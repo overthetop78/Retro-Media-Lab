@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using GWGUI.Infrastructure.Settings;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,6 +26,10 @@ public static class ThemeManager
             ApplyWindowTheme(window);
     }
 
+    private static readonly Dictionary<object, object?> BaseResources = new();
+    private static readonly ConditionalWeakTable<Window, WindowAppearance> WindowAppearances = new();
+    private sealed record WindowAppearance(Style? Style, bool HadLocalStyle);
+
     public static bool IsDark { get; private set; }
     public static AppTheme Current { get; private set; } = AppTheme.System;
     public static AppThemeDesign CurrentDesign { get; private set; } = AppThemeDesign.Base;
@@ -44,32 +49,61 @@ public static class ThemeManager
         var dark = Current == AppTheme.Dark || Current == AppTheme.System && systemUsesDarkTheme;
         IsDark = dark;
         var resources = Application.Current.Resources;
+        foreach (var original in BaseResources)
+        {
+            if (original.Value is null) resources.Remove(original.Key);
+            else resources[original.Key] = original.Value;
+        }
         CopyResources(ThemeConstants.TokensUri, resources);
-        CopyResources(definition.PaletteUri(dark), resources);
+        CopyResources(ThemeCatalog.Get(AppThemeDesign.Base).PaletteUri(dark), resources);
+        if (definition.Id != AppThemeDesign.Base) CopyResources(definition.PaletteUri(dark), resources, rememberBase: true);
+        if (definition.ControlsUri is { } controls) CopyResources(controls, resources, rememberBase: true);
         var windowColor = ((SolidColorBrush)resources[ThemeConstants.WindowResource]).Color;
         var accent = systemAccent.A == 0 ? ParseColor(ThemeConstants.DefaultAccent) : Color.FromRgb(systemAccent.R, systemAccent.G, systemAccent.B);
-        Set(ThemeConstants.AccentResource, EnsureTextContrast(accent, windowColor, dark));
+        if (definition.Id == AppThemeDesign.Base) Set(ThemeConstants.AccentResource, EnsureTextContrast(accent, windowColor, dark));
         foreach (Window window in Application.Current.Windows)
         {
             ApplyWindowTheme(window);
         }
     }
 
-    private static void CopyResources(string uri, ResourceDictionary destination)
+    private static void CopyResources(string uri, ResourceDictionary destination, bool rememberBase = false)
     {
         var source = new ResourceDictionary { Source = new Uri(uri, UriKind.Relative) };
-        foreach (var key in source.Keys) destination[key] = source[key];
+        CopyDictionary(source, destination, rememberBase);
+    }
+
+    private static void CopyDictionary(ResourceDictionary source, ResourceDictionary destination, bool rememberBase)
+    {
+        foreach (var merged in source.MergedDictionaries) CopyDictionary(merged, destination, rememberBase);
+        foreach (var key in source.Keys)
+        {
+            if (rememberBase && !BaseResources.ContainsKey(key)) BaseResources[key] = Application.Current.TryFindResource(key);
+            destination[key] = source[key];
+        }
     }
 
     public static void ApplyWindowTheme(Window window)
     {
         var ownsChrome = window.ReadLocalValue(Window.WindowStyleProperty) is WindowStyle.None;
-        if (!ownsChrome && window.ReadLocalValue(FrameworkElement.StyleProperty) == DependencyProperty.UnsetValue)
+        if (!ownsChrome && ThemeCatalog.Get(CurrentDesign).WindowStyleResource is { } windowStyle)
+        {
+            WindowAppearances.GetValue(window, target => new WindowAppearance(target.Style, target.ReadLocalValue(FrameworkElement.StyleProperty) != DependencyProperty.UnsetValue));
+            window.SetResourceReference(FrameworkElement.StyleProperty, windowStyle);
+        }
+        else if (!ownsChrome && WindowAppearances.TryGetValue(window, out var previous))
+        {
+            if (previous.HadLocalStyle) window.Style = previous.Style;
+            else window.ClearValue(FrameworkElement.StyleProperty);
+            WindowAppearances.Remove(window);
+        }
+        if (!ownsChrome && CurrentDesign == AppThemeDesign.Base && window.ReadLocalValue(FrameworkElement.StyleProperty) == DependencyProperty.UnsetValue)
             window.SetResourceReference(FrameworkElement.StyleProperty, ThemeConstants.BaseWindowStyleResource);
         if (window.ReadLocalValue(Control.BackgroundProperty) == DependencyProperty.UnsetValue)
             window.SetResourceReference(Control.BackgroundProperty, ThemeConstants.WindowResource);
         if (window.ReadLocalValue(Control.ForegroundProperty) == DependencyProperty.UnsetValue)
             window.SetResourceReference(Control.ForegroundProperty, ThemeConstants.TextResource);
+        if (window is GWGUI.App.Views.Windows.Shell.MainWindow shell) shell.ApplyThemeWorkspace();
         var handle = new WindowInteropHelper(window).Handle;
         if (handle == IntPtr.Zero) return;
         var enabled = IsDark ? 1 : 0;

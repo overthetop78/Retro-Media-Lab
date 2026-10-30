@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Werkruimte met vensters die u kunt verplaatsen en vergroten of verkleinen. Houd meerdere hulpmiddelen open en wissel ertussen zonder instellingen te verliezen.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimaliseren</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maximaliseren of herstellen</value></data>
 </root>

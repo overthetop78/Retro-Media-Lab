@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Área de trabalho com janelas móveis e redimensionáveis. Mantenha várias ferramentas abertas e alterne entre elas sem perder as definições.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimizar</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maximizar ou restaurar</value></data>
 </root>

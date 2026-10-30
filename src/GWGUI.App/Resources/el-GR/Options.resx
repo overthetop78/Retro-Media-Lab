@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Χώρος εργασίας με παράθυρα που μετακινούνται και αλλάζουν μέγεθος. Κρατήστε πολλά εργαλεία ανοιχτά και εναλλάξτε μεταξύ τους χωρίς απώλεια ρυθμίσεων.</value></data>
+  <data name="Options.Themes.Minimize"><value>Ελαχιστοποίηση</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Μεγιστοποίηση ή επαναφορά</value></data>
 </root>

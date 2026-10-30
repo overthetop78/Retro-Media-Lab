@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Không gian làm việc với các cửa sổ có thể di chuyển và thay đổi kích thước. Mở nhiều công cụ và chuyển đổi giữa chúng mà không mất cài đặt.</value></data>
+  <data name="Options.Themes.Minimize"><value>Thu nhỏ</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Phóng to hoặc khôi phục</value></data>
 </root>

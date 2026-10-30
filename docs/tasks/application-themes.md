@@ -92,10 +92,10 @@ Ordre demandé : supprimer les cinq thèmes refusés, terminer Base, tester, con
   - [x] Modifier `tests/GWGUI.Tests/Interface/Themes/ThemeDesignTests.cs` : garantir le repli vers Base pour chacun des cinq identifiants supprimés et conserver le style enregistré.
   - [x] Modifier `Theme/Base/Inventory.md` : corriger les chemins déplacés et les comptes de fichiers après le retrait des gabarits.
   - [x] Remplacer `Theme/Base/{LightPreview,DarkPreview}.png` par les nouveaux aperçus vérifiés ; supprimer `Interface/Themes/TemporaryThemeRepairTests.cs` et `artifacts/theme-repair/` après validation des tests.
-- [ ] Livrer Base pour validation, sans commit préalable.
+- [x] Livrer Base pour validation, sans commit préalable.
   - [x] Modifier `tests/GWGUI.LocalEmulationTests/Emulation/AcornEmuWd1770Tests.cs` : le test conserve une attente antérieure au filtrage demandé ; vérifier le refus du modèle double densité avec 8271 et son acceptation après sélection du WD1770, sans modifier le moteur Acorn inchangé.
   - [x] Modifier ce document avec le résultat des contrôles de navigation, préférences, Base et Acorn, puis du script `scripts/local-building.cmd --building=debug --modules=A` ; vérifier l'exécutable et les 24 modules.
-  - [ ] Après validation explicite de l'utilisateur : créer le commit Base ; conserver les prochains thèmes en attente jusqu'à cette validation.
+  - [x] Après validation explicite de l'utilisateur : créer le commit Base ; conserver les prochains thèmes en attente jusqu'à cette validation.
 
 ## Résultat de la livraison Base seule
 
@@ -110,3 +110,36 @@ Ordre demandé : supprimer les cinq thèmes refusés, terminer Base, tester, con
 
 Validation explicite de Base reçue de l'utilisateur le 30 octobre 2026. Le commit Base est maintenant autorisé, suivi du prochain thème seulement.
 
+
+# Premier nouveau thème : Studio
+
+Base validé et committé : `38ec52d63`. Studio propose un véritable espace de travail à fenêtres internes, avec ses propres cadres, contrôles et styles clair/sombre. Aucun commit Studio avant validation utilisateur. Les déclinaisons restent des choix internes futurs, pas des thèmes supplémentaires.
+
+- [x] Définir Studio et ses ressources.
+  - [x] Modifier `src/GWGUI.Infrastructure/Settings/AppThemeDesign.cs`, `src/GWGUI.App/Contracts/Theming/ThemeDefinition.cs`, créer `Contracts/Theming/IThemeWorkspace.cs` et modifier `Dictionaries/Theming/ThemeCatalog.cs` : Studio avec identifiant neuf, fabrique d'espace de travail et styles clair/sombre.
+  - [x] Créer `src/GWGUI.App/Theme/Studio/{StudioConstants.cs,Light.xaml,Dark.xaml,Controls.xaml,Window.xaml,StudioCaptionBar.cs}` : dimensions et glyphes nommés, palettes, gabarits des contrôles et cadres de toutes les fenêtres du thème.
+  - [x] Modifier `src/GWGUI.App/Resources/*/Options.resx` avec Argos puis revue : description de Studio et commandes Réduire, Agrandir/restaurer ; nom invariant en base commune.
+- [x] Construire les fenêtres internes.
+  - [x] Créer `src/GWGUI.App/Theme/Studio/{StudioWorkspace.cs,StudioPane.cs}` : conserver les sept vues, déplacer/redimensionner/réduire/restaurer les fenêtres, coordonner la sélection et préserver l'affichage natif des émulateurs ; détacher les événements et restituer les vues dans finally.
+  - [x] Créer `src/GWGUI.App/Theme/Base/Views/Windows/Shell/MainWindow.Theming.cs`, modifier `MainWindow.xaml.cs`, `MainWindow.EventsAndCommands.cs` et `Services/Theming/ThemeManager.cs` : installation et libération de l'espace, chargement des ressources Studio, application aux dialogues, restauration exacte de Base.
+- [x] Vérifier Studio et livrer pour validation.
+  - [x] Modifier `tests/GWGUI.Tests/Interface/Themes/ThemeDesignTests.cs` : persistance de Studio ; créer temporairement `TemporaryStudioTests.cs` : sept fonctions, déplacements, réduction, redimensionnement, changements de thème, fenêtres dérivées et fermeture effective ; produire les captures dans `artifacts/studio-validation/`.
+  - [x] Modifier `Theme/Studio/{Controls.xaml,Light.xaml,Dark.xaml,StudioCaptionBar.cs,StudioWorkspace.cs}` : finition des onglets et boutons d'action, commandes des fenêtres modales, activation après réduction et restitution complète même après erreur ; compléter `TemporaryStudioTests.cs` avec les comparaisons Base et les tailles minimales.
+  - [x] Modifier `TemporaryStudioTests.cs` : établir la capture Base après application des ressources à la fenêtre du fixture non affichée, comme le fait le chargement réel ; contrôler aussi l'échec de sauvegarde suivi d'une nouvelle tentative Studio.
+  - [x] Modifier `Theme/Studio/{Dark.xaml,StudioWorkspace.cs}` et `TemporaryStudioTests.cs` : harmoniser les surfaces sombres et conserver le passage clavier Ctrl+Tab et la sélection externe des fonctions.
+  - [x] Modifier `Theme/Studio/{Controls.xaml,StudioConstants.cs}` : conserver le contraste des commandes de titre au survol et une hauteur minimale suffisante ; vérifier les aperçus incorporés dans `TemporaryStudioTests.cs` avant sa suppression.
+  - [x] Créer `src/GWGUI.App/Theme/Studio/{LightPreview,DarkPreview}.png` à partir des captures contrôlées ; supprimer `tests/GWGUI.Tests/Interface/Themes/TemporaryStudioTests.cs` et `artifacts/studio-validation/`.
+  - [x] Modifier ce document avec les résultats des tests et du script officiel Debug `scripts/local-building.cmd --building=debug --modules=A` ; vérifier l'exécutable et les 24 modules et attendre la validation avant tout commit Studio.
+
+## Livraison Studio pour validation
+
+- Base validé et committé dans `38ec52d63` ; aucun commit Studio créé.
+- Studio est le seul nouveau thème proposé. Ses styles clair/sombre, palettes, contrôles et cadres sont définis dans `Theme/Studio/`.
+- Les sept fonctions restent accessibles ; les fenêtres des outils se déplacent, se redimensionnent, se réduisent et se restaurent, et Ctrl+Tab conserve le passage entre les fonctions. Les vues et commandes existantes sont conservées.
+- L'émulation utilise l'espace central lorsqu'elle est active afin que les HWND vidéo natifs ne recouvrent pas les fenêtres WPF. Les autres outils restent ouverts et retrouvent leur position au retour.
+- 155 contrôles ciblés réussis : navigation, préférences, persistance et Studio. Les tests temporaires ont contrôlé les sept vues empruntées, les interactions, le retour à Base identique pixel par pixel, les tailles réduites, l'échec de sauvegarde suivi d'une nouvelle tentative et la destruction des handles des fenêtres dérivées.
+- Deux aperçus réels 1360×900 incorporés et vérifiés ; traductions Argos revues dans toutes les langues. Le nom invariant Studio reste dans la base commune. Tests et captures temporaires supprimés.
+- Build officiel terminé avec le code 0 : `scripts/local-building.cmd --building=debug --modules=A`. Exécutable `F:\GW GUI\build\Debug\GW GUI\gwgui.exe`, DLL application et 24 manifestes/DLL de modules vérifiés après assemblage, dont Acorn et Amstrad.
+- Studio attend la validation utilisateur avant son commit et avant le thème suivant.
+
+Studio validé par l'utilisateur le 30 octobre 2026 : commit autorisé avant le thème suivant.

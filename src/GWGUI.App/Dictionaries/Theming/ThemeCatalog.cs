@@ -8,7 +8,13 @@ internal static class ThemeCatalog
 {
     internal static IReadOnlyList<ThemeDefinition> All { get; } = Array.AsReadOnly<ThemeDefinition>(
     [
-        Profile(AppThemeDesign.Base, [AppTheme.System, AppTheme.Light, AppTheme.Dark], AppTheme.System)
+        Profile(AppThemeDesign.Base, [AppTheme.System, AppTheme.Light, AppTheme.Dark], AppTheme.System),
+        Profile(AppThemeDesign.Studio, [AppTheme.Light, AppTheme.Dark], AppTheme.Dark) with
+        {
+            WindowStyleResource = GWGUI.App.Theme.Studio.StudioConstants.WindowStyle,
+            ControlsUri = ThemeConstants.PackPrefix + "Studio/Controls.xaml",
+            CreateWorkspace = (root, tabs) => new GWGUI.App.Theme.Studio.StudioWorkspace(root, tabs)
+        }
     ]);
 
     internal static ThemeDefinition Get(AppThemeDesign id) => All.FirstOrDefault(theme => theme.Id == id) ?? All[ThemeConstants.DefaultIndex];

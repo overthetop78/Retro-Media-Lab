@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Ruang kerja dengan jendela yang dapat dipindahkan dan diubah ukurannya. Biarkan beberapa alat terbuka dan beralih di antaranya tanpa kehilangan pengaturan.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimalkan</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maksimalkan atau pulihkan</value></data>
 </root>

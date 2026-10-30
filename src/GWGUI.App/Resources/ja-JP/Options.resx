@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>ウィンドウを移動・サイズ変更できる作業領域です。複数のツールを開いたまま、設定を保持して切り替えられます。</value></data>
+  <data name="Options.Themes.Minimize"><value>最小化</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>最大化または元に戻す</value></data>
 </root>

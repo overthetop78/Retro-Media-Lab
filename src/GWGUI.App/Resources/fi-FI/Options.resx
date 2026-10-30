@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Työtila, jossa ikkunoita voi siirtää ja niiden kokoa muuttaa. Pidä useita työkaluja avoinna ja vaihda niiden välillä menettämättä asetuksia.</value></data>
+  <data name="Options.Themes.Minimize"><value>Pienennä</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Suurenna tai palauta</value></data>
 </root>

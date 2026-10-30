@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>工作区中的窗口可以移动和调整大小。可同时打开多个工具，在它们之间切换而不丢失设置。</value></data>
+  <data name="Options.Themes.Minimize"><value>最小化</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>最大化或还原</value></data>
 </root>

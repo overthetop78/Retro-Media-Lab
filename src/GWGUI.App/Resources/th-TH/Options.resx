@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>พื้นที่ทำงานพร้อมหน้าต่างที่ย้ายและปรับขนาดได้ เปิดเครื่องมือหลายตัวค้างไว้และสลับใช้งานโดยไม่สูญเสียการตั้งค่า</value></data>
+  <data name="Options.Themes.Minimize"><value>ย่อเล็กสุด</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>ขยายใหญ่สุดหรือคืนค่า</value></data>
 </root>

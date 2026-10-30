@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>סביבת עבודה עם חלונות שניתן להזיז ולשנות את גודלם. השאר כמה כלים פתוחים ועבור ביניהם בלי לאבד את ההגדרות שלהם.</value></data>
+  <data name="Options.Themes.Minimize"><value>מזער</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>הגדל או שחזר</value></data>
 </root>

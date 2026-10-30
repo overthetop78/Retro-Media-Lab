@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Munkaterület mozgatható és átméretezhető ablakokkal. Tartson nyitva több eszközt, és váltson közöttük a beállítások elvesztése nélkül.</value></data>
+  <data name="Options.Themes.Minimize"><value>Kis méret</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Teljes méret vagy visszaállítás</value></data>
 </root>

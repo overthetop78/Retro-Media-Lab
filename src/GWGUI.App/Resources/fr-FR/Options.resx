@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Espace de travail à fenêtres déplaçables et redimensionnables. Gardez plusieurs outils ouverts et passez de l’un à l’autre sans perdre leurs réglages.</value></data>
+  <data name="Options.Themes.Minimize"><value>Réduire</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Agrandir ou restaurer</value></data>
 </root>

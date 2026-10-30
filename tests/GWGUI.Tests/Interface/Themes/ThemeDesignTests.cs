@@ -11,6 +11,8 @@ public sealed class ThemeDesignTests
     [InlineData(AppThemeDesign.Base, AppTheme.System)]
     [InlineData(AppThemeDesign.Base, AppTheme.Light)]
     [InlineData(AppThemeDesign.Base, AppTheme.Dark)]
+    [InlineData(AppThemeDesign.Studio, AppTheme.Light)]
+    [InlineData(AppThemeDesign.Studio, AppTheme.Dark)]
     public async Task SavedDesignAndAppearanceSurviveNewStoreInstance(AppThemeDesign design, AppTheme appearance)
     {
         var files = new SyntheticData();

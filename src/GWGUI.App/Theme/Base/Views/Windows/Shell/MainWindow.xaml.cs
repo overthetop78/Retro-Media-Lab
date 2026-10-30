@@ -446,5 +446,6 @@ public partial class MainWindow : Window
         ErrorLog.EntryWritten += AppendErrorToConsole;
         ErrorLog.WarningWritten += AppendWarningToConsole;
         _mediaDriveAudio = new MediaDriveAudioController(_mediaEngine.Drives, _writeError);
+        ApplyThemeWorkspace();
     }
 }

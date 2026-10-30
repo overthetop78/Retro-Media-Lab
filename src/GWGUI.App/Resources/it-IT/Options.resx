@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Area di lavoro con finestre spostabili e ridimensionabili. Tieni aperti più strumenti e passa da uno all’altro senza perdere le impostazioni.</value></data>
+  <data name="Options.Themes.Minimize"><value>Riduci a icona</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Ingrandisci o ripristina</value></data>
 </root>

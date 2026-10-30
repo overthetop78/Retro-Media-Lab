@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Spațiu de lucru cu ferestre care pot fi mutate și redimensionate. Păstrați mai multe instrumente deschise și comutați între ele fără a pierde setările.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimizează</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maximizează sau restaurează</value></data>
 </root>

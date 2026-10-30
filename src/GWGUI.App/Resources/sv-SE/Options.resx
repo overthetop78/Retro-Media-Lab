@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Arbetsyta med fönster som kan flyttas och storleksändras. Ha flera verktyg öppna och växla mellan dem utan att förlora inställningarna.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimera</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maximera eller återställ</value></data>
 </root>

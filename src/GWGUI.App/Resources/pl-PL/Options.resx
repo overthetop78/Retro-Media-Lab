@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Obszar roboczy z oknami, które można przesuwać i skalować. Otwórz kilka narzędzi i przełączaj się między nimi bez utraty ustawień.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimalizuj</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maksymalizuj lub przywróć</value></data>
 </root>

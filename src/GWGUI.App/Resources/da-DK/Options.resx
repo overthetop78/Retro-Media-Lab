@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Arbejdsområde med vinduer, der kan flyttes og ændres i størrelse. Hold flere værktøjer åbne, og skift mellem dem uden at miste indstillingerne.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimér</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maksimér eller gendan</value></data>
 </root>

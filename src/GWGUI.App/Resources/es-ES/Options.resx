@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Espacio de trabajo con ventanas que se pueden mover y redimensionar. Mantenga varias herramientas abiertas y cambie entre ellas sin perder su configuración.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimizar</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maximizar o restaurar</value></data>
 </root>

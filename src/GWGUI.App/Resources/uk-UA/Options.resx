@@ -74,4 +74,7 @@
 
 
 
+  <data name="Options.Themes.Studio.Description"><value>Робочий простір із вікнами, які можна переміщувати та змінювати в розмірі. Тримайте кілька інструментів відкритими й перемикайтеся між ними без втрати налаштувань.</value></data>
+  <data name="Options.Themes.Minimize"><value>Згорнути</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Розгорнути або відновити</value></data>
 </root>
