@@ -1,0 +1,13 @@
+# Sons Acorn : bruit injustifié au démarrage
+
+- [x] Corriger le faux bruit d’insertion à l’allumage sans masquer les accès matériels.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/EmulatorCore.cs` et créer `EmulatorCore.StartupAudio.cs` : après restauration des supports, remettre à zéro les événements mécaniques et restaurer silencieusement la présence des disquettes avant la première image CPU ; effacer aussi l’événement d’insertion cassette restaurée.
+  - [x] Modifier `EmulatorCore.FloppySound.cs` et `EmulatorCore.HardDiskSound.cs` dans ce même dossier : réutiliser la configuration des sons pour rétablir exactement activation, volume et profil après la restauration silencieuse.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuAudioTests.cs` : vérifier sans fichier externe la suppression des événements restaurés, la conservation de l’éjection et des accès ultérieurs, les lecteurs vides et désactivés, et l’identité des échantillons du BBC programmé avant/après nettoyage mécanique.
+  - [x] Modifier ce suivi avec les résultats groupés des tests audio/Acorn, puis livrer le build Debug avec tous les modules selon le script officiel ; aucune modification des fichiers utilisateur ni commit sans demande.
+
+Diagnostic vérifié : la configuration actuelle contient une disquette déjà insérée. Initialize appelle InsertMedia puis InsertFloppy signale une nouvelle insertion ; le profil BBC ne dispose pas de cet enregistrement et le service reprend celui du lecteur Alps 3½″. ClearAudio ne vide que la file PCM, pas cet événement mécanique. Le Winchester n’a aucune image montée dans cette configuration ; aucun bruit HDD n’est donc attribué à ce cas. Le son du BBC est généré séparément par le SN76489AN ; sa réinitialisation matérielle et les notes ne seront pas modifiées sans anomalie établie.
+
+Points de cohérence sonore repérés à traiter séparément de ce symptôme : replis vers un autre modèle pour les enregistrements manquants, représentation des grands déplacements de tête et coupure des bruitages en vitesse accélérée. Le remplacement des enregistrements n’est pas décidé arbitrairement.
+
+76 tests audio/disquette/cassette Acorn réussis, dont les quatre cas ajoutés : restauration silencieuse avec sons activés/désactivés, lecteur vide et égalité exacte du PCM BBC programmé. Aucun fichier externe ni sortie audio physique utilisé par ces tests. Build Debug officiel terminé avec succès (code 0) : exécutable présent, 24 modules livrés avec leurs DLL ; empreinte de la DLL Acorn livrée identique à celle compilée. Sortie : `build/Debug/Retro Media Lab/retromedialab.exe`. Vérification du diff réussie. Aucun commit effectué.

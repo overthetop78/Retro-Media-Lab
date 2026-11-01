@@ -15,15 +15,22 @@ internal sealed partial class EmulatorCore
         for (var drive = 0; drive < C.DriveCount; drive++)
         {
             if (_floppyMechanics[drive] is not { } mechanics) continue;
-            var settings = _floppySettings[drive];
-            var enabled = _floppyConnected[drive] && settings is { Speed: C.DefaultSpeed }
-                && bool.Parse(settings.Options?.GetValueOrDefault(C.MechanicalSoundOption, bool.TrueString) ?? bool.TrueString);
-            mechanics.Configure(StoragePresentationConstants.FloppySound,
-                EmulationMechanicalSoundSettings.ReadVolume(settings?.Options), enabled);
+            ConfigureFloppySound(drive);
             mechanics.SetMotor(_floppyConnected[drive] && machine.FloppyMotor(drive));
             mechanics.SetActivity(machine.FloppyReading(drive), machine.FloppyWriting(drive));
             var sound = mechanics.RenderAudio(SampleRate, samples.Length);
             for (var index = 0; index < sound.Length; index++) samples[index] += sound[index];
         }
     }
+
+    private void ConfigureFloppySound(int drive, bool allowSound = true)
+    {
+        if (_floppyMechanics[drive] is not { } mechanics) return;
+        var settings = _floppySettings[drive];
+        var enabled = allowSound && _floppyConnected[drive] && settings is { Speed: C.DefaultSpeed }
+            && bool.Parse(settings.Options?.GetValueOrDefault(C.MechanicalSoundOption, bool.TrueString) ?? bool.TrueString);
+        mechanics.Configure(StoragePresentationConstants.FloppySound,
+            EmulationMechanicalSoundSettings.ReadVolume(settings?.Options), enabled);
+    }
+
 }

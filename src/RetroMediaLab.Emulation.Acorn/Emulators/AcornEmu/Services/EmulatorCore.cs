@@ -97,6 +97,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         ConfigureHardDisks(configuration);
         ConfigureNetwork(configuration);
         foreach (var media in configuration.Media.Where(media => media.IsInserted)) InsertMedia(media);
+        ResetRestoredMediaAudio();
         _videoOutput = configuration.Options.GetValueOrDefault(EmulatorConstants.VideoOutput, EmulatorConstants.UhfOutput);
         ShutdownRequested = false;
         _sequence = 0;

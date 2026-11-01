@@ -1,4 +1,8 @@
 using System.Reflection;
+using RetroMediaLab.Emulation;
+using RetroMediaLab.Tests.Application.TestInfrastructure;
+using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
+using Storage = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelA.Services;
@@ -153,6 +157,95 @@ public sealed class AcornEmuAudioTests
         core.RunFrame(); core.Stop();
         Assert.False(core.TryDequeueAudio(out _));
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void StartupRestoresInsertedMediaSilentlyAndKeepsLaterPhysicalActions(bool soundEnabled)
+    {
+        using var core = new EmulatorCore(MachineModel.BbcMicroModelA);
+        var mechanics = EmulationSdk.MediaProcessing.CreateDriveMechanics(S.Floppy);
+        var image = ControlledDependencies.Simulate<IEmulationDiskImage>((method, _) => method.Name switch
+        {
+            "get_HasChanges" => false,
+            "Dispose" => null,
+            _ => throw new InvalidOperationException("Unexpected disk access: " + method.Name)
+        });
+        Field<IEmulationDriveMechanics?[]>(core, "_floppyMechanics")[0] = mechanics;
+        Field<IEmulationDiskImage?[]>(core, "_floppyImages")[0] = image;
+        Field<bool[]>(core, "_floppyConnected")[0] = true;
+        Field<FloppyDriveSettings?[]>(core, "_floppySettings")[0] = new("ds80", Storage.DefaultSpeed, false, false,
+            new Dictionary<string, string> { [Storage.MechanicalSoundOption] = soundEnabled.ToString() });
+        mechanics.Insert();
+        mechanics.SetMotor(true);
+        Assert.True(mechanics.HasPendingAudio);
+        typeof(EmulatorCore).GetField("_mechanicalEvent", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(core, S.Insert);
+        ResetRestoredMediaAudio(core);
+        Assert.False(mechanics.HasPendingAudio);
+        Assert.Null(Field<string?>(core, "_mechanicalEvent"));
+        mechanics.Eject();
+        Assert.Equal(soundEnabled, mechanics.HasPendingAudio);
+        mechanics.Reset();
+        mechanics.SetMotor(true);
+        Assert.Equal(soundEnabled, mechanics.HasPendingAudio);
+    }
+
+    [Fact]
+    public void StartupDoesNotPretendThatAnEmptyDriveContainsADisk()
+    {
+        using var core = new EmulatorCore(MachineModel.BbcMicroModelA);
+        var mechanics = EmulationSdk.MediaProcessing.CreateDriveMechanics(S.Floppy);
+        Field<IEmulationDriveMechanics?[]>(core, "_floppyMechanics")[0] = mechanics;
+        Field<bool[]>(core, "_floppyConnected")[0] = true;
+        Field<FloppyDriveSettings?[]>(core, "_floppySettings")[0] = new("ds80", Storage.DefaultSpeed, false, false);
+        mechanics.SetMotor(true);
+        ResetRestoredMediaAudio(core);
+        Assert.False(mechanics.HasPendingAudio);
+        mechanics.Eject();
+        Assert.False(mechanics.HasPendingAudio);
+    }
+
+    [Fact]
+    public void RestoringDriveStatePreservesTheProgrammedBbcSoundExactly()
+    {
+        using var reference = CoreWithProgrammedTone();
+        using var restored = CoreWithProgrammedTone();
+        ResetRestoredMediaAudio(restored);
+        reference.RunFrame();
+        restored.RunFrame();
+        Assert.True(reference.TryDequeueAudio(out var expected));
+        Assert.True(restored.TryDequeueAudio(out var actual));
+        Assert.Equal(expected!.InterleavedSamples.ToArray(), actual!.InterleavedSamples.ToArray());
+    }
+
+    private static EmulatorCore CoreWithProgrammedTone()
+    {
+        var machine = new ModelAMachine(new byte[16384], new byte[16384]);
+        machine.Write(0xfe43, 255);
+        machine.Write(0xfe42, 15);
+        void Write(byte value)
+        {
+            machine.Write(0xfe41, value);
+            machine.Write(0xfe40, 0);
+            machine.Write(0xfe40, 8);
+        }
+        Tone(Write, 284);
+        var core = new EmulatorCore(MachineModel.BbcMicroModelA);
+        var transferred = false;
+        try
+        {
+            typeof(EmulatorCore).GetField("_machine", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(core, machine);
+            transferred = true;
+            return core;
+        }
+        finally { if (!transferred) core.Dispose(); }
+    }
+
+    private static T Field<T>(EmulatorCore core, string name) =>
+        (T)typeof(EmulatorCore).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(core)!;
+
+    private static void ResetRestoredMediaAudio(EmulatorCore core) =>
+        typeof(EmulatorCore).GetMethod("ResetRestoredMediaAudio", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(core, null);
 
     /// <summary>Programme un ton par les deux octets matériels, après coupure des quatre voies.</summary>
     private static void Tone(Action<byte> write, int divisor)

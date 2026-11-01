@@ -8,6 +8,7 @@ internal sealed class MachineSession : IAsyncDisposable
     internal static IReadOnlyList<MachineSession> All => OpenSessions.ToArray();
     private Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> _machineFactory;
     private readonly List<EmulationMedia> _mountedMedia;
+    private readonly Func<IReadOnlyList<EmulationMedia>, Task>? _persistMountedMedia;
     private IEmulatedMachine _machine;
     private bool _disposed;
     private bool _hasLiveMachine = true;
@@ -16,14 +17,15 @@ internal sealed class MachineSession : IAsyncDisposable
     internal MachineSession(IEmulatedMachine machine, Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> machineFactory, IEnumerable<EmulationMedia> mountedMedia)
         : this(string.Empty, Guid.Empty, string.Empty, machine, machineFactory, mountedMedia) { }
 
-    internal MachineSession(string moduleId, Guid configurationId, string displayName, IEmulatedMachine machine, Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> machineFactory, IEnumerable<EmulationMedia> mountedMedia)
+    internal MachineSession(string moduleId, Guid configurationId, string displayName, IEmulatedMachine machine, Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> machineFactory, IEnumerable<EmulationMedia> mountedMedia, Func<IReadOnlyList<EmulationMedia>, Task>? persistMountedMedia = null)
     {
         ModuleId = moduleId;
         ConfigurationId = configurationId;
         DisplayName = displayName;
         _machine = machine;
         _machineFactory = machineFactory;
-        _mountedMedia = mountedMedia.ToList();
+        _mountedMedia = mountedMedia.Where(media => media.IsInserted).ToList();
+        _persistMountedMedia = persistMountedMedia;
         OpenSessions.Add(this);
     }
 
@@ -113,6 +115,7 @@ internal sealed class MachineSession : IAsyncDisposable
         else if (IsPowered) await _machine.Media.InsertAsync(media);
         else _recreateOnPowerOn = true;
         ReplaceMountedMedia(next);
+        if (_persistMountedMedia is not null) await _persistMountedMedia(next);
     }
 
     internal async Task EjectAsync(EmulationMediaSlot slot, bool requiresMachineRecreation)
@@ -123,6 +126,7 @@ internal sealed class MachineSession : IAsyncDisposable
         else if (IsPowered) await _machine.Media.EjectAsync(slot);
         else _recreateOnPowerOn = true;
         ReplaceMountedMedia(next);
+        if (_persistMountedMedia is not null) await _persistMountedMedia(next);
     }
 
     public async ValueTask DisposeAsync()

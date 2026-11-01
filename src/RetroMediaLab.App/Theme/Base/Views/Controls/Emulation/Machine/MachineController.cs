@@ -62,7 +62,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         try
         {
             session = new MachineSession(options.ModuleId, options.ConfigurationId, options.WindowTitle,
-                options.Machine, options.MachineFactory, options.MountedMedia);
+                options.Machine, options.MachineFactory, options.MountedMedia, options.PersistMountedMedia);
             controller = new MachineController(options, session);
             return controller;
         }

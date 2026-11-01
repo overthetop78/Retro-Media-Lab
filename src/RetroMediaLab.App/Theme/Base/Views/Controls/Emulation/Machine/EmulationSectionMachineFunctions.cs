@@ -38,7 +38,17 @@ public sealed partial class EmulationSection
             () => ReferenceEquals(_machines.SelectedContent, view),
             runtime.PrepareMediaAsync,
             null,
-            PersistRuntimeOptionsAsync));
+            PersistRuntimeOptionsAsync,
+            PersistMountedMedia: PersistMountedMediaAsync));
+        async Task PersistMountedMediaAsync(IReadOnlyList<EmulationMedia> media)
+        {
+            if (selected.Module is not IEmulationStorageSettingsManager storage) return;
+            var configuration = (await selected.Module.LoadConfigurationsAsync()).FirstOrDefault(item => item.Id == selected.Configuration.Id) ?? selected.Configuration;
+            var settings = storage.DescribeStorageSettings(configuration);
+            await selected.Module.SaveConfigurationAsync(storage.ApplyStorageSettings(configuration,
+                settings with { MountedMedia = media.Where(item => item.IsInserted).ToArray() }));
+        }
+
         async Task PersistRuntimeOptionsAsync(IReadOnlyDictionary<string, string> values)
         {
             var configuration = (await selected.Module.LoadConfigurationsAsync()).FirstOrDefault(item => item.Id == selected.Configuration.Id) ?? selected.Configuration;
