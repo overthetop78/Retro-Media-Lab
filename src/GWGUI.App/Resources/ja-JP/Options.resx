@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>スタート</value></data>
   <data name="Options.Themes.OS.Programs"><value>プログラム</value></data>
   <data name="Options.Themes.OS.Numbering"><value>番号付け</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>マシン</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>メディア</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>活動ログ</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>コマンド</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>コマンドを検索する</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>マッチングコマンドなし</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>マシンを選択するか、オープンセッションを続行する</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>コンテンツ</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>エミュレータセッションは開かず</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>ワークスペース内の機械、メディア文書、コンテクストツール。</value></data>
 </root>

@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programe</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numerotare</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Mașini de tăiat</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Jurnal de activitate</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Comenzi</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Caută o comandă</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Nicio comandă de potrivire</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Alegeți o mașină sau continuați o sesiune deschisă</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Context</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Nu se deschide sesiunea de emulare</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Mașini, documente media și instrumente contextuale într-un singur spațiu de lucru.</value></data>
 </root>

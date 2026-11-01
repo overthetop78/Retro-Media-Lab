@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>开始</value></data>
   <data name="Options.Themes.OS.Programs"><value>程序</value></data>
   <data name="Options.Themes.OS.Numbering"><value>编号</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>机器</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>媒体</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>活动日志</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>图标</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>搜索命令</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>没有匹配的命令</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>选择机器或继续开场</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>内容</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>没有模拟会话打开</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>在一个工作空间的机器,媒体文档和背景工具.</value></data>
 </root>

@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Program</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numrering</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Maskiner</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Aktivitetslogg</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Kommandon</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Sök efter ett kommando</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Inget matchande kommando</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Välj en maskin eller fortsätt en öppen session</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Kontext</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Ingen emuleringssession öppen</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Maskiner, mediedokument och kontextuella verktyg i ett arbetsutrymme.</value></data>
 </root>

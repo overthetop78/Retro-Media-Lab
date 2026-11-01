@@ -1,0 +1,36 @@
+<UserControl x:Class="GWGUI.App.Theme.Orbit.Views.ClassificationView"
+             x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions" FontFamily="Segoe UI" FontSize="12" Background="{DynamicResource Orbit.Window}" Foreground="{DynamicResource Orbit.Text}">
+    <UserControl.Resources><ResourceDictionary>
+        <DataTemplate x:Key="DetectedChoice">
+            <TextBlock Text="{Binding DisplayName}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="FontWeight" Value="Normal"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsDetected}" Value="True"><Setter Property="FontWeight" Value="Bold"/></DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </DataTemplate>
+    </ResourceDictionary></UserControl.Resources>
+    <DockPanel Margin="12">
+        <Button x:Name="CloseCommand" DockPanel.Dock="Bottom" Content="{l:Loc Common.Close}" HorizontalAlignment="Right" MinWidth="90" Margin="0,10,0,0" IsDefault="True" Click="CloseClick"/>
+        <CheckBox x:Name="Automatic" DockPanel.Dock="Top" Content="{l:Loc Classification.Automatic}" Margin="0,0,0,8"/>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Label Content="{l:Loc Classification.Machine}" Target="{Binding ElementName=Machines}"/>
+            <ComboBox x:Name="Machines" ItemTemplate="{StaticResource DetectedChoice}"/>
+        </DockPanel>
+        <DockPanel x:Name="ProtectionGroup" DockPanel.Dock="Bottom" Margin="0,8,0,0">
+            <Label Content="{l:Loc Classification.Protection}" Target="{Binding ElementName=Protections}"/>
+            <ComboBox x:Name="Protections" DisplayMemberPath="DisplayName"/>
+        </DockPanel>
+        <DockPanel>
+            <Label DockPanel.Dock="Top" Content="{l:Loc Classification.Format}" Target="{Binding ElementName=Formats}"/>
+            <ListBox x:Name="Formats" ItemTemplate="{StaticResource DetectedChoice}" MinHeight="60"/>
+        </DockPanel>
+    </DockPanel>
+</UserControl>

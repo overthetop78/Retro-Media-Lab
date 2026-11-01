@@ -15,6 +15,11 @@ internal static class ThemeCatalog
             ControlsUri = ThemeConstants.PackPrefix + "Studio/Controls.xaml",
             CreateWorkspace = (root, tabs) => new GWGUI.App.Theme.Studio.StudioWorkspace(root, tabs)
         },
+        Profile(AppThemeDesign.Orbit, [AppTheme.Light, AppTheme.Dark], AppTheme.Dark) with
+        {
+            ControlsUri = ThemeConstants.PackPrefix + "Orbit/Controls.xaml",
+            CreateWorkspace = (root, tabs) => new GWGUI.App.Theme.Orbit.OrbitWorkspace(root, tabs)
+        },
         Profile(AppThemeDesign.OS, [AppTheme.Light], AppTheme.Light) with
         {
             EditionHeadingResourceKey = "Options.Themes.Edition",

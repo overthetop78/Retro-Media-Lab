@@ -1,0 +1,18 @@
+<UserControl x:Class="GWGUI.App.Theme.Orbit.Views.ProfilesOptionsView" x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions" FontFamily="Segoe UI" FontSize="12" Background="{DynamicResource Orbit.Window}" Foreground="{DynamicResource Orbit.Text}">
+
+
+    <DockPanel Margin="8">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button x:Name="RenameAction" Content="{l:Loc Profiles.Rename}" Click="RenameClick" Margin="0,0,8,0"/>
+            <Button x:Name="DeleteAction" Content="{l:Loc Common.Delete}" Click="DeleteClick"/>
+        </StackPanel>
+        <TabControl x:Name="Categories" SelectionChanged="SelectionChanged">
+            <TabItem Header="{l:Loc Tab.Read}"><ListBox x:Name="ReadProfiles" DisplayMemberPath="Name" Margin="6" SelectionChanged="SelectionChanged" KeyDown="ProfileKeyDown" PreviewMouseLeftButtonDown="ProfileLeftButtonDown" PreviewMouseRightButtonDown="ProfileRightButtonDown"/></TabItem>
+            <TabItem Header="{l:Loc Tab.Write}"><ListBox x:Name="WriteProfiles" DisplayMemberPath="Name" Margin="6" SelectionChanged="SelectionChanged" KeyDown="ProfileKeyDown" PreviewMouseLeftButtonDown="ProfileLeftButtonDown" PreviewMouseRightButtonDown="ProfileRightButtonDown"/></TabItem>
+            <TabItem Header="{l:Loc Tab.Convert}"><ListBox x:Name="ConvertProfiles" DisplayMemberPath="Name" Margin="6" SelectionChanged="SelectionChanged" KeyDown="ProfileKeyDown" PreviewMouseLeftButtonDown="ProfileLeftButtonDown" PreviewMouseRightButtonDown="ProfileRightButtonDown"/></TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

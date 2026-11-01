@@ -1,0 +1,13 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <Style x:Key="Orbit.Visualization.TrackButton" TargetType="Button">
+  <Setter Property="FontFamily" Value="Segoe UI"/><Setter Property="FontSize" Value="11"/>
+  <Setter Property="Foreground" Value="Black"/><Setter Property="BorderBrush" Value="{DynamicResource Orbit.Text}"/>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+   <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" CornerRadius="3">
+    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"><ContentPresenter.Resources>
+     <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{Binding Foreground,RelativeSource={RelativeSource AncestorType=Button}}"/></Style>
+    </ContentPresenter.Resources></ContentPresenter>
+   </Border>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+</ResourceDictionary>

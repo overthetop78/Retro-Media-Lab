@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Käynnistä</value></data>
   <data name="Options.Themes.OS.Programs"><value>Ohjelmat</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numerointi</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>koneet</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Toimintoloki</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Komento</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Etsi komentoa</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Ei osumaa</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Valitse kone tai jatka avointa istuntoa</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Tausta</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Emulsioistuntoa ei ole avattu</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Koneet, media-asiakirjat ja kontekstityökalut yhdessä työtilassa.</value></data>
 </root>

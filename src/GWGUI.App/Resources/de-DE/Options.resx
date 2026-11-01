@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programme</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Nummerierung</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Maschinen</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Medien</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Tätigkeitsprotokoll</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Befehle</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Suche nach einem Befehl</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Kein Matching Command</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Wählen Sie eine Maschine aus oder setzen Sie eine offene Sitzung fort</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Kontext</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Keine Emulationssitzung offen</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Maschinen, Mediendokumente und kontextuelle Tools in einem Arbeitsbereich.</value></data>
 </root>

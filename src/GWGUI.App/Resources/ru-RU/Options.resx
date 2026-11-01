@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Пуск</value></data>
   <data name="Options.Themes.OS.Programs"><value>Программы</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Нумерация</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Машины</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>СМИ</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Журнал деятельности</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Командование</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Поиск команды</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Нет команды соответствия</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Выберите компьютер или продолжайте сеанс</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>контекст</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Сеанс эмуляции открыт</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Машины, медиа-документы и контекстные инструменты в одном рабочем пространстве.</value></data>
 </root>

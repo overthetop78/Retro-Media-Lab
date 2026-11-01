@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Kezdés</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programok</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Számozás</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Gép</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Média</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Tevékenységi napló</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Parancsok</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Parancskeresés</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Nincs egyező parancs</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Válasszon ki egy gépet vagy folytassa a nyílt munkamenetet</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Kontextus</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Nincs emuláció munkamenet</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Gépek, médiadokumentumok és kontextuális eszközök egy munkaterületen.</value></data>
 </root>

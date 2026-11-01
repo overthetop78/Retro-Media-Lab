@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>เริ่ม</value></data>
   <data name="Options.Themes.OS.Programs"><value>โปรแกรม</value></data>
   <data name="Options.Themes.OS.Numbering"><value>การกำหนดหมายเลข</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>เครื่อง</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>สื่อ</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>บันทึกกิจกรรม</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>คําสั่ง</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>ค้นหาคําสั่ง</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>ไม่มีคําสั่งที่เข้ากันได้</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>เลือกเครื่องหรือทําวาระงานที่เปิดอยู่</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>บริบท</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>ไม่มีการเปิดวาระการจําลอง</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>เครื่อง, เอกสารสื่อ และเครื่องมือบริบท ในที่ทํางาน</value></data>
 </root>

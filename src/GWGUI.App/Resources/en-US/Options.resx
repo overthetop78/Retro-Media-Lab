@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programs</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numbering</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Machines</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Activity log</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Commands</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Search for a command</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>No matching command</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Select a machine or continue an open session</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Context</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>No emulation session open</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Machines, media documents and contextual tools in one workspace.</value></data>
 </root>

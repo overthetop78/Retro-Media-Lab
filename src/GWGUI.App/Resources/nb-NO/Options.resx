@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programmer</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Nummerering</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Maskiner</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Medier</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Aktivitetslogg</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Kommandoer</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Søk etter en kommando</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Ingen samsvarende kommando</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Velg en maskin eller fortsett en åpen økt</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Kontekst</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Ingen emuleringsøkt åpen</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Maskiner, mediedokumenter og kontekstverktøy på ett arbeidsområde.</value></data>
 </root>

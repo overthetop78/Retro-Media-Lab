@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Mulai</value></data>
   <data name="Options.Themes.OS.Programs"><value>Program</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Penomoran</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Mesin</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Log aktivitas</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Perintah</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Cari perintah</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Tak ada perintah yang cocok</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Pilih mesin atau lanjutkan sesi terbuka</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Konteks</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Tidak ada sesi emulasi yang dibuka</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Mesin, dokumen media dan alat kontekstual dalam satu ruang kerja.</value></data>
 </root>

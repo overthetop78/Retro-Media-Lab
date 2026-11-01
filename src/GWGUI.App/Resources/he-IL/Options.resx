@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>התחל</value></data>
   <data name="Options.Themes.OS.Programs"><value>תוכניות</value></data>
   <data name="Options.Themes.OS.Numbering"><value>מספור</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>מכונות</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>מדיה</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>יומן פעילות</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>פקודות</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>חיפוש פקודה</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>לא תואמים את הפקודה</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>בחרו מכונה או המשך ישיבה פתוחה</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>המונחים</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>אין אפשרות לפתוח את ה-</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>מכונות, מסמכי מדיה וכלים קונטקסטואליים במרחב עבודה אחד.</value></data>
 </root>

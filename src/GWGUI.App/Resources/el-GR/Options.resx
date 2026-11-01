@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Έναρξη</value></data>
   <data name="Options.Themes.OS.Programs"><value>Προγράμματα</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Αρίθμηση</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Μηχανές</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Μέσα μαζικής ενημέρωσης</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Ημερολόγιο δραστηριότητας</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Εντολές</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Αναζήτηση εντολής</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Δεν υπάρχει αντίστοιχη εντολή</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Επιλέξτε μια μηχανή ή συνεχίστε μια ανοιχτή συνεδρία</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Πλαίσιο</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Χωρίς άνοιγμα συνεδρίας εξομοίωσης</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Μηχανές, έγγραφα μέσων και εργαλεία σε έναν χώρο εργασίας.</value></data>
 </root>

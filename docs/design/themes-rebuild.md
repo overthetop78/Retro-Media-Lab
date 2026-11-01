@@ -231,3 +231,1179 @@ L’image JSON d’extraction temporaire est supprimée après reconstruction.
 Références : le [guide Microsoft de février 1995](https://www.aoisnow.net/blog/wp-content/uploads/2019/10/Microsoft_WindowsGuidelines.pdf), chapitres 3 et 6, décrit bureau, barre des tâches, activation et commandes des fenêtres. Ce document est une préversion : le rendu final doit être comparé à [Windows 95 RTM 4.00.950](https://www.pcjs.org/software/pcx86/sys/windows/win95/4.00.950/), pas déduit uniquement de ses illustrations.
 
 La déclinaison remplacera le gestionnaire de programmes par un bureau avec lancement et barre des tâches. Ses fenêtres utiliseront les états natifs WPF ; leur contenu conservera les commandes, données et services RML. Le premier lot concerne le cadre. Les ressources historiques, le bureau et toutes les vues doivent être terminés avant l’ajout au sélecteur. Le build Windows 3.1 livré reste inchangé pendant cette réalisation.
+
+
+## Windows XP : contrôles et composition
+
+Windows XP constitue une déclinaison du thème OS. Les palettes Luna bleu, argent et olive sont des styles internes à cette déclinaison. Microsoft fournit les dictionnaires WPF `/PresentationFramework.Luna;component/themes/Luna.NormalColor.xaml`, `Luna.Metallic.xaml` et `Luna.Homestead.xaml` ; l’assembly PresentationFramework.Luna est présent dans le runtime .NET Desktop installé. Référence primaire : https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/styles-templates-overview#using-built-in-themes (table des thèmes intégrés).
+
+Ces dictionnaires reproduisent les contrôles communs ; ils ne fournissent ni le menu Démarrer XP, ni son bureau, ni les cadres non clients historiques. Ces éléments seront construits séparément à partir des ressources et références XP. Leur présence dans WPF ne constitue donc pas une preuve que la déclinaison XP est terminée.
+
+La composition prévue reste celle d’un bureau XP : menu Démarrer à deux colonnes, barre des tâches, fenêtres natives indépendantes et propriétés de type panneau de configuration. Les fonctions métiers et les surfaces de rendu restent aux propriétaires existants. Les vues d’acquisition, d’exploration et d’émulation seront raccordées explicitement ; aucune page Base ne sera affichée telle quelle et Windows 95 ne sera pas recoloré globalement.
+
+
+### Recherche des ressources Luna originales
+
+Le candidat `pazuzu156/KalebKlein/Windows XP Theme Installer/Themes/Luna/Luna.msstyles` (SHA-256 `fc76fbb00275ce12e433d10027a9b2b9a6e922afb9ab0113c2123bae012aeb85`) est écarté : son arbre de ressources contient IMAGE/VARIANT/STREAM/BCMAP et ne contient ni les bitmaps ni les paramètres TEXTFILE attendus du format XP. Il n’est donc pas utilisé pour représenter les cadres historiques XP. Le fichier a été lu en mémoire uniquement ; aucun binaire ni image n’a été conservé.
+
+
+### Luna du média XP SP3 : ressources retenues comme référence
+
+Source : `I386/LUNA.MS_` du média `en_windows_xp_professional_with_service_pack_3_x86_cd_vl_x14-73974.iso`, archive WinXPProSP3x86. Seuls 377 943 octets du fichier compressé ont été extraits par plages HTTP ; le média complet n’est pas téléchargé. Décompression de données avec expand.exe, sans exécution de Luna. SHA-256 de Luna.msstyles : `dd8e86e5a7c19ea9fe0e34992babefe592055d68eb8659763c8300558ca5dcb4`.
+
+| Ressource bitmap | Largeur | Hauteur des états | Bits |
+|---|---:|---:|---:|
+| BLUE_CAPTIONBUTTON_BMP | 21 | 168 | 32 |
+| BLUE_CLOSEBUTTON_BMP | 21 | 168 | 32 |
+| BLUE_FRAMEBOTTOM_BMP | 49 | 10 | 8 |
+| BLUE_FRAMECAPTIONMIN_BMP | 66 | 58 | 8 |
+| BLUE_FRAMECAPTIONSIZING_BMP | 66 | 58 | 1 |
+| BLUE_FRAMECAPTION_BMP | 66 | 58 | 8 |
+| BLUE_FRAMELEFT_BMP | 5 | 62 | 8 |
+| BLUE_FRAMEMAXIMIZED_BMP | 66 | 58 | 8 |
+| BLUE_FRAMERIGHT_BMP | 5 | 62 | 8 |
+| BLUE_MDICAPTIONBUTTON_BMP | 13 | 52 | 8 |
+| BLUE_SMALLCLOSEBUTTON_BMP | 13 | 104 | 32 |
+| BLUE_SMALLFRAMECAPTIONSIZING_BMP | 66 | 38 | 1 |
+| BLUE_SMALLFRAMECAPTION_BMP | 66 | 38 | 8 |
+| BLUE_STARTBUTTON_BMP | 99 | 99 | 24 |
+| BLUE_TASKBARBACKGROUNDVERTICAL_BMP | 28 | 41 | 8 |
+| BLUE_TASKBARBACKGROUND_BMP | 50 | 28 | 8 |
+| BLUE_TASKBARCHEVRONVERT_BMP | 5 | 48 | 8 |
+| BLUE_TASKBARCHEVRON_BMP | 8 | 72 | 8 |
+| BLUE_TASKBARGRIPPERVERTICAL_BMP | 16 | 6 | 8 |
+| BLUE_TASKBARGRIPPER_BMP | 6 | 16 | 8 |
+| BLUE_TASKBARSIZINGBARBOTTOM_BMP | 15 | 4 | 8 |
+| BLUE_TASKBARSIZINGBARLEFT_BMP | 4 | 15 | 8 |
+| BLUE_TASKBARSIZINGBARRIGHT_BMP | 4 | 15 | 8 |
+| BLUE_TASKBARSIZINGBARTOP_BMP | 15 | 4 | 8 |
+| BLUE_TASKBARTRAYVERTICAL_BMP | 28 | 110 | 8 |
+| BLUE_TASKBARTRAY_BMP | 110 | 28 | 8 |
+| HOMESTEAD_CAPTIONBUTTON_BMP | 21 | 168 | 24 |
+| HOMESTEAD_CLOSEBUTTON_BMP | 21 | 168 | 24 |
+| HOMESTEAD_FRAMEBOTTOM_BMP | 49 | 10 | 24 |
+| HOMESTEAD_FRAMECAPTIONMIN_BMP | 66 | 58 | 24 |
+| HOMESTEAD_FRAMECAPTIONSIZING_BMP | 66 | 58 | 1 |
+| HOMESTEAD_FRAMECAPTION_BMP | 66 | 58 | 24 |
+| HOMESTEAD_FRAMELEFT_BMP | 5 | 62 | 24 |
+| HOMESTEAD_FRAMEMAXIMIZED_BMP | 66 | 58 | 24 |
+| HOMESTEAD_FRAMERIGHT_BMP | 5 | 62 | 24 |
+| HOMESTEAD_MDICAPTIONBUTTON_BMP | 13 | 52 | 8 |
+| HOMESTEAD_SMALLCLOSEBUTTON_BMP | 13 | 104 | 32 |
+| HOMESTEAD_SMALLFRAMECAPTIONSIZING_BMP | 66 | 38 | 1 |
+| HOMESTEAD_SMALLFRAMECAPTION_BMP | 66 | 38 | 24 |
+| HOMESTEAD_STARTBUTTON_BMP | 99 | 99 | 24 |
+| HOMESTEAD_TASKBARBACKGROUNDVERTICAL_BMP | 28 | 41 | 24 |
+| HOMESTEAD_TASKBARBACKGROUND_BMP | 50 | 30 | 24 |
+| HOMESTEAD_TASKBARCHEVRONVERT_BMP | 5 | 48 | 8 |
+| HOMESTEAD_TASKBARCHEVRON_BMP | 8 | 72 | 8 |
+| HOMESTEAD_TASKBARGRIPPERVERTICAL_BMP | 16 | 6 | 24 |
+| HOMESTEAD_TASKBARGRIPPER_BMP | 6 | 16 | 24 |
+| HOMESTEAD_TASKBARSIZINGBARBOTTOM_BMP | 15 | 4 | 24 |
+| HOMESTEAD_TASKBARSIZINGBARLEFT_BMP | 4 | 15 | 24 |
+| HOMESTEAD_TASKBARSIZINGBARRIGHT_BMP | 4 | 15 | 24 |
+| HOMESTEAD_TASKBARSIZINGBARTOP_BMP | 15 | 4 | 24 |
+| HOMESTEAD_TASKBARTRAYVERTICAL_BMP | 28 | 110 | 24 |
+| HOMESTEAD_TASKBARTRAY_BMP | 110 | 28 | 24 |
+| METALLIC_CAPTIONBUTTON_BMP | 21 | 168 | 24 |
+| METALLIC_CLOSEBUTTON_BMP | 21 | 168 | 24 |
+| METALLIC_FRAMEBOTTOM_BMP | 49 | 10 | 24 |
+| METALLIC_FRAMECAPTIONMIN_BMP | 66 | 58 | 24 |
+| METALLIC_FRAMECAPTIONSIZING_BMP | 66 | 58 | 1 |
+| METALLIC_FRAMECAPTION_BMP | 66 | 58 | 24 |
+| METALLIC_FRAMELEFT_BMP | 5 | 62 | 24 |
+| METALLIC_FRAMEMAXIMIZED_BMP | 66 | 52 | 24 |
+| METALLIC_FRAMERIGHT_BMP | 5 | 62 | 24 |
+| METALLIC_MDICAPTIONBUTTON_BMP | 13 | 52 | 24 |
+| METALLIC_SMALLCLOSEBUTTON_BMP | 13 | 104 | 24 |
+| METALLIC_SMALLFRAMECAPTIONSIZING_BMP | 66 | 38 | 1 |
+| METALLIC_SMALLFRAMECAPTION_BMP | 66 | 38 | 24 |
+| METALLIC_STARTBUTTON_BMP | 99 | 99 | 24 |
+| METALLIC_TASKBARBACKGROUNDVERTICAL_BMP | 30 | 41 | 24 |
+| METALLIC_TASKBARBACKGROUND_BMP | 50 | 30 | 24 |
+| METALLIC_TASKBARCHEVRONVERT_BMP | 5 | 48 | 24 |
+| METALLIC_TASKBARCHEVRON_BMP | 8 | 72 | 24 |
+| METALLIC_TASKBARGRIPPERVERTICAL_BMP | 16 | 6 | 24 |
+| METALLIC_TASKBARGRIPPER_BMP | 6 | 16 | 24 |
+| METALLIC_TASKBARSIZINGBARBOTTOM_BMP | 15 | 4 | 24 |
+| METALLIC_TASKBARSIZINGBARLEFT_BMP | 4 | 15 | 24 |
+| METALLIC_TASKBARSIZINGBARRIGHT_BMP | 4 | 15 | 24 |
+| METALLIC_TASKBARSIZINGBARTOP_BMP | 15 | 4 | 24 |
+| METALLIC_TASKBARTRAYVERTICAL_BMP | 28 | 110 | 24 |
+| METALLIC_TASKBARTRAY_BMP | 110 | 28 | 24 |
+
+Paramètres présents : EXTRALARGEBLUE_INI, EXTRALARGEHOMESTEAD_INI, EXTRALARGEMETALLIC_INI, LARGEFONTSBLUE_INI, LARGEFONTSHOMESTEAD_INI, LARGEFONTSMETALLIC_INI, NORMALBLUE_INI, NORMALHOMESTEAD_INI, NORMALMETALLIC_INI, THEMES_INI.
+
+#### NORMALBLUE_INI
+
+```ini
+[Window.Caption]
+ImageFile = Blue\FrameCaption.bmp
+SizingMargins = 28, 35, 9, 17
+ContentMargins = 1, 1, 1, 1
+CaptionMargins = 4, 3, 0, 0
+SizingType = stretch
+Imagelayout = vertical
+ImageCount=2
+Transparent = True
+FillColorHint = 0 84 229; Average background color (strong blue)
+
+[Window.Caption(active)]
+TextShadowType = Single
+
+[Window.CaptionSizingTemplate]
+ImageFile = Blue\FrameCaptionSizing.bmp
+SizingMargins = 28, 35, 9, 17
+ContentMargins = 18, 18, 26, 0
+SizingType = tile
+Imagelayout = vertical
+ImageCount=2
+Transparent = True
+TransparentColor = 0 0 0
+
+[Window.FrameLeft]
+ImageFile = Blue\frameLeft.bmp
+SizingMargins = 2, 2, 0, 0
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.FrameRight]
+ImageFile = Blue\frameRight.bmp
+SizingMargins = 2, 2, 0, 0
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.FrameBottom]
+ImageFile = Blue\frameBottom.bmp
+SizingMargins = 5, 5, 2, 2
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.CloseButton]
+BgType = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 2, 2, 2, 2
+sizingType = Stretch
+ImageFile = Blue\CloseButton.bmp
+GlyphType   = ImageGlyph
+GlyphTransparent = True
+ImageCount = 8
+ImageLayout = Vertical
+OffsetType = TopRight
+Offset = -25, 5
+FillColorHint = 228 93 61; Close box average color (brick red)
+BorderColorHint = 255 255 255; Edge color (white)
+
+;----- glyphs ----
+ImageSelectType = size   ; choose src image by DPI of target DC (vs. theme DPI)
+UniformSizing   = true  ; if you must stretch, do width & height equally
+ImageFile1=Blue\CloseGlyph6.bmp
+ImageFile2=Blue\CloseGlyph9.bmp
+ImageFile3=Blue\CloseGlyph.bmp
+ImageFile4=Blue\CloseGlyph19.bmp
+ImageFile5=Blue\CloseGlyph23.bmp
+MinDpi1=96
+MinDpi2=126
+MinDpi3=170
+
+
+;Maximize button in window titlebar
+[TaskBar.BackgroundBottom]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 15, 11
+ImageFile = Blue\TaskbarBackground.bmp
+ImageCount  = 1
+FillColorHint = 36 94 220; Average background color (blue)
+
+[TaskBar.BackgroundLeft]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 15, 11, 0, 0
+ImageFile = Blue\TaskbarBackgroundVertical.bmp
+ImageCount  = 1
+FillColorHint = 36 94 220; Average background color (blue)
+
+[TaskBar.BackgroundTop]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 15, 11
+ImageFile = Blue\TaskbarBackground.bmp
+ImageCount  = 1
+FillColorHint = 36 94 220; Average background color (blue)
+
+[TaskBar.BackgroundRight]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 11, 13, 0, 0
+ImageFile = Blue\TaskbarBackgroundVertical.bmp
+ImageCount  = 1
+FillColorHint = 36 94 220; Average background color (blue)
+
+```
+
+#### NORMALHOMESTEAD_INI
+
+```ini
+[Window.Caption]
+ImageFile  = HomeStead\FrameCaption.bmp
+SizingMargins = 28, 35, 9, 17
+ContentMargins = 1, 1, 1, 1
+CaptionMargins = 4, 3, 0, 0
+SizingType = stretch
+Imagelayout = vertical
+ImageCount=2
+Transparent = True
+FillColorHint = 170 184 134; Average background color (olive green)
+
+[Window.Caption(active)]
+TextShadowType = Single
+
+[Window.CaptionSizingTemplate]
+ImageFile  = HomeStead\FrameCaptionSizing.bmp
+SizingMargins = 28, 35, 9, 17
+ContentMargins = 18, 18, 26, 0
+SizingType = tile
+Imagelayout = vertical
+ImageCount=2
+Transparent = True
+TransparentColor = 0 0 0
+
+[Window.FrameLeft]
+ImageFile=HomeStead\frameLeft.bmp
+SizingMargins = 2, 2, 0, 0
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.FrameRight]
+ImageFile=HomeStead\frameRight.bmp
+SizingMargins = 2, 2, 0, 0
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.FrameBottom]
+ImageFile=HomeStead\frameBottom.bmp
+SizingMargins = 5, 5, 2, 2
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.CloseButton]
+BgType = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 2, 2, 2, 2
+sizingType = Stretch
+ImageFile=HomeStead\CloseButton.bmp
+GlyphType   = ImageGlyph
+GlyphTransparent = True
+ImageCount = 8
+ImageLayout = Vertical
+OffsetType = TopRight
+Offset = -25, 5
+FillColorHint = 228 93 61; Close box average color (brick red)
+BorderColorHint = 255 255 255; Edge color (white)
+
+;----- glyphs ----
+ImageSelectType = size   ; choose src image by DPI of target DC (vs. theme DPI)
+UniformSizing   = true  ; if you must stretch, do width & height equally
+ImageFile1=homestead\CloseGlyph6.bmp
+ImageFile2=homestead\CloseGlyph9.bmp
+ImageFile3=homestead\CloseGlyph.bmp
+ImageFile4=homestead\CloseGlyph19.bmp
+ImageFile5=homestead\CloseGlyph23.bmp
+MinDpi1=96
+MinDpi2=126
+MinDpi3=170
+
+
+;Maximize button in window titlebar
+[TaskBar.BackgroundBottom]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 17, 12
+ImageFile   = HomeStead\TaskbarBackground.bmp
+ImageCount  = 1
+FillColorHint = 170 184 131; Average background color (olive)
+
+[TaskBar.BackgroundLeft]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 15, 11, 0, 0
+ImageFile   = HomeStead\TaskbarBackgroundVertical.bmp
+ImageCount  = 1
+FillColorHint = 170 184 131; Average background color (olive)
+
+[TaskBar.BackgroundTop]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 15, 11
+ImageFile   = HomeStead\TaskbarBackground.bmp
+ImageCount  = 1
+FillColorHint = 170 184 131; Average background color (olive)
+
+[TaskBar.BackgroundRight]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 11, 13, 0, 0
+ImageFile   = HomeStead\TaskbarBackgroundVertical.bmp
+ImageCount  = 1
+FillColorHint = 170 184 131; Average background color (olive)
+
+```
+
+#### NORMALMETALLIC_INI
+
+```ini
+[Window.Caption]
+ImageFile = Metallic\Framecaption.bmp
+SizingMargins = 28, 35, 9, 17
+ContentMargins = 1, 1, 1, 1
+CaptionMargins = 4, 3, 0, 0
+SizingType = stretch
+Imagelayout = vertical
+ImageCount=2
+Transparent = True
+FillColorHint = 164 163 190; Average background color (strong grey)
+
+
+[Window.Caption(active)]
+TextShadowType = Single
+
+[Window.CaptionSizingTemplate]
+ImageFile = Metallic\FrameCaptionSizing.bmp
+SizingMargins = 28, 35, 9, 17
+ContentMargins = 18, 18, 26, 0
+SizingType = tile
+Imagelayout = vertical
+ImageCount=2
+Transparent = True
+TransparentColor = 0 0 0
+
+[Window.FrameLeft]
+ImageFile = Metallic\frameLeft.bmp
+SizingMargins = 1, 1, 0, 0
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.FrameRight]
+ImageFile = Metallic\frameRight.bmp
+SizingMargins = 1, 1, 0, 0
+;ContentMargins = 1, 3, 0, 3
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.FrameBottom]
+ImageFile = Metallic\frameBottom.bmp
+SizingMargins = 5, 5, 1, 2
+SizingType = stretch
+ImageLayout = vertical
+ImageCount = 2
+Transparent = FALSE
+Borderonly = FALSE
+
+[Window.CloseButton]
+BgType = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 2, 2, 2, 2
+sizingType = Stretch
+ImageFile = Metallic\CloseButton.bmp
+GlyphType   = ImageGlyph
+GlyphTransparent = True
+ImageCount = 8
+ImageLayout = Vertical
+OffsetType = TopRight
+Offset = -25, 5
+FillColorHint = 228 93 61; Close box average color (brick red)
+BorderColorHint = 255 255 255; Edge color (white)
+
+
+;----- glyphs ----
+ImageSelectType = size   ; choose src image by DPI of target DC (vs. theme DPI)
+UniformSizing   = true  ; if you must stretch, do width & height equally
+ImageFile1=metallic\CloseGlyph6.bmp
+ImageFile2=metallic\CloseGlyph9.bmp
+ImageFile3=metallic\CloseGlyph.bmp
+ImageFile4=metallic\CloseGlyph19.bmp
+ImageFile5=metallic\CloseGlyph23.bmp
+MinDpi1=96
+MinDpi2=126
+MinDpi3=170
+
+
+
+;Maximize button in window titlebar
+[TaskBar.BackgroundBottom]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 17, 12
+ImageFile = Metallic\TaskbarBackground.bmp
+ImageCount  = 1
+FillColorHint = 168 169 191; Average background color (grey)
+
+
+[TaskBar.BackgroundLeft]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 17, 12, 0, 0
+ImageFile = Metallic\TaskbarBackgroundVertical.bmp
+ImageCount  = 1
+FillColorHint = 177 183 187; Average background color (grey)
+
+
+[TaskBar.BackgroundTop]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 17, 12
+ImageFile = Metallic\TaskbarBackground.bmp
+ImageCount  = 1
+FillColorHint = 177 183 187; Average background color (grey)
+
+
+[TaskBar.BackgroundRight]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 17, 12, 0, 0
+ImageFile = Metallic\TaskbarBackgroundVertical.bmp
+ImageCount  = 1
+FillColorHint = 177 183 187; Average background color (grey)
+
+
+```
+
+
+### Glyphes et panneau Démarrer XP
+
+Version du fichier de style extraite de VS_FIXEDFILEINFO : `1.0.0.1`.
+
+| Ressource | Largeur | Hauteur | Bits |
+|---|---:|---:|---:|
+| BLUE_CLOSEGLYPH19_BMP | 19 | 152 | 32 |
+| BLUE_CLOSEGLYPH23_BMP | 23 | 184 | 32 |
+| BLUE_CLOSEGLYPH6_BMP | 6 | 48 | 24 |
+| BLUE_CLOSEGLYPH9_BMP | 9 | 72 | 24 |
+| BLUE_CLOSEGLYPH_BMP | 13 | 104 | 32 |
+| BLUE_COMBOBUTTONGLYPH_BMP | 10 | 28 | 8 |
+| BLUE_HELPGLYPH19_BMP | 19 | 152 | 32 |
+| BLUE_HELPGLYPH23_BMP | 23 | 184 | 32 |
+| BLUE_HELPGLYPH6_BMP | 6 | 48 | 24 |
+| BLUE_HELPGLYPH9_BMP | 9 | 72 | 24 |
+| BLUE_HELPGLYPH_BMP | 13 | 104 | 32 |
+| BLUE_MAXIMIZEGLYPH19_BMP | 19 | 152 | 24 |
+| BLUE_MAXIMIZEGLYPH23_BMP | 23 | 184 | 4 |
+| BLUE_MAXIMIZEGLYPH6_BMP | 6 | 48 | 24 |
+| BLUE_MAXIMIZEGLYPH9_BMP | 9 | 72 | 24 |
+| BLUE_MAXIMIZEGLYPH_BMP | 13 | 104 | 8 |
+| BLUE_MDIGLYPHCLOSE_BMP | 10 | 40 | 8 |
+| BLUE_MDIGLYPHMINIMIZE_BMP | 10 | 40 | 8 |
+| BLUE_MDIGLYPHRESTORE_BMP | 10 | 40 | 8 |
+| BLUE_MINIMIZEGLYPH19_BMP | 19 | 152 | 24 |
+| BLUE_MINIMIZEGLYPH23_BMP | 23 | 184 | 4 |
+| BLUE_MINIMIZEGLYPH6_BMP | 6 | 48 | 24 |
+| BLUE_MINIMIZEGLYPH9_BMP | 9 | 72 | 24 |
+| BLUE_MINIMIZEGLYPH_BMP | 13 | 104 | 8 |
+| BLUE_RESTOREGLYPH19_BMP | 19 | 152 | 24 |
+| BLUE_RESTOREGLYPH23_BMP | 23 | 184 | 4 |
+| BLUE_RESTOREGLYPH6_BMP | 6 | 48 | 24 |
+| BLUE_RESTOREGLYPH9_BMP | 9 | 72 | 24 |
+| BLUE_RESTOREGLYPH_BMP | 13 | 104 | 8 |
+| BLUE_SCROLLARROWGLYPHSSMALL_BMP | 7 | 112 | 8 |
+| BLUE_SCROLLARROWGLYPHS_BMP | 9 | 144 | 8 |
+| BLUE_SMALLCLOSEGLYPH_BMP | 7 | 56 | 8 |
+| BLUE_SPINDOWNGLYPH_BMP | 7 | 24 | 8 |
+| BLUE_SPINLEFTGLYPH_BMP | 6 | 28 | 8 |
+| BLUE_SPINRIGHTGLYPH_BMP | 6 | 28 | 8 |
+| BLUE_SPINUPGLYPH_BMP | 7 | 24 | 8 |
+| BLUE_STARTPANELLOGOFFBACKGROUND_BMP | 97 | 39 | 8 |
+| BLUE_STARTPANELLOGOFFBUTTONSHOT_BMP | 72 | 24 | 32 |
+| BLUE_STARTPANELLOGOFFBUTTONS_BMP | 72 | 24 | 32 |
+| BLUE_STARTPANELMFUBACKGROUND_BMP | 156 | 4 | 8 |
+| BLUE_STARTPANELMOREPROGARROWHOT_BMP | 16 | 24 | 32 |
+| BLUE_STARTPANELMOREPROGARROW_BMP | 16 | 24 | 32 |
+| BLUE_STARTPANELMOREPROGBACKGROUND_BMP | 4 | 2 | 8 |
+| BLUE_STARTPANELPLACESBACKGROUND_BMP | 180 | 6 | 8 |
+| BLUE_TASKBANDBACKGROUND_BMP | 28 | 10 | 8 |
+| BLUE_TASKBANDBUTTONNOEDGEVERTICAL_BMP | 22 | 90 | 24 |
+| BLUE_TASKBANDBUTTONNOEDGE_BMP | 13 | 168 | 24 |
+| BLUE_TASKBANDBUTTONVERTICAL_BMP | 28 | 138 | 8 |
+| BLUE_TASKBANDBUTTON_BMP | 26 | 168 | 8 |
+| BLUE_TASKBANDFLASHBUTTONGROUPMENU_BMP | 30 | 23 | 24 |
+| BLUE_TASKBANDFLASHBUTTON_BMP | 26 | 28 | 24 |
+| BLUE_TASKBANDHOVER_BMP | 30 | 69 | 8 |
+| BLUE_TASKBANDSCROLLARROWGLYPHS_BMP | 10 | 160 | 8 |
+| BLUE_TASKBANDSCROLLARROWS_BMP | 17 | 272 | 8 |
+| BLUE_TASKBANDSCROLLSHAFTHORIZONTAL_BMP | 17 | 68 | 8 |
+| BLUE_TASKBANDSCROLLSHAFTVERTICAL_BMP | 17 | 68 | 8 |
+| BLUE_TASKBANDSCROLLTHUMBGRIPPERHORIZONTAL_BMP | 8 | 32 | 8 |
+| BLUE_TASKBANDSCROLLTHUMBGRIPPERVERTICAL_BMP | 8 | 32 | 8 |
+| BLUE_TASKBANDSCROLLTHUMBHORIZONTAL_BMP | 22 | 60 | 8 |
+| BLUE_TASKBANDSCROLLTHUMBVERTICAL_BMP | 15 | 88 | 8 |
+| BLUE_TOOLBARBUTTONSSPLITDROPDOWNGLYPH_BMP | 5 | 18 | 8 |
+
+Paramètres complémentaires de NORMALBLUE_INI :
+
+```ini
+[Window.MaxButton]
+BgType = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 2, 2, 2, 2
+sizingType = Stretch
+ImageFile = Blue\CaptionButton.bmp
+GlyphType   = ImageGlyph
+GlyphTransparent = True
+ImageCount = 8
+ImageLayout=Vertical
+OffsetType = TopRight
+Offset = -49, 5
+FillColorHint = 74 121 246; Titlebar button color (blue)
+BorderColorHint = 255 255 255; Edge color (white)
+
+;----- glyphs ----
+ImageSelectType = size   ; choose src image by DPI of target DC (vs. theme DPI)
+UniformSizing   = true  ; if you must stretch, do width & height equally
+ImageFile1=Blue\MaximizeGlyph6.bmp
+ImageFile2=Blue\MaximizeGlyph9.bmp
+ImageFile3=Blue\MaximizeGlyph.bmp
+ImageFile4=Blue\MaximizeGlyph19.bmp
+ImageFile5=Blue\MaximizeGlyph23.bmp
+MinDpi1=96
+MinDpi2=126
+MinDpi3=170
+
+
+;Restore button in window titlebar
+[Window.RestoreButton]
+BgType = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 2, 2, 2, 2
+sizingType = Stretch
+ImageFile = Blue\CaptionButton.bmp
+GlyphType   = ImageGlyph
+GlyphTransparent = True
+ImageCount = 8
+ImageLayout=Vertical
+OffsetType = TopRight
+Offset = -49, 5
+FillColorHint = 74 121 246; Titlebar button color (blue)
+BorderColorHint = 255 255 255; Edge color (white)
+
+;----- glyphs ----
+ImageSelectType = size   ; choose src image by DPI of target DC (vs. theme DPI)
+UniformSizing   = true  ; if you must stretch, do width & height equally
+ImageFile1=Blue\RestoreGlyph6.bmp
+ImageFile2=Blue\RestoreGlyph9.bmp
+ImageFile3=Blue\RestoreGlyph.bmp
+ImageFile4=Blue\RestoreGlyph19.bmp
+ImageFile5=Blue\RestoreGlyph23.bmp
+MinDpi1=96
+MinDpi2=126
+MinDpi3=170
+
+
+;Minimize button in window titlebar
+[Window.MinButton]
+BgType = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 2, 2, 2, 2
+sizingType = Stretch
+ImageFile = Blue\CaptionButton.bmp
+GlyphType   = ImageGlyph
+GlyphTransparent = True
+ImageCount = 8
+ImageLayout=Vertical
+OffsetType = TopRight
+Offset = -73, 5
+FillColorHint = 74 121 246; Titlebar button color (blue)
+BorderColorHint = 255 255 255; Edge color (white)
+
+;----- glyphs ----
+ImageSelectType = size   ; choose src image by DPI of target DC (vs. theme DPI)
+UniformSizing   = true  ; if you must stretch, do width & height equally
+ImageFile1=Blue\MinimizeGlyph6.bmp
+ImageFile2=Blue\MinimizeGlyph9.bmp
+ImageFile3=Blue\MinimizeGlyph.bmp
+ImageFile4=Blue\MinimizeGlyph19.bmp
+ImageFile5=Blue\MinimizeGlyph23.bmp
+MinDpi1=96
+MinDpi2=126
+MinDpi3=170
+
+;Help button in window titlebar--normally only appears on dialog windows
+[StartPanel]
+bgtype = none
+DefaultPaneSize = 0, 0, 380, 440
+
+[StartPanel.UserPane]
+UserPicture         = True
+ImageLayout         = Horizontal
+TextColor           = 255 255 255
+Font                = Franklin Gothic Medium, 14
+DefaultPaneSize     = 0, 0, 380, 64
+BgType              = Imagefile
+Transparent         = True
+ImageFile = Blue\StartUserPanel.bmp
+Imagecount          = 1
+SizingMargins       = 59, 60, 62, 0
+sizingType          = Stretch
+TEXTSHADOWOFFSET= 2, 2
+textshadowcolor     = 9 66 139
+TextShadowType      = continuous
+FillColorHint = 31 113 216; Average background (blue)
+
+
+[StartPanel.UserPicture]
+BgType = ImageFile
+ImageFile = Blue\UserTileBackground.bmp
+Imagecount = 1
+SizingType = Stretch
+SizingMargins = 6, 10, 6, 10
+ContentMargins = 8, 6, 8, 6
+Transparent = true
+FillColorHint = 204 214 235; Average Background (light blue grey)
+
+
+[StartPanel.ProgList]
+DefaultPaneSize = 0, 0, 190, 306
+ContentMargins  = 6 4 9 5
+TextColor   = 55 55 56
+HotTracking = 48 112 208
+CaptionText = 128 128 128
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 2, 153, 3, 0
+sizingType = Stretch
+ImageFile = Blue\StartPanelMFUBackground.bmp
+imagecount  = 1
+FillColorHint = 204 214 235; Average Background (light blue grey)
+
+
+[StartPanel.ProgListSeparator]
+BgType = ImageFile
+SizingType = TrueSize
+ImageFile = Blue\StartProgramsSeparator.bmp
+
+[StartPanel.MorePrograms]
+DefaultPaneSize = 0, 0, 190, 30
+TextColor           = 55 55 56
+HotTracking         = 48 112 208
+Font                = Tahoma, 8, Bold
+BgType              = ImageFile
+SizingType          = Stretch
+SizingMargins       = 3, 0, 0, 1
+
+;  left and right contentmargins should match proglist
+ContentMargins  = 8, 8, 0, 6
+ImageFile = Blue\StartPanelMoreProgBackGround.BMP
+imagecount  = 1
+sizingType = Stretch
+
+[StartPanel.MoreProgramsArrow]
+BgType  = ImageFile
+SizingType  = TrueSize
+ImageFile = Blue\StartPanelMoreProgArrow.bmp
+ImageCount  = 1
+FillColorHint = 108 207 108; Average color (green)
+
+[StartPanel.MoreProgramsArrow(hot)]
+BgType  = ImageFile
+SizingType  = TrueSize
+ImageFile = Blue\StartPanelMoreProgArrowHot.bmp
+ImageCount  = 1
+FillColorHint = 107 239 107; Average color (bright green)
+
+
+[StartPanel.PlacesList]
+DefaultPaneSize = 0, 0, 190, 336
+ContentMargins  = 4 6 9 5
+TextColor           = 10 36 106
+HotTracking         = 80 150 248
+BgType              = imageFile
+ImageFile = Blue\StartPanelPlacesBackground.bmp
+imagecount = 1
+SizingMargins = 172, 7, 3, 1
+sizingType = Stretch
+FillColorHint = 211 229 250; Background color (light blue)
+
+[StartPanel.PlacesListSeparator]
+BgType = ImageFile
+SizingType = TrueSize
+ImageFile = Blue\StartPlacesSeparator.bmp
+
+[StartPanel.Logoff]
+ContentMargins =  0, 0, 4, 2
+DefaultPaneSize = 0, 0, 380, 40
+TextColor   = 255 255 255
+HotTracking = 255 255 255
+bgType = imagefile
+ImageFile = Blue\StartPanelLogoffBackground.bmp
+imagecount = 1
+sizingMargins = 49, 47, 0, 38
+sizingType = Stretch
+FillColorHint = 37 119 223; Background color (lblue)
+
+;; note that if you want transparent LogoffButtons they MUST be 32 bit
+;; images with an alphachanel, not 8 or 24 bit images with a TransparentColor
+[StartPanel.LogoffButtons]
+BgType  = ImageFile
+Transparent = True
+SizingType  = TrueSize
+ImageFile = Blue\StartPanelLogoffButtons.bmp
+ImageCount  = 1
+
+[StartPanel.LogoffButtons(hot)]
+BgType  = ImageFile
+Transparent = True
+SizingType  = TrueSize
+ImageFile = Blue\StartPanelLogoffButtonsHot.bmp
+ImageCount  = 1
+
+
+;-------------- Taskbar specific --------------
+[TaskBar::Toolbar]
+BgType  = None
+Font= Tahoma, 8
+TextColor   = 255 255 255
+
+[TaskBar::Toolbar.Button]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 8, 3, 18, 8
+ContentMargins  = 0, 0, 4, 4
+ImageFile = Blue\TaskBandButtonNoEdge.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 53 122 238; Average background color (blue)
+
+[TaskBar::Toolbar.DropdownButton]
+BgType  = ImageFile
+
+SizingType  = Stretch
+SizingMargins   = 8, 3, 18, 8
+ContentMargins  = 2, 0, 4, 4
+ImageFile = Blue\TaskBandButtonNoEdge.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 53 122 238; Average background color (blue)
+
+[TaskBarVert::Toolbar]
+BgType  = None
+Font= Tahoma, 8
+TextColor   = 255 255 255
+
+[TaskBarVert::Toolbar.Button]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 15, 5, 6, 4
+ContentMargins  = 1, 1, 1, 1
+ImageFile = Blue\TaskBandButtonNoEdgeVertical.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 53 122 238; Average background color (blue)
+
+[TaskBarVert::Toolbar.DropdownButton]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 15, 5, 6, 4
+ContentMargins  = 1, 1, 1, 1
+ImageFile = Blue\TaskBandButtonNoEdgeVertical.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 53 122 238; ; Average background color (blue)
+
+[TaskBar::Rebar]
+BgType  = None
+Font= Tahoma, 8
+TextColor   = 123 182 232
+
+[TaskBar::Rebar.Band]
+BgType  = None
+
+[TaskBar::Rebar.Gripper]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 6, 4
+ContentMargins  = 2, 1, 0, 0
+ImageFile = Blue\TaskbarGripper.bmp
+ImageCount  = 1
+Transparent = True
+TransparentColor= 255 0 255
+FillColorHint = 6 45 159; Gripper dot color (dark purple)
+
+[TaskBar::Rebar.GripperVert]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 4, 6, 0, 0
+ContentMargins  = 0, 0, 2, 1
+ImageFile = Blue\TaskbarGripperVertical.bmp
+ImageCount  = 1
+Transparent = True
+TransparentColor= 255 0 255
+FillColorHint = 6 45 159; Gripper dot color (dark purple)
+
+[TaskBar::Rebar.Chevron]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 8, 3, 18, 8
+ContentMargins  = 0, 0, 0, 10
+ImageFile = Blue\TaskBandButtonNoEdge.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+GlyphType   = ImageGlyph
+GlyphImageFile = Blue\TaskbarChevron.bmp
+GlyphTransparent= true
+VAlign = Top
+FillColorHint = 6 45 159; Overflow glyph color (baby blue)
+
+[TaskBar::Rebar.ChevronVert]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 15, 5, 6, 4
+ContentMargins  = 0, 0, 0, 0
+ImageFile = Blue\TaskBandButtonNoEdgeVertical.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+GlyphType   = ImageGlyph
+GlyphImageFile = Blue\TaskbarChevronVert.bmp
+GlyphTransparent= true
+FillColorHint = 6 45 159; Overflow glyph color (baby blue)
+
+[TaskBar.BackgroundBottom]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 15, 11
+ImageFile = Blue\TaskbarBackground.bmp
+ImageCount  = 1
+FillColorHint = 36 94 220; Average background color (blue)
+
+[TaskBar.SizingBarBottom]
+BgType  = ImageFile
+SizingType  = Tile
+ImageFile = Blue\TaskbarSizingBarBottom.bmp
+ImageCount  = 1
+FillColorHint = 50 128 231; Average color (blue)
+
+[TaskBar.BackgroundLeft]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 15, 11, 0, 0
+ImageFile = Blue\TaskbarBackgroundVertical.bmp
+ImageCount  = 1
+FillColorHint = 36 94 220; Average background color (blue)
+
+[TaskBar.SizingBarLeft]
+BgType  = ImageFile
+SizingType  = Tile
+ImageFile = Blue\TaskbarSizingBarLeft.bmp
+ImageCount  = 1
+FillColorHint = 50 128 231; Average color (blue)
+
+[TaskBar.BackgroundTop]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 0, 0, 15, 11
+ImageFile = Blue\TaskbarBackground.bmp
+ImageCount  = 1
+FillColorHint = 36 94 220; Average background color (blue)
+
+[TaskBar.SizingBarTop]
+BgType  = ImageFile
+SizingType  = Tile
+ImageFile = Blue\TaskbarSizingBarTop.bmp
+ImageCount  = 1
+FillColorHint = 50 128 231; Average color (blue)
+
+[TaskBar.BackgroundRight]
+BgType  = ImageFile
+SizingType  = Tile
+SizingMargins   = 11, 13, 0, 0
+ImageFile = Blue\TaskbarBackgroundVertical.bmp
+ImageCount  = 1
+FillColorHint = 36 94 220; Average background color (blue)
+
+[TaskBar.SizingBarRight]
+BgType  = ImageFile
+SizingType  = Stretch
+ImageFile = Blue\TaskbarSizingBarRight.bmp
+ImageCount  = 1
+FillColorHint = 50 128 231; Average color (blue)
+
+;-------------- Taskband specific --------------
+[TaskBand.FlashButton]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 4, 4, 4, 4
+ContentMargins  = 0, 0, 4, 4
+ImageFile = Blue\TaskBandFlashButton.bmp
+ImageCount  = 1
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 56 130 234; Average background color (blue)
+AccentColorHint = 255 192 91; Attention hilite color (orange)
+
+[TaskBand.FlashButtonGroupMenu]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 4, 4, 4, 4
+ContentMargins  = 0, 0, 4, 4
+ImageFile = Blue\TaskBandFlashButtonGroupMenu.bmp
+ImageCount  = 1
+Transparent = True
+FillColorHint = 56 130 234; Average background color (blue)
+AccentColorHint = 255 192 91; Attention hilite color (orange)
+
+[TaskBand.GroupCount]
+Font= Tahoma, 8, Bold
+TextColor   = 255 204 109
+
+[TaskBand::Toolbar]
+BgType  = None
+Font= Tahoma, 8
+TextColor   = 255 255 255
+
+[TaskBand::Toolbar.Button]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 17, 5, 15, 8
+ContentMargins  = 0, 4, 4, 4
+ImageFile = Blue\TaskBandButton.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 54 127 239
+
+[TaskBand::Toolbar.DropdownButton]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 17, 5, 15, 8
+ContentMargins  = 0, 4, 4, 4
+ImageFile = Blue\TaskBandButton.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 54 127 239; Average background color (blue)
+
+[TaskBandVert::Toolbar]
+BgType  = None
+Font= Tahoma, 8
+TextColor   = 255 255 255
+
+[TaskBandVert::Toolbar.Button]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 16, 7, 12, 6
+ContentMargins  = 0, 4, 4, 4
+ImageFile = Blue\TaskBandButtonVertical.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 54 127 239; Average background color (blue)
+
+[TaskBandVert::Toolbar.DropdownButton]
+BgType  = ImageFile
+SizingType  = Stretch
+SizingMargins   = 16, 7, 12, 6
+ContentMargins  = 0, 4, 4, 4
+ImageFile = Blue\TaskBandButtonVertical.bmp
+ImageCount  = 6
+ImageLayout = vertical
+Transparent = True
+FillColorHint = 54 127 239; Average background color (blue)
+
+[TaskBand::ScrollBar.ArrowBtn]
+BgType  = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 0, 0, 0, 0
+SizingType = Stretch
+ImageFile = Blue\TaskbandScrollArrows.bmp
+ImageCount = 16
+ImageLayout = Vertical
+GlyphType   = ImageGlyph
+GlyphImageFile = Blue\TaskBandScrollArrowGlyphs.bmp
+GlyphTransparent = True
+FillColorHint = 25 66 205; Average background color (dark blue)
+
+[TaskBand::Scrollbar.ThumbBtnHorz]
+BgType  = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 4, 4, 0, 0
+ImageFile = Blue\TaskBandScrollThumbHorizontal.bmp
+ImageCount  = 4
+ImageLayout = Vertical
+FillColorHint = 25 66 205; Average background color (dark blue)
+
+;A visual element in the middle of the scrollbar thumb
+[TaskBand::Scrollbar.GripperHorz]
+BgType  = ImageFile
+SizingType  = TrueSize
+ImageFile = Blue\TaskBandScrollThumbGripperHorizontal.BMP
+imagelayout = vertical
+Transparent = True
+ImageCount  = 4
+FillColorHint = 44 96 226; Thumb gripper lighter color (blue)
+
+
+; Scrollbar Thumb (vertical)
+[TaskBand::Scrollbar.ThumbBtnVert]
+BgType  = ImageFile
+SizingMargins = 5, 5, 5, 5
+ContentMargins = 0, 0, 4, 4
+ImageFile = Blue\TaskBandScrollThumbVertical.bmp
+ImageCount  = 4
+ImageLayout = vertical
+FillColorHint = 25 66 205; Average background color (dark blue)
+
+;A visual element in the middle of the scrollbar thumb
+[TaskBand::Scrollbar.GripperVert]
+BgType  = ImageFile
+SizingType  = TrueSize
+ImageFile = Blue\TaskBandScrollThumbGripperVertical.BMP
+ImageCount  = 4
+Transparent = True
+ImageLayout = Vertical
+FillColorHint = 44 96 226; Thumb gripper lighter color (blue)
+
+
+; Scrollbar Tracks (horizontal)
+[TaskBand::Scrollbar.LowerTrackHorz]
+BgType  = imagefile
+ImageFile = Blue\TaskBandScrollShaftHorizontal.bmp
+SizingMargins = 0, 0, 1, 1
+ImageCount = 4
+ImageLayout = Vertical
+FillColorHint = 37 90 225; Average background color (blue)
+
+
+[TaskBand::Scrollbar.UpperTrackHorz]
+BgType  = imagefile
+ImageFile = Blue\TaskBandScrollShaftHorizontal.bmp
+SizingMargins = 0, 0, 1, 1
+ImageCount = 4
+ImageLayout = Vertical
+FillColorHint = 37 90 225; Average background color (blue)
+
+
+; Scrollbar Tracks (vertical)
+[TaskBand::Scrollbar.LowerTrackVert]
+BgType  = imagefile
+ImageFile = Blue\TaskBandScrollShaftVertical.bmp
+SizingMargins = 1, 1, 0, 0
+ImageCount = 4
+ImageLayout = Vertical
+FillColorHint = 37 90 225; Average background color (blue)
+
+
+[TaskBand::Scrollbar.UpperTrackVert]
+BgType  = imagefile
+ImageFile = Blue\TaskBandScrollShaftVertical.bmp
+SizingMargins = 1, 1, 0, 0
+ImageCount = 4
+ImageLayout = Vertical
+FillColorHint = 37 90 225; Average background color (blue)
+
+;-------------- Taskband Group Menu specific --------------
+[TaskBandGroupMenu::Toolbar]
+BgType  = ImageFile
+ImageFile = Blue\TaskBandBackground.bmp
+SizingType	= Tile
+SizingMargins	= 3, 3, 3, 3
+ContentMargins	= 9, 0, 0, 0
+Font= Tahoma, 8
+TextColor   = 255 255 255
+FillColorHint = 33 87 213; Average background color (blue)
+AccentColorHint = 255 199 60; Menu top hilite color (orange)
+
+
+[TaskBandGroupMenu::Toolbar.Button]
+BgType  = ImageFile
+SizingType  = stretch
+SizingMargins   = 3, 3, 0, 0
+ContentMargins  = 9, 0, 3, 3
+ImageFile = Blue\TaskBandHover.bmp
+ImageCount  = 3
+ImageLayout	= vertical
+Transparent	= True
+AccentColorHint = 79 150 255; Rollover hilite color (blue)
+
+;-------------- Tray Notify specific --------------
+```
+
+Icônes Windows XP — ressources du même média XP SP3 que Luna :
+- SHELL32.DLL : SHA-256 7c201e812138e2b9cbc2aa94e41d5573775d893b8104833a997acc79486d9a3a ; groupes conservés 1, 3, 4, 7, 13, 14, 16, 21, 24, 27, 36, 47, 145, 165, 270, 274.
+- USER32.DLL : SHA-256 acd0ae7b4d5f871e148276c6cc4ae3a216e33f67fc78d827c16986e1f945438c ; groupes 101–104 pour les messages.
+- EXPLORER.EXE : SHA-256 1e675cb7df214172f7eb0497f7275556038a0d09c6e5a3e6862c5e26885ef455 ; bitmap 143, drapeau Démarrer 25 × 20 avec canal alpha.
+Les fichiers ICO conservent les tailles et profondeurs originales. Les images de machines et de contenus restent fournies par les modules ; aucun remplacement du classement MediaEngine. Les trois binaires, les archives compressées, les planches de sélection et le script d’extraction sont temporaires et supprimés après copie des seules images utiles.
+
+### Intégration XP livrable — 1 novembre 2026
+
+OS contient Windows 3.1, Windows 95 et Windows XP. Les styles Bleu, Argent et Vert olive appartiennent à XP ; leurs noms sont traduits avec Argos dans les 29 catalogues localisés. Le nom Windows XP reste dans la base commune. Les aperçus viennent des captures du bureau à 1280 × 800.
+
+Le bureau XP conserve Démarrer à deux colonnes, les lanceurs et les fenêtres natives indépendantes. Les huit applications et les 26 dialogues sont raccordés aux commandes existantes. Les boutons de tâches se réduisent à la largeur disponible puis utilisent deux flèches de défilement, sans masquer leur contenu sous une barre de défilement. Les palettes s'appliquent aux fenêtres, onglets inactifs, textes et images du bureau sans recréer les contrôleurs. Windows 3.1, Windows 95 et XP proposent un accès direct à Thèmes par le parcours Préférences existant.
+
+Validation : parcours des réglages XP des 24 modules livrés, de leurs 213 machines et de 1 830 onglets ; aucun champ déclaré laissé sans présentation. Chaque routage natif est ouvert puis fermé avec vérification de destruction du HWND. Les confirmations sans annulation conservent leur refus de fermeture. Deux contrôleurs de test restituent les mêmes machines, fabriques de présentation et surfaces de vidéo ; les vues transitoires sont détruites suivant le contrat existant. Cela ne constitue pas un démarrage de chaque cœur matériel ni une validation sur tous les GPU.
+
+Les captures vérifiées sont dans `artifacts/themes-review/screens/OS/WindowsXP/` (Desktop, StartMenu, Application, Route, Module, EmulationSession et TaskbarOverflow). Les données de ces captures sont isolées et synthétiques ; les réglages utilisateur ne sont pas modifiés. Les scénarios temporaires et leurs dossiers sont supprimés après usage. XP attend la validation utilisateur avant commit ; les autres déclinaisons OS et Orbit, Matrix et Atlas restent dans le périmètre global.
+
+
+## Compositions Orbit, Matrix et Atlas — réalisation après XP
+
+### Orbit : la machine et ses documents
+
+Orbit ouvre d'abord la bibliothèque des machines et les sessions en cours. Un rail étroit de quatre espaces remplace le ruban des sept opérations : machines, médias, journal et commandes. Le centre contient soit la machine et son rendu emprunté, soit un document de travail. Les sessions disposent d'un sélecteur à images ; les périphériques et actions de la machine sont présentés dans un tiroir contextuel, sans détour par un écran d'accueil intermédiaire.
+
+Les opérations sur les médias ont un parcours propre : source, réglages, destination et lancement. Brut et format restent deux pages distinctes. Les réglages avancés, profils, sélection de formats multiples, conflits et résultats restent accessibles. Explorer et Visualisation forment l'espace d'examen des documents, avec leurs vues et propriétés coordonnées ; les surfaces de flux, secteurs, blocs, optique et bande restent empruntées aux moteurs existants. Le journal est un panneau repliable du travail, alimenté par le journal global existant : il ne prétend pas attribuer à une machine des messages dépourvus de cette information.
+
+Les commandes globales sont cherchables dans une palette, regroupées par leur chemin fonctionnel ; tous les accès Options, Émulation et Aide y restent présents et actualisés. Les réglages et les dialogues ont un cadre Orbit, une navigation de rubriques et des formulaires indépendants. Aucun menu ni cadre Windows 3.1/95/XP n'est utilisé. Les contrôles ont leur propre dessin, focus, sélection et états désactivés. Deux apparences, claire et sombre, conservent exactement cette composition. Le dessin emploie des surfaces unies, un accent turquoise pour l'action et des indicateurs de contexte, sans effets appliqués aux images ou vidéos émulées.
+
+L'inventaire de fichiers de `Theme/Orbit/` est détaillé dans `docs/tasks/application-themes.md` : shell et palette de commandes ; bibliothèque et présentation des machines ; lecture, écriture, conversion et leurs propriétés ; exploration et visualisation ; outils et journal ; fenêtres communes, préférences, réglages de tous les modules, créations/configurations de tous les supports, conflits, erreurs, firmware, mises à jour, historique, migration et À propos. Les contrôleurs, sources, listes et rendus restent chez leurs propriétaires. Les vues Orbit n'hébergent aucune page visuelle Base ou OS et ne déplacent pas leurs blocs.
+
+### Matrix : interface de terminal structurée
+
+Matrix présente un espace textuel partagé en panneaux, avec une ligne de commande de navigation, une liste de travaux et un panneau de contenu. Les choix et formulaires utilisent des lignes repérées, une sélection au clavier, des raccourcis visibles et une zone de validation. Les confirmations, erreurs, réglages, inventaires et journaux suivent ce même langage visuel. Les fonctions restent accessibles à la souris ; aucune commande libre ne remplace une validation existante. Le rendu graphique des machines occupe un panneau graphique dédié et conserve ses couleurs d'origine. Cette composition n'utilise ni le rail d'Orbit, ni ses tiroirs, ni les menus et fenêtres d'OS.
+
+### Atlas : atelier organisé par support
+
+Atlas prend le support ou l'image comme point d'entrée. Un catalogue de documents et une fiche du support rassemblent acquisition, écriture, conversion, inspection et exploration, sans répartir les informations du même support entre sept pages éloignées. Une séquence de travail expose source, destinations et résultats ; le journal reste attaché à l'espace des opérations existantes. Les réglages sont des fiches et les dialogues des formulaires documentaires. Les machines et sessions sont accessibles dans un espace propre, avec les mêmes contrats de surfaces et périphériques. Atlas ne reprend ni le bureau OS, ni les panneaux de terminal Matrix, ni le cockpit d'Orbit.
+
+Les styles ou apparences ne deviennent pas de nouveaux thèmes. Base et Studio validés sont conservés. Chaque nouveau thème sera ajouté au catalogue après réalisation de toutes ses fonctions, capturé à 1280×800 et 1920×1080, puis livré en Debug avec tous les modules. Aucun commit sans validation utilisateur.
+
+
+## Périmètre corrigé à la demande utilisateur — 1 novembre 2026
+
+Terminer Orbit puis arrêter le travail sur les thèmes. Ne pas engager Matrix, Atlas ni les déclinaisons OS restantes. OS demeure incomplet : Macintosh OS, Atari GEM et Amiga Workbench ne sont pas réalisés. Windows 98 est reporté à une éventuelle réalisation ultérieure à la demande de l’utilisateur ; il ne compte pas dans les manques actuels. Leurs mentions antérieures sont un inventaire des manques, pas une livraison. Les compositions Matrix et Atlas restent des propositions documentées. La livraison Orbit conserve les contrôles et le build Debug tous modules prévus, avec validation utilisateur avant commit.
+
+
+### Orbit — livraison pour essai
+
+Orbit est enregistré après reconstruction de ses vues : rail Machines/Médias/Journal/Commandes, documents des six opérations, sessions centrales, préférences, réglages de modules et dialogues propres à Orbit. Les traitements existants sont conservés. Les aperçus LightPreview.png et DarkPreview.png sont issus des captures réelles de la présentation.
+
+Les 176 contrôles existants de thèmes passent. Neuf scénarios temporaires vérifient navigation, conversion et toutes les pages déclarées par les 24 modules livrés ; six autres vérifient préférences, confirmations, fenêtres natives et transfert de deux sessions. Les captures de préférences et de sessions ont été inspectées ; tests temporaires supprimés après fermeture. Ces contrôles de présentation ne démarrent pas les cœurs réels et ne valident pas tous les GPU ni individuellement toutes les routes spécialisées.
+
+Les captures sont dans artifacts/themes-review/screens/Orbit. Le build Debug officiel --modules=A a réussi (code 0) : exécutable, 24 manifestes/DLL et identité de la DLL application livrée vérifiés. Les 212 tests groupés de thèmes et localisation passent. Aucun commit sans validation utilisateur. Arrêt du travail sur les thèmes après Orbit ; autres déclinaisons OS, Matrix et Atlas non engagés.

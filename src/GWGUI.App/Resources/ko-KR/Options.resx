@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>시작</value></data>
   <data name="Options.Themes.OS.Programs"><value>프로그램</value></data>
   <data name="Options.Themes.OS.Numbering"><value>번호 매기기</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>활동 로그</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>명령 명령</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>명령을 검색</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>일치 명령 없음</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>기계를 선택하거나 개방 세션을 계속</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>의논하기</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>정성 세션 없음</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>기계, 미디어 문서 및 컨텍스트 도구는 하나의 작업 공간에 있습니다.</value></data>
 </root>

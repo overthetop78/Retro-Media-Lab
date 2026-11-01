@@ -50,7 +50,7 @@ public sealed class ThemeEditionSelectionTests(StaExecutionScenarios sta)
         successful = true;
         await section.SaveSelectedAsync();
         Assert.False(section.SaveAction.IsEnabled);
-        Assert.Equal(new[] { AppThemeDesign.Base, AppThemeDesign.Studio, AppThemeDesign.OS }, ThemeCatalog.All.Select(theme => theme.Id));
+        Assert.Equal(new[] { AppThemeDesign.Base, AppThemeDesign.Studio, AppThemeDesign.Orbit, AppThemeDesign.OS }, ThemeCatalog.All.Select(theme => theme.Id));
         Assert.Empty(ThemeCatalog.Get(AppThemeDesign.Base).Editions);
         Assert.Empty(ThemeCatalog.Get(AppThemeDesign.Studio).Editions);
         Assert.Collection(ThemeCatalog.Get(AppThemeDesign.OS).Editions,

@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Spustit</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programy</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Číslování</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Stroje</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Média</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Zápis činností</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Příkazy</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Vyhledávání příkazu</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Žádný odpovídající příkaz</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Vyberte stroj nebo pokračujte v otevřené relaci</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Kontext</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Žádné emulace nejsou otevřeny</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Stroje, mediální dokumenty a kontextové nástroje v jednom pracovním prostoru.</value></data>
 </root>

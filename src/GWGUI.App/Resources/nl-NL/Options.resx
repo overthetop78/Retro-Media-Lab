@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programma’s</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Nummering</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Machines</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Activiteitslogboek</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Commando's</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Zoeken naar een opdracht</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Geen overeenkomende opdracht</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Selecteer een machine of ga door met een open sessie</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Context</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Geen emulatiesessie geopend</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Machines, mediadocumenten en contextuele hulpmiddelen in één werkruimte.</value></data>
 </root>

@@ -1,0 +1,33 @@
+<UserControl x:Class="GWGUI.App.Theme.Orbit.Views.FileSelectionView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions" xmlns:common="clr-namespace:GWGUI.App.Views.Controls.Common"
+ Background="{DynamicResource Orbit.Window}" Foreground="{DynamicResource Orbit.Text}" UseLayoutRounding="True">
+ <Grid>
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <StackPanel Margin="0,0,0,16"><Label Content="{l:Loc FileDialog.Directories}" Target="{Binding ElementName=Folders}"/>
+   <ComboBox x:Name="Folders" SelectionChanged="OnFolderSelected"><ComboBox.ItemTemplate><DataTemplate><DockPanel Margin="{Binding Indent}">
+    <common:FileEntryIcon Category="Folder" IsExpanded="{Binding Expanded}" Width="16" Height="16" Margin="0,0,8,0"/><TextBlock Text="{Binding Name}"/>
+   </DockPanel></DataTemplate></ComboBox.ItemTemplate></ComboBox>
+   <TextBlock x:Name="CurrentPath" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Orbit.Muted}" Margin="0,8,0,0"/>
+  </StackPanel>
+  <ListView x:Name="Files" Grid.Row="1" SelectionChanged="OnFileSelected" MouseDoubleClick="OnFileDoubleClick" Background="Transparent"><ListView.View><GridView>
+   <GridViewColumn Header="{l:Loc Explorer.Name}" Width="340"><GridViewColumn.CellTemplate><DataTemplate><DockPanel>
+    <common:FileEntryIcon Category="{Binding Category}" Width="16" Height="16" Margin="0,0,8,0"/><TextBlock Text="{Binding Name}"/>
+   </DockPanel></DataTemplate></GridViewColumn.CellTemplate></GridViewColumn>
+   <GridViewColumn Header="{l:Loc Explorer.Modified}" Width="150" DisplayMemberBinding="{Binding Modified}"/>
+  </GridView></ListView.View></ListView>
+  <Grid Grid.Row="2" Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="220"/></Grid.ColumnDefinitions>
+   <StackPanel Margin="0,0,12,0"><Label x:Name="NameLabel" Content="{l:Loc Read.FileName}" Target="{Binding ElementName=NameField}"/>
+    <TextBox x:Name="NameField" TextChanged="OnNameChanged"/>
+   </StackPanel><StackPanel Grid.Column="1"><Label x:Name="TypesLabel" Content="{l:Loc FileDialog.FileTypes}" Target="{Binding ElementName=Types}"/>
+    <ComboBox x:Name="Types" DisplayMemberPath="Name" SelectionChanged="OnFilterSelected"/>
+   </StackPanel>
+  </Grid>
+  <DockPanel Grid.Row="3" Margin="0,16,0,0"><Button x:Name="Accept" DockPanel.Dock="Right" Click="OnAccept" IsDefault="True" Style="{StaticResource Orbit.Primary}" Margin="8,0,0,0"/>
+   <Button x:Name="Cancel" DockPanel.Dock="Right" Content="{l:Loc Common.Cancel}" Click="OnCancel" Margin="8,0,0,0"/>
+   <StackPanel><CheckBox x:Name="ReadOnly" Content="{l:Loc Emulation.Storage.ReadOnly}" Checked="OnReadOnlyChanged" Unchecked="OnReadOnlyChanged"/>
+    <TextBlock x:Name="Error" Foreground="{DynamicResource Orbit.Error}" TextWrapping="Wrap"/>
+   </StackPanel>
+  </DockPanel>
+ </Grid>
+</UserControl>

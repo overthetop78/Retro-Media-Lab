@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <SolidColorBrush x:Key="Orbit.Window" Color="#EAF0F5"/>
+ <SolidColorBrush x:Key="Orbit.Surface" Color="#FFFFFF"/>
+ <SolidColorBrush x:Key="Orbit.Control" Color="#F3F7FA"/>
+ <SolidColorBrush x:Key="Orbit.Text" Color="#142C3C"/>
+ <SolidColorBrush x:Key="Orbit.Muted" Color="#466072"/>
+ <SolidColorBrush x:Key="Orbit.Accent" Color="#006C60"/>
+ <SolidColorBrush x:Key="Orbit.OnAccent" Color="#FFFFFF"/>
+ <SolidColorBrush x:Key="Orbit.Border" Color="#879EAC"/>
+ <SolidColorBrush x:Key="Orbit.Selection" Color="#CCEAE4"/>
+ <SolidColorBrush x:Key="Orbit.Hover" Color="#DFEAF0"/>
+ <SolidColorBrush x:Key="Orbit.Error" Color="#A52B28"/>
+ <SolidColorBrush x:Key="Orbit.Success" Color="#216E46"/>
+ <SolidColorBrush x:Key="Orbit.Warning" Color="#795400"/>
+ <SolidColorBrush x:Key="AccentBrush" Color="#006C60"/>
+ <SolidColorBrush x:Key="WindowBrush" Color="#EAF0F5"/>
+ <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
+ <SolidColorBrush x:Key="ControlBrush" Color="#F3F7FA"/>
+ <SolidColorBrush x:Key="TextBrush" Color="#142C3C"/>
+ <SolidColorBrush x:Key="BorderBrush" Color="#879EAC"/>
+ <SolidColorBrush x:Key="HoverBrush" Color="#DFEAF0"/>
+ <SolidColorBrush x:Key="SelectedBrush" Color="#CCEAE4"/>
+ <SolidColorBrush x:Key="ExplorerSelectionBrush" Color="#CCEAE4"/>
+ <SolidColorBrush x:Key="MutedTextBrush" Color="#466072"/>
+ <SolidColorBrush x:Key="StatusBrush" Color="#FFFFFF"/>
+ <SolidColorBrush x:Key="Theme.ErrorBrush" Color="#A52B28"/>
+ <SolidColorBrush x:Key="Theme.SuccessBrush" Color="#216E46"/>
+ <SolidColorBrush x:Key="Theme.WarningBrush" Color="#795400"/>
+ <SolidColorBrush x:Key="Theme.DangerSurface" Color="#F3F7FA"/>
+ <SolidColorBrush x:Key="Theme.SuccessSurface" Color="#F3F7FA"/>
+ <SolidColorBrush x:Key="Theme.PlotBackground" Color="#EAF0F5"/>
+ <SolidColorBrush x:Key="Theme.PlotText" Color="#142C3C"/>
+ <SolidColorBrush x:Key="SyntheticNameBrush" Color="#795400"/>
+ <SolidColorBrush x:Key="Theme.PrimaryBorder" Color="#006C60"/>
+ <SolidColorBrush x:Key="Theme.PrimaryHover" Color="#006C60"/>
+ <Color x:Key="Theme.PrimaryTopColor">#006C60</Color>
+ <Color x:Key="Theme.PrimaryBottomColor">#006C60</Color>
+ <SolidColorBrush x:Key="Theme.PrimaryShadow" Color="Transparent"/>
+ <CornerRadius x:Key="Theme.PrimaryRadius">5</CornerRadius>
+</ResourceDictionary>

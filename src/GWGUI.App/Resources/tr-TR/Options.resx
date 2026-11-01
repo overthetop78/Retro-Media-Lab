@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Başlat</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programlar</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numaralandırma</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Makineler</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Medya Medya</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Aktivite günlük</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Komutanlar</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Bir komut için arama</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Hiçbir eşleştirme komutu</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Bir makine seçin veya açık bir seans devam edin</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Context</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Hiçbir emulation seans açık</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Makineler, medya belgeleri ve bağlamsal araçlar bir çalışma alanında.</value></data>
 </root>

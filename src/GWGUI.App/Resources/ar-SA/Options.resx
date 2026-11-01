@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>ابدأ</value></data>
   <data name="Options.Themes.OS.Programs"><value>البرامج</value></data>
   <data name="Options.Themes.OS.Numbering"><value>الترقيم</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>الآلات</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>وسائط الإعلام</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>سجل الأنشطة</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>القيادات</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>ابحث عن أمر</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>لا توجد قيادة متطابقة</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>اختيار آلة أو مواصلة جلسة مفتوحة</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>السياق</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>لا توجد جلسة مفتوحة</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>الآلات ووثائق وسائط الإعلام والأدوات السياقية في مكان عمل واحد.</value></data>
 </root>

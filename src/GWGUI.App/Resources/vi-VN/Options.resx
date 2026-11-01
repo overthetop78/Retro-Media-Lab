@@ -94,4 +94,14 @@
   <data name="Options.Themes.OS.Start"><value>Chạy</value></data>
   <data name="Options.Themes.OS.Programs"><value>Chương trình</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Đánh số</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Máy</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Vật chứa</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Bản ghi hoạt động</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Lệnh</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Tìm lệnh</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Không có lệnh tương ứng</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Chọn một máy hoặc tiếp tục một phiên chạy mở</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Văn cảnh</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Không mở phiên chạy mô phỏng</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Máy móc, tài liệu truyền thông và công cụ ngữ cảnh trong một không gian làm việc.</value></data>
 </root>
