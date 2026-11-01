@@ -1,0 +1,1876 @@
+{
+  "Blue": {
+    "globals": {
+      "edgelightcolor": "241 239 226",
+      "edgehighlightcolor": "255 255 255",
+      "edgeshadowcolor": "172 168 153",
+      "edgedkshadowcolor": "113 111 100",
+      "edgefillcolor": "236 233 216"
+    },
+    "sysmetrics": {
+      "scrollbarwidth": "17",
+      "scrollbarheight": "17",
+      "window": "255 255 255",
+      "menubar": "236 233 216",
+      "menu": "255 255 255",
+      "background": "0 78 152",
+      "btnface": "236 233 216",
+      "highlight": "49 106 197",
+      "activecaption": "0 84 227",
+      "captiontext": "255 255 255",
+      "inactivecaption": "122 150 223",
+      "inactivecaptiontext": "216 228 248",
+      "gradientactivecaption": "61 149 255",
+      "gradientinactivecaption": "157 185 235",
+      "highlighttext": "255 255 255",
+      "menuhilight": "49 106 197",
+      "btnshadow": "172 168 153",
+      "graytext": "172 168 153",
+      "btnhighlight": "255 255 255",
+      "dkshadow3d": "113 111 100",
+      "light3d": "241 239 226",
+      "captionfont": "Trebuchet MS, 10, bold",
+      "captionbarheight": "25",
+      "smallcaptionfont": "Tahoma, 8, bold",
+      "smcaptionbarheight": "17",
+      "smcaptionbarwidth": "17",
+      "menufont": "Tahoma, 8",
+      "statusfont": "Tahoma, 8",
+      "msgboxfont": "Tahoma, 8",
+      "icontitlefont": "Tahoma, 8",
+      "flatmenus": "true",
+      "cssname": "cpwebvw.css",
+      "xmlname": "default.xml",
+      "mincolordepth": "15"
+    },
+    "window": {
+      "bgtype": "ImageFile",
+      "transparent": "true",
+      "textshadowoffset": "1,1",
+      "textshadowcolor": "10 24 131"
+    },
+    "window.caption": {
+      "imagefile": "Blue\\FrameCaption.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "1, 1, 1, 1",
+      "captionmargins": "4, 3, 0, 0",
+      "sizingtype": "stretch",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "fillcolorhint": "0 84 229"
+    },
+    "window.caption(active)": {
+      "textshadowtype": "Single"
+    },
+    "window.captionsizingtemplate": {
+      "imagefile": "Blue\\FrameCaptionSizing.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "18, 18, 26, 0",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "transparentcolor": "0 0 0"
+    },
+    "window.smallcaption": {
+      "imagefile": "Blue\\SmallFrameCaption.bmp",
+      "sizingmargins": "24, 37, 9, 8",
+      "contentmargins": "1, 1, 1, 1",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "fillcolorhint": "0 84 229"
+    },
+    "window.smallcaptionsizingtemplate": {
+      "imagefile": "Blue\\SmallFrameCaptionSizing.bmp",
+      "sizingmargins": "24, 37, 9, 8",
+      "contentmargins": "14, 14, 16, 0",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "transparentcolor": "0 0 0"
+    },
+    "window.maxcaption": {
+      "imagefile": "Blue\\FrameMaximized.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "1, 1, 1, 1",
+      "sizingtype": "Tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "captionmargins": "4, 3, 4, 2",
+      "contentalignment": "left",
+      "fillcolorhint": "0 84 229"
+    },
+    "window.maxcaption(active)": {
+      "textshadowtype": "Single"
+    },
+    "startpanel": {
+      "bgtype": "none",
+      "defaultpanesize": "0, 0, 380, 440"
+    },
+    "startpanel.userpane": {
+      "userpicture": "True",
+      "imagelayout": "Horizontal",
+      "textcolor": "255 255 255",
+      "font": "Franklin Gothic Medium, 14",
+      "defaultpanesize": "0, 0, 380, 64",
+      "bgtype": "Imagefile",
+      "transparent": "True",
+      "imagefile": "Blue\\StartUserPanel.bmp",
+      "imagecount": "1",
+      "sizingmargins": "59, 60, 62, 0",
+      "sizingtype": "Stretch",
+      "textshadowoffset": "2, 2",
+      "textshadowcolor": "9 66 139",
+      "textshadowtype": "continuous",
+      "fillcolorhint": "31 113 216"
+    },
+    "startpanel.userpicture": {
+      "bgtype": "ImageFile",
+      "imagefile": "Blue\\UserTileBackground.bmp",
+      "imagecount": "1",
+      "sizingtype": "Stretch",
+      "sizingmargins": "6, 10, 6, 10",
+      "contentmargins": "8, 6, 8, 6",
+      "transparent": "true",
+      "fillcolorhint": "204 214 235"
+    },
+    "startpanel.proglist": {
+      "defaultpanesize": "0, 0, 190, 306",
+      "contentmargins": "6 4 9 5",
+      "textcolor": "55 55 56",
+      "hottracking": "48 112 208",
+      "captiontext": "128 128 128",
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "2, 153, 3, 0",
+      "imagefile": "Blue\\StartPanelMFUBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "204 214 235"
+    },
+    "startpanel.proglistseparator": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Blue\\StartProgramsSeparator.bmp"
+    },
+    "startpanel.moreprograms": {
+      "defaultpanesize": "0, 0, 190, 30",
+      "textcolor": "55 55 56",
+      "hottracking": "48 112 208",
+      "font": "Tahoma, 8, Bold",
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "3, 0, 0, 1",
+      "contentmargins": "8, 8, 0, 6",
+      "imagefile": "Blue\\StartPanelMoreProgBackGround.BMP",
+      "imagecount": "1"
+    },
+    "startpanel.moreprogramsarrow": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Blue\\StartPanelMoreProgArrow.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "108 207 108"
+    },
+    "startpanel.moreprogramsarrow(hot)": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Blue\\StartPanelMoreProgArrowHot.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "107 239 107"
+    },
+    "startpanel.placeslist": {
+      "defaultpanesize": "0, 0, 190, 336",
+      "contentmargins": "4 6 9 5",
+      "textcolor": "10 36 106",
+      "hottracking": "80 150 248",
+      "bgtype": "imageFile",
+      "imagefile": "Blue\\StartPanelPlacesBackground.bmp",
+      "imagecount": "1",
+      "sizingmargins": "172, 7, 3, 1",
+      "sizingtype": "Stretch",
+      "fillcolorhint": "211 229 250"
+    },
+    "startpanel.placeslistseparator": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Blue\\StartPlacesSeparator.bmp"
+    },
+    "startpanel.logoff": {
+      "contentmargins": "0, 0, 4, 2",
+      "defaultpanesize": "0, 0, 380, 40",
+      "textcolor": "255 255 255",
+      "hottracking": "255 255 255",
+      "bgtype": "imagefile",
+      "imagefile": "Blue\\StartPanelLogoffBackground.bmp",
+      "imagecount": "1",
+      "sizingmargins": "49, 47, 0, 38",
+      "sizingtype": "Stretch",
+      "fillcolorhint": "37 119 223"
+    },
+    "startpanel.logoffbuttons": {
+      "bgtype": "ImageFile",
+      "transparent": "True",
+      "sizingtype": "TrueSize",
+      "imagefile": "Blue\\StartPanelLogoffButtons.bmp",
+      "imagecount": "1"
+    },
+    "startpanel.logoffbuttons(hot)": {
+      "bgtype": "ImageFile",
+      "transparent": "True",
+      "sizingtype": "TrueSize",
+      "imagefile": "Blue\\StartPanelLogoffButtonsHot.bmp",
+      "imagecount": "1"
+    },
+    "start::button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "6, 52, 13, 14",
+      "contentmargins": "10, 24, 2, 4",
+      "imagefile": "Blue\\StartButton.bmp",
+      "imagecount": "3",
+      "imagelayout": "Vertical",
+      "transparent": "True",
+      "font": "Franklin Gothic Medium, 14, italic",
+      "textcolor": "255 255 255",
+      "textshadowoffset": "2, 2",
+      "textshadowcolor": "69 76 16",
+      "textshadowtype": "continuous",
+      "fillcolorhint": "74 153 73"
+    },
+    "taskbar::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "255 255 255"
+    },
+    "taskbar::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "8, 3, 18, 8",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "Blue\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "53 122 238"
+    },
+    "taskbar::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "8, 3, 18, 8",
+      "contentmargins": "2, 0, 4, 4",
+      "imagefile": "Blue\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "53 122 238"
+    },
+    "taskbarvert::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "15, 5, 6, 4",
+      "contentmargins": "1, 1, 1, 1",
+      "imagefile": "Blue\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "53 122 238"
+    },
+    "taskbarvert::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "15, 5, 6, 4",
+      "contentmargins": "1, 1, 1, 1",
+      "imagefile": "Blue\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "53 122 238"
+    },
+    "taskbar::rebar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "123 182 232"
+    },
+    "taskbar::rebar.band": {
+      "bgtype": "None"
+    },
+    "taskbar::rebar.gripper": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 6, 4",
+      "contentmargins": "2, 1, 0, 0",
+      "imagefile": "Blue\\TaskbarGripper.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "transparentcolor": "255 0 255",
+      "fillcolorhint": "6 45 159"
+    },
+    "taskbar::rebar.grippervert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "4, 6, 0, 0",
+      "contentmargins": "0, 0, 2, 1",
+      "imagefile": "Blue\\TaskbarGripperVertical.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "transparentcolor": "255 0 255",
+      "fillcolorhint": "6 45 159"
+    },
+    "taskbar::rebar.chevron": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "8, 3, 18, 8",
+      "contentmargins": "0, 0, 0, 10",
+      "imagefile": "Blue\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "Blue\\TaskbarChevron.bmp",
+      "glyphtransparent": "true",
+      "valign": "Top",
+      "fillcolorhint": "6 45 159"
+    },
+    "taskbar::rebar.chevronvert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "15, 5, 6, 4",
+      "contentmargins": "0, 0, 0, 0",
+      "imagefile": "Blue\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "Blue\\TaskbarChevronVert.bmp",
+      "glyphtransparent": "true",
+      "fillcolorhint": "6 45 159"
+    },
+    "taskbar.backgroundbottom": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 15, 11",
+      "imagefile": "Blue\\TaskbarBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "36 94 220"
+    },
+    "taskbar.sizingbarbottom": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "Blue\\TaskbarSizingBarBottom.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "50 128 231"
+    },
+    "taskbar.backgroundleft": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "15, 11, 0, 0",
+      "imagefile": "Blue\\TaskbarBackgroundVertical.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "36 94 220"
+    },
+    "taskbar.sizingbarleft": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "Blue\\TaskbarSizingBarLeft.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "50 128 231"
+    },
+    "taskbar.backgroundtop": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 15, 11",
+      "imagefile": "Blue\\TaskbarBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "36 94 220"
+    },
+    "taskbar.sizingbartop": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "Blue\\TaskbarSizingBarTop.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "50 128 231"
+    },
+    "taskbar.backgroundright": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "11, 13, 0, 0",
+      "imagefile": "Blue\\TaskbarBackgroundVertical.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "36 94 220"
+    },
+    "taskbar.sizingbarright": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "imagefile": "Blue\\TaskbarSizingBarRight.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "50 128 231"
+    },
+    "taskband.flashbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 4, 4",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "Blue\\TaskBandFlashButton.bmp",
+      "imagecount": "1",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "56 130 234",
+      "accentcolorhint": "255 192 91"
+    },
+    "taskband.flashbuttongroupmenu": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 4, 4",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "Blue\\TaskBandFlashButtonGroupMenu.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "fillcolorhint": "56 130 234",
+      "accentcolorhint": "255 192 91"
+    },
+    "taskband.groupcount": {
+      "font": "Tahoma, 8, Bold",
+      "textcolor": "255 204 109"
+    },
+    "taskband::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "255 255 255"
+    },
+    "taskband::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "17, 5, 15, 8",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "Blue\\TaskBandButton.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "54 127 239"
+    },
+    "taskband::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "17, 5, 15, 8",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "Blue\\TaskBandButton.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "54 127 239"
+    },
+    "taskbandvert::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "255 255 255"
+    },
+    "taskbandvert::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "16, 7, 12, 6",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "Blue\\TaskBandButtonVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "54 127 239"
+    },
+    "taskbandvert::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "16, 7, 12, 6",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "Blue\\TaskBandButtonVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "54 127 239"
+    },
+    "taskband::scrollbar.arrowbtn": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "0, 0, 0, 0",
+      "sizingtype": "Stretch",
+      "imagefile": "Blue\\TaskbandScrollArrows.bmp",
+      "imagecount": "16",
+      "imagelayout": "Vertical",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "Blue\\TaskBandScrollArrowGlyphs.bmp",
+      "glyphtransparent": "True",
+      "fillcolorhint": "25 66 205"
+    },
+    "taskband::scrollbar.thumbbtnhorz": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "4, 4, 0, 0",
+      "imagefile": "Blue\\TaskBandScrollThumbHorizontal.bmp",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "25 66 205"
+    },
+    "taskband::scrollbar.gripperhorz": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Blue\\TaskBandScrollThumbGripperHorizontal.BMP",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "imagecount": "4",
+      "fillcolorhint": "44 96 226"
+    },
+    "taskband::scrollbar.thumbbtnvert": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "Blue\\TaskBandScrollThumbVertical.bmp",
+      "imagecount": "4",
+      "imagelayout": "vertical",
+      "fillcolorhint": "25 66 205"
+    },
+    "taskband::scrollbar.grippervert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Blue\\TaskBandScrollThumbGripperVertical.BMP",
+      "imagecount": "4",
+      "transparent": "True",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "44 96 226"
+    },
+    "taskband::scrollbar.lowertrackhorz": {
+      "bgtype": "imagefile",
+      "imagefile": "Blue\\TaskBandScrollShaftHorizontal.bmp",
+      "sizingmargins": "0, 0, 1, 1",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "37 90 225"
+    },
+    "taskband::scrollbar.uppertrackhorz": {
+      "bgtype": "imagefile",
+      "imagefile": "Blue\\TaskBandScrollShaftHorizontal.bmp",
+      "sizingmargins": "0, 0, 1, 1",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "37 90 225"
+    },
+    "taskband::scrollbar.lowertrackvert": {
+      "bgtype": "imagefile",
+      "imagefile": "Blue\\TaskBandScrollShaftVertical.bmp",
+      "sizingmargins": "1, 1, 0, 0",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "37 90 225"
+    },
+    "taskband::scrollbar.uppertrackvert": {
+      "bgtype": "imagefile",
+      "imagefile": "Blue\\TaskBandScrollShaftVertical.bmp",
+      "sizingmargins": "1, 1, 0, 0",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "37 90 225"
+    },
+    "taskbandgroupmenu::toolbar": {
+      "bgtype": "ImageFile",
+      "imagefile": "Blue\\TaskBandBackground.bmp",
+      "sizingtype": "Tile",
+      "sizingmargins": "3, 3, 3, 3",
+      "contentmargins": "9, 0, 0, 0",
+      "font": "Tahoma, 8",
+      "textcolor": "255 255 255",
+      "fillcolorhint": "33 87 213",
+      "accentcolorhint": "255 199 60"
+    },
+    "taskbandgroupmenu::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "stretch",
+      "sizingmargins": "3, 3, 0, 0",
+      "contentmargins": "9, 0, 3, 3",
+      "imagefile": "Blue\\TaskBandHover.bmp",
+      "imagecount": "3",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "accentcolorhint": "79 150 255"
+    }
+  },
+  "Olive": {
+    "globals": {
+      "edgelightcolor": "241 239 226",
+      "edgehighlightcolor": "255 255 255",
+      "edgeshadowcolor": "172 168 153",
+      "edgedkshadowcolor": "113 111 100",
+      "edgefillcolor": "236 233 216"
+    },
+    "sysmetrics": {
+      "scrollbarwidth": "17",
+      "scrollbarheight": "17",
+      "window": "255 255 255",
+      "menubar": "236 233 216",
+      "menu": "255 255 255",
+      "background": "157 172 189",
+      "btnface": "236 233 216",
+      "highlight": "147 160 112",
+      "activecaption": "139 161 105",
+      "captiontext": "255 255 255",
+      "inactivecaption": "212 214 186",
+      "inactivecaptiontext": "255 255 255",
+      "gradientactivecaption": "198 210 162",
+      "gradientinactivecaption": "212 214 186",
+      "highlighttext": "255 255 255",
+      "menuhilight": "147 160 112",
+      "btnshadow": "172 168 153",
+      "graytext": "172 168 153",
+      "btnhighlight": "255 255 255",
+      "dkshadow3d": "113 111 100",
+      "light3d": "241 239 226",
+      "captionfont": "Trebuchet MS, 10, bold",
+      "captionbarheight": "25",
+      "smallcaptionfont": "Tahoma, 8, bold",
+      "smcaptionbarheight": "17",
+      "smcaptionbarwidth": "17",
+      "menufont": "Tahoma, 8",
+      "statusfont": "Tahoma, 8",
+      "msgboxfont": "Tahoma, 8",
+      "icontitlefont": "Tahoma, 8",
+      "flatmenus": "true",
+      "cssname": "cpwebvw.css",
+      "xmlname": "default.xml",
+      "mincolordepth": "15"
+    },
+    "window": {
+      "bgtype": "ImageFile",
+      "transparent": "true",
+      "textshadowoffset": "1,1",
+      "textshadowcolor": "65 64 10"
+    },
+    "window.caption": {
+      "imagefile": "HomeStead\\FrameCaption.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "1, 1, 1, 1",
+      "captionmargins": "4, 3, 0, 0",
+      "sizingtype": "stretch",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "fillcolorhint": "170 184 134"
+    },
+    "window.caption(active)": {
+      "textshadowtype": "Single"
+    },
+    "window.captionsizingtemplate": {
+      "imagefile": "HomeStead\\FrameCaptionSizing.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "18, 18, 26, 0",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "transparentcolor": "0 0 0"
+    },
+    "window.smallcaption": {
+      "imagefile": "HomeStead\\SmallFrameCaption.bmp",
+      "sizingmargins": "24, 37, 9, 8",
+      "contentmargins": "1, 1, 1, 1",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "fillcolorhint": "170 184 134"
+    },
+    "window.smallcaptionsizingtemplate": {
+      "imagefile": "HomeStead\\SmallFrameCaptionSizing.bmp",
+      "sizingmargins": "24, 37, 9, 8",
+      "contentmargins": "14, 14, 16, 0",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "transparentcolor": "0 0 0"
+    },
+    "window.maxcaption": {
+      "imagefile": "HomeStead\\FrameMaximized.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "1, 1, 1, 1",
+      "sizingtype": "Tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "captionmargins": "4, 3, 4, 2",
+      "contentalignment": "left",
+      "fillcolorhint": "170 184 134"
+    },
+    "window.maxcaption(active)": {
+      "textshadowtype": "Single"
+    },
+    "startpanel": {
+      "bgtype": "none",
+      "defaultpanesize": "0, 0, 380, 440"
+    },
+    "startpanel.userpane": {
+      "userpicture": "True",
+      "imagelayout": "Horizontal",
+      "textcolor": "255 255 255",
+      "font": "Franklin Gothic Medium, 14",
+      "defaultpanesize": "0, 0, 380, 64",
+      "bgtype": "Imagefile",
+      "transparent": "True",
+      "imagefile": "HomeStead\\StartUserPanel.bmp",
+      "imagecount": "1",
+      "sizingmargins": "59, 60, 62, 0",
+      "sizingtype": "Stretch",
+      "textshadowoffset": "2, 2",
+      "textshadowcolor": "24 56 2",
+      "textshadowtype": "continuous",
+      "fillcolorhint": "183 199 147"
+    },
+    "startpanel.userpicture": {
+      "bgtype": "ImageFile",
+      "imagefile": "HomeStead\\UserTileBackground.bmp",
+      "imagecount": "1",
+      "sizingtype": "Stretch",
+      "sizingmargins": "6, 10, 6, 10",
+      "contentmargins": "8, 6, 8, 6",
+      "transparent": "true",
+      "fillcolorhint": "221 236 191"
+    },
+    "startpanel.proglist": {
+      "defaultpanesize": "0, 0, 190, 306",
+      "contentmargins": "6 4 9 5",
+      "textcolor": "55 55 56",
+      "hottracking": "133 144 102",
+      "captiontext": "128 128 128",
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "2, 153, 3, 0",
+      "imagefile": "HomeStead\\StartPanelMFUBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "255 255 255"
+    },
+    "startpanel.proglistseparator": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "HomeStead\\StartProgramsSeparator.bmp"
+    },
+    "startpanel.moreprograms": {
+      "defaultpanesize": "0, 0, 190, 30",
+      "textcolor": "55 55 56",
+      "hottracking": "133 144 102",
+      "font": "Tahoma, 8, Bold",
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "3, 0, 0, 1",
+      "contentmargins": "8, 8, 0, 6",
+      "imagefile": "HomeStead\\StartPanelMoreProgBackGround.BMP",
+      "imagecount": "1"
+    },
+    "startpanel.moreprogramsarrow": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "HomeStead\\StartPanelMoreProgArrow.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "108 207 108"
+    },
+    "startpanel.moreprogramsarrow(hot)": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "HomeStead\\StartPanelMoreProgArrowHot.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "107 239 107"
+    },
+    "startpanel.placeslist": {
+      "defaultpanesize": "0, 0, 190, 336",
+      "contentmargins": "4 6 9 5",
+      "textcolor": "84 95 56",
+      "hottracking": "80 150 248",
+      "bgtype": "imageFile",
+      "imagefile": "HomeStead\\StartPanelPlacesBackground.bmp",
+      "imagecount": "1",
+      "sizingmargins": "172, 7, 3, 1",
+      "sizingtype": "Stretch",
+      "fillcolorhint": "242 241 228"
+    },
+    "startpanel.placeslistseparator": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "HomeStead\\StartPlacesSeparator.bmp"
+    },
+    "startpanel.logoff": {
+      "contentmargins": "0, 0, 4, 2",
+      "defaultpanesize": "0, 0, 380, 40",
+      "textcolor": "65 64 10",
+      "hottracking": "255 255 255",
+      "bgtype": "imagefile",
+      "imagefile": "HomeStead\\StartPanelLogoffBackground.bmp",
+      "imagecount": "1",
+      "sizingmargins": "49, 47, 0, 38",
+      "sizingtype": "Stretch",
+      "fillcolorhint": "183 199 147"
+    },
+    "startpanel.logoffbuttons": {
+      "bgtype": "ImageFile",
+      "transparent": "True",
+      "sizingtype": "TrueSize",
+      "imagefile": "HomeStead\\StartPanelLogoffButtons.bmp",
+      "imagecount": "1"
+    },
+    "startpanel.logoffbuttons(hot)": {
+      "bgtype": "ImageFile",
+      "transparent": "True",
+      "sizingtype": "TrueSize",
+      "imagefile": "HomeStead\\StartPanelLogoffButtonsHot.bmp",
+      "imagecount": "1"
+    },
+    "start::button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "6, 52, 13, 14",
+      "contentmargins": "10, 24, 2, 4",
+      "imagefile": "HomeStead\\StartButton.bmp",
+      "imagecount": "3",
+      "imagelayout": "Vertical",
+      "transparent": "True",
+      "font": "Franklin Gothic Medium, 14, italic",
+      "textcolor": "255 255 255",
+      "textshadowoffset": "2, 2",
+      "textshadowcolor": "69 76 16",
+      "textshadowtype": "continuous",
+      "fillcolorhint": "125 151 96"
+    },
+    "taskbar::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "65 64 10"
+    },
+    "taskbar::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 16, 8",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "HomeStead\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168"
+    },
+    "taskbar::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 16, 8",
+      "contentmargins": "2, 0, 4, 4",
+      "imagefile": "HomeStead\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168"
+    },
+    "taskbarvert::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "65 64 10"
+    },
+    "taskbar::toolbar(checked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbar::toolbar(pressed)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbar::toolbar(hotchecked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar(checked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar(pressed)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar(hotchecked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 15, 3",
+      "contentmargins": "1, 1, 1, 1",
+      "imagefile": "HomeStead\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168"
+    },
+    "taskbarvert::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 15, 3",
+      "contentmargins": "1, 1, 1, 1",
+      "imagefile": "HomeStead\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168"
+    },
+    "taskbar::rebar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "255 255 255"
+    },
+    "taskbar::rebar.band": {
+      "bgtype": "None"
+    },
+    "taskbar::rebar.gripper": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 6, 4",
+      "contentmargins": "2, 1, 0, 0",
+      "imagefile": "HomeStead\\TaskbarGripper.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "transparentcolor": "255 0 255",
+      "fillcolorhint": "134 146 105"
+    },
+    "taskbar::rebar.grippervert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "4, 6, 0, 0",
+      "contentmargins": "0, 0, 2, 1",
+      "imagefile": "HomeStead\\TaskbarGripperVertical.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "transparentcolor": "255 0 255",
+      "fillcolorhint": "6 45 159"
+    },
+    "taskbar::rebar.chevron": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 16, 8",
+      "contentmargins": "0, 0, 0, 10",
+      "imagefile": "HomeStead\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "HomeStead\\TaskbarChevron.bmp",
+      "glyphtransparent": "true",
+      "valign": "Top",
+      "fillcolorhint": "65 64 10"
+    },
+    "taskbar::rebar.chevronvert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 15, 3",
+      "contentmargins": "0, 0, 0, 0",
+      "imagefile": "HomeStead\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "HomeStead\\TaskbarChevronVert.bmp",
+      "glyphtransparent": "true",
+      "fillcolorhint": "65 64 10"
+    },
+    "taskbar.backgroundbottom": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 17, 12",
+      "imagefile": "HomeStead\\TaskbarBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "170 184 131"
+    },
+    "taskbar.sizingbarbottom": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "HomeStead\\TaskbarSizingBarBottom.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "201 219 161"
+    },
+    "taskbar.backgroundleft": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "15, 11, 0, 0",
+      "imagefile": "HomeStead\\TaskbarBackgroundVertical.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "170 184 131"
+    },
+    "taskbar.sizingbarleft": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "HomeStead\\TaskbarSizingBarLeft.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "201 219 161"
+    },
+    "taskbar.backgroundtop": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 15, 11",
+      "imagefile": "HomeStead\\TaskbarBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "170 184 131"
+    },
+    "taskbar.sizingbartop": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "HomeStead\\TaskbarSizingBarTop.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "201 219 161"
+    },
+    "taskbar.backgroundright": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "11, 13, 0, 0",
+      "imagefile": "HomeStead\\TaskbarBackgroundVertical.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "170 184 131"
+    },
+    "taskbar.sizingbarright": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "imagefile": "HomeStead\\TaskbarSizingBarRight.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "201 219 161"
+    },
+    "taskband.flashbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 4, 4",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "HomeStead\\TaskBandFlashButton.bmp",
+      "imagecount": "1",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168",
+      "accentcolorhint": "243 189 115"
+    },
+    "taskband.flashbuttongroupmenu": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 4, 4",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "HomeStead\\TaskBandFlashButtonGroupMenu.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168",
+      "accentcolorhint": "243 189 115"
+    },
+    "taskband.groupcount": {
+      "font": "Tahoma, 8, Bold",
+      "textcolor": "65 64 10"
+    },
+    "taskband::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "65 64 10"
+    },
+    "taskband::toolbar(checked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskband::toolbar(pressed)": {
+      "textcolor": "255 255 255"
+    },
+    "taskband::toolbar(hotchecked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskband::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "17, 5, 15, 8",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "HomeStead\\TaskBandButton.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168"
+    },
+    "taskband::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "17, 5, 15, 8",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "HomeStead\\TaskBandButton.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168"
+    },
+    "taskbandvert::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "65 64 10"
+    },
+    "taskbandvert::toolbar(checked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbandvert::toolbar(pressed)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbandvert::toolbar(hotchecked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbandvert::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "16, 7, 12, 6",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "HomeStead\\TaskBandButtonVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168"
+    },
+    "taskbandvert::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "16, 7, 12, 6",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "HomeStead\\TaskBandButtonVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "199 208 168"
+    },
+    "taskband::scrollbar.arrowbtn": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "0, 0, 0, 0",
+      "sizingtype": "Stretch",
+      "imagefile": "HomeStead\\TaskbandScrollArrows.bmp",
+      "imagecount": "16",
+      "imagelayout": "Vertical",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "HomeStead\\TaskBandScrollArrowGlyphs.bmp",
+      "glyphtransparent": "True",
+      "fillcolorhint": "152 168 128"
+    },
+    "taskband::scrollbar.thumbbtnhorz": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "4, 4, 0, 0",
+      "imagefile": "HomeStead\\TaskBandScrollThumbHorizontal.bmp",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "152 168 128"
+    },
+    "taskband::scrollbar.gripperhorz": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "HomeStead\\TaskBandScrollThumbGripperHorizontal.BMP",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "imagecount": "4",
+      "fillcolorhint": "188 204 159"
+    },
+    "taskband::scrollbar.thumbbtnvert": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "HomeStead\\TaskBandScrollThumbVertical.bmp",
+      "imagecount": "4",
+      "imagelayout": "vertical",
+      "fillcolorhint": "152 168 128"
+    },
+    "taskband::scrollbar.grippervert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "HomeStead\\TaskBandScrollThumbGripperVertical.BMP",
+      "imagecount": "4",
+      "transparent": "True",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "188 204 159"
+    },
+    "taskband::scrollbar.lowertrackhorz": {
+      "bgtype": "imagefile",
+      "imagefile": "HomeStead\\TaskBandScrollShaftHorizontal.bmp",
+      "sizingmargins": "0, 0, 1, 1",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "168 185 140"
+    },
+    "taskband::scrollbar.uppertrackhorz": {
+      "bgtype": "imagefile",
+      "imagefile": "HomeStead\\TaskBandScrollShaftHorizontal.bmp",
+      "sizingmargins": "0, 0, 1, 1",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "168 185 140"
+    },
+    "taskband::scrollbar.lowertrackvert": {
+      "bgtype": "imagefile",
+      "imagefile": "HomeStead\\TaskBandScrollShaftVertical.bmp",
+      "sizingmargins": "1, 1, 0, 0",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "168 185 140"
+    },
+    "taskband::scrollbar.uppertrackvert": {
+      "bgtype": "imagefile",
+      "imagefile": "HomeStead\\TaskBandScrollShaftVertical.bmp",
+      "sizingmargins": "1, 1, 0, 0",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "168 185 140"
+    },
+    "taskbandgroupmenu::toolbar": {
+      "bgtype": "ImageFile",
+      "imagefile": "HomeStead\\TaskBandBackground.bmp",
+      "sizingtype": "Tile",
+      "sizingmargins": "3, 3, 3, 3",
+      "contentmargins": "9, 0, 0, 0",
+      "font": "Tahoma, 8",
+      "textcolor": "65 64 10",
+      "fillcolorhint": "176 192 136",
+      "accentcolorhint": "227 150 88"
+    },
+    "taskbandgroupmenu::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "stretch",
+      "sizingmargins": "3, 3, 0, 0",
+      "contentmargins": "9, 0, 3, 3",
+      "imagefile": "HomeStead\\TaskBandHover.bmp",
+      "imagecount": "3",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "accentcolorhint": "199 208 168"
+    }
+  },
+  "Silver": {
+    "globals": {
+      "edgelightcolor": "241 239 226",
+      "edgehighlightcolor": "255 255 255",
+      "edgeshadowcolor": "172 168 153",
+      "edgedkshadowcolor": "113 111 100",
+      "edgefillcolor": "236 233 216"
+    },
+    "sysmetrics": {
+      "scrollbarwidth": "17",
+      "scrollbarheight": "17",
+      "window": "255 255 255",
+      "menubar": "224 226 235",
+      "menu": "255 255 255",
+      "background": "88 87 104",
+      "btnface": "224 223 227",
+      "highlight": "178 180 191",
+      "activecaption": "192 192 192",
+      "captiontext": "14 16 16",
+      "inactivecaption": "255 255 255",
+      "inactivecaptiontext": "162 161 161",
+      "gradientactivecaption": "200 200 200",
+      "gradientinactivecaption": "238 239 247",
+      "highlighttext": "0 0 0",
+      "menuhilight": "187 183 199",
+      "hottracking": "100 139 203",
+      "btnshadow": "157 157 161",
+      "graytext": "172 168 153",
+      "btnhighlight": "255 255 255",
+      "dkshadow3d": "113 111 100",
+      "light3d": "241 239 226",
+      "captionfont": "Trebuchet MS, 10, bold",
+      "captionbarheight": "25",
+      "smallcaptionfont": "Tahoma, 8, bold",
+      "smcaptionbarheight": "17",
+      "smcaptionbarwidth": "17",
+      "menufont": "Tahoma, 8",
+      "statusfont": "Tahoma, 8",
+      "msgboxfont": "Tahoma, 8",
+      "icontitlefont": "Tahoma, 8",
+      "flatmenus": "true",
+      "cssname": "cpwebvw.css",
+      "xmlname": "default.xml",
+      "mincolordepth": "15"
+    },
+    "window": {
+      "bgtype": "ImageFile",
+      "transparent": "true",
+      "textshadowoffset": "1,1",
+      "textshadowcolor": "199 194 209"
+    },
+    "window.caption": {
+      "imagefile": "Metallic\\Framecaption.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "1, 1, 1, 1",
+      "captionmargins": "4, 3, 0, 0",
+      "sizingtype": "stretch",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "fillcolorhint": "164 163 190"
+    },
+    "window.caption(active)": {
+      "textshadowtype": "Single"
+    },
+    "window.captionsizingtemplate": {
+      "imagefile": "Metallic\\FrameCaptionSizing.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "18, 18, 26, 0",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "transparentcolor": "0 0 0"
+    },
+    "window.smallcaption": {
+      "imagefile": "Metallic\\SmallFrameCaption.bmp",
+      "sizingmargins": "24, 37, 3, 15",
+      "contentmargins": "1, 1, 1, 1",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "fillcolorhint": "164 163 190"
+    },
+    "window.smallcaptionsizingtemplate": {
+      "imagefile": "Metallic\\SmallFrameCaptionSizing.bmp",
+      "sizingmargins": "24, 37, 9, 8",
+      "contentmargins": "14, 14, 16, 0",
+      "sizingtype": "tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "transparent": "True",
+      "transparentcolor": "0 0 0"
+    },
+    "window.maxcaption": {
+      "imagefile": "Metallic\\FrameMaximized.bmp",
+      "sizingmargins": "28, 35, 9, 17",
+      "contentmargins": "1, 1, 1, 1",
+      "sizingtype": "Tile",
+      "imagelayout": "vertical",
+      "imagecount": "2",
+      "captionmargins": "10, 3, 4, 2",
+      "contentalignment": "left",
+      "fillcolorhint": "164 163 190"
+    },
+    "window.maxcaption(active)": {
+      "textshadowtype": "Single"
+    },
+    "startpanel": {
+      "bgtype": "none",
+      "defaultpanesize": "0, 0, 380, 440"
+    },
+    "startpanel.userpane": {
+      "userpicture": "True",
+      "imagelayout": "Horizontal",
+      "textcolor": "255 255 255",
+      "font": "Franklin Gothic Medium, 14",
+      "defaultpanesize": "0, 0, 380, 64",
+      "bgtype": "Imagefile",
+      "transparent": "True",
+      "imagefile": "Metallic\\StartUserPanel.bmp",
+      "imagecount": "1",
+      "sizingmargins": "59, 60, 62, 0",
+      "sizingtype": "Stretch",
+      "textshadowoffset": "2, 2",
+      "textshadowcolor": "31 34 38",
+      "textshadowtype": "continuous",
+      "fillcolorhint": "206 206 219"
+    },
+    "startpanel.userpicture": {
+      "bgtype": "ImageFile",
+      "imagefile": "Metallic\\UserTileBackground.bmp",
+      "imagecount": "1",
+      "sizingtype": "Stretch",
+      "sizingmargins": "6, 10, 6, 10",
+      "contentmargins": "8, 6, 8, 6",
+      "transparent": "true",
+      "fillcolorhint": "240 241 245"
+    },
+    "startpanel.proglist": {
+      "defaultpanesize": "0, 0, 190, 306",
+      "contentmargins": "6 4 9 5",
+      "textcolor": "55 55 56",
+      "hottracking": "48 112 208",
+      "captiontext": "128 128 128",
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "2, 153, 3, 0",
+      "imagefile": "Metallic\\StartPanelMFUBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "240 241 245"
+    },
+    "startpanel.proglistseparator": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Metallic\\StartProgramsSeparator.bmp"
+    },
+    "startpanel.moreprograms": {
+      "defaultpanesize": "0, 0, 190, 30",
+      "textcolor": "55 55 56",
+      "hottracking": "48 112 208",
+      "font": "Tahoma, 8, Bold",
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "3, 0, 0, 1",
+      "contentmargins": "8, 8, 0, 6",
+      "imagefile": "Metallic\\StartPanelMoreProgBackGround.BMP",
+      "imagecount": "1"
+    },
+    "startpanel.moreprogramsarrow": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Metallic\\StartPanelMoreProgArrow.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "108 207 108"
+    },
+    "startpanel.moreprogramsarrow(hot)": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Metallic\\StartPanelMoreProgArrowHot.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "107 239 107"
+    },
+    "startpanel.placeslist": {
+      "defaultpanesize": "0, 0, 190, 336",
+      "contentmargins": "4 6 9 5",
+      "textcolor": "10 36 106",
+      "hottracking": "80 150 248",
+      "bgtype": "imageFile",
+      "imagefile": "Metallic\\StartPanelPlacesBackground.bmp",
+      "imagecount": "1",
+      "sizingmargins": "172, 7, 3, 1",
+      "sizingtype": "Stretch",
+      "fillcolorhint": "240 241 245"
+    },
+    "startpanel.placeslistseparator": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Metallic\\StartPlacesSeparator.bmp"
+    },
+    "startpanel.logoff": {
+      "contentmargins": "0, 0, 4, 2",
+      "defaultpanesize": "0, 0, 380, 40",
+      "textcolor": "0 0 0",
+      "hottracking": "255 255 255",
+      "bgtype": "imagefile",
+      "imagefile": "Metallic\\StartPanelLogoffBackground.bmp",
+      "imagecount": "1",
+      "sizingmargins": "49, 47, 0, 38",
+      "sizingtype": "Stretch",
+      "fillcolorhint": "177 183 187"
+    },
+    "startpanel.logoffbuttons": {
+      "bgtype": "ImageFile",
+      "transparent": "True",
+      "sizingtype": "TrueSize",
+      "imagefile": "Metallic\\StartPanelLogoffButtons.bmp",
+      "imagecount": "1"
+    },
+    "startpanel.logoffbuttons(hot)": {
+      "bgtype": "ImageFile",
+      "transparent": "True",
+      "sizingtype": "TrueSize",
+      "imagefile": "Metallic\\StartPanelLogoffButtonsHot.bmp",
+      "imagecount": "1"
+    },
+    "start::button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "6, 52, 13, 14",
+      "contentmargins": "10, 24, 2, 4",
+      "imagefile": "Metallic\\StartButton.bmp",
+      "imagecount": "3",
+      "imagelayout": "Vertical",
+      "transparent": "True",
+      "font": "Franklin Gothic Medium, 14, italic",
+      "textcolor": "255 255 255",
+      "textshadowoffset": "2, 2",
+      "textshadowcolor": "69 76 16",
+      "textshadowtype": "continuous",
+      "fillcolorhint": "74 153 73"
+    },
+    "taskbar::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "0 0 0"
+    },
+    "taskbar::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 16, 8",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "Metallic\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskbar::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 16, 8",
+      "contentmargins": "2, 0, 4, 4",
+      "imagefile": "Metallic\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskbarvert::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "0 0 0"
+    },
+    "taskbar::toolbar(checked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbar::toolbar(pressed)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbar::toolbar(hotchecked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar(checked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar(pressed)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar(hotchecked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbarvert::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 15, 3",
+      "contentmargins": "1, 1, 1, 1",
+      "imagefile": "Metallic\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskbarvert::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 15, 3",
+      "contentmargins": "1, 1, 1, 1",
+      "imagefile": "Metallic\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskbar::rebar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "0 0 0"
+    },
+    "taskbar::rebar.band": {
+      "bgtype": "None"
+    },
+    "taskbar::rebar.gripper": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 6, 4",
+      "contentmargins": "2, 1, 0, 0",
+      "imagefile": "Metallic\\TaskbarGripper.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "transparentcolor": "255 0 255",
+      "fillcolorhint": "119 119 92"
+    },
+    "taskbar::rebar.grippervert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "4, 6, 0, 0",
+      "contentmargins": "0, 0, 2, 1",
+      "imagefile": "Metallic\\TaskbarGripperVertical.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "transparentcolor": "255 0 255",
+      "fillcolorhint": "119 119 92"
+    },
+    "taskbar::rebar.chevron": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 16, 8",
+      "contentmargins": "0, 0, 0, 10",
+      "imagefile": "Metallic\\TaskBandButtonNoEdge.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "Metallic\\TaskbarChevron.bmp",
+      "glyphtransparent": "true",
+      "valign": "Top",
+      "fillcolorhint": "255 255 255"
+    },
+    "taskbar::rebar.chevronvert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "4, 4, 15, 3",
+      "contentmargins": "0, 0, 0, 0",
+      "imagefile": "Metallic\\TaskBandButtonNoEdgeVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "Metallic\\TaskbarChevronVert.bmp",
+      "glyphtransparent": "true",
+      "fillcolorhint": "255 255 255",
+      "transparentcolor": "255 0 255"
+    },
+    "taskbar.backgroundbottom": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 17, 12",
+      "imagefile": "Metallic\\TaskbarBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "168 169 191"
+    },
+    "taskbar.sizingbarbottom": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "Metallic\\TaskbarSizingBarBottom.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "166 167 193"
+    },
+    "taskbar.backgroundleft": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "17, 12, 0, 0",
+      "imagefile": "Metallic\\TaskbarBackgroundVertical.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskbar.sizingbarleft": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "Metallic\\TaskbarSizingBarLeft.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "166 167 193"
+    },
+    "taskbar.backgroundtop": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "0, 0, 17, 12",
+      "imagefile": "Metallic\\TaskbarBackground.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskbar.sizingbartop": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "imagefile": "Metallic\\TaskbarSizingBarTop.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "166 167 193"
+    },
+    "taskbar.backgroundright": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Tile",
+      "sizingmargins": "17, 12, 0, 0",
+      "imagefile": "Metallic\\TaskbarBackgroundVertical.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskbar.sizingbarright": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "imagefile": "Metallic\\TaskbarSizingBarRight.bmp",
+      "imagecount": "1",
+      "fillcolorhint": "166 167 193"
+    },
+    "taskband.flashbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "17, 6, 12, 12",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "Metallic\\TaskBandFlashButton.bmp",
+      "imagecount": "1",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "218 219 229",
+      "accentcolorhint": "255 192 91",
+      "transparentcolor": "255 0 255"
+    },
+    "taskband.flashbuttongroupmenu": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "17, 5, 12, 7",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "Metallic\\TaskBandFlashButtonGroupMenu.bmp",
+      "imagecount": "1",
+      "transparent": "True",
+      "fillcolorhint": "218 219 229",
+      "accentcolorhint": "255 192 91",
+      "transparentcolor": "255 0 0"
+    },
+    "taskband.groupcount": {
+      "font": "Tahoma, 8, Bold",
+      "textcolor": "255 116 66"
+    },
+    "taskband::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "64 64 64"
+    },
+    "taskband::toolbar(checked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskband::toolbar(pressed)": {
+      "textcolor": "255 255 255"
+    },
+    "taskband::toolbar(hotchecked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskband::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "17, 5, 15, 8",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "Metallic\\TaskBandButton.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "218 219 229"
+    },
+    "taskband::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "17, 5, 15, 8",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "Metallic\\TaskBandButton.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "218 219 229"
+    },
+    "taskbandvert::toolbar": {
+      "bgtype": "None",
+      "font": "Tahoma, 8",
+      "textcolor": "0 0 0"
+    },
+    "taskbandvert::toolbar(checked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbandvert::toolbar(pressed)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbandvert::toolbar(hotchecked)": {
+      "textcolor": "255 255 255"
+    },
+    "taskbandvert::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "16, 7, 12, 6",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "Metallic\\TaskBandButtonVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "218 219 229"
+    },
+    "taskbandvert::toolbar.dropdownbutton": {
+      "bgtype": "ImageFile",
+      "sizingtype": "Stretch",
+      "sizingmargins": "16, 7, 12, 6",
+      "contentmargins": "0, 4, 4, 4",
+      "imagefile": "Metallic\\TaskBandButtonVertical.bmp",
+      "imagecount": "6",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "fillcolorhint": "218 219 229"
+    },
+    "taskband::scrollbar.arrowbtn": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "0, 0, 0, 0",
+      "sizingtype": "Stretch",
+      "imagefile": "Metallic\\TaskbandScrollArrows.bmp",
+      "imagecount": "16",
+      "imagelayout": "Vertical",
+      "glyphtype": "ImageGlyph",
+      "glyphimagefile": "Metallic\\TaskBandScrollArrowGlyphs.bmp",
+      "glyphtransparent": "True",
+      "fillcolorhint": "119 119 92"
+    },
+    "taskband::scrollbar.thumbbtnhorz": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "4, 4, 0, 0",
+      "imagefile": "Metallic\\TaskBandScrollThumbHorizontal.bmp",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "119 119 92"
+    },
+    "taskband::scrollbar.gripperhorz": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Metallic\\TaskBandScrollThumbGripperHorizontal.BMP",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "imagecount": "4",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskband::scrollbar.thumbbtnvert": {
+      "bgtype": "ImageFile",
+      "sizingmargins": "5, 5, 5, 5",
+      "contentmargins": "0, 0, 4, 4",
+      "imagefile": "Metallic\\TaskBandScrollThumbVertical.bmp",
+      "imagecount": "4",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "transparentcolor": "255 0 255"
+    },
+    "taskband::scrollbar.grippervert": {
+      "bgtype": "ImageFile",
+      "sizingtype": "TrueSize",
+      "imagefile": "Metallic\\TaskBandScrollThumbGripperVertical.BMP",
+      "imagecount": "4",
+      "transparent": "True",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskband::scrollbar.lowertrackhorz": {
+      "bgtype": "imagefile",
+      "imagefile": "Metallic\\TaskBandScrollShaftHorizontal.bmp",
+      "sizingmargins": "0, 0, 1, 1",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "177 183 187"
+    },
+    "taskband::scrollbar.uppertrackhorz": {
+      "bgtype": "imagefile",
+      "imagefile": "Metallic\\TaskBandScrollShaftHorizontal.bmp",
+      "sizingmargins": "0, 0, 1, 1",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "240 241 245"
+    },
+    "taskband::scrollbar.lowertrackvert": {
+      "bgtype": "imagefile",
+      "imagefile": "Metallic\\TaskBandScrollShaftVertical.bmp",
+      "sizingmargins": "1, 1, 0, 0",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "240 241 245"
+    },
+    "taskband::scrollbar.uppertrackvert": {
+      "bgtype": "imagefile",
+      "imagefile": "Metallic\\TaskBandScrollShaftVertical.bmp",
+      "sizingmargins": "1, 1, 0, 0",
+      "imagecount": "4",
+      "imagelayout": "Vertical",
+      "fillcolorhint": "240 241 245"
+    },
+    "taskbandgroupmenu::toolbar": {
+      "bgtype": "ImageFile",
+      "imagefile": "Metallic\\TaskBandBackground.bmp",
+      "sizingtype": "Tile",
+      "sizingmargins": "3, 3, 3, 3",
+      "contentmargins": "9, 0, 0, 0",
+      "font": "Tahoma, 8",
+      "textcolor": "0 0 0",
+      "fillcolorhint": "177 183 187",
+      "accentcolorhint": "255 199 60"
+    },
+    "taskbandgroupmenu::toolbar.button": {
+      "bgtype": "ImageFile",
+      "sizingtype": "stretch",
+      "sizingmargins": "3, 3, 0, 0",
+      "contentmargins": "9, 0, 3, 3",
+      "imagefile": "Metallic\\TaskBandHover.bmp",
+      "imagecount": "3",
+      "imagelayout": "vertical",
+      "transparent": "True",
+      "transparentcolor": "255 0 0"
+    }
+  }
+}

@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Kezdés</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programok</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Számozás</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Kék</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Ezüst</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Olívazöld</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Gép</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Média</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Tevékenységi napló</value></data>

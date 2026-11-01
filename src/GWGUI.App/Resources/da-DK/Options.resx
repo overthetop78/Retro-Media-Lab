@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programmer</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Nummerering</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Blå</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Sølv</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Olivengrøn</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Maskiner</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Medier</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Aktivitetslog</value></data>

@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>ابدأ</value></data>
   <data name="Options.Themes.OS.Programs"><value>البرامج</value></data>
   <data name="Options.Themes.OS.Numbering"><value>الترقيم</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>الأزرق</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>سيلفر</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>الزيتون الأخضر</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>الآلات</value></data>
   <data name="Options.Themes.Orbit.Media"><value>وسائط الإعلام</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>سجل الأنشطة</value></data>

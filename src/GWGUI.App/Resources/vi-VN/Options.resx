@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Chạy</value></data>
   <data name="Options.Themes.OS.Programs"><value>Chương trình</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Đánh số</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Xanh nước biển</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Bạc</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Xanh lá cây ô - li - ve</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Máy</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Vật chứa</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Bản ghi hoạt động</value></data>

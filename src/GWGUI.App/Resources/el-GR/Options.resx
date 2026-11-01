@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Έναρξη</value></data>
   <data name="Options.Themes.OS.Programs"><value>Προγράμματα</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Αρίθμηση</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Μπλε</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Ασημένιο</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Ελιές πράσινες</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Μηχανές</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Μέσα μαζικής ενημέρωσης</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Ημερολόγιο δραστηριότητας</value></data>

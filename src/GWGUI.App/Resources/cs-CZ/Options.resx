@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Spustit</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programy</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Číslování</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Modrá</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Stříbro</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Zelená</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Stroje</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Média</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Zápis činností</value></data>

@@ -35,7 +35,7 @@ public sealed class Windows31ThemeOptionsTests(StaExecutionScenarios sta)
         Assert.Equal(Visibility.Collapsed, variants.Visibility);
         var editions = Field<ComboBox>(view, "EditionChoices");
         var palettes = Field<ComboBox>(view, "EditionAppearance");
-        Assert.Equal(2, editions.Items.Count);
+        Assert.Equal(3, editions.Items.Count);
         Assert.Equal(23, palettes.Items.Count);
         palettes.SelectedIndex = Windows31PaletteCatalog.All.ToList().FindIndex(palette => palette.Id == Windows31ColorScheme.Bordeaux);
         Field<Button>(view, "ChooseAction").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

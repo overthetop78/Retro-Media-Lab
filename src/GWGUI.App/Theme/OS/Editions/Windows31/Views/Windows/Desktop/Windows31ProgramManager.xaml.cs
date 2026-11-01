@@ -111,6 +111,12 @@ internal partial class Windows31ProgramManager : UserControl, IDisposable
     {
         sharedMenus.Add(new Windows31MenuBindings(source.OptionsMenuItem, SharedOptions, source.EmulationMenuItem));
         sharedMenus.Add(new Windows31MenuBindings(source.HelpMenuItem, SharedHelp));
+        var themes = new MenuItem();
+        themes.SetBinding(HeaderedItemsControl.HeaderProperty, LocExtension.CreateBinding("Options.Themes.Title"));
+        RoutedEventHandler choose = (_, _) => source.RequestThemes();
+        themes.Click += choose;
+        MenuBar.Items.Add(themes);
+        groupCommands.Add((themes, choose));
     }
 
     internal event EventHandler? CloseRequested;

@@ -61,6 +61,7 @@ public partial class MainWindow : Window
     private void ConnectMainMenu()
     {
         ApplicationMenu.PreferencesRequested += Preferences_Click;
+        ApplicationMenu.ThemesRequested += Themes_Click;
         ApplicationMenu.UpdatesRequested += (_, _) => _navigation.ShowUpdates();
         ApplicationMenu.EmulationPreferencesRequested += (_, _) => _navigation.ShowEmulationPreferences(_settings);
         ApplicationMenu.EmulationModuleRequested += moduleId => _navigation.ShowEmulationModuleOptions(_settings, moduleId);

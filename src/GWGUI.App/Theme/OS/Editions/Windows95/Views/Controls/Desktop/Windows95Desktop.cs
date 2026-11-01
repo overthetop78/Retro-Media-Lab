@@ -21,6 +21,7 @@ internal sealed class Windows95Desktop : UserControl, IDisposable
     private readonly List<Action> detachLaunchers = [];
     private readonly List<Windows95MenuMirror> menuMirrors = [];
     private bool disposed;
+    internal event EventHandler? ThemesRequested;
 
     internal Windows95Desktop(IEnumerable<Windows95LauncherDefinition> launchers)
     {
@@ -90,6 +91,12 @@ internal sealed class Windows95Desktop : UserControl, IDisposable
             menuMirrors.Add(new Windows95MenuMirror(source, target));
             startMenu.Items.Add(target);
         }
+        var themes = new MenuItem();
+        themes.SetBinding(HeaderedItemsControl.HeaderProperty, LocExtension.CreateBinding("Options.Themes.Title"));
+        RoutedEventHandler choose = (_, _) => { if (!disposed) ThemesRequested?.Invoke(this, EventArgs.Empty); };
+        themes.Click += choose;
+        detachDesktop.Add(() => themes.Click -= choose);
+        startMenu.Items.Add(themes);
     }
 
     internal void SetLaunchers(IEnumerable<Windows95LauncherDefinition> definitions)
@@ -193,6 +200,7 @@ internal sealed class Windows95Desktop : UserControl, IDisposable
             detachDesktop.Clear();
             foreach (var mirror in menuMirrors) mirror.Dispose();
             menuMirrors.Clear();
+            ThemesRequested = null;
             startMenu.Items.Clear();
             startMenu.Resources.MergedDictionaries.Clear();
             icons.Children.Clear();

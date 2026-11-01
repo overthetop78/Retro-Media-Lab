@@ -236,6 +236,8 @@ public partial class MainWindow : Window
     private void CaptureWriteSettings() => _writeTab.CaptureSettings();
 
     private async void Preferences_Click(object sender, RoutedEventArgs e) => await _lifecycle.ShowPreferencesAsync();
+    private async void Themes_Click(object sender, RoutedEventArgs e) =>
+        await _lifecycle.ShowPreferencesAsync(GWGUI.App.Enums.Services.Navigation.PreferencesSection.Themes);
 
     internal void RefreshLocalizedContent()
     {
