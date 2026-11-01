@@ -126,4 +126,5 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programs</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numbering</value></data>
+  <data name="Options.Themes.OS.Windows95"><value>Windows 95</value></data>
 </root>

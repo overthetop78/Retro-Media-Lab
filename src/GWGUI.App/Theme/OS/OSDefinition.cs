@@ -1,5 +1,6 @@
 ﻿using GWGUI.App.Contracts.Theming;
 using GWGUI.App.Theme.OS.Editions.Windows31;
+using GWGUI.App.Theme.OS.Editions.Windows95;
 using GWGUI.Infrastructure.Settings;
 
 namespace GWGUI.App.Theme.OS;
@@ -13,7 +14,7 @@ internal static class OSDefinition
     internal static ThemeDefinition Definition { get; } = new(AppThemeDesign.OS, NameResource, DescriptionResource,
         [AppTheme.Light], AppTheme.Light)
     {
-        Editions = [Windows31Edition.Definition],
+        Editions = [Windows31Edition.Definition, Windows95Edition.Definition],
         EditionHeadingResourceKey = EditionResource
     };
 }

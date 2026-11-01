@@ -224,3 +224,10 @@ Chaque ICO conserve les trois images 32×32 originales du groupe : 8 couleurs, m
 | `message-information.ico` | 32516 | `bc8446c1da29067873e9dc3cea8ebd62a8ad9219a47cfe213d164676563f0f56` |
 
 L’image JSON d’extraction temporaire est supprimée après reconstruction.
+
+
+## Windows 95 — déclinaison suivante de OS
+
+Références : le [guide Microsoft de février 1995](https://www.aoisnow.net/blog/wp-content/uploads/2019/10/Microsoft_WindowsGuidelines.pdf), chapitres 3 et 6, décrit bureau, barre des tâches, activation et commandes des fenêtres. Ce document est une préversion : le rendu final doit être comparé à [Windows 95 RTM 4.00.950](https://www.pcjs.org/software/pcx86/sys/windows/win95/4.00.950/), pas déduit uniquement de ses illustrations.
+
+La déclinaison remplacera le gestionnaire de programmes par un bureau avec lancement et barre des tâches. Ses fenêtres utiliseront les états natifs WPF ; leur contenu conservera les commandes, données et services RML. Le premier lot concerne le cadre. Les ressources historiques, le bureau et toutes les vues doivent être terminés avant l’ajout au sélecteur. Le build Windows 3.1 livré reste inchangé pendant cette réalisation.

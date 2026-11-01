@@ -1,0 +1,14 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="Windows95Controls.xaml"/></ResourceDictionary.MergedDictionaries>
+ <SolidColorBrush x:Key="Windows95.Visualization.Window" Color="White"/>
+ <SolidColorBrush x:Key="Windows95.Visualization.Frame" Color="#808080"/>
+ <Style x:Key="Windows95.Visualization.TrackButton" TargetType="Button" BasedOn="{StaticResource Windows95Button}">
+  <Setter Property="BorderBrush" Value="Black"/>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+   <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+    <Border x:Name="Face" BorderBrush="White" BorderThickness="1,1,0,0"><Border x:Name="Shadow" BorderBrush="#808080" BorderThickness="0,0,1,1" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"><ContentPresenter.Resources><Style TargetType="TextBlock" BasedOn="{StaticResource Windows95ContentText}"/><Style TargetType="AccessText" BasedOn="{StaticResource Windows95ContentAccessText}"/></ContentPresenter.Resources></ContentPresenter></Border></Border>
+   </Border>
+   <ControlTemplate.Triggers><Trigger Property="IsPressed" Value="True"><Setter TargetName="Face" Property="BorderBrush" Value="#808080"/><Setter TargetName="Shadow" Property="BorderBrush" Value="White"/></Trigger></ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+</ResourceDictionary>

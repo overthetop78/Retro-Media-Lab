@@ -1,0 +1,52 @@
+<UserControl x:Class="GWGUI.App.Theme.OS.Editions.Windows95.Views.ToolsView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions" FontFamily="Microsoft Sans Serif" FontSize="11" Background="#C0C0C0" Foreground="Black">
+ <UserControl.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
+  <ResourceDictionary Source="../../../Styles/Windows95Desktop.xaml"/>
+  <ResourceDictionary Source="../../../Styles/Windows95Controls.xaml"/>
+ </ResourceDictionary.MergedDictionaries></ResourceDictionary></UserControl.Resources>
+ <DockPanel>
+  <Menu DockPanel.Dock="Top"><MenuItem Header="{l:Loc Options.Themes.OS.File}"><MenuItem x:Name="ExecuteCommand"/><Separator/><MenuItem x:Name="CloseCommand" Header="{l:Loc Common.Close}" Click="CloseClick"/></MenuItem></Menu>
+  <Border DockPanel.Dock="Bottom" BorderBrush="#808080" BorderThickness="1,1,0,0" Padding="3" Margin="2"><TextBlock x:Name="Hardware" TextTrimming="CharacterEllipsis"/></Border>
+  <Grid Margin="6">
+   <Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="10"/><ColumnDefinition/></Grid.ColumnDefinitions>
+   <ListBox x:Name="Modes" SelectionMode="Single" SelectionChanged="ModeChanged"><ListBoxItem Content="{l:Loc Tools.Erase}"/><ListBoxItem Content="{l:Loc Tools.Clean}"/></ListBox>
+   <DockPanel Grid.Column="2">
+    <DockPanel.Style><Style TargetType="DockPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=Modes}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></DockPanel.Style>
+    <Button x:Name="EraseExecute" DockPanel.Dock="Bottom" MinWidth="90" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+     <Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="140"/></Grid.ColumnDefinitions>
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+      <TextBlock Grid.ColumnSpan="2" Text="{l:Loc Tools.EraseWarning}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+      <CheckBox x:Name="EraseTracksEnabled" Grid.Row="1" Content="{l:Loc Tools.LimitTracks}" VerticalAlignment="Center"/>
+      <TextBox x:Name="EraseTracks" Grid.Row="1" Grid.Column="1" Margin="8,2,0,2"/>
+      <CheckBox x:Name="EraseRevolutionsEnabled" Grid.Row="2" Content="{l:Loc Tools.Revolutions}" VerticalAlignment="Center"/>
+      <TextBox x:Name="EraseRevolutions" Grid.Row="2" Grid.Column="1" Margin="8,2,0,2"/>
+      <Label Grid.Row="3" Content="{l:Loc Common.ExpertArguments}" Target="{Binding ElementName=EraseArguments}" Margin="0,8,0,2"/>
+      <TextBox x:Name="EraseArguments" Grid.Row="4" Grid.ColumnSpan="2"/>
+     </Grid>
+    </ScrollViewer>
+   </DockPanel>
+   <DockPanel Grid.Column="2">
+    <DockPanel.Style><Style TargetType="DockPanel"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=Modes}" Value="1"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></DockPanel.Style>
+    <Button x:Name="CleanExecute" DockPanel.Dock="Bottom" MinWidth="90" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+     <Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="140"/></Grid.ColumnDefinitions>
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+      <TextBlock Grid.ColumnSpan="2" Text="{l:Loc Tools.CleanWarning}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+      <CheckBox x:Name="CleanCylindersEnabled" Grid.Row="1" Content="{l:Loc Tools.Cylinders}" VerticalAlignment="Center"/>
+      <TextBox x:Name="CleanCylinders" Grid.Row="1" Grid.Column="1" Margin="8,2,0,2"/>
+      <CheckBox x:Name="CleanPassesEnabled" Grid.Row="2" Content="{l:Loc Tools.Passes}" VerticalAlignment="Center"/>
+      <TextBox x:Name="CleanPasses" Grid.Row="2" Grid.Column="1" Margin="8,2,0,2"/>
+      <CheckBox x:Name="CleanLingerEnabled" Grid.Row="3" Content="{l:Loc Tools.Linger}" VerticalAlignment="Center"/>
+      <TextBox x:Name="CleanLinger" Grid.Row="3" Grid.Column="1" Margin="8,2,0,2"/>
+      <Label Grid.Row="4" Content="{l:Loc Common.ExpertArguments}" Target="{Binding ElementName=CleanArguments}" Margin="0,8,0,2"/>
+      <TextBox x:Name="CleanArguments" Grid.Row="5" Grid.ColumnSpan="2"/>
+     </Grid>
+    </ScrollViewer>
+   </DockPanel>
+  </Grid>
+ </DockPanel>
+</UserControl>

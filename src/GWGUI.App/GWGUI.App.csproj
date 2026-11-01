@@ -51,6 +51,7 @@
     <Resource Include="Theme\**\*.png" />
     <Resource Include="Theme\OS\Editions\Windows31\Assets\Fonts\*.ttf" />
     <Resource Include="Theme\OS\Editions\Windows31\Assets\Icons\*.ico" />
+    <Resource Include="Theme\OS\Editions\Windows95\Assets\Icons\*.ico" />
     <Resource Include="Theme\OS\Editions\Windows31\Assets\Images\*.bmp" />
     <EmbeddedResource Include="Theme\OS\Editions\Windows31\Assets\ColorSchemes.json" LogicalName="GWGUI.App.Theme.OS.Windows31.ColorSchemes.json" />
     <Content Include="Assets\Controllers\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
