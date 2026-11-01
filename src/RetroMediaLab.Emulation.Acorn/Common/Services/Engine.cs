@@ -218,6 +218,8 @@ internal sealed class Engine
     }
 
     public ValueTask<EmulationEmulatorInstallation> GetEmulatorInstallationAsync(string machineId, CancellationToken cancellationToken = default) => PreferredAdapter(machineId).GetInstallationAsync(_managementContext, cancellationToken);
+    public ValueTask<EmulationEmulatorInstallation> GetEmulatorInstallationAsync(IEmulationConfiguration configuration, CancellationToken cancellationToken = default) =>
+        ManagementAdapter(Require(configuration)).GetInstallationAsync(_managementContext, cancellationToken);
     public async ValueTask<IReadOnlyList<EmulationEmulatorInstallation>> GetEmulatorInstallationsAsync(IEmulationConfiguration configuration, CancellationToken cancellationToken = default)
     {
         var results = new List<EmulationEmulatorInstallation>();
@@ -235,12 +237,16 @@ internal sealed class Engine
         return ValueTask.FromResult<IEmulationConfiguration>(adapter.SelectConfiguration(current with { Core = Enum.Parse<Emulator>(adapter.EmulatorKey) }));
     }
     public ValueTask<IReadOnlyList<EmulationEmulatorRelease>> FindEmulatorReleasesAsync(string machineId, CancellationToken cancellationToken = default) => PreferredAdapter(machineId).FindReleasesAsync(_managementContext, cancellationToken);
+    public ValueTask<IReadOnlyList<EmulationEmulatorRelease>> FindEmulatorReleasesAsync(IEmulationConfiguration configuration, CancellationToken cancellationToken = default) =>
+        ManagementAdapter(Require(configuration)).FindReleasesAsync(_managementContext, cancellationToken);
     public ValueTask<string> InstallEmulatorAsync(string machineId, EmulationEmulatorRelease release, IProgress<double>? progress = null, CancellationToken cancellationToken = default) => PreferredAdapter(machineId).InstallAsync(_managementContext, release, progress, cancellationToken);
+    public ValueTask<string> InstallEmulatorAsync(IEmulationConfiguration configuration, EmulationEmulatorRelease release, IProgress<double>? progress = null, CancellationToken cancellationToken = default) =>
+        ManagementAdapter(Require(configuration)).InstallAsync(_managementContext, release, progress, cancellationToken);
 
     public async ValueTask<EmulationMachineRuntime> CreateRuntimeAsync(IEmulationConfiguration configuration, EmulationRuntimeServices services, CancellationToken cancellationToken = default)
     {
         var current = Require(configuration);
-        var adapter = PreferredAdapter(current.MachineId);
+        var adapter = SelectedAdapter(current) ?? throw new ArgumentException(nameof(configuration));
         var corePath = await adapter.FindInstalledCorePathAsync(_managementContext, cancellationToken).ConfigureAwait(false) ?? throw CommonCoreHostFunctions.Messages.EmulatorNotInstalled(adapter.EmulatorId);
         cancellationToken.ThrowIfCancellationRequested();
         current = await adapter.PrepareRuntimeConfigurationAsync(current, services.ConvertedMediaDirectory).ConfigureAwait(false);
@@ -262,7 +268,10 @@ internal sealed class Engine
             PrepareMediaAsync: (media, token) => { token.ThrowIfCancellationRequested(); return adapter.PrepareMediaAsync(media, services.ConvertedMediaDirectory); });
     }
 
-    private IEmulatorAdapter PreferredAdapter(string machineId) => this.Adapters(ModelCatalog.Parse(machineId).ToString()).SingleOrDefault() ?? throw new ArgumentOutOfRangeException(nameof(machineId));
+    private IEmulatorAdapter PreferredAdapter(string machineId) => Adapter(ConfigurationFunctions.DefaultEmulator(ModelCatalog.Parse(machineId)));
+
+    private IEmulatorAdapter ManagementAdapter(MachineConfiguration configuration) =>
+        SelectedAdapter(configuration) ?? PreferredAdapter(configuration.MachineId);
     private static MachineConfiguration Require(IEmulationConfiguration configuration) => configuration as MachineConfiguration ?? throw new ArgumentException(nameof(configuration));
     /// <summary>Résout l’adaptateur sélectionné sans imposer un cœur aux configurations encore incomplètes.</summary>
     /// <param name="configuration">Configuration empruntée portant la sélection enregistrée.</param>

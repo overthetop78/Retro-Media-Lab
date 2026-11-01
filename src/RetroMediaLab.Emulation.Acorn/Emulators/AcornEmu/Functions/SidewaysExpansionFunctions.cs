@@ -24,7 +24,7 @@ internal static class SidewaysExpansionFunctions
         if (value == C.None) return new();
         if (C.AriesModels.TryGetValue(value, out var ariesRam))
         {
-            if (BbcMicroMemoryFunctions.ModelABytes(configuration) != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentException(ExceptionText.Get(M.RequiresMainRam), nameof(configuration));
+            if (BbcMicroMemoryFunctions.MainBytes(configuration) != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentException(ExceptionText.Get(M.RequiresMainRam), nameof(configuration));
             return new(AriesB12: true, AriesRamBytes: ariesRam);
         }
         foreach (var ramRom in new[] { true, false })
@@ -57,7 +57,7 @@ internal static class SidewaysExpansionFunctions
             for (var count = 1; count <= C.SocketCount; count++)
                 choices.Add(new((ramRom ? C.RamRomPrefix : C.EpromPrefix) + count.ToString(CultureInfo.InvariantCulture), string.Empty,
                     string.Format(CultureInfo.InvariantCulture, C.AssemblyDisplayFormat, ramRom ? C.RamRomName : C.EpromName, count), ramRom ? count * C.RamBytesPerModule : 0));
-        if (BbcMicroMemoryFunctions.ModelABytes(configuration) == BbcMicroModelConstants.ThirtyTwoKibibytes)
+        if (BbcMicroMemoryFunctions.MainBytes(configuration) == BbcMicroModelConstants.ThirtyTwoKibibytes)
             foreach (var model in C.AriesModels)
                 choices.Add(new(model.Key, string.Empty, string.Format(CultureInfo.InvariantCulture, C.AriesDisplayFormat, model.Value / SettingsConstants.Kibibyte), model.Value));
         return new(C.ExtensionGroup, EmulationMachineTab.Extensions, C.ExtensionGroup,

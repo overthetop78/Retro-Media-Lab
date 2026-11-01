@@ -12,6 +12,13 @@ internal static class BbcMicroModelConstants
     internal const string ModelBPlusDisplayNameResource = "Emulation.Acorn.Model.BbcMicroModelBPlus";
     internal const string ModelBPlus128DisplayNameResource = "Emulation.Acorn.Model.BbcMicroModelBPlus128";
     internal const string Master128DisplayNameResource = "Emulation.Acorn.Model.BbcMaster128";
+    internal const int CyclesPerLine = 128;
+    internal const int LinesPerFrame = 312;
+    internal const int CyclesPerFrame = CyclesPerLine * LinesPerFrame;
+    internal const string SixteenKibibytesValue = "16";
+    internal const string ThirtyTwoKibibytesValue = "32";
+    internal const string SixteenKibibytesDisplay = "16 KiB";
+    internal const string ThirtyTwoKibibytesDisplay = "32 KiB";
     internal const long CpuFrequencyHz = 2_000_000;
     internal const long SixteenKibibytes = 16 * 1024;
     internal const long ThirtyTwoKibibytes = 32 * 1024;

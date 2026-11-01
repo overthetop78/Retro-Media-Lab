@@ -1,7 +1,7 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelA.Services;
+using ModelAMachine = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.BbcMicroMachine;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Constants;

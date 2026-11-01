@@ -4,17 +4,18 @@ using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
+using Io = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.BbcMicroIoConstants;
 using CassetteConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.CassetteConstants;
 using BbcCassetteFunctions = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Functions.CassetteFunctions;
 using DiskConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.DiskConstants;
 
-namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelA.Services;
+namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
-/// <summary>Carte BBC Micro Model A : 16 ou 32 Kio physiques, ROM externes, VIA système et registres vidéo.</summary>
+/// <summary>Carte partagée BBC Micro : RAM, ROM, VIA système et périphériques communs aux profils A et B.</summary>
 /// <remarks>Les composants ne connaissent pas les services de l'application. Cette carte possède leur câblage et leur horloge.
 /// À 16 Kio, les adresses 4000–7FFF sont des alias de la RAM basse ; l'extension 32 Kio les rend indépendantes.
 /// Le bus CPU et la vidéo partagent la même mémoire physique.</remarks>
-internal sealed class ModelAMachine : ICpuBus, IAcornMachine
+internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
 {
     private readonly byte[] _ram;
     private readonly MemoryExtension _memoryExtension;
@@ -24,17 +25,19 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
     private readonly Winchester _winchester;
     private readonly Econet _econet;
     private readonly Via6522 _via = new();
+    private readonly Via6522? _userVia;
+    private readonly Adc7002? _adc;
     private readonly Keyboard _keyboard = new();
     private readonly Audio _audio = new();
     private readonly Acia6850 _acia = new(CassetteConstants.CpuClock, CassetteConstants.SerialClock);
     private readonly Cassette _cassette;
     private byte _latch = 255;
     private int _keyboardColumn;
-    private long _ticks, _nextFrame = BbcMicroModelAConstants.CyclesPerFrame;
+    private long _ticks, _nextFrame = BbcMicroModelConstants.CyclesPerFrame;
     private bool _break;
     internal Cpu6502 Cpu { get; }
     internal Video Video { get; }
-    public bool Irq => _via.Irq || _acia.Irq || _winchester.Irq;
+    public bool Irq => _via.Irq || _userVia?.Irq == true || _acia.Irq || _winchester.Irq;
     public bool Nmi => _disks.Nmi || _econet.Nmi;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get => _econet.FrameTransmitted; set => _econet.FrameTransmitted = value; }
     public Action<int>? NetworkPoll { get; set; }
@@ -66,7 +69,7 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
     public void ConfigureCassette(EmulationCassetteSettings settings) => _cassette.Configure(settings);
     public void EjectCassette() => _cassette.Eject();
 
-    internal ModelAMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null)
+    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false)
     {
         if (mos.Length != BbcMicroFirmwareConstants.BankSize || basic.Length != BbcMicroFirmwareConstants.BankSize) throw new ArgumentException("MOS et BASIC doivent chacun contenir 16 384 octets.");
         if (memoryBytes != BbcMicroModelConstants.SixteenKibibytes && memoryBytes != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentOutOfRangeException(nameof(memoryBytes));
@@ -82,7 +85,10 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
         Video = new Video(_ram, characters);
         _cassette = new Cassette(_acia);
         _via.ReadPortA = () => (_latch & 8) == 0 ? _keyboard.Read(_via.OutputA) : (byte)255;
-        _via.ReadPortB = () => 255;
+        _userVia = expandedIo ? new Via6522() : null;
+        _adc = expandedIo ? new Adc7002(_via.SetCb1) : null;
+        _adc?.SetInput(EmulationInputSnapshot.Empty.Controllers);
+        _via.ReadPortB = () => _adc?.FireInputs ?? Io.OpenInputs;
         _via.WritePortB = WriteLatch;
         _via.WritePortA = value => { if ((_latch & 1) == 0) _audio.Write(value); };
         Cpu = new Cpu6502(this);
@@ -90,7 +96,7 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
     }
     public void Reset(bool cold)
     {
-        if (cold) { Array.Clear(_ram); _via.Reset(); Video.Reset(); _audio.Reset(); _cassette.ResetHardware(); _roms.Reset(); _latch = 255; }
+        if (cold) { Array.Clear(_ram); _via.Reset(); _userVia?.Reset(); _adc?.Reset(); Video.Reset(); _audio.Reset(); _cassette.ResetHardware(); _roms.Reset(); _latch = 255; }
         _memoryExtension.Reset(cold);
         _disks.Reset();
         _winchester.Reset();
@@ -100,6 +106,7 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
     public void SetInput(EmulationInputSnapshot snapshot)
     {
         _keyboard.SetInput(snapshot.Keys, snapshot.HostCharacters);
+        _adc?.SetInput(snapshot.Controllers);
         if (_keyboard.BreakPressed && !_break) Reset(false);
         _break = _keyboard.BreakPressed;
     }
@@ -112,7 +119,7 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
     public byte[] RunFrame()
     {
         while (_ticks < _nextFrame) { if (!BbcCassetteFunctions.TryDirectLoad(Cpu, this, _cassette)) Cpu.Step(); }
-        _nextFrame += BbcMicroModelAConstants.CyclesPerFrame;
+        _nextFrame += BbcMicroModelConstants.CyclesPerFrame;
         return Video.Render();
     }
     /// <summary>La carte remet ses échantillons au cœur ; le Common possède la sortie audio physique.</summary>
@@ -123,6 +130,7 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
         if ((_ticks & 127) == 0) NetworkPoll?.Invoke(128);
         _audio.Tick();
         _cassette.Tick();
+        _adc?.Tick();
         _disks.Tick();
         _winchester.Tick();
         _econet.Tick();
@@ -132,6 +140,7 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
         if ((_ticks & 1) == 0)
         {
             _via.Tick();
+            _userVia?.Tick();
             if ((_latch & 8) != 0) _keyboardColumn = (_keyboardColumn + 1) & 15;
             else _keyboardColumn = _via.OutputA & 15;
             _via.SetKeyboardLine(_keyboard.ColumnPressed(_keyboardColumn));
@@ -150,6 +159,8 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
         if (address < 0xfe20) return _econet.ReadStation();
         if (address < 0xfe28) { _econet.EnableNmi(); return 0xfe; }
         if (address is >= 0xfe40 and < 0xfe60) return _via.Read(address & 15);
+        if (address is >= Io.UserViaStart and < Io.UserViaEnd) return _userVia?.Read(address & Io.UserViaRegisterMask) ?? Io.UnconnectedBus;
+        if (address is >= Io.AdcStart and < Io.AdcEnd) return _adc?.Read(address & Io.RegisterMask) ?? Io.UnconnectedBus;
         if (address is >= DiskConstants.ControllerStart and < DiskConstants.ControllerEnd) return _disks.Read(address);
         if (address is >= 0xfea0 and < 0xfec0) return _econet.Read(address);
         return 0xfe;
@@ -170,6 +181,8 @@ internal sealed class ModelAMachine : ICpuBus, IAcornMachine
         else if (address is >= 0xfe20 and < 0xfe30) Video.WriteUla(address, value);
         else if (address is >= DiskConstants.RomSelectStart and < DiskConstants.RomSelectEnd) _roms.Select(value);
         else if (address is >= 0xfe40 and < 0xfe60) _via.Write(address & 15, value);
+        else if (address is >= Io.UserViaStart and < Io.UserViaEnd) _userVia?.Write(address & Io.UserViaRegisterMask, value);
+        else if (address is >= Io.AdcStart and < Io.AdcEnd) _adc?.Write(address & Io.RegisterMask, value);
         else if (address is >= DiskConstants.ControllerStart and < DiskConstants.ControllerEnd) _disks.Write(address, value);
         else if (address is >= 0xfea0 and < 0xfec0) _econet.Write(address, value);
     }

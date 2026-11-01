@@ -120,7 +120,7 @@ public sealed class AcornEmuVideoTests
     [Fact]
     public void VideoOutputCanChangeThroughTheRuntimeWithoutResettingTheMachine()
     {
-        var machine = new RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelA.Services.ModelAMachine(new byte[16384], new byte[16384]);
+        var machine = new RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.BbcMicroMachine(new byte[16384], new byte[16384]);
         machine.Write(0x1234, 0x56);
         var pc = machine.Cpu.PC; var cycles = machine.Cpu.Cycles;
         RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces.IAcornMachine runtime = machine;

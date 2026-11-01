@@ -1,7 +1,7 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.MemoryExtensionConstants;
 
-namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelA.Services;
+namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
 /// <summary>RAM parallèle Aries B20 ou Watford 32K ; la vidéo reste raccordée à la RAM BBC.</summary>
 internal sealed class MemoryExtension

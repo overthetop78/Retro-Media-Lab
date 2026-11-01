@@ -1,3 +1,4 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using System.Reflection;
 using RetroMediaLab.Emulation;
 using RetroMediaLab.Tests.Application.TestInfrastructure;
@@ -5,7 +6,7 @@ using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
 using Storage = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelA.Services;
+using ModelAMachine = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.BbcMicroMachine;
 using RetroMediaLab.Emulation.Enums;
 using BbcAudio = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.Audio;
 using RetroMediaLab.Emulation.Contracts;

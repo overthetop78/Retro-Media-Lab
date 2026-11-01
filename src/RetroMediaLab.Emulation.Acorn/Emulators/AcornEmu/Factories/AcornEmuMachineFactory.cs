@@ -21,6 +21,10 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     public string EmulatorKey => Emulator.AcornEmu.ToString();
     public EmulationEmulatorDefinition Definition { get; } = new(EmulatorConstants.Id, EmulatorConstants.Name, "Emulation.Emulator.acornemu.Description", NativeModelCatalog.All.Select(model => model.Model.ToString()).ToHashSet(StringComparer.Ordinal));
     public bool SupportsNoContent => true;
+    public IReadOnlyDictionary<string, string> GetDefaultOptions(MachineConfiguration configuration) =>
+        configuration.Model == MachineModel.BbcMicroModelB
+            ? new Dictionary<string, string> { [SettingsConstants.MainMemory] = BbcMicroModelConstants.ThirtyTwoKibibytesValue }
+            : new Dictionary<string, string>();
     private static string AssemblyPath => typeof(AcornEmuMachineFactory).Assembly.Location;
     public bool TryHandleHostCommand(IReadOnlyList<string> arguments, out int exitCode) { exitCode = 0; return false; }
     public ValueTask<EmulationEmulatorInstallation> GetInstallationAsync(EmulatorManagementContext context, CancellationToken cancellationToken)
@@ -89,7 +93,7 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
         _ = MemoryExtensionFunctions.Read(configuration);
         _ = SidewaysExpansionFunctions.Read(configuration);
         if (EmulationCassetteSettings.Read(configuration.Options).BaudRate is not (0 or 300 or 1200)) throw new ArgumentOutOfRangeException(nameof(configuration));
-        _ = BbcMicroMemoryFunctions.ModelABytes(configuration);
+        _ = BbcMicroMemoryFunctions.MainBytes(configuration);
         if (configuration.Options.TryGetValue(CassetteConstants.ConnectedOption, out var connected) && !bool.TryParse(connected, out _)) throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(configuration));
         if (!EmulatorConstants.VideoOutputs.Contains(configuration.Options.GetValueOrDefault(EmulatorConstants.VideoOutput, EmulatorConstants.UhfOutput), StringComparer.Ordinal)) throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(configuration));
     }
@@ -111,6 +115,8 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     }
 
     public IReadOnlyList<FirmwareSlot> GetFirmwareSlots(MachineConfiguration configuration) => BbcMicroModelCatalog.All.Single(model => model.Model == configuration.Model).Firmware
+        .Where(category => category != FirmwareCategory.DiscFilingSystem)
+        .Append(FirmwareCategory.CharacterGenerator).Distinct()
         .Where(category => FirmwareFunctions.Field(category) is not null)
         .Select(category => new FirmwareSlot(FirmwareFunctions.Field(category)!, "", category switch { FirmwareCategory.OperatingSystem => EmulatorConstants.SystemFirmwareLabel, FirmwareCategory.CharacterGenerator => "Emulation.Acorn.Firmware.CharacterGenerator", _ => "Emulation.Firmware.Rom.Basic" }, IsRequired: true, MachineIds: new HashSet<string> { configuration.Model.ToString() }))
         .Concat(FloppyExtensionFunctions.Slots(configuration))
@@ -152,8 +158,10 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
             FloppyExtensionFunctions.Describe(configuration),
             new(SettingsConstants.MainMemory, EmulationMachineTab.Ram, SettingsConstants.ResourceMemory,
                 [new(SettingsConstants.MainMemory, EmulationMachineTab.Ram, SettingsConstants.MainMemory, SettingsConstants.ResourceMemory, EmulationSettingsEditor.Selection,
-                    configuration.Options.GetValueOrDefault(SettingsConstants.MainMemory, BbcMicroModelAConstants.StandardMemoryKib),
-                    [new(BbcMicroModelAConstants.StandardMemoryKib, string.Empty, "16 KiB"), new(BbcMicroModelAConstants.ExpandedMemoryKib, string.Empty, "32 KiB")], IsEnabled: !MemoryExtensionFunctions.Read(configuration).Enabled && !SidewaysExpansionFunctions.Read(configuration).AriesB12, RequiresRestart: true, RefreshSettingsOnChange: true)]),
+                    configuration.Options.GetValueOrDefault(SettingsConstants.MainMemory, configuration.Model == MachineModel.BbcMicroModelB ? BbcMicroModelConstants.ThirtyTwoKibibytesValue : BbcMicroModelAConstants.StandardMemoryKib),
+                    configuration.Model == MachineModel.BbcMicroModelB
+                        ? [new(BbcMicroModelConstants.ThirtyTwoKibibytesValue, string.Empty, BbcMicroModelConstants.ThirtyTwoKibibytesDisplay)]
+                        : [new(BbcMicroModelAConstants.StandardMemoryKib, string.Empty, BbcMicroModelConstants.SixteenKibibytesDisplay), new(BbcMicroModelAConstants.ExpandedMemoryKib, string.Empty, BbcMicroModelConstants.ThirtyTwoKibibytesDisplay)], IsEnabled: configuration.Model != MachineModel.BbcMicroModelB && !MemoryExtensionFunctions.Read(configuration).Enabled && !SidewaysExpansionFunctions.Read(configuration).AriesB12, RequiresRestart: true, RefreshSettingsOnChange: true)]),
             MemoryExtensionFunctions.Describe(configuration),
             SidewaysExpansionFunctions.Describe(configuration),
             SidewaysExpansionFunctions.DescribeRam(configuration),

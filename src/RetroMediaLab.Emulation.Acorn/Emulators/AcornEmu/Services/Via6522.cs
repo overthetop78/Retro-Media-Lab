@@ -7,7 +7,7 @@ internal sealed class Via6522
 {
     private readonly byte[] _registers = new byte[16];
     private int _timer1, _timer2, _latch1;
-    private bool _timer1Running, _timer2Running, _ca2;
+    private bool _timer1Running, _timer2Running, _ca2, _cb1;
     private byte _flags, _enabled;
     internal Func<byte>? ReadPortA { get; set; }
     internal Func<byte>? ReadPortB { get; set; }
@@ -21,7 +21,7 @@ internal sealed class Via6522
         Array.Clear(_registers);
         _timer1 = _timer2 = _latch1 = 0xffff;
         _flags = _enabled = 0;
-        _timer1Running = _timer2Running = _ca2 = false;
+        _timer1Running = _timer2Running = _ca2 = _cb1 = false;
     }
 
     /// <summary>Événement de synchronisation verticale raccordé à CA1 sur le BBC.</summary>
@@ -32,6 +32,14 @@ internal sealed class Via6522
         if (level != _ca2 && level == ((_registers[12] & 4) != 0)) _flags |= 1;
         _ca2 = level;
     }
+    /// <summary>Entrée CB1 ; le front actif dépend du PCR, la lecture de port B acquitte l’interruption.</summary>
+    internal void SetCb1(bool level)
+    {
+        const byte interrupt = Machines.BbcMicro.Common.Constants.BbcMicroIoConstants.Cb1Interrupt;
+        if (level != _cb1 && level == ((_registers[12] & interrupt) != 0)) _flags |= interrupt;
+        _cb1 = level;
+    }
+
     internal void Tick()
     {
         if (_timer1Running && --_timer1 < 0)

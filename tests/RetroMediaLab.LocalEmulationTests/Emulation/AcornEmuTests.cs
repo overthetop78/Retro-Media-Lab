@@ -6,7 +6,7 @@ using BbcFirmware = RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Funct
 using NativeFirmware = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions.FirmwareFunctions;
 using NativeModelCatalog = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries.ModelCatalog;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Dictionaries;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelA.Services;
+using ModelAMachine = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.BbcMicroMachine;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts;
@@ -77,10 +77,11 @@ public sealed class AcornEmuTests
     [InlineData("d35f6723132aabe3c4d00fc16fd9ecc6768df753", EmulationFirmwareCompatibility.Official)]
     [InlineData("2b6aecd33a43f296c20832524e47cc7e3a9c3b17", EmulationFirmwareCompatibility.PartiallyCompatible)]
     [InlineData("b369809275cb67dfd8a749265e91adb2d2558ae6", EmulationFirmwareCompatibility.Incompatible)]
-    public void FirmwareCompatibilityBelongsToModelAInsteadOfTheWholeEmulator(string sha1, EmulationFirmwareCompatibility compatibility)
+    public void FirmwareCompatibilityIsSharedByStandardModelsWithoutExtendingOtherVariants(string sha1, EmulationFirmwareCompatibility compatibility)
     {
         Assert.Equal(compatibility, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelA, sha1));
-        Assert.Equal(EmulationFirmwareCompatibility.Unknown, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelB, sha1));
+        Assert.Equal(compatibility, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelB, sha1));
+        Assert.Equal(EmulationFirmwareCompatibility.Unknown, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelBPlus, sha1));
         Assert.Equal(EmulationFirmwareCompatibility.Unknown, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelA, new string('0', 40)));
     }
 

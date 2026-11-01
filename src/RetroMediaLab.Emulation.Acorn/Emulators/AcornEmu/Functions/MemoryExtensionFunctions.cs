@@ -16,7 +16,7 @@ internal static class MemoryExtensionFunctions
         var card = configuration.Options.GetValueOrDefault(C.CardOption, C.None);
         if (card is not (C.None or C.AriesB20 or C.Watford32)) throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(configuration));
         var result = new MemoryExtensionSettings(card);
-        if (result.Enabled && BbcMicroMemoryFunctions.ModelABytes(configuration) != BbcMicroModelConstants.ThirtyTwoKibibytes)
+        if (result.Enabled && BbcMicroMemoryFunctions.MainBytes(configuration) != BbcMicroModelConstants.ThirtyTwoKibibytes)
             throw new ArgumentException(ExceptionText.Get(C.RequiresMainRam), nameof(configuration));
         return result;
     }
@@ -29,7 +29,7 @@ internal static class MemoryExtensionFunctions
         [
             new(C.CardOption, EmulationMachineTab.Ram, C.Group, C.CardLabel, EmulationSettingsEditor.Selection, settings.Card,
                 Choices(),
-                IsEnabled: BbcMicroMemoryFunctions.ModelABytes(configuration) == BbcMicroModelConstants.ThirtyTwoKibibytes,
+                IsEnabled: BbcMicroMemoryFunctions.MainBytes(configuration) == BbcMicroModelConstants.ThirtyTwoKibibytes,
                 ExplanationResourceKey: C.Help, RequiresRestart: true, RefreshSettingsOnChange: true),
             new(C.Firmware, EmulationMachineTab.Ram, C.Group, C.FirmwareLabel, EmulationSettingsEditor.Path,
                 configuration.Options.GetValueOrDefault(C.Firmware), IsEnabled: settings.Enabled && !SidewaysExpansionFunctions.ProvidesBank(configuration, FirmwareBank(configuration)), IsVisible: settings.Enabled,
@@ -38,7 +38,7 @@ internal static class MemoryExtensionFunctions
     }
 
     /// <summary>Capacité physique totale : mémoire principale plus carte, sans confondre leurs espaces d'adressage.</summary>
-    internal static long TotalBytes(MachineConfiguration configuration) => BbcMicroMemoryFunctions.ModelABytes(configuration) + Read(configuration).Bytes + SidewaysExpansionFunctions.Read(configuration).RamBytes;
+    internal static long TotalBytes(MachineConfiguration configuration) => BbcMicroMemoryFunctions.MainBytes(configuration) + Read(configuration).Bytes + SidewaysExpansionFunctions.Read(configuration).RamBytes;
 
     private static IReadOnlyList<EmulationSettingsChoice> Choices() =>
     [

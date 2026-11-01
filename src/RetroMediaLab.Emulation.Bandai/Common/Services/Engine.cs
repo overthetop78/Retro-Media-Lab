@@ -276,7 +276,7 @@ internal sealed class Engine
             PrepareMediaAsync: (media, token) => { token.ThrowIfCancellationRequested(); return adapter.PrepareMediaAsync(media, services.ConvertedMediaDirectory); });
     }
 
-    private IEmulatorAdapter PreferredAdapter(string machineId) => this.Adapters(ModelCatalog.Parse(machineId).ToString()).SingleOrDefault() ?? throw new ArgumentOutOfRangeException(nameof(machineId));
+    private IEmulatorAdapter PreferredAdapter(string machineId) => this.Adapter(ConfigurationFunctions.DefaultEmulator(ModelCatalog.Parse(machineId)));
 
     public string GetFirmwareDirectory(string machineId)
     {

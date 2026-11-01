@@ -3,7 +3,7 @@ using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Dictionaries;
 namespace RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Dictionaries;
 
 /// <summary>Compatibilité des ROM connues avec chaque machine BBC Micro, indépendamment du backend.</summary>
-/// <remarks>Seul le Model A est évalué dans ce jalon. Les autres profils restent Unknown :
+/// <remarks>Les Model A et B partagent les ROM du BBC Micro standard. Les autres profils restent Unknown :
 /// leurs règles ne sont pas déduites de celles du Model A. Les ROM connues non retenues sont
 /// incompatibles avec ce Model A de base, sauf les ROM réseau non évaluées dont la compatibilité reste inconnue.
 /// Une identité absente du catalogue reste inconnue.</remarks>
@@ -41,7 +41,7 @@ internal static class BbcMicroFirmwareCompatibilityCatalog
 
     internal static EmulationFirmwareCompatibility Get(MachineModel model, string sha1)
     {
-        if (!FirmwareCatalog.BySha1.ContainsKey(sha1) || !ByModel.TryGetValue(model, out var profile)) return EmulationFirmwareCompatibility.Unknown;
+        if (!FirmwareCatalog.BySha1.ContainsKey(sha1) || !ByModel.TryGetValue(model == MachineModel.BbcMicroModelB ? MachineModel.BbcMicroModelA : model, out var profile)) return EmulationFirmwareCompatibility.Unknown;
         // Les systèmes disque nécessitent l'extension matérielle correspondante du Model A.
         // Cette dépendance appartient à la machine ; elle reste indépendante de l'émulateur choisi.
         if (sha1.Equals("8564d944fedd17caf2023454ba5a7c3947aedc1f", StringComparison.OrdinalIgnoreCase) || sha1.Equals("7081f1d834645e501c8c9862cf4a50f282ca1f32", StringComparison.OrdinalIgnoreCase)) return EmulationFirmwareCompatibility.PartiallyCompatible;
