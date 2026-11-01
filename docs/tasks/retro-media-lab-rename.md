@@ -1,6 +1,6 @@
 # Renommage en Retro Media Lab
 
-- [ ] Terminer le renommage global demandé.
+- [x] Terminer le renommage global demandé.
   - [x] Appliquer les noms confirmés dans le dépôt.
     - [x] Modifier les sources, ressources de toutes les langues, scripts, documentation, workflows, SDK et installateur : nom affiché « Retro Media Lab », namespaces/projets `RetroMediaLab`, DLL/exécutable `retromedialab.*`, dépôt `Retro-Media-Lab`.
     - [x] Renommer `GWGUI.sln` en `RetroMediaLab.sln`, les 37 dossiers et les 42 fichiers techniques concernés ; mettre à jour les références. Les 39 projets n’ont aucune référence de projet manquante.
@@ -49,10 +49,12 @@ Vérification distante : aucun titre de release ne porte encore l’ancien nom ;
 
 Livraison définitive : second build officiel --modules=A terminé avec code 0 ; nom de produit des exécutables principal et updater « Retro Media Lab », 24 manifestes/DLL valides en 2.0.0/API 2.0 et aucun ancien nom de fichier dans le nouveau build. Les 24 paquets ont été chargés par le registre réel sans erreur ; aucune exécution de cœur. Scénario temporaire et données supprimés. Ancien build Debug supprimé après contrôle de son chemin, de l’absence de processus et de données portables.
 
-- [ ] Enregistrer et pousser le renommage après accord explicite utilisateur.
+- [x] Enregistrer et pousser le renommage après accord explicite utilisateur.
   - [x] Modifier ce suivi et l’index Git avec tous les renommages et modifications, vérifier l’absence de fichiers temporaires et de corruption d’encodage, puis créer le commit sur main.
-  - [ ] Pousser le commit sur origin/main, vérifier l’identité distante et inscrire le résultat ici ; ne créer aucun tag ni nouvelle release.
+  - [x] Pousser le commit sur origin/main, vérifier l’identité distante et inscrire le résultat ici ; ne créer aucun tag ni nouvelle release.
 
 Avant commit, les alertes d’espacement liées aux fichiers renommés ont été comparées au contenu précédent : toutes sont héritées (dont des fins de ligne CRCRLF et des blancs de licences tierces). Aucun nettoyage de formatage hors périmètre n’est ajouté.
 
 Le commit complet du renommage est créé. Les anciens blancs de fin de ligne ont été conservés, sans nouvelle alerte d’espacement introduite.
+
+Push principal réussi : commit 803f965c3 sur origin/main, SHA distant vérifié identique et README distant renommé. Les sources et workflows sont maintenant actualisés sur GitHub. Aucun tag ni nouvelle version d’application, SDK ou module créé ; le catalogue de modules peut être actualisé par le workflow habituel de main.
