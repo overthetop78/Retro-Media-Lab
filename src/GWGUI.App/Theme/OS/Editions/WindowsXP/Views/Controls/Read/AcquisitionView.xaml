@@ -1,0 +1,82 @@
+<UserControl x:Class="GWGUI.App.Theme.OS.Editions.WindowsXP.Views.AcquisitionView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions" FontFamily="Tahoma" FontSize="11" Foreground="Black"
+ Background="{DynamicResource WindowsXP.Face}" UseLayoutRounding="True">
+ <DockPanel>
+  <Menu DockPanel.Dock="Top">
+   <MenuItem Header="{l:Loc Options.Themes.OS.File}">
+    <MenuItem x:Name="BrowseCommand" Header="{l:Loc Read.DestinationFolder}"/>
+    <MenuItem x:Name="ExecuteCommand"/><Separator/>
+    <MenuItem x:Name="ExploreCommand" Header="{l:Loc Read.OpenExplore}" Click="ExploreClick"/>
+    <MenuItem x:Name="VisualizeCommand" Header="{l:Loc Read.OpenVisualize}" Click="VisualizeClick"/>
+    <Separator/><MenuItem x:Name="CloseCommand" Header="{l:Loc Common.Close}" Click="CloseClick"/>
+   </MenuItem>
+   <MenuItem Header="{l:Loc Menu.Options}"><MenuItem x:Name="AdvancedCommand" Header="{l:Loc Common.Advanced}" Click="AdvancedClick"/></MenuItem>
+  </Menu>
+  <Border DockPanel.Dock="Top" Background="White" Padding="12,10">
+   <DockPanel><Image x:Name="PageIcon" Width="32" Height="32" Margin="0,0,10,0" DockPanel.Dock="Left"/>
+    <StackPanel VerticalAlignment="Center"><TextBlock Text="{l:Loc Tab.Read}" FontSize="16" FontWeight="Bold"/>
+     <TextBlock x:Name="Hardware" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/></StackPanel>
+   </DockPanel>
+  </Border>
+  <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12,8">
+   <Button x:Name="Execute" MinWidth="100" IsDefault="True"/>
+  </StackPanel>
+  <TabControl Margin="12,10,12,0">
+   <TabItem Header="{l:Loc Read.ImageToCreate}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+     <StackPanel Margin="12" MinWidth="430">
+      <GroupBox Header="{l:Loc Profile.Title}" Margin="0,0,0,12">
+       <Grid Margin="8"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <ComboBox x:Name="Profiles" Margin="0,0,8,0"/>
+        <Button x:Name="SaveProfile" Grid.Column="1" Content="{l:Loc Common.Save}" Margin="0,0,8,0"/>
+        <Button x:Name="ResetProfile" Grid.Column="2" Content="{l:Loc Common.Reset}"/>
+       </Grid>
+      </GroupBox>
+      <TabControl Margin="0,0,0,12">
+       <TabItem x:Name="Raw" Header="{l:Loc Read.RawScp}">
+        <StackPanel Margin="12" Orientation="Horizontal"><CheckBox x:Name="RevolutionsEnabled" Content="{l:Loc Read.Revolutions}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+         <TextBox x:Name="Revolutions" Width="54"/></StackPanel>
+       </TabItem>
+       <TabItem x:Name="Known" Header="{l:Loc Read.KnownFormat}">
+        <Grid Margin="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+         <Label Content="{l:Loc Classification.Machine}" Target="{Binding ElementName=Family}"/>
+         <ComboBox x:Name="Family" Grid.Column="1" Margin="8,0,0,6"/>
+         <Label Content="{l:Loc Classification.Format}" Grid.Row="1" Target="{Binding ElementName=Format}"/>
+         <ComboBox x:Name="Format" Grid.Column="1" Grid.Row="1" Margin="8,0,0,6"/>
+         <Label Content="{l:Loc Read.Extension}" Grid.Row="2" Target="{Binding ElementName=Extension}"/>
+         <ComboBox x:Name="Extension" Grid.Column="1" Grid.Row="2" Margin="8,0,0,0"/>
+        </Grid>
+       </TabItem>
+      </TabControl>
+      <GroupBox Header="{l:Loc Read.DestinationFolder}">
+       <Grid Margin="8"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <Label Content="{l:Loc Read.Folder}" Target="{Binding ElementName=Folder}"/>
+        <TextBox x:Name="Folder" Grid.Column="1" Margin="8,0,8,8"/>
+        <Button x:Name="Browse" Grid.Column="2" Content="{l:Loc Common.Browse}" Margin="0,0,0,8"/>
+        <Label Content="{l:Loc Read.FileName}" Grid.Row="1" Target="{Binding ElementName=FileName}"/>
+        <TextBox x:Name="FileName" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" Margin="8,0,0,0"/>
+       </Grid>
+      </GroupBox>
+     </StackPanel>
+    </ScrollViewer>
+   </TabItem>
+   <TabItem Header="{l:Loc Logs.History}">
+    <DockPanel Margin="10">
+     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+      <Button x:Name="Explore" Content="{l:Loc Read.OpenExplore}" Click="ExploreClick" Margin="0,0,8,0"/>
+      <Button x:Name="Visualize" Content="{l:Loc Read.OpenVisualize}" Click="VisualizeClick"/>
+     </StackPanel>
+     <ListBox x:Name="History" MouseDoubleClick="HistoryDoubleClick" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+      <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="5" ToolTip="{Binding Path}">
+       <TextBlock Text="{Binding FileName}" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+       <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,3,0,0"/>
+      </StackPanel></DataTemplate></ListBox.ItemTemplate>
+     </ListBox>
+    </DockPanel>
+   </TabItem>
+  </TabControl>
+ </DockPanel>
+</UserControl>

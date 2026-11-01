@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Käynnistä</value></data>
   <data name="Options.Themes.OS.Programs"><value>Ohjelmat</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numerointi</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Sininen</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Hopea</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Oliivinvihreä</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>koneet</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Toimintoloki</value></data>

@@ -1,0 +1,1526 @@
+{
+  "Blue": {
+    "FrameCaption": {
+      "nativeClass": "Window.Caption",
+      "pixelWidth": 66,
+      "pixelHeight": 58,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        28,
+        35,
+        9,
+        17
+      ],
+      "contentMargins": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "FrameMaximized": {
+      "nativeClass": "Window.MaxCaption",
+      "pixelWidth": 66,
+      "pixelHeight": 58,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Tile",
+      "sizingMargins": [
+        28,
+        35,
+        9,
+        17
+      ],
+      "contentMargins": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameLeft": {
+      "nativeClass": "Window.FrameLeft",
+      "pixelWidth": 5,
+      "pixelHeight": 62,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        2,
+        2,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameRight": {
+      "nativeClass": "Window.FrameRight",
+      "pixelWidth": 5,
+      "pixelHeight": 62,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        2,
+        2,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameBottom": {
+      "nativeClass": "Window.FrameBottom",
+      "pixelWidth": 49,
+      "pixelHeight": 10,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        2,
+        2
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CaptionButton": {
+      "nativeClass": "Window.MaxButton",
+      "pixelWidth": 21,
+      "pixelHeight": 168,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CloseButton": {
+      "nativeClass": "Window.CloseButton",
+      "pixelWidth": 21,
+      "pixelHeight": 168,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CloseGlyph": {
+      "nativeClass": "Window.CloseButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "MinimizeGlyph": {
+      "nativeClass": "Window.MinButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "MaximizeGlyph": {
+      "nativeClass": "Window.MaxButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "RestoreGlyph": {
+      "nativeClass": "Window.RestoreButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "StartButton": {
+      "nativeClass": "Start::Button",
+      "pixelWidth": 99,
+      "pixelHeight": 99,
+      "imageCount": 3,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        6,
+        52,
+        13,
+        14
+      ],
+      "contentMargins": [
+        10,
+        24,
+        2,
+        4
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "TaskbarBackground": {
+      "nativeClass": "TaskBar.BackgroundBottom",
+      "pixelWidth": 50,
+      "pixelHeight": 28,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Tile",
+      "sizingMargins": [
+        0,
+        0,
+        15,
+        11
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "TaskbandButton": {
+      "nativeClass": "TaskBand::Toolbar.Button",
+      "pixelWidth": 26,
+      "pixelHeight": 168,
+      "imageCount": 6,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        17,
+        5,
+        15,
+        8
+      ],
+      "contentMargins": [
+        0,
+        4,
+        4,
+        4
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "StartUserPanel": {
+      "nativeClass": "StartPanel.UserPane",
+      "pixelWidth": 120,
+      "pixelHeight": 63,
+      "imageCount": 1,
+      "imageLayout": "Horizontal",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        59,
+        60,
+        62,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "StartProgramsBackground": {
+      "nativeClass": "StartPanel.ProgList",
+      "pixelWidth": 156,
+      "pixelHeight": 4,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        2,
+        153,
+        3,
+        0
+      ],
+      "contentMargins": [
+        6,
+        4,
+        9,
+        5
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartPlacesBackground": {
+      "nativeClass": "StartPanel.PlacesList",
+      "pixelWidth": 180,
+      "pixelHeight": 6,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        172,
+        7,
+        3,
+        1
+      ],
+      "contentMargins": [
+        4,
+        6,
+        9,
+        5
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartFooter": {
+      "nativeClass": "StartPanel.Logoff",
+      "pixelWidth": 97,
+      "pixelHeight": 39,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        49,
+        47,
+        0,
+        38
+      ],
+      "contentMargins": [
+        0,
+        0,
+        4,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartMorePrograms": {
+      "nativeClass": "StartPanel.MorePrograms",
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        3,
+        0,
+        0,
+        1
+      ],
+      "contentMargins": [
+        8,
+        8,
+        0,
+        6
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartArrow": {
+      "nativeClass": "StartPanel.MoreProgramsArrow",
+      "pixelWidth": 16,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartArrowHot": {
+      "nativeClass": "StartPanel.MoreProgramsArrow(hot)",
+      "pixelWidth": 16,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartLogoffButtons": {
+      "nativeClass": "StartPanel.LogoffButtons",
+      "pixelWidth": 72,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    }
+  },
+  "Silver": {
+    "FrameCaption": {
+      "nativeClass": "Window.Caption",
+      "pixelWidth": 66,
+      "pixelHeight": 58,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        28,
+        35,
+        9,
+        17
+      ],
+      "contentMargins": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "FrameMaximized": {
+      "nativeClass": "Window.MaxCaption",
+      "pixelWidth": 66,
+      "pixelHeight": 52,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Tile",
+      "sizingMargins": [
+        28,
+        35,
+        9,
+        17
+      ],
+      "contentMargins": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameLeft": {
+      "nativeClass": "Window.FrameLeft",
+      "pixelWidth": 5,
+      "pixelHeight": 62,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameRight": {
+      "nativeClass": "Window.FrameRight",
+      "pixelWidth": 5,
+      "pixelHeight": 62,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameBottom": {
+      "nativeClass": "Window.FrameBottom",
+      "pixelWidth": 49,
+      "pixelHeight": 10,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        1,
+        2
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CaptionButton": {
+      "nativeClass": "Window.MaxButton",
+      "pixelWidth": 21,
+      "pixelHeight": 168,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CloseButton": {
+      "nativeClass": "Window.CloseButton",
+      "pixelWidth": 21,
+      "pixelHeight": 168,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CloseGlyph": {
+      "nativeClass": "Window.CloseButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "MinimizeGlyph": {
+      "nativeClass": "Window.MinButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "MaximizeGlyph": {
+      "nativeClass": "Window.MaxButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "RestoreGlyph": {
+      "nativeClass": "Window.RestoreButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "StartButton": {
+      "nativeClass": "Start::Button",
+      "pixelWidth": 99,
+      "pixelHeight": 99,
+      "imageCount": 3,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        6,
+        52,
+        13,
+        14
+      ],
+      "contentMargins": [
+        10,
+        24,
+        2,
+        4
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "TaskbarBackground": {
+      "nativeClass": "TaskBar.BackgroundBottom",
+      "pixelWidth": 50,
+      "pixelHeight": 30,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Tile",
+      "sizingMargins": [
+        0,
+        0,
+        17,
+        12
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "TaskbandButton": {
+      "nativeClass": "TaskBand::Toolbar.Button",
+      "pixelWidth": 27,
+      "pixelHeight": 168,
+      "imageCount": 6,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        17,
+        5,
+        15,
+        8
+      ],
+      "contentMargins": [
+        0,
+        4,
+        4,
+        4
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "StartUserPanel": {
+      "nativeClass": "StartPanel.UserPane",
+      "pixelWidth": 211,
+      "pixelHeight": 63,
+      "imageCount": 1,
+      "imageLayout": "Horizontal",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        59,
+        60,
+        62,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "StartProgramsBackground": {
+      "nativeClass": "StartPanel.ProgList",
+      "pixelWidth": 224,
+      "pixelHeight": 192,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        2,
+        153,
+        3,
+        0
+      ],
+      "contentMargins": [
+        6,
+        4,
+        9,
+        5
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartPlacesBackground": {
+      "nativeClass": "StartPanel.PlacesList",
+      "pixelWidth": 224,
+      "pixelHeight": 6,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        172,
+        7,
+        3,
+        1
+      ],
+      "contentMargins": [
+        4,
+        6,
+        9,
+        5
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartFooter": {
+      "nativeClass": "StartPanel.Logoff",
+      "pixelWidth": 215,
+      "pixelHeight": 39,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        49,
+        47,
+        0,
+        38
+      ],
+      "contentMargins": [
+        0,
+        0,
+        4,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartMorePrograms": {
+      "nativeClass": "StartPanel.MorePrograms",
+      "pixelWidth": 224,
+      "pixelHeight": 28,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        3,
+        0,
+        0,
+        1
+      ],
+      "contentMargins": [
+        8,
+        8,
+        0,
+        6
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartArrow": {
+      "nativeClass": "StartPanel.MoreProgramsArrow",
+      "pixelWidth": 16,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartArrowHot": {
+      "nativeClass": "StartPanel.MoreProgramsArrow(hot)",
+      "pixelWidth": 16,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartLogoffButtons": {
+      "nativeClass": "StartPanel.LogoffButtons",
+      "pixelWidth": 72,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    }
+  },
+  "Olive": {
+    "FrameCaption": {
+      "nativeClass": "Window.Caption",
+      "pixelWidth": 66,
+      "pixelHeight": 58,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        28,
+        35,
+        9,
+        17
+      ],
+      "contentMargins": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "FrameMaximized": {
+      "nativeClass": "Window.MaxCaption",
+      "pixelWidth": 66,
+      "pixelHeight": 58,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Tile",
+      "sizingMargins": [
+        28,
+        35,
+        9,
+        17
+      ],
+      "contentMargins": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameLeft": {
+      "nativeClass": "Window.FrameLeft",
+      "pixelWidth": 5,
+      "pixelHeight": 62,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        2,
+        2,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameRight": {
+      "nativeClass": "Window.FrameRight",
+      "pixelWidth": 5,
+      "pixelHeight": 62,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        2,
+        2,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "FrameBottom": {
+      "nativeClass": "Window.FrameBottom",
+      "pixelWidth": 49,
+      "pixelHeight": 10,
+      "imageCount": 2,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        2,
+        2
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CaptionButton": {
+      "nativeClass": "Window.MaxButton",
+      "pixelWidth": 21,
+      "pixelHeight": 168,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CloseButton": {
+      "nativeClass": "Window.CloseButton",
+      "pixelWidth": 21,
+      "pixelHeight": 168,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "CloseGlyph": {
+      "nativeClass": "Window.CloseButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "MinimizeGlyph": {
+      "nativeClass": "Window.MinButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "MaximizeGlyph": {
+      "nativeClass": "Window.MaxButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "RestoreGlyph": {
+      "nativeClass": "Window.RestoreButton",
+      "pixelWidth": 13,
+      "pixelHeight": 104,
+      "imageCount": 8,
+      "imageLayout": "Vertical",
+      "sizingType": "Uniform",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "glyph": true,
+      "transparent": true,
+      "nativeImageField": "imagefile3"
+    },
+    "StartButton": {
+      "nativeClass": "Start::Button",
+      "pixelWidth": 99,
+      "pixelHeight": 99,
+      "imageCount": 3,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        6,
+        52,
+        13,
+        14
+      ],
+      "contentMargins": [
+        10,
+        24,
+        2,
+        4
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "TaskbarBackground": {
+      "nativeClass": "TaskBar.BackgroundBottom",
+      "pixelWidth": 50,
+      "pixelHeight": 30,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Tile",
+      "sizingMargins": [
+        0,
+        0,
+        17,
+        12
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "TaskbandButton": {
+      "nativeClass": "TaskBand::Toolbar.Button",
+      "pixelWidth": 26,
+      "pixelHeight": 168,
+      "imageCount": 6,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        17,
+        5,
+        15,
+        8
+      ],
+      "contentMargins": [
+        0,
+        4,
+        4,
+        4
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "StartUserPanel": {
+      "nativeClass": "StartPanel.UserPane",
+      "pixelWidth": 120,
+      "pixelHeight": 63,
+      "imageCount": 1,
+      "imageLayout": "Horizontal",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        59,
+        60,
+        62,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    },
+    "StartProgramsBackground": {
+      "nativeClass": "StartPanel.ProgList",
+      "pixelWidth": 156,
+      "pixelHeight": 4,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        2,
+        153,
+        3,
+        0
+      ],
+      "contentMargins": [
+        6,
+        4,
+        9,
+        5
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartPlacesBackground": {
+      "nativeClass": "StartPanel.PlacesList",
+      "pixelWidth": 180,
+      "pixelHeight": 6,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        172,
+        7,
+        3,
+        1
+      ],
+      "contentMargins": [
+        4,
+        6,
+        9,
+        5
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartFooter": {
+      "nativeClass": "StartPanel.Logoff",
+      "pixelWidth": 97,
+      "pixelHeight": 39,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        49,
+        47,
+        0,
+        38
+      ],
+      "contentMargins": [
+        0,
+        0,
+        4,
+        2
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartMorePrograms": {
+      "nativeClass": "StartPanel.MorePrograms",
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Stretch",
+      "sizingMargins": [
+        3,
+        0,
+        0,
+        1
+      ],
+      "contentMargins": [
+        8,
+        8,
+        0,
+        6
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartArrow": {
+      "nativeClass": "StartPanel.MoreProgramsArrow",
+      "pixelWidth": 16,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartArrowHot": {
+      "nativeClass": "StartPanel.MoreProgramsArrow(hot)",
+      "pixelWidth": 16,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": false,
+      "nativeImageField": "imagefile"
+    },
+    "StartLogoffButtons": {
+      "nativeClass": "StartPanel.LogoffButtons",
+      "pixelWidth": 72,
+      "pixelHeight": 24,
+      "imageCount": 1,
+      "imageLayout": "Vertical",
+      "sizingType": "Truesize",
+      "sizingMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "contentMargins": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "glyph": false,
+      "transparent": true,
+      "nativeImageField": "imagefile"
+    }
+  }
+}

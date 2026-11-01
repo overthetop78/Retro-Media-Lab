@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>เริ่ม</value></data>
   <data name="Options.Themes.OS.Programs"><value>โปรแกรม</value></data>
   <data name="Options.Themes.OS.Numbering"><value>การกำหนดหมายเลข</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>น้ําเงิน</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>เงิน</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>เขียว</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>เครื่อง</value></data>
   <data name="Options.Themes.Orbit.Media"><value>สื่อ</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>บันทึกกิจกรรม</value></data>

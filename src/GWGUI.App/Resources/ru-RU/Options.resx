@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Пуск</value></data>
   <data name="Options.Themes.OS.Programs"><value>Программы</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Нумерация</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>голубой</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Серебро</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Оливково-зеленый</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Машины</value></data>
   <data name="Options.Themes.Orbit.Media"><value>СМИ</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Журнал деятельности</value></data>

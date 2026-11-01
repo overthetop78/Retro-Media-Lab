@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Inicio</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programas</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numeración</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Azul</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Plata</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Verde de oliva</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Máquinas</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Medios de comunicación</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Actividad de registro</value></data>

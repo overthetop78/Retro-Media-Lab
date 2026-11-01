@@ -55,7 +55,8 @@ public sealed class ThemeEditionSelectionTests(StaExecutionScenarios sta)
         Assert.Empty(ThemeCatalog.Get(AppThemeDesign.Studio).Editions);
         Assert.Collection(ThemeCatalog.Get(AppThemeDesign.OS).Editions,
             edition => Assert.Same(Windows31Edition.Definition, edition),
-            edition => Assert.Same(GWGUI.App.Theme.OS.Editions.Windows95.Windows95Edition.Definition, edition));
+            edition => Assert.Same(GWGUI.App.Theme.OS.Editions.Windows95.Windows95Edition.Definition, edition),
+            edition => Assert.Same(GWGUI.App.Theme.OS.Editions.WindowsXP.WindowsXPEdition.Definition, edition));
     });
 
     [Fact]

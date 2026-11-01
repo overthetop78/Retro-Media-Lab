@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Start</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programe</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numerotare</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Albastru</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Argint</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Verde de măsline</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Mașini de tăiat</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Jurnal de activitate</value></data>

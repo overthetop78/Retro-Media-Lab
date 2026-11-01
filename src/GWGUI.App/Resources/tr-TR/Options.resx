@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Başlat</value></data>
   <data name="Options.Themes.OS.Programs"><value>Programlar</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Numaralandırma</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Blue Blue Blue Blue Blue Blue</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Silver Silver</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Zeytin yeşil</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Makineler</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Medya Medya</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Aktivite günlük</value></data>

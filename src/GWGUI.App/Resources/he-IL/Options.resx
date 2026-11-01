@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>התחל</value></data>
   <data name="Options.Themes.OS.Programs"><value>תוכניות</value></data>
   <data name="Options.Themes.OS.Numbering"><value>מספור</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>כחול כחול כחול</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>כסף</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>זית ירוק</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>מכונות</value></data>
   <data name="Options.Themes.Orbit.Media"><value>מדיה</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>יומן פעילות</value></data>

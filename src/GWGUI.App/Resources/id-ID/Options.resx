@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Mulai</value></data>
   <data name="Options.Themes.OS.Programs"><value>Program</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Penomoran</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Biru</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Perak</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Zaitun hijau</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Mesin</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Log aktivitas</value></data>

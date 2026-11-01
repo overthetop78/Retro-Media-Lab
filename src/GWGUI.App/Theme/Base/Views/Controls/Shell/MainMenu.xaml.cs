@@ -12,6 +12,8 @@ public partial class MainMenu : UserControl
     public MainMenu() => InitializeComponent();
 
     public event RoutedEventHandler? PreferencesRequested;
+    internal event RoutedEventHandler? ThemesRequested;
+    internal void RequestThemes() => ThemesRequested?.Invoke(this, new RoutedEventArgs());
     public event RoutedEventHandler? UpdatesRequested;
     public event RoutedEventHandler? EmulationPreferencesRequested;
     public event Action<string>? EmulationModuleRequested;

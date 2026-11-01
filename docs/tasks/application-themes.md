@@ -1705,3 +1705,6 @@ Livraison Orbit : scripts/local-building.cmd --building=debug --modules=A termin
 - [x] Enregistrer Orbit après accord utilisateur du 1 novembre 2026.
   - [x] Modifier ce suivi : consigner la validation et préparer dans Git les fichiers `src/GWGUI.App/Theme/Orbit/`, leur enregistrement `ThemeCatalog.cs`, `AppThemeDesign.cs`, les seules ressources Orbit de `Resources/*/Options.resx` et leur attente dans `ThemeEditionSelectionTests.cs` ; conserver les travaux Windows XP hors du commit.
   - [x] Enregistrer les fichiers Orbit et les documents `docs/design/themes-rebuild.md` / `docs/tasks/application-themes.md` dans un commit dédié, après contrôle du contenu indexé.
+
+- [x] Enregistrer tous les travaux restants sur demande explicite de l’utilisateur.
+  - [x] Ajouter dans Git tous les fichiers modifiés et nouveaux, notamment `src/GWGUI.App/Theme/OS/Editions/WindowsXP/`, les raccordements, ressources et tests associés, puis créer le commit sans exclure de travaux.

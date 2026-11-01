@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>開始</value></data>
   <data name="Options.Themes.OS.Programs"><value>程式</value></data>
   <data name="Options.Themes.OS.Numbering"><value>編號</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>蓝色</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>银</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>橄榄绿色</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>机器</value></data>
   <data name="Options.Themes.Orbit.Media"><value>媒体</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>活动日志</value></data>

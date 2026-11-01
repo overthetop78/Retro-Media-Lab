@@ -1,0 +1,90 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+ xmlns:v="clr-namespace:GWGUI.App.Theme.OS.Editions.WindowsXP.Views"
+ xmlns:p="clr-namespace:GWGUI.App.Theme.OS.Editions.WindowsXP"
+ xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions">
+ <Style x:Key="WindowsXPCaptionImage" TargetType="{x:Type v:WindowsXPImage}">
+  <Style.Triggers>
+   <DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="State" Value="Hot"/></DataTrigger>
+   <DataTrigger Binding="{Binding IsPressed,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="State" Value="Pressed"/></DataTrigger>
+  </Style.Triggers>
+ </Style>
+ <Style x:Key="WindowsXPCaptionButton" TargetType="Button">
+  <Setter Property="Width" Value="{x:Static p:WindowsXPMetrics.CaptionButtonWidth}"/>
+  <Setter Property="Height" Value="{x:Static p:WindowsXPMetrics.CaptionButtonHeight}"/>
+  <Setter Property="Margin" Value="{x:Static p:WindowsXPMetrics.CommandSpacing}"/>
+  <Setter Property="Focusable" Value="False"/>
+  <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+   <Grid Background="Transparent">
+    <v:WindowsXPImage x:Name="Surface" Part="CaptionButton" Style="{StaticResource WindowsXPCaptionImage}"/>
+    <ContentPresenter/>
+   </Grid>
+   <ControlTemplate.Triggers>
+    <Trigger Property="Command" Value="{x:Static SystemCommands.CloseWindowCommand}"><Setter TargetName="Surface" Property="Part" Value="CloseButton"/></Trigger>
+   </ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+ <Style TargetType="{x:Type v:WindowsXPWindow}">
+  <Setter Property="MinWidth" Value="{x:Static p:WindowsXPMetrics.MinimumWidth}"/>
+  <Setter Property="MinHeight" Value="{x:Static p:WindowsXPMetrics.MinimumHeight}"/>
+  <Setter Property="FontFamily" Value="Tahoma"/>
+  <Setter Property="FontSize" Value="{x:Static p:WindowsXPMetrics.FontSize}"/>
+  <Setter Property="Foreground" Value="Black"/>
+  <Setter Property="Background" Value="Transparent"/>
+  <Setter Property="SnapsToDevicePixels" Value="True"/>
+  <Setter Property="UseLayoutRounding" Value="True"/>
+  <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+  <Setter Property="shell:WindowChrome.WindowChrome"><Setter.Value>
+   <shell:WindowChrome CaptionHeight="{DynamicResource WindowsXP.CaptionHeight}" ResizeBorderThickness="{x:Static p:WindowsXPMetrics.ResizeBorder}"
+      CornerRadius="{x:Static p:WindowsXPMetrics.CaptionCorners}" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
+  </Setter.Value></Setter>
+  <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="{x:Type v:WindowsXPWindow}">
+   <Grid v:WindowsXPImage.WindowActive="{TemplateBinding IsActive}" Background="Transparent">
+    <Grid.RowDefinitions><RowDefinition Height="{DynamicResource WindowsXP.CaptionRowHeight}"/><RowDefinition/><RowDefinition Height="{x:Static p:WindowsXPMetrics.BottomRowHeight}"/></Grid.RowDefinitions>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="{x:Static p:WindowsXPMetrics.SideColumnWidth}"/><ColumnDefinition/><ColumnDefinition Width="{x:Static p:WindowsXPMetrics.SideColumnWidth}"/></Grid.ColumnDefinitions>
+    <v:WindowsXPImage x:Name="Caption" Part="FrameCaption" Grid.ColumnSpan="3"/>
+    <v:WindowsXPImage Part="FrameLeft" Grid.Row="1"/>
+    <v:WindowsXPImage Part="FrameRight" Grid.Row="1" Grid.Column="2"/>
+    <v:WindowsXPImage Part="FrameBottom" Grid.Row="2" Grid.ColumnSpan="3"/>
+    <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource WindowsXP.Face}">
+     <AdornerDecorator><ContentPresenter x:Name="PART_Document" Content="{TemplateBinding Document}"/></AdornerDecorator>
+    </Border>
+    <DockPanel x:Name="CaptionContents" Grid.ColumnSpan="3" Margin="{x:Static p:WindowsXPMetrics.CaptionTextMargin}">
+     <Button x:Name="SystemIcon" DockPanel.Dock="Left" Command="{x:Static SystemCommands.ShowSystemMenuCommand}"
+       Width="{x:Static p:WindowsXPMetrics.IconSize}" Height="{x:Static p:WindowsXPMetrics.IconSize}" Margin="{x:Static p:WindowsXPMetrics.IconMargin}"
+       Focusable="False" Background="Transparent" BorderThickness="0" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+      <Button.Template><ControlTemplate TargetType="Button"><ContentPresenter/></ControlTemplate></Button.Template>
+      <Button.InputBindings><MouseBinding MouseAction="LeftDoubleClick" Command="{x:Static SystemCommands.CloseWindowCommand}"/></Button.InputBindings>
+      <Image Source="{TemplateBinding Icon}" Stretch="Uniform"/>
+     </Button>
+     <TextBlock x:Name="Title" Text="{TemplateBinding Title}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+       FontFamily="{DynamicResource WindowsXP.CaptionFontFamily}" FontSize="{DynamicResource WindowsXP.CaptionFontSize}"
+       FontWeight="{DynamicResource WindowsXP.CaptionFontWeight}" Foreground="{DynamicResource WindowsXP.CaptionText}">
+      <TextBlock.Effect><DropShadowEffect x:Name="TitleShadow" Color="{DynamicResource WindowsXP.CaptionShadow}"
+       BlurRadius="0" Opacity="1" Direction="315" ShadowDepth="{x:Static p:WindowsXPMetrics.CaptionShadowDepth}"/></TextBlock.Effect>
+     </TextBlock>
+    </DockPanel>
+    <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{x:Static p:WindowsXPMetrics.CommandMargin}">
+     <Button x:Name="Minimize" Style="{StaticResource WindowsXPCaptionButton}" Command="{x:Static SystemCommands.MinimizeWindowCommand}" ToolTip="{l:Loc Options.Themes.Minimize}">
+      <v:WindowsXPImage Part="MinimizeGlyph" Style="{StaticResource WindowsXPCaptionImage}"/>
+     </Button>
+     <Button x:Name="Maximize" Style="{StaticResource WindowsXPCaptionButton}" Command="{x:Static SystemCommands.MaximizeWindowCommand}" ToolTip="{l:Loc Options.Themes.MaximizeRestore}">
+      <Grid><v:WindowsXPImage x:Name="MaximizeGlyph" Part="MaximizeGlyph" Style="{StaticResource WindowsXPCaptionImage}"/>
+       <v:WindowsXPImage x:Name="RestoreGlyph" Part="RestoreGlyph" Visibility="Collapsed" Style="{StaticResource WindowsXPCaptionImage}"/></Grid>
+     </Button>
+     <Button Style="{StaticResource WindowsXPCaptionButton}" Command="{x:Static SystemCommands.CloseWindowCommand}" ToolTip="{l:Loc Common.Close}">
+      <v:WindowsXPImage Part="CloseGlyph" Style="{StaticResource WindowsXPCaptionImage}"/>
+     </Button>
+    </StackPanel>
+   </Grid>
+   <ControlTemplate.Triggers>
+    <Trigger Property="IsActive" Value="False"><Setter TargetName="Title" Property="Foreground" Value="{DynamicResource WindowsXP.InactiveCaptionText}"/><Setter TargetName="Title" Property="Effect" Value="{x:Null}"/></Trigger>
+    <Trigger Property="Icon" Value="{x:Null}"><Setter TargetName="SystemIcon" Property="Visibility" Value="Collapsed"/></Trigger>
+    <Trigger Property="WindowState" Value="Maximized"><Setter TargetName="Caption" Property="Part" Value="FrameMaximized"/><Setter TargetName="Maximize" Property="Command" Value="{x:Static SystemCommands.RestoreWindowCommand}"/><Setter TargetName="MaximizeGlyph" Property="Visibility" Value="Collapsed"/><Setter TargetName="RestoreGlyph" Property="Visibility" Value="Visible"/></Trigger>
+    <Trigger Property="ResizeMode" Value="NoResize"><Setter TargetName="Minimize" Property="Visibility" Value="Collapsed"/><Setter TargetName="Maximize" Property="Visibility" Value="Collapsed"/><Setter TargetName="CaptionContents" Property="Margin" Value="{x:Static p:WindowsXPMetrics.DialogCaptionTextMargin}"/></Trigger>
+   </ControlTemplate.Triggers>
+  </ControlTemplate></Setter.Value></Setter>
+ </Style>
+</ResourceDictionary>

@@ -41,6 +41,7 @@ internal sealed partial class Windows95Workspace : Grid, IThemeWorkspace
             menu = root.Children.OfType<MainMenu>().Single();
             BuildApplications();
             desktop = new Windows95Desktop(launchers);
+            desktop.ThemesRequested += ThemesRequested;
             desktop.ConnectMenus([menu.OptionsMenuItem, menu.EmulationMenuItem, menu.HelpMenuItem]);
             router = new Windows95WindowRouter(this, desktop.RegisterWindow);
             Children.Add(desktop);
@@ -64,6 +65,8 @@ internal sealed partial class Windows95Workspace : Grid, IThemeWorkspace
     }
 
     public bool TryShowWindow(Window window) => !disposed && router is not null && router.TryShowWindow(window);
+
+    private void ThemesRequested(object? sender, EventArgs args) { if (!disposed) menu?.RequestThemes(); }
 
     private T Source<T>(string id) where T : FrameworkElement
     {
@@ -155,6 +158,7 @@ internal sealed partial class Windows95Workspace : Grid, IThemeWorkspace
         try
         {
             tabs.SelectionChanged -= SourceTabChanged;
+            if (desktop is not null) desktop.ThemesRequested -= ThemesRequested;
             if (machineSource is not null)
             {
                 machineSource.PresentationChanged -= MachinesChanged;

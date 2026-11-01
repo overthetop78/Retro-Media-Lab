@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>スタート</value></data>
   <data name="Options.Themes.OS.Programs"><value>プログラム</value></data>
   <data name="Options.Themes.OS.Numbering"><value>番号付け</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>青森 青森</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>シルバー</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>オリーブグリーン</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>マシン</value></data>
   <data name="Options.Themes.Orbit.Media"><value>メディア</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>活動ログ</value></data>

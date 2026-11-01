@@ -94,6 +94,9 @@
   <data name="Options.Themes.OS.Start"><value>Почати</value></data>
   <data name="Options.Themes.OS.Programs"><value>Програми</value></data>
   <data name="Options.Themes.OS.Numbering"><value>Нумерація</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Синій</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Срібло</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Оливкова зелена</value></data>
   <data name="Options.Themes.Orbit.Machines"><value>Машини</value></data>
   <data name="Options.Themes.Orbit.Media"><value>Медіа</value></data>
   <data name="Options.Themes.Orbit.Journal"><value>Журнал заходів</value></data>

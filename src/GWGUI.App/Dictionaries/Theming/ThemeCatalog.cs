@@ -23,7 +23,7 @@ internal static class ThemeCatalog
         Profile(AppThemeDesign.OS, [AppTheme.Light], AppTheme.Light) with
         {
             EditionHeadingResourceKey = "Options.Themes.Edition",
-            Editions = Array.AsReadOnly<ThemeEditionDefinition>([GWGUI.App.Theme.OS.Editions.Windows31.Windows31Edition.Definition, GWGUI.App.Theme.OS.Editions.Windows95.Windows95Edition.Definition])
+            Editions = Array.AsReadOnly<ThemeEditionDefinition>([GWGUI.App.Theme.OS.Editions.Windows31.Windows31Edition.Definition, GWGUI.App.Theme.OS.Editions.Windows95.Windows95Edition.Definition, GWGUI.App.Theme.OS.Editions.WindowsXP.WindowsXPEdition.Definition])
         }
     ]);
 
