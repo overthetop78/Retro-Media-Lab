@@ -12,7 +12,7 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($authorEmail)) { throw 
 
 # Use a fresh checkout so local files can never be mistaken for old wiki pages.
 $checkout = Join-Path $repository ('build\wiki-publish-' + [Guid]::NewGuid().ToString('N'))
-git clone 'https://github.com/overthetop78/GW-GUI.wiki.git' $checkout
+git clone 'https://github.com/overthetop78/Retro-Media-Lab.wiki.git' $checkout
 if ($LASTEXITCODE -ne 0) { throw 'Wiki clone failed. Enable the wiki and create its initial page on GitHub before the first publication.' }
 try {
     git -C $checkout config user.name $authorName
@@ -20,9 +20,11 @@ try {
     git -C $checkout config user.email $authorEmail
     if ($LASTEXITCODE -ne 0) { throw 'Could not configure wiki author email.' }
     # Only files recorded by our previous publication may be removed.
-    $manifestPath = Join-Path $checkout '.gwgui-wiki-files.json'
-    if (Test-Path -LiteralPath $manifestPath) {
-        $previousFiles = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $manifestPath = Join-Path $checkout '.retromedialab-wiki-files.json'
+    $legacyManifestPath = Join-Path $checkout '.gwgui-wiki-files.json'
+    $previousManifestPath = if (Test-Path -LiteralPath $manifestPath) { $manifestPath } else { $legacyManifestPath }
+    if (Test-Path -LiteralPath $previousManifestPath) {
+        $previousFiles = Get-Content -LiteralPath $previousManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
         foreach ($relative in $previousFiles) {
             $target = [IO.Path]::GetFullPath((Join-Path $checkout $relative))
             if (-not $target.StartsWith($checkout + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) -or $relative -match '(^|[/\\])\.git([/\\]|$)') { throw "Invalid wiki manifest entry: $relative" }
@@ -39,16 +41,17 @@ try {
         $manifest += $relative.Replace('\', '/')
     }
     $manifest | ConvertTo-Json | Set-Content -LiteralPath $manifestPath -Encoding UTF8
+    if (Test-Path -LiteralPath $legacyManifestPath -PathType Leaf) { Remove-Item -LiteralPath $legacyManifestPath }
     git -C $checkout add --all
     if ($LASTEXITCODE -ne 0) { throw 'Could not stage wiki pages.' }
     git -C $checkout diff --cached --quiet
     if ($LASTEXITCODE -eq 0) { Write-Output 'Wiki is already up to date.'; return }
     if ($LASTEXITCODE -ne 1) { throw 'Could not inspect wiki changes.' }
-    git -C $checkout commit -m 'Update GW GUI wiki'
+    git -C $checkout commit -m 'Update Retro Media Lab wiki'
     if ($LASTEXITCODE -ne 0) { throw 'Could not commit wiki pages.' }
     git -C $checkout push
     if ($LASTEXITCODE -ne 0) { throw 'Wiki publication failed.' }
-    Write-Output 'Wiki published: https://github.com/overthetop78/GW-GUI/wiki'
+    Write-Output 'Wiki published: https://github.com/overthetop78/Retro-Media-Lab/wiki'
 }
 finally {
     $expectedParent = [IO.Path]::GetFullPath((Join-Path $repository 'build'))

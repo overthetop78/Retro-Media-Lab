@@ -19,45 +19,45 @@ $publish = Join-Path $dist 'publish\win-x64'
 $applicationPublish = Join-Path $dist '.application-publish'
 $updaterPublish = Join-Path $dist '.updater-publish'
 $examplePublish = Join-Path $dist '.example-publish'
-$portable = Join-Path $dist 'portable\GW GUI'
+$portable = Join-Path $dist 'portable\Retro Media Lab'
 $portablePackageRoot = Join-Path $dist '.portable-package'
-$portablePackage = Join-Path $portablePackageRoot 'GW GUI'
+$portablePackage = Join-Path $portablePackageRoot 'Retro Media Lab'
 foreach ($target in @($publish, $applicationPublish, $updaterPublish, $examplePublish, $portablePackageRoot)) {
     if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Recurse -Force }
 }
 New-Item -ItemType Directory -Path $publish,$portable,$portablePackage -Force | Out-Null
 Get-ChildItem -LiteralPath $portable -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'Data' } | Remove-Item -Recurse -Force
 Get-ChildItem -LiteralPath $dist -File -ErrorAction SilentlyContinue | Where-Object {
-    $_.Name -match '^GW-GUI-.+-win-x64-(portable\.zip|setup\.exe)$' `
+    $_.Name -match '^Retro-Media-Lab-.+-win-x64-(portable\.zip|setup\.exe)$' `
         -or $_.Name -eq 'SHA256SUMS.txt'
 } | Remove-Item -Force
 
-dotnet publish (Join-Path $repository 'src\GWGUI.App\GWGUI.App.csproj') -c $Configuration -r win-x64 --self-contained false -p:Version=$Version -o $applicationPublish --disable-build-servers
+dotnet publish (Join-Path $repository 'src\RetroMediaLab.App\RetroMediaLab.App.csproj') -c $Configuration -r win-x64 --self-contained false -p:Version=$Version -o $applicationPublish --disable-build-servers
 if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed.' }
 # Example est livré dans le dossier normal des modules. Son manifeste et les interfaces
 # habituelles suffisent à le charger, sans inscription particulière dans l’application.
-$example = Resolve-GwGuiEmulationModule -Modules @(Get-GwGuiEmulationModules -RepositoryRoot $repository) -Module 'example'
+$example = Resolve-RetroMediaLabEmulationModule -Modules @(Get-RetroMediaLabEmulationModules -RepositoryRoot $repository) -Module 'example'
 dotnet publish $example.ProjectPath -c $Configuration -r win-x64 --self-contained false `
     -p:Version=$($example.Manifest.moduleVersion) -o $examplePublish --disable-build-servers
 if ($LASTEXITCODE -ne 0) { throw 'Example module publish failed.' }
-$sharedApplicationHashes = Get-GwGuiFileHashes -Files @(Get-ChildItem -LiteralPath $applicationPublish -Recurse -File)
-Copy-GwGuiComponentFiles -SourceDirectory $examplePublish -DestinationDirectory (Join-Path $applicationPublish "Modules\$($example.Id)") `
+$sharedApplicationHashes = Get-RetroMediaLabFileHashes -Files @(Get-ChildItem -LiteralPath $applicationPublish -Recurse -File)
+Copy-RetroMediaLabComponentFiles -SourceDirectory $examplePublish -DestinationDirectory (Join-Path $applicationPublish "Modules\$($example.Id)") `
     -AssetsDestinationDirectory $applicationPublish -SharedHashes $sharedApplicationHashes -RequiredFiles @('module.json', $example.EntryAssembly, ($example.AssemblyName + '.deps.json'))
-dotnet publish (Join-Path $repository 'src\GWGUI.Launcher\GWGUI.Launcher.csproj') -c $Configuration -r win-x64 --self-contained false -p:Version=$Version -o $publish --disable-build-servers
-if ($LASTEXITCODE -ne 0) { throw 'GW GUI bootstrap publish failed.' }
+dotnet publish (Join-Path $repository 'src\RetroMediaLab.Launcher\RetroMediaLab.Launcher.csproj') -c $Configuration -r win-x64 --self-contained false -p:Version=$Version -o $publish --disable-build-servers
+if ($LASTEXITCODE -ne 0) { throw 'Retro Media Lab bootstrap publish failed.' }
 Copy-Item -Path (Join-Path $applicationPublish '*') -Destination $publish -Recurse -Force
-Remove-Item -LiteralPath (Join-Path $publish 'gwgui.app.exe'),(Join-Path $publish 'gwgui.app.runtimeconfig.json') -Force
+Remove-Item -LiteralPath (Join-Path $publish 'retromedialab.app.exe'),(Join-Path $publish 'retromedialab.app.runtimeconfig.json') -Force
 & (Join-Path $PSScriptRoot 'organize_app\organize-application-output.ps1') -OutputDirectory $publish
 New-Item -ItemType Directory -Path (Join-Path $publish 'Modules') -Force | Out-Null
-dotnet publish (Join-Path $repository 'src\GWGUI.Updater\GWGUI.Updater.csproj') -c $Configuration `
+dotnet publish (Join-Path $repository 'src\RetroMediaLab.Updater\RetroMediaLab.Updater.csproj') -c $Configuration `
     -r win-x64 --self-contained false -p:Version=$Version -o $updaterPublish --disable-build-servers
-if ($LASTEXITCODE -ne 0) { throw 'GW GUI updater publish failed.' }
+if ($LASTEXITCODE -ne 0) { throw 'Retro Media Lab updater publish failed.' }
 $updaterOutput = Join-Path $publish 'Updater'
 New-Item -ItemType Directory -Path $updaterOutput -Force | Out-Null
-$sharedHashes = Get-GwGuiFileHashes -Files @(Get-ChildItem -LiteralPath (Join-Path $publish 'lib') -Recurse -File)
-Copy-GwGuiComponentFiles -SourceDirectory $updaterPublish -DestinationDirectory $updaterOutput `
-    -SharedHashes $sharedHashes -RequiredFiles @('gwgui.updater.exe', 'gwgui.updater.dll', 'gwgui.updater.pdb',
-        'gwgui.updater.deps.json', 'gwgui.updater.runtimeconfig.json')
+$sharedHashes = Get-RetroMediaLabFileHashes -Files @(Get-ChildItem -LiteralPath (Join-Path $publish 'lib') -Recurse -File)
+Copy-RetroMediaLabComponentFiles -SourceDirectory $updaterPublish -DestinationDirectory $updaterOutput `
+    -SharedHashes $sharedHashes -RequiredFiles @('retromedialab.updater.exe', 'retromedialab.updater.dll', 'retromedialab.updater.pdb',
+        'retromedialab.updater.deps.json', 'retromedialab.updater.runtimeconfig.json')
 Get-ChildItem -LiteralPath $publish -Recurse -File -Filter '*.pdb' | Remove-Item -Force
 
 Copy-Item -Path (Join-Path $publish '*') -Destination $portablePackage -Recurse -Force
@@ -66,7 +66,7 @@ Copy-Item -LiteralPath (Join-Path $repository 'README.md') -Destination $portabl
 Copy-Item -LiteralPath (Join-Path $repository 'installer\Prerequisites') -Destination $portablePackage -Recurse -Force
 New-Item -ItemType File -Path (Join-Path $portablePackage 'portable.flag') -Force | Out-Null
 
-$zip = Join-Path $dist "GW-GUI-$Version-win-x64-portable.zip"
+$zip = Join-Path $dist "Retro-Media-Lab-$Version-win-x64-portable.zip"
 if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }
 $zipCreated = $false
 for ($attempt = 1; $attempt -le 5 -and -not $zipCreated; $attempt++) {
@@ -76,7 +76,7 @@ for ($attempt = 1; $attempt -le 5 -and -not $zipCreated; $attempt++) {
     }
     catch {
         if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force -ErrorAction SilentlyContinue }
-        if ($attempt -eq 5) { throw "Portable ZIP creation failed after 5 attempts. Close any running GW GUI instance or process using '$portable'. $($_.Exception.Message)" }
+        if ($attempt -eq 5) { throw "Portable ZIP creation failed after 5 attempts. Close any running Retro Media Lab instance or process using '$portable'. $($_.Exception.Message)" }
         Write-Warning "Portable ZIP attempt $attempt failed because a file is temporarily in use. Retrying..."
         Start-Sleep -Milliseconds (500 * $attempt)
     }
@@ -92,12 +92,12 @@ if (-not $SkipInstaller) {
         $iscc = $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
     }
     if (-not $iscc) { throw 'Inno Setup 6 (ISCC.exe) was not found. Use -SkipInstaller to create only the portable ZIP.' }
-    & $iscc "/DMyAppVersion=$Version" "/DSourceDir=$publish" "/DOutputDir=$dist" (Join-Path $repository 'installer\GWGUI.iss')
+    & $iscc "/DMyAppVersion=$Version" "/DSourceDir=$publish" "/DOutputDir=$dist" (Join-Path $repository 'installer\RetroMediaLab.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Inno Setup compilation failed.' }
 }
 
 $packages = Get-ChildItem -LiteralPath $dist -File | Where-Object {
-    $_.Name -match "^GW-GUI-$([regex]::Escape($Version))-win-x64-(portable\.zip|setup\.exe)$"
+    $_.Name -match "^Retro-Media-Lab-$([regex]::Escape($Version))-win-x64-(portable\.zip|setup\.exe)$"
 }
 $checksums = foreach ($package in $packages) { $hash = Get-FileHash -LiteralPath $package.FullName -Algorithm SHA256; "$($hash.Hash.ToLowerInvariant())  $($package.Name)" }
 Set-Content -LiteralPath (Join-Path $dist 'SHA256SUMS.txt') -Value $checksums -Encoding ascii

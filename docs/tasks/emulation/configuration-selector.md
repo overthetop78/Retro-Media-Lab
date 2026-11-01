@@ -1,9 +1,9 @@
 # Sélecteur des configurations et suppression
 
 - [x] Remplacer le sélecteur de marques et synchroniser les suppressions.
-  - [x] Créer `src/GWGUI.App/Functions/Views/Emulation/Machine/EmulationSelectorButtonFunctions.cs` en y déplaçant le rendu existant des boutons avec image ; modifier `src/GWGUI.App/Views/Controls/Emulation/Machine/EmulationSectionLayoutFunctions.cs` pour réutiliser ce rendu.
-  - [x] Modifier `src/GWGUI.App/Views/Controls/Emulation/Options/EmulationPreferencesSection.cs`, `EmulationPreferencesSectionLayoutFunctions.cs` et `EmulationPreferencesSectionConfigurationFunctions.cs` pour remplacer le ComboBox par les logos, conserver la sélection lors du rechargement et rafraîchir le tableau après suppression.
-  - [x] Modifier `src/GWGUI.App/Views/Controls/Emulation/Machine/EmulationSection.cs` pour recharger les logos et images des configurations après suppression, en détachant les abonnements lorsque la vue est déchargée.
+  - [x] Créer `src/RetroMediaLab.App/Functions/Views/Emulation/Machine/EmulationSelectorButtonFunctions.cs` en y déplaçant le rendu existant des boutons avec image ; modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/EmulationSectionLayoutFunctions.cs` pour réutiliser ce rendu.
+  - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Options/EmulationPreferencesSection.cs`, `EmulationPreferencesSectionLayoutFunctions.cs` et `EmulationPreferencesSectionConfigurationFunctions.cs` pour remplacer le ComboBox par les logos, conserver la sélection lors du rechargement et rafraîchir le tableau après suppression.
+  - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/EmulationSection.cs` pour recharger les logos et images des configurations après suppression, en détachant les abonnements lorsque la vue est déchargée.
   - [x] Modifier `docs/tasks/emulation/configuration-selector.md` avec les vérifications des sources et les limites de validation, sans suppression de configuration personnelle ni build non demandé.
 
 Le fichier `docs/tasks/emulation/commun.md` contient déjà un conflit Git à l’entrée de cette tâche ; il est laissé intact.
@@ -28,9 +28,9 @@ ce fichier commun n’a pas été modifié par cette tâche.
 
 
 - [x] Réutiliser le bloc de sélection complet entre les deux écrans.
-  - [x] Créer `src/GWGUI.App/Views/Controls/Emulation/Machine/EmulationConfigurationSelector.cs` avec les deux lignes Marque/Machine, les logos, les images et les événements de sélection, en réutilisant le rendu des boutons existant.
-  - [x] Modifier `src/GWGUI.App/Views/Controls/Emulation/Machine/EmulationSection.cs`, `EmulationSectionLayoutFunctions.cs` et `EmulationSectionConfigurationFunctions.cs` pour héberger le contrôle commun tout en conservant ouverture, double-clic et repli du bloc.
-  - [x] Modifier `src/GWGUI.App/Views/Controls/Emulation/Options/EmulationPreferencesSection.cs`, `EmulationPreferencesSectionLayoutFunctions.cs` et `EmulationPreferencesSectionConfigurationFunctions.cs` pour héberger le même bloc et filtrer le tableau par marque et machine, en supprimant le rendu dupliqué.
+  - [x] Créer `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/EmulationConfigurationSelector.cs` avec les deux lignes Marque/Machine, les logos, les images et les événements de sélection, en réutilisant le rendu des boutons existant.
+  - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/EmulationSection.cs`, `EmulationSectionLayoutFunctions.cs` et `EmulationSectionConfigurationFunctions.cs` pour héberger le contrôle commun tout en conservant ouverture, double-clic et repli du bloc.
+  - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Options/EmulationPreferencesSection.cs`, `EmulationPreferencesSectionLayoutFunctions.cs` et `EmulationPreferencesSectionConfigurationFunctions.cs` pour héberger le même bloc et filtrer le tableau par marque et machine, en supprimant le rendu dupliqué.
   - [x] Modifier `docs/tasks/emulation/configuration-selector.md` avec les contrôles statiques effectués et le fonctionnement partagé, sans build non demandé.
 
 

@@ -1,35 +1,35 @@
-# Développer un module d'émulation sans connaître GW GUI
+# Développer un module d'émulation sans connaître Retro Media Lab
 
 ## Objet de ce guide
 
-Ce document décrit le contrat complet entre GW GUI et une bibliothèque d'émulation. Un auteur de
-module ne doit pas avoir besoin de lire `GWGUI.App`, Amiga ou Atari. Il doit seulement disposer de
-la bibliothèque de contrats `gwgui.emulation.dll`, de ce document et d'un projet .NET compatible.
+Ce document décrit le contrat complet entre Retro Media Lab et une bibliothèque d'émulation. Un auteur de
+module ne doit pas avoir besoin de lire `RetroMediaLab.App`, Amiga ou Atari. Il doit seulement disposer de
+la bibliothèque de contrats `retromedialab.emulation.dll`, de ce document et d'un projet .NET compatible.
 
 Le chargement dynamique, les paquets avec dépendances privées, l'installation initiale et les mises
-à jour après redémarrage sont indépendants de la publication de GW GUI. Un auteur utilise le paquet
-`GWGUI.Emulation.SDK`, le modèle sous `sdk/module-template` et son propre dépôt. L'API actuelle est
+à jour après redémarrage sont indépendants de la publication de Retro Media Lab. Un auteur utilise le paquet
+`RetroMediaLab.Emulation.SDK`, le modèle sous `sdk/module-template` et son propre dépôt. L'API actuelle est
 `1.0` et chaque module déclare ses bornes compatibles et l'adresse HTTPS de son catalogue dans
 `module.json`. Les traductions propres au module passent par `IEmulationModuleLocalization`.
 
 ## 1. Ce que contient un module
 
 Un module représente une famille, par exemple Commodore. Il peut contenir plusieurs machines et
-utiliser plusieurs cœurs. Le choix du cœur appartient au module ; GW GUI ne connaît que les contrats
+utiliser plusieurs cœurs. Le choix du cœur appartient au module ; Retro Media Lab ne connaît que les contrats
 communs.
 
 Le projet produit une DLL ayant les dépendances suivantes :
 
 ```text
 MonModule
-  -> gwgui.emulation.dll       contrat obligatoire
+  -> retromedialab.emulation.dll       contrat obligatoire
   -> bibliothèques du module   facultatives
-  -X-> gwgui.app.dll           interdit
+  -X-> retromedialab.app.dll           interdit
   -X-> autre module            interdit
 ```
 
 Le module ne fournit pas de fenêtre, de `UserControl`, de XAML ou de type WPF. Il décrit les
-machines, les champs et le runtime ; GW GUI construit toute l'interface.
+machines, les champs et le runtime ; Retro Media Lab construit toute l'interface.
 
 Une fois chargé, le module apparaît automatiquement dans le menu **Émulation**. Son entrée ouvre la
 fenêtre générique de paramètres alimentée par ses machines, ses onglets et ses champs. Le module ne
@@ -43,16 +43,16 @@ doit donc pas reproduire la navigation, les badges, les sélecteurs ou les dialo
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>gwgui.emulation.commodore</AssemblyName>
+    <AssemblyName>retromedialab.emulation.commodore</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="GWGUI.Emulation.SDK" Version="1.3.0" />
+    <PackageReference Include="RetroMediaLab.Emulation.SDK" Version="1.3.0" />
     <None Update="module.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
 ```
 
-La DLL finale et `module.json` sont déposés dans `Modules/Commodore`. GW GUI contrôle le manifeste
+La DLL finale et `module.json` sont déposés dans `Modules/Commodore`. Retro Media Lab contrôle le manifeste
 au prochain démarrage, avant d'initialiser la factory. Une DLL seule directement dans `Modules`
 n'est pas chargée.
 
@@ -62,7 +62,7 @@ Exemple de manifeste pour un module construit et validé avec l'API actuelle :
 {
   "schemaVersion": 2,
   "id": "Commodore",
-  "entryAssembly": "gwgui.emulation.commodore.dll",
+  "entryAssembly": "retromedialab.emulation.commodore.dll",
   "moduleVersion": "1.3.0",
   "hostApiMinimum": "1.3",
   "hostApiMaximum": "1.3",
@@ -82,12 +82,12 @@ de DLL dans ce dossier : aucun chemin absolu, sous-chemin ou lien externe. Les t
 [schéma et les règles de chargement](emulation-modules.md) précisent les validations.
 
 `updateCatalogUrl` appartient au module. Il pointe directement vers un fichier JSON HTTPS lisible
-par GW GUI, et non vers la page d'accueil d'un dépôt. GW GUI ne contient aucune liste de modules ni
+par Retro Media Lab, et non vers la page d'accueil d'un dépôt. Retro Media Lab ne contient aucune liste de modules ni
 aucune adresse propre à une famille.
 
-Pour un essai local, fermer GW GUI, déposer le dossier complet dans `Modules`, puis relancer.
-Dans le dépôt, placer le projet et son manifeste dans `src/GWGUI.Emulation.<Famille>`, avec un projet
-nommé `GWGUI.Emulation.<Famille>.csproj`. `scripts/release/update-catalog/emulation-modules/emulation-modules.ps1` le découvre alors sans
+Pour un essai local, fermer Retro Media Lab, déposer le dossier complet dans `Modules`, puis relancer.
+Dans le dépôt, placer le projet et son manifeste dans `src/RetroMediaLab.Emulation.<Famille>`, avec un projet
+nommé `RetroMediaLab.Emulation.<Famille>.csproj`. `scripts/release/update-catalog/emulation-modules/emulation-modules.ps1` le découvre alors sans
 modifier de liste. `scripts/local-building/build.ps1 -Configuration Debug` produit tous les modules découverts ;
 `scripts/module-release/package-module.ps1 -Module <id>` produit l'archive indépendante du module demandé. Les
 succès sont inscrits dans `Data/Logs/information-*.log` et les refus dans
@@ -111,7 +111,7 @@ public interface IEmulationModuleFactory
 - le constructeur ne charge ni fichier, ni cœur, ni réseau ;
 - `Create` construit le module ;
 - `IEmulationModule.Id` doit être identique à `IEmulationModuleFactory.Id`, sans tenir compte de la casse ;
-- toute exception refuse uniquement ce module et est inscrite dans le journal de GW GUI.
+- toute exception refuse uniquement ce module et est inscrite dans le journal de Retro Media Lab.
 
 Exemple :
 
@@ -140,7 +140,7 @@ public sealed record EmulationModuleContext(
 | `ModuleDirectory` | Racine persistante et isolée du module : `Data/Emulation/Machines/<Id>`. Le module crée dessous `Configurations`, `Core`, caches et fichiers propres. |
 | `HttpClient` | Instance partagée pour télécharger cœurs ou métadonnées. Ne jamais appeler `Dispose` dessus. |
 
-La factory et le module ne conservent aucun type provenant de `GWGUI.App`.
+La factory et le module ne conservent aucun type provenant de `RetroMediaLab.App`.
 
 ## 5. Sortie principale : `IEmulationModule`
 
@@ -175,7 +175,7 @@ public interface IEmulationModule
 
 - `Id` identifie la famille et doit rester compatible avec les configurations déjà enregistrées.
 - `DisplayResourceKey` désigne son libellé traduit. La recherche consulte d'abord le catalogue
-  du module, puis les ressources de GW GUI en repli.
+  du module, puis les ressources de Retro Media Lab en repli.
 - `Machines` contient des `EmulationMachineDefinition(Id, DisplayResourceKey)`. Les identifiants
   machine sont uniques dans le module et stables dans le temps.
 - `DefaultVisibility` annonce les onglets, blocs et champs généralement visibles.
@@ -210,7 +210,7 @@ des identifiants persistants : les renommer nécessite une migration dans le mod
 
 ## 5.1 Interfaces facultatives du module
 
-GW GUI détecte aussi quatre capacités sur l'objet retourné. Elles sont facultatives : ne pas
+Retro Media Lab détecte aussi quatre capacités sur l'objet retourné. Elles sont facultatives : ne pas
 implémenter une interface masque la fonction correspondante.
 
 ```csharp
@@ -271,7 +271,7 @@ périphériques disponibles, emplacements configurés, médias montés et régla
 
 ## 6. Décrire l'interface graphique
 
-GW GUI possède et dessine l'interface. Le module fournit seulement des données :
+Retro Media Lab possède et dessine l'interface. Le module fournit seulement des données :
 
 ```text
 EmulationMachineSettings
@@ -329,7 +329,7 @@ d'insertion. Le runtime implémente `IEmulationMedia` :
 
 ## 8. Création et cycle de vie du runtime
 
-GW GUI appelle `CreateRuntimeAsync` avec :
+Retro Media Lab appelle `CreateRuntimeAsync` avec :
 
 ```csharp
 public sealed record EmulationRuntimeServices(
@@ -340,13 +340,13 @@ public sealed record EmulationRuntimeServices(
     Func<string?, int, IAudioOutput> CreateAudioOutput);
 ```
 
-Ces chemins sont propres à l'exécution. `HostExecutablePath` permet de relancer `gwgui.exe` pour un
+Ces chemins sont propres à l'exécution. `HostExecutablePath` permet de relancer `retromedialab.exe` pour un
 cœur isolé ; la ligne de commande correspondante doit être reconnue par `TryHandleHostCommand`.
 La factory audio crée la sortie demandée avec la latence souhaitée.
 
 Le résultat `EmulationMachineRuntime` contient la configuration finale, les périphériques, les médias
 montés, le libellé, la capture du pointeur, l'éventuelle préparation des médias et une factory
-`CreateMachine`. GW GUI appelle cette factory avec la liste effective des médias.
+`CreateMachine`. Retro Media Lab appelle cette factory avec la liste effective des médias.
 
 L'`IEmulatedMachine` retournée expose :
 
@@ -372,7 +372,7 @@ traitement de l'événement. Toute variation de géométrie doit apparaître dè
 
 Un `AudioChunk` contient des échantillons `short` stéréo entrelacés. Sa longueur vaut
 `FrameCount * 2`. Le module publie la fréquence, respecte mute/volume et écrit dans la sortie créée
-par GW GUI.
+par Retro Media Lab.
 
 `SetInput` reçoit à chaque mise à jour un `EmulationInputSnapshot` contenant :
 
@@ -386,7 +386,7 @@ Le module traduit cet instantané vers le cœur. Les associations configurables 
 
 ## 10. Activité, options, cassette et états
 
-- `IEmulationRuntime.MediaActivity` associe chaque emplacement à son activité instantanée ; GW GUI
+- `IEmulationRuntime.MediaActivity` associe chaque emplacement à son activité instantanée ; Retro Media Lab
   s'en sert pour les LED.
 - `AvailableOptions` décrit les options natives réellement modifiables ; `SetOptionAsync` applique
   une valeur et signale proprement les refus.
@@ -402,13 +402,13 @@ catégorie, un code, une gravité, une cible et un contexte neutre. `OriginalTex
 du cœur pour le diagnostic. Le module ne montre jamais directement une boîte de dialogue et ne
 manipule jamais l'interface.
 
-Les exceptions inattendues peuvent remonter : GW GUI les journalise à la frontière du module. Une
+Les exceptions inattendues peuvent remonter : Retro Media Lab les journalise à la frontière du module. Une
 erreur attendue de média, firmware, état ou option doit utiliser le contrat de message correspondant.
 
 ## 12. Ordre des appels
 
 ```text
-démarrage de GW GUI
+démarrage de Retro Media Lab
   factory constructeur -> factory.Create(context)
   module.Machines / DefaultVisibility
   module.LoadConfigurationsAsync()
@@ -434,7 +434,7 @@ Chaque méthode valide que la configuration reçue appartient au bon `ModuleId` 
 
 ## 13. Vérifications minimales d'un nouveau module
 
-- GW GUI démarre avec sa DLL seule, avec les autres DLL et après son retrait ;
+- Retro Media Lab démarre avec sa DLL seule, avec les autres DLL et après son retrait ;
 - catalogue et création de chaque machine ;
 - sauvegarde, rechargement, changement et suppression de configuration ;
 - tous les types d'éditeurs et règles déclarés ;
@@ -446,7 +446,7 @@ Chaque méthode valide que la configuration reçue appartient au bon `ModuleId` 
 - cœur absent, firmware absent, média invalide et configuration endommagée ;
 - annulation et fermeture pendant une opération asynchrone.
 
-## 14. Installation et publication hors du dépôt GW GUI
+## 14. Installation et publication hors du dépôt Retro Media Lab
 
 Copier `sdk/module-template` dans un dépôt indépendant, remplacer les valeurs `example`, `OWNER` et
 `REPOSITORY`, puis implémenter `IEmulationModule`. Le fichier `module.json`, la factory et le module
@@ -454,20 +454,20 @@ doivent conserver le même identifiant. Une archive distribuable garde exactemen
 `Modules/<id>`.
 
 Pour la première installation, l'utilisateur choisit cette archive ZIP, saisit l'URL directe du
-catalogue inscrite dans le manifeste ou sélectionne le module dans le répertoire officiel de GW GUI.
-GW GUI valide l'identité, la version, les bornes d'API, l'empreinte du paquet et les chemins, puis
+catalogue inscrite dans le manifeste ou sélectionne le module dans le répertoire officiel de Retro Media Lab.
+Retro Media Lab valide l'identité, la version, les bornes d'API, l'empreinte du paquet et les chemins, puis
 redémarre pour installer le module. Les recherches suivantes partent uniquement de
 `updateCatalogUrl` du module installé.
 
-Pour proposer un module dans le répertoire officiel, ajouter dans le dépôt GW GUI un fichier
+Pour proposer un module dans le répertoire officiel, ajouter dans le dépôt Retro Media Lab un fichier
 `module-registry/<id>.json` contenant uniquement `id`, `displayName` et l'URL HTTPS directe du
-catalogue `.json`. Le générateur découvre tous ces fichiers automatiquement. Le code de GW GUI et
+catalogue `.json`. Le générateur découvre tous ces fichiers automatiquement. Le code de Retro Media Lab et
 les scripts ne contiennent aucune liste de familles à compléter.
 
 Le workflow modèle `.github/workflows/release-module.yml` réagit à un tag `vX.Y.Z`. Il vérifie que
 le tag correspond à `moduleVersion`, construit l'archive et son SHA-256, crée la release propre au
 module, puis remplace `update-catalog.json` dans la release technique stable `module-catalog`. Une
-nouvelle version d'un module ne demande aucun changement, commit ou release dans GW GUI.
+nouvelle version d'un module ne demande aucun changement, commit ou release dans Retro Media Lab.
 
 ## 15. Fonctions réalisées et limites pour un module externe
 
@@ -484,9 +484,9 @@ L'écosystème externe reste différé sur les points suivants :
 
 - aucun déchargement à chaud : ajouter, retirer ou mettre à jour un module demande un redémarrage.
 
-Le SDK `GWGUI.Emulation.SDK`, sa politique de compatibilité et le modèle `sdk/module-template` sont
+Le SDK `RetroMediaLab.Emulation.SDK`, sa politique de compatibilité et le modèle `sdk/module-template` sont
 publiés pour les dépôts indépendants. Un module tiers peut référencer le paquet depuis NuGet.org et
-gérer sa propre publication sans changer la version ni le paquet de GW GUI.
+gérer sa propre publication sans changer la version ni le paquet de Retro Media Lab.
 
 ## 16. Traductions embarquées
 
@@ -510,6 +510,6 @@ Les valeurs invariantes (CPU, formats, noms de machines…) restent dans leur ba
 par langue. Les textes communs de l'hôte restent dans App.
 
 Les bindings suivent le changement de culture existant. Pour compléter les traductions,
-utiliser `scripts/tools/translate-resx-argos.py --root src/GWGUI.Emulation.<Famille>/Resources` avec
+utiliser `scripts/tools/translate-resx-argos.py --root src/RetroMediaLab.Emulation.<Famille>/Resources` avec
 les options existantes d'Argos. Le [raccordement détaillé](emulation-module-localization.md)
 décrit les consommateurs et les noms des ressources.

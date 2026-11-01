@@ -1,0 +1,49 @@
+using RetroMediaLab.App.Contracts.Emulation.Settings;
+using RetroMediaLab.App.Contracts.Views.Emulation.Settings;
+using RetroMediaLab.App.Constants.Controls.Visual;
+using RetroMediaLab.App.Localization.Extensions;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RetroMediaLab.App.Functions.Views.Emulation.Settings;
+
+internal static partial class EmulationSettingsLayout
+{
+    private static string ProcessorIcon => IconGlyphs.Processor;
+    private static string CompatibilityIcon => IconGlyphs.Compatibility;
+    private static string AccelerationIcon => IconGlyphs.Acceleration;
+
+    internal static Grid CpuSettingsPage(EmulationCpuSettingsContent settings)
+    {
+        var processor = new StackPanel();
+        processor.Children.Add(SettingsFieldGrid(settings.CpuModel));
+        settings.CpuSummary.Margin = new Thickness(12, 0, 12, 12);
+        settings.CpuSummary.VerticalAlignment = VerticalAlignment.Center;
+        settings.CpuSummary.TextWrapping = TextWrapping.Wrap;
+        settings.CpuSummary.SetResourceReference(TextBlock.ForegroundProperty, "MutedTextBrush");
+        processor.Children.Add(settings.CpuSummary);
+        if (settings.ProcessorFields is { Count: > 0 })
+            processor.Children.Add(SettingsFieldGrid(settings.ProcessorFields.ToArray()));
+
+        var processorCard = IconCard(processor, LocExtension.Get("Emulation.Cpu.Processor"), ProcessorIcon);
+        var compatibilityFields = new List<EmulationSettingsControlField>();
+        if (settings.Precision is not null)
+            compatibilityFields.Add(settings.Precision);
+        if (settings.Fpu is not null)
+            compatibilityFields.Add(settings.Fpu);
+        var root = compatibilityFields.Count == 0 ? SingleColumnPage(processorCard) : TwoColumnPage(processorCard, IconCard(SettingsFieldGrid(compatibilityFields.ToArray()), LocExtension.Get("Emulation.Cpu.Compatibility"), CompatibilityIcon));
+
+        var speedFields = new List<EmulationSettingsControlField>
+        {
+            settings.OriginalSpeed
+        };
+        if (settings.CpuSpeed is not null)
+            speedFields.Add(settings.CpuSpeed);
+        var acceleration = IconCard(SettingsFieldGrid(speedFields.Count, speedFields.ToArray()), LocExtension.Get("Emulation.Cpu.Acceleration"), AccelerationIcon);
+        acceleration.Margin = new Thickness(0, 10, 0, 0);
+        Grid.SetRow(acceleration, 1);
+        Grid.SetColumnSpan(acceleration, 2);
+        root.Children.Add(acceleration);
+        return root;
+    }
+}

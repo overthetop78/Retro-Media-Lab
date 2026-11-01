@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>RetroMediaLab.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Thomson\RetroMediaLab.Emulation.Thomson.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Example\RetroMediaLab.Emulation.Example.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Watara\RetroMediaLab.Emulation.Watara.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Wenquxing\RetroMediaLab.Emulation.Wenquxing.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Panasonic\RetroMediaLab.Emulation.Panasonic.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.MediaFileSystems\RetroMediaLab.MediaFileSystems.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.MediaAnalysis\RetroMediaLab.MediaAnalysis.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Launcher\RetroMediaLab.Launcher.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Infrastructure\RetroMediaLab.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.MediaEngine\RetroMediaLab.MediaEngine.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.App\RetroMediaLab.App.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation\RetroMediaLab.Emulation.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Commodore\RetroMediaLab.Emulation.Commodore.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Amstrad\RetroMediaLab.Emulation.Amstrad.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Atari\RetroMediaLab.Emulation.Atari.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Acorn\RetroMediaLab.Emulation.Acorn.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Apple\RetroMediaLab.Emulation.Apple.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Bandai\RetroMediaLab.Emulation.Bandai.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Coleco\RetroMediaLab.Emulation.Coleco.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Epoch\RetroMediaLab.Emulation.Epoch.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Fairchild\RetroMediaLab.Emulation.Fairchild.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Philips\RetroMediaLab.Emulation.Philips.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Mattel\RetroMediaLab.Emulation.Mattel.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Sharp\RetroMediaLab.Emulation.Sharp.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Sinclair\RetroMediaLab.Emulation.Sinclair.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Snk\RetroMediaLab.Emulation.Snk.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Sega\RetroMediaLab.Emulation.Sega.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Nintendo\RetroMediaLab.Emulation.Nintendo.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Sony\RetroMediaLab.Emulation.Sony.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Microsoft\RetroMediaLab.Emulation.Microsoft.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.Emulation.Nec\RetroMediaLab.Emulation.Nec.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\RetroMediaLab.Tests\Application\TestInfrastructure\ControlledDependencies.cs" Link="Shared\Application\TestInfrastructure\ControlledDependencies.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Application\TestInfrastructure\StaExecutionScenarios.cs" Link="Shared\Application\TestInfrastructure\StaExecutionScenarios.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Application\TestInfrastructure\SyntheticData.cs" Link="Shared\Application\TestInfrastructure\SyntheticData.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Application\TestInfrastructure\TestResourceCleanup.cs" Link="Shared\Application\TestInfrastructure\TestResourceCleanup.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Interface\DeviceSettingsViews\DeviceListScenarios.cs" Link="Shared\Interface\DeviceSettingsViews\DeviceListScenarios.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\MachineConfigurationScenarios.cs" Link="Shared\Interface\EmulationViews\MachineConfigurationScenarios.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\MachineTabsScenarios.cs" Link="Shared\Interface\EmulationViews\MachineTabsScenarios.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\EmulationInteractionScenarios.cs" Link="Shared\Interface\EmulationViews\EmulationInteractionScenarios.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\CassetteTransportPresentationScenarios.cs" Link="Shared\Interface\EmulationViews\CassetteTransportPresentationScenarios.cs" />
+  </ItemGroup>
+
+</Project>

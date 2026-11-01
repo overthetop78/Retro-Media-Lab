@@ -2,7 +2,7 @@
 
 ## 1. Objectif
 
-GW-GUI doit pouvoir exploiter au maximum les capacités du Greaseweazle pour :
+Retro-Media-Lab doit pouvoir exploiter au maximum les capacités du Greaseweazle pour :
 
 * capturer le flux magnétique brut d'une disquette ;
 * analyser chaque piste indépendamment ;
@@ -28,7 +28,7 @@ et non :
 
 ---
 
-# 2. Ce que GW-GUI possède déjà
+# 2. Ce que Retro-Media-Lab possède déjà
 
 L'architecture actuelle est déjà très proche de ce qui est nécessaire.
 
@@ -158,7 +158,7 @@ Chaque piste possède :
 
 ## 3.2. Snapshot SCP
 
-À tout moment, GW-GUI peut fabriquer un `ScpImage` temporaire à partir de la session.
+À tout moment, Retro-Media-Lab peut fabriquer un `ScpImage` temporaire à partir de la session.
 
 Ce snapshot sert notamment à :
 
@@ -184,7 +184,7 @@ Le SCP reste donc :
 * standard ;
 * utilisable par les autres logiciels.
 
-La session GW-GUI reste, elle, beaucoup plus riche.
+La session Retro-Media-Lab reste, elle, beaucoup plus riche.
 
 ---
 
@@ -276,7 +276,7 @@ La récupération s'arrête à 7.
 
 Le maximum représente seulement :
 
-**la limite à partir de laquelle GW-GUI considère qu'insister n'apportera probablement plus suffisamment d'information.**
+**la limite à partir de laquelle Retro-Media-Lab considère qu'insister n'apportera probablement plus suffisamment d'information.**
 
 ---
 
@@ -344,7 +344,7 @@ Il est alors raisonnable de sélectionner les meilleures.
 
 Mais il ne faut **jamais fabriquer de nouvelles données par vote majoritaire aveugle**.
 
-GW-GUI doit conserver une séparation claire entre :
+Retro-Media-Lab doit conserver une séparation claire entre :
 
 * information réellement observée ;
 * information reconstruite ou choisie.
@@ -384,7 +384,7 @@ Supposons :
 * SCP final prévu : 3 révolutions ;
 * piste 12 relue 15 fois.
 
-GW-GUI possède alors 15 captures dans sa session.
+Retro-Media-Lab possède alors 15 captures dans sa session.
 
 Pour le SCP final, il peut retenir 3 révolutions.
 
@@ -420,7 +420,7 @@ La session interne est donc une meilleure solution.
 
 # 13. Fusion d'une piste relue
 
-GW-GUI peut parfaitement :
+Retro-Media-Lab peut parfaitement :
 
 * charger ou posséder un `ScpImage` initial ;
 * relire seulement une piste physique ;
@@ -519,7 +519,7 @@ Il faut donc ajouter une **session persistante récupérable**.
 
 ---
 
-# 18. Format de session GW-GUI
+# 18. Format de session Retro-Media-Lab
 
 Le format de session ne doit pas être limité par SCP.
 
@@ -602,7 +602,7 @@ Pas l'inverse.
 
 # 22. Reprise après plantage
 
-Au démarrage, GW-GUI peut détecter une session inachevée.
+Au démarrage, Retro-Media-Lab peut détecter une session inachevée.
 
 L'utilisateur peut choisir :
 
@@ -611,7 +611,7 @@ L'utilisateur peut choisir :
 * abandonner ;
 * supprimer la session.
 
-Lors de la reprise, GW-GUI sait :
+Lors de la reprise, Retro-Media-Lab sait :
 
 * quelles pistes sont terminées ;
 * lesquelles sont mauvaises ;
@@ -638,7 +638,7 @@ C'est différent du concept de « SCP final ».
 
 # 24. Écriture physique existante
 
-GW-GUI possède déjà :
+Retro-Media-Lab possède déjà :
 
 * écriture piste par piste ;
 * seek ;
@@ -680,7 +680,7 @@ Exemples d'options :
 * `VerificationRevolutions`
 * `MinimumVerificationScore`
 
-Les noms restent évidemment à adapter aux conventions GW-GUI.
+Les noms restent évidemment à adapter aux conventions Retro-Media-Lab.
 
 ---
 
@@ -836,7 +836,7 @@ Il faut donc rendre la stratégie testable plutôt que la figer immédiatement.
 
 # 35. Vérification de la piste nettoyée
 
-GW-GUI peut relire la piste intermédiaire après nettoyage.
+Retro-Media-Lab peut relire la piste intermédiaire après nettoyage.
 
 Mais il faut être précis sur ce qu'il mesure.
 
@@ -844,7 +844,7 @@ Greaseweazle fournit les **timings des transitions de flux**.
 
 Il ne fournit pas directement l'amplitude analogique du signal de la tête.
 
-GW-GUI ne peut donc pas dire :
+Retro-Media-Lab ne peut donc pas dire :
 
 « le signal fait 14 % de puissance ».
 
@@ -941,7 +941,7 @@ La stratégie à privilégier reste :
 
 Une piste écrite doit pouvoir être immédiatement relue.
 
-GW-GUI peut comparer :
+Retro-Media-Lab peut comparer :
 
 * flux écrit ;
 * flux relu ;
@@ -976,7 +976,7 @@ Exemples :
 
 Encore mieux qu'un simple compteur :
 
-GW-GUI peut voir si les retries n'améliorent plus rien.
+Retro-Media-Lab peut voir si les retries n'améliorent plus rien.
 
 Exemple :
 
@@ -1014,13 +1014,13 @@ Il faut séparer deux modes d'analyse.
 
 ## Raw
 
-GW-GUI ne suppose rien concernant le format.
+Retro-Media-Lab ne suppose rien concernant le format.
 
 Il préserve intégralement le flux.
 
 ## Format-aware
 
-GW-GUI connaît ou détecte :
+Retro-Media-Lab connaît ou détecte :
 
 * géométrie ;
 * encoding ;
@@ -1033,7 +1033,7 @@ Mais elle ne doit **jamais modifier silencieusement le flux brut**.
 
 Greaseweazle lui-même avertit qu'une lecture avec format sans mode raw peut décoder puis régénérer un flux « parfait », ce qui détruirait justement certaines informations de préservation. ([GitHub][1])
 
-Pour GW-GUI, la règle devrait donc rester :
+Pour Retro-Media-Lab, la règle devrait donc rester :
 
 **capture brute d'abord, analyse ensuite.**
 
@@ -1123,7 +1123,7 @@ En cas de perte du Greaseweazle :
 
 # 50. Fichier SCP intermédiaire
 
-Optionnellement, GW-GUI peut générer périodiquement un SCP de secours.
+Optionnellement, Retro-Media-Lab peut générer périodiquement un SCP de secours.
 
 Mais ce n'est pas indispensable si le format de session est fiable.
 
@@ -1131,13 +1131,13 @@ Le SCP intermédiaire est surtout utile pour :
 
 * ouvrir immédiatement la capture dans un autre logiciel ;
 * obtenir une sauvegarde portable ;
-* diagnostiquer GW-GUI.
+* diagnostiquer Retro-Media-Lab.
 
 ---
 
 # 51. Session vs SCP
 
-| Fonction                              | Session GW-GUI |      SCP |
+| Fonction                              | Session Retro-Media-Lab |      SCP |
 | ------------------------------------- | -------------: | -------: |
 | Nombre variable de captures par piste |              ✅ |        ❌ |
 | Captures rejetées                     |              ✅ |        ❌ |
@@ -1224,7 +1224,7 @@ La session reste la même.
 
 Principe important :
 
-**GW-GUI ne doit jamais inventer une donnée silencieusement.**
+**Retro-Media-Lab ne doit jamais inventer une donnée silencieusement.**
 
 Il peut :
 
@@ -1468,7 +1468,7 @@ Elle ne supprimera cependant jamais totalement la différence physique entre :
 
 # 65. Limites physiques impossibles à corriger logiciellement
 
-Même avec une excellente analyse de flux, GW-GUI ne peut pas :
+Même avec une excellente analyse de flux, Retro-Media-Lab ne peut pas :
 
 * agrandir physiquement une tête ;
 * mesurer directement l'amplitude analogique du champ magnétique via Greaseweazle ;
@@ -1562,7 +1562,7 @@ Ajouter :
 
 # 68. Résultat recherché
 
-À terme, GW-GUI ne serait plus simplement une GUI permettant de lire ou écrire une image avec Greaseweazle.
+À terme, Retro-Media-Lab ne serait plus simplement une GUI permettant de lire ou écrire une image avec Greaseweazle.
 
 Il deviendrait un véritable **outil de récupération et de préservation assistée au niveau flux** :
 
@@ -1577,7 +1577,7 @@ Il deviendrait un véritable **outil de récupération et de préservation assis
 
 L'architecture actuelle permet déjà une bonne partie de cette évolution sans remise à plat majeure : l'acquisition est déjà piste par piste, `ScpImage` est déjà le modèle utilisé par la visualisation, le writer SCP reconstruit proprement le conteneur et l'écriture physique dispose déjà d'une couche de vérification.
 
-**En gros : il ne manque pas une nouvelle architecture, il manque surtout une couche intelligente d'orchestration autour de ce que GW-GUI sait déjà faire.**
+**En gros : il ne manque pas une nouvelle architecture, il manque surtout une couche intelligente d'orchestration autour de ce que Retro-Media-Lab sait déjà faire.**
 
 [1]: https://github.com/keirf/greaseweazle/wiki/Supported-Image-Types/a8b5dc0199b156ef95bd9039277b3e9d4cde28d4?utm_source=chatgpt.com "Supported Image Types · keirf/greaseweazle Wiki · GitHub"
 [2]: https://github.com/keirf/greaseweazle/issues/78?utm_source=chatgpt.com "Feature request: DC Erase, Write Test Tracks · Issue #78 · keirf/greaseweazle · GitHub"

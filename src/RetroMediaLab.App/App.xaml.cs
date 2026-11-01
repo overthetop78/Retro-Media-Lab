@@ -1,0 +1,233 @@
+using RetroMediaLab.App.Services.Dialogs;
+using RetroMediaLab.Infrastructure.Settings;
+using RetroMediaLab.App.Functions.Localization;
+using RetroMediaLab.App.Localization.Extensions;
+using RetroMediaLab.App.Localization.Sources;
+using RetroMediaLab.App.Services.Emulation;
+using RetroMediaLab.App.Services.Logging;
+using RetroMediaLab.App.Services.Input.GameInput;
+using RetroMediaLab.App.Services.Storage;
+using RetroMediaLab.App.Services.Theming;
+using RetroMediaLab.App.Services.Updates;
+using RetroMediaLab.App.Services.Windows;
+using RetroMediaLab.App.Views.Windows.Preferences;
+using RetroMediaLab.App.Views.Windows.EmulationPreferences;
+using RetroMediaLab.App.Views.Windows.EmulationModuleOptions;
+using RetroMediaLab.App.Views.Windows.Updates;
+using RetroMediaLab.App.Views.Windows.Shell;
+using System.Globalization;
+using System.IO;
+using System.Net.Http;
+using System.Windows;
+using Microsoft.Win32;
+using System.Windows.Threading;
+using System.Windows.Interop;
+using RetroMediaLab.Infrastructure.HostTools;
+
+namespace RetroMediaLab.App;
+
+public partial class App : Application
+{
+    private AppTheme _theme;
+    private AppThemeDesign _themeDesign;
+    private IReadOnlyDictionary<AppThemeDesign, ThemeEditionSettings> _themeEditions = new Dictionary<AppThemeDesign, ThemeEditionSettings>();
+    private UpdateStartupCoordinator? _updateStartup;
+    private RetroMediaLab.App.Services.Input.Keyboard.ForegroundKeyboardShortcutGuard? _keyboardShortcutGuard;
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        ApplicationBrandMigration.Migrate(AppContext.BaseDirectory,
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+        _updateStartup = UpdateStartupCoordinator.FromArguments(e.Args);
+        foreach (var module in EmulationModuleRegistry.Modules)
+        {
+            if (module.TryHandleHostCommand(e.Args, out var exitCode))
+            {
+                Environment.ExitCode = exitCode;
+                Shutdown(exitCode);
+                return;
+            }
+        }
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        var directory = StoragePaths.DataDirectory;
+        Directory.CreateDirectory(StoragePaths.LogsDirectory);
+        var settingsStore = new JsonSettingsStore(Path.Combine(directory, "settings.json"));
+        var settings = Task.Run(() => settingsStore.LoadAsync()).GetAwaiter().GetResult();
+        var previousGwPath = settings.GwExecutablePath;
+        var previousFallbackPath = settings.PreviousGwExecutablePath;
+        var previousInstalledVersion = settings.InstalledHostToolsVersion;
+        settings.GwExecutablePath = StoragePaths.NormalizeHostToolsPath(settings.GwExecutablePath);
+        settings.PreviousGwExecutablePath = StoragePaths.NormalizeHostToolsPath(settings.PreviousGwExecutablePath);
+        using (var httpClient = new HttpClient())
+        {
+            var installations = new GwInstallationManager(httpClient, StoragePaths.HostToolsDirectory).Detect(settings.GwExecutablePath);
+            var configuredInstallation = installations.FirstOrDefault(installation =>
+                !string.IsNullOrWhiteSpace(settings.GwExecutablePath)
+                && string.Equals(installation.ExecutablePath, Path.GetFullPath(settings.GwExecutablePath), StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrWhiteSpace(configuredInstallation?.Version))
+                settings.InstalledHostToolsVersion = configuredInstallation.Version;
+            if (!string.IsNullOrWhiteSpace(settings.InstalledHostToolsVersion))
+            {
+                var managedInstallation = installations.FirstOrDefault(installation => installation.Managed && string.Equals(installation.Version, settings.InstalledHostToolsVersion, StringComparison.OrdinalIgnoreCase));
+                if (managedInstallation is not null) settings.GwExecutablePath = managedInstallation.ExecutablePath;
+            }
+        }
+        var language = UiLanguageResolver.Resolve(settings.Language, CultureInfo.CurrentUICulture);
+        if (!string.Equals(settings.Language, language, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(previousGwPath, settings.GwExecutablePath, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(previousFallbackPath, settings.PreviousGwExecutablePath, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(previousInstalledVersion, settings.InstalledHostToolsVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            settings.Language = language;
+            Task.Run(() => settingsStore.SaveAsync(settings)).GetAwaiter().GetResult();
+        }
+        var culture = UiLanguageResolver.GetCulture(language);
+        var uiCulture = UiLanguageResolver.GetUiCulture(language);
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = uiCulture;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = uiCulture;
+        base.OnStartup(e);
+        LocalizationSource.Instance.SetCultures(culture, uiCulture, refresh: false);
+        _theme = settings.Theme;
+        _themeDesign = settings.ThemeDesign;
+        _themeEditions = settings.ThemeEditions;
+        ThemeManager.ConfigureEditions(_themeEditions);
+        ThemeManager.Apply(settings.ThemeDesign, settings.Theme);
+        SystemEvents.UserPreferenceChanged += SystemPreferenceChanged;
+        GameInputControllerSource.Instance.StartMonitoring();
+        MainWindow = new MainWindow(null, initialSettings: settings);
+        try
+        {
+            _keyboardShortcutGuard = new RetroMediaLab.App.Services.Input.Keyboard.ForegroundKeyboardShortcutGuard();
+            MainWindow.Show();
+        }
+        catch
+        {
+            try { MainWindow.Close(); }
+            finally
+            {
+                try { _keyboardShortcutGuard?.Dispose(); }
+                finally { _keyboardShortcutGuard = null; }
+            }
+            throw;
+        }
+    }
+
+    private void SystemPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+    {
+        if (_theme == AppTheme.System) Dispatcher.Invoke(() => ThemeManager.Apply(_themeDesign, AppTheme.System));
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        try
+        {
+        ReleaseRemainingWindows();
+        try { RetroMediaLab.App.Services.Emulation.EmulationVideoPresentationProfiles.Store.FlushPending(); }
+        catch (Exception error) { System.Diagnostics.Trace.TraceError(error.ToString()); }
+        GameInputControllerSource.Instance.StopMonitoring();
+        SystemEvents.UserPreferenceChanged -= SystemPreferenceChanged;
+        DispatcherUnhandledException -= OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException -= OnDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException -= OnUnobservedTaskException;
+        }
+        finally
+        {
+            try { _keyboardShortcutGuard?.Dispose(); }
+            finally
+            {
+                _keyboardShortcutGuard = null;
+                base.OnExit(e);
+            }
+        }
+    }
+
+    private void ReleaseRemainingWindows()
+    {
+        foreach (Window window in Windows.Cast<Window>().ToArray())
+        {
+            try
+            {
+                if (new WindowInteropHelper(window).Handle != IntPtr.Zero) window.Close();
+            }
+            catch (InvalidOperationException) { }
+            window.DataContext = null;
+            window.Content = null;
+        }
+        MainWindow = null;
+    }
+
+    protected override void OnActivated(EventArgs e)
+    {
+        base.OnActivated(e);
+        foreach (Window window in Windows) ThemeManager.ApplyWindowTheme(window);
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        ErrorLog.Write(e.Exception, "WPF dispatcher");
+        var detail = ExceptionDescriptionFunctions.Describe(e.Exception);
+        WpfMessageDialogService.ShowMessage(WpfDialogOwner.Resolve(), LocExtension.Get("Error.Unexpected", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Error);
+        e.Handled = true;
+    }
+
+    private static void OnDomainUnhandledException(object? sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception exception) ErrorLog.Write(exception, "AppDomain unhandled exception");
+    }
+
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        ErrorLog.Write(e.Exception, "Unobserved task exception");
+        e.SetObserved();
+    }
+
+    public void SetTheme(AppTheme theme) => SetTheme(_themeDesign, theme);
+    public void SetTheme(AppThemeDesign design, AppTheme variant)
+    {
+        _themeDesign = design;
+        _theme = variant;
+        ThemeManager.ConfigureEditions(_themeEditions);
+        ThemeManager.Apply(design, variant);
+    }
+
+    public void SetLanguage(string language)
+    {
+        var culture = UiLanguageResolver.GetCulture(language);
+        var uiCulture = UiLanguageResolver.GetUiCulture(language);
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = uiCulture;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = uiCulture;
+        LocalizationSource.Instance.SetCultures(culture, uiCulture);
+        foreach (var window in Windows)
+        {
+            if (window is MainWindow main) main.RefreshLocalizedContent();
+            else if (window is PreferencesWindow preferences) preferences.RefreshLocalizedContent();
+            else if (window is EmulationPreferencesWindow emulationPreferences) emulationPreferences.RefreshLocalizedContent();
+            else if (window is EmulationModuleOptionsWindow moduleOptions) moduleOptions.RefreshLocalizedContent();
+            else if (window is UpdatesWindow updates) updates.RefreshLocalizedContent();
+        }
+    }
+
+    internal async Task CompleteUpdateStartupAsync(Window owner)
+    {
+        if (_updateStartup is null) return;
+        var coordinator = _updateStartup;
+        _updateStartup = null;
+        try
+        {
+            var result = await coordinator.CompleteStartupAsync();
+            if (result is null) return;
+            var succeeded = result.Status == RetroMediaLab.Updates.Contracts.UpdateTransactionStatus.Succeeded;
+            WpfMessageDialogService.ShowMessage(owner,
+                LocExtension.Get(succeeded ? "Updates.InstallSucceeded" : "Updates.InstallRestored", result.Detail ?? ""),
+                LocExtension.Get("Updates.Title"), MessageBoxButton.OK,
+                succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+        catch (Exception error) { ErrorLog.Write(error, "Completing update startup"); }
+    }
+}

@@ -169,7 +169,7 @@ Les rôles et associations sont à recouper avec les [profils B-Em](https://gith
 4. Les instructions du MOS et du langage passent par le bus : RAM, ROM ou registres des composants suivant l'adresse et le sens de l'accès.
 5. Les composants produisent ensuite interruptions, images, sons et échanges cassette/disque. Les services du module les transmettent à l'application par les interfaces existantes.
 
-Il s'agit du fonctionnement à représenter dans le cœur ; les liaisons GW GUI déjà présentes sont détaillées dans la [fiche Model A](Model%20A/model-a-reference.md#raccordement-aux-fichiers-déjà-présents-dans-gw-gui).
+Il s'agit du fonctionnement à représenter dans le cœur ; les liaisons Retro Media Lab déjà présentes sont détaillées dans la [fiche Model A](Model%20A/model-a-reference.md#raccordement-aux-fichiers-déjà-présents-dans-retro-media-lab).
 
 ### Points de chargement à conserver séparés
 

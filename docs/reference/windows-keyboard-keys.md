@@ -8,7 +8,7 @@ Référence : [Microsoft — System.Windows.Input.Key](https://learn.microsoft.c
 - `D0` à `D9` : touches numériques de la rangée supérieure, séparées de `NumPad0` à `NumPad9`.
 - `F1` à `F24` : touches de fonction ; les claviers ordinaires proposent généralement F1 à F12.
 - `LeftCtrl` / `RightCtrl`, `LeftAlt` / `RightAlt`, `LeftShift` / `RightShift` : côtés distincts. RightAlt correspond à Alt Gr sur les dispositions concernées ; SHIFT s'appelle MAJ en français.
-- `LWin` / `RWin` : touches Windows, aucune correspondance implicite avec les touches Amiga. Elles restent réservées à Windows dans GW GUI.
+- `LWin` / `RWin` : touches Windows, aucune correspondance implicite avec les touches Amiga. Elles restent réservées à Windows dans Retro Media Lab.
 - `Oem*` et `Abnt*` : identités dépendant de la disposition. Un alias tel que OemSemicolon ne prouve pas que le caractère produit soit un point-virgule sur un clavier français. Le caractère saisi relève de la disposition active et des événements de texte, pas du seul nom Key.
 - `ImeProcessed`, `System`, `DeadCharProcessed` : valeurs de traitement ; récupérer la vraie touche depuis l'événement approprié, ne pas les présenter comme des touches physiques.
 

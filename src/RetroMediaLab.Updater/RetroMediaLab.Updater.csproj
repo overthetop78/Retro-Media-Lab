@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <Product>Retro Media Lab</Product>
+    <Title>Retro Media Lab</Title>
+    <Company>Retro Media Lab</Company>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>retromedialab.updater</AssemblyName>
+    <RootNamespace>RetroMediaLab.Updater</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RetroMediaLab.Updates\RetroMediaLab.Updates.csproj" />
+  </ItemGroup>
+</Project>

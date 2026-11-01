@@ -1,0 +1,653 @@
+using RetroMediaLab.App.Services.Dialogs;
+using RetroMediaLab.Infrastructure.Settings.Emulation;
+using RetroMediaLab.App.Constants.Emulation;
+using RetroMediaLab.App.Constants.Machine;
+using RetroMediaLab.App.Contracts.Machine;
+using RetroMediaLab.App.Controllers.Emulation.Machine;
+using RetroMediaLab.App.Functions.Machine;
+using RetroMediaLab.App.Functions.Emulation.Storage;
+using RetroMediaLab.App.Functions.Emulation.Machine;
+using RetroMediaLab.App.Functions.Rendering.Emulation;
+using RetroMediaLab.App.Localization.Extensions;
+using RetroMediaLab.App.Presenters.Emulation.Machine;
+using RetroMediaLab.App.Services.Emulation;
+using RetroMediaLab.App.Services.Input.GameInput;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using RetroMediaLab.Emulation;
+using RetroMediaLab.App.Views.Dialogs.Emulation;
+using Microsoft.Win32;
+using RetroMediaLab.App.Views.Dialogs.Emulation.Storage;
+using RetroMediaLab.App.Services.Storage;
+using RetroMediaLab.App.Services.Windows;
+using RetroMediaLab.App.Theme.Common;
+
+namespace RetroMediaLab.App.Views.Controls.Emulation.Machine;
+
+internal sealed class MachineController : UserControl, IAsyncDisposable
+{
+    internal static readonly EmulationCassetteCommand[] CassetteCommandOrder =
+    [
+        EmulationCassetteCommand.Record,
+        EmulationCassetteCommand.Play,
+        EmulationCassetteCommand.Rewind,
+        EmulationCassetteCommand.FastForward,
+        EmulationCassetteCommand.Stop,
+        EmulationCassetteCommand.Pause
+    ];
+
+    private readonly MachineControllerOptions _options;
+    private EmulationMachinePresentation _view;
+    private ContentControl _presentationHost;
+    private Func<EmulationMachinePresentation> _presentationFactory;
+    private readonly MachineSession _session;
+    private readonly MachineQuickStates _quickStates;
+    private readonly MachineVideoPresenter _video;
+    private readonly MachineCommandBar _commands;
+    private readonly MachineInputController _input;
+    private IReadOnlyList<EmulationMediaDevice> _mediaDevices;
+    private Func<EmulationMedia, CancellationToken, ValueTask<EmulationMedia>>? _prepareMediaAsync;
+    private readonly Dictionary<EmulationMediaSlot, DateTime> _mediaActivityUntil = [];
+    private Window? _fullscreenWindow;
+    private Grid? _fullscreenHost;
+    private bool _audioMuted;
+    private bool _disposed;
+
+    internal static async Task<MachineController> CreateAsync(MachineControllerOptions options)
+    {
+        MachineSession? session = null;
+        MachineController? controller = null;
+        try
+        {
+            session = new MachineSession(options.ModuleId, options.ConfigurationId, options.WindowTitle,
+                options.Machine, options.MachineFactory, options.MountedMedia);
+            controller = new MachineController(options, session);
+            return controller;
+        }
+        finally
+        {
+            if (controller is null)
+            {
+                if (session is not null) await session.DisposeAsync();
+                else await options.Machine.DisposeAsync();
+            }
+        }
+    }
+
+    private MachineController(MachineControllerOptions options, MachineSession session)
+    {
+        _options = options;
+        _session = session;
+        _presentationHost = this;
+        _presentationFactory = options.CreatePresentation ?? CreateBasePresentation;
+        var initialized = false;
+        try
+        {
+            _view = _presentationFactory();
+            _mediaDevices = options.MediaDevices;
+            _prepareMediaAsync = options.PrepareMediaAsync;
+            _audioMuted = options.Machine.Audio.IsMuted;
+            _quickStates = new MachineQuickStates(() => _session.Machine.SavedStates, options.QuickStatePath);
+            _video = new MachineVideoPresenter(_view, options.Machine, options.VideoRenderer, options.VideoProcessing);
+            _video.FramePresented += FramePresented;
+            _video.ShaderLoadingChanged += VideoShaderLoadingChanged;
+            VideoShaderLoadingChanged(_video.IsShaderLoading);
+            _session.MachineChanged += MachineChanged;
+            _input = new MachineInputController(_view, _video.InputView, _video.InputHandle, () => _session.Machine, options.GlobalShortcuts, ExecuteShortcutAsync,
+                () => PresentationActivation?.Invoke() ?? options.IsActive(), inputHandleProvider: () => _video.InputHandle);
+            _commands = new MachineCommandBar(_view.Toolbar, CreateActions(), options.GlobalShortcuts, options.ShowError, _input.RestoreFocus);
+            _view.AttachCommands(_commands.Presentation);
+            _commands.SetSavedStateAvailability(_quickStates.IsSupported, _quickStates.IsAvailable);
+            _video.SurfaceChanged += VideoSurfaceChanged;
+            _commands.RendererStatus.Text = MachinePresentationFunctions.RendererName(_video.Renderer);
+            _commands.SetPowered(false);
+            _commands.SetMuted(_audioMuted);
+            _video.SetVisible(false);
+            RebuildMediaDevices();
+            Content = _view;
+            initialized = true;
+        }
+        finally
+        {
+            if (!initialized)
+            {
+                _session.MachineChanged -= MachineChanged;
+                if (_video is not null)
+                {
+                    _video.FramePresented -= FramePresented;
+                    _video.ShaderLoadingChanged -= VideoShaderLoadingChanged;
+                    _video.SurfaceChanged -= VideoSurfaceChanged;
+                }
+                EmulationVideoCleanupFunctions.RunAll(() => _input?.Dispose(), () => _video?.Dispose(), () => _view?.Dispose());
+            }
+        }
+    }
+
+    internal IEmulatedMachine Machine => _session.Machine;
+    internal bool IsFullscreen => _fullscreenWindow is not null;
+    internal EmulationMachinePresentation Presentation => _view;
+    internal ContentControl PresentationHost => _presentationHost;
+    internal Func<EmulationMachinePresentation> PresentationFactory => _presentationFactory;
+    internal Func<bool>? PresentationActivation { get; set; }
+    internal bool IsStopped => _disposed;
+
+    private static EmulationMachinePresentation CreateBasePresentation() => new MachineView();
+
+    internal void MovePresentationTo(ContentControl host)
+    {
+        if (ReferenceEquals(host, _presentationHost)) return;
+        if (host.Content is not null) throw new InvalidOperationException(nameof(host));
+        var previous = _presentationHost;
+        if (!_disposed) _input.BeginHostTransition();
+        try
+        {
+            if (ReferenceEquals(previous.Content, _view)) previous.Content = null;
+            try
+            {
+                if (!_disposed) host.Content = _view;
+                _presentationHost = host;
+            }
+            catch
+            {
+                if (!_disposed) previous.Content = _view;
+                throw;
+            }
+        }
+        finally { if (!_disposed) _input.CompleteHostTransition(); }
+    }
+
+    internal void SetPresentation(Func<EmulationMachinePresentation> create)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_presentationFactory == create) return;
+        var previous = _view;
+        var next = create() ?? throw new InvalidOperationException(nameof(create));
+        if (ReferenceEquals(previous, next)) return;
+        var committed = false;
+        try
+        {
+            next.AttachCommands(_commands.Presentation);
+            if (IsFullscreen) ExitFullscreen();
+            _input.BeginHostTransition();
+            try
+            {
+                _presentationHost.Content = null;
+                _commands.Rehost(next.Toolbar);
+                _video.SetPresentation(next);
+                _input.SetPresentation(next);
+                _view = next;
+                RebuildMediaDevices();
+                _presentationHost.Content = next;
+                _presentationFactory = create;
+                committed = true;
+            }
+            catch
+            {
+                _view = previous;
+                try
+                {
+                    _commands.Rehost(previous.Toolbar);
+                    _video.SetPresentation(previous);
+                    _input.SetPresentation(previous);
+                    RebuildMediaDevices();
+                }
+                finally { _presentationHost.Content = previous; }
+                throw;
+            }
+            finally { _input.CompleteHostTransition(); }
+        }
+        finally
+        {
+            if (committed) previous.Dispose();
+            else next.Dispose();
+        }
+    }
+
+    internal async Task StopAsync()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        try { ExitFullscreen(); }
+        finally
+        {
+            _video.FramePresented -= FramePresented;
+            _video.ShaderLoadingChanged -= VideoShaderLoadingChanged;
+            _video.SurfaceChanged -= VideoSurfaceChanged;
+            _session.MachineChanged -= MachineChanged;
+            try { EmulationVideoCleanupFunctions.RunAll(_input.Dispose, _video.Dispose); }
+            finally
+            {
+                try { EmulationVideoShaderLoadingStatus.Set(_options.ModuleId, _options.ConfigurationId, false); }
+                finally
+                {
+                    try { await _session.DisposeAsync(); }
+                    finally
+                    {
+                        try { _view.Dispose(); }
+                        finally
+                        {
+                            if (ReferenceEquals(_presentationHost.Content, _view)) _presentationHost.Content = null;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    internal void ApplyVideoRenderer(EmulationVideoRenderer renderer)
+    {
+        _video.SetRenderer(renderer);
+        _commands.RendererStatus.Text = MachinePresentationFunctions.RendererName(_video.Renderer);
+    }
+
+    internal void ApplyVideoConfiguration(EmulationVideoRenderer renderer, EmulationVideoProcessingConfiguration videoProcessing)
+    {
+        _video.SetVideoProcessing(videoProcessing);
+        ApplyVideoRenderer(renderer);
+    }
+
+    internal async Task ApplyRuntimeOptionsAsync(IReadOnlyDictionary<string, string> options)
+    {
+        if (_disposed || _session.Machine.State is not EmulationMachineState.Running
+            and not EmulationMachineState.Paused) return;
+        foreach (var option in EmulationRuntimeOptionFunctions.HotChanges(options, _session.Machine.Runtime.AvailableOptions))
+            await _session.Machine.Runtime.SetOptionAsync(option.Key, option.Value);
+    }
+
+    internal async Task ApplyConfigurationAsync(IEmulationConfiguration configuration)
+    {
+        if (_disposed) return;
+        var runtime = await _options.CreateRuntimeAsync(configuration, CancellationToken.None);
+        _mediaDevices = runtime.MediaDevices;
+        _prepareMediaAsync = runtime.PrepareMediaAsync;
+        await _session.UpdateMachineFactoryAsync(runtime.CreateMachine);
+        RebuildMediaDevices();
+    }
+
+    public async ValueTask DisposeAsync() => await StopAsync();
+
+    private void VideoShaderLoadingChanged(bool isLoading)
+    {
+        _view.SetShaderLoading(isLoading);
+        EmulationVideoShaderLoadingStatus.Set(_options.ModuleId, _options.ConfigurationId, isLoading);
+    }
+
+    private MachineCommandActions CreateActions() => new(
+        TogglePowerAsync,
+        TogglePauseAsync,
+        () => _session.Machine.Lifecycle.SoftResetAsync().AsTask(),
+        HardResetAsync,
+        QuickSaveAsync,
+        QuickLoadAsync,
+        CaptureScreenAsync,
+        ToggleFullscreenAsync,
+        ToggleAudioAsync,
+        _options.SwitchControllerPointer ?? (_session.Machine.Input.SupportsControllerPointerSwitch ? SwitchControllerPointerAsync : null),
+        _session.Machine.Runtime.AvailableOptions.Count > 0 ? OpenCoreOptionsAsync : null);
+
+    private async Task OpenCoreOptionsAsync()
+    {
+        var runtime = _session.Machine.Runtime;
+        if (runtime.AvailableOptions.Count == 0) return;
+        var dialog = new CoreOptionsDialog(runtime.EmulatorName, runtime.EmulatorVersion, runtime.AvailableOptions, _options.ModuleId);
+        try
+        {
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), dialog) != true) return;
+            var values = dialog.Values;
+            foreach (var option in runtime.AvailableOptions)
+            {
+                if (!values.TryGetValue(option.Key, out var value)
+                    || value == option.CurrentValue || option.RequiresRestart) continue;
+                await runtime.SetOptionAsync(option.Key, value);
+            }
+            if (_options.PersistRuntimeOptions is not null)
+                await _options.PersistRuntimeOptions(values);
+        }
+        finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
+    }
+
+    private async Task SwitchControllerPointerAsync()
+    {
+        var pointerMode = await _session.Machine.Input.SwitchControllerPointerAsync();
+        _commands.SetControllerPointerMode(pointerMode);
+    }
+
+    private async Task TogglePowerAsync()
+    {
+        await _session.TogglePowerAsync();
+        _input.SetPowered(_session.IsPowered);
+        _commands.SetPowered(_session.IsPowered);
+        _video.SetVisible(_session.IsPowered);
+        if (!_session.IsPowered) _commands.Status.Text = string.Empty;
+        RebuildMediaDevices();
+    }
+
+    private Task HardResetAsync()
+    {
+        var requiresRecreation = _mediaDevices.Any(device => device.RequiresMachineRecreation && _session.MountedMedia.Any(media => media.Slot == device.Slot));
+        return requiresRecreation ? _session.RecreateRunningMachineAsync() : _session.Machine.Lifecycle.HardResetAsync().AsTask();
+    }
+
+    private async Task TogglePauseAsync()
+    {
+        await _session.TogglePauseAsync();
+        _commands.SetPaused(_session.Machine.State == EmulationMachineState.Paused);
+    }
+
+    private Task ToggleAudioAsync()
+    {
+        _audioMuted = !_audioMuted;
+        _session.Machine.Audio.SetMuted(_audioMuted);
+        _commands.SetMuted(_audioMuted);
+        return Task.CompletedTask;
+    }
+
+    private async Task QuickSaveAsync()
+    {
+        if (await _quickStates.SaveAsync()) _commands.SetSavedStateAvailability(true, true);
+    }
+
+    private async Task QuickLoadAsync()
+    {
+        await _quickStates.LoadAsync();
+    }
+
+    private async Task CaptureScreenAsync()
+    {
+        var snapshot = await _video.CaptureSnapshotAsync() ?? throw new InvalidOperationException(LocExtension.Get("Emulation.Shortcut.Unavailable"));
+        var capture = snapshot.Clone();
+        capture.Freeze();
+        var path = await Task.Run(() => MachineCaptureFunctions.Save(capture, _options.CaptureFolder, DateTime.Now));
+        _commands.Status.Text = Path.GetFileName(path);
+    }
+
+    private Task ToggleFullscreenAsync()
+    {
+        if (_fullscreenWindow is null) EnterFullscreen();
+        else ExitFullscreen();
+        return Task.CompletedTask;
+    }
+
+    private void EnterFullscreen()
+    {
+        _input.BeginHostTransition();
+        _view.DisplayHost.Children.Remove(_view.Screen);
+        _fullscreenHost = new Grid
+        {
+            Background = Brushes.Black,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch
+        };
+        _fullscreenHost.Children.Add(_view.Screen);
+        _video.SetDisplayHost(_fullscreenHost);
+        _fullscreenWindow = new Window
+        {
+            Title = _options.WindowTitle,
+            Content = _fullscreenHost,
+            WindowStyle = WindowStyle.None,
+            WindowState = WindowState.Maximized,
+            Background = Brushes.Black
+        };
+        _fullscreenWindow.Closed += FullscreenWindowClosed;
+        _fullscreenWindow.ContentRendered += FullscreenContentRendered;
+        _fullscreenWindow.Show();
+        _fullscreenWindow.Activate();
+        _input.CompleteHostTransition();
+    }
+
+    private void ExitFullscreen(bool closeWindow = true)
+    {
+        if (_fullscreenWindow is null) return;
+        _input.BeginHostTransition();
+        var window = _fullscreenWindow;
+        window.Closed -= FullscreenWindowClosed;
+        window.ContentRendered -= FullscreenContentRendered;
+        _fullscreenHost?.Children.Remove(_view.Screen);
+        window.Content = null;
+        _fullscreenHost = null;
+        _fullscreenWindow = null;
+        _view.DisplayHost.Children.Add(_view.Screen);
+        _video.SetDisplayHost(_view.DisplayHost);
+        if (closeWindow) window.Close();
+        _input.CompleteHostTransition();
+    }
+
+    private void FullscreenWindowClosed(object? sender, EventArgs args) => ExitFullscreen(closeWindow: false);
+
+    private void FullscreenContentRendered(object? sender, EventArgs args)
+    {
+        _video.FitScreen();
+        _input.RestoreFocus();
+    }
+
+    private void MachineChanged(object? sender, IEmulatedMachine machine)
+    {
+        _video.SetMachine(machine);
+        machine.Audio.SetMuted(_audioMuted);
+        _commands.SetMuted(_audioMuted);
+        _commands.SetSavedStateAvailability(_quickStates.IsSupported, _quickStates.IsAvailable);
+        RebuildMediaDevices();
+    }
+
+    private void RebuildMediaDevices()
+    {
+        _view.SetDevices(_mediaDevices.Select(device =>
+        {
+            var canOpenMedia = device.IsRemovable && (device.MediaType != EmulationMediaType.MemoryCard
+                || device.ConfigurationKind == EmulationStorageConfigurationKind.MemoryCard);
+            var mounted = _session.MountedMedia.FirstOrDefault(media => media.Slot == device.Slot);
+            var cassette = device.MediaType == EmulationMediaType.Cassette ? _session.Machine.CassetteTransport : null;
+            var state = cassette?.State ?? EmulationCassetteState.Empty;
+            var activeOperation = cassette?.ActiveOperation;
+            return new MachineViewDevice(device.Slot.ToString(), device.DisplayLabel ?? device.Slot.ToString(),
+                DeviceGlyph(device.MediaType), canOpenMedia, mounted is not null,
+                canOpenMedia ? () => InsertMediaAsync(device) : null,
+                canOpenMedia && mounted is not null ? () => EjectMediaAsync(device) : null,
+                device.MediaType == EmulationMediaType.Cassette ? CassetteStateText(state) : null,
+                device.MediaType == EmulationMediaType.Cassette ? CassetteCommandOrder.Select(command => CassetteCommand(command, cassette, state, activeOperation)).ToArray() : null, device.MediaType);
+        }), _options.ShowError, _input.RestoreFocus);
+    }
+
+    private MachineViewDeviceCommand CassetteCommand(EmulationCassetteCommand command, IEmulationCassetteTransport? transport, EmulationCassetteState state, EmulationCassetteCommand? activeOperation)
+    {
+        var supported = transport?.AvailableCommands.Contains(command) == true;
+        return new MachineViewDeviceCommand(command, CassetteCommandText(command),
+            CassetteCommandGlyph(command), supported,
+            CassetteTransportPresentationFunctions.IsEnabled(_session.IsPowered, supported, state, activeOperation, command),
+            CassetteTransportPresentationFunctions.IsActive(state, activeOperation, command),
+            CassetteTransportPresentationFunctions.IsBlinking(state, activeOperation, command),
+            () => ExecuteCassetteCommandAsync(command));
+    }
+
+    private async Task InsertMediaAsync(EmulationMediaDevice device)
+    {
+        if (device.ConfigurationKind == EmulationStorageConfigurationKind.MemoryCard)
+        {
+            await ConfigureMemoryCardAsync(device);
+            return;
+        }
+        var extensions = device.AcceptedExtensions.Select(extension => $"*{extension}").ToArray();
+        var dialog = new OpenFileDialog
+        {
+            Filter = $"{LocExtension.Get("Emulation.Storage.Media.Associated")} ({string.Join(";", extensions)})|{string.Join(";", extensions)}",
+            InitialDirectory = _options.InitialMediaDirectory(device),
+            ShowReadOnly = device.MediaType is EmulationMediaType.Floppy or EmulationMediaType.Cassette,
+            ClientGuid = EmulationMediaDialogFunctions.ClientGuid(_options.ModuleId, _options.MachineId, device.Slot)
+        };
+        if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) != true) return;
+        var directory = Path.GetDirectoryName(dialog.FileName);
+        if (!string.IsNullOrWhiteSpace(directory)) _options.RememberMediaDirectory(device, directory);
+        var media = new EmulationMedia(dialog.FileName, device.Slot, device.MediaType, dialog.ReadOnlyChecked || new FileInfo(dialog.FileName).IsReadOnly, true);
+        if (_prepareMediaAsync is not null)
+            media = await _prepareMediaAsync(media, CancellationToken.None);
+        await _session.InsertAsync(media, device.RequiresMachineRecreation);
+        RebuildMediaDevices();
+    }
+
+    private async Task ConfigureMemoryCardAsync(EmulationMediaDevice device)
+    {
+        var current = _session.MountedMedia.FirstOrDefault(media => media.Slot == device.Slot)?.Path;
+        var folder = device.ImageDirectory ?? (device.DefaultImageSubdirectory is { } subdirectory
+            ? Path.Combine(StoragePaths.EmulationStorageDirectory, subdirectory)
+            : _options.InitialMediaDirectory(device) ?? StoragePaths.EmulationStorageDirectory);
+        string? selected;
+        if (device.UsesDirectory)
+        {
+            var dialog = new MemoryCardDirectoryConfigurationDialog(device.DisplayLabel ?? device.Slot.ToString(), current, folder);
+            try { if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), dialog) != true) return; selected = dialog.SupportPath; }
+            finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
+        }
+        else
+        {
+            var dialog = new HardDiskDriveConfigurationDialog(device.DisplayLabel ?? device.Slot.ToString(),
+                _options.WindowTitle, current, folder, device.HardDiskFormats ?? [],
+                EmulationMediaDialogFunctions.ClientGuid(_options.ModuleId, _options.MachineId, device.Slot),
+                fixedImageSizeBytes: device.FixedImageSizeBytes, defaultImageFileName: device.DefaultImageFileName,
+                presentation: device.DialogPresentation);
+            try { if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), dialog) != true) return; selected = dialog.SupportPath; }
+            finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
+        }
+        if (string.IsNullOrWhiteSpace(selected))
+            await _session.EjectAsync(device.Slot, device.RequiresMachineRecreation);
+        else
+            await _session.InsertAsync(new EmulationMedia(selected, device.Slot, EmulationMediaType.MemoryCard, false, true), device.RequiresMachineRecreation);
+        RebuildMediaDevices();
+    }
+
+    private async Task EjectMediaAsync(EmulationMediaDevice device)
+    {
+        await _session.EjectAsync(device.Slot, device.RequiresMachineRecreation);
+        RebuildMediaDevices();
+    }
+
+    private async Task ExecuteCassetteCommandAsync(EmulationCassetteCommand command)
+    {
+        var cassette = _session.Machine.CassetteTransport;
+        if (cassette is null) return;
+        if (command == EmulationCassetteCommand.Record)
+        {
+            var device = _mediaDevices.FirstOrDefault(device => device.MediaType == EmulationMediaType.Cassette);
+            if (device is null) return;
+            var extensions = EmulationSdk.MediaProcessing.CassetteRecordingExtensions.Where(extension => device.AcceptedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase)).ToArray();
+            if (extensions.Length == 0) return;
+            var dialog = new SaveFileDialog
+            {
+                Title = CassetteCommandText(command),
+                Filter = string.Join("|", extensions.Select(extension => $"{extension[1..].ToUpperInvariant()} (*{extension})|*{extension}")),
+                AddExtension = true, DefaultExt = extensions[0], OverwritePrompt = true,
+                InitialDirectory = _options.InitialMediaDirectory(device),
+                ClientGuid = EmulationMediaDialogFunctions.ClientGuid(_options.ModuleId, _options.MachineId, device.Slot)
+            };
+            if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) != true) return;
+            IReadOnlyDictionary<string, string>? pcm = null;
+            var recordingRate = new EmulationCassettePcmSettings().SampleRate;
+            if (Path.GetExtension(dialog.FileName).Equals(EmulationSdk.MediaProcessing.FileExtensions["Raw"], StringComparison.OrdinalIgnoreCase))
+            {
+                var defaults = (device.ConfigurationFields ?? []).Concat((device.ConfigurationBlocks ?? []).SelectMany(block => block.Fields)).Where(field => field.Id.StartsWith(EmulationCassettePcmSettings.Prefix, StringComparison.Ordinal) && field.Value is not null).ToDictionary(field => field.Id, field => field.Value!);
+                var profileDialog = new ManagedStorageConfigurationDialog(CassetteCommandText(command), "RAW", _options.ModuleId, EmulationCassettePcmSettings.Describe(defaults), null);
+                try
+                {
+                    if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), profileDialog) != true) return;
+                    var profile = EmulationCassettePcmSettings.Read(profileDialog.Options);
+                    pcm = profile.ToParameters(); recordingRate = profile.SampleRate;
+                }
+                finally { WpfWindowNavigationService.CloseOwnedDialog(profileDialog); }
+            }
+            var creation = new MediaCreationDialog(Window.GetWindow(this)!, CassetteCommandText(command), dialog.FileName,
+                () => EmulationSdk.MediaProcessing.WriteCassetteAsync(dialog.FileName, new EmulationCassetteSignal(ReadOnlyMemory<short>.Empty, recordingRate), parameters: pcm));
+            try { if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), creation) != true) return; }
+            finally { WpfWindowNavigationService.CloseOwnedDialog(creation); }
+            if (cassette.AvailableCommands.Contains(EmulationCassetteCommand.Stop)) await cassette.ExecuteAsync(EmulationCassetteCommand.Stop);
+            var current = _session.MountedMedia.FirstOrDefault(media => media.Slot == device.Slot);
+            var profileChanged = pcm is not null && (current?.Parameters is null || pcm.Any(pair => !current.Parameters.TryGetValue(pair.Key, out var value) || value != pair.Value));
+            if (current is null || profileChanged || !Path.GetFullPath(current.Path).Equals(Path.GetFullPath(dialog.FileName), StringComparison.OrdinalIgnoreCase))
+                await _session.InsertAsync(new EmulationMedia(dialog.FileName, device.Slot, EmulationMediaType.Cassette, new FileInfo(dialog.FileName).IsReadOnly, true) { Parameters = pcm }, device.RequiresMachineRecreation);
+            cassette = _session.Machine.CassetteTransport;
+            if (cassette is null) return;
+            RebuildMediaDevices();
+        }
+        await cassette.ExecuteAsync(command);
+        UpdateCassetteTransport(cassette);
+    }
+
+    private void UpdateCassetteTransport(IEmulationCassetteTransport cassette)
+    {
+        var key = EmulationMediaSlot.Cassette0.ToString();
+        _view.SetDeviceStatus(key, CassetteStateText(cassette.State));
+        _view.SetCassetteTransport(key, cassette.State, cassette.ActiveOperation, cassette.AvailableCommands, _session.IsPowered);
+    }
+
+    private static string CassetteStateText(EmulationCassetteState state) => LocExtension.Get($"Emulation.Cassette.State.{state}");
+
+    private static string CassetteCommandText(EmulationCassetteCommand command) => LocExtension.Get($"Emulation.Cassette.Command.{command}");
+
+    private static string CassetteCommandGlyph(EmulationCassetteCommand command) => command switch
+    {
+        EmulationCassetteCommand.Play => "▶",
+        EmulationCassetteCommand.Stop => "■",
+        EmulationCassetteCommand.Pause => "Ⅱ",
+        EmulationCassetteCommand.Rewind => "⏪",
+        EmulationCassetteCommand.FastForward => "⏩",
+        EmulationCassetteCommand.Record => "●",
+        _ => "?"
+    };
+
+    private static string DeviceGlyph(EmulationMediaType type) => type switch
+    {
+        EmulationMediaType.Floppy => MachinePresentationConstants.FloppyGlyph,
+        EmulationMediaType.HardDisk => MachinePresentationConstants.HardDiskGlyph,
+        EmulationMediaType.CompactDisc => MachinePresentationConstants.CompactDiscGlyph,
+        EmulationMediaType.Cartridge => MachinePresentationConstants.CartridgeGlyph,
+        EmulationMediaType.Cassette => MachinePresentationConstants.CassetteGlyph,
+        EmulationMediaType.MemoryCard => MachinePresentationConstants.MemoryCardGlyph,
+        _ => MachinePresentationConstants.FloppyGlyph
+    };
+
+    private void VideoSurfaceChanged(object? sender, EventArgs args) => _input.SetInputView(_video.InputView, _video.InputHandle);
+
+    private async Task ExecuteShortcutAsync(string action)
+    {
+        try
+        {
+            switch (action)
+            {
+                case EmulationShortcutDefaults.Power: await TogglePowerAsync(); break;
+                case EmulationShortcutDefaults.PauseResume: await TogglePauseAsync(); break;
+                case EmulationShortcutDefaults.SoftReset:
+                    await _session.Machine.Lifecycle.SoftResetAsync();
+                    break;
+                case EmulationShortcutDefaults.HardReset:
+                    await HardResetAsync();
+                    break;
+                case EmulationShortcutDefaults.QuickSave: await QuickSaveAsync(); break;
+                case EmulationShortcutDefaults.QuickLoad: await QuickLoadAsync(); break;
+                case EmulationShortcutDefaults.Screenshot: await CaptureScreenAsync(); break;
+                case EmulationShortcutDefaults.ToggleFullscreen: await ToggleFullscreenAsync(); break;
+                case EmulationShortcutDefaults.ReleaseMouse: _input.ReleasePointer(); break;
+                case EmulationShortcutDefaults.ToggleMute: await ToggleAudioAsync(); break;
+            }
+        }
+        catch (Exception error) { _options.ShowError(error); }
+        finally { _input.RestoreFocus(); }
+    }
+
+    private void FramePresented(object? sender, VideoFrame frame)
+    {
+        _commands.Status.Text = MachinePresentationFunctions.Status(frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond);
+        var now = DateTime.UtcNow;
+        var activityStates = _session.Machine.Runtime.MediaActivity;
+        if (_session.Machine.CassetteTransport is { } cassette) UpdateCassetteTransport(cassette);
+        foreach (var device in _mediaDevices)
+        {
+            if (!_view.DeviceLeds.TryGetValue(device.Slot.ToString(), out var led)) continue;
+            if (activityStates.GetValueOrDefault(device.Slot))
+                _mediaActivityUntil[device.Slot] = now + EmulationRuntimeConstants.MediaActivityPersistence;
+            var active = _mediaActivityUntil.GetValueOrDefault(device.Slot) > now;
+            var present = _session.MountedMedia.Any(media => media.Slot == device.Slot) || !device.IsRemovable;
+            led.Fill = active ? Brushes.LimeGreen : present ? Brushes.ForestGreen : Brushes.Gray;
+        }
+        _commands.SetInputStatus(_input.IsPointerCaptured, GameInputControllerReader.ReadAll().Any(state => state != EmulationControllerState.Empty));
+    }
+}

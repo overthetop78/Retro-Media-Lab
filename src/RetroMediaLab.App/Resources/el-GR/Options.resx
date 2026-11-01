@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Options.Title" xml:space="preserve"><value>Επιλογές</value></data>
+  <data name="Options.General" xml:space="preserve"><value>Γενικός</value></data>
+  <data name="Options.Tools" xml:space="preserve"><value>Greaseweazle Εργαλεία</value></data>
+  <data name="Options.Hardware" xml:space="preserve"><value>Ελεγκτές και μονάδες δίσκου</value></data>
+  <data name="Options.Profiles" xml:space="preserve"><value>Προφίλ</value></data>
+  <data name="Options.ImagesFolder" xml:space="preserve"><value>Προεπιλεγμένος φάκελος εικόνας δίσκου</value></data>
+  <data name="Options.Language" xml:space="preserve"><value>Γλώσσα</value></data>
+  <data name="Options.Theme" xml:space="preserve"><value>Θέμα</value></data>
+  <data name="Options.Theme.System" xml:space="preserve"><value>Σύστημα</value></data>
+  <data name="Options.Theme.Light" xml:space="preserve"><value>Φωτεινό</value></data>
+  <data name="Options.Theme.Dark" xml:space="preserve"><value>Σκοτεινό</value></data>
+  <data name="Options.GwPath" xml:space="preserve"><value>Διαδρομή προς gw.exe</value></data>
+  <data name="Options.ToolsHelp" xml:space="preserve"><value>Εάν λείπουν τα εργαλεία, ο βοηθός θα προσφερθεί να τα κατεβάσει ή να επιλέξει μια υπάρχουσα εγκατάσταση. Οι ενημερώσεις ανακοινώνονται μόνο.</value></data>
+  <data name="Options.HardwarePersistence" xml:space="preserve"><value>Οι ρυθμίσεις υλικού παραμένουν αποθηκευμένες όταν αποσυνδέεται μια μονάδα δίσκου.</value></data>
+  <data name="Options.ExecutableFilter"><value>Greaseweazle (gw.exe)|gw.exe|Εκτελέσιμο (*.exe)|*.exe</value></data>
+  <data name="Options.RemoveHardware"><value>Κατάργηση αυτού του αποθηκευμένου ελεγκτή και όλων των μονάδων δίσκου του;</value></data>
+  <data name="Options.HardwareTitle"><value>Μηχανήματα υπολογιστών</value></data>
+  <data name="Options.UseConversionTags"><value>Χρησιμοποιήστε ετικέτες στα ονόματα αρχείων μετατροπής</value></data>
+  <data name="Options.TagPreset"><value>Προκαθορισμένη</value></data>
+  <data name="Options.TagPresetFamily"><value>Μόνο για οικογένεια</value></data>
+  <data name="Options.TagPresetFormat"><value>Μορφοποίηση μόνο</value></data>
+  <data name="Options.TagPresetFamilyFormat"><value>Οικογένεια και μορφή</value></data>
+  <data name="Options.TagPresetFamilyExtension"><value>Οικογένεια και επέκταση</value></data>
+  <data name="Options.TagPresetDetailed"><value>Οικογένεια, μορφή και επέκταση</value></data>
+  <data name="Options.TagPattern"><value>Μοτίβο ετικέτας μετατροπής</value></data>
+  <data name="Options.TagVariablesTitle"><value>Διαθέσιμες μεταβλητές</value></data>
+  <data name="Options.TagVariableName"><value>Όνομα αρχείου πηγής</value></data>
+  <data name="Options.TagVariableFamily"><value>Οικογένεια: PC, ST, AMIGA…</value></data>
+  <data name="Options.TagVariableFormat"><value>Μορφή: 720, 1440, DD…</value></data>
+  <data name="Options.TagVariableExtension"><value>Επέκταση: IMA, ST, ADF…</value></data>
+  <data name="Options.TagVariableDateIso"><value>Ημερομηνία: 2026-08-06</value></data>
+  <data name="Options.TagVariableDateCompact"><value>Ημερομηνία: 20260806</value></data>
+  <data name="Options.TagVariableDateLocal"><value>Ημερομηνία: 06-08-2026</value></data>
+  <data name="Options.TagVariableTimeFull"><value>Ώρα: 14-35-42</value></data>
+  <data name="Options.TagVariableTimeCompact"><value>Ώρα: 143542</value></data>
+  <data name="Options.TagVariableTimeShort"><value>Ώρα: 14-35</value></data>
+  <data name="Options.TagPatternHelp"><value>{NAME} — όνομα πηγαίου αρχείου&#xA;{FAMILY} — οικογένεια μηχανών (PC, ST, AMIGA...)&#xA;{FORMAT} — μορφή ή γεωμετρία (720, 1440, DD...)&#xA;{EXTENSION} — επέκταση εξόδου (IMA, ST, ADF...)&#xA;{DATE:YYYY-MM-DD} — ημερομηνία 2026-08-06&#xA;{DATE:YYYYMMDD} — ημερομηνία 20260806&#xA;{DATE:DD-MM-YYYY} — ημερομηνία 06-08-2026&#xA;{TIME:HH-MM-SS} — χρόνος 14-35-42&#xA;{TIME:HHMMSS} — χρόνος 143542&#xA;{TIME:HH-MM} — χρόνος 14-35</value></data>
+  <data name="Options.RecentTagPatterns"><value>Πρόσφατα προσαρμοσμένα μοτίβα</value></data>
+  <data name="Options.NextTagExample"><value>Επόμενο παράδειγμα</value></data>
+  <data name="Options.TagPatternPreview"><value>Παράδειγμα: {0}</value></data>
+  <data name="Options.TagPatternInvalid"><value>Το μοτίβο ετικέτας πρέπει να περιέχει {tag}.</value></data>
+  <data name="Options.EnableLogs"><value>Αποθήκευση αρχείων καταγραφής</value></data>
+  <data name="Options.Logs"><value>κούτσουρα</value></data>
+  <data name="Options.LogsDescription"><value>Κάθε ενέργεια έχει το δικό της αρχείο στο φάκελο Retro Media Lab Logs.</value></data>
+  <data name="Options.LogActionErase"><value>Εξάλειψη</value></data>
+  <data name="Options.LogActionClean"><value>Καθαρά κεφάλια</value></data>
+  <data name="Options.OpenLogsFolder"><value>Άνοιγμα φακέλου</value></data>
+  <data name="Options.LogMaximumSize"><value>Μέγιστο μέγεθος</value></data>
+  <data name="Options.KeepLogArchives"><value>Διατηρήστε προηγούμενα αρχεία καταγραφής</value></data>
+  <data name="Options.LogUnlimitedHint"><value>0 = απεριόριστο</value></data>
+  <data name="Options.Engines" xml:space="preserve"><value>Μηχανές</value></data>
+  <data name="Options.Engines.Description" xml:space="preserve"><value>Επιλέξτε ανεξάρτητα τη μηχανή που χρησιμοποιείται για κάθε λειτουργία.</value></data>
+  <data name="Options.Engines.Internal" xml:space="preserve"><value>Εσωτερική μηχανή Retro Media Lab</value></data>
+  <data name="Options.Engines.StrictChoice" xml:space="preserve"><value>Η επιλεγμένη μηχανή χρησιμοποιείται αυστηρά. Αν δεν μπορεί να εκτελέσει τη λειτουργία, το Retro Media Lab το αναφέρει χωρίς να χρησιμοποιήσει σιωπηρά την άλλη μηχανή.</value></data>
+  <data name="Options.EmulationMachineTitle"><value>{0} — {1} : {2}</value></data>
+  <data name="Options.PreferencesTitle"><value>Προτιμήσεις</value></data>
+  <data name="Options.EmulationTitle"><value>Προτιμήσεις εξομοίωσης</value></data>
+  <data name="Options.EmulationModuleTitle"><value>{0} ⁇  προσομοίωσης</value></data>
+  <data name="Options.Themes.Title"><value>Θέματα</value></data>
+  <data name="Options.Themes.List"><value>Διαθέσιμα θέματα</value></data>
+  <data name="Options.Themes.Appearance"><value>Εμφάνιση</value></data>
+  <data name="Options.Themes.PreviewUnavailable"><value>Η προεπισκόπηση δεν είναι διαθέσιμη.</value></data>
+  <data name="Options.Themes.Active"><value>Ενεργό θέμα: {0}</value></data>
+  <data name="Options.Themes.ApplyHint"><value>Το επιλεγμένο θέμα εφαρμόζεται αμέσως και διατηρείται στις επόμενες εκκινήσεις της εφαρμογής.</value></data>
+  <data name="Options.Themes.Base.Description"><value>Η αρχική διάταξη με εμφάνιση συστήματος, φωτεινή ή σκοτεινή.</value></data>
+
+
+
+
+
+  <data name="Options.Themes.Studio.Description"><value>Χώρος εργασίας με παράθυρα που μετακινούνται και αλλάζουν μέγεθος. Κρατήστε πολλά εργαλεία ανοιχτά και εναλλάξτε μεταξύ τους χωρίς απώλεια ρυθμίσεων.</value></data>
+  <data name="Options.Themes.Minimize"><value>Ελαχιστοποίηση</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Μεγιστοποίηση ή επαναφορά</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Διαχείριση προγραμμάτων</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Σύστημα</value></data>
+  <data name="Options.Themes.OS.File"><value>Αρχείο</value></data>
+  <data name="Options.Themes.OS.Window"><value>Παράθυρο</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Διαδοχική διάταξη</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Σε παράθεση</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Τακτοποίηση εικονιδίων</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Επαναφορά</value></data>
+  <data name="Options.Themes.OS.Move"><value>Μετακίνηση</value></data>
+  <data name="Options.Themes.OS.Size"><value>Αλλαγή μεγέθους</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Μεγιστοποίηση</value></data>
+  <data name="Options.Themes.OS.Open"><value>Άνοιγμα</value></data>
+  <data name="Options.Themes.OS.Description"><value>Αρχικές διεπαφές λειτουργικού συστήματος, συμπεριλαμβανομένων των παραθύρων, των ελέγχων και των αλληλεπιδράσεων.</value></data>
+  <data name="Options.Themes.Edition"><value>Παραλλαγή</value></data>
+  <data name="Options.Themes.OS.Start"><value>Έναρξη</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Προγράμματα</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Αρίθμηση</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Μπλε</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Ασημένιο</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Ελιές πράσινες</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Μηχανές</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Μέσα μαζικής ενημέρωσης</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Ημερολόγιο δραστηριότητας</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Εντολές</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Αναζήτηση εντολής</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Δεν υπάρχει αντίστοιχη εντολή</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Επιλέξτε μια μηχανή ή συνεχίστε μια ανοιχτή συνεδρία</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Πλαίσιο</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Χωρίς άνοιγμα συνεδρίας εξομοίωσης</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Μηχανές, έγγραφα μέσων και εργαλεία σε έναν χώρο εργασίας.</value></data>
+</root>

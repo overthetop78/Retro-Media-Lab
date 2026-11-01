@@ -10,9 +10,9 @@ pas à lui seul les choix fonctionnels et ne déclenche aucune implémentation. 
 checklist, aucun contrat, shader, réglage de configuration ou contrôle d’interface n’est créé avant
 validation des groupes, compatibilités, présélections, réglages et de l’architecture proposée.
 
-Le périmètre couvre les traitements réalisés par GW GUI après réception d’une `VideoFrame`, pour
+Le périmètre couvre les traitements réalisés par Retro Media Lab après réception d’une `VideoFrame`, pour
 les machines actuelles et futures. Les choix qui modifient la machine ou le signal qu’elle produit
-restent des options de son émulateur. GW GUI ne doit donc pas recréer sous forme de filtre ses
+restent des options de son émulateur. Retro Media Lab ne doit donc pas recréer sous forme de filtre ses
 options RGB, composite, S-Video, RF, PAL, NTSC, monochrome ou équivalentes. Un effet inspiré d’un
 signal ne pourra être étudié que comme simulation distincte et explicitement nommée.
 
@@ -46,12 +46,12 @@ Ce modèle confirme la séparation utile entre catalogue stable, valeurs enregis
 chaîne ordonnée et exécution propre au renderer.
 
 Les fichiers Slang ne sont toutefois pas réutilisables tels quels : ils supposent le runtime de
-présélections Libretro, ses ressources, ses uniformes et parfois l’historique des trames. GW GUI
+présélections Libretro, ses ressources, ses uniformes et parfois l’historique des trames. Retro Media Lab
 devrait reprendre le modèle de chaîne, pas intégrer silencieusement un interpréteur RetroArch.
 
 ### Politique de licence proposée
 
-GW GUI est sous licence MIT, tandis que les collections n’ont pas de licence unique. Par exemple,
+Retro Media Lab est sous licence MIT, tandis que les collections n’ont pas de licence unique. Par exemple,
 [`newpixie-crt.slang`](https://github.com/libretro/slang-shaders/blob/master/crt/shaders/newpixie/newpixie-crt.slang)
 propose MIT ou domaine public,
 [`crt-geom.slang`](https://github.com/libretro/slang-shaders/blob/master/crt/shaders/crt-geom.slang)
@@ -70,7 +70,7 @@ Ce catalogue est extensible et ne promet pas que toutes les familles seront livr
 
 | Famille | Effet et réglages utiles | Dépendances et combinaisons | Licence de référence |
 |---|---|---|---|
-| Image générale | luminosité, contraste, gamma, saturation, netteté ; neutre 0 | toujours disponible, passe commune | à développer dans GW GUI |
+| Image générale | luminosité, contraste, gamma, saturation, netteté ; neutre 0 | toujours disponible, passe commune | à développer dans Retro Media Lab |
 | Échantillonnage | nearest, bilinéaire, sharp-bilinear, bicubique, échelle entière | une méthode à la fois ; préalable aux motifs | vérifier `interpolation`, `bicubic`, `windowed` |
 | Scalers pixel art | xBR, xBRZ, HQx, ScaleFX, ScaleNx et SABR ; facteur, seuil, lissage | multi-passe, un scaler à la fois ; avant la technologie d’affichage | licences hétérogènes, à vérifier séparément pour chaque algorithme |
 | Scanlines | orientation, intensité, épaisseur, phase, compensation | compatible avec CRT ; éviter deux générateurs | licences par fichier dans `scanlines`/`crt` |
@@ -78,35 +78,35 @@ Ce catalogue est extensible et ne promet pas que toutes les familles seront livr
 | CRT — masque | grille d’ouverture, shadow/slot mask ; motif, force, triades, RGB/BGR | dépend de la résolution de sortie | vérifier shader, LUT et textures |
 | CRT — géométrie | courbure, coins, vignette, overscan visuel | préserve le rapport logique ; peut accentuer le moiré | `crt-geom` est GPL-2.0-or-later |
 | Écran à pixels fixes | sous-choix LCD, LCD/LED ou OLED ; couleur ou palette monochrome, grille, sous-pixels, espace inter-pixels, ordre RGB/BGR, noir, rétroéclairage et réponse | exclusif du CRT, Plasma et Vectoriel ; paramètres propres affichés seulement s’ils produisent une différence réelle | licences hétérogènes dans `handheld` |
-| Plasma | cellules, diffusion, tramage temporel et rémanence | technologie principale exclusive ; historique nécessaire au temporel | à développer dans GW GUI après validation des paramètres |
-| Écran vectoriel | détection des lignes, largeur et focalisation du faisceau, couleur des phosphores, intensité et rayon du halo, persistance | approximation raster exclusive des autres technologies ; historique nécessaire | implémentation raster originale GW GUI tant que le moteur ne fournit pas de primitives vectorielles |
-| VFD | phosphores lumineux, seuil d’émission, verre fumé, structure des anodes, halo et persistance | approximation raster spécialisée et exclusive ; historique nécessaire | implémentation raster originale GW GUI, MIT |
-| Matrice LED | cellules LED, espacement, diffusion et couleur | technologie spécialisée exclusive, compatible avec scaler, restauration et réglages généraux | implémentation raster originale GW GUI, MIT |
-| Matrice de points | cellules logiques, palette, forme, taille et espacement des points, contraste, luminosité, halo, réponse et persistance | technologie spécialisée exclusive ; compatible avec scaler, restauration et réglages généraux | implémentation raster originale GW GUI, MIT |
-| Affichage à segments | disposition 7/14/16, teinte, épaisseur, contraste, halo et réponse | technologie spécialisée exclusive ; compatible avec scaler, restauration et réglages généraux | implémentation raster originale GW GUI, MIT |
-| Papier électronique | modes monochrome, 16 gris ou 4096 couleurs, contraste, tramage, rafraîchissement et image fantôme | technologie secondaire exclusive avec historique temporel | implémentation raster originale GW GUI, MIT |
-| Projection | flou optique, diffusion, texture de toile et convergence RGB | technologie secondaire exclusive, compatible avec scaler, restauration et réglages généraux | implémentation raster originale GW GUI, MIT |
-| Moiré/trame volontaire | orientation, fréquence, phase, intensité | distinct du moiré accidentel ; incompatible avec LCD | à développer dans GW GUI |
+| Plasma | cellules, diffusion, tramage temporel et rémanence | technologie principale exclusive ; historique nécessaire au temporel | à développer dans Retro Media Lab après validation des paramètres |
+| Écran vectoriel | détection des lignes, largeur et focalisation du faisceau, couleur des phosphores, intensité et rayon du halo, persistance | approximation raster exclusive des autres technologies ; historique nécessaire | implémentation raster originale Retro Media Lab tant que le moteur ne fournit pas de primitives vectorielles |
+| VFD | phosphores lumineux, seuil d’émission, verre fumé, structure des anodes, halo et persistance | approximation raster spécialisée et exclusive ; historique nécessaire | implémentation raster originale Retro Media Lab, MIT |
+| Matrice LED | cellules LED, espacement, diffusion et couleur | technologie spécialisée exclusive, compatible avec scaler, restauration et réglages généraux | implémentation raster originale Retro Media Lab, MIT |
+| Matrice de points | cellules logiques, palette, forme, taille et espacement des points, contraste, luminosité, halo, réponse et persistance | technologie spécialisée exclusive ; compatible avec scaler, restauration et réglages généraux | implémentation raster originale Retro Media Lab, MIT |
+| Affichage à segments | disposition 7/14/16, teinte, épaisseur, contraste, halo et réponse | technologie spécialisée exclusive ; compatible avec scaler, restauration et réglages généraux | implémentation raster originale Retro Media Lab, MIT |
+| Papier électronique | modes monochrome, 16 gris ou 4096 couleurs, contraste, tramage, rafraîchissement et image fantôme | technologie secondaire exclusive avec historique temporel | implémentation raster originale Retro Media Lab, MIT |
+| Projection | flou optique, diffusion, texture de toile et convergence RGB | technologie secondaire exclusive, compatible avec scaler, restauration et réglages généraux | implémentation raster originale Retro Media Lab, MIT |
+| Moiré/trame volontaire | orientation, fréquence, phase, intensité | distinct du moiré accidentel ; incompatible avec LCD | à développer dans Retro Media Lab |
 | Désentrelacement | bob, weave, blend, détection | peut exiger la trame précédente ; ne remplace pas le moteur | licences variables |
-| Rémanence générale | traînée lumineuse indépendante, intensité | exige une image d’historique bornée ; compatible avec toute technologie | implémentation temporelle originale GW GUI, MIT |
-| Flou de mouvement | mélange de la frame courante avec la précédente, intensité | exige une image d’historique bornée ; compatible avec toute technologie | implémentation temporelle originale GW GUI, MIT |
-| Scintillement | modulation alternée de luminosité, intensité | déterministe par numéro de frame ; ne supprime pas la frame | implémentation temporelle originale GW GUI, MIT |
-| Entrelacement simulé | champs pairs/impairs alternés, intensité | distinct du désentrelacement de restauration | implémentation temporelle originale GW GUI, MIT |
-| Insertion d’images noires | une frame noire sur deux, activation | exige une séquence fiable ; appliquée en dernier | implémentation temporelle originale GW GUI, MIT |
+| Rémanence générale | traînée lumineuse indépendante, intensité | exige une image d’historique bornée ; compatible avec toute technologie | implémentation temporelle originale Retro Media Lab, MIT |
+| Flou de mouvement | mélange de la frame courante avec la précédente, intensité | exige une image d’historique bornée ; compatible avec toute technologie | implémentation temporelle originale Retro Media Lab, MIT |
+| Scintillement | modulation alternée de luminosité, intensité | déterministe par numéro de frame ; ne supprime pas la frame | implémentation temporelle originale Retro Media Lab, MIT |
+| Entrelacement simulé | champs pairs/impairs alternés, intensité | distinct du désentrelacement de restauration | implémentation temporelle originale Retro Media Lab, MIT |
+| Insertion d’images noires | une frame noire sur deux, activation | exige une séquence fiable ; appliquée en dernier | implémentation temporelle originale Retro Media Lab, MIT |
 | Restauration | dé-dithering, débruitage, réduction de bandes | avant scaler et modèle d’affichage | licences variables |
 | Netteté/flou avancés | convolution, sharpen adaptatif, flou | distinct de la netteté générale | licences variables |
 | Palette/colorisation | palette monochrome, température, intensité | utile aux futurs écrans monochromes | textures et licences à vérifier |
 | Bordure/habillage | cadre ou décor | relève du point 8 | exclu du point 7 |
-| Simulation composite GW GUI | bande chromatique, bavure horizontale et dot crawl | post-traitement explicite ; ne modifie aucune option moteur | implémentation originale GW GUI, MIT |
-| Simulation S-Video GW GUI | luminance séparée, chrominance légèrement limitée | post-traitement explicite sans dot crawl ; ne modifie aucune option moteur | implémentation originale GW GUI, MIT |
-| Simulation RF GW GUI | perte de netteté et bruit de transmission | post-traitement explicite ; ne modifie aucune option moteur | implémentation originale GW GUI, MIT |
-| Simulation PAL GW GUI | alternance de phase et mélange chromatique vertical | post-traitement explicite ; ne change pas la norme moteur | implémentation originale GW GUI, MIT |
-| Simulation NTSC GW GUI | retard chromatique horizontal et phase de teinte | post-traitement explicite ; ne change pas la norme moteur | implémentation originale GW GUI, MIT |
-| Grain analogique | bruit fin monochrome modulé par la luminance, intensité | effet stylistique indépendant, distinct du bruit RF | implémentation originale GW GUI, MIT |
-| VHS | instabilité, perte de bande passante, retard chromatique, tracking et commutation des têtes | effet stylistique déterministe à la résolution de sortie | implémentation originale GW GUI, MIT |
-| Aberration chromatique | décalage opposé des composantes rouge et bleue, intensité | effet stylistique spatial à la résolution de sortie | implémentation originale GW GUI, MIT |
-| Halo lumineux | extraction et diffusion bornée des hautes lumières, intensité | effet stylistique global, distinct des halos propres aux technologies | implémentation originale GW GUI, MIT |
-| Sépia | conversion activable vers une teinte brun chaud | effet colorimétrique à la résolution de sortie | implémentation originale GW GUI, MIT |
+| Simulation composite Retro Media Lab | bande chromatique, bavure horizontale et dot crawl | post-traitement explicite ; ne modifie aucune option moteur | implémentation originale Retro Media Lab, MIT |
+| Simulation S-Video Retro Media Lab | luminance séparée, chrominance légèrement limitée | post-traitement explicite sans dot crawl ; ne modifie aucune option moteur | implémentation originale Retro Media Lab, MIT |
+| Simulation RF Retro Media Lab | perte de netteté et bruit de transmission | post-traitement explicite ; ne modifie aucune option moteur | implémentation originale Retro Media Lab, MIT |
+| Simulation PAL Retro Media Lab | alternance de phase et mélange chromatique vertical | post-traitement explicite ; ne change pas la norme moteur | implémentation originale Retro Media Lab, MIT |
+| Simulation NTSC Retro Media Lab | retard chromatique horizontal et phase de teinte | post-traitement explicite ; ne change pas la norme moteur | implémentation originale Retro Media Lab, MIT |
+| Grain analogique | bruit fin monochrome modulé par la luminance, intensité | effet stylistique indépendant, distinct du bruit RF | implémentation originale Retro Media Lab, MIT |
+| VHS | instabilité, perte de bande passante, retard chromatique, tracking et commutation des têtes | effet stylistique déterministe à la résolution de sortie | implémentation originale Retro Media Lab, MIT |
+| Aberration chromatique | décalage opposé des composantes rouge et bleue, intensité | effet stylistique spatial à la résolution de sortie | implémentation originale Retro Media Lab, MIT |
+| Halo lumineux | extraction et diffusion bornée des hautes lumières, intensité | effet stylistique global, distinct des halos propres aux technologies | implémentation originale Retro Media Lab, MIT |
+| Sépia | conversion activable vers une teinte brun chaud | effet colorimétrique à la résolution de sortie | implémentation originale Retro Media Lab, MIT |
 
 Les familles créatives `film`, `HDR`, `waterpaint` ou `cel` montrent l’intérêt d’un catalogue
 extensible, mais ne sont pas retenues pour la première proposition de fidélité d’affichage.
@@ -120,17 +120,17 @@ mode de ligne, saut de trames, profondeur de couleur, gamma PUAE et correction d
 sont décrites par `AmigaSettingsDescriptionFunctions` et transmises au cœur. Elles restent des
 options de l’émulateur.
 
-Le futur gamma général de GW GUI est un post-traitement distinct. Son stockage ne doit pas
+Le futur gamma général de Retro Media Lab est un post-traitement distinct. Son stockage ne doit pas
 réutiliser `puae_gfx_gamma`, et modifier l’un ne doit pas modifier l’autre.
 
 ### Atari — Hatari et Atari800
 
-GW GUI transmet notamment à Hatari le choix couleur/monochrome, la fréquence PAL/NTSC, l’overscan,
+Retro Media Lab transmet notamment à Hatari le choix couleur/monochrome, la fréquence PAL/NTSC, l’overscan,
 le saut de trames et le rapport d’aspect. Son filtre polarisé reste aussi une option interne.
 
 Pour Atari800, la région PAL/NTSC/SECAM, l’artifacting, la palette externe, la teinte, saturation,
 contraste, luminosité, gamma et délai de couleur modifient la sortie du cœur. Ils ne doivent pas
-être déplacés dans le catalogue GW GUI. Les cinq réglages généraux de GW GUI s’appliqueront à la
+être déplacés dans le catalogue Retro Media Lab. Les cinq réglages généraux de Retro Media Lab s’appliqueront à la
 `VideoFrame` déjà produite. Cette séparation vaut aussi pour chaque futur moteur.
 
 ## Analyse des surfaces de rendu actuelles
@@ -369,7 +369,7 @@ table ou texture d’un shader tiers.
 
 ### Écran vectoriel — approximation raster
 
-Tant que les moteurs ne fournissent que des `VideoFrame`, GW GUI ne prétend pas reconstruire les
+Tant que les moteurs ne fournissent que des `VideoFrame`, Retro Media Lab ne prétend pas reconstruire les
 primitives vectorielles d’origine. La référence calcule un gradient Sobel 3×3 de la luminance
 Rec. 709 linéaire, divise sa magnitude par `4` puis la borne à `0..1`. Le seuil visible `0..100`
 devient `0..1` ; une transition lissée de largeur `0,10` évite un bord binaire. L’intensité des lignes
@@ -395,7 +395,7 @@ basse résolution, y compris celle des Amiga et Atari actuels. Un seul scaler av
 
 La source algorithmique retenue est le shader officiel
 [`xbr-lv3.glsl`](https://github.com/libretro/glsl-shaders/blob/master/xbr/shaders/xbr-lv3.glsl)
-de Hyllian (copyright 2011–2015), dont l’en-tête accorde explicitement la licence MIT. GW GUI en
+de Hyllian (copyright 2011–2015), dont l’en-tête accorde explicitement la licence MIT. Retro Media Lab en
 adapte uniquement le niveau 1 dans sa chaîne commune ; aucun fichier du catalogue Libretro n’est
 embarqué. Pour chacun des quatre coins du pixel source central `E`, la référence compare les deux
 distances de contours pondérées du voisinage xBR, avec le vecteur de luminance publié
@@ -416,16 +416,16 @@ l’image finale dans leur texture avec une copie GPU neutre. Les renderers rest
 tous les autres filtres continuent à employer leur chemin GPU normal. La notice MIT et l’attribution
 du fichier de référence sont conservées dans `THIRD-PARTY-NOTICES.md`.
 
-#### xBRZ — réimplémentation compatible avec la licence MIT de GW GUI
+#### xBRZ — réimplémentation compatible avec la licence MIT de Retro Media Lab
 
 Le fichier de référence Libretro
 [`6xbrz.glsl`](https://github.com/libretro/glsl-shaders/blob/master/xbrz/shaders/6xbrz.glsl)
 attribue son code xBR à Hyllian sous licence MIT, mais indique explicitement que sa partie xBRZ
 provient du code de Zenju sous GPL-3.0 avec une exception limitée à MAME. Cette exception ne couvre
-pas GW GUI : aucun code, aucune table et aucune constante propre à cette implémentation xBRZ ne sont
+pas Retro Media Lab : aucun code, aucune table et aucune constante propre à cette implémentation xBRZ ne sont
 donc copiés.
 
-GW GUI fournit une réimplémentation originale de l’effet attendu : classification symétrique des
+Retro Media Lab fournit une réimplémentation originale de l’effet attendu : classification symétrique des
 quatre coins dans un voisinage 3×3, distance de couleur en luminance et chrominance, comparaison des
 énergies des deux diagonales, puis fusion faible ou forte vers le voisin horizontal ou vertical le
 plus proche. La zone faible est lissée entre `1,20` et `1,90`, la zone forte entre `0,90` et `1,70` ;
@@ -441,7 +441,7 @@ passe de repli ; le backend sélectionné présente ensuite l’image finale par
 
 La source retenue est
 [`hq2x.fs`](https://github.com/mgba-emu/mgba/blob/master/res/shaders/hq2x.shader/hq2x.fs)
-de Lior Halphon, copyright 2015–2023, sous licence MIT explicite. GW GUI adapte son noyau HQ2x :
+de Lior Halphon, copyright 2015–2023, sous licence MIT explicite. Retro Media Lab adapte son noyau HQ2x :
 comparaison du centre à ses huit voisins dans l’espace HQ, seuils `0,018`, `0,002` et `0,005`, motif
 sur huit bits, orientation vers le quadrant de sortie puis interpolations pondérées définies par les
 règles du shader. Les lectures sont bornées, le résultat est déterministe et l’échelle 1:1 reste
@@ -456,7 +456,7 @@ copyright 2016, dont chacune des cinq passes porte une licence MIT explicite. Le
 quatre passes d’analyse à la taille source puis une passe de reconstruction 3× ; la sortie choisit
 uniquement des couleurs déjà présentes dans l’image source.
 
-GW GUI adapte ce principe dans une passe CPU portable : mesure perceptuelle RGB de la source
+Retro Media Lab adapte ce principe dans une passe CPU portable : mesure perceptuelle RGB de la source
 officielle, classification symétrique des quatre jonctions d’un voisinage 3×3, rejet des coins
 ambigus, puis choix discret du pixel source pour chacun des neuf sous-pixels d’une grille 3×3. Pour
 une taille de sortie quelconque, la position normalisée est ramenée à cette grille ; les lectures
@@ -470,14 +470,14 @@ WPF, OpenGL, Direct3D 11 et Vulkan. Cette décision évite quatre traductions di
 multi-passe et garantit la même image sur chaque renderer. L’attribution et la licence MIT sont
 reproduites dans `THIRD-PARTY-NOTICES.md`.
 
-#### ScaleNx — réimplémentation compatible avec la licence MIT de GW GUI
+#### ScaleNx — réimplémentation compatible avec la licence MIT de Retro Media Lab
 
 La référence officielle examinée est
 [`scale3x.glsl`](https://github.com/libretro/glsl-shaders/blob/master/scalenx/shaders/scale3x.glsl),
 qui attribue Scale3x à Andrea Mazzoleni (2001–2004) et annonce explicitement la licence GNU GPL.
-Cette licence n’est pas reprise par GW GUI : aucun code, macro ou fichier de ce shader n’est copié.
+Cette licence n’est pas reprise par Retro Media Lab : aucun code, macro ou fichier de ce shader n’est copié.
 
-GW GUI réalise indépendamment le comportement public de la famille ScaleNx : comparer exactement
+Retro Media Lab réalise indépendamment le comportement public de la famille ScaleNx : comparer exactement
 les quatre voisins axiaux du pixel central, conserver le centre quand les axes opposés sont égaux,
 et prolonger un voisin uniquement lorsque les deux côtés du coin se rejoignent. Une grille logique
 2× est utilisée sous un agrandissement de `2,5`, puis une grille 3× au-delà ; toute taille de sortie
@@ -488,15 +488,15 @@ reste déterministe et borné aux bords, et l’échelle 1:1 est strictement neu
 copie neutre de WPF, OpenGL, Direct3D 11 et Vulkan. Comme aucun code GPL n’est incorporé, aucune
 notice tierce supplémentaire n’est ajoutée au binaire MIT.
 
-#### SABR — réimplémentation compatible avec la licence MIT de GW GUI
+#### SABR — réimplémentation compatible avec la licence MIT de Retro Media Lab
 
 La source officielle examinée est
 [`sabr-v3.0.cg`](https://github.com/libretro/common-shaders/blob/master/sabr/shaders/sabr-v3.0.cg)
 de Joshua Street. Son en-tête indique que certaines parties proviennent de 5xBR de Hyllian et place
 l’ensemble sous GNU GPL version 2 ou ultérieure. Aucun code, coefficient ni structure propre à ce
-shader n’est donc copié dans GW GUI.
+shader n’est donc copié dans Retro Media Lab.
 
-La variante de GW GUI est une reconstruction originale de l’objectif visuel : détecter dans un
+La variante de Retro Media Lab est une reconstruction originale de l’objectif visuel : détecter dans un
 voisinage 3×3 le coin dont les deux voisins se raccordent, comparer l’énergie de ce raccord à celle
 du contour opposé, puis interpoler en sRGB vers ces voisins dans une zone diagonale bornée. Le poids
 combine proximité du sous-pixel au coin, cohérence des deux voisins, contraste avec le centre et
@@ -511,7 +511,7 @@ pas le code GPL et reste sous la licence MIT du projet.
 #### Dé-dithering — damiers Hyllian
 
 Les contrats et options des moteurs Amiga et Atari du projet ne contiennent aucun dé-dithering : le
-traitement GW GUI ne duplique donc pas une option moteur. La source retenue est la chaîne
+traitement Retro Media Lab ne duplique donc pas une option moteur. La source retenue est la chaîne
 [`checkerboard-dedither`](https://github.com/libretro/slang-shaders/tree/master/dithering/shaders/checkerboard-dedither)
 de Hyllian, copyright 2011–2022, dont les trois passes portent explicitement la licence MIT.
 
@@ -532,14 +532,14 @@ avant une copie GPU neutre lorsqu’elle est active. L’attribution MIT est con
 #### Débruitage — passe bilatérale originale
 
 Les contrats et options exposés par les moteurs Amiga et Atari ne proposent aucun débruitage : ce
-traitement GW GUI ne masque et ne duplique donc aucun réglage moteur. Le catalogue officiel
+traitement Retro Media Lab ne masque et ne duplique donc aucun réglage moteur. Le catalogue officiel
 [`slang-shaders/denoisers`](https://github.com/libretro/slang-shaders/tree/master/denoisers) confirme
 les familles médiane et bilatérale. Le fichier officiel
 [`bilateral.slang`](https://github.com/libretro/slang-shaders/blob/master/denoisers/shaders/bilateral.slang)
 est toutefois sous GPL-2.0-or-later ; aucun code, coefficient ni enchaînement propre à ce shader
 n’est repris.
 
-GW GUI utilise une passe bilatérale 3×3 originale sur l’image linéaire à la taille source. Les
+Retro Media Lab utilise une passe bilatérale 3×3 originale sur l’image linéaire à la taille source. Les
 voisins proches reçoivent un poids spatial fixe, puis leur poids diminue exponentiellement selon
 leur distance colorimétrique au pixel central. L’intensité `0..100` règle à la fois la tolérance aux
 petites variations et le mélange avec le résultat ; `0` est strictement neutre. Une faible variation
@@ -558,9 +558,9 @@ Les modules Amiga et Atari n’exposent aucune option de réduction des bandes d
 officielle Libretro examinée est
 [`misc/shaders/deband.slang`](https://github.com/libretro/slang-shaders/blob/master/misc/shaders/deband.slang),
 dérivée de mpv et distribuée sous GPL-2.0-or-later ou LGPL-2.1-or-later. Aucun code, coefficient,
-générateur pseudo-aléatoire ni enchaînement de cette source n’est incorporé à GW GUI.
+générateur pseudo-aléatoire ni enchaînement de cette source n’est incorporé à Retro Media Lab.
 
-La passe GW GUI est une réalisation originale en lumière linéaire, déterministe et sans grain. Pour
+La passe Retro Media Lab est une réalisation originale en lumière linéaire, déterministe et sans grain. Pour
 chaque pixel, elle examine les directions horizontale et verticale et ne retient qu’une direction
 formant une faible marche cohérente : voisins de part et d’autre du centre, ou voisin identique au
 centre suivi du niveau suivant. Un pic local est rejeté comme bruit et un écart supérieur au seuil
@@ -584,7 +584,7 @@ accentuer l’image et s’exécute à la résolution de sortie après le modèl
 Le catalogue officiel contient notamment
 [`adaptive-sharpen.slang`](https://github.com/libretro/slang-shaders/blob/master/sharpen/shaders/adaptive-sharpen.slang),
 sous licence BSD à deux clauses. Il sert uniquement à confirmer la famille « accentuation
-adaptative » : GW GUI ne reprend ni son code, ni ses coefficients, ni sa structure, et conserve une
+adaptative » : Retro Media Lab ne reprend ni son code, ni ses coefficients, ni sa structure, et conserve une
 réalisation originale sous MIT.
 
 La passe calcule une moyenne locale 3×3 et renforce le résidu de micro-détail. Sa force décroît
@@ -594,7 +594,7 @@ dé-dithering, débruitage et réduction des bandes, mais avant l’unique scale
 avec les cinq technologies et tous les scalers, avec la même référence CPU sur WPF, OpenGL,
 Direct3D 11 et Vulkan.
 
-#### Désentrelacement GW GUI — champ explicite ou fusion verticale
+#### Désentrelacement Retro Media Lab — champ explicite ou fusion verticale
 
 Les modules Amiga et Atari n’exposent aucun désentrelacement dans leurs contrats actuels. Les frames
 communes ne transportent ni indicateur entrelacé, ni dominance de champ ; une détection automatique
@@ -668,7 +668,7 @@ documente les matrices de pas `2,5`, `3` et `4 mm`, tandis que
 [`LED Matrix Diffuser`](https://learn.adafruit.com/adafruit-matrixportal-m4/led-matrix-diffuser)
 explique l’emploi d’une plaque diffusante pour réduire les reflets de la grille et modifier le rendu
 visuel. Ces sources servent uniquement à définir les caractéristiques ; aucun code, shader, image ou
-autre actif tiers n’est incorporé. La passe originale GW GUI reste sous licence MIT.
+autre actif tiers n’est incorporé. La passe originale Retro Media Lab reste sous licence MIT.
 
 `Matrice LED` est une technologie exclusive des autres technologies d’affichage. Son interface est
 répartie en deux cartes. `Structure de la matrice` contient la forme ronde ou carrée, la taille des
@@ -692,7 +692,7 @@ qui publie notamment une taille de point propre au module graphique, et la docum
 du contrôleur
 [`SBN1661G`](https://support.newhavendisplay.com/hc/en-us/articles/4414858548887-SBN1661G),
 décrit comme pilote LCD STN à matrice de points. Elles servent uniquement à cadrer le rendu ; aucun
-code, pilote, document ou actif tiers n’est incorporé. La passe originale GW GUI reste sous MIT.
+code, pilote, document ou actif tiers n’est incorporé. La passe originale Retro Media Lab reste sous MIT.
 
 `Matrice de points` est distincte de la matrice LED et exclusive des autres technologies
 d’affichage. Les options sont réparties entre `Cellules`, `Couleur et lumière` et `Réponse et
@@ -719,7 +719,7 @@ affichage LED rouge à sept segments avec surface grise destinée au contraste, 
 [`HDSP-A27C`](https://www.broadcom.com/products/leds-and-displays/7-segment/through-hole/hdsp-a27c),
 affichage alphanumérique rouge à quatorze segments uniformément éclairés. La disposition seize
 segments est conservée comme extension géométrique du même modèle raster. Aucun code, schéma ou
-actif tiers n’est incorporé ; la passe originale GW GUI reste sous licence MIT.
+actif tiers n’est incorporé ; la passe originale Retro Media Lab reste sous licence MIT.
 
 `Affichage à segments` est une technologie exclusive des autres affichages. Son panneau propose
 `7 segments`, `14 segments` ou `16 segments`, les couleurs rouge, verte, ambre, bleue ou blanche,
@@ -741,7 +741,7 @@ de gris et 4096 couleurs, et la publication sur les plateformes ePaper récentes
 [`E Ink and MediaTek Deepen Collaboration`](https://www.eink.com/news/detail/E%20Ink-and-MediaTek-Deepen-Collaboration-for-Education-and-Digital-Reading-with-AI-SoCs),
 qui mentionne le tramage, l’accélération du rafraîchissement et les algorithmes réduisant le ghosting.
 Ces sources définissent uniquement les caractéristiques ; aucun code ni actif tiers n’est incorporé.
-La passe originale GW GUI reste sous licence MIT.
+La passe originale Retro Media Lab reste sous licence MIT.
 
 `Papier électronique` est une technologie exclusive des autres affichages. Son panneau propose
 `Monochrome`, `16 niveaux de gris` ou `4096 couleurs`, puis contraste et tramage sur `0..100`, temps
@@ -761,7 +761,7 @@ confirme que la convergence d’un projecteur se règle en déplaçant les compo
 par rapport au vert, dans une plage pouvant atteindre trois pixels. La documentation Epson rappelle
 également qu’une [surface de projection colorée ou texturée](https://files.support.epson.com/docid/cpd5/cpd55708/source/adjustments/tasks/panel_aligning.html)
 modifie le résultat observé. Ces références servent uniquement à définir les caractéristiques ;
-aucun code, shader ni actif tiers n’est incorporé. La passe originale GW GUI reste sous licence MIT.
+aucun code, shader ni actif tiers n’est incorporé. La passe originale Retro Media Lab reste sous licence MIT.
 
 `Projection` est une technologie exclusive des autres affichages. Son panneau propose flou optique,
 diffusion lumineuse, texture de toile et convergence RGB sur `0..100`, avec les valeurs initiales
@@ -779,7 +779,7 @@ CPU déterministe.
 La [spécification officielle des présélections slang](https://github.com/libretro/slang-shaders/blob/master/README.md)
 confirme qu’un traitement peut demander l’historique des frames précédentes. Elle sert ici uniquement
 à valider l’architecture temporelle : aucun shader, code, coefficient ni actif Libretro n’est repris.
-L’algorithme original GW GUI reste sous licence MIT.
+L’algorithme original Retro Media Lab reste sous licence MIT.
 
 `Rémanence générale` est une intensité permanente sur `0..100`, neutre à `0` et initialisée à `0`.
 Elle se trouve dans un panneau `Effets temporels` toujours visible, indépendamment du select de
@@ -797,7 +797,7 @@ Direct3D 11 et Vulkan utilisent le même repli CPU déterministe lorsque l’eff
 
 Comme pour la rémanence générale, la [spécification officielle slang](https://github.com/libretro/slang-shaders/blob/master/README.md)
 sert uniquement à confirmer l’emploi d’un historique de frames. L’algorithme est une implémentation
-originale GW GUI sous licence MIT, sans reprise de shader, code, coefficient ni actif tiers.
+originale Retro Media Lab sous licence MIT, sans reprise de shader, code, coefficient ni actif tiers.
 
 `Flou de mouvement` est une intensité indépendante sur `0..100`, neutre et initialisée à `0`, dans
 le panneau permanent `Effets temporels`. Chaque composante linéaire mélange la frame courante vers
@@ -822,13 +822,13 @@ visibilité de la surface native.
 La passe utilise `VideoFrame.Sequence`, n’intègre aucun code ou actif tiers et reste sous licence MIT.
 Elle intervient après les autres effets temporels afin qu’aucun traitement ne rééclaire la frame noire.
 
-#### Simulation composite GW GUI — post-traitement explicite
+#### Simulation composite Retro Media Lab — post-traitement explicite
 
 Le [catalogue officiel common-shaders](https://github.com/libretro/common-shaders) confirme l’existence
 d’une famille NTSC/composite, tandis que les documentations PUAE, Hatari et Atari800 recensées plus
 haut confirment que norme vidéo, timing et artifacting restent des choix des moteurs. Ces sources
 servent uniquement à délimiter l’effet : aucun code, shader, coefficient ni actif tiers n’est repris.
-La passe originale GW GUI reste sous licence MIT.
+La passe originale Retro Media Lab reste sous licence MIT.
 
 `Composite` est un choix exclusif du sélecteur de liaison, contrôlé par l’unique intensité de
 dégradation. Il traite seulement le `VideoFrame` déjà produit : il
@@ -844,11 +844,11 @@ modifie : l’une construit la sortie émulée, l’autre simule explicitement u
 WPF utilise la fonction CPU du fichier `SignalConnectionComposite.cs` ; OpenGL, Direct3D 11 et
 Vulkan utilisent directement la fonction shader définie dans ce même fichier.
 
-#### Simulation S-Video GW GUI — luminance séparée
+#### Simulation S-Video Retro Media Lab — luminance séparée
 
 Le catalogue common-shaders sert à confirmer la famille de simulations analogiques, et l’audit PUAE,
 Hatari et Atari800 conserve toutes les options matérielles dans les moteurs. Aucun code, shader,
-coefficient ni actif tiers n’est repris ; la passe originale GW GUI reste sous licence MIT.
+coefficient ni actif tiers n’est repris ; la passe originale Retro Media Lab reste sous licence MIT.
 
 `S-Video` est un choix exclusif du sélecteur de liaison. La passe conserve la luminance linéaire du pixel central et mélange
 seulement les deux composantes chromatiques avec leurs voisines horizontales, au maximum à `12 %`.
@@ -871,7 +871,7 @@ respectivement dans `SignalConnectionRgbScart.cs` et `SignalConnectionComponent.
 #### Grain — bruit stylistique fin
 
 Le catalogue slang-shaders confirme l’existence d’effets stylistiques de grain, sans qu’aucun code,
-shader, coefficient, texture ou actif tiers soit repris. La passe originale GW GUI reste sous MIT.
+shader, coefficient, texture ou actif tiers soit repris. La passe originale Retro Media Lab reste sous MIT.
 
 `Grain` est une intensité `0..100`, neutre et initialisée à `0`, dans le panneau permanent
 `Effets stylistiques`. Un hachage déterministe de la position et de `VideoFrame.Sequence` produit un
@@ -886,7 +886,7 @@ pipeline CPU commun ; OpenGL, Direct3D 11 et Vulkan utilisent le même repli CPU
 #### VHS — instabilité et pertes de ligne
 
 Le catalogue slang-shaders confirme la famille VHS sans qu’aucun code, shader, coefficient ou actif
-tiers soit repris. La passe originale GW GUI reste sous MIT.
+tiers soit repris. La passe originale Retro Media Lab reste sous MIT.
 
 `VHS` est une intensité `0..100`, neutre et initialisée à `0`. Chaque ligne reçoit un décalage
 horizontal déterministe borné à trois pixels ; rouge et bleu bavent vers des voisins opposés jusqu’à
@@ -900,7 +900,7 @@ Direct3D 11 et Vulkan utilisent le même repli CPU déterministe.
 #### Aberration chromatique — séparation des composantes
 
 Le catalogue slang-shaders confirme la famille des aberrations chromatiques sans qu’aucun code,
-shader, coefficient, texture ou actif tiers soit repris. La passe originale GW GUI reste sous MIT.
+shader, coefficient, texture ou actif tiers soit repris. La passe originale Retro Media Lab reste sous MIT.
 
 `Aberration chromatique` est une intensité `0..100`, neutre et initialisée à `0`. À la résolution
 de sortie, elle échantillonne le rouge vers la droite et le bleu vers la gauche avec un décalage
@@ -914,7 +914,7 @@ pipeline CPU commun ; OpenGL, Direct3D 11 et Vulkan utilisent le même repli CPU
 #### Bloom — diffusion des hautes lumières
 
 Le catalogue slang-shaders confirme la famille bloom sans qu’aucun code, shader, coefficient,
-texture ou actif tiers soit repris. La passe originale GW GUI reste sous MIT.
+texture ou actif tiers soit repris. La passe originale Retro Media Lab reste sous MIT.
 
 `Bloom` est une intensité `0..100`, neutre et initialisée à `0`. La passe conserve seulement la
 part de chaque composante linéaire supérieure à `60 %`, la moyenne dans un rayon de deux pixels,
@@ -929,7 +929,7 @@ qu’OpenGL, Direct3D 11 et Vulkan emploient le même repli CPU déterministe.
 #### Sépia — teinte chaude fondée sur la luminance
 
 Le catalogue slang-shaders confirme la famille des effets sépia sans qu’aucun code, shader,
-coefficient, texture ou actif tiers soit repris. La passe originale GW GUI reste sous MIT.
+coefficient, texture ou actif tiers soit repris. La passe originale Retro Media Lab reste sous MIT.
 
 `Sépia` est une intensité `0..100`, neutre et initialisée à `0`. La luminance linéaire Rec. 709
 est convertie en cible chaude avec les multiplicateurs rouge `1,07`, vert `0,93` et bleu `0,74`,
@@ -944,7 +944,7 @@ renderers utilisent le pipeline CPU commun ou son repli CPU déterministe.
 #### Niveaux de gris — luminance progressive
 
 Le catalogue slang-shaders confirme la famille grayscale sans qu’aucun code, shader, coefficient,
-texture ou actif tiers soit repris. La passe originale GW GUI reste sous MIT.
+texture ou actif tiers soit repris. La passe originale Retro Media Lab reste sous MIT.
 
 `Niveaux de gris` est une intensité `0..100`, neutre et initialisée à `0`. Pour chaque pixel,
 la luminance linéaire Rec. 709 `0,2126 R + 0,7152 G + 0,0722 B` est mélangée progressivement aux
@@ -956,11 +956,11 @@ avec toutes les technologies et tous les traitements ; à intensité maximale, i
 construction les teintes produites plus tôt dans la chaîne. Les quatre renderers utilisent le
 pipeline CPU commun ou son repli CPU déterministe.
 
-#### Simulation PAL GW GUI — phase alternée entre lignes
+#### Simulation PAL Retro Media Lab — phase alternée entre lignes
 
 Les documentations PUAE, Hatari et Atari800 citées plus haut réservent la norme PAL et ses timings au
 moteur ; le catalogue common-shaders confirme seulement la famille visuelle. Aucun code, shader,
-coefficient ni actif tiers n’est repris. La passe originale GW GUI reste sous licence MIT.
+coefficient ni actif tiers n’est repris. La passe originale Retro Media Lab reste sous licence MIT.
 
 `PAL` est un choix exclusif du sélecteur de norme. Il conserve la luminance,
 mélange les composantes chromatiques de chaque ligne avec la ligne voisine à `28 %` et `36 %` au
@@ -970,11 +970,11 @@ La passe intervient après RF et avant scaler. Elle se combine avec toutes les t
 les traitements explicites. WPF utilise le pipeline CPU commun ; OpenGL, Direct3D 11 et Vulkan
 utilisent directement le shader de `SignalStandardPal.cs`.
 
-#### Simulation NTSC GW GUI — retard chromatique et phase
+#### Simulation NTSC Retro Media Lab — retard chromatique et phase
 
 Les documentations PUAE, Hatari et Atari800 réservent la norme NTSC, la fréquence et la région au
 moteur ; common-shaders confirme seulement la famille visuelle. Aucun code, shader, coefficient ni
-actif tiers n’est repris. La passe originale GW GUI reste sous licence MIT.
+actif tiers n’est repris. La passe originale Retro Media Lab reste sous licence MIT.
 
 `NTSC` est un choix exclusif du sélecteur de norme. Il mélange la luminance
 avec le pixel horizontal précédent jusqu’à `12 %`, retarde les deux composantes chromatiques jusqu’à
@@ -991,11 +991,11 @@ est reprise de la ligne précédente, en alternance, sans bruit RF. Le traitemen
 réunis dans `SignalStandardSecam.cs`. Le mode `Automatique` choisit PAL au voisinage de 50 Hz et NTSC
 au voisinage de 60 Hz à partir des horodatages de frames, sans modifier la norme interne du moteur.
 
-#### Simulation RF GW GUI — transmission bruitée
+#### Simulation RF Retro Media Lab — transmission bruitée
 
 Le catalogue common-shaders confirme la famille des dégradations analogiques ; l’audit des moteurs
 conserve fréquence, région, norme et tout éventuel tuner dans l’émulateur. Aucun code, shader,
-coefficient ni actif tiers n’est repris. La passe originale GW GUI reste sous licence MIT.
+coefficient ni actif tiers n’est repris. La passe originale Retro Media Lab reste sous licence MIT.
 
 `RF` est un choix exclusif du sélecteur de liaison, contrôlé par son unique intensité.
 Elle mélange horizontalement chaque composante avec ses voisines jusqu’à `65 %`, puis ajoute un bruit
@@ -1055,11 +1055,11 @@ OpenGL, Direct3D 11 et Vulkan utilisent le même repli CPU déterministe lorsqu�
 | Scintillement | toutes les technologies, scalers, restaurations et autres effets temporels | aucune ; reste distinct de l’insertion d’images noires |
 | Entrelacement simulé | toutes les technologies, scalers, réglages et autres effets temporels | aucun ; ne remplace pas le désentrelacement de restauration |
 | Insertion d’images noires | toutes les technologies, scalers, restaurations et autres effets temporels | aucune ; appliquée en dernier et distincte du scintillement |
-| Simulation composite GW GUI | toutes les technologies, scalers, restaurations, réglages et effets temporels | aucune ; ne modifie ni ne remplace les options de signal du moteur |
-| Simulation S-Video GW GUI | toutes les technologies, scalers, restaurations, réglages, effets temporels et composite explicite | aucune ; luminance séparée et aucune option moteur modifiée |
-| Simulation RF GW GUI | toutes les technologies, scalers, restaurations, réglages, effets temporels et autres simulations explicites | aucune ; aucune fréquence, région ou option moteur modifiée |
-| Simulation PAL GW GUI | toutes les technologies, scalers, restaurations, réglages, effets temporels et autres simulations explicites | aucune ; ne change jamais la norme PAL/NTSC du moteur |
-| Simulation NTSC GW GUI | toutes les technologies, scalers, restaurations, réglages, effets temporels et autres simulations explicites | aucune ; ne change jamais la norme PAL/NTSC du moteur |
+| Simulation composite Retro Media Lab | toutes les technologies, scalers, restaurations, réglages et effets temporels | aucune ; ne modifie ni ne remplace les options de signal du moteur |
+| Simulation S-Video Retro Media Lab | toutes les technologies, scalers, restaurations, réglages, effets temporels et composite explicite | aucune ; luminance séparée et aucune option moteur modifiée |
+| Simulation RF Retro Media Lab | toutes les technologies, scalers, restaurations, réglages, effets temporels et autres simulations explicites | aucune ; aucune fréquence, région ou option moteur modifiée |
+| Simulation PAL Retro Media Lab | toutes les technologies, scalers, restaurations, réglages, effets temporels et autres simulations explicites | aucune ; ne change jamais la norme PAL/NTSC du moteur |
+| Simulation NTSC Retro Media Lab | toutes les technologies, scalers, restaurations, réglages, effets temporels et autres simulations explicites | aucune ; ne change jamais la norme PAL/NTSC du moteur |
 | Grain | toutes les technologies, scalers, restaurations, simulations, réglages et effets temporels | aucune ; distinct du bruit RF par sa position et son amplitude |
 | VHS | toutes les technologies, scalers, restaurations, simulations, réglages, grain et effets temporels | aucune ; effet stylistique à la résolution de sortie |
 | Aberration chromatique | toutes les technologies, scalers, restaurations, simulations, réglages, autres effets stylistiques et effets temporels | aucune ; effet spatial déterministe à la résolution de sortie |
@@ -1067,7 +1067,7 @@ OpenGL, Direct3D 11 et Vulkan utilisent le même repli CPU déterministe lorsqu�
 | Sépia | toutes les technologies, scalers, restaurations, simulations, réglages, autres effets stylistiques et effets temporels | aucune ; les niveaux de gris appliqués ensuite retirent sa teinte |
 | Niveaux de gris | toutes les technologies, scalers, restaurations, simulations, réglages, autres effets stylistiques et effets temporels | aucune ; distinct des palettes et modes monochromes des technologies |
 | Scaler pixel art | une technologie d’affichage et réglages généraux | autre scaler pixel art |
-| Désentrelacement GW GUI | technologie d’affichage et réglages généraux | autre méthode de désentrelacement ou traitement équivalent du moteur |
+| Désentrelacement Retro Media Lab | technologie d’affichage et réglages généraux | autre méthode de désentrelacement ou traitement équivalent du moteur |
 
 L’audit des filtres indépendants implémentés ne trouve aucune incompatibilité interne nécessitant
 une confirmation. Un seul scaler peut exister dans la configuration parce que l’échantillonnage est
@@ -1086,18 +1086,18 @@ fonction indépendante déjà active.
 La suite normale exclut les scénarios marqués `GpuExhaustive` : elle vérifie les contrats, les algorithmes CPU, la configuration, l’interface et les chemins de rendu représentatifs sans recompiler chaque variante de shader sur chaque backend. Elle se lance avec :
 
 ```powershell
-dotnet test tests/GWGUI.Tests/GWGUI.Tests.csproj -c Debug
+dotnet test tests/RetroMediaLab.Tests/RetroMediaLab.Tests.csproj -c Debug
 ```
 
 La matrice complète multi-filtres et multi-rendus reste disponible avant une livraison ou après une modification des shaders :
 
 ```powershell
-dotnet test tests/GWGUI.Tests/GWGUI.Tests.csproj -c Debug --filter Category=GpuExhaustive
+dotnet test tests/RetroMediaLab.Tests/RetroMediaLab.Tests.csproj -c Debug --filter Category=GpuExhaustive
 ```
 ### Tests du catalogue ultérieur
 
 Chaque entrée possède un test CPU isolé dans
-`tests/GWGUI.Tests/EmulationVideoProcessingPipelineTests.cs`, puis est incluse séparément à valeur
+`tests/RetroMediaLab.Tests/EmulationVideoProcessingPipelineTests.cs`, puis est incluse séparément à valeur
 maximale dans `RendererSnapshotsMatchDeterministicCpuImagesAtNeutralAndBounds`. Ce second contrôle
 compare la même image CPU déterministe pour WPF, OpenGL, Direct3D 11 et Vulkan, en plus de l’état
 neutre. Les scénarios dédiés sont :
@@ -1167,7 +1167,7 @@ traduit : `Normal`, `CrtArcadeColor`, `CrtTelevisionColor`, `CrtGreen`, `CrtAmbe
 
 ### Gamma retenu
 
-Le gamma GW GUI utilise **-10 à +10**, avec **0 neutre**, comme les autres réglages généraux. La
+Le gamma Retro Media Lab utilise **-10 à +10**, avec **0 neutre**, comme les autres réglages généraux. La
 valeur affichée est une correction perceptuelle, convertie par :
 
 `exposant = 2^(-valeur / 10)`
@@ -1197,11 +1197,11 @@ proche. La valeur 0 court-circuite l’ensemble et conserve exactement les octet
 
 Le découpage proposé respecte l’architecture commune :
 
-- **configuration commune** dans `GWGUI.Emulation` : valeurs sérialisables et identifiants stables,
+- **configuration commune** dans `RetroMediaLab.Emulation` : valeurs sérialisables et identifiants stables,
   sans WPF, Veldrid, GLSL ni texte utilisateur ;
-- **catalogue commun** dans `GWGUI.Emulation` : métadonnées, valeurs par défaut, groupes,
+- **catalogue commun** dans `RetroMediaLab.Emulation` : métadonnées, valeurs par défaut, groupes,
   incompatibilités, capacités et clés de ressources ;
-- **composition dans `GWGUI.App`** : validation, chaîne ordonnée, ciblage de l’instance et
+- **composition dans `RetroMediaLab.App`** : validation, chaîne ordonnée, ciblage de l’instance et
   changements atomiques ;
 - **exécution Veldrid commune** à Direct3D 11 et Vulkan ;
 - **exécution OpenGL** conforme à la même définition avec programmes et framebuffers OpenGL ;

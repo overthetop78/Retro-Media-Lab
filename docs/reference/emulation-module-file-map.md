@@ -1,8 +1,8 @@
 # Cartographie des fichiers des modules d’émulation
 
 Ce document décrit l’état existant avant toute création du module Amstrad. Les chemins des colonnes
-Amiga et Atari sont relatifs respectivement à `src/GWGUI.Emulation.Commodore` et
-`src/GWGUI.Emulation.Atari`. Une cellule vide signifie qu’aucun fichier de l’autre module
+Amiga et Atari sont relatifs respectivement à `src/RetroMediaLab.Emulation.Commodore` et
+`src/RetroMediaLab.Emulation.Atari`. Une cellule vide signifie qu’aucun fichier de l’autre module
 n’assume directement la même responsabilité. La colonne Amstrad reste volontairement vide jusqu’à
 la fin de l’étude des deux modules fonctionnels. Le rapprochement porte sur la responsabilité réelle,
 pas seulement sur la ressemblance du nom.
@@ -12,7 +12,7 @@ pas seulement sur la ressemblance du nom.
 | Amiga | Atari | Amstrad | Description |
 |---|---|---|---|
 | `EmulationGlobalUsings.cs` | `EmulationGlobalUsings.cs` |  | Dans les deux modules, importe globalement les contrats, enums, interfaces et espaces de noms communs utilisés par le module. |
-| `GWGUI.Emulation.Commodore.csproj` | `GWGUI.Emulation.Atari.csproj` |  | Dans les deux modules, configure la cible .NET/x64, les références vers le SDK et MediaEngine, la copie du manifeste et l’intégration des ressources. |
+| `RetroMediaLab.Emulation.Commodore.csproj` | `RetroMediaLab.Emulation.Atari.csproj` |  | Dans les deux modules, configure la cible .NET/x64, les références vers le SDK et MediaEngine, la copie du manifeste et l’intégration des ressources. |
 | `module.json` | `module.json` |  | Dans les deux modules, déclare l’identifiant, l’assembly d’entrée, la version du module, la plage d’API hôte et l’URL du catalogue. |
 ## Constants
 
@@ -24,7 +24,7 @@ pas seulement sur la ressemblance du nom.
 | `Constants/AmigaConfigurationValidationFunctionsConstants.cs` |  |  | Amiga : centralise pour Configuration Validation Functions Constants les valeurs `AMIROMTYPE1`. |
 | `Constants/AmigaCoreHostConstants.cs` | `Constants/AtariCoreHostConstants.cs` |  | Amiga : centralise pour Core Host Constants les valeurs `HostName`. Atari : centralise pour Core Host Constants les valeurs `CommandLineArgument`, `HostName`, `PipePrefix`, `VideoMapPrefix`, `LocalPipeServerName`, `UniqueNameFormat`, …. |
 | `Constants/AmigaCoreHostValues.cs` | `Constants/AtariCoreHostValues.cs` |  | Amiga : centralise pour Core Host Values les valeurs `Windows`, `Value`, `TheAmigaHostConfigurationIsInvalid`, `TheAmigaHostIsNotInitialized`. Atari : centralise pour Core Host Values les valeurs `Windows`. |
-| `Constants/AmigaCoreReleaseServiceConstants.cs` |  |  | Amiga : centralise pour Core Release Service Constants les valeurs `Validated96ebfcfc`, `Value96ebfcfc31072026GWGUI`, `HttpsBuildbotLibretroComNightlyWindowsX8664LatestPuaeLibretroDllZip`, `OptionLibretroDll`, `CoreJson`, `Unknown`, …. |
+| `Constants/AmigaCoreReleaseServiceConstants.cs` |  |  | Amiga : centralise pour Core Release Service Constants les valeurs `Validated96ebfcfc`, `Value96ebfcfc31072026RetroMediaLab`, `HttpsBuildbotLibretroComNightlyWindowsX8664LatestPuaeLibretroDllZip`, `OptionLibretroDll`, `CoreJson`, `Unknown`, …. |
 | `Constants/CommodoreEmulationModuleConstants.cs` | `Constants/AtariEmulationModuleConstants.cs` |  | Amiga : centralise pour Emulation Module Constants les valeurs `Amiga`, `ResourceFamilyAmiga`, `AmigaCoreHost`, `OptionModel`, `OptionVideoStandard`, `PAL`, …. Atari : centralise pour Emulation Module Constants les valeurs `Atari`, `ResourceFamilyAtari`, `Enabled`, `N`. |
 | `Constants/AmigaExternalCoreConstants.cs` |  |  | Amiga : centralise pour External Core Constants les valeurs `Hash0B8442C311CA`, `Kick31034A1000`, `Hash1FA1F93D3D7B`, `Kick32034A1000`, `Hash85AD74194E87`, `Kick33180A500`, …. |
 | `Constants/AmigaExternalCoreInstallerConstants.cs` |  |  | Amiga : centralise pour External Core Installer Constants les valeurs `Value96ebfcfc`, `HttpsBuildbotLibretroComNightlyWindowsX8664LatestPuaeLibretroDllZip`, `OptionLibretroDll`, `Download`, `Extract`, `TheOfficialAmigaCoreArchiveDoesNotContainPuaeLibretroDll`, …. |
@@ -37,11 +37,11 @@ pas seulement sur la ressemblance du nom.
 | `Constants/AmigaMachineConfigurationConstants.cs` | `Constants/AtariMachineConfigurationConstants.cs` |  | Amiga : centralise pour Machine Configuration Constants les valeurs `Amiga`, `A500`, `OptionModel`, `OptionVideoStandard`, `PAL`, `OptionFloppyMultidrive`, …. Atari : centralise pour Machine Configuration Constants les valeurs `Atari`. |
 | `Constants/AmigaMachineConstants.cs` | `Constants/AtariMachineConstants.cs` |  | Amiga : centralise pour Machine Constants les valeurs `TheAmigaStateDoesNotMatchTheRunningMachine`, `TheAmigaStateFirmwareMediaOrOptionsDoNotMatchTheRunningMachine`, `TheAmigaStateMediaListDoesNotMatchTheRunningMachine`, `TheAmigaMachineMustBeRunningBeforeChangingAFloppy`, `AmigaDiagnostics`, `TheAmigaMachineStopped`. Atari : centralise pour Machine Constants les valeurs `MinimumFramesPerSecond`, `MaximumFramesPerSecond`, `PauseWaitMilliseconds`, `DiagnosticTailCount`, `EmptyCount`, `NoRemainingTicks`, …. |
 | `Constants/AmigaModelCatalogConstants.cs` | `Constants/AtariModelCatalogConstants.cs` |  | Amiga : centralise pour Model Catalog Constants les valeurs `A500OG`, `A1200OG`, `A2000OG`, `A4030`, `A4040`, `CD32FR`, …. Atari : centralise pour Model Catalog Constants les valeurs `ResourceAtariModelSt`, `ResourceAtariModelStf`, `ResourceAtariModelStfm`, `ResourceAtariModelMegaSt`, `ResourceAtariModelSte`, `ResourceAtariModelMegaSte`, …. |
-| `Constants/AmigaProcessCoreConstants.cs` | `Constants/AtariProcessCoreConstants.cs` |  | Amiga : centralise pour Process Core Constants les valeurs `TheAmigaCoreProcessIsAlreadyInitialized`, `TheGWGUIExecutableUsedToHostTheAmigaCoreWasNotFound`, `AmigaCoreHost`, `TheAmigaCoreHostProcessCouldNotBeStarted`, `TheSharedAmigaVideoBufferIsUnavailable`, `TheAmigaCoreProcessIsNoLongerAvailable`, …. Atari : centralise pour Process Core Constants les valeurs `Windows`. |
+| `Constants/AmigaProcessCoreConstants.cs` | `Constants/AtariProcessCoreConstants.cs` |  | Amiga : centralise pour Process Core Constants les valeurs `TheAmigaCoreProcessIsAlreadyInitialized`, `TheRetroMediaLabExecutableUsedToHostTheAmigaCoreWasNotFound`, `AmigaCoreHost`, `TheAmigaCoreHostProcessCouldNotBeStarted`, `TheSharedAmigaVideoBufferIsUnavailable`, `TheAmigaCoreProcessIsNoLongerAvailable`, …. Atari : centralise pour Process Core Constants les valeurs `Windows`. |
 | `Constants/AmigaRuntimeMediaFunctionsConstants.cs` |  |  | Amiga : centralise pour Runtime Media Functions Constants les valeurs `Scp`. |
 | `Constants/AmigaSettingsConstants.cs` | `Constants/AtariSettingsConstants.cs` |  | Amiga : centralise pour Settings Constants les valeurs `KickstartPath`, `ExtendedRomPath`, `RomKeyPath`, `AudioEnabled`, `CpuOriginalSpeed`, `CpuSpeed`, …. Atari : centralise pour Settings Constants les valeurs `Cpu`, `CpuFrequency`, `CpuOriginalFrequency`, `CpuPrecision`, `Fpu`, `AlternateMemory`, …. |
 | `Constants/AmigaSettingsDescriptionFunctionsConstants.cs` | `Constants/AtariSettingsDescriptionFunctionsConstants.cs` |  | Amiga : centralise pour Settings Description Functions Constants les valeurs `OptionCpuModel`, `OptionCpuCompatibility`, `Exact`, `OptionVideoStandard`, `PAL`, `NTSC`, …. Atari : centralise pour Settings Description Functions Constants les valeurs `Mouse`, `ResourceTabMouse`, `Value`, `ResourceMouseSpeed`, `DefaultFolders`, `ResourceFolderDefault`, …. |
-| `Constants/AmigaStateStoreConstants.cs` | `Constants/AtariStateStoreConstants.cs` |  | Amiga : centralise pour State Store Constants les valeurs `Tmp`, `TheFileIsNotAGWGUIAmigaState`, `TheAmigaStateHeaderLengthIsInvalid`, `TheAmigaStateHeaderIsInvalid`, `TheAmigaStatePayloadIsCorrupted`, `TheAmigaMediaPathWasNotFound`, …. Atari : centralise pour State Store Constants les valeurs `AtariDirectoryName`, `QuickStateName`, `StateFileExtension`, `MetadataFileExtension`, `MetadataSearchPattern`, `CaptureFileExtension`, …. |
+| `Constants/AmigaStateStoreConstants.cs` | `Constants/AtariStateStoreConstants.cs` |  | Amiga : centralise pour State Store Constants les valeurs `Tmp`, `TheFileIsNotARetroMediaLabAmigaState`, `TheAmigaStateHeaderLengthIsInvalid`, `TheAmigaStateHeaderIsInvalid`, `TheAmigaStatePayloadIsCorrupted`, `TheAmigaMediaPathWasNotFound`, …. Atari : centralise pour State Store Constants les valeurs `AtariDirectoryName`, `QuickStateName`, `StateFileExtension`, `MetadataFileExtension`, `MetadataSearchPattern`, `CaptureFileExtension`, …. |
 | `Constants/AmigaStorageSettingsFunctionsConstants.cs` | `Constants/AtariStorageSettingsFunctionsConstants.cs` |  | Amiga : centralise pour Storage Settings Functions Constants les valeurs `Adf`, `Adz`, `Dms`, `Fdi`, `Ipf`, `Scp`, …. Atari : centralise pour Storage Settings Functions Constants les valeurs `StorageDevice`, `StorageModel`, `StorageSpeed`, `StorageWriteProtected`, `StorageRedirectWrites`, `StorageInterface`, …. |
 |  | `Constants/Atari800MediaConstants.cs` |  | Atari : centralise pour 800 Media Constants les valeurs `SystemOptionKey`, `Atari5200SystemValue`, `CartridgeHeaderText`, `CartridgeHeaderLength`, `MinimumCartridgeType`. |
 |  | `Constants/Atari800MediaErrors.cs` |  | Atari : centralise pour 800 Media Errors les valeurs `UnsupportedMediaCategory`, `InvalidExtension`, `ComputerMediaOn5200`, `ConsoleMediaOnComputer`, `CartridgeTypeInvalid`, `DynamicCartridgeUnsupported`, …. |
@@ -66,7 +66,7 @@ pas seulement sur la ressemblance du nom.
 |  | `Constants/AtariCoreLifecycleConstants.cs` |  | Atari : centralise pour Core Lifecycle Constants les valeurs `NoDevice`, `DefaultJoypadDevice`, `JoypadDeviceName`, `KeyboardDeviceName`, `MouseDeviceName`, `JoystickDeviceName`, …. |
 |  | `Constants/AtariCoreOptionConstants.cs` |  | Atari : centralise pour Core Option Constants les valeurs `SupportedInterfaceVersion`, `MaximumDefinitions`, `MaximumCategories`, `MaximumValues`, `LegacyDefinitionPointerCount`, `VersionTwoDefinitionPointerCountBeforeValues`, …. |
 |  | `Constants/AtariCoreOptionProbeConstants.cs` |  | Atari : centralise pour Core Option Probe Constants les valeurs `CommandLineArgument`, `SuccessExitCode`, `FailureExitCode`, `ProcessTimeoutMilliseconds`. |
-|  | `Constants/AtariCoreOptionProbeValues.cs` |  | Atari : centralise pour Core Option Probe Values les valeurs `GWGUIAtariOptionProbe`, `N`. |
+|  | `Constants/AtariCoreOptionProbeValues.cs` |  | Atari : centralise pour Core Option Probe Values les valeurs `RetroMediaLabAtariOptionProbe`, `N`. |
 |  | `Constants/AtariCoreReleaseConstants.cs` |  | Atari : centralise pour Core Release Constants les valeurs `ReleaseIdPrefix`, `ReleaseVersionFormat`, `TemporaryDownloadExtension`, `TemporaryExtractExtension`, `TemporaryManifestExtension`, `UnknownDiagnosticValue`, …. |
 |  | `Constants/AtariCoreReleaseErrors.cs` |  | Atari : centralise pour Core Release Errors les valeurs `MissingPublishedDate`, `MissingExpectedLibraryFormat`, `InvalidExportDirectory`, `InstalledLibraryLockedFormat`. |
 |  | `Constants/AtariDiskControlConstants.cs` |  | Atari : centralise pour Disk Control Constants les valeurs `InterfaceVersion`, `TextBufferSize`, `NoImageIndex`, `FirstImageIndex`, `FirstNativeImageIndex`, `NoNativeImageIndex`, …. |
@@ -417,25 +417,25 @@ de tâches terminées ne sont pas des raccordements exécutables et ne sont pas 
 
 | Fichier depuis la racine du dépôt | Module nommé | Effet réel |
 |---|---|---|
-| `GWGUI.sln` | Amiga et Atari | Ajoute les deux projets à la solution et les place sous le dossier logique src avec leurs configurations de build. |
-| `src/GWGUI.Emulation/GWGUI.Emulation.csproj` | Amiga et Atari | Déclare actuellement les deux assemblies comme InternalsVisibleTo : le SDK commun leur ouvre donc aussi ses membres internal. |
-| `tests/GWGUI.Tests/GWGUI.Tests.csproj` | Amiga et Atari | Référence directement les deux projets afin que les scénarios de tests puissent instancier leurs types. |
+| `RetroMediaLab.sln` | Amiga et Atari | Ajoute les deux projets à la solution et les place sous le dossier logique src avec leurs configurations de build. |
+| `src/RetroMediaLab.Emulation/RetroMediaLab.Emulation.csproj` | Amiga et Atari | Déclare actuellement les deux assemblies comme InternalsVisibleTo : le SDK commun leur ouvre donc aussi ses membres internal. |
+| `tests/RetroMediaLab.Tests/RetroMediaLab.Tests.csproj` | Amiga et Atari | Référence directement les deux projets afin que les scénarios de tests puissent instancier leurs types. |
 | `module-registry/amiga.json` | Amiga | Publie l’identifiant et l’URL du catalogue du module Amiga dans l’annuaire public. |
 | `module-registry/atari.json` | Atari | Publie l’identifiant et l’URL du catalogue du module Atari dans l’annuaire public. |
-| `tests/GWGUI.Tests/Architecture/MediaEngineProjectBoundaryTests.cs` | Amiga et Atari | Instancie les factories des deux modules pour vérifier leurs frontières avec MediaEngine. |
-| `tests/GWGUI.Tests/Emulation/Audio/AudioBufferScenarios.cs` | Atari | Teste directement le contrôleur de sortie audio Atari et son remplacement de périphérique. |
-| `tests/GWGUI.Tests/Emulation/EmulationContracts/RuntimeOptionScenarios.cs` | Atari | Vérifie les options runtime et leurs règles de redémarrage avec les catalogues Atari. |
-| `tests/GWGUI.Tests/Emulation/MachineAdapters/AtariCartridgeScenarios.cs` | Atari | Teste la préparation et les règles des cartouches Atari. |
-| `tests/GWGUI.Tests/Emulation/MachineAdapters/AtariCassetteScenarios.cs` | Atari | Teste le démarrage et l’état du transport cassette Atari. |
-| `tests/GWGUI.Tests/Emulation/MachineAdapters/AtariMediaActivityScenarios.cs` | Atari | Teste la conversion des états d’activité média Atari vers le contrat commun. |
-| `tests/GWGUI.Tests/Emulation/MachineAdapters/MachineAdapterFailureScenarios.cs` | Amiga et Atari | Provoque les échecs contrôlés des adaptateurs et cœurs des deux modules. |
-| `tests/GWGUI.Tests/Emulation/MachineAdapters/MachineAdaptersTests.cs` | Amiga et Atari | Expose à xUnit les scénarios communs et fournit les modèles Atari issus du catalogue. |
-| `tests/GWGUI.Tests/Emulation/MachineAdapters/MachineCapabilitiesScenarios.cs` | Amiga et Atari | Vérifie les capacités, réglages de stockage et médias annoncés par les deux modules. |
-| `tests/GWGUI.Tests/Emulation/MachineAdapters/MachineConfigurationMappingScenarios.cs` | Amiga et Atari | Vérifie création, application, persistance et conversion des configurations/médias des deux modules. |
-| `tests/GWGUI.Tests/Emulation/Modules/EmulationModuleManifestTests.cs` | Amiga comme exemple de manifeste | Utilise un manifeste d’exemple nommé amiga pour tester le parseur générique ; ce nom n’ajoute aucune dépendance runtime. |
-| `tests/GWGUI.Tests/Updates/ModuleDirectoryServiceTests.cs` | Amiga comme donnée de test | Utilise un catalogue fictif nommé amiga pour vérifier la sélection de versions et l’état d’installation du service d’annuaire générique ; ce nom n’ajoute aucune dépendance runtime. |
-| `tests/GWGUI.LocalDiskImageTests/TemporaryLibretroMediaReader/TemporaryLibretroMediaReader.csproj` | Atari | Référence temporairement le module Atari pour son lecteur Libretro d’audit. |
-| `tests/GWGUI.LocalDiskImageTests/TemporaryLibretroMediaReader/TemporaryLibretroMediaReader.cs` | Atari | Utilise les contrats et services Atari afin de lire des médias pendant l’audit temporaire. |
+| `tests/RetroMediaLab.Tests/Architecture/MediaEngineProjectBoundaryTests.cs` | Amiga et Atari | Instancie les factories des deux modules pour vérifier leurs frontières avec MediaEngine. |
+| `tests/RetroMediaLab.Tests/Emulation/Audio/AudioBufferScenarios.cs` | Atari | Teste directement le contrôleur de sortie audio Atari et son remplacement de périphérique. |
+| `tests/RetroMediaLab.Tests/Emulation/EmulationContracts/RuntimeOptionScenarios.cs` | Atari | Vérifie les options runtime et leurs règles de redémarrage avec les catalogues Atari. |
+| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/AtariCartridgeScenarios.cs` | Atari | Teste la préparation et les règles des cartouches Atari. |
+| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/AtariCassetteScenarios.cs` | Atari | Teste le démarrage et l’état du transport cassette Atari. |
+| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/AtariMediaActivityScenarios.cs` | Atari | Teste la conversion des états d’activité média Atari vers le contrat commun. |
+| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/MachineAdapterFailureScenarios.cs` | Amiga et Atari | Provoque les échecs contrôlés des adaptateurs et cœurs des deux modules. |
+| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/MachineAdaptersTests.cs` | Amiga et Atari | Expose à xUnit les scénarios communs et fournit les modèles Atari issus du catalogue. |
+| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/MachineCapabilitiesScenarios.cs` | Amiga et Atari | Vérifie les capacités, réglages de stockage et médias annoncés par les deux modules. |
+| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/MachineConfigurationMappingScenarios.cs` | Amiga et Atari | Vérifie création, application, persistance et conversion des configurations/médias des deux modules. |
+| `tests/RetroMediaLab.Tests/Emulation/Modules/EmulationModuleManifestTests.cs` | Amiga comme exemple de manifeste | Utilise un manifeste d’exemple nommé amiga pour tester le parseur générique ; ce nom n’ajoute aucune dépendance runtime. |
+| `tests/RetroMediaLab.Tests/Updates/ModuleDirectoryServiceTests.cs` | Amiga comme donnée de test | Utilise un catalogue fictif nommé amiga pour vérifier la sélection de versions et l’état d’installation du service d’annuaire générique ; ce nom n’ajoute aucune dépendance runtime. |
+| `tests/RetroMediaLab.LocalDiskImageTests/TemporaryLibretroMediaReader/TemporaryLibretroMediaReader.csproj` | Atari | Référence temporairement le module Atari pour son lecteur Libretro d’audit. |
+| `tests/RetroMediaLab.LocalDiskImageTests/TemporaryLibretroMediaReader/TemporaryLibretroMediaReader.cs` | Atari | Utilise les contrats et services Atari afin de lire des médias pendant l’audit temporaire. |
 | `docs/architecture/emulation.md` | Amiga et Atari | Décrit les frontières SDK/App/modules, le cycle d’une instance et les responsabilités observées des deux modules. |
 | `docs/architecture/emulation-module-localization.md` | Amiga et Atari | Décrit le raccordement de leurs ressources localisées au SDK et à l’hôte, ainsi que la propriété observée des clés de traduction. |
 | `docs/architecture/emulation-modules.md` | Amiga et Atari | Documente le paquet Modules/<id>, le manifeste et les assemblies actuelles. |
@@ -455,71 +455,71 @@ une future DLL sans ajouter son nom dans l’App.
 
 | Fichier depuis la racine du dépôt | Responsabilité générique |
 |---|---|
-| `src/GWGUI.Emulation/Constants/EmulationHostApi.cs` | Fixe la version d’API hôte et le nom conventionnel module.json. |
-| `src/GWGUI.Emulation/Contracts/EmulationModuleManifest.cs` | Définit le schéma de données du manifeste de tout module. |
-| `src/GWGUI.Emulation/Contracts/EmulationModuleContext.cs` | Transmet au module ses dossiers, l’exécutable hôte et les services fournis par l’App. |
-| `src/GWGUI.Emulation/Interfaces/IEmulationModuleFactory.cs` | Définit l’unique point d’entrée que la découverte dynamique recherche dans l’assembly. |
-| `src/GWGUI.Emulation/Interfaces/IEmulationModule.cs` | Définit la façade commune utilisée par l’App pour machines, configurations, réglages et runtime. |
-| `src/GWGUI.Emulation/Interfaces/IEmulationModuleLocalization.cs` | Permet à un module de résoudre ses propres ressources sans que l’App connaisse son nom. |
-| `src/GWGUI.Emulation/Contracts/EmulationEmulatorInstallation.cs` | Transporte l’identifiant du moteur courant et sa version installée éventuelle. |
-| `src/GWGUI.Emulation/Contracts/EmulationEmulatorRelease.cs` | Décrit une version de moteur téléchargeable, son libellé et son caractère obligatoire éventuel. |
-| `src/GWGUI.Emulation/Contracts/EmulationEmulatorMessageContext.cs` | Associe l’identifiant du moteur au contexte des messages émis pendant sa gestion. |
-| `src/GWGUI.Emulation/Interfaces/IEmulationEmulatorMessageContext.cs` | Étend le contexte de message commun avec l’identifiant du moteur concerné. |
-| `src/GWGUI.Emulation/Interfaces/IEmulationEmulatorManager.cs` | Transporte la configuration opaque entre l’App et le module pour obtenir le moteur sélectionné, recevoir toutes les installations disponibles, appliquer un `EmulatorId` à la configuration et rechercher ou installer les releases correspondantes ; les opérations historiques par `MachineId` restent le comportement par défaut des modules à moteur unique. |
-| `src/GWGUI.Emulation/README.md` | Documente le SDK, le manifeste et le contrat d’auteur de module. |
-| `src/GWGUI.App/App.xaml.cs` | Construit le registre au démarrage, charge les modules découverts et leur transmet les arguments de commande hôte. |
-| `src/GWGUI.App/Services/Emulation/EmulationModuleManifestReader.cs` | Lit et valide strictement module.json et sa compatibilité avec l’API hôte. |
-| `src/GWGUI.App/Services/Emulation/EmulationModuleLoadContext.cs` | Charge l’assembly du module et ses dépendances depuis son dossier isolé. |
-| `src/GWGUI.App/Services/Emulation/EmulationModuleRegistry.cs` | Parcourt les dossiers Modules, exige un manifeste, charge exactement une factory publique et refuse doublons/incompatibilités. |
-| `src/GWGUI.App/Services/Emulation/LoadedEmulationModule.cs` | Conserve ensemble manifeste, façade chargée, contexte d’assembly et dossier d’un module. |
-| `src/GWGUI.App/Localization/Extensions/LocExtension.cs` | Résout d’abord les ressources du module via IEmulationModuleLocalization puis les ressources communes de l’App. |
-| `src/GWGUI.App/Contracts/Emulation/Configurations/EmulationConfigurationListItem.cs` | Associe une configuration affichée à son IEmulationModule propriétaire. |
-| `src/GWGUI.App/Contracts/Emulation/Configurations/EmulationConfigurationTableRow.cs` | Associe une ligne de tableau de configurations au module qui sait l’interpréter. |
-| `src/GWGUI.App/Presenters/Emulation/Configurations/EmulationConfigurationPresenter.cs` | Demande au module le résumé et localise le nom de machine. |
-| `src/GWGUI.App/Presenters/Emulation/Configurations/EmulationConfigurationTablePresenter.cs` | Construit les lignes de configurations à partir des modules chargés. |
-| `src/GWGUI.App/Functions/Views/Emulation/Settings/EmulationConfigurationPersistenceFunctions.cs` | Appelle les opérations génériques de sauvegarde/suppression du module sélectionné. |
-| `src/GWGUI.App/Functions/Views/Emulation/Settings/EmulationSettingsValuePresentationFunctions.cs` | Présente les valeurs de réglage déclarées par n’importe quel module. |
-| `src/GWGUI.App/Constants/Emulation/EmulationCoreManagementConstants.cs` | Centralise les clés de traduction, noms d’automatisation et valeurs visuelles du panneau générique de gestion des moteurs. |
-| `src/GWGUI.App/Controllers/Emulation/Firmware/EmulationFirmwareManagementController.cs` | Active la gestion de firmware lorsque le module implémente l’interface optionnelle correspondante. |
-| `src/GWGUI.App/Controllers/Emulation/Options/EmulationEmulatorManagementController.cs` | Interroge le gestionnaire du module avec l’`IEmulationConfiguration` courante, affiche les `EmulatorId` reçus, réinjecte le choix utilisateur dans cette configuration, verrouille le choix d’une machine déjà sauvegardée et conserve la recherche, la progression, l’annulation et l’installation existantes. |
-| `src/GWGUI.App/Views/Controls/Emulation/Options/EmulationCoreManagementPanel.cs` | Fournit le sélecteur de moteur déjà présent ainsi que le bouton d’installation, le statut, la progression et l’annulation. |
-| `src/GWGUI.App/Views/Controls/Emulation/Options/EmulationModuleSettingsSection.cs` | Construit l’éditeur depuis `IEmulationModule`, fournit au contrôleur d’émulateurs la configuration opaque courante et laisse le parcours existant de brouillon ou de sauvegarde persister la configuration retournée. |
-| `src/GWGUI.App/Views/Windows/EmulationModuleOptions/EmulationModuleOptionsWindow.xaml.cs` | Héberge la fenêtre d’options d’un module sans connaître sa famille. |
-| `src/GWGUI.App/Views/Controls/Emulation/Machine/EmulationSection.cs` | Héberge une instance de machine créée par le runtime du module. |
-| `src/GWGUI.App/Views/Controls/Emulation/Machine/EmulationSectionMachineFunctions.cs` | Pilote cycle de vie, vidéo, audio, entrées et médias par les contrats communs. |
-| `src/GWGUI.App/Views/Controls/Emulation/Options/EmulationPreferencesSection.cs` | Affiche les modules et machines découverts dans les préférences. |
-| `src/GWGUI.App/Views/Controls/Shell/MainMenu.xaml.cs` | Construit les entrées de menu d’émulation depuis le registre chargé. |
-| `src/GWGUI.App/Views/Windows/Shell/MainWindow.ComponentConnections.cs` | Raccorde les modules chargés aux composants de la fenêtre principale. |
-| `src/GWGUI.App/Views/Windows/Shell/MainWindow.EventsAndCommands.cs` | Route les commandes d’ouverture/options vers le module choisi. |
-| `src/GWGUI.App/Services/Windows/WpfWindowNavigationService.cs` | Ouvre les fenêtres génériques d’options/configuration avec le module concerné. |
-| `src/GWGUI.App/Resources/00-Base/Emulation/EmulationCore.resx` | Définit les textes communs du sélecteur, de la recherche, du téléchargement, de l’état installé et du chemin ; le même fichier est traduit dans chacune des 29 cultures de l’App. |
-| `src/GWGUI.App/Services/Emulation/HardDiskDeletionService.cs` | Interroge tous les modules pour empêcher la suppression d’un disque encore référencé. |
-| `src/GWGUI.App/Services/Updates/ModuleDirectoryService.cs` | Gère les dossiers d’installation des modules par identifiant. |
-| `src/GWGUI.App/Services/Updates/ModuleInstallationService.cs` | Installe/remplace un paquet de module validé sans liste de familles codée en dur. |
-| `src/GWGUI.App/Services/Updates/ModuleUpdateService.cs` | Lit le catalogue déclaré par le manifeste et recherche la mise à jour du module. |
-| `src/GWGUI.App/Services/Updates/ApplicationUpdateService.cs` | Coordonne les composants de mise à jour de l’application et les informations de modules sans connaître leurs familles. |
-| `src/GWGUI.App/Services/Updates/UpdatePackagePreparationService.cs` | Valide la compatibilité hôte et prépare atomiquement l’installation du paquet. |
-| `src/GWGUI.App/Options/Controllers/UpdateOptionsController.cs` | Présente dans l’interface l’état et les actions de mise à jour des composants, dont les modules découverts. |
-| `src/GWGUI.Updates/Services/UpdateArchiveValidator.cs` | Valide l’arborescence Modules/<id>, le manifeste et l’assembly d’un paquet téléchargé. |
-| `src/GWGUI.Launcher/Program.cs` | Résout les assemblies de l’application lancée ; il ne possède aucune liste Amiga/Atari. |
-| `scripts/local-building.cmd` | Découvre chaque src/GWGUI.Emulation.* contenant module.json et l’ajoute au build local. |
+| `src/RetroMediaLab.Emulation/Constants/EmulationHostApi.cs` | Fixe la version d’API hôte et le nom conventionnel module.json. |
+| `src/RetroMediaLab.Emulation/Contracts/EmulationModuleManifest.cs` | Définit le schéma de données du manifeste de tout module. |
+| `src/RetroMediaLab.Emulation/Contracts/EmulationModuleContext.cs` | Transmet au module ses dossiers, l’exécutable hôte et les services fournis par l’App. |
+| `src/RetroMediaLab.Emulation/Interfaces/IEmulationModuleFactory.cs` | Définit l’unique point d’entrée que la découverte dynamique recherche dans l’assembly. |
+| `src/RetroMediaLab.Emulation/Interfaces/IEmulationModule.cs` | Définit la façade commune utilisée par l’App pour machines, configurations, réglages et runtime. |
+| `src/RetroMediaLab.Emulation/Interfaces/IEmulationModuleLocalization.cs` | Permet à un module de résoudre ses propres ressources sans que l’App connaisse son nom. |
+| `src/RetroMediaLab.Emulation/Contracts/EmulationEmulatorInstallation.cs` | Transporte l’identifiant du moteur courant et sa version installée éventuelle. |
+| `src/RetroMediaLab.Emulation/Contracts/EmulationEmulatorRelease.cs` | Décrit une version de moteur téléchargeable, son libellé et son caractère obligatoire éventuel. |
+| `src/RetroMediaLab.Emulation/Contracts/EmulationEmulatorMessageContext.cs` | Associe l’identifiant du moteur au contexte des messages émis pendant sa gestion. |
+| `src/RetroMediaLab.Emulation/Interfaces/IEmulationEmulatorMessageContext.cs` | Étend le contexte de message commun avec l’identifiant du moteur concerné. |
+| `src/RetroMediaLab.Emulation/Interfaces/IEmulationEmulatorManager.cs` | Transporte la configuration opaque entre l’App et le module pour obtenir le moteur sélectionné, recevoir toutes les installations disponibles, appliquer un `EmulatorId` à la configuration et rechercher ou installer les releases correspondantes ; les opérations historiques par `MachineId` restent le comportement par défaut des modules à moteur unique. |
+| `src/RetroMediaLab.Emulation/README.md` | Documente le SDK, le manifeste et le contrat d’auteur de module. |
+| `src/RetroMediaLab.App/App.xaml.cs` | Construit le registre au démarrage, charge les modules découverts et leur transmet les arguments de commande hôte. |
+| `src/RetroMediaLab.App/Services/Emulation/EmulationModuleManifestReader.cs` | Lit et valide strictement module.json et sa compatibilité avec l’API hôte. |
+| `src/RetroMediaLab.App/Services/Emulation/EmulationModuleLoadContext.cs` | Charge l’assembly du module et ses dépendances depuis son dossier isolé. |
+| `src/RetroMediaLab.App/Services/Emulation/EmulationModuleRegistry.cs` | Parcourt les dossiers Modules, exige un manifeste, charge exactement une factory publique et refuse doublons/incompatibilités. |
+| `src/RetroMediaLab.App/Services/Emulation/LoadedEmulationModule.cs` | Conserve ensemble manifeste, façade chargée, contexte d’assembly et dossier d’un module. |
+| `src/RetroMediaLab.App/Localization/Extensions/LocExtension.cs` | Résout d’abord les ressources du module via IEmulationModuleLocalization puis les ressources communes de l’App. |
+| `src/RetroMediaLab.App/Contracts/Emulation/Configurations/EmulationConfigurationListItem.cs` | Associe une configuration affichée à son IEmulationModule propriétaire. |
+| `src/RetroMediaLab.App/Contracts/Emulation/Configurations/EmulationConfigurationTableRow.cs` | Associe une ligne de tableau de configurations au module qui sait l’interpréter. |
+| `src/RetroMediaLab.App/Presenters/Emulation/Configurations/EmulationConfigurationPresenter.cs` | Demande au module le résumé et localise le nom de machine. |
+| `src/RetroMediaLab.App/Presenters/Emulation/Configurations/EmulationConfigurationTablePresenter.cs` | Construit les lignes de configurations à partir des modules chargés. |
+| `src/RetroMediaLab.App/Functions/Views/Emulation/Settings/EmulationConfigurationPersistenceFunctions.cs` | Appelle les opérations génériques de sauvegarde/suppression du module sélectionné. |
+| `src/RetroMediaLab.App/Functions/Views/Emulation/Settings/EmulationSettingsValuePresentationFunctions.cs` | Présente les valeurs de réglage déclarées par n’importe quel module. |
+| `src/RetroMediaLab.App/Constants/Emulation/EmulationCoreManagementConstants.cs` | Centralise les clés de traduction, noms d’automatisation et valeurs visuelles du panneau générique de gestion des moteurs. |
+| `src/RetroMediaLab.App/Controllers/Emulation/Firmware/EmulationFirmwareManagementController.cs` | Active la gestion de firmware lorsque le module implémente l’interface optionnelle correspondante. |
+| `src/RetroMediaLab.App/Controllers/Emulation/Options/EmulationEmulatorManagementController.cs` | Interroge le gestionnaire du module avec l’`IEmulationConfiguration` courante, affiche les `EmulatorId` reçus, réinjecte le choix utilisateur dans cette configuration, verrouille le choix d’une machine déjà sauvegardée et conserve la recherche, la progression, l’annulation et l’installation existantes. |
+| `src/RetroMediaLab.App/Views/Controls/Emulation/Options/EmulationCoreManagementPanel.cs` | Fournit le sélecteur de moteur déjà présent ainsi que le bouton d’installation, le statut, la progression et l’annulation. |
+| `src/RetroMediaLab.App/Views/Controls/Emulation/Options/EmulationModuleSettingsSection.cs` | Construit l’éditeur depuis `IEmulationModule`, fournit au contrôleur d’émulateurs la configuration opaque courante et laisse le parcours existant de brouillon ou de sauvegarde persister la configuration retournée. |
+| `src/RetroMediaLab.App/Views/Windows/EmulationModuleOptions/EmulationModuleOptionsWindow.xaml.cs` | Héberge la fenêtre d’options d’un module sans connaître sa famille. |
+| `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/EmulationSection.cs` | Héberge une instance de machine créée par le runtime du module. |
+| `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/EmulationSectionMachineFunctions.cs` | Pilote cycle de vie, vidéo, audio, entrées et médias par les contrats communs. |
+| `src/RetroMediaLab.App/Views/Controls/Emulation/Options/EmulationPreferencesSection.cs` | Affiche les modules et machines découverts dans les préférences. |
+| `src/RetroMediaLab.App/Views/Controls/Shell/MainMenu.xaml.cs` | Construit les entrées de menu d’émulation depuis le registre chargé. |
+| `src/RetroMediaLab.App/Views/Windows/Shell/MainWindow.ComponentConnections.cs` | Raccorde les modules chargés aux composants de la fenêtre principale. |
+| `src/RetroMediaLab.App/Views/Windows/Shell/MainWindow.EventsAndCommands.cs` | Route les commandes d’ouverture/options vers le module choisi. |
+| `src/RetroMediaLab.App/Services/Windows/WpfWindowNavigationService.cs` | Ouvre les fenêtres génériques d’options/configuration avec le module concerné. |
+| `src/RetroMediaLab.App/Resources/00-Base/Emulation/EmulationCore.resx` | Définit les textes communs du sélecteur, de la recherche, du téléchargement, de l’état installé et du chemin ; le même fichier est traduit dans chacune des 29 cultures de l’App. |
+| `src/RetroMediaLab.App/Services/Emulation/HardDiskDeletionService.cs` | Interroge tous les modules pour empêcher la suppression d’un disque encore référencé. |
+| `src/RetroMediaLab.App/Services/Updates/ModuleDirectoryService.cs` | Gère les dossiers d’installation des modules par identifiant. |
+| `src/RetroMediaLab.App/Services/Updates/ModuleInstallationService.cs` | Installe/remplace un paquet de module validé sans liste de familles codée en dur. |
+| `src/RetroMediaLab.App/Services/Updates/ModuleUpdateService.cs` | Lit le catalogue déclaré par le manifeste et recherche la mise à jour du module. |
+| `src/RetroMediaLab.App/Services/Updates/ApplicationUpdateService.cs` | Coordonne les composants de mise à jour de l’application et les informations de modules sans connaître leurs familles. |
+| `src/RetroMediaLab.App/Services/Updates/UpdatePackagePreparationService.cs` | Valide la compatibilité hôte et prépare atomiquement l’installation du paquet. |
+| `src/RetroMediaLab.App/Options/Controllers/UpdateOptionsController.cs` | Présente dans l’interface l’état et les actions de mise à jour des composants, dont les modules découverts. |
+| `src/RetroMediaLab.Updates/Services/UpdateArchiveValidator.cs` | Valide l’arborescence Modules/<id>, le manifeste et l’assembly d’un paquet téléchargé. |
+| `src/RetroMediaLab.Launcher/Program.cs` | Résout les assemblies de l’application lancée ; il ne possède aucune liste Amiga/Atari. |
+| `scripts/local-building.cmd` | Découvre chaque src/RetroMediaLab.Emulation.* contenant module.json et l’ajoute au build local. |
 | `scripts/local-building/build.ps1` | Copie dans la sortie les métadonnées et fichiers publiés de chaque module découvert. |
 | `scripts/publish-modules.cmd` | Parcourt les projets de modules ou publie l’identifiant demandé à partir de son manifeste. |
 | `scripts/module-release/package-module.ps1` | Construit et contrôle le paquet indépendant d’un module. |
 | `scripts/module-directory/build-module-directory.ps1` | Transforme les fichiers module-registry/*.json en annuaire public. |
-| `scripts/release/update-catalog/emulation-modules/emulation-modules.ps1` | Ajoute automatiquement les manifestes des projets GWGUI.Emulation.* au catalogue de publication. |
+| `scripts/release/update-catalog/emulation-modules/emulation-modules.ps1` | Ajoute automatiquement les manifestes des projets RetroMediaLab.Emulation.* au catalogue de publication. |
 | `.github/workflows/module-release.yml` | Publie un module identifié par son manifeste, sans liste Amiga/Atari. |
 | `.github/workflows/module-directory.yml` | Reconstruit et publie l’annuaire à chaque changement de module-registry. |
 | `scripts/tests/test-installer.ps1` | Vérifie génériquement que l’installateur place ou préserve les manifests des modules. |
 | `scripts/tests/test-installer-upgrade.ps1` | Crée un module fictif et vérifie sa conservation pendant une mise à niveau. |
-| `sdk/module-template/GWGUI.Emulation.Module.csproj` | Fournit le modèle de projet externe avec copie de module.json et référence au SDK. |
+| `sdk/module-template/RetroMediaLab.Emulation.Module.csproj` | Fournit le modèle de projet externe avec copie de module.json et référence au SDK. |
 | `sdk/module-template/ModuleFactory.cs` | Fournit l’exemple d’IEmulationModuleFactory découvert dynamiquement. |
 | `sdk/module-template/module.json` | Fournit le manifeste générique à adapter par un auteur de module. |
 | `sdk/module-template/.github/workflows/release-module.yml` | Fournit le workflow générique de paquet/catalogue d’un module externe. |
-| `tests/GWGUI.Tests/Emulation/Modules/EmulationModuleManifestTests.cs` | Vérifie le parseur et les plages de compatibilité du manifeste générique. |
-| `tests/GWGUI.Tests/Interface/SettingsViews/EmulationModuleSettingsNavigationScenarios.cs` | Vérifie l’affichage du moteur courant et le parcours générique de téléchargement depuis les options du module. |
-| `tests/GWGUI.Tests/Interface/SettingsViews/SettingsViewsTests.cs` | Expose les scénarios de navigation et de gestion du moteur dans la suite de tests STA. |
-| `tests/GWGUI.Tests/Updates/PendingModuleInstallationScenarios.cs` | Vérifie la préparation et l’activation différée d’un module fictif sans dépendre d’une famille réelle. |
+| `tests/RetroMediaLab.Tests/Emulation/Modules/EmulationModuleManifestTests.cs` | Vérifie le parseur et les plages de compatibilité du manifeste générique. |
+| `tests/RetroMediaLab.Tests/Interface/SettingsViews/EmulationModuleSettingsNavigationScenarios.cs` | Vérifie l’affichage du moteur courant et le parcours générique de téléchargement depuis les options du module. |
+| `tests/RetroMediaLab.Tests/Interface/SettingsViews/SettingsViewsTests.cs` | Expose les scénarios de navigation et de gestion du moteur dans la suite de tests STA. |
+| `tests/RetroMediaLab.Tests/Updates/PendingModuleInstallationScenarios.cs` | Vérifie la préparation et l’activation différée d’un module fictif sans dépendre d’une famille réelle. |
 
 ## Contrôle d’exhaustivité
 
@@ -539,7 +539,7 @@ une future DLL sans ajouter son nom dans l’App.
 | Resources | 30 | 30 |
 | **Total** | **115** | **329** |
 
-- Chaque chemin retourné par `rg --files src/GWGUI.Emulation.Commodore src/GWGUI.Emulation.Atari` apparaît dans le tableau interne.
+- Chaque chemin retourné par `rg --files src/RetroMediaLab.Emulation.Commodore src/RetroMediaLab.Emulation.Atari` apparaît dans le tableau interne.
 - Aucun chemin supplémentaire ou dupliqué n’est compté dans les totaux.
 - Les 30 fichiers de ressources de chaque module sont recensés individuellement : `00-Base` et les 29 cultures.
 - La colonne Amstrad ne contient encore aucun chemin ; elle ne décrit donc aucune architecture anticipée.

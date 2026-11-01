@@ -2,12 +2,12 @@
 
 La chaîne de connexion est unique :
 
-`GWGUI.App` → interfaces publiques de `GWGUI.Emulation` → module familial
-`GWGUI.Emulation.<Famille>` → `Common/Interfaces/IEmulatorAdapter.cs` → adaptateur concret sous
+`RetroMediaLab.App` → interfaces publiques de `RetroMediaLab.Emulation` → module familial
+`RetroMediaLab.Emulation.<Famille>` → `Common/Interfaces/IEmulatorAdapter.cs` → adaptateur concret sous
 `Emulators/<nom>/`.
 
-`GWGUI.App` ne référence aucun module familial. `GWGUI.Emulation` ne connaît aucun émulateur.
-Chaque module familial se branche sur les interfaces publiques de `GWGUI.Emulation`, puis expose à
+`RetroMediaLab.App` ne référence aucun module familial. `RetroMediaLab.Emulation` ne connaît aucun émulateur.
+Chaque module familial se branche sur les interfaces publiques de `RetroMediaLab.Emulation`, puis expose à
 ses adaptateurs le même contrat interne `IEmulatorAdapter`. Les fichiers Atari et Amiga de ce
 contrat ont exactement les mêmes membres et le même ordre ; seuls leur espace de noms et les types
 familiaux résolus localement diffèrent. Les contextes `EmulatorCreationContext` et
@@ -20,7 +20,7 @@ ajouter de membre tant qu'un besoin commun aux trois familles n'a pas été éta
 
 ## Structure canonique générale
 
-Les rôles équivalents emploient les mêmes noms dans chaque projet `GWGUI.Emulation.Xxxx`.
+Les rôles équivalents emploient les mêmes noms dans chaque projet `RetroMediaLab.Emulation.Xxxx`.
 Un fichier supplémentaire est autorisé uniquement lorsqu'il décrit une machine, un format ou une
 capacité sans équivalent dans l'autre famille.
 

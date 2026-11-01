@@ -2,7 +2,7 @@
 
 ## Décision et périmètre
 
-Ce document conserve la direction retenue pour les futurs `GWGUI.Emulation.<Famille>`
+Ce document conserve la direction retenue pour les futurs `RetroMediaLab.Emulation.<Famille>`
 (Amstrad, Commodore, etc.) et pour une évolution ultérieure d'Atari et d'Amiga.
 Le chantier est mis de côté : il ne demande pas de refactorisation immédiate.
 
@@ -12,7 +12,7 @@ du chargement et de la publication des modules de familles.
 
 ## Base commune à préserver
 
-- `GWGUI.Emulation` conserve les contrats et les traitements génériques entre App et les
+- `RetroMediaLab.Emulation` conserve les contrats et les traitements génériques entre App et les
   modules, dans les deux sens. App ne doit pas récupérer les traitements propres aux moteurs.
 - Chaque famille conserve une base commune pour l'orchestration et les comportements
   réellement partagés. Rattacher les moteurs à cette base est le fonctionnement souhaité.
@@ -25,7 +25,7 @@ Organisation indicative à appliquer de manière cohérente aux nouvelles famill
 les conventions du dépôt et les besoins réels :
 
 ```text
-GWGUI.Emulation.<Famille> — une DLL
+RetroMediaLab.Emulation.<Famille> — une DLL
   Base commune et orchestration
   Contrats des moteurs
   Implémentations des moteurs et comportements spécifiques
@@ -59,7 +59,7 @@ dans le code avant de planifier une extraction.
 
 Pour les prochaines familles, conserver dès le départ une distinction lisible entre la base
 commune et les adaptations du moteur présent, sans construire à l'avance un mécanisme complexe
-pour plusieurs moteurs. Réutiliser les traitements de `GWGUI.Emulation` lorsqu'ils sont génériques.
+pour plusieurs moteurs. Réutiliser les traitements de `RetroMediaLab.Emulation` lorsqu'ils sont génériques.
 
 ## Conditions de reprise et validation du chantier
 

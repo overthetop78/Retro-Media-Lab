@@ -1,0 +1,133 @@
+using System.Text.Json.Nodes;
+using RetroMediaLab.App.Services.Emulation;
+
+namespace RetroMediaLab.Tests.Emulation.Modules;
+
+public sealed class EmulationModuleManifestTests
+{
+    private const string Valid = """
+        {"schemaVersion":2,"id":"commodore","entryAssembly":"retromedialab.emulation.commodore.dll",
+         "moduleVersion":"2.0.0","hostApiMinimum":"2.0","hostApiMaximum":"2.0",
+         "updateCatalogUrl":"https://example.test/commodore/update-catalog.json"}
+        """;
+
+    [Fact]
+    public void CurrentManifestIsAccepted()
+    {
+        var manifest = EmulationModuleManifestReader.Parse(Valid);
+        Assert.Equal("commodore", manifest.Id);
+        Assert.Equal("2.0.0", manifest.ModuleVersion);
+    }
+
+    [Fact]
+    public void Api12PackagesAreRejectedBeforeModuleLoading()
+    {
+        var json = JsonNode.Parse(Valid)!;
+        json["hostApiMinimum"] = "1.2";
+        json["hostApiMaximum"] = "1.2";
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(json.ToJsonString()));
+        Assert.NotNull(EmulationModuleManifestReader.Parse(json.ToJsonString(), new Version(1, 2)));
+    }
+
+    [Theory]
+    [InlineData("1.0.0")]
+    [InlineData("1.0.1")]
+    [InlineData("1.1.0")]
+    [InlineData("1.2.9")]
+    [InlineData("1.3.0")]
+    [InlineData("1.9.9")]
+    public void VersionsBelow20AreRejectedEvenWithCompatibleApi(string version)
+    {
+        var json = JsonNode.Parse(Valid)!;
+        json["moduleVersion"] = version;
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(json.ToJsonString()));
+    }
+
+    [Fact]
+    public void FeedbackApiRequiresAnUpdatedHostBeforeModuleLoading()
+    {
+        var json = JsonNode.Parse(Valid)!;
+        json["hostApiMinimum"] = "1.1";
+        json["hostApiMaximum"] = "1.3";
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(json.ToJsonString(), new Version(1, 0)));
+        Assert.NotNull(EmulationModuleManifestReader.Parse(json.ToJsonString(), new Version(1, 1)));
+    }
+
+    [Fact]
+    public void VideoSettingsApiRequiresAnUpdatedHostBeforeModuleLoading()
+    {
+        var json = JsonNode.Parse(Valid)!;
+        json["hostApiMinimum"] = "1.2";
+        json["hostApiMaximum"] = "1.3";
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(json.ToJsonString(), new Version(1, 1)));
+        Assert.NotNull(EmulationModuleManifestReader.Parse(json.ToJsonString(), new Version(1, 2)));
+    }
+
+    [Theory]
+    [InlineData("schemaVersion")]
+    [InlineData("id")]
+    [InlineData("entryAssembly")]
+    [InlineData("moduleVersion")]
+    [InlineData("hostApiMinimum")]
+    [InlineData("hostApiMaximum")]
+    [InlineData("updateCatalogUrl")]
+    public void MissingRequiredFieldIsRejected(string field)
+    {
+        var json = JsonNode.Parse(Valid)!.AsObject();
+        json.Remove(field);
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(json.ToJsonString()));
+    }
+
+    [Theory]
+    [InlineData("id", "../commodore")]
+    [InlineData("id", "..")]
+    [InlineData("id", "C:\\commodore")]
+    [InlineData("id", "CON")]
+    [InlineData("id", "commodore ")]
+    [InlineData("id", "")]
+    [InlineData("entryAssembly", "../outside.dll")]
+    [InlineData("entryAssembly", "folder\\module.dll")]
+    [InlineData("entryAssembly", "module.exe")]
+    [InlineData("entryAssembly", "NUL.dll")]
+    [InlineData("moduleVersion", "1.0")]
+    [InlineData("moduleVersion", "1.0.0-preview")]
+    [InlineData("hostApiMinimum", "1.x")]
+    [InlineData("hostApiMaximum", "1.0.0")]
+    [InlineData("updateCatalogUrl", "")]
+    [InlineData("updateCatalogUrl", "/update-catalog.json")]
+    [InlineData("updateCatalogUrl", "http://example.test/update-catalog.json")]
+    public void InvalidFieldIsRejected(string field, string value)
+    {
+        var json = JsonNode.Parse(Valid)!;
+        json[field] = value;
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(json.ToJsonString()));
+    }
+
+    [Theory]
+    [InlineData("1.9", "1.10", "1.9", true)]
+    [InlineData("1.9", "1.10", "1.10", true)]
+    [InlineData("1.9", "1.10", "1.8", false)]
+    [InlineData("1.9", "1.10", "1.11", false)]
+    [InlineData("1.10", "1.9", "1.9", false)]
+    [InlineData("1.0", "1.0", "0.9", false)]
+    [InlineData("1.0", "1.0", "1.1", false)]
+    public void CompatibilityUsesNumericInclusiveBounds(string minimum, string maximum, string current, bool accepted)
+    {
+        var json = JsonNode.Parse(Valid)!;
+        json["hostApiMinimum"] = minimum;
+        json["hostApiMaximum"] = maximum;
+        if (accepted)
+            Assert.NotNull(EmulationModuleManifestReader.Parse(json.ToJsonString(), Version.Parse(current)));
+        else
+            Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(json.ToJsonString(), Version.Parse(current)));
+    }
+
+    [Fact]
+    public void UnknownSchemaAndDuplicateFieldsAreRejected()
+    {
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(Valid.Replace("\"schemaVersion\":2", "\"schemaVersion\":3")));
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse(Valid.Replace("\"id\":\"commodore\"", "\"id\":\"commodore\",\"Id\":\"atari\"")));
+        Assert.ThrowsAny<System.Text.Json.JsonException>(() => EmulationModuleManifestReader.Parse("{"));
+        Assert.Throws<InvalidDataException>(() => EmulationModuleManifestReader.Parse("[]"));
+    }
+}

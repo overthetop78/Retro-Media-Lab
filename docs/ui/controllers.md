@@ -9,7 +9,7 @@ même système de profils d’image et de surimpression.
 ## Ports et associations
 
 Chaque module annonce les ports de la machine, les types de périphériques compatibles et les
-commandes disponibles. GW GUI construit un tableau d’associations pour le port sélectionné.
+commandes disponibles. Retro Media Lab construit un tableau d’associations pour le port sélectionné.
 Une association peut provenir d’une manette, d’un joystick, du clavier, de la souris ou d’un autre
 périphérique pris en charge, sans imposer une sélection physique globale préalable.
 

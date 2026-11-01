@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="RetroMediaLab.App.Views.Controls.Conversion.ConversionAdvancedSection" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:l="clr-namespace:RetroMediaLab.App.Localization.Extensions">
+    <Expander Header="{l:Loc Common.Advanced}">
+        <Border Style="{StaticResource Card}" Margin="0,10,0,12">
+            <StackPanel>
+                <CheckBox x:Name="TracksEnabled" IsChecked="{Binding Conversion.Tracks.Enabled}" Content="{l:Loc Conversion.LimitTracks}" Checked="Input_Changed" Unchecked="Input_Changed" ToolTip="{l:Loc Advanced.TracksTip}"/>
+                <TextBox x:Name="TracksValue" Text="{Binding Conversion.Tracks.Value, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12" TextChanged="Input_Changed" ToolTip="{l:Loc Advanced.TrackSpecTip}"/>
+                <WrapPanel>
+                    <CheckBox x:Name="OutputTracksEnabled" IsChecked="{Binding Conversion.OutputTracks.Enabled}" Content="{l:Loc Advanced.OutputTracks}" Margin="0,0,8,0" Checked="Input_Changed" Unchecked="Input_Changed" ToolTip="{l:Loc Advanced.OutputTracksTip}"/>
+                    <TextBox x:Name="OutputTracksValue" Width="190" Text="{Binding Conversion.OutputTracks.Value, UpdateSourceTrigger=PropertyChanged}" TextChanged="Input_Changed" ToolTip="{l:Loc Advanced.TrackSpecTip}"/>
+                    <CheckBox x:Name="AdjustSpeedEnabled" IsChecked="{Binding Conversion.AdjustSpeed.Enabled}" Content="{l:Loc Advanced.AdjustSpeed}" Margin="18,0,8,0" Checked="Input_Changed" Unchecked="Input_Changed" ToolTip="{l:Loc Advanced.AdjustSpeedTip}"/>
+                    <TextBox x:Name="AdjustSpeedValue" Width="90" Text="{Binding Conversion.AdjustSpeed.Value, UpdateSourceTrigger=PropertyChanged}" TextChanged="Input_Changed" ToolTip="{l:Loc Advanced.SpeedTip}"/>
+                </WrapPanel>
+                <WrapPanel Margin="0,10,0,12">
+                    <CheckBox x:Name="PllEnabled" IsChecked="{Binding Conversion.Pll.Enabled}" Content="{l:Loc Advanced.Pll}" Margin="0,0,8,0" Checked="Input_Changed" Unchecked="Input_Changed" ToolTip="{l:Loc Advanced.PllOptionTip}"/>
+                    <TextBox x:Name="PllValue" Width="180" Text="{Binding Conversion.Pll.Value, UpdateSourceTrigger=PropertyChanged}" TextChanged="Input_Changed" ToolTip="{l:Loc Advanced.PllTip}"/>
+                    <CheckBox x:Name="HardSectors" IsChecked="{Binding Conversion.HardSectors.Enabled}" Content="{l:Loc Advanced.HardSectors}" Margin="18,0" Checked="Input_Changed" Unchecked="Input_Changed" ToolTip="{l:Loc Advanced.HardSectorsTip}"/>
+                    <CheckBox x:Name="Reverse" IsChecked="{Binding Conversion.Reverse.Enabled}" Content="{l:Loc Advanced.Reverse}" Margin="8,0" Checked="Input_Changed" Unchecked="Input_Changed" ToolTip="{l:Loc Advanced.ReverseTip}"/>
+                </WrapPanel>
+                <DockPanel Margin="0,0,0,12" ToolTip="{l:Loc Advanced.DiskDefsTip}">
+                    <Button x:Name="BrowseDiskDefs" DockPanel.Dock="Right" Content="{l:Loc Common.Browse}"/>
+                    <CheckBox x:Name="DiskDefsEnabled" IsChecked="{Binding Conversion.DiskDefs.Enabled}" Content="{l:Loc Advanced.DiskDefs}" VerticalAlignment="Center" Checked="Input_Changed" Unchecked="Input_Changed"/>
+                    <TextBox x:Name="DiskDefsValue" Margin="10,0" IsReadOnly="True" Text="{Binding Conversion.DiskDefs.Value, Mode=TwoWay}" TextChanged="Input_Changed"/>
+                </DockPanel>
+                <TextBlock Text="{l:Loc Common.ExpertArguments}"/>
+                <TextBox x:Name="ExpertArguments" Margin="0,6,0,0" Text="{Binding Conversion.ExpertArguments, UpdateSourceTrigger=PropertyChanged}" TextChanged="Input_Changed" ToolTip="{l:Loc Common.ExpertArgumentsTip}"/>
+            </StackPanel>
+        </Border>
+    </Expander>
+</UserControl>

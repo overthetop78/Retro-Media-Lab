@@ -1,0 +1,95 @@
+using RetroMediaLab.App.Services.Dialogs;
+using RetroMediaLab.Infrastructure.Settings;
+using RetroMediaLab.App.Contracts.Localization;
+using RetroMediaLab.App.Dictionaries.Localization;
+using RetroMediaLab.App.Localization.Sources;
+using RetroMediaLab.App.Services.Storage;
+using RetroMediaLab.App.Views.Controls.Options;
+using System.Windows;
+
+using Microsoft.Win32;
+
+
+namespace RetroMediaLab.App.Options.Controllers;
+
+internal sealed class GeneralOptionsController
+{
+    private readonly Window _owner;
+    private readonly OptionsGeneralSection _section;
+    private readonly AppSettings _settings;
+    private readonly Func<bool> _isInitializing;
+    private readonly Func<Task> _persistSettings;
+    private readonly Action _refreshLocalizedContent;
+    private readonly Func<string, object[], string> _localize;
+    private readonly Func<string?> _selectImagesFolder;
+
+    public GeneralOptionsController(
+        Window owner,
+        OptionsGeneralSection section,
+        AppSettings settings,
+        Func<bool> isInitializing,
+        Func<Task> persistSettings,
+        Action refreshLocalizedContent,
+        Func<string, object[], string> localize,
+        Func<string?>? selectImagesFolder = null)
+    {
+        _owner = owner;
+        _section = section;
+        _settings = settings;
+        _isInitializing = isInitializing;
+        _persistSettings = persistSettings;
+        _refreshLocalizedContent = refreshLocalizedContent;
+        _localize = localize;
+        _selectImagesFolder = selectImagesFolder ?? SelectImagesFolder;
+
+        section.ImagesFolder.Text = settings.DefaultImagesFolder;
+        StoragePaths.ConfigureEmulationStorageDirectory(settings.EmulationStorageFolder);
+        StoragePaths.ConfigureEmulationStateDirectory(settings.EmulationStateFolder);
+        StoragePaths.ConfigureEmulationCaptureDirectory(settings.EmulationCaptureFolder);
+        section.Languages.ItemsSource = UiLanguageCatalog.Available;
+        section.Languages.SelectedItem = UiLanguageCatalog.Available.FirstOrDefault(language => string.Equals(language.Code, settings.Language, StringComparison.OrdinalIgnoreCase)) ?? UiLanguageCatalog.Fallback;
+
+        section.LanguageChanged += LanguageChanged;
+        section.BrowseImagesFolderRequested += BrowseImagesFolder;
+        section.AutoSaveTextEditingFinished += async (_, _) => await _persistSettings();
+    }
+
+    public void ApplyTo(AppSettings settings)
+    {
+        settings.DefaultImagesFolder = _section.ImagesFolder.Text.Trim();
+        StoragePaths.ConfigureEmulationStorageDirectory(settings.EmulationStorageFolder);
+        StoragePaths.ConfigureEmulationStateDirectory(settings.EmulationStateFolder);
+        StoragePaths.ConfigureEmulationCaptureDirectory(settings.EmulationCaptureFolder);
+        if (_section.Languages.SelectedItem is UiLanguage language) settings.Language = language.Code;
+    }
+
+    private async void LanguageChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (_isInitializing() || _section.Languages.SelectedItem is not UiLanguage language ||
+            string.Equals(_settings.Language, language.Code, StringComparison.OrdinalIgnoreCase)) return;
+
+        _settings.Language = language.Code;
+        await _persistSettings();
+        if (Application.Current is App app) app.SetLanguage(language.Code);
+        else
+        {
+            LocalizationSource.Instance.Refresh();
+            _refreshLocalizedContent();
+        }
+    }
+
+    private async void BrowseImagesFolder(object sender, RoutedEventArgs e)
+    {
+        var path = _selectImagesFolder();
+        if (path is null) return;
+        _section.ImagesFolder.Text = path;
+        await _persistSettings();
+    }
+
+    private string? SelectImagesFolder()
+    {
+        var dialog = new OpenFolderDialog { Multiselect = false, Title = _localize("Options.ImagesFolder", []) };
+        return WpfFileDialogService.ShowFolderDialog(dialog, _owner) == true ? dialog.FolderName : null;
+    }
+
+}

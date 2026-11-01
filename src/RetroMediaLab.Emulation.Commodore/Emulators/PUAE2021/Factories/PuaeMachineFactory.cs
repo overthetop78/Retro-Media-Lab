@@ -1,0 +1,10 @@
+using RetroMediaLab.Emulation.Commodore.Emulators.Common.Constants;
+using RetroMediaLab.Emulation.Commodore.Emulators.PUAE2021.Constants;
+
+namespace RetroMediaLab.Emulation.Commodore.Emulators.PUAE2021.Factories;
+
+internal sealed class PuaeMachineFactory : UaeMachineFactory
+{
+    public override EmulatorCatalogEntry CatalogEntry { get; } = new(Emulator.PUAE2021, new(EmulatorConstants.Id, EmulatorConstants.DisplayName, EmulatorDescriptionConstants.AmigaDescriptionResourceKey, SupportedMachines));
+    internal override CoreDefinition CoreDefinition { get; } = new(EmulatorConstants.DisplayName, EmulatorConstants.LibraryFile, EmulatorConstants.DownloadUrl);
+}

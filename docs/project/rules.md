@@ -84,7 +84,7 @@ explicites de l’utilisateur restent prioritaires.
 - Quand un build Debug est demandé, lancer `scripts/local-building.cmd --building=debug --modules=0`. Si la stratégie
   PowerShell l’exige, employer
 `scripts\local-building.cmd --building=debug --modules=0`.
-- Vérifier la réussite du script et la présence de `build/Debug/GW GUI/gwgui.exe`, puis communiquer
+- Vérifier la réussite du script et la présence de `build/Debug/Retro Media Lab/retromedialab.exe`, puis communiquer
   ce chemin pour le test utilisateur.
 
 ## Formats multiples et détection
@@ -106,7 +106,7 @@ explicites de l’utilisateur restent prioritaires.
 
 ## Images de test
 
-- Les audits de médias emploient en lecture seule `F:\Rétro`, `F:\86Box\Isos`, `C:\Users\overt\Documents\GW GUI\Emulation\HDD` et `C:\Users\overt\86Box VMs`.
+- Les audits de médias emploient en lecture seule `F:\Rétro`, `F:\86Box\Isos`, `C:\Users\overt\Documents\Retro Media Lab\Emulation\HDD` et `C:\Users\overt\86Box VMs`.
 - Une validation ne copie, ne déplace et ne modifie aucun fichier de ces corpus.
 - Une image déjà validée n’est pas retraitée.
 - Les images générées sont elles aussi testées puis classées dans leur famille finale.
@@ -127,7 +127,7 @@ explicites de l’utilisateur restent prioritaires.
 
 ## Publications GitHub
 
-### Application GW GUI
+### Application Retro Media Lab
 
 - Cette procédure commence uniquement après une demande explicite de publication.
 - Préparer `.github/release-notes/vX.Y.Z.md` avec les nouveautés, améliorations, corrections,
@@ -155,11 +155,11 @@ explicites de l’utilisateur restent prioritaires.
 ### SDK d’émulation
 
 - Cette procédure commence uniquement après une demande explicite de publication du SDK.
-- Vérifier sur NuGet.org la stratégie Trusted Publishing liée à `overthetop78/GW-GUI` et
+- Vérifier sur NuGet.org la stratégie Trusted Publishing liée à `overthetop78/Retro-Media-Lab` et
   `sdk-release.yml`, sans environnement si le workflow n’en utilise pas. Vérifier que `NUGET_USER`
   contient le nom public NuGet.org. Ne créer ni stocker de clé API permanente.
 - Préparer `.github/release-notes/sdk/vX.Y.Z.md` avec les changements de contrats et de compatibilité.
-- Prendre `X.Y.Z` dans `Version` de `src/GWGUI.Emulation/GWGUI.Emulation.csproj` et l’employer dans
-  les notes, le tag `sdk-vX.Y.Z` et le paquet `GWGUI.Emulation.SDK.X.Y.Z.nupkg`.
+- Prendre `X.Y.Z` dans `Version` de `src/RetroMediaLab.Emulation/RetroMediaLab.Emulation.csproj` et l’employer dans
+  les notes, le tag `sdk-vX.Y.Z` et le paquet `RetroMediaLab.Emulation.SDK.X.Y.Z.nupkg`.
 - Commiter et pousser le SDK, sa documentation et ses notes sur `main`, puis créer et pousser le tag
   pour déclencher `.github/workflows/sdk-release.yml`.

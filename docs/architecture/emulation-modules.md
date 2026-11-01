@@ -1,19 +1,19 @@
 # Modules d'émulation dynamiques
 
-Le contrat de raccordement exhaustif destiné à un auteur qui ne possède pas le code de GW GUI est
+Le contrat de raccordement exhaustif destiné à un auteur qui ne possède pas le code de Retro Media Lab est
 décrit dans [`emulation-module-authoring.md`](emulation-module-authoring.md).
 La [résolution des traductions](emulation-module-localization.md) et les
 [mises à jour indépendantes](emulation-module-updates.md) complètent ce contrat.
 
 ## Fonctionnement
 
-`GWGUI.App` ne référence aucun projet `GWGUI.Emulation.<Famille>`. Au démarrage, elle cherche les
-paquets dans les sous-dossiers directs de `Modules`, à côté de `gwgui.exe`. Un paquet absent supprime
+`RetroMediaLab.App` ne référence aucun projet `RetroMediaLab.Emulation.<Famille>`. Au démarrage, elle cherche les
+paquets dans les sous-dossiers directs de `Modules`, à côté de `retromedialab.exe`. Un paquet absent supprime
 simplement les machines et onglets de sa famille. L'application fonctionne aussi sans dossier
 `Modules` ou avec un dossier vide.
 
 Le chargement est effectué une fois au démarrage : ajouter, remplacer ou retirer une DLL demande de
-terminer l'installation puis de redémarrer GW GUI. Plusieurs modules téléchargés sont regroupés dans
+terminer l'installation puis de redémarrer Retro Media Lab. Plusieurs modules téléchargés sont regroupés dans
 une seule transaction et un seul redémarrage. L'échec d'un module est journalisé sans empêcher les autres de fonctionner. Le
 retrait d'une DLL ne supprime jamais les configurations ni les données utilisateur.
 
@@ -25,16 +25,16 @@ Commodore et Atari utilisent le même contrat. Le module Commodore réutilise le
 
 ```text
 Modules/commodore/module.json
-Modules/commodore/gwgui.emulation.commodore.dll
+Modules/commodore/retromedialab.emulation.commodore.dll
 Modules/Atari/module.json
-Modules/Atari/gwgui.emulation.atari.dll
+Modules/Atari/retromedialab.emulation.atari.dll
 ```
 
 ```json
 {
   "schemaVersion": 2,
   "id": "commodore",
-  "entryAssembly": "gwgui.emulation.commodore.dll",
+  "entryAssembly": "retromedialab.emulation.commodore.dll",
   "moduleVersion": "1.0.0",
   "hostApiMinimum": "1.0",
   "hostApiMaximum": "1.0",
@@ -44,13 +44,13 @@ Modules/Atari/gwgui.emulation.atari.dll
 
 Les sept champs sont obligatoires. `schemaVersion` identifie le format JSON, actuellement `2`.
 `moduleVersion` est un numéro à trois composantes numériques propre au module ; `1.0.0`
-correspond à l'identité initiale des projets Amiga et Atari. Il ne versionne ni GW GUI ni le cœur.
+correspond à l'identité initiale des projets Amiga et Atari. Il ne versionne ni Retro Media Lab ni le cœur.
 Les bornes d'API sont des numéros `majeure.mineure`, inclusifs, comparés numériquement.
 L'API actuelle est `1.0` et les deux bornes des modules actuels valent `1.0` : aucun joker `1.x`
 ne promet une compatibilité future. Une borne minimale supérieure à la maximale est invalide.
 
 `updateCatalogUrl` est une URL HTTPS absolue appartenant au module. Elle pointe directement vers
-son catalogue JSON. GW GUI ne possède aucune liste de modules ou de dépôts : une fois le module
+son catalogue JSON. Retro Media Lab ne possède aucune liste de modules ou de dépôts : une fois le module
 installé, cette adresse est l’unique source de ses recherches de mise à jour.
 
 L'identifiant est stable et comparé sans distinction de casse entre manifeste, factory et module.
@@ -70,20 +70,20 @@ Les changements d'API seront déclarés et leur compatibilité vérifiée avant 
 
 ## Frontière de dépendances
 
-Un module référence `GWGUI.Emulation` et ses bibliothèques techniques. Il ne référence ni
-`GWGUI.App`, ni un autre module. `GWGUI.App` référence seulement les contrats de
-`GWGUI.Emulation` : aucun type concret ou `ProjectReference` vers une famille n'y est autorisé.
+Un module référence `RetroMediaLab.Emulation` et ses bibliothèques techniques. Il ne référence ni
+`RetroMediaLab.App`, ni un autre module. `RetroMediaLab.App` référence seulement les contrats de
+`RetroMediaLab.Emulation` : aucun type concret ou `ProjectReference` vers une famille n'y est autorisé.
 
 ### Inventaire des modules officiels
 
-Les projets `GWGUI.Emulation.Commodore` et `GWGUI.Emulation.Atari` ont actuellement la même
+Les projets `RetroMediaLab.Emulation.Commodore` et `RetroMediaLab.Emulation.Atari` ont actuellement la même
 frontière de compilation :
 
-| Dépendance produite | Rôle | Destination dans GW GUI |
+| Dépendance produite | Rôle | Destination dans Retro Media Lab |
 |---|---|---|
-| `gwgui.emulation.dll` | Contrats de module et traitements communs, dont les formats de disques | Bibliothèque commune de l'application dans `lib` ; chargée et partagée avec App |
-| `gwgui.mediaengine.dll` | Lecture, conversion et traitements de médias communs aux familles | Bibliothèque commune de l'application dans `lib` ; chargée et partagée avec App |
-| Bibliothèques `LTRData.DiscUtils.*` et `LTRData.Extensions` | Dépendances transitives des traitements communs de `GWGUI.Emulation` | Bibliothèques communes dans `lib`, résolues par l'application |
+| `retromedialab.emulation.dll` | Contrats de module et traitements communs, dont les formats de disques | Bibliothèque commune de l'application dans `lib` ; chargée et partagée avec App |
+| `retromedialab.mediaengine.dll` | Lecture, conversion et traitements de médias communs aux familles | Bibliothèque commune de l'application dans `lib` ; chargée et partagée avec App |
+| Bibliothèques `LTRData.DiscUtils.*` et `LTRData.Extensions` | Dépendances transitives des traitements communs de `RetroMediaLab.Emulation` | Bibliothèques communes dans `lib`, résolues par l'application |
 
 Chaque paquet officiel contient directement `module.json`, sa DLL d'entrée et, dans un build
 Debug, son PDB. Les 29 catalogues de traduction et `00-Base` sont des ressources embarquées
@@ -91,13 +91,13 @@ dans la DLL d'entrée ; aucun fichier de langue propre au module n'est distribu�
 
 Commodore et Atari n'ont aujourd'hui aucune DLL managée ou native privée à placer dans leur
 dossier de paquet. Le chargeur doit cependant résoudre en priorité depuis ce dossier les futures
-dépendances privées d'un module, tout en partageant les assemblies `gwgui.*` fournies par
+dépendances privées d'un module, tout en partageant les assemblies `retromedialab.*` fournies par
 l'application afin de conserver une seule identité des contrats et traitements communs.
 
 Les cœurs PUAE, Hatari, Atari800, Stella, ProSystem, Beetle Lynx et Virtual Jaguar ne sont pas
 des binaires du paquet de module. Les services existants les téléchargent dans
 `Data/Emulation/Machines/<Id>/Core`. Lorsqu'une machine est isolée dans un autre processus,
-le module utilise `EmulationRuntimeServices.HostExecutablePath` pour relancer le `gwgui.exe`
+le module utilise `EmulationRuntimeServices.HostExecutablePath` pour relancer le `retromedialab.exe`
 installé ; aucun exécutable hôte supplémentaire ne doit donc être copié dans le paquet.
 
 ## Entrée obligatoire de la DLL
@@ -117,18 +117,18 @@ public interface IEmulationModuleFactory
 `IEmulationModule.Id` doivent être égaux. Le constructeur reste sans travail lourd ;
 l'initialisation se fait dans `Create`.
 
-## Entrées fournies par GW GUI
+## Entrées fournies par Retro Media Lab
 
 | Entrée | Contenu | Utilisation |
 |---|---|---|
-| `DataDirectory` | Racine persistante de GW GUI | Seulement lorsqu'une API commune existante exige la racine générale |
+| `DataDirectory` | Racine persistante de Retro Media Lab | Seulement lorsqu'une API commune existante exige la racine générale |
 | `ModuleDirectory` | `Data/Emulation/Machines/<Id>` | Configurations, cœurs téléchargés et données propres au module |
 | `HttpClient` | Client HTTP partagé fourni par l'application | Le module l'utilise mais ne le libère pas |
 
 Le module ne calcule pas le chemin global lui-même et ne dépend d'aucun service interne de
-`GWGUI.App`.
+`RetroMediaLab.App`.
 
-## Sorties attendues par GW GUI
+## Sorties attendues par Retro Media Lab
 
 `Create` retourne l'unique sortie fonctionnelle, un `IEmulationModule` :
 
@@ -143,11 +143,11 @@ Le module ne calcule pas le chemin global lui-même et ne dépend d'aucun servic
 | `CreateRuntimeAsync` | Raccordement du runtime aux services vidéo, audio, entrées, messages et médias |
 | `TryHandleHostCommand` | Commandes internes d'un cœur hébergé dans un processus séparé |
 
-Tout objet traversant cette frontière appartient à `GWGUI.Emulation`. Une signature publique ne
-doit exposer aucun type de `GWGUI.App`, d'un autre module ou d'une dépendance privée.
+Tout objet traversant cette frontière appartient à `RetroMediaLab.Emulation`. Une signature publique ne
+doit exposer aucun type de `RetroMediaLab.App`, d'un autre module ou d'une dépendance privée.
 
 ```text
-GWGUI.App
+RetroMediaLab.App
   -> lit Modules/<Famille>/module.json et contrôle l'API
   -> charge la DLL d'entrée déclarée
   -> instancie IEmulationModuleFactory
@@ -161,9 +161,9 @@ Le choix du cœur, ses options natives et ses types privés restent entièrement
 
 ## Ajouter un module
 
-1. Créer `src/GWGUI.Emulation.<Famille>` et référencer `GWGUI.Emulation`.
-2. Implémenter la factory et `IEmulationModule`, sans référence à `GWGUI.App`.
-3. Nommer le projet `GWGUI.Emulation.<Famille>.csproj`, ajouter un `module.json` conforme dans le
+1. Créer `src/RetroMediaLab.Emulation.<Famille>` et référencer `RetroMediaLab.Emulation`.
+2. Implémenter la factory et `IEmulationModule`, sans référence à `RetroMediaLab.App`.
+3. Nommer le projet `RetroMediaLab.Emulation.<Famille>.csproj`, ajouter un `module.json` conforme dans le
    même dossier et configurer sa copie. L'identifiant du manifeste doit correspondre à `<Famille>`
    sans distinction de casse et `entryAssembly` au nom d'assembly du projet.
 4. Construire : `scripts/release/update-catalog/emulation-modules/emulation-modules.ps1` découvre automatiquement ce manifeste ; les scripts
@@ -172,7 +172,7 @@ Le choix du cœur, ses options natives et ses types privés restent entièrement
 5. Vérifier le paquet avec ce module, avec les autres, puis avec sa DLL retirée.
 
 Un dossier contenant une DLL compatible et son manifeste peut aussi être déposé manuellement
-dans `Modules` sans recompiler App, si ses dépendances sont déjà distribuées avec GW GUI.
+dans `Modules` sans recompiler App, si ses dépendances sont déjà distribuées avec Retro Media Lab.
 
 ## Erreurs à isoler
 
@@ -188,13 +188,13 @@ Le chargement par manifeste, le contrôle de l'API, les traductions embarquées,
 dépendances privées par un `AssemblyLoadContext` propre au paquet, les archives indépendantes,
 l’installation initiale et leur mise à jour après redémarrage sont réalisés. Amiga, Atari et tout
 futur projet conforme sont découverts par leur manifeste pour les builds locaux et leur propre
-paquet. Le paquet distribué de GW GUI contient l’application, le lanceur et l’updater, sans dossier
+paquet. Le paquet distribué de Retro Media Lab contient l’application, le lanceur et l’updater, sans dossier
 `Modules`. Les modules s’installent séparément depuis un ZIP ou l’URL de leur catalogue.
 
-Le SDK `GWGUI.Emulation.SDK` et son modèle de dépôt indépendant sont publiés. Le déchargement à
+Le SDK `RetroMediaLab.Emulation.SDK` et son modèle de dépôt indépendant sont publiés. Le déchargement à
 chaud reste différé. L'organisation interne des différents
 moteurs derrière un contrat commun est suivie séparément dans
 [`../future/emulation-engine-organization.md`](../future/emulation-engine-organization.md).
 
-Les modules sont du code approuvé exécuté avec les droits de GW GUI. Ce mécanisme découple les
+Les modules sont du code approuvé exécuté avec les droits de Retro Media Lab. Ce mécanisme découple les
 familles mais ne constitue pas une frontière de sécurité.

@@ -1,0 +1,50 @@
+namespace RetroMediaLab.Emulation.Commodore.Common.Machines.AmigaComputers.Constants;
+
+internal static class SettingsConstants
+{
+    internal const string KickstartPath = "configuration.kickstartPath";
+    internal const string ExtendedRomPath = "configuration.extendedRomPath";
+    internal const string RomKeyPath = "configuration.romKeyPath";
+    internal const string CpuOriginalSpeed = "configuration.cpuOriginalSpeed";
+    internal const string CpuSpeed = "configuration.cpuSpeed";
+    internal const string ParallelJoystickAdapter = "configuration.parallelJoystickAdapter";
+    internal const string OptionCpuModel = "retromedialab_amiga_cpu_model";
+    internal const string OptionCpuCompatibility = "retromedialab_amiga_cpu_compatibility";
+    internal const string OptionCpuThrottle = "retromedialab_amiga_cpu_throttle";
+    internal const string OptionCpuMultiplier = "retromedialab_amiga_cpu_multiplier";
+    internal const string OptionFpuModel = "retromedialab_amiga_fpu_model";
+    internal const string OptionChipmemSize = "retromedialab_amiga_chipmem_size";
+    internal const string OptionBogomemSize = "retromedialab_amiga_bogomem_size";
+    internal const string OptionFastmemSize = "retromedialab_amiga_fastmem_size";
+    internal const string OptionZ3memSize = "retromedialab_amiga_z3mem_size";
+    internal const string OptionVideoStandard = "retromedialab_amiga_video_standard";
+    internal const string OptionVideoResolution = "retromedialab_amiga_video_resolution";
+    internal const string OptionVideoAspect = "retromedialab_amiga_video_aspect";
+    internal const string OptionCrop = "retromedialab_amiga_crop";
+    internal const string OptionVideoVresolution = "retromedialab_amiga_video_vresolution";
+    internal const string OptionVideoAllowHzChange = "retromedialab_amiga_video_allow_hz_change";
+    internal const string OptionGfxFramerate = "retromedialab_amiga_gfx_framerate";
+    internal const string OptionGfxColors = "retromedialab_amiga_gfx_colors";
+    internal const string OptionGfxGamma = "retromedialab_amiga_gfx_gamma";
+    internal const string OptionImmediateBlits = "retromedialab_amiga_immediate_blits";
+    internal const string OptionCollisionLevel = "retromedialab_amiga_collision_level";
+    internal const string OptionGfxFlickerfixer = "retromedialab_amiga_gfx_flickerfixer";
+    internal const string OptionSoundInterpol = "retromedialab_amiga_sound_interpol";
+    internal const string OptionSoundFilter = "retromedialab_amiga_sound_filter";
+    internal const string OptionSoundFilterType = "retromedialab_amiga_sound_filter_type";
+    internal const string OptionSoundVolumeCd = "retromedialab_amiga_sound_volume_cd";
+    internal const string OptionFloppySound = "retromedialab_amiga_floppy_sound";
+    internal const string OptionFloppySoundType = "retromedialab_amiga_floppy_sound_type";
+    internal const string OptionFloppySoundEmptyMute = "retromedialab_amiga_floppy_sound_empty_mute";
+    internal const string OptionFloppySpeed = "retromedialab_amiga_floppy_speed";
+    internal const string OptionFloppyWriteProtection = "retromedialab_amiga_floppy_write_protection";
+    internal const string OptionFloppyWriteRedirect = "retromedialab_amiga_floppy_write_redirect";
+    internal const string OptionMouseSpeed = "retromedialab_amiga_mouse_speed";
+    internal const string OptionAnalogmouse = "retromedialab_amiga_analogmouse";
+    internal const string OptionAnalogmouseDeadzone = "retromedialab_amiga_analogmouse_deadzone";
+    internal const string OptionAnalogmouseSpeed = "retromedialab_amiga_analogmouse_speed";
+    internal const string OptionAnalogmouseSpeedRight = "retromedialab_amiga_analogmouse_speed_right";
+    internal const string OptionTurboFire = "retromedialab_amiga_turbo_fire";
+    internal const string OptionTurboFireButton = "retromedialab_amiga_turbo_fire_button";
+    internal const string OptionTurboPulse = "retromedialab_amiga_turbo_pulse";
+}

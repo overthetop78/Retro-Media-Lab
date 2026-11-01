@@ -1,6 +1,6 @@
 # Visualisation et exploration des images de supports
 
-Le but premier est de permettre à GW GUI de visualiser graphiquement la structure des images de disquettes, de disques durs, de CD et DVD, ainsi que de cassettes et de bandes, puis d’explorer les dossiers et les fichiers qu’elles contiennent.
+Le but premier est de permettre à Retro Media Lab de visualiser graphiquement la structure des images de disquettes, de disques durs, de CD et DVD, ainsi que de cassettes et de bandes, puis d’explorer les dossiers et les fichiers qu’elles contiennent.
 
 ## Visualiseur
 
@@ -16,7 +16,7 @@ Après l’ouverture de l’image, il doit trouver le traitement correspondant a
 
 Le fichier ouvert est dirigé vers le Reader correspondant à son format. Ce Reader fournit les informations disponibles pour identifier le support et construire son affichage : type de média, organisation des données, nombre de faces, pistes, secteurs, bandes, couches ou autres éléments réellement décrits par le format.
 
-La reconnaissance du format et le choix du Reader sont réunis dans `MediaRecognitionRegistry`. Chaque Reader déclare les extensions et signatures qu’il reconnaît, les fichiers associés, la famille du média concerné et la représentation qu’il produit. `GWGUI.App` utilise `MediaImageReadingService` et ne choisit plus un Reader à partir d'une condition propre à un format.
+La reconnaissance du format et le choix du Reader sont réunis dans `MediaRecognitionRegistry`. Chaque Reader déclare les extensions et signatures qu’il reconnaît, les fichiers associés, la famille du média concerné et la représentation qu’il produit. `RetroMediaLab.App` utilise `MediaImageReadingService` et ne choisit plus un Reader à partir d'une condition propre à un format.
 
 `MediaImageDocument` distingue explicitement une capture physique de flux, une image sectorielle, une image par blocs, une image à pistes optiques et un contenu séquentiel. SCP conserve ses transitions, ses révolutions et ses pistes physiques. ADF, ST, MSA ou IMA conservent leurs secteurs et leur géométrie logique et ne sont plus transformés en SCP synthétique pour être affichés.
 
@@ -34,20 +34,20 @@ Les services de conversion internes sont raccordés à ce résultat commun. Le r
 
 Les fonctions doivent rester dans la DLL propriétaire de leur action :
 
-- `GWGUI.MediaEngine` expose les contrats média nécessaires à `App` et contient la reconnaissance des formats, les Readers, décodeurs, représentations, Writers, conversions internes, lecture et écriture physiques, et l'orchestration de l'exploration ;
-- `GWGUI.MediaFileSystems` déclare les contrats de média décodé qu'il reçoit de `MediaEngine`, lit les volumes, dossiers et fichiers, et construit les volumes cibles de la migration ;
-- `GWGUI.MediaAnalysis` reconnaît les types et catégories des fichiers et fournit leurs identifiants d'icône et clés de traduction ;
-- `GWGUI.Infrastructure` contient l’accès aux appareils, à Windows, aux processus et aux outils externes, sans interpréter les formats ni choisir un rendu ;
-- `GWGUI.App` contient les vues, présentateurs et coordinateurs d’interface, sans algorithme de reconnaissance, décodage, exploration, écriture ou conversion.
+- `RetroMediaLab.MediaEngine` expose les contrats média nécessaires à `App` et contient la reconnaissance des formats, les Readers, décodeurs, représentations, Writers, conversions internes, lecture et écriture physiques, et l'orchestration de l'exploration ;
+- `RetroMediaLab.MediaFileSystems` déclare les contrats de média décodé qu'il reçoit de `MediaEngine`, lit les volumes, dossiers et fichiers, et construit les volumes cibles de la migration ;
+- `RetroMediaLab.MediaAnalysis` reconnaît les types et catégories des fichiers et fournit leurs identifiants d'icône et clés de traduction ;
+- `RetroMediaLab.Infrastructure` contient l’accès aux appareils, à Windows, aux processus et aux outils externes, sans interpréter les formats ni choisir un rendu ;
+- `RetroMediaLab.App` contient les vues, présentateurs et coordinateurs d’interface, sans algorithme de reconnaissance, décodage, exploration, écriture ou conversion.
 
 Les fichiers doivent suivre la même séparation à l’intérieur de chaque projet. Un registre sélectionne ses composants, une politique décide si elle accepte une source, un Reader lit un format, un Writer produit un format et un convertisseur coordonne une transformation. Ces responsabilités ne doivent pas être regroupées dans un contrôleur d’interface ou une factory générale.
 
 ### Structure hybride cible de MediaEngine
 
-`GWGUI.MediaEngine` emploie une structure hybride. Les types véritablement partagés sont rangés par nature à la racine du projet. Les implémentations propres à un format sont rangées par support, puis directement par format. Une famille de machines ou une variante ne crée un niveau supplémentaire que lorsqu’elle possède réellement plusieurs fichiers spécialisés.
+`RetroMediaLab.MediaEngine` emploie une structure hybride. Les types véritablement partagés sont rangés par nature à la racine du projet. Les implémentations propres à un format sont rangées par support, puis directement par format. Une famille de machines ou une variante ne crée un niveau supplémentaire que lorsqu’elle possède réellement plusieurs fichiers spécialisés.
 
 ```text
-GWGUI.MediaEngine/
+RetroMediaLab.MediaEngine/
 ├── Constants/
 ├── Enums/
 ├── Exceptions/
@@ -171,13 +171,13 @@ La chaîne d’écriture suit le même principe. `MediaImageWriterRegistry` sél
 
 Les décodeurs, encodeurs et reconstructeurs suivent également un système de registres. Le registre choisit une implémentation selon l’encodage et les capacités demandées ; l’algorithme reste dans la classe spécialisée. Un algorithme réellement commun, comme une lecture binaire, un checksum ou une opération MFM partagée, est extrait dans `Functions`, `Decoding` ou `Encoding` au lieu d’être recopié dans chaque format.
 
-L’Explorateur reçoit le document média, détecte ses volumes, puis confie chaque volume à un Reader de système de fichiers. Le Visualiseur choisit son fournisseur à partir de la représentation du document et non de l’extension du fichier. Les rendus Skia et les vues WPF restent dans `GWGUI.App` ; `GWGUI.MediaEngine` fournit seulement les données structurées nécessaires au rendu.
+L’Explorateur reçoit le document média, détecte ses volumes, puis confie chaque volume à un Reader de système de fichiers. Le Visualiseur choisit son fournisseur à partir de la représentation du document et non de l’extension du fichier. Les rendus Skia et les vues WPF restent dans `RetroMediaLab.App` ; `RetroMediaLab.MediaEngine` fournit seulement les données structurées nécessaires au rendu.
 
 La composition est divisée par fonction : reconnaissance, exploration, conversion, écriture, visualisation, décodage SCP et codecs séquentiels. Elle enregistre les composants disponibles, mais ne contient aucun algorithme de format. L’ajout d’un format consiste à ajouter ses composants et leur enregistrement, sans modifier les services généraux ni ajouter de nouvelle chaîne conditionnelle dans l’application. `MediaEngineFactory` subsiste seulement pour les consommateurs de compatibilité qui n'ont pas encore été retirés.
 
-Les modules d’émulation restent responsables des décisions propres à leurs émulateurs. Le module Amiga décide qu’une capture SCP doit devenir un ADF temporaire et gère le nom ainsi que le cache de ce fichier. Le module Atari choisit ATR ou ST selon la famille de machine et gère son média de session. Les Readers, décodeurs, transformations et Writers utilisés pour produire ces fichiers restent dans `GWGUI.MediaEngine`. Après le remplacement de la factory générale, les modules changent seulement leur appel vers le nouveau point d’entrée commun de MediaEngine; cette adaptation ne justifie pas de restructurer les projets d’émulation ni d’ajouter un contrat au SDK tant qu’aucun besoin public distinct n’est établi.
+Les modules d’émulation restent responsables des décisions propres à leurs émulateurs. Le module Amiga décide qu’une capture SCP doit devenir un ADF temporaire et gère le nom ainsi que le cache de ce fichier. Le module Atari choisit ATR ou ST selon la famille de machine et gère son média de session. Les Readers, décodeurs, transformations et Writers utilisés pour produire ces fichiers restent dans `RetroMediaLab.MediaEngine`. Après le remplacement de la factory générale, les modules changent seulement leur appel vers le nouveau point d’entrée commun de MediaEngine; cette adaptation ne justifie pas de restructurer les projets d’émulation ni d’ajouter un contrat au SDK tant qu’aucun besoin public distinct n’est établi.
 
-Pour les supports physiques futurs, les pilotes et appels aux appareils restent dans `GWGUI.Infrastructure`. `GWGUI.MediaEngine` reçoit une acquisition neutre, la décode en `MediaImageDocument`, ou transforme un document en `MediaWritePlan`. Cette séparation permet d’ajouter ultérieurement des lecteurs et Writers physiques de disquettes, disques durs, supports optiques ou bandes sans intégrer du code matériel dans le moteur de formats.
+Pour les supports physiques futurs, les pilotes et appels aux appareils restent dans `RetroMediaLab.Infrastructure`. `RetroMediaLab.MediaEngine` reçoit une acquisition neutre, la décode en `MediaImageDocument`, ou transforme un document en `MediaWritePlan`. Cette séparation permet d’ajouter ultérieurement des lecteurs et Writers physiques de disquettes, disques durs, supports optiques ou bandes sans intégrer du code matériel dans le moteur de formats.
 
 ### Représentations visuelles distinctes
 
@@ -204,7 +204,7 @@ Le fonctionnement actuel fournit deux parcours distincts :
 
 ### Préparation progressive de l’affichage
 
-Le fichier image est entièrement lu et transformé en données internes par `GWGUI.MediaEngine`. Le contrôleur commun prépare ensuite les éléments du descripteur progressivement. Chaque vue conserve son moteur de rendu, son cache, sa sélection et ses interactions. La progression ne dépend donc plus exclusivement de `SkiaScpRenderer`.
+Le fichier image est entièrement lu et transformé en données internes par `RetroMediaLab.MediaEngine`. Le contrôleur commun prépare ensuite les éléments du descripteur progressivement. Chaque vue conserve son moteur de rendu, son cache, sa sélection et ses interactions. La progression ne dépend donc plus exclusivement de `SkiaScpRenderer`.
 
 ### Choix graphiques de base
 

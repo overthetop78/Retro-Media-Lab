@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>retromedialab.emulation.example</AssemblyName>
+    <RootNamespace>Example.RetroMediaLab.Module</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="RetroMediaLab.Emulation.SDK" Version="2.0.0" />
+    <None Update="module.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

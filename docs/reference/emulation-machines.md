@@ -2,7 +2,7 @@
 
 ## Objet et périmètre
 
-Ce document prépare l’émulation interne des familles de machines dont GW GUI sait déjà reconnaître, lire, écrire, reconstruire ou cataloguer les images de disquettes. Il ne décrit pas l’interface utilisateur.
+Ce document prépare l’émulation interne des familles de machines dont Retro Media Lab sait déjà reconnaître, lire, écrire, reconstruire ou cataloguer les images de disquettes. Il ne décrit pas l’interface utilisateur.
 
 Il sert à répondre à quatre questions :
 
@@ -60,7 +60,7 @@ Les liens privilégient du code d’émulation, des tests ou des descriptions de
 | Intel 80186/286/386/486 et Pentium | IBM PC AT/PS2 et compatibles, Amstrad PC2086/2286/2386, Apricot Xen tardifs, FM Towns (386+), PC-98 selon génération | [MAME x86](https://github.com/mamedev/mame/tree/master/src/devices/cpu/i386), [86Box CPU](https://github.com/86Box/86Box/tree/master/src/cpu), [Bochs CPU](https://github.com/bochs-emu/Bochs/tree/master/bochs/cpu) |
 | NEC V20/V30 | PC-98 anciens, certains compatibles PC et consoles/arcades ; WonderSwan utilise V30MZ dérivé | [MAME V30](https://github.com/mamedev/mame/tree/master/src/devices/cpu/nec) |
 | Zilog Z8000 (Z8001/Z8002) | Commodore 900 (Z8001), Onyx et autres stations Unix ; certaines bornes Namco utilisent des variantes Z8002 | [MAME Z8000](https://github.com/mamedev/mame/tree/master/src/devices/cpu/z8000), [MAME Commodore 900](https://github.com/mamedev/mame/tree/master/src/mame/commodore) |
-| NEC V60/V70 | Stations et systèmes industriels NEC, Sega System 32 et autres bornes ; aucune machine actuellement cataloguée par GW GUI ne doit être supposée V60 sans identification explicite | [MAME V60](https://github.com/mamedev/mame/tree/master/src/devices/cpu/v60) |
+| NEC V60/V70 | Stations et systèmes industriels NEC, Sega System 32 et autres bornes ; aucune machine actuellement cataloguée par Retro Media Lab ne doit être supposée V60 sans identification explicite | [MAME V60](https://github.com/mamedev/mame/tree/master/src/devices/cpu/v60) |
 | TI TMS9900 | TI-99/4A ; TI-990 et variantes industrielles | [MAME TMS9900](https://github.com/mamedev/mame/tree/master/src/devices/cpu/tms9900), [js99er CPU](https://github.com/Rasmus-M/js99er-angular/tree/master/src/app/emulator/classes) |
 | DEC PDP-8 | PDP-8 et MINC-8 selon configuration | [SIMH PDP-8](https://github.com/simh/simh/blob/master/PDP8/pdp8_cpu.c), [MAME PDP-8](https://github.com/mamedev/mame/tree/master/src/devices/cpu/pdp8) |
 | DEC PDP-11 / VAX | PDP-11, MINC-11, MicroVAX/VAX ; consoles non concernées | [SIMH PDP-11](https://github.com/simh/simh/tree/master/PDP11), [SIMH VAX](https://github.com/simh/simh/tree/master/VAX), [MAME T11](https://github.com/mamedev/mame/tree/master/src/devices/cpu/t11) |
@@ -445,7 +445,7 @@ Les désignations PC-88, PC-98, X1, X68000, FM-7 et FM Towns couvrent chacune de
 - [TomHarte ProcessorTests](https://github.com/TomHarte/ProcessorTests) : vecteurs de tests CPU, notamment 6502, 68000, 6809 et Z80 selon dossiers disponibles.
 - [SIMH](https://github.com/simh/simh) : DEC, Data General, Altair/S-100 et mini-ordinateurs.
 - [FluxEngine formats](https://github.com/davidgiven/fluxengine/tree/master/src/formats) : comportement de nombreux formats physiques rares.
-- [Greaseweazle disk definitions](https://github.com/keirf/greaseweazle/tree/master/src/greaseweazle/data) : géométries et formats déjà liés à GW GUI.
+- [Greaseweazle disk definitions](https://github.com/keirf/greaseweazle/tree/master/src/greaseweazle/data) : géométries et formats déjà liés à Retro Media Lab.
 - [86Box](https://github.com/86Box/86Box) : cartes mères, chipsets, contrôleurs, vidéo et son IBM PC compatibles.
 - [DOSBox-X](https://github.com/joncampbell123/dosbox-x) : périphériques PC et contrôleur disquette, à confronter à 86Box pour la précision matérielle.
 

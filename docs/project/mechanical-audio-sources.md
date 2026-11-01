@@ -2,9 +2,9 @@
 
 ## État fonctionnel livré le 27 octobre 2026
 
-Le build Debug Acorn est prêt dans `build/Debug/GW GUI/gwgui.exe`. Les moteurs, déplacements de têtes, accès, arrêts et manipulations de supports utilisent les FLAC externes communs, avec réglage du volume des lecteurs. Les résonances des seeks rapides se chevauchent sans retard cumulatif. Le mécanisme du magnétophone utilise désormais dix clips réels ; lecture et enregistrement partagent le défilement, sans prise distincte du bouton REC.
+Le build Debug Acorn est prêt dans `build/Debug/Retro Media Lab/retromedialab.exe`. Les moteurs, déplacements de têtes, accès, arrêts et manipulations de supports utilisent les FLAC externes communs, avec réglage du volume des lecteurs. Les résonances des seeks rapides se chevauchent sans retard cumulatif. Le mécanisme du magnétophone utilise désormais dix clips réels ; lecture et enregistrement partagent le défilement, sans prise distincte du bouton REC.
 
-Validation finale : build réussi sans avertissement XML après documentation du volume ; 104 tests réussis contre les DLL livrées (contrôleurs 8271/WD1770/SCSI, audio, cassette et contrôles supplémentaires des volumes et événements dans le cœur). Les 1 759 FLAC livrés ont les mêmes empreintes que les sources. Les 1 759 WAV d’écoute sont dans `artifacts/audio-preview`, rangés par type/marque/modèle. Les sorties et scripts de validation temporaires ont été supprimés. La sortie native WASAPI a également été contrôlée avec le SDK et les clips livrés, sans ouvrir de fenêtre GW GUI.
+Validation finale : build réussi sans avertissement XML après documentation du volume ; 104 tests réussis contre les DLL livrées (contrôleurs 8271/WD1770/SCSI, audio, cassette et contrôles supplémentaires des volumes et événements dans le cœur). Les 1 759 FLAC livrés ont les mêmes empreintes que les sources. Les 1 759 WAV d’écoute sont dans `artifacts/audio-preview`, rangés par type/marque/modèle. Les sorties et scripts de validation temporaires ont été supprimés. La sortie native WASAPI a également été contrôlée avec le SDK et les clips livrés, sans ouvrir de fenêtre Retro Media Lab.
 
 La couverture fonctionnelle BBC Model A et la réutilisation commune sont vérifiées. L’association exhaustive des références commerciales aux machines des 24 modules n’est pas démontrée par ces tests. Les mécanismes dont la référence est inconnue restent explicitement sous `Unidentified`. Les sections suivantes conservent les sources et les étapes de recherche ; les mentions de travail restant dans les étapes anciennes sont à lire avec cet état livré.
 
@@ -76,7 +76,7 @@ L’utilisateur a précisé que les lecteurs silencieux doivent rester plus sile
 
 ## Banque externe : classement et lecture FLAC
 
-La banque distribuée est `src/GWGUI.MediaEngine/Assets/MechanicalAudio/<type>/<marque>/<modèle>/<bruitage>.flac` : types `Floppy`, `HardDisk`, `Optical` et `Tape` pour les enregistrements désormais disponibles. Insertion, éjection et moteur restent dans le dossier du modèle ; les séries Seek et Buzz ont leurs sous-dossiers. Les mécanismes non identifiés restent sous `Unidentified`, sans inventer leur marque. Les fichiers ne répètent pas la marque et le modèle.
+La banque distribuée est `src/RetroMediaLab.MediaEngine/Assets/MechanicalAudio/<type>/<marque>/<modèle>/<bruitage>.flac` : types `Floppy`, `HardDisk`, `Optical` et `Tape` pour les enregistrements désormais disponibles. Insertion, éjection et moteur restent dans le dossier du modèle ; les séries Seek et Buzz ont leurs sous-dossiers. Les mécanismes non identifiés restent sous `Unidentified`, sans inventer leur marque. Les fichiers ne répètent pas la marque et le modèle.
 
 Les 1 749 FLAC occupent 48 146 242 octets contre 103 320 114 octets pour les WAV sources. Le PCM décodé a été comparé bit à bit aux originaux lors de la conversion. Les niveaux des enregistrements récupérés sont conservés. La réserve utilisateur sur la normalisation concerne les sons à créer, afin de préserver les différences entre lecteurs silencieux et bruyants.
 
@@ -84,7 +84,7 @@ Les 1 749 FLAC occupent 48 146 242 octets contre 103 320 114 octets pour les WAV
 
 La lecture utilise NAudio 2.3.0 déjà référencé et `StreamMediaFoundationReader`, avec le décodeur FLAC de Windows Media Foundation ; l’encodeur FLAC externe sert uniquement à préparer les assets. App distribue une seule banque externe, sans intégration des sons dans une DLL ni duplication dans chaque module.
 
-Après déplacement, les 1 749 fichiers ont été vérifiés par SHA-256 et confrontés aux chemins du catalogue. La validation isolée des sources C# a réussi pour 24 profils et 153 opérations, avec lecture FLAC via les constantes, continuité des fragments, volume et protection du mélange. Le script temporaire et son résultat JSON ont été supprimés. Aucun build de GW GUI ni remplacement de l’application en cours d’essai n’a été effectué. Ce contrôle ne remplace pas la validation du build complet et ne signifie pas que tous les modèles et opérations manquants sont terminés.
+Après déplacement, les 1 749 fichiers ont été vérifiés par SHA-256 et confrontés aux chemins du catalogue. La validation isolée des sources C# a réussi pour 24 profils et 153 opérations, avec lecture FLAC via les constantes, continuité des fragments, volume et protection du mélange. Le script temporaire et son résultat JSON ont été supprimés. Aucun build de Retro Media Lab ni remplacement de l’application en cours d’essai n’a été effectué. Ce contrôle ne remplace pas la validation du build complet et ne signifie pas que tous les modèles et opérations manquants sont terminés.
 
 Contrôle isolé après ce découpage : les sources C# des quatre fichiers de catalogues ont été compilées en mémoire ; l’agrégation contient les 1 744 identités distinctes attendues pour les 1 749 fichiers, et chaque chemin référencé existe. Les quelques identités communes correspondent à des contenus source identiques. Aucun fichier temporaire ni build de l’application.
 
@@ -99,7 +99,7 @@ Les noms décrivent les événements : Disk-insert, Disk-eject, Drive-open/close
 
 Chaque identité est maintenant le chemin descriptif sans extension, par exemple `Floppy/Alps Electric/DF354H148F/Seek/Toward-center/1-track`. Les dictionnaires par matériel et par type relient directement cette identité au fichier FLAC ; le catalogue principal les agrège. Les empreintes servent uniquement à vérifier l’intégrité des originaux. Les définitions exécutées ne conservent aucune provenance ni empreinte source. Aucun fichier provenance ou preparation-report n’est recréé.
 
-Résultat : 1 749 FLAC recréés, 1 749 identités lisibles distinctes, 24 profils, PCM décodé identique à chaque original sans normalisation. La validation isolée des sources réelles a vérifié 173 opérations décodées à 44,1 kHz, la continuité entre fragments et le silence au volume zéro. Chaque déplacement up/down a été confronté au nom original, à sa distance et à sa direction. Le script temporaire a été supprimé. Aucun build de GW GUI.
+Résultat : 1 749 FLAC recréés, 1 749 identités lisibles distinctes, 24 profils, PCM décodé identique à chaque original sans normalisation. La validation isolée des sources réelles a vérifié 173 opérations décodées à 44,1 kHz, la continuité entre fragments et le silence au volume zéro. Chaque déplacement up/down a été confronté au nom original, à sa distance et à sa direction. Le script temporaire a été supprimé. Aucun build de Retro Media Lab.
 
 Cette reconstruction corrige l’organisation et l’identification des enregistrements disponibles. La couverture des lecteurs et opérations encore absents des sources reste à compléter ; elle n’est pas déclarée terminée par ce contrôle.
 
@@ -114,7 +114,7 @@ Le service commun utilise les bases suivantes, explicitement choisies plutôt qu
 
 Le profil de base est placé en tête des choix et utilisé lorsque le profil demandé est absent ou non renseigné. Pour un profil enregistré spécifique, chaque opération disponible reste issue de ce profil ; une opération manquante utilise celle de la base de sa catégorie. La durée de l’événement utilise le même repli que le rendu. Si la base ne possède pas non plus cette opération, aucun son supplémentaire n’est inventé. Les réglages d’activation et de volume restent appliqués par leurs consommateurs habituels.
 
-Validation isolée sur les sources réelles : les trois bases, le rendu sans profil et avec profil absent, les durées correspondantes, le repli de l’arrêt Epson SD-800 vers Alps et la conservation de son déplacement spécifique ont réussi. Le script temporaire a été supprimé ; aucun build de GW GUI.
+Validation isolée sur les sources réelles : les trois bases, le rendu sans profil et avec profil absent, les durées correspondantes, le repli de l’arrêt Epson SD-800 vers Alps et la conservation de son déplacement spécifique ont réussi. Le script temporaire a été supprimé ; aucun build de Retro Media Lab.
 
 ## Lecture directe des FLAC et raccordement mécanique en cours
 
@@ -132,7 +132,7 @@ Validation isolée : 24 fichiers de modèles, au plus 189 lignes par fichier ; l
 
 La mécanique commune de MediaEngine suit les accès des représentations sectorielles, blocs et pistes optiques : moteur, insertion/éjection, position, sens et distance du déplacement. La sélection de face reste distincte du déplacement des têtes. Les transferts continus actualisent leur position finale sans inventer un nouveau seek. Les opérations de lecture, exploration, conversion et écriture disposent de scopes de fin d’activité. Le raccordement au mixeur App et aux consommateurs SDK/Acorn reste en cours et n’est pas déclaré terminé.
 
-Validation isolée des sources actuelles : compilation de MediaEngine en mémoire avec ses générateurs, lecture directe des FLAC, catalogue de 24 profils et 1 749 fichiers, conservation des octets sectoriels et blocs, positions atteintes et fin d’activité après erreur/annulation. Le démarrage unique, la continuité de rotation entre deux fragments audio et la fin du son d’arrêt ont également été vérifiés. Les fichiers de validation temporaires ont été supprimés. Aucun build de GW GUI, arrêt ou remplacement de l’application.
+Validation isolée des sources actuelles : compilation de MediaEngine en mémoire avec ses générateurs, lecture directe des FLAC, catalogue de 24 profils et 1 749 fichiers, conservation des octets sectoriels et blocs, positions atteintes et fin d’activité après erreur/annulation. Le démarrage unique, la continuité de rotation entre deux fragments audio et la fin du son d’arrêt ont également été vérifiés. Les fichiers de validation temporaires ont été supprimés. Aucun build de Retro Media Lab, arrêt ou remplacement de l’application.
 
 ## Raccordement disque Acorn et volume à chaud vérifiés
 
@@ -184,9 +184,9 @@ Acorn utilise désormais les durées réelles des commandes, et produit aussi le
 
 ### Build et sortie Windows contrôlés
 
-`scripts/local-building.cmd --building=debug --modules=acorn` a terminé avec succès. La livraison contient `build/Debug/GW GUI/gwgui.exe` et `Modules/acorn/gwgui.emulation.acorn.dll`. Le script inclut également son module Exemple systématique. Les dix FLAC Tape ont les mêmes empreintes dans la livraison et dans les sources externes.
+`scripts/local-building.cmd --building=debug --modules=acorn` a terminé avec succès. La livraison contient `build/Debug/Retro Media Lab/retromedialab.exe` et `Modules/acorn/retromedialab.emulation.acorn.dll`. Le script inclut également son module Exemple systématique. Les dix FLAC Tape ont les mêmes empreintes dans la livraison et dans les sources externes.
 
-Un exécutable temporaire a référencé les DLL livrées, décodé les FLAC via `EmulationSdk.MediaProcessing`, puis alimenté la vraie classe `WasapiAudioOutput` en mono à 44 100 Hz. La sortie était active, son tampon a été vidé et `Dispose` exécuté dans un `finally` a supprimé son tampon. Aucune fenêtre GW GUI n’a été lancée par ce contrôle. Les fichiers et artefacts des deux validations temporaires ont été supprimés. La fidélité subjective au magnétophone précis de l’utilisateur n’est pas démontrée : la référence commerciale du magnétophone enregistré reste inconnue.
+Un exécutable temporaire a référencé les DLL livrées, décodé les FLAC via `EmulationSdk.MediaProcessing`, puis alimenté la vraie classe `WasapiAudioOutput` en mono à 44 100 Hz. La sortie était active, son tampon a été vidé et `Dispose` exécuté dans un `finally` a supprimé son tampon. Aucune fenêtre Retro Media Lab n’a été lancée par ce contrôle. Les fichiers et artefacts des deux validations temporaires ont été supprimés. La fidélité subjective au magnétophone précis de l’utilisateur n’est pas démontrée : la référence commerciale du magnétophone enregistré reste inconnue.
 
 Un avertissement XML CS1573 signale la documentation absente du paramètre `MechanicalVolumePercent` du contrat cassette ; aucune erreur de compilation. Les déplacements rapides et les WAV d’écoute définitifs restent à terminer avant de déclarer l’objectif complet.
 

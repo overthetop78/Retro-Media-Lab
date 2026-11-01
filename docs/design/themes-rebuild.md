@@ -14,20 +14,20 @@ L’inventaire initial, temporaire et désormais supprimé, recensait 64 vues XA
 
 Fenêtres XAML identifiées :
 
-- `src/GWGUI.App/Theme/Base/Views/Dialogs/Conversion/ConversionConflictWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Dialogs/Explorer/ExplorerIssuesWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Dialogs/Hardware/HardwareUnavailableWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Dialogs/Profiles/ProfileNameWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Dialogs/Read/ReadConflictWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/About/AboutWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/Conversion/FileMigrationWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/EmulationModuleOptions/EmulationModuleOptionsWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/EmulationPreferences/EmulationPreferencesWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/Logs/LogHistoryWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/Preferences/PreferencesWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/Shell/MainWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/Tools/GwToolWindow.xaml`
-- `src/GWGUI.App/Theme/Base/Views/Windows/Updates/UpdatesWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Dialogs/Conversion/ConversionConflictWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Dialogs/Explorer/ExplorerIssuesWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Dialogs/Hardware/HardwareUnavailableWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Dialogs/Profiles/ProfileNameWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Dialogs/Read/ReadConflictWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/About/AboutWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/Conversion/FileMigrationWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/EmulationModuleOptions/EmulationModuleOptionsWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/EmulationPreferences/EmulationPreferencesWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/Logs/LogHistoryWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/Preferences/PreferencesWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/Shell/MainWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/Tools/GwToolWindow.xaml`
+- `src/RetroMediaLab.App/Theme/Base/Views/Windows/Updates/UpdatesWindow.xaml`
 
 Les fenêtres créées en code comprennent notamment la sélection des firmwares, les options du cœur, la création et l’association des supports, les lecteurs cassette/disquette/disque dur/optique/cartouche/carte mémoire, ainsi que les commandes et réglages des machines. Elles devront être parcourues explicitement ; repeindre leur cadre ne les valide pas.
 
@@ -106,7 +106,7 @@ Les prochains fichiers seront définis dans le suivi avant implémentation : bur
 
 ## Fichiers de réalisation OS — ordre de construction
 
-Tous les chemins suivants sont relatifs à `src/GWGUI.App/Theme/OS/`. Les sources Base ne deviennent jamais le contenu visuel des nouvelles fenêtres.
+Tous les chemins suivants sont relatifs à `src/RetroMediaLab.App/Theme/OS/`. Les sources Base ne deviennent jamais le contenu visuel des nouvelles fenêtres.
 
 1. `Editions/Windows31/Windows31WindowState.cs`, `Windows31WindowPlacement.cs` : états normal, agrandi, réduit en icône et fermé ; géométrie restaurée, déplacement/redimensionnement validés et activation. Les transitions sont propres à Windows 3.1, sans appel à la barre des tâches Windows actuelle.
 2. `Editions/Windows31/Windows31Frame.xaml` et `.xaml.cs`, `Windows31Controls.xaml`, `Windows31Metrics.cs` : cadre sans bouton Fermer moderne, case système, commandes de réduction/agrandissement, menus et contrôles historiques ; tracé et typographie comparés aux références. Les polices historiques restent un point ouvert explicite.
@@ -122,7 +122,7 @@ La palette utilise des valeurs VGA explicites. Le gris clair VGA (192, 192, 192)
 
 ## Texte bitmap et surfaces natives — fichiers de réalisation
 
-Les contrôles WPF conservent leurs interactions de saisie et sélection. Le texte doit employer les métriques et glyphes bitmap historiques, sans substitution par Segoe UI ou Tahoma. Les fichiers prévus sont un convertisseur temporaire (retiré après conversion contrôlée des ressources raster en contours de pixels), `Theme/OS/Editions/Windows31/Assets/Fonts/` (faces nécessaires), `Windows31Typography.xaml` (familles, tailles et repli explicite pour les alphabets absents), et la déclaration de ces ressources dans `GWGUI.App.csproj`. La source primaire du format est Microsoft, *Programmer’s Reference, Volume 4: Resources*, avril 1992, chapitre 4 ([scan SDK](https://bitsavers.trailing-edge.com/pdf/microsoft/windows_3.1/Microsoft_Windows_3.1_SDK_1992/PC30211-0492_Programmers_Reference_Volume_4_199204.pdf)), complétée par [KB65123](https://ftp.zx.net.nz/pub/Patches/ftp.microsoft.com/MISC/KB/en-us/65/123.HTM). La disponibilité des polices locales ne prouve toujours pas leur identité avec les disquettes d’origine : cette comparaison reste un critère d’achèvement.
+Les contrôles WPF conservent leurs interactions de saisie et sélection. Le texte doit employer les métriques et glyphes bitmap historiques, sans substitution par Segoe UI ou Tahoma. Les fichiers prévus sont un convertisseur temporaire (retiré après conversion contrôlée des ressources raster en contours de pixels), `Theme/OS/Editions/Windows31/Assets/Fonts/` (faces nécessaires), `Windows31Typography.xaml` (familles, tailles et repli explicite pour les alphabets absents), et la déclaration de ces ressources dans `RetroMediaLab.App.csproj`. La source primaire du format est Microsoft, *Programmer’s Reference, Volume 4: Resources*, avril 1992, chapitre 4 ([scan SDK](https://bitsavers.trailing-edge.com/pdf/microsoft/windows_3.1/Microsoft_Windows_3.1_SDK_1992/PC30211-0492_Programmers_Reference_Volume_4_199204.pdf)), complétée par [KB65123](https://ftp.zx.net.nz/pub/Patches/ftp.microsoft.com/MISC/KB/en-us/65/123.HTM). La disponibilité des polices locales ne prouve toujours pas leur identité avec les disquettes d’origine : cette comparaison reste un critère d’achèvement.
 
 Précision utilisateur après les premières captures : toutes les applications de cette déclinaison s’ouvrent à l’intérieur du bureau RML, en fenêtre ou agrandies dans ce bureau. L’hébergement autonome dans Windows31ApplicationWindow.cs est retiré. Windows31Desktop.cs gère les cadres internes, leur activation, leur réduction en icône et leur restauration. Le Gestionnaire de programmes est lui-même une fenêtre du bureau et contient des groupes d’icônes ; le double-clic ouvre les applications. La composition et la fidélité visuelle des deux premiers formulaires ont été refusées et doivent être reprises.
 

@@ -1,0 +1,11 @@
+namespace RetroMediaLab.Emulation.Enums;
+
+public enum EmulationMediaCategory
+{
+    FloppyDrive,
+    HardDisk,
+    CompactDiscDrive,
+    CartridgeSlot,
+    CassetteDrive,
+    MemoryCard
+}

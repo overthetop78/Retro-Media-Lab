@@ -78,25 +78,25 @@ $repo = $repositoryParts[1]
 
 if ($Scope -eq 'Application') {
     $catalog.components = @($catalog.components | Where-Object {
-        $_.id -ieq 'gwgui' -and $_.kind -ieq 'application'
+        $_.id -ieq 'retromedialab' -and $_.kind -ieq 'application'
     })
     if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version is required for the application and must use X.Y.Z.' }
     if ([string]::IsNullOrWhiteSpace($ApplicationTag)) { $ApplicationTag = "v$Version" }
     if ($ApplicationTag -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') { throw 'ApplicationTag contains unsupported characters.' }
-    $packageName = "GW-GUI-$Version-win-x64-portable.zip"
+    $packageName = "Retro-Media-Lab-$Version-win-x64-portable.zip"
     $packagePath = Join-Path $dist $packageName
     $release = [ordered]@{
         version = $Version
         packageUrl = "https://github.com/$owner/$repo/releases/download/$ApplicationTag/$packageName"
         sha256 = Read-Sha256 $packagePath
         notesUrl = "https://github.com/$owner/$repo/releases/tag/$ApplicationTag"
-        hostApiVersion = (Get-GwGuiHostApiVersion -RepositoryRoot $repositoryRoot).ToString(2)
+        hostApiVersion = (Get-RetroMediaLabHostApiVersion -RepositoryRoot $repositoryRoot).ToString(2)
     }
-    Set-Release $catalog 'gwgui' 'application' $release
+    Set-Release $catalog 'retromedialab' 'application' $release
 }
 
 if ($Scope -eq 'Module') {
-    $availableModules = @(Get-GwGuiEmulationModules -RepositoryRoot $repositoryRoot)
+    $availableModules = @(Get-RetroMediaLabEmulationModules -RepositoryRoot $repositoryRoot)
     if ([string]::IsNullOrWhiteSpace($Module)) {
         throw 'Module is required when Scope is Module.'
     }
@@ -104,12 +104,12 @@ if ($Scope -eq 'Module') {
         -or $ModuleTag -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
         throw 'ModuleTag is required for a module and contains unsupported characters.'
     }
-    $moduleDefinition = Resolve-GwGuiEmulationModule -Modules $availableModules -Module $Module
+    $moduleDefinition = Resolve-RetroMediaLabEmulationModule -Modules $availableModules -Module $Module
     $manifest = $moduleDefinition.Manifest
     $catalog.components = @($catalog.components | Where-Object {
         $_.id -ieq $manifest.id -and $_.kind -ieq 'module'
     })
-    $packageName = "GW-GUI-Module-$($manifest.id)-$($manifest.moduleVersion)-win-x64.zip"
+    $packageName = "Retro-Media-Lab-Module-$($manifest.id)-$($manifest.moduleVersion)-win-x64.zip"
     $packagePath = Join-Path $dist $packageName
     $release = [ordered]@{
         version = $manifest.moduleVersion

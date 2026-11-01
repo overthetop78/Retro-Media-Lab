@@ -6,26 +6,26 @@ Relevé effectué avec les machines Atari ST et Amiga 1200 démarrées par l'uti
 
 | PID observé | Commande / rôle | Description du fichier | Fenêtre visible |
 |---|---|---|---|
-| 43100 | Interface principale | `gwgui` | `GW GUI` |
-| 47376 | `--amiga-core-host` | `gwgui` | Aucune |
-| 49184 | `--atari-core-host` | `gwgui` | Aucune |
+| 43100 | Interface principale | `retromedialab` | `Retro Media Lab` |
+| 47376 | `--amiga-core-host` | `retromedialab` | Aucune |
+| 49184 | `--atari-core-host` | `retromedialab` | Aucune |
 
 Les deux moteurs ont le PID 43100 comme parent, utilisent le même chemin
-`build/Debug/GW GUI/gwgui.exe` et ne présentent que des fenêtres techniques invisibles
+`build/Debug/Retro Media Lab/retromedialab.exe` et ne présentent que des fenêtres techniques invisibles
 sans titre applicatif. Leurs lancements utilisent tous deux `UseShellExecute = false`
 et `CreateNoWindow = true`.
 
 La capture du Gestionnaire des tâches faite pendant ce relevé montre le groupe
-`gwgui (4)` développé avec les quatre lignes suivantes :
+`retromedialab (4)` développé avec les quatre lignes suivantes :
 
 - `GameInputRawInputProxy.exe` ;
-- `GW GUI` ;
-- `gwgui` ;
-- `gwgui`.
+- `Retro Media Lab` ;
+- `retromedialab` ;
+- `retromedialab`.
 
 Dans ce relevé, les deux moteurs sont donc affichés avec le même nom. La ligne
-`GW GUI` est la fenêtre principale, et non le nom d'un moteur Atari. La description
-`gwgui` vient du même fichier exécutable pour les trois processus. Le compteur du
+`Retro Media Lab` est la fenêtre principale, et non le nom d'un moteur Atari. La description
+`retromedialab` vient du même fichier exécutable pour les trois processus. Le compteur du
 groupe inclut également le processus auxiliaire GameInput : ce n'est pas un compteur
 de machines démarrées.
 
@@ -41,12 +41,12 @@ complétée par les commandes/PID et l'énumération des fenêtres Win32 en lect
 
 ## Code concerné
 
-- `src/GWGUI.Launcher/GWGUI.Launcher.csproj` définit l'exécutable commun `gwgui`.
-- `src/GWGUI.App/App.xaml.cs` traite les commandes hôtes avant de créer la fenêtre principale.
-- `src/GWGUI.Emulation.Commodore/Services/AmigaProcessCore.cs` lance le processus Amiga.
-- `src/GWGUI.Emulation.Atari/Services/AtariProcessCore.cs` lance le processus Atari.
-- `src/GWGUI.Emulation.Commodore/Services/AmigaCoreHost.cs` et
-  `src/GWGUI.Emulation.Atari/Services/AtariCoreHost.cs` hébergent les moteurs sans fenêtre visible.
+- `src/RetroMediaLab.Launcher/RetroMediaLab.Launcher.csproj` définit l'exécutable commun `retromedialab`.
+- `src/RetroMediaLab.App/App.xaml.cs` traite les commandes hôtes avant de créer la fenêtre principale.
+- `src/RetroMediaLab.Emulation.Commodore/Services/AmigaProcessCore.cs` lance le processus Amiga.
+- `src/RetroMediaLab.Emulation.Atari/Services/AtariProcessCore.cs` lance le processus Atari.
+- `src/RetroMediaLab.Emulation.Commodore/Services/AmigaCoreHost.cs` et
+  `src/RetroMediaLab.Emulation.Atari/Services/AtariCoreHost.cs` hébergent les moteurs sans fenêtre visible.
 
 ## Noms des machines dans la liste : différé
 

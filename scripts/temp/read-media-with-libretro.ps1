@@ -24,8 +24,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$projectPath = Join-Path $repositoryRoot 'tests\GWGUI.LocalDiskImageTests\TemporaryLibretroMediaReader\TemporaryLibretroMediaReader.csproj'
-$assemblyPath = Join-Path $repositoryRoot 'tests\GWGUI.LocalDiskImageTests\TemporaryLibretroMediaReader\bin\TemporaryLibretroMediaReader\Debug\net10.0-windows10.0.19041.0\GWGUI.TemporaryLibretroMediaReader.dll'
+$projectPath = Join-Path $repositoryRoot 'tests\RetroMediaLab.LocalDiskImageTests\TemporaryLibretroMediaReader\TemporaryLibretroMediaReader.csproj'
+$assemblyPath = Join-Path $repositoryRoot 'tests\RetroMediaLab.LocalDiskImageTests\TemporaryLibretroMediaReader\bin\TemporaryLibretroMediaReader\Debug\net10.0-windows10.0.19041.0\RetroMediaLab.TemporaryLibretroMediaReader.dll'
 
 . (Join-Path $PSScriptRoot 'common/DotNetProcess.ps1')
 

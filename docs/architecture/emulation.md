@@ -16,7 +16,7 @@ Toute décision architecturale ou fonctionnelle prise pendant la refonte doit ê
 
 ## Règle impérative d'examen comparatif du code existant
 
-Avant de créer, modifier, déplacer, découper ou renommer un fichier lié à l'émulation, il faut examiner tous les fichiers concernés et suivre leur fonctionnement réel. Cet examen comprend obligatoirement les implémentations équivalentes existant dans App, `GWGUI.Emulation.Commodore`, `GWGUI.Emulation.Atari` et, lorsqu'elles existent, les autres bibliothèques `GWGUI.Emulation.xxx`. Il ne faut jamais concevoir la partie Atari sans vérifier son équivalent Amiga, ni l'inverse.
+Avant de créer, modifier, déplacer, découper ou renommer un fichier lié à l'émulation, il faut examiner tous les fichiers concernés et suivre leur fonctionnement réel. Cet examen comprend obligatoirement les implémentations équivalentes existant dans App, `RetroMediaLab.Emulation.Commodore`, `RetroMediaLab.Emulation.Atari` et, lorsqu'elles existent, les autres bibliothèques `RetroMediaLab.Emulation.xxx`. Il ne faut jamais concevoir la partie Atari sans vérifier son équivalent Amiga, ni l'inverse.
 
 Le but est d'éviter les implémentations répétées, les architectures parallèles incompatibles, les fichiers inutiles et les noms différents pour une même responsabilité. Par exemple, deux fichiers tels que `AmigaVideoOutputMachine.cs` et `AtariVideoOptions.cs` ne doivent pas être conservés comme deux concepts distincts s'ils remplissent réellement la même fonction. Il faut d'abord déterminer ce qui peut devenir commun. Si une implémentation spécialisée reste nécessaire dans chaque bibliothèque, elle doit suivre une structure, une responsabilité et un nom cohérents dans toutes les bibliothèques concernées.
 
@@ -36,37 +36,37 @@ Avant d'ajouter un nouveau fichier ou une nouvelle abstraction, il faut donc vé
 
 **Jamais de texte brut destiné à l'utilisateur dans le code.** Tous les textes affichables sont identifiés et manipulés au moyen de constantes stables permettant de les relier au système de traduction. Cette règle concerne tous les mots, libellés, titres, descriptions, messages, avertissements, erreurs, boutons, choix de sélecteurs et phrases susceptibles d'apparaître dans l'interface.
 
-Chaque constante de texte doit posséder une valeur traduite dans toutes les langues prises en charge. Les bibliothèques `GWGUI.Emulation.xxx` transmettent les identifiants et les données nécessaires ; elles ne construisent pas elles-mêmes les phrases finales et ne renvoient pas de texte utilisateur déjà formaté.
+Chaque constante de texte doit posséder une valeur traduite dans toutes les langues prises en charge. Les bibliothèques `RetroMediaLab.Emulation.xxx` transmettent les identifiants et les données nécessaires ; elles ne construisent pas elles-mêmes les phrases finales et ne renvoient pas de texte utilisateur déjà formaté.
 
 Les termes génériques invariants, par exemple `CPU`, `RAM` ou `ROM`, restent eux aussi identifiés par une clé de ressource et passent par le même système de localisation que les autres textes. Leur clé et leur valeur sont définies uniquement dans le catalogue neutre. Elles sont volontairement absentes des catalogues propres aux langues : le mécanisme normal de repli des ressources retourne alors la valeur neutre inchangée, quelle que soit la langue active. Il ne faut ni recopier ces invariants dans chaque fichier de langue, ni les écrire directement dans le code de l'interface.
 
 ## Règle impérative concernant les noms du code
 
-Les identifiants créés par GW GUI ne doivent pas employer `Kind`, `...Kind`, `GetKind` ou une autre variante construite autour de ce mot. Cette règle s'applique aux méthodes, fonctions, classes, interfaces, records, propriétés, champs, constantes, enums et autres éléments déclarés dans App, `GWGUI.Emulation` et toutes les bibliothèques `GWGUI.Emulation.xxx`.
+Les identifiants créés par Retro Media Lab ne doivent pas employer `Kind`, `...Kind`, `GetKind` ou une autre variante construite autour de ce mot. Cette règle s'applique aux méthodes, fonctions, classes, interfaces, records, propriétés, champs, constantes, enums et autres éléments déclarés dans App, `RetroMediaLab.Emulation` et toutes les bibliothèques `RetroMediaLab.Emulation.xxx`.
 
 Chaque nom doit employer un terme simple, concret, techniquement exact et facilement compréhensible indépendamment de la langue du développeur, par exemple `Category`, `Target`, `Code`, `Format`, `Model`, `Family`, `Device`, `Media` ou un autre mot décrivant précisément la donnée. Il ne faut pas remplacer mécaniquement tous les usages de `Kind` par un même mot : le remplacement est choisi suivant le rôle réel de chaque élément.
 
-Cette règle ne concerne pas les identifiants imposés par le langage, le framework ou une bibliothèque externe, par exemple `LayoutKind` ou `UriKind`. GW GUI peut appeler ces API avec leur nom officiel, mais ne doit pas reprendre cette convention pour nommer ses propres éléments.
+Cette règle ne concerne pas les identifiants imposés par le langage, le framework ou une bibliothèque externe, par exemple `LayoutKind` ou `UriKind`. Retro Media Lab peut appeler ces API avec leur nom officiel, mais ne doit pas reprendre cette convention pour nommer ses propres éléments.
 
 ## 1. Objet
 
-Ce document fixe la séparation entre `GWGUI.App`, `GWGUI.Emulation` et les bibliothèques `GWGUI.Emulation.xxx`.
+Ce document fixe la séparation entre `RetroMediaLab.App`, `RetroMediaLab.Emulation` et les bibliothèques `RetroMediaLab.Emulation.xxx`.
 
 L’interface graphique doit être commune. Chaque bibliothèque fournit les données et règles propres à ses machines. La réorganisation doit préserver toutes les fonctionnalités, valeurs enregistrées et comportements existants.
 
 ## 2. Architecture retenue
 
-Les bibliothèques prises en charge restent référencées à la compilation par `GWGUI.App`. Aucune découverte automatique de DLL externes n’est nécessaire.
+Les bibliothèques prises en charge restent référencées à la compilation par `RetroMediaLab.App`. Aucune découverte automatique de DLL externes n’est nécessaire.
 
-Actuellement, `GWGUI.App.csproj` référence notamment :
+Actuellement, `RetroMediaLab.App.csproj` référence notamment :
 
-- `GWGUI.Emulation` ;
-- `GWGUI.Emulation.Commodore` ;
-- `GWGUI.Emulation.Atari`.
+- `RetroMediaLab.Emulation` ;
+- `RetroMediaLab.Emulation.Commodore` ;
+- `RetroMediaLab.Emulation.Atari`.
 
-Une future bibliothèque `GWGUI.Emulation.Sega` pourra être ajoutée de la même manière. Le chargeur,
+Une future bibliothèque `RetroMediaLab.Emulation.Sega` pourra être ajoutée de la même manière. Le chargeur,
 les scripts et le répertoire officiel découvrent les modules conformes à leur manifeste sans ajouter
-de référence, de constante ou de branche propre à la nouvelle famille dans `GWGUI.App`.
+de référence, de constante ou de branche propre à la nouvelle famille dans `RetroMediaLab.App`.
 
 ## 3. Les deux raccordements dans App
 
@@ -82,7 +82,7 @@ Le rendu reste commun dans App et reçoit les données du module ciblé. Il ne f
 
 Chaque fenêtre de module possède sa propre instance du contrôle générique. La construction graphique est commune, mais chaque fenêtre crée ses propres instances de boutons, sélecteurs, champs, listes et autres contrôles. Aucun objet graphique n’est partagé entre les fenêtres Amiga, Atari ou une future famille.
 
-Les contrôles de chaque instance sont remplis avec les données de la bibliothèque correspondante : `GWGUI.Emulation.Commodore` pour la fenêtre Amiga, `GWGUI.Emulation.Atari` pour la fenêtre Atari, puis la bibliothèque concernée pour toute nouvelle famille.
+Les contrôles de chaque instance sont remplis avec les données de la bibliothèque correspondante : `RetroMediaLab.Emulation.Commodore` pour la fenêtre Amiga, `RetroMediaLab.Emulation.Atari` pour la fenêtre Atari, puis la bibliothèque concernée pour toute nouvelle famille.
 
 Ces instances restent en mémoire pendant la durée de vie de leur boîte de dialogue. Seuls le code de construction, la disposition et les comportements graphiques sont communs ; les objets créés et les données qu’ils contiennent sont indépendants.
 
@@ -94,20 +94,20 @@ L’onglet **Configurations** reste commun à toutes les familles. Il rassemble 
 
 Il dirige une configuration Amiga vers `AmigaEngine` et une configuration Atari vers `AtariEngine`. Chaque bibliothèque possède un seul Engine de famille, chargé uniquement de créer ou recréer les instances de machines :
 
-- `AmigaEngine` et `AmigaMachine` sont dans `src/GWGUI.Emulation.Commodore` ;
-- `AtariEngine` et `AtariMachine` sont dans `src/GWGUI.Emulation.Atari`.
+- `AmigaEngine` et `AmigaMachine` sont dans `src/RetroMediaLab.Emulation.Commodore` ;
+- `AtariEngine` et `AtariMachine` sont dans `src/RetroMediaLab.Emulation.Atari`.
 
-Pour Sega, `SegaEngine` et `SegaMachine` seront créés dans `src/GWGUI.Emulation.Sega`, puis raccordés à `EmulationSection`.
+Pour Sega, `SegaEngine` et `SegaMachine` seront créés dans `src/RetroMediaLab.Emulation.Sega`, puis raccordés à `EmulationSection`.
 
 Une nouvelle instance de machine est créée pour chaque onglet d’exécution. Chaque machine conserve ainsi ses propres états, médias et réglages d’exécution. L'Engine de famille n'est pas dupliqué par onglet.
 
-## 4. Responsabilité de GWGUI.Emulation
+## 4. Responsabilité de RetroMediaLab.Emulation
 
-`GWGUI.Emulation` contient les contrats et comportements réellement communs. Il ne contient pas les règles propres à Amiga, Atari ou une autre famille.
+`RetroMediaLab.Emulation` contient les contrats et comportements réellement communs. Il ne contient pas les règles propres à Amiga, Atari ou une autre famille.
 
-`GWGUI.Emulation` est une dépendance commune obligatoire de l'application et de toutes les bibliothèques `GWGUI.Emulation.xxx`. `GWGUI.App`, `GWGUI.Emulation.Commodore`, `GWGUI.Emulation.Atari` et les futures bibliothèques utilisent directement les interfaces, enums et contrats définis dans ce projet. App découvre les bibliothèques spécialisées dans `Modules` et communique avec elles uniquement par ces contrats communs.
+`RetroMediaLab.Emulation` est une dépendance commune obligatoire de l'application et de toutes les bibliothèques `RetroMediaLab.Emulation.xxx`. `RetroMediaLab.App`, `RetroMediaLab.Emulation.Commodore`, `RetroMediaLab.Emulation.Atari` et les futures bibliothèques utilisent directement les interfaces, enums et contrats définis dans ce projet. App découvre les bibliothèques spécialisées dans `Modules` et communique avec elles uniquement par ces contrats communs.
 
-Les appels passent directement entre `GWGUI.App` et la bibliothèque `GWGUI.Emulation.xxx` ciblée. `GWGUI.Emulation` n'intercepte pas et ne retransmet pas ces appels. Chaque bibliothèque spécialisée traduit elle-même les identifiants, choix et valeurs communs vers les paramètres exacts attendus par son ou ses émulateurs. Elle effectue également la conversion inverse avant de renvoyer à App un résultat exprimé avec les contrats communs.
+Les appels passent directement entre `RetroMediaLab.App` et la bibliothèque `RetroMediaLab.Emulation.xxx` ciblée. `RetroMediaLab.Emulation` n'intercepte pas et ne retransmet pas ces appels. Chaque bibliothèque spécialisée traduit elle-même les identifiants, choix et valeurs communs vers les paramètres exacts attendus par son ou ses émulateurs. Elle effectue également la conversion inverse avant de renvoyer à App un résultat exprimé avec les contrats communs.
 
 La DLL produite par ce projet doit donc être distribuée avec l'application. Si elle manque, App et les bibliothèques spécialisées ne peuvent pas charger, puisqu'il leur manque les définitions communes contre lesquelles elles ont été compilées.
 
@@ -123,7 +123,7 @@ Les contrats communs décrivent notamment :
 
 Ils ne contiennent aucun objet WPF.
 
-## 5. Responsabilité de GWGUI.Emulation.xxx
+## 5. Responsabilité de RetroMediaLab.Emulation.xxx
 
 Chaque bibliothèque spécialisée contient ses moteurs, machines, configurations, capacités et règles propres.
 
@@ -139,13 +139,13 @@ Après la création, toutes les actions propres à la machine sont envoyées dir
 
 App conserve séparément, pour chaque onglet de machine, l'état courant des supports : chemins des images de disquettes, CD, disques durs et autres fichiers montés, emplacement de chaque support et état inséré ou éjecté. Une insertion, une éjection ou un remplacement est envoyé directement à l'instance, puis App met à jour l'état de l'onglet si l'opération réussit. Lorsqu'une instance est détruite puis recréée, App réinjecte cet état dans la configuration de création.
 
-Cet état reste au minimum en mémoire pendant toute la durée de vie de l'onglet. Si les onglets doivent être restaurés après la fermeture complète de GW GUI, App peut également l'enregistrer dans un fichier d'état de session et le relire au démarrage, sans modifier obligatoirement la configuration enregistrée de la machine.
+Cet état reste au minimum en mémoire pendant toute la durée de vie de l'onglet. Si les onglets doivent être restaurés après la fermeture complète de Retro Media Lab, App peut également l'enregistrer dans un fichier d'état de session et le relire au démarrage, sans modifier obligatoirement la configuration enregistrée de la machine.
 
 Les derniers dossiers utilisés par les boîtes de sélection de fichiers appartiennent également à App. Ils sont mémorisés par machine et par type de support afin que chaque machine retrouve son dossier de disquettes, CD, disques durs ou autres supports. Ils ne sont conservés ni par l'Engine ni par l'instance émulée.
 
 ### 5.1 Gestion et installation des émulateurs
 
-Chaque bibliothèque `GWGUI.Emulation.xxx` gère entièrement les émulateurs qu'elle prend en charge. Cette responsabilité comprend la recherche des versions disponibles, le téléchargement, la vérification du fichier obtenu, l'extraction, le placement dans l'arborescence prévue, l'écriture et la lecture du manifeste de l'installation courante et la résolution du chemin de la bibliothèque à charger.
+Chaque bibliothèque `RetroMediaLab.Emulation.xxx` gère entièrement les émulateurs qu'elle prend en charge. Cette responsabilité comprend la recherche des versions disponibles, le téléchargement, la vérification du fichier obtenu, l'extraction, le placement dans l'arborescence prévue, l'écriture et la lecture du manifeste de l'installation courante et la résolution du chemin de la bibliothèque à charger.
 
 Une seule version est installée pour chaque émulateur. L'installation d'une autre version remplace la bibliothèque déjà installée après validation du nouveau fichier. Les anciennes versions ne sont pas conservées dans des dossiers parallèles et il n'existe pas de sélection persistante entre plusieurs installations locales. Le manifeste décrit uniquement la version actuellement installée.
 
@@ -163,9 +163,9 @@ Cette vérification appartient à `Emulation.xxx`, pas à App et pas à l'état 
 
 Lorsqu'une installation est refusée ou échoue, `Emulation.xxx` lève une exception spécialisée conforme aux contrats communs. Cette exception contient un code stable et les données utiles, par exemple l'identifiant de l'émulateur concerné ; elle ne contient pas le texte final de l'interface. App intercepte cette exception au point où elle a lancé l'action, choisit la traduction correspondant au code et appelle sa boîte de dialogue d'erreur commune. `Emulation.xxx` n'appelle jamais directement une fenêtre, un dialogue ou une fonction graphique d'App.
 
-Cette règle s'applique à tous les messages créés par GW GUI, et pas uniquement aux erreurs d'installation. Aucun texte destiné à l'utilisateur ne doit être construit en texte brut par `GWGUI.Emulation` ou par une bibliothèque `GWGUI.Emulation.xxx`.
+Cette règle s'applique à tous les messages créés par Retro Media Lab, et pas uniquement aux erreurs d'installation. Aucun texte destiné à l'utilisateur ne doit être construit en texte brut par `RetroMediaLab.Emulation` ou par une bibliothèque `RetroMediaLab.Emulation.xxx`.
 
-Un message provenant directement d'un émulateur suit une règle distincte. `Emulation.xxx` cherche d'abord une correspondance connue et stable permettant de le convertir en `MessageCode`, afin qu'App utilise la traduction correspondante. Si aucune correspondance n'est connue, `Emulation.xxx` peut transmettre le texte original de l'émulateur sans traduction. Ce texte de repli ne doit jamais être confondu avec un message produit par GW GUI.
+Un message provenant directement d'un émulateur suit une règle distincte. `Emulation.xxx` cherche d'abord une correspondance connue et stable permettant de le convertir en `MessageCode`, afin qu'App utilise la traduction correspondante. Si aucune correspondance n'est connue, `Emulation.xxx` peut transmettre le texte original de l'émulateur sans traduction. Ce texte de repli ne doit jamais être confondu avec un message produit par Retro Media Lab.
 
 Le contrat commun d'un message reste plat et contient six données :
 
@@ -174,11 +174,11 @@ Le contrat commun d'un message reste plat et contient six données :
 - `Severity` indique son importance et détermine son apparence commune, notamment l'icône et la couleur ;
 - `Target` désigne son unique destination d'affichage dans App, par exemple une boîte de dialogue, une zone intégrée, la barre d'état ou aucun affichage avec `Silent` ;
 - `Context` contient les données nécessaires au message, sans phrase déjà formatée.
-- `OriginalText` contient uniquement le texte original reçu directement d'un émulateur lorsqu'aucune correspondance traduite n'a été trouvée. Il reste vide pour les messages reconnus et pour tous les messages créés par GW GUI.
+- `OriginalText` contient uniquement le texte original reçu directement d'un émulateur lorsqu'aucune correspondance traduite n'a été trouvée. Il reste vide pour les messages reconnus et pour tous les messages créés par Retro Media Lab.
 
 Les journaux techniques produits par un émulateur sont reçus et traités par la bibliothèque `Emulation.xxx` qui gère cet émulateur. Ils restent les journaux propres à cette bibliothèque et à ses émulateurs ; ils ne sont pas transformés en messages utilisateur et ne sont pas intégrés aux journaux généraux d'App.
 
-Chaque bibliothèque `Emulation.xxx` possède son propre journal. Le nom du fichier journal correspond au nom de la bibliothèque afin que son origine soit identifiable directement. Par exemple, `GWGUI.Emulation.Atari` utilise son journal de bibliothèque `emulation-atari.log` et `GWGUI.Emulation.Commodore` utilise `emulation-commodore.log`. Toutes les instances et tous les émulateurs gérés par une même bibliothèque alimentent ce journal commun à la bibliothèque.
+Chaque bibliothèque `Emulation.xxx` possède son propre journal. Le nom du fichier journal correspond au nom de la bibliothèque afin que son origine soit identifiable directement. Par exemple, `RetroMediaLab.Emulation.Atari` utilise son journal de bibliothèque `emulation-atari.log` et `RetroMediaLab.Emulation.Commodore` utilise `emulation-commodore.log`. Toutes les instances et tous les émulateurs gérés par une même bibliothèque alimentent ce journal commun à la bibliothèque.
 
 Les messages que l'émulateur destine à l'utilisateur suivent un chemin différent. `Emulation.xxx` cherche obligatoirement une correspondance traduite avant de remplir `OriginalText`. Lorsqu'il reconnaît le message, il le convertit vers le contrat commun avec son `MessageCode` et laisse `OriginalText` vide. Dans le cas contraire seulement, `MessageCode` prend la valeur générique `UntranslatedEmulatorMessage` et `OriginalText` contient le texte original à afficher sans traduction. Dans les deux cas, `Emulation.xxx` transmet également `Severity` et `Target`, puis App applique l'apparence et la destination demandées. `Silent` signifie qu'App ne produit aucun affichage pour ce message. Le message original reste enregistré séparément dans le journal propre à la bibliothèque.
 
@@ -192,7 +192,7 @@ Les composants visuels actuels de gestion des émulateurs deviennent communs et 
 
 Les commandes de clavier, souris et manette sont envoyées directement par l'onglet App à son instance de machine. Il en va de même pour les changements de disquette et de CD. App choisit l'instance grâce à la référence déjà conservée par l'onglet ; aucun routage par l'Engine n'intervient.
 
-Plusieurs machines d'une même famille produisent donc plusieurs chaînes indépendantes : chaque onglet App correspond directement à une instance de machine de la bibliothèque concernée. Une machine Atari exécute l'implémentation fournie par `GWGUI.Emulation.Atari`, tandis qu'une machine Amiga exécute celle de `GWGUI.Emulation.Commodore`. App appelle les interfaces communes ; la référence obtenue après la découverte dynamique détermine la bonne implémentation.
+Plusieurs machines d'une même famille produisent donc plusieurs chaînes indépendantes : chaque onglet App correspond directement à une instance de machine de la bibliothèque concernée. Une machine Atari exécute l'implémentation fournie par `RetroMediaLab.Emulation.Atari`, tandis qu'une machine Amiga exécute celle de `RetroMediaLab.Emulation.Commodore`. App appelle les interfaces communes ; la référence obtenue après la découverte dynamique détermine la bonne implémentation.
 
 Elle fournit uniquement des données et comportements, jamais des boutons, sélecteurs, onglets ou autres objets graphiques.
 
@@ -202,16 +202,16 @@ Pour chaque machine, elle détermine :
 - les blocs et options visibles ;
 - les valeurs proposées ;
 - les compatibilités et contraintes ;
-- les correspondances entre les choix de GW GUI et ceux de l’émulateur.
+- les correspondances entre les choix de Retro Media Lab et ceux de l’émulateur.
 
 ### 5.2 Interface commune des instances en cours d’exécution
 
-Après sa création par l’Engine et la Factory appropriée, chaque machine est remise à App sous la forme de l’interface commune `IEmulatedMachine`. Cette interface est déclarée une seule fois dans `GWGUI.Emulation`, dans le dossier `Interfaces`. Elle constitue le contrat commun entre App et toutes les implémentations de machines fournies par `GWGUI.Emulation.xxx`.
+Après sa création par l’Engine et la Factory appropriée, chaque machine est remise à App sous la forme de l’interface commune `IEmulatedMachine`. Cette interface est déclarée une seule fois dans `RetroMediaLab.Emulation`, dans le dossier `Interfaces`. Elle constitue le contrat commun entre App et toutes les implémentations de machines fournies par `RetroMediaLab.Emulation.xxx`.
 
 La même définition est utilisée des deux côtés :
 
-- `GWGUI.App` référence l’interface pour connaître les propriétés qu’il peut lire et les méthodes qu’il peut appeler ;
-- `GWGUI.Emulation.Commodore`, `GWGUI.Emulation.Atari` et les futures bibliothèques référencent cette même interface pour l’implémenter dans leurs classes de machines concrètes ;
+- `RetroMediaLab.App` référence l’interface pour connaître les propriétés qu’il peut lire et les méthodes qu’il peut appeler ;
+- `RetroMediaLab.Emulation.Commodore`, `RetroMediaLab.Emulation.Atari` et les futures bibliothèques référencent cette même interface pour l’implémenter dans leurs classes de machines concrètes ;
 - une instance concrète, par exemple `AmigaMachine` ou `AtariMachine`, exécute réellement le code demandé.
 
 Il n’existe pas une copie de l’interface dans App et une autre dans chaque bibliothèque. Il n’existe pas non plus d’objet intermédiaire qui reçoit, copie puis retransmet chaque commande. Une variable typée avec une interface désigne directement l’instance concrète. L’interface indique uniquement les membres disponibles, les données acceptées, les résultats renvoyés et les garanties fournies par l’instance.
@@ -252,7 +252,7 @@ public interface IEmulatedMachine : IAsyncDisposable
 
 Ces propriétés ne provoquent aucun transfert supplémentaire. Une classe concrète peut implémenter elle-même plusieurs de ces interfaces et renvoyer `this`, ou déléguer une responsabilité à un objet interne. Dans les deux cas, App appelle directement l’implémentation appartenant à l’instance de l’onglet concerné.
 
-Chaque interface doit être placée dans son propre fichier sous `src/GWGUI.Emulation/Interfaces`. Les records utilisés pour transporter les données vont dans `Contracts`, les enums dans `Enums` et les constantes dans `Constants`.
+Chaque interface doit être placée dans son propre fichier sous `src/RetroMediaLab.Emulation/Interfaces`. Les records utilisés pour transporter les données vont dans `Contracts`, les enums dans `Enums` et les constantes dans `Constants`.
 
 ### 5.4 Cycle de vie
 
@@ -401,7 +401,7 @@ public interface IEmulationRuntime
 }
 ```
 
-`AmigaCoreOption` et `AtariCoreOption` doivent être convertis par leur bibliothèque en un contrat commun `EmulationOption`. Les noms et valeurs natifs propres à l’émulateur restent internes à `GWGUI.Emulation.xxx`. Les données d’état supplémentaires qui n’ont aucun sens commun restent également internes tant qu’App n’en a pas besoin pour une fonction générique.
+`AmigaCoreOption` et `AtariCoreOption` doivent être convertis par leur bibliothèque en un contrat commun `EmulationOption`. Les noms et valeurs natifs propres à l’émulateur restent internes à `RetroMediaLab.Emulation.xxx`. Les données d’état supplémentaires qui n’ont aucun sens commun restent également internes tant qu’App n’en a pas besoin pour une fonction générique.
 
 Ce contrat commun doit être établi à partir des deux implémentations existantes, et non à partir du seul objet `AtariRuntimeStatus`. Les machines Amiga et Atari exposent déjà toutes les deux les dernières images et données audio, les événements correspondants, les états des voyants, le nom et la version de l’émulateur, les options disponibles et l’erreur éventuelle. Ces éléments passent donc par les interfaces communes décrites ci-dessus.
 
@@ -409,7 +409,7 @@ La cadence vidéo et la fréquence audio existent également dans les deux impl�
 
 Les compteurs de tampon audio, le nombre de dépassements ou de manques audio, la région Atari et l’état ou l’identifiant du processus hôte ne sont pas imposés à toutes les machines. Ils restent dans l’implémentation spécialisée tant qu’aucune fonction commune d’App ne les utilise. Si une fonction commune en a ensuite besoin, elle est ajoutée comme capacité commune facultative ; elle ne doit pas être placée dans un objet global spécifique à Atari puis consommée directement par App.
 
-Après migration, `AtariRuntimeStatus` ne doit donc plus servir de contrat entre App et Atari. App doit obtenir les informations dont elle a besoin par les mêmes interfaces communes que pour Amiga. Une donnée réellement propre à Atari reste interne à `GWGUI.Emulation.Atari` et ne force pas Amiga à fournir une valeur artificielle.
+Après migration, `AtariRuntimeStatus` ne doit donc plus servir de contrat entre App et Atari. App doit obtenir les informations dont elle a besoin par les mêmes interfaces communes que pour Amiga. Une donnée réellement propre à Atari reste interne à `RetroMediaLab.Emulation.Atari` et ne force pas Amiga à fournir une valeur artificielle.
 
 ### 5.10 Séparation avec la configuration
 
@@ -441,11 +441,11 @@ Un onglet d’exécution conserve une seule référence vers son `IEmulatedMachi
 - les boutons de sauvegarde et restauration appellent `SavedStates` ;
 - les journaux, LED et informations sur l’émulateur lisent `Runtime`.
 
-Les classes concrètes de `GWGUI.Emulation.xxx` implémentent les mêmes interfaces communes. App n’a donc pas besoin de tester `IAmigaMachine` ou `IAtariMachine` pour ces opérations et ne dépend pas de leurs membres spécifiques. La référence conservée par chaque onglet garantit que les commandes atteignent la bonne instance lorsqu’il existe plusieurs machines simultanément.
+Les classes concrètes de `RetroMediaLab.Emulation.xxx` implémentent les mêmes interfaces communes. App n’a donc pas besoin de tester `IAmigaMachine` ou `IAtariMachine` pour ces opérations et ne dépend pas de leurs membres spécifiques. La référence conservée par chaque onglet garantit que les commandes atteignent la bonne instance lorsqu’il existe plusieurs machines simultanément.
 
-## 6. Responsabilité de GWGUI.App
+## 6. Responsabilité de RetroMediaLab.App
 
-`GWGUI.App` contient l’interface : onglets, boutons, sélecteurs, champs, listes, tableaux, dialogues, styles, icônes et traductions.
+`RetroMediaLab.App` contient l’interface : onglets, boutons, sélecteurs, champs, listes, tableaux, dialogues, styles, icônes et traductions.
 
 Les traductions restent dans App. Elles sont des ressources d’affichage ; il est inutile de créer un système linguistique indépendant dans chaque bibliothèque intégrée.
 
@@ -496,7 +496,7 @@ App ne masque pas automatiquement un bloc parce que toutes ses options sont masq
 
 Pour un sélecteur commun dont les valeurs sont connues par App, comme les quantités de RAM, la bibliothèque fournit la clé du sélecteur, les clés des choix autorisés et la clé sélectionnée. App possède les correspondances d’affichage et les traductions de ces valeurs. Un module ne duplique donc pas les libellés communs.
 
-Les sous-onglets, blocs, options et choix transmis entre App et les bibliothèques sont désignés par des identifiants communs définis dans `GWGUI.Emulation`, et non par des chaînes écrites librement. Les écritures telles que `mouseTab = true` ou `pokeyStereoSelect = true` décrivent seulement le principe de fonctionnement ; elles ne constituent pas le format technique retenu.
+Les sous-onglets, blocs, options et choix transmis entre App et les bibliothèques sont désignés par des identifiants communs définis dans `RetroMediaLab.Emulation`, et non par des chaînes écrites librement. Les écritures telles que `mouseTab = true` ou `pokeyStereoSelect = true` décrivent seulement le principe de fonctionnement ; elles ne constituent pas le format technique retenu.
 
 Les périphériques réels de l’ordinateur hôte, notamment les sorties audio et les manettes physiques détectées, sont recensés et gérés par App. Ils ne sont pas fournis par `Emulation.xxx`. La bibliothèque indique seulement si la machine utilise la fonction concernée et, lorsque cela est nécessaire, les capacités ou types d’entrées qu’elle accepte.
 
@@ -514,32 +514,32 @@ App applique ensuite le tri commun et construit la liste graphique. La biblioth�
 
 Le bouton commun **Utiliser** transmet à la bibliothèque associée à l'onglet la ROM sélectionnée et l'identifiant de la machine ciblée. La bibliothèque détermine l'emplacement correspondant à ce type de ROM — ROM système, ROM étendue, clé ROM ou autre emplacement déclaré — puis renvoie à App la configuration mise à jour. App actualise les contrôles communs avec ces données et ne contient aucune règle Atari, Amiga ou propre à une autre famille pour choisir l'emplacement.
 
-### 7.3 Traitements vidéo communs de GW GUI
+### 7.3 Traitements vidéo communs de Retro Media Lab
 
 Les traitements vidéo réalisés après la production d’une `VideoFrame` sont communs à toutes les
 familles de machines. Ils ne sont pas décrits ni exécutés séparément par
-`GWGUI.Emulation.Commodore`, `GWGUI.Emulation.Atari` ou une future bibliothèque spécialisée.
+`RetroMediaLab.Emulation.Commodore`, `RetroMediaLab.Emulation.Atari` ou une future bibliothèque spécialisée.
 
 La séparation obligatoire est la suivante :
 
 ```text
-GWGUI.Emulation
+RetroMediaLab.Emulation
     → contrats d’émulation et vidéo brute : IEmulationVideo, VideoFrame, EmulationPixelFormat
     → aucune dépendance vers WPF, Veldrid, OpenGL ou un langage de shader
-    → aucune référence à GWGUI.VideoPresentation
+    → aucune référence à RetroMediaLab.VideoPresentation
 
-GWGUI.Emulation.xxx
+RetroMediaLab.Emulation.xxx
     → conserve uniquement les options vidéo natives de son émulateur
     → ne stocke ni renderer ni post-traitement dans la configuration de machine
-    → ne traduit pas une option PAL, NTSC, composite, RF ou équivalente en filtre GW GUI
+    → ne traduit pas une option PAL, NTSC, composite, RF ou équivalente en filtre Retro Media Lab
 
-GWGUI.VideoPresentation
+RetroMediaLab.VideoPresentation
     → bibliothèque indépendante, sans référence vers les modules ni App
     → contrats de présentation, enums, valeurs neutres, catalogue et normalisation
     → profil hôte regroupant renderer et traitements, stockage générique et migration
 
-GWGUI.App
-    → référence GWGUI.Emulation et GWGUI.VideoPresentation, jamais l’inverse
+RetroMediaLab.App
+    → référence RetroMediaLab.Emulation et RetroMediaLab.VideoPresentation, jamais l’inverse
     → construit l’interface commune de l’onglet Vidéo
     → compose la chaîne de traitement à partir de la configuration
     → exécute cette chaîne dans WPF/CPU, OpenGL ou Veldrid
@@ -570,7 +570,7 @@ sérialise plus les anciens champs. Les états Atari créés avant cette sépara
 seule la vérification de compatibilité historique considère leurs anciens champs de présentation.
 
 Règle pour tout futur module : produire les frames brutes et décrire ses options natives ; ne jamais
-référencer GWGUI.VideoPresentation, stocker un profil de présentation ni appliquer les effets GW GUI.
+référencer RetroMediaLab.VideoPresentation, stocker un profil de présentation ni appliquer les effets Retro Media Lab.
 Le choix du renderer et les traitements sont fournis automatiquement par l’éditeur hôte.
 
 La chaîne reçoit une image commune et l’ordonne ainsi : normalisation de la source, restauration
@@ -587,7 +587,7 @@ supprimé, changé ou privé silencieusement d’une fonctionnalité.
 
 #### Snapshot
 
-`Snapshot` représente la sortie finale de la chaîne de traitements GW GUI, avant tout habillage
+`Snapshot` représente la sortie finale de la chaîne de traitements Retro Media Lab, avant tout habillage
 externe futur comme un bezel ou un cadre. Il produit ainsi la même image que celle visible dans la
 zone d’émulation, quelle que soit la surface WPF, OpenGL, Direct3D 11 ou Vulkan utilisée. Une surface
 GPU effectue la lecture de sa ressource de sortie à la demande ou réutilise une copie lisible ; elle
@@ -609,7 +609,7 @@ reste active si la construction échoue.
 
 Si aucune instance correspondante n’est ouverte, aucune chaîne d’exécution n’est créée. Les valeurs
 enregistrées sont simplement relues et appliquées lors de la prochaine création de cette machine.
-Un post-traitement GW GUI ne demande jamais à l’Engine de recréer l’instance émulée.
+Un post-traitement Retro Media Lab ne demande jamais à l’Engine de recréer l’instance émulée.
 
 Une erreur de compilation ou d’exécution d’un traitement ne modifie pas les valeurs enregistrées.
 Le repli actuel vers WPF reçoit la même configuration. Une limitation de backend est déclarée et
@@ -617,7 +617,7 @@ présentée par un texte localisé ; elle ne provoque pas la disparition silenci
 
 #### Interface de l’onglet Vidéo
 
-Les contrôles des traitements GW GUI existent uniquement dans le sous-onglet **Vidéo** de la
+Les contrôles des traitements Retro Media Lab existent uniquement dans le sous-onglet **Vidéo** de la
 configuration de machine. Ils sont visuellement séparés des options internes de l’émulateur. Ils ne
 sont ajoutés ni dans la barre d’outils de l’instance, ni dans les options générales de l’application,
 ni dans une page propre à Amiga ou Atari.
@@ -645,12 +645,12 @@ correspondante.
 
 ## 8. Migration du code existant
 
-À la fin de la réorganisation, aucun fichier propre à Amiga ou Atari ne doit rester dans `GWGUI.App`, hormis les raccordements explicites nécessaires aux bibliothèques référencées.
+À la fin de la réorganisation, aucun fichier propre à Amiga ou Atari ne doit rester dans `RetroMediaLab.App`, hormis les raccordements explicites nécessaires aux bibliothèques référencées.
 
 Chaque fichier `Amiga...cs` ou `Atari...cs` présent dans App doit être examiné :
 
 - sa construction graphique devient un contrôle commun dans App ;
-- ses règles propres rejoignent `GWGUI.Emulation.Commodore` ou `GWGUI.Emulation.Atari` ;
+- ses règles propres rejoignent `RetroMediaLab.Emulation.Commodore` ou `RetroMediaLab.Emulation.Atari` ;
 - ses comportements réellement communs rejoignent le projet commun approprié.
 
 Il ne faut pas déplacer un fichier entier aveuglément : son contenu doit être séparé selon ses responsabilités. Tout objet graphique placé à tort dans une bibliothèque d’émulation doit revenir dans App.
@@ -667,7 +667,7 @@ Les interfaces, enums, constantes, contrats et dictionnaires ne doivent pas êtr
 
 ## 10. Organisation des dossiers
 
-Dans App, `GWGUI.Emulation` et chaque `GWGUI.Emulation.xxx`, les fichiers sont rangés selon leur rôle :
+Dans App, `RetroMediaLab.Emulation` et chaque `RetroMediaLab.Emulation.xxx`, les fichiers sont rangés selon leur rôle :
 
 - `Controls` : composants graphiques ;
 - `Interfaces` : interfaces ;
@@ -691,13 +691,13 @@ Un nom générique ne doit jamais masquer une dépendance spécifique.
 
 Pour ajouter Sega avec l’architecture retenue :
 
-1. créer un dépôt de module indépendant qui référence le SDK public de GW GUI ;
+1. créer un dépôt de module indépendant qui référence le SDK public de Retro Media Lab ;
 2. y créer moteurs, machines, configurations, capacités, règles, traductions et ressources visuelles ;
 3. produire son paquet contenant `module.json`, les assemblages et son URL de catalogue directe ;
 4. publier ce paquet et référencer son catalogue dans le catalogue officiel des modules si le module doit y apparaître ;
-5. installer le module dans `Modules` : sa découverte crée automatiquement son entrée de menu, sa fenêtre de paramètres et ses machines sans modifier ni republier GW GUI.
+5. installer le module dans `Modules` : sa découverte crée automatiquement son entrée de menu, sa fenêtre de paramètres et ses machines sans modifier ni republier Retro Media Lab.
 
-Le module fournit ses données ; GW GUI conserve les contrôles communs et ne contient aucun raccord propre à Sega, Amiga, Atari ou une autre famille.
+Le module fournit ses données ; Retro Media Lab conserve les contrôles communs et ne contient aucun raccord propre à Sega, Amiga, Atari ou une autre famille.
 
 ## 13. Validation
 

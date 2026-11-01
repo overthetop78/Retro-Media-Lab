@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>RetroMediaLab.MediaAudit</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="MediaFileExtractor\**\*.cs" />
+    <Compile Remove="TemporaryLibretroMediaReader\**\*.cs" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.MediaFileSystems\RetroMediaLab.MediaFileSystems.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.MediaEngine\RetroMediaLab.MediaEngine.csproj" />
+    <ProjectReference Include="..\..\src\RetroMediaLab.App\RetroMediaLab.App.csproj" />
+  </ItemGroup>
+
+</Project>

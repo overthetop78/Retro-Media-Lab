@@ -6,7 +6,7 @@
 
 Le module Microsoft doit pouvoir afficher les machines Xbox et leurs informations même lorsqu’aucun émulateur n’est installé. La création d’une configuration doit toutefois rester impossible tant qu’aucun adaptateur compatible n’est listé et choisi.
 
-Le travail futur doit s’intégrer au pont déjà présent dans `GWGUI.Emulation` : gestionnaire d’émulateurs, configuration opaque et cycle de sauvegarde existant. Il ne faut pas créer un second catalogue global, un second format de configuration ou un contrat parallèle.
+Le travail futur doit s’intégrer au pont déjà présent dans `RetroMediaLab.Emulation` : gestionnaire d’émulateurs, configuration opaque et cycle de sauvegarde existant. Il ne faut pas créer un second catalogue global, un second format de configuration ou un contrat parallèle.
 
 Les familles couvertes par cette note sont :
 
@@ -27,15 +27,15 @@ Les familles couvertes par cette note sont :
 
 Les projets et leurs dépôts de référence sont listés à la fin du document. Les versions, la compatibilité et l’état des API devront être revérifiés au moment de l’implémentation.
 
-## 3. Architecture cible dans GW GUI
+## 3. Architecture cible dans Retro Media Lab
 
 ### 3.1 Contrat commun
 
 L’application C# doit parler à un contrat commun, indépendamment de la technologie du cœur :
 
 ```text
-GW GUI
-  └─ GWGUI.Emulation (contrat et cycle de configuration)
+Retro Media Lab
+  └─ RetroMediaLab.Emulation (contrat et cycle de configuration)
        └─ Microsoft adapter host
             ├─ CxbxCore.dll (futur, Xbox)
             ├─ XeniaCore.dll (futur, Xbox 360)
@@ -60,7 +60,7 @@ Shutdown
 
 ### 3.2 Raccordement aux contrats existants
 
-- Ajouter les définitions d’émulateurs au gestionnaire déjà utilisé par `GWGUI.Emulation`.
+- Ajouter les définitions d’émulateurs au gestionnaire déjà utilisé par `RetroMediaLab.Emulation`.
 - Exposer une définition par installation/version/architecture réellement disponible.
 - Conserver un seul `EmulatorId` dans la configuration sauvegardée.
 - Proposer les choix avant la sauvegarde et verrouiller le sélecteur après sauvegarde, conformément au cycle existant.
@@ -148,7 +148,7 @@ Le chargement dynamique (`retro_get_api_version`, recherche des symboles, callba
 Un cœur Libretro et un émulateur autonome n’ont pas le même cycle de vie. Cxbx-Reloaded, xemu ou Xenia ne doivent pas être artificiellement déclarés Libretro tant qu’un port réellement maintenu n’existe pas. Le même contrat de haut niveau peut être partagé, mais :
 
 - `LibretroCoreAdapter` fonctionne en mémoire et fournit `RunFrame` si le core le permet ;
-- `NativeCoreAdapter` enveloppe une DLL C conçue pour GW GUI ;
+- `NativeCoreAdapter` enveloppe une DLL C conçue pour Retro Media Lab ;
 - `ProcessAdapter` pilote un exécutable autonome et ne fournit que les capacités qu’il peut garantir.
 
 Cette séparation permet d’ajouter ultérieurement un core Libretro sans modifier la configuration utilisateur ni le catalogue des machines.
@@ -159,7 +159,7 @@ Cette séparation permet d’ajouter ultérieurement un core Libretro sans modif
 - Les chemins fournis par l’utilisateur doivent être validés avant lancement et ne doivent jamais être interprétés comme une commande.
 - Les tests doivent utiliser des médias et BIOS légalement détenus par l’utilisateur ou des logiciels libres de droits.
 - Une machine sans adaptateur installé reste visible et configurable au niveau informatif, mais sa sauvegarde doit être refusée avec un message traduit indiquant qu’un émulateur doit être choisi.
-- Une machine avec adaptateur sélectionné doit conserver exactement cet identifiant ; les changements d’installation doivent passer par le flux de modification prévu par `GWGUI.Emulation`.
+- Une machine avec adaptateur sélectionné doit conserver exactement cet identifiant ; les changements d’installation doivent passer par le flux de modification prévu par `RetroMediaLab.Emulation`.
 
 ## 7. Découpage de réalisation proposé
 
@@ -171,7 +171,7 @@ Cette séparation permet d’ajouter ultérieurement un core Libretro sans modif
 
 ### Jalon B — premier adaptateur natif
 
-- Créer un répertoire de wrapper sous `src/GWGUI.Emulation.Microsoft/Emulators/`.
+- Créer un répertoire de wrapper sous `src/RetroMediaLab.Emulation.Microsoft/Emulators/`.
 - Choisir une seule cible de compilation (x64 en premier) et une seule ABI.
 - Implémenter le chargement de DLL, la vérification de version, le mapping des erreurs et le nettoyage complet.
 - Ajouter un test C# d’ABI qui crée, charge, arrête et détruit un handle sans fuite.
@@ -185,17 +185,17 @@ Cette séparation permet d’ajouter ultérieurement un core Libretro sans modif
 ### Emplacements à prévoir
 
 ```text
-src/GWGUI.Emulation.Microsoft/
+src/RetroMediaLab.Emulation.Microsoft/
   Emulators/
     Cxbx/
     Xenia/
     Libretro/
     Process/
-tests/GWGUI.Tests/Emulation/Microsoft/
+tests/RetroMediaLab.Tests/Emulation/Microsoft/
 docs/project/microsoft-emulator-adapters.md
 ```
 
-Les sources externes ne doivent pas être copiées aveuglément dans le dépôt GW GUI. Documenter le commit, la licence, la toolchain et la procédure de reproduction du wrapper choisi.
+Les sources externes ne doivent pas être copiées aveuglément dans le dépôt Retro Media Lab. Documenter le commit, la licence, la toolchain et la procédure de reproduction du wrapper choisi.
 
 ## 8. Validation avant intégration
 

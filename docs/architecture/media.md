@@ -2,149 +2,149 @@
 
 ## Chaîne de traitement actuelle
 
-Ce document décrit l'organisation fonctionnelle actuellement composée par `GWGUI.MediaEngine`. Les catalogues et registres du code restent les sources de vérité lorsqu'un format ou un lecteur est ajouté.
-
-### Couches distinctes
-
-```text
-Fichier ou matériel
-        ↓
-Lecteur de conteneur ou Greaseweazle
-        ↓
-Flux, pistes et révolutions
-        ↓
-Décodeur de piste (FM, MFM, GCR, MMFM…)
-        ↓
-Candidats secteurs, structures et anomalies
-        ↓
-Reconstruction d'image sectorielle et géométrie
-        ↓
-Lecteur de système de fichiers
-        ↓
-Volume, dossiers, fichiers, attributs et avertissements
-        ↓
-Projection Explorateur, Visualisateur ou Conversion
-```
-
-Ces couches ne sont pas interchangeables. Un décodeur de flux ne lit pas un répertoire, un lecteur de système de fichiers ne reconstruit pas les timings SCP et un encodeur de piste ne crée pas à lui seul un conteneur de sortie.
-
-### Composition actuelle
-
-`MediaEngineFactory` compose les services utilisés par le moteur :
-
-- `DiskImageRecognitionRegistry` ordonne les politiques de reconnaissance des images directes ;
-- `ScpImageExplorationService` sépare l'exploration automatique d'une capture SCP de sa reconstruction sectorielle explicite ;
-- `FluxDecoderRegistry` et `FluxEncoderRegistry` fournissent les codecs de pistes ;
-- `FileSystemRegistry` exécute les lecteurs de systèmes de fichiers compatibles ;
-- `DiskImageInterpretationService` applique les normalisations et interprétations supplémentaires ;
-- `DiskImageDocumentFactory` construit le document présenté par l'Explorateur.
-
-`DiskImageExplorer` orchestre ces services. Il ne contient plus directement le catalogue des lecteurs ni les algorithmes de reconstruction.
-
-### Reconnaissance des conteneurs et images
-
-La composition actuelle enregistre des politiques pour les familles suivantes :
-
-- ADF ;
-- SSD et DSD ;
-- Coherent ;
-- DEC RX02 ;
-- Atari ST, MSA et ATR ;
-- Commodore D64, D71 et D81 ;
-- images Apple ;
-- images MSX ;
-- CPC DSK et EDSK ;
-- images brutes IMG et IMA ;
-- TD0, 86F, CP2 et IMD ;
-- SCP.
-
-Une extension sert d'indice pour certaines politiques, mais les formats ambigus utilisent des sondes ou des politiques spécialisées. Les politiques sont essayées dans l'ordre explicite défini par `MediaEngineFactory`. La première lecture entièrement validée est retenue. Si plusieurs candidats rejettent le contenu, leurs échecs sont conservés dans `DiskImageCandidatesRejectedException`.
-
-### Décodeurs et encodeurs de pistes
-
-`FluxDecoderCatalog` fournit actuellement 25 décodeurs. `FluxEncoderCatalog` fournit 24 encodeurs correspondants. Le flux brut possède un décodeur, mais aucun encodeur sectoriel correspondant.
-
-Les familles couvertes comprennent ISO FM/MFM, Amiga MFM, Apple II GCR, Apple RWTS18, Apple Macintosh GCR, Lisa FileWare, Commodore GCR et Commodore 900, DEC RX02 ainsi que les autres codecs spécialisés enregistrés dans ces deux catalogues.
-
-Chaque codec reste séparé dans son propre fichier. Les catalogues définissent leur ordre public ; les registres valident les identifiants et fournissent la sélection.
-
-`FluxDecoderRegistry` met en cache le résultat d'un décodeur par révolution et par identifiant de codec au moyen d'un cache faible attaché à la révolution.
-
-### Reconstruction des captures SCP
-
-La composition actuelle utilise six reconstructeurs principaux :
-
-- `IsoScpSectorImageReader` pour la famille ISO FM/MFM partagée ;
-- `AmigaScpSectorImageReader` ;
-- `AtariScpSectorImageReader`, qui adapte les formats Atari au reconstructeur ISO commun ;
-- `CommodoreScpSectorImageReader` ;
-- `AppleScpSectorImageReader` ;
-- `DecRx02ScpSectorImageReader`.
-
-`ScpCandidateRegistry` associe les identifiants de formats aux candidats adaptés. `ScpFamilyProbe` détermine les familles plausibles pour l'exploration automatique. Une sélection explicite passe par le candidat enregistré pour l'identifiant demandé.
-
-### Systèmes de fichiers
-
-`FileSystemReaderCatalog` fournit actuellement 18 lecteurs :
-
-- AmigaDOS et archives de ressources Amiga plates ;
-- Acorn ADFS/FileCore et BBC DFS ;
-- Coherent ;
-- RT-11 et UCSD ;
-- Apple Inform/Xzip, DOS, ProDOS, Macintosh MFS, Macintosh HFS et Lisa ;
-- CP/M Amstrad et CP/M générique ;
-- Commodore DOS ;
-- FAT12 ;
-- Atari DOS.
-
-`FileSystemRegistry.ReadCandidates` exécute tous les lecteurs correspondant à l'identifiant demandé. `TryRead` retourne la première correspondance du rapport obtenu. L'ordre du catalogue reste donc significatif lorsqu'un appel utilise `TryRead`.
-
-### Détection automatique actuelle
-
-Pour une capture portant réellement la signature SCP et sans format imposé, `DiskImageExplorer` délègue à l'exploration automatique SCP.
-
-Pour les autres images :
-
-1. `DiskImageRecognitionRegistry` choisit la première politique qui lit entièrement le contenu ;
-2. `FileSystemRegistry` recherche les systèmes de fichiers associés au format reconnu ;
-3. `DiskImageInterpretationService` produit les interprétations supplémentaires compatibles ;
-4. les résultats identiques sont dédupliqués ;
-5. `DiskImageDocumentFactory` construit le document final.
-
-Si aucune politique ne reconnaît le fichier, l'Explorateur construit un document inconnu. Une annulation est propagée pendant la reconnaissance et l'exploration.
-
-### Choix explicite actuel
-
-Lorsqu'un identifiant de format est fourni, le registre de reconnaissance le transmet aux politiques. L'image reconnue est ensuite associée à cet identifiant et `FileSystemRegistry.TryRead` retient la première lecture compatible.
-
-Ce chemin explicite ne conserve donc pas actuellement toutes les autres interprétations possibles. Toute évolution de ce comportement doit être décidée séparément avant modification.
-
-### Parcours fonctionnels
-
-#### Lecture
-
-La lecture pilote Greaseweazle, suit la progression et produit un fichier. Une nouvelle commande doit réinitialiser l'état de progression ; une annulation doit nettoyer toute sortie partielle.
-
-#### Écriture
-
-L'écriture reconnaît le fichier source, applique la classification choisie, construit la commande Greaseweazle et suit sa progression.
-
-#### Conversion
-
-La conversion reconnaît la source puis dirige chaque sortie vers Greaseweazle ou vers un service interne explicitement pris en charge. Les compatibilités de sortie proviennent des catalogues du produit.
-
-#### Visualisateur
-
-Le Visualisateur charge une capture de flux directement ou construit une représentation de flux depuis une image sectorielle. Le rendu reste une projection distincte des données décodées.
-
-#### Explorateur
-
-L'Explorateur reconnaît le conteneur, reconstruit éventuellement une image sectorielle, lit les systèmes de fichiers puis construit les documents, dossiers, fichiers, détails et avertissements. Lorsqu'aucun système de fichiers n'est reconnu, il ne doit pas inventer de noms de fichiers.
-
-### Données partagées et recalculs
-
-Les données techniques réutilisables sont le conteneur analysé, les pistes et révolutions, les résultats de codecs, les secteurs reconstruits et les interprétations reconnues. Le rendu bitmap, l'arbre de fichiers, les panneaux de détails et le texte localisé restent des projections séparées.
-
+Ce document décrit l'organisation fonctionnelle actuellement composée par `RetroMediaLab.MediaEngine`. Les catalogues et registres du code restent les sources de vérité lorsqu'un format ou un lecteur est ajouté.
+
+### Couches distinctes
+
+```text
+Fichier ou matériel
+        ↓
+Lecteur de conteneur ou Greaseweazle
+        ↓
+Flux, pistes et révolutions
+        ↓
+Décodeur de piste (FM, MFM, GCR, MMFM…)
+        ↓
+Candidats secteurs, structures et anomalies
+        ↓
+Reconstruction d'image sectorielle et géométrie
+        ↓
+Lecteur de système de fichiers
+        ↓
+Volume, dossiers, fichiers, attributs et avertissements
+        ↓
+Projection Explorateur, Visualisateur ou Conversion
+```
+
+Ces couches ne sont pas interchangeables. Un décodeur de flux ne lit pas un répertoire, un lecteur de système de fichiers ne reconstruit pas les timings SCP et un encodeur de piste ne crée pas à lui seul un conteneur de sortie.
+
+### Composition actuelle
+
+`MediaEngineFactory` compose les services utilisés par le moteur :
+
+- `DiskImageRecognitionRegistry` ordonne les politiques de reconnaissance des images directes ;
+- `ScpImageExplorationService` sépare l'exploration automatique d'une capture SCP de sa reconstruction sectorielle explicite ;
+- `FluxDecoderRegistry` et `FluxEncoderRegistry` fournissent les codecs de pistes ;
+- `FileSystemRegistry` exécute les lecteurs de systèmes de fichiers compatibles ;
+- `DiskImageInterpretationService` applique les normalisations et interprétations supplémentaires ;
+- `DiskImageDocumentFactory` construit le document présenté par l'Explorateur.
+
+`DiskImageExplorer` orchestre ces services. Il ne contient plus directement le catalogue des lecteurs ni les algorithmes de reconstruction.
+
+### Reconnaissance des conteneurs et images
+
+La composition actuelle enregistre des politiques pour les familles suivantes :
+
+- ADF ;
+- SSD et DSD ;
+- Coherent ;
+- DEC RX02 ;
+- Atari ST, MSA et ATR ;
+- Commodore D64, D71 et D81 ;
+- images Apple ;
+- images MSX ;
+- CPC DSK et EDSK ;
+- images brutes IMG et IMA ;
+- TD0, 86F, CP2 et IMD ;
+- SCP.
+
+Une extension sert d'indice pour certaines politiques, mais les formats ambigus utilisent des sondes ou des politiques spécialisées. Les politiques sont essayées dans l'ordre explicite défini par `MediaEngineFactory`. La première lecture entièrement validée est retenue. Si plusieurs candidats rejettent le contenu, leurs échecs sont conservés dans `DiskImageCandidatesRejectedException`.
+
+### Décodeurs et encodeurs de pistes
+
+`FluxDecoderCatalog` fournit actuellement 25 décodeurs. `FluxEncoderCatalog` fournit 24 encodeurs correspondants. Le flux brut possède un décodeur, mais aucun encodeur sectoriel correspondant.
+
+Les familles couvertes comprennent ISO FM/MFM, Amiga MFM, Apple II GCR, Apple RWTS18, Apple Macintosh GCR, Lisa FileWare, Commodore GCR et Commodore 900, DEC RX02 ainsi que les autres codecs spécialisés enregistrés dans ces deux catalogues.
+
+Chaque codec reste séparé dans son propre fichier. Les catalogues définissent leur ordre public ; les registres valident les identifiants et fournissent la sélection.
+
+`FluxDecoderRegistry` met en cache le résultat d'un décodeur par révolution et par identifiant de codec au moyen d'un cache faible attaché à la révolution.
+
+### Reconstruction des captures SCP
+
+La composition actuelle utilise six reconstructeurs principaux :
+
+- `IsoScpSectorImageReader` pour la famille ISO FM/MFM partagée ;
+- `AmigaScpSectorImageReader` ;
+- `AtariScpSectorImageReader`, qui adapte les formats Atari au reconstructeur ISO commun ;
+- `CommodoreScpSectorImageReader` ;
+- `AppleScpSectorImageReader` ;
+- `DecRx02ScpSectorImageReader`.
+
+`ScpCandidateRegistry` associe les identifiants de formats aux candidats adaptés. `ScpFamilyProbe` détermine les familles plausibles pour l'exploration automatique. Une sélection explicite passe par le candidat enregistré pour l'identifiant demandé.
+
+### Systèmes de fichiers
+
+`FileSystemReaderCatalog` fournit actuellement 18 lecteurs :
+
+- AmigaDOS et archives de ressources Amiga plates ;
+- Acorn ADFS/FileCore et BBC DFS ;
+- Coherent ;
+- RT-11 et UCSD ;
+- Apple Inform/Xzip, DOS, ProDOS, Macintosh MFS, Macintosh HFS et Lisa ;
+- CP/M Amstrad et CP/M générique ;
+- Commodore DOS ;
+- FAT12 ;
+- Atari DOS.
+
+`FileSystemRegistry.ReadCandidates` exécute tous les lecteurs correspondant à l'identifiant demandé. `TryRead` retourne la première correspondance du rapport obtenu. L'ordre du catalogue reste donc significatif lorsqu'un appel utilise `TryRead`.
+
+### Détection automatique actuelle
+
+Pour une capture portant réellement la signature SCP et sans format imposé, `DiskImageExplorer` délègue à l'exploration automatique SCP.
+
+Pour les autres images :
+
+1. `DiskImageRecognitionRegistry` choisit la première politique qui lit entièrement le contenu ;
+2. `FileSystemRegistry` recherche les systèmes de fichiers associés au format reconnu ;
+3. `DiskImageInterpretationService` produit les interprétations supplémentaires compatibles ;
+4. les résultats identiques sont dédupliqués ;
+5. `DiskImageDocumentFactory` construit le document final.
+
+Si aucune politique ne reconnaît le fichier, l'Explorateur construit un document inconnu. Une annulation est propagée pendant la reconnaissance et l'exploration.
+
+### Choix explicite actuel
+
+Lorsqu'un identifiant de format est fourni, le registre de reconnaissance le transmet aux politiques. L'image reconnue est ensuite associée à cet identifiant et `FileSystemRegistry.TryRead` retient la première lecture compatible.
+
+Ce chemin explicite ne conserve donc pas actuellement toutes les autres interprétations possibles. Toute évolution de ce comportement doit être décidée séparément avant modification.
+
+### Parcours fonctionnels
+
+#### Lecture
+
+La lecture pilote Greaseweazle, suit la progression et produit un fichier. Une nouvelle commande doit réinitialiser l'état de progression ; une annulation doit nettoyer toute sortie partielle.
+
+#### Écriture
+
+L'écriture reconnaît le fichier source, applique la classification choisie, construit la commande Greaseweazle et suit sa progression.
+
+#### Conversion
+
+La conversion reconnaît la source puis dirige chaque sortie vers Greaseweazle ou vers un service interne explicitement pris en charge. Les compatibilités de sortie proviennent des catalogues du produit.
+
+#### Visualisateur
+
+Le Visualisateur charge une capture de flux directement ou construit une représentation de flux depuis une image sectorielle. Le rendu reste une projection distincte des données décodées.
+
+#### Explorateur
+
+L'Explorateur reconnaît le conteneur, reconstruit éventuellement une image sectorielle, lit les systèmes de fichiers puis construit les documents, dossiers, fichiers, détails et avertissements. Lorsqu'aucun système de fichiers n'est reconnu, il ne doit pas inventer de noms de fichiers.
+
+### Données partagées et recalculs
+
+Les données techniques réutilisables sont le conteneur analysé, les pistes et révolutions, les résultats de codecs, les secteurs reconstruits et les interprétations reconnues. Le rendu bitmap, l'arbre de fichiers, les panneaux de détails et le texte localisé restent des projections séparées.
+
 Le cache de décodage par révolution existe dans `FluxDecoderRegistry`. Aucun cache global de document par chemin n'est décrit ici tant qu'un tel mécanisme n'a pas été vérifié dans le code.
 
 ## Contrat complet d’une image de disquette
@@ -485,7 +485,7 @@ Le moteur interne peut fournir `PisteAcquise` immédiatement après chaque piste
 
 ### Responsabilités entre moteur et application
 
-#### Moteur `GWGUI.MediaEngine`
+#### Moteur `RetroMediaLab.MediaEngine`
 
 Le moteur doit :
 
@@ -496,7 +496,7 @@ Le moteur doit :
 - retourner les interprétations dans l'ordre où elles ont été validées ;
 - retourner les identifiants techniques, jamais les textes traduits de l'interface.
 
-#### Application `GWGUI.App`
+#### Application `RetroMediaLab.App`
 
 L'application doit uniquement :
 

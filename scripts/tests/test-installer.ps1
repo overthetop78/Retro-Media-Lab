@@ -13,7 +13,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-if ([string]::IsNullOrWhiteSpace($SetupPath)) { $SetupPath = Join-Path $repository 'dist\GW-GUI-0.1.0-win-x64-setup.exe' }
+if ([string]::IsNullOrWhiteSpace($SetupPath)) { $SetupPath = Join-Path $repository 'dist\Retro-Media-Lab-0.1.0-win-x64-setup.exe' }
 if ([string]::IsNullOrWhiteSpace($InstallDirectory)) { $InstallDirectory = Join-Path $repository 'dist\installer-smoke' }
 $setup = [IO.Path]::GetFullPath($SetupPath)
 $destination = [IO.Path]::GetFullPath($InstallDirectory)
@@ -25,7 +25,7 @@ if (-not $destination.StartsWith($distRoot, [StringComparison]::OrdinalIgnoreCas
 if (-not (Test-Path -LiteralPath $setup -PathType Leaf)) { throw "Installer not found: $setup" }
 if (Test-Path -LiteralPath $destination) { throw "Smoke-test destination already exists: $destination" }
 if (Test-Path -LiteralPath $uninstallRegistryPath) {
-    throw 'An installed GW GUI registration already exists. The installer smoke test refuses to replace it.'
+    throw 'An installed Retro Media Lab registration already exists. The installer smoke test refuses to replace it.'
 }
 
 $uninstaller = Join-Path $destination 'unins000.exe'
@@ -36,8 +36,8 @@ try {
     $install.WaitForExit()
     if ($install.ExitCode -ne 0) { throw "Installer exited with code $($install.ExitCode)." }
 
-    $required = @('gwgui.exe', 'unins000.exe', 'Modules\example\module.json',
-        'Modules\example\gwgui.emulation.example.dll', 'Modules\example\gwgui.emulation.example.deps.json')
+    $required = @('retromedialab.exe', 'unins000.exe', 'Modules\example\module.json',
+        'Modules\example\retromedialab.emulation.example.dll', 'Modules\example\retromedialab.emulation.example.deps.json')
     foreach ($relative in $required) {
         $path = Join-Path $destination $relative
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Installed file missing: $relative" }
@@ -46,23 +46,23 @@ try {
     if (Get-ChildItem -LiteralPath $destination -Recurse -File -Filter '*.pdb') { throw 'Debug symbols were installed.' }
     $modulesDirectory = Join-Path $destination 'Modules'
     if (-not (Test-Path -LiteralPath $modulesDirectory -PathType Container)) {
-        throw 'A clean GW GUI installation is missing its Modules directory.'
+        throw 'A clean Retro Media Lab installation is missing its Modules directory.'
     }
     $bundledModules = @(Get-ChildItem -LiteralPath $modulesDirectory -Force)
     if ($bundledModules.Count -ne 1 -or $bundledModules[0].Name -ine 'example' -or -not $bundledModules[0].PSIsContainer) {
-        throw 'A clean GW GUI installation must contain only the Example module.'
+        throw 'A clean Retro Media Lab installation must contain only the Example module.'
     }
     $exampleManifestPath = Join-Path $modulesDirectory 'example\module.json'
     $manifests = @(Get-ChildItem -LiteralPath $destination -Recurse -File -Filter 'module.json')
     if ($manifests.Count -ne 1 -or $manifests[0].FullName -ine $exampleManifestPath) {
-        throw 'A clean GW GUI installation must contain only the Example module manifest.'
+        throw 'A clean Retro Media Lab installation must contain only the Example module manifest.'
     }
     $exampleManifest = Get-Content -LiteralPath $exampleManifestPath -Raw | ConvertFrom-Json
-    if ($exampleManifest.id -ine 'example' -or $exampleManifest.entryAssembly -ine 'gwgui.emulation.example.dll') {
+    if ($exampleManifest.id -ine 'example' -or $exampleManifest.entryAssembly -ine 'retromedialab.emulation.example.dll') {
         throw 'The bundled Example module manifest does not match its entry assembly.'
     }
 
-    $version = (Get-Item -LiteralPath (Join-Path $destination 'gwgui.exe')).VersionInfo.ProductVersion
+    $version = (Get-Item -LiteralPath (Join-Path $destination 'retromedialab.exe')).VersionInfo.ProductVersion
     if (-not $version.StartsWith($ExpectedVersion, [StringComparison]::Ordinal)) {
         throw "Unexpected installed product version: $version (expected $ExpectedVersion)."
     }

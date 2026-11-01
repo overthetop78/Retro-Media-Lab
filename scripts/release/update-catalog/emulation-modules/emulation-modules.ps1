@@ -1,14 +1,14 @@
-function Get-GwGuiHostApiVersion {
+function Get-RetroMediaLabHostApiVersion {
     param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
 
-    $source = Join-Path ([IO.Path]::GetFullPath($RepositoryRoot)) 'src\GWGUI.Emulation\Constants\EmulationHostApi.cs'
+    $source = Join-Path ([IO.Path]::GetFullPath($RepositoryRoot)) 'src\RetroMediaLab.Emulation\Constants\EmulationHostApi.cs'
     $declaration = [regex]::Match((Get-Content -LiteralPath $source -Raw),
         'CurrentVersion\s*\{[^}]+\}\s*=\s*new(?:\s+Version)?\s*\(\s*(?<major>\d+)\s*,\s*(?<minor>\d+)\s*\)')
     if (-not $declaration.Success) { throw "Cannot read the host API version from '$source'." }
     return [Version]::new([int]$declaration.Groups['major'].Value, [int]$declaration.Groups['minor'].Value)
 }
 
-function Get-GwGuiEmulationModules {
+function Get-RetroMediaLabEmulationModules {
     param(
         [Parameter(Mandatory = $true)]
         [string]$RepositoryRoot
@@ -22,13 +22,13 @@ function Get-GwGuiEmulationModules {
 
     $modules = @()
     $identifiers = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-    $directories = @(Get-ChildItem -LiteralPath $sourceRoot -Directory -Filter 'GWGUI.Emulation.*' |
+    $directories = @(Get-ChildItem -LiteralPath $sourceRoot -Directory -Filter 'RetroMediaLab.Emulation.*' |
         Sort-Object Name)
     foreach ($directory in $directories) {
         $manifestPath = Join-Path $directory.FullName 'module.json'
         if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { continue }
 
-        $name = $directory.Name.Substring('GWGUI.Emulation.'.Length)
+        $name = $directory.Name.Substring('RetroMediaLab.Emulation.'.Length)
         if ([string]::IsNullOrWhiteSpace($name)) {
             throw "Invalid emulation module directory: $($directory.FullName)"
         }
@@ -95,7 +95,7 @@ function Get-GwGuiEmulationModules {
     return @($modules | Sort-Object Id)
 }
 
-function Resolve-GwGuiEmulationModule {
+function Resolve-RetroMediaLabEmulationModule {
     param(
         [Parameter(Mandatory = $true)]
         [object[]]$Modules,

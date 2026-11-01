@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       module:
-        description: Module id from src/GWGUI.Emulation.*/module.json
+        description: Module id from src/RetroMediaLab.Emulation.*/module.json
         required: true
         type: string
       generate_notes:
@@ -38,7 +38,7 @@ jobs:
           REQUESTED_MODULE: ${{ inputs.module }}
         run: |
           . .\scripts\release\update-catalog\emulation-modules\emulation-modules.ps1
-          $definitions = @(Get-GwGuiEmulationModules -RepositoryRoot (Resolve-Path .))
+          $definitions = @(Get-RetroMediaLabEmulationModules -RepositoryRoot (Resolve-Path .))
           if ("${{ github.event_name }}" -eq 'push') {
             if ($env:GITHUB_REF_NAME -notmatch '^module-([A-Za-z0-9][A-Za-z0-9._-]*)-v(\d+\.\d+\.\d+)$') {
               throw "Unsupported module tag: $env:GITHUB_REF_NAME"
@@ -49,7 +49,7 @@ jobs:
             $moduleId = $env:REQUESTED_MODULE
             $tagVersion = $null
           }
-          $definition = Resolve-GwGuiEmulationModule -Modules $definitions -Module $moduleId
+          $definition = Resolve-RetroMediaLabEmulationModule -Modules $definitions -Module $moduleId
           $manifest = $definition.Manifest
           if ($tagVersion -and $tagVersion -ne $manifest.moduleVersion) {
             throw "Tag version $tagVersion does not match manifest version $($manifest.moduleVersion)."
@@ -58,15 +58,15 @@ jobs:
           "MODULE_NAME=$($definition.Name)" >> $env:GITHUB_ENV
           "MODULE_VERSION=$($manifest.moduleVersion)" >> $env:GITHUB_ENV
           "MODULE_NOTES=.github/release-notes/modules/$($definition.Id)/v$($manifest.moduleVersion).md" >> $env:GITHUB_ENV
-          "MODULE_ARCHIVE=dist/GW-GUI-Module-$($definition.Id)-$($manifest.moduleVersion)-win-x64.zip" >> $env:GITHUB_ENV
+          "MODULE_ARCHIVE=dist/Retro-Media-Lab-Module-$($definition.Id)-$($manifest.moduleVersion)-win-x64.zip" >> $env:GITHUB_ENV
           "MODULE_RELEASE_TAG=module-$($definition.Id)-v$($manifest.moduleVersion)" >> $env:GITHUB_ENV
           "MODULE_CATALOG_TAG=module-$($definition.Id)-catalog" >> $env:GITHUB_ENV
-      - name: Run GW GUI tests
+      - name: Run Retro Media Lab tests
         shell: pwsh
         run: |
           $env:DOTNET_CLI_UI_LANGUAGE = 'en-US'
-          dotnet test .\tests\GWGUI.Tests\GWGUI.Tests.csproj --configuration Release --logger "console;verbosity=normal"
-          if ($LASTEXITCODE -ne 0) { throw 'GW GUI tests failed.' }
+          dotnet test .\tests\RetroMediaLab.Tests\RetroMediaLab.Tests.csproj --configuration Release --logger "console;verbosity=normal"
+          if ($LASTEXITCODE -ne 0) { throw 'Retro Media Lab tests failed.' }
       - name: Build module archive
         shell: pwsh
         run: .\scripts\module-release\package-module.ps1 -Module $env:MODULE_ID -Configuration Release
@@ -98,7 +98,7 @@ jobs:
         run: .\scripts\release\update-catalog\build-update-catalog.ps1 -Scope Module -Module $env:MODULE_ID -Repository '${{ github.repository }}' -ModuleTag $env:MODULE_RELEASE_TAG -ExistingCatalog .\dist\existing-catalog\update-catalog.json
       - uses: actions/upload-artifact@v6
         with:
-          name: GW-GUI-Module-${{ env.MODULE_ID }}-${{ env.MODULE_VERSION }}-win-x64
+          name: Retro-Media-Lab-Module-${{ env.MODULE_ID }}-${{ env.MODULE_VERSION }}-win-x64
           path: |
             ${{ env.MODULE_ARCHIVE }}
             ${{ env.MODULE_ARCHIVE }}.sha256
@@ -114,7 +114,7 @@ jobs:
             $env:MODULE_ARCHIVE,
             "$env:MODULE_ARCHIVE.sha256",
             '--latest=false',
-            '--title', "GW GUI $env:MODULE_NAME module $env:MODULE_VERSION"
+            '--title', "Retro Media Lab $env:MODULE_NAME module $env:MODULE_VERSION"
           )
           if (Test-Path -LiteralPath $env:MODULE_NOTES -PathType Leaf) {
             $arguments += @('--notes-file', $env:MODULE_NOTES)
@@ -138,7 +138,7 @@ jobs:
         run: |
           gh release view $env:MODULE_CATALOG_TAG
           if ($LASTEXITCODE -ne 0) {
-            gh release create $env:MODULE_CATALOG_TAG --title "GW GUI $env:MODULE_NAME module catalog" --notes 'Machine-readable module update catalog.' --latest=false
+            gh release create $env:MODULE_CATALOG_TAG --title "Retro Media Lab $env:MODULE_NAME module catalog" --notes 'Machine-readable module update catalog.' --latest=false
           }
           if ($LASTEXITCODE -ne 0) { throw 'Unable to create the module catalog release.' }
           gh release upload $env:MODULE_CATALOG_TAG .\dist\update-catalog.json --clobber

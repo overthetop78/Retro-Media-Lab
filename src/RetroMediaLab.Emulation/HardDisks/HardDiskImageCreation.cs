@@ -1,0 +1,64 @@
+using System.IO;
+
+namespace RetroMediaLab.Emulation.HardDisks;
+
+public static class HardDiskImageCreation
+{
+    public static void Create(string path, DiskImagePlan plan, DiskFormatRegistry? registry = null, DiskConsumerProfile? consumer = null)
+    {
+        var write = DiskImageBuilder.Prepare(plan, registry, consumer);
+        Publish(path, plan.FixedSize && string.Equals(plan.ContainerId, "raw", StringComparison.OrdinalIgnoreCase) ? plan.CapacityBytes : 0, write);
+    }
+
+    public static void Create(string path, long bytes, HardDiskImageFormat format, bool preallocate, HardDiskPreparation preparation = HardDiskPreparation.Blank, DiskImageGeometry? geometry = null)
+    {
+        HardDiskImageValidation.Validate(path, bytes, format);
+        if (preparation != HardDiskPreparation.Blank && format.Preparations?.Contains(preparation) != true)
+            throw new ArgumentException("Unsupported disk preparation.", nameof(preparation));
+        if (format.SupportsExplicitGeometry && (geometry is null || geometry.Capacity != bytes || !format.LogicalSectorSizes.Contains(geometry.SectorSize)))
+            throw new ArgumentException("An explicit geometry matching the disk capacity and sector size is required.", nameof(geometry));
+        if (format.FixedGeometry is { } fixedGeometry && geometry != fixedGeometry)
+            throw new ArgumentOutOfRangeException(nameof(geometry));
+        if (format.ImageCreator is { } create)
+        {
+            if (File.Exists(Path.GetFullPath(path))) throw new IOException("The disk image already exists.");
+            create(path, bytes, preallocate, preparation, geometry);
+            return;
+        }
+        Publish(path, preallocate && format.Container == Containers.DiskContainerKind.Raw ? bytes : 0,
+            stream => Containers.DiskContainerWriter.Write(stream, bytes, format.Container,
+                content =>
+                {
+                    if (preparation == HardDiskPreparation.Blank && format.InitializeBlankImage is { } initialize)
+                        initialize(content);
+                    else HardDiskPreparationWriter.Prepare(content, preparation, formatId: format.Id);
+                }, fixedSize: preallocate, logicalSectorBytes: format.LogicalSectorSizes.Order().First(sectorBytes => sectorBytes > 0 && bytes % sectorBytes == 0)));
+    }
+
+    private static void Publish(string path, long preallocationBytes, Action<Stream> write)
+    {
+        var target = Path.GetFullPath(path);
+        if (File.Exists(target)) throw new IOException("The disk image already exists.");
+        var temporary = target + "." + Guid.NewGuid().ToString("N") + ".creating";
+        var ownsTemporary = false;
+        try
+        {
+            using (var stream = new FileStream(temporary, new FileStreamOptions
+            {
+                Mode = FileMode.CreateNew, Access = FileAccess.ReadWrite, Share = FileShare.None,
+                PreallocationSize = preallocationBytes
+            }))
+            {
+                ownsTemporary = true;
+                write(stream);
+                stream.Flush(flushToDisk: true);
+            }
+            // Atomic publication, without overwriting an image created in the meantime.
+            File.Move(temporary, target, overwrite: false);
+        }
+        finally
+        {
+            if (ownsTemporary && File.Exists(temporary)) File.Delete(temporary);
+        }
+    }
+}

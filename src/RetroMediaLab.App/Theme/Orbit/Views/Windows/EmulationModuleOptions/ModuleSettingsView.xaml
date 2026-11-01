@@ -1,0 +1,18 @@
+<UserControl x:Class="RetroMediaLab.App.Theme.Orbit.Views.ModuleSettingsView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:l="clr-namespace:RetroMediaLab.App.Localization.Extensions" Background="{DynamicResource Orbit.Window}" Foreground="{DynamicResource Orbit.Text}" UseLayoutRounding="True">
+ <Grid>
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <Grid Margin="0,0,0,22"><Grid.ColumnDefinitions><ColumnDefinition Width="70"/><ColumnDefinition/></Grid.ColumnDefinitions>
+   <Image Source="{Binding SelectedItem.Image,ElementName=Machines}" Width="56" Height="56" Stretch="Uniform"/>
+   <StackPanel Grid.Column="1"><Label Content="{l:Loc Emulation.Configuration.Machine}" Target="{Binding ElementName=Machines}"/><ComboBox x:Name="Machines" DisplayMemberPath="DisplayName"/></StackPanel>
+  </Grid>
+  <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="185"/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+   <ListBox x:Name="Categories" SelectionChanged="CategoryChanged" Background="Transparent" HorizontalContentAlignment="Stretch"/>
+   <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel x:Name="Fields"/></ScrollViewer>
+  </Grid>
+  <DockPanel Grid.Row="2" Margin="0,20,0,0"><Button Content="{l:Loc Common.Close}" Click="CloseClick" DockPanel.Dock="Right" IsDefault="True"/>
+   <Button x:Name="CreateAction" Content="{l:Loc Common.Create}" Click="CreateClick" HorizontalAlignment="Left" Style="{StaticResource Orbit.Primary}"/>
+  </DockPanel>
+ </Grid>
+</UserControl>

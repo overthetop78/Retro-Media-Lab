@@ -1,0 +1,104 @@
+using RetroMediaLab.App.Functions.Rendering.Emulation;
+using RetroMediaLab.App.Interfaces.Rendering.Emulation;
+using RetroMediaLab.Emulation;
+
+namespace RetroMediaLab.App.Rendering.Emulation.Processing;
+
+internal sealed record CpuVideoFrameProcessingResult(VideoFrame SourceFrame, VideoFrame? ProcessedFrame, byte[]? Bgra32Pixels, long ConfigurationVersion, Exception? Error);
+
+internal sealed class SoftwareVideoFrameProcessingWorker : IDisposable
+{
+    private readonly object _gate = new();
+    private readonly IEmulationVideoProcessingPipeline _pipeline;
+    private WorkItem? _pending;
+    private Task? _processingTask;
+    private bool _running;
+    private bool _disposed;
+    private bool _resetHistory;
+
+    internal void ResetHistory()
+    {
+        lock (_gate) _resetHistory = true;
+    }
+
+    internal void Suspend()
+    {
+        lock (_gate)
+        {
+            _pending = null;
+            _resetHistory = true;
+        }
+    }
+
+    internal SoftwareVideoFrameProcessingWorker(IEmulationVideoProcessingPipeline pipeline) => _pipeline = pipeline;
+
+    internal void Submit(EmulationVideoProcessingConfiguration configuration, VideoFrame frame, EmulationVideoProcessingSize outputSize, long configurationVersion, Action<CpuVideoFrameProcessingResult> completed)
+    {
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _pending = new WorkItem(configuration, frame, outputSize, configurationVersion, completed);
+            if (_running) return;
+            _running = true;
+            _processingTask = Task.Run(ProcessPending);
+        }
+    }
+
+    public void Dispose()
+    {
+        Task? processingTask;
+        lock (_gate)
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _pending = null;
+            processingTask = _processingTask;
+        }
+        try { processingTask?.GetAwaiter().GetResult(); }
+        finally { _pipeline.Dispose(); }
+    }
+
+    private void ProcessPending()
+    {
+        while (true)
+        {
+            WorkItem? work;
+            bool resetHistory;
+            lock (_gate)
+            {
+                if (_disposed || _pending is null)
+                {
+                    _running = false;
+                    return;
+                }
+                work = _pending;
+                _pending = null;
+                resetHistory = _resetHistory;
+                _resetHistory = false;
+            }
+
+            CpuVideoFrameProcessingResult result;
+            try
+            {
+                if (resetHistory) _pipeline.ResetTemporalHistory();
+                var processed = _pipeline.Process(work.Configuration, work.Frame, new EmulationVideoProcessingSize(work.Frame.Width, work.Frame.Height), work.OutputSize);
+                result = new(work.Frame, processed, EmulationVideoPixelFunctions.ToBgra32(processed), work.ConfigurationVersion, null);
+            }
+            catch (Exception error)
+            {
+                result = new(work.Frame, null, null, work.ConfigurationVersion, error);
+            }
+
+            lock (_gate)
+            {
+                if (_disposed) continue;
+                if (_pending is not null) continue;
+                _running = false;
+            }
+            work.Completed(result);
+            return;
+        }
+    }
+
+    private sealed record WorkItem(EmulationVideoProcessingConfiguration Configuration, VideoFrame Frame, EmulationVideoProcessingSize OutputSize, long ConfigurationVersion, Action<CpuVideoFrameProcessingResult> Completed);
+}

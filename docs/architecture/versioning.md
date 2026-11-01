@@ -1,11 +1,11 @@
 # Version, compilation et révision
 
-GW GUI, chaque module et le SDK possèdent des versions distinctes parce qu’ils sont distribués
+Retro Media Lab, chaque module et le SDK possèdent des versions distinctes parce qu’ils sont distribués
 indépendamment.
 
 ## Application
 
-`GWGUI.App.csproj` définit `0.3.0` comme version locale par défaut. `scripts/local-building/build.ps1` lit cette
+`RetroMediaLab.App.csproj` définit `0.3.0` comme version locale par défaut. `scripts/local-building/build.ps1` lit cette
 valeur lorsqu’aucun `-Version X.Y.Z` n’est fourni et la transmet aux publications de l’application,
 du lanceur et de l’updater. `scripts/release/package/package.ps1` exige une version et l’emploie aussi dans les noms
 du ZIP portable et de l’installateur.
@@ -19,12 +19,12 @@ modifications doivent être commitées et poussées sur `main` avant l’exécut
 
 Chaque `module.json` porte sa propre `moduleVersion`. Le build d’un module utilise cette valeur et
 sa publication emploie le tag `module-<id>-vX.Y.Z`. Une nouvelle version d’un module ne change pas la
-version de GW GUI et ne republie pas l’application.
+version de Retro Media Lab et ne republie pas l’application.
 
 ## SDK
 
-`src/GWGUI.Emulation/GWGUI.Emulation.csproj` porte la version du paquet public
-`GWGUI.Emulation.SDK`; elle est actuellement `1.0.1`. Le même numéro doit apparaître dans ses notes,
+`src/RetroMediaLab.Emulation/RetroMediaLab.Emulation.csproj` porte la version du paquet public
+`RetroMediaLab.Emulation.SDK`; elle est actuellement `1.0.1`. Le même numéro doit apparaître dans ses notes,
 son tag `sdk-vX.Y.Z` et son paquet NuGet. Sa compatibilité publique est détaillée dans
 [`emulation-sdk-versioning.md`](emulation-sdk-versioning.md).
 

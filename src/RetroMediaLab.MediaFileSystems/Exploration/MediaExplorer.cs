@@ -1,0 +1,121 @@
+using System.IO;
+using RetroMediaLab.MediaFileSystems.Contracts;
+using RetroMediaLab.MediaFileSystems.Interfaces;
+using RetroMediaLab.MediaFileSystems.Interfaces.Exploration;
+using RetroMediaLab.MediaFileSystems.FileSystems.Iso9660;
+using RetroMediaLab.MediaFileSystems.FileSystems.Udf;
+using RetroMediaLab.MediaFileSystems.FileSystems.Amstrad.Cartridge;
+using RetroMediaLab.MediaFileSystems.FileSystems.Console.Cartridge;
+using RetroMediaLab.MediaFileSystems.FileSystems.Xbox.Xdvdfs;
+using RetroMediaLab.MediaFileSystems.FileSystems.Nintendo.FamicomDisk;
+using RetroMediaLab.MediaFileSystems.FileSystems.Nintendo.GameCube;
+using RetroMediaLab.MediaFileSystems.Exploration.Partitioning;
+using RetroMediaLab.MediaFileSystems.Exploration.Sequential;
+
+namespace RetroMediaLab.MediaFileSystems.Exploration;
+
+/// <summary>Retrouve les volumes, dossiers et fichiers dans un média déjà décodé.</summary>
+public sealed class MediaExplorer
+{
+    private readonly IReadOnlyList<IMediaFileSystemReader> readers;
+    private readonly MediaVolumeDetectorRegistry volumeDetectors;
+
+    public MediaExplorer(IEnumerable<IMediaFileSystemReader> readers, MediaVolumeDetectorRegistry volumeDetectors)
+    {
+        ArgumentNullException.ThrowIfNull(readers);
+        ArgumentNullException.ThrowIfNull(volumeDetectors);
+        var materialized = readers.ToArray();
+        for (var index = 0; index < materialized.Length; index++)
+        {
+            if (materialized[index] is null) throw FileSystemRegistryExceptions.NullReader(index);
+            if (string.IsNullOrWhiteSpace(materialized[index].Id))
+                throw FileSystemRegistryExceptions.EmptyReaderId(index);
+        }
+        var duplicate = materialized.GroupBy(reader => reader.Id, StringComparer.OrdinalIgnoreCase).FirstOrDefault(group => group.Skip(1).Any());
+        if (duplicate is not null) throw FileSystemRegistryExceptions.DuplicateReaderId(duplicate.Key);
+        this.readers = Array.AsReadOnly(materialized);
+        this.volumeDetectors = volumeDetectors;
+    }
+
+    public IReadOnlyList<IMediaFileSystemReader> Readers => readers;
+
+    public static MediaExplorer CreateDefault(IEnumerable<IMediaFileSystemReader> adapterReaders)
+    {
+        ArgumentNullException.ThrowIfNull(adapterReaders);
+        var detectors = new MediaVolumeDetectorRegistry(
+        [
+            new SequentialContentVolumeDetector(),
+            new OpticalTrackVolumeDetector(),
+            new GptVolumeDetector(),
+            new MbrVolumeDetector(),
+            new WholeMediaVolumeDetector()
+        ]);
+        var registered = FileSystemReaderCatalog.CreateDefault().Cast<IMediaFileSystemReader>().Concat(adapterReaders)
+            .Concat(new IMediaFileSystemReader[]
+            {
+                new AmstradCartridgeFileSystemReader(),
+                new ConsoleCartridgeFileSystemReader(),
+                new FamicomDiskFileSystemReader(),
+                new GameCubeFstFileSystemReader(),
+                new XdvdfsFileSystemReader(),
+                new UdfFileSystemReader(),
+                new JolietExtensionReader(),
+                new RockRidgeExtensionReader(),
+                new Iso9660FileSystemReader()
+            });
+        return new MediaExplorer(registered, detectors);
+    }
+
+    public async ValueTask<MediaFileSystemExplorationResult> ExploreAsync(IMediaImageDocument document, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        var detection = await volumeDetectors.DetectAsync(document, cancellationToken).ConfigureAwait(false);
+        var explored = new List<ExploredFileSystemVolume>();
+        foreach (var volume in detection.Volumes)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = ExploreVolume(document, volume);
+            if (result.FileSystem is not null)
+            {
+                result = result with
+                {
+                    AnalyzedEntries = FileSystemEntryAnalyzer.AnalyzeEntries(document.FormatId, result.FileSystem)
+                };
+            }
+            explored.Add(result);
+        }
+        return new MediaFileSystemExplorationResult(detection.Volumes, explored, detection.Diagnostics, FirstFileName(explored));
+    }
+
+    private static string? FirstFileName(IEnumerable<ExploredFileSystemVolume> volumes) => volumes.SelectMany(volume => volume.FileSystem?.Entries ?? []).SelectMany(entry => EnumerateFiles(entry, static item => item.Kind == FileSystemEntryKind.File, static item => item.Children)).Select(entry => entry.Name).FirstOrDefault();
+
+    /// <summary>Énumère les fichiers dans l'ordre de l'arbre, sans matérialiser les descendants.</summary>
+    public static IEnumerable<TEntry> EnumerateFiles<TEntry>(TEntry entry,
+        Func<TEntry, bool> isFile, Func<TEntry, IReadOnlyList<TEntry>> children)
+    {
+        if (isFile(entry)) yield return entry;
+        foreach (var child in children(entry))
+        {
+            foreach (var descendant in EnumerateFiles(child, isFile, children)) yield return descendant;
+        }
+    }
+
+    private ExploredFileSystemVolume ExploreVolume(IMediaImageDocument document, MediaVolumeDescriptor volume)
+    {
+        IEnumerable<IMediaFileSystemReader> ordered = string.IsNullOrWhiteSpace(volume.FileSystemId) ? readers : readers.OrderByDescending(reader => reader.Id.Equals(volume.FileSystemId, StringComparison.OrdinalIgnoreCase));
+        var diagnostics = new List<string>();
+        foreach (var reader in ordered)
+        {
+            if (!reader.CanRead(document, volume)) continue;
+            try
+            {
+                return new ExploredFileSystemVolume(volume, reader.Id, reader.Read(document, volume), diagnostics);
+            }
+            catch (InvalidDataException exception)
+            {
+                diagnostics.Add($"{reader.Id}: {exception.Message}");
+            }
+        }
+        return new ExploredFileSystemVolume(volume, null, null, diagnostics);
+    }
+}

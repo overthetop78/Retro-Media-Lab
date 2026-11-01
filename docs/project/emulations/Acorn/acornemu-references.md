@@ -91,7 +91,7 @@ Le format UEF décrit des médias associés aux BBC Micro, Electron et Atom. C'e
 
 Cette liste n'est pas toute la spécification. La lecture de quelques blocs courants ne constitue pas une prise en charge complète des protections, des débits variables ou de tous les médias UEF. [Spécification UEF](https://electrem.emuunlim.com/UEFSpecs.htm).
 
-**Déduction pour AcornEmu :** la représentation des durées et transitions d'un média pourrait être partagée, tandis que le câblage, le décodage cassette et les registres restent propres à chaque machine. La lecture d'une image ne doit pas être confondue avec son acceptation par le matériel émulé. Dans GW GUI, les échanges de médias suivent les interfaces existantes d'Emulation et de MediaEngine.
+**Déduction pour AcornEmu :** la représentation des durées et transitions d'un média pourrait être partagée, tandis que le câblage, le décodage cassette et les registres restent propres à chaque machine. La lecture d'une image ne doit pas être confondue avec son acceptation par le matériel émulé. Dans Retro Media Lab, les échanges de médias suivent les interfaces existantes d'Emulation et de MediaEngine.
 
 ## Éléments susceptibles d'être partagés
 

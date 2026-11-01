@@ -2,7 +2,7 @@
 
 ## Thomson TO8D photograph
 
-Asset: `src/GWGUI.Emulation.Thomson/Assets/Machines/To8D.png`.
+Asset: `src/RetroMediaLab.Emulation.Thomson/Assets/Machines/To8D.png`.
 Photograph by Frédéric BISSON, 24 April 2016, Retrogaming Days V, Évreux.
 Source: https://commons.wikimedia.org/wiki/File:Thomson_TO8D_(26347254330).jpg
 Original: https://upload.wikimedia.org/wikipedia/commons/b/b4/Thomson_TO8D_%2826347254330%29.jpg
@@ -116,7 +116,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 ## ColecoVision Expansion Module #2 photograph
 
-Asset: `src/GWGUI.App/Assets/Controllers/coleco-driving-controller.png`.
+Asset: `src/RetroMediaLab.App/Assets/Controllers/coleco-driving-controller.png`.
 Photograph by Evan-Amos, 2 August 2016, dedicated to the public domain by the author.
 Source: https://commons.wikimedia.org/wiki/File:ColecoVision-Expansion2.jpg
 Original: https://upload.wikimedia.org/wikipedia/commons/7/7f/ColecoVision-Expansion2.jpg
@@ -124,28 +124,28 @@ Adaptation: proportional resizing to 512 x 407 pixels and removal of the exterio
 
 ## ColecoVision Super Action Controller photograph
 
-Asset: `src/GWGUI.App/Assets/Controllers/coleco-super-action-controller.png`.
+Asset: `src/RetroMediaLab.App/Assets/Controllers/coleco-super-action-controller.png`.
 Product photograph published by PowerUp Gaming.
 Original: https://www.powerupgaming.ca/cdn/shop/products/colecovision-super-action-controller.png?v=1751239228
 Adaptation: 90-degree rotation, classical removal of the exterior white background, removal of detached background speckles, edge matte cleanup and proportional resizing to 355 x 512 pixels. The complete photographed controller and its cable are preserved. No generated hardware, controls, lettering or logos. No open license is asserted for this source photograph.
 
 ## ColecoVision Roller Controller photograph
 
-Asset: `src/GWGUI.App/Assets/Controllers/coleco-roller-controller.png`.
+Asset: `src/RetroMediaLab.App/Assets/Controllers/coleco-roller-controller.png`.
 Source photograph published by Atariboy2600 in "Life as a Retro Video Gamer - Colecovision", AtariAge, September 2024: https://forums.atariage.com/topic/372301-life-as-a-retro-video-gamer-colecovision/.
 Original: https://media.invisioncic.com/r322239/monthly_2024_09/image.jpeg.06f9185257de0896433a83378044139c.jpeg
 Adaptation: crop of the actual Roller Controller, classical silhouette alpha masking, 10-degree rotation to straighten its photographed face and proportional resizing to 512 x 259 pixels. No generated or reconstructed hardware, controls, lettering or logos. No open license is asserted for this source photograph.
 
 ## Apple II J-Plus photograph
 
-Asset: `src/GWGUI.Emulation.Apple/Assets/Machines/AppleIIJPlus.png`.
+Asset: `src/RetroMediaLab.Emulation.Apple/Assets/Machines/AppleIIJPlus.png`.
 Source photograph published by RR Auction: https://www.rrauction.com/auctions/lot-detail/349793807146036-apple-ii-j-plus-computer/.
 Original: https://cdn.rrauction.com/auction/714/3497938_1.jpg
 Adaptation: classical silhouette alpha masking of the actual computer and proportional resizing to a maximum dimension of 512 pixels, with transparent padding. The original Apple II J-Plus badge, katakana keyboard legends and complete case are preserved. No generated hardware, lettering or logos. No open license is asserted for this source photograph.
 
 ## Coleco ADAM photograph
 
-Asset: `src/GWGUI.Emulation.Coleco/Assets/Machines/Adam.png`.
+Asset: `src/RetroMediaLab.Emulation.Coleco/Assets/Machines/Adam.png`.
 Photograph by Akbkuku (Shelby Jueden), 16 July 2023. Published under Creative Commons Attribution 4.0 International: https://creativecommons.org/licenses/by/4.0/.
 Source: https://commons.wikimedia.org/wiki/File:Coleco-ADAM-computer-with-parts_(edit).jpg ; packaging edit by DigitalIceAge.
 Original: https://upload.wikimedia.org/wikipedia/commons/e/eb/Coleco-ADAM-computer-with-parts_%28edit%29.jpg
@@ -153,33 +153,33 @@ Adaptation: classical silhouette alpha mask, removal of exterior background encl
 
 ## ZX Spectrum SE prototype photograph
 
-Asset: `src/GWGUI.Emulation.Sinclair/Assets/Machines/SpectrumSe.png`.
+Asset: `src/RetroMediaLab.Emulation.Sinclair/Assets/Machines/SpectrumSe.png`.
 Source: the prototype photograph published in ZX Shed issue 2, preserved by World of Spectrum: https://worldofspectrum.org/files/large/6b6c3ef9a7a2c60 (ZXShedIssue02.pdf).
 Adaptation: lossless assembly of the two embedded JPEG strips into the original 2048 x 653 photograph, classical silhouette alpha masking and proportional resizing to 512 pixels wide with transparent padding. The photographed rack enclosure, Cherry keyboard, connectors and controls are retained. The original photograph crops the top edge of the equipment; no missing parts or lettering have been generated or reconstructed. No open license is asserted for this source photograph.
 
 ## Philips Videopac+ G7400 and Brandt Jopac JO7400 photographs
 
-Asset: `src/GWGUI.Emulation.Philips/Assets/Machines/VideopacG7400.png`.
+Asset: `src/RetroMediaLab.Emulation.Philips/Assets/Machines/VideopacG7400.png`.
 Photograph by Marco van den Hout, 27 August 2004, licensed under CC BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/ . Source: https://commons.wikimedia.org/wiki/File:Philips_Videopac_G7400.jpg . Original: https://upload.wikimedia.org/wikipedia/commons/3/3d/Philips_Videopac_G7400.jpg . Manual exterior silhouette alpha mask and proportional resizing with ImageMagick to 512 x 382 pixels; keyboard, case, branding and controls preserved. The adapted photograph remains under CC BY-SA 3.0.
 
-Asset: `src/GWGUI.Emulation.Philips/Assets/Machines/JopacJo7400.png`.
+Asset: `src/RetroMediaLab.Emulation.Philips/Assets/Machines/JopacJo7400.png`.
 Source photograph preserved by the Videopac.org Jopac archive: http://videopac.org/jopac/ , image http://videopac.org/jopac/p1010004.jpg (1600 x 1200). No photographer or specific reuse license is identified by the source. Manual silhouette alpha mask, removal of the exterior shadow and proportional resizing with ImageMagick to 512 x 393 pixels. The entire photographed console, membrane keyboard and original markings are retained; no generated or reconstructed parts.
 
 ## Sony original DualShock controller photographs
 
-Asset: `src/GWGUI.App/Assets/Controllers/sony-dualshock-1.png`.
+Asset: `src/RetroMediaLab.App/Assets/Controllers/sony-dualshock-1.png`.
 Source: PiXEL-RETRO, Sony PlayStation original grey DualShock SCPH-1200 product photographs, https://pixel-retro.com/products/sony-playstation-manette-originale-grise-gray-joystick-controller . Original files: `IMG_5546.jpg` (front) and `IMG_5547.jpg` (upper buttons). No specific reuse license is stated by the source.
 Adaptation: classical manual silhouette masks and proportional resizing with ImageMagick, composed on a transparent 512 x 512 canvas. The main front photograph and a separate rotated detail of the upper buttons retain the original hardware and markings; no generated or reconstructed controls. The four upper-button interaction zones are placed on the separate photographic detail.
 
 ## Sony DualShock 3 controller photograph
 
-Asset: `src/GWGUI.App/Assets/Controllers/sony-dualshock-3.png`.
+Asset: `src/RetroMediaLab.App/Assets/Controllers/sony-dualshock-3.png`.
 Source: https://commons.wikimedia.org/wiki/File:PS3_controller.png (1200 x 880 PNG), photographed by Evan-Amos; controller cutout by Lorenziand, derived from PS3Versions.png. The source is released into the public domain by its authors.
 Adaptation: proportional classical resampling to 512 x 375 pixels, preserving the existing transparent silhouette and photographic markings. No generated or reconstructed parts.
 
 ## Sinclair ZX80 photograph
 
-Asset: `src/GWGUI.Emulation.Sinclair/Assets/Machines/Zx80.png`.
+Asset: `src/RetroMediaLab.Emulation.Sinclair/Assets/Machines/Zx80.png`.
 Photograph by Daniel Ryde, Skövde, 31 August 2004; levels and sharpening edit by Ian Dunster. Licensed under Creative Commons Attribution-ShareAlike 3.0 Unported: https://creativecommons.org/licenses/by-sa/3.0/.
 Source: https://commons.wikimedia.org/wiki/File:ZX80.jpg
 Original: https://upload.wikimedia.org/wikipedia/commons/2/24/ZX80.jpg
@@ -187,12 +187,12 @@ Adaptation: classical silhouette alpha mask, removal of the exterior background 
 
 ## Philips Videopac G7000 alpha correction
 
-Asset: `src/GWGUI.Emulation.Philips/Assets/Machines/VideopacG7000.png`.
+Asset: `src/RetroMediaLab.Emulation.Philips/Assets/Machines/VideopacG7000.png`.
 The existing repository photograph is retained. This update changes only its alpha channel: classical edge matte cleanup with protection of the dark cable pixels and a subpixel feather. RGB pixels, lettering, controls and cable paths are unchanged; no new photograph or generated hardware is introduced. Dimensions remain 512 x 312 pixels.
 
 ## Amstrad GX4000 controller photograph
 
-Asset: src/GWGUI.App/Assets/Controllers/amstrad-gx4000-controller.png.
+Asset: src/RetroMediaLab.App/Assets/Controllers/amstrad-gx4000-controller.png.
 Photograph by Evan-Amos, 31 January 2012, dedicated to the public domain by the author; cropped from the 2012 console-set photograph by Jesus.arnold.
 Source: https://commons.wikimedia.org/wiki/File:GX4000_controller.png
 Original: https://upload.wikimedia.org/wikipedia/commons/9/9a/GX4000_controller.png
@@ -210,13 +210,13 @@ CH Products Mach II and Mach III Apple II joystick photographs: Apple II Documen
 
 ## Kraft Premium II Apple joystick photograph
 
-Asset: `src/GWGUI.App/Assets/Controllers/apple-kraft-premium-ii.png`.
+Asset: `src/RetroMediaLab.App/Assets/Controllers/apple-kraft-premium-ii.png`.
 Source: owen2471, https://www.amibay.com/threads/vintage-kraft-premium-ii-joystick-apple.2455381/ , attachment `IMG_5396.webp` (2550363). The seller identifies the Apple version and reports using it on an Apple IIc. No specific reuse license is stated by the source.
 Adaptation: manual silhouette alpha mask and proportional resizing to a maximum dimension of 512 pixels with ImageMagick. The original casing, analog stick, single fire button and mechanical centering controls are preserved; cable and background removed. No generated content.
 
 ## Sinclair ZX Spectrum 128K photograph
 
-Asset: `src/GWGUI.Emulation.Sinclair/Assets/Machines/Spectrum128K.png`.
+Asset: `src/RetroMediaLab.Emulation.Sinclair/Assets/Machines/Spectrum128K.png`.
 Photograph by Bill Bertram (Pixel8), 21 August 2006. Licensed under Creative Commons Attribution-ShareAlike 2.5 Generic: https://creativecommons.org/licenses/by-sa/2.5/.
 Source: https://commons.wikimedia.org/wiki/File:ZX_Spectrum128K.jpg
 Original: https://upload.wikimedia.org/wikipedia/commons/1/1b/ZX_Spectrum128K.jpg

@@ -7,8 +7,8 @@ Ce document conserve les demandes et les défauts montrés dans les captures. Un
 Exécution détaillée : `docs/tasks/acorn-storage-settings.md`. Les corrections décrites dans ce suivi sont vérifiées et livrées par le build Debug du 27 octobre 2026. La vérification doit couvrir chacun de ces points, sans les remplacer par un résumé générique.
 
 - [x] Finaliser les corrections de configuration et de création.
-  - [x] Modifier `src/GWGUI.App/Resources/*/Emulation/EmulationStorage.resx`, `EmulationCassette.resx`, `EmulationHdd.resx` : achever les traductions Argos, corriger le français et contrôler les libellés de toutes les langues ; conserver les valeurs invariantes dans la base commune.
-  - [x] Modifier `src/GWGUI.App/Views/Dialogs/Emulation/Storage/HardDiskDriveConfigurationDialog.cs` et les constantes associées : sélectionner une capacité par défaut autorisée, inclure celle du profil personnalisé dans les présélections et vérifier les capacités calculées par la géométrie.
+  - [x] Modifier `src/RetroMediaLab.App/Resources/*/Emulation/EmulationStorage.resx`, `EmulationCassette.resx`, `EmulationHdd.resx` : achever les traductions Argos, corriger le français et contrôler les libellés de toutes les langues ; conserver les valeurs invariantes dans la base commune.
+  - [x] Modifier `src/RetroMediaLab.App/Views/Dialogs/Emulation/Storage/HardDiskDriveConfigurationDialog.cs` et les constantes associées : sélectionner une capacité par défaut autorisée, inclure celle du profil personnalisé dans les présélections et vérifier les capacités calculées par la géométrie.
   - [x] Modifier les tests autonomes stockage existants et créer puis supprimer `artifacts/acorn-storage-settings-check/` : vérifier les images autorisées/refusées, la création effective, la préallocation, les fenêtres et chaque défaut des captures ci-dessous ; libérer fenêtres, threads et objets possédés dans finally.
   - [x] Modifier la livraison `build/Debug/` par le script autorisé lorsque l'application est fermée ; vérifier l'exécutable et le module Acorn, puis consigner les résultats dans `docs/tasks/acorn-storage-settings.md`.
 

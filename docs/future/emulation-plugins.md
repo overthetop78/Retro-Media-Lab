@@ -6,12 +6,12 @@ dans [`../architecture/emulation-module-authoring.md`](../architecture/emulation
 
 Le [découpage interne des moteurs](emulation-engine-organization.md) fait l'objet d'un chantier
 différé distinct : conserver une base commune et isoler les adaptations des moteurs au sein
-d'une seule DLL par famille, avec la même approche pour les futurs `GWGUI.Emulation.<Famille>`.
+d'une seule DLL par famille, avec la même approche pour les futurs `RetroMediaLab.Emulation.<Famille>`.
 
 ## Projets séparés et SDK
 
 C'est utile, faisable et pratique : chaque module peut avoir son dépôt, sa version, ses tests et ses
-publications. GW GUI publie un SDK versionné contenant les contrats publics. Un module référence ce
+publications. Retro Media Lab publie un SDK versionné contenant les contrats publics. Un module référence ce
 SDK, jamais le projet principal.
 
 Sont déjà réalisés dans le dépôt :
@@ -19,9 +19,9 @@ Sont déjà réalisés dans le dépôt :
 - l'évolution de l'API hôte (version initiale `1.0` et contrôle par manifeste en place) ;
 - le raccordement des textes propres au module ;
 - le format du paquet, les dépendances privées isolées, les archives indépendantes et leur mise à jour ;
-- le paquet public versionné `GWGUI.Emulation.SDK` et sa politique de compatibilité.
+- le paquet public versionné `RetroMediaLab.Emulation.SDK` et sa politique de compatibilité.
 
-Restent différés les tests publiés contre chaque version de GW GUI prise en charge.
+Restent différés les tests publiés contre chaque version de Retro Media Lab prise en charge.
 
 ## Sous-dossier et manifeste
 
@@ -32,7 +32,7 @@ L'API actuelle et les bornes de ces deux modules valent `1.0`. Les DLL seules di
 ```text
 Modules/Commodore/
   module.json
-  gwgui.emulation.commodore.dll
+  retromedialab.emulation.commodore.dll
   dependance-privee.dll
 ```
 
@@ -43,7 +43,7 @@ avant de charger son code :
 {
   "schemaVersion": 1,
   "id": "Commodore",
-  "entryAssembly": "gwgui.emulation.commodore.dll",
+  "entryAssembly": "retromedialab.emulation.commodore.dll",
   "moduleVersion": "1.2.0",
   "hostApiMinimum": "1.0",
   "hostApiMaximum": "1.0"
@@ -57,7 +57,7 @@ utilisateur.
 
 Elle sert bien au contrôle de compatibilité. Un module exigeant l'API 2 doit être refusé proprement
 par une application limitée à l'API 1. La raison exacte est enregistrée dans le journal avant
-d'instancier la factory. Cette version ne désigne ni GW GUI, ni le module, ni le cœur : elle désigne
+d'instancier la factory. Cette version ne désigne ni Retro Media Lab, ni le module, ni le cœur : elle désigne
 uniquement leur langage commun.
 
 La compatibilité avec de futures versions n'est pas présumée : minimum et maximum valent
@@ -71,7 +71,7 @@ mêmes informations : module chargé, version, chemin ou raison du refus. Elle r
 ## Traductions et blocs graphiques
 
 Les blocs graphiques sont déjà déclaratifs. Le module envoie onglet, bloc, éditeur, valeur, choix,
-visibilité et règles ; GW GUI crée les contrôles. Le module n'envoie jamais de XAML ou de contrôle
+visibilité et règles ; Retro Media Lab crée les contrôles. Le module n'envoie jamais de XAML ou de contrôle
 WPF arbitraire.
 
 Un catalogue propre au module concerne seulement les textes associés aux clés de ressources : noms
@@ -82,13 +82,13 @@ communs restent dans les ressources centrales. Le raccordement est décrit dans
 
 Lorsqu'une clé existe à la fois dans le module et dans les ressources internes, la traduction du
 module est prioritaire. Cela permet de corriger ou renommer un champ dans une nouvelle version du
-module sans attendre une nouvelle version de GW GUI. Les ressources internes servent uniquement de
+module sans attendre une nouvelle version de Retro Media Lab. Les ressources internes servent uniquement de
 repli pour les textes communs. Le mécanisme est validé sur Amiga et Atari. Les catalogues embarqués
 remplacent la proposition de fichiers de langue externes par module.
 
 ## Découverte de modules officiels
 
-La distribution de GW GUI reste vide de modules. Les modules officiels disponibles sont présentés
+La distribution de Retro Media Lab reste vide de modules. Les modules officiels disponibles sont présentés
 par la fenêtre Mises à jour et installés indépendamment depuis leurs propres archives. Une future
 évolution pourrait ajouter plusieurs sources de découverte ou des filtres au catalogue, mais elle ne
 doit pas réintroduire les modules dans l'installateur de l'application.
@@ -104,22 +104,22 @@ mettre à jour les modules uniquement après fermeture et redémarrage.
 
 ## Mise à jour de l'application et des modules
 
-GW GUI annonce séparément les mises à jour disponibles pour l'application et pour chacun des modules
-installés. L'utilisateur sélectionne les mises à jour souhaitées, puis GW GUI ouvre l'application de
+Retro Media Lab annonce séparément les mises à jour disponibles pour l'application et pour chacun des modules
+installés. L'utilisateur sélectionne les mises à jour souhaitées, puis Retro Media Lab ouvre l'application de
 mise à jour dédiée.
 
 Le flux retenu est :
 
-1. GW GUI recherche les mises à jour de l'application et de tous les modules installés ;
+1. Retro Media Lab recherche les mises à jour de l'application et de tous les modules installés ;
 2. toutes les versions sélectionnées sont téléchargées, contrôlées et préparées ensemble ;
-3. GW GUI lance l'application de mise à jour avec le plan complet ;
-4. l'application de mise à jour demande à GW GUI de se fermer puis attend la fin réelle du processus ;
+3. Retro Media Lab lance l'application de mise à jour avec le plan complet ;
+4. l'application de mise à jour demande à Retro Media Lab de se fermer puis attend la fin réelle du processus ;
 5. elle sauvegarde les fichiers actuels et remplace l'application et tous les modules concernés ;
-6. elle relance une seule fois la nouvelle version de GW GUI ;
+6. elle relance une seule fois la nouvelle version de Retro Media Lab ;
 7. si le nouveau démarrage échoue, elle restaure les fichiers sauvegardés et relance la version précédente.
 
 L'application de mise à jour est un exécutable minimal distinct : elle ne charge aucun module et ne
-dépend pas des DLL qu'elle doit remplacer. Aucune mise à jour n'est appliquée pendant que GW GUI ou
+dépend pas des DLL qu'elle doit remplacer. Aucune mise à jour n'est appliquée pendant que Retro Media Lab ou
 une machine émulée fonctionne. Plusieurs mises à jour sont toujours regroupées dans une seule
 fermeture et un seul redémarrage.
 

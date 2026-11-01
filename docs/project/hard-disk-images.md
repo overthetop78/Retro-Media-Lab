@@ -16,7 +16,7 @@ L’inventaire des formats et variantes à couvrir est conservé dans [le catalo
 | Amorçage et installation | Installer séparément le chargeur, les pilotes et le système lorsque cela est demandé et possible. |
 | Adaptateur de stockage | Déclarer les combinaisons acceptées par le consommateur du disque et effectuer son branchement. |
 
-Le code de construction se trouve dans `src/GWGUI.Emulation/HardDisks`, avec les dossiers `Containers`, `Partitioning` et `FileSystems`. Les opérations travaillent sur des flux ; les tests construisent leurs données en mémoire.
+Le code de construction se trouve dans `src/RetroMediaLab.Emulation/HardDisks`, avec les dossiers `Containers`, `Partitioning` et `FileSystems`. Les opérations travaillent sur des flux ; les tests construisent leurs données en mémoire.
 
 Un nom de format historique reste un identifiant technique valide. Il ne signifie pas que son implémentation dépend d’une machine ou d’un émulateur. L’organisation se fait par format, jamais par la liste des modules installés.
 

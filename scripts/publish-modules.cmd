@@ -16,7 +16,7 @@ gh auth status >nul 2>&1 || (
 )
 
 if not "%~1"=="" (
-    set "MODULE_DIRECTORY=src\GWGUI.Emulation.%~1"
+    set "MODULE_DIRECTORY=src\RetroMediaLab.Emulation.%~1"
     if not exist "!MODULE_DIRECTORY!\module.json" (
         echo Erreur : module introuvable : %~1
         popd
@@ -29,7 +29,7 @@ if not "%~1"=="" (
 )
 
 set "FOUND_MODULE="
-for /d %%D in ("src\GWGUI.Emulation.*") do (
+for /d %%D in ("src\RetroMediaLab.Emulation.*") do (
     if exist "%%~fD\module.json" (
         set "FOUND_MODULE=1"
         call :publish_manifest "%%~fD\module.json"

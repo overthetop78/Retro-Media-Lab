@@ -1,7 +1,7 @@
-using GWGUI.Emulation.Contracts;
-using GWGUI.Emulation.Interfaces;
+using RetroMediaLab.Emulation.Contracts;
+using RetroMediaLab.Emulation.Interfaces;
 
-namespace Example.GWGUI.Module;
+namespace Example.RetroMediaLab.Module;
 
 // Replace the example identity and return your IEmulationModule implementation.
 public sealed class ModuleFactory : IEmulationModuleFactory

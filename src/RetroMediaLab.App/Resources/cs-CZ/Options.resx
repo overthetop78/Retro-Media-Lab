@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Options.Title" xml:space="preserve"><value>Možnosti</value></data>
+  <data name="Options.General" xml:space="preserve"><value>Generál</value></data>
+  <data name="Options.Tools" xml:space="preserve"><value>Greaseweazle Nástroje</value></data>
+  <data name="Options.Hardware" xml:space="preserve"><value>Ovladače a pohony</value></data>
+  <data name="Options.Profiles" xml:space="preserve"><value>Profily</value></data>
+  <data name="Options.ImagesFolder" xml:space="preserve"><value>Výchozí složka obrazu disku</value></data>
+  <data name="Options.Language" xml:space="preserve"><value>Jazyk</value></data>
+  <data name="Options.Theme" xml:space="preserve"><value>Téma</value></data>
+  <data name="Options.Theme.System" xml:space="preserve"><value>Systém</value></data>
+  <data name="Options.Theme.Light" xml:space="preserve"><value>Světlý</value></data>
+  <data name="Options.Theme.Dark" xml:space="preserve"><value>Tmavý</value></data>
+  <data name="Options.GwPath" xml:space="preserve"><value>Cesta k gw.exe</value></data>
+  <data name="Options.ToolsHelp" xml:space="preserve"><value>Pokud nástroje chybí, asistent nabídne jejich stažení nebo zvolí existující instalaci. Aktualizace jsou pouze oznámeny.</value></data>
+  <data name="Options.HardwarePersistence" xml:space="preserve"><value>Hardwarová nastavení zůstanou uložena i po odpojení disku.</value></data>
+  <data name="Options.ExecutableFilter"><value>Greseweazle (gw.exe)|gw.exe|Spustitelný (*.exe)|*.exe</value></data>
+  <data name="Options.RemoveHardware"><value>Odebrat tento uložený ovladač a všechny jeho jednotky?</value></data>
+  <data name="Options.HardwareTitle"><value>Železářské zboží</value></data>
+  <data name="Options.UseConversionTags"><value>Použijte značky v názvech souborů konverze</value></data>
+  <data name="Options.TagPreset"><value>Přednastaveno</value></data>
+  <data name="Options.TagPresetFamily"><value>Pouze rodina</value></data>
+  <data name="Options.TagPresetFormat"><value>Pouze formát</value></data>
+  <data name="Options.TagPresetFamilyFormat"><value>Rodina a formát</value></data>
+  <data name="Options.TagPresetFamilyExtension"><value>Rodina a rozšíření</value></data>
+  <data name="Options.TagPresetDetailed"><value>Rodina, formát a rozšíření</value></data>
+  <data name="Options.TagPattern"><value>Vzor značky konverze</value></data>
+  <data name="Options.TagVariablesTitle"><value>Dostupné proměnné</value></data>
+  <data name="Options.TagVariableName"><value>Zdrojový název souboru</value></data>
+  <data name="Options.TagVariableFamily"><value>Rodina: PC, ST, AMIGA…</value></data>
+  <data name="Options.TagVariableFormat"><value>Formát: 720, 1440, DD…</value></data>
+  <data name="Options.TagVariableExtension"><value>Rozšíření: IMA, ST, ADF…</value></data>
+  <data name="Options.TagVariableDateIso"><value>Datum: 2026-08-06</value></data>
+  <data name="Options.TagVariableDateCompact"><value>Datum: 20260806</value></data>
+  <data name="Options.TagVariableDateLocal"><value>Datum: 06.08.2026</value></data>
+  <data name="Options.TagVariableTimeFull"><value>Čas: 14-35-42</value></data>
+  <data name="Options.TagVariableTimeCompact"><value>Čas: 143542</value></data>
+  <data name="Options.TagVariableTimeShort"><value>Čas: 14-35</value></data>
+  <data name="Options.TagPatternHelp"><value>{NAME} - zdrojový název souboru&#xA;{FAMILY} - rodina strojů (PC, ST, AMIGA...)&#xA;{FORMAT} - formát nebo geometrie (720,1440, DD...)&#xA;{EXTENSION} - rozšíření výstupu (IMA, ST, ADF...)&#xA;{DATE:YYYY-MM-DD} - datum 2026- 08- 06&#xA;{DATE:YYYYMMDD} - datum 20260806&#xA;{DATE:DD-MM-YYYY} - datum 06-08-2026&#xA;{TIME:HH-MM-SS} - čas 14-35-42&#xA;{TIME:HHMMSS} - čas 143542&#xA;{TIME:HH-MM} - čas 14-35</value></data>
+  <data name="Options.RecentTagPatterns"><value>Nedávné vlastní vzory</value></data>
+  <data name="Options.NextTagExample"><value>Další příklad</value></data>
+  <data name="Options.TagPatternPreview"><value>Příklad: {0}</value></data>
+  <data name="Options.TagPatternInvalid"><value>Vzor značky musí obsahovat {tag}.</value></data>
+  <data name="Options.EnableLogs"><value>Uložit protokoly</value></data>
+  <data name="Options.Logs"><value>Protokoly</value></data>
+  <data name="Options.LogsDescription"><value>Každá akce má svůj vlastní soubor ve složce Retro Media Lab Logs.</value></data>
+  <data name="Options.LogActionErase"><value>Vymazat</value></data>
+  <data name="Options.LogActionClean"><value>Čisté hlavy</value></data>
+  <data name="Options.OpenLogsFolder"><value>Otevřete složku</value></data>
+  <data name="Options.LogMaximumSize"><value>Maximální velikost</value></data>
+  <data name="Options.KeepLogArchives"><value>Uchovávejte předchozí protokoly</value></data>
+  <data name="Options.LogUnlimitedHint"><value>0 = neomezeně</value></data>
+  <data name="Options.Engines" xml:space="preserve"><value>Moduly</value></data>
+  <data name="Options.Engines.Description" xml:space="preserve"><value>Zvolte nezávisle modul použitý pro každou operaci.</value></data>
+  <data name="Options.Engines.Internal" xml:space="preserve"><value>Interní modul Retro Media Lab</value></data>
+  <data name="Options.Engines.StrictChoice" xml:space="preserve"><value>Vybraný modul se používá striktně. Pokud operaci nezvládne, Retro Media Lab to oznámí a tiše nepoužije druhý modul.</value></data>
+  <data name="Options.EmulationMachineTitle" xml:space="preserve"><value>{0} - {1} : {2}</value></data>
+  <data name="Options.PreferencesTitle"><value>Předvolby</value></data>
+  <data name="Options.EmulationTitle"><value>Emulační preference</value></data>
+  <data name="Options.EmulationModuleTitle"><value>{0} nastavení emulace</value></data>
+  <data name="Options.Themes.Title"><value>Motivy</value></data>
+  <data name="Options.Themes.List"><value>Dostupné motivy</value></data>
+  <data name="Options.Themes.Appearance"><value>Vzhled</value></data>
+  <data name="Options.Themes.PreviewUnavailable"><value>Náhled není k dispozici.</value></data>
+  <data name="Options.Themes.Active"><value>Aktivní motiv: {0}</value></data>
+  <data name="Options.Themes.ApplyHint"><value>Vybraný motiv se použije ihned a zachová se při příštím spuštění aplikace.</value></data>
+  <data name="Options.Themes.Base.Description"><value>Původní rozložení se systémovým, světlým nebo tmavým vzhledem.</value></data>
+
+
+
+
+
+  <data name="Options.Themes.Studio.Description"><value>Pracovní plocha s přesouvatelnými okny a nastavitelnou velikostí. Nechte otevřených několik nástrojů a přepínejte mezi nimi bez ztráty nastavení.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimalizovat</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maximalizovat nebo obnovit</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Správce programů</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Systém</value></data>
+  <data name="Options.Themes.OS.File"><value>Soubor</value></data>
+  <data name="Options.Themes.OS.Window"><value>Okno</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Kaskáda</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Vedle sebe</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Uspořádat ikony</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Obnovit</value></data>
+  <data name="Options.Themes.OS.Move"><value>Přesunout</value></data>
+  <data name="Options.Themes.OS.Size"><value>Změnit velikost</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximalizovat</value></data>
+  <data name="Options.Themes.OS.Open"><value>Otevřít</value></data>
+  <data name="Options.Themes.OS.Description"><value>Původní rozhraní operačního systému, včetně oken, ovládačů a interakcí.</value></data>
+  <data name="Options.Themes.Edition"><value>Varianta</value></data>
+  <data name="Options.Themes.OS.Start"><value>Spustit</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programy</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Číslování</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Modrá</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Stříbro</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Zelená</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Stroje</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Média</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Zápis činností</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Příkazy</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Vyhledávání příkazu</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Žádný odpovídající příkaz</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Vyberte stroj nebo pokračujte v otevřené relaci</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Kontext</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Žádné emulace nejsou otevřeny</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Stroje, mediální dokumenty a kontextové nástroje v jednom pracovním prostoru.</value></data>
+</root>

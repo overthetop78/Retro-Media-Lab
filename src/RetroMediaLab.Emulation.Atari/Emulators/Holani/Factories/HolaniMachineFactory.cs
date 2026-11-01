@@ -1,0 +1,11 @@
+using RetroMediaLab.Emulation.Atari.Emulators.Holani.Constants;
+using HolaniInputFunctions = RetroMediaLab.Emulation.Atari.Emulators.Holani.Functions.InputFunctions;
+
+namespace RetroMediaLab.Emulation.Atari.Emulators.Holani.Factories;
+
+internal sealed class HolaniMachineFactory() : MachineFactory(EmulatorConstants.Entry)
+{
+    internal override IReadOnlySet<string> CartridgeExtensions => EmulatorConstants.CartridgeExtensions;
+    public override void PrepareFirmware(MachineConfiguration configuration, string systemDirectory) => FirmwareRuntimeFunctions.PrepareSystemDirectory(configuration, systemDirectory, validateRequired: false);
+    public override EmulationInputSnapshot PrepareInput(EmulationInputSnapshot snapshot) => HolaniInputFunctions.ToNative(snapshot);
+}

@@ -2,9 +2,9 @@
 
 ## Responsabilités
 
-### `GWGUI.MediaEngine`
+### `RetroMediaLab.MediaEngine`
 
-`GWGUI.MediaEngine` possède quatre responsabilités liées au média lui-même :
+`RetroMediaLab.MediaEngine` possède quatre responsabilités liées au média lui-même :
 
 - lire un média physique et produire un fichier flux ou une image sectorielle ;
 - écrire un fichier flux ou une image sectorielle sur un média physique ;
@@ -14,42 +14,42 @@
   sectorielle.
 
 La conversion d'images compatibles agit sur les représentations physiques (SCP, images sectorielles
-et autres formats compatibles). Elle reste dans `GWGUI.MediaEngine`.
+et autres formats compatibles). Elle reste dans `RetroMediaLab.MediaEngine`.
 
 Il possède les conteneurs, flux, pistes, révolutions, secteurs, blocs, données séquentielles, codecs
 et géométries. Il ne possède plus l’explorateur de fichiers et ne connaît ni les contrôles WPF, ni
 les icônes de l’application, ni les textes traduits.
 
-### `GWGUI.MediaFileSystems`
+### `RetroMediaLab.MediaFileSystems`
 
-`GWGUI.MediaFileSystems` contient la lecture des fichiers de l’explorateur retirée de `GWGUI.MediaEngine`. À partir
-d’une représentation fournie par `GWGUI.MediaEngine`, il détecte les partitions, volumes et systèmes
+`RetroMediaLab.MediaFileSystems` contient la lecture des fichiers de l’explorateur retirée de `RetroMediaLab.MediaEngine`. À partir
+d’une représentation fournie par `RetroMediaLab.MediaEngine`, il détecte les partitions, volumes et systèmes
 de fichiers, puis lit leurs vrais dossiers, fichiers, métadonnées et contenus. Il conserve les noms
 enregistrés dans le média et ne crée pas de faux fichiers pour remplacer un contenu qu’il ne sait
 pas encore lire. Il ne lit et n’écrit aucun média physique, ne
 convertit pas les fichiers flux ou les images sectorielles et ne produit pas leur visualisation
 graphique.
 
-### `GWGUI.MediaAnalysis`
+### `RetroMediaLab.MediaAnalysis`
 
-`GWGUI.MediaAnalysis` analyse les volumes, dossiers et fichiers fournis par
-`GWGUI.MediaFileSystems`. Il détermine les types génériques utiles, leur catégorie sémantique, leur
+`RetroMediaLab.MediaAnalysis` analyse les volumes, dossiers et fichiers fournis par
+`RetroMediaLab.MediaFileSystems`. Il détermine les types génériques utiles, leur catégorie sémantique, leur
 identifiant stable d’icône et leur clé de traduction. Il produit une arborescence indépendante de
 WPF, prête à être affichée par un consommateur.
 
-### `GWGUI.App`
+### `RetroMediaLab.App`
 
-`GWGUI.App` appelle uniquement l'API de `GWGUI.MediaEngine` pour ouvrir et explorer le média. Il
+`RetroMediaLab.App` appelle uniquement l'API de `RetroMediaLab.MediaEngine` pour ouvrir et explorer le média. Il
 traduit les clés reçues, associe les identifiants d’icônes aux ressources graphiques et affiche les
 lignes préparées. Il ne relit pas les octets des fichiers et ne possède pas de règle de reconnaissance
 de contenu.
 
-## Arborescence de `GWGUI.MediaFileSystems`
+## Arborescence de `RetroMediaLab.MediaFileSystems`
 
 Les lecteurs sont rangés sous `FileSystems` selon la nature du système lu :
 
 ```text
-GWGUI.MediaFileSystems
+RetroMediaLab.MediaFileSystems
 ├── FileSystems
 │   ├── Amiga
 │   ├── Apple
@@ -82,25 +82,25 @@ reconnaissance des types utiles à l'explorateur.
 ## Sens autorisé des dépendances
 
 ```text
-GWGUI.App
+RetroMediaLab.App
     ↓
-GWGUI.MediaEngine
+RetroMediaLab.MediaEngine
     ↓
-GWGUI.MediaFileSystems
+RetroMediaLab.MediaFileSystems
     ↓
-GWGUI.MediaAnalysis
+RetroMediaLab.MediaAnalysis
 ```
 
-`GWGUI.App` n'appelle ni `GWGUI.MediaFileSystems` ni `GWGUI.MediaAnalysis` ;
-`GWGUI.MediaEngine` n'appelle pas directement `GWGUI.MediaAnalysis`. Les résultats reviennent par
+`RetroMediaLab.App` n'appelle ni `RetroMediaLab.MediaFileSystems` ni `RetroMediaLab.MediaAnalysis` ;
+`RetroMediaLab.MediaEngine` n'appelle pas directement `RetroMediaLab.MediaAnalysis`. Les résultats reviennent par
 les retours de méthodes dans l'ordre inverse, sans relancer l'exploration ou l'analyse.
 Les contrats de média décodé utilisés par `MediaFileSystems` sont déclarés dans cette bibliothèque
 et implémentés par `MediaEngine`. Les informations que `App` reçoit sont exposées par l'API de
-`MediaEngine`. Aucune référence inverse entre ces projets ni DLL `GWGUI.Domain` n'est nécessaire.
+`MediaEngine`. Aucune référence inverse entre ces projets ni DLL `RetroMediaLab.Domain` n'est nécessaire.
 
-Les références de projets suivent ce graphe. `GWGUI.App` ne référence pas directement
-`GWGUI.MediaFileSystems` ni `GWGUI.MediaAnalysis` ; `GWGUI.MediaFileSystems` ne référence pas
-`GWGUI.MediaEngine`.
+Les références de projets suivent ce graphe. `RetroMediaLab.App` ne référence pas directement
+`RetroMediaLab.MediaFileSystems` ni `RetroMediaLab.MediaAnalysis` ; `RetroMediaLab.MediaFileSystems` ne référence pas
+`RetroMediaLab.MediaEngine`.
 Le raccordement des appels de production reste en cours : `MediaEngine` utilise encore ses anciens
 lecteurs de systèmes de fichiers, et `MediaFileSystems` ne déclenche pas encore la classification
 de `MediaAnalysis`. Le chargement et la double exploration actuellement utilisés par l'application
@@ -108,7 +108,7 @@ restent orchestrés une seule fois dans `MediaEngine` pendant cette extraction.
 
 ## Réutilisation par un émulateur
 
-Un émulateur appelle `GWGUI.MediaEngine` pour monter, lire ou convertir un média. S'il expose
+Un émulateur appelle `RetroMediaLab.MediaEngine` pour monter, lire ou convertir un média. S'il expose
 l'explorateur de fichiers, il demande aussi son résultat à cette même API ; `MediaEngine` déclenche
 alors `MediaFileSystems`, qui déclenche `MediaAnalysis`. Les lecteurs et décodeurs restent communs ;
 ils ne sont pas recopiés dans l'émulateur.
@@ -117,7 +117,7 @@ ils ne sont pas recopiés dans l'émulateur.
 
 ### Du moteur vers les systèmes de fichiers
 
-`GWGUI.MediaEngine` fournit une représentation documentée du média : format du conteneur, capacité,
+`RetroMediaLab.MediaEngine` fournit une représentation documentée du média : format du conteneur, capacité,
 géométrie disponible et accès aux flux, pistes, secteurs, blocs ou données séquentielles. Cette
 représentation ne contient aucune hypothèse sur l’interface qui la consommera.
 
@@ -129,7 +129,7 @@ décodage et sans attribuer de nom aux blocs anonymes.
 
 ### Des systèmes de fichiers vers l’analyse
 
-`GWGUI.MediaFileSystems` fournit les volumes reconnus et leur arborescence réelle. Chaque entrée
+`RetroMediaLab.MediaFileSystems` fournit les volumes reconnus et leur arborescence réelle. Chaque entrée
 porte son nom enregistré, sa nature, sa taille, ses dates disponibles, ses attributs natifs, sa
 référence de stockage, ses enfants, son contenu lorsqu’il a pu être lu, son état de validité et ses
 diagnostics. Une absence de système de fichiers reconnu reste explicitement une absence de résultat ;
@@ -137,7 +137,7 @@ elle n’est pas remplacée par des noms de fichiers inventés.
 
 ### De l’analyse vers l’application
 
-`GWGUI.MediaAnalysis` fournit des lignes hiérarchiques indépendantes de l’interface. Chaque ligne
+`RetroMediaLab.MediaAnalysis` fournit des lignes hiérarchiques indépendantes de l’interface. Chaque ligne
 conserve les données de l’entrée d’origine et ajoute une définition de type comprenant :
 
 - un identifiant technique stable ;
@@ -146,7 +146,7 @@ conserve les données de l’entrée d’origine et ajoute une définition de ty
 - une clé de traduction.
 
 La clé n’est pas traduite dans la bibliothèque d’analyse. L’identifiant d’icône ne désigne pas un
-objet graphique ou un fichier de ressources précis. `GWGUI.App` effectue ces deux adaptations au
+objet graphique ou un fichier de ressources précis. `RetroMediaLab.App` effectue ces deux adaptations au
 dernier moment, selon sa langue et son thème actifs.
 
 ## Règles d’identification

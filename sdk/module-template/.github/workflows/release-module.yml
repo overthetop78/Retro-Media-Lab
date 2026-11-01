@@ -1,4 +1,4 @@
-name: Publish GW GUI module
+name: Publish Retro Media Lab module
 
 on:
   push:
@@ -28,13 +28,13 @@ jobs:
           if ($manifest.updateCatalogUrl -ne "https://github.com/${{ github.repository }}/releases/download/module-catalog/update-catalog.json") {
             throw 'module.json does not point to this repository module-catalog release.'
           }
-          dotnet publish .\GWGUI.Emulation.Module.csproj -c Release -r win-x64 --self-contained false -p:Version=$version -o .\dist\publish
+          dotnet publish .\RetroMediaLab.Emulation.Module.csproj -c Release -r win-x64 --self-contained false -p:Version=$version -o .\dist\publish
           if ($LASTEXITCODE -ne 0) { throw 'Module publish failed.' }
           $root = ".\dist\package\Modules\$($manifest.id)"
           New-Item -ItemType Directory -Path $root -Force | Out-Null
           Copy-Item .\dist\publish\* $root -Recurse -Force
           Copy-Item .\module.json $root -Force
-          $archive = ".\dist\GW-GUI-Module-$($manifest.id)-$version-win-x64.zip"
+          $archive = ".\dist\Retro-Media-Lab-Module-$($manifest.id)-$version-win-x64.zip"
           Compress-Archive -Path .\dist\package\Modules -DestinationPath $archive
           $sha = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
           "$sha  $([IO.Path]::GetFileName($archive))" | Set-Content "$archive.sha256" -Encoding ascii
@@ -80,7 +80,7 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME $env:MODULE_ARCHIVE "$env:MODULE_ARCHIVE.sha256" --verify-tag --latest=false --generate-notes --title "GW GUI module $env:MODULE_ID $env:MODULE_VERSION"
+        run: gh release create $env:GITHUB_REF_NAME $env:MODULE_ARCHIVE "$env:MODULE_ARCHIVE.sha256" --verify-tag --latest=false --generate-notes --title "Retro Media Lab module $env:MODULE_ID $env:MODULE_VERSION"
       - name: Publish module catalog
         shell: pwsh
         env:

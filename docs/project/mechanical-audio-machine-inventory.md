@@ -8,18 +8,18 @@ Modèles énumérés/référencés : `BbcMaster128`, `BbcMicroModelA`, `BbcMicro
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Acorn/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Acorn/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Acorn/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:16` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cassette),`
-- `src/GWGUI.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:22` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
-- `src/GWGUI.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:28` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
-- `src/GWGUI.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:34` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
-- `src/GWGUI.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:40` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:16` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cassette),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:22` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:28` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:34` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:40` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge),`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -29,18 +29,18 @@ Identifiants des définitions de modèles : `ModelConstants.Cpc464`, `ModelConst
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/CpcClassic/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/CpcPlus/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/Gx4000/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/CpcClassic/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/CpcPlus/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Gx4000/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/Common/Constants/StorageConstants.cs:24` : `internal const int MaximumFloppyDrives = 2;`
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/GWGUI.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Constants/StorageConstants.cs:24` : `internal const int MaximumFloppyDrives = 2;`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -50,19 +50,19 @@ Modèles énumérés/référencés : `AppleII`, `AppleIIJPlus`, `AppleIIPlus`, `
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Apple/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Apple/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Apple/Common/Machines/Common/Enums/MachineEnums.cs`
-- `src/GWGUI.Emulation.Apple/Common/Machines/Macintosh/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Apple/Common/Machines/Pippin/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/Macintosh/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/Pippin/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs:24` : `Array.AsReadOnly(new[] { HardwareStorageCapability.Floppy, HardwareStorageCapability.HardDisk,`
-- `src/GWGUI.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs:25` : `HardwareStorageCapability.Cassette }),`
-- `src/GWGUI.Emulation.Apple/Common/Machines/Macintosh/Dictionaries/ModelCatalog.cs:28` : `Array.AsReadOnly(hardDisk ? new[] { HardwareStorageCapability.Floppy, HardwareStorageCapability.HardDisk } : new[] { HardwareStorageCapability.Floppy }),`
-- `src/GWGUI.Emulation.Apple/Common/Machines/Pippin/Dictionaries/ModelCatalog.cs:15` : `[HardwareVideoCapability.Taos], [HardwareAudioCapability.Awacs], [HardwareStorageCapability.CompactDisc],`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs:24` : `Array.AsReadOnly(new[] { HardwareStorageCapability.Floppy, HardwareStorageCapability.HardDisk,`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs:25` : `HardwareStorageCapability.Cassette }),`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/Macintosh/Dictionaries/ModelCatalog.cs:28` : `Array.AsReadOnly(hardDisk ? new[] { HardwareStorageCapability.Floppy, HardwareStorageCapability.HardDisk } : new[] { HardwareStorageCapability.Floppy }),`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/Pippin/Dictionaries/ModelCatalog.cs:15` : `[HardwareVideoCapability.Taos], [HardwareAudioCapability.Awacs], [HardwareStorageCapability.CompactDisc],`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -72,26 +72,26 @@ Modèles énumérés/référencés : `Atari130Xe`, `Atari2600`, `Atari400`, `Ata
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Atari/Common/Machines/Atari2600/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Atari5200/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Atari7800/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Atari8Bit/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/AtariLynx/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/AtariST/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari2600/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari5200/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari7800/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari8Bit/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariLynx/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariST/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Atari/Common/Machines/Atari2600/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Atari5200/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Atari7800/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
-- `src/GWGUI.Emulation.Atari/Common/Machines/Atari8Bit/Dictionaries/ModelCatalog.cs:10` : `private static readonly IReadOnlyList<HardwareStorageCapability> Storage = HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge);`
-- `src/GWGUI.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs:16` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
-- `src/GWGUI.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs:21` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge, HardwareStorageCapability.CompactDisc),`
-- `src/GWGUI.Emulation.Atari/Common/Machines/AtariLynx/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari2600/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari5200/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari7800/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari8Bit/Dictionaries/ModelCatalog.cs:10` : `private static readonly IReadOnlyList<HardwareStorageCapability> Storage = HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge);`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs:16` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs:21` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge, HardwareStorageCapability.CompactDisc),`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariLynx/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -101,9 +101,9 @@ Modèles énumérés/référencés : `Playdia`, `SwanCrystal`, `TamagotchiP1`, `
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Bandai/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Bandai/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Bandai/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Bandai/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Bandai/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Bandai/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -117,9 +117,9 @@ Modèles énumérés/référencés : `Adam`, `ColecoVision`.
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Coleco/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Coleco/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Coleco/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Coleco/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Coleco/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Coleco/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -133,56 +133,56 @@ Identifiants des définitions de modèles : `ModelConstants.C128`, `ModelConstan
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Commodore/Common/Machines/AmigaCD32/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/AmigaComputers/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/C128/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/C64/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CommodoreCDTV/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Vic20/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/AmigaCD32/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/AmigaComputers/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/C128/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/C64/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CommodoreCDTV/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Vic20/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Commodore/Common/Machines/AmigaCD32/Dictionaries/ModelCatalog.cs:14` : `HasBuiltInFloppyDrive: false, HasKeyboard: false);`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/AmigaComputers/Contracts/ModelContracts.cs:15` : `bool SupportsHardDrives = true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/AmigaComputers/Contracts/ModelContracts.cs:20` : `bool HasBuiltInFloppyDrive = true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/C128/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/C64/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/C64/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/C64/Dictionaries/ModelCatalog.cs:29` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:29` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:37` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:45` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:53` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:61` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/CommodoreCDTV/Dictionaries/ModelCatalog.cs:14` : `HasBuiltInFloppyDrive: false);`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Contracts/ModelContracts.cs:14` : `bool HasBuiltInFloppyDrive,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Contracts/ModelContracts.cs:20` : `public int MaximumFloppyDrives => (int)FloppyDriveCapacity;`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Contracts/ModelContracts.cs:21` : `public int MaximumHardDrives => (int)HardDriveCapacity;`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Contracts/ModelContracts.cs:22` : `public bool SupportsHardDrives => HardDriveCapacity != DriveCapacity.None;`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:29` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:37` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:45` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:53` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:61` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:69` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:77` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:85` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:93` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:101` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs:29` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs:37` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Vic20/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
-- `src/GWGUI.Emulation.Commodore/Common/Machines/Vic20/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/AmigaCD32/Dictionaries/ModelCatalog.cs:14` : `HasBuiltInFloppyDrive: false, HasKeyboard: false);`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/AmigaComputers/Contracts/ModelContracts.cs:15` : `bool SupportsHardDrives = true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/AmigaComputers/Contracts/ModelContracts.cs:20` : `bool HasBuiltInFloppyDrive = true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/C128/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/C64/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/C64/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/C64/Dictionaries/ModelCatalog.cs:29` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:29` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:37` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:45` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:53` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CbmII/Dictionaries/ModelCatalog.cs:61` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/CommodoreCDTV/Dictionaries/ModelCatalog.cs:14` : `HasBuiltInFloppyDrive: false);`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Contracts/ModelContracts.cs:14` : `bool HasBuiltInFloppyDrive,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Contracts/ModelContracts.cs:20` : `public int MaximumFloppyDrives => (int)FloppyDriveCapacity;`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Contracts/ModelContracts.cs:21` : `public int MaximumHardDrives => (int)HardDriveCapacity;`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Contracts/ModelContracts.cs:22` : `public bool SupportsHardDrives => HardDriveCapacity != DriveCapacity.None;`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:29` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:37` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:45` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:53` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:61` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:69` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:77` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:85` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:93` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Pet/Dictionaries/ModelCatalog.cs:101` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs:29` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Plus4/Dictionaries/ModelCatalog.cs:37` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Vic20/Dictionaries/ModelCatalog.cs:13` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
+- `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Vic20/Dictionaries/ModelCatalog.cs:21` : `HasCdDrive: false, HasBuiltInFloppyDrive: false, HasKeyboard: true,`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -192,9 +192,9 @@ Modèles énumérés/référencés : `CassetteVision`, `CassetteVisionJr`, `Supe
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Epoch/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Epoch/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Epoch/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Epoch/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Epoch/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Epoch/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -208,16 +208,16 @@ Modèles énumérés/référencés : `ExampleMachineA`, `ExampleMachineB`, `disq
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Example/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Example/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Example/Common/Machines/Common/Enums/MachineEnums.cs`
-- `src/GWGUI.Emulation.Example/Common/Machines/ExampleMachineA/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Example/Common/Machines/ExampleMachineB/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Example/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Example/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Example/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Example/Common/Machines/ExampleMachineA/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Example/Common/Machines/ExampleMachineB/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Example/Common/Machines/ExampleMachineA/Dictionaries/ModelCatalog.cs:15` : `[HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.HardDisk],`
-- `src/GWGUI.Emulation.Example/Common/Machines/ExampleMachineB/Dictionaries/ModelCatalog.cs:15` : `[HardwareStorageCapability.Cartridge, HardwareStorageCapability.MemoryCard],`
+- `src/RetroMediaLab.Emulation.Example/Common/Machines/ExampleMachineA/Dictionaries/ModelCatalog.cs:15` : `[HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.HardDisk],`
+- `src/RetroMediaLab.Emulation.Example/Common/Machines/ExampleMachineB/Dictionaries/ModelCatalog.cs:15` : `[HardwareStorageCapability.Cartridge, HardwareStorageCapability.MemoryCard],`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -227,9 +227,9 @@ Modèles énumérés/référencés : `ChannelF`, `ChannelFSystemII`.
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Fairchild/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Fairchild/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Fairchild/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Fairchild/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Fairchild/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Fairchild/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -243,9 +243,9 @@ Modèles énumérés/référencés : `Intellivision`.
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Mattel/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Mattel/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Mattel/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Mattel/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Mattel/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Mattel/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -259,20 +259,20 @@ Identifiants des définitions de modèles : `ModelConstants.Xbox`, `ModelConstan
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:9` : `ControllerPortCount: 4, HasBuiltInCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:10` : `SupportsCompactDiscDrive: true, CpuModels: [ModelConstants.CpuPentiumIii],`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:15` : `ControllerPortCount: 4, HasBuiltInCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:16` : `SupportsCompactDiscDrive: false, CpuModels: [ModelConstants.CpuXenon],`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:9` : `ControllerPortCount: 4, HasBuiltInCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:10` : `SupportsCompactDiscDrive: true, CpuModels: [ModelConstants.CpuPentiumIii],`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:15` : `ControllerPortCount: 4, HasBuiltInCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:16` : `SupportsCompactDiscDrive: false, CpuModels: [ModelConstants.CpuXenon],`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -280,74 +280,74 @@ Références acoustiques commerciales : à établir à partir des lecteurs inté
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Nec/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc8801/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8801/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:19` : `bool HasBuiltInCdDrive,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:20` : `bool SupportsCdDrive,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:21` : `bool SupportsHardDrives = false);`
-- `src/GWGUI.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc8001/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc8001/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false);`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc8801/Constants/MachineConstants.cs:20` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc8801/Constants/MachineConstants.cs:25` : `HasBuiltInCdDrive: false, SupportsCdDrive: false);`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc9801/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc9801/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false, SupportsHardDrives: true);`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc9821/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
-- `src/GWGUI.Emulation.Nec/Common/Machines/Pc9821/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false, SupportsHardDrives: true);`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
-- `src/GWGUI.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:23` : `internal const bool SupportsCdDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:19` : `bool HasBuiltInCdDrive,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:20` : `bool SupportsCdDrive,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:21` : `bool SupportsHardDrives = false);`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8001/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8001/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false);`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8801/Constants/MachineConstants.cs:20` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8801/Constants/MachineConstants.cs:25` : `HasBuiltInCdDrive: false, SupportsCdDrive: false);`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9801/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9801/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false, SupportsHardDrives: true);`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9821/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9821/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false, SupportsHardDrives: true);`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:23` : `internal const bool SupportsCdDrive = false;`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -357,19 +357,19 @@ Identifiants des définitions de modèles : `ModelConstants.FamicomDisk`, `Model
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs:45` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs:48` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs:51` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs:45` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs:48` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs:51` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -379,10 +379,10 @@ Modèles énumérés/référencés : `ThreeDO`.
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Panasonic/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Panasonic/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Panasonic/Common/Machines/Common/Enums/MachineEnums.cs`
-- `src/GWGUI.Emulation.Panasonic/Common/Machines/ThreeDO/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Panasonic/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Panasonic/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Panasonic/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Panasonic/Common/Machines/ThreeDO/Dictionaries/HardwareModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -396,9 +396,9 @@ Modèles énumérés/référencés : `JopacJo7400`, `Odyssey2`, `P2000T`, `Phili
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Philips/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Philips/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Philips/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Philips/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Philips/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Philips/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -412,21 +412,21 @@ Identifiants des définitions de modèles : `ModelConstants.Atomiswave`, `ModelC
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:36` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:40` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:44` : `false, ModelConstants.NoDrive, ModelConstants.NoDrive, false, false, true, true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:48` : `false, ModelConstants.NoDrive, ModelConstants.NoDrive, false, false, true, true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:62` : `false, false, true, true, HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:36` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:40` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:44` : `false, ModelConstants.NoDrive, ModelConstants.NoDrive, false, false, true, true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:48` : `false, ModelConstants.NoDrive, ModelConstants.NoDrive, false, false, true, true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:62` : `false, false, true, true, HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -436,9 +436,9 @@ Modèles énumérés/référencés : `X1`, `X1Turbo`, `X1TurboZ`, `X68000`, `X68
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Sharp/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Sharp/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Sharp/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Sharp/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Sharp/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Sharp/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -452,9 +452,9 @@ Modèles énumérés/référencés : `Pentagon1024K`, `Pentagon128K`, `Pentagon5
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Sinclair/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Sinclair/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Sinclair/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Sinclair/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Sinclair/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Sinclair/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -468,9 +468,9 @@ Modèles énumérés/référencés : `NeoGeoAes`, `NeoGeoCd`, `NeoGeoCdz`, `NeoG
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Snk/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Snk/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Snk/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Snk/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Snk/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Snk/Common/Machines/Common/Enums/MachineEnums.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -484,26 +484,26 @@ Identifiants des définitions de modèles : `ModelConstants.PlayStation`, `Model
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Sony/Common/Machines/PocketStation/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/PocketStation/Dictionaries/ModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:9` : `(int)RamCapacity._2MB, false, 0, 0, false, false, false, false, HasBuiltInCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:10` : `SupportsCompactDiscDrive: true, CpuModels: [ModelConstants.CpuR3000A],`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:14` : `(int)RamCapacity._32MB, false, 0, 0, false, false, false, false, HasBuiltInCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:15` : `SupportsCompactDiscDrive: true, CpuModels: [ModelConstants.CpuR5900],`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:20` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:30` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:35` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:40` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/GWGUI.Emulation.Sony/Common/Machines/PocketStation/Dictionaries/ModelCatalog.cs:12` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:9` : `(int)RamCapacity._2MB, false, 0, 0, false, false, false, false, HasBuiltInCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:10` : `SupportsCompactDiscDrive: true, CpuModels: [ModelConstants.CpuR3000A],`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:14` : `(int)RamCapacity._32MB, false, 0, 0, false, false, false, false, HasBuiltInCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:15` : `SupportsCompactDiscDrive: true, CpuModels: [ModelConstants.CpuR5900],`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:20` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:30` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:35` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:40` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/PocketStation/Dictionaries/ModelCatalog.cs:12` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -513,11 +513,11 @@ Modèles énumérés/référencés : `Mo5`, `Mo6`, `To7`, `To770`, `To8`, `To8D`
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Thomson/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Thomson/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Thomson/Common/Machines/Common/Enums/MachineEnums.cs`
-- `src/GWGUI.Emulation.Thomson/Common/Machines/Mo/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Thomson/Common/Machines/To/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Thomson/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Thomson/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Thomson/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Thomson/Common/Machines/Mo/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Thomson/Common/Machines/To/Dictionaries/HardwareModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -531,10 +531,10 @@ Modèles énumérés/référencés : `Supervision`.
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Watara/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Watara/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Watara/Common/Machines/Common/Enums/MachineEnums.cs`
-- `src/GWGUI.Emulation.Watara/Common/Machines/Supervision/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Watara/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Watara/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Watara/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Watara/Common/Machines/Supervision/Dictionaries/HardwareModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
@@ -548,10 +548,10 @@ Modèles énumérés/référencés : `CC800`, `NC1020`, `NC2000`, `NC3000`, `PC1
 
 Catalogues sources :
 
-- `src/GWGUI.Emulation.Wenquxing/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
-- `src/GWGUI.Emulation.Wenquxing/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
-- `src/GWGUI.Emulation.Wenquxing/Common/Machines/Common/Enums/MachineEnums.cs`
-- `src/GWGUI.Emulation.Wenquxing/Common/Machines/ElectronicDictionaries/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Wenquxing/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Wenquxing/Common/Machines/Common/Dictionaries/ModelCatalog.cs`
+- `src/RetroMediaLab.Emulation.Wenquxing/Common/Machines/Common/Enums/MachineEnums.cs`
+- `src/RetroMediaLab.Emulation.Wenquxing/Common/Machines/ElectronicDictionaries/Dictionaries/HardwareModelCatalog.cs`
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 

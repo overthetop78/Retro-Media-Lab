@@ -7,7 +7,7 @@ le mécanisme en production et conserve l'inventaire des clés pour vérifier le
 
 ## Fonctionnement actuel
 
-`src/GWGUI.App/Localization/Extensions/LocExtension.cs` construit un index des clés depuis
+`src/RetroMediaLab.App/Localization/Extensions/LocExtension.cs` construit un index des clés depuis
 les catalogues neutres nommés dans `Constants/Localization/LocalizationCatalogNames.cs`.
 Chaque catalogue utilise `ResourceManager` et les ressources de l'assembly App. Une clé absente
 est présentée sous la forme `[clé]`. `Get` utilise la culture UI pour le texte et la culture
@@ -37,7 +37,7 @@ invariants restent uniquement dans la base appropriée.
 
 ## Cultures distribuées
 
-La liste provient de `src/GWGUI.App/Dictionaries/Localization/UiLanguageCatalog.cs` et des
+La liste provient de `src/RetroMediaLab.App/Dictionaries/Localization/UiLanguageCatalog.cs` et des
 répertoires de ressources. Le repli de langue déclaré par App est `en-US`.
 
 ar-SA, cs-CZ, da-DK, de-DE, el-GR, en-US, es-ES, fi-FI, fr-FR, he-IL, hu-HU,
@@ -51,7 +51,7 @@ les traductions nouvelles ou manquantes ; le script existant est `scripts/tools/
 
 La liste suivante relève les consommateurs de métadonnées de module ; les appels de textes
 communs présents dans les mêmes fichiers restent à distinguer des clés issues du module.
-Tous les chemins sont relatifs à `src/GWGUI.App/`.
+Tous les chemins sont relatifs à `src/RetroMediaLab.App/`.
 
 | Fichier | Échanges concernés |
 |---|---|
@@ -91,7 +91,7 @@ que lorsque leur propriété est établie par l'inventaire de leurs usages.
 Le contrat commun `IEmulationModuleLocalization` reçoit une clé et une `CultureInfo`, retourne un indicateur de présence
 et la valeur trouvée. Les ressources de toutes les cultures sont embarquées dans l'assembly
 principal du module, avec des noms distincts, sans assembly satellite à installer. Les sources
-restent des RESX maintenables avec Argos. Un lecteur commun dans `GWGUI.Emulation` réalise
+restent des RESX maintenables avec Argos. Un lecteur commun dans `RetroMediaLab.Emulation` réalise
 la recherche ; les modules n'accèdent ni à `LocExtension` ni aux types WPF.
 
 `LocExtension` applique ensuite le formatage existant avec `LocalizationSource.Culture`.

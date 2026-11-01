@@ -1,0 +1,25 @@
+using RetroMediaLab.App.Theme.Common;
+using RetroMediaLab.Infrastructure.Settings.Hardware;
+using RetroMediaLab.App.Enums.Services.Dialogs;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RetroMediaLab.App.Views.Dialogs.Hardware;
+
+public partial class HardwareUnavailableWindow : Window
+{
+    public MissingHardwareChoice Choice { get; private set; } = MissingHardwareChoice.Continue;
+
+    public HardwareUnavailableWindow(IReadOnlyList<ControllerSettings> controllers)
+    {
+        InitializeComponent();
+        MissingControllers.ItemsSource = controllers.Select(controller => $"{controller.Model} — {controller.UsbId} — {controller.LastPort}").ToArray();
+    }
+
+    private void Choice_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string value } && Enum.TryParse(value, out MissingHardwareChoice choice))
+            Choice = choice;
+        ThemeDialogCompletion.Complete(this, true);
+    }
+}

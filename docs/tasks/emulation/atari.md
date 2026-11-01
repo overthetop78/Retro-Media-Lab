@@ -19,7 +19,7 @@
   - [ ] 4.1 Diagnostiquer la transition exacte
     - [ ] Modifier `docs/reference/atari-libretro.md` avec le journal et la transition reproduite avant de modifier le code de montage ou d’éjection du moteur Jaguar.
   - [ ] 4.2 Appliquer et vérifier la correction
-    - [ ] Modifier les fonctions Jaguar concernées sous `src/GWGUI.Emulation.Atari` puis compléter `docs/reference/atari-libretro.md` avec le test réussi de changement et d’éjection du disque.
+    - [ ] Modifier les fonctions Jaguar concernées sous `src/RetroMediaLab.Emulation.Atari` puis compléter `docs/reference/atari-libretro.md` avec le test réussi de changement et d’éjection du disque.
 - [ ] 5. Écrire le guide utilisateur Atari
   - [ ] 5.1 Documenter les parcours réellement validés
     - [ ] Créer `wiki/fr-FR/Emulation-Atari.md` et `wiki/en-US/Atari-Emulation.md` avec l’installation du module, le choix d’une machine, des firmwares, des médias, du moteur et des contrôleurs après validation des parcours correspondants.

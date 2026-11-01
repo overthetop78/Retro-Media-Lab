@@ -14,7 +14,7 @@ Le port A du VIA transporte les données et le port B programme le verrou IC32. 
 
 ### Fichiers et échanges
 
-Chemins relatifs à `src/GWGUI.Emulation.Acorn/Emulators/AcornEmu/` :
+Chemins relatifs à `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/` :
 
 | Fichier | Rôle, propriété et liaison |
 | --- | --- |
@@ -43,7 +43,7 @@ Recherche du 25 octobre 2026. Les caractéristiques communes aux BBC Micro sont 
 
 ### Vidéo AcornEmu : ROM externe et balayage — implémentation du 25 octobre 2026
 
-Le cœur est une implémentation C# interne au module Acorn : il exécute le CPU et les composants dans le processus de GW GUI, sans Libretro, B2, programme auxiliaire ou DLL d'émulateur externe. Les images ROM restent des données utilisateur externes.
+Le cœur est une implémentation C# interne au module Acorn : il exécute le CPU et les composants dans le processus de Retro Media Lab, sans Libretro, B2, programme auxiliaire ou DLL d'émulateur externe. Les images ROM restent des données utilisateur externes.
 
 **ROM de caractères.** Le réglage ROM possède désormais un troisième emplacement obligatoire, `acornemu.characters`, distinct des champs MOS et langage. Choisir le fichier externe `saa5050`. Le profil matériel Model A déclare le rôle `CharacterGenerator` dans Common. La reconnaissance et le contrôle des 960 octets sont communs ; l'adaptateur ne fait que relier ce rôle au champ et demander son chargement. La ROM n'est pas remplacée par les caractères du MOS et ses octets ne sont pas intégrés au code.
 
@@ -225,7 +225,7 @@ Pour MOS 0.92 et 1.00, les empreintes sont identifiées dans MAME ; aucun lien b
 | `os01.rom` | Variante MOS 0.10 avec ses propres routines et limitations. | Même famille de matériel, mais comportements logiciels à conserver pour cette version. | Banque système correspondant au montage ancien ; ne pas lui attribuer automatiquement la pagination du MOS 1.20. |
 | `basic1.rom` | BASIC I, associé au profil ancien étudié. | CPU, RAM et services du MOS chargé. | Fenêtre de langage ; les copies de banques effectuées dans MAME sont une représentation logicielle du profil. |
 
-Les ROM ne se transmettent pas des objets C# : le **CPU exécute leurs instructions**, avec des appels et lectures/écritures sur les adresses de la machine. Le cœur expose les composants qui répondent à ces accès. Les interfaces C# concernent la liaison entre le cœur, le Common du module et GW GUI.
+Les ROM ne se transmettent pas des objets C# : le **CPU exécute leurs instructions**, avec des appels et lectures/écritures sur les adresses de la machine. Le cœur expose les composants qui répondent à ces accès. Les interfaces C# concernent la liaison entre le cœur, le Common du module et Retro Media Lab.
 
 Les rôles reposent sur les [déclarations de ROM MAME](https://github.com/mamedev/mame/blob/84981cc15cfc1429e48f098d80c6dd97bc82a0bc/src/mame/acorn/bbcb.cpp#L778), les [profils B-Em](https://github.com/stardot/b-em/blob/a76c3655140a9fc3c70ecef25660932e0890b1e5/b-em.cfg#L7) et les références MOS de la fiche de gamme.
 
@@ -265,9 +265,9 @@ Pour suivre les routines instruction par instruction, le [réassemblage MOS comm
 
 Cette table relie les éléments techniques documentés dans [l'architecture BBC Micro](../bbc-micro-architecture.md). Elle définit les échanges à représenter, pas des méthodes C# qui existeraient déjà dans AcornEmu.
 
-## Raccordement aux fichiers déjà présents dans GW GUI
+## Raccordement aux fichiers déjà présents dans Retro Media Lab
 
-Les chemins suivants sont relatifs à `src/GWGUI.Emulation.Acorn/`. Leur rôle a été relevé dans les sources locales. Le premier cœur AcornEmu est désormais créé ; ses fichiers et ses limites sont détaillés ci-dessous.
+Les chemins suivants sont relatifs à `src/RetroMediaLab.Emulation.Acorn/`. Leur rôle a été relevé dans les sources locales. Le premier cœur AcornEmu est désormais créé ; ses fichiers et ses limites sont détaillés ci-dessous.
 
 | Fichier existant | Rôle et liaison |
 | --- | --- |
@@ -287,7 +287,7 @@ Les chemins suivants sont relatifs à `src/GWGUI.Emulation.Acorn/`. Leur rôle a
 | `Common/Services/AudioOutputController.cs` | Sortie audio de la session, distincte de l'émulation du PSG et de ses registres. |
 | `Common/Services/StateStore.cs` | Service existant de persistance des états ; le contenu matériel du futur cœur devra passer par les contrats de sauvegarde existants. |
 | `Emulators/B2/Factories/B2MachineFactory.cs` | Adaptateur B2 existant ; fournit ses réglages et conversions de modèles. Ce fichier n'implémente pas le CPU ou le matériel BBC. |
-| `Emulators/B2/Functions/ModelFunctions.cs` | Correspondance entre modèles GW GUI et options B2 ; les cas actuels comprennent B, B+, B+128 et Master 128. |
+| `Emulators/B2/Functions/ModelFunctions.cs` | Correspondance entre modèles Retro Media Lab et options B2 ; les cas actuels comprennent B, B+, B+128 et Master 128. |
 | `Emulators/Common/Interop/Factories/MachineFactory.cs` | Fabrique partagée des cœurs externes : création du processus et raccordement libretro. Elle est liée à ce mode d'exécution ; elle n'est pas à considérer automatiquement comme la base d'un cœur interne. |
 
 ### Chaîne d'interconnexion à conserver
@@ -333,13 +333,13 @@ Implémentation du 25 octobre 2026. Le cœur démarre effectivement sur **MOS 1.
 
 ### Inventaire des fichiers créés
 
-Tous les chemins de cette table sont relatifs à `src/GWGUI.Emulation.Acorn/Emulators/AcornEmu/`.
+Tous les chemins de cette table sont relatifs à `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/`.
 
 | Fichier | Rôle, données et liaisons |
 | --- | --- |
 | `Constants/EmulatorConstants.cs` | Identité `acornemu`, nom, version du cœur et identifiants `acornemu.mos`/`acornemu.basic` des champs de firmware. Utilisé par la fabrique, le chargeur et le runtime. |
 | `Constants/HardwareConstants.cs` | Fréquence CPU, taille RAM/ROM et géométrie du premier rendu. Partagé par la carte, la vidéo et le contrat de runtime ; ces constantes ne sont pas des réglages de l'hôte. |
-| `Interfaces/ICpuBus.cs` | Accès mémoire, progression d'un cycle et ligne IRQ. Le CPU emprunte ce contrat à la carte sans connaître les services de GW GUI. |
+| `Interfaces/ICpuBus.cs` | Accès mémoire, progression d'un cycle et ligne IRQ. Le CPU emprunte ce contrat à la carte sans connaître les services de Retro Media Lab. |
 | `Services/Cpu6502.cs` | Registres A/X/Y/S/P/PC, pile, vecteurs, IRQ, accès au bus, comptage des cycles et arithmétique binaire/décimale NMOS. Le bus possède la mémoire ; le CPU ne la duplique pas. |
 | `Services/Cpu6502.Instructions.cs` | Décode les instructions officielles et leurs adressages, pénalités de page, branches, appels/retours et opérations mémoire. Complète la même classe CPU, sans second état de processeur. |
 | `Services/Via6522.cs` | Registres des ports, directions, timers, IFR/IER, contrôles et acquittements. Les fonctions de broches sont raccordées par la carte ; `Tick` avance le VIA à 1 MHz. La ligne IRQ est lue par le CPU. |
@@ -381,7 +381,7 @@ Le fichier existant `Common/Machines/Common/Enums/CoreEnums.cs` ajoute `AcornEmu
 
 ### Vérifications effectuées
 
-`tests/GWGUI.LocalEmulationTests/Emulation/AcornEmuTests.cs` contient sept tests autonomes, sans ROM, fichier ni application externe : intégration Common et options de firmware, addition/retenue, JMP indirect NMOS, arithmétique décimale, acquittement timer VIA, alias RAM/protection ROM et rendu mode 4.
+`tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuTests.cs` contient sept tests autonomes, sans ROM, fichier ni application externe : intégration Common et options de firmware, addition/retenue, JMP indirect NMOS, arithmétique décimale, acquittement timer VIA, alias RAM/protection ROM et rendu mode 4.
 
 Deux tests temporaires supplémentaires ont lu les ROM et le programme CPU en mémoire, sans enregistrer leurs octets sur disque : validation fonctionnelle 6502 et démarrage/saisie BASIC. Ils ont passé avant suppression de leur source temporaire. Les neuf cas ciblés ont passé ensemble. Ils n'ont créé aucune fenêtre, aucun processus d'émulation séparé ni dossier de session.
 
@@ -400,7 +400,7 @@ Ces références complètent les tableaux de registres et de branchements déjà
 
 ### Tester le build Debug
 
-Le build ciblé a réussi avec `scripts/local-building.cmd --building=debug --modules=acorn`. L'exécutable est `build/Debug/GW GUI/gwgui.exe`. Le seul module de marque produit est Acorn ; Example reste fourni automatiquement par le script existant. La DLL Acorn distribuée a la même empreinte que la DLL compilée.
+Le build ciblé a réussi avec `scripts/local-building.cmd --building=debug --modules=acorn`. L'exécutable est `build/Debug/Retro Media Lab/retromedialab.exe`. Le seul module de marque produit est Acorn ; Example reste fourni automatiquement par le script existant. La DLL Acorn distribuée a la même empreinte que la DLL compilée.
 
 - Créer une machine **BBC Micro Model A** et sélectionner **AcornEmu**.
 - Dans les réglages ROM, choisir les fichiers **MOS 1.20** et **BASIC II** externes dont les téléchargements figurent plus haut.
@@ -486,15 +486,15 @@ Le premier essai utilisateur confirme le démarrage, le clavier alphabétique et
 
 | Fichier | Rôle et liaison |
 | --- | --- |
-| `src/GWGUI.App/Functions/Input/Keyboard/EmulationKeyMapper.HostCharacters.cs` | Traduit les touches maintenues par `ToUnicodeEx`, avec la disposition active du thread de saisie et les modificateurs. Ce fichier ne connaît aucune marque ni machine émulée. Le drapeau 4 préserve l'état Windows des touches mortes. |
-| `src/GWGUI.App/Controllers/Emulation/Machine/MachineInputController.cs` | Conserve la résolution prioritaire des raccourcis globaux et des affectations de machine. Retire les sources déjà consommées de la lecture physique complémentaire, puis publie les touches et caractères via le contrat d'entrée. Les cibles explicitement affectées restent des commandes, sans traduction de caractère concurrente. |
-| `src/GWGUI.Emulation/Contracts/EmulationInputSnapshot.cs` | Transporte `Keys` et `HostCharacters`, dictionnaire des caractères par touche hôte maintenue. Cette donnée est indépendante du matériel émulé ; une entrée peut aussi contenir uniquement des commandes physiques. |
-| `src/GWGUI.Emulation/Functions/EmulationInputMappingFunctions.cs` et `Services/EmulationInputFrameStore.cs` | Copient et conservent les caractères dans les instantanés de frame. L'accumulateur existant conserve également cette propriété avec les états absolus. |
-| `src/GWGUI.Emulation/Functions/EmulationHostProtocolFunctions.cs` | Transporte les mêmes caractères entre processus par l'interface de protocole commune déjà utilisée par les modules. Après les touches : nombre d'associations (−1 en leur absence), puis identité de touche sur 32 bits et caractère UTF-16 sur 16 bits. Les nombres invalides et doublons sont refusés. |
-| `src/GWGUI.Emulation.Acorn/Common/Machines/Common/Functions/InputFunctions.Snapshot.cs` | Les projections existantes par `with` conservent les caractères pendant le passage Common. Aucun chemin App→Acorn direct n'est ajouté. |
-| `src/GWGUI.Emulation.Acorn/Emulators/AcornEmu/Dictionaries/KeyboardDictionary.cs` | Décrit les contacts BBC et le SHIFT requis pour les symboles ; décrit aussi la correspondance des touches de pavé numérique avec les contacts existants. Les positions de `@`, des crochets et de la barre oblique inverse ont été vérifiées contre MAME. |
-| `src/GWGUI.Emulation.Acorn/Emulators/AcornEmu/Services/Keyboard.cs` | Convertit les caractères hôtes en contacts matériels, puis applique les commandes physiques. Reconstruit la matrice à chaque instantané pour relâcher touches et SHIFT synthétique. Les lettres conservent la gestion CAPS LOCK/SHIFT LOCK du MOS. Un espace ne modifie pas SHIFT. |
-| `src/GWGUI.Emulation.Acorn/Emulators/AcornEmu/Services/ModelAMachine.cs` | Fournit les touches et caractères à la matrice avant les interrogations du VIA. |
+| `src/RetroMediaLab.App/Functions/Input/Keyboard/EmulationKeyMapper.HostCharacters.cs` | Traduit les touches maintenues par `ToUnicodeEx`, avec la disposition active du thread de saisie et les modificateurs. Ce fichier ne connaît aucune marque ni machine émulée. Le drapeau 4 préserve l'état Windows des touches mortes. |
+| `src/RetroMediaLab.App/Controllers/Emulation/Machine/MachineInputController.cs` | Conserve la résolution prioritaire des raccourcis globaux et des affectations de machine. Retire les sources déjà consommées de la lecture physique complémentaire, puis publie les touches et caractères via le contrat d'entrée. Les cibles explicitement affectées restent des commandes, sans traduction de caractère concurrente. |
+| `src/RetroMediaLab.Emulation/Contracts/EmulationInputSnapshot.cs` | Transporte `Keys` et `HostCharacters`, dictionnaire des caractères par touche hôte maintenue. Cette donnée est indépendante du matériel émulé ; une entrée peut aussi contenir uniquement des commandes physiques. |
+| `src/RetroMediaLab.Emulation/Functions/EmulationInputMappingFunctions.cs` et `Services/EmulationInputFrameStore.cs` | Copient et conservent les caractères dans les instantanés de frame. L'accumulateur existant conserve également cette propriété avec les états absolus. |
+| `src/RetroMediaLab.Emulation/Functions/EmulationHostProtocolFunctions.cs` | Transporte les mêmes caractères entre processus par l'interface de protocole commune déjà utilisée par les modules. Après les touches : nombre d'associations (−1 en leur absence), puis identité de touche sur 32 bits et caractère UTF-16 sur 16 bits. Les nombres invalides et doublons sont refusés. |
+| `src/RetroMediaLab.Emulation.Acorn/Common/Machines/Common/Functions/InputFunctions.Snapshot.cs` | Les projections existantes par `with` conservent les caractères pendant le passage Common. Aucun chemin App→Acorn direct n'est ajouté. |
+| `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Dictionaries/KeyboardDictionary.cs` | Décrit les contacts BBC et le SHIFT requis pour les symboles ; décrit aussi la correspondance des touches de pavé numérique avec les contacts existants. Les positions de `@`, des crochets et de la barre oblique inverse ont été vérifiées contre MAME. |
+| `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/Keyboard.cs` | Convertit les caractères hôtes en contacts matériels, puis applique les commandes physiques. Reconstruit la matrice à chaque instantané pour relâcher touches et SHIFT synthétique. Les lettres conservent la gestion CAPS LOCK/SHIFT LOCK du MOS. Un espace ne modifie pas SHIFT. |
+| `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/ModelAMachine.cs` | Fournit les touches et caractères à la matrice avant les interrogations du VIA. |
 
 Ainsi, le guillemet de la touche 3 française devient SHIFT+2 côté BBC ; Maj+3 français devient 3 sans SHIFT côté BBC. Les chiffres, opérateurs, séparateur décimal et entrée du pavé numérique utilisent des touches BBC existantes, sans inventer un pavé matériel au Model A. CTRL/ALT restent des modificateurs de commandes ; AltGr conserve sa traduction hôte.
 
@@ -508,7 +508,7 @@ Références : [ToUnicodeEx, Microsoft](https://learn.microsoft.com/en-us/window
 
 ## Firmwares du dossier utilisateur — 25 octobre 2026
 
-Les 24 fichiers de `C:\Users\overt\AppData\Roaming\GW GUI\Emulation\Machines\acorn\Firmware` correspondent par SHA-1 aux déclarations de [MAME `bbcb.cpp`, révision 84981cc15cfc1429e48f098d80c6dd97bc82a0bc](https://github.com/mamedev/mame/blob/84981cc15cfc1429e48f098d80c6dd97bc82a0bc/src/mame/acorn/bbcb.cpp). Il faut distinguer identification, compatibilité matérielle et fonctionnement effectivement obtenu avec AcornEmu.
+Les 24 fichiers de `C:\Users\overt\AppData\Roaming\Retro Media Lab\Emulation\Machines\acorn\Firmware` correspondent par SHA-1 aux déclarations de [MAME `bbcb.cpp`, révision 84981cc15cfc1429e48f098d80c6dd97bc82a0bc](https://github.com/mamedev/mame/blob/84981cc15cfc1429e48f098d80c6dd97bc82a0bc/src/mame/acorn/bbcb.cpp). Il faut distinguer identification, compatibilité matérielle et fonctionnement effectivement obtenu avec AcornEmu.
 
 | Fichier | Identification par empreinte | Intérêt pour le Model A |
 | --- | --- | --- |
@@ -612,24 +612,24 @@ Les choix proposés sont 22 050, 44 100, 48 000, 96 000 et 192 000 Hz ; mono/st�
 
 ### Parcours et responsabilités des fichiers
 
-Les chemins suivants sont relatifs à `src/`. Dans les lignes Acorn, le préfixe est `GWGUI.Emulation.Acorn/`.
+Les chemins suivants sont relatifs à `src/`. Dans les lignes Acorn, le préfixe est `RetroMediaLab.Emulation.Acorn/`.
 
 | Fichier ou groupe | Rôle et liaisons |
 | --- | --- |
-| `GWGUI.MediaEngine/Contracts/MediaCassetteSignal.cs` | Signal mono, cadence, repères et blocs validés avec métadonnées. Aucune adresse CPU exécutée dans MediaEngine. |
-| `GWGUI.MediaEngine/Functions/CassetteSignalFunctions.cs` | Lecture des quatre conteneurs, rendu du signal UEF, écriture atomique par les écrivains existants/enregistrés. Les données avant/après enregistrement sont fournies par le magnétophone. |
-| `GWGUI.MediaEngine/Contracts/CassettePcmProfile.cs`, `Functions/CassettePcmFunctions.cs` | Validation du profil RAW, normalisation du codage, conservation des canaux/précision, conversion demandée de cadence et d'encodage. |
-| `GWGUI.MediaEngine/Images/Formats/Tape/Csw/CswReader.cs`, `CswWriter.cs` | CSW 1/2 en lecture, RLE/Z-RLE ; écriture CSW 2 Z-RLE des durées de passages par zéro. |
-| `GWGUI.MediaEngine/Images/Formats/Tape/Raw/RawTapeReader.cs`, `RawTapeWriter.cs` | Signal sans en-tête avec profil explicite. La reconnaissance automatique ne remplace pas un disque RAW déjà reconnu. |
-| `GWGUI.MediaEngine/Images/Formats/Tape/Uef/UefReader.cs`, `UefWriter.cs`, `Tape/Wav/WavTapeReader.cs`, `WavTapeWriter.cs` | Lecteurs/écrivains de conteneurs existants réutilisés ; images vides valides pour REC. |
-| `GWGUI.MediaEngine/Functions/FskSerialFunctions.cs` et `Images/Reading/Decoding/Sequential/Acorn/AcornTapeDecoder.cs` | Trames et positions avec cadences fractionnaires ; reconnaissance des blocs BBC à 300/1 200 bauds, y compris mélangés sur une bande. CRC conservés dans le résultat. |
-| `GWGUI.MediaEngine/Functions/CassetteBlockFunctions.cs` | Réutilise les décodeurs existants pour la présentation des blocs et leurs repères. Le système de fichiers cassette existant fournit les entrées de l'explorateur. |
-| `GWGUI.MediaEngine/Images/Conversion/Sequential/CassetteSignalRepresentationConverter.cs` | Conversion du signal entre UEF et PCM sans exiger des fichiers reconnus ; WAV/CSW/RAW utilisent ensuite les écrivains PCM. |
-| `GWGUI.MediaEngine/Images/Conversion/Sequential/SequentialMediaConversionService.cs` et `Images/Writing/Encoding/Sequential/Acorn/AcornTapeEncoder.cs` | Conversion des blocs/fichiers reconnus par les protocoles existants, avec porteuses et silences nécessaires au chargement matériel. |
-| `GWGUI.MediaEngine/Functions/MechanicalSoundFunctions.cs` | Synthèse des bruits de transport ; aucune fenêtre, aucun thread audio ni fichier sonore externe détenu. |
-| `GWGUI.MediaEngine/Interfaces/IMediaRuntimePreparation.cs`, `Services/MediaRuntimePreparationService.cs` | Accès commun à la lecture/écriture cassette, aux formats et aux sons. |
-| `GWGUI.Emulation/Contracts/EmulationCassetteSignal.cs`, `EmulationCassetteSettings.cs`, `EmulationCassettePcmSettings.cs` | Contrats et descriptions de réglages génériques pour les émulateurs internes. |
-| `GWGUI.Emulation/Interfaces/IEmulationMediaProcessing.cs`, `Services/EmulationMediaProcessingService.cs` | Relais vers MediaEngine ; aucun type MediaEngine exposé au module. |
+| `RetroMediaLab.MediaEngine/Contracts/MediaCassetteSignal.cs` | Signal mono, cadence, repères et blocs validés avec métadonnées. Aucune adresse CPU exécutée dans MediaEngine. |
+| `RetroMediaLab.MediaEngine/Functions/CassetteSignalFunctions.cs` | Lecture des quatre conteneurs, rendu du signal UEF, écriture atomique par les écrivains existants/enregistrés. Les données avant/après enregistrement sont fournies par le magnétophone. |
+| `RetroMediaLab.MediaEngine/Contracts/CassettePcmProfile.cs`, `Functions/CassettePcmFunctions.cs` | Validation du profil RAW, normalisation du codage, conservation des canaux/précision, conversion demandée de cadence et d'encodage. |
+| `RetroMediaLab.MediaEngine/Images/Formats/Tape/Csw/CswReader.cs`, `CswWriter.cs` | CSW 1/2 en lecture, RLE/Z-RLE ; écriture CSW 2 Z-RLE des durées de passages par zéro. |
+| `RetroMediaLab.MediaEngine/Images/Formats/Tape/Raw/RawTapeReader.cs`, `RawTapeWriter.cs` | Signal sans en-tête avec profil explicite. La reconnaissance automatique ne remplace pas un disque RAW déjà reconnu. |
+| `RetroMediaLab.MediaEngine/Images/Formats/Tape/Uef/UefReader.cs`, `UefWriter.cs`, `Tape/Wav/WavTapeReader.cs`, `WavTapeWriter.cs` | Lecteurs/écrivains de conteneurs existants réutilisés ; images vides valides pour REC. |
+| `RetroMediaLab.MediaEngine/Functions/FskSerialFunctions.cs` et `Images/Reading/Decoding/Sequential/Acorn/AcornTapeDecoder.cs` | Trames et positions avec cadences fractionnaires ; reconnaissance des blocs BBC à 300/1 200 bauds, y compris mélangés sur une bande. CRC conservés dans le résultat. |
+| `RetroMediaLab.MediaEngine/Functions/CassetteBlockFunctions.cs` | Réutilise les décodeurs existants pour la présentation des blocs et leurs repères. Le système de fichiers cassette existant fournit les entrées de l'explorateur. |
+| `RetroMediaLab.MediaEngine/Images/Conversion/Sequential/CassetteSignalRepresentationConverter.cs` | Conversion du signal entre UEF et PCM sans exiger des fichiers reconnus ; WAV/CSW/RAW utilisent ensuite les écrivains PCM. |
+| `RetroMediaLab.MediaEngine/Images/Conversion/Sequential/SequentialMediaConversionService.cs` et `Images/Writing/Encoding/Sequential/Acorn/AcornTapeEncoder.cs` | Conversion des blocs/fichiers reconnus par les protocoles existants, avec porteuses et silences nécessaires au chargement matériel. |
+| `RetroMediaLab.MediaEngine/Functions/MechanicalSoundFunctions.cs` | Synthèse des bruits de transport ; aucune fenêtre, aucun thread audio ni fichier sonore externe détenu. |
+| `RetroMediaLab.MediaEngine/Interfaces/IMediaRuntimePreparation.cs`, `Services/MediaRuntimePreparationService.cs` | Accès commun à la lecture/écriture cassette, aux formats et aux sons. |
+| `RetroMediaLab.Emulation/Contracts/EmulationCassetteSignal.cs`, `EmulationCassetteSettings.cs`, `EmulationCassettePcmSettings.cs` | Contrats et descriptions de réglages génériques pour les émulateurs internes. |
+| `RetroMediaLab.Emulation/Interfaces/IEmulationMediaProcessing.cs`, `Services/EmulationMediaProcessingService.cs` | Relais vers MediaEngine ; aucun type MediaEngine exposé au module. |
 | `Common/Machines/BbcMicro/Functions/CassetteFunctions.cs` | Passage du BBC Common par le service Emulation, avec protocole `acorn-bbc`. |
 | `Common/Interfaces/IEmulatorCassetteTransport.cs`, `Common/Services/Machine.Cassette.cs` | Commandes transport par la file du cœur, état et activité vers les interfaces déjà utilisées par App. |
 | `Emulators/AcornEmu/Services/Acia6850.cs` | Réception et émission série temporisées, registre de contrôle, parité, bits d'arrêt, dépassement et IRQ. |
@@ -638,9 +638,9 @@ Les chemins suivants sont relatifs à `src/`. Dans les lignes Acorn, le préfixe
 | `Emulators/AcornEmu/Machines/BbcMicro/ModelA/Services/ModelAMachine.cs` | Câblage ACIA FE08–FE0F, ULA FE10–FE17, IRQ, horloge CPU et appel du chargement direct partagé. |
 | `Emulators/AcornEmu/Services/EmulatorCore.cs` | Montage, paramètres par image, modes de lecture, mélange des bruits, sauvegarde et actualisation des repères après écriture. |
 | `Emulators/AcornEmu/Factories/AcornEmuMachineFactory.cs` | Lecteur optionnel, formats et champs de réglage, stockage de configuration et relais des voyants communs. |
-| `GWGUI.App/Controllers/Emulation/Storage/EmulationStorageSettingsController.cs` | Ouvre le dialogue existant pour les paramètres d'un lecteur cassette. |
-| `GWGUI.App/Views/Controls/Emulation/Machine/MachineController.cs` | Choix REC du format et profil RAW, création/montage, commandes de transport existantes. Annulation avant modification du média. |
-| `GWGUI.App/Controllers/MainWindow/ConversionTabController.cs`, `Services/Conversion/ConversionBatchExecutor.cs` | Sélection et transmission des paramètres RAW d'entrée/sortie pour les conversions. |
+| `RetroMediaLab.App/Controllers/Emulation/Storage/EmulationStorageSettingsController.cs` | Ouvre le dialogue existant pour les paramètres d'un lecteur cassette. |
+| `RetroMediaLab.App/Views/Controls/Emulation/Machine/MachineController.cs` | Choix REC du format et profil RAW, création/montage, commandes de transport existantes. Annulation avant modification du média. |
+| `RetroMediaLab.App/Controllers/MainWindow/ConversionTabController.cs`, `Services/Conversion/ConversionBatchExecutor.cs` | Sélection et transmission des paramètres RAW d'entrée/sortie pour les conversions. |
 
 Le module accède uniquement à Emulation. MediaEngine prépare et écrit les conteneurs, tandis qu'AcornEmu émule le matériel BBC. Les flux de lecture/écriture appartiennent aux lecteurs et écrivains et sont libérés par leur portée ; les images utilisateur restent intactes pendant les essais synthétiques.
 
@@ -658,7 +658,7 @@ Le chargement direct exige des blocs complets, CRC valides, nom/numéros cohére
 
 Les 35 contrôles ciblés cassette ont réussi : lecture/écriture des quatre conteneurs, images vides, profils RAW, conservation des bits PCM 24 bits, exploration des fichiers BBC, conversions de blocs et de signaux sans fichiers reconnus, bandes mêlant 300/1 200 bauds, trames UEF explicites/définies, enregistrement matériel, protection, latences et chargement direct synthétique. Les tests temporaires et leurs fichiers ont ensuite été supprimés ; les 77 contrôles AcornEmu conservés et les 13 contrôles existants de compatibilité séquentielle passent après recompilation.
 
-`scripts/local-building.cmd --building=debug --modules=acorn` a terminé avec succès. L'exécutable est `F:\GW GUI\build\Debug\GW GUI\gwgui.exe`, avec Acorn demandé et Example fourni automatiquement par le script. Cette validation synthétique ne remplace pas l'essai utilisateur d'un programme réel. Aucun commit cassette n'a été créé.
+`scripts/local-building.cmd --building=debug --modules=acorn` a terminé avec succès. L'exécutable est `F:\Retro Media Lab\build\Debug\Retro Media Lab\retromedialab.exe`, avec Acorn demandé et Example fourni automatiquement par le script. Cette validation synthétique ne remplace pas l'essai utilisateur d'un programme réel. Aucun commit cassette n'a été créé.
 
 ### Références des formats et du matériel
 
@@ -678,7 +678,7 @@ Le Model A de base ne possède ni contrôleur disque, ni lecteur externe, ni Eco
 | Winchester | Interface hôte Acorn sur le bus 1 MHz, contrôleur SCSI/SASI et ROM ADFS ; unités et protection configurées séparément. | Le dialogue HDD, les conteneurs courants et la vue CHS existent ; le couple BBC `.dat`/`.dsc` n'est pas enregistré dans MediaEngine. |
 | Econet | Réseau Acorn avec contrôleur et ROM réseau ; les fichiers viennent d'un serveur réseau, pas d'une image disque montée comme lecteur local. | Absent d'AcornEmu. Les registres et le protocole ne sont pas remplacés par un faux lecteur HDD. |
 
-`GWGUI.App/Views/Dialogs/Emulation/Storage/HardDiskDriveConfigurationDialog.cs` est le dialogue HDD existant à réutiliser. `EmulationStorageDeviceSettings` transporte déjà les paramètres disquette et le choix d'interface HDD. `BlockMediaView.xaml.cs` et `SkiaHardDiskGeometryRenderer.cs` présentent déjà les surfaces correspondant aux têtes ; deux surfaces peuvent appartenir au même plateau physique, distinction qui dépend de la géométrie déclarée. `HardDiskGeometry` porte cylindres, têtes, secteurs par piste et taille de secteur. La géométrie physique ne doit pas être inventée à partir de la seule capacité d'une image.
+`RetroMediaLab.App/Views/Dialogs/Emulation/Storage/HardDiskDriveConfigurationDialog.cs` est le dialogue HDD existant à réutiliser. `EmulationStorageDeviceSettings` transporte déjà les paramètres disquette et le choix d'interface HDD. `BlockMediaView.xaml.cs` et `SkiaHardDiskGeometryRenderer.cs` présentent déjà les surfaces correspondant aux têtes ; deux surfaces peuvent appartenir au même plateau physique, distinction qui dépend de la géométrie déclarée. `HardDiskGeometry` porte cylindres, têtes, secteurs par piste et taille de secteur. La géométrie physique ne doit pas être inventée à partir de la seule capacité d'une image.
 
 Les fichiers Winchester utilisés par b2, B-em et BeebEm associent un `.dat` aux secteurs et un `.dsc` au descripteur. Le descripteur SCSI conserve notamment les cylindres aux octets 13–14 (ordre big-endian), les têtes à l'octet 15 ; le montage étudié utilise 33 secteurs de 256 octets par piste. Ces données doivent alimenter les surfaces et le parcours des pistes. Une description absente ou invalide doit rester distinguée d'une géométrie connue.
 
@@ -686,23 +686,23 @@ Sources : [b2, images SCSI et configuration](https://github.com/tom-seddon/b2/bl
 
 ### Images et visualisation raccordées le 26 octobre
 
-`GWGUI.MediaEngine/Images/Formats/HardDisk/Acorn/AcornWinchesterFormat.cs` et `AcornWinchesterReader.cs` lisent les secteurs DAT de 256 octets et la géométrie DSC, enregistrés par `MediaRecognitionComposition`. Les octets déclarés mais absents du DAT restent indisponibles et produisent un diagnostic ; une description manquante ne crée aucune géométrie fictive. `AcornWinchesterWriter.cs`, enregistré dans `MediaWritingComposition`, réutilise `AtomicMediaFileSetWriter` pour publier DAT et DSC ensemble avec restauration sur erreur. Les champs inconnus du DSC sont conservés. Une écriture exige une géométrie et des données complètes.
+`RetroMediaLab.MediaEngine/Images/Formats/HardDisk/Acorn/AcornWinchesterFormat.cs` et `AcornWinchesterReader.cs` lisent les secteurs DAT de 256 octets et la géométrie DSC, enregistrés par `MediaRecognitionComposition`. Les octets déclarés mais absents du DAT restent indisponibles et produisent un diagnostic ; une description manquante ne crée aucune géométrie fictive. `AcornWinchesterWriter.cs`, enregistré dans `MediaWritingComposition`, réutilise `AtomicMediaFileSetWriter` pour publier DAT et DSC ensemble avec restauration sur erreur. Les champs inconnus du DSC sont conservés. Une écriture exige une géométrie et des données complètes.
 
 Les fichiers ADFS BBC S/M/L utilisent respectivement 40×1, 80×1 et 80×2 pistes de 16 secteurs de 256 octets. `AcornAdfGeometry.cs`, `AdfReader.cs` et `AcornAdfWriter.cs` prennent en charge leurs 160/320/640 Kio, ADS/ADM/ADL et ADF, dans le parcours ADF existant. Les faces sont rangées par cylindre puis face, conformément aux définitions `diskdefs_acorn.cfg` déjà présentes. Ces définitions alimentent déjà les décodeurs/encodeurs MFM et la sélection de format pour les captures ; elles ne sont pas dupliquées. Une IMG d'une taille identique n'est pas assimilée à ADFS par cette seule taille. La conversion conserve la géométrie et n'annonce pas un agrandissement S→M/L comme une simple copie.
 
-Dans `GWGUI.MediaFileSystems/FileSystems/Acorn`, le lecteur `Adfs/AcornAdfsFileSystemReader.cs` réutilise ses résolveurs FileCore et reconnaît désormais les répertoires BBC de 47 entrées/1 280 octets à partir du secteur 2. Les attributs BBC viennent des bits hauts du nom ; le dernier octet d'une entrée est son numéro de séquence. `AcornAdfsDirectoryReader.cs` et `AcornAdfsFileReader.cs` utilisent la taille réelle des secteurs. `AcornAdfsFileSystemReader.Blocks.cs` donne au même lecteur un accès secteur borné aux volumes HDD, sans charger le disque entier. Les répertoires FileCore de 77 entrées/2 048 octets conservent leur parcours existant.
+Dans `RetroMediaLab.MediaFileSystems/FileSystems/Acorn`, le lecteur `Adfs/AcornAdfsFileSystemReader.cs` réutilise ses résolveurs FileCore et reconnaît désormais les répertoires BBC de 47 entrées/1 280 octets à partir du secteur 2. Les attributs BBC viennent des bits hauts du nom ; le dernier octet d'une entrée est son numéro de séquence. `AcornAdfsDirectoryReader.cs` et `AcornAdfsFileReader.cs` utilisent la taille réelle des secteurs. `AcornAdfsFileSystemReader.Blocks.cs` donne au même lecteur un accès secteur borné aux volumes HDD, sans charger le disque entier. Les répertoires FileCore de 77 entrées/2 048 octets conservent leur parcours existant.
 
 `BlockMediaVisualizationProvider.cs` décrit les pistes de chaque surface CHS en LBA et vérifie leur disponibilité par des lectures de 64 Kio au maximum. `MediaVisualizationController.cs` parcourt toutes les surfaces au lieu de la seule surface 0, puis affiche les résultats ; la présence d'une plage dans le catalogue ne suffit plus à afficher une lecture réussie. Les erreurs de données manquantes restent visibles et l'annulation est propagée. `BlockMediaInspectorPresenter.cs` conserve les limites des pistes ; `SkiaHardDiskGeometryRenderer.cs` dessine leurs anneaux par surface, et `BlockMediaView.xaml.cs` relie la piste sélectionnée à son LBA, avec zoom et déplacement. Les surfaces sont connues par les têtes ; le nombre de plateaux physiques reste inconnu quand le descripteur ne l'indique pas.
 
 Validation synthétique : aller-retour DAT/DSC, champs du descripteur conservés, remplacement atomique de la source, géométrie absente/troncature distinguées ; aller-retour des trois formats ADFS BBC, exploration de fichiers et sous-répertoires, adressage des faces et absence de reconnaissance ADFS d'une IMG arbitraire. Les tests utilisant ces fichiers ont été supprimés avec leurs images. Les 22 contrôles conservés de stockage Acorn, conversion et visualisation réussissent. **Les contrôleurs disquette/Winchester et Econet ne sont pas encore raccordés à AcornEmu à ce stade.**
 
-Le build intermédiaire Debug Acorn a réussi le 26 octobre après ces changements : `F:\GW GUI\build\Debug\GW GUI\gwgui.exe`, module Acorn et MediaEngine dans `lib` présents. Il permet les essais de formats, exploration et visualisation ; il n'annonce pas encore de nouveaux lecteurs opérationnels dans AcornEmu.
+Le build intermédiaire Debug Acorn a réussi le 26 octobre après ces changements : `F:\Retro Media Lab\build\Debug\Retro Media Lab\retromedialab.exe`, module Acorn et MediaEngine dans `lib` présents. Il permet les essais de formats, exploration et visualisation ; il n'annonce pas encore de nouveaux lecteurs opérationnels dans AcornEmu.
 
 ### Accès aux secteurs depuis les émulateurs internes
 
-`GWGUI.MediaEngine/Interfaces/IMediaRuntimeDisk.cs` et `Services/MediaRuntimeDisk.cs` réutilisent les représentations secteurs/blocs et leurs écrivains. `MediaDiskSector` conserve adresse physique, numéro logique, données et diagnostics. Les lectures HDD restent bornées à un secteur ; les changements s'accumulent en mémoire, puis `FlushAsync` publie l'image par son écrivain existant. Les données non modifiées et les champs DSC sont préservés. La protection en écriture reste effective. Une publication refusée conserve les changements pour réessayer et laisse la source intacte.
+`RetroMediaLab.MediaEngine/Interfaces/IMediaRuntimeDisk.cs` et `Services/MediaRuntimeDisk.cs` réutilisent les représentations secteurs/blocs et leurs écrivains. `MediaDiskSector` conserve adresse physique, numéro logique, données et diagnostics. Les lectures HDD restent bornées à un secteur ; les changements s'accumulent en mémoire, puis `FlushAsync` publie l'image par son écrivain existant. Les données non modifiées et les champs DSC sont préservés. La protection en écriture reste effective. Une publication refusée conserve les changements pour réessayer et laisse la source intacte.
 
-`GWGUI.Emulation/Interfaces/IEmulationDiskImage.cs`, `Contracts/EmulationDiskSector.cs` et `Services/EmulationMediaProcessingService.Disks.cs` exposent ces opérations par `IEmulationMediaProcessing.OpenDiskAsync`. Le module passe par `Common/Machines/BbcMicro/Functions/DiskFunctions.cs` ; il reçoit uniquement les types SDK. Le cœur propriétaire doit sérialiser les appels, sauvegarder, détacher l'image et la libérer dans finally ; la libération effectue une dernière sauvegarde si nécessaire. Aucun flux n'est conservé ouvert par cet accès sectoriel. Une géométrie inconnue reste à zéro et les coordonnées physiques d'un secteur HDD inconnu restent à -1.
+`RetroMediaLab.Emulation/Interfaces/IEmulationDiskImage.cs`, `Contracts/EmulationDiskSector.cs` et `Services/EmulationMediaProcessingService.Disks.cs` exposent ces opérations par `IEmulationMediaProcessing.OpenDiskAsync`. Le module passe par `Common/Machines/BbcMicro/Functions/DiskFunctions.cs` ; il reçoit uniquement les types SDK. Le cœur propriétaire doit sérialiser les appels, sauvegarder, détacher l'image et la libérer dans finally ; la libération effectue une dernière sauvegarde si nécessaire. Aucun flux n'est conservé ouvert par cet accès sectoriel. Une géométrie inconnue reste à zéro et les coordonnées physiques d'un secteur HDD inconnu restent à -1.
 
 Quatre essais temporaires ont vérifié les secteurs DFS, ADFS et Winchester, leur sauvegarde/réouverture, les secteurs inchangés, la protection et la reprise après verrouillage de la destination. Ces essais et leurs images ont été supprimés ; 77 contrôles AcornEmu conservés passent après recompilation. Le relais commun est disponible ; son utilisation par les contrôleurs d'AcornEmu reste l'étape suivante.
 
@@ -726,7 +726,7 @@ La reconnaissance des ROM de service suit les octets de type et de copyright de 
 
 Validation : les 93 contrôles AcornEmu autonomes passent. Trois essais temporaires avec MOS 1.20 et BASIC II ont exécuté `*DISC`, `SAVE`, `NEW`, `LOAD`, `LIST`, `RUN` et `*CAT` : DFS 0.9H en 16 et 32 Kio, puis DNFS 1.20 en 32 Kio. Le programme relu s'exécute et les secteurs modifiés sont publiés dans l'image SSD temporaire. Les ROM du dossier utilisateur ont seulement été lues ; les essais et leurs images ont été supprimés, puis les 93 contrôles conservés reconstruits et exécutés. WD1770/ADFS, Winchester et Econet restent à raccorder ; ce résultat ne valide pas encore ces extensions.
 
-Build intermédiaire du 26 octobre : `scripts/local-building.cmd --building=debug --modules=acorn` réussi. `build/Debug/GW GUI/gwgui.exe`, le module Acorn et les bibliothèques SDK/MediaEngine dans `lib` sont présents. Ce build permet les essais utilisateur cassette/DFS ; Example est inclus automatiquement par le script. Aucun commit créé.
+Build intermédiaire du 26 octobre : `scripts/local-building.cmd --building=debug --modules=acorn` réussi. `build/Debug/Retro Media Lab/retromedialab.exe`, le module Acorn et les bibliothèques SDK/MediaEngine dans `lib` sont présents. Ce build permet les essais utilisateur cassette/DFS ; Example est inclus automatiquement par le script. Aucun commit créé.
 
 ### Carte Acorn WD1770 et disquettes ADFS
 
@@ -748,7 +748,7 @@ Références : [câblage et protocole WD1770 de B-em](https://github.com/stardot
 
 L'interface Acorn commence à FC40 : données à +0, statut à +1, sélection à +2, commande IRQ à +3. Le statut expose C/D en bit 7, I/O en 6, REQ en 5, IRQ en 4, BSY en 1 et MSG en 0. La transaction traverse sélection, commande, transfert de données, résultat puis message et bus libre. Les commandes ADFS observées comprennent disponibilité, état d'erreur, formatage, lecture/écriture à commande de six octets, paramètres de géométrie et mise en marche/arrêt. Quatre unités sont distinguées ; les commandes six octets portent le LUN dans les trois bits hauts du deuxième octet et une adresse de bloc sur 21 bits. Le transfert BBC utilise des blocs de 256 octets, indépendamment du conteneur hôte. Source technique : [B-em, interface SCSI Acorn](https://github.com/stardot/b-em/blob/master/src/scsi.c).
 
-Les points existants à employer sont `GWGUI.Emulation/HardDisks/HardDiskImageFormat.cs`, `HardDiskImageCreation.cs`, `HardDiskImageValidation.cs`, `EmulationMediaDevice.HardDiskFormats` et `EmulationStorageDeviceSettings.InterfaceId`, avec `HardDiskDriveConfigurationDialog.cs` dans App. Le profil BIOS `DiskChsGeometry` ne porte que têtes/secteurs et raisonne en secteurs de 512 octets ; il ne suffit pas à représenter le descripteur Winchester 256 octets. La création doit donc transmettre la géométrie déclarée au service média, puis réutiliser `AcornWinchesterWriter` pour publier DAT et DSC ensemble. `AcornAdfsFormatter.CreateHeader` peut préparer le système de fichiers natif ; le relais sectoriel existant fournit lecture, écritures et publication des modifications. À cette étape, le contrôleur Winchester n'est pas encore raccordé.
+Les points existants à employer sont `RetroMediaLab.Emulation/HardDisks/HardDiskImageFormat.cs`, `HardDiskImageCreation.cs`, `HardDiskImageValidation.cs`, `EmulationMediaDevice.HardDiskFormats` et `EmulationStorageDeviceSettings.InterfaceId`, avec `HardDiskDriveConfigurationDialog.cs` dans App. Le profil BIOS `DiskChsGeometry` ne porte que têtes/secteurs et raisonne en secteurs de 512 octets ; il ne suffit pas à représenter le descripteur Winchester 256 octets. La création doit donc transmettre la géométrie déclarée au service média, puis réutiliser `AcornWinchesterWriter` pour publier DAT et DSC ensemble. `AcornAdfsFormatter.CreateHeader` peut préparer le système de fichiers natif ; le relais sectoriel existant fournit lecture, écritures et publication des modifications. À cette étape, le contrôleur Winchester n'est pas encore raccordé.
 
 ### Contrôleur Winchester — protocole et paramètres validés
 
@@ -766,7 +766,7 @@ Pour reproduire la configuration vérifiée : sélectionner 32 Kio, fournir MOS 
 
 Après suppression des cinq essais temporaires et de leurs images, les 124 contrôles AcornEmu conservés réussissent. Aucun répertoire temporaire Winchester ne subsiste.
 
-Le build intermédiaire Debug Acorn a réussi avec ces unités Winchester : `F:\GW GUI\build\Debug\GW GUI\gwgui.exe`, `Modules/acorn/gwgui.emulation.acorn.dll` et le SDK dans `lib` ont été vérifiés après la fin du script. Example est ajouté par le script existant. Ce build permet les essais utilisateur des disquettes et du Winchester ; Econet reste absent.
+Le build intermédiaire Debug Acorn a réussi avec ces unités Winchester : `F:\Retro Media Lab\build\Debug\Retro Media Lab\retromedialab.exe`, `Modules/acorn/retromedialab.emulation.acorn.dll` et le SDK dans `lib` ont été vérifiés après la fin du script. Example est ajouté par le script existant. Ce build permet les essais utilisateur des disquettes et du Winchester ; Econet reste absent.
 
 ### Econet — matériel et échanges à raccorder
 
@@ -805,7 +805,7 @@ Les identités sont dans le dictionnaire Common ; leur compatibilité Model A re
 
 Le câblage BBC distingue le niveau CTS, le verrou NMI et les événements RX acquittés. Le repos reste lisible sans redemander continuellement la même NMI ; une nouvelle activité réarme les événements. CLR RX acquitte les statuts observés par les lectures de registres. RTS maintient l'émetteur jusqu'à la fin de la trame engagée ; le couper dès l'écriture du dernier octet tronquait les scouts NFS. Ces comportements ont été corrigés à partir des accès de NFS 3.34, puis couverts par des contrôles autonomes. Référence de la ROM : [désassemblage annoté NFS 3.34](https://acornaeology.uk/acorn-nfs/3.34.html), notamment INACTIVE, préparation TX et opérations immédiates.
 
-`Services/EmulatorCore.Network.cs` relie le transport à `IAcornMachine`, sans donner de socket au CPU ou au contrôleur. Stop détache les callbacks et ferme la socket dans finally ; Dispose le fait également après une erreur de sauvegarde ou de démarrage. Le constructeur du transport libère la socket en cas d'échec du bind. Reset remet les transactions en attente à zéro. Le changement de configuration se fait par extinction/rallumage de la machine, sans fermer GW GUI.
+`Services/EmulatorCore.Network.cs` relie le transport à `IAcornMachine`, sans donner de socket au CPU ou au contrôleur. Stop détache les callbacks et ferme la socket dans finally ; Dispose le fait également après une erreur de sauvegarde ou de démarrage. Le constructeur du transport libère la socket en cas d'échec du bind. Reset remet les transactions en attente à zéro. Le changement de configuration se fait par extinction/rallumage de la machine, sans fermer Retro Media Lab.
 
 Quatre scénarios temporaires ont réussi : aller-retour UDP brut et réutilisation du port après fermeture ; AUN bidirectionnel, accusés et suppression des doublons ; refus d'un port occupé puis libération effective à l'extinction ; appels réseau exécutés par NFS 3.34 avec MOS 1.20 et BASIC II externes. Ce dernier scénario transmet `44 33 22 11` sur le port Econet 99 par OSWORD 16, attend le résultat par OSBYTE 50, puis émet la demande de type distant 88 et reçoit `01 00 34 03` dans la RAM prévue. Le correspondant est une socket locale de test qui accuse les données et répond au type distant ; cela ne constitue pas un serveur de fichiers complet. Les sockets sont fermées et les ROM/fichiers temporaires supprimés après les essais ; aucune ROM n'est intégrée au code.
 
@@ -825,7 +825,7 @@ Pour utiliser un serveur existant : installer l'extension dans Réseau, choisir 
 | Réutilisation et architecture | Les dialogues et parcours de conversion, visualisation et exploration sont étendus. Acorn accède aux images via Common et le SDK ; MediaEngine porte les conteneurs et MediaFileSystems les fichiers. Le transport réseau est interne à AcornEmu et n'ajoute aucune dépendance de paquet. |
 | Traductions et durée de vie | Nouveaux champs traduits par Argos dans toutes les langues, invariants dans la base. Les scénarios vérifient sauvegarde/protection, fermeture des sockets après erreur et extinction, puis réutilisation du port. Les tests et données externes temporaires ont été supprimés. |
 
-Après nettoyage, **164 contrôles AcornEmu conservés** et **18 contrôles de stockage Acorn** réussissent. Les quatre essais réseau temporaires avaient réussi avant suppression. Le script `scripts/local-building.cmd --building=debug --modules=acorn` a ensuite réussi ; l'exécutable, les DLL App/SDK/MediaEngine dans `lib` et le module Acorn ont été vérifiés dans `F:\GW GUI\build\Debug\GW GUI`. Le dossier du module contient uniquement sa DLL, son PDB, son fichier deps et son manifeste ; les dépendances communes restent dans `lib`. Example est inclus par le script existant. Aucun commit créé.
+Après nettoyage, **164 contrôles AcornEmu conservés** et **18 contrôles de stockage Acorn** réussissent. Les quatre essais réseau temporaires avaient réussi avant suppression. Le script `scripts/local-building.cmd --building=debug --modules=acorn` a ensuite réussi ; l'exécutable, les DLL App/SDK/MediaEngine dans `lib` et le module Acorn ont été vérifiés dans `F:\Retro Media Lab\build\Debug\Retro Media Lab`. Le dossier du module contient uniquement sa DLL, son PDB, son fichier deps et son manifeste ; les dépendances communes restent dans `lib`. Example est inclus par le script existant. Aucun commit créé.
 
 Limites matérielles documentées : les contrôleurs disquette traitent les pistes régulières existantes, sans reproduire toutes les protections ni créer une nouvelle topologie physique par formatage. Le transport réseau utilise des trames délimitées, sans simulation analogique du câble ; l'essai NFS utilise un correspondant de test, et non un serveur de fichiers complet. Ces limites ne remplacent pas une réussite de lecture/écriture par un succès fictif.
 
@@ -835,7 +835,7 @@ Le contrat `IEmulationDiskImage.Metadata` expose les métadonnées existantes en
 
 Les 118 contrôles AcornEmu conservés passent, dont quatorze pour le SCSI et le bus. Un essai temporaire supplémentaire a vérifié la modification du DSC, la conservation exacte du DAT et des champs restants, le rejet d'une capacité incohérente et de l'écriture protégée, puis la réouverture. Le verrouillage volontaire du DAT fait échouer la publication sans toucher aux deux fichiers ; une nouvelle tentative après libération réussit. Le test temporaire et ses images ont été supprimés, puis les tests conservés reconstruits.
 
-Sources supplémentaires : [B-em, géométries sectorielles et organisation des faces](https://github.com/stardot/b-em/blob/master/src/sdf-geo.c), [Guide To Disc Formats de Gerald Holdsworth](https://www.geraldholdsworth.co.uk/documents/DiscImage.pdf), définitions Greaseweazle v1.23 déjà conservées dans `GWGUI.MediaEngine/Images/Formats/Definitions/diskdefs_acorn.cfg`. Répertoires BBC : en-tête à 0, entrées à 5, nom à 1 228, titre à 1 241, séquence finale à 1 274 et signature finale à 1 275 ; adresses exprimées en secteurs de 256 octets.
+Sources supplémentaires : [B-em, géométries sectorielles et organisation des faces](https://github.com/stardot/b-em/blob/master/src/sdf-geo.c), [Guide To Disc Formats de Gerald Holdsworth](https://www.geraldholdsworth.co.uk/documents/DiscImage.pdf), définitions Greaseweazle v1.23 déjà conservées dans `RetroMediaLab.MediaEngine/Images/Formats/Definitions/diskdefs_acorn.cfg`. Répertoires BBC : en-tête à 0, entrées à 5, nom à 1 228, titre à 1 241, séquence finale à 1 274 et signature finale à 1 275 ; adresses exprimées en secteurs de 256 octets.
 
 
 ### Correction des dialogues de lecteurs et des données médias — 26 octobre 2026
@@ -844,7 +844,7 @@ Le catalogue disponible sert au bouton Ajouter ; `Engine.CreateRuntimeAsync` tra
 
 Le contrôleur 8271/WD1770 est réglé dans la configuration du lecteur de disquettes et reste commun aux deux lecteurs BBC. Les choix de lecteurs présentent faces SS/DS, densité SD/DD et capacité en Kio. Les limites de cylindres sont conservées, car deux supports de même capacité peuvent avoir des géométries différentes.
 
-`GWGUI.Emulation.Acorn/Emulators/AcornEmu/Dictionaries/FloppyDriveModels.cs` possède les profils physiques BBC, les formats autorisés et la validation matérielle. Les constantes matérielles résident dans `Constants/FloppyDriveConstants.cs`. Le contrôleur actif détermine les modèles et les formats proposés : le 8271 exclut la double densité. Le module transmet un identifiant de format à `CreateBlankDiskAsync` ; MediaEngine réutilise `BlankSectorImageFactory` et ses écrivains existants, sans choisir le lecteur ou la machine. La fenêtre affiche le nom du format, son extension et sa géométrie ; un choix unique est automatique, plusieurs choix restent disponibles dans la liste.
+`RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Dictionaries/FloppyDriveModels.cs` possède les profils physiques BBC, les formats autorisés et la validation matérielle. Les constantes matérielles résident dans `Constants/FloppyDriveConstants.cs`. Le contrôleur actif détermine les modèles et les formats proposés : le 8271 exclut la double densité. Le module transmet un identifiant de format à `CreateBlankDiskAsync` ; MediaEngine réutilise `BlankSectorImageFactory` et ses écrivains existants, sans choisir le lecteur ou la machine. La fenêtre affiche le nom du format, son extension et sa géométrie ; un choix unique est automatique, plusieurs choix restent disponibles dans la liste.
 
 La configuration cassette regroupe chargement, mécanique et profil RAW. Débit automatique/300/1200 et mode de chargement utilisent des boutons radio. Automatique suit le débit du circuit série réglé par le logiciel BBC ; il ne détecte pas le débit dans le fichier. Les curseurs mécaniques sont courts, à crans, avec présélections et visibles seulement en temps réel. Les délais concernent le démarrage du moteur avant lecture/enregistrement. Le groupe RAW distingue fréquence d'échantillonnage, mono/stéréo, profondeur, signe et little-endian. La hauteur est bornée et le contenu peut défiler, avec les boutons de validation séparés.
 
@@ -876,7 +876,7 @@ L'onglet Extensions contient le cadre Extensions disquette. Les boutons radio In
 
 Les nouvelles options sont `acornemu.floppy.rom8271`, `acornemu.floppy.rom1770` et `acornemu.floppy.solidisk`. Le choix actif reste `acornemu.floppy.controller`. L'ancien champ `acornemu.dfs` est relu pour la configuration ancienne tant que les champs séparés ne sont pas enregistrés. Une fois un nouveau champ enregistré, il ne sert plus de repli pour l'autre contrôleur.
 
-Les deux ROM peuvent être renseignées avec Solidisk ; seule celle du contrôleur actif est exposée dans la banque disque au démarrage. Cela évite de laisser une ancienne ROM piloter les registres d'un contrôleur absent. Le choix d'interface nécessite un redémarrage de la machine émulée ; il ne ferme pas GW GUI. Il n'y a pas de choix par lecteur ni de bascule automatique au montage d'une image. Le second chemin ne correspond pas à une seconde ROM de système de fichiers sur le même contrôleur : cette interface propose une ROM par contrôleur.
+Les deux ROM peuvent être renseignées avec Solidisk ; seule celle du contrôleur actif est exposée dans la banque disque au démarrage. Cela évite de laisser une ancienne ROM piloter les registres d'un contrôleur absent. Le choix d'interface nécessite un redémarrage de la machine émulée ; il ne ferme pas Retro Media Lab. Il n'y a pas de choix par lecteur ni de bascule automatique au montage d'une image. Le second chemin ne correspond pas à une seconde ROM de système de fichiers sur le même contrôleur : cette interface propose une ROM par contrôleur.
 
 `FloppyExtensionConstants.cs` définit les clés et ressources de cette extension. `FloppyExtensionFunctions.cs` décrit ses champs, leurs autorisations et la projection des ROM candidates vers chaque contrôleur. La reconnaissance matérielle reste dans les définitions Common/Machines : `FirmwareDiskController.cs` et le champ `FirmwareDefinition.DiskController`. Une identité non évaluée reste inconnue ; le nom du fichier ne suffit pas à certifier son interface. Le gestionnaire App réutilise la présentation ROM avec une liste distincte par onglet, et interdit l'action Utiliser sur une destination grisée.
 

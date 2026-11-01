@@ -1,0 +1,58 @@
+<UserControl x:Class="RetroMediaLab.App.Theme.Orbit.Views.ExplorerView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:v="clr-namespace:RetroMediaLab.App.Theme.Orbit.Views" xmlns:common="clr-namespace:RetroMediaLab.App.Views.Controls.Common"
+ xmlns:l="clr-namespace:RetroMediaLab.App.Localization.Extensions" Foreground="{DynamicResource Orbit.Text}" Background="{DynamicResource Orbit.Window}" UseLayoutRounding="True">
+ <Grid>
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <DockPanel Margin="0,0,0,16"><WrapPanel DockPanel.Dock="Right">
+   <Button x:Name="ReadToolbar" Margin="0,0,8,6"><TextBlock x:Name="ReadCaption"/></Button>
+   <Button x:Name="OpenToolbar" Content="{l:Loc Explorer.OpenImage}" Style="{StaticResource Orbit.Primary}" Margin="0,0,0,6"/>
+  </WrapPanel><TextBlock Text="{l:Loc Tab.Explorer}" FontSize="23" FontWeight="Light"/></DockPanel>
+  <Grid Grid.Row="1" Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+   <TextBox x:Name="Path" IsReadOnly="True"/><Button x:Name="InformationToolbar" Grid.Column="1" Click="InformationClick" Content="{l:Loc Menu.Information}" Margin="8,0,0,0"/>
+  </Grid>
+  <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition Width="240"/><ColumnDefinition/></Grid.ColumnDefinitions>
+   <Border Background="{DynamicResource Orbit.Surface}" CornerRadius="8" Padding="12" Margin="0,0,16,0">
+    <DockPanel><StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+     <Label x:Name="SessionLabel" Content="{l:Loc Explorer.Session}"/><ComboBox x:Name="Sessions"/>
+     <Label x:Name="VolumeLabel" Content="{l:Loc Explorer.Volume}" Margin="0,10,0,0"/><ComboBox x:Name="Volumes"/>
+     <ComboBox x:Name="Formats" Margin="0,10,0,0"/>
+     <CheckBox x:Name="AutomaticCommand" Content="{l:Loc Classification.Automatic}" Margin="0,8,0,0"/>
+     <Button x:Name="ClassificationCommand" Content="{l:Loc Classification.Format}" Click="ClassificationClick" Margin="0,6,0,0"/>
+    </StackPanel>
+    <ListBox x:Name="Folders" Background="Transparent" PreviewKeyDown="FolderKeyDown" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+     <ListBox.ItemTemplate><DataTemplate><DockPanel>
+      <v:OrbitFolderBranch Folder="{Binding}" MouseLeftButtonDown="FolderBranchClick"/>
+      <common:FileEntryIcon Category="Folder" IsExpanded="{Binding IsExpanded}" Width="16" Height="16" Margin="0,0,6,0"/>
+      <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+     </DockPanel></DataTemplate></ListBox.ItemTemplate>
+    </ListBox></DockPanel>
+   </Border>
+   <DockPanel Grid.Column="1">
+    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10"><TextBlock x:Name="VolumeName" FontWeight="SemiBold" Margin="0,0,16,0"/>
+     <TextBlock x:Name="CapacityCaption" Margin="0,0,5,0"/><TextBlock x:Name="Capacity" Margin="0,0,16,0"/>
+     <TextBlock x:Name="FreeCaption" Margin="0,0,5,0"/><TextBlock x:Name="Free" Margin="0,0,16,0"/>
+     <TextBlock x:Name="EntriesCaption" Margin="0,0,5,0"/><TextBlock x:Name="Entries"/>
+    </WrapPanel>
+    <Expander x:Name="OpticalTracks" DockPanel.Dock="Bottom" Header="{l:Loc Explorer.AudioTracks}" Margin="0,12,0,0"><ListBox x:Name="Tracks" MaxHeight="160"/></Expander>
+    <ListView x:Name="Files" MouseDoubleClick="FileDoubleClick" KeyDown="FileKeyDown"><ListView.View><GridView>
+     <GridViewColumn Header="{l:Loc Explorer.Name}" Width="230"><GridViewColumn.CellTemplate><DataTemplate><DockPanel>
+      <common:FileEntryIcon Category="{Binding IconCategory}" Width="16" Height="16" Margin="0,0,6,0"/><TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+     </DockPanel></DataTemplate></GridViewColumn.CellTemplate></GridViewColumn>
+     <GridViewColumn Header="{l:Loc Explorer.Size}" Width="85" DisplayMemberBinding="{Binding SizeText}"/>
+     <GridViewColumn Header="{l:Loc Explorer.Type}" Width="130" DisplayMemberBinding="{Binding TypeText}"/>
+     <GridViewColumn Header="{l:Loc Explorer.Modified}" Width="140" DisplayMemberBinding="{Binding ModifiedText}"/>
+    </GridView></ListView.View></ListView>
+   </DockPanel>
+   <Border x:Name="EmptyState" Grid.ColumnSpan="2" Background="{DynamicResource Orbit.Window}"><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+    <TextBlock Text="{l:Loc Visual.NoFile}" FontSize="20" Margin="0,0,0,16"/><Button x:Name="EmptyOpen" Content="{l:Loc Explorer.OpenImage}"/>
+   </StackPanel></Border>
+   <Border x:Name="Recognition" Grid.ColumnSpan="2" Background="{DynamicResource Orbit.Surface}" Padding="20"><StackPanel VerticalAlignment="Center">
+    <TextBlock x:Name="RecognitionStage" FontSize="20"/><TextBlock x:Name="RecognitionDetail" TextWrapping="Wrap" Margin="0,12,0,16"/><ProgressBar x:Name="RecognitionProgress"/>
+   </StackPanel></Border>
+  </Grid>
+  <DockPanel Grid.Row="3" Margin="0,16,0,0"><Button x:Name="WarningsCommand" Content="{l:Loc Explorer.Warnings}" Click="WarningsClick" DockPanel.Dock="Right"/>
+   <Button x:Name="CloseCommand" Content="{l:Loc Common.Close}" Click="CloseClick" HorizontalAlignment="Left"/>
+  </DockPanel>
+ </Grid>
+</UserControl>

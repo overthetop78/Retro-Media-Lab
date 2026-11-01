@@ -1,0 +1,339 @@
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text.Json;
+using RetroMediaLab.Updates.Contracts;
+using RetroMediaLab.Updates.Services;
+using RetroMediaLab.App.Contracts.Updates;
+using RetroMediaLab.Emulation.Constants;
+
+namespace RetroMediaLab.App.Services.Updates;
+
+internal sealed class UpdatePackagePreparationService
+{
+    private static readonly JsonSerializerOptions JsonOptions = UpdateJsonOptions.Create();
+    private readonly HttpClient _httpClient;
+    private readonly Func<InstalledUpdateState> _installedState;
+    private readonly string _applicationDirectory;
+    private readonly UpdateArchiveValidator _archiveValidator;
+    private readonly string _workingRootDirectory;
+
+    internal UpdatePackagePreparationService(
+        HttpClient? httpClient = null,
+        Func<InstalledUpdateState>? installedState = null,
+        string? applicationDirectory = null,
+        UpdateArchiveValidator? archiveValidator = null,
+        string? workingRootDirectory = null)
+    {
+        _httpClient = httpClient ?? new HttpClient();
+        _installedState = installedState ?? ApplicationUpdateService.ReadInstalledState;
+        _applicationDirectory = Path.GetFullPath(applicationDirectory ?? AppContext.BaseDirectory);
+        _archiveValidator = archiveValidator ?? new UpdateArchiveValidator();
+        _workingRootDirectory = Path.GetFullPath(workingRootDirectory ?? Path.Combine(Path.GetTempPath(), "Retro Media Lab", "Updates"));
+    }
+
+    internal async Task<PreparedUpdateLaunch> PrepareAsync(UpdatePlan plan, IProgress<double>? progress = null, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? expectedModuleCatalogUrls = null)
+    {
+        var preparation = await PrepareComponentsAsync(plan, progress, cancellationToken, expectedModuleCatalogUrls).ConfigureAwait(false);
+        try
+        {
+            return await CreateLaunchAsync(preparation.TransactionId, preparation.WorkingDirectory, preparation.Components, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            DeleteDirectory(preparation.WorkingDirectory);
+            throw;
+        }
+    }
+
+    internal async Task<PendingModuleInstallation> PrepareRemoteModuleAsync(UpdatePlan plan, string displayName, string catalogUrl, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    {
+        var preparation = await PrepareComponentsAsync(plan, progress, cancellationToken,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [plan.Items.Single().ComponentId] = catalogUrl
+            }).ConfigureAwait(false);
+        var component = preparation.Components.Single();
+        return new(component.ComponentId, displayName, component.Version, catalogUrl, component, preparation.WorkingDirectory);
+    }
+
+    internal Task<PendingModuleInstallation> PrepareLocalModuleAsync(string archivePath, string displayName, CancellationToken cancellationToken = default)
+    {
+        var sourceArchive = Path.GetFullPath(archivePath);
+        if (!File.Exists(sourceArchive)) throw new FileNotFoundException("Module archive was not found.", sourceArchive);
+        VerifyInstallationIsWritable();
+        var transactionId = Guid.NewGuid().ToString("N");
+        var workDirectory = Path.Combine(_workingRootDirectory, transactionId);
+        var localArchive = Path.Combine(workDirectory, "packages", "module.zip");
+        Directory.CreateDirectory(Path.GetDirectoryName(localArchive)!);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            File.Copy(sourceArchive, localArchive, overwrite: false);
+            cancellationToken.ThrowIfCancellationRequested();
+            var validated = _archiveValidator.ExtractModuleValidated(localArchive, Path.Combine(workDirectory, "extracted"));
+            var manifest = validated.ModuleManifest ?? throw new InvalidDataException("The module archive does not contain a manifest.");
+            var installed = _installedState();
+            if (installed.Modules.Any(module => module.Id.Equals(manifest.Id, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"Module '{manifest.Id}' is already installed.");
+            ValidateModuleHostCompatibility(manifest, installed.HostApiVersion);
+            var component = new PreparedUpdateComponent(manifest.Id, UpdateComponentKind.Module, UpdateComponentOperation.InstallModule, manifest.ModuleVersion, validated.RootDirectory);
+            return Task.FromResult(new PendingModuleInstallation(manifest.Id, displayName, manifest.ModuleVersion, manifest.UpdateCatalogUrl, component, workDirectory));
+        }
+        catch
+        {
+            try { if (Directory.Exists(workDirectory)) Directory.Delete(workDirectory, recursive: true); }
+            catch { }
+            throw;
+        }
+    }
+
+    internal async Task<PreparedUpdateLaunch> CreateModuleLaunchAsync(IReadOnlyList<PendingModuleInstallation> installations, CancellationToken cancellationToken = default)
+    {
+        if (installations.Count == 0)
+            throw new InvalidOperationException("No prepared module installation is available.");
+        VerifyInstallationIsWritable();
+        var transactionId = Guid.NewGuid().ToString("N");
+        var workDirectory = Path.Combine(_workingRootDirectory, transactionId);
+        try
+        {
+            var components = new List<PreparedUpdateComponent>(installations.Count);
+            foreach (var installation in installations)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ValidateModuleVersion(installation.ModuleId, installation.Component.Version);
+                var destination = Path.Combine(workDirectory, "extracted", installation.ModuleId);
+                CopyRegularDirectory(installation.Component.PreparedDirectory, destination);
+                components.Add(installation.Component with { PreparedDirectory = destination });
+            }
+            return await CreateLaunchAsync(transactionId, workDirectory, components, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            DeleteDirectory(workDirectory);
+            throw;
+        }
+    }
+
+    private async Task<PreparedComponents> PrepareComponentsAsync(UpdatePlan plan, IProgress<double>? progress, CancellationToken cancellationToken, IReadOnlyDictionary<string, string>? expectedModuleCatalogUrls)
+    {
+        if (!plan.IsCompatible || plan.Items.Count == 0)
+            throw new InvalidOperationException("The selected update plan is empty or incompatible.");
+        var installed = _installedState();
+        ValidateFinalCompatibility(plan, installed);
+        VerifyInstallationIsWritable();
+        var transactionId = Guid.NewGuid().ToString("N");
+        var workDirectory = Path.Combine(_workingRootDirectory, transactionId);
+        var packagesDirectory = Path.Combine(workDirectory, "packages");
+        var extractedDirectory = Path.Combine(workDirectory, "extracted");
+        Directory.CreateDirectory(packagesDirectory);
+        try
+        {
+            var prepared = new List<PreparedUpdateComponent>();
+            for (var index = 0; index < plan.Items.Count; index++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var item = plan.Items[index];
+                var archive = Path.Combine(packagesDirectory, $"{item.ComponentId}-{item.Release.Version}.zip");
+                await DownloadVerifiedAsync(item.Release, archive, cancellationToken).ConfigureAwait(false);
+                var extraction = Path.Combine(extractedDirectory, item.ComponentId);
+                var validated = _archiveValidator.ExtractValidated(archive, extraction, item.ComponentId, item.Kind, item.Release.Version);
+                if (validated.ModuleManifest is not null)
+                    ValidateModuleHostCompatibility(validated.ModuleManifest, installed.HostApiVersion);
+                if (item.Kind == UpdateComponentKind.Module
+                    && expectedModuleCatalogUrls?.TryGetValue(item.ComponentId, out var expectedCatalogUrl) == true
+                    && (!Uri.TryCreate(validated.ModuleManifest?.UpdateCatalogUrl, UriKind.Absolute, out var declared)
+                        || !Uri.TryCreate(expectedCatalogUrl, UriKind.Absolute, out var expected)
+                        || declared != expected))
+                    throw new InvalidDataException($"Module '{item.ComponentId}' declares a different update catalog URL.");
+                var operation = item.Kind == UpdateComponentKind.Application
+                    ? UpdateComponentOperation.UpdateApplication
+                    : installed.Modules.Any(module => module.Id.Equals(item.ComponentId, StringComparison.OrdinalIgnoreCase)) ? UpdateComponentOperation.UpdateModule : UpdateComponentOperation.InstallModule;
+                prepared.Add(new(item.ComponentId, item.Kind, operation, item.Release.Version, validated.RootDirectory));
+                progress?.Report((index + 1d) / plan.Items.Count);
+            }
+            return new(transactionId, workDirectory, prepared);
+        }
+        catch
+        {
+            DeleteDirectory(workDirectory);
+            throw;
+        }
+    }
+
+    private async Task<PreparedUpdateLaunch> CreateLaunchAsync(string transactionId, string workDirectory, IReadOnlyList<PreparedUpdateComponent> prepared, CancellationToken cancellationToken)
+    {
+        var updaterDirectory = Path.Combine(workDirectory, "updater");
+        CopyUpdaterFiles(_applicationDirectory, updaterDirectory);
+        var updaterExecutable = Path.Combine(updaterDirectory, "retromedialab.updater.exe");
+        if (!File.Exists(updaterExecutable))
+            throw new FileNotFoundException("The installed updater is missing.", updaterExecutable);
+
+        var executionPlan = new UpdateExecutionPlan(2, transactionId, _applicationDirectory,
+            Path.Combine(_applicationDirectory, "retromedialab.exe"), RunningApplicationProcessIds(), 10, 30,
+            Path.Combine(workDirectory, "startup.signal"), Path.Combine(workDirectory, "result.json"), prepared);
+        var planPath = Path.Combine(workDirectory, "update-plan.json");
+        var temporaryPlan = planPath + ".tmp";
+        await File.WriteAllTextAsync(temporaryPlan, JsonSerializer.Serialize(executionPlan, JsonOptions), cancellationToken).ConfigureAwait(false);
+        File.Move(temporaryPlan, planPath);
+        return new(updaterExecutable, planPath, workDirectory, executionPlan.ResultPath);
+    }
+
+    private async Task DownloadVerifiedAsync(UpdateCatalogRelease release, string destination, CancellationToken cancellationToken)
+    {
+        using var response = await _httpClient.GetAsync(release.PackageUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        await using var input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var buffer = new byte[81920];
+        while (true)
+        {
+            var count = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            if (count == 0) break;
+            await output.WriteAsync(buffer.AsMemory(0, count), cancellationToken).ConfigureAwait(false);
+            hash.AppendData(buffer, 0, count);
+        }
+        await output.FlushAsync(cancellationToken).ConfigureAwait(false);
+        var actual = Convert.ToHexString(hash.GetHashAndReset());
+        if (!actual.Equals(release.Sha256, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException($"SHA-256 mismatch for component package '{release.PackageUrl}'.");
+    }
+
+    private static void ValidateFinalCompatibility(UpdatePlan plan, InstalledUpdateState installed)
+    {
+        var application = plan.Items.FirstOrDefault(item => item.Kind == UpdateComponentKind.Application);
+        var apiValue = application?.Release.HostApiVersion ?? installed.HostApiVersion;
+        if (!Version.TryParse(apiValue, out var targetApi))
+            throw new InvalidDataException("Invalid target host API.");
+        foreach (var module in installed.Modules)
+        {
+            var update = plan.Items.FirstOrDefault(item => item.Kind == UpdateComponentKind.Module && item.ComponentId.Equals(module.Id, StringComparison.OrdinalIgnoreCase));
+            var minimumValue = update?.Release.HostApiMinimum ?? module.HostApiMinimum;
+            var maximumValue = update?.Release.HostApiMaximum ?? module.HostApiMaximum;
+            if (!Version.TryParse(minimumValue, out var minimum) || !Version.TryParse(maximumValue, out var maximum)
+                || targetApi < minimum || targetApi > maximum)
+                throw new InvalidDataException($"Module '{module.Id}' is incompatible with target host API {apiValue}.");
+        }
+    }
+
+    private static void ValidateModuleHostCompatibility(RetroMediaLab.Emulation.Contracts.EmulationModuleManifest manifest, string hostApiVersion)
+    {
+        ValidateModuleVersion(manifest.Id, manifest.ModuleVersion);
+        if (!Version.TryParse(hostApiVersion, out var hostApi)
+            || !Version.TryParse(manifest.HostApiMinimum, out var minimum)
+            || !Version.TryParse(manifest.HostApiMaximum, out var maximum)
+            || hostApi < minimum || hostApi > maximum)
+            throw new InvalidDataException($"Module '{manifest.Id}' is incompatible with host API {hostApiVersion}.");
+    }
+
+    private static void ValidateModuleVersion(string moduleId, string version)
+    {
+        if (!Version.TryParse(version, out var moduleVersion) || moduleVersion < EmulationHostApi.MinimumModuleVersion)
+            throw new InvalidDataException($"Module '{moduleId}' version {version} is no longer supported. Minimum module version: {EmulationHostApi.MinimumModuleVersion}.");
+    }
+
+    private void VerifyInstallationIsWritable()
+    {
+        var probe = Path.Combine(_applicationDirectory, $".retromedialab-update-{Guid.NewGuid():N}.tmp");
+        try { using (File.Create(probe)) { } }
+        finally { if (File.Exists(probe)) File.Delete(probe); }
+    }
+
+    private IReadOnlyList<int> RunningApplicationProcessIds()
+    {
+        var executable = Path.Combine(_applicationDirectory, "retromedialab.exe");
+        var processIds = new HashSet<int> { Environment.ProcessId };
+        foreach (var process in Process.GetProcessesByName("retromedialab"))
+        {
+            using (process)
+            {
+                try
+                {
+                    if (string.Equals(process.MainModule?.FileName, executable, StringComparison.OrdinalIgnoreCase))
+                        processIds.Add(process.Id);
+                }
+                catch { }
+            }
+        }
+        return processIds.Order().ToArray();
+    }
+
+    internal static void CopyUpdaterFiles(string applicationDirectory, string destination)
+    {
+        CopyRegularDirectory(Path.Combine(applicationDirectory, "Updater"), destination);
+        var dependencyFile = Path.Combine(destination, "retromedialab.updater.deps.json");
+        if (!File.Exists(dependencyFile)) return;
+
+        using var document = JsonDocument.Parse(File.ReadAllText(dependencyFile));
+        var root = document.RootElement;
+        var targetName = root.GetProperty("runtimeTarget").GetProperty("name").GetString()!;
+        var target = root.GetProperty("targets").GetProperty(targetName);
+        var runtimeFiles = target.EnumerateObject()
+            .Where(library => library.Value.TryGetProperty("runtime", out _))
+            .SelectMany(library => library.Value.GetProperty("runtime").EnumerateObject())
+            .Select(asset => Path.GetFileName(asset.Name))
+            .Where(name => name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+        var libraryDirectory = Path.Combine(applicationDirectory, "lib");
+        string[]? sharedFiles = null;
+        foreach (var fileName in runtimeFiles)
+        {
+            var stagedFile = Path.Combine(destination, fileName);
+            if (File.Exists(stagedFile)) continue;
+            if (sharedFiles is null)
+            {
+                if ((File.GetAttributes(libraryDirectory) & FileAttributes.ReparsePoint) != 0)
+                    throw new InvalidDataException($"Updater directory cannot contain a reparse point: {libraryDirectory}");
+                sharedFiles = Directory.GetFiles(libraryDirectory, "*", new EnumerationOptions
+                {
+                    RecurseSubdirectories = true,
+                    AttributesToSkip = FileAttributes.ReparsePoint,
+                    IgnoreInaccessible = false
+                });
+            }
+            var matches = sharedFiles.Where(path => Path.GetFileName(path).Equals(fileName, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (matches.Length == 0)
+                throw new FileNotFoundException("An installed updater dependency is missing.", fileName);
+            if (matches.Length != 1)
+                throw new InvalidDataException($"The installed updater dependency is ambiguous: {fileName}");
+            CopyRegularFile(matches[0], stagedFile);
+        }
+    }
+
+    private static void CopyRegularDirectory(string source, string destination)
+    {
+        if (!Directory.Exists(source))
+            throw new DirectoryNotFoundException($"Installed updater directory is missing: {source}");
+        foreach (var directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories).Prepend(source))
+        {
+            if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+                throw new InvalidDataException($"Updater directory cannot contain a reparse point: {directory}");
+            var relative = Path.GetRelativePath(source, directory);
+            Directory.CreateDirectory(relative == "." ? destination : Path.Combine(destination, relative));
+        }
+        foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+        {
+            var target = Path.Combine(destination, Path.GetRelativePath(source, file));
+            CopyRegularFile(file, target);
+        }
+    }
+
+    private static void CopyRegularFile(string source, string destination)
+    {
+        if ((File.GetAttributes(source) & FileAttributes.ReparsePoint) != 0)
+            throw new InvalidDataException($"Updater directory cannot contain a reparse point: {source}");
+        File.Copy(source, destination, overwrite: false);
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        try { if (Directory.Exists(path)) Directory.Delete(path, recursive: true); }
+        catch { }
+    }
+}
+
+internal sealed record PreparedUpdateLaunch(string UpdaterExecutable, string PlanPath, string WorkingDirectory, string ResultPath);
+
+internal sealed record PreparedComponents(string TransactionId, string WorkingDirectory, IReadOnlyList<PreparedUpdateComponent> Components);

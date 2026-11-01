@@ -1,0 +1,20 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:w="clr-namespace:RetroMediaLab.App.Theme.OS.Editions.Windows31"
+                    xmlns:dialog="clr-namespace:System.Windows;assembly=PresentationFramework">
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Read}" UriSource="../Assets/Icons/read.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Write}" UriSource="../Assets/Icons/write.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Conversion}" UriSource="../Assets/Icons/conversion.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Visualization}" UriSource="../Assets/Icons/visualization.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Explorer}" UriSource="../Assets/Icons/explorer.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Tools}" UriSource="../Assets/Icons/tools.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Emulation}" UriSource="../Assets/Icons/emulation.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Preferences}" UriSource="../Assets/Icons/preferences.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.EmulationPreferences}" UriSource="../Assets/Icons/emulation-preferences.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.ProgramManager}" UriSource="../Assets/Icons/group.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static w:Windows31ApplicationId.Terminal}" UriSource="../Assets/Icons/terminal.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static dialog:MessageBoxImage.Information}" UriSource="../Assets/Icons/message-information.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static dialog:MessageBoxImage.Warning}" UriSource="../Assets/Icons/message-warning.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static dialog:MessageBoxImage.Error}" UriSource="../Assets/Icons/message-error.ico" CacheOption="OnLoad"/>
+    <BitmapImage x:Key="{x:Static dialog:MessageBoxImage.Question}" UriSource="../Assets/Icons/message-question.ico" CacheOption="OnLoad"/>
+</ResourceDictionary>

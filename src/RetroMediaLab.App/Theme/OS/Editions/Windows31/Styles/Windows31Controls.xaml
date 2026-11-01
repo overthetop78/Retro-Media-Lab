@@ -1,0 +1,298 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:w="clr-namespace:RetroMediaLab.App.Theme.OS.Editions.Windows31"
+                    xmlns:explorer="clr-namespace:RetroMediaLab.App.Contracts.Explorer">
+    <ResourceDictionary.MergedDictionaries>
+        <w:Windows31DefaultColors/>
+        <ResourceDictionary Source="Windows31Typography.xaml"/>
+        <ResourceDictionary Source="../Views/Controls/Common/Styles/ScrollControls.xaml"/>
+        <ResourceDictionary Source="../Views/Controls/Common/Styles/NavigationControls.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+    <w:Windows31FileImages x:Key="{x:Static explorer:IFileEntryImageProvider.ResourceKey}"/>
+    <Style x:Key="KeyboardFocus" TargetType="Control">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Margin="3" Stroke="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" StrokeThickness="1" StrokeDashArray="1,1" SnapsToDevicePixels="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonFace}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonText}}"/>
+        <Setter Property="Padding" Value="10,3"/>
+        <Setter Property="MinHeight" Value="23"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="DefaultEdge" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" BorderThickness="1" CornerRadius="2" Background="{TemplateBinding Background}">
+                        <Border x:Name="Relief" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonHighlight}}" BorderThickness="2,2,0,0" CornerRadius="1">
+                            <Border x:Name="Shadow" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonShadow}}" BorderThickness="0,0,2,2">
+                                <w:Windows31ContentPresenter x:Name="Caption" Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                            </Border>
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsDefaulted" Value="True"><Setter TargetName="DefaultEdge" Property="BorderThickness" Value="2"/></Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Relief" Property="BorderThickness" Value="0"/>
+                            <Setter TargetName="Shadow" Property="BorderThickness" Value="1,1,0,0"/>
+                            <Setter TargetName="Caption" Property="RenderTransform"><Setter.Value><TranslateTransform X="1" Y="1"/></Setter.Value></Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.GrayText}}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonText}}"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <DockPanel Background="Transparent">
+                        <Grid Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center">
+                            <Border Background="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" BorderThickness="1"/>
+                            <Path x:Name="Mark" Data="M 2,2 L 10,10 M 10,2 L 2,10" Stroke="{DynamicResource {x:Static w:Windows31PaletteResources.WindowText}}" StrokeThickness="1" Visibility="Collapsed"/>
+                        </Grid>
+                        <w:Windows31ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
+                    </DockPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True"><Setter TargetName="Mark" Property="Visibility" Value="Visible"/></Trigger>
+                        <Trigger Property="IsChecked" Value="{x:Null}"><Setter TargetName="Mark" Property="Visibility" Value="Visible"/><Setter TargetName="Mark" Property="Opacity" Value="0.5"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.GrayText}}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonText}}"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <DockPanel Background="Transparent">
+                        <Grid Width="12" Height="12" Margin="0,0,5,0" VerticalAlignment="Center">
+                            <Ellipse Fill="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}" Stroke="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" StrokeThickness="1"/>
+                            <Ellipse x:Name="Dot" Width="4" Height="4" Fill="{DynamicResource {x:Static w:Windows31PaletteResources.WindowText}}" Visibility="Collapsed"/>
+                        </Grid>
+                        <w:Windows31ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                    </DockPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True"><Setter TargetName="Dot" Property="Visibility" Value="Visible"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.GrayText}}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.WindowText}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}"/>
+        <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Selection}}"/>
+        <Setter Property="SelectionTextBrush" Value="{DynamicResource {x:Static w:Windows31PaletteResources.SelectionText}}"/>
+        <Setter Property="SelectionOpacity" Value="1"/>
+        <Setter Property="Padding" Value="3,2"/>
+        <Setter Property="MinHeight" Value="21"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                        <ScrollViewer x:Name="PART_ContentHost"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.GrayText}}"/><Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonFace}}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ComboBox">
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.WindowText}}"/>
+        <Setter Property="MinHeight" Value="21"/>
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <Border BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" BorderThickness="1" Background="{TemplateBinding Background}"/>
+                        <ToggleButton x:Name="DropDown" Focusable="False" IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" ClickMode="Press">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <DockPanel Background="Transparent">
+                                        <Border DockPanel.Dock="Right" Width="18" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" BorderThickness="1" Background="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonFace}}">
+                                            <Path Data="M 0,0 L 8,0 4,4 Z" Fill="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <Border/>
+                                    </DockPanel>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <w:Windows31ContentPresenter x:Name="SelectionContent" Margin="4,2,21,2" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" IsHitTestVisible="False" VerticalAlignment="Center"/>
+                        <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="False" Focusable="False" PopupAnimation="None">
+                            <Border Background="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" BorderThickness="1" MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <ScrollViewer><ItemsPresenter/></ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.GrayText}}"/><Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonFace}}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ComboBoxItem">
+        <Setter Property="Padding" Value="3,1"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.WindowText}}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><w:Windows31ContentPresenter/></Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Selection}}"/><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.SelectionText}}"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.GrayText}}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ListBox">
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.WindowText}}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <Border BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" BorderThickness="1" Background="{TemplateBinding Background}"><ScrollViewer><ItemsPresenter/></ScrollViewer></Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ListBoxItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.WindowText}}"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocus}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border Background="{TemplateBinding Background}" Padding="2"><w:Windows31ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/></Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Selection}}"/><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.SelectionText}}"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.GrayText}}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="GroupBox">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonText}}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GroupBox">
+                    <Grid>
+                        <Border Margin="0,7,0,0" BorderThickness="1" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonShadow}}"/>
+                        <Grid Margin="8,0">
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <Border Background="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonFace}}" HorizontalAlignment="Left" Padding="3,0"><w:Windows31ContentPresenter ContentSource="Header" RecognizesAccessKey="True"/></Border>
+                            <w:Windows31ContentPresenter Grid.Row="1" Margin="0,5,0,7"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="Label">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonText}}"/>
+        <Setter Property="Padding" Value="3,2"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Label"><w:Windows31ContentPresenter Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+    <Style TargetType="Menu">
+        <Setter Property="FontFamily" Value="{StaticResource Windows31CaptionFont}"/>
+        <Setter Property="FontSize" Value="{x:Static w:Windows31Metrics.CaptionFontSize}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Menu}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.MenuText}}"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Menu"><Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" BorderThickness="0,0,0,1"><ItemsPresenter/></Border></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="ContextMenu">
+        <Setter Property="FontFamily" Value="{StaticResource Windows31CaptionFont}"/>
+        <Setter Property="FontSize" Value="{x:Static w:Windows31Metrics.CaptionFontSize}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Window}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.WindowText}}"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ContextMenu"><Border BorderThickness="1" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" Background="{TemplateBinding Background}" Padding="1"><ItemsPresenter/></Border></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="MenuItem">
+        <Setter Property="FontFamily" Value="{StaticResource Windows31CaptionFont}"/>
+        <Setter Property="FontSize" Value="{x:Static w:Windows31Metrics.CaptionFontSize}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.MenuText}}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="5,2"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Grid>
+                        <Border x:Name="Selection" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition x:Name="CheckColumn" Width="16"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition x:Name="ArrowColumn" Width="13"/></Grid.ColumnDefinitions>
+                                <Path x:Name="CheckMark" Data="M 1,4 L 4,7 10,1" Stroke="{TemplateBinding Foreground}" Visibility="Collapsed" VerticalAlignment="Center"/>
+                                <w:Windows31ContentPresenter Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True"/>
+                                <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Margin="15,0,0,0" Foreground="{TemplateBinding Foreground}"/>
+                                <Path x:Name="SubmenuArrow" Grid.Column="3" Data="M 0,0 L 4,4 0,8 Z" Fill="{TemplateBinding Foreground}" Visibility="Collapsed" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsSubmenuOpen}" Placement="Right" PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}" Focusable="False" PopupAnimation="None">
+                            <Border Background="{DynamicResource {x:Static w:Windows31PaletteResources.Menu}}" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}" BorderThickness="1" Padding="1"><ItemsPresenter/></Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True"><Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/></Trigger>
+                        <Trigger Property="HasItems" Value="True"><Setter TargetName="SubmenuArrow" Property="Visibility" Value="Visible"/></Trigger>
+                        <Trigger Property="Role" Value="TopLevelHeader">
+                            <Setter TargetName="PART_Popup" Property="Placement" Value="Bottom"/>
+                            <Setter TargetName="SubmenuArrow" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="CheckColumn" Property="Width" Value="0"/>
+                            <Setter TargetName="ArrowColumn" Property="Width" Value="0"/>
+                        </Trigger>
+                        <Trigger Property="Role" Value="TopLevelItem"><Setter TargetName="CheckColumn" Property="Width" Value="0"/><Setter TargetName="ArrowColumn" Property="Width" Value="0"/></Trigger>
+                        <Trigger Property="IsHighlighted" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Selection}}"/><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.SelectionText}}"/></Trigger>
+                        <Trigger Property="IsSubmenuOpen" Value="True"><Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.Selection}}"/><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.SelectionText}}"/></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.GrayText}}"/></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="Separator">
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Separator"><Border Height="1" Margin="2,3" Background="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}"/></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="GridViewColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonFace}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonText}}"/>
+        <Setter Property="Padding" Value="4,3"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GridViewColumnHeader">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonHighlight}}" BorderThickness="1,1,0,0">
+                        <Border BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonShadow}}" BorderThickness="0,0,1,1">
+                            <w:Windows31ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center"/>
+                        </Border>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

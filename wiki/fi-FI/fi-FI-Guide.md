@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Käyttäjän opas
+# Retro Media Lab Käyttäjän opas
 
-GW GUI on Windows-sovellus lukemiseen, kirjoittamiseen, muuntamiseen, tarkastukseen ja emulointiin levykuvat. Se voi hallita Greaseweazle laitteisto, työskennellä levykuvatiedostoja kautta sen sisäinen moottori, ja ajaa tallennettu emuloitu-kone kokoonpanot.
+Retro Media Lab on Windows-sovellus lukemiseen, kirjoittamiseen, muuntamiseen, tarkastukseen ja emulointiin levykuvat. Se voi hallita Greaseweazle laitteisto, työskennellä levykuvatiedostoja kautta sen sisäinen moottori, ja ajaa tallennettu emuloitu-kone kokoonpanot.
 
 Tässä oppaassa kuvataan sovelluksen nykyisessä versiossa esitetty englanninkielinen käyttöliittymä. Se on kirjoitettu lähde tulostettavan käyttöohjeen: kuvakaappaukset kuvaavat ohjaimia, kun taas ympäröivä teksti selittää, mitä valita, miksi valita se, ja miten tarkistaa tulos.
 
@@ -10,7 +10,7 @@ Tässä oppaassa kuvataan sovelluksen nykyisessä versiossa esitetty englanninki
 
 ### Miten tätä opasta käytetään
 
-Jos käytät tätä ensimmäistä kertaa GW GUI, täydellinen [Aloitus](#getting-started), sitten seuraa [Luetaan levy](#reading-a-disk). Jos sovellus on jo konfiguroitu, mene suoraan leikkaukseen, jonka haluat suorittaa. Vaihtoehdot luvut toimivat viitteenä, kun menettely pyytää sinua muuttamaan aseman, moottorin, profiilin tai emuloitu koneen asetuksia.
+Jos käytät tätä ensimmäistä kertaa Retro Media Lab, täydellinen [Aloitus](#getting-started), sitten seuraa [Luetaan levy](#reading-a-disk). Jos sovellus on jo konfiguroitu, mene suoraan leikkaukseen, jonka haluat suorittaa. Vaihtoehdot luvut toimivat viitteenä, kun menettely pyytää sinua muuttamaan aseman, moottorin, profiilin tai emuloitu koneen asetuksia.
 
 Liitännän nimet näytetään **rohkea**. Tiedostonimet, polut, komennot ja kirjaimelliset arvot näytetään `code`. Huomautukset selittävät normaalin käyttäytymisen; varoitukset tunnistavat toiminnot, jotka voivat muuttaa levyä, ohjainta tai tallennettua kokoonpanoa.
 
@@ -40,7 +40,7 @@ Liitännän nimet näytetään **rohkea**. Tiedostonimet, polut, komennot ja kir
 
 ## Työnkulun ymmärtäminen
 
-GW GUI erottaa fyysisen levyn toiminnot kuvatiedoston toiminnoista:
+Retro Media Lab erottaa fyysisen levyn toiminnot kuvatiedoston toiminnoista:
 
 | Tavoite | Syöte | Tulos | Suositeltava sivu |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Suojellakseen, ensin tehdä raaka kiinniotto ja pitää se ennallaan isäntä. L
 - Asetettu polku `gw.exe` käytettäessä Greaseweazle Host Tools Moottori.
 - Laillisesti saadut ROM tiedostoja, kun emuloitu kone tarvitsee niitä.
 
-Sovellus tarkistaa tarvittavan .NET-käyttöajan käynnistettäessä. Jos se puuttuu, seuraa asennuskehotusta ja käynnistä se uudelleen GW GUI.
+Sovellus tarkistaa tarvittavan .NET-käyttöajan käynnistettäessä. Jos se puuttuu, seuraa asennuskehotusta ja käynnistä se uudelleen Retro Media Lab.
 
 ### Ennen laitteiston liittämistä
 
@@ -75,11 +75,11 @@ Tarkista seuraavat tiedot ennen kuin suoritat fyysisen levyn toimintaa:
 4. Varmista, että aseman koko ja tiheys vastaavat levyä.
 5. Write-protect lähdelevyn mahdollisuuksien mukaan.
 
-GW GUI ei voi estää virheellistä kaapelointia, sopimatonta tehoa tai mekaanisesti vaarallista ajoa. Testaa tuntematon laitteisto, jossa on käytetty levy ensin.
+Retro Media Lab ei voi estää virheellistä kaapelointia, sopimatonta tehoa tai mekaanisesti vaarallista ajoa. Testaa tuntematon laitteisto, jossa on käytetty levy ensin.
 
 ### Ensimmäinen laukaisu
 
-1. Avaa `gwgui.exe`.
+1. Avaa `retromedialab.exe`.
 2. Avaa **Valinnat**.
 3. Sisään **Ohjaimet ja asemat**, skannaa säätimen ja määrittää aseman.
 4. Tarkista tai valitse valittu polku `gw.exe`.
@@ -92,7 +92,7 @@ Työasetukset näyttävät ohjaimen ja aseman tilapalkissa, esimerkiksi aseman n
 
 ### Moottorin valinta
 
-GW GUI voi paljastaa useamman kuin yhden toteutuksen joissakin toimissa. • **Greaseweazle Host Tools** moottori vetoaa määritetty `gw.exe`; sisäinen GW GUI moottorin kahvat tuettu toiminta sovelluksen sisällä. Moottorin valinta on selkeä ja riippumaton lukemiseen, kirjoittamiseen, muuntamiseen ja Disk ExplorerJos valittu moottori ei tue toimenpidettä, GW GUI ilmoittaa, että ehto sijasta moottoreiden automaattisesti.
+Retro Media Lab voi paljastaa useamman kuin yhden toteutuksen joissakin toimissa. • **Greaseweazle Host Tools** moottori vetoaa määritetty `gw.exe`; sisäinen Retro Media Lab moottorin kahvat tuettu toiminta sovelluksen sisällä. Moottorin valinta on selkeä ja riippumaton lukemiseen, kirjoittamiseen, muuntamiseen ja Disk ExplorerJos valittu moottori ei tue toimenpidettä, Retro Media Lab ilmoittaa, että ehto sijasta moottoreiden automaattisesti.
 
 ## Pääikkuna
 
@@ -435,7 +435,7 @@ Käytä roskakorin ohjausta vain tallennetun konfiguraation poistamiseen; se ei 
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Moottorin valinta" width="72%"></p>
 
-Valitse moottori itsenäisesti lukemiseen, kirjoittamiseen, muuntamiseen, ja Disk Explorer. Valittua moottoria käytetään tiukasti: jos se ei pysty suorittamaan pyydettyä toimintaa, GW GUI ilmoittaa rajoituksesta moottorien hiljaisen kytkemisen sijaan.
+Valitse moottori itsenäisesti lukemiseen, kirjoittamiseen, muuntamiseen, ja Disk Explorer. Valittua moottoria käytetään tiukasti: jos se ei pysty suorittamaan pyydettyä toimintaa, Retro Media Lab ilmoittaa rajoituksesta moottorien hiljaisen kytkemisen sijaan.
 
 Tämä riippumattomuus on tahallista. Esimerkiksi fyysiset lukemat voivat käyttää Greaseweazle Host Tools kun kuvan muuntaminen ja etsintä käyttää sisäistä moottoria. Tallenna moottorivalinnat profiiliin tai projektin muistiin, kun uusittavuus on tärkeää.
 
@@ -514,7 +514,7 @@ Aseta siru RAM, Hitaasti RAM, Nopea RAM, ja tuettu laajennusmuisti. Yhteensopivu
 
 Valitse järjestelmä Kickstart ROM, valinnainen laajennettu ROMja ROM Avain. Havaittu...ROM luettelo näyttää nimet, korjaukset ja yhteensopivuus valitun mallin kanssa. Valitse havaittu ROM ja napsauta **Käyttö**, tai selaa tiedostoa manuaalisesti.
 
-ROM tiedostoja ei toimiteta GW GUI. Käytä ROMs sinulla on laillinen oikeus käyttää.
+ROM tiedostoja ei toimiteta Retro Media Lab. Käytä ROMs sinulla on laillinen oikeus käyttää.
 
 Havaittu luettelo on parempi kuin arvata tiedostonimestä: se raportoi ROM henkilöllisyys ja tarkistus sekä arviointi yhteensopivuudesta valitun mallin kanssa. **Yhteensopiva ** on tavanomainen valinta; ** Osittain yhteensopiva ** osoittaa, että ROM voi käynnistyä, mutta ei täsmää koneeseen. ** Päivitä ** skannaa uudelleen määritetty ROM sijainti. ** Käyttö** määrittää valitun havaitun ROM kokoonpanoon.
 
@@ -589,7 +589,7 @@ Nämä ikkunat avataan **Työkalut ** Lasku. Jokainen ikkuna esikatselee luotuja
 
 Näyttää valitun ohjaimen ilmoittamat tiedot. Laajenna **Raakatuotanto** kun tarvitset täydellisen komennon.
 
-Käytä tätä ensimmäisenä diagnostisena komentona. Onnistunut vastaus vahvistaa, että GW GUI voi käynnistää asetellut isäntätyökalut suoritettavaksi ja kommunikoida valitun laitteen kanssa. Tallenna laitteisto- ja laitteistotiedot ennen päivitystä.
+Käytä tätä ensimmäisenä diagnostisena komentona. Onnistunut vastaus vahvistaa, että Retro Media Lab voi käynnistää asetellut isäntätyökalut suoritettavaksi ja kommunikoida valitun laitteen kanssa. Tallenna laitteisto- ja laitteistotiedot ennen päivitystä.
 
 ### USB kaistanleveys
 
@@ -673,7 +673,7 @@ Kun vertaat kahta yritystä, tarkista, että ohjain, ajaa, moottori, profiili, l
 
 ## Sovellustiedot ja kannettava käyttö
 
-GW GUI pitää käyttäjän tiedot erillään sovellus binäärit. Valitusta paketista ja tilasta riippuen asetukset, lokit, ladatut työkalut, emulaattorin komponentit, sieppaukset, tilat ja konekokoonpanot tallennetaan joko sovellukseen `Data` kansiossa tai konfiguroiduissa käyttäjätietopaikoissa.
+Retro Media Lab pitää käyttäjän tiedot erillään sovellus binäärit. Valitusta paketista ja tilasta riippuen asetukset, lokit, ladatut työkalut, emulaattorin komponentit, sieppaukset, tilat ja konekokoonpanot tallennetaan joko sovellukseen `Data` kansiossa tai konfiguroiduissa käyttäjätietopaikoissa.
 
 Ennen kuin korvaat kannettavan asennuksen tai liikutat sitä, pidä koko hakemuskansio koossa ja varmuuskopioi `Data` kansio. Älä siirrä yksittäisiä tiedostoja `lib`, koska sovellus ratkaisee omat ja kolmannen osapuolen kirjastot tästä rakenteesta.
 
@@ -762,7 +762,7 @@ Ennen laitteistonvaihtotyökalua:
 4. Tarkista ohjaimen tila ja aseman asetukset.
 5. Juokse **Rekisterinpitäjän tiedot** jos havaitseminen onnistuu, mutta käskyt epäonnistuvat.
 
-Jos se ei vieläkään näy, kokeile toista suoraa USB Portti ja kaapeli, sitten uudelleenskannaus. Tarkista Windows-laitteen hallinta uudesta sarjalaitteesta. Ohjain näkyy Windows mutta puuttuu GW GUI yleensä osoittaa kiireinen portti, vaikea kokoonpano, tai Host Tools ongelma; ohjain puuttuu Windows osoittaa USB, teho, kuljettaja, tai laitteisto.
+Jos se ei vieläkään näy, kokeile toista suoraa USB Portti ja kaapeli, sitten uudelleenskannaus. Tarkista Windows-laitteen hallinta uudesta sarjalaitteesta. Ohjain näkyy Windows mutta puuttuu Retro Media Lab yleensä osoittaa kiireinen portti, vaikea kokoonpano, tai Host Tools ongelma; ohjain puuttuu Windows osoittaa USB, teho, kuljettaja, tai laitteisto.
 
 ### `gw.exe` ei löytynyt
 
@@ -772,7 +772,7 @@ Valittuasi sen, suorita **Rekisterinpitäjän tiedot**. Jos tämä ei onnistu en
 
 ### Toiminta käyttää väärää moottoria
 
-Avaa **Vaihtoehdot > Moottorit** ja tarkistaa koneen tähän tarkoitukseen. GW GUI ei hiljaa putoa takaisin toiseen moottoriin.
+Avaa **Vaihtoehdot > Moottorit** ja tarkistaa koneen tähän tarkoitukseen. Retro Media Lab ei hiljaa putoa takaisin toiseen moottoriin.
 
 Moottorin asetukset ovat erillisiä: muuntomoottorin vaihtaminen ei muuta lukemista, kirjoittamista tai Disk Explorer. Avaa epäonnistuva toiminto uudelleen tallennuksen jälkeen ja vahvista luotu komento konsolissa.
 
@@ -815,7 +815,7 @@ Toista lukeminen uudelle tiedostonimelle, lisää tarvittaessa vallankumouksia j
 
 ## Sanasto
 
-| Termi | Merkitys GW GUI |
+| Termi | Merkitys Retro Media Lab |
 |---|---|
 | Kontrolleri | • Greaseweazle laitteistoliitäntä kytketty yli USB |
 | Asema | Ohjaimeen kiinnitetty fyysinen levykeasema |

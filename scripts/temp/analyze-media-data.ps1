@@ -14,8 +14,8 @@ $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 if (-not $OutputRoot) {
     $OutputRoot = Join-Path $repositoryRoot 'artifacts\media-audit'
 }
-$auditProject = Join-Path $repositoryRoot 'tests\GWGUI.LocalDiskImageTests\GWGUI.LocalDiskImageTests.csproj'
-$auditAssembly = Join-Path $repositoryRoot 'tests\GWGUI.LocalDiskImageTests\bin\Debug\net10.0-windows10.0.19041.0\GWGUI.LocalDiskImageTests.dll'
+$auditProject = Join-Path $repositoryRoot 'tests\RetroMediaLab.LocalDiskImageTests\RetroMediaLab.LocalDiskImageTests.csproj'
+$auditAssembly = Join-Path $repositoryRoot 'tests\RetroMediaLab.LocalDiskImageTests\bin\Debug\net10.0-windows10.0.19041.0\RetroMediaLab.LocalDiskImageTests.dll'
 $checkpointPath = Join-Path $OutputRoot 'checkpoint.json'
 $failurePath = Join-Path $OutputRoot 'failure.json'
 

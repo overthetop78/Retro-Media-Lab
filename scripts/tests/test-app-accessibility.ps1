@@ -6,7 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-if ([string]::IsNullOrWhiteSpace($ApplicationPath)) { $ApplicationPath = Join-Path $repository 'dist\portable\GW GUI\gwgui.exe' }
+if ([string]::IsNullOrWhiteSpace($ApplicationPath)) { $ApplicationPath = Join-Path $repository 'dist\portable\Retro Media Lab\retromedialab.exe' }
 $application = [IO.Path]::GetFullPath($ApplicationPath)
 if (-not (Test-Path -LiteralPath $application -PathType Leaf)) { throw "Application not found: $application" }
 
@@ -15,7 +15,7 @@ Add-Type -AssemblyName UIAutomationTypes
 Add-Type @'
 using System;
 using System.Runtime.InteropServices;
-public static class GwGuiWindowAudit {
+public static class RetroMediaLabWindowAudit {
     [DllImport("user32.dll")] public static extern uint GetDpiForWindow(IntPtr hwnd);
     [DllImport("user32.dll", SetLastError=true)] public static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
 }
@@ -35,7 +35,7 @@ try {
         $condition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ProcessIdProperty, $process.Id)
         $root = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Children, $condition)
     }
-    if ($null -eq $root) { throw 'The GW GUI main window was not exposed through UI Automation.' }
+    if ($null -eq $root) { throw 'The Retro Media Lab main window was not exposed through UI Automation.' }
 
     Start-Sleep -Seconds 3
     $continueCondition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::AutomationIdProperty, 'ContinueButton')
@@ -53,15 +53,15 @@ try {
         $candidate = $window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $mainTabsCondition)
         if ($null -ne $candidate) { $root = $window; $mainTabs = $candidate; break }
     }
-    if ($null -eq $mainTabs) { throw 'The GW GUI main window and its main tab control were not found.' }
+    if ($null -eq $mainTabs) { throw 'The Retro Media Lab main window and its main tab control were not found.' }
     if ([string]::IsNullOrWhiteSpace($root.Current.Name)) { throw 'The main window has no accessible name.' }
 
     $process.Refresh()
-    $dpi = [GwGuiWindowAudit]::GetDpiForWindow($process.MainWindowHandle)
+    $dpi = [RetroMediaLabWindowAudit]::GetDpiForWindow($process.MainWindowHandle)
     if ($dpi -eq 0) { $dpi = 96 }
     $expectedWidth = [int][Math]::Round($MinimumLogicalWidth * $dpi / 96)
     $expectedHeight = [int][Math]::Round($MinimumLogicalHeight * $dpi / 96)
-    if (-not [GwGuiWindowAudit]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, 20, 20, $expectedWidth, $expectedHeight, 0x0040)) {
+    if (-not [RetroMediaLabWindowAudit]::SetWindowPos($process.MainWindowHandle, [IntPtr]::Zero, 20, 20, $expectedWidth, $expectedHeight, 0x0040)) {
         throw 'The main window could not be resized for the minimum-size audit.'
     }
     Start-Sleep -Milliseconds 300

@@ -1,0 +1,67 @@
+using System.Windows;
+using System.Windows.Controls;
+using RetroMediaLab.App.Theme.Common;
+using RetroMediaLab.App.Views.Controls.Emulation.Storage;
+
+namespace RetroMediaLab.App.Theme.OS.Editions.Windows95.Views;
+
+internal partial class ModuleStorageView : UserControl, IDisposable
+{
+    private readonly EmulationStorageDeviceList source;
+    private readonly ThemeBindingScope bindings = new();
+    private bool disposed;
+
+    internal ModuleStorageView(EmulationStorageDeviceList source)
+    {
+        this.source = source;
+        try
+        {
+            InitializeComponent();
+            bindings.OneWay(source, IsEnabledProperty, this, IsEnabledProperty);
+            bindings.OneWay(source, VisibilityProperty, this, VisibilityProperty);
+            bindings.Action(source.PresentationAdd, Add);
+            source.PresentationChanged += SourceChanged;
+            Rebuild();
+        }
+        catch { Dispose(); throw; }
+    }
+    private void SourceChanged(object? sender, EventArgs args) { if (!disposed) Rebuild(); }
+    private void Rebuild()
+    {
+        var selected = (Devices.SelectedItem as EmulationStorageDeviceList.PresentationRow)?.Device.Slot;
+        Devices.ItemsSource = source.PresentationRows;
+        Devices.SelectedItem = source.PresentationRows.FirstOrDefault(row => row.Device.Slot == selected) ?? source.PresentationRows.FirstOrDefault();
+        UpdateActions();
+    }
+    private void SelectionChanged(object sender, SelectionChangedEventArgs args) { if (!disposed) UpdateActions(); }
+    private void UpdateActions()
+    {
+        var device = (Devices.SelectedItem as EmulationStorageDeviceList.PresentationRow)?.Device;
+        Configure.IsEnabled = device?.CanConfigure == true;
+        Remove.IsEnabled = device?.CanRemove == true;
+    }
+    private void ConfigureClicked(object sender, RoutedEventArgs args)
+    {
+        if (!disposed && Devices.SelectedItem is EmulationStorageDeviceList.PresentationRow row) source.RequestPresentationConfigure(row.Device);
+    }
+    private void RemoveClicked(object sender, RoutedEventArgs args)
+    {
+        if (!disposed && Devices.SelectedItem is EmulationStorageDeviceList.PresentationRow row) source.RequestPresentationRemove(row.Device);
+    }
+    public void Dispose()
+    {
+        if (disposed) return;
+        disposed = true;
+        source.PresentationChanged -= SourceChanged;
+        try { bindings.Dispose(); }
+        finally
+        {
+            Devices.SelectionChanged -= SelectionChanged;
+            Configure.Click -= ConfigureClicked;
+            Remove.Click -= RemoveClicked;
+            Devices.ItemsSource = null;
+            Content = null;
+            Resources.Clear();
+        }
+    }
+}

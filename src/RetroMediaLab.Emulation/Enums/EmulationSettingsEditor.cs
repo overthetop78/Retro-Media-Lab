@@ -1,0 +1,16 @@
+namespace RetroMediaLab.Emulation.Enums;
+
+public enum EmulationSettingsEditor
+{
+    Selection,
+    Toggle,
+    Text,
+    Path,
+    DirectoryPath,
+    Number,
+    Percentage,
+    Information,
+    Slider,
+    OpenDirectory,
+    IPv4
+}

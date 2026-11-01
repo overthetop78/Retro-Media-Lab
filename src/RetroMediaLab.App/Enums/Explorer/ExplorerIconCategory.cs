@@ -1,0 +1,27 @@
+namespace RetroMediaLab.App.Enums.Explorer;
+
+public enum ExplorerIconCategory
+{
+    File,
+    Folder,
+    Text,
+    Document,
+    SourceCode,
+    BasicProgram,
+    Executable,
+    Command,
+    System,
+    ObjectCode,
+    Data,
+    Configuration,
+    Library,
+    Image,
+    Audio,
+    Rom,
+    Media,
+    Archive,
+    DiskImage,
+    Link,
+    Font,
+    Program
+}

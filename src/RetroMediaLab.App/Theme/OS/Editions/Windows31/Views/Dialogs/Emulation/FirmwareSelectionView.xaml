@@ -1,0 +1,40 @@
+<UserControl x:Class="RetroMediaLab.App.Theme.OS.Editions.Windows31.Views.FirmwareSelectionView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:l="clr-namespace:RetroMediaLab.App.Localization.Extensions" xmlns:w="clr-namespace:RetroMediaLab.App.Theme.OS.Editions.Windows31">
+ <DockPanel Margin="8">
+  <TextBlock x:Name="Destination" DockPanel.Dock="Top" Margin="0,0,0,8" TextWrapping="Wrap"/>
+  <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+   <TextBlock x:Name="PathLabel" TextTrimming="CharacterEllipsis" Margin="0,0,0,8"/>
+   <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+    <Button x:Name="Save" Content="{l:Loc Common.Save}" Margin="0,0,8,0"/>
+    <Button x:Name="Cancel" Content="{l:Loc Common.Cancel}"/>
+   </StackPanel>
+  </StackPanel>
+  <StackPanel DockPanel.Dock="Right" Margin="8,0,0,0">
+   <Button x:Name="Open" Content="{l:Loc Emulation.Firmware.Rom.OpenFolder}" Margin="0,0,0,8"/>
+   <Button x:Name="Refresh" Content="{l:Loc Common.Refresh}"/>
+  </StackPanel>
+  <Grid>
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
+   <Grid Margin="3,0,3,4">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="3*"/><ColumnDefinition Width="2*"/><ColumnDefinition Width="2*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
+    <TextBlock Text="{l:Loc Explorer.Name}"/>
+    <TextBlock Grid.Column="1" Text="{l:Loc Read.FileName}"/>
+    <TextBlock Grid.Column="2" Text="{l:Loc Emulation.Input.Binding.LabelState}"/>
+    <TextBlock Grid.Column="3" Text="{l:Loc Emulation.Firmware}"/>
+   </Grid>
+   <ListBox x:Name="Candidates" Grid.Row="1" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+    <ListBox.ItemTemplate><DataTemplate>
+     <Grid ToolTip="{Binding Path}" Margin="0,2">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="3*"/><ColumnDefinition Width="2*"/><ColumnDefinition Width="2*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
+      <TextBlock Text="{Binding Name}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+      <TextBlock Grid.Column="1" Text="{Binding File}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+      <TextBlock Grid.Column="2" Text="{Binding Compatibility}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+      <TextBlock Grid.Column="3" Text="{Binding Destination}" VerticalAlignment="Center"/>
+     </Grid>
+    </DataTemplate></ListBox.ItemTemplate>
+   </ListBox>
+   <TextBlock x:Name="Empty" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False"/>
+  </Grid>
+ </DockPanel>
+</UserControl>

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>retromedialab.emulation.fairchild</AssemblyName>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Assets\**\*" TargetPath="Assets\Emulation\fairchild\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+
+    <None Update="module.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <InternalsVisibleTo Include="RetroMediaLab.Tests" />
+    <InternalsVisibleTo Include="RetroMediaLab.LocalEmulationTests" />
+    <ProjectReference Include="..\RetroMediaLab.Emulation\RetroMediaLab.Emulation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+
+
+    <EmbeddedResource Update="Resources\*\*.resx">
+      <WithCulture>false</WithCulture>
+      <LogicalName>RetroMediaLab.Emulation.Fairchild.Resources.%(Filename).$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('%(Identity)')))).resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Target Name="RemoveHostProvidedAssembliesFromCopyLocal" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').StartsWith('retromedialab.'))" />
+    </ItemGroup>
+  </Target>
+</Project>

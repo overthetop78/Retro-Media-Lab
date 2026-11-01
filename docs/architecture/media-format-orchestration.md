@@ -130,7 +130,7 @@ Les cinq fournisseurs enregistrés correspondent aux cinq représentations :
 
 Ils produisent un `MediaVisualizationDescriptor` qui indique la représentation, les surfaces,
 l’unité de progression, la direction et les éléments à préparer. Ce descripteur sépare les données
-du média du dessin WPF ou Skia, qui reste dans `GWGUI.App`. L'application possède des vues et des
+du média du dessin WPF ou Skia, qui reste dans `RetroMediaLab.App`. L'application possède des vues et des
 présentateurs séparés pour le flux, les secteurs, les blocs, les pistes optiques et les contenus
 séquentiels ; le contrôleur d'espace de travail choisit la vue à partir de la représentation du
 document, jamais de son extension.
@@ -191,11 +191,11 @@ appliquée.
 ## Points d’intégration
 
 `MainWindow` crée une composition MediaEngine et injecte ses services aux contrôleurs de lecture,
-conversion, exploration et visualisation concernés. `GWGUI.App` garde les vues, les présentateurs
+conversion, exploration et visualisation concernés. `RetroMediaLab.App` garde les vues, les présentateurs
 et la coordination de l’interface. Les algorithmes de formats, de décodage, de reconstruction, de
-conversion et d’écriture restent dans `GWGUI.MediaEngine`.
+conversion et d’écriture restent dans `RetroMediaLab.MediaEngine`.
 
-`GWGUI.Infrastructure` reste le point prévu pour les appareils physiques et les outils externes.
+`RetroMediaLab.Infrastructure` reste le point prévu pour les appareils physiques et les outils externes.
 Les projets d’émulation n’ont pas été restructurés : seuls leurs appels vers le service commun ont
 été adaptés. Aucun nouveau contrat public du SDK d’émulation n’a été nécessaire.
 
@@ -209,7 +209,7 @@ Les projets d’émulation n’ont pas été restructurés : seuls leurs appels 
 - Les codecs séquentiels décodent les familles enregistrées ; un signal WAV inconnu reste visible
   comme signal et ne devient pas artificiellement un fichier exploré.
 - L'écriture physique neutre est préparée par contrats et registres. Les appareils et outils réels
-  autres que Greaseweazle devront être ajoutés dans `GWGUI.Infrastructure`, sans déplacer leurs
+  autres que Greaseweazle devront être ajoutés dans `RetroMediaLab.Infrastructure`, sans déplacer leurs
   protocoles dans MediaEngine ou dans l'interface.
 - Les validations finales avec les véritables fichiers des corpus locaux de médias restent séparées et
   seront effectuées manuellement après les phases d'implémentation et les commits prévus.

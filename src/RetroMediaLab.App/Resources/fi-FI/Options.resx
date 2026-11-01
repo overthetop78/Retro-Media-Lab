@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Options.Title" xml:space="preserve"><value>Vaihtoehdot</value></data>
+  <data name="Options.General" xml:space="preserve"><value>Kenraali</value></data>
+  <data name="Options.Tools" xml:space="preserve"><value>Greaseweazle Työkalut</value></data>
+  <data name="Options.Hardware" xml:space="preserve"><value>Ohjaimet ja asemat</value></data>
+  <data name="Options.Profiles" xml:space="preserve"><value>Profiilit</value></data>
+  <data name="Options.ImagesFolder" xml:space="preserve"><value>Oletuslevykuvakansio</value></data>
+  <data name="Options.Language" xml:space="preserve"><value>Kieli</value></data>
+  <data name="Options.Theme" xml:space="preserve"><value>Teema</value></data>
+  <data name="Options.Theme.System" xml:space="preserve"><value>Järjestelmä</value></data>
+  <data name="Options.Theme.Light" xml:space="preserve"><value>Vaalea</value></data>
+  <data name="Options.Theme.Dark" xml:space="preserve"><value>Tumma</value></data>
+  <data name="Options.GwPath" xml:space="preserve"><value>Polku gw.exe</value></data>
+  <data name="Options.ToolsHelp" xml:space="preserve"><value>Jos työkalut puuttuvat, avustaja ehdottaa niiden lataamista tai valitse olemassa olevan asennuksen. Päivityksistä ilmoitetaan vain.</value></data>
+  <data name="Options.HardwarePersistence" xml:space="preserve"><value>Laitteistoasetukset säilyvät tallessa, kun asema irrotetaan.</value></data>
+  <data name="Options.ExecutableFilter"><value>Greaseweazle (gw.exe)|gw.exe|suoritettava (*.exe)|*.exe</value></data>
+  <data name="Options.RemoveHardware"><value>Poistetaanko tämä tallennettu ohjain ja kaikki sen asemat?</value></data>
+  <data name="Options.HardwareTitle"><value>Laitteisto</value></data>
+  <data name="Options.UseConversionTags"><value>Käytä tunnisteita muunnostiedostojen nimissä</value></data>
+  <data name="Options.TagPreset"><value>Esiasetettu</value></data>
+  <data name="Options.TagPresetFamily"><value>Vain perhe</value></data>
+  <data name="Options.TagPresetFormat"><value>Vain muoto</value></data>
+  <data name="Options.TagPresetFamilyFormat"><value>Perhe ja muoto</value></data>
+  <data name="Options.TagPresetFamilyExtension"><value>Perhe ja laajennus</value></data>
+  <data name="Options.TagPresetDetailed"><value>Perhe, muoto ja laajennus</value></data>
+  <data name="Options.TagPattern"><value>Tulostagin malli</value></data>
+  <data name="Options.TagVariablesTitle"><value>Saatavilla olevat muuttujat</value></data>
+  <data name="Options.TagVariableName"><value>Lähdetiedoston nimi</value></data>
+  <data name="Options.TagVariableFamily"><value>Perhe: PC, ST, AMIGA…</value></data>
+  <data name="Options.TagVariableFormat"><value>Muoto: 720, 1440, DD…</value></data>
+  <data name="Options.TagVariableExtension"><value>Laajennus: IMA, ST, ADF…</value></data>
+  <data name="Options.TagVariableDateIso"><value>Päivämäärä: 2026-08-06</value></data>
+  <data name="Options.TagVariableDateCompact"><value>Päivämäärä: 20260806</value></data>
+  <data name="Options.TagVariableDateLocal"><value>Päivämäärä: 06-08-2026</value></data>
+  <data name="Options.TagVariableTimeFull"><value>Aika: 14-35-42</value></data>
+  <data name="Options.TagVariableTimeCompact"><value>Aika: 143542</value></data>
+  <data name="Options.TagVariableTimeShort"><value>Aika: 14-35</value></data>
+  <data name="Options.TagPatternHelp"><value>{NAME} ... lähdetiedostonimi&#xA;{FAMILY} ... koneperhe (PC, ST, AMIGA...)&#xA;{FORMAT} ... muoto tai geometria (720, 1440), DD...)&#xA;{EXTENSION} ...IMA, ST, ADF...)&#xA;{DATE:YYYY-MM-DD} ... päivämäärä 2026-08-06&#xA;{DATE:YYYYMMDD} ... päivämäärä 20260806&#xA;{DATE:DD-MM-YYYY} ... päivä 06-08-2026&#xA;{TIME:HH-MM-SS} ... aika 14-35-42&#xA;{TIME:HHMMSS} ... aika 143542&#xA;{TIME:HH-MM} ... aika 14-35</value></data>
+  <data name="Options.RecentTagPatterns"><value>Viimeaikaiset mukautetut kuviot</value></data>
+  <data name="Options.NextTagExample"><value>Seuraava esimerkki</value></data>
+  <data name="Options.TagPatternPreview"><value>Esimerkki: {0}</value></data>
+  <data name="Options.TagPatternInvalid"><value>Tunnistemallin tulee sisältää {tag}.</value></data>
+  <data name="Options.EnableLogs"><value>Tallenna lokit</value></data>
+  <data name="Options.Logs"><value>Lokit</value></data>
+  <data name="Options.LogsDescription"><value>Jokaisella toiminnolla on oma tiedostonsa Retro Media Lab Lokit -kansiossa.</value></data>
+  <data name="Options.LogActionErase"><value>Poista</value></data>
+  <data name="Options.LogActionClean"><value>Puhtaat päät</value></data>
+  <data name="Options.OpenLogsFolder"><value>Avaa kansio</value></data>
+  <data name="Options.LogMaximumSize"><value>Suurin koko</value></data>
+  <data name="Options.KeepLogArchives"><value>Säilytä aiemmat lokit</value></data>
+  <data name="Options.LogUnlimitedHint"><value>0 = rajoittamaton</value></data>
+  <data name="Options.Engines" xml:space="preserve"><value>Moottorit</value></data>
+  <data name="Options.Engines.Description" xml:space="preserve"><value>Valitse kullekin toiminnolle käytettävä moottori erikseen.</value></data>
+  <data name="Options.Engines.Internal" xml:space="preserve"><value>Retro Media Lab:n sisäinen moottori</value></data>
+  <data name="Options.Engines.StrictChoice" xml:space="preserve"><value>Valittua moottoria käytetään ehdottomasti. Jos se ei voi suorittaa toimintoa, Retro Media Lab ilmoittaa siitä vaihtamatta huomaamatta toiseen moottoriin.</value></data>
+  <data name="Options.EmulationMachineTitle" xml:space="preserve"><value>{0} ... {1} : {2}</value></data>
+  <data name="Options.PreferencesTitle"><value>Asetukset</value></data>
+  <data name="Options.EmulationTitle"><value>Emulgointiasetukset</value></data>
+  <data name="Options.EmulationModuleTitle"><value>{0} emulointiasetukset</value></data>
+  <data name="Options.Themes.Title"><value>Teemat</value></data>
+  <data name="Options.Themes.List"><value>Käytettävissä olevat teemat</value></data>
+  <data name="Options.Themes.Appearance"><value>Ulkoasu</value></data>
+  <data name="Options.Themes.PreviewUnavailable"><value>Esikatselu ei ole käytettävissä.</value></data>
+  <data name="Options.Themes.Active"><value>Aktiivinen teema: {0}</value></data>
+  <data name="Options.Themes.ApplyHint"><value>Valittu teema otetaan heti käyttöön ja säilytetään sovelluksen seuraavilla käynnistyskerroilla.</value></data>
+  <data name="Options.Themes.Base.Description"><value>Alkuperäinen asettelu järjestelmän, vaalealla tai tummalla ulkoasulla.</value></data>
+
+
+
+
+
+  <data name="Options.Themes.Studio.Description"><value>Työtila, jossa ikkunoita voi siirtää ja niiden kokoa muuttaa. Pidä useita työkaluja avoinna ja vaihda niiden välillä menettämättä asetuksia.</value></data>
+  <data name="Options.Themes.Minimize"><value>Pienennä</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Suurenna tai palauta</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Ohjelmanhallinta</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Järjestelmä</value></data>
+  <data name="Options.Themes.OS.File"><value>Tiedosto</value></data>
+  <data name="Options.Themes.OS.Window"><value>Ikkuna</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Limittäin</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Vierekkäin</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Järjestä kuvakkeet</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Palauta</value></data>
+  <data name="Options.Themes.OS.Move"><value>Siirrä</value></data>
+  <data name="Options.Themes.OS.Size"><value>Koko</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maksimoi</value></data>
+  <data name="Options.Themes.OS.Open"><value>Avaa</value></data>
+  <data name="Options.Themes.OS.Description"><value>Alkuperäiset käyttöjärjestelmän liitännät, mukaan lukien ikkunat, ohjaimet ja vuorovaikutus.</value></data>
+  <data name="Options.Themes.Edition"><value>Variantti</value></data>
+  <data name="Options.Themes.OS.Start"><value>Käynnistä</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Ohjelmat</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numerointi</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Sininen</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Hopea</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Oliivinvihreä</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>koneet</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Toimintoloki</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Komento</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Etsi komentoa</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Ei osumaa</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Valitse kone tai jatka avointa istuntoa</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Tausta</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Emulsioistuntoa ei ole avattu</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Koneet, media-asiakirjat ja kontekstityökalut yhdessä työtilassa.</value></data>
+</root>

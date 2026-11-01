@@ -16,7 +16,7 @@ Créer `.github/release-notes/vX.Y.Z.md` à partir du [modèle de notes](../../.
 
 Le numéro **X.Y.Z du nom de ce fichier est le numéro unique de publication**. Il doit rester identique dans les notes, le titre GitHub, le tag et les noms des paquets. Le type de publication peut ajouter un suffixe au tag ou au titre, sans changer ces trois chiffres.
 
-Par exemple, avec `v0.1.3.md`, utiliser `0.1.3` partout. Pour une release stable succédant à `v0.1.2`, le lien de comparaison est `https://github.com/overthetop78/GW-GUI/compare/v0.1.2...v0.1.3`. Pour une snapshot, le tag cible de cet exemple devient `v0.1.3-snapshot`.
+Par exemple, avec `v0.1.3.md`, utiliser `0.1.3` partout. Pour une release stable succédant à `v0.1.2`, le lien de comparaison est `https://github.com/overthetop78/Retro-Media-Lab/compare/v0.1.2...v0.1.3`. Pour une snapshot, le tag cible de cet exemple devient `v0.1.3-snapshot`.
 
 ## 2. Envoyer le code et les notes sur main
 
@@ -46,9 +46,9 @@ Il recherche les notes correspondant au numéro saisi. Si le fichier manque, il 
 
 | Choix | Usage | Tag pour `0.1.3` | Titre GitHub |
 |---|---|---|---|
-| `1. Latest` | Release stable, marquée comme dernière version | `v0.1.3` | `GW GUI 0.1.3 Release` |
-| `2. Pre-release` | Snapshot, marquée comme préversion | `v0.1.3-snapshot` | `GW GUI 0.1.3 Snapshot` |
-| `3. Aucun label` | Publication sans label Latest ni Pre-release | `v0.1.3` | `GW GUI 0.1.3` |
+| `1. Latest` | Release stable, marquée comme dernière version | `v0.1.3` | `Retro Media Lab 0.1.3 Release` |
+| `2. Pre-release` | Snapshot, marquée comme préversion | `v0.1.3-snapshot` | `Retro Media Lab 0.1.3 Snapshot` |
+| `3. Aucun label` | Publication sans label Latest ni Pre-release | `v0.1.3` | `Retro Media Lab 0.1.3` |
 
 Choisir le type demandé pour cette publication. S’il n’est pas précisé, le faire préciser avant de déclencher le workflow.
 
@@ -59,16 +59,16 @@ Le workflow accepte également les pushs de tags `v*`, avec des notes générée
 ## 5. Publier un module d'émulation indépendamment
 
 Une publication de module utilise sa propre version `X.Y.Z` lue dans son `module.json`.
-Elle ne modifie pas la version de GW GUI et ne remplace pas une release de l'application comme
+Elle ne modifie pas la version de Retro Media Lab et ne remplace pas une release de l'application comme
 dernière release GitHub.
 
 ### Module officiel conservé dans ce dépôt
 
-Pour tout identifiant `<id>` découvert dans `src/GWGUI.Emulation.*/module.json` :
+Pour tout identifiant `<id>` découvert dans `src/RetroMediaLab.Emulation.*/module.json` :
 
 - tag : `module-<id>-vX.Y.Z` ;
 - notes : `.github/release-notes/modules/<id>/vX.Y.Z.md` ;
-- archive : `GW-GUI-Module-<id>-X.Y.Z-win-x64.zip`.
+- archive : `Retro-Media-Lab-Module-<id>-X.Y.Z-win-x64.zip`.
 
 Avant une publication réelle :
 
@@ -84,16 +84,16 @@ GitHub. Il déclenche `module-release.yml`, attend sa fin et arrête toute la pu
 crée le tag et la release GitHub avec `--latest=false`, puis publie le catalogue du module.
 
 Après la release, le workflow publie le catalogue propre au module sous
-`module-<id>-catalog`. L’URL correspondante est inscrite dans le `module.json`; GW GUI ne la possède
+`module-<id>-catalog`. L’URL correspondante est inscrite dans le `module.json`; Retro Media Lab ne la possède
 pas dans ses constantes.
 
 ### Module maintenu dans un dépôt indépendant
 
 Copier `sdk/module-template` dans le dépôt du module et remplacer les valeurs d’exemple. Ce projet
-référence `GWGUI.Emulation.SDK` depuis NuGet.org et possède son propre `module.json`, ses notes, ses
+référence `RetroMediaLab.Emulation.SDK` depuis NuGet.org et possède son propre `module.json`, ses notes, ses
 tags, son workflow et son catalogue. Le tag `vX.Y.Z` déclenche le workflow modèle, qui crée la
 release du module puis publie `update-catalog.json` sous le tag technique `module-catalog` de ce
-dépôt. Aucun commit, tag ou workflow dans GW GUI n’est requis pour publier une nouvelle version de
+dépôt. Aucun commit, tag ou workflow dans Retro Media Lab n’est requis pour publier une nouvelle version de
 ce module.
 
 ## 6. Catalogue de mises à jour et updater distribués
@@ -103,29 +103,29 @@ Ces fonctions sont réalisées par les workflows :
 - une release d’application stable ou sans label met à jour l’actif `update-catalog.json` du tag
   technique `application-catalog` ;
 - une snapshot produit son catalogue comme artefact sans remplacer le catalogue stable ;
-- une release de l’application contient uniquement GW GUI, son lanceur et son updater, sans module ;
+- une release de l’application contient uniquement Retro Media Lab, son lanceur et son updater, sans module ;
 - une release de module inscrit son archive sous `module-<id>-vX.Y.Z` et met à jour uniquement
   `module-<id>-catalog` ;
-- le paquet portable et l’installateur contiennent `Updater/gwgui.updater.exe`.
+- le paquet portable et l’installateur contiennent `Updater/retromedialab.updater.exe`.
 
-Les publications réelles de GW GUI 0.3.0, des modules Amiga et Atari 1.0.0 et du SDK 1.0.1 ont
+Les publications réelles de Retro Media Lab 0.3.0, des modules Amiga et Atari 1.0.0 et du SDK 1.0.1 ont
 confirmé les actifs, catalogues et URL produits.
 
 ## 7. Publier le SDK d’émulation
 
-Le contrat public est distribué sur NuGet.org sous l’identifiant `GWGUI.Emulation.SDK`. Dans
+Le contrat public est distribué sur NuGet.org sous l’identifiant `RetroMediaLab.Emulation.SDK`. Dans
 NuGet.org, créer une stratégie **Trusted Publishing** appartenant au compte qui publie le paquet,
-avec `overthetop78` comme propriétaire GitHub, `GW-GUI` comme dépôt, `sdk-release.yml` comme fichier
+avec `overthetop78` comme propriétaire GitHub, `Retro-Media-Lab` comme dépôt, `sdk-release.yml` comme fichier
 de workflow et aucun environnement. Autoriser la publication de nouveaux paquets et versions pour
-`GWGUI.Emulation.SDK`. Dans GitHub Actions, définir la variable `NUGET_USER` avec le nom public du
+`RetroMediaLab.Emulation.SDK`. Dans GitHub Actions, définir la variable `NUGET_USER` avec le nom public du
 profil NuGet.org. Aucune clé API permanente ni aucun secret `NUGET_API_KEY` ne sont nécessaires.
 
 La version `X.Y.Z` doit être identique dans :
 
-- `Version` de `src/GWGUI.Emulation/GWGUI.Emulation.csproj` ;
+- `Version` de `src/RetroMediaLab.Emulation/RetroMediaLab.Emulation.csproj` ;
 - `.github/release-notes/sdk/vX.Y.Z.md` ;
 - le tag `sdk-vX.Y.Z` ;
-- le paquet `GWGUI.Emulation.SDK.X.Y.Z.nupkg`.
+- le paquet `RetroMediaLab.Emulation.SDK.X.Y.Z.nupkg`.
 
 Après commit et push sur `main`, créer et pousser le tag. `.github/workflows/sdk-release.yml` demande
 un jeton OIDC GitHub, l’échange avec `NuGet/login@v1` contre une clé temporaire, exécute les tests,
@@ -133,5 +133,5 @@ crée le paquet, sa documentation XML et son README, publie sur NuGet.org, puis 
 du SDK avec ses notes. La politique de compatibilité est détaillée dans
 [`emulation-sdk-versioning.md`](../architecture/emulation-sdk-versioning.md).
 
-Le README affiché sur NuGet provient de `src/GWGUI.Emulation/README.md`. Il doit décrire le contrat
+Le README affiché sur NuGet provient de `src/RetroMediaLab.Emulation/README.md`. Il doit décrire le contrat
 public actuel et être mis à jour dans le même commit lorsqu’une évolution du SDK change son usage.

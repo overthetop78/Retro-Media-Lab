@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Gebruikersgids
+# Retro Media Lab Gebruikersgids
 
-GW GUI is een Windows-applicatie voor het lezen, schrijven, converteren, inspecteren en emuleren van floppy-disk afbeeldingen. Het kan controleren Greaseweazle hardware, werken met disk-image bestanden via de interne motor, en draaien opgeslagen emulated-machine configuraties.
+Retro Media Lab is een Windows-applicatie voor het lezen, schrijven, converteren, inspecteren en emuleren van floppy-disk afbeeldingen. Het kan controleren Greaseweazle hardware, werken met disk-image bestanden via de interne motor, en draaien opgeslagen emulated-machine configuraties.
 
 Deze handleiding beschrijft de Engelse interface weergegeven in de huidige versie van de toepassing. Het is geschreven als de bron van de afdrukbare gebruikershandleiding: screenshots illustreren de controles, terwijl de omliggende tekst uitlegt wat te kiezen, waarom te kiezen, en hoe het resultaat te verifiëren.
 
@@ -10,7 +10,7 @@ Deze handleiding beschrijft de Engelse interface weergegeven in de huidige versi
 
 ### Hoe deze handleiding te gebruiken
 
-Als dit uw eerste gebruik is GW GUI, compleet [Aan de slag](#getting-started), volg dan [Een schijf lezen](#reading-a-disk). Als de toepassing al is geconfigureerd, ga dan direct naar het hoofdstuk voor de bewerking die u wilt uitvoeren. De opties hoofdstukken dienen als een referentie wanneer een procedure vraagt u een aandrijving, motor, profiel, of emuleerde-machine instelling te veranderen.
+Als dit uw eerste gebruik is Retro Media Lab, compleet [Aan de slag](#getting-started), volg dan [Een schijf lezen](#reading-a-disk). Als de toepassing al is geconfigureerd, ga dan direct naar het hoofdstuk voor de bewerking die u wilt uitvoeren. De opties hoofdstukken dienen als een referentie wanneer een procedure vraagt u een aandrijving, motor, profiel, of emuleerde-machine instelling te veranderen.
 
 Interface namen worden getoond in **vet**. Bestandsnamen, paden, commando's en letterlijke waarden worden weergegeven als `code`. Opmerkingen verklaren normaal gedrag; waarschuwingen identificeren handelingen die een schijf, controller of opgeslagen configuratie kunnen veranderen.
 
@@ -40,7 +40,7 @@ Interface namen worden getoond in **vet**. Bestandsnamen, paden, commando's en l
 
 ## De workflow begrijpen
 
-GW GUI scheidt fysieke-schijf bewerkingen van image-bestand bewerkingen:
+Retro Media Lab scheidt fysieke-schijf bewerkingen van image-bestand bewerkingen:
 
 | Doel | Invoer | Uitvoer | Aanbevolen pagina |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Voor het behoud, maak eerst een ruwe vangst en houd het onveranderd als een mees
 - Een ingesteld pad naar `gw.exe` bij gebruik van de Greaseweazle Host Tools motor.
 - Juridisch verkregen ROM bestanden wanneer een emuleerde machine ze nodig heeft.
 
-De toepassing controleert de vereiste .NET runtime bij het opstarten. Als het ontbreekt, volg dan de installatieprompt en herstart GW GUI.
+De toepassing controleert de vereiste .NET runtime bij het opstarten. Als het ontbreekt, volg dan de installatieprompt en herstart Retro Media Lab.
 
 ### Voor het verbinden van hardware
 
@@ -75,11 +75,11 @@ Controleer het volgende voordat u een fysieke schijfoperatie uitvoert:
 4. Bevestig dat de schijfgrootte en dichtheid overeenkomen met de schijf.
 5. Schrijf-bescherm de bronschijf indien mogelijk.
 
-GW GUI kan schade veroorzaakt door verkeerde bekabeling, ongeschikt vermogen of een mechanisch onveilige aandrijving niet voorkomen. Test onbekende hardware eerst met een vervangbare schijf.
+Retro Media Lab kan schade veroorzaakt door verkeerde bekabeling, ongeschikt vermogen of een mechanisch onveilige aandrijving niet voorkomen. Test onbekende hardware eerst met een vervangbare schijf.
 
 ### Eerste lancering
 
-1. Open `gwgui.exe`.
+1. Open `retromedialab.exe`.
 2. Open **Opties**.
 3. In **Controllers en aandrijvingen**, scannen op de controller en configureren van de drive.
 4. Verifiëren of selecteren van pad `gw.exe`.
@@ -92,7 +92,7 @@ Een werkende setup moet de controller tonen en rijden in de statusbalk, bijvoorb
 
 ### Een motor kiezen
 
-GW GUI kan meer dan één implementatie voor sommige operaties blootleggen. De **Greaseweazle Host Tools** motor roept de geconfigureerde `gw.exe`; de interne GW GUI motor behandelt ondersteunde handelingen binnen de toepassing. Motor selectie is expliciet en onafhankelijk voor het lezen, schrijven, conversie, en Disk Explorer. Als een bewerking niet wordt ondersteund door de geselecteerde motor, GW GUI meldt die toestand in plaats van automatisch van motor te veranderen.
+Retro Media Lab kan meer dan één implementatie voor sommige operaties blootleggen. De **Greaseweazle Host Tools** motor roept de geconfigureerde `gw.exe`; de interne Retro Media Lab motor behandelt ondersteunde handelingen binnen de toepassing. Motor selectie is expliciet en onafhankelijk voor het lezen, schrijven, conversie, en Disk Explorer. Als een bewerking niet wordt ondersteund door de geselecteerde motor, Retro Media Lab meldt die toestand in plaats van automatisch van motor te veranderen.
 
 ## Hoofdvenster
 
@@ -435,7 +435,7 @@ Gebruik de prullenbak om alleen de opgeslagen configuratie te verwijderen; de ha
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Motorselectie" width="72%"></p>
 
-Kies de motor onafhankelijk voor het lezen, schrijven, conversie, en Disk Explorer. De geselecteerde motor wordt strikt gebruikt: als hij de gevraagde werking niet kan uitvoeren, GW GUI meldt de beperking in plaats van stil schakelen van motoren.
+Kies de motor onafhankelijk voor het lezen, schrijven, conversie, en Disk Explorer. De geselecteerde motor wordt strikt gebruikt: als hij de gevraagde werking niet kan uitvoeren, Retro Media Lab meldt de beperking in plaats van stil schakelen van motoren.
 
 Deze onafhankelijkheid is opzettelijk. Bijvoorbeeld, fysieke lezingen kunnen gebruiken Greaseweazle Host Tools terwijl beeldconversie en exploratie gebruik maken van de interne motor. Registreer motorkeuzes in een profiel of projectnota wanneer reproduceerbaarheid van belang is.
 
@@ -514,7 +514,7 @@ Spaander instellen RAM, Langzaam RAM, Snel RAM, en ondersteund uitbreiding geheu
 
 Selecteer het systeem Kickstart ROM, facultatief verlengd ROMen ROM sleutel. De gedetecteerde-ROM lijst toont namen, herzieningen en compatibiliteit met het geselecteerde model. Een gedetecteerde selecteren ROM en klik **Gebruik**, of bladeren naar een bestand handmatig.
 
-ROM bestanden worden niet geleverd door GW GUIGebruik ROM's die je wettelijk mag gebruiken.
+ROM bestanden worden niet geleverd door Retro Media LabGebruik ROM's die je wettelijk mag gebruiken.
 
 De gedetecteerde lijst heeft de voorkeur boven het raden van een bestandsnaam: het rapporteert de ROM identiteit en herziening en evalueert de compatibiliteit met het geselecteerde model. **Compatibel ** de normale keuze is; ** Gedeeltelijk compatibel ** wijst erop dat de ROM kan opstarten maar komt niet precies overeen met de machine. ** Verversen ** herscant de geconfigureerde ROM locaties. ** Gebruik** wijst de geselecteerde gedetecteerde ROM naar de configuratie.
 
@@ -589,7 +589,7 @@ Deze dialoogvensters worden geopend vanuit de **Hulpmiddelen ** tab. Elk dialoog
 
 Toont de door de geselecteerde controller gerapporteerde informatie. Uitvouwen **Ruwe output** wanneer u het volledige commando antwoord nodig heeft.
 
-Gebruik dit als het eerste diagnostische commando. Een succesvol antwoord bevestigt dat GW GUI kan het geconfigureerde Host Tools uitvoerbaar starten en communiceren met het geselecteerde apparaat. Neem de firmware en hardware informatie op voordat u een update uitvoert.
+Gebruik dit als het eerste diagnostische commando. Een succesvol antwoord bevestigt dat Retro Media Lab kan het geconfigureerde Host Tools uitvoerbaar starten en communiceren met het geselecteerde apparaat. Neem de firmware en hardware informatie op voordat u een update uitvoert.
 
 ### USB bandbreedte
 
@@ -673,7 +673,7 @@ Bij het vergelijken van twee pogingen, controleer of de controller, aandrijving,
 
 ## Toepassingsgegevens en draagbaar gebruik
 
-GW GUI houdt gebruikersgegevens gescheiden van programma binaire bestanden. Afhankelijk van het geselecteerde pakket en modus, worden instellingen, logs, gedownloade tools, emulatorcomponenten, captures, statuss en machineconfiguraties opgeslagen in de toepassing `Data` directory of in de geconfigureerde locatie van gebruikersgegevens.
+Retro Media Lab houdt gebruikersgegevens gescheiden van programma binaire bestanden. Afhankelijk van het geselecteerde pakket en modus, worden instellingen, logs, gedownloade tools, emulatorcomponenten, captures, statuss en machineconfiguraties opgeslagen in de toepassing `Data` directory of in de geconfigureerde locatie van gebruikersgegevens.
 
 Voor het vervangen of verplaatsen van een draagbare installatie, houd de volledige toepassingsmap samen en een back-up van de `Data` map. Individuele bestanden niet verplaatsen van `lib`, omdat de toepassing lost zijn eigen en derden bibliotheken uit die structuur.
 
@@ -762,7 +762,7 @@ Voor een hardware-veranderende tool:
 4. Controleer de controllerstatus en de schijfconfiguratie.
 5. Uitvoeren **Controllerinformatie** als detectie slaagt maar commando's falen.
 
-Als het nog steeds niet verschijnt, probeer een andere direct USB Poort en kabel, dan opnieuw scannen. Controleer Windows Device Manager voor een nieuw gedetecteerd seriële apparaat. Een controller zichtbaar voor Windows, maar afwezig van GW GUI meestal wijst naar een drukke poort, oude configuratie, of Host Tools probleem; een controller afwezig uit Windows wijst naar USB, power, driver, of hardware.
+Als het nog steeds niet verschijnt, probeer een andere direct USB Poort en kabel, dan opnieuw scannen. Controleer Windows Device Manager voor een nieuw gedetecteerd seriële apparaat. Een controller zichtbaar voor Windows, maar afwezig van Retro Media Lab meestal wijst naar een drukke poort, oude configuratie, of Host Tools probleem; een controller afwezig uit Windows wijst naar USB, power, driver, of hardware.
 
 ### `gw.exe` kan niet gevonden worden
 
@@ -772,7 +772,7 @@ Na het selecteren, uitvoeren **Controllerinformatie**. Als dat niet lukt voordat
 
 ### Een bewerking gebruikt de verkeerde motor
 
-Open **Opties > Motoren** en controleer de aan die exacte werking toegewezen motor. GW GUI valt niet stil terug op de andere motor.
+Open **Opties > Motoren** en controleer de aan die exacte werking toegewezen motor. Retro Media Lab valt niet stil terug op de andere motor.
 
 Motorinstellingen zijn gescheiden: het veranderen van de conversiemotor verandert niet lezen, schrijven, of Disk Explorer. Open de mislukte bewerking na het opslaan van de optie en bevestig het gegenereerde commando in de console.
 
@@ -815,7 +815,7 @@ Herhaal de read naar een nieuwe bestandsnaam, verhoog revoluties waar nodig, en 
 
 ## Woordenlijst
 
-| Termijn | Betekenis GW GUI |
+| Termijn | Betekenis Retro Media Lab |
 |---|---|
 | Controller | De Greaseweazle hardware interface aangesloten over USB |
 | Rijden | De fysieke diskette aan de controller bevestigd |

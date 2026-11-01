@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Kullanıcı Kılavuzu
+# Retro Media Lab Kullanıcı Kılavuzu
 
-GW GUI Okumak, yazmak, dönüştürmek, denetlemek ve floppy-disk görüntüleri taklit etmek için bir Windows uygulamasıdır. Kontrol edebilir Greaseweazle Donanım, iç motoru aracılığıyla disk görüntü dosyaları ile çalışır ve emated-makine konfigürasyonları çalıştırın.
+Retro Media Lab Okumak, yazmak, dönüştürmek, denetlemek ve floppy-disk görüntüleri taklit etmek için bir Windows uygulamasıdır. Kontrol edebilir Greaseweazle Donanım, iç motoru aracılığıyla disk görüntü dosyaları ile çalışır ve emated-makine konfigürasyonları çalıştırın.
 
 Bu kılavuz, uygulamanın mevcut sürümünde gösterilen İngilizce arayüzü açıklar. Baskılanabilir kullanıcı kılavuzunun kaynağı olarak yazılır: ekran görüntüleri kontrolleri gösterirken, çevreleyen metin neyi seçeceğini, neden seçmeyi ve sonucu nasıl doğrulamayı önerir.
 
@@ -10,7 +10,7 @@ Bu kılavuz, uygulamanın mevcut sürümünde gösterilen İngilizce arayüzü a
 
 ### Bu kılavuzu nasıl kullanılır
 
-Eğer bu ilk kez kullanımınız GW GUITamam, tamam [Başlanmaya başladı](#getting-started)Sonra takip et [Bir disk okuma](#reading-a-disk). Uygulama zaten yapılandırılmışsa, gerçekleştirmek istediğiniz operasyon için doğrudan bölüme gidin. Seçeneklerin bölümleri, bir prosedür bir sürücü, motor, profil veya emated-makine ayarını değiştirmenizi istediğinizde referans olarak hizmet eder.
+Eğer bu ilk kez kullanımınız Retro Media LabTamam, tamam [Başlanmaya başladı](#getting-started)Sonra takip et [Bir disk okuma](#reading-a-disk). Uygulama zaten yapılandırılmışsa, gerçekleştirmek istediğiniz operasyon için doğrudan bölüme gidin. Seçeneklerin bölümleri, bir prosedür bir sürücü, motor, profil veya emated-makine ayarını değiştirmenizi istediğinizde referans olarak hizmet eder.
 
 Interface isimleri gösterilir **cesur cesur cesur cesur** Dosya isimleri, yollar, komutlar ve gerçek değerler olarak gösterilir `code`Notlar normal davranışları açıklar; bir disk, kontrolör veya depolama yapılandırmasını değiştirebilecek işlemleri tanımlar.
 
@@ -40,7 +40,7 @@ Interface isimleri gösterilir **cesur cesur cesur cesur** Dosya isimleri, yolla
 
 ## İş akışını anlamak
 
-GW GUI Görüntü-file operasyonlarının fiziksel-disk işlemleri:
+Retro Media Lab Görüntü-file operasyonlarının fiziksel-disk işlemleri:
 
 | Goal | Giriş giriş | Çıktı Çıktı Çıktı | Önerilen sayfa |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Koruma için, önce bir ham yakalama yapın ve bir usta olarak değişmesini sa�
 - yapılandırılmış bir yol için `gw.exe` Ne zaman kullanırken Greaseweazle Host Tools Motor.
 - Yasal olarak elde edildi ROM Bir emated makine onları gerektirdiğinde dosyalar.
 
-Uygulama, başlangıçta gerekli .NET runtime kontrol eder. Eğer eksikse, yüklemeyi takip edin, sonra yeniden başlayın GW GUI.
+Uygulama, başlangıçta gerekli .NET runtime kontrol eder. Eğer eksikse, yüklemeyi takip edin, sonra yeniden başlayın Retro Media Lab.
 
 ### Donanımı bağlamadan önce
 
@@ -75,11 +75,11 @@ Bir fiziksel-disk operasyonu çalıştırmadan önce aşağıdakileri kontrol ed
 4. Sürücü boyutunu ve yoğunluk diski eşleştirdiğini onaylayın.
 5. Mümkün olduğunda kaynak diskini yazın.
 
-GW GUI Yanlış taksileme, uygun olmayan güç veya mekanik olarak güvenli olmayan bir sürücü tarafından kaynaklanan zararları engelleyebilir. İlk önce gerçekleştirilmiş bir diskle yabancı donanım test edin.
+Retro Media Lab Yanlış taksileme, uygun olmayan güç veya mekanik olarak güvenli olmayan bir sürücü tarafından kaynaklanan zararları engelleyebilir. İlk önce gerçekleştirilmiş bir diskle yabancı donanım test edin.
 
 ### İlk başlangıç
 
-1. Open Open Open Open `gwgui.exe`.
+1. Open Open Open Open `retromedialab.exe`.
 2. Open Open Open Open **Seçenekleri**.
 3. İçinde In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In In **kontrolörler ve sürücüler** Kontrol için tarama ve sürücüyü yapılandırın.
 4. Verify veya yolu seçin `gw.exe`.
@@ -92,7 +92,7 @@ Bir çalışma kurulumu, örneğin bir sürücü numarası, büyüklüğü, yoğ
 
 ### Bir motor seçmek
 
-GW GUI Bazı operasyonlar için birden fazla uygulama ortaya çıkabilir. The The The The The The The The **Greaseweazle Host Tools** Motorlar, yapılandırılan çağrıyı çağıran motorlar `gw.exe`; iç GW GUI Motor uygulama içindeki işlemleri destekledi. Motor seçimi okuma, yazma, dönüşüm ve yazma için açık ve bağımsızdır. Disk ExplorerBir operasyon seçilmiş motor tarafından desteklenmezse, GW GUI Motorları otomatik olarak değiştirmek yerine bu durumu bildiriyor.
+Retro Media Lab Bazı operasyonlar için birden fazla uygulama ortaya çıkabilir. The The The The The The The The **Greaseweazle Host Tools** Motorlar, yapılandırılan çağrıyı çağıran motorlar `gw.exe`; iç Retro Media Lab Motor uygulama içindeki işlemleri destekledi. Motor seçimi okuma, yazma, dönüşüm ve yazma için açık ve bağımsızdır. Disk ExplorerBir operasyon seçilmiş motor tarafından desteklenmezse, Retro Media Lab Motorları otomatik olarak değiştirmek yerine bu durumu bildiriyor.
 
 ## Ana pencere
 
@@ -435,7 +435,7 @@ Kaydetilen donanım ayarları, bir sürücü geçici olarak kapandığında kull
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Motor seçimi" width="72%"></p>
 
-Motoru okuma, yazma, dönüştürme ve yazma için bağımsız olarak seçin Disk Explorer. Seçilmiş motor kesinlikle kullanılır: talep edilen operasyonu yapamıyorsa, GW GUI Sessiz geçiş motorları yerine sınırlamayı rapor edin.
+Motoru okuma, yazma, dönüştürme ve yazma için bağımsız olarak seçin Disk Explorer. Seçilmiş motor kesinlikle kullanılır: talep edilen operasyonu yapamıyorsa, Retro Media Lab Sessiz geçiş motorları yerine sınırlamayı rapor edin.
 
 Bu bağımsızlık kasıtlıdır. Örneğin, fiziksel okumalar kullanabilir Greaseweazle Host Tools Görüntü dönüşümü ve keşif iç motoru kullanırken. Bir profilde veya proje notunda yedeklenebilirlik önemlidir.
 
@@ -514,7 +514,7 @@ Configure Chip RAMSlow, RAMHızlı, RAMVe genişleme hafızasını destekledi. U
 
 Sistemi seçin Kickstart ROM, Seçmeli genişletilmiş genişletilmiş ROMVe ROM anahtar. tespit edilen -ROM Liste isimleri, revizyonları ve seçilen modelle uyumluluk gösterir. Bir tespit edilen ROM ve tıklayın **Use Use Use Use Use**, veya bir dosyaya manuel olarak göz atın.
 
-ROM dosyalar tarafından temin edilmez GW GUIROM'ları kullanmak yasal olarak izin verilir.
+ROM dosyalar tarafından temin edilmez Retro Media LabROM'ları kullanmak yasal olarak izin verilir.
 
 Tespit edilen liste bir dosya adından tahmin etmek için tercih edilir: rapor eder ROM Kimlik ve revizyon ve seçilen modelle uyumluluğu değerlendirin. **Uyumlu Uyumlu Uyumlu ** Normal seçimdir; ** Kısmen uyumlu ** Belirtildiğine göre, ROM boot olabilir ama tam olarak makineyle eşleşmez. ** Yenileme ** Yeniden yapılandırılabilir ROM yerler. ** Use Use Use Use Use** Seçilen tespit edilen atamaları düzenler ROM yapılandırmaya.
 
@@ -589,7 +589,7 @@ Bu diyaloglar açılır **Araçlar ** sekme. Her dialog, üretilenleri gösterir
 
 Seçilen kontrolör tarafından bildirilen görüntüler. Genişletilmiş Genişleme **Raw çıktı** Tam komut cevabına ihtiyacınız olduğunda.
 
-Bunu ilk tanı emri olarak kullanın. Başarılı bir cevap, doğruları doğruluyor GW GUI yapılandırılmış Host Toolsları kapatılabilir ve seçilen cihazla iletişim kurabilir. Bir güncelleme yapmadan önce bilgisayar ve donanım bilgilerini kayıt edin.
+Bunu ilk tanı emri olarak kullanın. Başarılı bir cevap, doğruları doğruluyor Retro Media Lab yapılandırılmış Host Toolsları kapatılabilir ve seçilen cihazla iletişim kurabilir. Bir güncelleme yapmadan önce bilgisayar ve donanım bilgilerini kayıt edin.
 
 ### USB bant genişliği
 
@@ -673,7 +673,7 @@ Yararlı bir teşhis kaydı, üretilen komut, zamantamps, motor çıktısını v
 
 ## Uygulama verileri ve portatif kullanım
 
-GW GUI Kullanıcı verileri başvuru binerlerinden ayrı tutar. Seçilen paket ve moda bağlı olarak, ayarlar, loglar, indirilen araçlar, emülatör bileşenleri, yakalamalar, devletler ve makine yapılandırmaları uygulamada da depolanır. `Data` Rehber veya yapılandırılmış kullanıcı konumlarında.
+Retro Media Lab Kullanıcı verileri başvuru binerlerinden ayrı tutar. Seçilen paket ve moda bağlı olarak, ayarlar, loglar, indirilen araçlar, emülatör bileşenleri, yakalamalar, devletler ve makine yapılandırmaları uygulamada da depolanır. `Data` Rehber veya yapılandırılmış kullanıcı konumlarında.
 
 Bir portatif yükleme değiştirme veya taşımadan önce, tüm uygulama klasörü birlikte tut ve geri dön `Data` klasörü. Bireysel dosyaları hareket etmeyin `lib`Çünkü uygulama kendi ve üçüncü taraf kütüphanelerini bu yapıdan çözer.
 
@@ -762,7 +762,7 @@ Donanım değişen bir araçtan önce:
 4. Kontrol durumunu onaylayın ve konfigürasyonu kontrol edin.
 5. Run Run Run **Controller bilgi** Eğer tespit başarılı olursa ancak komutlar başarısız olur.
 
-Hala görünmüyorsa, başka bir doğrudan deneyin USB port ve kablo, sonra yeniden kullanılabilir. Yeni tespit edilmiş bir seri cihazı için Windows Device Manager'ı kontrol edin. Windows'a görünür bir kontrol cihazı, ancak mevcut değil GW GUI Genellikle yoğun bir limana, sabit yapılandırmaya veya Host Tools problemine işaret eder; Windows puanlarından olmayan bir kontrol USBgüç, sürücü veya donanım.
+Hala görünmüyorsa, başka bir doğrudan deneyin USB port ve kablo, sonra yeniden kullanılabilir. Yeni tespit edilmiş bir seri cihazı için Windows Device Manager'ı kontrol edin. Windows'a görünür bir kontrol cihazı, ancak mevcut değil Retro Media Lab Genellikle yoğun bir limana, sabit yapılandırmaya veya Host Tools problemine işaret eder; Windows puanlarından olmayan bir kontrol USBgüç, sürücü veya donanım.
 
 ### `gw.exe` bulunamadı
 
@@ -772,7 +772,7 @@ Onu seçtikten sonra, koşmak **Controller bilgi**. Donanımla iletişim kurmada
 
 ### Bir operasyon yanlış motoru kullanır
 
-Open Open Open Open **Seçenekler > Motorlar** Ve motoru bu tam operasyona atanan kontrol edin. GW GUI Sessizce diğer motora geri düşmez.
+Open Open Open Open **Seçenekler > Motorlar** Ve motoru bu tam operasyona atanan kontrol edin. Retro Media Lab Sessizce diğer motora geri düşmez.
 
 Motor ayarları ayrıdır: dönüşüm motorunu değiştirmek okuma, yazma veya yazmaz veya Disk Explorerseçeneği tasarruf ettikten sonra başarısız işlemi yeniden açın ve konsolda üretilen komutu onaylayın.
 
@@ -815,7 +815,7 @@ Okumayı yeni bir dosya adına tekrarlayın, uygun olan devrimleri arttırır ve
 
 ## Parlak
 
-| Term Term Term Term | Anlam içinde GW GUI |
+| Term Term Term Term | Anlam içinde Retro Media Lab |
 |---|---|
 | Controller | The The The The The The The The Greaseweazle Donanım arayüzü birbirine bağlı USB |
 | Drive Drive Drive | Kontrolücüye bağlı fiziksel floppy sürücü |

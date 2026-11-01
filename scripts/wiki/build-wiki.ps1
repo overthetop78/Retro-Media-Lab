@@ -4,8 +4,8 @@ $ErrorActionPreference = 'Stop'
 $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $source = Join-Path $repository 'wiki'
 $output = [IO.Path]::GetFullPath((Join-Path $repository 'build\wiki'))
-$wikiUrl = 'https://github.com/overthetop78/GW-GUI/wiki'
-$assetsUrl = 'https://raw.githubusercontent.com/wiki/overthetop78/GW-GUI'
+$wikiUrl = 'https://github.com/overthetop78/Retro-Media-Lab/wiki'
+$assetsUrl = 'https://raw.githubusercontent.com/wiki/overthetop78/Retro-Media-Lab'
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $pages = @(Get-ChildItem -LiteralPath $source -Recurse -File -Filter '*.md')
 if ($pages.Count -eq 0) { throw 'No wiki pages found.' }
@@ -37,7 +37,7 @@ $rendered = foreach ($page in $pages) {
     [pscustomobject]@{ Relative = $page.FullName.Substring($source.Length + 1); Content = $converted }
 }
 
-$catalog = [IO.File]::ReadAllText((Join-Path $repository 'src\GWGUI.App\Dictionaries\Localization\UiLanguageCatalog.cs'))
+$catalog = [IO.File]::ReadAllText((Join-Path $repository 'src\RetroMediaLab.App\Dictionaries\Localization\UiLanguageCatalog.cs'))
 foreach ($language in [regex]::Matches($catalog, 'new\("([^"]+)",')) {
     $code = $language.Groups[1].Value
     if (-not (Test-Path -LiteralPath (Join-Path $source "$code\$code-Guide.md"))) { throw "Missing wiki language: $code" }

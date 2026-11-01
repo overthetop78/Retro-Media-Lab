@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Brukerveiledning
+# Retro Media Lab Brukerveiledning
 
-GW GUI er et Windows-program for å lese, skrive, konvertere, inspisere og emulere diskett-disk-bilder. Det kan kontrollere Greaseweazle maskinvare, arbeid med disk-bilde-filer gjennom sin interne motor, og kjøre lagret emulert-maskin konfigurasjoner.
+Retro Media Lab er et Windows-program for å lese, skrive, konvertere, inspisere og emulere diskett-disk-bilder. Det kan kontrollere Greaseweazle maskinvare, arbeid med disk-bilde-filer gjennom sin interne motor, og kjøre lagret emulert-maskin konfigurasjoner.
 
 Denne guiden beskriver det engelske grensesnittet som er vist i gjeldende versjon av programmet. Den er skrevet som kilden til den utskrivbare brukermanualen: skjermbilder illustrerer kontroller, mens den omkringliggende teksten forklarer hva du skal velge, hvorfor velge den, og hvordan du kan verifisere resultatet.
 
@@ -10,7 +10,7 @@ Denne guiden beskriver det engelske grensesnittet som er vist i gjeldende versjo
 
 ### Hvordan bruke denne guiden
 
-Hvis dette er første gang du bruker GW GUI, komplett [Åpne i gang](#getting-started)Følg deretter [Leser en disk](#reading-a-disk)Hvis programmet allerede er konfigurert, gå direkte til kapitlet for operasjonen du vil utføre. Alternativkapittelene tjener som referanse når en prosedyre ber deg om å endre en stasjon, motor, profil eller emulerte maskininnstillinger.
+Hvis dette er første gang du bruker Retro Media Lab, komplett [Åpne i gang](#getting-started)Følg deretter [Leser en disk](#reading-a-disk)Hvis programmet allerede er konfigurert, gå direkte til kapitlet for operasjonen du vil utføre. Alternativkapittelene tjener som referanse når en prosedyre ber deg om å endre en stasjon, motor, profil eller emulerte maskininnstillinger.
 
 Grensesnittnavn er vist i **dristige**. Filnavn, stier, kommandoer og bokstavelige verdier vises som `code`Noter forklarer normal atferd; advarsler identifiserer operasjoner som kan endre en disk, kontroller eller lagret konfigurasjon.
 
@@ -40,7 +40,7 @@ Grensesnittnavn er vist i **dristige**. Filnavn, stier, kommandoer og bokstaveli
 
 ## Forstå arbeidsflyten
 
-GW GUI separerer fysiske diskoperasjoner fra bildefiloperasjoner:
+Retro Media Lab separerer fysiske diskoperasjoner fra bildefiloperasjoner:
 
 | Mål | Inngang | Utgang | Anbefalt side |
 |---|---|---|---|
@@ -63,7 +63,7 @@ For bevaring, først gjøre en rå fangst og holde det uendret som en mester. Op
 - En konfigurert bane til `gw.exe` Når du bruker Greaseweazle Host Tools motor.
 - Lovlig oppnådd ROM filer når en emulert maskin krever dem.
 
-Programmet kontrollerer den nødvendige .NET-kjøretiden ved oppstart. Hvis det mangler, følg installasjonsprompten og start på nytt GW GUI.
+Programmet kontrollerer den nødvendige .NET-kjøretiden ved oppstart. Hvis det mangler, følg installasjonsprompten og start på nytt Retro Media Lab.
 
 ### Før du kobler til maskinvare
 
@@ -75,11 +75,11 @@ Sjekk følgende før du kjører en fysisk-disk-operasjon:
 4. Bekreft at enhetens størrelse og tetthet samsvarer med disken.
 5. Skrivebeskytt kildedisken når det er mulig.
 
-GW GUI kan ikke hindre skader forårsaket av feil cabling, upassende effekt eller en mekanisk utrygg kjøring. Test ukjent maskinvare med en utnyttbar disk først.
+Retro Media Lab kan ikke hindre skader forårsaket av feil cabling, upassende effekt eller en mekanisk utrygg kjøring. Test ukjent maskinvare med en utnyttbar disk først.
 
 ### Første lansering
 
-1. Åpne `gwgui.exe`.
+1. Åpne `retromedialab.exe`.
 2. Åpne **Valg**.
 3. I **Styrere og stasjoner**, skanne for kontrolleren og konfigurere stasjonen.
 4. Kontroller eller velg banen til `gw.exe`.
@@ -92,7 +92,7 @@ En arbeidsoppsett bør vise kontrolleren og kjøre i statuslinjen, for eksempel 
 
 ### Velg en motor
 
-GW GUI kan utsette mer enn én implementering for enkelte operasjoner. Den **Greaseweazle Host Tools** motor påkaller konfigurert `gw.exe`den interne GW GUI motor håndterer støttede operasjoner inne i applikasjonen. Motorvalg er eksplisitt og uavhengig for lesing, skriving, konvertering og Disk ExplorerHvis en operasjon ikke støttes av den valgte motoren, GW GUI rapporterer at tilstanden i stedet for å endre motorer automatisk.
+Retro Media Lab kan utsette mer enn én implementering for enkelte operasjoner. Den **Greaseweazle Host Tools** motor påkaller konfigurert `gw.exe`den interne Retro Media Lab motor håndterer støttede operasjoner inne i applikasjonen. Motorvalg er eksplisitt og uavhengig for lesing, skriving, konvertering og Disk ExplorerHvis en operasjon ikke støttes av den valgte motoren, Retro Media Lab rapporterer at tilstanden i stedet for å endre motorer automatisk.
 
 ## Hovedvindu
 
@@ -435,7 +435,7 @@ Bruk søppelkontrollen bare til å fjerne den lagrede konfigurasjonen; den koble
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Motorvalg" width="72%"></p>
 
-Velg motoren uavhengig for lesing, skriving, konvertering og Disk Explorer. Den valgte motoren brukes strengt: hvis den ikke kan utføre den ønskede operasjonen, GW GUI rapporterer begrensningen i stedet for stille bytte motorer.
+Velg motoren uavhengig for lesing, skriving, konvertering og Disk Explorer. Den valgte motoren brukes strengt: hvis den ikke kan utføre den ønskede operasjonen, Retro Media Lab rapporterer begrensningen i stedet for stille bytte motorer.
 
 Denne uavhengigheten er intensjonell. For eksempel kan fysiske lesere bruke Greaseweazle Host Tools mens bildekonvertering og utforskning bruker den interne motoren. Record motorvalg i en profil eller prosjektnote når reprodusilitet er viktig.
 
@@ -514,7 +514,7 @@ Konfigurer Chip RAM, langsom RAM, Rask RAMog støttet utvidelsesminne. Kompatibi
 
 Velg systemet Kickstart ROM, valgfri utvidet ROM, og ROM Nøkkelen. Detektert-ROM liste viser navn, revisjoner og kompatibilitet med den valgte modellen. Velg et detektert ROM og klikk **Bruk**, eller bla til en fil manuelt.
 
-ROM Filene leveres ikke av GW GUI. Bruk ROMs du har lov til å bruke.
+ROM Filene leveres ikke av Retro Media Lab. Bruk ROMs du har lov til å bruke.
 
 Den detekterte listen er foretrukket å gjette fra et filnavn: det rapporterer ROM identitet og revisjon og evaluerer kompatibilitet med den valgte modellen. **Kompatibel ** er det normale valget; ** Delvis kompatibel ** indikerer at ROM kan boot men ikke akkurat matche maskinen. ** Oppdater ** Sjekker om konfigurert ROM beliggenheter. ** Bruk** tilordner den valgte detekterte ROM til konfigurasjonen.
 
@@ -589,7 +589,7 @@ Disse dialogene åpnes fra **Verktøy ** tab. Hver dialog forhåndsvisning den g
 
 Viser informasjon rapportert av den valgte kontrolleren. Utvid **Rå utgang** Når du trenger fullstendig kommandorespons.
 
-Bruk dette som den første diagnostiske kommandoen. En vellykket respons bekrefter at GW GUI kan starte den konfigurerte vertsverktøy kjørbare og kommunisere med den valgte enheten. Ta opp firmware- og maskinvareinformasjonen før du utfører en oppdatering.
+Bruk dette som den første diagnostiske kommandoen. En vellykket respons bekrefter at Retro Media Lab kan starte den konfigurerte vertsverktøy kjørbare og kommunisere med den valgte enheten. Ta opp firmware- og maskinvareinformasjonen før du utfører en oppdatering.
 
 ### USB båndbredde
 
@@ -673,7 +673,7 @@ Når du sammenligner to forsøk, sjekk at kontrolleren, stasjonen, motoren, prof
 
 ## Søknadsdata og bærbar bruk
 
-GW GUI holde brukerdata adskilt fra applikasjonsbinarer. Avhengig av den valgte pakken og modusen lagres innstillinger, logger, nedlastede verktøy, emulatorkomponenter, opptak, tilstander og maskinkonfigurasjoner enten i programmet `Data` katalog eller på konfigurerte brukerdatasteder.
+Retro Media Lab holde brukerdata adskilt fra applikasjonsbinarer. Avhengig av den valgte pakken og modusen lagres innstillinger, logger, nedlastede verktøy, emulatorkomponenter, opptak, tilstander og maskinkonfigurasjoner enten i programmet `Data` katalog eller på konfigurerte brukerdatasteder.
 
 Før du erstatter eller flytter en bærbar installasjon, hold hele programmappen sammen og sikkerhetskopierer `Data` mappe. Ikke flytt individuelle filer fra `lib`, fordi programmet løser sine egne og tredjeparts biblioteker fra den strukturen.
 
@@ -762,7 +762,7 @@ Før et maskinvareendringsverktøy:
 4. Kontroller kontrollerstatus og stasjonskonfigurasjon.
 5. Kjør **Kontrollørinformasjon** Hvis deteksjonen lykkes, men kommandoene mislykkes.
 
-Hvis det fortsatt ikke vises, prøv en annen direkte USB Port og kabel, deretter skanne. Sjekk Windows Device Manager for en nyoppdaget serieenhet. En kontroller synlig for Windows, men fraværende GW GUI vanligvis peker på en travel port, stange konfigurasjon eller Host Tools problem; en kontroller fraværende fra Windows poeng til USB, strøm, driver eller maskinvare.
+Hvis det fortsatt ikke vises, prøv en annen direkte USB Port og kabel, deretter skanne. Sjekk Windows Device Manager for en nyoppdaget serieenhet. En kontroller synlig for Windows, men fraværende Retro Media Lab vanligvis peker på en travel port, stange konfigurasjon eller Host Tools problem; en kontroller fraværende fra Windows poeng til USB, strøm, driver eller maskinvare.
 
 ### `gw.exe` Finnes ikke
 
@@ -772,7 +772,7 @@ Etter å ha valgt den, løp **Kontrollørinformasjon** Hvis det mislykkes før d
 
 ### En operasjon bruker feil motor
 
-Åpne **Alternativer > Motorer** Sjekk motoren som er tildelt den nøyaktige driften. GW GUI Faller ikke stille tilbake til den andre motoren.
+Åpne **Alternativer > Motorer** Sjekk motoren som er tildelt den nøyaktige driften. Retro Media Lab Faller ikke stille tilbake til den andre motoren.
 
 Motorinnstillingene er separate: å endre konverteringsmotoren endrer ikke lesing, skriving eller Disk Explorer. Åpne feiloperasjonen etter å ha lagret alternativet og bekrefte den genererte kommandoen i konsollen.
 
@@ -815,7 +815,7 @@ Gjenta lesningen til et nytt filnamn, øke revolusjoner der det er nødvendig, o
 
 ## Ordliste
 
-| Term | Betydning i GW GUI |
+| Term | Betydning i Retro Media Lab |
 |---|---|
 | Kontrollør | Den Greaseweazle maskinvaregrensesnitt tilkoblet over USB |
 | Drive | Den fysiske diskettstasjonen som er festet til kontrolleren |

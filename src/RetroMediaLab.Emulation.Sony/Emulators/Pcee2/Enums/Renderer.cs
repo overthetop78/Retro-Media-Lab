@@ -1,0 +1,8 @@
+namespace RetroMediaLab.Emulation.Sony.Emulators.Pcee2.Enums;
+
+internal enum Renderer
+{
+    Opengl = 0,
+    Software = 1,
+    Vulkan = 2,
+}

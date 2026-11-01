@@ -2,7 +2,7 @@
 
 Les commandes de cette page s’exécutent depuis la racine du dépôt.
 
-Les sources du wiki sont conservées dans [wiki/](../../wiki/Home.md), avec un dossier par langue et un dossier `images/` partagé. Les modifications se font dans ces sources ; le dépôt `GW-GUI.wiki.git` reçoit le résultat de la préparation.
+Les sources du wiki sont conservées dans [wiki/](../../wiki/Home.md), avec un dossier par langue et un dossier `images/` partagé. Les modifications se font dans ces sources ; le dépôt `Retro-Media-Lab.wiki.git` reçoit le résultat de la préparation.
 
 ## Préparer les fichiers localement
 

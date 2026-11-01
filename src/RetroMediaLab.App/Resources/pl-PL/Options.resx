@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Options.Title" xml:space="preserve"><value>Opcje</value></data>
+  <data name="Options.General" xml:space="preserve"><value>Ogólny</value></data>
+  <data name="Options.Tools" xml:space="preserve"><value>Greaseweazle Narzędzia</value></data>
+  <data name="Options.Hardware" xml:space="preserve"><value>Kontrolery i napędy</value></data>
+  <data name="Options.Profiles" xml:space="preserve"><value>Profile</value></data>
+  <data name="Options.ImagesFolder" xml:space="preserve"><value>Domyślny folder obrazu dysku</value></data>
+  <data name="Options.Language" xml:space="preserve"><value>Język</value></data>
+  <data name="Options.Theme" xml:space="preserve"><value>Temat</value></data>
+  <data name="Options.Theme.System"><value>System</value></data>
+  <data name="Options.Theme.Light" xml:space="preserve"><value>Jasny</value></data>
+  <data name="Options.Theme.Dark" xml:space="preserve"><value>Ciemny</value></data>
+  <data name="Options.GwPath" xml:space="preserve"><value>Ścieżka do gw.exe</value></data>
+  <data name="Options.ToolsHelp" xml:space="preserve"><value>Jeśli brakuje narzędzi, asystent zaproponuje ich pobranie lub wybranie istniejącej instalacji. Aktualizacje są jedynie ogłaszane.</value></data>
+  <data name="Options.HardwarePersistence" xml:space="preserve"><value>Ustawienia sprzętowe pozostają zapisane po odłączeniu dysku.</value></data>
+  <data name="Options.ExecutableFilter"><value>Greaseweazle (gw.exe)|gw.exe|Wykonalny (*.exe)|*.exe</value></data>
+  <data name="Options.RemoveHardware"><value>Usunąć przechowywany kontroler i wszystkie jego dyski?</value></data>
+  <data name="Options.HardwareTitle"><value>Sprzęt komputerowy</value></data>
+  <data name="Options.UseConversionTags"><value>Użyj tagów w nazwach plików konwersji</value></data>
+  <data name="Options.TagPreset"><value>Wstępnie ustawione</value></data>
+  <data name="Options.TagPresetFamily"><value>Tylko rodzina</value></data>
+  <data name="Options.TagPresetFormat"><value>Tylko formatuj</value></data>
+  <data name="Options.TagPresetFamilyFormat"><value>Rodzina i format</value></data>
+  <data name="Options.TagPresetFamilyExtension"><value>Rodzina i rozszerzenie</value></data>
+  <data name="Options.TagPresetDetailed"><value>Rodzina, format i rozszerzenie</value></data>
+  <data name="Options.TagPattern"><value>Wzór tagu konwersji</value></data>
+  <data name="Options.TagVariablesTitle"><value>Dostępne zmienne</value></data>
+  <data name="Options.TagVariableName"><value>Nazwa pliku źródłowego</value></data>
+  <data name="Options.TagVariableFamily"><value>Rodzina: PC, ST, AMIGA…</value></data>
+  <data name="Options.TagVariableFormat"><value>Format: 720, 1440, DD...</value></data>
+  <data name="Options.TagVariableExtension"><value>Numer wewnętrzny: IMA, ST, ADF…</value></data>
+  <data name="Options.TagVariableDateIso"><value>Data: 2026-08-06</value></data>
+  <data name="Options.TagVariableDateCompact"><value>Data: 20260806</value></data>
+  <data name="Options.TagVariableDateLocal"><value>Data: 06-08-2026</value></data>
+  <data name="Options.TagVariableTimeFull"><value>Czas: 14-35-42</value></data>
+  <data name="Options.TagVariableTimeCompact"><value>Czas: 143542</value></data>
+  <data name="Options.TagVariableTimeShort"><value>Czas: 14-35</value></data>
+  <data name="Options.TagPatternHelp"><value>{NAME} - nazwa pliku źródłowego&#xA;{FAMILY} - rodzina maszyn (PC, ST, AMIGA...)&#xA;{FORMAT} - format lub geometria (720, 1440, DD...)&#xA;{EXTENSION} - rozszerzenie wyjścia (IMA, ST, ADF...)&#xA;{DATE:YYYY-MM-DD} - data 2026- 08- 06&#xA;{DATE:YYYYMMDD} - data 20260806&#xA;{DATE:DD-MM-YYYY} - data 06- 08- 2026&#xA;{TIME:HH-MM-SS} - czas 14- 35- 42&#xA;{TIME:HHMMSS} - czas 143542&#xA;{TIME:HH-MM} - czas 14- 35</value></data>
+  <data name="Options.RecentTagPatterns"><value>Najnowsze niestandardowe wzory</value></data>
+  <data name="Options.NextTagExample"><value>Następny przykład</value></data>
+  <data name="Options.TagPatternPreview"><value>Przykład: {0}</value></data>
+  <data name="Options.TagPatternInvalid"><value>Wzorzec tagu musi zawierać {tag}.</value></data>
+  <data name="Options.EnableLogs"><value>Zapisz logi</value></data>
+  <data name="Options.Logs"><value>Dzienniki</value></data>
+  <data name="Options.LogsDescription"><value>Każda akcja ma swój własny plik w folderze Retro Media Lab Logs.</value></data>
+  <data name="Options.LogActionErase"><value>Usuwać</value></data>
+  <data name="Options.LogActionClean"><value>Czyste głowy</value></data>
+  <data name="Options.OpenLogsFolder"><value>Otwórz folder</value></data>
+  <data name="Options.LogMaximumSize"><value>Maksymalny rozmiar</value></data>
+  <data name="Options.KeepLogArchives"><value>Zachowaj poprzednie logi</value></data>
+  <data name="Options.LogUnlimitedHint"><value>0 = nieograniczony</value></data>
+  <data name="Options.Engines" xml:space="preserve"><value>Silniki</value></data>
+  <data name="Options.Engines.Description" xml:space="preserve"><value>Wybierz niezależnie silnik używany dla każdej operacji.</value></data>
+  <data name="Options.Engines.Internal" xml:space="preserve"><value>Wewnętrzny silnik Retro Media Lab</value></data>
+  <data name="Options.Engines.StrictChoice" xml:space="preserve"><value>Wybrany silnik jest używany bez przełączania. Jeśli nie może wykonać operacji, Retro Media Lab zgłasza to zamiast po cichu używać drugiego silnika.</value></data>
+  <data name="Options.EmulationMachineTitle" xml:space="preserve"><value>{0} - {1} : {2}</value></data>
+  <data name="Options.PreferencesTitle"><value>Preferencje</value></data>
+  <data name="Options.EmulationTitle"><value>Preferencje emulacji</value></data>
+  <data name="Options.EmulationModuleTitle"><value>{0} Ustawienia emulacji</value></data>
+  <data name="Options.Themes.Title"><value>Motywy</value></data>
+  <data name="Options.Themes.List"><value>Dostępne motywy</value></data>
+  <data name="Options.Themes.Appearance"><value>Wygląd</value></data>
+  <data name="Options.Themes.PreviewUnavailable"><value>Podgląd jest niedostępny.</value></data>
+  <data name="Options.Themes.Active"><value>Aktywny motyw: {0}</value></data>
+  <data name="Options.Themes.ApplyHint"><value>Wybrany motyw jest stosowany od razu i zachowywany przy kolejnych uruchomieniach aplikacji.</value></data>
+  <data name="Options.Themes.Base.Description"><value>Oryginalny układ z wyglądem systemowym, jasnym lub ciemnym.</value></data>
+
+
+
+
+
+  <data name="Options.Themes.Studio.Description"><value>Obszar roboczy z oknami, które można przesuwać i skalować. Otwórz kilka narzędzi i przełączaj się między nimi bez utraty ustawień.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimalizuj</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maksymalizuj lub przywróć</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Menedżer programów</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>System</value></data>
+  <data name="Options.Themes.OS.File"><value>Plik</value></data>
+  <data name="Options.Themes.OS.Window"><value>Okno</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Kaskadowo</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Sąsiadująco</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Rozmieść ikony</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Przywróć</value></data>
+  <data name="Options.Themes.OS.Move"><value>Przenieś</value></data>
+  <data name="Options.Themes.OS.Size"><value>Rozmiar</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maksymalizuj</value></data>
+  <data name="Options.Themes.OS.Open"><value>Otwórz</value></data>
+  <data name="Options.Themes.OS.Description"><value>Oryginalne interfejsy systemu operacyjnego, w tym okna, sterowniki i interakcje.</value></data>
+  <data name="Options.Themes.Edition"><value>Wariant</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programy</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numeracja</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Niebieski</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Srebro</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Oliwa z oliwek</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Maszyny</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Dziennik działalności</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Polecenia</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Szukaj polecenia</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Brak dopasowania komendy</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Wybierz maszynę lub kontynuuj sesję otwartą</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Kontekst</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Nie otwierają sesji emulacji</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Maszyny, dokumenty medialne i narzędzia kontekstowe w jednym miejscu pracy.</value></data>
+</root>

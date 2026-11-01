@@ -1,10 +1,10 @@
 <!-- Nommer le fichier vX.Y.Z.md. -->
-<!-- Titre Release : GW GUI X.Y.Z Release -->
-<!-- Titre Snapshot : GW GUI X.Y.Z Snapshot -->
-<!-- Titre sans label : GW GUI X.Y.Z -->
+<!-- Titre Release : Retro Media Lab X.Y.Z Release -->
+<!-- Titre Snapshot : Retro Media Lab X.Y.Z Snapshot -->
+<!-- Titre sans label : Retro Media Lab X.Y.Z -->
 <!-- Le type choisi dans publish-release.cmd définit le titre et le label GitHub. -->
 
-# GW GUI X.Y.Z
+# Retro Media Lab X.Y.Z
 
 ## Nouveautés
 

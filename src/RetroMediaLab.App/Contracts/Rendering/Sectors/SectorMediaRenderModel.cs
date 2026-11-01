@@ -1,0 +1,11 @@
+using RetroMediaLab.App.Enums.Rendering.Sectors;
+
+namespace RetroMediaLab.App.Contracts.Rendering.Sectors;
+
+public sealed record SectorMediaRenderModel(string FormatId, int BlockSize, IReadOnlyList<SectorMediaSurface> Surfaces, SectorMediaLayoutKind LayoutKind = SectorMediaLayoutKind.Physical);
+
+public sealed record SectorMediaSurface(int Index, IReadOnlyList<SectorMediaTrack> Tracks);
+
+public sealed record SectorMediaTrack(int Cylinder, IReadOnlyList<SectorMediaElement> Sectors);
+
+public sealed record SectorMediaElement(long Position, int LogicalBlock, int Cylinder, int Number, int Size, SectorMediaElementState State, string? FileSystemPath = null);

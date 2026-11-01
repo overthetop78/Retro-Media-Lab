@@ -1,9 +1,0 @@
-using System.IO;
-namespace GWGUI.Emulation.Commodore.Common.Constants;
-
-internal static class ErrorContextConstants
-{
-    internal const string Path = "path";
-    internal const string Version = "version";
-    internal const string Extension = "extension";
-}

@@ -1,0 +1,35 @@
+using RetroMediaLab.App.Constants.Theming;
+using RetroMediaLab.App.Contracts.Theming;
+using RetroMediaLab.Infrastructure.Settings;
+
+namespace RetroMediaLab.App.Dictionaries.Theming;
+
+internal static class ThemeCatalog
+{
+    internal static IReadOnlyList<ThemeDefinition> All { get; } = Array.AsReadOnly<ThemeDefinition>(
+    [
+        Profile(AppThemeDesign.Base, [AppTheme.System, AppTheme.Light, AppTheme.Dark], AppTheme.System),
+        Profile(AppThemeDesign.Studio, [AppTheme.Light, AppTheme.Dark], AppTheme.Dark) with
+        {
+            WindowStyleResource = RetroMediaLab.App.Theme.Studio.StudioConstants.WindowStyle,
+            ControlsUri = ThemeConstants.PackPrefix + "Studio/Controls.xaml",
+            CreateWorkspace = (root, tabs) => new RetroMediaLab.App.Theme.Studio.StudioWorkspace(root, tabs)
+        },
+        Profile(AppThemeDesign.Orbit, [AppTheme.Light, AppTheme.Dark], AppTheme.Dark) with
+        {
+            ControlsUri = ThemeConstants.PackPrefix + "Orbit/Controls.xaml",
+            CreateWorkspace = (root, tabs) => new RetroMediaLab.App.Theme.Orbit.OrbitWorkspace(root, tabs)
+        },
+        Profile(AppThemeDesign.OS, [AppTheme.Light], AppTheme.Light) with
+        {
+            EditionHeadingResourceKey = "Options.Themes.Edition",
+            Editions = Array.AsReadOnly<ThemeEditionDefinition>([RetroMediaLab.App.Theme.OS.Editions.Windows31.Windows31Edition.Definition, RetroMediaLab.App.Theme.OS.Editions.Windows95.Windows95Edition.Definition, RetroMediaLab.App.Theme.OS.Editions.WindowsXP.WindowsXPEdition.Definition])
+        }
+    ]);
+
+    internal static ThemeDefinition Get(AppThemeDesign id) => All.FirstOrDefault(theme => theme.Id == id) ?? All[ThemeConstants.DefaultIndex];
+
+    private static ThemeDefinition Profile(AppThemeDesign id, IReadOnlyList<AppTheme> variants, AppTheme defaultVariant) => new(id,
+        ThemeConstants.ResourcePrefix + id + ThemeConstants.NameSuffix,
+        ThemeConstants.ResourcePrefix + id + ThemeConstants.DescriptionSuffix, Array.AsReadOnly(variants.ToArray()), defaultVariant);
+}

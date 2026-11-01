@@ -90,7 +90,7 @@ exit /b !RESULT!
 
 :load_modules
 set /a MODULE_COUNT=0
-for /d %%D in ("src\GWGUI.Emulation.*") do (
+for /d %%D in ("src\RetroMediaLab.Emulation.*") do (
     if exist "%%~fD\module.json" (
         set "CURRENT_ID="
         set "CURRENT_VERSION="

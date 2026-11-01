@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Guia do Usuário
+# Retro Media Lab Guia do Usuário
 
-GW GUI é um aplicativo Windows para ler, escrever, converter, inspecionar e emular imagens de disquetes. Pode controlar Greaseweazle hardware, trabalhar com arquivos de imagem de disco através de seu motor interno, e executar configurações salvas emulado-máquina.
+Retro Media Lab é um aplicativo Windows para ler, escrever, converter, inspecionar e emular imagens de disquetes. Pode controlar Greaseweazle hardware, trabalhar com arquivos de imagem de disco através de seu motor interno, e executar configurações salvas emulado-máquina.
 
 Este guia descreve a interface em inglês mostrada na versão atual da aplicação. Ele é escrito como a fonte do manual do usuário imprimível: screenshots ilustram os controles, enquanto o texto ao redor explica o que escolher, por que escolher, e como verificar o resultado.
 
@@ -10,7 +10,7 @@ Este guia descreve a interface em inglês mostrada na versão atual da aplicaç�
 
 ### Como utilizar este guia
 
-Se esta for a sua primeira vez a utilizar GW GUI, completo [Começar](#getting-started), então siga [Lendo um disco](#reading-a-disk). Se o aplicativo já estiver configurado, vá diretamente para o capítulo para a operação que você deseja executar. Os capítulos de opções servem como referência quando um procedimento pede que você altere uma configuração de acionamento, motor, perfil ou máquina emulado.
+Se esta for a sua primeira vez a utilizar Retro Media Lab, completo [Começar](#getting-started), então siga [Lendo um disco](#reading-a-disk). Se o aplicativo já estiver configurado, vá diretamente para o capítulo para a operação que você deseja executar. Os capítulos de opções servem como referência quando um procedimento pede que você altere uma configuração de acionamento, motor, perfil ou máquina emulado.
 
 Os nomes da interface são mostrados em **negrito**. Nomes de arquivos, caminhos, comandos e valores literais são mostrados como `code`. Notas explicam o comportamento normal; avisos identificam operações que podem alterar um disco, controlador ou configuração armazenada.
 
@@ -40,7 +40,7 @@ Os nomes da interface são mostrados em **negrito**. Nomes de arquivos, caminhos
 
 ## Compreender o fluxo de trabalho
 
-GW GUI separa as operações do disco físico das operações do ficheiro de imagem:
+Retro Media Lab separa as operações do disco físico das operações do ficheiro de imagem:
 
 | Objetivo | Entrada | Saída | Página recomendada |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Para preservação, primeiro fazer uma captura crua e mantê-lo inalterado como 
 - Um caminho configurado para `gw.exe` quando utilizar a Greaseweazle Host Tools Motor.
 - Obtidos legalmente ROM arquivos quando uma máquina emulado precisa deles.
 
-O aplicativo verifica o tempo de execução necessário .NET na inicialização. Se estiver faltando, siga o prompt de instalação e reinicie GW GUI.
+O aplicativo verifica o tempo de execução necessário .NET na inicialização. Se estiver faltando, siga o prompt de instalação e reinicie Retro Media Lab.
 
 ### Antes de conectar hardware
 
@@ -75,11 +75,11 @@ Verificar o seguinte antes de executar uma operação de disco físico:
 4. Confirme que o tamanho da unidade e densidade correspondem ao disco.
 5. Gravar-proteger o disco de origem quando possível.
 
-GW GUI não pode evitar danos causados por cabeamento incorreto, energia inadequada ou uma movimentação mecanicamente insegura. Teste hardware desconhecido com um disco descartável primeiro.
+Retro Media Lab não pode evitar danos causados por cabeamento incorreto, energia inadequada ou uma movimentação mecanicamente insegura. Teste hardware desconhecido com um disco descartável primeiro.
 
 ### Primeiro lançamento
 
-1. Abrir `gwgui.exe`.
+1. Abrir `retromedialab.exe`.
 2. Abrir **Opções**.
 3. In **Controladores e unidades**, digitalizar para o controlador e configurar a unidade.
 4. Verificar ou selecionar o caminho para `gw.exe`.
@@ -92,7 +92,7 @@ Uma configuração de trabalho deve mostrar o controlador e unidade na barra de 
 
 ### Escolher um motor
 
-GW GUI pode expor mais de uma implementação para algumas operações. A **Greaseweazle Host Tools** motor invoca o configurado `gw.exe`; o GW GUI O motor manipula operações suportadas dentro da aplicação. A seleção do motor é explícita e independente para leitura, escrita, conversão e Disk Explorer. Se uma operação não for suportada pelo motor seleccionado, GW GUI relata essa condição em vez de mudar os motores automaticamente.
+Retro Media Lab pode expor mais de uma implementação para algumas operações. A **Greaseweazle Host Tools** motor invoca o configurado `gw.exe`; o Retro Media Lab O motor manipula operações suportadas dentro da aplicação. A seleção do motor é explícita e independente para leitura, escrita, conversão e Disk Explorer. Se uma operação não for suportada pelo motor seleccionado, Retro Media Lab relata essa condição em vez de mudar os motores automaticamente.
 
 ## Janela principal
 
@@ -435,7 +435,7 @@ Use o controle de lixo apenas para remover a configuração salva; ele não desc
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Selecção do motor" width="72%"></p>
 
-Escolha o motor independentemente para ler, escrever, converter e Disk Explorer. O motor selecionado é usado estritamente: se não puder executar a operação solicitada, GW GUI relata a limitação em vez de mudar silenciosamente os motores.
+Escolha o motor independentemente para ler, escrever, converter e Disk Explorer. O motor selecionado é usado estritamente: se não puder executar a operação solicitada, Retro Media Lab relata a limitação em vez de mudar silenciosamente os motores.
 
 Esta independência é intencional. Por exemplo, leituras físicas podem usar Greaseweazle Host Tools enquanto conversão de imagem e exploração usam o motor interno. Gravar as escolhas do motor em um perfil ou nota do projeto quando a reprodutibilidade importa.
 
@@ -514,7 +514,7 @@ Configurar o Chip RAM, Devagar RAM, Rápido RAM, e memória de expansão suporta
 
 Selecione o sistema Kickstart ROM, extensão opcional ROM, e ROM Chave. O detectado...ROM lista exibe nomes, revisões e compatibilidade com o modelo selecionado. Selecionar um detectado ROM e clique **Utilização**, ou navegar para um arquivo manualmente.
 
-ROM os ficheiros não são fornecidos por GW GUI. Use ROMs que você está legalmente autorizado a usar.
+ROM os ficheiros não são fornecidos por Retro Media Lab. Use ROMs que você está legalmente autorizado a usar.
 
 A lista detectada é preferível a adivinhar a partir de um nome de arquivo: ele reporta o ROM identidade e revisão e avalia compatibilidade com o modelo selecionado. **Compatível ** é a escolha normal; ** Parcialmente compatível ** indica que a ROM pode arrancar, mas não corresponde precisamente à máquina. ** Actualizar ** rescans o configurado ROM Locais. ** Utilização** atribui o selecionado detectado ROM à configuração.
 
@@ -589,7 +589,7 @@ Estas janelas são abertas a partir do **Ferramentas ** tab. Cada diálogo visua
 
 Exibe informações relatadas pelo controlador selecionado. Expandir **Resultado bruto** quando você precisa da resposta completa do comando.
 
-Use isto como o primeiro comando de diagnóstico. Uma resposta bem sucedida confirma que GW GUI pode iniciar o executável do Host Tools configurado e comunicar com o dispositivo selecionado. Grave as informações de firmware e hardware antes de realizar uma atualização.
+Use isto como o primeiro comando de diagnóstico. Uma resposta bem sucedida confirma que Retro Media Lab pode iniciar o executável do Host Tools configurado e comunicar com o dispositivo selecionado. Grave as informações de firmware e hardware antes de realizar uma atualização.
 
 ### USB largura de banda
 
@@ -673,7 +673,7 @@ Ao comparar duas tentativas, verifique se o controlador, drive, motor, perfil, c
 
 ## Dados de aplicação e uso portátil
 
-GW GUI mantém os dados do usuário separados dos binários de aplicativos. Dependendo do pacote e modo selecionados, as configurações, os registros, as ferramentas baixadas, os componentes do emulador, as capturas, os estados e as configurações da máquina são armazenados na aplicação `Data` diretório ou nas localizações configuradas de dados do usuário.
+Retro Media Lab mantém os dados do usuário separados dos binários de aplicativos. Dependendo do pacote e modo selecionados, as configurações, os registros, as ferramentas baixadas, os componentes do emulador, as capturas, os estados e as configurações da máquina são armazenados na aplicação `Data` diretório ou nas localizações configuradas de dados do usuário.
 
 Antes de substituir ou mover uma instalação portátil, mantenha a pasta completa da aplicação em conjunto e faça backup da `Data` pasta. Não mover arquivos individuais de `lib`, porque o aplicativo resolve suas próprias e de terceiros bibliotecas a partir dessa estrutura.
 
@@ -762,7 +762,7 @@ Antes de uma ferramenta de mudança de hardware:
 4. Verifique o estado do controlador e a configuração da unidade.
 5. Executar **Informação do controlador** se a detecção tiver sucesso, mas os comandos falharem.
 
-Se ainda não aparecer, tente outro direto USB bombordo e cabo, depois reescane. Verifique o Windows Device Manager para um dispositivo serial recentemente detectado. Um controlador visível para Windows mas ausente de GW GUI geralmente aponta para uma porta ocupada, configuração defasada ou problema do Host Tools; um controlador ausente do Windows aponta para USB, potência, driver ou hardware.
+Se ainda não aparecer, tente outro direto USB bombordo e cabo, depois reescane. Verifique o Windows Device Manager para um dispositivo serial recentemente detectado. Um controlador visível para Windows mas ausente de Retro Media Lab geralmente aponta para uma porta ocupada, configuração defasada ou problema do Host Tools; um controlador ausente do Windows aponta para USB, potência, driver ou hardware.
 
 ### `gw.exe` não foi encontrado
 
@@ -772,7 +772,7 @@ Depois de selecioná- lo, execute **Informação do controlador**. Se isso falha
 
 ### Uma operação utiliza o motor errado
 
-Abrir **Opções > Motores** e verificar o motor atribuído a essa operação exata. GW GUI não deve voltar silenciosamente para o outro motor.
+Abrir **Opções > Motores** e verificar o motor atribuído a essa operação exata. Retro Media Lab não deve voltar silenciosamente para o outro motor.
 
 As configurações do motor são separadas: mudar o motor de conversão não muda leitura, escrita, ou Disk Explorer. Reabrir a operação falhando após salvar a opção e confirmar o comando gerado no console.
 
@@ -815,7 +815,7 @@ Repita a leitura para um novo nome de arquivo, aumente as revoluções quando ap
 
 ## Glossário
 
-| Termo | Significado em GW GUI |
+| Termo | Significado em Retro Media Lab |
 |---|---|
 | Controlador | A Greaseweazle interface de hardware conectada sobre USB |
 | Dirija | A unidade de disquete física ligada ao controlador |

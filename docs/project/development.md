@@ -5,9 +5,9 @@ Les commandes de cette page s’exécutent depuis la racine du dépôt.
 Pour restaurer les dépendances, compiler la solution ou lancer le projet WPF directement :
 
 ```powershell
-dotnet restore GWGUI.sln
-dotnet build GWGUI.sln
-dotnet run --project src/GWGUI.App
+dotnet restore RetroMediaLab.sln
+dotnet build RetroMediaLab.sln
+dotnet run --project src/RetroMediaLab.App
 ```
 
 ## Organisation du dépôt

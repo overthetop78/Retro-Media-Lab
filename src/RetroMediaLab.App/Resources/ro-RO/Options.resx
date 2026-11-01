@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Options.Title" xml:space="preserve"><value>Opțiuni</value></data>
+  <data name="Options.General" xml:space="preserve"><value>Generalități</value></data>
+  <data name="Options.Tools" xml:space="preserve"><value>Greaseweazle Instrumente</value></data>
+  <data name="Options.Hardware" xml:space="preserve"><value>Controlere și unități</value></data>
+  <data name="Options.Profiles" xml:space="preserve"><value>Profiluri</value></data>
+  <data name="Options.ImagesFolder" xml:space="preserve"><value>Folder implicit de imagine de disc</value></data>
+  <data name="Options.Language" xml:space="preserve"><value>Limbă</value></data>
+  <data name="Options.Theme" xml:space="preserve"><value>Temă</value></data>
+  <data name="Options.Theme.System" xml:space="preserve"><value>Sistem</value></data>
+  <data name="Options.Theme.Light" xml:space="preserve"><value>Luminos</value></data>
+  <data name="Options.Theme.Dark" xml:space="preserve"><value>Întunecat</value></data>
+  <data name="Options.GwPath" xml:space="preserve"><value>Calea către gw.exe</value></data>
+  <data name="Options.ToolsHelp" xml:space="preserve"><value>Dacă instrumentele lipsesc, asistentul se va oferi să le descarce sau să aleagă o instalare existentă. Actualizările sunt doar anunțate.</value></data>
+  <data name="Options.HardwarePersistence" xml:space="preserve"><value>Setările hardware rămân stocate atunci când o unitate este deconectată.</value></data>
+  <data name="Options.ExecutableFilter"><value>Greaseweazle (gw.exe)|gw.exe|Executabilă (*.exe)|*.exe</value></data>
+  <data name="Options.RemoveHardware"><value>Eliminați acest controler stocat și toate unitățile sale?</value></data>
+  <data name="Options.HardwareTitle"><value>Hardware</value></data>
+  <data name="Options.UseConversionTags"><value>Utilizați etichete în numele fișierelor de conversie</value></data>
+  <data name="Options.TagPreset"><value>Presetat</value></data>
+  <data name="Options.TagPresetFamily"><value>Doar familie</value></data>
+  <data name="Options.TagPresetFormat"><value>Numai format</value></data>
+  <data name="Options.TagPresetFamilyFormat"><value>Familie și format</value></data>
+  <data name="Options.TagPresetFamilyExtension"><value>Familia și extinderea</value></data>
+  <data name="Options.TagPresetDetailed"><value>Familie, format și extensie</value></data>
+  <data name="Options.TagPattern"><value>Model de etichetă de conversie</value></data>
+  <data name="Options.TagVariablesTitle"><value>Variabile disponibile</value></data>
+  <data name="Options.TagVariableName"><value>Nume fișier sursă</value></data>
+  <data name="Options.TagVariableFamily"><value>Familie: PC, ST, AMIGA…</value></data>
+  <data name="Options.TagVariableFormat"><value>Format: 720, 1440, DD...</value></data>
+  <data name="Options.TagVariableExtension"><value>Extensie: IMA, ST, ADF…</value></data>
+  <data name="Options.TagVariableDateIso"><value>Data: 2026-08-06</value></data>
+  <data name="Options.TagVariableDateCompact"><value>Data: 20260806</value></data>
+  <data name="Options.TagVariableDateLocal"><value>Data: 06-08-2026</value></data>
+  <data name="Options.TagVariableTimeFull"><value>Ora: 14-35-42</value></data>
+  <data name="Options.TagVariableTimeCompact"><value>Ora: 143542</value></data>
+  <data name="Options.TagVariableTimeShort"><value>Timp: 14-35</value></data>
+  <data name="Options.TagPatternHelp"><value>{NAME} &#xA;{FAMILY} PC, ST, AMIGA...)&#xA;{FORMAT} format sau geometrie (720, 1440, DD...)&#xA;{EXTENSION} IMA, ST, ADF...)&#xA;{DATE:YYYY-MM-DD} &#xA;{DATE:YYYYMMDD} &#xA;{DATE:DD-MM-YYYY} &#xA;{TIME:HH-MM-SS} &#xA;{TIME:HHMMSS} &#xA;{TIME:HH-MM} </value></data>
+  <data name="Options.RecentTagPatterns"><value>Modele personalizate recente</value></data>
+  <data name="Options.NextTagExample"><value>Următorul exemplu</value></data>
+  <data name="Options.TagPatternPreview"><value>Exemplu: {0}</value></data>
+  <data name="Options.TagPatternInvalid"><value>Modelul de etichetă trebuie să conțină {tag}.</value></data>
+  <data name="Options.EnableLogs"><value>Salvați jurnalele</value></data>
+  <data name="Options.Logs"><value>Bușteni</value></data>
+  <data name="Options.LogsDescription"><value>Fiecare acțiune are propriul fișier în folderul Retro Media Lab Jurnal.</value></data>
+  <data name="Options.LogActionErase"><value>Şterge</value></data>
+  <data name="Options.LogActionClean"><value>Capetele curate</value></data>
+  <data name="Options.OpenLogsFolder"><value>Deschide folderul</value></data>
+  <data name="Options.LogMaximumSize"><value>Dimensiunea maxima</value></data>
+  <data name="Options.KeepLogArchives"><value>Păstrați jurnalele anterioare</value></data>
+  <data name="Options.LogUnlimitedHint"><value>0 = nelimitat</value></data>
+  <data name="Options.Engines" xml:space="preserve"><value>Motoare</value></data>
+  <data name="Options.Engines.Description" xml:space="preserve"><value>Alegeți independent motorul utilizat pentru fiecare operație.</value></data>
+  <data name="Options.Engines.Internal" xml:space="preserve"><value>Motor intern Retro Media Lab</value></data>
+  <data name="Options.Engines.StrictChoice" xml:space="preserve"><value>Motorul selectat este utilizat strict. Dacă nu poate efectua operația, Retro Media Lab raportează acest lucru fără a utiliza în tăcere celălalt motor.</value></data>
+  <data name="Options.EmulationMachineTitle" xml:space="preserve"><value>{0}  {1} : {2}</value></data>
+  <data name="Options.PreferencesTitle"><value>Preferințe</value></data>
+  <data name="Options.EmulationTitle"><value>Preferințe de emulare</value></data>
+  <data name="Options.EmulationModuleTitle"><value>{0} setări de emulare</value></data>
+  <data name="Options.Themes.Title"><value>Teme</value></data>
+  <data name="Options.Themes.List"><value>Teme disponibile</value></data>
+  <data name="Options.Themes.Appearance"><value>Aspect</value></data>
+  <data name="Options.Themes.PreviewUnavailable"><value>Previzualizare indisponibilă.</value></data>
+  <data name="Options.Themes.Active"><value>Tema activă: {0}</value></data>
+  <data name="Options.Themes.ApplyHint"><value>Tema aleasă se aplică imediat și se păstrează la următoarele porniri ale aplicației.</value></data>
+  <data name="Options.Themes.Base.Description"><value>Aspectul original, cu modul sistemului, luminos sau întunecat.</value></data>
+
+
+
+
+
+  <data name="Options.Themes.Studio.Description"><value>Spațiu de lucru cu ferestre care pot fi mutate și redimensionate. Păstrați mai multe instrumente deschise și comutați între ele fără a pierde setările.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimizează</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maximizează sau restaurează</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Manager de programe</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Sistem</value></data>
+  <data name="Options.Themes.OS.File"><value>Fișier</value></data>
+  <data name="Options.Themes.OS.Window"><value>Fereastră</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Cascadă</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Alăturat</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Aranjare pictograme</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Restabilire</value></data>
+  <data name="Options.Themes.OS.Move"><value>Mutare</value></data>
+  <data name="Options.Themes.OS.Size"><value>Redimensionare</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximizare</value></data>
+  <data name="Options.Themes.OS.Open"><value>Deschidere</value></data>
+  <data name="Options.Themes.OS.Description"><value>Interfețele sistemului de operare original, inclusiv ferestrele, comenzile și interacțiunile.</value></data>
+  <data name="Options.Themes.Edition"><value>Variantă</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programe</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numerotare</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Albastru</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Argint</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Verde de măsline</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Mașini de tăiat</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Jurnal de activitate</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Comenzi</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Caută o comandă</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Nicio comandă de potrivire</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Alegeți o mașină sau continuați o sesiune deschisă</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Context</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Nu se deschide sesiunea de emulare</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Mașini, documente media și instrumente contextuale într-un singur spațiu de lucru.</value></data>
+</root>

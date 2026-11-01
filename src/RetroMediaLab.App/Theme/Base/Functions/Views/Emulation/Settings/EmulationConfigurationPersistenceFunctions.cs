@@ -1,0 +1,24 @@
+using RetroMediaLab.App.Services.Emulation;
+
+namespace RetroMediaLab.App.Functions.Views.Emulation.Settings;
+
+internal static class EmulationConfigurationPersistenceFunctions
+{
+    internal static async ValueTask<bool> PersistAsync(
+        IEmulationModule module,
+        IEmulationConfiguration configuration,
+        bool hasSavedConfiguration,
+        CancellationToken cancellationToken = default,
+        RetroMediaLab.VideoPresentation.Services.VideoPresentationProfileStore? profiles = null)
+    {
+        if (!hasSavedConfiguration)
+        {
+            EmulationConfigurationDraftStore.Set(module.Id, configuration);
+            return false;
+        }
+
+        (profiles ?? EmulationVideoPresentationProfiles.Store).Get(module.Id, configuration.Id);
+        await module.SaveConfigurationAsync(configuration, cancellationToken);
+        return true;
+    }
+}

@@ -1,4 +1,4 @@
-function Get-GwGuiFileHashes {
+function Get-RetroMediaLabFileHashes {
     param([object[]]$Files)
 
     $hashes = @{}
@@ -12,7 +12,7 @@ function Get-GwGuiFileHashes {
     return $hashes
 }
 
-function Copy-GwGuiComponentFiles {
+function Copy-RetroMediaLabComponentFiles {
     param(
         [string]$SourceDirectory,
         [string]$DestinationDirectory,

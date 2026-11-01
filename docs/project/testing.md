@@ -5,32 +5,32 @@ reconstruction ont été retirés après intégration de leurs résultats.
 
 Les commandes de cette page s’exécutent depuis la racine du dépôt.
 
-Le groupe 1.1 de `tests/GWGUI.Tests` vérifie les sept onglets et leurs états, le routage des commandes, les requêtes de dialogues et leurs réponses simulées, la disposition hors écran, le placement sur des géométries simulées et les propriétés/liaisons des contrôles. Les libellés des menus sont contrôlés dans les langues du catalogue sans imposer de traduction ni de lettre d’accès.
+Le groupe 1.1 de `tests/RetroMediaLab.Tests` vérifie les sept onglets et leurs états, le routage des commandes, les requêtes de dialogues et leurs réponses simulées, la disposition hors écran, le placement sur des géométries simulées et les propriétés/liaisons des contrôles. Les libellés des menus sont contrôlés dans les langues du catalogue sans imposer de traduction ni de lettre d’accès.
 
 Les vues sont créées en mémoire sur un Dispatcher STA. Aucun affichage, handle de fenêtre natif ni focus réel n’est nécessaire. Les anciens scénarios interactifs ont été remplacés ; la modalité et le focus natifs de WPF ne font pas partie des résultats déclarés couverts.
 
 Dernière validation locale en configuration `Release` : **1 579 tests réussis, 0 échec, 0 ignoré, en 18 secondes**.
 
-Les 41 groupes couvrent les 122 tâches du plan, réparties entre l’application, l’interface, le matériel, les médias et l’émulation. Les scénarios exercent les opérations et leur annulation, les réglages et profils, la localisation, les commandes et le protocole, la reconnaissance des images, les conteneurs, les codecs, les systèmes de fichiers, les conversions et migrations, ainsi que les adaptateurs, entrées et sorties audio/vidéo de GW GUI.
+Les 41 groupes couvrent les 122 tâches du plan, réparties entre l’application, l’interface, le matériel, les médias et l’émulation. Les scénarios exercent les opérations et leur annulation, les réglages et profils, la localisation, les commandes et le protocole, la reconnaissance des images, les conteneurs, les codecs, les systèmes de fichiers, les conversions et migrations, ainsi que les adaptateurs, entrées et sorties audio/vidéo de Retro Media Lab.
 
-Les données sont synthétiques et les accès aux fichiers de données sont simulés en mémoire, y compris pour les réglages, les conteneurs et les migrations. Les périphériques, processus, services réseau et cœurs externes sont remplacés aux interfaces ; les traitements intégrés de GW GUI sont réellement exécutés. Aucun scénario ne lance de moteur d’émulation ou `gw.exe`.
+Les données sont synthétiques et les accès aux fichiers de données sont simulés en mémoire, y compris pour les réglages, les conteneurs et les migrations. Les périphériques, processus, services réseau et cœurs externes sont remplacés aux interfaces ; les traitements intégrés de Retro Media Lab sont réellement exécutés. Aucun scénario ne lance de moteur d’émulation ou `gw.exe`.
 
 ## Tests des images disque
 
-[GWGUI.LocalDiskImageTests](../../tests/GWGUI.LocalDiskImageTests/GWGUI.LocalDiskImageTests.csproj) contient tous les tests de reconnaissance, lecture, écriture, conversion, conteneurs, codecs et systèmes de fichiers des images disque, qu'ils utilisent des données synthétiques ou le corpus local. Il reste séparé de la solution principale et du workflow de release. L'audit local utilise en lecture seule `F:\Rétro`, `F:\86Box\Isos`, `C:\Users\overt\Documents\GW GUI\Emulation\HDD` et `C:\Users\overt\86Box VMs`, sans copier, déplacer ni modifier les médias.
+[RetroMediaLab.LocalDiskImageTests](../../tests/RetroMediaLab.LocalDiskImageTests/RetroMediaLab.LocalDiskImageTests.csproj) contient tous les tests de reconnaissance, lecture, écriture, conversion, conteneurs, codecs et systèmes de fichiers des images disque, qu'ils utilisent des données synthétiques ou le corpus local. Il reste séparé de la solution principale et du workflow de release. L'audit local utilise en lecture seule `F:\Rétro`, `F:\86Box\Isos`, `C:\Users\overt\Documents\Retro Media Lab\Emulation\HDD` et `C:\Users\overt\86Box VMs`, sans copier, déplacer ni modifier les médias.
 
 Tout test qui dépend d'une image locale, d'un matériel, d'une application ou d'une DLL externe est
 une validation manuelle locale exécutée par le développeur qui possède cette ressource. Ces tests
-restent hors de `GWGUI.sln`, des workflows GitHub, des contrôles automatiques et de la fabrication
+restent hors de `RetroMediaLab.sln`, des workflows GitHub, des contrôles automatiques et de la fabrication
 des releases. Ils ne doivent jamais pouvoir bloquer ou déclencher une publication.
 
 ```powershell
-dotnet test tests/GWGUI.LocalDiskImageTests/GWGUI.LocalDiskImageTests.csproj
+dotnet test tests/RetroMediaLab.LocalDiskImageTests/RetroMediaLab.LocalDiskImageTests.csproj
 ```
 
 ## Contrôles exécutés pendant la release
 
-Le workflow `release.yml` restaure, compile en configuration `Release` et exécute `GWGUI.Tests` avant de construire les paquets, pour les déclenchements manuels (dont les snapshots) et les tags de release. Une erreur de compilation, un test en échec ou l’absence de test exécuté bloque la suite du workflow et la publication. Le nombre de tests est contrôlé directement dans la sortie de `dotnet test`. Les nouveaux groupes ajoutés à ce projet seront automatiquement inclus, sans filtre de catégorie.
+Le workflow `release.yml` restaure, compile en configuration `Release` et exécute `RetroMediaLab.Tests` avant de construire les paquets, pour les déclenchements manuels (dont les snapshots) et les tags de release. Une erreur de compilation, un test en échec ou l’absence de test exécuté bloque la suite du workflow et la publication. Le nombre de tests est contrôlé directement dans la sortie de `dotnet test`. Les nouveaux groupes ajoutés à ce projet seront automatiquement inclus, sans filtre de catégorie.
 
 Ce raccordement est configuré ; sa première exécution sur GitHub reste à vérifier lors d’une release.
 
@@ -39,8 +39,8 @@ Après la construction des paquets, le workflow prépare et vérifie les sources
 Ces contrôles peuvent aussi être lancés localement après le packaging. Exemple pour les paquets `0.1.3` :
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/test-installer.ps1 -SetupPath dist/GW-GUI-0.1.3-win-x64-setup.exe -ExpectedVersion 0.1.3 -InstallerLanguage english
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/test-installer.ps1 -SetupPath dist/GW-GUI-0.1.3-win-x64-setup.exe -ExpectedVersion 0.1.3 -InstallerLanguage french
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/test-installer.ps1 -SetupPath dist/Retro-Media-Lab-0.1.3-win-x64-setup.exe -ExpectedVersion 0.1.3 -InstallerLanguage english
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/test-installer.ps1 -SetupPath dist/Retro-Media-Lab-0.1.3-win-x64-setup.exe -ExpectedVersion 0.1.3 -InstallerLanguage french
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/test-installer-upgrade.ps1 -CurrentVersion 0.1.3
 ```
 
@@ -49,7 +49,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/test-installer
 | Installation | Installation silencieuse dans un dossier isolé sous `dist`, fichiers attendus, version, langue, puis désinstallation et nettoyage. |
 | Mise à jour | Installation d’une ancienne version simulée, ajout de restes d’un ancien runtime .NET, mise à jour et suppression de ces fichiers obsolètes, puis désinstallation. |
 
-Les contrôles d’installation refusent de démarrer si une installation GW GUI est déjà enregistrée pour l’utilisateur.
+Les contrôles d’installation refusent de démarrer si une installation Retro Media Lab est déjà enregistrée pour l’utilisateur.
 
 ## Validation du socle MediaEngine commun
 
@@ -57,10 +57,10 @@ La validation locale du socle commun a été exécutée en configuration `Debug`
 de médias. Les quatre projets concernés compilent sans avertissement ni erreur :
 
 ```powershell
-dotnet build src/GWGUI.MediaEngine/GWGUI.MediaEngine.csproj --no-restore --configuration Debug --verbosity quiet
-dotnet build src/GWGUI.App/GWGUI.App.csproj --no-restore --configuration Debug --verbosity quiet
-dotnet build src/GWGUI.Emulation.Commodore/GWGUI.Emulation.Commodore.csproj --no-restore --configuration Debug --verbosity quiet
-dotnet build src/GWGUI.Emulation.Atari/GWGUI.Emulation.Atari.csproj --no-restore --configuration Debug --verbosity quiet
+dotnet build src/RetroMediaLab.MediaEngine/RetroMediaLab.MediaEngine.csproj --no-restore --configuration Debug --verbosity quiet
+dotnet build src/RetroMediaLab.App/RetroMediaLab.App.csproj --no-restore --configuration Debug --verbosity quiet
+dotnet build src/RetroMediaLab.Emulation.Commodore/RetroMediaLab.Emulation.Commodore.csproj --no-restore --configuration Debug --verbosity quiet
+dotnet build src/RetroMediaLab.Emulation.Atari/RetroMediaLab.Emulation.Atari.csproj --no-restore --configuration Debug --verbosity quiet
 ```
 
 Les tests ciblés du registre de reconnaissance, des représentations de disquettes, de la conversion,
@@ -68,8 +68,8 @@ du partage du document et des frontières entre projets ont ensuite produit **10
 et 0 test ignoré** :
 
 ```powershell
-dotnet test tests/GWGUI.LocalDiskImageTests/GWGUI.LocalDiskImageTests.csproj --no-restore --configuration Debug --filter "FullyQualifiedName~MediaRecognitionRegistryTests|FullyQualifiedName~FloppyMediaReadingTests|FullyQualifiedName~MediaConversionServiceTests|FullyQualifiedName~MediaExplorerTests" --verbosity quiet
-dotnet test tests/GWGUI.Tests/GWGUI.Tests.csproj --no-restore --configuration Debug --filter "FullyQualifiedName~MediaEngineProjectBoundaryTests" --verbosity quiet
+dotnet test tests/RetroMediaLab.LocalDiskImageTests/RetroMediaLab.LocalDiskImageTests.csproj --no-restore --configuration Debug --filter "FullyQualifiedName~MediaRecognitionRegistryTests|FullyQualifiedName~FloppyMediaReadingTests|FullyQualifiedName~MediaConversionServiceTests|FullyQualifiedName~MediaExplorerTests" --verbosity quiet
+dotnet test tests/RetroMediaLab.Tests/RetroMediaLab.Tests.csproj --no-restore --configuration Debug --filter "FullyQualifiedName~MediaEngineProjectBoundaryTests" --verbosity quiet
 ```
 
 Le script de construction Debug standard a ensuite terminé avec succès :
@@ -79,7 +79,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-building/build
 ```
 
 Le script a produit l'application sans module d'émulation préinstallé. La présence de
-`build/Debug/GW GUI/gwgui.exe` a été vérifiée après sa terminaison.
+`build/Debug/Retro Media Lab/retromedialab.exe` a été vérifiée après sa terminaison.
 
 ## Validation des vues de médias
 
@@ -87,7 +87,7 @@ Les tests généraux du Visualiseur ont été exécutés en configuration `Debug
 corpus privé. Les **14 scénarios ont réussi, sans échec ni test ignoré** :
 
 ```powershell
-dotnet test tests/GWGUI.Tests/GWGUI.Tests.csproj --no-restore --configuration Debug --filter "FullyQualifiedName~MediaVisualizationRoutingTests|FullyQualifiedName~FloppyVisualizationTests|FullyQualifiedName~OtherMediaVisualizationTests|FullyQualifiedName~MediaVisualizationLayoutTests" --verbosity minimal
+dotnet test tests/RetroMediaLab.Tests/RetroMediaLab.Tests.csproj --no-restore --configuration Debug --filter "FullyQualifiedName~MediaVisualizationRoutingTests|FullyQualifiedName~FloppyVisualizationTests|FullyQualifiedName~OtherMediaVisualizationTests|FullyQualifiedName~MediaVisualizationLayoutTests" --verbosity minimal
 ```
 
 Ils contrôlent le routage de `Flux`, `Sectors`, `Blocks`, `OpticalTracks` et `Sequential`, la
@@ -103,7 +103,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-building/build
 ```
 
 Le script a terminé avec succès et la présence de
-`build/Debug/GW GUI/gwgui.exe` a été vérifiée. Dans cette version :
+`build/Debug/Retro Media Lab/retromedialab.exe` a été vérifiée. Dans cette version :
 
 - ouvrir un fichier `.scp` depuis l'onglet **Visualisation** affiche la vue Flux ;
 - ouvrir une image de disquette sectorielle reconnue, par exemple ADF, ST, MSA, ATR, D64, D71,
@@ -121,10 +121,10 @@ contrôles ne dépendent pas des corpus locaux et ne constituent pas les essais 
 finaux des images réelles.
 
 ```powershell
-dotnet test tests/GWGUI.LocalDiskImageTests/GWGUI.LocalDiskImageTests.csproj --no-restore --filter "FullyQualifiedName~RawHardDiskMediaTests"
-dotnet test tests/GWGUI.LocalDiskImageTests/GWGUI.LocalDiskImageTests.csproj --no-restore --filter "FullyQualifiedName~OpticalMediaTests"
-dotnet test tests/GWGUI.LocalDiskImageTests/GWGUI.LocalDiskImageTests.csproj --no-restore --filter "FullyQualifiedName~SequentialMediaTests"
-dotnet test tests/GWGUI.Tests/GWGUI.Tests.csproj --no-restore --filter "FullyQualifiedName~OtherMediaExplorerScenarios"
+dotnet test tests/RetroMediaLab.LocalDiskImageTests/RetroMediaLab.LocalDiskImageTests.csproj --no-restore --filter "FullyQualifiedName~RawHardDiskMediaTests"
+dotnet test tests/RetroMediaLab.LocalDiskImageTests/RetroMediaLab.LocalDiskImageTests.csproj --no-restore --filter "FullyQualifiedName~OpticalMediaTests"
+dotnet test tests/RetroMediaLab.LocalDiskImageTests/RetroMediaLab.LocalDiskImageTests.csproj --no-restore --filter "FullyQualifiedName~SequentialMediaTests"
+dotnet test tests/RetroMediaLab.Tests/RetroMediaLab.Tests.csproj --no-restore --filter "FullyQualifiedName~OtherMediaExplorerScenarios"
 ```
 
 Résultats obtenus :
@@ -150,7 +150,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-building/build
 ```
 
 Le script a produit l'application sans module d'émulation préinstallé. La présence de
-`build/Debug/GW GUI/gwgui.exe` a été vérifiée après sa terminaison.
+`build/Debug/Retro Media Lab/retromedialab.exe` a été vérifiée après sa terminaison.
 
 ## Validation autonome des compléments HDD
 
@@ -158,7 +158,7 @@ Les tests généraux des services HDD d'émulation et des Readers, Writers et co
 MediaEngine ont été exécutés ensemble en configuration `Debug`, sans utiliser les corpus locaux :
 
 ```powershell
-dotnet test tests/GWGUI.LocalDiskImageTests/GWGUI.LocalDiskImageTests.csproj -c Debug --no-restore --filter "FullyQualifiedName~GWGUI.Tests.Emulation.HardDisks|FullyQualifiedName~GWGUI.Tests.MediaEngine.HardDisk" --nologo -v:quiet
+dotnet test tests/RetroMediaLab.LocalDiskImageTests/RetroMediaLab.LocalDiskImageTests.csproj -c Debug --no-restore --filter "FullyQualifiedName~RetroMediaLab.Tests.Emulation.HardDisks|FullyQualifiedName~RetroMediaLab.Tests.MediaEngine.HardDisk" --nologo -v:quiet
 ```
 
 Résultat : **422 réussites, 0 échec et 0 test ignoré**. Cet ensemble couvre notamment les capacités
@@ -173,11 +173,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-building/build
 ```
 
 Le script a produit l'application sans module d'émulation préinstallé. La présence de
-`build/Debug/GW GUI/gwgui.exe` a été vérifiée après sa terminaison.
+`build/Debug/Retro Media Lab/retromedialab.exe` a été vérifiée après sa terminaison.
 
 ## Ancien contrôle interactif, manuel uniquement
 
-`scripts/tests/test-app-accessibility.ps1` reste disponible pour ouvrir l’exécutable empaqueté, contrôler son redimensionnement avec le DPI Windows et inspecter les noms accessibles. Ce script nécessite un bureau ; il n’est plus appelé par le workflow de release ni par `GWGUI.Tests`. Les tests hors écran ne sont pas présentés comme un remplacement de sa vérification du cadre natif.
+`scripts/tests/test-app-accessibility.ps1` reste disponible pour ouvrir l’exécutable empaqueté, contrôler son redimensionnement avec le DPI Windows et inspecter les noms accessibles. Ce script nécessite un bureau ; il n’est plus appelé par le workflow de release ni par `RetroMediaLab.Tests`. Les tests hors écran ne sont pas présentés comme un remplacement de sa vérification du cadre natif.
 
 ## Contrat de fermeture WPF et graphique
 
@@ -198,7 +198,7 @@ vidage des fenêtres sur le thread STA, traitement de la file WPF jusqu'à la pr
 la fixture. Elle attend ensuite la terminaison du thread et les finaliseurs. Cette modification n'a
 pas déclenché l'audit manuel des corpus locaux ni lancé l'application.
 
-L'exécutable `GWGUI.LocalDiskImageTests` libère dans son bloc `finally` l'éventuelle `Application`
+L'exécutable `RetroMediaLab.LocalDiskImageTests` libère dans son bloc `finally` l'éventuelle `Application`
 WPF chargée par l'analyse, ses fenêtres, son `Dispatcher` et les objets en attente de finalisation.
 Le script `scripts/temp/analyze-media-data.ps1` démarre chaque
 invocation `dotnet` sans créer de fenêtre, attend sa terminaison,

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Options.Title" xml:space="preserve"><value>خيارات</value></data>
+  <data name="Options.General" xml:space="preserve"><value>عام</value></data>
+  <data name="Options.Tools" xml:space="preserve"><value>Greaseweazle الأدوات</value></data>
+  <data name="Options.Hardware" xml:space="preserve"><value>وحدات التحكم ومحركات الأقراص</value></data>
+  <data name="Options.Profiles" xml:space="preserve"><value>الملفات الشخصية</value></data>
+  <data name="Options.ImagesFolder" xml:space="preserve"><value>المجلد الافتراضي لصورة القرص</value></data>
+  <data name="Options.Language" xml:space="preserve"><value>لغة</value></data>
+  <data name="Options.Theme" xml:space="preserve"><value>سمة</value></data>
+  <data name="Options.Theme.System" xml:space="preserve"><value>النظام</value></data>
+  <data name="Options.Theme.Light" xml:space="preserve"><value>فاتح</value></data>
+  <data name="Options.Theme.Dark" xml:space="preserve"><value>داكن</value></data>
+  <data name="Options.GwPath" xml:space="preserve"><value>المسار إلى gw.exe</value></data>
+  <data name="Options.ToolsHelp" xml:space="preserve"><value>إذا كانت الأدوات مفقودة، فسيعرض عليك المساعد تنزيلها أو اختيار تثبيت موجود. يتم الإعلان عن التحديثات فقط.</value></data>
+  <data name="Options.HardwarePersistence" xml:space="preserve"><value>تظل إعدادات الأجهزة مخزنة عند فصل محرك الأقراص.</value></data>
+  <data name="Options.ExecutableFilter"><value>غريزويزل (جو.كس)|gw.exe|قابلة للتنفيذ (مطبقة)*.exe)|*.exe</value></data>
+  <data name="Options.RemoveHardware"><value>إزالة وحدة التحكم المخزنة هذه وكافة محركات الأقراص الخاصة بها؟</value></data>
+  <data name="Options.HardwareTitle"><value>الأجهزة</value></data>
+  <data name="Options.UseConversionTags"><value>استخدم العلامات في أسماء ملفات التحويل</value></data>
+  <data name="Options.TagPreset"><value>محددة مسبقا</value></data>
+  <data name="Options.TagPresetFamily"><value>العائلة فقط</value></data>
+  <data name="Options.TagPresetFormat"><value>التنسيق فقط</value></data>
+  <data name="Options.TagPresetFamilyFormat"><value>الأسرة والشكل</value></data>
+  <data name="Options.TagPresetFamilyExtension"><value>الأسرة والامتداد</value></data>
+  <data name="Options.TagPresetDetailed"><value>الأسرة والشكل والامتداد</value></data>
+  <data name="Options.TagPattern"><value>نمط علامة التحويل</value></data>
+  <data name="Options.TagVariablesTitle"><value>المتغيرات المتاحة</value></data>
+  <data name="Options.TagVariableName"><value>اسم الملف المصدر</value></data>
+  <data name="Options.TagVariableFamily"><value>العائلة: PC، ST، AMIGA…</value></data>
+  <data name="Options.TagVariableFormat"><value>التنسيق: 720، 1440، DD…</value></data>
+  <data name="Options.TagVariableExtension"><value>الامتداد: IMA، ST، ADF…</value></data>
+  <data name="Options.TagVariableDateIso"><value>التاريخ: 2026-08-06</value></data>
+  <data name="Options.TagVariableDateCompact"><value>التاريخ: 20260806</value></data>
+  <data name="Options.TagVariableDateLocal"><value>التاريخ: 06-08-2026</value></data>
+  <data name="Options.TagVariableTimeFull"><value>الوقت: 14-35-42</value></data>
+  <data name="Options.TagVariableTimeCompact"><value>الوقت: 143542</value></data>
+  <data name="Options.TagVariableTimeShort"><value>الوقت: 14-35</value></data>
+  <data name="Options.TagPatternHelp"><value>{NAME} - اسم ملف المصدر&#xA;{FAMILY} - أسرة الآلات )الآلات(PC، ST، AMIGA...&#xA;{FORMAT} - الشكل أو الهندسة (720، 1440، DD...&#xA;{EXTENSION} - تمديد الناتج )العمل(IMA، ST، ADF...&#xA;{DATE:YYYY-MM-DD} - التاريخ 2026-08-06&#xA;{DATE:YYYYMMDD} - التاريخ 20260806&#xA;{DATE:DD-MM-YYYY} 06-08-2026&#xA;{TIME:HH-MM-SS} - الوقت&#xA;{TIME:HHMMSS} - الوقت ١٤٣٥٤٢&#xA;{TIME:HH-MM} - الوقت 14-35</value></data>
+  <data name="Options.RecentTagPatterns"><value>الأنماط المخصصة الأخيرة</value></data>
+  <data name="Options.NextTagExample"><value>المثال التالي</value></data>
+  <data name="Options.TagPatternPreview"><value>مثال: {0}</value></data>
+  <data name="Options.TagPatternInvalid"><value>يجب أن يحتوي نمط العلامة على {tag}.</value></data>
+  <data name="Options.EnableLogs"><value>حفظ السجلات</value></data>
+  <data name="Options.Logs"><value>سجلات</value></data>
+  <data name="Options.LogsDescription"><value>لكل إجراء ملفه الخاص في Retro Media Lab ملف لوجز.</value></data>
+  <data name="Options.LogActionErase"><value>محو</value></data>
+  <data name="Options.LogActionClean"><value>رؤوس نظيفة</value></data>
+  <data name="Options.OpenLogsFolder"><value>افتح المجلد</value></data>
+  <data name="Options.LogMaximumSize"><value>الحد الأقصى للحجم</value></data>
+  <data name="Options.KeepLogArchives"><value>الاحتفاظ بالسجلات السابقة</value></data>
+  <data name="Options.LogUnlimitedHint"><value>0 = غير محدود</value></data>
+  <data name="Options.Engines" xml:space="preserve"><value>المحركات</value></data>
+  <data name="Options.Engines.Description" xml:space="preserve"><value>اختر بشكل مستقل المحرك المستخدم لكل عملية.</value></data>
+  <data name="Options.Engines.Internal" xml:space="preserve"><value>محرك Retro Media Lab الداخلي</value></data>
+  <data name="Options.Engines.StrictChoice" xml:space="preserve"><value>يُستخدم المحرك المحدد حصريًا. إذا تعذر عليه تنفيذ العملية، يبلغ Retro Media Lab بذلك بدلًا من استخدام المحرك الآخر بصمت.</value></data>
+  <data name="Options.EmulationMachineTitle" xml:space="preserve"><value>{0} - {1} : {2}</value></data>
+  <data name="Options.PreferencesTitle"><value>الأفضليات</value></data>
+  <data name="Options.EmulationTitle"><value>الأفضليات الخلقية</value></data>
+  <data name="Options.EmulationModuleTitle"><value>{0} أماكن العزل</value></data>
+  <data name="Options.Themes.Title"><value>السمات</value></data>
+  <data name="Options.Themes.List"><value>السمات المتاحة</value></data>
+  <data name="Options.Themes.Appearance"><value>المظهر</value></data>
+  <data name="Options.Themes.PreviewUnavailable"><value>المعاينة غير متاحة.</value></data>
+  <data name="Options.Themes.Active"><value>السمة النشطة: {0}</value></data>
+  <data name="Options.Themes.ApplyHint"><value>يُطبّق اختيارك فورًا ويُحفظ لمرات تشغيل التطبيق التالية.</value></data>
+  <data name="Options.Themes.Base.Description"><value>التخطيط الأصلي بمظهر النظام أو المظهر الفاتح أو الداكن.</value></data>
+
+
+
+
+
+  <data name="Options.Themes.Studio.Description"><value>مساحة عمل بنوافذ قابلة للتحريك وتغيير الحجم. أبقِ عدة أدوات مفتوحة وانتقل بينها دون فقد إعداداتها.</value></data>
+  <data name="Options.Themes.Minimize"><value>تصغير</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>تكبير أو استعادة</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>مدير البرامج</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>النظام</value></data>
+  <data name="Options.Themes.OS.File"><value>ملف</value></data>
+  <data name="Options.Themes.OS.Window"><value>نافذة</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>تتالي</value></data>
+  <data name="Options.Themes.OS.Tile"><value>تجانب</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>ترتيب الأيقونات</value></data>
+  <data name="Options.Themes.OS.Restore"><value>استعادة</value></data>
+  <data name="Options.Themes.OS.Move"><value>نقل</value></data>
+  <data name="Options.Themes.OS.Size"><value>تغيير الحجم</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>تكبير</value></data>
+  <data name="Options.Themes.OS.Open"><value>فتح</value></data>
+  <data name="Options.Themes.OS.Description"><value>وصلات نظام التشغيل الأصلي، بما في ذلك النوافذ والضوابط والتفاعلات.</value></data>
+  <data name="Options.Themes.Edition"><value>البديل</value></data>
+  <data name="Options.Themes.OS.Start"><value>ابدأ</value></data>
+  <data name="Options.Themes.OS.Programs"><value>البرامج</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>الترقيم</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>الأزرق</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>سيلفر</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>الزيتون الأخضر</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>الآلات</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>وسائط الإعلام</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>سجل الأنشطة</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>القيادات</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>ابحث عن أمر</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>لا توجد قيادة متطابقة</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>اختيار آلة أو مواصلة جلسة مفتوحة</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>السياق</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>لا توجد جلسة مفتوحة</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>الآلات ووثائق وسائط الإعلام والأدوات السياقية في مكان عمل واحد.</value></data>
+</root>

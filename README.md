@@ -1,10 +1,10 @@
-# GW GUI
+# Retro Media Lab
 
 **Lire, écrire, convertir, explorer et émuler des images de disquettes depuis une interface Windows.**
 
-GW GUI associe le pilotage du matériel Greaseweazle à un moteur de traitement des images disque et à l’émulation intégrée. Développée en C#/.NET 10 et WPF, l’application réunit les opérations, leurs réglages et leurs journaux dans une même interface.
+Retro Media Lab associe le pilotage du matériel Greaseweazle à un moteur de traitement des images disque et à l’émulation intégrée. Développée en C#/.NET 10 et WPF, l’application réunit les opérations, leurs réglages et leurs journaux dans une même interface.
 
-[Télécharger une version](https://github.com/overthetop78/GW-GUI/releases) · [Guide utilisateur](https://github.com/overthetop78/GW-GUI/wiki) · [Documentation du projet](docs/README.md)
+[Télécharger une version](https://github.com/overthetop78/Retro-Media-Lab/releases) · [Guide utilisateur](https://github.com/overthetop78/Retro-Media-Lab/wiki) · [Documentation du projet](docs/README.md)
 
 ## Ce que permet l’application
 
@@ -22,27 +22,27 @@ Les profils permettent de retrouver les réglages des opérations. Les commandes
 
 Le matériel Greaseweazle est nécessaire pour travailler sur les disquettes physiques. La conversion, la visualisation et l’exploration d’images existantes s’utilisent depuis leurs fichiers. Les opérations disponibles dépendent du format de l’image et, pour l’exploration, du système de fichiers reconnu.
 
-## Installer et utiliser GW GUI
+## Installer et utiliser Retro Media Lab
 
 L’application est proposée pour **Windows x64**, avec une interface multilingue et deux distributions :
 
-- **ZIP portable** : extraire l’archive et lancer `gwgui.exe`. Le marqueur `portable.flag` permet de conserver les réglages, journaux et outils gérés dans `Data`, à côté de l’application.
+- **ZIP portable** : extraire l’archive et lancer `retromedialab.exe`. Le marqueur `portable.flag` permet de conserver les réglages, journaux et outils gérés dans `Data`, à côté de l’application.
 - **Installateur** : installer l’application avec l’assistant multilingue. Les données sont conservées dans les dossiers utilisateur Windows.
 
 Le **Microsoft Windows Desktop Runtime .NET 10 x64** est nécessaire à l’exécution ; le runtime .NET n’est pas inclus dans les paquets.
 
-Le paquet de GW GUI ne contient aucun module d’émulation. Dans **Options > Mises à jour**, le bouton
+Le paquet de Retro Media Lab ne contient aucun module d’émulation. Dans **Options > Mises à jour**, le bouton
 **Afficher les modules disponibles** charge le répertoire officiel et permet d’installer séparément
 Amiga, Atari et les futurs modules enregistrés. Une archive ZIP ou l’URL HTTPS directe du catalogue
 reste utilisable pour un module tiers. Chaque module conserve sa propre version et sa propre adresse
-de mise à jour ; une mise à jour de GW GUI préserve les modules déjà installés.
+de mise à jour ; une mise à jour de Retro Media Lab préserve les modules déjà installés.
 
 Le paquet d’un module installe son code, son manifeste et ses ressources d’interface. Il ne contient
 pas les cœurs Libretro et ne fournit pas les firmwares protégés des machines. Après l’installation du
 module, les cœurs compatibles se téléchargent dans **Options > Émulation** ; les ROM et firmwares
 nécessaires restent à fournir par l’utilisateur.
 
-Le [wiki utilisateur](https://github.com/overthetop78/GW-GUI/wiki) propose un choix parmi 29 langues. Le menu d’aide ouvre directement le guide dans la langue de l’application. Cette aide est uniquement en ligne ; les guides sont progressivement enrichis et révisés.
+Le [wiki utilisateur](https://github.com/overthetop78/Retro-Media-Lab/wiki) propose un choix parmi 29 langues. Le menu d’aide ouvre directement le guide dans la langue de l’application. Cette aide est uniquement en ligne ; les guides sont progressivement enrichis et révisés.
 
 ## Compiler le projet localement
 
@@ -92,12 +92,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-building/build
 Sans `--Module` ni `--AllModules`, le dossier `Modules` est créé vide. `--Module` accepte un ou
 plusieurs identifiants découverts depuis leur manifeste. `--AllModules` ajoute tous les modules
 découverts. Les deux options ne peuvent pas être combinées.
-Sans `-Version`, le script utilise la version courante inscrite dans `GWGUI.App.csproj`.
+Sans `-Version`, le script utilise la version courante inscrite dans `RetroMediaLab.App.csproj`.
 
 | Configuration | Exécutable produit |
 |---|---|
-| Debug | `build/Debug/GW GUI/gwgui.exe` |
-| Release | `build/Release/GW GUI/gwgui.exe` |
+| Debug | `build/Debug/Retro Media Lab/retromedialab.exe` |
+| Release | `build/Release/Retro Media Lab/retromedialab.exe` |
 
 Le script reconstruit le dossier de la configuration choisie et ferme au besoin l’application exécutée depuis ce dossier. Les sorties de compilation sont ignorées par Git.
 
@@ -117,10 +117,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\release\package\pack
 
 | Sortie | Contenu |
 |---|---|
-| `dist/GW-GUI-0.1.3-win-x64-portable.zip` | Archive portable à distribuer. |
-| `dist/GW-GUI-0.1.3-win-x64-setup.exe` | Installateur, sauf avec `-SkipInstaller`. |
+| `dist/Retro-Media-Lab-0.1.3-win-x64-portable.zip` | Archive portable à distribuer. |
+| `dist/Retro-Media-Lab-0.1.3-win-x64-setup.exe` | Installateur, sauf avec `-SkipInstaller`. |
 | `dist/SHA256SUMS.txt` | Empreintes des paquets produits. |
-| `dist/portable/GW GUI/gwgui.exe` | Copie locale prête à lancer. |
+| `dist/portable/Retro Media Lab/retromedialab.exe` | Copie locale prête à lancer. |
 
 Le dossier `Data` de la copie portable locale est conservé ; il n’est pas ajouté au ZIP distribué. La construction des paquets est locale : leur envoi sur GitHub utilise la procédure de publication ci-dessous.
 
@@ -135,4 +135,4 @@ Le dossier `Data` de la copie portable locale est conservé ; il n’est pas ajo
 
 ## Licence
 
-GW GUI est distribué sous [licence MIT](LICENSE). Les informations concernant les composants tiers sont dans [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+Retro Media Lab est distribué sous [licence MIT](LICENSE). Les informations concernant les composants tiers sont dans [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

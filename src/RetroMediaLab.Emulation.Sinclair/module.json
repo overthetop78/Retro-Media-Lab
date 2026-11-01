@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 2,
+  "id": "sinclair",
+  "entryAssembly": "retromedialab.emulation.sinclair.dll",
+  "moduleVersion": "2.0.0",
+  "hostApiMinimum": "2.0",
+  "hostApiMaximum": "2.0",
+  "updateCatalogUrl": "https://github.com/overthetop78/Retro-Media-Lab/releases/download/module-sinclair-catalog/update-catalog.json"
+}

@@ -2,8 +2,8 @@
 
 ## Périmètre actuel
 
-`GWGUI.Emulation.Amstrad` est un module unique chargé par les interfaces génériques de
-`GWGUI.Emulation`. La première version code uniquement les familles suivantes :
+`RetroMediaLab.Emulation.Amstrad` est un module unique chargé par les interfaces génériques de
+`RetroMediaLab.Emulation`. La première version code uniquement les familles suivantes :
 
 | Famille | Machines | Émulateur |
 |---|---|---|
@@ -43,15 +43,15 @@ périphériques matériels.
 ## Chaîne d’intégration
 
 ```text
-GWGUI.App
-  -> GWGUI.Emulation (interfaces publiques)
-  -> GWGUI.Emulation.Amstrad (module et Common)
+RetroMediaLab.App
+  -> RetroMediaLab.Emulation (interfaces publiques)
+  -> RetroMediaLab.Emulation.Amstrad (module et Common)
   -> Common/Interfaces/IEmulatorAdapter
   -> Emulators/Caprice32
   -> cap32_libretro.dll dans le processus hôte d’émulation
 ```
 
-`GWGUI.App` ne connaît ni Caprice32 ni les modèles natifs du cœur. La façade du module crée une
+`RetroMediaLab.App` ne connaît ni Caprice32 ni les modèles natifs du cœur. La façade du module crée une
 configuration commune, décrit ses réglages et ses médias, puis l’adaptateur Caprice32 effectue la
 traduction au lancement. Tous les processus, threads, pipes, mappings, callbacks et bibliothèques
 natives possédés par le module sont arrêtés et libérés dans les parcours de fermeture et d’erreur.
@@ -93,7 +93,7 @@ rapport à Caprice32.
 ## Versions du cœur
 
 Le gestionnaire générique affiche les versions retournées par l’adaptateur, la version installée et
-la version marquée comme référence fonctionnelle de GW GUI. L’installation porte toujours sur la
+la version marquée comme référence fonctionnelle de Retro Media Lab. L’installation porte toujours sur la
 version explicitement sélectionnée. Pour Caprice32, le serveur officiel Libretro ne publie qu’une
 archive individuelle `latest` ; il ne fournit pas d’historique daté de DLL Caprice32. L’adaptateur
 expose donc cette version officielle et la marque comme référence tant qu’aucune archive stable
@@ -108,14 +108,14 @@ pas, à lui seul, de déplacer le pointeur d’un logiciel CPC tel que SymbOS.
 Des souris matérielles ont existé sur CPC, notamment les interfaces AMX et Kempston. Leur prise en
 charge exige que le cœur émule explicitement l’interface matérielle correspondante et traduise les
 événements hôte vers ce matériel. La version Libretro de Caprice32 actuellement intégrée ne publie
-pas ce périphérique matériel par son interface d’entrée. GW GUI capture et transmet donc
+pas ce périphérique matériel par son interface d’entrée. Retro Media Lab capture et transmet donc
 correctement la souris au cœur, mais ne doit pas annoncer une souris CPC fonctionnelle tant que le
 cœur utilisé ne fournit pas AMX, Kempston ou une interface équivalente.
 
 ## Configuration machine et profil vidéo
 
 La configuration machine appartient au module : modèle, CPU, RAM, ROM, périphériques, médias et
-options de l’émulateur. Le profil de présentation vidéo appartient à GW GUI : moteur de rendu,
+options de l’émulateur. Le profil de présentation vidéo appartient à Retro Media Lab : moteur de rendu,
 ratio de présentation, échantillonnage et shaders. Il est donc persisté séparément, sous
 `Data/Emulation/VideoPresentation/<identifiant-module-encodé>/`, mais reste référencé par
 l’identifiant de la configuration machine. Les dossiers `616D696761`, `616D7374726164` et

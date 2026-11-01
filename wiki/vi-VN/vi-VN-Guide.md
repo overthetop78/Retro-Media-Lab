@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Hướng dẫn người dùng
+# Retro Media Lab Hướng dẫn người dùng
 
-GW GUI là một ứng dụng của Windows cho việc đọc, viết, chuyển đổi, thanh tra, và mô phỏng hình mềm mềm. Nó có thể kiểm soát Greaseweazle Phần cứng, làm việc với các tập tin hình ảnh đĩa thông qua cơ chế nội bộ của nó, và chạy lưu mô phỏng cấu hình máy tính.
+Retro Media Lab là một ứng dụng của Windows cho việc đọc, viết, chuyển đổi, thanh tra, và mô phỏng hình mềm mềm. Nó có thể kiểm soát Greaseweazle Phần cứng, làm việc với các tập tin hình ảnh đĩa thông qua cơ chế nội bộ của nó, và chạy lưu mô phỏng cấu hình máy tính.
 
 Hướng dẫn này mô tả giao diện tiếng Anh hiển thị trong phiên bản hiện thời của ứng dụng. Nó được viết như là nguồn của sổ tay người dùng có thể in được: ảnh chụp màn hình minh họa điều khiển, trong khi văn bản xung quanh giải thích những gì cần lựa chọn, tại sao nên chọn, và làm thế nào để kiểm tra kết quả.
 
@@ -10,7 +10,7 @@ Hướng dẫn này mô tả giao diện tiếng Anh hiển thị trong phiên b
 
 ### Cách sử dụng hướng dẫn này
 
-Nếu đây là lần đầu tiên bạn sử dụng GW GUI, hoàn tất [Bắt đầu](#getting-started)Vậy thì theo tôi. [Đọc đĩa](#reading-a-disk)Nếu ứng dụng này đã được cấu hình, hãy đi thẳng đến chương trong thao tác này. Các chương tùy chọn được dùng để tham khảo khi một thủ tục yêu cầu bạn thay đổi ổ đĩa, động cơ, hồ sơ, hoặc thiết lập máy tính mô phỏng.
+Nếu đây là lần đầu tiên bạn sử dụng Retro Media Lab, hoàn tất [Bắt đầu](#getting-started)Vậy thì theo tôi. [Đọc đĩa](#reading-a-disk)Nếu ứng dụng này đã được cấu hình, hãy đi thẳng đến chương trong thao tác này. Các chương tùy chọn được dùng để tham khảo khi một thủ tục yêu cầu bạn thay đổi ổ đĩa, động cơ, hồ sơ, hoặc thiết lập máy tính mô phỏng.
 
 Name **táo** Tên tập tin, đường dẫn, lệnh và giá trị nghĩa đen được hiển thị như `code`Ghi chú giải thích cách ứng xử bình thường; cảnh báo xác định các thao tác có thể thay đổi đĩa, điều khiển hoặc cấu hình đã lưu.
 
@@ -40,7 +40,7 @@ Name **táo** Tên tập tin, đường dẫn, lệnh và giá trị nghĩa đen
 
 ## Hiểu được dòng chảy công việc
 
-GW GUI Phân biệt hoạt động vật lý-dik với thao tác ảnh:
+Retro Media Lab Phân biệt hoạt động vật lý-dik với thao tác ảnh:
 
 | Vào | Nhập | Xuất | Trang đã gợi ý |
 |---|---|---|---|
@@ -63,7 +63,7 @@ GW GUI Phân biệt hoạt động vật lý-dik với thao tác ảnh:
 - Một đường dẫn đã cấu hình tới `gw.exe` khi sử dụng Greaseweazle Host Tools Động cơ.
 - Nhận được hợp pháp ROM Tập tin khi một máy tính mô phỏng cần thiết.
 
-Ứng dụng sẽ kiểm tra giờ chạy yêu cầu khi khởi động. Nếu nó còn thiếu, hãy theo dấu nhắc cài đặt, rồi khởi chạy lại GW GUI.
+Ứng dụng sẽ kiểm tra giờ chạy yêu cầu khi khởi động. Nếu nó còn thiếu, hãy theo dấu nhắc cài đặt, rồi khởi chạy lại Retro Media Lab.
 
 ### Trước khi kết nối phần cứng
 
@@ -75,11 +75,11 @@ Hãy kiểm tra những điều sau đây trước khi chạy thao tác tự đ�
 4. Xác nhận kích cỡ và mật độ tương ứng với đĩa.
 5. Ghi- bảo vệ đĩa nguồn khi có thể.
 
-GW GUI Không thể ngăn ngừa những thiệt hại do sự tắc nghẽn không chính xác, sức mạnh không thích hợp, hoặc động cơ không an toàn. Kiểm tra phần cứng lạ trước.
+Retro Media Lab Không thể ngăn ngừa những thiệt hại do sự tắc nghẽn không chính xác, sức mạnh không thích hợp, hoặc động cơ không an toàn. Kiểm tra phần cứng lạ trước.
 
 ### Đầu tiên phóng
 
-1. Mở `gwgui.exe`.
+1. Mở `retromedialab.exe`.
 2. Mở **Tùy chọn**.
 3. Vào **Điều khiển và lái xe** quét và cấu hình ổ đĩa.
 4. Kiểm tra hoặc chọn đường dẫn tới `gw.exe`.
@@ -92,7 +92,7 @@ Một thiết lập làm việc nên hiển thị bộ điều khiển và ổ �
 
 ### Chọn một động cơ
 
-GW GUI có thể phơi bày nhiều hơn một thực hiện cho một số hoạt động. Hạt **Greaseweazle Host Tools** Comment `gw.exe`; nội bộ GW GUI Các điều khiển động cơ hỗ trợ thao tác bên trong ứng dụng. Chọn động cơ rõ ràng và độc lập để đọc, viết, chuyển đổi và Disk ExplorerNếu một thao tác không được máy đã chọn hỗ trợ, GW GUI báo cáo rằng điều kiện thay vì tự động thay đổi động cơ.
+Retro Media Lab có thể phơi bày nhiều hơn một thực hiện cho một số hoạt động. Hạt **Greaseweazle Host Tools** Comment `gw.exe`; nội bộ Retro Media Lab Các điều khiển động cơ hỗ trợ thao tác bên trong ứng dụng. Chọn động cơ rõ ràng và độc lập để đọc, viết, chuyển đổi và Disk ExplorerNếu một thao tác không được máy đã chọn hỗ trợ, Retro Media Lab báo cáo rằng điều kiện thay vì tự động thay đổi động cơ.
 
 ## Cửa sổ chính
 
@@ -435,7 +435,7 @@ Dùng bộ điều khiển thùng rác chỉ để gỡ bỏ cấu hình đã l�
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Chọn cơ chế" width="72%"></p>
 
-Chọn động cơ một cách độc lập để đọc, viết, chuyển đổi và Disk Explorer.. Máy đã chọn được dùng hoàn toàn: nếu nó không thể thực hiện thao tác đã yêu cầu, GW GUI báo cáo giới hạn thay vì lặng lẽ chuyển động cơ.
+Chọn động cơ một cách độc lập để đọc, viết, chuyển đổi và Disk Explorer.. Máy đã chọn được dùng hoàn toàn: nếu nó không thể thực hiện thao tác đã yêu cầu, Retro Media Lab báo cáo giới hạn thay vì lặng lẽ chuyển động cơ.
 
 Sự độc lập này là cố ý. Thí dụ, đọc sách về thể chất có thể dùng Greaseweazle Host Tools Trong khi chuyển đổi hình ảnh và khám phá sử dụng động cơ nội bộ. Ghi lại các lựa chọn của động cơ trong hồ sơ hoặc dự án lưu ý khi tính khả thi quan trọng.
 
@@ -514,7 +514,7 @@ Cấu hình Chip RAMChậm RAMNhanh RAMvà hỗ trợ bộ nhớ mở rộng. Th
 
 Chọn khởi chạy cú pháp hệ thống ROM, mở rộng tùy chọn ROM, và ROM Chìa khóa. Phát hiện...ROM Danh sách hiển thị tên, sửa đổi và tương thích với mô hình đã chọn. Chọn một phát hiện ROM rồi nhấn **Dùng** hoặc duyệt qua tập tin bằng tay.
 
-ROM tập tin không được cung cấp bởi GW GUIDùng ROM hợp pháp để dùng.
+ROM tập tin không được cung cấp bởi Retro Media LabDùng ROM hợp pháp để dùng.
 
 Danh sách được phát hiện là thích hợp hơn để đoán từ tên tập tin: nó báo cáo ROM Danh tính, chỉnh sửa và đánh giá tương thích với mô hình đã chọn. **Tương thích ** là sự lựa chọn bình thường; ** Tương thích một phần ** Cho thấy rằng ROM Có thể khởi động nhưng không chính xác tương ứng với máy. ** Cập nhật ** Name ROM Vị trí. ** Dùng** chỉ định thiết bị phát hiện đã chọn ROM để cấu hình.
 
@@ -589,7 +589,7 @@ Những hộp thoại này được mở từ **Công cụ ** Thẻ. Mỗi hộp
 
 Hiển thị thông tin được trình bày bởi bộ điều khiển đã chọn. Mở rộng **Kết xuất thô** Khi bạn cần đáp ứng toàn bộ lệnh.
 
-Dùng cái này làm lệnh chẩn đoán đầu tiên. Một phản ứng thành công xác nhận rằng GW GUI có thể khởi chạy thực hiện được Công cụ Máy đã cấu hình và liên lạc với thiết bị đã chọn. Ghi lại thông tin phần cứng và phần cứng trước khi cập nhật.
+Dùng cái này làm lệnh chẩn đoán đầu tiên. Một phản ứng thành công xác nhận rằng Retro Media Lab có thể khởi chạy thực hiện được Công cụ Máy đã cấu hình và liên lạc với thiết bị đã chọn. Ghi lại thông tin phần cứng và phần cứng trước khi cập nhật.
 
 ### USB băng thông
 
@@ -673,7 +673,7 @@ Khi so sánh hai lần cố gắng, hãy kiểm tra xem các điều khiển, �
 
 ## Name
 
-GW GUI giữ dữ liệu người dùng riêng biệt với nhị phân ứng dụng. Tùy thuộc vào gói và chế độ đã chọn, thiết lập, bản ghi, công cụ tải về, thành phần giả lập, thu, trạng thái và cấu hình máy được cất giữ trong ứng dụng `Data` thư mục hoặc trong vị trí người dùng- dữ liệu đã cấu hình.
+Retro Media Lab giữ dữ liệu người dùng riêng biệt với nhị phân ứng dụng. Tùy thuộc vào gói và chế độ đã chọn, thiết lập, bản ghi, công cụ tải về, thành phần giả lập, thu, trạng thái và cấu hình máy được cất giữ trong ứng dụng `Data` thư mục hoặc trong vị trí người dùng- dữ liệu đã cấu hình.
 
 Trước khi thay thế hoặc di chuyển một cài đặt di động, giữ cho các thư mục toàn bộ ứng dụng kết hợp với nhau và sao lưu các `Data` Thư mục. Không di chuyển tập tin cá nhân từ `lib`Bởi vì ứng dụng này giải quyết các thư viện của riêng mình và bên thứ ba từ cấu trúc đó.
 
@@ -762,7 +762,7 @@ Trước khi một công cụ thay đổi phần cứng:
 4. Kiểm tra tình trạng điều khiển và lái cấu hình.
 5. Chạy **Thông tin về Controller** Nếu phát hiện thành công nhưng lệnh thất bại.
 
-Nếu nó vẫn không xuất hiện, hãy thử một trực tiếp khác USB Cổng và cáp, rồi quay lại. Kiểm tra quản lý thiết bị Windows tìm thiết bị nối tiếp mới phát hiện. Name GW GUI thường chỉ tới một cổng bận, cấu hình cũ, hoặc vấn đề Công cụ máy; một bộ điều khiển vắng mặt từ các điểm Windows USBhoặc phần cứng.
+Nếu nó vẫn không xuất hiện, hãy thử một trực tiếp khác USB Cổng và cáp, rồi quay lại. Kiểm tra quản lý thiết bị Windows tìm thiết bị nối tiếp mới phát hiện. Name Retro Media Lab thường chỉ tới một cổng bận, cấu hình cũ, hoặc vấn đề Công cụ máy; một bộ điều khiển vắng mặt từ các điểm Windows USBhoặc phần cứng.
 
 ### `gw.exe` không tìm thấy
 
@@ -772,7 +772,7 @@ Sau khi chọn nó, chạy **Thông tin về Controller** Nếu việc đó khô
 
 ### Name
 
-Mở **Tùy chọn > Máy** và kiểm tra động cơ được giao nhiệm vụ đó. GW GUI không lặng lẽ quay trở lại động cơ khác.
+Mở **Tùy chọn > Máy** và kiểm tra động cơ được giao nhiệm vụ đó. Retro Media Lab không lặng lẽ quay trở lại động cơ khác.
 
 Thiết lập máy riêng: Thay đổi động cơ chuyển đổi không thay đổi việc đọc, viết hay Disk ExplorerMở lại thao tác bị lỗi sau khi lưu tùy chọn và xác nhận lệnh tạo ra trong bảng điều khiển.
 
@@ -815,7 +815,7 @@ Lặp lại đoạn đọc cho tên tập tin mới, làm tăng các cuộc các
 
 ## Bản chú giải
 
-| Kì | Nghĩa là trong GW GUI |
+| Kì | Nghĩa là trong Retro Media Lab |
 |---|---|
 | Điều khiển | Hạt Greaseweazle Giao diện phần cứng kết nối qua USB |
 | Lái đi | Name |

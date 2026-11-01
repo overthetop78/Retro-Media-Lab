@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Felhasználói útmutató
+# Retro Media Lab Felhasználói útmutató
 
-GW GUI egy Windows alkalmazás olvasásra, írásra, konvertálásra, ellenőrzésre, és a floppy- disk képek emulálására. Képes irányítani. Greaseweazle hardver, dolgozz a lemez-kép fájlokat a belső motor, és fuss mentett emulated-gép konfigurációk.
+Retro Media Lab egy Windows alkalmazás olvasásra, írásra, konvertálásra, ellenőrzésre, és a floppy- disk képek emulálására. Képes irányítani. Greaseweazle hardver, dolgozz a lemez-kép fájlokat a belső motor, és fuss mentett emulated-gép konfigurációk.
 
 Ez az útmutató az alkalmazás aktuális verziójában látható angol felületet írja le. A nyomtatható felhasználói kézikönyv forrásaként van megírva: a képernyőképek illusztrálják a vezérlőket, míg a környező szöveg elmagyarázza, hogy mit válasszunk, miért válasszunk, és hogyan ellenőrizzük az eredményt.
 
@@ -10,7 +10,7 @@ Ez az útmutató az alkalmazás aktuális verziójában látható angol felület
 
 ### Hogyan kell alkalmazni ezt az útmutatót?
 
-Ha ez az első alkalom, hogy GW GUI, teljes [Kezdődik](#getting-started), majd kövesse [Egy lemez olvasása](#reading-a-disk)Ha az alkalmazás már be van konfigurálva, menjen közvetlenül a művelet fejezetéhez. Az opciók fejezetei referenciaként szolgálnak, amikor az eljárás arra kéri Önt, hogy változtasson meg egy meghajtót, motort, profilt vagy emulatált gépet.
+Ha ez az első alkalom, hogy Retro Media Lab, teljes [Kezdődik](#getting-started), majd kövesse [Egy lemez olvasása](#reading-a-disk)Ha az alkalmazás már be van konfigurálva, menjen közvetlenül a művelet fejezetéhez. Az opciók fejezetei referenciaként szolgálnak, amikor az eljárás arra kéri Önt, hogy változtasson meg egy meghajtót, motort, profilt vagy emulatált gépet.
 
 Az interfész nevei a következők: **félkövér**. Filenames, ösvények, parancsok, és szó szerinti értékek jelennek meg, mint `code`. Megjegyzés magyarázza a normál viselkedést; figyelmeztetések azonosítja műveletek, amelyek megváltoztathatják a lemez, vezérlő, vagy tárolt konfiguráció.
 
@@ -40,7 +40,7 @@ Az interfész nevei a következők: **félkövér**. Filenames, ösvények, para
 
 ## A munkafolyamat megértése
 
-GW GUI elválasztja a fizikai lemezen végzett műveleteket az image-file műveletektől:
+Retro Media Lab elválasztja a fizikai lemezen végzett műveleteket az image-file műveletektől:
 
 | Cél | Bemenet | Kimenet | Ajánlott oldal |
 |---|---|---|---|
@@ -63,7 +63,7 @@ A megőrzés, először, hogy egy nyers fogás, és tartsa változatlan, mint eg
 - A beállított út `gw.exe` amikor a Greaseweazle Host Tools motor.
 - Jogilag előállított ROM akták, amikor egy emulált gépnek szüksége van rájuk.
 
-Az alkalmazás ellenőrzi a szükséges .NET futási idő indításakor. Ha hiányzik, kövesse a telepítési parancsot, majd indítsa újra GW GUI.
+Az alkalmazás ellenőrzi a szükséges .NET futási idő indításakor. Ha hiányzik, kövesse a telepítési parancsot, majd indítsa újra Retro Media Lab.
 
 ### A hardver csatlakoztatása előtt
 
@@ -75,11 +75,11 @@ A fizikai lemezen végzett művelet előtt ellenőrizze a következőket:
 4. Erősítse meg, hogy a meghajtó mérete és sűrűsége megegyezik a lemezzel.
 5. Írás- védje a forráslemezt, ha lehetséges.
 
-GW GUI nem akadályozhatja meg a hibás kábelezés, a nem megfelelő teljesítmény vagy a mechanikusan nem biztonságos hajtás okozta károkat. Először teszteljünk ismeretlen hardvert feláldozható lemezzel.
+Retro Media Lab nem akadályozhatja meg a hibás kábelezés, a nem megfelelő teljesítmény vagy a mechanikusan nem biztonságos hajtás okozta károkat. Először teszteljünk ismeretlen hardvert feláldozható lemezzel.
 
 ### Első kilövés
 
-1. Megnyitás `gwgui.exe`.
+1. Megnyitás `retromedialab.exe`.
 2. Megnyitás **Opciók**.
 3. In **Vezérlő és meghajtó** Keresse meg a vezérlőt, és állítsa be a meghajtót.
 4. Az út ellenőrzése vagy kiválasztása `gw.exe`.
@@ -92,7 +92,7 @@ A munkabeállítás kell mutatni a vezérlő és a meghajtó az állapotsorban, 
 
 ### Motor kiválasztása
 
-GW GUI egyes műveletek esetében egynél több végrehajtást fedhet fel. A **Greaseweazle Host Tools** a motor a beállított `gw.exe`; a belső GW GUI az alkalmazáson belüli támogatott műveletek motorkezelői. A motor kiválasztása egyértelmű és független az olvasáshoz, íráshoz, átalakításhoz, és Disk Explorer. Ha egy műveletet a kiválasztott motor nem támogat, GW GUI Ezt az állapotot a motor automatikus módosítása helyett jelenti.
+Retro Media Lab egyes műveletek esetében egynél több végrehajtást fedhet fel. A **Greaseweazle Host Tools** a motor a beállított `gw.exe`; a belső Retro Media Lab az alkalmazáson belüli támogatott műveletek motorkezelői. A motor kiválasztása egyértelmű és független az olvasáshoz, íráshoz, átalakításhoz, és Disk Explorer. Ha egy műveletet a kiválasztott motor nem támogat, Retro Media Lab Ezt az állapotot a motor automatikus módosítása helyett jelenti.
 
 ## Fő ablak
 
@@ -435,7 +435,7 @@ A hulladékkezelő csak a mentett konfiguráció eltávolítására használhat�
 
 <p align="center"><img src="../images/options-engines-en.png" alt="A motor kiválasztása" width="72%"></p>
 
-Válassza ki a motort függetlenül olvasás, írás, átalakítás, és Disk Explorer. A kiválasztott motort szigorúan használják: ha nem tudja végrehajtani a kért műveletet, GW GUI a korlátozást jelenti, ahelyett, hogy csendben kapcsolná a motorokat.
+Válassza ki a motort függetlenül olvasás, írás, átalakítás, és Disk Explorer. A kiválasztott motort szigorúan használják: ha nem tudja végrehajtani a kért műveletet, Retro Media Lab a korlátozást jelenti, ahelyett, hogy csendben kapcsolná a motorokat.
 
 Ez a függetlenség szándékos. Például a fizikai olvasatok használhatják Greaseweazle Host Tools míg a képátalakítás és a feltárás a belső motort használja. A motorválasztásokat profilba vagy projektfeljegyzésbe kell rögzíteni, ha a reprodukálhatóság számít.
 
@@ -514,7 +514,7 @@ Chip beállítása RAMLassan. RAM, RAM, és támogatta bővítési memória. A k
 
 Válassza ki a Kickstart rendszert ROM, opcionális kiterjesztés ROM, és ROM Kulcs. A felfedezett...ROM list megjeleníti nevek, revíziók, és kompatibilitás a kiválasztott modell. Kijelölés ROM és kattintson **Felhasználás** vagy kézzel böngészhet egy fájlba.
 
-ROM A fájlokat nem a GW GUI. Használjon ROM-ot, amit legálisan használhat.
+ROM A fájlokat nem a Retro Media Lab. Használjon ROM-ot, amit legálisan használhat.
 
 Az észlelt lista jobb, mint találgatni egy fájlnév: jelenti a ROM azonosítás és felülvizsgálat, valamint a kiválasztott modellel való kompatibilitás értékelése. **Kompatibilis ** a szokásos választás; ** Részben kompatibilis ** jelzi, hogy ROM lehet boot, de nem pontosan illeszkedik a gép. ** Frissítés ** a beállított ROM helyszínek. ** Felhasználás** kijelöli a kiválasztott észleltet ROM a konfigurációhoz.
 
@@ -589,7 +589,7 @@ Ezek a párbeszédek a **Szerszámok ** Tab. Minden párbeszédablak előnézeti
 
 A kijelölt vezérlő által jelentett információk megjelenítése. Kibontás **Nyersteljesítmény** amikor a teljes parancs válaszra van szükséged.
 
-Használja ezt az első diagnosztikai parancsként. A sikeres válasz megerősíti, hogy GW GUI elindíthatja a beállított Host Tools programot, és kommunikálhat a kiválasztott eszközzel. A frissítést megelőzően rögzítse a firmware és hardver adatokat.
+Használja ezt az első diagnosztikai parancsként. A sikeres válasz megerősíti, hogy Retro Media Lab elindíthatja a beállított Host Tools programot, és kommunikálhat a kiválasztott eszközzel. A frissítést megelőzően rögzítse a firmware és hardver adatokat.
 
 ### USB sávszélesség
 
@@ -673,7 +673,7 @@ Két kísérlet összehasonlításakor ellenőrizze, hogy a vezérlő, a meghajt
 
 ## Alkalmazási adatok és hordozható használat
 
-GW GUI a felhasználói adatokat elkülöníti az alkalmazásikontrolloktól. A kiválasztott csomagtól és módtól függően a beállítások, naplók, letöltött eszközök, emulátor alkatrészek, rögzítések, állapotok és gépkonfigurációk az alkalmazásban is tárolhatók `Data` könyvtár vagy a beállított user- adatok helyein.
+Retro Media Lab a felhasználói adatokat elkülöníti az alkalmazásikontrolloktól. A kiválasztott csomagtól és módtól függően a beállítások, naplók, letöltött eszközök, emulátor alkatrészek, rögzítések, állapotok és gépkonfigurációk az alkalmazásban is tárolhatók `Data` könyvtár vagy a beállított user- adatok helyein.
 
 A hordozható installáció cseréje vagy mozgatása előtt a teljes alkalmazás mappát együtt kell tartani, és a `Data` mappa. Ne mozgassa az egyes fájlokat `lib`, mert az alkalmazás megszünteti a saját és harmadik fél könyvtárak ebből a szerkezetből.
 
@@ -762,7 +762,7 @@ A hardver-változó eszköz előtt:
 4. Ellenőrizze a vezérlő állapotát és a meghajtó konfigurációját.
 5. Futás! **Adatkezelő** ha az észlelés sikerrel jár, de a parancs nem.
 
-Ha még mindig nem jelenik meg, próbálja meg egy másik közvetlen USB Kikötő és kábel, aztán rescan. Ellenőrizze a Windows Device Manager egy újonnan felfedezett soros eszköz. A vezérlő látható a Windows, de hiányzik GW GUI általában mutat egy forgalmas port, állott konfiguráció, vagy Host Tools probléma; egy vezérlő hiányzik a Windows pontok USB, teljesítmény, vezető, vagy hardver.
+Ha még mindig nem jelenik meg, próbálja meg egy másik közvetlen USB Kikötő és kábel, aztán rescan. Ellenőrizze a Windows Device Manager egy újonnan felfedezett soros eszköz. A vezérlő látható a Windows, de hiányzik Retro Media Lab általában mutat egy forgalmas port, állott konfiguráció, vagy Host Tools probléma; egy vezérlő hiányzik a Windows pontok USB, teljesítmény, vezető, vagy hardver.
 
 ### `gw.exe` nem található
 
@@ -772,7 +772,7 @@ Miután kiválasztottad, fuss. **Adatkezelő**. Ha ez nem sikerül, mielőtt kap
 
 ### Egy művelet rossz motort használ
 
-Megnyitás **Opciók > Motorok** és ellenőrizze az adott művelethez rendelt motort. GW GUI nem esik vissza csendben a másik motorra.
+Megnyitás **Opciók > Motorok** és ellenőrizze az adott művelethez rendelt motort. Retro Media Lab nem esik vissza csendben a másik motorra.
 
 A motor beállítása különálló: a konverziós motor megváltoztatása nem változtat az olvasáson, íráson vagy Disk Explorer. Újra megnyitni a hiba művelet mentése után az opciót, és ellenőrizze a generált parancs a konzolban.
 
@@ -815,7 +815,7 @@ Ismételje meg az olvasást egy új fájlnévre, növelje a forradalmakat, ahol 
 
 ## Glosszárium
 
-| kifejezés | Vagyis: GW GUI |
+| kifejezés | Vagyis: Retro Media Lab |
 |---|---|
 | Vezérlő | A Greaseweazle hardver interfész csatlakoztatva USB |
 | Indítás | A kezelőhöz csatlakoztatott fizikai floppy meghajtó |

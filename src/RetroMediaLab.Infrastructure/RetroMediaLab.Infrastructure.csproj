@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>retromedialab.infrastructure</AssemblyName>
+</PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="RetroMediaLab.Tests" />
+    <InternalsVisibleTo Include="RetroMediaLab.LocalEmulationTests" />
+    <ProjectReference Include="..\RetroMediaLab.MediaEngine\RetroMediaLab.MediaEngine.csproj" />
+  </ItemGroup>
+
+</Project>

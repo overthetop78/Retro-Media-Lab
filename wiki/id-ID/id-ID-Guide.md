@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Panduan Pengguna
+# Retro Media Lab Panduan Pengguna
 
-GW GUI adalah aplikasi Windows untuk membaca, menulis, mengubah, memeriksa, dan meniru gambar disket floppy-. Ini dapat mengontrol Greaseweazle perangkat keras, bekerja dengan file disk-image melalui mesin internal, dan menjalankan konfigurasi emulated- mesin disimpan.
+Retro Media Lab adalah aplikasi Windows untuk membaca, menulis, mengubah, memeriksa, dan meniru gambar disket floppy-. Ini dapat mengontrol Greaseweazle perangkat keras, bekerja dengan file disk-image melalui mesin internal, dan menjalankan konfigurasi emulated- mesin disimpan.
 
 Panduan ini menggambarkan antar muka Inggris yang ditampilkan pada versi aplikasi saat ini. Ini ditulis sebagai sumber manual pengguna yang dapat dicetak: cuplikan layar mengilustrasikan kendali, sedangkan teks di sekitarnya menjelaskan apa yang harus dipilih, mengapa memilihnya, dan bagaimana memverifikasi hasilnya.
 
@@ -10,7 +10,7 @@ Panduan ini menggambarkan antar muka Inggris yang ditampilkan pada versi aplikas
 
 ### Bagaimana menggunakan panduan ini
 
-Jika ini adalah pertama kalinya Anda menggunakan GW GUI, lengkap [Mendapatkan dimulai](#getting-started), kemudian mengikuti [Membaca disk](#reading-a-disk)Jika aplikasi telah dikonfigurasi, pergi langsung ke bab untuk operasi yang ingin Anda lakukan. Bab-bab opsi berfungsi sebagai referensi ketika prosedur meminta Anda untuk mengubah drive, mesin, profil, atau emulated- pengaturan mesin.
+Jika ini adalah pertama kalinya Anda menggunakan Retro Media Lab, lengkap [Mendapatkan dimulai](#getting-started), kemudian mengikuti [Membaca disk](#reading-a-disk)Jika aplikasi telah dikonfigurasi, pergi langsung ke bab untuk operasi yang ingin Anda lakukan. Bab-bab opsi berfungsi sebagai referensi ketika prosedur meminta Anda untuk mengubah drive, mesin, profil, atau emulated- pengaturan mesin.
 
 Nama antarmuka ditampilkan pada **tebal** Nama berkas, jalur, perintah, dan nilai literal ditampilkan sebagai `code`. Catatan menjelaskan perilaku normal; peringatan mengidentifikasi operasi yang dapat mengubah disk, pengontrol, atau konfigurasi tersimpan.
 
@@ -40,7 +40,7 @@ Nama antarmuka ditampilkan pada **tebal** Nama berkas, jalur, perintah, dan nila
 
 ## Memahami alur kerja
 
-GW GUI memisahkan operasi fixcal- disk dari operasi berkas image-:
+Retro Media Lab memisahkan operasi fixcal- disk dari operasi berkas image-:
 
 | Gol | Masukan | Keluaran | Halaman yang direkomendasikan |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Untuk pelestarian, pertama membuat penangkapan mentah dan tetap tidak berubah se
 - Path yang dikonfigurasi ke `gw.exe` ketika menggunakan Greaseweazle Host Tools Mesin.
 - Diperoleh secara sah ROM berkas ketika sebuah mesin beremulasi membutuhkan mereka.
 
-Aplikasi ini harus diperiksa. Waktu berjalan di awal. Jika hilang, ikuti prompt instalasi, kemudian jalankan ulang GW GUI.
+Aplikasi ini harus diperiksa. Waktu berjalan di awal. Jika hilang, ikuti prompt instalasi, kemudian jalankan ulang Retro Media Lab.
 
 ### Sebelum menghubungkan perangkat keras
 
@@ -75,11 +75,11 @@ Periksa berikut sebelum menjalankan operasi physical- disk:
 4. Konfirmasikan bahwa ukuran drive dan kepadatan cocok dengan disk.
 5. Write- lindungi disk sumber ketika memungkinkan.
 
-GW GUI tidak dapat mencegah kerusakan yang disebabkan oleh kabel yang salah, kekuatan yang tidak cocok, atau drive mekanis tidak aman. Uji perangkat keras asing dengan disk yang dibuang terlebih dahulu.
+Retro Media Lab tidak dapat mencegah kerusakan yang disebabkan oleh kabel yang salah, kekuatan yang tidak cocok, atau drive mekanis tidak aman. Uji perangkat keras asing dengan disk yang dibuang terlebih dahulu.
 
 ### Peluncuran pertama
 
-1. Buka `gwgui.exe`.
+1. Buka `retromedialab.exe`.
 2. Buka **Opsi**.
 3. Masuk **Kontrol dan drive**, memindai pengontrol dan mengatur drive.
 4. Verifikasi atau pilih lokasi ke `gw.exe`.
@@ -92,7 +92,7 @@ Pengaturan kerja harus menunjukkan pengontrol dan drive di bar status, misalnya 
 
 ### Memilih mesin
 
-GW GUI dapat mengekspos lebih dari satu implementasi untuk beberapa operasi. The **Greaseweazle Host Tools** mesin memanggil dikonfigurasi `gw.exe`; internal GW GUI mesin menangani operasi yang didukung di dalam aplikasi. Pemilihan mesin eksplisit dan independen untuk membaca, menulis, konversi, dan Disk ExplorerJika sebuah operasi tidak didukung oleh mesin yang dipilih, GW GUI laporan bahwa kondisi bukannya mengubah mesin otomatis.
+Retro Media Lab dapat mengekspos lebih dari satu implementasi untuk beberapa operasi. The **Greaseweazle Host Tools** mesin memanggil dikonfigurasi `gw.exe`; internal Retro Media Lab mesin menangani operasi yang didukung di dalam aplikasi. Pemilihan mesin eksplisit dan independen untuk membaca, menulis, konversi, dan Disk ExplorerJika sebuah operasi tidak didukung oleh mesin yang dipilih, Retro Media Lab laporan bahwa kondisi bukannya mengubah mesin otomatis.
 
 ## Jendela utama
 
@@ -435,7 +435,7 @@ Gunakan kontrol sampah hanya untuk menghapus konfigurasi yang disimpan; ini tida
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Pemilihan mesin" width="72%"></p>
 
-Pilih mesin secara independen untuk membaca, menulis, konversi, dan Disk ExplorerMesin yang dipilih dipakai secara ketat: jika tidak dapat melakukan operasi yang diminta, GW GUI Melaporkan keterbatasan bukannya beralih diam-diam mesin.
+Pilih mesin secara independen untuk membaca, menulis, konversi, dan Disk ExplorerMesin yang dipilih dipakai secara ketat: jika tidak dapat melakukan operasi yang diminta, Retro Media Lab Melaporkan keterbatasan bukannya beralih diam-diam mesin.
 
 Kemerdekaan ini disengaja. Sebagai contoh, pembacaan fisik dapat menggunakan Greaseweazle Host Tools sementara konversi gambar dan eksplorasi menggunakan mesin internal. Rekam pilihan mesin dalam profil atau catatan proyek ketika reproduksi penting.
 
@@ -514,7 +514,7 @@ Atur Chip RAM, Lambat RAM, Cepat RAM, dan didukung memori ekspansi. Pesan kompat
 
 Pilih sistem Kickstart ROM, opsional extended ROM, dan ROM kunci. Terdeteksi...ROM tampilkan nama, revisi, dan kompatibilitas dengan model yang dipilih. Pilih sebuah terdeteksi ROM dan klik **Gunakan**, atau menelusuri ke berkas secara manual.
 
-ROM berkas tidak diberikan oleh GW GUIGunakan ROM yang diperbolehkan untuk digunakan.
+ROM berkas tidak diberikan oleh Retro Media LabGunakan ROM yang diperbolehkan untuk digunakan.
 
 Daftar terdeteksi lebih baik untuk menebak dari nama berkas: itu melaporkan ROM identitas dan revisi dan evaluasi kompatibilitas dengan model yang dipilih. **Cocok ** adalah pilihan normal; ** Sebagian kompatibel ** Menunjukkan bahwa ROM mungkin boot tetapi tidak persis sesuai mesin. ** Segarkan ** batalkan konfigurasi ROM lokasi. ** Gunakan** assign yang dipilih terdeteksi ROM ke konfigurasi.
 
@@ -589,7 +589,7 @@ Dialog ini dibuka dari **Perkakas ** tab. Setiap dialog pratilik yang dihasilkan
 
 Tampilkan informasi yang dilaporkan oleh pengendali terpilih. Ekspansi **Keluaran mentah** ketika Anda membutuhkan lengkap perintah respon.
 
-Gunakan ini sebagai perintah diagnostik pertama. Sebuah respon sukses menegaskan bahwa GW GUI dapat memulai perangkat Host yang dikonfigurasi yang dapat dieksekusi dan berkomunikasi dengan perangkat yang dipilih. Rekam informasi firmware dan hardware sebelum melakukan pemutakhiran.
+Gunakan ini sebagai perintah diagnostik pertama. Sebuah respon sukses menegaskan bahwa Retro Media Lab dapat memulai perangkat Host yang dikonfigurasi yang dapat dieksekusi dan berkomunikasi dengan perangkat yang dipilih. Rekam informasi firmware dan hardware sebelum melakukan pemutakhiran.
 
 ### USB lebar bandwidth
 
@@ -673,7 +673,7 @@ Ketika membandingkan dua upaya, periksa bahwa pengendali, penggerak, mesin, prof
 
 ## Data aplikasi dan penggunaan portabel
 
-GW GUI menjaga data pengguna terpisah dari binari aplikasi. Tergantung pada paket dan mode yang dipilih, pengaturan, log, perangkat yang diunduh, komponen emulator, menangkap, menyatakan, dan konfigurasi mesin disimpan baik dalam aplikasi `Data` direktori atau di lokasi terkonfigurasi data.
+Retro Media Lab menjaga data pengguna terpisah dari binari aplikasi. Tergantung pada paket dan mode yang dipilih, pengaturan, log, perangkat yang diunduh, komponen emulator, menangkap, menyatakan, dan konfigurasi mesin disimpan baik dalam aplikasi `Data` direktori atau di lokasi terkonfigurasi data.
 
 Sebelum mengganti atau memindahkan instalasi portabel, simpan folder aplikasi lengkap bersama dan backup up `Data` folder. Jangan pindahkan berkas individu dari `lib`, karena aplikasi menyelesaikan sendiri dan ketiga perpustakaan partai dari struktur itu.
 
@@ -762,7 +762,7 @@ Sebelum alat yang berubah-keras:
 4. Verifikasi status pengontrol dan konfigurasi drive.
 5. Lari **Informasi kendali** jika deteksi berhasil tapi perintah gagal.
 
-Jika masih tidak muncul, mencoba langsung lain USB Port dan kabel, kemudian memindai ulang. Periksa Manajer Perangkat Windows untuk perangkat serial yang baru terdeteksi. Pengontrol terlihat ke Windows tetapi tidak hadir dari GW GUI biasanya menunjuk ke port, konfigurasi, basi, atau masalah Host Tools; seorang pengendali tidak hadir dari Windows point ke USB, Power, driver, atau hardware.
+Jika masih tidak muncul, mencoba langsung lain USB Port dan kabel, kemudian memindai ulang. Periksa Manajer Perangkat Windows untuk perangkat serial yang baru terdeteksi. Pengontrol terlihat ke Windows tetapi tidak hadir dari Retro Media Lab biasanya menunjuk ke port, konfigurasi, basi, atau masalah Host Tools; seorang pengendali tidak hadir dari Windows point ke USB, Power, driver, atau hardware.
 
 ### `gw.exe` tidak ditemukan
 
@@ -772,7 +772,7 @@ Setelah memilihnya, lari **Informasi kendali** Jika itu gagal sebelum menghubung
 
 ### Sebuah operasi menggunakan mesin yang salah
 
-Buka **Opsi > Mesin** dan memeriksa mesin yang ditugaskan untuk operasi yang tepat. GW GUI tidak diam-diam jatuh kembali ke mesin lain.
+Buka **Opsi > Mesin** dan memeriksa mesin yang ditugaskan untuk operasi yang tepat. Retro Media Lab tidak diam-diam jatuh kembali ke mesin lain.
 
 Pengaturan mesin terpisah: mengubah mesin konversi tidak mengubah membaca, menulis, atau Disk Explorer. Membuka kembali operasi gagal setelah menyimpan opsi dan mengkonfirmasi perintah yang dihasilkan dalam konsol.
 
@@ -815,7 +815,7 @@ Ulangi pembacaan ke nama berkas baru, tingkatkan revolusi yang sesuai, dan bandi
 
 ## Glossary
 
-| Masa | Artinya dalam GW GUI |
+| Masa | Artinya dalam Retro Media Lab |
 |---|---|
 | Controller | The Greaseweazle antar muka perangkat keras tersambung USB |
 | Kandar | Kandar floppy fisik melekat ke controller |

@@ -51,20 +51,20 @@ jobs:
             $releaseTag = "v$version"
           }
           "RELEASE_TAG=$releaseTag" >> $env:GITHUB_ENV
-      - name: Run GW GUI tests
+      - name: Run Retro Media Lab tests
         shell: pwsh
         run: |
           $env:DOTNET_CLI_UI_LANGUAGE = 'en-US'
-          $testOutput = @(& dotnet test .\tests\GWGUI.Tests\GWGUI.Tests.csproj --configuration Release --logger "console;verbosity=normal" 2>&1)
+          $testOutput = @(& dotnet test .\tests\RetroMediaLab.Tests\RetroMediaLab.Tests.csproj --configuration Release --logger "console;verbosity=normal" 2>&1)
           $testExitCode = $LASTEXITCODE
           $testOutput | ForEach-Object { Write-Host $_ }
-          if ($testExitCode -ne 0) { throw 'GW GUI tests failed.' }
+          if ($testExitCode -ne 0) { throw 'Retro Media Lab tests failed.' }
 
           $summary = [string]::Join("`n", $testOutput)
           $testCounts = [regex]::Matches($summary, '(?im)(?:^|,)\s*Total(?: tests)?\s*:\s*(\d+)')
           $executed = ($testCounts | ForEach-Object { [int]$_.Groups[1].Value } | Measure-Object -Sum).Sum
           if ($testCounts.Count -eq 0 -or $executed -le 0) {
-            throw 'No GW GUI test was executed.'
+            throw 'No Retro Media Lab test was executed.'
           }
       - name: Install Inno Setup
         shell: pwsh
@@ -89,19 +89,19 @@ jobs:
         run: .\scripts\release\update-catalog\build-update-catalog.ps1 -Scope Application -Version $env:PACKAGE_VERSION -ApplicationTag $env:RELEASE_TAG -Repository '${{ github.repository }}' -ExistingCatalog .\dist\existing-catalog\update-catalog.json
       - name: Smoke-test installer in English
         shell: pwsh
-        run: .\scripts\tests\test-installer.ps1 -SetupPath ".\dist\GW-GUI-$env:PACKAGE_VERSION-win-x64-setup.exe" -ExpectedVersion $env:PACKAGE_VERSION -InstallerLanguage english
+        run: .\scripts\tests\test-installer.ps1 -SetupPath ".\dist\Retro-Media-Lab-$env:PACKAGE_VERSION-win-x64-setup.exe" -ExpectedVersion $env:PACKAGE_VERSION -InstallerLanguage english
       - name: Smoke-test installer in French
         shell: pwsh
-        run: .\scripts\tests\test-installer.ps1 -SetupPath ".\dist\GW-GUI-$env:PACKAGE_VERSION-win-x64-setup.exe" -ExpectedVersion $env:PACKAGE_VERSION -InstallerLanguage french
+        run: .\scripts\tests\test-installer.ps1 -SetupPath ".\dist\Retro-Media-Lab-$env:PACKAGE_VERSION-win-x64-setup.exe" -ExpectedVersion $env:PACKAGE_VERSION -InstallerLanguage french
       - name: Smoke-test upgrade from a legacy self-contained installation
         shell: pwsh
-        run: .\scripts\tests\test-installer-upgrade.ps1 -CurrentSetupPath ".\dist\GW-GUI-$env:PACKAGE_VERSION-win-x64-setup.exe" -CurrentVersion $env:PACKAGE_VERSION
+        run: .\scripts\tests\test-installer-upgrade.ps1 -CurrentSetupPath ".\dist\Retro-Media-Lab-$env:PACKAGE_VERSION-win-x64-setup.exe" -CurrentVersion $env:PACKAGE_VERSION
       - uses: actions/upload-artifact@v6
         with:
-          name: GW-GUI-${{ env.PACKAGE_VERSION }}-win-x64
+          name: Retro-Media-Lab-${{ env.PACKAGE_VERSION }}-win-x64
           path: |
-            dist/GW-GUI-*-win-x64-portable.zip
-            dist/GW-GUI-*-win-x64-setup.exe
+            dist/Retro-Media-Lab-*-win-x64-portable.zip
+            dist/Retro-Media-Lab-*-win-x64-setup.exe
             dist/SHA256SUMS.txt
             dist/update-catalog.json
           if-no-files-found: error
@@ -110,7 +110,7 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME dist/GW-GUI-*-win-x64-portable.zip dist/GW-GUI-*-win-x64-setup.exe dist/SHA256SUMS.txt --verify-tag --generate-notes
+        run: gh release create $env:GITHUB_REF_NAME dist/Retro-Media-Lab-*-win-x64-portable.zip dist/Retro-Media-Lab-*-win-x64-setup.exe dist/SHA256SUMS.txt --verify-tag --generate-notes
       - name: Publish requested GitHub release
         if: github.event_name == 'workflow_dispatch'
         shell: pwsh
@@ -124,15 +124,15 @@ jobs:
             default { "v$env:PACKAGE_VERSION" }
           }
           $title = switch ($env:PUBLICATION_TYPE) {
-            'latest' { "GW GUI $env:PACKAGE_VERSION Release" }
-            'prerelease' { "GW GUI $env:PACKAGE_VERSION Snapshot" }
-            'none' { "GW GUI $env:PACKAGE_VERSION" }
+            'latest' { "Retro Media Lab $env:PACKAGE_VERSION Release" }
+            'prerelease' { "Retro Media Lab $env:PACKAGE_VERSION Snapshot" }
+            'none' { "Retro Media Lab $env:PACKAGE_VERSION" }
             default { throw "Unsupported publication type: $env:PUBLICATION_TYPE" }
           }
           $arguments = @(
             'release', 'create', $tag,
-            'dist/GW-GUI-*-win-x64-portable.zip',
-            'dist/GW-GUI-*-win-x64-setup.exe',
+            'dist/Retro-Media-Lab-*-win-x64-portable.zip',
+            'dist/Retro-Media-Lab-*-win-x64-setup.exe',
             'dist/SHA256SUMS.txt',
             '--title', $title
           )
@@ -156,7 +156,7 @@ jobs:
         run: |
           gh release view application-catalog
           if ($LASTEXITCODE -ne 0) {
-            gh release create application-catalog --title 'GW GUI application catalog' --notes 'Machine-readable application update catalog.' --latest=false
+            gh release create application-catalog --title 'Retro Media Lab application catalog' --notes 'Machine-readable application update catalog.' --latest=false
           }
           if ($LASTEXITCODE -ne 0) { throw 'Unable to create the component catalog release.' }
           gh release upload application-catalog .\dist\update-catalog.json --clobber

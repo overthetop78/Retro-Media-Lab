@@ -1,7 +1,7 @@
 # Comparaison des fichiers Common Amiga et Atari
 
 Ce document recense uniquement les fichiers présents sous `Common`, avec des chemins relatifs à la
-racine de `GWGUI.Emulation.Commodore` ou `GWGUI.Emulation.Atari`. Une absence dans une colonne signifie
+racine de `RetroMediaLab.Emulation.Commodore` ou `RetroMediaLab.Emulation.Atari`. Une absence dans une colonne signifie
 qu’aucun fichier portant ce chemin n’existe dans l’autre projet. « Problème » désigne un écart de
 structure ou de responsabilité à examiner ; une différence propre à une famille n’est pas automatiquement une anomalie.
 
@@ -10,7 +10,7 @@ structure ou de responsabilité à examiner ; une différence propre à une fami
 - [x] 1. Inventorier et comparer les fichiers des deux dossiers `Common`
   - [x] 1.1 Construire le tableau exhaustif et décrire les écarts
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour ajouter chaque fichier de
-      `src/GWGUI.Emulation.Commodore/Common` et `src/GWGUI.Emulation.Atari/Common`, associer les chemins
+      `src/RetroMediaLab.Emulation.Commodore/Common` et `src/RetroMediaLab.Emulation.Atari/Common`, associer les chemins
       identiques et décrire dans la troisième colonne leur rôle ainsi que les différences constatées.
   - [x] 1.2 Vérifier l’exhaustivité du document
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour inscrire les nombres de
@@ -23,7 +23,7 @@ structure ou de responsabilité à examiner ; une différence propre à une fami
 - Tableaux : 55 chemins communs, 16 chemins propres à Amiga et 105 chemins propres à Atari.
 - Chaque fichier apparaît exactement une fois dans la colonne de son projet ; aucun doublon ni erreur
   d'ordre alphabétique n'a été détecté.
-- Harmonisation cartouche : compilations `GWGUI.Emulation.Commodore` et `GWGUI.Emulation.Atari` réussies,
+- Harmonisation cartouche : compilations `RetroMediaLab.Emulation.Commodore` et `RetroMediaLab.Emulation.Atari` réussies,
   avec 0 avertissement et 0 erreur pour chacune, puis revalidées après déplacement des capacités.
 - Erreurs de cartouche : neuf clés ajoutées aux 30 catalogues Atari ; audit Argos réussi pour 28 cultures
   et compilation Atari réussie avec 0 avertissement et 0 erreur, puis revalidés après correction de
@@ -110,27 +110,27 @@ structure ou de responsabilité à examiner ; une différence propre à une fami
       deux projets, ajouter le membre manquant, ou déplacer la constante hors de `Common`.
   - [x] 2.2 Appliquer les alignements et identifier les constantes uniques
     - [x] 2.2.1 Aligner les constantes audio
-      - [x] Modifier `src/GWGUI.Emulation.Commodore/Common/Constants/AudioConstants.cs` pour déclarer les
+      - [x] Modifier `src/RetroMediaLab.Emulation.Commodore/Common/Constants/AudioConstants.cs` pour déclarer les
         mêmes invariants de tampon, d'échantillon et de volume que le fichier Atari.
-      - [x] Modifier `src/GWGUI.Emulation.Commodore/Common/Contracts/AudioContracts.cs` pour utiliser les
+      - [x] Modifier `src/RetroMediaLab.Emulation.Commodore/Common/Contracts/AudioContracts.cs` pour utiliser les
         valeurs de choix déjà détenues par `SettingsDescriptionFunctionsConstants`.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/AudioConstants.cs` et
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/AudioConstants.cs` et
         `SettingsConstants.cs` pour sortir `VideoAudioSettingsConstants` du fichier audio.
     - [x] 2.2.2 Aligner les dix-sept autres paires de constantes
-      - [x] Séparer dans `src/GWGUI.Emulation.Commodore/Common/Constants` et
-        `src/GWGUI.Emulation.Atari/Common/Constants` chaque classe de constantes actuellement regroupée,
+      - [x] Séparer dans `src/RetroMediaLab.Emulation.Commodore/Common/Constants` et
+        `src/RetroMediaLab.Emulation.Atari/Common/Constants` chaque classe de constantes actuellement regroupée,
         afin que chaque fichier porte le nom de son unique classe.
       - [x] Modifier les deux `ConfigurationStoreConstants.cs`, les deux services
         `Common/Services/ConfigurationStore.cs` et les fonctions de persistance Atari afin d'utiliser
         exactement les mêmes noms et valeurs de stockage, sans valeur équivalente codée en dur.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Services/ConfigurationStore.cs` pour supprimer
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Services/ConfigurationStore.cs` pour supprimer
         le suivi `IsLoading` sans consommateur au lieu d'ajouter artificiellement ce code à Amiga.
       - [x] Modifier les deux `ConfigurationStoreConstants.cs` et leurs consommateurs pour remplacer
         les versions de schéma, séparateurs temporaires, paramètres de verrou et options JSON encore
         écrits en dur par des membres constants identiques entre Amiga et Atari.
-      - [x] Modifier `src/GWGUI.Emulation.Commodore/Common/Constants/CartridgeConstants.cs` pour ajouter
+      - [x] Modifier `src/RetroMediaLab.Emulation.Commodore/Common/Constants/CartridgeConstants.cs` pour ajouter
         le contrat générique de cartouche, indépendamment de l'absence actuelle d'émulateur Amiga compatible.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/CartridgeConstants.cs` pour ne conserver
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/CartridgeConstants.cs` pour ne conserver
         que les constantes génériques identiques au contrat Amiga.
       - [x] Modifier les quatre fichiers `Emulators/Stella/Constants/EmulatorConstants.cs`,
         `Emulators/ProSystem/Constants/EmulatorConstants.cs`,
@@ -145,22 +145,22 @@ structure ou de responsabilité à examiner ; une différence propre à une fami
       - [x] Modifier `Emulators/Stella/Factories/StellaMachineFactory.cs` et
         `Emulators/VirtualJaguar/Factories/VirtualJaguarMachineFactory.cs` pour déclarer explicitement
         leur prise en charge de la région de cartouche sans tester leur identité dans `Common`.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Factories/MachineFactory.cs` pour exposer aux
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Factories/MachineFactory.cs` pour exposer aux
         fonctions communes les capacités de cartouche déclarées par chaque adaptateur concret.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/MediaFunctions.Cartridge.cs`,
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/MediaFunctions.Cartridge.cs`,
         `Common/Functions/StorageFunctions.Devices.cs`, `Common/Services/ExternalCore.Content.cs` et
         `Common/Services/ExternalCore.Media.cs` pour consommer ces capacités sans table d'émulateurs
         dans `Common`.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Emulators/Atari800/Constants/Atari800MediaConstants.cs`
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Emulators/Atari800/Constants/Atari800MediaConstants.cs`
         pour séparer les extensions de cartouche ordinateur et Atari 5200 détenues par cet émulateur.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Emulators/Atari800/Factories/Atari800MachineFactory.cs`
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Emulators/Atari800/Factories/Atari800MachineFactory.cs`
         et `Common/Factories/MachineFactory.cs` pour relayer les extensions Atari800 selon la machine
         par l'adaptateur existant.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/StorageFunctions.Devices.cs` pour
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/StorageFunctions.Devices.cs` pour
         supprimer les dernières extensions de cartouche propres à Atari800 codées dans `Common`.
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour actualiser la décision,
         la ligne d'inventaire et les totaux après l'ajout du contrat Amiga.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/StorageFunctions.Devices.cs` pour
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/StorageFunctions.Devices.cs` pour
         typer explicitement la collection vide utilisée lorsqu'un adaptateur ne gère aucune cartouche.
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour inscrire la réussite des
         compilations Amiga puis Atari après cette harmonisation.
@@ -174,30 +174,30 @@ structure ou de responsabilité à examiner ; une différence propre à une fami
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour inscrire la nouvelle
         réussite des compilations Amiga puis Atari après le déplacement de ces booléens.
     - [x] 2.2.3 Remplacer les textes bruts des erreurs de cartouche par les traductions du module
-      - [x] Créer `src/GWGUI.Emulation.Atari/Common/Exceptions/CartridgeExceptions.cs` pour résoudre
+      - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Exceptions/CartridgeExceptions.cs` pour résoudre
         les clés `Emulation.Atari.Error.Cartridge.*` dans les ressources du module et construire des
         `EmulationException` explicitement localisées.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Exceptions/EmulationException.cs` pour indiquer
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Exceptions/EmulationException.cs` pour indiquer
         si son message a déjà été traduit par le module.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Contracts/CoreContracts.cs`,
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Contracts/CoreContracts.cs`,
         `Common/Functions/CoreFunctions.Host.cs` et `Common/Services/ProcessCore.Protocol.cs` pour
         conserver cette indication lors du passage par le processus hôte.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/RuntimeFunctions.cs` pour transmettre
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/RuntimeFunctions.cs` pour transmettre
         les erreurs déjà traduites à l'App avec `EmulationErrorService.TranslateLocalized` et conserver
         le code générique pour les autres erreurs.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/MediaFunctions.Cartridge.cs`,
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/MediaFunctions.Cartridge.cs`,
         `Common/Services/ExternalCore.Content.cs`, `Common/Services/ExternalCore.Media.cs` et
         `Emulators/VirtualJaguar/Functions/VirtualJaguarOptionFunctions.cs` pour appeler
         `CartridgeExceptions` aux neuf points d'erreur concernés.
-      - [x] Supprimer `src/GWGUI.Emulation.Atari/Common/Constants/CartridgeErrors.cs` après disparition
+      - [x] Supprimer `src/RetroMediaLab.Emulation.Atari/Common/Constants/CartridgeErrors.cs` après disparition
         de tous ses consommateurs.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Resources/00-Base/Emulation.resx` et
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Resources/00-Base/Emulation.resx` et
         `Resources/en-US/Emulation.resx` avec les neuf textes anglais de référence, puis modifier tous
         les `Resources/<culture>/Emulation.resx` au moyen de `scripts/tools/translate-resx-argos.py`.
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour retirer
         `CartridgeErrors.cs` de l'inventaire, actualiser les totaux et inscrire les validations Argos
         et compilation.
-      - [x] Modifier les 30 fichiers `src/GWGUI.Emulation.Atari/Resources/<culture>/Emulation.resx`
+      - [x] Modifier les 30 fichiers `src/RetroMediaLab.Emulation.Atari/Resources/<culture>/Emulation.resx`
         avec `scripts/tools/translate-resx-argos.py --replace` pour reformuler et retraduire la phrase
         SECAM dont la première traduction Argos française était incorrecte.
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour inscrire le nouvel audit
@@ -209,129 +209,129 @@ structure ou de responsabilité à examiner ; une différence propre à une fami
         mêmes classes et membres génériques extraits de `CommonConstants.cs`.
       - [x] Modifier les deux `Common/Constants/MediaConstants.cs` pour y ajouter les séparateurs
         génériques de chemin et d'extensions avec les mêmes noms et valeurs.
-      - [x] Modifier les consommateurs sous `src/GWGUI.Emulation.Atari/Common/Functions` et
+      - [x] Modifier les consommateurs sous `src/RetroMediaLab.Emulation.Atari/Common/Functions` et
         `Common/Services` pour remplacer chaque référence à `CommonConstants` par la classe de
         responsabilité correspondante.
-      - [x] Modifier les consommateurs sous `src/GWGUI.Emulation.Atari/Emulators` pour remplacer
+      - [x] Modifier les consommateurs sous `src/RetroMediaLab.Emulation.Atari/Emulators` pour remplacer
         chaque référence à `CommonConstants` par la classe de responsabilité correspondante.
-      - [x] Modifier `src/GWGUI.Emulation.Commodore/Emulators/PUAE/Services/ExternalCore.cs`,
+      - [x] Modifier `src/RetroMediaLab.Emulation.Commodore/Emulators/PUAE/Services/ExternalCore.cs`,
         `ExternalHostCallbacks.Environment.cs`, `ExternalHostCallbacks.AudioVideo.cs`, `CoreHost.cs`
         et `CoreReleaseService.cs` pour utiliser les mêmes constantes génériques déjà codées en dur.
-      - [x] Modifier `src/GWGUI.Emulation.Commodore/Emulators/PUAE/Constants/ExternalCoreConstants.cs`
+      - [x] Modifier `src/RetroMediaLab.Emulation.Commodore/Emulators/PUAE/Constants/ExternalCoreConstants.cs`
         pour retirer les noms de répertoires désormais détenus par `CoreDirectoryConstants`.
-      - [x] Supprimer `src/GWGUI.Emulation.Atari/Common/Constants/CommonConstants.cs` après disparition
+      - [x] Supprimer `src/RetroMediaLab.Emulation.Atari/Common/Constants/CommonConstants.cs` après disparition
         de tous ses consommateurs.
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour retirer
         `CommonConstants.cs`, ajouter les sept paires de fichiers, actualiser les totaux et inscrire
         les compilations Amiga puis Atari.
       - [x] Supprimer les deux `Common/Constants/HashConstants.cs` après confirmation que
         `Sha256HexLength` était une constante morte sans consommateur.
-      - [x] Modifier `src/GWGUI.Emulation.Commodore/Common/Constants/SavedStateConstants.cs` et
+      - [x] Modifier `src/RetroMediaLab.Emulation.Commodore/Common/Constants/SavedStateConstants.cs` et
         `Emulators/PUAE/Services/ExternalCore.cs` pour employer la limite Amiga réelle sans modifier
         le comportement existant.
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour corriger le nombre de
         paires ajoutées, les totaux et réinscrire les compilations finales Amiga puis Atari.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/CompatibilityConstants.cs` et
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/CompatibilityConstants.cs` et
         `Common/Functions/MediaFunctions.Compatibility.cs` pour employer
         `BufferConstants.EmptyCollectionCount` sans doublon local.
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner que
         `EnvironmentConstants.MaximumControllerPortCount` reste distinct : il borne les descripteurs
         natifs analysés à 32, tandis que `ControllerPortConstants` borne les ports configurables à 4.
-      - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/StateConstants.cs` et
+      - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/StateConstants.cs` et
         `Common/Functions/StateFunctions.Store.cs`, `StateFunctions.Saved.cs` pour employer
         `BufferConstants.FirstBufferIndex` sans doublon local.
       - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner la suppression
         des deux doublons réels et la distinction sémantique de la limite native à 32 détectée par
         l'audit final.
-      - [x] Compiler `GWGUI.Emulation.Atari` et consigner le résultat final après suppression des
+      - [x] Compiler `RetroMediaLab.Emulation.Atari` et consigner le résultat final après suppression des
         doublons.
     - [x] 2.2.5 Aligner les autres paires de constantes communes
       - [x] Nettoyer les anciens fichiers de constantes devenus vides
-        - [x] Supprimer `src/GWGUI.Emulation.Commodore/Common/Constants/ControllerConstants.cs`, devenu
+        - [x] Supprimer `src/RetroMediaLab.Emulation.Commodore/Common/Constants/ControllerConstants.cs`, devenu
           vide tandis que le fichier Atari ne contient que des membres explicitement uniques à Atari.
-        - [x] Supprimer `src/GWGUI.Emulation.Commodore/Common/Constants/CoreConstants.cs`, devenu vide après
+        - [x] Supprimer `src/RetroMediaLab.Emulation.Commodore/Common/Constants/CoreConstants.cs`, devenu vide après
           déplacement de ses constantes vers leurs propriétaires.
-        - [x] Supprimer `src/GWGUI.Emulation.Commodore/Common/Constants/CoreManagementConstants.cs`, devenu
+        - [x] Supprimer `src/RetroMediaLab.Emulation.Commodore/Common/Constants/CoreManagementConstants.cs`, devenu
           vide après déplacement de ses constantes vers leurs propriétaires.
         - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour retirer ces trois
           fichiers vides de l'inventaire et actualiser les totaux.
-        - [x] Compiler `GWGUI.Emulation.Commodore` après la suppression des trois fichiers vides et
+        - [x] Compiler `RetroMediaLab.Emulation.Commodore` après la suppression des trois fichiers vides et
           consigner le résultat.
       - [x] Sortir les clés de traduction de `CompatibilityConstants.cs`
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/SettingsTextConstants.cs` pour
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/SettingsTextConstants.cs` pour
           y déclarer les huit clés de traduction des explications de compatibilité.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/MediaFunctions.Compatibility.cs`
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/MediaFunctions.Compatibility.cs`
           pour utiliser ces clés depuis leur propriétaire textuel.
         - [x] Modifier les deux `Common/Constants/ControllerPortConstants.cs` pour y déclarer les
           nombres génériques de un, deux et quatre ports avec les mêmes noms et valeurs.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/MediaFunctions.Compatibility.cs`
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/MediaFunctions.Compatibility.cs`
           pour employer `ControllerPortConstants` pour la validation et les deux ports ST.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/CompatibilityConstants.cs` pour
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/CompatibilityConstants.cs` pour
           retirer les huit clés déplacées, les nombres de ports déplacés et `CoreManagedValue`, ancien
           marqueur remplacé par le contrat typé `OptionAvailability` et sans consommateur.
-        - [x] Créer `src/GWGUI.Emulation.Commodore/Common/Constants/CompatibilityConstants.cs` avec les
+        - [x] Créer `src/RetroMediaLab.Emulation.Commodore/Common/Constants/CompatibilityConstants.cs` avec les
           deux invariants génériques restants, identiques au fichier Atari.
         - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner ce déplacement.
-        - [x] Compiler `GWGUI.Emulation.Atari` et consigner le résultat après ce nettoyage.
-        - [x] Compiler `GWGUI.Emulation.Commodore` et consigner le résultat après l'ajout du contrat
+        - [x] Compiler `RetroMediaLab.Emulation.Atari` et consigner le résultat après ce nettoyage.
+        - [x] Compiler `RetroMediaLab.Emulation.Commodore` et consigner le résultat après l'ajout du contrat
           générique de compatibilité.
       - [x] Supprimer le modèle mort de compatibilité des options
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Contracts/MediaContracts.cs` pour retirer
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Contracts/MediaContracts.cs` pour retirer
           `VisibleGroups` et `Options`, qui ne sont lus par aucun consommateur.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Contracts/MachineContracts.cs` pour supprimer
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Contracts/MachineContracts.cs` pour supprimer
           le contrat `OptionRule` devenu sans consommateur.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/MediaFunctions.Compatibility.cs`
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/MediaFunctions.Compatibility.cs`
           pour retirer la construction et la validation des règles d'options mortes.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Enums/SettingsEnums.cs` pour supprimer
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Enums/SettingsEnums.cs` pour supprimer
           `SettingsGroup`, devenu sans consommateur.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/SettingsTextConstants.cs` pour
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/SettingsTextConstants.cs` pour
           retirer les sept clés d'explication devenues sans consommateur et conserver celle du média
           Jaguar CD encore utilisée.
         - [x] Supprimer les deux `Common/Constants/CompatibilityConstants.cs`, désormais sans usage.
         - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour retirer ces fichiers,
           corriger les totaux et consigner la suppression du modèle mort.
-        - [x] Compiler `GWGUI.Emulation.Atari`, puis `GWGUI.Emulation.Commodore`, et consigner les résultats.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/ErrorMessages.cs` pour supprimer
+        - [x] Compiler `RetroMediaLab.Emulation.Atari`, puis `RetroMediaLab.Emulation.Commodore`, et consigner les résultats.
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/ErrorMessages.cs` pour supprimer
           les deux messages bruts devenus inaccessibles avec `OptionRule`.
-        - [x] Compiler `GWGUI.Emulation.Atari` et consigner le résultat final après cette suppression.
+        - [x] Compiler `RetroMediaLab.Emulation.Atari` et consigner le résultat final après cette suppression.
       - [x] Supprimer la fausse migration de configuration Atari
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/ConfigurationFunctions.Persistence.cs`
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/ConfigurationFunctions.Persistence.cs`
           pour valider directement la version du document désérialisé.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Services/ConfigurationStore.cs` pour appeler
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Services/ConfigurationStore.cs` pour appeler
           directement la désérialisation du stockage, comme le flux Amiga.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Functions/ConfigurationFunctions.cs` pour
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Functions/ConfigurationFunctions.cs` pour
           supprimer `ConfigurationMigrationFunctions` et son import JSON devenu inutile.
-        - [x] Supprimer `src/GWGUI.Emulation.Atari/Common/Constants/ConfigurationMigrationConstants.cs`.
+        - [x] Supprimer `src/RetroMediaLab.Emulation.Atari/Common/Constants/ConfigurationMigrationConstants.cs`.
         - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour retirer ce fichier de
           l'inventaire et actualiser les totaux.
-        - [x] Compiler `GWGUI.Emulation.Atari` et consigner le résultat final.
+        - [x] Compiler `RetroMediaLab.Emulation.Atari` et consigner le résultat final.
       - [x] Supprimer le découpage artificiel `ConfigurationOptionConstants.cs`
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/SettingsConstants.cs` pour y déplacer
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/SettingsConstants.cs` pour y déplacer
           la clé de mémoire principale.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Constants/VideoAudioSettingsConstants.cs` pour
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Constants/VideoAudioSettingsConstants.cs` pour
           y déplacer directement les cinq clés vidéo/audio et les trois valeurs par défaut.
-        - [x] Modifier les consommateurs sous `src/GWGUI.Emulation.Atari/Common`, `Emulators` et
+        - [x] Modifier les consommateurs sous `src/RetroMediaLab.Emulation.Atari/Common`, `Emulators` et
           `Modules` pour employer les propriétaires réels de ces constantes.
-        - [x] Supprimer `src/GWGUI.Emulation.Atari/Common/Constants/ConfigurationOptionConstants.cs`.
+        - [x] Supprimer `src/RetroMediaLab.Emulation.Atari/Common/Constants/ConfigurationOptionConstants.cs`.
         - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour retirer ce fichier de
           l'inventaire et actualiser les totaux.
-        - [x] Compiler `GWGUI.Emulation.Atari` et consigner le résultat final.
+        - [x] Compiler `RetroMediaLab.Emulation.Atari` et consigner le résultat final.
       - [x] Aligner `ConfigurationSummaryFunctionsConstants.cs`
         - [x] Modifier les deux `Common/Constants/ConfigurationSummaryFunctionsConstants.cs` pour
           conserver les mêmes constantes génériques avec des noms explicites, supprimer les membres
           inutilisés et nommer clairement les membres propres à chaque famille.
-        - [x] Modifier `src/GWGUI.Emulation.Commodore/Common/Constants/StorageConstants.cs` et
+        - [x] Modifier `src/RetroMediaLab.Emulation.Commodore/Common/Constants/StorageConstants.cs` et
           `FirmwareCatalogConstants.cs` pour recevoir les constantes Amiga actuellement mal rangées.
         - [x] Modifier les deux fonctions `Common/Functions/ConfigurationFunctions*.cs` pour employer
           les nouveaux propriétaires et résoudre les textes audio par les ressources du module.
-        - [x] Modifier `src/GWGUI.Emulation.Atari/Modules/AtariEmulationModule.cs` pour employer le nom
+        - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Modules/AtariEmulationModule.cs` pour employer le nom
           explicite de la constante TOS.
         - [x] Modifier les ressources `00-Base` et `en-US` Amiga et Atari pour ajouter les deux textes
           de résumé audio.
         - [x] Modifier toutes les autres cultures Amiga et Atari avec
           `scripts/tools/translate-resx-argos.py`.
         - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner l'alignement.
-        - [x] Compiler `GWGUI.Emulation.Commodore`, puis `GWGUI.Emulation.Atari`, et consigner les résultats.
+        - [x] Compiler `RetroMediaLab.Emulation.Commodore`, puis `RetroMediaLab.Emulation.Atari`, et consigner les résultats.
       - [x] Reprendre exhaustivement la liste de divergences fournie
         - [x] Établir les propriétaires réels avant les déplacements
           - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour ajouter, pour chaque
@@ -380,7 +380,7 @@ structure ou de responsabilité à examiner ; une différence propre à une fami
           - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour reconstruire tous les
             tableaux alphabétiques de `Common`, recalculer les totaux et consigner chaque décision finale.
   - [x] 2.3 Vérifier l'identité structurelle et le fonctionnement
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour comparer les types
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour comparer les types
       et membres déclarés par les deux dossiers `Common/Constants`, sans imposer l'égalité des valeurs
       propres aux familles.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour inscrire les résultats de
@@ -398,7 +398,7 @@ structure ou de responsabilité à examiner ; une différence propre à une fami
 
 Une constante propre à une famille peut rester dans ce dossier lorsqu'elle représente une donnée déjà
 exposée à App ou partagée par plusieurs émulateurs de la famille. Elle doit alors porter un commentaire
-explicite `Unique to GWGUI.Emulation.Commodore` ou `Unique to GWGUI.Emulation.Atari`. Seules les données
+explicite `Unique to RetroMediaLab.Emulation.Commodore` ou `Unique to RetroMediaLab.Emulation.Atari`. Seules les données
 réellement propres à un cœur ou à son protocole doivent être déplacées sous `Emulators`.
 
 | Fichier | Constat membre par membre | Décision |
@@ -843,13 +843,13 @@ se trouver dans le `Common` familial.
   - [x] Classer les contrats actuels selon leur propriétaire réel.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour ajouter le tableau de décision de chaque fichier de `Common/Contracts` Amiga et Atari.
   - [x] Sortir de `Common/Contracts` les contrats propres aux machines ou aux émulateurs.
-    - [x] Déplacer les contrats propres aux machines Amiga de `src/GWGUI.Emulation.Commodore/Common/Contracts` vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Contracts` et adapter leurs espaces de noms et consommateurs.
-    - [x] Déplacer les contrats propres aux machines Atari de `src/GWGUI.Emulation.Atari/Common/Contracts` vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Contracts` et adapter leurs espaces de noms et consommateurs.
-    - [x] Déplacer les contrats propres à Libretro de `src/GWGUI.Emulation.Atari/Common/Contracts` vers `src/GWGUI.Emulation.Atari/Emulators/Libretro/Contracts` et adapter leurs espaces de noms et consommateurs.
+    - [x] Déplacer les contrats propres aux machines Amiga de `src/RetroMediaLab.Emulation.Commodore/Common/Contracts` vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Contracts` et adapter leurs espaces de noms et consommateurs.
+    - [x] Déplacer les contrats propres aux machines Atari de `src/RetroMediaLab.Emulation.Atari/Common/Contracts` vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Contracts` et adapter leurs espaces de noms et consommateurs.
+    - [x] Déplacer les contrats propres à Libretro de `src/RetroMediaLab.Emulation.Atari/Common/Contracts` vers `src/RetroMediaLab.Emulation.Atari/Emulators/Libretro/Contracts` et adapter leurs espaces de noms et consommateurs.
   - [x] Uniformiser les fichiers qui restent dans `Common/Contracts`.
-    - [x] Modifier les fichiers `src/GWGUI.Emulation.Commodore/Common/Contracts/*.cs` et `src/GWGUI.Emulation.Atari/Common/Contracts/*.cs` afin d'avoir les mêmes noms de fichiers, types et membres génériques des deux côtés.
+    - [x] Modifier les fichiers `src/RetroMediaLab.Emulation.Commodore/Common/Contracts/*.cs` et `src/RetroMediaLab.Emulation.Atari/Common/Contracts/*.cs` afin d'avoir les mêmes noms de fichiers, types et membres génériques des deux côtés.
   - [x] Protéger l'alignement architectural.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour comparer les fichiers et membres de `Common/Contracts` entre Amiga et Atari.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour comparer les fichiers et membres de `Common/Contracts` entre Amiga et Atari.
   - [x] Actualiser l'inventaire documentaire.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour régénérer les tableaux alphabétiques après les déplacements.
   - [x] Vérifier le résultat.
@@ -878,13 +878,13 @@ se trouver dans le `Common` familial.
   - [x] Classer les dictionnaires selon leur propriétaire réel.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour ajouter la décision de propriété de chaque fichier de `Common/Dictionaries`.
   - [x] Sortir les catalogues de machines de `Common/Dictionaries`.
-    - [x] Déplacer les catalogues Amiga de contrôleurs, micrologiciels, machines et modèles vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Dictionaries`, puis adapter leurs espaces de noms et consommateurs.
-    - [x] Déplacer les catalogues Atari de compatibilité, contrôleurs, micrologiciels, machines et modèles vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Dictionaries`, puis adapter leurs espaces de noms et consommateurs.
+    - [x] Déplacer les catalogues Amiga de contrôleurs, micrologiciels, machines et modèles vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Dictionaries`, puis adapter leurs espaces de noms et consommateurs.
+    - [x] Déplacer les catalogues Atari de compatibilité, contrôleurs, micrologiciels, machines et modèles vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Dictionaries`, puis adapter leurs espaces de noms et consommateurs.
   - [x] Uniformiser le catalogue générique des émulateurs.
     - [x] Modifier les deux `Common/Dictionaries/EmulatorCatalog.cs` pour exposer les mêmes membres génériques à partir de `IEmulatorAdapter`, sans données de cœur concret dans le catalogue commun.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Emulators/Libretro/Dictionaries/CoreCatalog.cs` pour conserver le catalogue d’installation et d’interopération propre aux cœurs Libretro, puis adapter ses consommateurs.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Emulators/Libretro/Dictionaries/CoreCatalog.cs` pour conserver le catalogue d’installation et d’interopération propre aux cœurs Libretro, puis adapter ses consommateurs.
   - [x] Protéger l’alignement architectural.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour comparer les noms de fichiers, types et membres publics de `Common/Dictionaries` entre Amiga et Atari.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour comparer les noms de fichiers, types et membres publics de `Common/Dictionaries` entre Amiga et Atari.
   - [x] Actualiser l’inventaire documentaire.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour régénérer les tableaux alphabétiques concernés après les déplacements.
   - [x] Vérifier le résultat.
@@ -907,15 +907,15 @@ se trouver dans le `Common` familial.
   - [x] Classer chaque énumération selon son propriétaire réel.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour ajouter la décision de propriété de chaque fichier de `Common/Enums`.
   - [x] Déplacer les énumérations de machines.
-    - [x] Déplacer les énumérations Amiga de contrôleurs, micrologiciels, médias et sélection d’émulateur vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Enums`, puis adapter les espaces de noms et consommateurs.
-    - [x] Déplacer les énumérations Atari de contrôleurs, micrologiciels, entrées, machines, médias, réglages, états, stockage et sélection d’émulateur vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Enums`, puis adapter les espaces de noms et consommateurs.
+    - [x] Déplacer les énumérations Amiga de contrôleurs, micrologiciels, médias et sélection d’émulateur vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Enums`, puis adapter les espaces de noms et consommateurs.
+    - [x] Déplacer les énumérations Atari de contrôleurs, micrologiciels, entrées, machines, médias, réglages, états, stockage et sélection d’émulateur vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Enums`, puis adapter les espaces de noms et consommateurs.
   - [x] Déplacer les énumérations propres aux cœurs.
-    - [x] Créer les fichiers nécessaires sous `src/GWGUI.Emulation.Commodore/Emulators/PUAE/Enums` pour les commandes du processus PUAE et adapter leurs consommateurs.
-    - [x] Créer les fichiers nécessaires sous `src/GWGUI.Emulation.Atari/Emulators/Libretro/Enums` pour le protocole, l’environnement et les erreurs Libretro et adapter leurs consommateurs.
+    - [x] Créer les fichiers nécessaires sous `src/RetroMediaLab.Emulation.Commodore/Emulators/PUAE/Enums` pour les commandes du processus PUAE et adapter leurs consommateurs.
+    - [x] Créer les fichiers nécessaires sous `src/RetroMediaLab.Emulation.Atari/Emulators/Libretro/Enums` pour le protocole, l’environnement et les erreurs Libretro et adapter leurs consommateurs.
   - [x] Supprimer les coquilles sans contenu.
-    - [x] Supprimer `src/GWGUI.Emulation.Atari/Common/Enums/VideoEnums.cs`, qui ne déclare aucun type.
+    - [x] Supprimer `src/RetroMediaLab.Emulation.Atari/Common/Enums/VideoEnums.cs`, qui ne déclare aucun type.
   - [x] Protéger l’alignement architectural.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour vérifier que `Common/Enums` contient exactement les mêmes fichiers et types dans les deux modules.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour vérifier que `Common/Enums` contient exactement les mêmes fichiers et types dans les deux modules.
   - [x] Actualiser l’inventaire documentaire.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour régénérer les tableaux alphabétiques concernés après les déplacements.
   - [x] Vérifier le résultat.
@@ -942,25 +942,25 @@ se trouver dans le `Common` familial.
 - [x] Aligner les quatre derniers groupes demandés entre Amiga et Atari.
   - [x] 6.1 Aligner `Common/Exceptions`.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner la propriété réelle de `MachineExceptions.cs`, `CartridgeExceptions.cs`, `EmulationException.cs` et `ErrorMessages.cs`.
-    - [x] Déplacer `src/GWGUI.Emulation.Commodore/Common/Exceptions/MachineExceptions.cs` vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Exceptions/MachineExceptions.cs`, adapter son espace de noms et ses consommateurs.
-    - [x] Déplacer les exceptions Atari propres aux machines vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Exceptions`, les exceptions propres à Libretro vers `src/GWGUI.Emulation.Atari/Emulators/Libretro/Exceptions`, puis adapter leurs consommateurs.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour contrôler l’égalité finale de `Common/Exceptions`.
+    - [x] Déplacer `src/RetroMediaLab.Emulation.Commodore/Common/Exceptions/MachineExceptions.cs` vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Exceptions/MachineExceptions.cs`, adapter son espace de noms et ses consommateurs.
+    - [x] Déplacer les exceptions Atari propres aux machines vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Exceptions`, les exceptions propres à Libretro vers `src/RetroMediaLab.Emulation.Atari/Emulators/Libretro/Exceptions`, puis adapter leurs consommateurs.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour contrôler l’égalité finale de `Common/Exceptions`.
   - [x] 6.2 Aligner `Common/Factories`.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner que `MachineFactory.cs` est la base des adaptateurs Libretro Atari et non une factory générique aux familles.
-    - [x] Déplacer `src/GWGUI.Emulation.Atari/Common/Factories/MachineFactory.cs` vers `src/GWGUI.Emulation.Atari/Emulators/Libretro/Factories/MachineFactory.cs`, adapter son espace de noms et ses consommateurs.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour contrôler l’égalité finale de `Common/Factories`.
+    - [x] Déplacer `src/RetroMediaLab.Emulation.Atari/Common/Factories/MachineFactory.cs` vers `src/RetroMediaLab.Emulation.Atari/Emulators/Libretro/Factories/MachineFactory.cs`, adapter son espace de noms et ses consommateurs.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour contrôler l’égalité finale de `Common/Factories`.
   - [x] 6.3 Aligner `Common/Functions`.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour classer chaque fichier de fonctions comme générique identique, fonction de machine ou fonction d’émulateur.
-    - [x] Déplacer les fonctions Amiga propres aux machines vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Functions` et celles propres à PUAE vers `src/GWGUI.Emulation.Commodore/Emulators/PUAE/Functions`, avec leurs espaces de noms et consommateurs.
-    - [x] Déplacer les fonctions Atari propres aux machines vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Functions` et celles propres à Libretro vers `src/GWGUI.Emulation.Atari/Emulators/Libretro/Functions`, avec leurs espaces de noms et consommateurs.
+    - [x] Déplacer les fonctions Amiga propres aux machines vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Functions` et celles propres à PUAE vers `src/RetroMediaLab.Emulation.Commodore/Emulators/PUAE/Functions`, avec leurs espaces de noms et consommateurs.
+    - [x] Déplacer les fonctions Atari propres aux machines vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Functions` et celles propres à Libretro vers `src/RetroMediaLab.Emulation.Atari/Emulators/Libretro/Functions`, avec leurs espaces de noms et consommateurs.
     - [x] Modifier les fichiers restant dans les deux `Common/Functions` pour qu’ils aient les mêmes noms, types et membres génériques, ou les déplacer si aucun contenu n’est réellement commun.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour contrôler l’égalité finale de `Common/Functions`.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour contrôler l’égalité finale de `Common/Functions`.
   - [x] 6.4 Aligner `Common/Interfaces`.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour classer les quatre interfaces actuelles selon la frontière famille–émulateur ou leur dépendance à Libretro.
-    - [x] Déplacer `ICoreReleaseService.cs`, `IEmulatorCore.cs` et `IEmulatorMediaAdapter.cs` vers `src/GWGUI.Emulation.Atari/Emulators/Libretro/Interfaces`, puis adapter leurs espaces de noms et consommateurs.
-    - [x] Déplacer `src/GWGUI.Emulation.Commodore/Common/Interfaces/IEmulatorCore.cs` vers `src/GWGUI.Emulation.Commodore/Emulators/PUAE/Interfaces/IEmulatorCore.cs`, puis adapter son espace de noms et ses consommateurs.
+    - [x] Déplacer `ICoreReleaseService.cs`, `IEmulatorCore.cs` et `IEmulatorMediaAdapter.cs` vers `src/RetroMediaLab.Emulation.Atari/Emulators/Libretro/Interfaces`, puis adapter leurs espaces de noms et consommateurs.
+    - [x] Déplacer `src/RetroMediaLab.Emulation.Commodore/Common/Interfaces/IEmulatorCore.cs` vers `src/RetroMediaLab.Emulation.Commodore/Emulators/PUAE/Interfaces/IEmulatorCore.cs`, puis adapter son espace de noms et ses consommateurs.
     - [x] Conserver les deux `Common/Interfaces/IEmulatorAdapter.cs` strictement identiques comme unique contrat générique famille–émulateur.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour comparer le contenu complet de `Common/Interfaces` entre Amiga et Atari.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour comparer le contenu complet de `Common/Interfaces` entre Amiga et Atari.
   - [x] 6.5 Actualiser l’inventaire et vérifier l’ensemble.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour régénérer les tableaux alphabétiques de tous les dossiers concernés et leurs nouveaux propriétaires.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner les builds, les tests d’architecture, l’absence de dossiers vides, l’absence d’anciens espaces de noms et les égalités finales.
@@ -987,29 +987,29 @@ se trouver dans le `Common` familial.
 
 - [x] Remplacer le regroupement artificiel `AtariClassic` par les familles de machines réelles et vérifier leur raccordement au `Common`.
   - [x] 7.1 Extraire les primitives matérielles réellement partagées de `AtariClassic`.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/Common/Contracts/HardwareModelContracts.cs` avec les contrats descriptifs communs actuellement déclarés comme `ClassicModelDefinition` et `ClassicPortDefinition`.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/Common/Enums/HardwareModelEnums.cs` avec les capacités matérielles communes actuellement déclarées sous les noms `ClassicCpu`, `ClassicRegion`, `ClassicVideoCapability`, `ClassicAudioCapability`, `ClassicPortCapability` et `ClassicStorageCapability`.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/Common/Functions/HardwareModelFunctions.cs` avec les fonctions communes de création et de vérification des définitions matérielles, sans constante propre à une famille.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Contracts/HardwareModelContracts.cs` avec les contrats descriptifs communs actuellement déclarés comme `ClassicModelDefinition` et `ClassicPortDefinition`.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Enums/HardwareModelEnums.cs` avec les capacités matérielles communes actuellement déclarées sous les noms `ClassicCpu`, `ClassicRegion`, `ClassicVideoCapability`, `ClassicAudioCapability`, `ClassicPortCapability` et `ClassicStorageCapability`.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Functions/HardwareModelFunctions.cs` avec les fonctions communes de création et de vérification des définitions matérielles, sans constante propre à une famille.
   - [x] 7.2 Donner à chaque famille ses constantes et son catalogue.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/Atari8Bit/Constants/ModelConstants.cs` et `src/GWGUI.Emulation.Atari/Common/Machines/Atari8Bit/Dictionaries/ModelCatalog.cs` pour y placer exclusivement les Atari 400, 800, 800 XL, 130 XE, XL/XE et XEGS.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/Atari2600/Constants/ModelConstants.cs` et `src/GWGUI.Emulation.Atari/Common/Machines/Atari2600/Dictionaries/ModelCatalog.cs` pour le modèle Atari 2600.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/Atari5200/Constants/ModelConstants.cs` et `src/GWGUI.Emulation.Atari/Common/Machines/Atari5200/Dictionaries/ModelCatalog.cs` pour le modèle Atari 5200.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/Atari7800/Constants/ModelConstants.cs` et `src/GWGUI.Emulation.Atari/Common/Machines/Atari7800/Dictionaries/ModelCatalog.cs` pour le modèle Atari 7800.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/AtariLynx/Constants/ModelConstants.cs` et `src/GWGUI.Emulation.Atari/Common/Machines/AtariLynx/Dictionaries/ModelCatalog.cs` pour le modèle Atari Lynx.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/AtariJaguar/Constants/ModelConstants.cs` et `src/GWGUI.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs` pour les modèles Atari Jaguar et Jaguar CD.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari8Bit/Constants/ModelConstants.cs` et `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari8Bit/Dictionaries/ModelCatalog.cs` pour y placer exclusivement les Atari 400, 800, 800 XL, 130 XE, XL/XE et XEGS.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari2600/Constants/ModelConstants.cs` et `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari2600/Dictionaries/ModelCatalog.cs` pour le modèle Atari 2600.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari5200/Constants/ModelConstants.cs` et `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari5200/Dictionaries/ModelCatalog.cs` pour le modèle Atari 5200.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari7800/Constants/ModelConstants.cs` et `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari7800/Dictionaries/ModelCatalog.cs` pour le modèle Atari 7800.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariLynx/Constants/ModelConstants.cs` et `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariLynx/Dictionaries/ModelCatalog.cs` pour le modèle Atari Lynx.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariJaguar/Constants/ModelConstants.cs` et `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs` pour les modèles Atari Jaguar et Jaguar CD.
   - [x] 7.3 Raccorder les catalogues séparés sans recréer un faux groupe de machines.
-    - [x] Créer `src/GWGUI.Emulation.Atari/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs` pour agréger les catalogues des familles réelles et fournir la recherche commune aux consommateurs.
-    - [x] Modifier les fichiers consommateurs sous `src/GWGUI.Emulation.Atari/Common/Machines` afin que les constantes alimentent les contrats et catalogues attendus par les fonctions communes.
-    - [x] Modifier les fichiers consommateurs sous `src/GWGUI.Emulation.Atari/Emulators` afin que chaque adaptateur utilise les contrats et interfaces du `Common` sans type parallèle ni donnée recopiée.
-    - [x] Renommer `src/GWGUI.Emulation.Atari/Common/Machines/Common/Functions/SettingsFunctions.Machine.Classic.cs` en `src/GWGUI.Emulation.Atari/Common/Machines/Common/Functions/SettingsFunctions.Machine.Hardware.cs` et remplacer les noms `Classic` qui désignent à tort l’ensemble de ces familles.
-    - [x] Modifier `src/GWGUI.Emulation.Atari/EmulationGlobalUsings.cs` pour référencer les six familles explicites et retirer tous les espaces de noms `AtariClassic`.
+    - [x] Créer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Dictionaries/HardwareModelCatalog.cs` pour agréger les catalogues des familles réelles et fournir la recherche commune aux consommateurs.
+    - [x] Modifier les fichiers consommateurs sous `src/RetroMediaLab.Emulation.Atari/Common/Machines` afin que les constantes alimentent les contrats et catalogues attendus par les fonctions communes.
+    - [x] Modifier les fichiers consommateurs sous `src/RetroMediaLab.Emulation.Atari/Emulators` afin que chaque adaptateur utilise les contrats et interfaces du `Common` sans type parallèle ni donnée recopiée.
+    - [x] Renommer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Functions/SettingsFunctions.Machine.Classic.cs` en `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Functions/SettingsFunctions.Machine.Hardware.cs` et remplacer les noms `Classic` qui désignent à tort l’ensemble de ces familles.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Atari/EmulationGlobalUsings.cs` pour référencer les six familles explicites et retirer tous les espaces de noms `AtariClassic`.
     - [x] Modifier les fichiers d’erreurs Atari concernés pour remplacer les identifiants `ClassicModel` par des identifiants décrivant le catalogue matériel.
   - [x] 7.4 Supprimer l’ancien regroupement et protéger la séparation et ses raccordements.
-    - [x] Supprimer les cinq fichiers sous `src/GWGUI.Emulation.Atari/Common/Machines/AtariClassic` après migration complète de leur contenu.
-    - [x] Supprimer les dossiers désormais vides sous `src/GWGUI.Emulation.Atari/Common/Machines/AtariClassic` après avoir vérifié qu’ils ne contiennent plus aucun fichier.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour exiger `Atari8Bit`, `Atari2600`, `Atari5200`, `Atari7800`, `AtariLynx`, `AtariJaguar` et `AtariST`, interdire `AtariClassic` et vérifier les raccordements entre contrats communs et adaptateurs.
-    - [x] Modifier `src/GWGUI.Emulation.Atari/Common/Machines/Common/Dictionaries/ModelCatalog.cs` pour construire les modèles exposés au `Common` à partir de `StModelCatalog` et `HardwareModelCatalog`, sans recopier leurs clés de ressources.
-    - [x] Supprimer `src/GWGUI.Emulation.Atari/Common/Machines/Common/Constants/ModelConstants.cs` après suppression de ses constantes de modèles dupliquées.
+    - [x] Supprimer les cinq fichiers sous `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariClassic` après migration complète de leur contenu.
+    - [x] Supprimer les dossiers désormais vides sous `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariClassic` après avoir vérifié qu’ils ne contiennent plus aucun fichier.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour exiger `Atari8Bit`, `Atari2600`, `Atari5200`, `Atari7800`, `AtariLynx`, `AtariJaguar` et `AtariST`, interdire `AtariClassic` et vérifier les raccordements entre contrats communs et adaptateurs.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Dictionaries/ModelCatalog.cs` pour construire les modèles exposés au `Common` à partir de `StModelCatalog` et `HardwareModelCatalog`, sans recopier leurs clés de ressources.
+    - [x] Supprimer `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Constants/ModelConstants.cs` après suppression de ses constantes de modèles dupliquées.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour actualiser l’inventaire alphabétique et expliquer la propriété et le raccordement de chaque nouveau dossier de machines.
   - [x] 7.5 Vérifier la séparation.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner la réussite du build Atari, des tests d’architecture, l’absence de référence à `AtariClassic`, l’absence de type parallèle aux contrats communs et l’absence de dossier vide.
@@ -1033,27 +1033,27 @@ se trouver dans le `Common` familial.
 
 - [x] Créer `Common/Machines/Common` dans les modules Amiga et Atari pour les catégories partagées par leurs machines.
   - [x] 8.1 Déplacer l’infrastructure commune Atari.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Atari/Common/Machines/Constants/*.cs` vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Constants/` et remplacer leur espace de noms par `GWGUI.Emulation.Atari.Common.Machines.Common.Constants`.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Atari/Common/Machines/Contracts/*.cs` vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Contracts/` et remplacer leur espace de noms par `GWGUI.Emulation.Atari.Common.Machines.Common.Contracts`.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Atari/Common/Machines/Dictionaries/*.cs` vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Dictionaries/` et remplacer leur espace de noms par `GWGUI.Emulation.Atari.Common.Machines.Common.Dictionaries`.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Atari/Common/Machines/Enums/*.cs` vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Enums/` et remplacer leur espace de noms par `GWGUI.Emulation.Atari.Common.Machines.Common.Enums`.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Atari/Common/Machines/Functions/*.cs` vers `src/GWGUI.Emulation.Atari/Common/Machines/Common/Functions/` et remplacer leur espace de noms par `GWGUI.Emulation.Atari.Common.Machines.Common.Functions`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Constants/*.cs` vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Constants/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Atari.Common.Machines.Common.Constants`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Contracts/*.cs` vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Contracts/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Atari.Common.Machines.Common.Contracts`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Dictionaries/*.cs` vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Dictionaries/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Atari.Common.Machines.Common.Dictionaries`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Enums/*.cs` vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Enums/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Atari.Common.Machines.Common.Enums`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Functions/*.cs` vers `src/RetroMediaLab.Emulation.Atari/Common/Machines/Common/Functions/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Atari.Common.Machines.Common.Functions`.
   - [x] 8.2 Déplacer l’infrastructure commune Amiga.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Commodore/Common/Machines/Constants/*.cs` vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Constants/` et remplacer leur espace de noms par `GWGUI.Emulation.Commodore.Common.Machines.Common.Constants`.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Commodore/Common/Machines/Contracts/*.cs` vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Contracts/` et remplacer leur espace de noms par `GWGUI.Emulation.Commodore.Common.Machines.Common.Contracts`.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Commodore/Common/Machines/Dictionaries/*.cs` vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Dictionaries/` et remplacer leur espace de noms par `GWGUI.Emulation.Commodore.Common.Machines.Common.Dictionaries`.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Commodore/Common/Machines/Enums/*.cs` vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Enums/` et remplacer leur espace de noms par `GWGUI.Emulation.Commodore.Common.Machines.Common.Enums`.
-    - [x] Déplacer `src/GWGUI.Emulation.Commodore/Common/Machines/Exceptions/MachineExceptions.cs` vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Exceptions/MachineExceptions.cs` et remplacer son espace de noms par `GWGUI.Emulation.Commodore.Common.Machines.Common.Exceptions`.
-    - [x] Déplacer les fichiers `src/GWGUI.Emulation.Commodore/Common/Machines/Functions/*.cs` vers `src/GWGUI.Emulation.Commodore/Common/Machines/Common/Functions/` et remplacer leur espace de noms par `GWGUI.Emulation.Commodore.Common.Machines.Common.Functions`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Constants/*.cs` vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Constants/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Commodore.Common.Machines.Common.Constants`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Contracts/*.cs` vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Contracts/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Commodore.Common.Machines.Common.Contracts`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Dictionaries/*.cs` vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Dictionaries/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Commodore.Common.Machines.Common.Dictionaries`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Enums/*.cs` vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Enums/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Commodore.Common.Machines.Common.Enums`.
+    - [x] Déplacer `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Exceptions/MachineExceptions.cs` vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Exceptions/MachineExceptions.cs` et remplacer son espace de noms par `RetroMediaLab.Emulation.Commodore.Common.Machines.Common.Exceptions`.
+    - [x] Déplacer les fichiers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Functions/*.cs` vers `src/RetroMediaLab.Emulation.Commodore/Common/Machines/Common/Functions/` et remplacer leur espace de noms par `RetroMediaLab.Emulation.Commodore.Common.Machines.Common.Functions`.
   - [x] 8.3 Raccorder les nouveaux espaces de noms.
-    - [x] Modifier `src/GWGUI.Emulation.Atari/EmulationGlobalUsings.cs` pour importer les catégories de `Common/Machines/Common` et retirer les anciens imports directs sous `Machines`.
-    - [x] Modifier `src/GWGUI.Emulation.Commodore/EmulationGlobalUsings.cs` pour importer les catégories de `Common/Machines/Common` et retirer les anciens imports directs sous `Machines`.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Atari/EmulationGlobalUsings.cs` pour importer les catégories de `Common/Machines/Common` et retirer les anciens imports directs sous `Machines`.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Commodore/EmulationGlobalUsings.cs` pour importer les catégories de `Common/Machines/Common` et retirer les anciens imports directs sous `Machines`.
     - [x] Modifier les fichiers C# Atari et Amiga qui référencent explicitement les anciens espaces de noms `Common.Machines.Constants` ou `Common.Machines.Functions` afin de viser `Common.Machines.Common`.
   - [x] 8.4 Protéger et documenter la structure.
-    - [x] Modifier `tests/GWGUI.Tests/Architecture/EmulationArchitectureTests.cs` pour exiger le dossier `Machines/Common`, ses catégories, et interdire les catégories directement sous `Machines`.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/EmulationArchitectureTests.cs` pour exiger le dossier `Machines/Common`, ses catégories, et interdire les catégories directement sous `Machines`.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour régénérer l’inventaire alphabétique avec les chemins `Common/Machines/Common/...` et consigner la portée des fichiers déplacés.
     - [x] Modifier `docs/reference/emulator-adapter-file-map.md`, `docs/reference/emulation-module-file-map.md` et `docs/tasks/emulation/emulation-family-common-organization.md` pour décrire le nouveau niveau `Machines/Common`.
   - [x] 8.5 Vérifier le déplacement.
-    - [x] Modifier les fichiers sous `tests/GWGUI.Tests/Emulation` qui importent explicitement `GWGUI.Emulation.Atari.Common.Machines.*` ou `GWGUI.Emulation.Commodore.Common.Machines.*` afin d’ajouter le niveau `Common` aux catégories déplacées.
-    - [x] Modifier `tests/GWGUI.LocalDiskImageTests/TemporaryLibretroMediaReader/TemporaryLibretroMediaReader.cs` pour importer les contrats et enums depuis `Common.Machines.Common`.
+    - [x] Modifier les fichiers sous `tests/RetroMediaLab.Tests/Emulation` qui importent explicitement `RetroMediaLab.Emulation.Atari.Common.Machines.*` ou `RetroMediaLab.Emulation.Commodore.Common.Machines.*` afin d’ajouter le niveau `Common` aux catégories déplacées.
+    - [x] Modifier `tests/RetroMediaLab.LocalDiskImageTests/TemporaryLibretroMediaReader/TemporaryLibretroMediaReader.cs` pour importer les contrats et enums depuis `Common.Machines.Common`.
     - [x] Modifier `docs/reference/emulation-common-file-comparison.md` pour consigner les builds Amiga et Atari, les tests d’architecture, l’absence d’ancien espace de noms et l’absence de dossier vide.

@@ -1,8 +1,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$OutputDirectory,
-    [string]$ApplicationAssemblyName = 'gwgui.app',
-    [string]$RootAssemblyName = 'gwgui'
+    [string]$ApplicationAssemblyName = 'retromedialab.app',
+    [string]$RootAssemblyName = 'retromedialab'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -13,7 +13,7 @@ if (-not (Test-Path -LiteralPath $output -PathType Container)) {
 
 $dependencyManifests = @(Get-ChildItem -LiteralPath $output -File -Filter '*.deps.json')
 if ($dependencyManifests.Count -eq 0) {
-    throw "GW GUI dependency manifests are missing from: $output"
+    throw "Retro Media Lab dependency manifests are missing from: $output"
 }
 
 function Update-DependencyPath {
@@ -60,7 +60,7 @@ if ($applicationLibraries.Count -gt 0) {
     New-Item -ItemType Directory -Path $libraries -Force | Out-Null
     foreach ($library in $applicationLibraries) {
         $category = switch -Regex ($library.Name) {
-            '^gwgui\.' { $null; break }
+            '^retromedialab\.' { $null; break }
             '^(SkiaSharp|libSkiaSharp)' { 'SkiaSharp'; break }
             '^NAudio' { 'NAudio'; break }
             '^Newtonsoft\.Json' { 'Newtonsoft.Json'; break }

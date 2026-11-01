@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>retromedialab.mediafilesystems</AssemblyName>
+    <RootNamespace>RetroMediaLab.MediaFileSystems</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="RetroMediaLab.Tests" />
+    <InternalsVisibleTo Include="RetroMediaLab.LocalEmulationTests" />
+    <InternalsVisibleTo Include="RetroMediaLab.LocalDiskImageTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+
+    <ProjectReference Include="..\RetroMediaLab.MediaAnalysis\RetroMediaLab.MediaAnalysis.csproj" />
+  </ItemGroup>
+
+</Project>

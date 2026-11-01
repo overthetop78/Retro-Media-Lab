@@ -1,0 +1,38 @@
+using MediaSourceDescriptor = RetroMediaLab.MediaEngine.Contracts.MediaSourceDescriptor;
+using RetroMediaLab.MediaEngine.Contracts;
+using RetroMediaLab.MediaEngine.Contracts.Explorer;
+using RetroMediaLab.MediaEngine.Enums;
+using System.IO;
+
+namespace RetroMediaLab.MediaEngine.Images.Reading;
+
+/// <summary>Loads one media document and explores its file-system content without presentation dependencies.</summary>
+public sealed class MediaImageExplorationService(MediaImageReadingService reader, MediaExplorer explorer)
+{
+    public async Task<ExploredMediaImage> ExploreAsync(string path, string? requestedFormatId, CancellationToken cancellationToken = default, Action<MediaExplorationProgress>? reportProgress = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        reportProgress?.Invoke(new(MediaExplorationProgressStage.ReadingMedia, Path.GetFileName(path), 58));
+
+        var source = new MediaSourceDescriptor(path, [], RequestedFormatId: requestedFormatId);
+        MediaImageDocument document;
+        try
+        {
+            document = await reader.ReadAsync(source, cancellationToken).ConfigureAwait(false);
+        }
+        catch (NotSupportedException) when (requestedFormatId is not null)
+        {
+            document = await reader.ReadAsync(source with { RequestedFormatId = null }, cancellationToken).ConfigureAwait(false);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        document = await RetroMediaLab.MediaEngine.Functions.CassetteBlockFunctions.IndexAsync(document, cancellationToken).ConfigureAwait(false);
+        reportProgress?.Invoke(new(MediaExplorationProgressStage.ReadingFileSystem, document.FormatId, 78, document.MediaKind));
+
+        var explored = await explorer.ExploreAsync(document, cancellationToken).ConfigureAwait(false);
+        reportProgress?.Invoke(new(MediaExplorationProgressStage.RecognizingFiles, explored.FirstFileName ?? document.FormatId, 94, document.MediaKind));
+        return explored;
+    }
+
+}

@@ -1,0 +1,84 @@
+using RetroMediaLab.MediaEngine.Images.Formats.Tape;
+using RetroMediaLab.MediaEngine.Images.Visualization;
+using RetroMediaLab.MediaEngine.Images.Writing;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Scp.Decoding;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Scp.Reading;
+using RetroMediaLab.MediaEngine.Images.Conversion;
+using RetroMediaLab.MediaEngine.Images.Conversion.Optical;
+using RetroMediaLab.MediaEngine.Images.Conversion.Sequential;
+using RetroMediaLab.MediaEngine.PhysicalMedia.Writing;
+using RetroMediaLab.MediaEngine.Images.Reading;
+using MediaExplorer = RetroMediaLab.MediaEngine.Images.Reading.MediaExplorer;
+using FileSystemsMediaExplorer = RetroMediaLab.MediaFileSystems.Exploration.MediaExplorer;
+using FileSystemRegistry = RetroMediaLab.MediaFileSystems.Exploration.SectorFileSystemRegistry;
+using RetroMediaLab.MediaEngine.Interfaces;
+using RetroMediaLab.MediaEngine.Services;
+
+namespace RetroMediaLab.MediaEngine;
+
+/// <summary>Assembles the shared media engine services without implementing format algorithms.</summary>
+public sealed class MediaEngineComposition
+{
+    /// <summary>Fournit les calculs d'intégrité par leur contrat public, sans initialiser les lecteurs ou convertisseurs.</summary>
+    /// <remarks>Le traitement est sans état et reste emprunté ; les octets et leur durée de vie appartiennent à l'appelant.</remarks>
+    public static IMediaDataIntegrity DataIntegrity { get; } = new MediaDataIntegrityService();
+
+    /// <summary>Fournit les préparations CUE et SCP sous leur contrat, avec création différée des convertisseurs.</summary>
+    public static IMediaRuntimePreparation RuntimePreparation { get; } = new MediaRuntimePreparationService();
+
+    /// <summary>Fournit les opérations de systèmes de fichiers sans exposer leur bibliothèque aux consommateurs.</summary>
+    public static IMediaFileSystemProcessing FileSystems { get; } = new MediaFileSystemProcessingService();
+
+    private MediaEngineComposition(MediaRecognitionComposition recognition, MediaExplorer explorer, MediaConversionComposition conversion, MediaWritingComposition writing, MediaVisualizationComposition visualization)
+    {
+        Recognition = recognition;
+        Explorer = explorer;
+        Conversion = conversion;
+        Writing = writing;
+        Writing.WritingService.Drives = recognition.ReadingService.Drives;
+        Visualization = visualization;
+        FloppyFluxAcquisitionService = new FloppyFluxAcquisitionService();
+        FloppyMediaWritePlanningService = new FloppyMediaWritePlanningService(DiskImageExplorer.CreateDefault());
+        ConversionService = new MediaConversionService(conversion.Registry, writing.Registry, writing.WritingService);
+        OpticalConversionService = conversion.CreateOpticalImageConverter(writing);
+        SequentialConversionService = conversion.CreateSequentialMediaConverter(writing);
+    }
+
+    public MediaRecognitionComposition Recognition { get; }
+
+    public MediaConversionComposition Conversion { get; }
+
+    public MediaWritingComposition Writing { get; }
+
+    public MediaVisualizationComposition Visualization { get; }
+
+    public FloppyFluxAcquisitionService FloppyFluxAcquisitionService { get; }
+
+    public FloppyMediaWritePlanningService FloppyMediaWritePlanningService { get; }
+
+    public MediaImageReadingService ReadingService => Recognition.ReadingService;
+
+    /// <summary>Activité mécanique des lecteurs d’images, commune à la lecture et à ses consommateurs.</summary>
+    public MediaDriveService Drives => ReadingService.Drives;
+
+    public MediaExplorer Explorer { get; }
+
+    public MediaConversionService ConversionService { get; }
+
+    public OpticalImageConversionService OpticalConversionService { get; }
+
+    public SequentialMediaConversionService SequentialConversionService { get; }
+
+    public static MediaEngineComposition CreateDefault()
+    {
+        var recognition = MediaRecognitionComposition.CreateDefault();
+        var sequentialMedia = SequentialMediaComposition.CreateDefault();
+        var mediaFileSystems = FileSystemsMediaExplorer.CreateDefault([new SequentialContentDecoderAdapter(sequentialMedia.Decoders)]);
+        var explorer = new MediaExplorer(mediaFileSystems);
+        var decoding = new ScpSectorDecodingComposition(recognition.ScpReader, new FileSystemRegistry());
+        var conversion = new MediaConversionComposition(recognition, decoding, sequentialMedia);
+        var writing = MediaWritingComposition.CreateDefault();
+        var visualization = MediaVisualizationComposition.CreateDefault();
+        return new MediaEngineComposition(recognition, explorer, conversion, writing, visualization);
+    }
+}

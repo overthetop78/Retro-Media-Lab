@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# Uživatelská příručka GW GUI
+# Uživatelská příručka Retro Media Lab
 
-GW GUI je aplikace pro Windows určená ke čtení, zápisu, převodu, kontrole a emulaci obrazů disků. Dokáže ovládat hardware Greaseweazle, pracovat se soubory obrazů disků prostřednictvím interního enginu a spouštět uložené konfigurace emulovaných počítačů.
+Retro Media Lab je aplikace pro Windows určená ke čtení, zápisu, převodu, kontrole a emulaci obrazů disků. Dokáže ovládat hardware Greaseweazle, pracovat se soubory obrazů disků prostřednictvím interního enginu a spouštět uložené konfigurace emulovaných počítačů.
 
 Tato příručka popisuje anglické rozhraní uvedené v aktuální verzi aplikace. Je zapsán jako zdroj manuálu pro tisk: screenshoty ilustrují ovládání, zatímco okolní text vysvětluje, co si vybrat, proč si vybrat a jak ověřit výsledek.
 
@@ -10,7 +10,7 @@ Tato příručka popisuje anglické rozhraní uvedené v aktuální verzi aplika
 
 ### Jak se tento návod používá
 
-Pokud je to poprvé, co používáte GW GUI, kompletní [Getting started ](#getting-started), pak následovat [Čtení disku ](#reading-a-disk). Pokud je aplikace již nakonfigurována, přejděte přímo do kapitoly pro operaci, kterou chcete provést. Kapitola možností slouží jako reference, pokud vás procedura požádá o změnu nastavení pohonu, motoru, profilu nebo emulovaného stroje.
+Pokud je to poprvé, co používáte Retro Media Lab, kompletní [Getting started ](#getting-started), pak následovat [Čtení disku ](#reading-a-disk). Pokud je aplikace již nakonfigurována, přejděte přímo do kapitoly pro operaci, kterou chcete provést. Kapitola možností slouží jako reference, pokud vás procedura požádá o změnu nastavení pohonu, motoru, profilu nebo emulovaného stroje.
 
 Jména rozhraní jsou uvedena v **bold**. Jména souborů, cesty, příkazy a doslovné hodnoty jsou zobrazeny jako `code`. Poznámky vysvětlují normální chování; varování identifikují operace, které mohou změnit disk, regulátor nebo uloženou konfiguraci.
 
@@ -40,7 +40,7 @@ Jména rozhraní jsou uvedena v **bold**. Jména souborů, cesty, příkazy a do
 
 ## Pochopení pracovního postupu
 
-GW GUI odděluje operace s fyzickým diskem od operací se soubory obrazů:
+Retro Media Lab odděluje operace s fyzickým diskem od operací se soubory obrazů:
 
 | Cíl | Vstup | Výstup | Doporučená karta |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Pro zachování, nejprve udělat syrové zachycení a udržet ji beze změny jak
 - Nakonfigurovaná cesta do `gw.exe` při použití Greaseweazle Host Tools motoru.
 - Právně získané soubory ROM, když je emulovaný stroj vyžaduje.
 
-Aplikace kontroluje požadovaný .NET runtime při spuštění. Pokud chybí, postupujte podle volby instalace a poté restartujte GW GUI.
+Aplikace kontroluje požadovaný .NET runtime při spuštění. Pokud chybí, postupujte podle volby instalace a poté restartujte Retro Media Lab.
 
 ### Před připojením hardwaru
 
@@ -75,11 +75,11 @@ Před spuštěním operace fyzického disku zkontrolujte následující:
 4. Potvrďte, že velikost a hustota pohonu odpovídají disku.
 5. Pokud je to možné, chraňte zdrojový disk proti zápisu.
 
-GW GUI nemůže zabránit poškození způsobenému nesprávným kabeláží, nevhodným výkonem nebo mechanicky nebezpečným pohonem. Nejprve otestujte neznámé hardware s postradatelným diskem.
+Retro Media Lab nemůže zabránit poškození způsobenému nesprávným kabeláží, nevhodným výkonem nebo mechanicky nebezpečným pohonem. Nejprve otestujte neznámé hardware s postradatelným diskem.
 
 ### První start
 
-1. Otevřít `gwgui.exe`.
+1. Otevřít `retromedialab.exe`.
 2. Otevřete **Options**.
 3. V **Controllers a pohony**, skenovat pro regulátor a konfigurovat disk.
 4. Ověřte nebo vyberte cestu do `gw.exe`.
@@ -92,7 +92,7 @@ Pracovní nastavení by mělo ukázat regulátor a řídit v stavové liště, n
 
 ### Výběr motoru
 
-GW GUI může pro některé operace odhalit více než jednu implementaci. Motor **Greaseweazle Host Tools ** se odvolává na konfigurované **; vnitřní ovládání motoru GW GUI podporuje provoz uvnitř aplikace. Výběr motoru je explicitní a nezávislý pro čtení, psaní, konverzi a Disk Explorer. Pokud není provoz podporován zvoleným motorem, GW GUI tuto podmínku hlásí místo automatické výměny motorů.
+Retro Media Lab může pro některé operace odhalit více než jednu implementaci. Motor **Greaseweazle Host Tools ** se odvolává na konfigurované **; vnitřní ovládání motoru Retro Media Lab podporuje provoz uvnitř aplikace. Výběr motoru je explicitní a nezávislý pro čtení, psaní, konverzi a Disk Explorer. Pokud není provoz podporován zvoleným motorem, Retro Media Lab tuto podmínku hlásí místo automatické výměny motorů.
 
 ## Hlavní okno
 
@@ -435,7 +435,7 @@ Ovládání koše lze použít pouze k odstranění uložené konfigurace; neodp
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Výběr motoru" width="72%"></p>
 
-Zvolte nezávisle motor pro čtení, zápis, konverzi a Disk Explorer. Vybraný motor se používá striktně: pokud nemůže provést požadovaný provoz, ohlásí GW GUI omezení místo tichého spínání motorů.
+Zvolte nezávisle motor pro čtení, zápis, konverzi a Disk Explorer. Vybraný motor se používá striktně: pokud nemůže provést požadovaný provoz, ohlásí Retro Media Lab omezení místo tichého spínání motorů.
 
 Tato nezávislost je úmyslná. Například fyzické údaje mohou používat Greaseweazle Host Tools, zatímco konverzi obrazu a průzkum využívají vnitřní motor. Zaznamenejte volbu motoru do profilu nebo poznámky k projektu, pokud jde o reprodukovatelnost.
 
@@ -514,7 +514,7 @@ Nastavte Chip RAM, Slow RAM, Fast RAM a podporovanou rozšiřující paměť. Zp
 
 Vyberte systém Kickstart ROM, volitelný rozšířený ROM a ROM klíč. Detekovaný seznam ROM zobrazuje názvy, revize a kompatibilitu se zvoleným modelem. Zvolte detekovaný **a klikněte na ** Použít **, nebo navštivte soubor ručně.
 
-Soubory s příponou ROM nejsou dodávány společností GW GUI. Používejte ROM, které můžete legálně používat.
+Soubory s příponou ROM nejsou dodávány společností Retro Media Lab. Používejte ROM, které můžete legálně používat.
 
 Detekovaný seznam je vhodnější než hádat z názvu souboru: zobrazí identitu a revizi ROM a vyhodnotí kompatibilitu se zvoleným modelem. **Kompatibilní ** je normální volba; ** Částečně kompatibilní ROM naznačuje, že ROM může spustit, ale není přesně shodný stroj.** Refresh ** obnovuje konfigurované polohy ROM.** Použití ** přiřazuje zvolený detekovaný ROM do konfigurace.
 
@@ -589,7 +589,7 @@ Tyto dialogy jsou otevřeny z karty **Tools **. Každé dialogové okno zobrazuj
 
 Zobrazí informace hlášené zvoleným ovladačem. Expand **Syrový výstup**, když potřebujete kompletní odpověď na příkaz.
 
-Použijte to jako první diagnostický příkaz. Úspěšná odpověď potvrzuje, že GW GUI může spustit nakonfigurovaný spustitelný Host Tools a komunikovat s vybraným zařízením. Před provedením aktualizace zaznamenejte informace o firmwaru a hardwaru.
+Použijte to jako první diagnostický příkaz. Úspěšná odpověď potvrzuje, že Retro Media Lab může spustit nakonfigurovaný spustitelný Host Tools a komunikovat s vybraným zařízením. Před provedením aktualizace zaznamenejte informace o firmwaru a hardwaru.
 
 ### šířka pásma USB
 
@@ -673,7 +673,7 @@ Při porovnávání dvou pokusů zkontrolujte, zda byl ovladač, pohon, motor, p
 
 ## Údaje o aplikaci a přenosné použití
 
-GW GUI udržuje uživatelská data oddělená od aplikačních binárů. V závislosti na zvoleném balíku a režimu jsou nastavení, protokoly, stažené nástroje, emulační komponenty, zachycení, stavy a konfigurace stroje uloženy buď v adresáři `Data` aplikace, nebo v konfigurovaných uživatelsky-datových lokalitách.
+Retro Media Lab udržuje uživatelská data oddělená od aplikačních binárů. V závislosti na zvoleném balíku a režimu jsou nastavení, protokoly, stažené nástroje, emulační komponenty, zachycení, stavy a konfigurace stroje uloženy buď v adresáři `Data` aplikace, nebo v konfigurovaných uživatelsky-datových lokalitách.
 
 Před nahrazením nebo přesunutím přenosné instalace držte kompletní složku aplikace pohromadě a zálohujte složku `Data`. Nepřenášejte jednotlivé soubory z `lib`, protože aplikace z této struktury řeší své vlastní knihovny a knihovny třetích stran.
 
@@ -762,7 +762,7 @@ Před nástrojem pro výměnu pevného skladu:
 4. Ověřte stav regulátoru a konfiguraci pohonu.
 5. Spustit **Řídicí informace**, pokud detekce uspěje, ale příkazy selžou.
 
-Pokud se stále neobjeví, zkuste jiný přímý port USB a kabel, pak rescan. Zkontrolujte Windows Device Manager pro nově detekované sériové zařízení. Regulátor viditelný pro Windows, ale chybějící v GW GUI obvykle ukazuje na rušný port, stalou konfiguraci nebo problém s Host Tools; regulátor chybějící ve Windows ukazuje na USB, výkon, ovladač nebo hardware.
+Pokud se stále neobjeví, zkuste jiný přímý port USB a kabel, pak rescan. Zkontrolujte Windows Device Manager pro nově detekované sériové zařízení. Regulátor viditelný pro Windows, ale chybějící v Retro Media Lab obvykle ukazuje na rušný port, stalou konfiguraci nebo problém s Host Tools; regulátor chybějící ve Windows ukazuje na USB, výkon, ovladač nebo hardware.
 
 ### `gw.exe` nelze nalézt
 
@@ -772,7 +772,7 @@ Po jeho výběru spusťte informace o ovladači **. Pokud to selže před kontak
 
 ### Operace používá špatný motor
 
-Otevřete **Options > Engines** a zkontrolujte engine přiřazený dané operaci. GW GUI bez upozornění nepřepne na jiný engine.
+Otevřete **Options > Engines** a zkontrolujte engine přiřazený dané operaci. Retro Media Lab bez upozornění nepřepne na jiný engine.
 
 Nastavení motoru je oddělené: změna konverzního motoru nemění čtení, zápis ani Disk Explorer. Znovu otevřete chybnou operaci po uložení volby a potvrďte generovaný příkaz v konzoli.
 
@@ -815,7 +815,7 @@ Opakujte čtení do nového názvu souboru, případně zvyšte otáčky a porov
 
 ## Glosář
 
-| Termín | Význam v GW GUI |
+| Termín | Význam v Retro Media Lab |
 |---|---|
 | Regulátor | Hardwarové rozhraní Greaseweazle připojené přes USB |
 | Jeď. | Fyzický disketový pohon připojený k regulátoru |

@@ -5,7 +5,7 @@
 
 ### Vérification des 24 modules — définitions de firmwares et rattachement aux machines
 
-Vérification du code présent au 25 octobre 2026. Les chemins ci-dessous sont relatifs à `src/GWGUI.Emulation.<module>/`. Une inspection de fichier dans Common ne constitue pas à elle seule un catalogue de BIOS par machine. Les chemins d'installation et exigences propres à un cœur restent distincts des identités et compatibilités matérielles. Cette vérification ne prétend pas avoir exécuté tous les BIOS et tous les émulateurs.
+Vérification du code présent au 25 octobre 2026. Les chemins ci-dessous sont relatifs à `src/RetroMediaLab.Emulation.<module>/`. Une inspection de fichier dans Common ne constitue pas à elle seule un catalogue de BIOS par machine. Les chemins d'installation et exigences propres à un cœur restent distincts des identités et compatibilités matérielles. Cette vérification ne prétend pas avoir exécuté tous les BIOS et tous les émulateurs.
 
 | Module | Données et parcours effectivement constatés | État de la séparation machine/émulateur |
 | --- | --- | --- |

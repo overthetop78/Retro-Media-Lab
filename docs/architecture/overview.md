@@ -2,18 +2,18 @@
 
 ## Projets de production
 
-- `GWGUI.App` : application WPF, composition des fenêtres et contrôles, présentation, contrôleurs applicatifs et services propres à l’interface.
-- `GWGUI.Infrastructure` : implémentations techniques liées à Greaseweazle, Windows, la persistance et les services externes.
-- `GWGUI.MediaEngine` : API média de l’application, reconnaissance et décodage des images, lecture et écriture physiques, conversion d’images et visualisation.
-- `GWGUI.MediaFileSystems` : détection des volumes et lecture des vrais dossiers et fichiers des images décodées ; construction des volumes cibles pour la migration de fichiers.
-- `GWGUI.MediaAnalysis` : reconnaissance des types, catégories, icônes et clés de traduction des fichiers.
-- `GWGUI.Emulation` : contrats, services et fonctions communs à toutes les familles émulées.
-- `GWGUI.Emulation.Commodore` : modèles, catalogues, fonctions et modules propres à l’Amiga.
-- `GWGUI.Emulation.Atari` : modèles, catalogues, fonctions et modules propres aux machines Atari.
-- `GWGUI.VideoPresentation` : profils et traitements de présentation de la vidéo d'émulation.
-- `GWGUI.Updates` : catalogues, validation et plans de mise à jour de l'application et des modules.
-- `GWGUI.Launcher` : démarrage de l'application et résolution des DLL du paquet.
-- `GWGUI.Updater` : remplacement des fichiers lors d'une mise à jour préparée et vérification du redémarrage.
+- `RetroMediaLab.App` : application WPF, composition des fenêtres et contrôles, présentation, contrôleurs applicatifs et services propres à l’interface.
+- `RetroMediaLab.Infrastructure` : implémentations techniques liées à Greaseweazle, Windows, la persistance et les services externes.
+- `RetroMediaLab.MediaEngine` : API média de l’application, reconnaissance et décodage des images, lecture et écriture physiques, conversion d’images et visualisation.
+- `RetroMediaLab.MediaFileSystems` : détection des volumes et lecture des vrais dossiers et fichiers des images décodées ; construction des volumes cibles pour la migration de fichiers.
+- `RetroMediaLab.MediaAnalysis` : reconnaissance des types, catégories, icônes et clés de traduction des fichiers.
+- `RetroMediaLab.Emulation` : contrats, services et fonctions communs à toutes les familles émulées.
+- `RetroMediaLab.Emulation.Commodore` : modèles, catalogues, fonctions et modules propres à l’Amiga.
+- `RetroMediaLab.Emulation.Atari` : modèles, catalogues, fonctions et modules propres aux machines Atari.
+- `RetroMediaLab.VideoPresentation` : profils et traitements de présentation de la vidéo d'émulation.
+- `RetroMediaLab.Updates` : catalogues, validation et plans de mise à jour de l'application et des modules.
+- `RetroMediaLab.Launcher` : démarrage de l'application et résolution des DLL du paquet.
+- `RetroMediaLab.Updater` : remplacement des fichiers lors d'une mise à jour préparée et vérification du redémarrage.
 
 ## Responsabilités et échanges
 
@@ -23,35 +23,35 @@ d'architecture.
 
 ### Application et médias
 
-**`GWGUI.App`** possède l'interface : fenêtres, contrôles, affichage, traduction des clés reçues,
+**`RetroMediaLab.App`** possède l'interface : fenêtres, contrôles, affichage, traduction des clés reçues,
 état de présentation et réaction aux commandes de l'utilisateur. Elle transmet ces commandes au
 service responsable et présente ses résultats. Elle assemble les services au démarrage et gère le
-cycle de vie de ses fenêtres. Pour les médias, son seul point d'accès est `GWGUI.MediaEngine` : elle
-ne demande pas directement une lecture à `GWGUI.MediaFileSystems` ni une classification à
-`GWGUI.MediaAnalysis`. « Interface seulement » comprend cette coordination de l'interface ; cela
+cycle de vie de ses fenêtres. Pour les médias, son seul point d'accès est `RetroMediaLab.MediaEngine` : elle
+ne demande pas directement une lecture à `RetroMediaLab.MediaFileSystems` ni une classification à
+`RetroMediaLab.MediaAnalysis`. « Interface seulement » comprend cette coordination de l'interface ; cela
 n'inclut pas la reconnaissance d'un format, d'un système de fichiers ou d'un type de fichier.
 
-**`GWGUI.MediaEngine`** est le moteur des médias, pas un moteur d'émulation. Il reconnaît un format
+**`RetroMediaLab.MediaEngine`** est le moteur des médias, pas un moteur d'émulation. Il reconnaît un format
 d'image, charge et décode le média une seule fois, gère les représentations de flux, pistes, secteurs,
 blocs ou données séquentielles, et fournit les données techniques du visualiseur. Il prend en charge
 la lecture d'une disquette physique vers une image et l'écriture d'une disquette physique depuis une
 image, ainsi que la conversion entre formats d'images compatibles. L'affichage des données du
 visualiseur reste dans `App`. Pour l'explorateur, MediaEngine transmet le média déjà décodé à
-`GWGUI.MediaFileSystems` et retourne le résultat à App. Pour une migration de fichiers, il lit
+`RetroMediaLab.MediaFileSystems` et retourne le résultat à App. Pour une migration de fichiers, il lit
 l'image source, crée l'image cible vierge, demande à MediaFileSystems d'y construire le système de
 fichiers et d'y injecter les fichiers, puis écrit l'image résultante. Il peut fournir un média à un
 module d'émulation sans gérer les machines, manettes ou sauvegardes de l'émulateur.
 
-**`GWGUI.MediaFileSystems`** traite le contenu logique de l'image que MediaEngine lui fournit. Il
+**`RetroMediaLab.MediaFileSystems`** traite le contenu logique de l'image que MediaEngine lui fournit. Il
 retrouve les vrais volumes, partitions, dossiers, fichiers, noms enregistrés, métadonnées et contenus
 accessibles, puis construit l'arborescence de l'explorateur. Il ne recharge pas et ne redécode pas
 l'image, n'invente pas de nom de fichier et ne reconnaît pas lui-même le type sémantique d'un
-fichier. Il demande ce dernier travail à `GWGUI.MediaAnalysis`, puis retourne à MediaEngine les
+fichier. Il demande ce dernier travail à `RetroMediaLab.MediaAnalysis`, puis retourne à MediaEngine les
 données nécessaires à la réponse. Pour la migration, il planifie les noms et métadonnées compatibles
 avec le système de fichiers cible et construit le volume qui reçoit les fichiers ; MediaEngine garde
 la création et l'écriture du conteneur image.
 
-**`GWGUI.MediaAnalysis`** reçoit de MediaFileSystems les dossiers et fichiers effectivement trouvés.
+**`RetroMediaLab.MediaAnalysis`** reçoit de MediaFileSystems les dossiers et fichiers effectivement trouvés.
 Il identifie leur type, leur catégorie, l'identifiant d'icône et la clé de traduction, et retourne
 ces informations à MediaFileSystems. App traduit la clé et affiche le résultat. D'autres propriétés,
 comme le logiciel capable d'ouvrir un fichier, restent une possibilité future, sans contrat arrêté
@@ -68,7 +68,7 @@ La progression exacte figure dans la [feuille de séparation](../tasks/media-lib
 
 ### Matériel et accès techniques
 
-**`GWGUI.Infrastructure`** contient actuellement l'accès au matériel et aux outils externes :
+**`RetroMediaLab.Infrastructure`** contient actuellement l'accès au matériel et aux outils externes :
 découverte des périphériques, protocole et transport Greaseweazle, lancement de `gw.exe`, lecture de
 ses capacités, gestion de son installation, processus et journaux techniques. Les opérations média
 restent décidées par MediaEngine ; Infrastructure fournit les adaptateurs matériels et les commandes
@@ -91,22 +91,22 @@ résultats du matériel.
 
 ### Émulation et vidéo
 
-**`GWGUI.Emulation`** concerne la gestion commune des émulateurs : contrats des modules et des
+**`RetroMediaLab.Emulation`** concerne la gestion commune des émulateurs : contrats des modules et des
 machines, sessions, médias insérés, disques durs émulés, entrées et manettes côté émulateur, images
 vidéo, audio, configurations et états de sauvegarde. Les adaptations aux périphériques Windows et
 les écrans qui commandent ces fonctions ne sont pas le cœur de l'émulation. Actuellement, une partie
 des services d'entrée, de chargement des modules et de persistance des configurations se trouve
 encore dans App ; les réglages généraux d'émulation enregistrés par `AppSettings` sont dans
 Infrastructure. Cette répartition actuelle ne change pas la responsabilité fonctionnelle de
-GWGUI.Emulation : gérer l'émulation commune aux machines.
+RetroMediaLab.Emulation : gérer l'émulation commune aux machines.
 
-**`GWGUI.Emulation.Commodore`, `GWGUI.Emulation.Atari` et les futurs modules de machine** fournissent
+**`RetroMediaLab.Emulation.Commodore`, `RetroMediaLab.Emulation.Atari` et les futurs modules de machine** fournissent
 les modèles, choix de machines, configurations et implémentations propres à leur famille. Les modules
-Amiga et Atari référencent `GWGUI.Emulation` pour les contrats communs et `GWGUI.MediaEngine` quand
+Amiga et Atari référencent `RetroMediaLab.Emulation` pour les contrats communs et `RetroMediaLab.MediaEngine` quand
 ils ont besoin d'une opération sur une image média. App les découvre et les charge comme modules ;
 ils ne référencent pas App et ne se référencent pas mutuellement.
 
-**`GWGUI.VideoPresentation`** définit les profils, réglages, préréglages et calculs de présentation
+**`RetroMediaLab.VideoPresentation`** définit les profils, réglages, préréglages et calculs de présentation
 vidéo de l'émulation. App reçoit les images produites via les contrats d'Emulation, applique les
 choix de présentation et effectue l'affichage dans ses surfaces graphiques. VideoPresentation est
 référencé par App ; il ne référence actuellement ni App ni Emulation. Il n'est pas le propriétaire
@@ -114,26 +114,26 @@ des commandes de la machine émulée.
 
 ### Mises à jour et démarrage
 
-**`GWGUI.Updates`** définit et valide les catalogues des versions de l'application et des modules,
+**`RetroMediaLab.Updates`** définit et valide les catalogues des versions de l'application et des modules,
 compare les versions disponibles et prépare le plan d'installation. Il référence les contrats
 d'Emulation nécessaires pour vérifier la compatibilité des modules. Actuellement, les services App
 effectuent aussi les requêtes réseau et téléchargent les archives ; cette logique dépasse une App
 strictement limitée à l'interface et reste à ranger si ce périmètre est appliqué partout.
 
-**`GWGUI.Updater`** est l'outil appelé lorsqu'une mise à jour est prête. Il lit le plan fourni par
+**`RetroMediaLab.Updater`** est l'outil appelé lorsqu'une mise à jour est prête. Il lit le plan fourni par
 Updates, attend la fermeture des processus concernés, remplace les fichiers, contrôle le démarrage
 de la nouvelle version et restaure l'ancienne si la vérification échoue. Ce n'est pas le composant
 qui cherche ou télécharge les versions.
 
-**`GWGUI.Launcher`** est l'exécutable de lancement. Il charge `gwgui.app.dll` et résout les DLL du
+**`RetroMediaLab.Launcher`** est l'exécutable de lancement. Il charge `retromedialab.app.dll` et résout les DLL du
 paquet dans `lib` ainsi que les ressources de langue. La découverte des modules d'émulation et la
 gestion de leurs machines sont assurées après le démarrage par App et les bibliothèques d'émulation ;
 Launcher ne les pilote pas.
 
 ## Projets de validation
 
-- `GWGUI.Tests` contient la suite rapide par défaut et une catégorie `GpuExhaustive` séparée pour les matrices complètes de shaders et de moteurs de rendu.
-- `GWGUI.LocalDiskImageTests` reste un outil local séparé de la solution principale pour les contrôles utilisant le corpus privé.
+- `RetroMediaLab.Tests` contient la suite rapide par défaut et une catégorie `GpuExhaustive` séparée pour les matrices complètes de shaders et de moteurs de rendu.
+- `RetroMediaLab.LocalDiskImageTests` reste un outil local séparé de la solution principale pour les contrôles utilisant le corpus privé.
 
 ## Dépendances entre projets
 
@@ -149,11 +149,11 @@ App → VideoPresentation
 App → Updates → Emulation
 Emulation.Amiga / Emulation.Atari → Emulation, MediaEngine
 Updater → Updates
-Launcher → aucun projet GW GUI ; il charge App à l'exécution
+Launcher → aucun projet Retro Media Lab ; il charge App à l'exécution
 ```
 
 `MediaAnalysis`, `Emulation` et `VideoPresentation` n'ont pas de référence vers un autre projet
-GW GUI. App découvre les modules Amiga et Atari dans `Modules` sans référence directe à leurs
+Retro Media Lab. App découvre les modules Amiga et Atari dans `Modules` sans référence directe à leurs
 projets. Les modules ne se référencent pas mutuellement. Aucune bibliothèque de production ne
 référence App, et il n'y a pas de référence circulaire entre les projets médias.
 
@@ -171,11 +171,11 @@ Chaque projet place les éléments dans le dossier correspondant à leur respons
 - `Services` pour les responsabilités possédant un cycle de vie ou des dépendances ;
 - `Views`, `ViewModels`, `Presenters` et `Controllers` uniquement dans l’application lorsque la responsabilité appartient à l’interface.
 
-Une fonction ou une donnée réellement commune à plusieurs familles d’émulation appartient à `GWGUI.Emulation`. Une différence propre à Amiga ou Atari reste dans sa bibliothèque spécialisée.
+Une fonction ou une donnée réellement commune à plusieurs familles d’émulation appartient à `RetroMediaLab.Emulation`. Une différence propre à Amiga ou Atari reste dans sa bibliothèque spécialisée.
 
 ## Moteur média
 
-`GWGUI.MediaEngine` sépare actuellement :
+`RetroMediaLab.MediaEngine` sépare actuellement :
 
 - `Reading`, `Recognition` et `Formats` pour ouvrir et reconnaître les images ;
 - `Decoding`, `Encoding`, `Reconstruction` et `Representations` pour les données de flux, pistes,
@@ -191,20 +191,20 @@ La chaîne complète, les registres actuels et le contrat `IImageDisquette` sont
 
 ## Émulation
 
-`GWGUI.Emulation` définit les contrats communs des modules, machines, médias, entrées, vidéo, audio, messages et sauvegardes d’état. Les modules Amiga et Atari fournissent leurs catalogues et implémentations spécialisées à l’application.
+`RetroMediaLab.Emulation` définit les contrats communs des modules, machines, médias, entrées, vidéo, audio, messages et sauvegardes d’état. Les modules Amiga et Atari fournissent leurs catalogues et implémentations spécialisées à l’application.
 
 Les règles détaillées de cette séparation sont décrites dans [l’architecture modulaire de l’émulation](emulation.md).
 
 ## Application WPF
 
-`GWGUI.App` sépare les fenêtres dans `Views/Windows`, les composants réutilisables dans `Views/Controls` et les responsabilités non visuelles dans leurs contrôleurs, présentateurs, fonctions et services respectifs.
+`RetroMediaLab.App` sépare les fenêtres dans `Views/Windows`, les composants réutilisables dans `Views/Controls` et les responsabilités non visuelles dans leurs contrôleurs, présentateurs, fonctions et services respectifs.
 
 Les réglages et outils de gestion sont répartis entre trois fenêtres accessibles depuis la fenêtre principale :
 
-- **Options > Préférences…** ouvre les réglages généraux de GW GUI : général, journaux, contrôleurs et lecteurs, moteurs, profils et manettes ;
+- **Options > Préférences…** ouvre les réglages généraux de Retro Media Lab : général, journaux, contrôleurs et lecteurs, moteurs, profils et manettes ;
 - **Émulation > Préférences d’émulation…** ouvre seulement les réglages communs Général, Raccourcis et Configurations ;
 - chaque autre entrée dynamique du menu **Émulation** ouvre une boîte de dialogue indépendante alimentée par le module installé correspondant ;
-- **Options > Mises à jour…** ouvre le gestionnaire des versions de GW GUI et des modules d’émulation.
+- **Options > Mises à jour…** ouvre le gestionnaire des versions de Retro Media Lab et des modules d’émulation.
 
 Ces fenêtres conservent des responsabilités distinctes. Les préférences enregistrent le comportement général de l’application, les préférences d’émulation enregistrent les réglages partagés, chaque fenêtre de module configure directement ses machines, et la fenêtre des mises à jour gère la découverte, la préparation groupée, l’installation et le remplacement des composants distribués.
 

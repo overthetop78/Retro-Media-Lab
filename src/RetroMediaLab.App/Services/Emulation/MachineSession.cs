@@ -1,0 +1,183 @@
+using RetroMediaLab.Emulation;
+
+namespace RetroMediaLab.App.Services.Emulation;
+
+internal sealed class MachineSession : IAsyncDisposable
+{
+    private static readonly HashSet<MachineSession> OpenSessions = [];
+    internal static IReadOnlyList<MachineSession> All => OpenSessions.ToArray();
+    private Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> _machineFactory;
+    private readonly List<EmulationMedia> _mountedMedia;
+    private IEmulatedMachine _machine;
+    private bool _disposed;
+    private bool _hasLiveMachine = true;
+    private bool _recreateOnPowerOn;
+
+    internal MachineSession(IEmulatedMachine machine, Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> machineFactory, IEnumerable<EmulationMedia> mountedMedia)
+        : this(string.Empty, Guid.Empty, string.Empty, machine, machineFactory, mountedMedia) { }
+
+    internal MachineSession(string moduleId, Guid configurationId, string displayName, IEmulatedMachine machine, Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> machineFactory, IEnumerable<EmulationMedia> mountedMedia)
+    {
+        ModuleId = moduleId;
+        ConfigurationId = configurationId;
+        DisplayName = displayName;
+        _machine = machine;
+        _machineFactory = machineFactory;
+        _mountedMedia = mountedMedia.ToList();
+        OpenSessions.Add(this);
+    }
+
+    internal string ModuleId { get; }
+    internal Guid ConfigurationId { get; }
+    internal string DisplayName { get; }
+    internal IEmulatedMachine Machine => _machine;
+    internal bool IsPowered { get; private set; }
+    internal IReadOnlyList<EmulationMedia> MountedMedia => _mountedMedia;
+    internal event EventHandler<IEmulatedMachine>? MachineChanged;
+
+    internal async Task PowerOnAsync()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (IsPowered) return;
+        if (_recreateOnPowerOn) await DisposeCurrentMachineAsync();
+        if (!_hasLiveMachine) CreateMachine();
+        try
+        {
+            await _machine.Lifecycle.StartAsync();
+            IsPowered = true;
+        }
+        catch
+        {
+            await DisposeCurrentMachineAsync();
+            throw;
+        }
+    }
+
+    internal async Task PowerOffAsync()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (!IsPowered) return;
+        await DisposeCurrentMachineAsync();
+        IsPowered = false;
+    }
+
+    internal async Task TogglePowerAsync()
+    {
+        if (IsPowered) await PowerOffAsync();
+        else await PowerOnAsync();
+    }
+
+    internal async Task TogglePauseAsync()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (!IsPowered) return;
+        if (_machine.State == EmulationMachineState.Running)
+            await _machine.Lifecycle.PauseAsync();
+        else if (_machine.State == EmulationMachineState.Paused)
+            await _machine.Lifecycle.ResumeAsync();
+    }
+
+    internal async Task RecreateRunningMachineAsync()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var wasPowered = IsPowered;
+        await DisposeCurrentMachineAsync();
+        CreateMachine();
+        if (!wasPowered) return;
+        try
+        {
+            await _machine.Lifecycle.StartAsync();
+            IsPowered = true;
+        }
+        catch
+        {
+            await DisposeCurrentMachineAsync();
+            IsPowered = false;
+            throw;
+        }
+    }
+
+    internal Task UpdateMachineFactoryAsync(Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> machineFactory)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        _machineFactory = machineFactory;
+        if (!IsPowered) _recreateOnPowerOn = true;
+        return Task.CompletedTask;
+    }
+
+    internal async Task InsertAsync(EmulationMedia media, bool requiresMachineRecreation)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var next = _mountedMedia.Where(item => item.Slot != media.Slot).Append(media).ToArray();
+        if (IsPowered && requiresMachineRecreation) await RecreateRunningMachineAsync(next);
+        else if (IsPowered) await _machine.Media.InsertAsync(media);
+        else _recreateOnPowerOn = true;
+        ReplaceMountedMedia(next);
+    }
+
+    internal async Task EjectAsync(EmulationMediaSlot slot, bool requiresMachineRecreation)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        var next = _mountedMedia.Where(item => item.Slot != slot).ToArray();
+        if (IsPowered && requiresMachineRecreation) await RecreateRunningMachineAsync(next);
+        else if (IsPowered) await _machine.Media.EjectAsync(slot);
+        else _recreateOnPowerOn = true;
+        ReplaceMountedMedia(next);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed) return;
+        try { await DisposeCurrentMachineAsync(); }
+        finally
+        {
+            _disposed = true;
+            OpenSessions.Remove(this);
+        }
+    }
+
+    private void CreateMachine()
+    {
+        _machine = _machineFactory(_mountedMedia);
+        _hasLiveMachine = true;
+        _recreateOnPowerOn = false;
+        MachineChanged?.Invoke(this, _machine);
+    }
+
+    private async Task RecreateRunningMachineAsync(IReadOnlyList<EmulationMedia> media)
+    {
+        await DisposeCurrentMachineAsync();
+        _machine = _machineFactory(media);
+        _hasLiveMachine = true;
+        MachineChanged?.Invoke(this, _machine);
+        try
+        {
+            await _machine.Lifecycle.StartAsync();
+            IsPowered = true;
+        }
+        catch
+        {
+            await DisposeCurrentMachineAsync();
+            IsPowered = false;
+            throw;
+        }
+    }
+
+    private void ReplaceMountedMedia(IEnumerable<EmulationMedia> media)
+    {
+        _mountedMedia.Clear();
+        _mountedMedia.AddRange(media);
+    }
+
+    private async Task DisposeCurrentMachineAsync()
+    {
+        if (!_hasLiveMachine) return;
+        try { await _machine.Lifecycle.StopAsync(); }
+        finally
+        {
+            await _machine.DisposeAsync();
+            _hasLiveMachine = false;
+            IsPowered = false;
+        }
+    }
+}

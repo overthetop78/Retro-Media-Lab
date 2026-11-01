@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Options.Title" xml:space="preserve"><value>Alternativ</value></data>
+  <data name="Options.General" xml:space="preserve"><value>Allmän</value></data>
+  <data name="Options.Tools" xml:space="preserve"><value>Greaseweazle Verktyg</value></data>
+  <data name="Options.Hardware" xml:space="preserve"><value>Styrenheter och drivenheter</value></data>
+  <data name="Options.Profiles" xml:space="preserve"><value>Profiler</value></data>
+  <data name="Options.ImagesFolder" xml:space="preserve"><value>Standard diskbildsmapp</value></data>
+  <data name="Options.Language" xml:space="preserve"><value>Språk</value></data>
+  <data name="Options.Theme" xml:space="preserve"><value>Tema</value></data>
+  <data name="Options.Theme.System" xml:space="preserve"><value>System</value></data>
+  <data name="Options.Theme.Light" xml:space="preserve"><value>Ljust</value></data>
+  <data name="Options.Theme.Dark" xml:space="preserve"><value>Mörkt</value></data>
+  <data name="Options.GwPath" xml:space="preserve"><value>Sökväg till gw.exe</value></data>
+  <data name="Options.ToolsHelp" xml:space="preserve"><value>Om verktygen saknas kommer assistenten att erbjuda att ladda ner dem eller välja en befintlig installation. Uppdateringar meddelas endast.</value></data>
+  <data name="Options.HardwarePersistence" xml:space="preserve"><value>Hårdvaruinställningarna förblir lagrade när en enhet kopplas bort.</value></data>
+  <data name="Options.ExecutableFilter"><value>Greaseweazle (gw.exe)|gw.exe|Exekverbar (genomförbar)*.exe)|*.exe</value></data>
+  <data name="Options.RemoveHardware"><value>Ta bort denna lagrade kontroller och alla dess enheter?</value></data>
+  <data name="Options.HardwareTitle"><value>Hårdvara</value></data>
+  <data name="Options.UseConversionTags"><value>Använd taggar i konverteringsfilnamn</value></data>
+  <data name="Options.TagPreset"><value>Förinställa</value></data>
+  <data name="Options.TagPresetFamily"><value>Endast familj</value></data>
+  <data name="Options.TagPresetFormat"><value>Endast format</value></data>
+  <data name="Options.TagPresetFamilyFormat"><value>Familj och format</value></data>
+  <data name="Options.TagPresetFamilyExtension"><value>Familj och förlängning</value></data>
+  <data name="Options.TagPresetDetailed"><value>Familj, format och förlängning</value></data>
+  <data name="Options.TagPattern"><value>Konverteringstaggmönster</value></data>
+  <data name="Options.TagVariablesTitle"><value>Tillgängliga variabler</value></data>
+  <data name="Options.TagVariableName"><value>Källfilnamn</value></data>
+  <data name="Options.TagVariableFamily"><value>Familj: PC, ST, AMIGA...</value></data>
+  <data name="Options.TagVariableFormat"><value>Format: 720, 1440, DD...</value></data>
+  <data name="Options.TagVariableExtension"><value>Förlängning: IMA, ST, ADF...</value></data>
+  <data name="Options.TagVariableDateIso"><value>Datum: 2026-08-06</value></data>
+  <data name="Options.TagVariableDateCompact"><value>Datum: 20260806</value></data>
+  <data name="Options.TagVariableDateLocal"><value>Datum: 2026-08-06</value></data>
+  <data name="Options.TagVariableTimeFull"><value>Tid: 14-35-42</value></data>
+  <data name="Options.TagVariableTimeCompact"><value>Tid: 143542</value></data>
+  <data name="Options.TagVariableTimeShort"><value>Tid: 14-35</value></data>
+  <data name="Options.TagPatternHelp"><value>{NAME} - Källa filnamn&#xA;{FAMILY} - maskinfamilj (PC, ST, AMIGA...)&#xA;{FORMAT} format eller geometri (720, 1440, DD...)&#xA;{EXTENSION} - utgångsförlängning (utgångsförlängning)IMA, ST, ADF...)&#xA;{DATE:YYYY-MM-DD} - datum 2026-08-06&#xA;{DATE:YYYYMMDD} - datum 20260806&#xA;{DATE:DD-MM-YYYY} - datum 06-08-2026&#xA;{TIME:HH-MM-SS} - Tid 14-35-42&#xA;{TIME:HHMMSS} - Tid 143542&#xA;{TIME:HH-MM} - Tid 14-35</value></data>
+  <data name="Options.RecentTagPatterns"><value>Senaste anpassade mönster</value></data>
+  <data name="Options.NextTagExample"><value>Nästa exempel</value></data>
+  <data name="Options.TagPatternPreview"><value>Exempel: {0}</value></data>
+  <data name="Options.TagPatternInvalid"><value>Taggmönstret måste innehålla {tag}.</value></data>
+  <data name="Options.EnableLogs"><value>Spara loggar</value></data>
+  <data name="Options.Logs"><value>Loggar</value></data>
+  <data name="Options.LogsDescription"><value>Varje åtgärd har sin egen fil i mappen Retro Media Lab Logs.</value></data>
+  <data name="Options.LogActionErase"><value>Radera</value></data>
+  <data name="Options.LogActionClean"><value>Rengör huvuden</value></data>
+  <data name="Options.OpenLogsFolder"><value>Öppna mappen</value></data>
+  <data name="Options.LogMaximumSize"><value>Maximal storlek</value></data>
+  <data name="Options.KeepLogArchives"><value>Spara tidigare loggar</value></data>
+  <data name="Options.LogUnlimitedHint"><value>0 = obegränsat</value></data>
+  <data name="Options.Engines" xml:space="preserve"><value>Motorer</value></data>
+  <data name="Options.Engines.Description" xml:space="preserve"><value>Välj oberoende vilken motor som används för varje åtgärd.</value></data>
+  <data name="Options.Engines.Internal" xml:space="preserve"><value>Intern Retro Media Lab-motor</value></data>
+  <data name="Options.Engines.StrictChoice" xml:space="preserve"><value>Den valda motorn används strikt. Om den inte kan utföra åtgärden rapporterar Retro Media Lab det utan att tyst använda den andra motorn.</value></data>
+  <data name="Options.EmulationMachineTitle" xml:space="preserve"><value>{0} -- {1} :: :: {2}</value></data>
+  <data name="Options.PreferencesTitle"><value>Föreställningar</value></data>
+  <data name="Options.EmulationTitle"><value>Emuleringspreferenser</value></data>
+  <data name="Options.EmulationModuleTitle"><value>{0} emuleringsinställningar</value></data>
+  <data name="Options.Themes.Title"><value>Teman</value></data>
+  <data name="Options.Themes.List"><value>Tillgängliga teman</value></data>
+  <data name="Options.Themes.Appearance"><value>Utseende</value></data>
+  <data name="Options.Themes.PreviewUnavailable"><value>Förhandsvisning saknas.</value></data>
+  <data name="Options.Themes.Active"><value>Aktivt tema: {0}</value></data>
+  <data name="Options.Themes.ApplyHint"><value>Det valda temat används direkt och behålls nästa gång programmet startas.</value></data>
+  <data name="Options.Themes.Base.Description"><value>Den ursprungliga layouten med systemets, ljust eller mörkt utseende.</value></data>
+
+
+
+
+
+  <data name="Options.Themes.Studio.Description"><value>Arbetsyta med fönster som kan flyttas och storleksändras. Ha flera verktyg öppna och växla mellan dem utan att förlora inställningarna.</value></data>
+  <data name="Options.Themes.Minimize"><value>Minimera</value></data>
+  <data name="Options.Themes.MaximizeRestore"><value>Maximera eller återställ</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Programhanteraren</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>System</value></data>
+  <data name="Options.Themes.OS.File"><value>Arkiv</value></data>
+  <data name="Options.Themes.OS.Window"><value>Fönster</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Överlappande</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Sida vid sida</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Ordna ikoner</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Återställ</value></data>
+  <data name="Options.Themes.OS.Move"><value>Flytta</value></data>
+  <data name="Options.Themes.OS.Size"><value>Storlek</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximera</value></data>
+  <data name="Options.Themes.OS.Open"><value>Öppna</value></data>
+  <data name="Options.Themes.OS.Description"><value>Ursprungliga operativsystemgränssnitt, inklusive fönster, kontroller och interaktioner.</value></data>
+  <data name="Options.Themes.Edition"><value>Variant</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Program</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numrering</value></data>
+  <data name="Options.Themes.OS.XP.Blue"><value>Blå</value></data>
+  <data name="Options.Themes.OS.XP.Silver"><value>Silver Silver</value></data>
+  <data name="Options.Themes.OS.XP.Olive"><value>Olivgrön</value></data>
+  <data name="Options.Themes.Orbit.Machines"><value>Maskiner</value></data>
+  <data name="Options.Themes.Orbit.Media"><value>Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media Media</value></data>
+  <data name="Options.Themes.Orbit.Journal"><value>Aktivitetslogg</value></data>
+  <data name="Options.Themes.Orbit.Commands"><value>Kommandon</value></data>
+  <data name="Options.Themes.Orbit.SearchCommands"><value>Sök efter ett kommando</value></data>
+  <data name="Options.Themes.Orbit.NoCommand"><value>Inget matchande kommando</value></data>
+  <data name="Options.Themes.Orbit.ChooseMachine"><value>Välj en maskin eller fortsätt en öppen session</value></data>
+  <data name="Options.Themes.Orbit.Context"><value>Kontext</value></data>
+  <data name="Options.Themes.Orbit.NoSessions"><value>Ingen emuleringssession öppen</value></data>
+  <data name="Options.Themes.Orbit.Description"><value>Maskiner, mediedokument och kontextuella verktyg i ett arbetsutrymme.</value></data>
+</root>

@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI User Guide
+# Retro Media Lab User Guide
 
-GW GUI is a Windows application for reading, writing, converting, inspecting, and emulating floppy-disk images. It can control Greaseweazle hardware, work with disk-image files through its internal engine, and run saved emulated-machine configurations.
+Retro Media Lab is a Windows application for reading, writing, converting, inspecting, and emulating floppy-disk images. It can control Greaseweazle hardware, work with disk-image files through its internal engine, and run saved emulated-machine configurations.
 
 This guide describes the English interface shown in the current version of the application. It is written as the source of the printable user manual: screenshots illustrate the controls, while the surrounding text explains what to choose, why to choose it, and how to verify the result.
 
@@ -10,7 +10,7 @@ This guide describes the English interface shown in the current version of the a
 
 ### How to use this guide
 
-If this is your first time using GW GUI, complete [Getting started](#getting-started), then follow [Reading a disk](#reading-a-disk). If the application is already configured, go directly to the chapter for the operation you want to perform. The options chapters serve as a reference when a procedure asks you to change a drive, engine, profile, or emulated-machine setting.
+If this is your first time using Retro Media Lab, complete [Getting started](#getting-started), then follow [Reading a disk](#reading-a-disk). If the application is already configured, go directly to the chapter for the operation you want to perform. The options chapters serve as a reference when a procedure asks you to change a drive, engine, profile, or emulated-machine setting.
 
 Interface names are shown in **bold**. Filenames, paths, commands, and literal values are shown as `code`. Notes explain normal behaviour; warnings identify operations that may alter a disk, controller, or stored configuration.
 
@@ -41,7 +41,7 @@ Interface names are shown in **bold**. Filenames, paths, commands, and literal v
 
 ## Understanding the workflow
 
-GW GUI separates physical-disk operations from image-file operations:
+Retro Media Lab separates physical-disk operations from image-file operations:
 
 | Goal | Input | Output | Recommended page |
 |---|---|---|---|
@@ -64,7 +64,7 @@ For preservation, first make a raw capture and keep it unchanged as a master. Cr
 - A configured path to `gw.exe` when using the Greaseweazle Host Tools engine.
 - Legally obtained ROM files when an emulated machine requires them.
 
-The application checks its required .NET runtime at startup. If it is missing, follow the installation prompt, then restart GW GUI.
+The application checks its required .NET runtime at startup. If it is missing, follow the installation prompt, then restart Retro Media Lab.
 
 ### Before connecting hardware
 
@@ -76,11 +76,11 @@ Check the following before running a physical-disk operation:
 4. Confirm that the drive size and density match the disk.
 5. Write-protect the source disk when possible.
 
-GW GUI cannot prevent damage caused by incorrect cabling, unsuitable power, or a mechanically unsafe drive. Test unfamiliar hardware with an expendable disk first.
+Retro Media Lab cannot prevent damage caused by incorrect cabling, unsuitable power, or a mechanically unsafe drive. Test unfamiliar hardware with an expendable disk first.
 
 ### First launch
 
-1. Open `gwgui.exe`.
+1. Open `retromedialab.exe`.
 2. Open **Options**.
 3. In **Controllers and drives**, scan for the controller and configure the drive.
 4. Verify or select the path to `gw.exe`.
@@ -93,7 +93,7 @@ A working setup should show the controller and drive in the status bar, for exam
 
 ### Choosing an engine
 
-GW GUI can expose more than one implementation for some operations. The **Greaseweazle Host Tools** engine invokes the configured `gw.exe`; the internal GW GUI engine handles supported operations inside the application. Engine selection is explicit and independent for reading, writing, conversion, and Disk Explorer. If an operation is unsupported by the selected engine, GW GUI reports that condition instead of changing engines automatically.
+Retro Media Lab can expose more than one implementation for some operations. The **Greaseweazle Host Tools** engine invokes the configured `gw.exe`; the internal Retro Media Lab engine handles supported operations inside the application. Engine selection is explicit and independent for reading, writing, conversion, and Disk Explorer. If an operation is unsupported by the selected engine, Retro Media Lab reports that condition instead of changing engines automatically.
 
 ## Main window
 
@@ -436,7 +436,7 @@ Use the trash control only to remove the saved configuration; it does not discon
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Engine selection" width="72%"></p>
 
-Choose the engine independently for reading, writing, conversion, and Disk Explorer. The selected engine is used strictly: if it cannot perform the requested operation, GW GUI reports the limitation instead of silently switching engines.
+Choose the engine independently for reading, writing, conversion, and Disk Explorer. The selected engine is used strictly: if it cannot perform the requested operation, Retro Media Lab reports the limitation instead of silently switching engines.
 
 This independence is intentional. For example, physical reads may use Greaseweazle Host Tools while image conversion and exploration use the internal engine. Record engine choices in a profile or project note when reproducibility matters.
 
@@ -515,7 +515,7 @@ Configure Chip RAM, Slow RAM, Fast RAM, and supported expansion memory. Compatib
 
 Select the system Kickstart ROM, optional extended ROM, and ROM key. The detected-ROM list displays names, revisions, and compatibility with the selected model. Select a detected ROM and click **Use**, or browse to a file manually.
 
-ROM files are not supplied by GW GUI. Use ROMs you are legally permitted to use.
+ROM files are not supplied by Retro Media Lab. Use ROMs you are legally permitted to use.
 
 The detected list is preferable to guessing from a filename: it reports the ROM identity and revision and evaluates compatibility with the selected model. **Compatible** is the normal choice; **Partially compatible** indicates that the ROM may boot but does not precisely match the machine. **Refresh** rescans the configured ROM locations. **Use** assigns the selected detected ROM to the configuration.
 
@@ -582,7 +582,7 @@ Port 1 and Port 2 are configured independently. **Automatic** controller type is
 
 ## Atari configuration
 
-GW GUI uses one Atari configuration editor for computer, console, and handheld families. Select the model first: the application then chooses the matching core and disables settings or media slots that the selected hardware cannot use. A saved configuration stores the model, firmware references, media, core options, input mappings, audio and video choices, and Atari-specific folders. The core binaries, firmware files, media, captures, and saved states remain separate files; they are not embedded in the configuration.
+Retro Media Lab uses one Atari configuration editor for computer, console, and handheld families. Select the model first: the application then chooses the matching core and disables settings or media slots that the selected hardware cannot use. A saved configuration stores the model, firmware references, media, core options, input mappings, audio and video choices, and Atari-specific folders. The core binaries, firmware files, media, captures, and saved states remain separate files; they are not embedded in the configuration.
 
 ### Create and save a machine
 
@@ -600,9 +600,9 @@ Saving replaces the stored definition with the values shown in the editor. It do
 
 ### Cores and supported families
 
-The model determines the core. GW GUI manages one active installation for each of the following six cores:
+The model determines the core. Retro Media Lab manages one active installation for each of the following six cores:
 
-| Core | Models exposed by GW GUI | Main media |
+| Core | Models exposed by Retro Media Lab | Main media |
 |---|---|---|
 | Hatari | ST, STF, STFM, Mega ST, STE, Mega STE, TT, Falcon | Floppy, hard-disk image, GEMDOS directory |
 | Atari800 | Atari 400, Atari 800, Atari 800XL, Atari 130XE, modern XL/XE 320K, 576K and 1088K, XEGS, Atari 5200 | Floppy, cassette, cartridge |
@@ -633,7 +633,7 @@ The firmware scan reads the Atari firmware directory and compares known files wi
 | Jaguar | Boot ROM supplied by the core | Cartridge only; a standard Jaguar configuration rejects CD media |
 | Jaguar CD | Jaguar boot support plus a complete supported disc image | The selected core must report CD support; partial or missing CUE tracks are rejected |
 
-Firmware is not supplied by GW GUI. Use files that you are legally permitted to use and keep a backup of known-good originals. When a configured file is moved or deleted, the configuration remains but launch fails with the missing path identified in the error details.
+Firmware is not supplied by Retro Media Lab. Use files that you are legally permitted to use and keep a backup of known-good originals. When a configured file is moved or deleted, the configuration remains but launch fails with the missing path identified in the error details.
 
 ### General folders and core options
 
@@ -711,7 +711,7 @@ When changing media, use the slot shown in the running-machine media bar. **Ejec
 | Invalid or incompatible state | Load it with the same model, firmware, core version, options, and media, or use an in-guest save instead |
 | Active configuration cannot be modified | Close the running machine before saving or deleting its configuration |
 
-GW GUI reports a localized summary and keeps the technical details in the error log. When requesting help, include the model, core version, media type, operation, and complete logged error; do not share copyrighted firmware or private media.
+Retro Media Lab reports a localized summary and keeps the technical details in the error log. When requesting help, include the model, core version, media type, operation, and complete logged error; do not share copyrighted firmware or private media.
 
 ## Hardware diagnostics and maintenance
 
@@ -723,7 +723,7 @@ These dialogs are opened from the **Tools** tab. Each dialog previews the genera
 
 Displays information reported by the selected controller. Expand **Raw output** when you need the complete command response.
 
-Use this as the first diagnostic command. A successful response confirms that GW GUI can start the configured Host Tools executable and communicate with the selected device. Record the firmware and hardware information before performing an update.
+Use this as the first diagnostic command. A successful response confirms that Retro Media Lab can start the configured Host Tools executable and communicate with the selected device. Record the firmware and hardware information before performing an update.
 
 ### USB bandwidth
 
@@ -807,7 +807,7 @@ When comparing two attempts, check that the controller, drive, engine, profile, 
 
 ## Application data and portable use
 
-GW GUI keeps user data separate from application binaries. Depending on the selected package and mode, settings, logs, downloaded tools, emulator components, captures, states, and machine configurations are stored either in the application `Data` directory or in the configured user-data locations.
+Retro Media Lab keeps user data separate from application binaries. Depending on the selected package and mode, settings, logs, downloaded tools, emulator components, captures, states, and machine configurations are stored either in the application `Data` directory or in the configured user-data locations.
 
 Before replacing or moving a portable installation, keep the complete application folder together and back up the `Data` folder. Do not move individual files from `lib`, because the application resolves its own and third-party libraries from that structure.
 
@@ -896,7 +896,7 @@ Before a hardware-changing tool:
 4. Verify the controller status and drive configuration.
 5. Run **Controller information** if detection succeeds but commands fail.
 
-If it still does not appear, try another direct USB port and cable, then rescan. Check Windows Device Manager for a newly detected serial device. A controller visible to Windows but absent from GW GUI usually points to a busy port, stale configuration, or Host Tools problem; a controller absent from Windows points to USB, power, driver, or hardware.
+If it still does not appear, try another direct USB port and cable, then rescan. Check Windows Device Manager for a newly detected serial device. A controller visible to Windows but absent from Retro Media Lab usually points to a busy port, stale configuration, or Host Tools problem; a controller absent from Windows points to USB, power, driver, or hardware.
 
 ### `gw.exe` cannot be found
 
@@ -906,7 +906,7 @@ After selecting it, run **Controller information**. If that fails before contact
 
 ### An operation uses the wrong engine
 
-Open **Options > Engines** and check the engine assigned to that exact operation. GW GUI does not silently fall back to the other engine.
+Open **Options > Engines** and check the engine assigned to that exact operation. Retro Media Lab does not silently fall back to the other engine.
 
 Engine settings are separate: changing the conversion engine does not change reading, writing, or Disk Explorer. Reopen the failing operation after saving the option and confirm the generated command in the console.
 
@@ -949,7 +949,7 @@ Repeat the read to a new filename, increase revolutions where appropriate, and c
 
 ## Glossary
 
-| Term | Meaning in GW GUI |
+| Term | Meaning in Retro Media Lab |
 |---|---|
 | Controller | The Greaseweazle hardware interface connected over USB |
 | Drive | The physical floppy drive attached to the controller |

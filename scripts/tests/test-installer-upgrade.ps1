@@ -10,7 +10,7 @@ $repository = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $dist = [IO.Path]::GetFullPath((Join-Path $repository 'dist'))
 $distPrefix = $dist + [IO.Path]::DirectorySeparatorChar
 if ([string]::IsNullOrWhiteSpace($CurrentSetupPath)) {
-    $CurrentSetupPath = Join-Path $dist "GW-GUI-$CurrentVersion-win-x64-setup.exe"
+    $CurrentSetupPath = Join-Path $dist "Retro-Media-Lab-$CurrentVersion-win-x64-setup.exe"
 }
 if ([string]::IsNullOrWhiteSpace($InstallDirectory)) {
     $InstallDirectory = Join-Path $dist 'installer-upgrade-smoke'
@@ -26,13 +26,13 @@ if (-not $destination.StartsWith($distPrefix, [StringComparison]::OrdinalIgnoreC
     throw 'InstallDirectory must be located inside the repository dist directory.'
 }
 if (-not (Test-Path -LiteralPath $currentSetup -PathType Leaf)) { throw "Current installer not found: $currentSetup" }
-if (-not (Test-Path -LiteralPath (Join-Path $publishDirectory 'gwgui.exe') -PathType Leaf)) {
+if (-not (Test-Path -LiteralPath (Join-Path $publishDirectory 'retromedialab.exe') -PathType Leaf)) {
     throw "Published application not found: $publishDirectory"
 }
 if (Test-Path -LiteralPath $destination) { throw "Upgrade-test destination already exists: $destination" }
 if (Test-Path -LiteralPath $fixtureDirectory) { throw "Upgrade-test fixture directory already exists: $fixtureDirectory" }
 if (Test-Path -LiteralPath $uninstallRegistryPath) {
-    throw 'An installed GW GUI registration already exists. The upgrade smoke test refuses to replace it.'
+    throw 'An installed Retro Media Lab registration already exists. The upgrade smoke test refuses to replace it.'
 }
 
 $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
@@ -51,9 +51,9 @@ $currentInstall = $null
 $uninstall = $null
 try {
     New-Item -ItemType Directory -Path $fixtureDirectory | Out-Null
-    & $iscc "/DMyAppVersion=$PreviousVersion" "/DSourceDir=$publishDirectory" "/DOutputDir=$fixtureDirectory" (Join-Path $repository 'installer\GWGUI.iss') | Out-Null
+    & $iscc "/DMyAppVersion=$PreviousVersion" "/DSourceDir=$publishDirectory" "/DOutputDir=$fixtureDirectory" (Join-Path $repository 'installer\RetroMediaLab.iss') | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'Previous-version fixture compilation failed.' }
-    $previousSetup = Join-Path $fixtureDirectory "GW-GUI-$PreviousVersion-win-x64-setup.exe"
+    $previousSetup = Join-Path $fixtureDirectory "Retro-Media-Lab-$PreviousVersion-win-x64-setup.exe"
     if (-not (Test-Path -LiteralPath $previousSetup -PathType Leaf)) { throw 'Previous-version fixture was not produced.' }
 
     $installArguments = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/DIR=`"$destination`"")
@@ -68,7 +68,7 @@ try {
     # Reproduce an upgrade from the former self-contained package. These files
     # make apphost prefer an application-local .NET runtime and cause the false
     # "install Microsoft .NET" prompt when that old runtime is incomplete.
-    $obsoleteRuntimeFiles = @('hostfxr.dll', 'hostpolicy.dll', 'coreclr.dll', 'GW GUI.dll')
+    $obsoleteRuntimeFiles = @('hostfxr.dll', 'hostpolicy.dll', 'coreclr.dll', 'Retro Media Lab.dll')
     foreach ($obsoleteRuntimeFile in $obsoleteRuntimeFiles) {
         Set-Content -LiteralPath (Join-Path $destination $obsoleteRuntimeFile) -Value 'obsolete runtime fixture'
     }
@@ -90,7 +90,7 @@ try {
     if ($currentRegistration.DisplayVersion -ne $CurrentVersion) {
         throw "Upgrade registered version $($currentRegistration.DisplayVersion), expected $CurrentVersion."
     }
-    $productVersion = (Get-Item -LiteralPath (Join-Path $destination 'gwgui.exe')).VersionInfo.ProductVersion
+    $productVersion = (Get-Item -LiteralPath (Join-Path $destination 'retromedialab.exe')).VersionInfo.ProductVersion
     if (-not $productVersion.StartsWith($CurrentVersion, [StringComparison]::Ordinal)) {
         throw "Upgraded executable version is $productVersion, expected $CurrentVersion."
     }

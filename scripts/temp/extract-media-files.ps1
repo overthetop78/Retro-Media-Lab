@@ -12,8 +12,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$projectPath = Join-Path $repositoryRoot 'tests\GWGUI.LocalDiskImageTests\MediaFileExtractor\GWGUI.MediaFileExtractor.csproj'
-$assemblyPath = Join-Path $repositoryRoot 'tests\GWGUI.LocalDiskImageTests\MediaFileExtractor\bin\Debug\net10.0-windows10.0.19041.0\GWGUI.MediaFileExtractor.dll'
+$projectPath = Join-Path $repositoryRoot 'tests\RetroMediaLab.LocalDiskImageTests\MediaFileExtractor\RetroMediaLab.MediaFileExtractor.csproj'
+$assemblyPath = Join-Path $repositoryRoot 'tests\RetroMediaLab.LocalDiskImageTests\MediaFileExtractor\bin\Debug\net10.0-windows10.0.19041.0\RetroMediaLab.MediaFileExtractor.dll'
 $resolvedImagePath = (Resolve-Path -LiteralPath $ImagePath).Path
 $resolvedOutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
 

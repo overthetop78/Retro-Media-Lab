@@ -1,24 +1,24 @@
 # Organisation interne d’un module de famille d’émulation
 
-Ce document fixe l’organisation cible de `GWGUI.Emulation.Atari`,
-`GWGUI.Emulation.Commodore` et des futurs modules comme `GWGUI.Emulation.Amstrad`.
+Ce document fixe l’organisation cible de `RetroMediaLab.Emulation.Atari`,
+`RetroMediaLab.Emulation.Commodore` et des futurs modules comme `RetroMediaLab.Emulation.Amstrad`.
 
 ## Frontière avec Emulation
 
-`GWGUI.Emulation` communique uniquement avec le module familial au travers de ses
+`RetroMediaLab.Emulation` communique uniquement avec le module familial au travers de ses
 contrats publics. Il ne référence jamais un cœur concret, son dossier, sa DLL ou
 ses types.
 
-Dans chaque module familial, `Common` reçoit les demandes de `GWGUI.Emulation`,
+Dans chaque module familial, `Common` reçoit les demandes de `RetroMediaLab.Emulation`,
 sélectionne un adaptateur et traduit le résultat vers les contrats publics.
 Un adaptateur concret traduit ensuite entre les contrats internes de `Common` et
 l’API native de son cœur.
 
 ```text
-GWGUI.App
-  -> GWGUI.Emulation
-    -> GWGUI.Emulation.<Famille>/Common
-      -> GWGUI.Emulation.<Famille>/Emulators/<Emulateur>
+RetroMediaLab.App
+  -> RetroMediaLab.Emulation
+    -> RetroMediaLab.Emulation.<Famille>/Common
+      -> RetroMediaLab.Emulation.<Famille>/Emulators/<Emulateur>
 ```
 
 La dépendance inverse est interdite : un fichier de `Common` ne doit pas utiliser
@@ -27,7 +27,7 @@ un type placé sous `Emulators/<Emulateur>`.
 ## Arborescence cible
 
 ```text
-GWGUI.Emulation.<Famille>/
+RetroMediaLab.Emulation.<Famille>/
 ├── Common/
 │   ├── Constants/
 │   ├── Contracts/
@@ -52,7 +52,7 @@ GWGUI.Emulation.<Famille>/
 ├── Modules/
 ├── Resources/
 ├── EmulationGlobalUsings.cs
-├── GWGUI.Emulation.<Famille>.csproj
+├── RetroMediaLab.Emulation.<Famille>.csproj
 └── module.json
 ```
 

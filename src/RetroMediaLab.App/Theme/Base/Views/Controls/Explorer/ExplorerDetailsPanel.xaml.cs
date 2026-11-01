@@ -1,0 +1,194 @@
+using RetroMediaLab.App.Contracts.Explorer;
+using RetroMediaLab.App.Enums.Explorer;
+using RetroMediaLab.App.Localization.Extensions;
+using RetroMediaLab.App.Localization.Sources;
+using RetroMediaLab.App.Presenters.Explorer;
+using RetroMediaLab.App.ViewModels.Explorer;
+using System.Windows;
+using RetroMediaLab.MediaEngine.Contracts;
+using RetroMediaLab.MediaEngine.Contracts.Explorer;
+using System.Windows.Controls;
+using System.Windows.Media;
+
+namespace RetroMediaLab.App.Views.Controls.Explorer;
+
+public partial class ExplorerDetailsPanel : UserControl
+{
+    private ExploredDiskImage? _document;
+    private ExploredMediaImage? _mediaDocument;
+    private ExploredMediaVolume? _mediaVolume;
+    private ExplorerContentItem? _item;
+    private OpticalTrackDescriptor? _opticalTrack;
+    private string? _currentSystem;
+
+    public ExplorerDetailsPanel()
+    {
+        InitializeComponent();
+        Loaded += (_, _) => System.ComponentModel.PropertyChangedEventManager.AddHandler(LocalizationSource.Instance, LocalizationChanged, "Item[]");
+        Unloaded += (_, _) => System.ComponentModel.PropertyChangedEventManager.RemoveHandler(LocalizationSource.Instance, LocalizationChanged, "Item[]");
+        Clear();
+    }
+
+    public string DisplayedTitle => DetailsTitle.Text;
+    internal event EventHandler? PresentationChanged;
+    internal ExplorerDetailsPresentation Presentation { get; private set; } = new(string.Empty, ExplorerIconCategory.DiskImage, []);
+    public bool IsShowingDisk => (_document is not null || _mediaDocument is not null) && _item is null && _opticalTrack is null;
+
+    public void Clear()
+    {
+        _document = null;
+        _mediaDocument = null;
+        _mediaVolume = null;
+        _item = null;
+        _opticalTrack = null;
+        _currentSystem = null;
+        DetailsIcon.Category = ExplorerIconCategory.DiskImage;
+        DetailsIcon.Tone = ExplorerEntryTone.Default;
+        DetailsTitle.Text = "\u2014";
+        DetailsTitle.Foreground = BrushFor(false);
+        DetailsTitle.FontWeight = FontWeights.Normal;
+        SetRows([]);
+        Presentation = new(DetailsTitle.Text, ExplorerIconCategory.DiskImage, []);
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ShowDisk(ExploredDiskImage document, string? currentSystem = null)
+    {
+        _document = document;
+        _mediaDocument = null;
+        _mediaVolume = null;
+        _item = null;
+        _opticalTrack = null;
+        _currentSystem = currentSystem;
+        Render();
+    }
+
+    public void ShowMedia(ExploredMediaImage document, ExploredMediaVolume volume, string? currentSystem = null)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(volume);
+        _document = null;
+        _mediaDocument = document;
+        _mediaVolume = volume;
+        _item = null;
+        _opticalTrack = null;
+        _currentSystem = currentSystem;
+        Render();
+    }
+
+    public void ShowItem(ExploredDiskImage document, ExplorerContentItem item)
+    {
+        _document = document;
+        _mediaDocument = null;
+        _mediaVolume = null;
+        _item = item;
+        _opticalTrack = null;
+        Render();
+    }
+
+    public void ShowItem(ExplorerContentItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        _item = item;
+        _opticalTrack = null;
+        Render();
+    }
+
+    public void ShowOpticalTrack(OpticalTrackDescriptor track)
+    {
+        ArgumentNullException.ThrowIfNull(track);
+        _document = null;
+        _mediaVolume = null;
+        _item = null;
+        _opticalTrack = track;
+        Render();
+    }
+
+    private void LocalizationChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (Dispatcher.CheckAccess()) Render();
+        else _ = Dispatcher.BeginInvoke(Render);
+    }
+
+    private void Render()
+    {
+        if (_opticalTrack is not null)
+        {
+            Apply(ExplorerDetailsPresenter.ForOpticalTrack(_opticalTrack));
+            return;
+        }
+
+        if (_document is null && (_mediaDocument is null || _mediaVolume is null))
+        {
+            Clear();
+            return;
+        }
+
+        if (_item is not null)
+        {
+            RenderItem(_item);
+            return;
+        }
+
+        if (_document is not null)
+        {
+            RenderDisk(_document);
+            return;
+        }
+
+        Apply(ExplorerDetailsPresenter.ForMedia(_mediaDocument!, _mediaVolume!, _currentSystem));
+    }
+
+    private void RenderDisk(ExploredDiskImage document)
+    {
+        Apply(ExplorerDetailsPresenter.ForDisk(document, _currentSystem));
+    }
+
+    private void RenderItem(ExplorerContentItem item)
+    {
+        Apply(ExplorerDetailsPresenter.ForItem(item));
+    }
+
+    private void Apply(ExplorerDetailsPresentation presentation)
+    {
+        Presentation = presentation;
+        DetailsIcon.Category = presentation.IconCategory;
+        DetailsIcon.Tone = presentation.Tone;
+        DetailsTitle.Text = presentation.Title;
+        DetailsTitle.Foreground = presentation.Tone switch
+        {
+            ExplorerEntryTone.Executable => new SolidColorBrush(Color.FromRgb(24, 134, 75)),
+            ExplorerEntryTone.Muted => BrushFor(true),
+            _ => BrushFor(presentation.IsSyntheticTitle)
+        };
+        DetailsTitle.FontWeight = presentation.Tone == ExplorerEntryTone.Executable ? FontWeights.SemiBold : FontWeights.Normal;
+        SetRows(presentation.Rows.Select(row => ((string?)row.Key, (string?)row.Value, row.IsSyntheticValue)).ToArray());
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private Brush BrushFor(bool synthetic)
+    {
+        var resourceKey = synthetic ? "SyntheticNameBrush" : "TextBrush";
+        return TryFindResource(resourceKey) as Brush ?? SystemColors.WindowTextBrush;
+    }
+
+    private void SetRows(IReadOnlyList<(string? Key, string? Value, bool IsSynthetic)> values)
+    {
+        var rows = new[] { DetailRow1, DetailRow2, DetailRow3, DetailRow4, DetailRow5, DetailRow6, DetailRow7, DetailRow8, DetailRow9, DetailRow10, DetailRow11, DetailRow12 };
+        var labels = new[] { DetailLabel1, DetailLabel2, DetailLabel3, DetailLabel4, DetailLabel5, DetailLabel6, DetailLabel7, DetailLabel8, DetailLabel9, DetailLabel10, DetailLabel11, DetailLabel12 };
+        var displayedValues = new[] { DetailValue1, DetailValue2, DetailValue3, DetailValue4, DetailValue5, DetailValue6, DetailValue7, DetailValue8, DetailValue9, DetailValue10, DetailValue11, DetailValue12 };
+        for (var index = 0; index < rows.Length; index++)
+        {
+            var visible = index < values.Count && values[index].Key is not null;
+            rows[index].Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            if (!visible)
+            {
+                continue;
+            }
+
+            labels[index].Text = LocExtension.Get(values[index].Key!);
+            displayedValues[index].Text = string.IsNullOrWhiteSpace(values[index].Value) ? "\u2014" : values[index].Value;
+            displayedValues[index].Foreground = BrushFor(values[index].IsSynthetic);
+        }
+    }
+}

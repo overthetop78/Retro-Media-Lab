@@ -1,0 +1,18 @@
+using RetroMediaLab.Emulation.Enums;
+
+namespace RetroMediaLab.Emulation.Contracts;
+
+public sealed record EmulationControllerChoice(
+    string Id,
+    string DisplayResourceKey,
+    string? InvariantDisplayValue = null,
+    IReadOnlyList<InputBindingDefinition>? BindingDefinitions = null,
+    IReadOnlyList<string>? CompatibleVisualIds = null,
+    string? DefaultVisualId = null,
+    IReadOnlyDictionary<EmulationControllerVisualControl, string>? VisualCommandIds = null,
+    IReadOnlyDictionary<string, IReadOnlyList<InputBindingDefinition>>? VisualBindingDefinitions = null)
+{
+    public EmulationControllerCategory Category { get; init; }
+    public bool IsSupportedByEmulator { get; init; } = true;
+    public IReadOnlyDictionary<string, IReadOnlyList<EmulationControllerOutputDefinition>>? VisualOutputDefinitions { get; init; }
+}

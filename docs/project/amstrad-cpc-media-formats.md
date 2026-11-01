@@ -30,6 +30,6 @@ Les répertoires sans extension entre crochets contiennent principalement des `.
 - Une CPR conserve ses chunks RIFF et ses banques réelles. Une conversion CPR vers ROM brute peut concaténer les banques dans leur ordre d’adresse ; l’opération inverse exige des banques de taille valide.
 - Les banques CPR/ROM sont des plages distinctes de la représentation bloc commune. Le visualisateur bloc existant conserve donc chaque frontière de banque sans traitement graphique propre à l’Amstrad.
 - Un instantané `.sna` CPCEMU/Caprice32 est un contenu de démarrage propre à l’émulateur. Il n’est ni lu, ni exploré, ni visualisé par MediaEngine.
-- Toute entrée exposée par l’explorateur, notamment les banques CPR/ROM, passe par `FileSystemEntryAnalyzer`; la classification reste ainsi la responsabilité de `GWGUI.MediaAnalysis` sans logique de classification ajoutée dans MediaEngine ou dans l’application.
+- Toute entrée exposée par l’explorateur, notamment les banques CPR/ROM, passe par `FileSystemEntryAnalyzer`; la classification reste ainsi la responsabilité de `RetroMediaLab.MediaAnalysis` sans logique de classification ajoutée dans MediaEngine ou dans l’application.
 
 Références de format utilisées : implémentation officielle HxCFloppyEmulator pour HxC Stream, implémentation Greaseweazle et documentation KryoFlux Stream Protocol pour KryoFlux, spécification CDT/TZX et structure RIFF AMS! des cartouches CPC Plus.

@@ -2,7 +2,7 @@
 
 ## Demande et limites de responsabilité
 
-Le registre appartient à `GWGUI.Emulation`. Les modules y décrivent leurs interfaces configurées, puis publient leur état réel pendant l'exécution. `GWGUI.App` présente un tableau en lecture seule, mis à jour automatiquement, sans effectuer les échanges réseau à la place des modules.
+Le registre appartient à `RetroMediaLab.Emulation`. Les modules y décrivent leurs interfaces configurées, puis publient leur état réel pendant l'exécution. `RetroMediaLab.App` présente un tableau en lecture seule, mis à jour automatiquement, sans effectuer les échanges réseau à la place des modules.
 
 Les configurations des machines restent la source persistante. Le registre est en mémoire et se reconstruit au lancement. Il ne nécessite pas un second fichier contenant un état de marche susceptible de devenir périmé.
 
@@ -121,25 +121,25 @@ Le moteur ne peut pas produire une liste fiable de tous les ports applicatifs ou
   - [x] Recherche et modèle de données.
     - [x] Créer `docs/research/emulation-network-model.md` : sources primaires, familles de réseaux, distinction des couches, responsabilités et règles sans conversion implicite.
   - [x] Contrats et registre communs.
-    - [x] Créer les enums dans `src/GWGUI.Emulation/Enums/` : `EmulationNetworkInterfaceType.cs`, `EmulationNetworkType.cs`, `EmulationNetworkProtocol.cs`, `EmulationNetworkTransport.cs`, `EmulationNetworkTransferFormat.cs`, `EmulationNetworkAddressType.cs`, `EmulationNetworkRelayType.cs`, `EmulationNetworkCompatibility.cs` ; catégories connues et valeurs internes distinctes des codes transmis.
-    - [x] Créer `src/GWGUI.Emulation/Contracts/EmulationNetworkEndpoint.cs`, `EmulationNetworkAddress.cs` et `EmulationNetworkRelay.cs` : identités, état, catégories typées, IP structurée, port séparé, adresses natives et références de relais.
-    - [x] Créer `src/GWGUI.Emulation/Constants/EmulationNetworkConstants.cs` et `Functions/EmulationNetworkValueFunctions.cs` : constantes et correspondances vers les ressources, sans utiliser les noms d’enums comme textes affichés.
-    - [x] Créer `src/GWGUI.Emulation/Interfaces/IEmulationNetworkManager.cs`, `IEmulationNetworks.cs`, `IEmulationNetworkRegistration.cs` et `Services/EmulationNetworkService.cs` : configurations, publication, propriétaires de session, mise à jour, retrait, compatibilité contrôlée par les deux modules.
-    - [x] Modifier `src/GWGUI.Emulation/EmulationSdk.cs` : exposer le registre commun en mémoire.
+    - [x] Créer les enums dans `src/RetroMediaLab.Emulation/Enums/` : `EmulationNetworkInterfaceType.cs`, `EmulationNetworkType.cs`, `EmulationNetworkProtocol.cs`, `EmulationNetworkTransport.cs`, `EmulationNetworkTransferFormat.cs`, `EmulationNetworkAddressType.cs`, `EmulationNetworkRelayType.cs`, `EmulationNetworkCompatibility.cs` ; catégories connues et valeurs internes distinctes des codes transmis.
+    - [x] Créer `src/RetroMediaLab.Emulation/Contracts/EmulationNetworkEndpoint.cs`, `EmulationNetworkAddress.cs` et `EmulationNetworkRelay.cs` : identités, état, catégories typées, IP structurée, port séparé, adresses natives et références de relais.
+    - [x] Créer `src/RetroMediaLab.Emulation/Constants/EmulationNetworkConstants.cs` et `Functions/EmulationNetworkValueFunctions.cs` : constantes et correspondances vers les ressources, sans utiliser les noms d’enums comme textes affichés.
+    - [x] Créer `src/RetroMediaLab.Emulation/Interfaces/IEmulationNetworkManager.cs`, `IEmulationNetworks.cs`, `IEmulationNetworkRegistration.cs` et `Services/EmulationNetworkService.cs` : configurations, publication, propriétaires de session, mise à jour, retrait, compatibilité contrôlée par les deux modules.
+    - [x] Modifier `src/RetroMediaLab.Emulation/EmulationSdk.cs` : exposer le registre commun en mémoire.
   - [x] Raccordement du module Acorn existant.
-    - [x] Modifier `src/GWGUI.Emulation.Acorn/Modules/AcornEmulationModule.cs` : description des interfaces Econet configurées.
-    - [x] Modifier `src/GWGUI.Emulation.Acorn/Emulators/AcornEmu/Constants/NetworkConstants.cs` : constantes une par ligne, paramètres d’adressage et version du registre.
-    - [x] Modifier `src/GWGUI.Emulation.Acorn/Emulators/AcornEmu/Functions/NetworkFunctions.cs` : description typée, extraction des coordonnées et contrôle natif de station.
-    - [x] Modifier `src/GWGUI.Emulation.Acorn/Emulators/AcornEmu/Services/EmulatorCore.Network.cs` et `EconetTransport.cs` : déclaration de présence, correspondants actifs automatiques, maintien des correspondants externes explicites, libération dans les blocs `finally` des propriétaires existants.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Modules/AcornEmulationModule.cs` : description des interfaces Econet configurées.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Constants/NetworkConstants.cs` : constantes une par ligne, paramètres d’adressage et version du registre.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Functions/NetworkFunctions.cs` : description typée, extraction des coordonnées et contrôle natif de station.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/EmulatorCore.Network.cs` et `EconetTransport.cs` : déclaration de présence, correspondants actifs automatiques, maintien des correspondants externes explicites, libération dans les blocs `finally` des propriétaires existants.
   - [x] Tableau de consultation.
-    - [x] Créer `src/GWGUI.App/Constants/Emulation/EmulationNetworkLayoutConstants.cs`, `Contracts/Emulation/Network/EmulationNetworkRow.cs` et `Views/Controls/Emulation/Network/EmulationNetworkSection.cs` : tableau compact en lecture seule, état, machine, interface, réseau, protocoles, format, transport, IP, port, adresses natives, relais et point non IP.
-    - [x] Modifier `EmulationSection.cs`, `EmulationSectionLayoutFunctions.cs`, `EmulationSectionConfigurationFunctions.cs` et `EmulationSectionTabDragFunctions.cs` dans `src/GWGUI.App/Views/Controls/Emulation/Machine/` : onglet fixe, configurations opaques transmises au registre et préservation des onglets de machines.
-    - [x] Modifier les 30 fichiers `src/GWGUI.App/Resources/*/Emulation/EmulationWelcome.resx` : invariants dans la base, traductions Argos puis correction des erreurs de vocabulaire et de sens dans chaque langue.
+    - [x] Créer `src/RetroMediaLab.App/Constants/Emulation/EmulationNetworkLayoutConstants.cs`, `Contracts/Emulation/Network/EmulationNetworkRow.cs` et `Views/Controls/Emulation/Network/EmulationNetworkSection.cs` : tableau compact en lecture seule, état, machine, interface, réseau, protocoles, format, transport, IP, port, adresses natives, relais et point non IP.
+    - [x] Modifier `EmulationSection.cs`, `EmulationSectionLayoutFunctions.cs`, `EmulationSectionConfigurationFunctions.cs` et `EmulationSectionTabDragFunctions.cs` dans `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/` : onglet fixe, configurations opaques transmises au registre et préservation des onglets de machines.
+    - [x] Modifier les 30 fichiers `src/RetroMediaLab.App/Resources/*/Emulation/EmulationWelcome.resx` : invariants dans la base, traductions Argos puis correction des erreurs de vocabulaire et de sens dans chaque langue.
   - [x] Vérification et corrections constatées.
-    - [x] Créer `tests/GWGUI.LocalEmulationTests/Emulation/EmulationNetworkRegistryTests.cs` : configurations hors tension, états actifs, incompatibilités, paramètres natifs, identités de machines indépendantes du matériel, plusieurs interfaces, IP et port distincts, retrait et erreurs de notification.
-    - [x] Modifier `tests/GWGUI.Tests/Interface/EmulationViews/MachineTabsScenarios.cs` : compter l’onglet fixe et conserver les contrôles de sélection et fermeture des machines.
-    - [x] Créer `tests/GWGUI.LocalEmulationTests/Emulation/TemporaryNetworkTransportTests.cs` et `Interface/SettingsViews/TemporaryNetworkViewTests.cs` : échange UDP réel sans liste manuelle, refus Econet/AUN, état, affichage WPF et capture.
-    - [x] Modifier `src/GWGUI.App/Views/Controls/Emulation/Network/EmulationNetworkSection.cs` : imposer `BindingMode.OneWay`, après détection par le contrôle WPF d’une tentative de liaison bidirectionnelle sur l’état en lecture seule.
+    - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/EmulationNetworkRegistryTests.cs` : configurations hors tension, états actifs, incompatibilités, paramètres natifs, identités de machines indépendantes du matériel, plusieurs interfaces, IP et port distincts, retrait et erreurs de notification.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Interface/EmulationViews/MachineTabsScenarios.cs` : compter l’onglet fixe et conserver les contrôles de sélection et fermeture des machines.
+    - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/TemporaryNetworkTransportTests.cs` et `Interface/SettingsViews/TemporaryNetworkViewTests.cs` : échange UDP réel sans liste manuelle, refus Econet/AUN, état, affichage WPF et capture.
+    - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Network/EmulationNetworkSection.cs` : imposer `BindingMode.OneWay`, après détection par le contrôle WPF d’une tentative de liaison bidirectionnelle sur l’état en lecture seule.
     - [x] Supprimer les deux sources de tests temporaires précédentes et leurs captures/journaux propres dans `artifacts/` après validation.
   - [x] Livraison Debug.
     - [x] Modifier le présent document : consigner les résultats du script officiel et la vérification des fichiers livrés ci-dessous.
@@ -153,7 +153,7 @@ Le moteur ne peut pas produire une liste fiable de tous les ports applicatifs ou
 - Les 30 catalogues ont été vérifiés : XML, absence de doublons, couverture des enums et des nouvelles clés, invariants dans la base commune. Les erreurs Argos observées ont été corrigées, dont les répétitions, les négations perdues et les sens non informatiques.
 - Les sources temporaires, captures et journaux de ces contrôles sont supprimés ; aucun processus `testhost` ne reste actif après validation.
 - `scripts/local-building.cmd --building=debug --modules=A` : code de sortie 0.
-- `build/Debug/GW GUI/gwgui.exe` et `lib/gwgui.app.dll` présents ; 24 manifestes et 24 DLL d’entrée de modules vérifiés.
+- `build/Debug/Retro Media Lab/retromedialab.exe` et `lib/retromedialab.app.dll` présents ; 24 manifestes et 24 DLL d’entrée de modules vérifiés.
 
 Le contrat permet de décrire les différentes familles documentées ; il ne prétend pas émuler leurs cartes réseau. Le raccordement effectif ajouté concerne Econet dans AcornEmu. Les autres modules pourront déclarer leurs interfaces et fournir leurs contrôles natifs avec les mêmes contrats. La découverte automatique porte sur les sessions du registre de la même application ; les émulateurs externes conservent une destination explicite et doivent parler le même format.
 
@@ -161,21 +161,21 @@ Le contrat permet de décrire les différentes familles documentées ; il ne pr�
 
 - [x] Déplacer et présenter le tableau dans les préférences d’émulation.
   - [x] Déplacer l’onglet.
-    - [x] Modifier `src/GWGUI.App/Views/Controls/Emulation/Machine/EmulationSection.cs` et `EmulationSectionLayoutFunctions.cs` : retirer l’onglet Réseau des écrans de machines et son rafraîchissement local.
-    - [x] Modifier `src/GWGUI.App/Views/Controls/Emulation/Options/EmulationPreferencesSection.cs` : ajouter Réseau après Configuration et rafraîchir ses traductions.
-    - [x] Modifier `src/GWGUI.App/Views/Controls/Emulation/Options/EmulationPreferencesSectionConfigurationFunctions.cs` : publier également les configurations chargées par les préférences dans le registre existant.
+    - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/EmulationSection.cs` et `EmulationSectionLayoutFunctions.cs` : retirer l’onglet Réseau des écrans de machines et son rafraîchissement local.
+    - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Options/EmulationPreferencesSection.cs` : ajouter Réseau après Configuration et rafraîchir ses traductions.
+    - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Options/EmulationPreferencesSectionConfigurationFunctions.cs` : publier également les configurations chargées par les préférences dans le registre existant.
   - [x] Refaire la présentation sans sélection.
-    - [x] Créer `src/GWGUI.App/Views/Styles/EmulationNetworkStyles.xaml` : styles locaux du tableau, en-têtes, lignes et cellules, alignement vertical central et absence de sélection utilisateur.
-    - [x] Modifier `src/GWGUI.App/Constants/Emulation/EmulationNetworkLayoutConstants.cs` et `Views/Controls/Emulation/Network/EmulationNetworkSection.cs` : appliquer les styles, les espacements et l’état centré en lecture seule.
+    - [x] Créer `src/RetroMediaLab.App/Views/Styles/EmulationNetworkStyles.xaml` : styles locaux du tableau, en-têtes, lignes et cellules, alignement vertical central et absence de sélection utilisateur.
+    - [x] Modifier `src/RetroMediaLab.App/Constants/Emulation/EmulationNetworkLayoutConstants.cs` et `Views/Controls/Emulation/Network/EmulationNetworkSection.cs` : appliquer les styles, les espacements et l’état centré en lecture seule.
   - [x] Valider et livrer.
-    - [x] Modifier `tests/GWGUI.Tests/Interface/EmulationViews/MachineTabsScenarios.cs` : rétablir le nombre d’onglets des machines.
-    - [x] Créer `tests/GWGUI.LocalEmulationTests/Interface/SettingsViews/TemporaryNetworkPreferencesTests.cs` : vérifier l’emplacement, le centrage et l’absence de sélection ; produire une capture dans `artifacts/network-preferences.png`.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Interface/EmulationViews/MachineTabsScenarios.cs` : rétablir le nombre d’onglets des machines.
+    - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Interface/SettingsViews/TemporaryNetworkPreferencesTests.cs` : vérifier l’emplacement, le centrage et l’absence de sélection ; produire une capture dans `artifacts/network-preferences.png`.
     - [x] Supprimer la source temporaire, sa capture et son journal après contrôle.
     - [x] Modifier le présent document : résultats des vérifications et du build Debug complet exigé par le contrôle automatique, sans modification supplémentaire des modules.
 
-- [x] Modifier `src/GWGUI.App/Views/Styles/EmulationNetworkStyles.xaml` : placer les styles implicites des cellules et en-têtes dans les ressources locales ; le contrôle WPF a montré que les styles globaux prenaient priorité sur les setters du tableau.
+- [x] Modifier `src/RetroMediaLab.App/Views/Styles/EmulationNetworkStyles.xaml` : placer les styles implicites des cellules et en-têtes dans les ressources locales ; le contrôle WPF a montré que les styles globaux prenaient priorité sur les setters du tableau.
 
-- [x] Modifier `src/GWGUI.App/Constants/Emulation/EmulationNetworkLayoutConstants.cs`, `Views/Styles/EmulationNetworkStyles.xaml` et `Views/Controls/Emulation/Network/EmulationNetworkSection.cs` : élargir la colonne d’état pour garder « Allumée » sur une ligne et annuler le gras hérité de l’onglet dans les données et la description.
+- [x] Modifier `src/RetroMediaLab.App/Constants/Emulation/EmulationNetworkLayoutConstants.cs`, `Views/Styles/EmulationNetworkStyles.xaml` et `Views/Controls/Emulation/Network/EmulationNetworkSection.cs` : élargir la colonne d’état pour garder « Allumée » sur une ligne et annuler le gras hérité de l’onglet dans les données et la description.
 
 ### Résultat de la correction
 
@@ -190,9 +190,9 @@ Le build application seule (`--modules=0`) a été refusé par le contrôle auto
 ## Identification de la ROM Econet
 
 - [x] Clarifier le champ réseau et distinguer absence de validation et incompatibilité.
-  - [x] Modifier `src/GWGUI.Emulation.Acorn/Resources/00-Base/Emulation.resx` : nommer le champ invariant « Econet — NFS ROM », commun à toutes les langues ; il s’agit uniquement de noms et sigles.
-  - [x] Modifier `src/GWGUI.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/FirmwareCompatibilityCatalog.cs` : pour une ROM réseau reconnue mais non évaluée dans le profil, retourner Unknown plutôt que déduire Incompatible de son absence ; conserver les résultats explicitement connus.
-  - [x] Modifier `tests/GWGUI.LocalEmulationTests/Emulation/AcornEmuEconetTests.cs` : vérifier cette distinction dans le contrôle existant de ROM réseau.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Resources/00-Base/Emulation.resx` : nommer le champ invariant « Econet — NFS ROM », commun à toutes les langues ; il s’agit uniquement de noms et sigles.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/FirmwareCompatibilityCatalog.cs` : pour une ROM réseau reconnue mais non évaluée dans le profil, retourner Unknown plutôt que déduire Incompatible de son absence ; conserver les résultats explicitement connus.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuEconetTests.cs` : vérifier cette distinction dans le contrôle existant de ROM réseau.
   - [x] Modifier le présent document : consigner l’origine du rouge, les contrôles et le build Debug avec modules.
 
 Le rouge de Torch NET provenait du résultat par défaut Incompatible appliqué aux ROM réseau reconnues mais absentes du profil du Model A. Ce résultat est remplacé par Unknown : l’identité du fichier est reconnue, sa compatibilité n’est pas établie. Les deux identités Acorn NFS 3.34 et 3.35K déjà évaluées conservent leur résultat partiellement compatible. Aucun fonctionnement de Torch NET n’est déclaré validé.

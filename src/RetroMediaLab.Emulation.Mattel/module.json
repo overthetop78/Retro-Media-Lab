@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 2,
+  "id": "mattel",
+  "entryAssembly": "retromedialab.emulation.mattel.dll",
+  "moduleVersion": "2.0.0",
+  "hostApiMinimum": "2.0",
+  "hostApiMaximum": "2.0",
+  "updateCatalogUrl": "https://github.com/overthetop78/Retro-Media-Lab/releases/download/module-mattel-catalog/update-catalog.json"
+}

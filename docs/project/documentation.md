@@ -1,6 +1,6 @@
 # Organisation et entretien de la documentation
 
-La documentation de GW GUI décrit le produit actuel, ses références, ses procédures et les travaux
+La documentation de Retro Media Lab décrit le produit actuel, ses références, ses procédures et les travaux
 qui restent réellement à effectuer. Un même sujet ne doit pas être maintenu simultanément comme
 architecture actuelle et comme ancienne feuille d’implémentation.
 

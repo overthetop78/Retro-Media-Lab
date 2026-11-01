@@ -1,4 +1,4 @@
-# Documentation de GW GUI
+# Documentation de Retro Media Lab
 
 La documentation est organisée par responsabilité. Son [mode d’organisation et d’entretien](project/documentation.md)
 explique où placer l’architecture actuelle, les procédures, les références, l’interface, les idées

@@ -7,7 +7,7 @@ Le menu principal **Émulation** est distinct du menu **Options**. Il contient :
 - **Préférences d’émulation…**, qui ouvre les réglages communs ;
 - une entrée ajoutée automatiquement pour chaque module chargé, par exemple **Amiga** ou **Atari**.
 
-GW GUI ne contient aucune entrée de famille codée en dur. Installer ou retirer un module modifie le
+Retro Media Lab ne contient aucune entrée de famille codée en dur. Installer ou retirer un module modifie le
 menu au prochain démarrage.
 
 ## Préférences communes
@@ -41,20 +41,20 @@ entrées, moteur et profil vidéo de la machine choisie.
 
 **Options > Mises à jour** ouvre une fenêtre dédiée. Sa navigation sépare :
 
-- la mise à jour de GW GUI ;
+- la mise à jour de Retro Media Lab ;
 - les modules disponibles dans le répertoire officiel ;
 - chaque module installé et sa propre recherche de mise à jour ;
 - l’installation avancée depuis un ZIP ou une URL de catalogue.
 
 Télécharger un module ne redémarre pas immédiatement l’application. Son badge devient
 **Téléchargé**. Plusieurs téléchargements peuvent être préparés, puis le bouton de pied de fenêtre
-devient **Finir l’installation**. Une seule transaction installe tous les modules et redémarre GW GUI
+devient **Finir l’installation**. Une seule transaction installe tous les modules et redémarre Retro Media Lab
 une seule fois. Après reprise, leur badge est **Installé**.
 
 Le bouton de fermeture `X` demande si l’installation doit être terminée. Refuser annule les
 téléchargements préparés et ferme la fenêtre.
 
-Installer un module ajoute ses machines et son intégration à GW GUI. Les cœurs Libretro et les
+Installer un module ajoute ses machines et son intégration à Retro Media Lab. Les cœurs Libretro et les
 firmwares nécessaires sont gérés séparément dans les paramètres d’émulation ; les firmwares restent
 fournis légalement par l’utilisateur.
 

@@ -21,7 +21,7 @@ jobs:
         run: |
           if ($env:GITHUB_REF_NAME -notmatch '^sdk-v(\d+\.\d+\.\d+)$') { throw 'Invalid SDK tag.' }
           $version = $Matches[1]
-          [xml]$project = Get-Content .\src\GWGUI.Emulation\GWGUI.Emulation.csproj -Raw
+          [xml]$project = Get-Content .\src\RetroMediaLab.Emulation\RetroMediaLab.Emulation.csproj -Raw
           if ($project.Project.PropertyGroup.Version -ne $version) { throw 'SDK tag and project version differ.' }
           $notes = ".github/release-notes/sdk/v$version.md"
           if (-not (Test-Path -LiteralPath $notes -PathType Leaf)) { throw "SDK release notes are missing: $notes" }
@@ -29,10 +29,10 @@ jobs:
           "SDK_NOTES=$notes" >> $env:GITHUB_ENV
       - name: Test contracts
         shell: pwsh
-        run: dotnet test .\tests\GWGUI.Tests\GWGUI.Tests.csproj --configuration Release
+        run: dotnet test .\tests\RetroMediaLab.Tests\RetroMediaLab.Tests.csproj --configuration Release
       - name: Pack SDK
         shell: pwsh
-        run: dotnet pack .\src\GWGUI.Emulation\GWGUI.Emulation.csproj --configuration Release --no-restore -p:PackageVersion=$env:SDK_VERSION -o .\dist\sdk
+        run: dotnet pack .\src\RetroMediaLab.Emulation\RetroMediaLab.Emulation.csproj --configuration Release --no-restore -p:PackageVersion=$env:SDK_VERSION -o .\dist\sdk
       - name: Request temporary NuGet.org credential
         uses: NuGet/login@v1
         id: nuget-login
@@ -40,9 +40,9 @@ jobs:
           user: ${{ vars.NUGET_USER }}
       - name: Publish SDK to NuGet.org
         shell: pwsh
-        run: dotnet nuget push ".\dist\sdk\GWGUI.Emulation.SDK.$env:SDK_VERSION.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --skip-duplicate
+        run: dotnet nuget push ".\dist\sdk\RetroMediaLab.Emulation.SDK.$env:SDK_VERSION.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" --skip-duplicate
       - name: Publish SDK release notes and packages
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME .\dist\sdk\*.nupkg .\dist\sdk\*.snupkg --verify-tag --latest=false --title "GW GUI Emulation SDK $env:SDK_VERSION" --notes-file $env:SDK_NOTES
+        run: gh release create $env:GITHUB_REF_NAME .\dist\sdk\*.nupkg .\dist\sdk\*.snupkg --verify-tag --latest=false --title "Retro Media Lab Emulation SDK $env:SDK_VERSION" --notes-file $env:SDK_NOTES

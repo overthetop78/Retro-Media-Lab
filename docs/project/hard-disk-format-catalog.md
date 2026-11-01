@@ -9,7 +9,7 @@ Ce catalogue est organisé par structures de stockage. Il ne dépend pas des mac
 ### État après l'orchestration commune des médias
 
 Les états détaillés des tableaux ci-dessous décrivent la **création** par
-`GWGUI.Emulation.HardDisks.DiskFormatRegistry`. Cette création ne doit pas être confondue avec les
+`RetroMediaLab.Emulation.HardDisks.DiskFormatRegistry`. Cette création ne doit pas être confondue avec les
 capacités de lecture, d'écriture et d'exploration du document commun de MediaEngine.
 
 Après l'orchestration commune :
@@ -149,7 +149,7 @@ Les [implémentations de tables de partitions](https://android.googlesource.com/
 | Zone d’échange Linux | SWAPSPACE2 v1 implémenté | Volume sans fichiers ni dossiers. Pages de 4, 8, 16, 32 ou 64 Kio, entiers little-endian ou big-endian, UUID et liste de pages défectueuses explicites ; label ASCII de 15 caractères maximum. De 10 à 2³²−1 pages, avec au moins 10 pages non défectueuses, en-tête compris. Limites du noyau consommateur distinctes. Ancien SWAP-SPACE et hibernation à couvrir séparément. |
 | ReFS, HPFS | À étudier | Versions et documentation exploitable. |
 | OFS / FFS | DOS0 à DOS5 implémentés | Base, international et dircache ; cache vide alloué et référencé, type RDB cohérent. Long names et autres tailles de blocs à couvrir séparément. |
-| PFS3 / PDS3 | PFS3 à secteurs de 512 octets et blocs réservés de 1 Kio implémenté | Moteur intégré au code de GWGUI.Emulation : formatage, lecture, écriture, noms longs, métadonnées, allocation, diagnostic et mode super-index ; profil de 8 Mio à 213 021 952 secteurs. PFS3 et PDS3 sont des choix de pilote RDB pour le même format de volume ; type PFS3 par défaut, PDS3 explicite. Modes expérimentaux à blocs réservés de 2/4 Kio et installation du pilote à couvrir. Distinct de PFS associé à APA. |
+| PFS3 / PDS3 | PFS3 à secteurs de 512 octets et blocs réservés de 1 Kio implémenté | Moteur intégré au code de RetroMediaLab.Emulation : formatage, lecture, écriture, noms longs, métadonnées, allocation, diagnostic et mode super-index ; profil de 8 Mio à 213 021 952 secteurs. PFS3 et PDS3 sont des choix de pilote RDB pour le même format de volume ; type PFS3 par défaut, PDS3 explicite. Modes expérimentaux à blocs réservés de 2/4 Kio et installation du pilote à couvrir. Distinct de PFS associé à APA. |
 | SFS / SFS2 | À couvrir | Formateurs et variantes à identifier séparément. |
 | MFS | Volume vide implémenté | Profil de 128 Kio à 64 Mio, MDB de deux secteurs et sa copie finale, répertoire de douze secteurs, au plus 640 blocs d’allocation. Labels Mac Roman de 1 à 27 octets ; caractères non représentables refusés. Autres paramètres à couvrir. |
 | HFS classique | Volume vide implémenté | Profil 128 Kio à 4 Gio ; bitmap de seize secteurs, allocation adaptée, arbres catalogue/extents et copie MDB. Labels Mac Roman de 1 à 27 octets, y compris dans les clés du catalogue et le thread racine. Paramètres supplémentaires à couvrir. |
@@ -190,7 +190,7 @@ aux blocs 2 à 5, 77 entrées de fichiers et les champs 16 bits little-endian. L
 et les références primaires recensées dans la
 [description Apple Pascal](https://ciderpress2.com/formatdoc/Pascal-notes.html) confirment cette
 organisation. Ils ne définissent pas une variante HDD générale big-endian ni une autre taille de
-répertoire que GW GUI pourrait annoncer sans format ou machine cible précis. Aucune variante
+répertoire que Retro Media Lab pourrait annoncer sans format ou machine cible précis. Aucune variante
 Pascal supplémentaire n'est donc retenue dans cette phase.
 
 Ces références servent uniquement à vérifier la structure ; aucun code tiers n'est incorporé et
@@ -198,7 +198,7 @@ aucune licence logicielle supplémentaire ne s'applique au projet.
 
 ### Chaînes EBR
 
-La disposition LBA déjà produite par GW GUI place chaque EBR avant son volume logique et le lien
+La disposition LBA déjà produite par Retro Media Lab place chaque EBR avant son volume logique et le lien
 vers l'EBR suivant après la fin du volume courant. Elle correspond à la règle publiée par
 [Microsoft pour la manipulation des EBR](https://learn.microsoft.com/windows/win32/api/winioctl/ni-winioctl-ioctl_disk_set_drive_layout_ex).
 Le profil CHS historique distinct utilise déjà le type étendu `0x05`, l'alignement sur les pistes
@@ -248,7 +248,7 @@ Les secours Sun suivent les [emplacements vérifiés par le formateur illumos](h
 
 Les zones d’échange suivent [l’en-tête SWAPSPACE2](https://github.com/torvalds/linux/blob/master/include/linux/swap.h) et les bornes du [formateur mkswap](https://github.com/util-linux/util-linux/blob/master/disk-utils/mkswap.c). `linux-swap-4k`, `-8k`, `-16k`, `-32k`, `-64k` et leurs variantes suffixées `-be` sont enregistrés. Le constructeur génère des métadonnées sur flux ; il n’active aucune zone d’échange du système hôte.
 
-Le moteur PFS3 intégré est adapté du [code Hst.Amiga figé au commit de la version 0.6.236](https://github.com/henrikstengaard/hst-amiga/blob/be46479b058264b88b73346a496a04525205f431/src/Hst.Amiga/FileSystems/Pfs3/Pfs3Formatter.cs). Les [constantes de ce profil](https://github.com/henrikstengaard/hst-amiga/blob/be46479b058264b88b73346a496a04525205f431/src/Hst.Amiga/FileSystems/Pfs3/Constants.cs) définissent son plafond sans mode expérimental. Il est compilé directement dans GWGUI.Emulation et n'ajoute aucune dépendance Hst au paquet. Les tests utilisent ce moteur intégré, des flux simulés et des fichiers synthétiques. Le secteur de volume porte `PFS\1`, distinct des types de pilote `PFS\3` et `PDS\3` dans RDB. This product includes software developed by Michiel Pelt. Les [notices distribuées](../../THIRD-PARTY-NOTICES.md) incluent les licences MIT et PFS3.
+Le moteur PFS3 intégré est adapté du [code Hst.Amiga figé au commit de la version 0.6.236](https://github.com/henrikstengaard/hst-amiga/blob/be46479b058264b88b73346a496a04525205f431/src/Hst.Amiga/FileSystems/Pfs3/Pfs3Formatter.cs). Les [constantes de ce profil](https://github.com/henrikstengaard/hst-amiga/blob/be46479b058264b88b73346a496a04525205f431/src/Hst.Amiga/FileSystems/Pfs3/Constants.cs) définissent son plafond sans mode expérimental. Il est compilé directement dans RetroMediaLab.Emulation et n'ajoute aucune dépendance Hst au paquet. Les tests utilisent ce moteur intégré, des flux simulés et des fichiers synthétiques. Le secteur de volume porte `PFS\1`, distinct des types de pilote `PFS\3` et `PDS\3` dans RDB. This product includes software developed by Michiel Pelt. Les [notices distribuées](../../THIRD-PARTY-NOTICES.md) incluent les licences MIT et PFS3.
 
 Références de représentation : [Growing redolog](https://github.com/qemu/qemu/blob/master/block/bochs.c), [types MBR](https://github.com/util-linux/util-linux/blob/master/include/pt-mbr-partnames.h), [types GPT](https://github.com/util-linux/util-linux/blob/master/include/pt-gpt-partnames.h) et [labels HFS+/HFSX](https://developer.apple.com/library/archive/technotes/tn/tn1150.html).
 

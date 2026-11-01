@@ -31,7 +31,7 @@ jobs:
         run: |
           gh release view module-directory
           if ($LASTEXITCODE -ne 0) {
-            gh release create module-directory --title 'GW GUI module directory' --notes 'Machine-readable directory of installable emulation modules.' --latest=false
+            gh release create module-directory --title 'Retro Media Lab module directory' --notes 'Machine-readable directory of installable emulation modules.' --latest=false
           }
           if ($LASTEXITCODE -ne 0) { throw 'Unable to create the module directory release.' }
           gh release upload module-directory .\dist\module-directory.json --clobber

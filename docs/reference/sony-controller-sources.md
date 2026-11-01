@@ -4,7 +4,7 @@ PNG avec canal alpha, dimension maximale de 512 pixels. Les cadrages de face et 
 
 | Périphérique | Référence photographique |
 | --- | --- |
-| DualShock | Ancien `src/GWGUI.App/Assets/Controllers/sony-dualshock-1.png`, recadré en vue de face |
+| DualShock | Ancien `src/RetroMediaLab.App/Assets/Controllers/sony-dualshock-1.png`, recadré en vue de face |
 | Dual Analog | https://commons.wikimedia.org/wiki/File:PlayStation_Dual_Analog.png |
 | Analog Joystick | https://commons.wikimedia.org/wiki/File:PlayStation-Analog-Joystick.jpg |
 | Mouse | https://commons.wikimedia.org/wiki/File:PlayStation_Mouse.jpg |
@@ -17,7 +17,7 @@ PNG avec canal alpha, dimension maximale de 512 pixels. Les cadrages de face et 
 ## Tapis choisi pour PS1/PS2
 
 Visuel générique explicitement fourni et retenu par l’utilisateur : https://m.media-amazon.com/images/I/71taHKzVsvL._AC_UF894,1000_QL80_.jpg.
-Retouche demandée : retrait du câble et de la prise USB, fond extérieur transparent, blancs imprimés internes conservés. Le fabricant n’est pas identifié : ne pas présenter cette image comme un modèle officiel Sony/Konami. Fichier : `src/GWGUI.App/Assets/Controllers/sony-dance-mat.png`. Chargement bitmap commun, sans générateur vectoriel ni traitement particulier dans le catalogue.
+Retouche demandée : retrait du câble et de la prise USB, fond extérieur transparent, blancs imprimés internes conservés. Le fabricant n’est pas identifié : ne pas présenter cette image comme un modèle officiel Sony/Konami. Fichier : `src/RetroMediaLab.App/Assets/Controllers/sony-dance-mat.png`. Chargement bitmap commun, sans générateur vectoriel ni traitement particulier dans le catalogue.
 
 ## Catalogue physique PS1/PS2 à raccorder
 
@@ -352,7 +352,7 @@ Play! libretro : `Source/ui_libretro/PH_Libretro_Input.cpp` interroge exclusivem
 
 LRPS2 : `PAD::LoadConfig()` dans `pcsx2/PAD/PAD.cpp` force `MultitapPort0_Enabled` et `MultitapPort1_Enabled` à false ; aucune option multitap dans `libretro/libretro_core_options.h`. Le nombre théorique de structures de pad (8) ne constitue pas une prise en charge activable. https://github.com/libretro/ps2/blob/master/pcsx2/PAD/PAD.cpp .
 
-PCEE2 : le multitap natif expose les modes disabled/port1/port2/both. La couche charge aussi la section `[MemoryCards]` de `pcsx2/inis/PCSX2.ini` avant les options libretro. Ces dernières écrasent uniquement Slot1/Slot2. Le moteur lit les six autres emplacements via `Multitap1_Slot2_Enable/Filename` jusqu’à `Multitap2_Slot4_Enable/Filename`. Cela permet de raccorder les cartes supplémentaires via l’INI déjà géré par GW GUI. Sources : https://github.com/WizzardSK/pcee2-libretro/blob/libretro/pcee2-libretro/Libretro.cpp et https://github.com/WizzardSK/pcee2-libretro/blob/libretro/pcsx2/Pcsx2Config.cpp . Le catalogue GW GUI était limité à deux cartes, raccordement complémentaire nécessaire.
+PCEE2 : le multitap natif expose les modes disabled/port1/port2/both. La couche charge aussi la section `[MemoryCards]` de `pcsx2/inis/PCSX2.ini` avant les options libretro. Ces dernières écrasent uniquement Slot1/Slot2. Le moteur lit les six autres emplacements via `Multitap1_Slot2_Enable/Filename` jusqu’à `Multitap2_Slot4_Enable/Filename`. Cela permet de raccorder les cartes supplémentaires via l’INI déjà géré par Retro Media Lab. Sources : https://github.com/WizzardSK/pcee2-libretro/blob/libretro/pcee2-libretro/Libretro.cpp et https://github.com/WizzardSK/pcee2-libretro/blob/libretro/pcsx2/Pcsx2Config.cpp . Le catalogue Retro Media Lab était limité à deux cartes, raccordement complémentaire nécessaire.
 
 
 Raccordement réalisé : les cartes PCEE2 conservent les indices physiques 0/1, 2–4 (multitap 1) et 5–7 (multitap 2). Le catalogue expose 2, 5, 5 ou 8 emplacements selon le mode, identifiés MC 1/2 puis MC 1B–1D et MC 2B–2D. Les fichiers natifs reprennent les noms du moteur `Mcd-Multitap1-Slot02.ps2`, etc. Les six clés Enable/Filename sont écrites dans l’INI, les emplacements désactivés sont explicitement désactivés sans effacer les autres sections. Préparation et persistance utilisent les chemins de cartes choisis avec leurs indices physiques, y compris lorsque seul le second multitap est actif. Aucun multitap fictif ajouté à LRPS2 ou Play!.

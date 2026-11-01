@@ -1,0 +1,15 @@
+using RetroMediaLab.App.Views.Controls.Emulation.Input;
+using RetroMediaLab.App.Views.Controls.Options;
+using System.Windows.Controls;
+
+
+
+namespace RetroMediaLab.App.Contracts.Emulation.Controllers;
+
+internal sealed record EmulationControllerPortSettings(int Number, ComboBox Type, ComboBox Visual, ControllerVisualizer Visualizer, InputBindingEditor Bindings, EmulationControllerOutputEditor? Outputs = null)
+{
+    public string? DisplayName { get; init; }
+    public int? DisplayNumber { get; init; }
+    public bool IsUsb { get; init; }
+    public TextBlock? Availability { get; init; }
+}

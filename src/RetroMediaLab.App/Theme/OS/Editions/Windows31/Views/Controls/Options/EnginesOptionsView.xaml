@@ -1,0 +1,19 @@
+<UserControl x:Class="RetroMediaLab.App.Theme.OS.Editions.Windows31.Views.EnginesOptionsView" x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:RetroMediaLab.App.Localization.Extensions">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="12">
+            <TextBlock Text="{l:Loc Options.Engines.Description}" Margin="0,0,0,12"/>
+            <TextBlock Text="{l:Loc Read.Title}" Margin="0,0,0,4"/>
+            <ComboBox x:Name="PhysicalRead" Margin="0,0,0,10"/>
+            <TextBlock Text="{l:Loc Write.Title}" Margin="0,0,0,4"/>
+            <ComboBox x:Name="PhysicalWrite" Margin="0,0,0,10"/>
+            <TextBlock Text="{l:Loc Conversion.Title}" Margin="0,0,0,4"/>
+            <ComboBox x:Name="Conversion" Margin="0,0,0,10"/>
+            <TextBlock Text="{l:Loc Tab.Explorer}" Margin="0,0,0,4"/>
+            <ComboBox x:Name="ExplorerRead" Margin="0,0,0,12"/>
+            <TextBlock Text="{l:Loc Options.Engines.StrictChoice}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

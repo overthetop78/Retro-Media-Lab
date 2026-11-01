@@ -1,0 +1,21 @@
+using RetroMediaLab.MediaEngine.Constants;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Raw;
+using RetroMediaLab.MediaEngine.Images.Reading.Reconstruction;
+
+namespace RetroMediaLab.MediaEngine.Images.Conversion.Commodore;
+/// <summary>Convertit les captures et dumps Commodore 900 COHERENT en BIN ou IMG.</summary>
+public sealed class CoherentConversionService(CommodoreScpSectorImageReader scpReader, CoherentRawImageReader reader, CoherentRawImageWriter writer)
+{
+    /// <summary>Indique si la cible est un dump brut Commodore 900.</summary>
+    public static bool CanCreate(string formatId,
+        string extension) => formatId.Equals(DiskImageFormatIds.Commodore900Coherent,
+        StringComparison.OrdinalIgnoreCase) && (extension.Equals(DiskImageFileExtensions.Bin,
+        StringComparison.OrdinalIgnoreCase) || extension.Equals(DiskImageFileExtensions.Img,
+        StringComparison.OrdinalIgnoreCase));
+    /// <summary>Reconstruit ou relit la source, puis écrit son ordre logique zoné commun.</summary>
+    public async Task ConvertAsync(string sourcePath, string outputPath, CancellationToken cancellationToken = default)
+    {
+        var image = await MediaConversionService.ReadSectorSourceAsync(sourcePath, () => scpReader.ReadAsync(sourcePath, DiskImageFormatIds.Commodore900Coherent, cancellationToken), () => reader.ReadAsync(sourcePath, cancellationToken)).ConfigureAwait(false);
+        await writer.WriteAsync(image, outputPath, cancellationToken).ConfigureAwait(false);
+    }
+}

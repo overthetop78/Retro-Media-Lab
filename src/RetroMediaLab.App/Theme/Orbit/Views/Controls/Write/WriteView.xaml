@@ -1,0 +1,39 @@
+<UserControl x:Class="RetroMediaLab.App.Theme.Orbit.Views.WriteView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:l="clr-namespace:RetroMediaLab.App.Localization.Extensions" Foreground="{DynamicResource Orbit.Text}" Background="{DynamicResource Orbit.Window}" UseLayoutRounding="True">
+ <Grid>
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <DockPanel Margin="0,0,0,20"><Button x:Name="AdvancedCommand" DockPanel.Dock="Right" Content="{l:Loc Common.Advanced}" Click="AdvancedClick"/>
+   <StackPanel><TextBlock Text="{l:Loc Tab.Write}" FontSize="23" FontWeight="Light"/><TextBlock x:Name="Hardware" Foreground="{DynamicResource Orbit.Muted}" Margin="0,4,12,0" TextTrimming="CharacterEllipsis"/></StackPanel>
+  </DockPanel>
+  <StackPanel Grid.Row="1" Margin="0,0,0,24"><Label Content="{l:Loc Write.Source}" Target="{Binding ElementName=SourcePath}"/>
+   <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="SourcePath"/>
+    <Button x:Name="Browse" Grid.Column="1" Content="{l:Loc Common.Browse}" Margin="8,0,0,0"/>
+   </Grid>
+  </StackPanel>
+  <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="280"/></Grid.ColumnDefinitions>
+   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,20,0">
+    <StackPanel><TextBlock Text="{l:Loc Write.Detected}" FontSize="17" Margin="0,0,0,12"/>
+     <TextBlock x:Name="Detection" TextWrapping="Wrap" Foreground="{DynamicResource Orbit.Muted}" Margin="0,0,0,16"/>
+     <ComboBox x:Name="Formats" Margin="0,0,0,18"/>
+     <WrapPanel><Button x:Name="ModifyCommand" Content="{l:Loc Common.Modify}" Margin="0,0,8,8"/>
+      <Button x:Name="VisualizeCommand" Content="{l:Loc Write.VisualizeTracks}" Margin="0,0,0,8"/></WrapPanel>
+    </StackPanel>
+   </ScrollViewer>
+   <Border Grid.Column="1" Background="{DynamicResource Orbit.Surface}" CornerRadius="8" Padding="14">
+    <StackPanel><Label Content="{l:Loc Profile.Title}" Target="{Binding ElementName=Profiles}"/><ComboBox x:Name="Profiles"/>
+     <WrapPanel Margin="0,12,0,22"><Button x:Name="SaveProfile" Content="{l:Loc Common.Save}" Margin="0,0,8,8"/>
+      <Button x:Name="ResetProfile" Content="{l:Loc Common.Reset}" Margin="0,0,0,8"/></WrapPanel>
+     <TextBlock x:Name="Verification" TextWrapping="Wrap" Foreground="{DynamicResource Orbit.Muted}">
+      <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="Text" Value="{l:Loc Write.VerifyOn}"/>
+       <Style.Triggers><DataTrigger Binding="{Binding Tag,RelativeSource={RelativeSource Self}}" Value="True"><Setter Property="Text" Value="{l:Loc Write.VerifyOff}"/></DataTrigger></Style.Triggers>
+      </Style></TextBlock.Style>
+     </TextBlock>
+    </StackPanel>
+   </Border>
+  </Grid>
+  <DockPanel Grid.Row="3" Margin="0,18,0,0"><Button x:Name="Execute" DockPanel.Dock="Right" IsDefault="True" Style="{StaticResource Orbit.Primary}"/>
+   <Button x:Name="CloseCommand" Content="{l:Loc Common.Close}" Click="CloseClick" HorizontalAlignment="Left"/>
+  </DockPanel>
+ </Grid>
+</UserControl>

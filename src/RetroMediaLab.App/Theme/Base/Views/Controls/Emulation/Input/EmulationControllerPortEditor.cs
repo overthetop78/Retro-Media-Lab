@@ -1,0 +1,77 @@
+using RetroMediaLab.App.Controllers.Emulation.Input;
+using RetroMediaLab.App.Contracts.Emulation.Controllers;
+using RetroMediaLab.App.Contracts.Input;
+using RetroMediaLab.App.Enums.Input;
+using RetroMediaLab.App.Views.Controls.Options;
+using RetroMediaLab.Emulation.Enums;
+using System.Windows;
+using System.Windows.Controls;
+
+
+namespace RetroMediaLab.App.Views.Controls.Emulation.Input;
+
+internal sealed class EmulationControllerPortEditor
+{
+    private readonly EmulationBindingVisualizationController _visualizationController;
+    private IReadOnlyDictionary<EmulationControllerVisualControl, string>? _visualCommandIds;
+    internal EmulationControllerPortEditor(int number, InputCaptureSources captureSources, bool prefixKeyboardSource, string actionLabel, string searchLabel, string moduleId, string machineId)
+    {
+        Number = number;
+        ModuleId = moduleId;
+        MachineId = machineId;
+        Type = new ComboBox();
+        Availability = new TextBlock { TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed, Margin = new Thickness(0, 8, 0, 10) };
+        Visual = new ComboBox
+        {
+            DisplayMemberPath = nameof(KeyValuePair<string, string>.Value),
+            SelectedValuePath = nameof(KeyValuePair<string, string>.Key)
+        };
+        Visualizer = new ControllerVisualizer { Visibility = Visibility.Collapsed };
+        Bindings = new InputBindingEditor();
+        Outputs = new EmulationControllerOutputEditor();
+        Visualizer.VisualZoneClicked += control =>
+        {
+            if (_visualCommandIds?.TryGetValue(control, out var commandId) == true)
+                Bindings.SelectAndStartCapture(commandId);
+        };
+        _visualizationController = new EmulationBindingVisualizationController(Bindings, Visualizer);
+        Visualizer.Loaded += VisualizerLoaded;
+        Visualizer.Unloaded += VisualizerUnloaded;
+        Bindings.ConfigurePresentation(actionLabel, searchLabel);
+        Bindings.ConfigureCaptureSources(captureSources, prefixKeyboardSource);
+    }
+
+    private void VisualizerLoaded(object sender, RoutedEventArgs args) => _visualizationController.Start();
+
+    private void VisualizerUnloaded(object sender, RoutedEventArgs args) => _visualizationController.Stop();
+
+    internal int Number { get; }
+    internal string? DisplayName { get; set; }
+    internal int? DisplayNumber { get; set; }
+    internal bool IsUsb { get; set; }
+    internal TextBlock Availability { get; }
+    internal string ModuleId { get; }
+    internal string MachineId { get; }
+    internal ComboBox Type { get; }
+    internal ComboBox Visual { get; }
+    internal string? SelectedVisualId => Visual.SelectedItem is EmulationControllerVisualChoiceView { ControllerChoice: not null } choice ? choice.VisualId : Visual.SelectedValue as string;
+    internal RetroMediaLab.Emulation.Contracts.EmulationControllerChoice? SelectedControllerChoice =>
+        Type.SelectedItem is EmulationControllerCategoryChoiceView
+            ? (Visual.SelectedItem as EmulationControllerVisualChoiceView)?.ControllerChoice
+            : (Type.SelectedItem as EmulationControllerChoiceView)?.Choice;
+    internal string? PhysicalDeviceId { get; set; }
+    internal ControllerVisualizer Visualizer { get; }
+    internal InputBindingEditor Bindings { get; }
+    internal EmulationControllerOutputEditor Outputs { get; }
+    internal int DeadZonePercent { get; set; }
+
+    internal void SetVisualProfile(ControllerArtworkProfile? profile, IReadOnlyDictionary<EmulationControllerVisualControl, string>? commandIds)
+    {
+        _visualCommandIds = commandIds;
+        Visualizer.ArtworkProfile = profile;
+        Visualizer.VisualCommandIds = commandIds;
+        Visualizer.Visibility = profile is null ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    internal EmulationControllerPortSettings Settings => new(Number, Type, Visual, Visualizer, Bindings, Outputs) { DisplayName = DisplayName, DisplayNumber = DisplayNumber, IsUsb = IsUsb, Availability = Availability };
+}

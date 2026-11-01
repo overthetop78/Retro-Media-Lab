@@ -12,7 +12,7 @@ Ce document décrit tous les fichiers présents dans `scripts`. Les commandes so
 |---|---|---|
 | `temp/analyze-media-data.ps1` | Analyse et validation continue des images de médias locales avec rapports et reprise | Aucun |
 | `temp/extract_data_from_ContentHex.ps1` | Extraction des données d’analyse depuis le `ContentHex` des fichiers consignés | Aucun |
-| `local-building/build.ps1` | Construction locale de GW GUI | Aucun |
+| `local-building/build.ps1` | Construction locale de Retro Media Lab | Aucun |
 | `local-building.cmd` | Sélection interactive ou directe d’une construction locale | Aucun |
 | `module-directory/build-module-directory.ps1` | Production du répertoire des modules installables | Workflow de publication du répertoire de modules |
 | `release/update-catalog/build-update-catalog.ps1` | Production du catalogue de mises à jour | Workflows de publication de l’application et des modules |
@@ -26,7 +26,7 @@ Ce document décrit tous les fichiers présents dans `scripts`. Les commandes so
 | `publish-release.cmd` | Déclenchement interactif d’une publication | Aucun |
 | `publish-wiki.cmd` | Raccourci Windows de publication du wiki | Aucun |
 | `wiki/publish-wiki.ps1` | Publication du dépôt wiki | `publish-wiki.cmd` |
-| `tools/stop-debug-gwgui.ps1` | Arrêt manuel des processus du build Debug | Aucun |
+| `tools/stop-debug-retromedialab.ps1` | Arrêt manuel des processus du build Debug | Aucun |
 | `tests/test-app-accessibility.ps1` | Validation manuelle de l’accessibilité de l’interface | Aucun |
 | `tests/test-installer.ps1` | Validation d’une installation propre | Workflow de publication de l’application |
 | `tests/test-installer-upgrade.ps1` | Validation d’une mise à niveau | Workflow de publication de l’application |
@@ -37,7 +37,7 @@ Ce document décrit tous les fichiers présents dans `scripts`. Les commandes so
 
 ### `local-building/build.ps1`
 
-Construit une version locale directement utilisable dans `build/Debug/GW GUI` ou `build/Release/GW GUI`.
+Construit une version locale directement utilisable dans `build/Debug/Retro Media Lab` ou `build/Release/Retro Media Lab`.
 
 ```powershell
 .\scripts\local-building\build.ps1 [-Configuration Debug|Release] [-Version X.Y.Z] [--Module <id>[,<id>...]] [--AllModules]
@@ -47,15 +47,15 @@ Sans `-Configuration`, le script construit successivement Debug et Release. Pour
 il ferme les processus qui utilisent l’exécutable du dossier cible, supprime l’ancien résultat et le
 répertoire intermédiaire, puis publie l’application, les modules explicitement demandés, le lanceur
 et le programme de mise à jour. Il appelle `organize-application-output.ps1` avant de vérifier la
-présence de `gwgui.exe`.
+présence de `retromedialab.exe`.
 
-Le résultat principal se trouve dans `build/<Configuration>/GW GUI`. Par défaut, son dossier
+Le résultat principal se trouve dans `build/<Configuration>/Retro Media Lab`. Par défaut, son dossier
 `Modules` existe et reste vide, comme dans le paquet distribué. `--Module amiga`,
 `--Module amiga,atari` ou tout autre identifiant découvert ajoute uniquement les modules choisis ;
 `--AllModules` ajoute tous les manifestes découverts. `--Module` et `--AllModules` sont incompatibles.
 Un identifiant inconnu, vide ou répété provoque une erreur avant la construction. Les fichiers
 intermédiaires sont créés sous `build/.staging` puis supprimés à la fin.
-Sans `-Version`, la version de l’application vient de `src/GWGUI.App/GWGUI.App.csproj`. `-Version`
+Sans `-Version`, la version de l’application vient de `src/RetroMediaLab.App/RetroMediaLab.App.csproj`. `-Version`
 permet de produire explicitement une autre version locale et applique le même numéro à l’application,
 au lanceur et au programme de mise à jour.
 
@@ -78,7 +78,7 @@ seule fois `local-building/build.ps1` avec `-AllModules`, `-Module` ou sans sél
 
 ### `module-directory/build-module-directory.ps1`
 
-Construit le répertoire distant utilisé pour afficher les modules installables dans GW GUI.
+Construit le répertoire distant utilisé pour afficher les modules installables dans Retro Media Lab.
 
 ```powershell
 .\scripts\module-directory\build-module-directory.ps1 `
@@ -98,11 +98,11 @@ Fournit les fonctions communes de découverte des modules. Ce fichier est charg�
 
 ```powershell
 . .\scripts\release\update-catalog\emulation-modules\emulation-modules.ps1
-$modules = Get-GwGuiEmulationModules -RepositoryRoot (Resolve-Path .)
-$module = Resolve-GwGuiEmulationModule -RepositoryRoot (Resolve-Path .) -Module atari
+$modules = Get-RetroMediaLabEmulationModules -RepositoryRoot (Resolve-Path .)
+$module = Resolve-RetroMediaLabEmulationModule -RepositoryRoot (Resolve-Path .) -Module atari
 ```
 
-`Get-GwGuiEmulationModules` recherche chaque dossier direct `src/GWGUI.Emulation.*` contenant `module.json`. La fonction vérifie notamment le projet homonyme, le schéma du manifeste, l’identifiant, les versions, les limites d’API hôte, les doublons et la correspondance entre `entryAssembly`, `AssemblyName` et le dossier. `Resolve-GwGuiEmulationModule` sélectionne un module par identifiant de manifeste ou suffixe de dossier.
+`Get-RetroMediaLabEmulationModules` recherche chaque dossier direct `src/RetroMediaLab.Emulation.*` contenant `module.json`. La fonction vérifie notamment le projet homonyme, le schéma du manifeste, l’identifiant, les versions, les limites d’API hôte, les doublons et la correspondance entre `entryAssembly`, `AssemblyName` et le dossier. `Resolve-RetroMediaLabEmulationModule` sélectionne un module par identifiant de manifeste ou suffixe de dossier.
 
 L’ajout d’un module conforme ne demande donc aucune modification manuelle de la liste dans les scripts qui utilisent ces fonctions.
 
@@ -113,11 +113,11 @@ Réorganise les DLL d’un dossier publié et réécrit les chemins correspondan
 ```powershell
 .\scripts\release\package\organize_app\organize-application-output.ps1 `
   -OutputDirectory <dossier> `
-  [-ApplicationAssemblyName gwgui.app] `
-  [-RootAssemblyName gwgui]
+  [-ApplicationAssemblyName retromedialab.app] `
+  [-RootAssemblyName retromedialab]
 ```
 
-Le script place les ressources de langue dans `Languages`, les bibliothèques GW GUI dans `lib` et les autres dépendances dans des sous-dossiers de `lib` selon leur famille. Il déplace également le manifeste de dépendances de l’application dans `lib`. Le dossier fourni est modifié sur place et doit déjà contenir les manifestes `.deps.json` attendus.
+Le script place les ressources de langue dans `Languages`, les bibliothèques Retro Media Lab dans `lib` et les autres dépendances dans des sous-dossiers de `lib` selon leur famille. Il déplace également le manifeste de dépendances de l’application dans `lib`. Le dossier fourni est modifié sur place et doit déjà contenir les manifestes `.deps.json` attendus.
 
 Ce script est une étape interne de `local-building/build.ps1` et `package.ps1`.
 
@@ -132,9 +132,9 @@ Crée l’archive distribuable d’un module découvert par son `module.json`.
   [-DistDirectory dist]
 ```
 
-Le script publie le projet du module pour Windows x64, vérifie la présence du manifeste, de la DLL d’entrée et du fichier `.deps.json`, puis crée `GW-GUI-Module-<id>-<version>-win-x64.zip` et son fichier `.sha256`. L’archive conserve la racine `Modules/<id>`. Les bibliothèques communes fournies par l’hôte et les PDB de Release sont exclues. Le répertoire de travail temporaire est supprimé, y compris après une erreur.
+Le script publie le projet du module pour Windows x64, vérifie la présence du manifeste, de la DLL d’entrée et du fichier `.deps.json`, puis crée `Retro-Media-Lab-Module-<id>-<version>-win-x64.zip` et son fichier `.sha256`. L’archive conserve la racine `Modules/<id>`. Les bibliothèques communes fournies par l’hôte et les PDB de Release sont exclues. Le répertoire de travail temporaire est supprimé, y compris après une erreur.
 
-`-DistDirectory` doit désigner un emplacement situé dans le dépôt. Le script est appelé par le workflow de publication d’un module. Il peut aussi être exécuté directement pour produire une archive de module sans reconstruire ni republier GW GUI.
+`-DistDirectory` doit désigner un emplacement situé dans le dépôt. Le script est appelé par le workflow de publication d’un module. Il peut aussi être exécuté directement pour produire une archive de module sans reconstruire ni republier Retro Media Lab.
 
 ### `publish-modules.cmd`
 
@@ -164,7 +164,7 @@ sur `main`. Le workflow crée ou met à jour la release technique `module-direct
 
 ### `release/package/package.ps1`
 
-Crée les paquets de l’application GW GUI sans module d’émulation.
+Crée les paquets de l’application Retro Media Lab sans module d’émulation.
 
 ```powershell
 .\scripts\release\package\package.ps1 `
@@ -174,7 +174,7 @@ Crée les paquets de l’application GW GUI sans module d’émulation.
   [-SkipInstaller]
 ```
 
-Le script nettoie les sorties temporaires et les anciens paquets d’application correspondant à la version, tout en conservant les données de `dist/portable/GW GUI/Data`. Il publie uniquement l’application, le lanceur et le programme de mise à jour, organise les DLL, retire les PDB et crée l’archive portable. Il n’appelle pas `package-module.ps1` et n’ajoute aucun dossier `Modules`. Sans `-SkipInstaller`, il construit aussi l’installateur avec Inno Setup. Il produit enfin `SHA256SUMS.txt`.
+Le script nettoie les sorties temporaires et les anciens paquets d’application correspondant à la version, tout en conservant les données de `dist/portable/Retro Media Lab/Data`. Il publie uniquement l’application, le lanceur et le programme de mise à jour, organise les DLL, retire les PDB et crée l’archive portable. Il n’appelle pas `package-module.ps1` et n’ajoute aucun dossier `Modules`. Sans `-SkipInstaller`, il construit aussi l’installateur avec Inno Setup. Il produit enfin `SHA256SUMS.txt`.
 
 Le répertoire de distribution doit être situé dans le dépôt. Inno Setup est requis uniquement pour produire l’installateur.
 
@@ -196,7 +196,7 @@ Construit `update-catalog.json` à partir des paquets déjà produits.
 ```
 
 Pour l’application, le script produit un catalogue de schéma 2 et de nature `application`, contenant
-uniquement `gwgui`, l’URL du paquet, celle des notes et la version d’API hôte. Pour un module, il
+uniquement `retromedialab`, l’URL du paquet, celle des notes et la version d’API hôte. Pour un module, il
 produit un catalogue de nature `module`, contenant uniquement l’identité demandée, ses bornes d’API
 et les URL construites depuis `-Repository` et `-ModuleTag`. Il n’existe pas de portée `All` : chaque
 module possède son propre catalogue. Le script vérifie les sommes SHA-256 depuis le fichier
@@ -237,7 +237,7 @@ Construit puis publie le wiki GitHub.
 .\scripts\wiki\publish-wiki.ps1
 ```
 
-Après `build-wiki.ps1`, le script vérifie l’identité Git, clone `GW-GUI.wiki.git` dans un dossier temporaire unique sous `build`, remplace uniquement les fichiers suivis par `.gwgui-wiki-files.json`, crée un commit s’il existe des changements et les pousse. Le clone temporaire est supprimé à la fin. Une authentification GitHub fonctionnelle et une identité Git configurée sont nécessaires.
+Après `build-wiki.ps1`, le script vérifie l’identité Git, clone `Retro-Media-Lab.wiki.git` dans un dossier temporaire unique sous `build`, remplace uniquement les fichiers suivis par `.retromedialab-wiki-files.json`, crée un commit s’il existe des changements et les pousse. Le clone temporaire est supprimé à la fin. Une authentification GitHub fonctionnelle et une identité Git configurée sont nécessaires.
 
 ### `publish-release.cmd`
 
@@ -259,7 +259,7 @@ Effectue un contrôle manuel de l’accessibilité native et du redimensionnemen
 
 ```powershell
 .\scripts\tests\test-app-accessibility.ps1 `
-  [-ApplicationPath <gwgui.exe>] `
+  [-ApplicationPath <retromedialab.exe>] `
   [-MinimumLogicalWidth 1280] `
   [-MinimumLogicalHeight 720]
 ```
@@ -306,7 +306,7 @@ Les trois scripts de test ont donc chacun une couverture utile : les deux contr�
 
 ### `temp/analyze-media-data.ps1`
 
-Compile `GWGUI.LocalDiskImageTests`, énumère les images de médias locales, analyse chacune d'elles,
+Compile `RetroMediaLab.LocalDiskImageTests`, énumère les images de médias locales, analyse chacune d'elles,
 enregistre les informations décodées dans `artifacts/media-audit/items`, puis contrôle la
 reconnaissance, l'exploration, la visualisation et les conversions disponibles. Un point de reprise
 permet de continuer au même fichier après correction ; la boucle s'arrête au premier défaut.
@@ -344,12 +344,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\tools\find-invalid-d
 Le script ne modifie aucun fichier. Il affiche chaque lien cassé, document non indexé ou feuille
 terminée, puis renvoie un code de sortie non nul.
 
-### `tools/stop-debug-gwgui.ps1`
+### `tools/stop-debug-retromedialab.ps1`
 
 Arrête manuellement les processus dont l’exécutable se trouve dans le dossier du build Debug.
 
 ```powershell
-.\scripts\tools\stop-debug-gwgui.ps1 [-BuildDirectory 'build/Debug/GW GUI']
+.\scripts\tools\stop-debug-retromedialab.ps1 [-BuildDirectory 'build/Debug/Retro Media Lab']
 ```
 
 Le script demande d’abord la fermeture normale de chaque processus trouvé, attend jusqu’à trois secondes, puis force l’arrêt de ceux qui restent. Il ne supprime aucun fichier. Aucun autre script ne l’appelle ; il sert lorsqu’un build Debug lancé manuellement doit être arrêté.
@@ -370,6 +370,6 @@ python .\scripts\tools\translate-resx-argos.py --repair-mixed
 python .\scripts\tools\translate-resx-argos.py --format
 ```
 
-`--root` permet de choisir un autre dossier de ressources que `src/GWGUI.App/Resources`. Le mode d’ajout insère les clés dans la ressource de base et traduit les textes traduisibles dans toutes les cultures. `--sync-all` complète les entrées absentes ; `--culture` permet de limiter cette synchronisation à une culture, y compris `en-US`, et `--catalog` à un seul fichier de ressources. `--clean-only` retire les doublons et les valeurs techniques invariantes qui doivent utiliser le repli, `--audit` ne modifie rien et contrôle la structure, la présence de chaque texte traduisible dans les 28 cultures Argos, les clés, les paramètres réservés et les fragments non traduits. `en-US` utilise volontairement les textes de `00-Base`; les valeurs techniques invariantes utilisent aussi ce repli. Une traduction identique au texte anglais reste inscrite physiquement afin que l’audit puisse distinguer une traduction produite d’une clé oubliée. `--repair-mixed` retraduit les entrées mixtes, et `--format` normalise la présentation XML des éléments `data`.
+`--root` permet de choisir un autre dossier de ressources que `src/RetroMediaLab.App/Resources`. Le mode d’ajout insère les clés dans la ressource de base et traduit les textes traduisibles dans toutes les cultures. `--sync-all` complète les entrées absentes ; `--culture` permet de limiter cette synchronisation à une culture, y compris `en-US`, et `--catalog` à un seul fichier de ressources. `--clean-only` retire les doublons et les valeurs techniques invariantes qui doivent utiliser le repli, `--audit` ne modifie rien et contrôle la structure, la présence de chaque texte traduisible dans les 28 cultures Argos, les clés, les paramètres réservés et les fragments non traduits. `en-US` utilise volontairement les textes de `00-Base`; les valeurs techniques invariantes utilisent aussi ce repli. Une traduction identique au texte anglais reste inscrite physiquement afin que l’audit puisse distinguer une traduction produite d’une clé oubliée. `--repair-mixed` retraduit les entrées mixtes, et `--format` normalise la présentation XML des éléments `data`.
 
 Les modes de traduction modifient directement les fichiers `.resx`. Les termes protégés, paramètres et valeurs invariantes sont préservés. Les modèles Argos nécessaires doivent déjà être installés. Pour les libellés techniques courts susceptibles d’être ambigus hors contexte, le script fournit à Argos une formulation de média explicite, par exemple « Media track » pour `Explorer.Track` et « Media recording sides » pour `Explorer.Faces`. Les termes français validés restent exactement `Session`, `Piste`, `Couches` et `Faces`.

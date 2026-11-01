@@ -1,7 +1,7 @@
 # Sources des manettes et périphériques Nintendo
 
 Références utilisées pour constituer le catalogue de ressources
-`src/GWGUI.Emulation.Nintendo/Resources/00-Base/Controllers.resx`.
+`src/RetroMediaLab.Emulation.Nintendo/Resources/00-Base/Controllers.resx`.
 
 Les liens ci-dessous sont regroupés par famille ou périphérique. Ils ont été
 déplacés depuis les commentaires du fichier de ressources, sans modification.

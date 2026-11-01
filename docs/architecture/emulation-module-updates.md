@@ -1,15 +1,15 @@
-# Mises à jour indépendantes de GW GUI et des modules
+# Mises à jour indépendantes de Retro Media Lab et des modules
 
 ## Principe
 
-GW GUI connaît deux adresses distantes génériques : son propre catalogue d’application et le
+Retro Media Lab connaît deux adresses distantes génériques : son propre catalogue d’application et le
 répertoire officiel des modules installables. Il ne contient aucune liste codée en dur ni adresse
 propre à Amiga, Atari ou un futur module. Chaque module installé déclare ensuite sa propre source de
 mise à jour dans `updateCatalogUrl` de son `module.json`.
 
 Les deux parcours restent séparés :
 
-- la recherche **GW GUI** lit le catalogue d’application publié au tag technique
+- la recherche **Retro Media Lab** lit le catalogue d’application publié au tag technique
   `application-catalog` ;
 - **Afficher les modules disponibles** lit `module-directory.json`, puis le catalogue indépendant
   de chaque module référencé ;
@@ -39,13 +39,13 @@ Chaque document contient une seule nature de composant :
   "generatedAtUtc": "2026-09-09T10:00:00Z",
   "components": [
     {
-      "id": "gwgui",
+      "id": "retromedialab",
       "kind": "application",
       "releases": [
         {
           "version": "1.0.0",
           "hostApiVersion": "1.0",
-          "packageUrl": "https://github.com/OWNER/REPOSITORY/releases/download/v1.0.0/GW-GUI-1.0.0-win-x64-portable.zip",
+          "packageUrl": "https://github.com/OWNER/REPOSITORY/releases/download/v1.0.0/Retro-Media-Lab-1.0.0-win-x64-portable.zip",
           "sha256": "<64 caractères hexadécimaux>",
           "notesUrl": "https://github.com/OWNER/REPOSITORY/releases/tag/v1.0.0"
         }
@@ -69,7 +69,7 @@ Chaque document contient une seule nature de composant :
           "version": "1.0.0",
           "hostApiMinimum": "1.0",
           "hostApiMaximum": "1.0",
-          "packageUrl": "https://github.com/OWNER/REPOSITORY/releases/download/module-example-v1.0.0/GW-GUI-Module-example-1.0.0-win-x64.zip",
+          "packageUrl": "https://github.com/OWNER/REPOSITORY/releases/download/module-example-v1.0.0/Retro-Media-Lab-Module-example-1.0.0-win-x64.zip",
           "sha256": "<64 caractères hexadécimaux>",
           "notesUrl": "https://github.com/OWNER/REPOSITORY/releases/tag/module-example-v1.0.0"
         }
@@ -79,7 +79,7 @@ Chaque document contient une seule nature de composant :
 }
 ```
 
-Un catalogue d’application ne peut contenir que `gwgui`. Un catalogue de module ne peut contenir
+Un catalogue d’application ne peut contenir que `retromedialab`. Un catalogue de module ne peut contenir
 qu’un composant de type `module`, correspondant à l’identité attendue. Les versions de produit ont
 trois nombres et les versions d’API deux nombres. Les URL doivent être HTTPS et les empreintes
 SHA-256 contenir 64 caractères hexadécimaux.
@@ -91,7 +91,7 @@ associant plusieurs sources distantes.
 
 ## Publication
 
-`.github/workflows/release.yml` publie uniquement GW GUI, son lanceur et son updater. Après une
+`.github/workflows/release.yml` publie uniquement Retro Media Lab, son lanceur et son updater. Après une
 release stable ou sans label, il remplace `update-catalog.json` au tag `application-catalog`. Une
 snapshot conserve le catalogue comme artefact du workflow sans remplacer le catalogue stable.
 
@@ -106,7 +106,7 @@ L’adresse complète de ce dernier appartient au `module.json` de ce module.
 
 `scripts/publish-module-directory.cmd` déclenche `.github/workflows/module-directory.yml`, qui reconstruit le répertoire depuis `module-registry` et
 remplace `module-directory.json` dans la release technique `module-directory`. Cette publication est
-indépendante des versions de GW GUI et des versions propres aux modules.
+indépendante des versions de Retro Media Lab et des versions propres aux modules.
 
 `scripts/release/update-catalog/build-update-catalog.ps1` accepte uniquement `-Scope Application` ou `-Scope Module`. Le
 paramètre `-Repository OWNER/REPOSITORY` détermine les URL publiées. Une publication de module exige
@@ -119,7 +119,7 @@ La version de l’application vient de son assembly informationnel et sa version
 chargés par `EmulationModuleRegistry`. La version d’un cœur PUAE, Hatari, Atari800 ou autre n’est
 jamais utilisée comme version du module.
 
-La fenêtre dédiée **Options > Mises à jour…** sépare la version de GW GUI, le catalogue des modules
+La fenêtre dédiée **Options > Mises à jour…** sépare la version de Retro Media Lab, le catalogue des modules
 disponibles, les modules installés et l’installation avancée. `ApplicationUpdateService` consulte
 seulement `UpdateEndpoints.ApplicationCatalogUrl`. `ModuleDirectoryService` consulte l’unique
 `UpdateEndpoints.ModuleDirectoryUrl`, valide le répertoire, puis affiche la dernière version de
@@ -129,7 +129,7 @@ chaque module compatible avec l’API hôte. `ModuleUpdateService` consulte seul
 Une navigation verticale affiche une entrée par module installé afin de rester utilisable lorsque
 leur nombre augmente. La page du module indique toujours sa version installée et son état explicite :
 installé et à jour, mise à jour disponible, opération en cours ou erreur. Les états utilisent des
-icônes et couleurs communes ; GW GUI ne contient aucun logo ni traitement propre à une famille.
+icônes et couleurs communes ; Retro Media Lab ne contient aucun logo ni traitement propre à une famille.
 
 L’installation initiale accepte :
 
@@ -138,7 +138,7 @@ L’installation initiale accepte :
   téléchargée et vérifiée.
 
 Une confirmation explicite précède chaque téléchargement. La préparation validée est conservée
-pendant l’exécution de GW GUI et la ligne du module prend l’état `Téléchargé`. L’application reste
+pendant l’exécution de Retro Media Lab et la ligne du module prend l’état `Téléchargé`. L’application reste
 ouverte afin que plusieurs modules puissent être préparés successivement. Le bouton
 `Finir l’installation` regroupe tous les composants préparés dans une seule transaction, demande
 la confirmation de fermeture, lance une seule fois l’updater, puis provoque un seul redémarrage.
@@ -153,8 +153,8 @@ ROM nécessaires ne sont pas distribués dans le module et restent sélectionné
 ## Préparation et sécurité des archives
 
 `UpdatePackagePreparationService` télécharge les paquets sous
-`%TEMP%/GW GUI/Updates/<transaction>`, vérifie leur SHA-256 et appelle `UpdateArchiveValidator`.
-Une archive d’application doit avoir une racine unique `GW GUI`. Une archive de module doit avoir
+`%TEMP%/Retro Media Lab/Updates/<transaction>`, vérifie leur SHA-256 et appelle `UpdateArchiveValidator`.
+Une archive d’application doit avoir une racine unique `Retro Media Lab`. Une archive de module doit avoir
 exactement `Modules/<id>`, un manifeste valide de schéma 2, une identité et une version conformes,
 une DLL d’entrée présente et une URL de catalogue HTTPS cohérente. Les chemins absolus, remontées
 `..` et liens de réanalyse sont refusés.
@@ -163,27 +163,27 @@ Le plan sérialisé distingue `UpdateApplication`, `InstallModule` et `UpdateMod
 sont préparés avant la fermeture. Plusieurs installations de modules préparées séparément peuvent
 être réunies dans ce même plan. Tant que l'application n'a pas redémarré, leur état visible est
 `Téléchargé` et le bouton de fermeture devient `Finir l'installation`. La copie temporaire de
-`gwgui.updater.exe` est lancée seulement après cette validation et une seule fois pour toute la
+`retromedialab.updater.exe` est lancée seulement après cette validation et une seule fois pour toute la
 transaction. Une fermeture par le bouton `X` demande si l'installation doit être terminée ; le refus
 annule les téléchargements préparés et ferme la fenêtre.
 
 ## Transaction hors processus
 
-L’updater attend la fin des PID `gwgui.exe` appartenant à l’installation. Pour une mise à jour de
+L’updater attend la fin des PID `retromedialab.exe` appartenant à l’installation. Pour une mise à jour de
 l’application, il sauvegarde et remplace l’installation hors `Data` et `Modules` : tous les modules
 installés sont donc conservés. Pour une mise à jour de module, il sauvegarde et remplace uniquement
 `Modules/<id>`. Pour une installation, il crée ce dossier et le supprime si une opération ultérieure
 de la transaction échoue.
 
 Toute erreur restaure les éléments remplacés. Après copie, l’updater relance exactement une fois
-`gwgui.exe`. Le nouveau processus émet son signal après
+`retromedialab.exe`. Le nouveau processus émet son signal après
 `MainWindowLifecycleController.LoadAsync`. Sans signal dans le délai prévu, l’updater ferme ce
 processus, restaure l’état précédent et relance la version restaurée afin d’afficher le résultat.
 
-Les données portables sous `Data`, les données utilisateur sous `%APPDATA%/GW GUI`, les chemins de
+Les données portables sous `Data`, les données utilisateur sous `%APPDATA%/Retro Media Lab`, les chemins de
 stockage configurés et les données Greaseweazle ne font jamais partie de la transaction.
 
 ## Limite actuelle
 
-Ajouter, retirer ou remplacer un module demande un redémarrage de GW GUI. Le déchargement à chaud
+Ajouter, retirer ou remplacer un module demande un redémarrage de Retro Media Lab. Le déchargement à chaud
 n’est pas pris en charge.

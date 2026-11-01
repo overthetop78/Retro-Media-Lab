@@ -16,8 +16,8 @@ if (-not $dist.StartsWith($repository + [IO.Path]::DirectorySeparatorChar,
     throw 'DistDirectory must be located inside the repository.'
 }
 
-$definitions = @(Get-GwGuiEmulationModules -RepositoryRoot $repository)
-$definition = Resolve-GwGuiEmulationModule -Modules $definitions -Module $Module
+$definitions = @(Get-RetroMediaLabEmulationModules -RepositoryRoot $repository)
+$definition = Resolve-RetroMediaLabEmulationModule -Modules $definitions -Module $Module
 $project = $definition.ProjectPath
 $manifest = $definition.Manifest
 
@@ -42,7 +42,7 @@ try {
     }
 
     foreach ($source in Get-ChildItem -LiteralPath $publish -Recurse -File) {
-        $isShared = $source.Name -imatch '^gwgui\.(emulation|mediaengine)\.(dll|pdb)$' `
+        $isShared = $source.Name -imatch '^retromedialab\.(emulation|mediaengine)\.(dll|pdb)$' `
             -or $source.Name -imatch '^(DiscUtils|LTRData)\..*\.dll$'
         if ($isShared) { continue }
         if ($Configuration -eq 'Release' -and $source.Extension -ieq '.pdb') { continue }
@@ -55,7 +55,7 @@ try {
         Copy-Item -LiteralPath $source.FullName -Destination $target -Force
     }
 
-    $archiveName = "GW-GUI-Module-$($manifest.id)-$($manifest.moduleVersion)-win-x64.zip"
+    $archiveName = "Retro-Media-Lab-Module-$($manifest.id)-$($manifest.moduleVersion)-win-x64.zip"
     $archive = Join-Path $dist $archiveName
     $checksum = $archive + '.sha256'
     if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }

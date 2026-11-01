@@ -1,0 +1,110 @@
+using RetroMediaLab.App.Constants.Localization;
+using RetroMediaLab.App.Contracts.Machine;
+using RetroMediaLab.App.Localization.Extensions;
+using RetroMediaLab.App.Services.Logging;
+using RetroMediaLab.App.Services.Terminal;
+using RetroMediaLab.App.Views.Controls.Emulation.Machine;
+using RetroMediaLab.App.Views.Controls.Shell;
+using RetroMediaLab.Infrastructure.Settings;
+using System.IO;
+using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Controls;
+namespace RetroMediaLab.Tests.Interface.EmulationViews;
+internal static class EmulationInteractionScenarios
+{
+    public static void ErrorLogAppearsOnceInConsoleAndDetaches()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "retromedialab-error-console-" + Guid.NewGuid().ToString("N"));
+        var terminal = new TerminalSection();
+        var settings = new AppSettings();
+        var controller = new TerminalPanelController(terminal, new RowDefinition(), new GridSplitter(), () => settings);
+        Action<string> append = controller.AppendError;
+        ErrorLog.EntryWritten += append;
+        try
+        {
+            var error = new InvalidOperationException("synthetic emulation failure");
+            Assert.NotNull(ErrorLog.Write(error, "Atari ST - starting emulation", directory));
+
+            var output = terminal.OutputText;
+            Assert.Contains("Atari ST - starting emulation", output, StringComparison.Ordinal);
+            Assert.Contains(error.ToString(), output, StringComparison.Ordinal);
+            Assert.Equal(1, output.Split("synthetic emulation failure", StringSplitOptions.None).Length - 1);
+            Assert.True(controller.IsVisible);
+
+            ErrorLog.EntryWritten -= append;
+            Assert.NotNull(ErrorLog.Write(new InvalidOperationException("after detach"), "detached", directory));
+            Assert.DoesNotContain("after detach", terminal.OutputText, StringComparison.Ordinal);
+        }
+        finally
+        {
+            ErrorLog.EntryWritten -= append;
+            terminal.Content = null;
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
+
+    public static void ConsoleLayoutIsIndependentForEachMainTab()
+    {
+        var terminal = new TerminalSection();
+        var row = new RowDefinition { Height = new GridLength(230) };
+        var settings = new AppSettings();
+        var controller = new TerminalPanelController(terminal, row, new GridSplitter(), () => settings);
+        try
+        {
+            controller.SetVisibility(true);
+            controller.SelectTab(1);
+            Assert.Equal(190, row.Height.Value);
+            controller.SetVisibility(false);
+            controller.SelectTab(0);
+            Assert.True(controller.IsVisible);
+            Assert.Equal(230, row.Height.Value);
+            controller.SelectTab(1);
+            Assert.False(controller.IsVisible);
+            controller.SetVisibility(true);
+            row.Height = new GridLength(310);
+            controller.SelectTab(0);
+            controller.SelectTab(1);
+            Assert.True(controller.IsVisible);
+            Assert.Equal(310, row.Height.Value);
+        }
+        finally
+        {
+            terminal.Content = null;
+        }
+    }
+
+    public static void Commands(bool failure)
+    {
+        var host = new DockPanel(); var calls = new List<int>(); var errors = new List<Exception>(); var restored = 0;
+        Func<Task> Command(int index) => () => { calls.Add(index); return failure ? Task.FromException(new IOException("synthetic command")) : Task.CompletedTask; };
+        var bar = new MachineCommandBar(host,new(Command(0),Command(1),Command(2),Command(3),Command(4),Command(5),Command(6),Command(7),Command(8),Command(9)),[],errors.Add,() => restored++);
+        var keys = new[] {EmulationResourceKeys.Power,
+            EmulationResourceKeys.PauseResume,
+            EmulationResourceKeys.SoftReset,
+            EmulationResourceKeys.HardReset,
+            EmulationResourceKeys.QuickSave,
+            EmulationResourceKeys.QuickLoad,
+            EmulationResourceKeys.CaptureScreen,
+            EmulationResourceKeys.Fullscreen,
+            EmulationResourceKeys.Audio,
+            EmulationResourceKeys.SwitchControllerPointer};
+        Button Find(string key) => MachineConfigurationScenarios.Controls<Button>(host).Single(x => Equals(x.ToolTip,LocExtension.Get(key)));
+        bar.SetPowered(false);
+        foreach(var key in keys) Assert.Equal(key == EmulationResourceKeys.Power || key == EmulationResourceKeys.Fullscreen,Find(key).IsEnabled);
+        bar.SetPowered(true); bar.SetSavedStateAvailability(true,false);
+        Assert.True(Find(EmulationResourceKeys.QuickSave).IsEnabled); Assert.False(Find(EmulationResourceKeys.QuickLoad).IsEnabled);
+        bar.SetSavedStateAvailability(true,true); Assert.True(Find(EmulationResourceKeys.QuickLoad).IsEnabled);
+        foreach(var key in keys) Find(key).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Assert.Equal(Enumerable.Range(0,10),calls); Assert.Equal(10,restored); Assert.Equal(failure?10:0,errors.Count);
+        var pause = Assert.IsType<TextBlock>(Find(EmulationResourceKeys.PauseResume).Content); var previous = pause.Text;
+        bar.SetPaused(true); Assert.NotEqual(previous,pause.Text); bar.SetPaused(false); Assert.Equal(previous,pause.Text);
+        bar.SetInputStatus(true,false);
+        Assert.Equal(LocExtension.Get("Emulation.Value.Enabled"),AutomationProperties.GetItemStatus(bar.PointerStatus));
+        Assert.Equal(LocExtension.Get("Emulation.Value.Disabled"),AutomationProperties.GetItemStatus(bar.ControllerStatus));
+        bar.SetInputStatus(false,true);
+        Assert.Equal(LocExtension.Get("Emulation.Value.Disabled"),AutomationProperties.GetItemStatus(bar.PointerStatus));
+        Assert.Equal(LocExtension.Get("Emulation.Value.Enabled"),AutomationProperties.GetItemStatus(bar.ControllerStatus));
+        bar.SetPowered(false); Assert.False(Find(EmulationResourceKeys.QuickSave).IsEnabled); Assert.False(Find(EmulationResourceKeys.QuickLoad).IsEnabled);
+    }
+}

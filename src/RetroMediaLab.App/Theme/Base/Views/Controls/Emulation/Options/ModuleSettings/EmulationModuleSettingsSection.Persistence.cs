@@ -1,0 +1,159 @@
+using RetroMediaLab.App.Contracts.Emulation.Configurations;
+using RetroMediaLab.App.Contracts.Emulation.Machine;
+using RetroMediaLab.App.Contracts.Emulation.Settings;
+using RetroMediaLab.App.Controllers.Emulation.Options;
+using RetroMediaLab.App.Functions.Views.Emulation.Settings;
+using RetroMediaLab.App.Localization.Extensions;
+using RetroMediaLab.App.Services.Emulation;
+using RetroMediaLab.App.Constants.Views.Emulation;
+using RetroMediaLab.App.Functions.Emulation.Machine;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
+
+internal sealed partial class EmulationModuleSettingsSection
+{
+    private async void MachineChanged(object sender, SelectionChangedEventArgs args)
+    {
+        if (_loading || _machines.SelectedItem is not EmulationMachineChoice selected) return;
+        await ExecuteAsync(async () =>
+        {
+            CaptureEditorValues();
+            var previous = _configuration;
+            var wasSaved = _saved.Any(item => item.Id == previous.Id);
+            if (!wasSaved) EmulationConfigurationDraftStore.Set(_module.Id, previous);
+            if (wasSaved) await PersistCapturedConfigurationAsync(previous, true);
+            _configuration = _saved.FirstOrDefault(item => item.MachineId == selected.Definition.Id) ?? (EmulationConfigurationDraftStore.TryGet(_module.Id, selected.Definition.Id, out var draft) ? draft : _module.CreateConfiguration(selected.Definition.Id));
+            RebuildEditor();
+            NotifyEditingContextChanged();
+        });
+    }
+
+    private async Task ExecuteAsync(Func<Task> action)
+    {
+        try { await action(); }
+        catch (Exception error) { _showError(error); }
+    }
+
+    private Task ExecuteUserChangeAsync() => ExecuteAsync(ApplyUserChangeAsync);
+
+    private async Task ApplyUserChangeAsync()
+    {
+        if (_inputSettings?.HasErrors == true) return;
+        _profiles.Get(_module.Id, _configuration.Id);
+        CaptureEditorValues();
+        var configuration = _configuration;
+        await PersistCapturedConfigurationAsync(configuration, _saved.Any(item => item.Id == configuration.Id));
+    }
+
+    private async Task PersistCapturedConfigurationAsync(IEmulationConfiguration configuration, bool hasSavedConfiguration)
+    {
+        await _saveInputGate.WaitAsync();
+        try
+        {
+            if (await EmulationConfigurationPersistenceFunctions.PersistAsync(_module, configuration, hasSavedConfiguration, profiles: _profiles))
+            {
+                _saved = _saved.Select(item => item.Id == configuration.Id ? configuration : item).ToArray();
+                ConfigurationSaved?.Invoke(this, new EmulationConfigurationSavedEventArgs(configuration));
+            }
+        }
+        finally { _saveInputGate.Release(); }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_inputSettings?.HasErrors == true) return;
+        _profiles.Get(_module.Id, _configuration.Id);
+        var values = _fieldControls.ToDictionary(item => item.Key, item => ReadValue(item.Value), StringComparer.Ordinal);
+        _configuration = _module.ApplySettings(_configuration, values);
+        if (_inputSettings is not null) _configuration = _inputSettings.Apply(_configuration);
+        if (_storageSettings is not null) _configuration = _storageSettings.Apply(_configuration);
+        if (_emulatorManagement is not null)
+            await _emulatorManagement.EnsureEmulatorSelectedAsync();
+        _configuration = EmulationVideoConfigurationFunctions.Apply(_module, _configuration, _profiles.Get(_module.Id, _configuration.Id).Renderer);
+        var configuration = _configuration;
+        await _profiles.SaveAsync(_module.Id, configuration.Id);
+        await _module.SaveConfigurationAsync(configuration);
+        EmulationConfigurationDraftStore.Remove(_module.Id, configuration.MachineId);
+        ConfigurationSaved?.Invoke(this, new EmulationConfigurationSavedEventArgs(configuration));
+        await ReloadAsync();
+    }
+
+    private Task SaveVideoProfileAsync()
+    {
+        var id = _configuration.Id;
+        return _saved.Any(item => item.Id == id) ? _profiles.SaveAsync(_module.Id, id) : Task.CompletedTask;
+    }
+
+    private static string? ReadValue(FrameworkElement control) => control switch
+    {
+        RetroMediaLab.App.Views.Controls.Common.ConstrainedTextBox input => input.CommittedValue,
+        Button { Tag: string directory } => directory,
+        TextBox text => text.Text,
+        Grid { Tag: TextBox path } => path.Text,
+        _ => RetroMediaLab.App.Functions.Views.Emulation.Settings.EmulationSettingsFieldControlFunctions.Read(control)
+    };
+
+    private void SelectMachine(string machineId)
+    {
+        _loading = true;
+        _machines.SelectedItem = _machines.Items.Cast<EmulationMachineChoice>().First(item => item.Definition.Id == machineId);
+        _loading = false;
+    }
+
+    private void RebuildEditor()
+    {
+        EmulationSettingsLayout.DetachReusableElement(_machines);
+        EmulationSettingsLayout.DetachReusableElement(_videoProcessing);
+        var rebuilt = BuildEditor();
+        Content = rebuilt;
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
+        if (_emulatorManagement is not null)
+            _ = ExecuteAsync(_emulatorManagement.RefreshAsync);
+        if (HasFirmwareFields(_selectedTab) && _firmwareManagement is not null)
+            _ = ExecuteAsync(_firmwareManagement.RefreshAsync);
+    }
+
+    private void SetConfiguration(IEmulationConfiguration configuration)
+    {
+        _configuration = configuration;
+        RebuildEditor();
+    }
+
+    private void NotifyEditingContextChanged()
+    {
+        var machine = (_machines.SelectedItem as EmulationMachineChoice)?.DisplayName ?? _configuration.MachineId;
+        EditingContextChanged?.Invoke(this, new EmulationMachineEditingContext(LocExtension.GetForModule(_module, _module.DisplayResourceKey), machine));
+    }
+
+    private Task TabActivatedAsync(EmulationMachineTab tab) => RememberTabAndActivateAsync(tab);
+
+    private async Task RememberTabAndActivateAsync(EmulationMachineTab tab)
+    {
+        _selectedTab = tab;
+        if (HasFirmwareFields(tab) && _firmwareManagement is not null)
+            await _firmwareManagement.RefreshAsync();
+    }
+
+    internal void RefreshLocalizedContent()
+    {
+        CaptureEditorValues();
+        var choices = _module.Machines.Select(CreateMachineChoice).ToArray();
+        _machines.ItemsSource = choices;
+        SelectMachine(_configuration.MachineId);
+        FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        RebuildEditor();
+        NotifyEditingContextChanged();
+    }
+
+    private void CaptureEditorValues()
+    {
+        if (_fieldControls.Count != 0)
+            _configuration = _module.ApplySettings(_configuration, _fieldControls.ToDictionary(item => item.Key, item => ReadValue(item.Value), StringComparer.Ordinal));
+        if (_inputSettings is not null) _configuration = _inputSettings.Apply(_configuration);
+        if (_storageSettings is not null) _configuration = _storageSettings.Apply(_configuration);
+        _configuration = EmulationVideoConfigurationFunctions.Apply(_module, _configuration, _profiles.Get(_module.Id, _configuration.Id).Renderer);
+    }
+}

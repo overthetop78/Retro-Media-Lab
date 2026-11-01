@@ -1,8 +1,8 @@
 [🌐 Languages / Langues](../Home.md)
 
-# GW GUI Ghid utilizator
+# Retro Media Lab Ghid utilizator
 
-GW GUI este o aplicație Windows pentru citirea, scrierea, convertirea, inspecția și emularea imaginilor cu dischetă. Poate controla Greaseweazle hardware, lucrați cu fișiere de imagini de disc prin motorul său intern, și executați configurații de mașini emulate salvate.
+Retro Media Lab este o aplicație Windows pentru citirea, scrierea, convertirea, inspecția și emularea imaginilor cu dischetă. Poate controla Greaseweazle hardware, lucrați cu fișiere de imagini de disc prin motorul său intern, și executați configurații de mașini emulate salvate.
 
 Acest ghid descrie interfața engleză afișată în versiunea curentă a aplicației. Acesta este scris ca sursă a manualului de utilizator imprimat: capturi de ecran ilustrează controalele, în timp ce textul din jur explică ce să aleagă, de ce să-l aleagă, și cum să verifice rezultatul.
 
@@ -10,7 +10,7 @@ Acest ghid descrie interfața engleză afișată în versiunea curentă a aplica
 
 ### Cum să utilizaţi acest ghid
 
-Dacă aceasta este prima dată când utilizaţi GW GUI, complet [Începem](#getting-started), apoi urmați [Citirea unui disc](#reading-a-disk)Dacă aplicaţia este deja configurată, mergeţi direct la capitolul operaţiunii pe care doriţi să o efectuaţi. Capitolele opțiunilor servesc ca referință atunci când o procedură vă cere să modificați o unitate, motor, profil sau setare emulată-mașină.
+Dacă aceasta este prima dată când utilizaţi Retro Media Lab, complet [Începem](#getting-started), apoi urmați [Citirea unui disc](#reading-a-disk)Dacă aplicaţia este deja configurată, mergeţi direct la capitolul operaţiunii pe care doriţi să o efectuaţi. Capitolele opțiunilor servesc ca referință atunci când o procedură vă cere să modificați o unitate, motor, profil sau setare emulată-mașină.
 
 Numele interfeței sunt afișate în **aldine**. Numele fișierelor, căile, comenzile și valorile literale sunt afișate ca `code`. Note explica comportamentul normal; avertismentele identifica operatiunile care pot modifica un disc, controler sau configuratie stocata.
 
@@ -40,7 +40,7 @@ Numele interfeței sunt afișate în **aldine**. Numele fișierelor, căile, com
 
 ## Înțelegerea fluxului de lucru
 
-GW GUI separă operațiunile cu disc fizic de operațiunile cu fișiere de imagine:
+Retro Media Lab separă operațiunile cu disc fizic de operațiunile cu fișiere de imagine:
 
 | Gol | Intrare | Rezultat | Pagina recomandată |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Pentru conservare, face mai întâi o captură brută și păstrați-l neschimba
 - O cale configurată către `gw.exe` atunci când se utilizează Greaseweazle Host Tools Motor.
 - Obţinute legal ROM fișiere atunci când o mașină emulată le necesită.
 
-Cererea verifică durata de funcționare necesară .NET la pornire. Dacă lipsește, urmați prompt instalarea, apoi reporniți GW GUI.
+Cererea verifică durata de funcționare necesară .NET la pornire. Dacă lipsește, urmați prompt instalarea, apoi reporniți Retro Media Lab.
 
 ### Înainte de conectarea hardware-ului
 
@@ -75,11 +75,11 @@ Verificați următoarele înainte de a efectua o operație fizică-disc:
 4. Confirmă că dimensiunea și densitatea motorului se potrivesc discului.
 5. Dacă este posibil, protejați discul sursă.
 
-GW GUI nu pot preveni daunele cauzate de cablare incorectă, de o putere necorespunzătoare sau de o unitate nesigură mecanic. Testul hardware necunoscut cu un disc de consum mai întâi.
+Retro Media Lab nu pot preveni daunele cauzate de cablare incorectă, de o putere necorespunzătoare sau de o unitate nesigură mecanic. Testul hardware necunoscut cu un disc de consum mai întâi.
 
 ### Prima lansare
 
-1. Deschide `gwgui.exe`.
+1. Deschide `retromedialab.exe`.
 2. Deschide **Opțiuni**.
 3. În **Controloare și unități** Scanează după controler şi configurează unitatea.
 4. Verificați sau selectați calea spre `gw.exe`.
@@ -92,7 +92,7 @@ Un setup de lucru ar trebui să arate controlorul și conduce în bara de stare,
 
 ### Alegerea unui motor
 
-GW GUI pot expune mai mult de o implementare pentru unele operațiuni. ă **Greaseweazle Host Tools** motorul invocă configurația `gw.exe`; intern GW GUI mânerele motorului care funcționează în cadrul aplicației. Selectarea motorului este explicită și independentă pentru citire, scriere, conversie și Disk Explorer. Dacă o operațiune nu este susținută de motorul selectat, GW GUI raportează această stare în loc să schimbe automat motoarele.
+Retro Media Lab pot expune mai mult de o implementare pentru unele operațiuni. ă **Greaseweazle Host Tools** motorul invocă configurația `gw.exe`; intern Retro Media Lab mânerele motorului care funcționează în cadrul aplicației. Selectarea motorului este explicită și independentă pentru citire, scriere, conversie și Disk Explorer. Dacă o operațiune nu este susținută de motorul selectat, Retro Media Lab raportează această stare în loc să schimbe automat motoarele.
 
 ## Fereastra principală
 
@@ -435,7 +435,7 @@ Utilizați controlul gunoiului doar pentru a elimina configurația salvată; nu 
 
 <p align="center"><img src="../images/options-engines-en.png" alt="Selectarea motorului" width="72%"></p>
 
-Alegeți motorul independent pentru citire, scriere, conversie și Disk Explorer. Motorul selectat este utilizat strict: dacă nu poate efectua operațiunea solicitată; GW GUI raportează limitarea în loc să schimbe în tăcere motoarele.
+Alegeți motorul independent pentru citire, scriere, conversie și Disk Explorer. Motorul selectat este utilizat strict: dacă nu poate efectua operațiunea solicitată; Retro Media Lab raportează limitarea în loc să schimbe în tăcere motoarele.
 
 Această independenţă este intenţionată. De exemplu, citirile fizice pot folosi Greaseweazle Host Tools în timp ce conversia imaginii și explorarea utilizează motorul intern. Înregistrați opțiunile motorului într-un profil sau notă de proiect atunci când reproductibilitatea contează.
 
@@ -514,7 +514,7 @@ Configurează Chip RAM, Încet RAM, Repede RAM, și a sprijinit memoria de expan
 
 Alegeți sistemul Kickstart ROM, opțional extins ROM, și ROM Cheia. Detectat-ROM lista afișează numele, revizuirile și compatibilitatea cu modelul selectat. Alegeți un detector ROM și faceți clic **Utilizare**, sau naviga la un fișier manual.
 
-ROM fișierele nu sunt furnizate de GW GUIUtilizaţi ROM-uri care vă sunt permise legal să utilizaţi.
+ROM fișierele nu sunt furnizate de Retro Media LabUtilizaţi ROM-uri care vă sunt permise legal să utilizaţi.
 
 Lista detectată este preferabilă presupunerii dintr-un nume de fișier: raportează ROM identitatea și revizuirea și evaluează compatibilitatea cu modelul selectat. **Compatibil ** este alegerea normală; ** Parţial compatibil ** indică faptul că ROM poate boot, dar nu se potrivește exact cu mașina. ** Reîmprospătează ** rescanează configuratul ROM locaţii. ** Utilizare** atribuie detectate selectate ROM la configuraţie.
 
@@ -589,7 +589,7 @@ Aceste dialoguri sunt deschise din **Unelte ** tab. Fiecare dialog previzualizar
 
 Afișează informațiile raportate de operatorul selectat. Extinde **Producția brută** atunci când aveți nevoie de răspunsul de comandă completă.
 
-Foloseşte asta ca prima comandă de diagnosticare. Un răspuns de succes confirmă că GW GUI poate porni instrumentul gazdă configurat executabil și comunica cu dispozitivul selectat. Înregistrați informațiile despre firmware și hardware înainte de a efectua o actualizare.
+Foloseşte asta ca prima comandă de diagnosticare. Un răspuns de succes confirmă că Retro Media Lab poate porni instrumentul gazdă configurat executabil și comunica cu dispozitivul selectat. Înregistrați informațiile despre firmware și hardware înainte de a efectua o actualizare.
 
 ### USB lățime de bandă
 
@@ -673,7 +673,7 @@ Atunci când se compară două încercări, verificați dacă operatorul, unitat
 
 ## Date de aplicare și utilizare portabilă
 
-GW GUI păstrează datele utilizatorului separat de binarele aplicației. În funcție de pachetul și modul selectat, setările, jurnalele, instrumentele descărcate, componentele emulatoare, capturile, stările și configurațiile mașinilor sunt stocate fie în aplicație `Data` directorul sau în locaţiile configurate de utilizator-date.
+Retro Media Lab păstrează datele utilizatorului separat de binarele aplicației. În funcție de pachetul și modul selectat, setările, jurnalele, instrumentele descărcate, componentele emulatoare, capturile, stările și configurațiile mașinilor sunt stocate fie în aplicație `Data` directorul sau în locaţiile configurate de utilizator-date.
 
 Înainte de a înlocui sau muta o instalație portabilă, țineți dosarul complet de aplicare împreună și înapoi în sus `Data` Dosar. Nu muta fișierele individuale din `lib`, deoarece cererea își rezolvă propriile biblioteci și terțe părți din această structură.
 
@@ -762,7 +762,7 @@ Imaginile de disc pot fi mult mai mari decât setările. Magazin de masterat de 
 4. Verifica starea controlerului și configurarea motorului.
 5. Fugi! **Informații privind controlorul** dacă detectarea reușește, dar comenzile nu reușesc.
 
-Dacă încă nu apare, încercaţi un alt direct USB Port și cablu, apoi rescan. Verificați Windows Device Manager pentru un dispozitiv serial nou detectat. Un controler vizibil pentru Windows, dar absent de la GW GUI de obicei, indică un port ocupat, configurare vechi, sau problema Host Tools; un controler absent din Windows puncte la USB, putere, conducător auto, sau hardware.
+Dacă încă nu apare, încercaţi un alt direct USB Port și cablu, apoi rescan. Verificați Windows Device Manager pentru un dispozitiv serial nou detectat. Un controler vizibil pentru Windows, dar absent de la Retro Media Lab de obicei, indică un port ocupat, configurare vechi, sau problema Host Tools; un controler absent din Windows puncte la USB, putere, conducător auto, sau hardware.
 
 ### `gw.exe` nu poate fi găsit
 
@@ -772,7 +772,7 @@ După selectarea acestuia, executați **Informații privind controlorul**. Dacă
 
 ### O operațiune folosește motorul greșit
 
-Deschide **Opțiuni > Motoare** și verificați motorul atribuit acestei operațiuni exacte. GW GUI nu cade în tăcere înapoi la celălalt motor.
+Deschide **Opțiuni > Motoare** și verificați motorul atribuit acestei operațiuni exacte. Retro Media Lab nu cade în tăcere înapoi la celălalt motor.
 
 Setările motorului sunt separate: schimbarea motorului de conversie nu modifică citirea, scrierea sau Disk Explorer. Redeschide operaţiunea eşuată după salvarea opţiunii şi confirmă comanda generată în consolă.
 
@@ -815,7 +815,7 @@ Repetați citire la un nou nume de fișier, creșteți revoluțiile, după caz, 
 
 ## Glosar
 
-| Termen | Semnificație în GW GUI |
+| Termen | Semnificație în Retro Media Lab |
 |---|---|
 | Controlor | ă Greaseweazle interfață hardware conectată peste USB |
 | Condu | Drive-ul floppy fizic atașat la controler |
