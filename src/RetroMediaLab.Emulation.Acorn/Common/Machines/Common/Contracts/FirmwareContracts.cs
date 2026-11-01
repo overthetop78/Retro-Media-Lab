@@ -8,4 +8,4 @@ public sealed record FirmwareConfiguration(FirmwareCategory Category, string Pat
 /// <param name="Category">Rôle matériel ; il ne désigne pas un champ de configuration de backend.</param>
 /// <param name="DiskController">Interface disque identifiée ; Unknown ne constitue pas une interdiction.</param>
 /// <param name="Combined">Image concaténée langage puis système, chacun de 16 Kio.</param>
-internal sealed record FirmwareDefinition(string Name, string? Version, FirmwareCategory Category, bool Combined = false, FirmwareDiskController DiskController = FirmwareDiskController.Unknown);
+internal sealed record FirmwareDefinition(string Name, string? Version, FirmwareCategory Category, bool Combined = false, FirmwareDiskController DiskController = FirmwareDiskController.Unknown, EmulationVideoStandard? VideoStandard = null);

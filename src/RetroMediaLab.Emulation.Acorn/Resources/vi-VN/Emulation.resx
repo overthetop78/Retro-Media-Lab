@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>Cổng đầu tiên là:  32768. Những giả lập chia sẻ cùng một địa chỉ lắng nghe cần những cổng khác nhau.  32768 / 32769. Dùng các phím mũi tên lên và xuống để thay đổi giá trị. Trạm điều khiển phải xác định cổng đích.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Bản đồ số trạm từ xa tới địa chỉ và cổng mạng.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Địa chỉ ví dụ này trạm 3 trên mạng 0, chạy trên máy tính này tại cổng 32769. Tách các mục ra với các dấu chấm hay các đường thẳng. Với một máy tính khác, hãy dùng địa chỉ của nó trên mạng địa phương. Cấu hình mục quay về vị trí khác.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Tự động dùng điều chọn MOS ROM Khi nó được công nhận, một điều không rõ ràng. MOS ROM giữ tiêu chuẩn phim trước. Chọn PAL hay NTSC Phát hiện có ghi đè tự động.</value></data>
 </root>

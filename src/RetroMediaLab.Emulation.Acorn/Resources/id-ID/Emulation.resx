@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>Port awal adalah:  32768. Emulator berbagi alamat pendengar yang sama membutuhkan port yang berbeda.  32768 / 32769. Gunakan tombol panah atas dan bawah untuk mengubah nilai. Stasiun jauh mesti menyatakan port tujuan.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Peta nomor stasiun jarak jauh ke alamat dan port jaringan.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Contoh alamat stasiun 3 pada jaringan 0, berjalan di komputer ini di port 32769. Masukan terpisah dengan semicolons atau istirahat baris. Untuk komputer lain, gunakan alamatnya pada jaringan lokal. Mengkonfigurasi entri kembali yang sesuai di stasiun lain.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Otomatis memakai yang dipilih MOS ROM ketika diakui sebuah tidak diketahui MOS ROM menjaga standar video sebelumnya. Memilih PAL atau NTSC overrides deteksi otomatis.</value></data>
 </root>

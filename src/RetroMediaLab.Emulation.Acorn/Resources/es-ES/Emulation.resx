@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>El puerto inicial es:  32768. Los emuladores que comparten la misma dirección de escucha necesitan diferentes puertos.  32768 / 32769. Utilice las teclas de flecha arriba y abajo para cambiar el valor. Las estaciones remotas deben especificar el puerto de destino.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Mapa remoto números de estación a direcciones de red y puertos.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Este ejemplo aborda la estación 3 en la red 0, corriendo en este ordenador en el puerto 32769. Entradas separadas con semicolons o roturas de línea. Para otro ordenador, utilice su dirección en la red local. Configure la entrada de retorno correspondiente en la otra estación.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Usos automáticos seleccionados MOS ROM cuando se reconoce. Un desconocido MOS ROM mantiene el estándar de vídeo anterior. PAL o NTSC anula la detección automática.</value></data>
 </root>

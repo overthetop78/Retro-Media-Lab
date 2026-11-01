@@ -16,7 +16,7 @@
   <data name="Emulation.Acorn.Video.Output"><value>Video output</value></data>
   <data name="Emulation.Acorn.Video.Output.Monochrome"><value>Composite (monochrome)</value></data>
   <data name="Emulation.Acorn.Video.Output.ColourComposite"><value>Composite (colour, S39)</value></data>
-  <data name="Emulation.Acorn.Video.Output.Uhf" xml:space="preserve"><value>UHF PAL</value></data>
+  <data name="Emulation.Acorn.Video.Output.Uhf" xml:space="preserve"><value>UHF</value></data>
   <data name="Emulation.Acorn.Video.Output.Rgb" xml:space="preserve"><value>RGB</value></data>
   <data name="Emulation.Acorn.Network.Title"><value>Econet</value></data>
   <data name="Emulation.Acorn.Network.Rom"><value>Econet — NFS ROM</value></data>
@@ -81,4 +81,5 @@
   <data name="Emulation.Acorn.Network.Port.Help"><value>UDP listening port on this PC, from 1 to 65535.</value></data>
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>The initial port is 32768. Instances sharing the same listening address need different ports, for example 32768 and 32769. Use the Up and Down arrow keys to change the value. Remote stations must specify the destination port.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>Write network.station=IPv4:port. For example, 0.3=127.0.0.1:32769 means station 3 on network 0, running on this PC at port 32769. Separate entries with semicolons or line breaks. For another PC, use its local-network IPv4 address. Configure the corresponding return entry on the other station.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatic uses the selected MOS ROM when it is recognized. An unknown MOS ROM keeps the previous video standard. Selecting PAL or NTSC overrides automatic detection.</value></data>
 </root>

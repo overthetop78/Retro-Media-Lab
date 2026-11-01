@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>De eerste poort is:  32768. Emulatoren die hetzelfde luisteradres delen hebben verschillende poorten nodig.  32768 / 32769. Gebruik de op en neer pijltjestoetsen om de waarde te veranderen. Remote stations moeten de bestemmingspoort specificeren.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Kaart remote stationnummers naar netwerkadressen en poorten.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Dit voorbeeld adresseert station 3 op netwerk 0, draait op deze computer op poort 32769. Aparte ingangen met puntkomma's of regelonderbrekingen. Gebruik het adres van een andere computer op het lokale netwerk. Configureer de bijbehorende terugkeer op het andere station.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatisch gebruik van de geselecteerde MOS ROM als het wordt herkend. MOS ROM houdt de vorige videostandaard. Selecteren PAL of NTSC Overschrijft automatische detectie.</value></data>
 </root>

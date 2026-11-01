@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>初始連接埠為 32768。共用相同接聽位址的模擬器必須使用不同連接埠，例如 32768 和 32769。使用鍵盤的向上與向下方向鍵調整數值。遠端站台設定必須指定目的地連接埠。</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>將遠端站號對應至網路位址與連接埠。</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;此範例代表網路 0 的站台 3，執行於此電腦的連接埠 32769。各筆設定以分號或換行分隔。其他電腦請使用其區域網路位址。也必須在另一個站台設定對應的回程項目。</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>自动使用选中的 MOS ROM 被认出来时 未知 MOS ROM 保存上一个视频标准。选择 PAL 或 或 双 NTSC 自动检测器被覆盖 。</value></data>
 </root>

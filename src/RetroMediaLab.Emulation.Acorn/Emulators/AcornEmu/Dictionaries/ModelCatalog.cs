@@ -33,9 +33,21 @@ internal static class ModelCatalog
         var basic = chips.TryGetValue(SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.BasicBank), out var programmedBasic) ? programmedBasic : FirmwareFunctions.Read(configuration, EmulatorConstants.BasicFirmware);
         var mos = FirmwareFunctions.Read(configuration, EmulatorConstants.SystemFirmware);
         MemoryExtensionFunctions.ValidateMos(configuration, mos);
-        return new BbcMicroMachine(mos, basic, BbcMicroMemoryFunctions.MainBytes(configuration), FirmwareFunctions.Read(configuration, EmulatorConstants.CharacterFirmware), StorageFunctions.HasInterface(configuration), FirmwareFunctions.OptionRoms(configuration, chips), StorageFunctions.UsesWd1770(configuration), StorageFunctions.HasWinchester(configuration), network.Enabled, network.Station, network.CyclesPerByte, MemoryExtensionFunctions.Read(configuration), SidewaysExpansionFunctions.Read(configuration), expandedIo: expandedIo)
+        return new BbcMicroMachine(mos, basic, BbcMicroMemoryFunctions.MainBytes(configuration), FirmwareFunctions.Read(configuration, EmulatorConstants.CharacterFirmware), StorageFunctions.HasInterface(configuration), FirmwareFunctions.OptionRoms(configuration, chips), StorageFunctions.UsesWd1770(configuration), StorageFunctions.HasWinchester(configuration), network.Enabled, network.Station, network.CyclesPerByte, MemoryExtensionFunctions.Read(configuration), SidewaysExpansionFunctions.Read(configuration), expandedIo: expandedIo, videoStandard: VideoStandardFunctions.Resolve(configuration))
         {
             Video = { Monochrome = configuration.Options.GetValueOrDefault(EmulatorConstants.VideoOutput, EmulatorConstants.UhfOutput) == EmulatorConstants.MonochromeOutput }
+        };
+    }
+
+    internal static AcornEmuModelDefinition Get(MachineConfiguration configuration)
+    {
+        var standard = VideoStandardFunctions.Resolve(configuration);
+        var ntsc = standard == EmulationVideoStandard.Ntsc;
+        return Get(configuration.Model) with
+        {
+            Region = standard,
+            Height = ntsc ? VideoConstants.NtscHeight : VideoConstants.Height,
+            FramesPerSecond = (double)BbcMicroModelConstants.CpuFrequencyHz / (ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame)
         };
     }
 

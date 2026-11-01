@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>İlk liman:  32768. Aynı dinleme adresini paylaşan tarihçiler farklı limanlara ihtiyaç duyar.  32768 / 32769. Değeri değiştirmek için yukarı ve aşağı ok anahtarlarını kullanın. Uzak istasyonlar varış limanını belirtmelidir.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Uzak istasyon numaralarını ağ adresleri ve portlarla eşleştirir.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Bu örnek, istasyon 3'ü ağ 0'da ele alır, 32769 port'da bu bilgisayar üzerinde çalışır. Yarı sömürgeler veya çizgi molaları ile ayrı girişler. Başka bir bilgisayar için, adresini yerel ağda kullanın. Diğer istasyondaki ilgili geri dönüş girişini yapılandırın.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Otomatik olarak seçilenleri kullanır MOS ROM Tanındığı zaman. Bilinmeyen bir şey. MOS ROM Önceki video standardını tutar. Seçen PAL veya veya NTSC Overrides otomatik algılama.</value></data>
 </root>

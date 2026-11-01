@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>Den opprinnelige havnen er:  32768. Emulatorer som deler den samme lytteadressen trenger forskjellige porter.  32768 / 32769. Bruk piltastene opp og ned for å endre verdien. Fjernstasjonene må angi destinasjonsporten.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Kart fjernstasjonsnummer til nettverksadresser og porter.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Dette eksempelet adresserer stasjon 3 på nettverk 0, kjører på denne datamaskinen ved port 32769. Separat innlegg med semikoloner eller linjebrudd. For en annen datamaskin, bruk adressen på det lokale nettverket. Konfigurer den tilsvarende returoppføringen på den andre stasjonen.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatisk bruker den valgte MOS ROM Når det er kjent. En ukjent MOS ROM Holder forrige videostandard. Velger PAL eller NTSC Overstyrer automatisk deteksjon.</value></data>
 </root>

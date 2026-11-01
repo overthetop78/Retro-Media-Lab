@@ -14,6 +14,8 @@ internal static class BbcMicroModelConstants
     internal const string Master128DisplayNameResource = "Emulation.Acorn.Model.BbcMaster128";
     internal const int CyclesPerLine = 128;
     internal const int LinesPerFrame = 312;
+    internal const int NtscLinesPerFrame = 262;
+    internal const int NtscCyclesPerFrame = CyclesPerLine * NtscLinesPerFrame;
     internal const int CyclesPerFrame = CyclesPerLine * LinesPerFrame;
     internal const string SixteenKibibytesValue = "16";
     internal const string ThirtyTwoKibibytesValue = "32";

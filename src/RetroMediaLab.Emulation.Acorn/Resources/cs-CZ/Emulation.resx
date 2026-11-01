@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>Počáteční port je:  32768. Emulátory sdílející stejnou adresu pro poslech potřebují různé porty.  32768 / 32769. Pomocí kláves se šipkami nahoru a dolů změníte hodnotu. Vzdálené stanice musí specifikovat cílový port.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Mapujte čísla vzdálených stanic na síťové adresy a porty.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Tento příklad adresy stanice3 na síti0, běží na tomto počítači na portu32769. Samostatné položky se středníky nebo čárové přestávky. Pro jiný počítač použijte jeho adresu v lokální síti. Nastavit odpovídající návratový vstup na druhé stanici.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatické použití vybraného MOS ROM když je rozpoznán, neznámý MOS ROM udržuje předchozí video standard. PAL nebo NTSC Přebíhá automatickou detekci.</value></data>
 </root>

@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>初期ポートは:  32768. 同じリスニングアドレスを共有するエミュレータは、異なるポートを必要とします。  32768 / 32769. 上下矢印キーを使用して、値を変更します。 リモートステーションは、宛先ポートを指定する必要があります。</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>リモートステーション番号をネットワークアドレスやポートにマップします。</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;この例では、ポート32769でこのコンピュータ上で動作するネットワーク0でステーション3をアドレスします。 セミコロンまたはラインブレイクで区切られたエントリ。 別のコンピューターでは、ローカルネットワーク上のアドレスを使用します。 他のステーションで対応する戻りエントリを設定します。</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>自動で選択された使用 MOS ROM 認識されると、未知の MOS ROM 以前のビデオ規格を保持します。 選択 PAL または NTSC 自動検出をオーバーライドします。</value></data>
 </root>

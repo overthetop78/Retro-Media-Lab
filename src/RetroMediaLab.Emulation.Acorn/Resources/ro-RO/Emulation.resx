@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>Portul iniţial este:  32768. Emulatorii care împărtăşesc aceeaşi adresă de ascultare au nevoie de porturi diferite.  32768 / 32769. Utilizați tastele săgeată în sus și în jos pentru a schimba valoarea. Posturile de la distanţă trebuie să specifice portul de destinaţie.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Harta numerelor staţiei de la distanţă către adresele de reţea şi porturi.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Acest exemplu se adresează staţiei 3 din reţeaua 0, funcţionând pe acest computer din portul 32769. Intrări separate cu semicoloane sau pauze de linie. Pentru un alt calculator, utilizați adresa sa pe rețeaua locală. Configurează intrarea de întoarcere corespunzătoare pe cealaltă stație.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Folosește automat selectat MOS ROM când este recunoscut. MOS ROM păstrează standardul video anterior. Selectarea PAL sau NTSC suprascrie detectarea automată.</value></data>
 </root>

@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>초기 항구는:  32768. Emulators는 동일한 듣는 주소 다른 포트를 공유합니다.  32768 / 32769. 값을 변경하려면 위와 아래 화살표 키를 사용합니다. 원격 역은 목적지 항구를 지정해야 합니다.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>원격 스테이션 번호를 네트워크 주소 및 포트에 연결합니다.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;이 예제는 포트 32769에서이 컴퓨터에서 실행되는 네트워크 0에 역 3을 주소합니다. semicolons 또는 라인 브레이크가있는 별도의 항목. 다른 컴퓨터의 경우, 로컬 네트워크의 주소를 사용합니다. 다른 역에 해당 반환 항목 구성.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>선택된 자동 사용 MOS ROM 인식될 때. 알 수없는 MOS ROM 이전 비디오 표준을 유지. 선택 PAL 또는 NTSC overrides 자동 탐지.</value></data>
 </root>

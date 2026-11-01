@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>הנמל הראשוני הוא:  32768. אמלטורים שחולקים את אותה כתובת האזנה זקוקים לנמלים שונים.  32768 / 32769. השתמש במקשי החץ למעלה ולמטה כדי לשנות את הערך. תחנות מרוחקות צריכות לציין את נמל היעד.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>מספרי תחנה מרחוק במפה לכתובות רשת ונמלים.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;דוגמה זו מתייחסת לתחנת 3 ברשת 0, פועל במחשב זה בנמל 32769. ערכים נפרדים עם סדקים או הפסקות קו. עבור מחשב אחר, השתמש בכתובת שלו ברשת המקומית. הגדירו את כניסה החזרה המתאימה בתחנה האחרת.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>שימושים אוטומטיים ב-Keld MOS ROM כאשר הוא מוכר, לא ידוע MOS ROM שמור על תקן הוידאו הקודם. PAL או או NTSC עקבו אחרי Autoזיהוי אוטומטי</value></data>
 </root>

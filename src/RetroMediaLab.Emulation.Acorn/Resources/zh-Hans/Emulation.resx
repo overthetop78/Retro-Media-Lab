@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>初始端口为:  32768. 共享相同收听地址的模拟器需要不同的端口.  32768 / 32769. 使用上下箭头键来更改值. 远程站必须指定目的地端口.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>将远程站名映射到网络地址和端口.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;这个例子地址是3号站台在0网络上,运行在32769端口的这台计算机上. 以分号或换行符分隔条目。 对于另一台计算机,请在本地网络上使用其地址. 配置另一站对应的回回条目.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>自动使用选中的 MOS ROM 被认出来时 未知 MOS ROM 保存上一个视频标准。选择 PAL 或 或 双 NTSC 自动检测器被覆盖 。</value></data>
 </root>

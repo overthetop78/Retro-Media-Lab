@@ -63,7 +63,8 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     public EmulationStorageSettings DescribeStorage(MachineConfiguration configuration) => StorageSettingsFunctions.Describe(configuration) with { AvailableDevices = CassetteDevices(configuration).Concat(NativeStorage.Devices(configuration)).Concat(NativeStorage.HardDiskDevices(configuration)).ToArray() };
     public IReadOnlyList<EmulationStorageDeviceSettings> DescribeDeviceSettings(MachineConfiguration configuration) => NativeStorage.DescribeSettings(configuration).Concat(NativeStorage.DescribeHardDiskSettings(configuration)).Concat(CassetteConnected(configuration) ? [new EmulationStorageDeviceSettings(EmulationMediaSlot.Cassette0, Options: configuration.Options.Where(pair => pair.Key.StartsWith(EmulationCassetteSettings.Prefix, StringComparison.Ordinal)).ToDictionary())] : []).ToArray();
     public MachineConfiguration ApplyDeviceSettings(MachineConfiguration configuration, IReadOnlyList<EmulationStorageDeviceSettings> settings) => NativeStorage.ApplySettings(configuration, settings);
-    public bool RequiresOptionRestart(MachineConfiguration configuration, string key) => !NativeStorage.IsMechanicalSoundOption(key) && (key.StartsWith(NativeStorageConstants.FloppyPrefix, StringComparison.Ordinal) || key.StartsWith(NativeStorageConstants.HardDiskPrefix, StringComparison.Ordinal) || key.StartsWith(NetworkConstants.Prefix, StringComparison.Ordinal) || key == NetworkConstants.Firmware || key == SidewaysExpansionConstants.Option || key.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) || key.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal) || key is MemoryExtensionConstants.CardOption or MemoryExtensionConstants.Firmware || key == NativeStorageConstants.DfsFirmware);
+    public IReadOnlyDictionary<string, string> NormalizeOptions(MachineConfiguration configuration) => VideoStandardFunctions.Normalize(configuration);
+    public bool RequiresOptionRestart(MachineConfiguration configuration, string key) => !NativeStorage.IsMechanicalSoundOption(key) && (key.StartsWith(NativeStorageConstants.FloppyPrefix, StringComparison.Ordinal) || key.StartsWith(NativeStorageConstants.HardDiskPrefix, StringComparison.Ordinal) || key.StartsWith(NetworkConstants.Prefix, StringComparison.Ordinal) || key == NetworkConstants.Firmware || key == SidewaysExpansionConstants.Option || key.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) || key.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal) || key is MemoryExtensionConstants.CardOption or MemoryExtensionConstants.Firmware || key == NativeStorageConstants.DfsFirmware || key == VideoStandardConstants.Option);
     /// <summary>Conserve le branchement même sans cassette et retire le lecteur lorsque l'utilisateur le supprime.</summary>
     public MachineConfiguration ApplyStorage(MachineConfiguration configuration, EmulationStorageSettings settings)
     {
@@ -88,6 +89,7 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     public decimal? GetMemoryKib(MachineConfiguration configuration) => MemoryExtensionFunctions.TotalBytes(configuration) / (decimal)SettingsConstants.Kibibyte;
     public void ValidateOptions(MachineConfiguration configuration)
     {
+        _ = VideoStandardFunctions.Resolve(configuration.Options, null);
         NativeStorage.Validate(configuration);
         _ = NetworkFunctions.Read(configuration);
         _ = MemoryExtensionFunctions.Read(configuration);
@@ -167,6 +169,11 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
             SidewaysExpansionFunctions.DescribeRam(configuration),
             SidewaysExpansionFunctions.DescribeRoms(configuration),
             new("Rom", EmulationMachineTab.Rom, "Emulation.Firmware", fields),
+            new(VideoStandardConstants.Option, EmulationMachineTab.Video, VideoStandardConstants.Label,
+                [new(VideoStandardConstants.Option, EmulationMachineTab.Video, VideoStandardConstants.Option, VideoStandardConstants.Label, EmulationSettingsEditor.Selection,
+                    configuration.Options.GetValueOrDefault(VideoStandardConstants.Option, VideoStandardConstants.Automatic),
+                    [new(VideoStandardConstants.Automatic, VideoStandardConstants.AutomaticLabel), new(VideoStandardConstants.Pal, VideoStandardConstants.PalLabel), new(VideoStandardConstants.Ntsc, VideoStandardConstants.NtscLabel)],
+                    RequiresRestart: true, ExplanationResourceKey: VideoStandardConstants.Help)]),
             new(EmulatorConstants.VideoOutput, EmulationMachineTab.Video, "Emulation.Acorn.Video.Output",
                 [new(EmulatorConstants.VideoOutput, EmulationMachineTab.Video, EmulatorConstants.VideoOutput, "Emulation.Acorn.Video.Output", EmulationSettingsEditor.Selection,
                     configuration.Options.GetValueOrDefault(EmulatorConstants.VideoOutput, EmulatorConstants.UhfOutput),

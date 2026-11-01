@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>والميناء الأولي هو:  32768. المرشدون الذين يتشاركون نفس عنوان الإستماع يحتاجون إلى موانئ مختلفة  32768 / 32769. استخدمي مفاتيح السهام لأغير القيمة ويجب أن تحدد محطات التطهير ميناء المقصد.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>خريطة أرقام المحطات عن بعد إلى عناوين الشبكة والموانئ.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;ويتناول هذا المثال المحطة 3 على الشبكة 0، التي تعمل على هذا الحاسوب في الميناء 32769. دخول منفصلة مع شبه كولونز أو استراحة خط. من أجل حاسوب آخر، استخدم عنوانه على الشبكة المحلية. اعترفي بالدخول المقابل للمحطة الأخرى</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>الاستخدامات الآلية MOS ROM عندما يتم التعرف عليه MOS ROM يُبقي على المُستوى السابق للفيديو PAL أو NTSC يُبطل كشف التلقائي.</value></data>
 </root>

@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>A porta inicial é:  32768. Os emuladores que compartilham o mesmo endereço de escuta precisam de portas diferentes.  32768 / 32769. Use as teclas de seta para cima e para baixo para alterar o valor. As estações remotas devem especificar a porta de destino.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Mapear números de estações remotas para endereços de rede e portas.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Este exemplo aborda a estação 3 na rede 0, rodando neste computador na porta 32769. Separar entradas com pontos- e- vírgulas ou quebras de linha. Para outro computador, use seu endereço na rede local. Configure a entrada de retorno correspondente na outra estação.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Automático usa o selecionado MOS ROM quando é reconhecido. Um desconhecido MOS ROM mantém o padrão de vídeo anterior. Selecionando PAL ou NTSC sobrepõe a detecção automática.</value></data>
 </root>

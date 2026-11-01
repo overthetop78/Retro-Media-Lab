@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>Alkuperäinen satama on:  32768. Emulaattorit, jotka jakavat saman kuunteluosoitteen, tarvitsevat erilaisia satamia.  32768 / 32769. Käytä ylös ja alas nuolinäppäimiä muuttaa arvoa. Etäasemien on ilmoitettava määräsatama.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Kartoita aseman numerot verkko-osoitteisiin ja satamiin.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Tämä esimerkki osoittaa aseman 3 verkon 0, käynnissä tällä tietokoneella Port 32769. Erilliset merkinnät puolipisteillä tai viivakatkoilla. Toiseen tietokoneeseen, käytä sen osoitetta paikallisessa verkossa. Määrittele vastaava paluumerkintä toisella asemalla.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Käyttää valittua automaattista MOS ROM kun se on tunnistettu. MOS ROM pitää edellisen videon standardin. Valitaan PAL tai NTSC ohitetaan automaattinen tunnistus.</value></data>
 </root>

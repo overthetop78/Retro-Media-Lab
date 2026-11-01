@@ -33,7 +33,8 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly Cassette _cassette;
     private byte _latch = 255;
     private int _keyboardColumn;
-    private long _ticks, _nextFrame = BbcMicroModelConstants.CyclesPerFrame;
+    private long _ticks, _nextFrame;
+    private readonly int _cyclesPerFrame;
     private bool _break;
     internal Cpu6502 Cpu { get; }
     internal Video Video { get; }
@@ -69,7 +70,7 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     public void ConfigureCassette(EmulationCassetteSettings settings) => _cassette.Configure(settings);
     public void EjectCassette() => _cassette.Eject();
 
-    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false)
+    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false, EmulationVideoStandard videoStandard = EmulationVideoStandard.Pal)
     {
         if (mos.Length != BbcMicroFirmwareConstants.BankSize || basic.Length != BbcMicroFirmwareConstants.BankSize) throw new ArgumentException("MOS et BASIC doivent chacun contenir 16 384 octets.");
         if (memoryBytes != BbcMicroModelConstants.SixteenKibibytes && memoryBytes != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentOutOfRangeException(nameof(memoryBytes));
@@ -82,7 +83,10 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
         _disks = new Disks(diskInterface, wd1770);
         _winchester = new Winchester(winchesterInterface);
         _econet = new Econet(econetInterface, econetStation, econetCyclesPerByte);
-        Video = new Video(_ram, characters);
+        if (videoStandard is not (EmulationVideoStandard.Pal or EmulationVideoStandard.Ntsc)) throw new ArgumentOutOfRangeException(nameof(videoStandard));
+        _cyclesPerFrame = videoStandard == EmulationVideoStandard.Ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame;
+        _nextFrame = _cyclesPerFrame;
+        Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? Constants.VideoConstants.NtscHeight : Constants.VideoConstants.Height);
         _cassette = new Cassette(_acia);
         _via.ReadPortA = () => (_latch & 8) == 0 ? _keyboard.Read(_via.OutputA) : (byte)255;
         _userVia = expandedIo ? new Via6522() : null;
@@ -119,7 +123,7 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     public byte[] RunFrame()
     {
         while (_ticks < _nextFrame) { if (!BbcCassetteFunctions.TryDirectLoad(Cpu, this, _cassette)) Cpu.Step(); }
-        _nextFrame += BbcMicroModelConstants.CyclesPerFrame;
+        _nextFrame += _cyclesPerFrame;
         return Video.Render();
     }
     /// <summary>La carte remet ses échantillons au cœur ; le Common possède la sortie audio physique.</summary>

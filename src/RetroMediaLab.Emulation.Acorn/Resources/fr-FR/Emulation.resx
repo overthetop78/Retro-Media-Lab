@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>Le port initial est 32768. Deux émulateurs utilisant la même adresse d’écoute doivent avoir des ports différents, par exemple 32768 et 32769. Les flèches Haut et Bas permettent de modifier la valeur. Chaque station distante doit indiquer le port de son destinataire.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Correspondance entre stations Econet distantes et adresses IPv4 avec port UDP.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>Syntaxe : network.station=IPv4:port. Exemple : 0.3=127.0.0.1:32769 désigne la station 3 du réseau 0, sur cet ordinateur au port 32769. Séparez les entrées par des points-virgules ou des sauts de ligne. Pour un autre ordinateur, utilisez son adresse IPv4 sur le réseau local. Configurez aussi l’entrée de retour sur l’autre station.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>En mode automatique, une ROM MOS reconnue détermine le standard vidéo. Une ROM MOS inconnue conserve le standard précédent. Choisir PAL ou NTSC remplace cette détection automatique.</value></data>
 </root>

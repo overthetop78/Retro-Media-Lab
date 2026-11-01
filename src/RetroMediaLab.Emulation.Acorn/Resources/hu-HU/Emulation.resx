@@ -51,4 +51,5 @@
   <data name="Emulation.Acorn.Network.Port.Help.Detailed"><value>A kezdeti kikötő:  32768. Az azonos hallgatási című emulátoroknak különböző kikötőkre van szükségük.  32768 / 32769. Használja a fel és le nyilakkal változtatni az értéket. A távoli állomásoknak meg kell határozniuk a célkikötőt.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Térkép távoli állomás számok hálózati címek és portok.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Ez a példa a 3-as állomást érinti a 0-as hálózaton, ezen a számítógépen fut a 32769-es kikötőben. Különálló bejegyzések szemikolonokkal vagy vonaltörésekkel. Egy másik számítógéphez használja a címét a helyi hálózaton. Állítsa be a megfelelő visszatérési bejegyzést a másik állomáson.</value></data>
+  <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatikus használata a kiválasztott MOS ROM Ha felismerik, ismeretlen. MOS ROM megtartja az előző videó szabványt. PAL vagy NTSC felülírja az automatikus érzékelést.</value></data>
 </root>

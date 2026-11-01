@@ -12,8 +12,9 @@ internal sealed class Video
     private readonly Crtc6845 _crtc = new();
     private readonly TeletextSaa5050 _teletext;
     private readonly byte[] _palette = new byte[16];
-    private byte[] _drawing = new byte[VideoConstants.Width * VideoConstants.Height * 4];
-    private byte[] _completed = new byte[VideoConstants.Width * VideoConstants.Height * 4];
+    private byte[] _drawing;
+    private byte[] _completed;
+    internal int Height { get; }
     private byte _control;
     private int _phase, _cursorRemaining;
     internal int ScreenWrap { get; set; } = 0x5800;
@@ -22,7 +23,15 @@ internal sealed class Video
     internal long Frame => _crtc.Frame;
 
     /// <summary>La RAM reste possédée par la carte ; le générateur conserve sa propre copie de ROM externe.</summary>
-    internal Video(byte[] ram, ReadOnlySpan<byte> characters) { _ram = ram; _teletext = new(characters); }
+    internal Video(byte[] ram, ReadOnlySpan<byte> characters, int height = VideoConstants.Height)
+    {
+        if (height is not (VideoConstants.Height or VideoConstants.NtscHeight)) throw new ArgumentOutOfRangeException(nameof(height));
+        _ram = ram;
+        _teletext = new(characters);
+        Height = height;
+        _drawing = new byte[VideoConstants.Width * Height * 4];
+        _completed = new byte[_drawing.Length];
+    }
     internal void Reset()
     {
         _crtc.Reset(); _teletext.Reset(); Array.Clear(_palette);
@@ -43,7 +52,7 @@ internal sealed class Video
         _phase ^= 1;
         if ((_control & 16) == 0 && _phase != 0) return;
         if (_crtc.Column == 0) { _teletext.BeginLine(_crtc.Row); _cursorRemaining = 0; }
-        if (_crtc.IsProgrammed && _crtc.DisplayEnabled && _crtc.Scanline < VideoConstants.Height)
+        if (_crtc.IsProgrammed && _crtc.DisplayEnabled && _crtc.Scanline < Height)
         {
             if (_crtc.CursorForCell(_crtc.Address)) _cursorRemaining = (_control & 2) != 0 ? 1 : VideoConstants.CursorWidths[_control >> 5];
             if ((_control & 2) != 0) TeletextCharacter();
@@ -54,7 +63,7 @@ internal sealed class Video
         {
             // L'image terminée est détachée avant de commencer la suivante.
             _completed = _drawing;
-            _drawing = new byte[VideoConstants.Width * VideoConstants.Height * 4];
+            _drawing = new byte[_completed.Length];
         }
     }
 
@@ -102,7 +111,7 @@ internal sealed class Video
 
     private void Pixel(int x, int y, int color)
     {
-        if ((uint)x >= VideoConstants.Width || (uint)y >= VideoConstants.Height) return;
+        if ((uint)x >= VideoConstants.Width || (uint)y >= Height) return;
         var offset = (y * VideoConstants.Width + x) * 4;
         var red = (color & 1) != 0 ? 255 : 0;
         var green = (color & 2) != 0 ? 255 : 0;

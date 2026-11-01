@@ -16,7 +16,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 /// Les ROM sont lues depuis les chemins choisis par l'utilisateur ; aucune image n'est intégrée à l'assembly.</remarks>
 internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTransport
 {
-    private readonly AcornEmuModelDefinition _definition;
+    private AcornEmuModelDefinition _definition;
     private IAcornMachine? _machine;
 
     /// <summary>Sélectionne le constructeur et les sorties du modèle sans charger de ROM ni créer de session.</summary>
@@ -88,6 +88,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (configuration.Model != _definition.Model) throw new ArgumentOutOfRangeException(nameof(configuration));
+        _definition = NativeModelCatalog.Get(configuration);
         _machine = _definition.Create(configuration);
         _cassetteSettings = EmulationCassetteSettings.Read(configuration.Options);
         _runtimeOptions = new(configuration.Options, StringComparer.Ordinal);
