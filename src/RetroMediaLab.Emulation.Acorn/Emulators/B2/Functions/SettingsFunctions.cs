@@ -53,6 +53,11 @@ internal static class EmulatorSettingsFunctions
                     SettingsConstants.ResourceFirmware, EmulationSettingsEditor.Information, "embedded",
                     [new("embedded", SettingsConstants.ResourceEmbeddedFirmware)])])
         };
+        if (configuration.Model is MachineModel.BbcMicroModelBPlus or MachineModel.BbcMicroModelBPlus128)
+            blocks.Add(new(SettingsConstants.MainMemory, EmulationMachineTab.Ram, SettingsConstants.ResourceMemory,
+                [new(SettingsConstants.MainMemory, EmulationMachineTab.Ram, SettingsConstants.MainMemory, SettingsConstants.ResourceMemory, EmulationSettingsEditor.Selection,
+                    configuration.Options.GetValueOrDefault(SettingsConstants.MainMemory, native == OptionConstants.ModelBPlus128 ? BbcMicroModelConstants.OneHundredTwentyEightKibibytesValue : BbcMicroModelConstants.SixtyFourKibibytesValue),
+                    [new(BbcMicroModelConstants.SixtyFourKibibytesValue, string.Empty, "64 KiB"), new(BbcMicroModelConstants.OneHundredTwentyEightKibibytesValue, string.Empty, "128 KiB")], RequiresRestart: true)]));
         if (configuration.Model == MachineModel.BbcMicroModelB && ConfigurationOptionFunctions.DiscController(native) == OptionConstants.ChallengerController)
             blocks.Add(new(OptionConstants.DiscMemory, EmulationMachineTab.Ram, "Emulation.Memory.Extensions",
                 [new(OptionConstants.DiscMemory, EmulationMachineTab.Ram, OptionConstants.DiscMemory, "Emulation.Memory.Extensions",

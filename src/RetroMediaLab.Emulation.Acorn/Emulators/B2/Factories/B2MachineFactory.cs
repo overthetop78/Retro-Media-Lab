@@ -16,6 +16,10 @@ internal sealed class B2MachineFactory() : MachineFactory(EmulatorConstants.Entr
     public MachineConfiguration ApplyDeviceSettings(MachineConfiguration configuration, IReadOnlyList<EmulationStorageDeviceSettings> settings) => MediaDeviceFunctions.Apply(configuration, settings);
 
     public IReadOnlyDictionary<string, string> GetDefaultOptions(MachineConfiguration configuration) => ConfigurationOptionFunctions.Defaults(configuration.Model);
+    decimal? IEmulatorSettings.GetMemoryKib(MachineConfiguration configuration) => configuration.Model is MachineModel.BbcMicroModelBPlus or MachineModel.BbcMicroModelBPlus128
+        ? configuration.Options.GetValueOrDefault(SettingsConstants.MainMemory, configuration.Options.GetValueOrDefault(OptionConstants.Model, B2ModelFunctions.DefaultValue(configuration.Model)) == OptionConstants.ModelBPlus128 ? BbcMicroModelConstants.OneHundredTwentyEightKibibytesValue : BbcMicroModelConstants.SixtyFourKibibytesValue) == BbcMicroModelConstants.OneHundredTwentyEightKibibytesValue
+            ? BbcMicroModelConstants.OneHundredTwentyEightKibibytes / (decimal)SettingsConstants.Kibibyte : BbcMicroModelConstants.SixtyFourKibibytes / (decimal)SettingsConstants.Kibibyte
+        : HardwareModelCatalog.Get(configuration.Model).MainMemoryBytes / (decimal)SettingsConstants.Kibibyte;
     public void ValidateOptions(MachineConfiguration configuration) => ConfigurationOptionFunctions.Validate(configuration);
     public IReadOnlyDictionary<string, string> NormalizeOptions(MachineConfiguration configuration) => ConfigurationOptionFunctions.Normalize(configuration.Model, configuration.Options);
     public MachineModel ResolveModel(MachineConfiguration configuration) =>

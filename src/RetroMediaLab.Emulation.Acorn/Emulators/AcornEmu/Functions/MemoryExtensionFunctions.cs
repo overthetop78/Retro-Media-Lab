@@ -57,7 +57,7 @@ internal static class MemoryExtensionFunctions
     /// <summary>Une ROM reconnue d'une autre carte mémoire n'est pas utilisable dans cette carte.</summary>
     internal static EmulationFirmwareCandidate Destination(MachineConfiguration configuration, EmulationFirmwareCandidate candidate)
     {
-        var known = FirmwareCatalog.BySha1.GetValueOrDefault(candidate.Id.Split(':')[0]);
+        var known = AcornFirmware.BySha1.GetValueOrDefault(candidate.Id.Split(':')[0]);
         return known?.Category == FirmwareCategory.MemoryExtension && known.Name != Read(configuration).FirmwareName
             ? candidate with { Compatibility = EmulationFirmwareCompatibility.Incompatible } : candidate;
     }
@@ -66,7 +66,7 @@ internal static class MemoryExtensionFunctions
     internal static void ValidateMos(MachineConfiguration configuration, ReadOnlySpan<byte> mos)
     {
         if (!Read(configuration).Enabled) return;
-        var known = FirmwareCatalog.BySha1.GetValueOrDefault(Convert.ToHexString(SHA1.HashData(mos)));
+        var known = AcornFirmware.BySha1.GetValueOrDefault(Convert.ToHexString(SHA1.HashData(mos)));
         if (known is { Category: FirmwareCategory.OperatingSystem, Version: not null }
             && Version.TryParse(known.Version, out var version) && version < Version.Parse(C.RequiredMosVersion))
             throw new ArgumentException(ExceptionText.Get(C.RequiresMos), nameof(configuration));
@@ -78,8 +78,8 @@ internal static class MemoryExtensionFunctions
         var settings = Read(configuration);
         if (!settings.Enabled) return;
         var rom = SidewaysExpansionFunctions.ProvidesBank(configuration, FirmwareBank(configuration)) && banks.TryGetValue(FirmwareBank(configuration), out var chip) ? chip : FirmwareFunctions.Read(configuration, C.Firmware);
-        var known = FirmwareCatalog.BySha1.GetValueOrDefault(Convert.ToHexString(SHA1.HashData(rom.AsSpan(0, rom.Length / 2))))
-            ?? FirmwareCatalog.BySha1.GetValueOrDefault(Convert.ToHexString(SHA1.HashData(rom)));
+        var known = AcornFirmware.BySha1.GetValueOrDefault(Convert.ToHexString(SHA1.HashData(rom.AsSpan(0, rom.Length / 2))))
+            ?? AcornFirmware.BySha1.GetValueOrDefault(Convert.ToHexString(SHA1.HashData(rom)));
         if (known is not null && (known.Category != FirmwareCategory.MemoryExtension || known.Name != settings.FirmwareName))
             throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
         if (SidewaysExpansionFunctions.ProvidesBank(configuration, FirmwareBank(configuration))) { banks[FirmwareBank(configuration)] = rom; return; }

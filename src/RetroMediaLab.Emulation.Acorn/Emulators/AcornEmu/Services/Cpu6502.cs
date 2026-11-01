@@ -16,6 +16,7 @@ internal sealed partial class Cpu6502(ICpuBus bus)
     internal byte S { get; private set; } = 0xfd;
     internal byte P { get; private set; } = InterruptDisable | Unused;
     internal ushort PC { get; private set; }
+    internal ushort InstructionAddress { get; private set; }
     internal long Cycles { get; private set; }
     /// <summary>Termine un appel MOS traité explicitement par l'assemblage de la machine, comme un RTS matériel.</summary>
     /// <remarks>Le CPU ne décide pas quel appel intercepter. Le modèle choisit le contrat MOS et les données à charger.</remarks>
@@ -50,6 +51,7 @@ internal sealed partial class Cpu6502(ICpuBus bus)
             EnterInterrupt(start, 0xfffe);
             return;
         }
+        InstructionAddress = PC;
         var opcode = Fetch();
         var expected = Execute(opcode);
         Pad(start, expected);

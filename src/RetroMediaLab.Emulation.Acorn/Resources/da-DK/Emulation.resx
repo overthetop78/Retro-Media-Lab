@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Kort numre på fjernstationer til netværksadresser og -porte.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Dette eksempel adresserer station 3 på netværk 0, kører på denne computer i port 32769. Separate indgange med semikoloner eller linjebrud. For en anden computer, bruge sin adresse på det lokale netværk. Indstil den tilsvarende returindgang på den anden station.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatisk bruger det valgte MOS ROM når det er anerkendt. MOS ROM holder den forrige videostandard. Valg PAL eller NTSC tilsidesætter automatisk detektering.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Bygning i hukommelsen</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>HovedStencils RAM + skyggeskærm RAM + privat personsøgningsName RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>System ROM (MOS og BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Systemet ROM skal indeholde MOS og BASIC i et 32 KiB billede. ROM sokker accepterer 8, 16 eller 32 KiB billeder.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Identificeret ROM. Operationen afhænger af softwarekravene og den konfigurerede hukommelse.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Identificeret udvidelse ROM. Dens tilhørende hardware skal installeres og understøttes af emulatoren.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Disk- arkiveringssystem ROM. kræver sin matchende disk controller; DFS og ADFS er forskellige arkiveringssystemer.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Netværksarkiveringssystem ROM. Kræver Econet interface og kompatibelt netværksapparat.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Taledata ROM til talesyntesizeren. Kan ikke bruges som MOS eller som et sidevejsprogram ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>System ROM. skal være i overensstemmelse med maskinmodellen B+ bruger en kombineret 32 KiB BASIC og MOS billede.</value></data>
 </root>

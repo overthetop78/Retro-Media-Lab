@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Bản đồ số trạm từ xa tới địa chỉ và cổng mạng.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Địa chỉ ví dụ này trạm 3 trên mạng 0, chạy trên máy tính này tại cổng 32769. Tách các mục ra với các dấu chấm hay các đường thẳng. Với một máy tính khác, hãy dùng địa chỉ của nó trên mạng địa phương. Cấu hình mục quay về vị trí khác.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Tự động dùng điều chọn MOS ROM Khi nó được công nhận, một điều không rõ ràng. MOS ROM giữ tiêu chuẩn phim trước. Chọn PAL hay NTSC Phát hiện có ghi đè tự động.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Bộ nhớ được xây dựng</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Chính RAM &amp; Màn hình Bóng râm RAM + thư mục đã được nhập RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Hệ thống ROM (Tiếng cười)MOS và BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Hệ thống ROM phải chứa MOS và BASIC trong hình 32 KiB. khác ROM Các ổ cắm chấp nhận 8, 16 hoặc 32 hình ảnh của KiB.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Nhận diện ROM. Thao tác phụ thuộc vào yêu cầu phần mềm và bộ nhớ đã cấu hình.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Nhận diện phần mở rộng ROM. Phần cứng liên quan của nó phải được cài đặt và hỗ trợ bởi trình giả lập.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Hệ thống lọc đĩa ROM. Yêu cầu bộ điều khiển đĩa của nó; DFS và ADFS là hệ thống hồ sơ khác nhau.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Hệ thống lọc mạng ROM. Cần thiết giao diện Econet và thiết bị mạng tương thích.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Dữ liệu giọng nói ROM Trình tổng hợp giọng nói. Không thể dùng làm MOS hoặc như một chương trình sang một bên ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Hệ thống ROM. Phải phù hợp với mô hình máy; B+ sử dụng một kết hợp 32 KiB BASIC và MOS hình ảnh.</value></data>
 </root>

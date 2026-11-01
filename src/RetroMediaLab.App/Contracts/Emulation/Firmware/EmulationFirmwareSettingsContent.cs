@@ -10,4 +10,5 @@ internal sealed record EmulationFirmwareSettingsContent(
     Func<Task> OpenFolder,
     Func<EmulationFirmwareCandidate, bool> CanUse,
     Action<Exception> ShowError,
-    Func<EmulationFirmwareCandidate, string> DestinationLabel);
+    Func<EmulationFirmwareCandidate, string> DestinationLabel,
+    Func<EmulationFirmwareCandidate, string>? Explanation = null);

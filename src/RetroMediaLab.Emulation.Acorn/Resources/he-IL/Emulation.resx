@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>מספרי תחנה מרחוק במפה לכתובות רשת ונמלים.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;דוגמה זו מתייחסת לתחנת 3 ברשת 0, פועל במחשב זה בנמל 32769. ערכים נפרדים עם סדקים או הפסקות קו. עבור מחשב אחר, השתמש בכתובת שלו ברשת המקומית. הגדירו את כניסה החזרה המתאימה בתחנה האחרת.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>שימושים אוטומטיים ב-Keld MOS ROM כאשר הוא מוכר, לא ידוע MOS ROM שמור על תקן הוידאו הקודם. PAL או או NTSC עקבו אחרי Autoזיהוי אוטומטי</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>זיכרון מובנה</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Main RAM מסך הצללים + Shadow RAM + פרטי RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>מערכת מערכת ROM (()MOS ו BASIC) )</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>המערכת ROM חייב להכיל MOS ו BASIC בתמונה 32 קייב. ROM קובצי ה-Skets מקבלים 8 16 או 32 תמונות של KiB.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>זיהוי ROM. פעולה תלויה בדרישות התוכנה והזיכרון המפונק.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>הרחבה מדהימה ROM. החומרה המשויכת שלה חייבת להיות מותקנת ונתמכת על ידי החיקוי.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>מערכת רישום Disc ROM. נדרש את הבקר הדיסקיבי; DFS ו ADFS הם מערכות שונות של הגשת.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>מערכת Network Giving ROM. נדרש ממשק Econet וציוד רשת תואם.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>נתוני דיבור ROM עבור הנאום סינתזייזר.לא ניתן להשתמש בו כמו MOS או כתכנית צד ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>מערכת מערכת ROM. צריך להתאים את מודל המכונה; B+ שימוש ב- 32 KiB BASIC ו MOS תמונה</value></data>
 </root>

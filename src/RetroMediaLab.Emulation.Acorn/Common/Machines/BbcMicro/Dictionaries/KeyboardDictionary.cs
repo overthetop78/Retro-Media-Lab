@@ -5,6 +5,7 @@ internal static class BbcMicroKeyboardDictionary
     internal static readonly IReadOnlyDictionary<EmulationKey, EmulationKey> DefaultHostKeys =
         new Dictionary<EmulationKey, EmulationKey>
         {
+            [EmulationKey.Break] = EmulationKey.Break,
             [EmulationKey.AcornF0] = EmulationKey.F10,
             [EmulationKey.AcornCopy] = EmulationKey.Insert,
             [EmulationKey.AcornShiftLock] = EmulationKey.PageDown

@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Peta nomor stasiun jarak jauh ke alamat dan port jaringan.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Contoh alamat stasiun 3 pada jaringan 0, berjalan di komputer ini di port 32769. Masukan terpisah dengan semicolons atau istirahat baris. Untuk komputer lain, gunakan alamatnya pada jaringan lokal. Mengkonfigurasi entri kembali yang sesuai di stasiun lain.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Otomatis memakai yang dipilih MOS ROM ketika diakui sebuah tidak diketahui MOS ROM menjaga standar video sebelumnya. Memilih PAL atau NTSC overrides deteksi otomatis.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Bangun-dalam memori</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Utama RAM + layar bayangan RAM + private paged RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Sistem ROM (MOS dan BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Sistem ROM harus berisi MOS dan BASIC dalam gambar 32 KiB. ROM soket menerima 8, 16 atau 32 gambar KiB.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Tak dikenal ROM. Operasi tergantung pada kebutuhan perangkat lunak dan memori yang dikonfigurasi.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Ekstensi tak dikenal ROM. Perangkat keras yang terkait harus dipasang dan didukung oleh emulator.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Sistem pengajuan diska ROM. Membutuhkan pengontrol diska yang cocok; DFS dan ADFS adalah sistem arsip yang berbeda.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Sistem pengajuan jaringan ROM. Membutuhkan antarmuka Econet dan peralatan jaringan yang kompatibel.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Data pidato ROM untuk synthesizer pidato. Tidak dapat digunakan sebagai MOS atau sebagai program samping ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Sistem ROM. Harus sesuai dengan model mesin; B+ menggunakan sebuah gabungan 32 KiB BASIC dan MOS gambar.</value></data>
 </root>

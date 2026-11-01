@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Карта номерів віддалених станцій до мережевих адрес і портів.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Цей приклад адрес станції 3 в мережі 0, що працює на цьому комп'ютері в порту 32769. Окремі записи з напівкольонами або лінійними перервами. Для іншого комп’ютера використовуйте свою адресу на локальній мережі. Налаштуйте відповідний запис повернення на іншу станцію.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Автоматичне використання вибраного MOS ROM коли він визнаний. Невідомий MOS ROM зберігає попередній відео стандарт. Вибір PAL або NTSC перенади автоматичного виявлення.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Вбудована пам'ять</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Головна RAM + екран тіней RAM + приватний стор. RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Системы ROM (Українська)MOS і BASIC) , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , ,</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Система ROM мати MOS і BASIC в 32 КОБ зображення. Інше ROM розетки приймають 8, 16 або 32 KiB зображення.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Визначено ROM. Робота залежить від вимог до програмного забезпечення та настроюваної пам'яті.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Визначене розширення ROM. Його пов'язане обладнання необхідно встановити і підтримувати емулятор.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Система затискання диска ROM. Вимагає його відповідність дискового контролера; DFS і ADFS відрізняються герлінговими системами.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Система мережевого герлінгу ROM. Вимагає інтерфейс Econet і сумісне мережеве обладнання.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Дані про мову ROM для синтезатора мови. Не можна використовувати як MOS або як програма бокових шляхів ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Системы ROM. Повинна відповідати моделі машини; B+ використовує комбінований 32 KiB BASIC і MOS зображення.</value></data>
 </root>

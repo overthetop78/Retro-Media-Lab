@@ -2,10 +2,11 @@ namespace RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Constants;
 
 internal static class BbcMicroKeyboardConstants
 {
-    internal static readonly IReadOnlyList<EmulationKey> SpecialKeys = [EmulationKey.AcornF0, EmulationKey.AcornCopy, EmulationKey.AcornShiftLock];
+    internal static readonly IReadOnlyList<EmulationKey> SpecialKeys = [EmulationKey.Break, EmulationKey.AcornF0, EmulationKey.AcornCopy, EmulationKey.AcornShiftLock];
 
     internal static readonly IReadOnlyList<EmulationKey> MasterSpecialKeys = [.. SpecialKeys, EmulationKey.AcornKeypadHash, EmulationKey.AcornKeypadDelete, EmulationKey.AcornKeypadComma];
 
+    internal const string BreakResource = "Emulation.Acorn.Key.Break";
     internal const string F0Resource = "Emulation.Acorn.Key.F0";
     internal const string CopyResource = "Emulation.Acorn.Key.Copy";
     internal const string ShiftLockResource = "Emulation.Acorn.Key.ShiftLock";

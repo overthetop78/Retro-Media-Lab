@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Térkép távoli állomás számok hálózati címek és portok.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Ez a példa a 3-as állomást érinti a 0-as hálózaton, ezen a számítógépen fut a 32769-es kikötőben. Különálló bejegyzések szemikolonokkal vagy vonaltörésekkel. Egy másik számítógéphez használja a címét a helyi hálózaton. Állítsa be a megfelelő visszatérési bejegyzést a másik állomáson.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatikus használata a kiválasztott MOS ROM Ha felismerik, ismeretlen. MOS ROM megtartja az előző videó szabványt. PAL vagy NTSC felülírja az automatikus érzékelést.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Épített memóriaName</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Fő RAM + árnyékképernyő RAM + magánszemélyhívó RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Rendszer ROM (MOS és BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>A rendszer ROM tartalmaz MOS és BASIC 32 KiB-s képben. ROM A foglalatok 8, 16 vagy 32 KiB képet fogadnak el.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Azonosítva ROM. A művelet a szoftvertől és a beállított memóriától függ.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Azonosított kiterjesztés ROM. A hozzá tartozó hardvert az emulátornak kell telepítenie és támogatnia.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>A lemezalapú adatrögzítési rendszer ROM. A megfelelő tárcsavezérlő szükséges hozzá; DFS és ADFS különböző nyilvántartási rendszerek.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Hálózati adatrögzítési rendszer ROM. Az Econet interfészt és a kompatibilis hálózati berendezéseket igényli.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Beszédadatok ROM a beszédszintetizátorhoz. Nem használható MOS vagy oldalsó programként ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Rendszer ROM. A gép modelljének meg kell felelnie; B+ 32 KiB kombinált használatát BASIC és MOS Képek.</value></data>
 </root>

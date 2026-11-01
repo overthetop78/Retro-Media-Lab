@@ -75,14 +75,14 @@ public sealed class AcornEmuTests
     [InlineData("4b0ece6dc139d5d3f4fabd023716fb6f25149b80", EmulationFirmwareCompatibility.Official)]
     [InlineData("dca33995c0d008a527efe923d03333394b01022c", EmulationFirmwareCompatibility.Official)]
     [InlineData("d35f6723132aabe3c4d00fc16fd9ecc6768df753", EmulationFirmwareCompatibility.Official)]
-    [InlineData("2b6aecd33a43f296c20832524e47cc7e3a9c3b17", EmulationFirmwareCompatibility.PartiallyCompatible)]
+    [InlineData("2b6aecd33a43f296c20832524e47cc7e3a9c3b17", EmulationFirmwareCompatibility.Unknown)]
     [InlineData("b369809275cb67dfd8a749265e91adb2d2558ae6", EmulationFirmwareCompatibility.Incompatible)]
     public void FirmwareCompatibilityIsSharedByStandardModelsWithoutExtendingOtherVariants(string sha1, EmulationFirmwareCompatibility compatibility)
     {
-        Assert.Equal(compatibility, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelA, sha1));
-        Assert.Equal(compatibility, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelB, sha1));
-        Assert.Equal(EmulationFirmwareCompatibility.Unknown, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelBPlus, sha1));
-        Assert.Equal(EmulationFirmwareCompatibility.Unknown, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelA, new string('0', 40)));
+        Assert.Equal(compatibility, AcornBBCMicroModel.Get(MachineModel.BbcMicroModelA, sha1));
+        Assert.Equal(compatibility, AcornBBCMicroModel.Get(MachineModel.BbcMicroModelB, sha1));
+        Assert.Equal(EmulationFirmwareCompatibility.Unknown, AcornBBCMicroModel.Get(MachineModel.BbcMaster128, sha1));
+        Assert.Equal(EmulationFirmwareCompatibility.Unknown, AcornBBCMicroModel.Get(MachineModel.BbcMicroModelA, new string('0', 40)));
     }
 
     [Fact]
@@ -99,8 +99,8 @@ public sealed class AcornEmuTests
 
     [Theory]
     [InlineData(8192, 1)]
-    [InlineData(16384, 2)]
-    [InlineData(32768, 2)]
+    [InlineData(16384, 1)]
+    [InlineData(32768, 1)]
     public void UnknownRomRemainsVisibleAndSelectable(int size, int candidates)
     {
         var image = new byte[size];
@@ -109,38 +109,43 @@ public sealed class AcornEmuTests
         Assert.All(entries, entry =>
         {
             Assert.Equal(EmulationFirmwareCompatibility.Unknown, entry.Compatibility);
-            Assert.NotNull(entry.DestinationFieldId);
-            Assert.Equal(16384, BbcFirmware.GetRomBytes(image, NativeFirmware.Role(entry.DestinationFieldId!)).Length);
+            Assert.Null(entry.DestinationFieldId);
+            foreach (var field in new[] { "acornemu.mos", "acornemu.basic", "acornemu.dfs" })
+            {
+                var selectable = Assert.Single(RetroMediaLab.App.Controllers.Emulation.Firmware.EmulationFirmwareManagementController.CandidatesForField([entry], field));
+                Assert.Equal(field, selectable.DestinationFieldId);
+                Assert.Equal(EmulationFirmwareCompatibility.Unknown, selectable.Compatibility);
+            }
         });
     }
 
     [Fact]
-    public void UnknownSidewaysRomIsRecognizedFromHeaderInsteadOfFilename()
+    public void UnknownLanguageHeaderDoesNotRestrictTheDestination()
     {
         var image = new byte[16384];
         image[6] = 0x60; image[7] = 14; image[14] = 0; image[15] = (byte)'('; image[16] = (byte)'C'; image[17] = (byte)')';
         var entry = Assert.Single(BbcFirmware.Inspect(image, "renamed.bin", MachineModel.BbcMicroModelA, NativeFirmware.Field));
-        Assert.Equal("acornemu.basic", entry.DestinationFieldId);
+        Assert.Null(entry.DestinationFieldId);
         Assert.Equal(EmulationFirmwareCompatibility.Unknown, entry.Compatibility);
     }
 
     [Fact]
-    public void UnknownMosIsRecognizedFromResetVectorInsteadOfFilename()
+    public void UnknownResetVectorDoesNotRestrictTheDestination()
     {
         var image = new byte[16384]; image[^4] = 0xcd; image[^3] = 0xd9;
         var entry = Assert.Single(BbcFirmware.Inspect(image, "renamed.bin", MachineModel.BbcMicroModelA, NativeFirmware.Field));
-        Assert.Equal("acornemu.mos", entry.DestinationFieldId);
+        Assert.Null(entry.DestinationFieldId);
     }
 
     [Fact]
-    public void ServiceRomUsesTheOptionalDiskBankAndKnownDfsRequiresTheMachineExtension()
+    public void UnknownServiceHeaderRemainsSelectableAndKnownDfsRequiresTheMachineExtension()
     {
         var image = new byte[8192]; image[6] = 0x82; image[7] = 16;
         image[17] = (byte)'('; image[18] = (byte)'C'; image[19] = (byte)')';
         var candidate = Assert.Single(BbcFirmware.Inspect(image, "service.rom", MachineModel.BbcMicroModelA, NativeFirmware.Field));
-        Assert.Equal("acornemu.dfs", candidate.DestinationFieldId); Assert.Equal(EmulationFirmwareCompatibility.Unknown, candidate.Compatibility);
+        Assert.Null(candidate.DestinationFieldId); Assert.Equal(EmulationFirmwareCompatibility.Unknown, candidate.Compatibility);
         Assert.Equal(16384, BbcFirmware.GetRomBytes(image, FirmwareCategory.DiscFilingSystem).Length);
-        Assert.Equal(EmulationFirmwareCompatibility.PartiallyCompatible, BbcMicroFirmwareCompatibilityCatalog.Get(MachineModel.BbcMicroModelA, "dbbec4d2540a854c120be3194c7566a2b79d153b"));
+        Assert.Equal(EmulationFirmwareCompatibility.Compatible, AcornBBCMicroModel.Get(MachineModel.BbcMicroModelA, "dbbec4d2540a854c120be3194c7566a2b79d153b"));
         Assert.Throws<InvalidDataException>(() => BbcFirmware.GetRomBytes(new byte[32768], FirmwareCategory.DiscFilingSystem));
     }
 

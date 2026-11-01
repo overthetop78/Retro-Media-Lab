@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Mapa zdalnych numerów stacji do adresów sieciowych i portów.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Ten przykład dotyczy stacji 3 w sieci 0, uruchomionej na tym komputerze w porcie 32769. Oddzielne wpisy z średnikami lub przerwami w linii. Dla innego komputera użyj jego adresu w sieci lokalnej. Konfiguracja odpowiedniego wpisu powrotnego na drugiej stacji.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatyczne używa zaznaczonego MOS ROM gdy jest rozpoznawany. Nieznany MOS ROM zachowuje poprzedni standard wideo. Wybór PAL lub NTSC nadjeżdża automatyczne wykrywanie.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Built- in memory</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Główne RAM + ekran cieni RAM + prywatny paged RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>System ROM (MOS oraz BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>System ROM musi zawierać MOS oraz BASIC w obrazie 32 KiB. Inne ROM gniazda akceptują 8, 16 lub 32 obrazy KiB.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Identyfikowany ROM. Operacja zależy od wymagań oprogramowania i skonfigurowanej pamięci.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Zidentyfikowane rozszerzenie ROM. Jego sprzęty muszą być zainstalowane i obsługiwane przez emulator.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>System archiwizacji dysków ROM. Wymaga odpowiedniego sterownika tarczy; DFS oraz ADFS są różnymi systemami składania dokumentów.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>System zgłaszania sieci ROM. Wymaga interfejsu Econet i kompatybilnego sprzętu sieciowego.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Dane dotyczące mowy ROM do syntezatora mowy. Nie można używać jako MOS lub jako program boczny ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>System ROM. Musi pasować do modelu maszyny; B+ wykorzystuje połączenie 32 KiB BASIC oraz MOS obraz.</value></data>
 </root>

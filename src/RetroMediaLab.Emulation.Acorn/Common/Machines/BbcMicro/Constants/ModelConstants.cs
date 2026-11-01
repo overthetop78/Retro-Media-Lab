@@ -17,6 +17,8 @@ internal static class BbcMicroModelConstants
     internal const int NtscLinesPerFrame = 262;
     internal const int NtscCyclesPerFrame = CyclesPerLine * NtscLinesPerFrame;
     internal const int CyclesPerFrame = CyclesPerLine * LinesPerFrame;
+    internal const string SixtyFourKibibytesValue = "64";
+    internal const string OneHundredTwentyEightKibibytesValue = "128";
     internal const string SixteenKibibytesValue = "16";
     internal const string ThirtyTwoKibibytesValue = "32";
     internal const string SixteenKibibytesDisplay = "16 KiB";

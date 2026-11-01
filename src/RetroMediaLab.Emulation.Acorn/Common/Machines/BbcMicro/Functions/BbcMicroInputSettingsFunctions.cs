@@ -13,6 +13,7 @@ internal static class BbcMicroInputSettingsFunctions
 
     private static string ResourceKey(EmulationKey key) => key switch
     {
+        EmulationKey.Break => BbcMicroKeyboardConstants.BreakResource,
         EmulationKey.AcornF0 => BbcMicroKeyboardConstants.F0Resource,
         EmulationKey.AcornCopy => BbcMicroKeyboardConstants.CopyResource,
         EmulationKey.AcornShiftLock => BbcMicroKeyboardConstants.ShiftLockResource,

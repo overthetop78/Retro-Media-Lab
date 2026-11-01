@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Kaart remote stationnummers naar netwerkadressen en poorten.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Dit voorbeeld adresseert station 3 op netwerk 0, draait op deze computer op poort 32769. Aparte ingangen met puntkomma's of regelonderbrekingen. Gebruik het adres van een andere computer op het lokale netwerk. Configureer de bijbehorende terugkeer op het andere station.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatisch gebruik van de geselecteerde MOS ROM als het wordt herkend. MOS ROM houdt de vorige videostandaard. Selecteren PAL of NTSC Overschrijft automatische detectie.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Ingebouwd geheugen</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Hoofd RAM + schaduwscherm RAM + privé pagina RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Systeem ROM (MOS en BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Het systeem ROM moet bevatten MOS en BASIC in een 32 KiB afbeelding. andere ROM sockets accepteren 8, 16 of 32 KiB afbeeldingen.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Geïdentificeerd ROM. De bediening hangt af van de software-eisen en het geconfigureerde geheugen.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Geïdentificeerde uitbreiding ROM. De bijbehorende hardware moet worden geïnstalleerd en ondersteund door de emulator.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Schijfarchiefsysteem ROM. vereist de bijbehorende schijfcontroller; DFS en ADFS zijn verschillende bestandssystemen.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Netwerkarchiefsysteem ROM. Vereist de Econet interface en compatibele netwerkapparatuur.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Speechgegevens ROM voor de spraaksynthesizer. Kan niet gebruikt worden als MOS of als een zijwaartse programma ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Systeem ROM. Moet overeenkomen met het model van de machine; de B+ gebruikt een gecombineerde 32 KiB BASIC en MOS afbeelding.</value></data>
 </root>

@@ -23,7 +23,7 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
     private readonly Button _open;
     private bool _closing;
     private readonly TextBlock _empty = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
-    private readonly TextBlock _path = new() { TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 4, 0, 8), Opacity = 0.7 };
+    private readonly TextBlock _path = new() { TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 4, 0, 8), Opacity = 0.7, TextWrapping = TextWrapping.Wrap };
     private Task _refreshTask = Task.CompletedTask;
     private bool _busy;
     private bool _disposed;
@@ -89,6 +89,8 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
         _firmwares.HorizontalContentAlignment = HorizontalAlignment.Stretch;
         _firmwares.BorderThickness = new Thickness(0);
         _firmwares.SelectionChanged += SelectionChanged;
+        VirtualizingPanel.SetIsVirtualizing(_firmwares, true);
+        ScrollViewer.SetCanContentScroll(_firmwares, true);
         ScrollViewer.SetHorizontalScrollBarVisibility(_firmwares, ScrollBarVisibility.Disabled);
         Grid.SetIsSharedSizeScope(_firmwares, true);
         AutomationProperties.SetAutomationId(_firmwares, "FirmwareCandidates");
@@ -158,10 +160,10 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
                 var item = new ListBoxItem
                 {
                     Tag = candidate, Padding = new Thickness(0), Margin = new Thickness(0), FontSize = 12, HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                    Content = string.IsNullOrEmpty(candidate.Path)
-                        ? new TextBlock { Text = candidate.DisplayName, Margin = new Thickness(12, 7, 12, 7) }
-                        : EmulationSettingsLayout.FirmwareRow(candidate.DisplayName, candidate.Version, candidate.Compatibility, candidate.Path, _settings.DestinationLabel(candidate))
+                    MinHeight = 34
                 };
+                item.Loaded += CandidateLoaded;
+                item.Unloaded += CandidateUnloaded;
                 _firmwares.Items.Add(item);
                 if (string.Equals(candidate.Path, selected?.Path ?? _settings.CurrentPath, StringComparison.OrdinalIgnoreCase))
                     _firmwares.SelectedItem = item;
@@ -182,12 +184,26 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
         }
     }
 
+    private void CandidateLoaded(object sender, RoutedEventArgs args)
+    {
+        if (sender is not ListBoxItem { Tag: EmulationFirmwareCandidate candidate } item || item.Content is not null) return;
+        item.Content = string.IsNullOrEmpty(candidate.Path)
+            ? new TextBlock { Text = candidate.DisplayName, Margin = new Thickness(12, 7, 12, 7) }
+            : EmulationSettingsLayout.FirmwareRow(candidate.DisplayName, candidate.Version, candidate.Compatibility, candidate.Path, _settings.DestinationLabel(candidate));
+    }
+
+    private static void CandidateUnloaded(object sender, RoutedEventArgs args)
+    {
+        if (sender is ListBoxItem item) item.Content = null;
+    }
+
     private void SelectionChanged(object sender, SelectionChangedEventArgs args) => UpdateSelection();
 
     private void UpdateSelection()
     {
         var candidate = (_firmwares.SelectedItem as ListBoxItem)?.Tag as EmulationFirmwareCandidate;
-        _path.Text = candidate?.Path ?? string.Empty;
+        _path.Text = candidate is null ? string.Empty : string.Join(Environment.NewLine,
+            new[] { _settings.Explanation?.Invoke(candidate), candidate.Path }.Where(value => !string.IsNullOrWhiteSpace(value)));
         _path.ToolTip = candidate?.Path;
         _save.IsEnabled = !_busy && !_lifetime.IsCancellationRequested && candidate is not null && _settings.CanUse(candidate);
     }

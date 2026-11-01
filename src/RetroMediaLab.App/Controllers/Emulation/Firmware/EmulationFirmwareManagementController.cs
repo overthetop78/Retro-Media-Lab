@@ -93,7 +93,8 @@ internal sealed class EmulationFirmwareManagementController : IAsyncDisposable
                 var destination = _module.Describe(configuration.MachineId, configuration).Blocks
                     .SelectMany(block => block.Fields).FirstOrDefault(item => item.Id == candidate.DestinationFieldId);
                 return destination is null ? string.Empty : LocExtension.GetForModule(_module, destination.LabelResourceKey);
-            });
+            }, candidate => string.IsNullOrEmpty(candidate.ExplanationResourceKey) ? string.Empty
+                : LocExtension.GetForModule(_module, candidate.ExplanationResourceKey));
         FirmwareSelectionDialog? dialog = null;
         try
         {

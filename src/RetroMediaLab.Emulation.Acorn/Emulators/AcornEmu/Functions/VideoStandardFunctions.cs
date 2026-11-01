@@ -10,7 +10,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 internal static class VideoStandardFunctions
 {
     internal static EmulationVideoStandard? Identify(string sha1) =>
-        FirmwareCatalog.BySha1.TryGetValue(sha1, out var firmware) && firmware.Category == FirmwareCategory.OperatingSystem
+        AcornFirmware.BySha1.TryGetValue(sha1, out var firmware) && firmware.Category == FirmwareCategory.OperatingSystem
             ? firmware.VideoStandard : null;
 
     internal static EmulationVideoStandard Resolve(IReadOnlyDictionary<string, string> options, EmulationVideoStandard? mosStandard)

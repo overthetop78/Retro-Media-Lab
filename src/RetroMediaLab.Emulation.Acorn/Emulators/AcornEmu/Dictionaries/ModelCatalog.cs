@@ -20,6 +20,9 @@ internal static class ModelCatalog
             CreateModelA),
         new(MachineModel.BbcMicroModelB, (double)BbcMicroModelConstants.CpuFrequencyHz / BbcMicroModelConstants.CyclesPerFrame,
             VideoConstants.Width, VideoConstants.Height, 4, EmulationPixelFormat.Xrgb8888, 4f / 3, EmulationVideoStandard.Pal,
+            CreateModelB),
+        new(MachineModel.BbcMicroModelBPlus, (double)BbcMicroModelConstants.CpuFrequencyHz / BbcMicroModelConstants.CyclesPerFrame,
+            VideoConstants.Width, VideoConstants.Height, 4, EmulationPixelFormat.Xrgb8888, 4f / 3, EmulationVideoStandard.Pal,
             CreateModelB)
     ];
 
@@ -30,10 +33,10 @@ internal static class ModelCatalog
     {
         var network = NetworkFunctions.Read(configuration);
         var chips = SidewaysExpansionFunctions.ChipBanks(configuration);
-        var basic = chips.TryGetValue(SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.BasicBank), out var programmedBasic) ? programmedBasic : FirmwareFunctions.Read(configuration, EmulatorConstants.BasicFirmware);
+        var basic = !ModelBPlusFunctions.IsModel(configuration) && chips.TryGetValue(SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.BasicBank), out var programmedBasic) ? programmedBasic : FirmwareFunctions.Read(configuration, EmulatorConstants.BasicFirmware);
         var mos = FirmwareFunctions.Read(configuration, EmulatorConstants.SystemFirmware);
         MemoryExtensionFunctions.ValidateMos(configuration, mos);
-        return new BbcMicroMachine(mos, basic, BbcMicroMemoryFunctions.MainBytes(configuration), FirmwareFunctions.Read(configuration, EmulatorConstants.CharacterFirmware), StorageFunctions.HasInterface(configuration), FirmwareFunctions.OptionRoms(configuration, chips), StorageFunctions.UsesWd1770(configuration), StorageFunctions.HasWinchester(configuration), network.Enabled, network.Station, network.CyclesPerByte, MemoryExtensionFunctions.Read(configuration), SidewaysExpansionFunctions.Read(configuration), expandedIo: expandedIo, videoStandard: VideoStandardFunctions.Resolve(configuration))
+        return new BbcMicroMachine(mos, basic, BbcMicroMemoryFunctions.MainBytes(configuration), FirmwareFunctions.Read(configuration, EmulatorConstants.CharacterFirmware), StorageFunctions.HasInterface(configuration), FirmwareFunctions.OptionRoms(configuration, chips), StorageFunctions.UsesWd1770(configuration), StorageFunctions.HasWinchester(configuration), network.Enabled, network.Station, network.CyclesPerByte, MemoryExtensionFunctions.Read(configuration), SidewaysExpansionFunctions.Read(configuration), expandedIo: expandedIo, videoStandard: VideoStandardFunctions.Resolve(configuration), modelBPlusMemory: ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.MemoryBytes(configuration) : 0)
         {
             Video = { Monochrome = configuration.Options.GetValueOrDefault(EmulatorConstants.VideoOutput, EmulatorConstants.UhfOutput) == EmulatorConstants.MonochromeOutput }
         };

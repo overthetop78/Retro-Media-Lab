@@ -19,6 +19,7 @@ internal sealed class Video
     private int _phase, _cursorRemaining;
     internal int ScreenWrap { get; set; } = 0x5800;
     internal bool Monochrome { get; set; }
+    internal Func<int, byte>? ReadMemory { get; set; }
     internal bool VSync => _crtc.VSync;
     internal long Frame => _crtc.Frame;
 
@@ -81,7 +82,8 @@ internal sealed class Video
         if (_crtc.RasterAddress >= 8) return;
         var address = (_crtc.Address << 3) | _crtc.RasterAddress;
         if (address >= 0x8000) address = (address + ScreenWrap) & 0x7fff;
-        var data = _ram[address & (_ram.Length - 1)];
+        var offset = address & (_ram.Length - 1);
+        var data = ReadMemory?.Invoke(offset) ?? _ram[offset];
         var count = Math.Clamp(1 << (((_control >> 2) & 3) + ((_control & 16) == 0 ? 1 : 0)), 1, 8);
         var width = (_control & 16) == 0 ? 16 : 8;
         for (var x = 0; x < width; x++)
@@ -98,7 +100,8 @@ internal sealed class Video
 
     private void TeletextCharacter()
     {
-        var data = _ram[(0x7c00 | (_crtc.Address & 0x3ff)) & (_ram.Length - 1)];
+        var offset = (0x7c00 | (_crtc.Address & 0x3ff)) & (_ram.Length - 1);
+        var data = ReadMemory?.Invoke(offset) ?? _ram[offset];
         var raster = _crtc.InterlaceVideo ? _crtc.RasterAddress : _crtc.RasterAddress * 2;
         var cell = _teletext.Character(data, raster, _crtc.Frame);
         for (var x = 0; x < 16; x++)

@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Mapa remoto números de estación a direcciones de red y puertos.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Este ejemplo aborda la estación 3 en la red 0, corriendo en este ordenador en el puerto 32769. Entradas separadas con semicolons o roturas de línea. Para otro ordenador, utilice su dirección en la red local. Configure la entrada de retorno correspondiente en la otra estación.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Usos automáticos seleccionados MOS ROM cuando se reconoce. Un desconocido MOS ROM mantiene el estándar de vídeo anterior. PAL o NTSC anula la detección automática.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Memoria incorporada</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>principal RAM + pantalla de sombra RAM + página privada RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Sistema ROM (G)MOS y BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>El sistema ROM debe contener MOS y BASIC en una imagen de 32 KiB. Otros ROM sockets aceptan imágenes de 8, 16 o 32 KiB.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Identificado ROM. La operación depende de los requisitos de software y de la memoria configurada.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Extensión identificada ROM. Su hardware asociado debe ser instalado y apoyado por el emulador.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Sistema de archivo de disco ROM. Requiere su controlador de disco que coincida; DFS y ADFS son diferentes sistemas de presentación.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Sistema de archivo de redes ROM. Requiere la interfaz Econet y el equipo de red compatible.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Datos de habla ROM para el sintetizador de discursos. No se puede utilizar como MOS o como programa de los laterales ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Sistema ROM. Debe coincidir con el modelo de máquina; el B+ usa un combinado de 32 KiB BASIC y MOS imagen.</value></data>
 </root>

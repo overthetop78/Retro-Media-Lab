@@ -14,12 +14,12 @@ internal static class FirmwareFunctions
     internal static string? Field(FirmwareCategory category) => category switch
     {
         FirmwareCategory.OperatingSystem => EmulatorConstants.SystemFirmware,
-        FirmwareCategory.Basic or FirmwareCategory.Language => EmulatorConstants.BasicFirmware,
+        FirmwareCategory.Basic => EmulatorConstants.BasicFirmware,
         FirmwareCategory.CharacterGenerator => EmulatorConstants.CharacterFirmware,
         FirmwareCategory.Network => NetworkConstants.Firmware,
         FirmwareCategory.MemoryExtension => MemoryExtensionConstants.Firmware,
         FirmwareCategory.DiscFilingSystem => StorageConstants.DfsFirmware,
-        FirmwareCategory.Application => StorageConstants.DfsFirmware,
+        FirmwareCategory.Language or FirmwareCategory.Application => null,
         _ => null
     };
 
@@ -40,12 +40,15 @@ internal static class FirmwareFunctions
         if (SidewaysExpansionFunctions.RoleBank(configuration, field) is { } bank && SidewaysExpansionFunctions.ProvidesBank(configuration, bank))
             return BbcMicroFirmwareFunctions.GetRomBytes(SidewaysExpansionFunctions.ReadBank(configuration, bank), Role(field));
         var path = field is FloppyExtensionConstants.IntelRom or FloppyExtensionConstants.WdRom
-            ? FloppyExtensionFunctions.RomPath(configuration, field) : configuration.Options.GetValueOrDefault(field);
+            ? FloppyExtensionFunctions.RomPath(configuration, field) : configuration.Options.GetValueOrDefault(ModelBPlusFunctions.IsModel(configuration) && field == EmulatorConstants.BasicFirmware ? EmulatorConstants.SystemFirmware : field);
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
             throw new EmulationException(ErrorCategory.Firmware, ErrorCode.FirmwareMissing,
                 field == MemoryExtensionConstants.Firmware ? ExceptionText.Get(MemoryExtensionConstants.MissingFirmware)
                     : ExceptionText.Get(CoreErrorResourceKeys.NamedFirmwareMissing, RomName(field)), isLocalized: true);
-        return BbcMicroFirmwareFunctions.GetRomBytes(File.ReadAllBytes(path), Role(field));
+        var bytes = File.ReadAllBytes(path);
+        if (ModelBPlusFunctions.IsModel(configuration) && field is EmulatorConstants.SystemFirmware or EmulatorConstants.BasicFirmware && bytes.Length != Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants.ChipBytes)
+            throw new EmulationException(ErrorCategory.Firmware, ErrorCode.FirmwareInvalid, ExceptionText.Get(Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants.RomSizeError), isLocalized: true);
+        return BbcMicroFirmwareFunctions.GetRomBytes(bytes, Role(field));
     }
     /// <summary>Désigne la ROM manquante sans exposer l’identifiant technique du champ à l’utilisateur.</summary>
     private static string RomName(string field) => field switch
@@ -69,6 +72,11 @@ internal static class FirmwareFunctions
             .ToDictionary(bank => bank.Key, bank => bank.Value);
         if (StorageFunctions.NeedsDiskRom(configuration) && !banks.ContainsKey(SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.DfsBank))) banks[SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.DfsBank)] = Read(configuration, FloppyExtensionFunctions.ActiveRom(configuration));
         if (NetworkFunctions.Read(configuration).Enabled && !banks.ContainsKey(SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.NetworkBank))) banks[SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.NetworkBank)] = Read(configuration, NetworkConstants.Firmware);
+        if (ModelBPlusFunctions.IsModel(configuration))
+        {
+            foreach (var bank in banks.Keys.ToArray())
+                if (bank is Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants.DfsBank or Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants.NetworkBank && !banks.ContainsKey(bank - 1)) banks[bank - 1] = banks[bank];
+        }
         MemoryExtensionFunctions.AddFirmware(configuration, banks);
         return banks;
     }

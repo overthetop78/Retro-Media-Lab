@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>ส่งหมายเลขสถานีปลายทางไปยังที่อยู่และพอร์ตเครือข่าย</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;ตัวอย่างนี้ สถานีที่อยู่ 3 บนเครือข่าย 0 ทํางานบนคอมพิวเตอร์นี้ที่ท่าเรือ 32769 แยกรายการกับ กึ่งคอรัส หรือ หยุดสาย สําหรับ คอมพิวเตอร์ อีก ตัว หนึ่ง ให้ ใช้ ที่ อยู่ ของ มัน บน เครือ ข่าย. ปรับแต่งรายการที่ส่งกลับบนสถานีอื่น ๆ ที่ตรงกัน</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>ใช้ส่วนที่เลือกอัตโนมัติ MOS ROM เมื่อมันได้รับการยอมรับ ไม่ปรากฏ MOS ROM คงมาตรฐานวิดีโอก่อนหน้านี้ไว้ PAL หรือ NTSC แทนค่าการตรวจสอบอัตโนมัติ</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>หน่วยความจําที่ถูกสร้าง</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>หลัก RAM เพิ่มเงาหน้าจอ RAM เพิ่มหน้าส่วนตัว RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>ระบบ ROM (MOS และ BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>ระบบ ROM ต้องบรรจุ MOS และ BASIC ในภาพ 32 กิโลไบต์ ROM ฐานรับภาพ 8, 16 หรือ 32 กิโลบี</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>ถูกกําหนด ROM. ปฏิบัติการขึ้นอยู่กับความต้องการโปรแกรมและหน่วยความจําที่ปรับแต่ง</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>ส่วนขยายการระบุ ROM. ฮาร์ดแวร์ที่สัมพันธ์กันนี้ จะต้องถูกติดตั้งและรองรับโดยตัวจําลอง</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>ระบบจัดเก็บแผ่น ROM. ต้องการตัวควบคุมแผ่นที่เข้าคู่กัน DFS และ ADFS เป็นระบบเอกสารที่แตกต่างกัน</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>ระบบจัดเก็บเครือข่าย ROM. ต้องการอินเทอร์เฟส Econet และอุปกรณ์เครือข่ายที่เข้ากันได้</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>ข้อมูลคําพูด ROM สําหรับตัวสังเคราะห์คําพูด ไม่สามารถนําไปใช้เป็นตัวสังเคราะห์ได้ MOS หรือเป็นโปรแกรมที่ด้านข้าง ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>ระบบ ROM. ต้องตรงกับโมเดลของเครื่องจักร B+ ใช้รวม 32 กิโลไบต์ BASIC และ MOS ภาพลักษณ์</value></data>
 </root>

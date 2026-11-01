@@ -22,7 +22,11 @@ internal sealed class Disks(bool enabled, bool wd1770 = false)
         if (!enabled) return;
         if (wd1770)
         {
-            if ((address & 4) != 0) { if ((_control & 0x20) != 0) Wd.Write(address & 3, value); }
+            // Le bus CPU reste accessible au reset : la DFS teste le registre de piste avant de libérer /MR.
+            if ((address & 4) != 0)
+            {
+                if ((address & 3) != 0 || (_control & 0x20) != 0) Wd.Write(address & 3, value);
+            }
             else
             {
                 if ((value & 0x20) == 0) Wd.Reset();

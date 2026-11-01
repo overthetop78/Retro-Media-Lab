@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>원격 스테이션 번호를 네트워크 주소 및 포트에 연결합니다.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;이 예제는 포트 32769에서이 컴퓨터에서 실행되는 네트워크 0에 역 3을 주소합니다. semicolons 또는 라인 브레이크가있는 별도의 항목. 다른 컴퓨터의 경우, 로컬 네트워크의 주소를 사용합니다. 다른 역에 해당 반환 항목 구성.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>선택된 자동 사용 MOS ROM 인식될 때. 알 수없는 MOS ROM 이전 비디오 표준을 유지. 선택 PAL 또는 NTSC overrides 자동 탐지.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>내장 메모리</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>의 의 RAM + 그림자 스크린 RAM + 개인 페이지 RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>시스템 ROM (주)MOS 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 BASIC) )</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>시스템 ROM 은은 MOS 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 BASIC 32 KiB 이미지. 다른 것 ROM 소켓은 8, 16 또는 32 KiB 이미지를 받아들입니다.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>인증번호 ROM. 가동은 소프트웨어 필요조건에 달려 있고 형성된 기억.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>ID/ID ROM. 관련 하드웨어는 에뮬레이터에 의해 설치 및 지원해야합니다.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>디스크 피링 시스템 ROM. 일치하는 디스크 컨트롤러를 요구합니다; DFS 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ADFS 다른 서류 시스템입니다.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>네트워크 시스템 ROM. Econet 인터페이스 및 호환 네트워크 장비가 필요합니다.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>발표자료 ROM 음성 합성기. 사용될 수 없습니다 MOS 또는 sideways 프로그램으로 ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>시스템 ROM. 기계 모형을 일치해야 합니다; B+ 결합된 32 KiB를 사용하십시오 BASIC 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 MOS 이미지.</value></data>
 </root>

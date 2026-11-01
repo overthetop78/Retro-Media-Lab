@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Χαρτογραφήστε τους αριθμούς απομακρυσμένων σταθμών σε διευθύνσεις δικτύου και λιμάνια.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Το παράδειγμα αυτό απευθύνεται στο σταθμό 3 στο δίκτυο 0, που λειτουργεί σε αυτόν τον υπολογιστή στη θύρα 32769. Ξεχωριστές καταχωρήσεις με ημικολόνια ή διαλείμματα γραμμής. Για έναν άλλο υπολογιστή, χρησιμοποιήστε τη διεύθυνσή του στο τοπικό δίκτυο. Ρυθμίστε την αντίστοιχη είσοδο επιστροφής στον άλλο σταθμό.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Αυτόματη χρήση του επιλεγμένου MOS ROM - Όταν αναγνωρίζεται. MOS ROM διατηρεί το προηγούμενο πρότυπο βίντεο. PAL ή NTSC παρακάμπτει την αυτόματη ανίχνευση.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Ενσωματωμένη μνήμη</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Κύρια RAM + οθόνη σκιάς RAM + Ιδιωτική σελίδα RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Σύστημα ROM (MOS και BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Το σύστημα ROM πρέπει να περιέχει MOS και BASIC σε εικόνα 32 KiB. Άλλα ROM Οι υποδοχές δέχονται 8, 16 ή 32 εικόνες KiB.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Προσδιορίζονται ROM. Η λειτουργία εξαρτάται από τις απαιτήσεις του λογισμικού και τη ρυθμισμένη μνήμη.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Προσδιορισμένη επέκταση ROM. Το σχετικό υλικό του πρέπει να εγκατασταθεί και να υποστηρίζεται από τον εξομοιωτή.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Σύστημα αρχειοθέτησης δίσκων ROM. απαιτεί τον αντίστοιχο ελεγκτή δίσκων του· DFS και ADFS είναι διαφορετικά συστήματα αρχειοθέτησης.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Σύστημα αρχειοθέτησης δικτύου ROM. Απαιτεί τη διεπαφή Econet και συμβατό εξοπλισμό δικτύου.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Στοιχεία λόγου ROM για το συνθεσάιζερ ομιλίας. Αδυναμία χρήσης ως MOS ή ως πλευρικό πρόγραμμα ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Σύστημα ROM. Πρέπει να ταιριάζει με το μοντέλο μηχανής? B+ χρησιμοποιεί συνδυασμένο 32 KiB BASIC και MOS εικόνα.</value></data>
 </root>

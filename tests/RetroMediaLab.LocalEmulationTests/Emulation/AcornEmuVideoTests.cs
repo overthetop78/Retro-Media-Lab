@@ -14,11 +14,14 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuVideoTests
 {
     [Fact]
-    public void UnknownCharacterRomHasItsOwnSelectableSlot()
+    public void UnknownCharacterRomRemainsSelectableWithoutAssumingItsRole()
     {
         var candidate = Assert.Single(Firmware.Inspect(new byte[960], "characters", MachineModel.BbcMicroModelA, NativeFirmware.Field));
         Assert.Equal(EmulationFirmwareCompatibility.Unknown, candidate.Compatibility);
-        Assert.Equal("acornemu.characters", candidate.DestinationFieldId);
+        Assert.Null(candidate.DestinationFieldId);
+        var selectable = Assert.Single(RetroMediaLab.App.Controllers.Emulation.Firmware.EmulationFirmwareManagementController.CandidatesForField([candidate], "acornemu.characters"));
+        Assert.Equal("acornemu.characters", selectable.DestinationFieldId);
+        Assert.Equal(EmulationFirmwareCompatibility.Unknown, selectable.Compatibility);
         Assert.Equal(960, Firmware.GetRomBytes(new byte[960], FirmwareCategory.CharacterGenerator).Length);
         Assert.Throws<System.IO.InvalidDataException>(() => Firmware.GetRomBytes(new byte[16384], FirmwareCategory.CharacterGenerator));
     }

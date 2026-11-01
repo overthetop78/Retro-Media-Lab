@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Kartoita aseman numerot verkko-osoitteisiin ja satamiin.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Tämä esimerkki osoittaa aseman 3 verkon 0, käynnissä tällä tietokoneella Port 32769. Erilliset merkinnät puolipisteillä tai viivakatkoilla. Toiseen tietokoneeseen, käytä sen osoitetta paikallisessa verkossa. Määrittele vastaava paluumerkintä toisella asemalla.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Käyttää valittua automaattista MOS ROM kun se on tunnistettu. MOS ROM pitää edellisen videon standardin. Valitaan PAL tai NTSC ohitetaan automaattinen tunnistus.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Sisäänrakennettu muisti</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Pää RAM + varjoruutu RAM + yksityinen sivu RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Järjestelmä ROM (MOS sekä BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Järjestelmä ROM sisältää MOS sekä BASIC 32 KiB-kuvassa. ROM pistorasiat hyväksyvät 8, 16 tai 32 KiB-kuvaa.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Tunnistettu ROM. Toiminta riippuu ohjelmistovaatimuksista ja konfiguroidusta muistista.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Havaittu laajennus ROM. Emulaattorin on asennettava ja tuettava siihen liittyviä laitteita.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Levyn tallennusjärjestelmä ROM. edellyttää, että levyn ohjain on yhteensopiva; DFS sekä ADFS ovat erilaisia arkistointijärjestelmiä.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Verkkorekisteröintijärjestelmä ROM. Vaatii Econet-liitäntää ja yhteensopivia verkkolaitteita.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Puhetiedot ROM puhe syntetisaattori. Ei voida käyttää MOS tai sivuttain ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Järjestelmä ROM. Täytyy vastata koneen malli; B+ käyttää yhdistettyä 32 KiB:tä BASIC sekä MOS Kuva.</value></data>
 </root>

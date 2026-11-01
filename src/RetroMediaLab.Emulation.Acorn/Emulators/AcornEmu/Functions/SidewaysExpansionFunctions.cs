@@ -46,7 +46,7 @@ internal static class SidewaysExpansionFunctions
         settings.AriesB12 ? C.AriesSocketLabels[socket] : C.SocketLabels[socket];
 
     /// <summary>Banque physique d'un rôle installé avant l'extension.</summary>
-    internal static int NativeBank(MachineConfiguration configuration, int bank) => Read(configuration).MapNativeBank(bank);
+    internal static int NativeBank(MachineConfiguration configuration, int bank) => ModelBPlusFunctions.Bank(configuration, Read(configuration).MapNativeBank(bank));
 
     /// <summary>Choix du matériel installé, indépendant de l'affichage de sa capacité RAM.</summary>
     internal static EmulationSettingsBlock Describe(MachineConfiguration configuration)
@@ -77,6 +77,7 @@ internal static class SidewaysExpansionFunctions
     /// <summary>Un chemin par puce, uniquement pour les supports utilisés ; les chemins retirés restent enregistrés.</summary>
     internal static EmulationSettingsBlock DescribeRoms(MachineConfiguration configuration)
     {
+        if (ModelBPlusFunctions.IsModel(configuration)) return ModelBPlusFunctions.DescribeRoms(configuration);
         var settings = Read(configuration);
         return new(C.RomGroup, EmulationMachineTab.Rom, C.RomGroup,
             Enumerable.Range(0, settings.RomSocketCount).Select(socket => new EmulationSettingsField(ChipField(settings, socket), EmulationMachineTab.Rom, C.RomGroup,
@@ -87,16 +88,18 @@ internal static class SidewaysExpansionFunctions
     internal static IEnumerable<FirmwareSlot> Slots(MachineConfiguration configuration)
     {
         var settings = Read(configuration);
+        if (ModelBPlusFunctions.IsModel(configuration)) return ModelBPlusFunctions.Slots(configuration);
         return Enumerable.Range(0, settings.RomSocketCount).Select(socket => new FirmwareSlot(ChipField(settings, socket), string.Empty, ChipLabel(settings, socket)));
     }
 
     /// <summary>Présence explicite d'une image de puce contenant cette banque.</summary>
-    internal static bool ProvidesBank(MachineConfiguration configuration, int bank) => Read(configuration).IsChipBank(bank)
+    internal static bool ProvidesBank(MachineConfiguration configuration, int bank) => ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.ProvidesBank(configuration, bank) : Read(configuration).IsChipBank(bank)
         && !string.IsNullOrWhiteSpace(configuration.Options.GetValueOrDefault(ChipField(Read(configuration), Read(configuration).ChipSocket(bank))));
 
     /// <summary>Lit une banque de la puce choisie ; une petite puce répète ses lignes d'adresse non décodées.</summary>
     internal static byte[] ReadBank(MachineConfiguration configuration, int bank)
     {
+        if (ModelBPlusFunctions.IsModel(configuration)) return ModelBPlusFunctions.ChipBanks(configuration)[bank];
         var settings = Read(configuration);
         if (!ProvidesBank(configuration, bank)) throw new ArgumentException(nameof(bank));
         var bytes = File.ReadAllBytes(configuration.Options[ChipField(settings, settings.ChipSocket(bank))]);
@@ -123,6 +126,7 @@ internal static class SidewaysExpansionFunctions
     /// <summary>Charge toutes les banques définies par une puce ; l'appelant ajoute les rôles non remplacés.</summary>
     internal static IReadOnlyDictionary<int, byte[]> ChipBanks(MachineConfiguration configuration)
     {
+        if (ModelBPlusFunctions.IsModel(configuration)) return ModelBPlusFunctions.ChipBanks(configuration);
         var settings = Read(configuration);
         var banks = new Dictionary<int, byte[]>();
         for (var socket = 0; socket < settings.RomSocketCount; socket++)

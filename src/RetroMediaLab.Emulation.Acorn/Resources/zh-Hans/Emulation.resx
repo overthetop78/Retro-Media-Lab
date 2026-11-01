@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>将远程站名映射到网络地址和端口.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;这个例子地址是3号站台在0网络上,运行在32769端口的这台计算机上. 以分号或换行符分隔条目。 对于另一台计算机,请在本地网络上使用其地址. 配置另一站对应的回回条目.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>自动使用选中的 MOS ROM 被认出来时 未知 MOS ROM 保存上一个视频标准。选择 PAL 或 或 双 NTSC 自动检测器被覆盖 。</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>内置内存</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>主体 RAM + 阴影屏幕 RAM + 私人页面d RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>系统 ROM (单位:千美元)MOS 财务报告和已审计财务报表 BASIC) , (中文(简体) ).</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>系统 ROM 必须是包含 MOS 财务报告和已审计财务报表 BASIC 以32 KiB 图像显示。 ROM 套接字接受8,16或32个KiB图像.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>已确认 ROM. 操作取决于软件要求和配置的内存.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>已确认的扩展 ROM. 其相關相關硬件由仿真器安装并提供支持.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>磁盘存档系统 ROM. 需要匹配的盘控制器; DFS 财务报告和已审计财务报表 ADFS 不同的备案系统。</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>网络归档系统 ROM. 需要Econet接口和相容的网络设备.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>语音数据 ROM 用于语音合成器。不能用作 MOS 或作为侧道程序 ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>系统 ROM. 必须与机器模型匹配; B+ 使用一个组合的32 KB BASIC 财务报告和已审计财务报表 MOS 图像。</value></data>
 </root>

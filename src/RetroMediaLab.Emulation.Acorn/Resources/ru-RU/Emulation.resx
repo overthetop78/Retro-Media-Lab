@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Картографируйте номера удаленных станций на сетевые адреса и порты.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;В этом примере адресована станция 3 в сети 0, работающая на этом компьютере в порту 32769. Отдельные записи с полуколонами или разрывами линий. Для другого компьютера используйте его адрес в локальной сети. Настройка соответствующего обратного входа на другой станции.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Автоматическое использование выбранного MOS ROM когда он будет признан неизвестным MOS ROM Сохраняет предыдущий видеостандарт.Выбор PAL или NTSC Преодолевает автоматическое обнаружение.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Встроенная память</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Главный RAM + Теневой экран RAM + Частный сайт RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Система ROM ()MOS и BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Система ROM должен содержать MOS и BASIC на изображении 32 киб. ROM Сокет принимает 8, 16 или 32 изображения KiB.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>идентифицированный ROM. Операция зависит от требований программного обеспечения и настроенной памяти.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Идентифицированное расширение ROM. Его связанное оборудование должно быть установлено и поддержано эмулятором.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Система подачи дисков ROM. Требует своего контроллера диска; DFS и ADFS Это разные системы подачи.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Сетевая система подачи заявок ROM. Требуется интерфейс Econet и совместимое сетевое оборудование.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Данные о речи ROM для синтезатора речи. Не может использоваться как MOS или как программа боковых ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Система ROM. должен соответствовать модели машины; B+ Использует комбинированный 32 киб BASIC и MOS Изображение.</value></data>
 </root>

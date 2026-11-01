@@ -1,3 +1,4 @@
+using Plus = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using E = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.SidewaysExpansionConstants;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.DiskConstants;
@@ -11,9 +12,10 @@ internal sealed class SidewaysRoms
     private readonly bool[] _writable = new bool[C.RomBankCount];
     private readonly bool[] _protected = new bool[C.RomBankCount];
     private readonly int _basicBank;
+    private readonly bool _modelBPlus;
     private readonly bool _broadcastToBankZero;
     private int _selected;
-    internal SidewaysRoms(ReadOnlySpan<byte> basic, IReadOnlyDictionary<int, byte[]>? additional = null, SidewaysExpansionSettings? expansion = null)
+    internal SidewaysRoms(ReadOnlySpan<byte> basic, IReadOnlyDictionary<int, byte[]>? additional = null, SidewaysExpansionSettings? expansion = null, int modelBPlusMemory = 0)
     {
         if (basic.Length != C.RomBankSize) throw new ArgumentException(nameof(basic));
         expansion ??= new();
@@ -22,11 +24,20 @@ internal sealed class SidewaysRoms
         _selected = _basicBank;
         _broadcastToBankZero = expansion.AriesB12;
         _banks[_basicBank] = basic.ToArray();
+        _modelBPlus = modelBPlusMemory != 0;
+        if (_modelBPlus) _banks[_basicBank - 1] = _banks[_basicBank];
         foreach (var bank in additional ?? new Dictionary<int, byte[]>())
         {
             if (bank.Key < 0 || bank.Key >= C.RomBankCount || bank.Key == _basicBank || bank.Value.Length != C.RomBankSize) throw new ArgumentException(nameof(additional));
             _banks[bank.Key] = bank.Value.ToArray();
         }
+        if (modelBPlusMemory == Plus.ExpandedBytes)
+            foreach (var bank in Plus.RamBanks)
+            {
+                if (_banks[bank] is not null) throw new ArgumentException(nameof(additional));
+                _banks[bank] = new byte[C.RomBankSize];
+                _writable[bank] = true;
+            }
         for (var bank = 0; bank < C.RomBankCount; bank++)
         {
             if (!expansion.IsRamBank(bank)) continue;
@@ -38,7 +49,7 @@ internal sealed class SidewaysRoms
     internal void Select(byte value)
     {
         _selected = value & (C.RomBankCount - 1);
-        if (_broadcastToBankZero || !_writable[_selected]) return;
+        if (_modelBPlus || _broadcastToBankZero || !_writable[_selected]) return;
         if ((value & E.ProtectCommandMask) == E.ProtectCommand) _protected[_selected] = true;
         else if ((value & E.ProtectCommandMask) == E.UnprotectCommand) _protected[_selected] = false;
     }

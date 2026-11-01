@@ -8,6 +8,13 @@ internal static class ConfigurationOptionFunctions
     internal static IReadOnlyDictionary<string, string> Normalize(MachineModel model, IReadOnlyDictionary<string, string> options)
     {
         var result = new Dictionary<string, string>(options, StringComparer.Ordinal);
+        if (model is MachineModel.BbcMicroModelBPlus or MachineModel.BbcMicroModelBPlus128 && options.TryGetValue(SettingsConstants.MainMemory, out var total))
+            result[OptionConstants.Model] = total switch
+            {
+                BbcMicroModelConstants.SixtyFourKibibytesValue => OptionConstants.ModelBPlus,
+                BbcMicroModelConstants.OneHundredTwentyEightKibibytesValue => OptionConstants.ModelBPlus128,
+                _ => throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(options))
+            };
         if (model == MachineModel.BbcMicroModelB)
         {
             var native = options.GetValueOrDefault(OptionConstants.Model, B2ModelFunctions.DefaultValue(model));

@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>خريطة أرقام المحطات عن بعد إلى عناوين الشبكة والموانئ.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;ويتناول هذا المثال المحطة 3 على الشبكة 0، التي تعمل على هذا الحاسوب في الميناء 32769. دخول منفصلة مع شبه كولونز أو استراحة خط. من أجل حاسوب آخر، استخدم عنوانه على الشبكة المحلية. اعترفي بالدخول المقابل للمحطة الأخرى</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>الاستخدامات الآلية MOS ROM عندما يتم التعرف عليه MOS ROM يُبقي على المُستوى السابق للفيديو PAL أو NTSC يُبطل كشف التلقائي.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>بناء الذاكرة</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>الرئيسية RAM + شاشة الظل RAM + صفحة خاصة RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>النظام ROM )أ(MOS و BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>النظام ROM يجب أن يحتوي MOS و BASIC في صورة 32 كيلوبايت ROM تقبل الجوارب 8 أو 16 أو 32 صورة من نوع كي بي.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>هوية ROM. وتتوقف العملية على احتياجات البرامجيات والذاكرة المكوّنة.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>التمديد المحدد ROM. ويجب أن يركب المرشد معداته المرتبطة به ويدعمها.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>نظام الإقرارات ROM. (ب) يتطلب متحكمه في القرص المطابق؛ DFS و ADFS هي نظم مختلفة للحفظ.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>نظام تقديم الطلبات الشبكي ROM. يتطلب واجهة إيكونت ومعدات شبكة متوافقة.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>بيانات عن الخطابات ROM "للمُغنية "سينثيزر لا يمكن أن تُستخدم MOS أو كبرنامج جانبي ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>النظام ROM. يجب أن يطابق نموذج الآلة B+ استخدامات مجمَّعة BASIC و MOS صورة</value></data>
 </root>

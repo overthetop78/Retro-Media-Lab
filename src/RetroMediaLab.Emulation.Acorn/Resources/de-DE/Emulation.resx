@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Zuordnung entfernter Stationsnummern zu Netzwerkadressen und Ports.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Dieses Beispiel adressiert die Station 3 im Netzwerk 0, die auf diesem Computer am Port 32769 läuft. Separate Einträge mit Semikolonen oder Linienumbrüchen. Verwenden Sie für einen anderen Computer seine Adresse im lokalen Netzwerk. Konfigurieren Sie den entsprechenden Rückgabeeintrag auf der anderen Station.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatisch verwendet die ausgewählte MOS ROM wenn es erkannt wird. Eine unbekannte MOS ROM behält den vorherigen Videostandard. PAL oder NTSC automatische Erkennung überschreibt.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Eingebauter Speicher</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Haupthauptstadt RAM + Schattenschirm RAM + Privatseite RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>System ROM ()MOS und BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Das System ROM muss enthalten MOS und BASIC in einem 32-Kib-Bild. ROM Sockel akzeptieren 8, 16 oder 32 KiB-Bilder.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Identifiziert ROM. Der Betrieb hängt von den Softwareanforderungen und dem konfigurierten Speicher ab.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Identifizierte Erweiterung ROM. Die zugehörige Hardware muss vom Emulator installiert und unterstützt werden.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Platteneintragung ROM. Erfordert seinen passenden Plattencontroller; DFS und ADFS Es gibt unterschiedliche Archivierungssysteme.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Netzwerk-Dateiierungssystem ROM. Erfordert die Econet-Schnittstelle und kompatible Netzwerkausrüstung.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Sprachdaten ROM für den Sprachsynthesizer. MOS oder als Sideways Programm ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>System ROM. muss dem Maschinenmodell entsprechen; die B+ verwendet eine kombinierte 32 KiB BASIC und MOS Bild.</value></data>
 </root>

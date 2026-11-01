@@ -1,3 +1,5 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Services;
+using Plus = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Constants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
@@ -18,6 +20,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
 {
     private readonly byte[] _ram;
+    private readonly ModelBPlusMemory? _plusMemory;
     private readonly MemoryExtension _memoryExtension;
     private readonly byte[] _mos;
     private readonly SidewaysRoms _roms;
@@ -70,16 +73,18 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     public void ConfigureCassette(EmulationCassetteSettings settings) => _cassette.Configure(settings);
     public void EjectCassette() => _cassette.Eject();
 
-    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false, EmulationVideoStandard videoStandard = EmulationVideoStandard.Pal)
+    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false, EmulationVideoStandard videoStandard = EmulationVideoStandard.Pal, int modelBPlusMemory = 0)
     {
         if (mos.Length != BbcMicroFirmwareConstants.BankSize || basic.Length != BbcMicroFirmwareConstants.BankSize) throw new ArgumentException("MOS et BASIC doivent chacun contenir 16 384 octets.");
         if (memoryBytes != BbcMicroModelConstants.SixteenKibibytes && memoryBytes != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentOutOfRangeException(nameof(memoryBytes));
         memoryExtension ??= new(MemoryExtensionConstants.None);
         if (memoryExtension.Enabled && memoryBytes != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentOutOfRangeException(nameof(memoryBytes));
+        if (modelBPlusMemory is not (0 or Plus.BaseBytes or Plus.ExpandedBytes)) throw new ArgumentOutOfRangeException(nameof(modelBPlusMemory));
+        _plusMemory = modelBPlusMemory == 0 ? null : new ModelBPlusMemory();
         _ram = new byte[memoryBytes];
         _memoryExtension = new(memoryExtension);
         _mos = mos.ToArray();
-        _roms = new SidewaysRoms(basic, optionRoms, sidewaysExpansion);
+        _roms = new SidewaysRoms(basic, optionRoms, sidewaysExpansion, modelBPlusMemory);
         _disks = new Disks(diskInterface, wd1770);
         _winchester = new Winchester(winchesterInterface);
         _econet = new Econet(econetInterface, econetStation, econetCyclesPerByte);
@@ -87,6 +92,7 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
         _cyclesPerFrame = videoStandard == EmulationVideoStandard.Ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame;
         _nextFrame = _cyclesPerFrame;
         Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? Constants.VideoConstants.NtscHeight : Constants.VideoConstants.Height);
+        if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
         _cassette = new Cassette(_acia);
         _via.ReadPortA = () => (_latch & 8) == 0 ? _keyboard.Read(_via.OutputA) : (byte)255;
         _userVia = expandedIo ? new Via6522() : null;
@@ -102,6 +108,7 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     {
         if (cold) { Array.Clear(_ram); _via.Reset(); _userVia?.Reset(); _adc?.Reset(); Video.Reset(); _audio.Reset(); _cassette.ResetHardware(); _roms.Reset(); _latch = 255; }
         _memoryExtension.Reset(cold);
+        _plusMemory?.Reset(cold);
         _disks.Reset();
         _winchester.Reset();
         _econet.Reset();
@@ -152,7 +159,8 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     }
     public byte Read(ushort address)
     {
-        if (address < MemoryExtensionConstants.RamEnd) return _memoryExtension.Read(address, _ram);
+        if (address < MemoryExtensionConstants.RamEnd) return _plusMemory?.Read(address, Cpu.InstructionAddress, _ram) ?? _memoryExtension.Read(address, _ram);
+        if (_plusMemory?.PrivateSelected(address) == true) return _plusMemory.ReadPrivate(address);
         if (address < 0xc000) return _roms.Read(address);
         if (address < 0xfc00 || address >= 0xff00) return _mos[address & 0x3fff];
         if (address is >= AcornScsiConstants.Start and < AcornScsiConstants.End) return _winchester.Read(address);
@@ -171,7 +179,13 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     }
     public void Write(ushort address, byte value)
     {
-        if (address < MemoryExtensionConstants.RamEnd) { _memoryExtension.Write(address, value, _ram); return; }
+        if (address < MemoryExtensionConstants.RamEnd)
+        {
+            if (_plusMemory is not null) _plusMemory.Write(address, Cpu.InstructionAddress, value, _ram);
+            else _memoryExtension.Write(address, value, _ram);
+            return;
+        }
+        if (_plusMemory?.PrivateSelected(address) == true) { _plusMemory.WritePrivate(address, value); return; }
         if (address < MemoryExtensionConstants.RamEnd + BbcMicroFirmwareConstants.BankSize) { _roms.Write(address, value); return; }
         if (_memoryExtension.Control(address)) return;
         if (address is >= AcornScsiConstants.Start and < AcornScsiConstants.End) { _winchester.Write(address, value); return; }
@@ -183,7 +197,11 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
         else if (address is >= 0xfe10 and < 0xfe18) _cassette.WriteUla(value);
         else if (address is >= 0xfe18 and < 0xfe20) _econet.DisableNmi();
         else if (address is >= 0xfe20 and < 0xfe30) Video.WriteUla(address, value);
-        else if (address is >= DiskConstants.RomSelectStart and < DiskConstants.RomSelectEnd) _roms.Select(value);
+        else if (address is >= DiskConstants.RomSelectStart and < DiskConstants.RomSelectEnd)
+        {
+            if (_plusMemory is null || address < Plus.ControlEnd && (address & Plus.ShadowRegister) == Plus.RomRegister) _roms.Select(value);
+            _plusMemory?.Select(address, value);
+        }
         else if (address is >= 0xfe40 and < 0xfe60) _via.Write(address & 15, value);
         else if (address is >= Io.UserViaStart and < Io.UserViaEnd) _userVia?.Write(address & Io.UserViaRegisterMask, value);
         else if (address is >= Io.AdcStart and < Io.AdcEnd) _adc?.Write(address & Io.RegisterMask, value);

@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Mapujte čísla vzdálených stanic na síťové adresy a porty.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>network.station=IPv4:port&#xA;0.3=127.0.0.1:32769&#xA;Tento příklad adresy stanice3 na síti0, běží na tomto počítači na portu32769. Samostatné položky se středníky nebo čárové přestávky. Pro jiný počítač použijte jeho adresu v lokální síti. Nastavit odpovídající návratový vstup na druhé stanici.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>Automatické použití vybraného MOS ROM když je rozpoznán, neznámý MOS ROM udržuje předchozí video standard. PAL nebo NTSC Přebíhá automatickou detekci.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Built- in memory</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>Hlavní RAM + stínová obrazovka RAM + soukromé paged RAM</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>Systém ROM (MOS a BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>Systém ROM musí obsahovat MOS a BASIC v 32 KiB obraze. Ostatní ROM zásuvky akceptují 8, 16 nebo 32 KiB obrázků.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>Identifikováno ROM. Operace závisí na požadavcích na software a nakonfigurované paměti.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>Identifikované prodloužení ROM. Jeho připojený hardware musí být nainstalován a podporován emulátorem.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>Systém archivace disků ROM. Vyžaduje jeho odpovídající disky regulátoru; DFS a ADFS jsou různé systémy pro ukládání.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Síťový systém pro podávání zpráv ROM. Vyžaduje rozhraní Econet a kompatibilní síťové vybavení.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Údaje o řeči ROM pro reproduktor. Nelze použít jako MOS nebo jako vedlejší program ROM.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Systém ROM. Musí odpovídat modelu stroje; B+ používá kombinovanou 32 KiB BASIC a MOS obrázek.</value></data>
 </root>

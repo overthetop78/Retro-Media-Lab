@@ -13,7 +13,7 @@ internal static class BbcMicroFirmwareFunctions
     internal static async ValueTask<IReadOnlyList<EmulationFirmwareCandidate>> ScanAsync(MachineModel model, string path, Func<FirmwareCategory, string?> destination, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (new FileInfo(path).Length > BbcMicroFirmwareConstants.BankSize * 2)
+        if (new FileInfo(path).Length > BbcMicroFirmwareConstants.MaximumRomImageBytes)
             return [new(path, path, Path.GetFileName(path), null, EmulationFirmwareCompatibility.Unknown)];
         var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
         return Inspect(bytes, path, model, destination);
@@ -26,28 +26,37 @@ internal static class BbcMicroFirmwareFunctions
     {
         if (!BbcMicroModelCatalog.All.Any(item => item.Model == model)) throw new ArgumentOutOfRangeException(nameof(model));
         var hash = Convert.ToHexString(SHA1.HashData(bytes));
-        if (FirmwareCatalog.BySha1.TryGetValue(hash, out var known))
+        if (AcornFirmware.BySha1.TryGetValue(hash, out var known))
         {
-            var compatibility = BbcMicroFirmwareCompatibilityCatalog.Get(model, hash);
-            if (known.Combined) return [Candidate(FirmwareCategory.OperatingSystem, known.Name, known.Version, compatibility), Candidate(FirmwareCategory.Basic, known.Name, known.Version, compatibility)];
-            return [Candidate(known.Category, known.Name, known.Version, compatibility)];
+            return AcornBBCMicroModel.Roles(model, hash).Select(role =>
+                Candidate(role, known.Name, known.Version, AcornBBCMicroModel.Get(model, hash, role))).ToArray();
         }
-        var name = Path.GetFileName(path);
-        if (bytes.Length == BbcMicroFirmwareConstants.CharacterRomSize) return [Candidate(FirmwareCategory.CharacterGenerator, name, null, EmulationFirmwareCompatibility.Unknown)];
-        if (bytes.Length is not (BbcMicroFirmwareConstants.BankSize / 2 or BbcMicroFirmwareConstants.BankSize or BbcMicroFirmwareConstants.BankSize * 2))
-            return [new(hash, path, name, null, EmulationFirmwareCompatibility.Unknown)];
-        var role = Identify(bytes);
-        if (role.HasValue) return [Candidate(role.Value, name, null, EmulationFirmwareCompatibility.Unknown)];
-        if (bytes.Length == BbcMicroFirmwareConstants.BankSize / 2) return [Candidate(FirmwareCategory.Basic, name, null, EmulationFirmwareCompatibility.Unknown)];
-        return [Candidate(FirmwareCategory.OperatingSystem, name, null, EmulationFirmwareCompatibility.Unknown), Candidate(FirmwareCategory.Basic, name, null, EmulationFirmwareCompatibility.Unknown)];
+        // L'en-tête ou une taille plausible ne prouve pas l'identité : aucune restriction de rôle pour une ROM inconnue.
+        return [new(hash, path, Path.GetFileName(path), null, EmulationFirmwareCompatibility.Unknown)];
 
-        EmulationFirmwareCandidate Candidate(FirmwareCategory role, string name, string? version, EmulationFirmwareCompatibility compatibility) => new(hash + ":" + role, path, name, version, compatibility, destination(role));
+        EmulationFirmwareCandidate Candidate(FirmwareCategory role, string name, string? version, EmulationFirmwareCompatibility compatibility)
+        {
+            var field = destination(role);
+            return new(hash + ":" + role, path, name, version,
+                field is null ? EmulationFirmwareCompatibility.Incompatible : compatibility, field)
+            {
+                ExplanationResourceKey = role switch
+                {
+                    FirmwareCategory.OperatingSystem => BbcMicroFirmwareConstants.SystemExplanation,
+                    FirmwareCategory.Speech => BbcMicroFirmwareConstants.SpeechExplanation,
+                    FirmwareCategory.Network => BbcMicroFirmwareConstants.NetworkExplanation,
+                    FirmwareCategory.DiscFilingSystem => BbcMicroFirmwareConstants.DiskExplanation,
+                    FirmwareCategory.MemoryExtension => BbcMicroFirmwareConstants.HardwareExplanation,
+                    _ => BbcMicroFirmwareConstants.SoftwareExplanation
+                }
+            };
+        }
     }
 
     /// <summary>Reconnaît un rôle par empreinte ou structure ; le rôle ne constitue pas une validation de compatibilité.</summary>
     internal static FirmwareCategory? Identify(ReadOnlySpan<byte> bytes)
     {
-        if (FirmwareCatalog.BySha1.TryGetValue(Convert.ToHexString(SHA1.HashData(bytes)), out var known)) return known.Combined ? null : known.Category;
+        if (AcornFirmware.BySha1.TryGetValue(Convert.ToHexString(SHA1.HashData(bytes)), out var known)) return known.Combined ? null : known.Category;
         if (bytes.Length is not (BbcMicroFirmwareConstants.BankSize or BbcMicroFirmwareConstants.BankSize / 2)) return null;
         var copyright = bytes[7];
         if (copyright + 3 < bytes.Length && bytes[copyright] == 0 && bytes[copyright + 1] == '(' && bytes[copyright + 2] == 'C' && bytes[copyright + 3] == ')')

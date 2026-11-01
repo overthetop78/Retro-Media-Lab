@@ -52,4 +52,14 @@
   <data name="Emulation.Acorn.Network.Peers.Help"><value>Correspondance entre stations Econet distantes et adresses IPv4 avec port UDP.</value></data>
   <data name="Emulation.Acorn.Network.Peers.Help.Detailed"><value>Syntaxe : network.station=IPv4:port. Exemple : 0.3=127.0.0.1:32769 désigne la station 3 du réseau 0, sur cet ordinateur au port 32769. Séparez les entrées par des points-virgules ou des sauts de ligne. Pour un autre ordinateur, utilisez son adresse IPv4 sur le réseau local. Configurez aussi l’entrée de retour sur l’autre station.</value></data>
   <data name="Emulation.Acorn.Video.Standard.Help"><value>En mode automatique, une ROM MOS reconnue détermine le standard vidéo. Une ROM MOS inconnue conserve le standard précédent. Choisir PAL ou NTSC remplace cette détection automatique.</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory"><value>Mémoire intégrée</value></data>
+  <data name="Emulation.Acorn.BPlus.Memory.Description"><value>RAM principale + RAM écran Shadow + RAM privée paginée</value></data>
+  <data name="Emulation.Acorn.BPlus.SystemRom"><value>ROM système (MOS et BASIC)</value></data>
+  <data name="Emulation.Acorn.BPlus.InvalidRomSize"><value>La ROM système doit réunir MOS et BASIC dans une image de 32 Kio. Les autres supports ROM acceptent des images de 8, 16 ou 32 Kio.</value></data>
+  <data name="Emulation.Acorn.Firmware.SoftwareRequirements"><value>ROM identifiée. Son fonctionnement dépend des besoins du logiciel et de la mémoire configurée.</value></data>
+  <data name="Emulation.Acorn.Firmware.HardwareRequirements"><value>ROM d’extension identifiée. Le matériel associé doit être installé et pris en charge par l’émulateur.</value></data>
+  <data name="Emulation.Acorn.Firmware.DiskRequirements"><value>ROM de gestion des disquettes. Elle nécessite le contrôleur correspondant ; DFS et ADFS sont des systèmes de fichiers différents.</value></data>
+  <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>ROM de gestion du réseau. Elle nécessite l’interface Econet et les équipements réseau compatibles.</value></data>
+  <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>ROM de données du synthétiseur vocal. Elle ne peut servir ni de MOS ni de ROM de programme paginée.</value></data>
+  <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>ROM système. Elle doit correspondre au modèle ; le B+ utilise une image combinée de 32 Kio contenant BASIC et MOS.</value></data>
 </root>

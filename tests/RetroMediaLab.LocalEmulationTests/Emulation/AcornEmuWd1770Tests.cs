@@ -15,6 +15,21 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuWd1770Tests
 {
     [Fact]
+    public void DfsCanProbeTrackRegisterBeforeReleasingControllerReset()
+    {
+        var machine = new ModelAMachine(new byte[16384], new byte[16384], diskInterface: true, wd1770: true);
+        machine.Write(0xfe85, 0x5a);
+        Assert.Equal(0x5a, machine.Read(0xfe85));
+        machine.Write(0xfe86, 3);
+        Assert.Equal(3, machine.Read(0xfe86));
+        machine.Write(0xfe84, 0x88);
+        for (var tick = 0; tick < 100; tick++) machine.Tick();
+        Assert.False(machine.FloppyMotor(0));
+        Assert.False(machine.FloppyReading(0));
+        Assert.False(machine.Nmi);
+    }
+
+    [Fact]
     public void AcornControlLatchAndRegistersReachTheSelectedSideAndNmi()
     {
         using var disk = new Disk(80);

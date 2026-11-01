@@ -1,3 +1,4 @@
+using Plus = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants;
 using System.IO;
 using CommonCoreHostFunctions = RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions;
@@ -22,7 +23,9 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     public EmulationEmulatorDefinition Definition { get; } = new(EmulatorConstants.Id, EmulatorConstants.Name, "Emulation.Emulator.acornemu.Description", NativeModelCatalog.All.Select(model => model.Model.ToString()).ToHashSet(StringComparer.Ordinal));
     public bool SupportsNoContent => true;
     public IReadOnlyDictionary<string, string> GetDefaultOptions(MachineConfiguration configuration) =>
-        configuration.Model == MachineModel.BbcMicroModelB
+        ModelBPlusFunctions.IsModel(configuration)
+            ? new Dictionary<string, string> { [SettingsConstants.MainMemory] = configuration.Model == MachineModel.BbcMicroModelBPlus128 ? Plus.Memory128 : Plus.Memory64, [NativeStorageConstants.ControllerOption] = NativeStorageConstants.AcornWd1770, [NativeStorageConstants.Key(EmulationMediaSlot.Floppy0.Index, NativeStorageConstants.ConnectedOption)] = bool.TrueString }
+            : configuration.Model == MachineModel.BbcMicroModelB
             ? new Dictionary<string, string> { [SettingsConstants.MainMemory] = BbcMicroModelConstants.ThirtyTwoKibibytesValue }
             : new Dictionary<string, string>();
     private static string AssemblyPath => typeof(AcornEmuMachineFactory).Assembly.Location;
@@ -64,10 +67,12 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     public IReadOnlyList<EmulationStorageDeviceSettings> DescribeDeviceSettings(MachineConfiguration configuration) => NativeStorage.DescribeSettings(configuration).Concat(NativeStorage.DescribeHardDiskSettings(configuration)).Concat(CassetteConnected(configuration) ? [new EmulationStorageDeviceSettings(EmulationMediaSlot.Cassette0, Options: configuration.Options.Where(pair => pair.Key.StartsWith(EmulationCassetteSettings.Prefix, StringComparison.Ordinal)).ToDictionary())] : []).ToArray();
     public MachineConfiguration ApplyDeviceSettings(MachineConfiguration configuration, IReadOnlyList<EmulationStorageDeviceSettings> settings) => NativeStorage.ApplySettings(configuration, settings);
     public IReadOnlyDictionary<string, string> NormalizeOptions(MachineConfiguration configuration) => VideoStandardFunctions.Normalize(configuration);
-    public bool RequiresOptionRestart(MachineConfiguration configuration, string key) => !NativeStorage.IsMechanicalSoundOption(key) && (key.StartsWith(NativeStorageConstants.FloppyPrefix, StringComparison.Ordinal) || key.StartsWith(NativeStorageConstants.HardDiskPrefix, StringComparison.Ordinal) || key.StartsWith(NetworkConstants.Prefix, StringComparison.Ordinal) || key == NetworkConstants.Firmware || key == SidewaysExpansionConstants.Option || key.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) || key.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal) || key is MemoryExtensionConstants.CardOption or MemoryExtensionConstants.Firmware || key == NativeStorageConstants.DfsFirmware || key == VideoStandardConstants.Option);
+    public bool RequiresOptionRestart(MachineConfiguration configuration, string key) => !NativeStorage.IsMechanicalSoundOption(key) && (key.StartsWith(NativeStorageConstants.FloppyPrefix, StringComparison.Ordinal) || key.StartsWith(NativeStorageConstants.HardDiskPrefix, StringComparison.Ordinal) || key.StartsWith(NetworkConstants.Prefix, StringComparison.Ordinal) || key == NetworkConstants.Firmware || key == SidewaysExpansionConstants.Option || key.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) || key.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal) || key is MemoryExtensionConstants.CardOption or MemoryExtensionConstants.Firmware || key == NativeStorageConstants.DfsFirmware || key == VideoStandardConstants.Option || key == SettingsConstants.MainMemory || key.StartsWith(Plus.ChipPrefix, StringComparison.Ordinal));
     /// <summary>Conserve le branchement même sans cassette et retire le lecteur lorsque l'utilisateur le supprime.</summary>
     public MachineConfiguration ApplyStorage(MachineConfiguration configuration, EmulationStorageSettings settings)
     {
+        if (ModelBPlusFunctions.IsModel(configuration) && !settings.ConfiguredSlots.Contains(EmulationMediaSlot.Floppy0))
+            settings = settings with { ConfiguredSlots = settings.ConfiguredSlots.Append(EmulationMediaSlot.Floppy0).ToArray() };
         var options = new Dictionary<string, string>(configuration.Options, StringComparer.Ordinal) { [CassetteConstants.ConnectedOption] = settings.ConfiguredSlots.Contains(EmulationMediaSlot.Cassette0).ToString() };
         foreach (var pair in settings.DeviceSettings?.FirstOrDefault(device => device.Slot == EmulationMediaSlot.Cassette0)?.Options ?? new Dictionary<string, string>())
             if (pair.Key.StartsWith(EmulationCassetteSettings.Prefix, StringComparison.Ordinal)) options[pair.Key] = pair.Value;
@@ -86,10 +91,16 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     public MachineConfiguration ApplyInputConfiguration(MachineConfiguration configuration) => configuration;
 
     /// <summary>Annonce et valide la RAM réellement allouée par l'implémentation du modèle.</summary>
-    public decimal? GetMemoryKib(MachineConfiguration configuration) => MemoryExtensionFunctions.TotalBytes(configuration) / (decimal)SettingsConstants.Kibibyte;
+    public decimal? GetMemoryKib(MachineConfiguration configuration) => (ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.MemoryBytes(configuration) : MemoryExtensionFunctions.TotalBytes(configuration)) / (decimal)SettingsConstants.Kibibyte;
     public void ValidateOptions(MachineConfiguration configuration)
     {
         _ = VideoStandardFunctions.Resolve(configuration.Options, null);
+        if (ModelBPlusFunctions.IsModel(configuration))
+        {
+            _ = ModelBPlusFunctions.MemoryBytes(configuration);
+            if (MemoryExtensionFunctions.Read(configuration).Enabled || SidewaysExpansionFunctions.Read(configuration) != new Contracts.SidewaysExpansionSettings()) throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(configuration));
+            if (configuration.Options.GetValueOrDefault(NativeStorageConstants.ControllerOption, NativeStorageConstants.AcornWd1770) != NativeStorageConstants.AcornWd1770 || FloppyExtensionFunctions.HasSolidisk(configuration)) throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(configuration));
+        }
         NativeStorage.Validate(configuration);
         _ = NetworkFunctions.Read(configuration);
         _ = MemoryExtensionFunctions.Read(configuration);
@@ -117,14 +128,15 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     }
 
     public IReadOnlyList<FirmwareSlot> GetFirmwareSlots(MachineConfiguration configuration) => BbcMicroModelCatalog.All.Single(model => model.Model == configuration.Model).Firmware
-        .Where(category => category != FirmwareCategory.DiscFilingSystem)
+        .Where(category => category != FirmwareCategory.DiscFilingSystem && !(ModelBPlusFunctions.IsModel(configuration) && category == FirmwareCategory.Basic))
         .Append(FirmwareCategory.CharacterGenerator).Distinct()
         .Where(category => FirmwareFunctions.Field(category) is not null)
-        .Select(category => new FirmwareSlot(FirmwareFunctions.Field(category)!, "", category switch { FirmwareCategory.OperatingSystem => EmulatorConstants.SystemFirmwareLabel, FirmwareCategory.CharacterGenerator => "Emulation.Acorn.Firmware.CharacterGenerator", _ => "Emulation.Firmware.Rom.Basic" }, IsRequired: true, MachineIds: new HashSet<string> { configuration.Model.ToString() }))
+        .Select(category => new FirmwareSlot(FirmwareFunctions.Field(category)!, "", category switch { FirmwareCategory.OperatingSystem => ModelBPlusFunctions.IsModel(configuration) ? Plus.SystemRomLabel : EmulatorConstants.SystemFirmwareLabel, FirmwareCategory.CharacterGenerator => "Emulation.Acorn.Firmware.CharacterGenerator", _ => "Emulation.Firmware.Rom.Basic" }, IsRequired: true, MachineIds: new HashSet<string> { configuration.Model.ToString() }))
         .Concat(FloppyExtensionFunctions.Slots(configuration))
         .Append(MemoryExtensionFunctions.Slot(configuration))
         .Concat(SidewaysExpansionFunctions.Slots(configuration))
         .Concat(NetworkFunctions.Read(configuration).Enabled ? [new FirmwareSlot(NetworkConstants.Firmware, "", "Emulation.Acorn.Network.Rom", IsRequired: true, MachineIds: new HashSet<string> { configuration.Model.ToString() })] : [])
+        .Where(slot => !ModelBPlusFunctions.IsModel(configuration) || slot.FieldId is not (MemoryExtensionConstants.Firmware or FloppyExtensionConstants.IntelRom))
         .Select(slot => slot with { IsRequired = slot.IsRequired && !(SidewaysExpansionFunctions.RoleBank(configuration, slot.FieldId) is { } bank && SidewaysExpansionFunctions.ProvidesBank(configuration, bank)) }).ToArray();
     /// <summary>Analyse uniquement le dossier ROM choisi par le parcours commun.</summary>
     public async ValueTask<IReadOnlyList<EmulationFirmwareCandidate>> ScanFirmwareAsync(MachineConfiguration configuration, string directory, CancellationToken cancellationToken)
@@ -138,7 +150,10 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     {
         // Le gestionnaire firmware peut attendre ce résultat depuis le thread UI : ne pas y rapatrier la continuation.
         var candidates = await BbcMicroFirmwareFunctions.ScanAsync(configuration.Model, path, FirmwareFunctions.Field, cancellationToken).ConfigureAwait(false);
-        var result = candidates.SelectMany(candidate => candidate.DestinationFieldId == NativeStorageConstants.DfsFirmware
+        if (ModelBPlusFunctions.IsModel(configuration))
+            candidates = candidates.Select(candidate => candidate.DestinationFieldId == EmulatorConstants.SystemFirmware && new FileInfo(path).Length != Plus.ChipBytes
+                    ? candidate with { Compatibility = EmulationFirmwareCompatibility.Incompatible } : candidate).ToArray();
+        var result = candidates.Where(candidate => !ModelBPlusFunctions.IsModel(configuration) || candidate.DestinationFieldId != EmulatorConstants.BasicFirmware).SelectMany(candidate => candidate.DestinationFieldId == NativeStorageConstants.DfsFirmware
             ? FloppyExtensionFunctions.Destinations(candidate)
             : candidate.DestinationFieldId == MemoryExtensionConstants.Firmware && MemoryExtensionFunctions.Read(configuration).Enabled
                 ? new[] { MemoryExtensionFunctions.Destination(configuration, candidate) } : new[] { candidate }).ToList();
@@ -146,26 +161,41 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
             && candidates.All(candidate => candidate.Compatibility == EmulationFirmwareCompatibility.Unknown)
             && new FileInfo(path).Length is BbcMicroFirmwareConstants.BankSize or BbcMicroFirmwareConstants.BankSize / 2)
             result.Add(candidates[0] with { Id = candidates[0].Id + ":" + FirmwareCategory.MemoryExtension, DestinationFieldId = MemoryExtensionConstants.Firmware });
-        if (candidates.Count > 0 && SidewaysExpansionFunctions.AcceptsLength(SidewaysExpansionFunctions.Read(configuration), new FileInfo(path).Length))
+        if (candidates.Count > 0 && (ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.AcceptsLength(new FileInfo(path).Length) : SidewaysExpansionFunctions.AcceptsLength(SidewaysExpansionFunctions.Read(configuration), new FileInfo(path).Length)))
             foreach (var slot in SidewaysExpansionFunctions.Slots(configuration))
-                result.Add(candidates[0] with { Id = candidates[0].Id + slot.FieldId, DestinationFieldId = slot.FieldId, Compatibility = EmulationFirmwareCompatibility.Unknown });
+                result.Add(candidates[0] with { Id = candidates[0].Id + slot.FieldId, DestinationFieldId = slot.FieldId, Compatibility = SocketCompatibility(configuration.Model, candidates[0]) });
         return result;
     }
+    internal static EmulationFirmwareCompatibility SocketCompatibility(MachineModel model, EmulationFirmwareCandidate candidate)
+    {
+        var hash = candidate.Id.Split(':')[0];
+        if (!AcornFirmware.BySha1.ContainsKey(hash)) return EmulationFirmwareCompatibility.Unknown;
+        foreach (var category in new[] { FirmwareCategory.Basic, FirmwareCategory.Language, FirmwareCategory.Application,
+                     FirmwareCategory.DiscFilingSystem, FirmwareCategory.Network, FirmwareCategory.MemoryExtension })
+        {
+            var compatibility = AcornBBCMicroModel.Get(model, hash, category);
+            if (compatibility != EmulationFirmwareCompatibility.Incompatible) return compatibility;
+        }
+        return EmulationFirmwareCompatibility.Incompatible;
+    }
+
     public IReadOnlyList<EmulationSettingsBlock> DescribeSettings(MachineConfiguration configuration, EmulatorManagementContext? context = null)
     {
-        var fields = GetFirmwareSlots(configuration).Where(slot => slot.FieldId is not (FloppyExtensionConstants.IntelRom or FloppyExtensionConstants.WdRom or MemoryExtensionConstants.Firmware) && !slot.FieldId.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) && !slot.FieldId.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal)).Select(slot => new EmulationSettingsField(slot.FieldId, EmulationMachineTab.Rom, "Rom", slot.LabelResourceKey, EmulationSettingsEditor.Path, configuration.Options.GetValueOrDefault(slot.FieldId), IsEnabled: !(SidewaysExpansionFunctions.RoleBank(configuration, slot.FieldId) is { } bank && SidewaysExpansionFunctions.ProvidesBank(configuration, bank)), DefaultFolderCategory: EmulationDefaultFolderCategory.Firmware, RequiresRestart: true)).ToArray();
+        var fields = GetFirmwareSlots(configuration).Where(slot => slot.FieldId is not (FloppyExtensionConstants.IntelRom or FloppyExtensionConstants.WdRom or MemoryExtensionConstants.Firmware) && !slot.FieldId.StartsWith(Plus.ChipPrefix, StringComparison.Ordinal) && !slot.FieldId.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) && !slot.FieldId.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal)).Select(slot => new EmulationSettingsField(slot.FieldId, EmulationMachineTab.Rom, "Rom", slot.LabelResourceKey, EmulationSettingsEditor.Path, configuration.Options.GetValueOrDefault(slot.FieldId), IsEnabled: !(SidewaysExpansionFunctions.RoleBank(configuration, slot.FieldId) is { } bank && SidewaysExpansionFunctions.ProvidesBank(configuration, bank)), DefaultFolderCategory: EmulationDefaultFolderCategory.Firmware, RequiresRestart: true)).ToArray();
         return
         [
             NetworkFunctions.Describe(configuration),
             FloppyExtensionFunctions.Describe(configuration),
             new(SettingsConstants.MainMemory, EmulationMachineTab.Ram, SettingsConstants.ResourceMemory,
                 [new(SettingsConstants.MainMemory, EmulationMachineTab.Ram, SettingsConstants.MainMemory, SettingsConstants.ResourceMemory, EmulationSettingsEditor.Selection,
-                    configuration.Options.GetValueOrDefault(SettingsConstants.MainMemory, configuration.Model == MachineModel.BbcMicroModelB ? BbcMicroModelConstants.ThirtyTwoKibibytesValue : BbcMicroModelAConstants.StandardMemoryKib),
-                    configuration.Model == MachineModel.BbcMicroModelB
+                    configuration.Options.GetValueOrDefault(SettingsConstants.MainMemory, ModelBPlusFunctions.IsModel(configuration) ? Plus.Memory64 : configuration.Model == MachineModel.BbcMicroModelB ? BbcMicroModelConstants.ThirtyTwoKibibytesValue : BbcMicroModelAConstants.StandardMemoryKib),
+                    ModelBPlusFunctions.IsModel(configuration)
+                        ? [new(Plus.Memory64, string.Empty, Plus.Memory64Display), new(Plus.Memory128, string.Empty, Plus.Memory128Display)]
+                        : configuration.Model == MachineModel.BbcMicroModelB
                         ? [new(BbcMicroModelConstants.ThirtyTwoKibibytesValue, string.Empty, BbcMicroModelConstants.ThirtyTwoKibibytesDisplay)]
                         : [new(BbcMicroModelAConstants.StandardMemoryKib, string.Empty, BbcMicroModelConstants.SixteenKibibytesDisplay), new(BbcMicroModelAConstants.ExpandedMemoryKib, string.Empty, BbcMicroModelConstants.ThirtyTwoKibibytesDisplay)], IsEnabled: configuration.Model != MachineModel.BbcMicroModelB && !MemoryExtensionFunctions.Read(configuration).Enabled && !SidewaysExpansionFunctions.Read(configuration).AriesB12, RequiresRestart: true, RefreshSettingsOnChange: true)]),
-            MemoryExtensionFunctions.Describe(configuration),
-            SidewaysExpansionFunctions.Describe(configuration),
+            ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.DescribeMemory(configuration) : MemoryExtensionFunctions.Describe(configuration),
+            SidewaysExpansionFunctions.Describe(configuration) with { IsVisible = !ModelBPlusFunctions.IsModel(configuration) },
             SidewaysExpansionFunctions.DescribeRam(configuration),
             SidewaysExpansionFunctions.DescribeRoms(configuration),
             new("Rom", EmulationMachineTab.Rom, "Emulation.Firmware", fields),
