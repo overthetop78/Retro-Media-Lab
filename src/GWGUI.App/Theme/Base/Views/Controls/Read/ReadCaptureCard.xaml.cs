@@ -1,3 +1,4 @@
+using GWGUI.App.ViewModels.Operations;
 using GWGUI.App.Localization.Extensions;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,20 +18,22 @@ public partial class ReadCaptureCard : UserControl
     public ReadCaptureCard(string path)
     {
         InitializeComponent();
-        Path = path;
-        FileNameText.Text = System.IO.Path.GetFileName(path);
+        State = new ReadCaptureViewModel(path);
+        FileNameText.Text = State.FileName;
         ExploreButton.Click += (_, _) => ExploreRequested?.Invoke(path);
         VisualizeButton.Click += (_, _) => VisualizeRequested?.Invoke(path);
         SetInProgress();
     }
 
-    public string Path { get; }
+    public ReadCaptureViewModel State { get; }
+    public string Path => State.Path;
 
     public event Action<string>? ExploreRequested;
     public event Action<string>? VisualizeRequested;
 
     public void SetCompleted(string summary)
     {
+        State.Complete(summary);
         CardBorder.Background = CompletedBackground;
         CardBorder.BorderBrush = CompletedBorder;
         StateText.Text = LocExtension.Get("Status.Success");
@@ -42,6 +45,7 @@ public partial class ReadCaptureCard : UserControl
 
     public void SetArchived()
     {
+        State.Archive();
         CardBorder.Background = ArchivedBackground;
         CardBorder.BorderBrush = ArchivedBorder;
     }

@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>관련 분야</value></data>
   <data name="Visual.SectorWithoutData"><value>데이터 없이</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>카세트 정보</value></data>
+  <data name="Visual.Representation"><value>표시 형태</value></data>
 </root>

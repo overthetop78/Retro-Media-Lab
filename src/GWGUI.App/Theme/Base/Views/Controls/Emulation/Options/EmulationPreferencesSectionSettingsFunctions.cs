@@ -1,3 +1,5 @@
+using System.Windows;
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.Settings.Emulation;
 using GWGUI.App.Services.Storage;
 using System.Windows.Controls;
@@ -11,7 +13,7 @@ public sealed partial class EmulationPreferencesSection
     private async Task BrowseFolderAsync(TextBox target)
     {
         var dialog = new OpenFolderDialog { InitialDirectory = target.Text };
-        if (dialog.ShowDialog() != true) return;
+        if (WpfFileDialogService.ShowFolderDialog(dialog, Window.GetWindow(this)) != true) return;
         target.Text = dialog.FolderName;
         await SaveFoldersAsync();
     }

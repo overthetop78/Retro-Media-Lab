@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -18,9 +19,9 @@ namespace GWGUI.App.Options.Controllers;
 
 internal sealed partial class UpdateOptionsController : IDisposable
 {
-    private async void InstallApplication(object sender, RoutedEventArgs e) => await InstallAsync(UpdateSearchScope.Application);
+    private async void InstallApplication(object sender, RoutedEventArgs e) => await TrackAsync(() => InstallAsync(UpdateSearchScope.Application));
 
-    private async void InstallModules(object sender, RoutedEventArgs e) => await InstallModuleUpdatesAsync();
+    private async void InstallModules(object sender, RoutedEventArgs e) => await TrackAsync(InstallModuleUpdatesAsync);
 
     private async Task InstallModuleUpdatesAsync()
     {
@@ -28,7 +29,9 @@ internal sealed partial class UpdateOptionsController : IDisposable
         await InstallAsync(UpdateSearchScope.Modules);
     }
 
-    private async void InstallModuleFromFile(object sender, RoutedEventArgs e)
+    private async void InstallModuleFromFile(object sender, RoutedEventArgs e) => await TrackAsync(() => InstallModuleFromFileAsync(sender, e));
+
+    private async Task InstallModuleFromFileAsync(object sender, RoutedEventArgs e)
     {
         _moduleOperationPage = ModuleOperationPage.Advanced;
         var dialog = new OpenFileDialog
@@ -36,11 +39,13 @@ internal sealed partial class UpdateOptionsController : IDisposable
             Title = _localize("Updates.ModuleInstallFromFile", []),
             Filter = _localize("Updates.ModuleArchiveFilter", [])
         };
-        if (dialog.ShowDialog(_owner) != true) return;
+        if (WpfFileDialogService.ShowFileDialog(dialog, _owner) != true) return;
         await PrepareNewModuleAsync(cancellation => _moduleInstallation.PrepareFromFileAsync(dialog.FileName, Path.GetFileNameWithoutExtension(dialog.FileName), cancellation));
     }
 
-    private async void InstallModuleFromUrl(object sender, RoutedEventArgs e)
+    private async void InstallModuleFromUrl(object sender, RoutedEventArgs e) => await TrackAsync(() => InstallModuleFromUrlAsync(sender, e));
+
+    private async Task InstallModuleFromUrlAsync(object sender, RoutedEventArgs e)
     {
         _moduleOperationPage = ModuleOperationPage.Advanced;
         var catalogUrl = _section.ModuleCatalogUrl.Text.Trim();
@@ -52,7 +57,9 @@ internal sealed partial class UpdateOptionsController : IDisposable
         await PrepareNewModuleAsync(cancellation => _moduleInstallation.PrepareFromCatalogAsync(catalogUrl, catalogUrl, new Progress<double>(value => ActiveModuleProgress().Value = value * 100), cancellation));
     }
 
-    private async void InstallAvailableModule(object sender, RoutedEventArgs e)
+    private async void InstallAvailableModule(object sender, RoutedEventArgs e) => await TrackAsync(() => InstallAvailableModuleAsync(sender, e));
+
+    private async Task InstallAvailableModuleAsync(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { DataContext: AvailableModuleRow module } || !module.CanInstall
             || _pendingInstallations.Contains(module.Id)) return;
@@ -95,15 +102,17 @@ internal sealed partial class UpdateOptionsController : IDisposable
         {
             _preparationCancellation?.Dispose();
             _preparationCancellation = null;
-            if (_owner.IsVisible) SetPreparing(UpdateSearchScope.Modules, false);
+            if (!_stopping) SetPreparing(UpdateSearchScope.Modules, false);
         }
     }
 
-    internal async Task FinishModuleInstallationsAsync(bool confirm = true)
+    internal Task FinishModuleInstallationsAsync(bool confirm = true) => TrackAsync(() => FinishModuleInstallationsCoreAsync(confirm));
+
+    private async Task FinishModuleInstallationsCoreAsync(bool confirm)
     {
         var installations = _pendingInstallations.Items;
         if (installations.Count == 0 || _preparationCancellation is not null) return;
-        if (confirm && MessageBox.Show(_owner, _localize("Updates.FinishModuleInstallationsConfirm", []), _localize("Updates.Title", []), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+        if (confirm && WpfMessageDialogService.ShowMessage(_owner, _localize("Updates.FinishModuleInstallationsConfirm", []), _localize("Updates.Title", []), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
         try
         {
             _preparationCancellation = new CancellationTokenSource();
@@ -124,7 +133,7 @@ internal sealed partial class UpdateOptionsController : IDisposable
         {
             _preparationCancellation?.Dispose();
             _preparationCancellation = null;
-            if (_owner.IsVisible) SetPreparing(UpdateSearchScope.Modules, false);
+            if (!_stopping) SetPreparing(UpdateSearchScope.Modules, false);
         }
     }
 
@@ -136,7 +145,7 @@ internal sealed partial class UpdateOptionsController : IDisposable
         if (!isApplication && string.IsNullOrWhiteSpace(moduleId)) return;
         try
         {
-            var result = isApplication ? await _applicationService.SearchAsync(_applicationSelections) : await _moduleService.SearchAsync(moduleId!, _moduleSelections);
+            var result = isApplication ? await _applicationService.SearchAsync(_applicationSelections, _lifetime.Token) : await _moduleService.SearchAsync(moduleId!, _moduleSelections, _lifetime.Token);
             if (isApplication)
             {
                 _applicationResult = result;
@@ -148,7 +157,7 @@ internal sealed partial class UpdateOptionsController : IDisposable
                 if (!string.Equals(_section.SelectedModuleId, moduleId, StringComparison.OrdinalIgnoreCase)) return;
             }
             if (!CanInstall(result)) return;
-            if (MessageBox.Show(_owner, _localize("Updates.InstallConfirm", [result.Plan.Items.Count]), _localize("Updates.Title", []), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+            if (WpfMessageDialogService.ShowMessage(_owner, _localize("Updates.InstallConfirm", [result.Plan.Items.Count]), _localize("Updates.Title", []), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
             _preparationCancellation = new CancellationTokenSource();
             SetPreparing(scope, true);
@@ -174,7 +183,7 @@ internal sealed partial class UpdateOptionsController : IDisposable
         {
             _preparationCancellation?.Dispose();
             _preparationCancellation = null;
-            if (_owner.IsVisible) SetPreparing(scope, false);
+            if (!_stopping) SetPreparing(scope, false);
         }
     }
 

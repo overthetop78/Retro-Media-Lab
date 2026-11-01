@@ -1,0 +1,11 @@
+<UserControl x:Class="GWGUI.App.Theme.OS.Editions.Windows31.Views.VideoProcessingView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions">
+ <DockPanel Margin="8">
+  <ComboBox x:Name="Pages" DockPanel.Dock="Top" DisplayMemberPath="Label" SelectionChanged="PageChanged" Margin="0,0,0,8"/>
+  <StackPanel x:Name="ShaderLoading" DockPanel.Dock="Top" Margin="0,0,0,8">
+   <TextBlock Text="{l:Loc Emulation.Video.Shader.Loading}"/><ProgressBar IsIndeterminate="True" Height="12"/>
+  </StackPanel>
+  <StackPanel x:Name="Fields"/>
+ </DockPanel>
+</UserControl>

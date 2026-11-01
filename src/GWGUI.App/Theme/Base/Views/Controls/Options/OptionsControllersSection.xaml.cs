@@ -1,4 +1,4 @@
-using GWGUI.App.Localization.Extensions;
+﻿using GWGUI.App.Localization.Extensions;
 using GWGUI.App.Services.Input.GameInput;
 using GWGUI.App.Services.Logging;
 using GWGUI.App.Views.Controls.Options.ControllerPresentation;
@@ -51,6 +51,19 @@ public partial class OptionsControllersSection : UserControl
         RefreshModelChoices();
     }
 
+    internal bool? PresentationVisibility { get; private set; }
+    private bool PresentationIsVisible => PresentationVisibility ?? IsVisible;
+    private bool PresentationIsLoaded => PresentationVisibility.HasValue || IsLoaded;
+
+    internal void SetPresentationVisibility(bool? visible)
+    {
+        if (PresentationVisibility == visible) return;
+        PresentationVisibility = visible;
+        Section_IsVisibleChanged(this, new DependencyPropertyChangedEventArgs());
+    }
+
+    internal void CommitPresentationDeadZones() => SaveAnalogDeadZones();
+
     internal void RefreshLocalizedContent()
     {
         RefreshModelChoices();
@@ -65,9 +78,9 @@ public partial class OptionsControllersSection : UserControl
 
     private async void Section_Loaded(object sender, RoutedEventArgs e)
     {
-        if (!IsVisible) return;
+        if (!PresentationIsVisible) return;
         await RefreshDevicesAsync(force: false);
-        if (IsVisible) _timer.Start();
+        if (PresentationIsVisible) _timer.Start();
     }
 
     private void Section_Unloaded(object sender, RoutedEventArgs e)
@@ -79,11 +92,11 @@ public partial class OptionsControllersSection : UserControl
 
     private async void Section_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (!IsLoaded) return;
-        if (IsVisible)
+        if (!PresentationIsLoaded) return;
+        if (PresentationIsVisible)
         {
             await RefreshDevicesAsync(force: false);
-            if (IsVisible) _timer.Start();
+            if (PresentationIsVisible) _timer.Start();
         }
         else
         {
@@ -95,7 +108,7 @@ public partial class OptionsControllersSection : UserControl
 
     private async void Timer_Tick(object? sender, EventArgs e)
     {
-        if (!IsVisible) return;
+        if (!PresentationIsVisible) return;
         if (DateTime.UtcNow >= _nextDevicePollUtc)
         {
             _nextDevicePollUtc = DateTime.UtcNow.AddMilliseconds(250);

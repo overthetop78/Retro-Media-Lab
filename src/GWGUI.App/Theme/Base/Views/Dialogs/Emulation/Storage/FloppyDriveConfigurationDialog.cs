@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.App.Constants.Emulation;
 using GWGUI.App.Functions.Views.Emulation.Settings;
 using GWGUI.App.Constants.Localization;
@@ -12,6 +13,8 @@ using System.Windows;
 using System.Windows.Controls;
 using GWGUI.Emulation;
 using Microsoft.Win32;
+using GWGUI.App.Services.Windows;
+using GWGUI.App.Theme.Common;
 
 
 namespace GWGUI.App.Views.Dialogs.Emulation.Storage;
@@ -19,6 +22,17 @@ namespace GWGUI.App.Views.Dialogs.Emulation.Storage;
 public sealed class FloppyDriveConfigurationDialog : Window
 {
     public string? CreatedMediaToMount { get; private set; }
+    internal ComboBox PresentationModel => _model;
+    internal FrameworkElement PresentationSpeed => _speed;
+    internal EmulationSettingsField PresentationSpeedField { get; }
+    internal CheckBox PresentationWriteProtection => _writeProtected;
+    internal CheckBox PresentationRedirectWrites => _redirectWrites;
+    internal FloppyDriveDialogOptions PresentationOptions => _options;
+    internal string? PresentationModule { get; }
+    internal IReadOnlyList<EmulationSettingsField> PresentationFields { get; }
+    internal IReadOnlyDictionary<string, FrameworkElement> PresentationControls => _fields;
+    internal Button? PresentationCreate { get; }
+
 
     private readonly ComboBox _model = new();
     private readonly FrameworkElement _speed;
@@ -35,6 +49,8 @@ public sealed class FloppyDriveConfigurationDialog : Window
         string? moduleId = null, IReadOnlyList<EmulationSettingsField>? configurationFields = null)
     {
         _options = options;
+        PresentationModule = moduleId;
+        PresentationFields = configurationFields ?? [];
         _clientGuid = clientGuid;
         Title = $"{LocExtension.Get(EmulationResourceKeys.StorageDeviceConfigure)} {identifier}";
         Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(window => window.IsActive);
@@ -51,10 +67,11 @@ public sealed class FloppyDriveConfigurationDialog : Window
         _model.ItemsSource = options.Models.Select(choice =>
             new StorageDialogChoice(choice.Value, FloppyChoicePresentation.Model(choice, moduleId))).ToArray();
         ComboBoxSelection.SelectByValue<StorageDialogChoice>(_model, settings.Model, choice => choice.Value);
-        _speed = StorageConfigurationFieldFunctions.Create(new EmulationSettingsField(
+        PresentationSpeedField = new EmulationSettingsField(
             nameof(_speed), EmulationMachineTab.Storage, string.Empty, "Emulation.Storage.Floppy.Speed",
             EmulationSettingsEditor.Selection, settings.Speed, options.SpeedChoices ?? EmulationDriveSpeedChoices.Standard,
-            UseRadioButtons: true), moduleId, null);
+            UseRadioButtons: true);
+        _speed = StorageConfigurationFieldFunctions.Create(PresentationSpeedField, moduleId, null);
         _writeProtected.Content = LocExtension.Get("Emulation.Storage.Floppy.WriteProtection");
         _writeProtected.IsChecked = settings.WriteProtected;
         _redirectWrites.Content = LocExtension.Get("Emulation.Storage.Floppy.WriteRedirect");
@@ -97,9 +114,10 @@ public sealed class FloppyDriveConfigurationDialog : Window
                 create.IsEnabled = false;
                 try { CreateBlankFloppy(); }
                 catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
-                { MessageBox.Show(this, error.Message, Title, MessageBoxButton.OK, MessageBoxImage.Warning); }
+                { WpfMessageDialogService.ShowMessage(this, error.Message, Title, MessageBoxButton.OK, MessageBoxImage.Warning); }
                 finally { create.IsEnabled = true; }
             };
+            PresentationCreate = create;
             actions.Children.Add(create);
         }
 
@@ -121,13 +139,13 @@ public sealed class FloppyDriveConfigurationDialog : Window
             () => configuration.DestinationPath, CreateImage, () => configuration.IsComplete);
         try
         {
-            if (creation.ShowDialog() == true)
+            if (WpfWindowNavigationService.ShowOwnedDialog(this, creation) == true)
             {
                 CreatedMediaToMount = creation.CreatedPath;
-                DialogResult = true;
+                ThemeDialogCompletion.Complete(this, true);
             }
         }
-        finally { creation.Close(); }
+        finally { WpfWindowNavigationService.CloseOwnedDialog(creation); }
     }
 
     private void CreateBlankFloppy()
@@ -149,7 +167,7 @@ public sealed class FloppyDriveConfigurationDialog : Window
             ClientGuid = _clientGuid,
             FileName = $"blank{extension}"
         };
-        if (dialog.ShowDialog(this) != true) return;
+        if (WpfFileDialogService.ShowFileDialog(dialog, this) != true) return;
         var creation = new MediaCreationDialog(this, LocExtension.Get("Emulation.Storage.Floppy.CreateBlank"), dialog.FileName, async () =>
         {
             if (formats?.Count > 0)
@@ -166,12 +184,12 @@ public sealed class FloppyDriveConfigurationDialog : Window
         });
         try
         {
-            if (creation.ShowDialog() == true)
+            if (WpfWindowNavigationService.ShowOwnedDialog(this, creation) == true)
             {
                 CreatedMediaToMount = dialog.FileName;
-                DialogResult = true;
+                ThemeDialogCompletion.Complete(this, true);
             }
         }
-        finally { creation.Close(); }
+        finally { WpfWindowNavigationService.CloseOwnedDialog(creation); }
     }
 }

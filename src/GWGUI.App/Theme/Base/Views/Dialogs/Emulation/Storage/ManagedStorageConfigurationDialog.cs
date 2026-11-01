@@ -15,6 +15,13 @@ namespace GWGUI.App.Views.Dialogs.Emulation.Storage;
 internal sealed class ManagedStorageConfigurationDialog : Window
 {
     private readonly Dictionary<string, FrameworkElement> _controls = new(StringComparer.Ordinal);
+    internal sealed record PresentationGroup(EmulationSettingsBlock Block, string Title);
+    internal IReadOnlyList<PresentationGroup> PresentationGroups { get; }
+    internal IReadOnlyList<EmulationSettingsBlock> PresentationVisibleGroups { get; private set; } = [];
+    internal IReadOnlyDictionary<string, FrameworkElement> PresentationControls => _controls;
+    internal string PresentationModule { get; }
+    internal string? PresentationExplanation { get; }
+    internal event EventHandler? PresentationChanged;
     internal IReadOnlyDictionary<string, string> Options => _controls.ToDictionary(item => item.Key, item => StorageConfigurationFieldFunctions.Read(item.Value), StringComparer.Ordinal);
 
     internal ManagedStorageConfigurationDialog(string identifier, string model, string moduleId, IReadOnlyList<EmulationSettingsField> fields, IReadOnlyDictionary<string, string>? values, string? explanation = null, IReadOnlyList<EmulationSettingsBlock>? blocks = null)
@@ -24,6 +31,10 @@ internal sealed class ManagedStorageConfigurationDialog : Window
         ShowInTaskbar = false; WindowStartupLocation = WindowStartupLocation.CenterOwner;
         StorageDialogUi.CompactAppearance(this);
         var groups = blocks?.Where(block => block.IsVisible).ToArray() ?? [new EmulationSettingsBlock(string.Empty, EmulationMachineTab.Storage, string.Empty, fields)];
+        PresentationModule = moduleId;
+        PresentationExplanation = explanation;
+        PresentationGroups = groups.Select(block => new PresentationGroup(block,
+            string.IsNullOrWhiteSpace(block.TitleResourceKey) ? model : LocExtension.GetForModule(moduleId, block.TitleResourceKey))).ToArray();
         Width = groups.Length > 1 ? C.GroupedWidth : C.ManagedWidth;
         MaxWidth = SystemParameters.WorkArea.Width * C.WorkAreaWidthRatio; MinWidth = C.MinimumWidth;
         MaxHeight = Math.Min(C.CompactMaximumHeight, SystemParameters.WorkArea.Height * C.WorkAreaHeightRatio);
@@ -49,6 +60,7 @@ internal sealed class ManagedStorageConfigurationDialog : Window
             var selectedCards = visible.Select(item => item.Card).ToArray();
             if (visibleCards.SequenceEqual(selectedCards)) return;
             visibleCards = selectedCards;
+            PresentationVisibleGroups = visible.Select(item => item.Block).ToArray();
             grid.Children.Clear(); grid.RowDefinitions.Clear();
             var row = 0; var column = 0;
             for (var index = 0; index < visible.Length; index++)
@@ -61,6 +73,7 @@ internal sealed class ManagedStorageConfigurationDialog : Window
                 Grid.SetRow(item.Card, row); Grid.SetColumn(item.Card, column); Grid.SetColumnSpan(item.Card, span); grid.Children.Add(item.Card);
                 column += span; if (column >= C.MaximumColumns) { row++; column = 0; }
             }
+            PresentationChanged?.Invoke(this, EventArgs.Empty);
         }
         body.Children.Add(grid);
         grid.AddHandler(ToggleButton.CheckedEvent, new RoutedEventHandler((_, _) => RefreshGroups()));

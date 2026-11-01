@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Obnovit</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Otevřít složku</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Pauza</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Ano</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Ne</value></data>
+  <data name="Common.Abort"><value>Přerušit</value></data>
+  <data name="Common.Retry"><value>Opakovat</value></data>
+  <data name="Common.Ignore"><value>Ignorovat</value></data>
+  <data name="Common.TryAgain"><value>Zkusit znovu</value></data>
 </root>

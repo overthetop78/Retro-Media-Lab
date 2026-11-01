@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Válasszon ki egy forrást és egy célállomást.</value></data>
   <data name="Migration.Severity"><value>Súlyosság</value></data>
   <data name="Migration.Path"><value>Forrásút</value></data>
-  <data name="Migration.Description"><value>Leírás</value></data>
+  <data name="Migration.Description"><value>A probléma leírása</value></data>
   <data name="Migration.AcceptLosses"><value>A felsorolt metaadatok veszteségeinek elfogadása</value></data>
   <data name="Migration.Execute"><value>Migrate- fájlok</value></data>
   <data name="Migration.Blocking"><value>Blokkolás</value></data>

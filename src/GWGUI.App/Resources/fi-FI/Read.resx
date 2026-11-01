@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Käytä seuraavaa numeroa</value></data>
   <data name="Read.ConflictEditName"><value>Anna minun muokata nimeä</value></data>
   <data name="Read.ImageToCreate"><value>Luotava kuva</value></data>
-  <data name="Read.Extension"><value>Laajennus</value></data>
+  <data name="Read.Extension"><value>Tiedostopääte</value></data>
   <data name="Read.RawScp"><value>Raakakuva (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Tunnettu levymuoto</value></data>
   <data name="Read.FileName"><value>Tiedostonimi</value></data>

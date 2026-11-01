@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Gebruik het volgende nummer</value></data>
   <data name="Read.ConflictEditName"><value>Laat me de naam bewerken</value></data>
   <data name="Read.ImageToCreate"><value>Afbeelding om te creëren</value></data>
-  <data name="Read.Extension"><value>Verlenging</value></data>
+  <data name="Read.Extension"><value>Bestandsextensie</value></data>
   <data name="Read.RawScp"><value>Ruwe afbeelding (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Bekend schijfformaat</value></data>
   <data name="Read.FileName"><value>Bestandsnaam</value></data>

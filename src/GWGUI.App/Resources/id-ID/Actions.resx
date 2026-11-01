@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Segarkan</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Buka folder</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Jeda</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Ya</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Tidak</value></data>
+  <data name="Common.Abort"><value>Batalkan</value></data>
+  <data name="Common.Retry"><value>Coba lagi</value></data>
+  <data name="Common.Ignore"><value>Abaikan</value></data>
+  <data name="Common.TryAgain"><value>Coba lagi</value></data>
 </root>

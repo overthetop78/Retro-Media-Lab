@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Bruk neste tall</value></data>
   <data name="Read.ConflictEditName"><value>La meg redigere navnet</value></data>
   <data name="Read.ImageToCreate"><value>Bilde å lage</value></data>
-  <data name="Read.Extension"><value>Forlengelse</value></data>
+  <data name="Read.Extension"><value>Filendelse</value></data>
   <data name="Read.RawScp"><value>Råbilde (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Kjent diskformat</value></data>
   <data name="Read.FileName"><value>Filnavn</value></data>

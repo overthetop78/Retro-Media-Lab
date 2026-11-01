@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Arbeitsbereich mit verschiebbaren Fenstern, deren Größe sich ändern lässt. Mehrere Werkzeuge bleiben geöffnet und behalten beim Wechsel ihre Einstellungen.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimieren</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maximieren oder wiederherstellen</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Programm-Manager</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>System</value></data>
+  <data name="Options.Themes.OS.File"><value>Datei</value></data>
+  <data name="Options.Themes.OS.Window"><value>Fenster</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Überlappend</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Nebeneinander</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Symbole anordnen</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Wiederherstellen</value></data>
+  <data name="Options.Themes.OS.Move"><value>Verschieben</value></data>
+  <data name="Options.Themes.OS.Size"><value>Größe ändern</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximieren</value></data>
+  <data name="Options.Themes.OS.Open"><value>Öffnen</value></data>
+  <data name="Options.Themes.OS.Description"><value>Originale Betriebssystemschnittstellen, einschließlich Fenster, Steuerungen und Interaktionen.</value></data>
+  <data name="Options.Themes.Edition"><value>Variante</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programme</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Nummerierung</value></data>
 </root>

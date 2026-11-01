@@ -131,6 +131,7 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         {
             _loading = false;
         }
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
 }

@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Không gian làm việc với các cửa sổ có thể di chuyển và thay đổi kích thước. Mở nhiều công cụ và chuyển đổi giữa chúng mà không mất cài đặt.</value></data>
   <data name="Options.Themes.Minimize"><value>Thu nhỏ</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Phóng to hoặc khôi phục</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Trình quản lý chương trình</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Hệ thống</value></data>
+  <data name="Options.Themes.OS.File"><value>Tệp</value></data>
+  <data name="Options.Themes.OS.Window"><value>Cửa sổ</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Xếp tầng</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Xếp cạnh nhau</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Sắp xếp biểu tượng</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Khôi phục</value></data>
+  <data name="Options.Themes.OS.Move"><value>Di chuyển</value></data>
+  <data name="Options.Themes.OS.Size"><value>Đổi kích thước</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Phóng to</value></data>
+  <data name="Options.Themes.OS.Open"><value>Mở</value></data>
+  <data name="Options.Themes.OS.Description"><value>Giao diện hệ điều hành gốc, bao gồm cửa sổ, điều khiển và tương tác.</value></data>
+  <data name="Options.Themes.Edition"><value>Biến thế</value></data>
+  <data name="Options.Themes.OS.Start"><value>Chạy</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Chương trình</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Đánh số</value></data>
 </root>

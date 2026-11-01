@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>לחצן</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>מתג</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} צירים · {1} לחצנים · {2} מתגים</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>כן</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>לא</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>ללא</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>משחק Generic Gamepad</value></data>
   <data name="Controllers.Model.RacingWheel"><value>גלגל מרוץ</value></data>

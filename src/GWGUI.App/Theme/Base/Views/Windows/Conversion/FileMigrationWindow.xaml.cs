@@ -10,6 +10,8 @@ using GWGUI.App.ViewModels.Conversion;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
+using System.ComponentModel;
 using GWGUI.MediaEngine.Images.Creation;
 using GWGUI.MediaEngine.Images.Reading;
 using GWGUI.MediaEngine.Contracts.Explorer;
@@ -24,6 +26,25 @@ public partial class FileMigrationWindow : Window
     private FileSystemVolume? _source;
     private MigrationValidationReport? _report;
     private bool _busy;
+    private readonly string? _initialSourcePath;
+    private readonly CancellationTokenSource _lifetime = new();
+    private readonly HashSet<Task> _pending = [];
+    private Task? _initialization;
+    private Task _closing = Task.CompletedTask;
+    private bool _closeRequested;
+    private bool _allowClose;
+
+    internal TextBox PresentationSource => SourcePathTextBox;
+    internal Button PresentationBrowseSource => BrowseSourceButton;
+    internal TextBlock PresentationSourceSummary => SourceSummaryText;
+    internal ComboBox PresentationTarget => TargetComboBox;
+    internal TextBox PresentationOutput => OutputPathTextBox;
+    internal Button PresentationBrowseOutput => BrowseOutputButton;
+    internal TextBlock PresentationCompatibility => CompatibilityText;
+    internal CheckBox PresentationAcceptance => AcceptLossesCheckBox;
+    internal ProgressBar PresentationProgress => ProgressBar;
+    internal Button PresentationExecute => ExecuteButton;
+    internal Task PresentationOperation => Task.WhenAll(_pending.Append(_closing));
 
     public ObservableCollection<FileMigrationTargetOption> Targets { get; } = new(FileSystemMigrationTargetCatalog.All.Select(target => new FileMigrationTargetOption(target)));
     public ObservableCollection<FileMigrationLossRow> Losses { get; } = [];
@@ -32,6 +53,8 @@ public partial class FileMigrationWindow : Window
     public FileMigrationWindow(string? initialSourcePath = null)
     {
         InitializeComponent();
+        _initialSourcePath = initialSourcePath;
+        Closing += WindowClosing;
         DataContext = this;
         _fileDialogs = new WpfFileDialogService(this);
         _dialogs = new WpfMessageDialogService(this);
@@ -44,13 +67,61 @@ public partial class FileMigrationWindow : Window
         AcceptLossesCheckBox.Checked += Acceptance_Changed;
         AcceptLossesCheckBox.Unchecked += Acceptance_Changed;
         ExecuteButton.Click += Execute_Click;
-        if (!string.IsNullOrWhiteSpace(initialSourcePath)) Loaded += async (_, _) => await LoadSourceAsync(initialSourcePath);
+        Loaded += WindowLoaded;
+    }
+
+    private async void WindowLoaded(object sender, RoutedEventArgs args) => await InitializePresentationAsync();
+
+    internal Task InitializePresentationAsync() => _initialization ??= _closeRequested || string.IsNullOrWhiteSpace(_initialSourcePath)
+        ? Task.CompletedTask : TrackAsync(() => LoadSourceAsync(_initialSourcePath));
+
+    private async Task TrackAsync(Func<Task> action)
+    {
+        if (_closeRequested) return;
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _pending.Add(completion.Task);
+        try { await action(); }
+        finally { _pending.Remove(completion.Task); completion.SetResult(); }
+    }
+
+    private void WindowClosing(object? sender, CancelEventArgs args)
+    {
+        if (_allowClose) return;
+        args.Cancel = true;
+        RequestPresentationClose();
+    }
+
+    internal void RequestPresentationClose()
+    {
+        if (_closeRequested) return;
+        _closeRequested = true;
+        _lifetime.Cancel();
+        _closing = CloseAfterOperationsAsync();
+    }
+
+    private async Task CloseAfterOperationsAsync()
+    {
+        try { await Task.WhenAll(_pending); }
+        finally
+        {
+            Loaded -= WindowLoaded;
+            Closing -= WindowClosing;
+            BrowseSourceButton.Click -= BrowseSource_Click;
+            BrowseOutputButton.Click -= BrowseOutput_Click;
+            TargetComboBox.SelectionChanged -= Target_Changed;
+            AcceptLossesCheckBox.Checked -= Acceptance_Changed;
+            AcceptLossesCheckBox.Unchecked -= Acceptance_Changed;
+            ExecuteButton.Click -= Execute_Click;
+            _lifetime.Dispose();
+            _allowClose = true;
+            await Dispatcher.InvokeAsync(Close);
+        }
     }
 
     private async void BrowseSource_Click(object sender, RoutedEventArgs e)
     {
         var path = _fileDialogs.OpenFile(new(LocExtension.Get("Common.DiskImageFilter"), Path.GetDirectoryName(SourcePathTextBox.Text)));
-        if (path is not null) await LoadSourceAsync(path);
+        if (path is not null) await TrackAsync(() => LoadSourceAsync(path));
     }
 
     private void BrowseOutput_Click(object sender, RoutedEventArgs e)
@@ -71,7 +142,9 @@ public partial class FileMigrationWindow : Window
 
     private void Acceptance_Changed(object sender, RoutedEventArgs e) => RefreshValidation();
 
-    private async void Execute_Click(object sender, RoutedEventArgs e)
+    private async void Execute_Click(object sender, RoutedEventArgs e) => await TrackAsync(ExecuteMigrationAsync);
+
+    private async Task ExecuteMigrationAsync()
     {
         if (_source is null || SelectedTarget is null || _report?.CanExecute != true || string.IsNullOrWhiteSpace(OutputPathTextBox.Text)) return;
         if (Path.GetFullPath(SourcePathTextBox.Text).Equals(Path.GetFullPath(OutputPathTextBox.Text), StringComparison.OrdinalIgnoreCase))
@@ -83,9 +156,11 @@ public partial class FileMigrationWindow : Window
         try
         {
             SetBusy(true);
-            await _coordinator.ExecuteAsync(_source, OutputPathTextBox.Text, SelectedTarget.Target.FormatId, AcceptLossesCheckBox.IsChecked == true);
+            await _coordinator.ExecuteAsync(_source, OutputPathTextBox.Text, SelectedTarget.Target.FormatId, AcceptLossesCheckBox.IsChecked == true, _lifetime.Token);
+            if (_closeRequested) return;
             _dialogs.Show(LocExtension.Get("Migration.Completed", OutputPathTextBox.Text), LocExtension.Get("Migration.Title"), icon: UserDialogIcon.Information);
         }
+        catch (OperationCanceledException) when (_closeRequested) { }
         catch (Exception exception)
         {
             ShowLoggedError(exception, "Executing file migration", "Migration.Failed");
@@ -101,12 +176,14 @@ public partial class FileMigrationWindow : Window
         try
         {
             SetBusy(true);
-            _source = await _coordinator.ReadSourceAsync(path);
+            _source = await _coordinator.ReadSourceAsync(path, _lifetime.Token);
+            if (_closeRequested) return;
             SourcePathTextBox.Text = path;
             SourceSummaryText.Text = LocExtension.Get("Migration.SourceSummary", _source.Name, _source.FileSystemId, _source.Entries.Count);
             OutputPathTextBox.Text = SuggestedOutputPath();
             RefreshValidation();
         }
+        catch (OperationCanceledException) when (_closeRequested) { }
         catch (Exception exception)
         {
             _source = null;

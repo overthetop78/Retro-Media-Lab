@@ -18,6 +18,12 @@ public partial class OptionsGeneralSection : UserControl
     public ItemsControl TagVariables => TagVariablesList;
     public TextBlock TagPreview => TagPatternPreview;
 
+    internal void RequestBrowseImagesFolder() => BrowseImagesFolder_Click(this, new RoutedEventArgs());
+    internal void RequestNextTagExample() => NextTagExample_Click(this, new RoutedEventArgs());
+    internal void RequestRecentTagPattern(MouseButtonEventArgs args) => RecentTagPattern_DoubleClick(RecentTagPatterns, args);
+    internal void RequestTagPatternEditingFinished(KeyboardFocusChangedEventArgs args) => TagPattern_LostKeyboardFocus(TagPatternText, args);
+    internal void RequestImagesFolderEditingFinished(KeyboardFocusChangedEventArgs args) => AutoSaveText_LostKeyboardFocus(ImagesFolderText, args);
+
     public event SelectionChangedEventHandler? LanguageChanged;
     public event RoutedEventHandler? UseTagsChanged;
     public event RoutedEventHandler? BrowseImagesFolderRequested;

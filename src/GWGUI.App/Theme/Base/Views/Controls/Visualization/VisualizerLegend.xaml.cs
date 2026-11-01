@@ -10,6 +10,8 @@ public partial class VisualizerLegend : UserControl
 {
     public VisualizerLegend() => InitializeComponent();
 
+    internal ItemsControl DataItems => LegendItems;
+
     public void Configure(MediaVisualizationDescriptor descriptor)
     {
         ArgumentNullException.ThrowIfNull(descriptor);

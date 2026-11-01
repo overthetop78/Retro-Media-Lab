@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Selectaţi o sursă şi o destinaţie.</value></data>
   <data name="Migration.Severity"><value>Severitate</value></data>
   <data name="Migration.Path"><value>Calea sursei</value></data>
-  <data name="Migration.Description"><value>Descriere</value></data>
+  <data name="Migration.Description"><value>Descrierea problemei</value></data>
   <data name="Migration.AcceptLosses"><value>Acceptă pierderile de metadate listate</value></data>
   <data name="Migration.Execute"><value>Migrați fișierele</value></data>
   <data name="Migration.Blocking"><value>Blocare</value></data>

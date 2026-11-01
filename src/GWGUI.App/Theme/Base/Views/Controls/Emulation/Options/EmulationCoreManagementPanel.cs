@@ -9,6 +9,10 @@ namespace GWGUI.App.Views.Controls.Emulation.Options;
 
 internal sealed class EmulationCoreManagementPanel : UserControl
 {
+    internal static readonly DependencyProperty StatusIsErrorProperty = DependencyProperty.Register(
+        nameof(StatusIsError), typeof(bool), typeof(EmulationCoreManagementPanel), new PropertyMetadata(false));
+    public bool StatusIsError => (bool)GetValue(StatusIsErrorProperty);
+
     internal ComboBox Emulators { get; } = new() { MinWidth = 300 };
     internal Button Search { get; } = new() { MinWidth = 150 };
     internal ComboBox Versions { get; } = new() { MinWidth = 320, Visibility = Visibility.Collapsed };
@@ -125,6 +129,7 @@ internal sealed class EmulationCoreManagementPanel : UserControl
 
     internal void SetStatus(string text, bool isError = false)
     {
+        SetValue(StatusIsErrorProperty, isError);
         Status.Text = text;
         Status.Foreground = isError ? new SolidColorBrush(EmulationCoreManagementConstants.ErrorText) : (Brush)FindResource(ControlVisualConstants.MutedTextBrushResource);
     }

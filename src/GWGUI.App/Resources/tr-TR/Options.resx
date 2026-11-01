@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Taşınabilir ve boyutlandırılabilir pencereler içeren çalışma alanı. Birden fazla aracı açık tutun ve ayarlarını kaybetmeden aralarında geçiş yapın.</value></data>
   <data name="Options.Themes.Minimize"><value>Simge durumuna küçült</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Ekranı kapla veya geri yükle</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Program Yöneticisi</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Sistem</value></data>
+  <data name="Options.Themes.OS.File"><value>Dosya</value></data>
+  <data name="Options.Themes.OS.Window"><value>Pencere</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Basamakla</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Döşe</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Simgeleri düzenle</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Geri yükle</value></data>
+  <data name="Options.Themes.OS.Move"><value>Taşı</value></data>
+  <data name="Options.Themes.OS.Size"><value>Boyutlandır</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Ekranı kapla</value></data>
+  <data name="Options.Themes.OS.Open"><value>Aç</value></data>
+  <data name="Options.Themes.OS.Description"><value>Orijinal işletim sistemi arabirimleri, pencereler, kontroller ve etkileşimler dahil.</value></data>
+  <data name="Options.Themes.Edition"><value>Variant</value></data>
+  <data name="Options.Themes.OS.Start"><value>Başlat</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programlar</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numaralandırma</value></data>
 </root>

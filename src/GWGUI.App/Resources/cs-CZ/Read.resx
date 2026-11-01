@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Použijte následující číslo</value></data>
   <data name="Read.ConflictEditName"><value>Dovolte mi upravit název</value></data>
   <data name="Read.ImageToCreate"><value>Obrázek k vytvoření</value></data>
-  <data name="Read.Extension"><value>Rozšíření</value></data>
+  <data name="Read.Extension"><value>Přípona souboru</value></data>
   <data name="Read.RawScp"><value>Nezpracovaný obrázek (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Známý formát disku</value></data>
   <data name="Read.FileName"><value>Název souboru</value></data>

@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>Den døde sektor</value></data>
   <data name="Visual.SectorWithoutData"><value>Sektor uden data</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>Kassetteoplysninger</value></data>
+  <data name="Visual.Representation"><value>Visningstilstand</value></data>
 </root>

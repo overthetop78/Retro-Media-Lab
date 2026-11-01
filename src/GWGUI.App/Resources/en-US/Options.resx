@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Workspace with movable and resizable windows. Keep several tools open and switch between them without losing their settings.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimize</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maximize or restore</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Program Manager</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>System</value></data>
+  <data name="Options.Themes.OS.File"><value>File</value></data>
+  <data name="Options.Themes.OS.Window"><value>Window</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Cascade</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Tile</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Arrange icons</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Restore</value></data>
+  <data name="Options.Themes.OS.Move"><value>Move</value></data>
+  <data name="Options.Themes.OS.Size"><value>Size</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximize</value></data>
+  <data name="Options.Themes.OS.Open"><value>Open</value></data>
+  <data name="Options.Themes.OS.Description"><value>Original operating system interfaces, including windows, controls and interactions.</value></data>
+  <data name="Options.Themes.Edition"><value>Variant</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programs</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numbering</value></data>
 </root>

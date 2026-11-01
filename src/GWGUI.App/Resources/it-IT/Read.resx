@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Usa il numero successivo</value></data>
   <data name="Read.ConflictEditName"><value>Fammi modificare il nome</value></data>
   <data name="Read.ImageToCreate"><value>Immagine da creare</value></data>
-  <data name="Read.Extension"><value>Estensione</value></data>
+  <data name="Read.Extension"><value>Estensione del file</value></data>
   <data name="Read.RawScp"><value>Immagine grezza (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Formato del disco noto</value></data>
   <data name="Read.FileName"><value>Nome file</value></data>

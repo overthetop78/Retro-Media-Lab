@@ -175,7 +175,7 @@ internal static class GameInputDisplayFormatter
     internal static string FeedbackMotor(GameInputForceFeedbackMotorDescriptor motor)
     {
         var effects = motor.SupportedEffects.Count == 0 ? LocExtension.Get("Controllers.None") : string.Join(", ", motor.SupportedEffects.Select(EnumValue));
-        var power = motor.PoweredOn ? LocExtension.Get("Controllers.Yes") : LocExtension.Get("Controllers.No");
+        var power = motor.PoweredOn ? LocExtension.Get("Common.Yes") : LocExtension.Get("Common.No");
         return $"#{motor.Index + 1}: ⏻ {power} · {Flags(motor.SupportedAxes)} · {effects}";
     }
 

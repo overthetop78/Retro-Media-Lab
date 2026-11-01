@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>次の番号を使用してください</value></data>
   <data name="Read.ConflictEditName"><value>名前を編集させてください</value></data>
   <data name="Read.ImageToCreate"><value>作成するイメージ</value></data>
-  <data name="Read.Extension"><value>拡大</value></data>
+  <data name="Read.Extension"><value>ファイル拡張子</value></data>
   <data name="Read.RawScp"><value>生の画像 (SCP)</value></data>
   <data name="Read.KnownFormat"><value>既知のディスクフォーマット</value></data>
   <data name="Read.FileName"><value>ファイル名</value></data>

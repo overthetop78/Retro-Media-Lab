@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Diskette</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Harde schijf</value></data>
   <data name="Common.MediaKind.Optical"><value>Optische schijf</value></data>
-  <data name="Common.MediaKind.Tape"><value>Tape</value></data>
+  <data name="Common.MediaKind.Tape"><value>Magneetband</value></data>
   <data name="Common.Representation.Flux"><value>Flux</value></data>
   <data name="Common.Representation.Sectors"><value>Sectoren</value></data>
   <data name="Common.Representation.Blocks"><value>Blok</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Schijfafbeeldingen|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Alle bestanden|*.*</value></data>
   <data name="Common.Console"><value>Troosten</value></data>
   <data name="Common.Command"><value>Commando</value></data>
+  <data name="FileDialog.Open"><value>Openen</value></data>
+  <data name="FileDialog.SaveAs"><value>Opslaan als</value></data>
+  <data name="FileDialog.SelectFolder"><value>Map selecteren</value></data>
+  <data name="FileDialog.Directories"><value>Mappen</value></data>
+  <data name="FileDialog.Drives"><value>Stations</value></data>
+  <data name="FileDialog.FileTypes"><value>Bestandstypen</value></data>
+  <data name="FileDialog.AllFiles"><value>Alle bestanden</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>Het bestand bestaat al. Vervangen?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Voer een geldige bestandsnaam in.</value></data>
 </root>

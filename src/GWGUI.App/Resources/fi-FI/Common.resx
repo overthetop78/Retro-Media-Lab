@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Levyke</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Kovalevy</value></data>
   <data name="Common.MediaKind.Optical"><value>Optinen levy</value></data>
-  <data name="Common.MediaKind.Tape"><value>Nauha</value></data>
+  <data name="Common.MediaKind.Tape"><value>Magneettinauha</value></data>
   <data name="Common.Representation.Flux"><value>Flux</value></data>
   <data name="Common.Representation.Sectors"><value>Alat</value></data>
   <data name="Common.Representation.Blocks"><value>Lohkot</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Levykuvat|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Kaikki tiedostot|*.*</value></data>
   <data name="Common.Console"><value>Konsoli</value></data>
   <data name="Common.Command"><value>Komento</value></data>
+  <data name="FileDialog.Open"><value>Avaa</value></data>
+  <data name="FileDialog.SaveAs"><value>Tallenna nimellä</value></data>
+  <data name="FileDialog.SelectFolder"><value>Valitse kansio</value></data>
+  <data name="FileDialog.Directories"><value>Kansiot</value></data>
+  <data name="FileDialog.Drives"><value>Asemat</value></data>
+  <data name="FileDialog.FileTypes"><value>Tiedostotyypit</value></data>
+  <data name="FileDialog.AllFiles"><value>Kaikki tiedostot</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>Tiedosto on jo olemassa. Korvaa se?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Anna kelvollinen tiedostonimi.</value></data>
 </root>

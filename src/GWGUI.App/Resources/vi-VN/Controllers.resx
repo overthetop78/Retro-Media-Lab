@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Nút</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Công tắc</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} trục · {1} nút · {2} công tắc</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Có</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Không</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Không có</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Trò chơi chung</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Name</value></data>

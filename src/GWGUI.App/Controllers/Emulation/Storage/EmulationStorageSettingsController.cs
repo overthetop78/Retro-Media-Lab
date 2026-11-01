@@ -9,6 +9,7 @@ using GWGUI.App.Services.Emulation;
 using GWGUI.App.Functions.Emulation.Storage;
 using GWGUI.App.Constants.Localization;
 using GWGUI.App.Services.Storage;
+using GWGUI.App.Services.Windows;
 
 
 namespace GWGUI.App.Controllers.Emulation.Storage;
@@ -29,6 +30,7 @@ internal sealed class EmulationStorageSettingsController
         _defaultFolder = defaultFolder;
     }
 
+    internal EmulationStorageDeviceList? PresentationList => _view;
     internal event EventHandler? SettingsChanged;
 
     internal UIElement CreateContent(IEmulationConfiguration configuration)
@@ -78,12 +80,12 @@ internal sealed class EmulationStorageSettingsController
         EmulationMediaType type;
         try
         {
-            if (dialog.ShowDialog() != true) return;
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(_view), dialog) != true) return;
             type = dialog.SelectedType;
         }
         finally
         {
-            dialog.Close();
+            WpfWindowNavigationService.CloseOwnedDialog(dialog);
         }
         var selected = candidates.First(device => device.MediaType == type);
         var deviceSettings = (_settings.DeviceSettings ?? []).ToList();
@@ -150,10 +152,10 @@ internal sealed class EmulationStorageSettingsController
         IReadOnlyDictionary<string, string> selected;
         try
         {
-            if (dialog.ShowDialog() != true) return;
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(_view), dialog) != true) return;
             selected = dialog.Options;
         }
-        finally { dialog.Close(); }
+        finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
         _settings = _settings with
         {
             DeviceSettings = (_settings.DeviceSettings ?? []).Where(item => item.Slot != device.Slot)
@@ -170,10 +172,10 @@ internal sealed class EmulationStorageSettingsController
             var directoryDialog = new MemoryCardDirectoryConfigurationDialog(DeviceLabel(device), current, ImageDirectory(device));
             try
             {
-                if (directoryDialog.ShowDialog() != true) return;
+                if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(_view), directoryDialog) != true) return;
                 SetMemoryCardPath(device, directoryDialog.SupportPath);
             }
-            finally { directoryDialog.Close(); }
+            finally { WpfWindowNavigationService.CloseOwnedDialog(directoryDialog); }
             return;
         }
         var dialog = new HardDiskDriveConfigurationDialog(
@@ -188,12 +190,12 @@ internal sealed class EmulationStorageSettingsController
         string? selected;
         try
         {
-            if (dialog.ShowDialog() != true) return;
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(_view), dialog) != true) return;
             selected = dialog.SupportPath;
         }
         finally
         {
-            dialog.Close();
+            WpfWindowNavigationService.CloseOwnedDialog(dialog);
         }
         SetMemoryCardPath(device, selected);
     }
@@ -222,12 +224,12 @@ internal sealed class EmulationStorageSettingsController
         EmulationCompactDiscDriveSettings selected;
         try
         {
-            if (dialog.ShowDialog() != true) return;
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(_view), dialog) != true) return;
             selected = dialog.Settings;
         }
         finally
         {
-            dialog.Close();
+            WpfWindowNavigationService.CloseOwnedDialog(dialog);
         }
         _settings = _settings with
         {
@@ -246,12 +248,12 @@ internal sealed class EmulationStorageSettingsController
         CartridgeSlotSettings selected;
         try
         {
-            if (dialog.ShowDialog() != true) return;
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(_view), dialog) != true) return;
             selected = dialog.Settings;
         }
         finally
         {
-            dialog.Close();
+            WpfWindowNavigationService.CloseOwnedDialog(dialog);
         }
         var settings = (_settings.DeviceSettings ?? []).Where(item => item.Slot != device.Slot).Append(new EmulationStorageDeviceSettings(device.Slot, Cartridge: selected)).ToArray();
         _settings = _settings with { DeviceSettings = settings };
@@ -278,14 +280,14 @@ internal sealed class EmulationStorageSettingsController
         IReadOnlyDictionary<string, string> options;
         try
         {
-            if (dialog.ShowDialog() != true) return;
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(_view), dialog) != true) return;
             supportPath = dialog.SupportPath;
             interfaceId = dialog.InterfaceId;
             options = dialog.Options;
         }
         finally
         {
-            dialog.Close();
+            WpfWindowNavigationService.CloseOwnedDialog(dialog);
         }
         var media = string.IsNullOrWhiteSpace(supportPath) ? null : new EmulationMedia(supportPath, device.Slot, device.MediaType, current?.IsReadOnly ?? false, true);
         _settings = _settings with
@@ -307,13 +309,13 @@ internal sealed class EmulationStorageSettingsController
         string? createdMediaToMount;
         try
         {
-            if (dialog.ShowDialog() != true) return;
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(_view), dialog) != true) return;
             selectedSettings = dialog.Settings;
             createdMediaToMount = dialog.CreatedMediaToMount;
         }
         finally
         {
-            dialog.Close();
+            WpfWindowNavigationService.CloseOwnedDialog(dialog);
         }
         var settings = (_settings.DeviceSettings ?? []).Where(item => item.Slot != device.Slot).Append(new EmulationStorageDeviceSettings(device.Slot, selectedSettings)).ToArray();
         _settings = _settings with

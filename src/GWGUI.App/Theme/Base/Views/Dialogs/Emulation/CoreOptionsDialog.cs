@@ -10,6 +10,10 @@ namespace GWGUI.App.Views.Dialogs.Emulation;
 
 public sealed class CoreOptionsDialog : Window
 {
+    internal sealed record PresentationOption(string Key, string Category, string Label, FrameworkElement Control);
+    internal string PresentationSubtitle { get; }
+    internal IReadOnlyList<PresentationOption> PresentationOptions => _options.Select(option => new PresentationOption(option.Key,
+        string.IsNullOrWhiteSpace(option.Category) ? Title : Resolve(option.Category), Resolve(option.Name), _controls[option.Key])).ToArray();
     private readonly IReadOnlyList<EmulationOption> _options;
     private readonly string? _moduleId;
     private readonly Dictionary<string, FrameworkElement> _controls = new(StringComparer.Ordinal);
@@ -28,7 +32,8 @@ public sealed class CoreOptionsDialog : Window
         SizeToContent = SizeToContent.Height;
         ResizeMode = ResizeMode.NoResize;
 
-        var subtitle = string.IsNullOrWhiteSpace(emulatorVersion) ? emulatorName : $"{emulatorName} · {emulatorVersion}";
+        PresentationSubtitle = string.IsNullOrWhiteSpace(emulatorVersion) ? emulatorName : $"{emulatorName} · {emulatorVersion}";
+        var subtitle = PresentationSubtitle;
         var body = new StackPanel();
         foreach (var group in _options.GroupBy(option => option.Category ?? string.Empty, StringComparer.Ordinal))
         {

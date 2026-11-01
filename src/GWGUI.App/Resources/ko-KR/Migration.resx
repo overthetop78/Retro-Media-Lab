@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>소스와 목적지를 선택하십시오.</value></data>
   <data name="Migration.Severity"><value>의성</value></data>
   <data name="Migration.Path"><value>소스 경로</value></data>
-  <data name="Migration.Description"><value>의 특징</value></data>
+  <data name="Migration.Description"><value>문제의 설명</value></data>
   <data name="Migration.AcceptLosses"><value>목록으로 만들어진 metadata 손실</value></data>
   <data name="Migration.Execute"><value>파일 Migrate</value></data>
   <data name="Migration.Blocking"><value>팟캐스트</value></data>

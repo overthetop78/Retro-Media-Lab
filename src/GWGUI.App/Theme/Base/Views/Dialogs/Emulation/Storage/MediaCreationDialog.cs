@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -6,6 +7,7 @@ using GWGUI.App.Constants.Controls.Visual;
 using GWGUI.App.Constants.Emulation;
 using GWGUI.App.Functions.Views.Emulation.Storage;
 using GWGUI.App.Localization.Extensions;
+using GWGUI.App.Theme.Common;
 
 namespace GWGUI.App.Views.Dialogs.Emulation.Storage;
 
@@ -14,20 +16,36 @@ internal sealed class MediaCreationDialog : Window
 {
     private bool _busy;
     private bool _created;
+    private bool _closeRequested;
+    private Task _creationTask = Task.CompletedTask;
+    internal FrameworkElement PresentationConfiguration { get; }
+    internal TextBlock PresentationStatus => _status;
+    internal Button PresentationMount { get; }
+    internal Button PresentationCreate { get; }
+    internal Button PresentationCancel { get; }
+    internal bool PresentationBusy => _busy;
+    internal Task PresentationOperation => _creationTask;
+
+    internal void RequestPresentationClose()
+    {
+        if (_busy) _closeRequested = true;
+        else Close();
+    }
     private readonly StackPanel _buttons = new() { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly TextBlock _status = new() { TextWrapping = TextWrapping.Wrap };
 
     /// <summary>Fichier effectivement créé, conservé lorsque la configuration est ensuite verrouillée.</summary>
     internal string? CreatedPath { get; private set; }
 
-    internal MediaCreationDialog(Window owner, string title, string path, Func<Task> create)
+    internal MediaCreationDialog(Window? owner, string title, string path, Func<Task> create)
         : this(owner, title, new TextBox { Text = path, IsReadOnly = true, TextWrapping = TextWrapping.Wrap }, () => path, create)
     {
     }
 
-    internal MediaCreationDialog(Window owner, string title, FrameworkElement configuration, Func<string> destinationPath, Func<Task> create, Func<bool>? canCreate = null)
+    internal MediaCreationDialog(Window? owner, string title, FrameworkElement configuration, Func<string> destinationPath, Func<Task> create, Func<bool>? canCreate = null)
     {
-        Owner = owner;
+        Owner = owner?.IsVisible == true ? owner : null;
+        PresentationConfiguration = configuration;
         Title = title;
         ShowInTaskbar = false;
         SetResourceReference(StyleProperty, "ApplicationWindowStyle");
@@ -54,8 +72,22 @@ internal sealed class MediaCreationDialog : Window
         var cancel = Button(LocExtension.Get("Common.Cancel"));
         cancel.IsCancel = true;
         mount.IsDefault = true;
-        mount.Click += async (_, _) => await CreateAsync(true);
-        onlyCreate.Click += async (_, _) => await CreateAsync(false);
+        PresentationMount = mount;
+        PresentationCreate = onlyCreate;
+        PresentationCancel = cancel;
+        mount.Click += async (_, _) =>
+        {
+            if (_busy) return;
+            _creationTask = CreateAsync(true);
+            await _creationTask;
+        };
+        onlyCreate.Click += async (_, _) =>
+        {
+            if (_busy) return;
+            _creationTask = CreateAsync(false);
+            await _creationTask;
+        };
+        cancel.Click += (_, _) => { if (!_busy) ThemeDialogCompletion.Complete(this, false); };
         void RefreshCommands()
         {
             var ready = canCreate?.Invoke() ?? true;
@@ -65,7 +97,12 @@ internal sealed class MediaCreationDialog : Window
         configuration.AddHandler(Selector.SelectionChangedEvent, new SelectionChangedEventHandler((_, _) => RefreshCommands()));
         configuration.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler((_, _) => RefreshCommands()));
         RefreshCommands();
-        Closing += (_, args) => args.Cancel = _busy;
+        Closing += (_, args) =>
+        {
+            if (!_busy) return;
+            args.Cancel = true;
+            _closeRequested = true;
+        };
         var root = StorageDialogUi.DialogLayout(StorageDialogUi.DialogHeader(IconGlyphs.FloppyDisk, title, string.Empty, compact: true),
             new ScrollViewer { Content = body, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }, _buttons);
         root.Margin = new Thickness(18);
@@ -97,15 +134,16 @@ internal sealed class MediaCreationDialog : Window
             }
             catch (Exception error)
             {
-                MessageBox.Show(this, error.Message, Title, MessageBoxButton.OK, MessageBoxImage.Warning);
+                WpfMessageDialogService.ShowMessage(this, error.Message, Title, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             finally
             {
                 _busy = false;
                 _buttons.IsEnabled = true;
                 RefreshCommands();
+                if (_closeRequested) Close();
             }
-            if (completed && mountAfterCreation) DialogResult = true;
+            if (!_closeRequested && completed && mountAfterCreation) ThemeDialogCompletion.Complete(this, true);
         }
     }
 

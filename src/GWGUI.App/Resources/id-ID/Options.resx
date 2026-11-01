@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Ruang kerja dengan jendela yang dapat dipindahkan dan diubah ukurannya. Biarkan beberapa alat terbuka dan beralih di antaranya tanpa kehilangan pengaturan.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimalkan</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maksimalkan atau pulihkan</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Pengelola Program</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Sistem</value></data>
+  <data name="Options.Themes.OS.File"><value>Berkas</value></data>
+  <data name="Options.Themes.OS.Window"><value>Jendela</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Berjenjang</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Berdampingan</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Susun ikon</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Pulihkan</value></data>
+  <data name="Options.Themes.OS.Move"><value>Pindahkan</value></data>
+  <data name="Options.Themes.OS.Size"><value>Ubah ukuran</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maksimalkan</value></data>
+  <data name="Options.Themes.OS.Open"><value>Buka</value></data>
+  <data name="Options.Themes.OS.Description"><value>Sistem operasi asli antarmuka, termasuk jendela, kontrol dan interaksi.</value></data>
+  <data name="Options.Themes.Edition"><value>Variabel</value></data>
+  <data name="Options.Themes.OS.Start"><value>Mulai</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Program</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Penomoran</value></data>
 </root>

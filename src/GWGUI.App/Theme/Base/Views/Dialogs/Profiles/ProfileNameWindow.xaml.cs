@@ -1,3 +1,5 @@
+using GWGUI.App.Services.Dialogs;
+using GWGUI.App.Theme.Common;
 using GWGUI.App.Localization.Extensions;
 using System.Windows;
 
@@ -12,13 +14,21 @@ public partial class ProfileNameWindow : Window
     internal ProfileNameWindow(string? initialName, Action? accept, Action? nameRequired)
     {
         InitializeComponent(); NameText.Text = initialName ?? "";
-        _accept = accept ?? (() => DialogResult = true);
-        _nameRequired = nameRequired ?? (() => MessageBox.Show(this, LocExtension.Get("Profile.NameRequired"), LocExtension.Get("Profile.Title"), MessageBoxButton.OK, MessageBoxImage.Information));
+        _accept = accept ?? (() => ThemeDialogCompletion.Complete(this, true));
+        _nameRequired = nameRequired ?? (() => WpfMessageDialogService.ShowMessage(this, LocExtension.Get("Profile.NameRequired"), LocExtension.Get("Profile.Title"), MessageBoxButton.OK, MessageBoxImage.Information));
         Loaded += (_, _) => { NameText.SelectAll(); NameText.Focus(); };
     }
+    internal event EventHandler? NameRequired;
+    internal void RequestSave() => Save_Click(this, new RoutedEventArgs());
+
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(ProfileName)) { _nameRequired(); return; }
+        if (string.IsNullOrWhiteSpace(ProfileName))
+        {
+            if (NameRequired is { } required) required(this, EventArgs.Empty);
+            else _nameRequired();
+            return;
+        }
         _accept();
     }
 }

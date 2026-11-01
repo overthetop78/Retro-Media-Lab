@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>工作區中的視窗可以移動和調整大小。可同時開啟多個工具，在它們之間切換而不遺失設定。</value></data>
   <data name="Options.Themes.Minimize"><value>最小化</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>最大化或還原</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>程式管理員</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>系統</value></data>
+  <data name="Options.Themes.OS.File"><value>檔案</value></data>
+  <data name="Options.Themes.OS.Window"><value>視窗</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>層疊</value></data>
+  <data name="Options.Themes.OS.Tile"><value>並排</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>排列圖示</value></data>
+  <data name="Options.Themes.OS.Restore"><value>還原</value></data>
+  <data name="Options.Themes.OS.Move"><value>移動</value></data>
+  <data name="Options.Themes.OS.Size"><value>大小</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>最大化</value></data>
+  <data name="Options.Themes.OS.Open"><value>開啟</value></data>
+  <data name="Options.Themes.OS.Description"><value>原始操作系统接口,包括窗口,控制和交互.</value></data>
+  <data name="Options.Themes.Edition"><value>备选案文</value></data>
+  <data name="Options.Themes.OS.Start"><value>開始</value></data>
+  <data name="Options.Themes.OS.Programs"><value>程式</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>編號</value></data>
 </root>

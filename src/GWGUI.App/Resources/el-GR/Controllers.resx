@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Κουμπί</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Διακόπτης</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} άξονες · {1} κουμπιά · {2} διακόπτες</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Ναι</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Όχι</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Κανένα</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Γενικό πληκτρολόγιο</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Τροχός ποδοκίνητος</value></data>

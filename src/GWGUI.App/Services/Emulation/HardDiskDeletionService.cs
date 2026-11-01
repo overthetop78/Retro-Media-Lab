@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using System.IO;
 using System.Windows;
 using GWGUI.App.Localization.Extensions;
@@ -18,7 +19,7 @@ internal static class HardDiskDeletionService
         var handles = HardDiskDeletionFile.Open(members);
         try
         {
-            if (MessageBox.Show(LocExtension.Get("Emulation.Hdd.DeleteConfirm", string.Join(Environment.NewLine, members)), LocExtension.Get("Emulation.Hdd.Delete"), MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return false;
+            if (WpfMessageDialogService.ShowMessage(LocExtension.Get("Emulation.Hdd.DeleteConfirm", string.Join(Environment.NewLine, members)), LocExtension.Get("Emulation.Hdd.Delete"), MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return false;
             var confirmedMembers = HardDiskImageSetResolver.Resolve(fullPath);
             if (!members.SequenceEqual(confirmedMembers, StringComparer.OrdinalIgnoreCase))
                 throw new IOException("The disk image set changed while deletion was being confirmed.");
@@ -42,7 +43,7 @@ internal static class HardDiskDeletionService
                 throw new IOException(LocExtension.Get("Emulation.Hdd.Link"));
     }
 
-    private static void ShowUsers(IReadOnlyList<string> users) => MessageBox.Show(LocExtension.Get("Emulation.Hdd.InUse", string.Join(Environment.NewLine, users)), LocExtension.Get("Emulation.Hdd.Delete"), MessageBoxButton.OK, MessageBoxImage.Information);
+    private static void ShowUsers(IReadOnlyList<string> users) => WpfMessageDialogService.ShowMessage(LocExtension.Get("Emulation.Hdd.InUse", string.Join(Environment.NewLine, users)), LocExtension.Get("Emulation.Hdd.Delete"), MessageBoxButton.OK, MessageBoxImage.Information);
 
     private static async Task<IReadOnlyList<string>> FindUsersAsync(IReadOnlyList<string> paths, IEmulationConfiguration current)
     {

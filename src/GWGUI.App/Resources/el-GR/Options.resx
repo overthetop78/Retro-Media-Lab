@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Χώρος εργασίας με παράθυρα που μετακινούνται και αλλάζουν μέγεθος. Κρατήστε πολλά εργαλεία ανοιχτά και εναλλάξτε μεταξύ τους χωρίς απώλεια ρυθμίσεων.</value></data>
   <data name="Options.Themes.Minimize"><value>Ελαχιστοποίηση</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Μεγιστοποίηση ή επαναφορά</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Διαχείριση προγραμμάτων</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Σύστημα</value></data>
+  <data name="Options.Themes.OS.File"><value>Αρχείο</value></data>
+  <data name="Options.Themes.OS.Window"><value>Παράθυρο</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Διαδοχική διάταξη</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Σε παράθεση</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Τακτοποίηση εικονιδίων</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Επαναφορά</value></data>
+  <data name="Options.Themes.OS.Move"><value>Μετακίνηση</value></data>
+  <data name="Options.Themes.OS.Size"><value>Αλλαγή μεγέθους</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Μεγιστοποίηση</value></data>
+  <data name="Options.Themes.OS.Open"><value>Άνοιγμα</value></data>
+  <data name="Options.Themes.OS.Description"><value>Αρχικές διεπαφές λειτουργικού συστήματος, συμπεριλαμβανομένων των παραθύρων, των ελέγχων και των αλληλεπιδράσεων.</value></data>
+  <data name="Options.Themes.Edition"><value>Παραλλαγή</value></data>
+  <data name="Options.Themes.OS.Start"><value>Έναρξη</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Προγράμματα</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Αρίθμηση</value></data>
 </root>

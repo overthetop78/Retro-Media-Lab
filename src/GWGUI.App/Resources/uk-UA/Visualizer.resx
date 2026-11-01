@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>Депутатський сектор</value></data>
   <data name="Visual.SectorWithoutData"><value>Сектор без даних</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>Відомості про касету</value></data>
+  <data name="Visual.Representation"><value>Режим відображення</value></data>
 </root>

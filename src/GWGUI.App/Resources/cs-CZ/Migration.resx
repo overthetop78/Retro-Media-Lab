@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Vyberte zdroj a cíl.</value></data>
   <data name="Migration.Severity"><value>Závažnost</value></data>
   <data name="Migration.Path"><value>Cesta zdroje</value></data>
-  <data name="Migration.Description"><value>Popis</value></data>
+  <data name="Migration.Description"><value>Popis problému</value></data>
   <data name="Migration.AcceptLosses"><value>Přijmout ztráty uvedených metadat</value></data>
   <data name="Migration.Execute"><value>Přemístit soubory</value></data>
   <data name="Migration.Blocking"><value>Blokování</value></data>

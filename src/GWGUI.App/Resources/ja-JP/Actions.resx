@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>更新</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>フォルダーを開く</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>一時停止</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>はい</value></data>
+  <data name="Common.No" xml:space="preserve"><value>いいえ</value></data>
+  <data name="Common.Abort"><value>中止</value></data>
+  <data name="Common.Retry"><value>再試行</value></data>
+  <data name="Common.Ignore"><value>無視</value></data>
+  <data name="Common.TryAgain"><value>再試行</value></data>
 </root>

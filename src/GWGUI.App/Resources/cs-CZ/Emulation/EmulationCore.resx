@@ -23,6 +23,6 @@
   <data name="Emulation.Core.Emulator"><value>Emulátor</value></data>
   <data name="Emulation.Core.Install"><value>Instalovat</value></data>
   <data name="Emulation.Core.InstalledBadge"><value>Instalováno</value></data>
-  <data name="Emulation.Core.NameOptions" xml:space="preserve"><value>Základní opce</value></data>
+  <data name="Emulation.Core.NameOptions"><value>Možnosti emulačního jádra</value></data>
   <data name="Emulation.Core.NameNoEmulatorAvailable"><value>Před vytvořením tohoto stroje vyberte emulátor.</value></data>
 </root>

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GWGUI.App.Services.Windows;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -98,7 +99,8 @@ internal sealed class EmulationFirmwareManagementController : IAsyncDisposable
         {
             dialog = new FirmwareSelectionDialog(content, owner);
             _dialog = dialog;
-            if (dialog.ShowDialog() != true || dialog.SelectedFirmware is not { } selected) return null;
+            var result = owner is null ? dialog.ShowDialog() : WpfWindowNavigationService.ShowOwnedDialog(owner, dialog);
+            if (result != true || dialog.SelectedFirmware is not { } selected) return null;
             if (configuration.Id != _getConfiguration().Id || configuration.MachineId != _getConfiguration().MachineId || !CanUse(field.Id, selected)) return null;
             // Les fichiers non identifiés suivent la validation du champ, comme l'ancien choix de fichier.
             if (selected.Compatibility == EmulationFirmwareCompatibility.Unknown)

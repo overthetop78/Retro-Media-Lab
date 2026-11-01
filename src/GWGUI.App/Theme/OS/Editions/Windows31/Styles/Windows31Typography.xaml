@@ -1,0 +1,6 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <FontFamily x:Key="Windows31BodyFont">../Assets/Fonts/#RML Win31 Sans VGA, Global User Interface</FontFamily>
+    <FontFamily x:Key="Windows31CaptionFont">../Assets/Fonts/#RML Win31 System VGA, Global User Interface</FontFamily>
+    <FontFamily x:Key="Windows31FixedFont">../Assets/Fonts/#RML Win31 Fixed VGA, Global User Interface</FontFamily>
+</ResourceDictionary>

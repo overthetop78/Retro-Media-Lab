@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>Mrtvý sektor</value></data>
   <data name="Visual.SectorWithoutData"><value>Odvětví bez údajů</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>Informace o kazetě</value></data>
+  <data name="Visual.Representation"><value>Režim zobrazení</value></data>
 </root>

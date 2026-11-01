@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Használja a következő számot</value></data>
   <data name="Read.ConflictEditName"><value>Hadd módosítsam a nevet</value></data>
   <data name="Read.ImageToCreate"><value>Létrehozandó kép</value></data>
-  <data name="Read.Extension"><value>Kiterjesztés</value></data>
+  <data name="Read.Extension"><value>Fájlkiterjesztés</value></data>
   <data name="Read.RawScp"><value>Nyers kép (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Ismert lemezformátum</value></data>
   <data name="Read.FileName"><value>Fájlnév</value></data>

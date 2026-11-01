@@ -23,7 +23,7 @@ public sealed partial class EmulationPreferencesSection : UserControl
     internal static event Func<Task>? ConfigurationDeleted;
     internal event Func<IEmulationModule, IEmulationConfiguration, Task>? EditConfigurationRequested;
 
-    private readonly IReadOnlyList<IEmulationModule> _modules = EmulationModuleRegistry.Modules;
+    private readonly IReadOnlyList<IEmulationModule> _modules;
     private readonly EmulationConfigurationSelector _configurationSelector = new();
     private string? _selectedConfigurationMachineId;
     private IEmulationModule? _selectedConfigurationModule;
@@ -42,9 +42,13 @@ public sealed partial class EmulationPreferencesSection : UserControl
     private readonly List<(TabItem Tab, string ResourceKey)> _localizedTabs = [];
     private bool _configurationsLoaded;
     private bool _loadingConfigurations;
+    private Task? _configurationLoadTask;
 
-    public EmulationPreferencesSection()
+    public EmulationPreferencesSection() : this(EmulationModuleRegistry.Modules) { }
+
+    internal EmulationPreferencesSection(IReadOnlyList<IEmulationModule> modules)
     {
+        _modules = modules;
         _shortcuts.ConfigureCaptureSources(GWGUI.App.Enums.Input.InputCaptureSources.Keyboard | GWGUI.App.Enums.Input.InputCaptureSources.Mouse | GWGUI.App.Enums.Input.InputCaptureSources.Controller, true);
         _tabs = new TabControl
         {
@@ -53,19 +57,9 @@ public sealed partial class EmulationPreferencesSection : UserControl
             VerticalContentAlignment = VerticalAlignment.Stretch
         };
         _shortcuts.BindingsChanged += async (_, _) => await SaveShortcutsAsync();
-        _configurationSelector.BrandSelected += module =>
-        {
-            _selectedConfigurationModule = module;
-            _selectedConfigurationMachineId = null;
-            RebuildConfigurationBrands();
-            FilterConfigurationTable();
-        };
+        _configurationSelector.BrandSelected += SelectModule;
         _configurationSelector.MachineSelected += (_, machine) =>
-        {
-            _selectedConfigurationMachineId = _selectedConfigurationMachineId == machine.Id ? null : machine.Id;
-            RebuildConfigurationBrands();
-            FilterConfigurationTable();
-        };
+            SelectMachine(_selectedConfigurationMachineId == machine.Id ? null : machine.Id);
         _configurationTable.EditRequested += async row => await EditConfigurationAsync(row);
         _configurationTable.DeleteRequested += async row => await DeleteConfigurationAsync(row);
         _storageFolder.LostKeyboardFocus += async (_, _) => await SaveFoldersAsync();
@@ -78,6 +72,55 @@ public sealed partial class EmulationPreferencesSection : UserControl
         Content = _tabs;
         Loaded += async (_, _) => await LoadConfigurationsWhenVisibleAsync();
         IsVisibleChanged += async (_, _) => await LoadConfigurationsWhenVisibleAsync();
+    }
+
+    internal TextBox StorageFolder => _storageFolder;
+    internal TextBox CaptureFolder => _captureFolder;
+    internal TextBox StateFolder => _stateFolder;
+    internal InputBindingEditor ShortcutEditor => _shortcuts;
+    internal IReadOnlyList<EmulationConfigurationTableRow> ConfigurationRows => _configurationRows;
+    internal IEmulationModule? SelectedModule => _selectedConfigurationModule;
+    internal string? SelectedMachineId => _selectedConfigurationMachineId;
+    internal event EventHandler? PresentationChanged;
+
+    internal Task RequestSaveFoldersAsync() => SaveFoldersAsync();
+    internal Task RequestBrowseFolderAsync(TextBox folder) => BrowseFolderAsync(folder);
+    internal Task RequestEditConfigurationAsync(EmulationConfigurationTableRow row) => EditConfigurationAsync(row);
+    internal Task RequestDeleteConfigurationAsync(EmulationConfigurationTableRow row) => DeleteConfigurationAsync(row);
+
+    internal Task EnsureConfigurationsAsync()
+    {
+        if (_configurationsLoaded) return Task.CompletedTask;
+        if (_loadingConfigurations) return _configurationLoadTask ?? Task.CompletedTask;
+        return _configurationLoadTask = LoadInitialConfigurationsAsync();
+    }
+
+    internal Task WaitForConfigurationsAsync() => _configurationLoadTask ?? Task.CompletedTask;
+
+    private async Task LoadInitialConfigurationsAsync()
+    {
+        _loadingConfigurations = true;
+        try
+        {
+            await ReloadConfigurationsAsync();
+            _configurationsLoaded = true;
+        }
+        finally { _loadingConfigurations = false; }
+    }
+
+    internal void SelectModule(IEmulationModule module)
+    {
+        _selectedConfigurationModule = module;
+        _selectedConfigurationMachineId = null;
+        RebuildConfigurationBrands();
+        FilterConfigurationTable();
+    }
+
+    internal void SelectMachine(string? machineId)
+    {
+        _selectedConfigurationMachineId = machineId;
+        RebuildConfigurationBrands();
+        FilterConfigurationTable();
     }
 
     public void Configure(AppSettings settings, Func<Task> persistSettings)
@@ -97,14 +140,7 @@ public sealed partial class EmulationPreferencesSection : UserControl
 
     private async Task LoadConfigurationsWhenVisibleAsync()
     {
-        if (!IsLoaded || !IsVisible || _configurationsLoaded || _loadingConfigurations) return;
-        _loadingConfigurations = true;
-        try
-        {
-            await ReloadConfigurationsAsync();
-            _configurationsLoaded = true;
-        }
-        finally { _loadingConfigurations = false; }
+        if (IsLoaded && IsVisible) await EnsureConfigurationsAsync();
     }
 
     internal static void RaiseConfigurationSaved(object sender, EmulationConfigurationSavedEventArgs args) => ConfigurationSaved?.Invoke(sender, args);

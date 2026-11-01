@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Välj en källa och en destination.</value></data>
   <data name="Migration.Severity"><value>Svårighetsgrad</value></data>
   <data name="Migration.Path"><value>Källa väg</value></data>
-  <data name="Migration.Description"><value>Beskrivning</value></data>
+  <data name="Migration.Description"><value>Beskrivning av problemet</value></data>
   <data name="Migration.AcceptLosses"><value>Acceptera de listade metadataförlusterna</value></data>
   <data name="Migration.Execute"><value>Migrera filer</value></data>
   <data name="Migration.Blocking"><value>Blockering</value></data>

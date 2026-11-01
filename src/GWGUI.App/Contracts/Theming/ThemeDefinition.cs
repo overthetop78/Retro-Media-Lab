@@ -7,6 +7,10 @@ namespace GWGUI.App.Contracts.Theming;
 internal sealed record ThemeDefinition(AppThemeDesign Id, string NameResourceKey, string DescriptionResourceKey,
     IReadOnlyList<AppTheme> Variants, AppTheme DefaultVariant)
 {
+    internal IReadOnlyList<ThemeEditionDefinition> Editions { get; init; } = [];
+    internal string EditionHeadingResourceKey { get; init; } = "Options.Themes.Appearance";
+    internal ThemeEditionDefinition? FindEdition(string? id) => Editions.FirstOrDefault(edition => edition.Id == id)
+        ?? Editions.FirstOrDefault();
     internal Func<Grid, TabControl, IThemeWorkspace>? CreateWorkspace { get; init; }
     internal string? WindowStyleResource { get; init; }
     internal string? ControlsUri { get; init; }

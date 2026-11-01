@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Hajlékonylemez</value></data>
   <data name="Common.MediaKind.HardDisk"><value>merevlemez</value></data>
   <data name="Common.MediaKind.Optical"><value>Optikai tárcsa</value></data>
-  <data name="Common.MediaKind.Tape"><value>Videofelvétel</value></data>
+  <data name="Common.MediaKind.Tape"><value>Mágnesszalag</value></data>
   <data name="Common.Representation.Flux"><value>flux</value></data>
   <data name="Common.Representation.Sectors"><value>Szektorok</value></data>
   <data name="Common.Representation.Blocks"><value>Blokkok</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Lemezképek|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Minden fájl|*.*</value></data>
   <data name="Common.Console"><value>Konzol</value></data>
   <data name="Common.Command"><value>Parancs</value></data>
+  <data name="FileDialog.Open"><value>Megnyitás</value></data>
+  <data name="FileDialog.SaveAs"><value>Mentés másként</value></data>
+  <data name="FileDialog.SelectFolder"><value>Mappa kiválasztása</value></data>
+  <data name="FileDialog.Directories"><value>Könyvtárak</value></data>
+  <data name="FileDialog.Drives"><value>Meghajtók</value></data>
+  <data name="FileDialog.FileTypes"><value>Fájltípusok</value></data>
+  <data name="FileDialog.AllFiles"><value>Minden fájl</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>A fájl már létezik. Helyettesíteni?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Adjon meg egy érvényes fájlnevet.</value></data>
 </root>

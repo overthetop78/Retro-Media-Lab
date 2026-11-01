@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>軟碟</value></data>
   <data name="Common.MediaKind.HardDisk"><value>硬盘</value></data>
   <data name="Common.MediaKind.Optical"><value>光盘</value></data>
-  <data name="Common.MediaKind.Tape"><value>磁带</value></data>
+  <data name="Common.MediaKind.Tape"><value>磁帶</value></data>
   <data name="Common.Representation.Flux"><value>豪华</value></data>
   <data name="Common.Representation.Sectors"><value>部门</value></data>
   <data name="Common.Representation.Blocks"><value>块</value></data>
@@ -22,4 +22,14 @@
   <data name="Common.DiskImageFilter"><value>磁盘图像|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|所有文件|*.*</value></data>
   <data name="Common.Console"><value>安慰</value></data>
   <data name="Common.Command"><value>命令</value></data>
+  <data name="FileDialog.Open"><value>開啟</value></data>
+  <data name="FileDialog.SaveAs"><value>另存新檔</value></data>
+  <data name="FileDialog.SelectFolder"><value>選擇資料夾</value></data>
+  <data name="FileDialog.Directories"><value>目錄</value></data>
+  <data name="FileDialog.Drives"><value>磁碟機</value></data>
+  <data name="FileDialog.FileTypes"><value>檔案類型</value></data>
+  <data name="FileDialog.AllFiles"><value>所有檔案</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>檔案已存在。要取代它嗎？
+{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>請輸入有效的檔案名稱。</value></data>
 </root>

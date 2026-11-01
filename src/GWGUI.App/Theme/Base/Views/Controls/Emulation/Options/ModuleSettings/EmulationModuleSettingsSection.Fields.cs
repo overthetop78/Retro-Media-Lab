@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.App.Constants.Controls.Visual;
 using GWGUI.App.Constants.Storage;
 using GWGUI.App.Contracts.Emulation.Settings;
@@ -127,7 +128,7 @@ internal sealed partial class EmulationModuleSettingsSection
                 InitialDirectory = currentDirectory ?? DefaultFolder(field.DefaultFolderCategory),
                 FileName = File.Exists(path.Text) ? Path.GetFileName(path.Text) : string.Empty
             };
-            if (dialog.ShowDialog() == true)
+            if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) == true)
             {
                 path.Text = dialog.FileName;
                 await ExecuteUserChangeAsync();
@@ -163,7 +164,7 @@ internal sealed partial class EmulationModuleSettingsSection
         browse.Click += async (_, _) =>
         {
             var dialog = new OpenFolderDialog { InitialDirectory = path.Text };
-            if (dialog.ShowDialog() == true)
+            if (WpfFileDialogService.ShowFolderDialog(dialog, Window.GetWindow(this)) == true)
             {
                 path.Text = dialog.FolderName;
                 await ExecuteUserChangeAsync();

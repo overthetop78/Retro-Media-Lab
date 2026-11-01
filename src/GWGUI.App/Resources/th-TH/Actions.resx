@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>รีเฟรช</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>เปิดโฟลเดอร์</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>หยุดชั่วคราว</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>ใช่</value></data>
+  <data name="Common.No" xml:space="preserve"><value>ไม่</value></data>
+  <data name="Common.Abort"><value>ยกเลิก</value></data>
+  <data name="Common.Retry"><value>ลองใหม่</value></data>
+  <data name="Common.Ignore"><value>ละเว้น</value></data>
+  <data name="Common.TryAgain"><value>ลองอีกครั้ง</value></data>
 </root>

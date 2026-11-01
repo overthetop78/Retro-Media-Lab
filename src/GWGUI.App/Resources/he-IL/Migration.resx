@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>בחרו מקור והמטרה</value></data>
   <data name="Migration.Severity"><value>מספר</value></data>
   <data name="Migration.Path"><value>נתיב מקור</value></data>
-  <data name="Migration.Description"><value>תיאור תיאור</value></data>
+  <data name="Migration.Description"><value>תיאור הבעיה</value></data>
   <data name="Migration.AcceptLosses"><value>קבלו את ההפסדים ה- metadata</value></data>
   <data name="Migration.Execute"><value>קבצים Migrate</value></data>
   <data name="Migration.Blocking"><value>חסימת</value></data>

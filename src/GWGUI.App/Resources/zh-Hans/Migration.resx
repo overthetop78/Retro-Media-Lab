@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>选择源和目的地。</value></data>
   <data name="Migration.Severity"><value>严重性</value></data>
   <data name="Migration.Path"><value>源路径</value></data>
-  <data name="Migration.Description"><value>说明</value></data>
+  <data name="Migration.Description"><value>问题说明</value></data>
   <data name="Migration.AcceptLosses"><value>接受列出的元数据损失</value></data>
   <data name="Migration.Execute"><value>迁移文件</value></data>
   <data name="Migration.Blocking"><value>封锁</value></data>

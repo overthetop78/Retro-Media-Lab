@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Disk images|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|All files|*.*</value></data>
   <data name="Common.Console"><value>Console</value></data>
   <data name="Common.Command"><value>Command</value></data>
+  <data name="FileDialog.Open"><value>Open</value></data>
+  <data name="FileDialog.SaveAs"><value>Save as</value></data>
+  <data name="FileDialog.SelectFolder"><value>Select a folder</value></data>
+  <data name="FileDialog.Directories"><value>Directories</value></data>
+  <data name="FileDialog.Drives"><value>Drives</value></data>
+  <data name="FileDialog.FileTypes"><value>List files of type</value></data>
+  <data name="FileDialog.AllFiles"><value>All files</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>The file already exists. Replace it?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Enter a valid file name.</value></data>
 </root>

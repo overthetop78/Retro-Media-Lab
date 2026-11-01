@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>סביבת עבודה עם חלונות שניתן להזיז ולשנות את גודלם. השאר כמה כלים פתוחים ועבור ביניהם בלי לאבד את ההגדרות שלהם.</value></data>
   <data name="Options.Themes.Minimize"><value>מזער</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>הגדל או שחזר</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>מנהל התוכניות</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>מערכת</value></data>
+  <data name="Options.Themes.OS.File"><value>קובץ</value></data>
+  <data name="Options.Themes.OS.Window"><value>חלון</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>מדורג</value></data>
+  <data name="Options.Themes.OS.Tile"><value>זה לצד זה</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>סדר סמלים</value></data>
+  <data name="Options.Themes.OS.Restore"><value>שחזר</value></data>
+  <data name="Options.Themes.OS.Move"><value>הזז</value></data>
+  <data name="Options.Themes.OS.Size"><value>שנה גודל</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>הגדל</value></data>
+  <data name="Options.Themes.OS.Open"><value>פתח</value></data>
+  <data name="Options.Themes.OS.Description"><value>ממשקי מערכת ההפעלה המקוריים, כולל חלונות, בקרה ואינטראקציות.</value></data>
+  <data name="Options.Themes.Edition"><value>משתנה</value></data>
+  <data name="Options.Themes.OS.Start"><value>התחל</value></data>
+  <data name="Options.Themes.OS.Programs"><value>תוכניות</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>מספור</value></data>
 </root>

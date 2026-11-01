@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Przycisk</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Przełącznik</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>Osie: {0} · przyciski: {1} · przełączniki: {2}</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Tak</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Nie</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Brak</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Generyczny gamepad</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Koła wyścigowe</value></data>

@@ -52,6 +52,7 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
     private IEmulationConfiguration _configuration;
     private bool _loading;
     private bool _disposed;
+    private Task? _initialLoad;
     private readonly SemaphoreSlim _saveInputGate = new(1, 1);
     private EmulationMachineTab _selectedTab = EmulationMachineTab.General;
 
@@ -108,7 +109,7 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
             await ExecuteAsync(SaveVideoProfileAsync);
         };
         Content = BuildEditor();
-        Loaded += async (_, _) => await ExecuteAsync(ReloadAsync);
+        Loaded += async (_, _) => await EnsureInitializedAsync();
     }
 
     internal event EventHandler<EmulationConfigurationSavedEventArgs>? ConfigurationSaved;
@@ -126,6 +127,7 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
     }
 
     internal Task ReloadWhenOpenedAsync() => ExecuteAsync(ReloadAsync);
+    internal Task EnsureInitializedAsync() => _initialLoad ??= ReloadWhenOpenedAsync();
 
     internal async Task ReloadAfterConfigurationDeletedAsync(Guid configurationId, string machineId)
     {
@@ -170,10 +172,14 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
         _disposed = true;
         try
         {
-            if (_emulatorManagement is not null)
+            try { if (_initialLoad is not null) await _initialLoad; }
+            finally
             {
-                _emulatorManagement.ConfigurationChanged -= EmulatorConfigurationChanged;
-                await _emulatorManagement.DisposeAsync();
+                if (_emulatorManagement is not null)
+                {
+                    _emulatorManagement.ConfigurationChanged -= EmulatorConfigurationChanged;
+                    await _emulatorManagement.DisposeAsync();
+                }
             }
         }
         finally
@@ -185,6 +191,10 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
             finally
             {
                 _machines.SelectionChanged -= MachineChanged;
+                PresentationChanged = null;
+                presentationTabs = null;
+                _fieldControls.Clear();
+                _userChangeHandlers.Clear();
                 Content = null;
             }
         }

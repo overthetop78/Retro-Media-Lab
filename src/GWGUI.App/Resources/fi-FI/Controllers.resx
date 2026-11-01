@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Painike</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Kytkin</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} akselia · {1} painiketta · {2} kytkintä</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Kyllä</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Ei</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Ei mitään</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Tavallinen pelialusta</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Kilpapyörä</value></data>

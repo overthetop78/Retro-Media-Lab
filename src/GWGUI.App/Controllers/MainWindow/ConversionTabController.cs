@@ -12,6 +12,7 @@ using GWGUI.Infrastructure.Settings;
 using GWGUI.Infrastructure.Settings.Engines;
 using GWGUI.App.Functions.ViewModels.Conversion;
 using GWGUI.App.Enums.Services.Dialogs;
+using GWGUI.App.Contracts.ViewModels.Conversion;
 using GWGUI.App.Interfaces.Services.Dialogs;
 using GWGUI.App.Localization.Extensions;
 using GWGUI.App.Presenters.Conversion;
@@ -115,8 +116,8 @@ internal sealed class ConversionTabController(
 
     internal void SelectionChanged(object? sender)
     {
-        if (sender is not ConversionFormatControl control) return;
-        viewModel.Conversion.SetFormat(control.Format.Id, control.IsSelected, control.ExplicitExtensions);
+        if (sender is not ConversionFormatPresentation selection) return;
+        viewModel.Conversion.SetFormat(selection.Format.Id, selection.IsSelected, selection.ExplicitExtensions);
         BuildFormats(sourceExtension, sourceDetection); UpdateCommand();
     }
 
@@ -172,7 +173,7 @@ internal sealed class ConversionTabController(
     internal void OpenMigration()
     {
         var sourcePath = File.Exists(view.SourceBlock.Input.Text) ? view.SourceBlock.Input.Text : null;
-        new FileMigrationWindow(sourcePath) { Owner = owner }.ShowDialog();
+        GWGUI.App.Services.Windows.WpfWindowNavigationService.ShowOwnedDialog(owner, new FileMigrationWindow(sourcePath));
     }
 
     internal IReadOnlyList<ConversionOutput> Plan()

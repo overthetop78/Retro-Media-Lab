@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Obszar roboczy z oknami, które można przesuwać i skalować. Otwórz kilka narzędzi i przełączaj się między nimi bez utraty ustawień.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimalizuj</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maksymalizuj lub przywróć</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Menedżer programów</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>System</value></data>
+  <data name="Options.Themes.OS.File"><value>Plik</value></data>
+  <data name="Options.Themes.OS.Window"><value>Okno</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Kaskadowo</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Sąsiadująco</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Rozmieść ikony</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Przywróć</value></data>
+  <data name="Options.Themes.OS.Move"><value>Przenieś</value></data>
+  <data name="Options.Themes.OS.Size"><value>Rozmiar</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maksymalizuj</value></data>
+  <data name="Options.Themes.OS.Open"><value>Otwórz</value></data>
+  <data name="Options.Themes.OS.Description"><value>Oryginalne interfejsy systemu operacyjnego, w tym okna, sterowniki i interakcje.</value></data>
+  <data name="Options.Themes.Edition"><value>Wariant</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programy</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numeracja</value></data>
 </root>

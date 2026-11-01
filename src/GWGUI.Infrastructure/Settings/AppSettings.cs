@@ -14,6 +14,7 @@ public sealed class AppSettings
     public string Language { get; set; } = "";
     public AppTheme Theme { get; set; } = AppTheme.System;
     public AppThemeDesign ThemeDesign { get; set; } = AppThemeDesign.Base;
+    public Dictionary<AppThemeDesign, ThemeEditionSettings> ThemeEditions { get; set; } = [];
     public string DefaultImagesFolder { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
     public string EmulationStorageFolder { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GW GUI", "Emulation");
     public string EmulationCaptureFolder { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "GW GUI", "Emulation", "Captures");

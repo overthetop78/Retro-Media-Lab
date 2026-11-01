@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.App.Constants.Emulation.Errors;
 using GWGUI.App.Presenters.Common;
 using GWGUI.App.Contracts.Emulation.Configurations;
@@ -20,7 +21,7 @@ public sealed partial class EmulationPreferencesSection
 
     private async Task DeleteConfigurationAsync(EmulationConfigurationTableRow row)
     {
-        var answer = MessageBox.Show(
+        var answer = WpfMessageDialogService.ShowMessage(
             string.Format(LocExtension.Get("Emulation.Configuration.DeleteConfirm"), LocExtension.GetForModule(row.Module, row.Module.DisplayResourceKey), row.MachineName),
             LocExtension.Get("Common.Delete"),
             MessageBoxButton.YesNo,
@@ -53,6 +54,7 @@ public sealed partial class EmulationPreferencesSection
         var selectedModule = _selectedConfigurationModule;
         _configurationTable.SetRows(selectedModule is null ? [] : _configurationRows.Where(row => row.Module.Id == selectedModule.Id
             && (_selectedConfigurationMachineId is null || row.Configuration.MachineId == _selectedConfigurationMachineId)).ToArray());
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void RebuildConfigurationBrands()

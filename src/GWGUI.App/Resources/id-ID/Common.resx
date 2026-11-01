@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Disket</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Hard disk</value></data>
   <data name="Common.MediaKind.Optical"><value>Diska optik</value></data>
-  <data name="Common.MediaKind.Tape"><value>Tape</value></data>
+  <data name="Common.MediaKind.Tape"><value>Pita magnetik</value></data>
   <data name="Common.Representation.Flux"><value>Flux</value></data>
   <data name="Common.Representation.Sectors"><value>Sektor</value></data>
   <data name="Common.Representation.Blocks"><value>Blok</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Image disk|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Semua berkas|*.*</value></data>
   <data name="Common.Console"><value>Menghibur</value></data>
   <data name="Common.Command"><value>Memerintah</value></data>
+  <data name="FileDialog.Open"><value>Buka</value></data>
+  <data name="FileDialog.SaveAs"><value>Simpan sebagai</value></data>
+  <data name="FileDialog.SelectFolder"><value>Pilih folder</value></data>
+  <data name="FileDialog.Directories"><value>Direktori</value></data>
+  <data name="FileDialog.Drives"><value>Kandar</value></data>
+  <data name="FileDialog.FileTypes"><value>Jenis berkas</value></data>
+  <data name="FileDialog.AllFiles"><value>Semua berkas</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>Berkas sudah ada. Ganti?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Masukkan nama berkas yang valid.</value></data>
 </root>

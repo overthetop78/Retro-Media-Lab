@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>磁盘图像|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|所有文件|*.*</value></data>
   <data name="Common.Console"><value>安慰</value></data>
   <data name="Common.Command"><value>命令</value></data>
+  <data name="FileDialog.Open"><value>打开</value></data>
+  <data name="FileDialog.SaveAs"><value>另存为</value></data>
+  <data name="FileDialog.SelectFolder"><value>选择文件夹</value></data>
+  <data name="FileDialog.Directories"><value>目录</value></data>
+  <data name="FileDialog.Drives"><value>驱动器</value></data>
+  <data name="FileDialog.FileTypes"><value>文件类型</value></data>
+  <data name="FileDialog.AllFiles"><value>所有文件</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>文件已经存在。 要替换它吗 ?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>输入一个有效的文件名.</value></data>
 </root>

@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>ฟลอปปีดิสก์</value></data>
   <data name="Common.MediaKind.HardDisk"><value>ฮาร์ดดิสก์</value></data>
   <data name="Common.MediaKind.Optical"><value>แผ่นโอพทัล</value></data>
-  <data name="Common.MediaKind.Tape"><value>เทป</value></data>
+  <data name="Common.MediaKind.Tape"><value>เทปแม่เหล็ก</value></data>
   <data name="Common.Representation.Flux"><value>เบลอ</value></data>
   <data name="Common.Representation.Sectors"><value>ส่วน</value></data>
   <data name="Common.Representation.Blocks"><value>บล็อค</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>ภาพบนดิสก์|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|ทุกแฟ้ม|*.*</value></data>
   <data name="Common.Console"><value>คอนโซล</value></data>
   <data name="Common.Command"><value>สั่งการ</value></data>
+  <data name="FileDialog.Open"><value>เปิด</value></data>
+  <data name="FileDialog.SaveAs"><value>บันทึกเป็น</value></data>
+  <data name="FileDialog.SelectFolder"><value>เลือกโฟลเดอร์</value></data>
+  <data name="FileDialog.Directories"><value>โฟลเดอร์</value></data>
+  <data name="FileDialog.Drives"><value>ไดรฟ์</value></data>
+  <data name="FileDialog.FileTypes"><value>ชนิดแฟ้ม</value></data>
+  <data name="FileDialog.AllFiles"><value>ทุกแฟ้ม</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>มีแฟ้มอยู่แล้ว แทนที่หรือไม่?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>ป้อนชื่อแฟ้มที่ถูกต้อง</value></data>
 </root>

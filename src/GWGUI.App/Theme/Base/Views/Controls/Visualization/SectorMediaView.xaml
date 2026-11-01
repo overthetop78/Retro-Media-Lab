@@ -40,9 +40,9 @@
                     <DockPanel LastChildFill="True">
                         <Border DockPanel.Dock="Right" Padding="2" Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="18">
                             <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource VisualizationZoomButton}" Tag="0" Content="&#x2212;" Click="ZoomOutButton_Click"/>
+                                <Button x:Name="ZoomOut0Button" Style="{StaticResource VisualizationZoomButton}" Tag="0" Content="&#x2212;" Click="ZoomOutButton_Click"/>
                                 <Button x:Name="ResetZoom0Button" Style="{StaticResource VisualizationZoomButton}" Tag="0" Width="62" FontSize="12" Content="100 %" Click="ResetZoomButton_Click"/>
-                                <Button Style="{StaticResource VisualizationZoomButton}" Tag="0" Content="+" Click="ZoomInButton_Click"/>
+                                <Button x:Name="ZoomIn0Button" Style="{StaticResource VisualizationZoomButton}" Tag="0" Content="+" Click="ZoomInButton_Click"/>
                             </StackPanel>
                         </Border>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -62,9 +62,9 @@
                     <DockPanel LastChildFill="True">
                         <Border DockPanel.Dock="Right" Padding="2" Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="18">
                             <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource VisualizationZoomButton}" Tag="1" Content="&#x2212;" Click="ZoomOutButton_Click"/>
+                                <Button x:Name="ZoomOut1Button" Style="{StaticResource VisualizationZoomButton}" Tag="1" Content="&#x2212;" Click="ZoomOutButton_Click"/>
                                 <Button x:Name="ResetZoom1Button" Style="{StaticResource VisualizationZoomButton}" Tag="1" Width="62" FontSize="12" Content="100 %" Click="ResetZoomButton_Click"/>
-                                <Button Style="{StaticResource VisualizationZoomButton}" Tag="1" Content="+" Click="ZoomInButton_Click"/>
+                                <Button x:Name="ZoomIn1Button" Style="{StaticResource VisualizationZoomButton}" Tag="1" Content="+" Click="ZoomInButton_Click"/>
                             </StackPanel>
                         </Border>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

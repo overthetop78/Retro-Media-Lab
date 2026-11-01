@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Espacio de trabajo con ventanas que se pueden mover y redimensionar. Mantenga varias herramientas abiertas y cambie entre ellas sin perder su configuración.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimizar</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maximizar o restaurar</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Administrador de programas</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Sistema</value></data>
+  <data name="Options.Themes.OS.File"><value>Archivo</value></data>
+  <data name="Options.Themes.OS.Window"><value>Ventana</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Cascada</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Mosaico</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Organizar iconos</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Restaurar</value></data>
+  <data name="Options.Themes.OS.Move"><value>Mover</value></data>
+  <data name="Options.Themes.OS.Size"><value>Tamaño</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximizar</value></data>
+  <data name="Options.Themes.OS.Open"><value>Abrir</value></data>
+  <data name="Options.Themes.OS.Description"><value>Interfaz de sistema operativo original, incluyendo ventanas, controles e interacciones.</value></data>
+  <data name="Options.Themes.Edition"><value>Variante</value></data>
+  <data name="Options.Themes.OS.Start"><value>Inicio</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programas</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numeración</value></data>
 </root>

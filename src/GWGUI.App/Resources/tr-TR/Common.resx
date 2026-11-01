@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Disket</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Hard disk</value></data>
   <data name="Common.MediaKind.Optical"><value>Optik disk</value></data>
-  <data name="Common.MediaKind.Tape"><value>Bant</value></data>
+  <data name="Common.MediaKind.Tape"><value>Manyetik bant</value></data>
   <data name="Common.Representation.Flux"><value>Flux Flux</value></data>
   <data name="Common.Representation.Sectors"><value>Sektörler</value></data>
   <data name="Common.Representation.Blocks"><value>Bloklar</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Disk görüntüleri|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|All files|*.*</value></data>
   <data name="Common.Console"><value>Konsol</value></data>
   <data name="Common.Command"><value>Emretmek</value></data>
+  <data name="FileDialog.Open"><value>Aç</value></data>
+  <data name="FileDialog.SaveAs"><value>Farklı kaydet</value></data>
+  <data name="FileDialog.SelectFolder"><value>Klasör seç</value></data>
+  <data name="FileDialog.Directories"><value>Klasörler</value></data>
+  <data name="FileDialog.Drives"><value>Sürücüler</value></data>
+  <data name="FileDialog.FileTypes"><value>Dosya türleri</value></data>
+  <data name="FileDialog.AllFiles"><value>Tüm dosyalar</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>Dosya zaten var. Onu Değiştiriyor mu?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Geçerli bir dosya adı girin.</value></data>
 </root>

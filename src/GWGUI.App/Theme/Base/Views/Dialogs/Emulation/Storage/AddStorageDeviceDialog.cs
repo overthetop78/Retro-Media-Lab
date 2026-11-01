@@ -11,6 +11,7 @@ namespace GWGUI.App.Views.Dialogs.Emulation.Storage;
 public sealed class AddStorageDeviceDialog : Window
 {
     private readonly ComboBox _type = new();
+    internal ComboBox PresentationType => _type;
 
     public EmulationMediaType SelectedType => _type.SelectedItem is StorageDeviceChoice choice ? choice.Type : EmulationMediaType.Floppy;
 

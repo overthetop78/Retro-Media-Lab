@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Selecione uma fonte e um destino.</value></data>
   <data name="Migration.Severity"><value>Severidade</value></data>
   <data name="Migration.Path"><value>Localização do código</value></data>
-  <data name="Migration.Description"><value>Designação das mercadorias</value></data>
+  <data name="Migration.Description"><value>Descrição do problema</value></data>
   <data name="Migration.AcceptLosses"><value>Aceitar as perdas de metadados listadas</value></data>
   <data name="Migration.Execute"><value>Migrar arquivos</value></data>
   <data name="Migration.Blocking"><value>Bloqueamento</value></data>

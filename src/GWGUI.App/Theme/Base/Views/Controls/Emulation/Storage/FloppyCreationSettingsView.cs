@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,6 +22,10 @@ internal sealed class FloppyCreationSettingsView : Border
 
     internal FloppyCreationFormatChoice? SelectedFormat => _image.SelectedItem as FloppyCreationFormatChoice;
     internal string DestinationPath => _path.Text;
+    internal ComboBox PresentationDisk => _disk;
+    internal ComboBox PresentationImage => _image;
+    internal TextBox PresentationDestination => _path;
+    internal Button PresentationBrowse { get; }
     internal bool IsComplete => SelectedFormat is not null && !string.IsNullOrWhiteSpace(DestinationPath);
 
     internal FloppyCreationSettingsView(FloppyDriveModelChoice model, FloppyDriveDialogOptions options, Guid clientGuid)
@@ -43,6 +48,7 @@ internal sealed class FloppyCreationSettingsView : Border
         destination.Children.Add(_path);
         var browse = new Button { Content = LocExtension.Get("Common.Browse"), Margin = new Thickness(10, 0, 0, 0), MinWidth = 100 };
         Grid.SetColumn(browse, 1); destination.Children.Add(browse);
+        PresentationBrowse = browse;
         browse.Click += (_, _) => Browse();
         AddField(MediaCreationConstants.DestinationLabel, destination, last: true);
         Child = fields;
@@ -75,7 +81,7 @@ internal sealed class FloppyCreationSettingsView : Border
                 ClientGuid = clientGuid,
                 FileName = string.IsNullOrWhiteSpace(DestinationPath) ? MediaCreationConstants.BlankFileName + selected?.Extension : Path.GetFileName(DestinationPath)
             };
-            if (dialog.ShowDialog(Window.GetWindow(this)) == true) _path.Text = dialog.FileName;
+            if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) == true) _path.Text = dialog.FileName;
         }
     }
 

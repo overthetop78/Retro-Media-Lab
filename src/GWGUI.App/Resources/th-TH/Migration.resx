@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>เลือกแหล่งและปลายทาง</value></data>
   <data name="Migration.Severity"><value>ความจุ</value></data>
   <data name="Migration.Path"><value>พาธของแหล่ง</value></data>
-  <data name="Migration.Description"><value>คําอธิบาย</value></data>
+  <data name="Migration.Description"><value>รายละเอียดของปัญหา</value></data>
   <data name="Migration.AcceptLosses"><value>ยอมรับข้อมูลกํากับที่แสดง</value></data>
   <data name="Migration.Execute"><value>ชื่อแฟ้มการขอข้อมูล</value></data>
   <data name="Migration.Blocking"><value>บล็อค</value></data>

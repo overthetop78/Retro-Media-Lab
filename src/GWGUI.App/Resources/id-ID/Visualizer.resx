@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>Sektor mati</value></data>
   <data name="Visual.SectorWithoutData"><value>Sektor tanpa data</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>Informasi kaset</value></data>
+  <data name="Visual.Representation"><value>Mode tampilan</value></data>
 </root>

@@ -32,6 +32,9 @@ public partial class VisualizerHeaderSection : UserControl
     public TextBlock FileNameText => DocumentIdentity.FileNameText;
     public TextBlock SummaryText => DocumentIdentity.SummaryText;
     public ComboBox DecoderCombo => Decoder;
+    internal ComboBox RepresentationCombo => RepresentationChoice;
+    internal FrameworkElement RevolutionAvailability => RevolutionControl;
+    internal Button ClassificationOptionsButton => ManualOptionsButton;
     public ComboBox RevolutionCombo => RevolutionChoice;
     public CheckBox LinkZoomCheckBox => LinkZoom;
     public Button ResetButton => Reset;

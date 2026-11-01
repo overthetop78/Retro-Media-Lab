@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Frissítés</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Mappa megnyitása</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Szünet</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Igen</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Nem</value></data>
+  <data name="Common.Abort"><value>Megszakítás</value></data>
+  <data name="Common.Retry"><value>Újra</value></data>
+  <data name="Common.Ignore"><value>Kihagyás</value></data>
+  <data name="Common.TryAgain"><value>Próbálja újra</value></data>
 </root>

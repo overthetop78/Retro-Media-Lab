@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Arbetsyta med fönster som kan flyttas och storleksändras. Ha flera verktyg öppna och växla mellan dem utan att förlora inställningarna.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimera</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maximera eller återställ</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Programhanteraren</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>System</value></data>
+  <data name="Options.Themes.OS.File"><value>Arkiv</value></data>
+  <data name="Options.Themes.OS.Window"><value>Fönster</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Överlappande</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Sida vid sida</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Ordna ikoner</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Återställ</value></data>
+  <data name="Options.Themes.OS.Move"><value>Flytta</value></data>
+  <data name="Options.Themes.OS.Size"><value>Storlek</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximera</value></data>
+  <data name="Options.Themes.OS.Open"><value>Öppna</value></data>
+  <data name="Options.Themes.OS.Description"><value>Ursprungliga operativsystemgränssnitt, inklusive fönster, kontroller och interaktioner.</value></data>
+  <data name="Options.Themes.Edition"><value>Variant</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Program</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numrering</value></data>
 </root>

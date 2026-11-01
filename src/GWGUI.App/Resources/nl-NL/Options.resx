@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Werkruimte met vensters die u kunt verplaatsen en vergroten of verkleinen. Houd meerdere hulpmiddelen open en wissel ertussen zonder instellingen te verliezen.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimaliseren</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maximaliseren of herstellen</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Programmabeheer</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Systeem</value></data>
+  <data name="Options.Themes.OS.File"><value>Bestand</value></data>
+  <data name="Options.Themes.OS.Window"><value>Venster</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Trapsgewijs</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Naast elkaar</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Pictogrammen schikken</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Vorig formaat</value></data>
+  <data name="Options.Themes.OS.Move"><value>Verplaatsen</value></data>
+  <data name="Options.Themes.OS.Size"><value>Formaat wijzigen</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximaliseren</value></data>
+  <data name="Options.Themes.OS.Open"><value>Openen</value></data>
+  <data name="Options.Themes.OS.Description"><value>Originele interface van het besturingssysteem, inclusief vensters, besturingen en interacties.</value></data>
+  <data name="Options.Themes.Edition"><value>Variant</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programma’s</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Nummering</value></data>
 </root>

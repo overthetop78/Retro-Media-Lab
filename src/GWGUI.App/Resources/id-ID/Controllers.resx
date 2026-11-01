@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Tombol</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Sakelar</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} sumbu · {1} tombol · {2} sakelar</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Ya</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Tidak</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Tidak ada</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>gamepad generik</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Roda balap</value></data>

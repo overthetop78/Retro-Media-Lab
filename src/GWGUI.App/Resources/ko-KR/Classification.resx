@@ -6,6 +6,6 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Classification.Automatic"><value>자동 감지</value></data>
   <data name="Classification.Machine"><value>컴퓨터</value></data>
-  <data name="Classification.Format"><value>형식</value></data>
+  <data name="Classification.Format"><value>디스크 형식</value></data>
   <data name="Classification.Protection"><value>보호</value></data>
 </root>

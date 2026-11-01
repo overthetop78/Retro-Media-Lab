@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.Settings;
 using GWGUI.App.Options.States;
 using GWGUI.App.ViewModels.Options;
@@ -42,11 +43,11 @@ internal sealed class ProfileOptionsController
         _localize = localize;
         _promptName = promptName ?? (name =>
         {
-            var dialog = new ProfileNameWindow(name) { Owner = _owner };
-            return dialog.ShowDialog() == true ? dialog.ProfileName : null;
+            var dialog = new ProfileNameWindow(name);
+            return GWGUI.App.Services.Windows.WpfWindowNavigationService.ShowOwnedDialog(_owner, dialog) == true ? dialog.ProfileName : null;
         });
-        _confirmDelete = confirmDelete ?? (name => MessageBox.Show(_owner, Localize("Profile.DeleteConfirm", name), Localize("Profile.Title"), MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes);
-        _duplicateName = duplicateName ?? (() => MessageBox.Show(_owner, Localize("Profile.DuplicateName"), Localize("Profile.Title"), MessageBoxButton.OK, MessageBoxImage.Warning));
+        _confirmDelete = confirmDelete ?? (name => WpfMessageDialogService.ShowMessage(_owner, Localize("Profile.DeleteConfirm", name), Localize("Profile.Title"), MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes);
+        _duplicateName = duplicateName ?? (() => WpfMessageDialogService.ShowMessage(_owner, Localize("Profile.DuplicateName"), Localize("Profile.Title"), MessageBoxButton.OK, MessageBoxImage.Warning));
 
         _section.ReadProfiles.ItemsSource = _state.Read;
         _section.WriteProfiles.ItemsSource = _state.Write;

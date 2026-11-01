@@ -1,3 +1,5 @@
+﻿using GWGUI.Emulation.Enums;
+
 namespace GWGUI.App.Contracts.Machine;
 
-internal sealed record MachineViewDevice(string Key, string Label, string Glyph, bool Removable, bool Present, Func<Task>? Insert, Func<Task>? Eject, string? Status = null, IReadOnlyList<MachineViewDeviceCommand>? Commands = null);
+internal sealed record MachineViewDevice(string Key, string Label, string Glyph, bool Removable, bool Present, Func<Task>? Insert, Func<Task>? Eject, string? Status = null, IReadOnlyList<MachineViewDeviceCommand>? Commands = null, EmulationMediaType? MediaType = null);

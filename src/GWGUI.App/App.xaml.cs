@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.Settings;
 using GWGUI.App.Functions.Localization;
 using GWGUI.App.Localization.Extensions;
@@ -29,6 +30,7 @@ public partial class App : Application
 {
     private AppTheme _theme;
     private AppThemeDesign _themeDesign;
+    private IReadOnlyDictionary<AppThemeDesign, ThemeEditionSettings> _themeEditions = new Dictionary<AppThemeDesign, ThemeEditionSettings>();
     private UpdateStartupCoordinator? _updateStartup;
     private GWGUI.App.Services.Input.Keyboard.ForegroundKeyboardShortcutGuard? _keyboardShortcutGuard;
     protected override void OnStartup(StartupEventArgs e)
@@ -88,6 +90,8 @@ public partial class App : Application
         LocalizationSource.Instance.SetCultures(culture, uiCulture, refresh: false);
         _theme = settings.Theme;
         _themeDesign = settings.ThemeDesign;
+        _themeEditions = settings.ThemeEditions;
+        ThemeManager.ConfigureEditions(_themeEditions);
         ThemeManager.Apply(settings.ThemeDesign, settings.Theme);
         SystemEvents.UserPreferenceChanged += SystemPreferenceChanged;
         GameInputControllerSource.Instance.StartMonitoring();
@@ -163,7 +167,7 @@ public partial class App : Application
     {
         ErrorLog.Write(e.Exception, "WPF dispatcher");
         var detail = ExceptionDescriptionFunctions.Describe(e.Exception);
-        MessageBox.Show(WpfDialogOwner.Resolve(), LocExtension.Get("Error.Unexpected", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Error);
+        WpfMessageDialogService.ShowMessage(WpfDialogOwner.Resolve(), LocExtension.Get("Error.Unexpected", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Error);
         e.Handled = true;
     }
 
@@ -183,6 +187,7 @@ public partial class App : Application
     {
         _themeDesign = design;
         _theme = variant;
+        ThemeManager.ConfigureEditions(_themeEditions);
         ThemeManager.Apply(design, variant);
     }
 
@@ -215,7 +220,7 @@ public partial class App : Application
             var result = await coordinator.CompleteStartupAsync();
             if (result is null) return;
             var succeeded = result.Status == GWGUI.Updates.Contracts.UpdateTransactionStatus.Succeeded;
-            MessageBox.Show(owner,
+            WpfMessageDialogService.ShowMessage(owner,
                 LocExtension.Get(succeeded ? "Updates.InstallSucceeded" : "Updates.InstallRestored", result.Detail ?? ""),
                 LocExtension.Get("Updates.Title"), MessageBoxButton.OK,
                 succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);

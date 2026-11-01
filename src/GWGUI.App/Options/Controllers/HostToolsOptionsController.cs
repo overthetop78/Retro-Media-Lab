@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.HostTools;
 using GWGUI.Infrastructure.Settings;
 using GWGUI.App.Options.States;
@@ -60,7 +61,7 @@ internal sealed class HostToolsOptionsController
     private async void Browse(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog { Filter = _localize("Options.ExecutableFilter", []) };
-        if (dialog.ShowDialog(_owner) != true) return;
+        if (WpfFileDialogService.ShowFileDialog(dialog, _owner) != true) return;
         Select(new HostToolsInstallation(dialog.FileName, null, false));
         await _persistSettings();
     }
@@ -91,7 +92,7 @@ internal sealed class HostToolsOptionsController
         await WithBusyState(async () =>
         {
             var release = await _state.CheckLatestAsync();
-            if (MessageBox.Show(_owner, _localize("HostTools.DownloadConfirm", [release.Version]), _localize("HostTools.Title", []), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+            if (WpfMessageDialogService.ShowMessage(_owner, _localize("HostTools.DownloadConfirm", [release.Version]), _localize("HostTools.Title", []), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
             _section.DownloadProgress.Visibility = Visibility.Visible;
             var progress = new Progress<double>(value => _section.DownloadProgress.Value = value * 100);
@@ -106,7 +107,7 @@ internal sealed class HostToolsOptionsController
         try { _state.Rollback(CurrentPath); }
         catch (FileNotFoundException)
         {
-            MessageBox.Show(_owner, _localize("HostTools.NoPrevious", []), _localize("HostTools.Title", []));
+            WpfMessageDialogService.ShowMessage(_owner, _localize("HostTools.NoPrevious", []), _localize("HostTools.Title", []));
             return;
         }
 

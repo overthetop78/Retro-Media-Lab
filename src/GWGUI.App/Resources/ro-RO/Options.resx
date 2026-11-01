@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Spațiu de lucru cu ferestre care pot fi mutate și redimensionate. Păstrați mai multe instrumente deschise și comutați între ele fără a pierde setările.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimizează</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maximizează sau restaurează</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Manager de programe</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Sistem</value></data>
+  <data name="Options.Themes.OS.File"><value>Fișier</value></data>
+  <data name="Options.Themes.OS.Window"><value>Fereastră</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Cascadă</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Alăturat</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Aranjare pictograme</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Restabilire</value></data>
+  <data name="Options.Themes.OS.Move"><value>Mutare</value></data>
+  <data name="Options.Themes.OS.Size"><value>Redimensionare</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximizare</value></data>
+  <data name="Options.Themes.OS.Open"><value>Deschidere</value></data>
+  <data name="Options.Themes.OS.Description"><value>Interfețele sistemului de operare original, inclusiv ferestrele, comenzile și interacțiunile.</value></data>
+  <data name="Options.Themes.Edition"><value>Variantă</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programe</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numerotare</value></data>
 </root>

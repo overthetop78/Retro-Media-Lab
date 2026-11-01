@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.App.Functions.Localization;
 using GWGUI.App.Localization.Extensions;
 using GWGUI.App.Options.Controllers;
@@ -16,6 +17,10 @@ public partial class UpdatesWindow : Window
     private readonly PendingModuleInstallationStore _pendingInstallations;
     private readonly Func<MessageBoxResult> _confirmCloseWithPending;
     private bool _finishInProgress;
+    private bool _closeRequested;
+    private bool _allowClose;
+    private Task _closing = Task.CompletedTask;
+    internal Task PresentationOperation => Task.WhenAll(_controller.PendingOperations, _closing);
     internal OptionsUpdatesSection Section => UpdatesSection;
     internal Button FooterButton => FooterAction;
     internal TextBlock FooterHint => FinishInstallationHint;
@@ -29,7 +34,7 @@ public partial class UpdatesWindow : Window
     {
         InitializeComponent();
         _pendingInstallations = pendingInstallations;
-        _confirmCloseWithPending = confirmCloseWithPending ?? (() => MessageBox.Show(this, LocExtension.Get("Updates.CloseWithPendingModulesConfirm"), LocExtension.Get("Updates.Title"), MessageBoxButton.YesNo, MessageBoxImage.Question));
+        _confirmCloseWithPending = confirmCloseWithPending ?? (() => WpfMessageDialogService.ShowMessage(this, LocExtension.Get("Updates.CloseWithPendingModulesConfirm"), LocExtension.Get("Updates.Title"), MessageBoxButton.YesNo, MessageBoxImage.Question));
         _controller = new UpdateOptionsController(this, UpdatesSection, new ApplicationUpdateService(), (key, arguments) => LocExtension.Get(key, arguments), reportError ?? ShowLoggedError, pendingInstallations: pendingInstallations);
         _pendingInstallations.Changed += PendingInstallationsChanged;
         Closing += WindowClosing;
@@ -49,33 +54,51 @@ public partial class UpdatesWindow : Window
     {
         ErrorLog.Write(exception, "Managing updates");
         var detail = ExceptionDescriptionFunctions.Describe(exception);
-        MessageBox.Show(this, LocExtension.Get("Error.Unexpected", detail), LocExtension.Get("Updates.Title"), MessageBoxButton.OK, MessageBoxImage.Error);
+        WpfMessageDialogService.ShowMessage(this, LocExtension.Get("Error.Unexpected", detail), LocExtension.Get("Updates.Title"), MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
     private async void FooterAction_Click(object sender, RoutedEventArgs e)
     {
         if (_pendingInstallations.Items.Count == 0)
         {
-            Close();
+            RequestPresentationClose();
             return;
         }
 
         await FinishInstallationAsync();
     }
 
-    private async void WindowClosing(object? sender, CancelEventArgs e)
+    private void WindowClosing(object? sender, CancelEventArgs e)
     {
-        if (_pendingInstallations.Items.Count == 0) return;
+        if (_allowClose) return;
         e.Cancel = true;
-        if (_finishInProgress) return;
-        if (_confirmCloseWithPending() == MessageBoxResult.Yes)
-        {
-            await FinishInstallationAsync(confirm: false);
-            return;
-        }
+        RequestPresentationClose();
+    }
 
-        _pendingInstallations.Clear();
-        e.Cancel = false;
+    internal void RequestPresentationClose()
+    {
+        if (_closeRequested || _finishInProgress && RequiresFinishingBeforeClose) return;
+        _closeRequested = true;
+        _closing = CloseAfterOperationsAsync();
+    }
+
+    private async Task CloseAfterOperationsAsync()
+    {
+        if (RequiresFinishingBeforeClose)
+        {
+            if (_confirmCloseWithPending() == MessageBoxResult.Yes)
+            {
+                await FinishInstallationAsync(confirm: false);
+                if (RequiresFinishingBeforeClose) { _closeRequested = false; return; }
+            }
+            else _pendingInstallations.Clear();
+        }
+        try { await _controller.StopAsync(); }
+        finally
+        {
+            _allowClose = true;
+            await Dispatcher.InvokeAsync(Close);
+        }
     }
 
     private async Task FinishInstallationAsync(bool confirm = true)
@@ -87,7 +110,7 @@ public partial class UpdatesWindow : Window
         finally
         {
             _finishInProgress = false;
-            if (IsVisible) FooterAction.IsEnabled = true;
+            if (!_allowClose) FooterAction.IsEnabled = true;
         }
     }
 
@@ -112,6 +135,7 @@ public partial class UpdatesWindow : Window
     {
         _pendingInstallations.Changed -= PendingInstallationsChanged;
         Closing -= WindowClosing;
+        Closed -= WindowClosed;
         _controller.Dispose();
     }
 }

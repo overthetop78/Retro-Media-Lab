@@ -1,3 +1,4 @@
+using GWGUI.App.Theme.Common;
 using GWGUI.App.Enums.Services.Dialogs;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +19,6 @@ public partial class ReadConflictWindow : Window
     {
         if (sender is Button { Tag: string value } && Enum.TryParse(value, out ReadConflictChoice choice))
             Choice = choice;
-        DialogResult = true;
+        ThemeDialogCompletion.Complete(this, true);
     }
 }

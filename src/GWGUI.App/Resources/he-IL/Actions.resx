@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>רענון</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>פתח תיקייה</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>השהיה</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>כן</value></data>
+  <data name="Common.No" xml:space="preserve"><value>לא</value></data>
+  <data name="Common.Abort"><value>הפסק</value></data>
+  <data name="Common.Retry"><value>נסה שוב</value></data>
+  <data name="Common.Ignore"><value>התעלם</value></data>
+  <data name="Common.TryAgain"><value>נסה שוב</value></data>
 </root>

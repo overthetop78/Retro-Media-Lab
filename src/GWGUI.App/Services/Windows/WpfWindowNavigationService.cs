@@ -14,6 +14,8 @@ using GWGUI.App.Views.Windows.Preferences;
 using GWGUI.App.Views.Windows.Updates;
 using GWGUI.App.Views.Windows.Tools;
 using System.Windows;
+using System.Windows.Threading;
+using GWGUI.App.Views.Dialogs.Emulation.Storage;
 using GWGUI.Infrastructure.Hardware;
 using GWGUI.Infrastructure.Processes;
 using GWGUI.App.Services.Updates;
@@ -80,7 +82,63 @@ public sealed class WpfWindowNavigationService : IWindowNavigationService
 
     private void Show(Window window)
     {
+        if (TryShowThemeWindow(_owner, window)) return;
         _show(window, _owner);
+    }
+
+    internal static bool TryShowThemeWindow(Window owner, Window window)
+    {
+        for (Window? current = owner; current is not null; current = GWGUI.App.Theme.Common.ThemeDialogCompletion.Owner(current) ?? current.Owner)
+            if (current is GWGUI.App.Views.Windows.Shell.MainWindow main && main.TryShowThemeWindow(window)) return true;
+        return false;
+    }
+
+    internal static bool? ShowOwnedDialog(Window? owner, Window window)
+    {
+        owner ??= window.Owner ?? Application.Current.MainWindow;
+        using var ownership = owner is null ? null : GWGUI.App.Theme.Common.ThemeDialogCompletion.AttachOwner(window, owner);
+        try
+        {
+            if (owner is not null && TryShowThemeWindow(owner, window)) return GWGUI.App.Theme.Common.ThemeDialogCompletion.Result(window);
+            Window? nativeOwner = owner;
+            while (nativeOwner is not null && !nativeOwner.IsVisible)
+                nativeOwner = GWGUI.App.Theme.Common.ThemeDialogCompletion.Owner(nativeOwner) ?? nativeOwner.Owner;
+            window.Owner = nativeOwner;
+            return window.ShowDialog();
+        }
+        finally { CloseOwnedDialog(window); }
+    }
+
+    internal static void CloseOwnedDialog(Window window)
+    {
+        if (window is GwToolWindow closingTool) closingTool.RequestPresentationClose();
+        if (window is GWGUI.App.Views.Windows.Conversion.FileMigrationWindow closingMigration) closingMigration.RequestPresentationClose();
+        if (window is UpdatesWindow closingUpdates) closingUpdates.RequestPresentationClose();
+        var pending = window switch
+        {
+            MediaCreationDialog creation => creation.PresentationOperation,
+            HardDiskDriveConfigurationDialog disk => disk.PresentationOperation,
+            GWGUI.App.Views.Dialogs.Common.FileSelectionDialog file => file.PresentationOperation,
+            EmulationModuleOptionsWindow module => module.PresentationOperation,
+            LogHistoryWindow logs => logs.PresentationOperation,
+            GwToolWindow tool => tool.PresentationOperation,
+            UpdatesWindow updates => updates.PresentationOperation,
+            GWGUI.App.Views.Windows.Conversion.FileMigrationWindow migration => migration.PresentationOperation,
+            _ => Task.CompletedTask
+        };
+        try
+        {
+            if (!pending.IsCompleted)
+            {
+                var loop = new DispatcherFrame();
+                var notification = pending.ContinueWith(_ => window.Dispatcher.Invoke(() => loop.Continue = false),
+                    CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+                Dispatcher.PushFrame(loop);
+                notification.GetAwaiter().GetResult();
+            }
+            pending.GetAwaiter().GetResult();
+        }
+        finally { window.Close(); }
     }
 
     public bool ShowPreferences(AppSettings settings, PreferencesSection section = PreferencesSection.General)

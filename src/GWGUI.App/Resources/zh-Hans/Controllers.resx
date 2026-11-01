@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>按钮</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>开关</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} 个轴 · {1} 个按钮 · {2} 个开关</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>是</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>否</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>无</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>普通游戏板</value></data>
   <data name="Controllers.Model.RacingWheel"><value>跑轮</value></data>

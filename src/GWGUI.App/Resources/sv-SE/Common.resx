@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Diskett</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Hård disk</value></data>
   <data name="Common.MediaKind.Optical"><value>Optisk disc</value></data>
-  <data name="Common.MediaKind.Tape"><value>Tape</value></data>
+  <data name="Common.MediaKind.Tape"><value>Magnetband</value></data>
   <data name="Common.Representation.Flux"><value>Flux</value></data>
   <data name="Common.Representation.Sectors"><value>Sektorer</value></data>
   <data name="Common.Representation.Blocks"><value>Block</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Diskbilder|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Alla filer|*.*</value></data>
   <data name="Common.Console"><value>Trösta</value></data>
   <data name="Common.Command"><value>Kommando</value></data>
+  <data name="FileDialog.Open"><value>Öppna</value></data>
+  <data name="FileDialog.SaveAs"><value>Spara som</value></data>
+  <data name="FileDialog.SelectFolder"><value>Välj en mapp</value></data>
+  <data name="FileDialog.Directories"><value>Mappar</value></data>
+  <data name="FileDialog.Drives"><value>Enheter</value></data>
+  <data name="FileDialog.FileTypes"><value>Filtyper</value></data>
+  <data name="FileDialog.AllFiles"><value>Alla filer</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>Filen finns redan. Byt ut den?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Ange ett giltigt filnamn.</value></data>
 </root>

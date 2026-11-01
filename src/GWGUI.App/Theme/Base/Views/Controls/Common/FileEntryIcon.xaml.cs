@@ -1,4 +1,5 @@
 using GWGUI.App.Enums.Explorer;
+using GWGUI.App.Contracts.Explorer;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +11,13 @@ namespace GWGUI.App.Views.Controls.Common;
 public partial class FileEntryIcon : UserControl
 {
     private static readonly Dictionary<(string Name, int Size), ImageSource> Cache = [];
+    private static readonly DependencyProperty ImageProviderProperty = DependencyProperty.Register(
+        "ImageProvider", typeof(IFileEntryImageProvider), typeof(FileEntryIcon),
+        new PropertyMetadata(null, (owner, _) => ((FileEntryIcon)owner).Refresh()));
+
+    public static readonly DependencyProperty IsExpandedProperty = DependencyProperty.Register(
+        nameof(IsExpanded), typeof(bool), typeof(FileEntryIcon),
+        new PropertyMetadata(false, (owner, _) => ((FileEntryIcon)owner).Refresh()));
 
     public static readonly DependencyProperty CategoryProperty = DependencyProperty.Register(
         nameof(Category), typeof(ExplorerIconCategory), typeof(FileEntryIcon),
@@ -20,6 +28,7 @@ public partial class FileEntryIcon : UserControl
     public FileEntryIcon()
     {
         InitializeComponent();
+        SetResourceReference(ImageProviderProperty, IFileEntryImageProvider.ResourceKey);
         SizeChanged += (_, _) => Refresh();
         Refresh();
     }
@@ -28,6 +37,12 @@ public partial class FileEntryIcon : UserControl
     {
         get => (ExplorerIconCategory)GetValue(CategoryProperty);
         set => SetValue(CategoryProperty, value);
+    }
+
+    public bool IsExpanded
+    {
+        get => (bool)GetValue(IsExpandedProperty);
+        set => SetValue(IsExpandedProperty, value);
     }
 
     public ExplorerEntryTone Tone
@@ -39,10 +54,13 @@ public partial class FileEntryIcon : UserControl
     private void Refresh()
     {
         if (!IsInitialized) return;
-        var source = LoadIcon(FileName(Category), Math.Max(20, (int)Math.Ceiling(Math.Max(ActualWidth, ActualHeight))));
+        var provider = (IFileEntryImageProvider?)GetValue(ImageProviderProperty);
+        var size = Math.Max(20, (int)Math.Ceiling(Math.Max(ActualWidth, ActualHeight)));
+        var source = provider?.GetImage(Category, size, IsExpanded) ?? LoadIcon(FileName(Category), size);
+        var tint = Tone != ExplorerEntryTone.Default && (provider?.SupportsTint ?? true);
         NativeIcon.Source = source;
-        NativeIcon.Visibility = Tone == ExplorerEntryTone.Default ? Visibility.Visible : Visibility.Collapsed;
-        TintedIcon.Visibility = Tone == ExplorerEntryTone.Default ? Visibility.Collapsed : Visibility.Visible;
+        NativeIcon.Visibility = tint ? Visibility.Collapsed : Visibility.Visible;
+        TintedIcon.Visibility = tint ? Visibility.Visible : Visibility.Collapsed;
         TintedIcon.SetResourceReference(System.Windows.Shapes.Shape.FillProperty,
             Tone == ExplorerEntryTone.Executable ? "Theme.SuccessBrush" : "MutedTextBrush");
         TintedIcon.OpacityMask = new ImageBrush(source) { Stretch = Stretch.Uniform };

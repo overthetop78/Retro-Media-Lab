@@ -23,6 +23,6 @@
   <data name="Emulation.Core.Emulator"><value>Emulator</value></data>
   <data name="Emulation.Core.Install"><value>Installieren</value></data>
   <data name="Emulation.Core.InstalledBadge"><value>Installiert</value></data>
-  <data name="Emulation.Core.NameOptions" xml:space="preserve"><value>Kernoptionen</value></data>
+  <data name="Emulation.Core.NameOptions"><value>Optionen des Emulationskerns</value></data>
   <data name="Emulation.Core.NameNoEmulatorAvailable"><value>Wählen Sie einen Emulator, bevor Sie diese Maschine erstellen.</value></data>
 </root>

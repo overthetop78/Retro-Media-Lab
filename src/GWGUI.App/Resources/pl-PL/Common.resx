@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Dyskietka</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Dysk twardy</value></data>
   <data name="Common.MediaKind.Optical"><value>Dysk optyczny</value></data>
-  <data name="Common.MediaKind.Tape"><value>Taśma</value></data>
+  <data name="Common.MediaKind.Tape"><value>Taśma magnetyczna</value></data>
   <data name="Common.Representation.Flux"><value>Flux</value></data>
   <data name="Common.Representation.Sectors"><value>Sektory</value></data>
   <data name="Common.Representation.Blocks"><value>Bloki</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Obrazy dysków|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Wszystkie pliki|*.*</value></data>
   <data name="Common.Console"><value>Konsola</value></data>
   <data name="Common.Command"><value>Rozkaz</value></data>
+  <data name="FileDialog.Open"><value>Otwórz</value></data>
+  <data name="FileDialog.SaveAs"><value>Zapisz jako</value></data>
+  <data name="FileDialog.SelectFolder"><value>Wybierz folder</value></data>
+  <data name="FileDialog.Directories"><value>Katalogi</value></data>
+  <data name="FileDialog.Drives"><value>Dyski</value></data>
+  <data name="FileDialog.FileTypes"><value>Typy plików</value></data>
+  <data name="FileDialog.AllFiles"><value>Wszystkie pliki</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>Plik już istnieje. Zastąpić go?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Wprowadź poprawną nazwę pliku.</value></data>
 </root>

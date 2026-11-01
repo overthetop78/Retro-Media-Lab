@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Vernieuwen</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Map openen</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Pauze</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Ja</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Nee</value></data>
+  <data name="Common.Abort"><value>Afbreken</value></data>
+  <data name="Common.Retry"><value>Opnieuw</value></data>
+  <data name="Common.Ignore"><value>Negeren</value></data>
+  <data name="Common.TryAgain"><value>Opnieuw proberen</value></data>
 </root>

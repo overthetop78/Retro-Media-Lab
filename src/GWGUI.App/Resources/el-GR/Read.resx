@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Χρησιμοποιήστε τον επόμενο αριθμό</value></data>
   <data name="Read.ConflictEditName"><value>Επιτρέψτε μου να επεξεργαστώ το όνομα</value></data>
   <data name="Read.ImageToCreate"><value>Εικόνα για δημιουργία</value></data>
-  <data name="Read.Extension"><value>Επέκταση</value></data>
+  <data name="Read.Extension"><value>Επέκταση αρχείου</value></data>
   <data name="Read.RawScp"><value>Ακατέργαστη εικόνα (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Γνωστή μορφή δίσκου</value></data>
   <data name="Read.FileName"><value>Όνομα αρχείου</value></data>

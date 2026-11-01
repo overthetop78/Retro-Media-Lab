@@ -17,6 +17,18 @@ public partial class ConversionFormatsSection : UserControl
     public IReadOnlyList<string> SelectedOutputLines => SelectedOutputs.Items.Cast<string>().ToArray();
     public IReadOnlyList<string> MachineChoices => Machines.Items.Cast<string>().ToArray();
     public IReadOnlyList<ConversionFormatPresentation> VisibleFormats => Formats.Items.Cast<ConversionFormatPresentation>().ToArray();
+    public ListBox MachineSelector => Machines;
+    public ItemsControl FormatItems => Formats;
+    public ItemsControl SelectedItems => SelectedOutputs;
+
+    public void RequestSelection(string formatId, bool selected, IEnumerable<string> extensions)
+    {
+        var presentation = _items.FirstOrDefault(item => item.Format.Id.Equals(formatId, StringComparison.OrdinalIgnoreCase));
+        if (presentation is null || selected && !presentation.IsCompatible) return;
+        var known = presentation.Format.Extensions.Select(item => item.Extension).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var wanted = extensions.Where(known.Contains).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        ValueChanged?.Invoke(presentation with { IsSelected = selected, ExplicitExtensions = wanted }, EventArgs.Empty);
+    }
 
     public void SetItems(IReadOnlyList<ConversionFormatPresentation> items, string? sourceExtension = null)
     {
@@ -55,7 +67,10 @@ public partial class ConversionFormatsSection : UserControl
     }
 
     private void Machines_SelectionChanged(object sender, SelectionChangedEventArgs e) => RefreshFormats();
-    private void Format_ValueChanged(object? sender, EventArgs e) => ValueChanged?.Invoke(sender, e);
+    private void Format_ValueChanged(object? sender, EventArgs e)
+    {
+        if (sender is ConversionFormatControl control) RequestSelection(control.Format.Id, control.IsSelected, control.ExplicitExtensions);
+    }
     private void List_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
     {
         if (sender is not ScrollViewer viewer || viewer.ScrollableHeight <= 0) return;

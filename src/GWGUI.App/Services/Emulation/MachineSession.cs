@@ -128,9 +128,12 @@ internal sealed class MachineSession : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         if (_disposed) return;
-        await DisposeCurrentMachineAsync();
-        _disposed = true;
-        OpenSessions.Remove(this);
+        try { await DisposeCurrentMachineAsync(); }
+        finally
+        {
+            _disposed = true;
+            OpenSessions.Remove(this);
+        }
     }
 
     private void CreateMachine()

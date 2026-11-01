@@ -50,6 +50,7 @@ internal sealed partial class EmulationModuleSettingsSection
         _firmwareManagement?.ClearViews();
         _fieldControls.Clear();
         _userChangeHandlers.Clear();
+        presentationMemoryTotal = null;
         _configuration = EmulationVideoConfigurationFunctions.Apply(_module, _configuration, _profiles.Get(_module.Id, _configuration.Id).Renderer);
         var settings = _module.Describe(_configuration.MachineId, _configuration);
         var tabs = EmulationMachineTabs.Create(tab => settings.Visibility.Tabs.GetValueOrDefault(tab)
@@ -57,6 +58,7 @@ internal sealed partial class EmulationModuleSettingsSection
                 || settings.Blocks.Any(block => block.Tab == tab && block.IsVisible && block.Fields.Any(field => field.IsVisible)))
             ? BuildTab(settings, tab) : null, $"{_module.Id}:{_configuration.MachineId}", TabActivatedAsync, _selectedTab);
         AttachUserChangeHandlers();
+        presentationTabs = tabs;
         return tabs;
     }
 
@@ -199,9 +201,12 @@ internal sealed partial class EmulationModuleSettingsSection
         return groups;
     }
 
+    internal static bool IsFieldDisplayed(EmulationMachineTab tab, EmulationSettingsField field)
+        => field.IsVisible && !(tab == EmulationMachineTab.General && field.Editor == EmulationSettingsEditor.DirectoryPath && field.DefaultFolderCategory is not null);
+
     private void AddBlocks(Panel panel, EmulationMachineSettings settings, EmulationMachineTab tab)
     {
-        bool IsDisplayed(EmulationSettingsField field) => field.IsVisible && !(tab == EmulationMachineTab.General && field.Editor == EmulationSettingsEditor.DirectoryPath && field.DefaultFolderCategory is not null);
+        bool IsDisplayed(EmulationSettingsField field) => IsFieldDisplayed(tab, field);
         if (tab == EmulationMachineTab.Rom)
         {
             var blocks = settings.Blocks.Where(block => block.Tab == tab && block.IsVisible && block.Fields.Any(IsDisplayed))

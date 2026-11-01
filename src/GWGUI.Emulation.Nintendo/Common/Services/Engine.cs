@@ -207,7 +207,7 @@ internal sealed class Engine
     {
         var current = RequireConfiguration(configuration);
         var adapter = SelectedAdapter(current);
-        var settings = adapter?.DescribeStorage(current) ?? StorageSettingsFunctions.Describe(current, this.Adapter(current));
+        var settings = adapter?.DescribeStorage(current) ?? StorageSettingsFunctions.Describe(current);
         return CommonCoreHostFunctions.MediaRules.RestrictAcceptedExtensions(settings, EmulationMediaCategory.CartridgeSlot, adapter?.GetCartridgeExtensions(current));
     }
 

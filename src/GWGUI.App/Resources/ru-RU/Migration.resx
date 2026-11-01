@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Выберите источник и пункт назначения.</value></data>
   <data name="Migration.Severity"><value>тяжелая</value></data>
   <data name="Migration.Path"><value>Путь к источнику</value></data>
-  <data name="Migration.Description"><value>Описание</value></data>
+  <data name="Migration.Description"><value>Описание проблемы</value></data>
   <data name="Migration.AcceptLosses"><value>Принять перечисленные потери метаданных</value></data>
   <data name="Migration.Execute"><value>Миграция файлов</value></data>
   <data name="Migration.Blocking"><value>блокировка</value></data>

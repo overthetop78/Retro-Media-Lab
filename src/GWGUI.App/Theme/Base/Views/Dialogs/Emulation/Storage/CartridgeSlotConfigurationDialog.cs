@@ -16,6 +16,11 @@ public sealed class CartridgeSlotConfigurationDialog : Window
 {
     private readonly CheckBox _option = new();
     private readonly Dictionary<string, ComboBox> _options = new(StringComparer.Ordinal);
+    internal CheckBox PresentationOption => _option;
+    internal string? PresentationHint { get; }
+    internal string? PresentationModule { get; }
+    internal IReadOnlyList<EmulationSettingsField> PresentationFields { get; }
+    internal IReadOnlyDictionary<string, ComboBox> PresentationControls => _options;
 
     public CartridgeSlotSettings Settings => new(_option.IsChecked == true, _options.ToDictionary(item => item.Key, item => ((EmulationSettingsChoiceView)item.Value.SelectedItem).Choice.Id, StringComparer.Ordinal));
 
@@ -33,6 +38,9 @@ public sealed class CartridgeSlotConfigurationDialog : Window
         _option.Content = optionLabel;
         _option.IsChecked = settings.OptionEnabled;
         _option.Margin = new Thickness(0, 4, 0, 4);
+        PresentationHint = optionHint;
+        PresentationModule = moduleId;
+        PresentationFields = configurationFields ?? [];
 
         var body = new StackPanel();
         if (!string.IsNullOrWhiteSpace(optionLabel)) body.Children.Add(_option);

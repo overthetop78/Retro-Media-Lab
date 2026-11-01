@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>플로피 디스크</value></data>
   <data name="Common.MediaKind.HardDisk"><value>하드 디스크</value></data>
   <data name="Common.MediaKind.Optical"><value>광학 디스크</value></data>
-  <data name="Common.MediaKind.Tape"><value>제품정보</value></data>
+  <data name="Common.MediaKind.Tape"><value>자기 테이프</value></data>
   <data name="Common.Representation.Flux"><value>렉스</value></data>
   <data name="Common.Representation.Sectors"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의</value></data>
   <data name="Common.Representation.Blocks"><value>팟캐스트</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Disk 이미지|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|모든 파일|*.*</value></data>
   <data name="Common.Console"><value>콘솔</value></data>
   <data name="Common.Command"><value>명령</value></data>
+  <data name="FileDialog.Open"><value>열기</value></data>
+  <data name="FileDialog.SaveAs"><value>다른 이름으로 저장</value></data>
+  <data name="FileDialog.SelectFolder"><value>폴더 선택</value></data>
+  <data name="FileDialog.Directories"><value>폴더</value></data>
+  <data name="FileDialog.Drives"><value>드라이브</value></data>
+  <data name="FileDialog.FileTypes"><value>파일 형식</value></data>
+  <data name="FileDialog.AllFiles"><value>모든 파일</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>이미 존재하는 파일. 그것을 대체?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>유효한 파일 이름을 입력합니다.</value></data>
 </root>

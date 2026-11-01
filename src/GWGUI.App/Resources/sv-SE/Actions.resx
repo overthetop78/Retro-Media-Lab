@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Uppdatera</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Öppna mapp</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Paus</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Ja</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Nej</value></data>
+  <data name="Common.Abort"><value>Avbryt</value></data>
+  <data name="Common.Retry"><value>Försök igen</value></data>
+  <data name="Common.Ignore"><value>Ignorera</value></data>
+  <data name="Common.TryAgain"><value>Försök igen</value></data>
 </root>

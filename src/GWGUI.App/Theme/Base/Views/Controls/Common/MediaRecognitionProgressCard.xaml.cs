@@ -9,6 +9,7 @@ public partial class MediaRecognitionProgressCard : UserControl
     public string Stage => StageText.Text;
     public string Detail => DetailText.Text;
     public double Value => Progress.Value;
+    internal bool IsIndeterminate => Progress.IsIndeterminate;
     public string Percent => PercentText.Text;
 
     public void SetProgress(string stage, string detail, double value, bool indeterminate = false)

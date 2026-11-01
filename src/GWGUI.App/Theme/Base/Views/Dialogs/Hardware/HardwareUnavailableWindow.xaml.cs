@@ -1,3 +1,4 @@
+using GWGUI.App.Theme.Common;
 using GWGUI.Infrastructure.Settings.Hardware;
 using GWGUI.App.Enums.Services.Dialogs;
 using System.Windows;
@@ -19,6 +20,6 @@ public partial class HardwareUnavailableWindow : Window
     {
         if (sender is Button { Tag: string value } && Enum.TryParse(value, out MissingHardwareChoice choice))
             Choice = choice;
-        DialogResult = true;
+        ThemeDialogCompletion.Complete(this, true);
     }
 }

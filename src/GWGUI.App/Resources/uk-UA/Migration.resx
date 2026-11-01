@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Виберіть джерело та призначення.</value></data>
   <data name="Migration.Severity"><value>Сєвєвічність</value></data>
   <data name="Migration.Path"><value>Джерело шлях</value></data>
-  <data name="Migration.Description"><value>Опис</value></data>
+  <data name="Migration.Description"><value>Опис проблеми</value></data>
   <data name="Migration.AcceptLosses"><value>Прийняття перерахованих втрат метаданих</value></data>
   <data name="Migration.Execute"><value>Migrate файли</value></data>
   <data name="Migration.Blocking"><value>Блокування</value></data>

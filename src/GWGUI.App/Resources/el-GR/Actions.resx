@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Ανανέωση</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Άνοιγμα φακέλου</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Παύση</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Ναι</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Όχι</value></data>
+  <data name="Common.Abort"><value>Ματαίωση</value></data>
+  <data name="Common.Retry"><value>Επανάληψη</value></data>
+  <data name="Common.Ignore"><value>Παράβλεψη</value></data>
+  <data name="Common.TryAgain"><value>Δοκιμάστε ξανά</value></data>
 </root>

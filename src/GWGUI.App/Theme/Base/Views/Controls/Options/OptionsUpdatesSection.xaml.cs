@@ -35,6 +35,12 @@ public partial class OptionsUpdatesSection : UserControl
     public Button InstallModuleUrlButton => InstallModuleUrlAction;
     public TextBox ModuleCatalogUrl => ModuleCatalogUrlInput;
     internal ListBox NavigationControl => UpdateNavigation;
+    internal FrameworkElement PresentationApplicationPage => ApplicationPage;
+    internal FrameworkElement PresentationDirectoryPage => DirectoryPage;
+    internal FrameworkElement PresentationModulePage => InstalledModulePage;
+    internal FrameworkElement PresentationAdvancedPage => AdvancedPage;
+    internal void PresentationVersionChanged(object sender, SelectionChangedEventArgs args) => Version_SelectionChanged(sender, args);
+    internal void PresentationInstallAvailable(object sender, RoutedEventArgs args) => InstallAvailableModule_Click(sender, args);
     public string? SelectedModuleId => (UpdateNavigation.SelectedItem as UpdateNavigationItem)?.ModuleId;
 
     public event RoutedEventHandler? SearchRequested;

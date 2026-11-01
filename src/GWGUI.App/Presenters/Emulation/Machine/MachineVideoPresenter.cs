@@ -2,7 +2,7 @@ using GWGUI.App.Constants.Machine;
 using GWGUI.App.Factories.Rendering.Emulation;
 using GWGUI.App.Functions.Rendering.Emulation;
 using GWGUI.App.Interfaces.Rendering.Emulation;
-using GWGUI.App.Views.Controls.Emulation.Machine;
+using GWGUI.App.Theme.Common;
 using System.Diagnostics;
 using System.Windows;
 using GWGUI.Emulation;
@@ -11,7 +11,7 @@ namespace GWGUI.App.Presenters.Emulation.Machine;
 
 internal sealed class MachineVideoPresenter : IDisposable
 {
-    private readonly MachineView _view;
+    private EmulationMachinePresentation _view;
     private readonly Func<EmulationVideoRenderer, IEmulationVideoSurface> _createSurface;
     private FrameworkElement _displayHost;
     private IEmulatedMachine _machine;
@@ -40,7 +40,7 @@ internal sealed class MachineVideoPresenter : IDisposable
     private long _historyGeneration = -1;
     private Window? _hostWindow;
 
-    internal MachineVideoPresenter(MachineView view, IEmulatedMachine machine,
+    internal MachineVideoPresenter(EmulationMachinePresentation view, IEmulatedMachine machine,
         EmulationVideoRenderer renderer,
         EmulationVideoProcessingConfiguration? videoProcessing = null,
         Func<EmulationVideoRenderer, IEmulationVideoSurface>? createSurface = null)
@@ -81,6 +81,51 @@ internal sealed class MachineVideoPresenter : IDisposable
     internal event EventHandler<VideoFrame>? FramePresented;
     internal event EventHandler? SurfaceChanged;
     internal event Action<bool>? ShaderLoadingChanged;
+
+    internal void SetPresentation(EmulationMachinePresentation presentation)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (ReferenceEquals(_view, presentation)) return;
+        var previous = _view;
+        var visibility = previous.VideoHost.Visibility;
+        Unsubscribe(previous);
+        previous.DetachVideoView();
+        try
+        {
+            presentation.SetVideoView(_surface.View);
+            _view = presentation;
+            presentation.VideoHost.Visibility = visibility;
+            presentation.SetShaderLoading(_shaderLoading);
+            Subscribe(presentation);
+            SetDisplayHost(presentation.DisplayHost);
+            UpdatePresentationVisibility();
+            RequestCurrentFrame();
+        }
+        catch
+        {
+            Unsubscribe(presentation);
+            presentation.DetachVideoView();
+            _view = previous;
+            previous.SetVideoView(_surface.View);
+            Subscribe(previous);
+            SetDisplayHost(previous.DisplayHost);
+            UpdatePresentationVisibility();
+            throw;
+        }
+
+        void Subscribe(EmulationMachinePresentation view)
+        {
+            view.VideoHost.IsVisibleChanged += VideoHostVisibilityChanged;
+            view.VideoHost.Loaded += VideoHostLoaded;
+            view.VideoHost.Unloaded += VideoHostUnloaded;
+        }
+        void Unsubscribe(EmulationMachinePresentation view)
+        {
+            view.VideoHost.IsVisibleChanged -= VideoHostVisibilityChanged;
+            view.VideoHost.Loaded -= VideoHostLoaded;
+            view.VideoHost.Unloaded -= VideoHostUnloaded;
+        }
+    }
 
     internal void SetMachine(IEmulatedMachine machine)
     {

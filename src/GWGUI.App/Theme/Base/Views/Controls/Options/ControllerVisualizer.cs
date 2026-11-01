@@ -1,4 +1,4 @@
-using GWGUI.App.Contracts.Input;
+﻿using GWGUI.App.Contracts.Input;
 using GWGUI.App.Enums.Input;
 using GWGUI.App.Services.Input.GameInput;
 using GWGUI.App.Views.Controls.Options.ControllerVisualization;
@@ -11,10 +11,12 @@ namespace GWGUI.App.Views.Controls.Options;
 
 public sealed partial class ControllerVisualizer : FrameworkElement
 {
+    internal event EventHandler? PresentationChanged;
+
     internal ControllerVisualModel Model
     {
         get => _model;
-        set { _model = value; InvalidateVisual(); }
+        set { _model = value; InvalidateVisual(); PresentationChanged?.Invoke(this, EventArgs.Empty); }
     }
 
     internal GameInputLiveState? State
@@ -25,6 +27,7 @@ public sealed partial class ControllerVisualizer : FrameworkElement
             _state = value;
             _visualState = null;
             InvalidateVisual();
+            PresentationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -35,6 +38,7 @@ public sealed partial class ControllerVisualizer : FrameworkElement
         {
             _visualState = value;
             InvalidateVisual();
+            PresentationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -46,6 +50,7 @@ public sealed partial class ControllerVisualizer : FrameworkElement
             _artworkProfile = value;
             HoveredVisualControl = null;
             InvalidateVisual();
+            PresentationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -57,6 +62,7 @@ public sealed partial class ControllerVisualizer : FrameworkElement
             _visualCommandIds = value;
             HoveredVisualControl = null;
             InvalidateVisual();
+            PresentationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 

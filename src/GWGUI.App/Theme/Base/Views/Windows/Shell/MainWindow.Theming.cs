@@ -9,14 +9,21 @@ public partial class MainWindow
 {
     private IThemeWorkspace? themeWorkspace;
     private AppThemeDesign workspaceDesign;
+    private string? workspaceEdition;
+
+    internal bool TryShowThemeWindow(System.Windows.Window window) => themeWorkspace?.TryShowWindow(window) == true;
 
     internal void ApplyThemeWorkspace()
     {
         var definition = ThemeCatalog.Get(ThemeManager.CurrentDesign);
-        if (workspaceDesign == definition.Id && (themeWorkspace is not null || definition.CreateWorkspace is null)) return;
+        var edition = ThemeManager.CurrentEdition;
+        var createWorkspace = edition?.CreateWorkspace ?? definition.CreateWorkspace;
+        if (workspaceDesign == definition.Id && workspaceEdition == edition?.Id
+            && (themeWorkspace is not null || createWorkspace is null)) return;
         ReleaseThemeWorkspace();
         workspaceDesign = definition.Id;
-        if (definition.CreateWorkspace is { } create)
+        workspaceEdition = edition?.Id;
+        if (createWorkspace is { } create)
         {
             try { themeWorkspace = create(ShellRoot, MainTabs); }
             catch

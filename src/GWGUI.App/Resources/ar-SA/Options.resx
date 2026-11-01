@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>مساحة عمل بنوافذ قابلة للتحريك وتغيير الحجم. أبقِ عدة أدوات مفتوحة وانتقل بينها دون فقد إعداداتها.</value></data>
   <data name="Options.Themes.Minimize"><value>تصغير</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>تكبير أو استعادة</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>مدير البرامج</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>النظام</value></data>
+  <data name="Options.Themes.OS.File"><value>ملف</value></data>
+  <data name="Options.Themes.OS.Window"><value>نافذة</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>تتالي</value></data>
+  <data name="Options.Themes.OS.Tile"><value>تجانب</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>ترتيب الأيقونات</value></data>
+  <data name="Options.Themes.OS.Restore"><value>استعادة</value></data>
+  <data name="Options.Themes.OS.Move"><value>نقل</value></data>
+  <data name="Options.Themes.OS.Size"><value>تغيير الحجم</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>تكبير</value></data>
+  <data name="Options.Themes.OS.Open"><value>فتح</value></data>
+  <data name="Options.Themes.OS.Description"><value>وصلات نظام التشغيل الأصلي، بما في ذلك النوافذ والضوابط والتفاعلات.</value></data>
+  <data name="Options.Themes.Edition"><value>البديل</value></data>
+  <data name="Options.Themes.OS.Start"><value>ابدأ</value></data>
+  <data name="Options.Themes.OS.Programs"><value>البرامج</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>الترقيم</value></data>
 </root>

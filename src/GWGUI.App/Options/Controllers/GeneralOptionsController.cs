@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.Settings;
 using GWGUI.App.Contracts.Localization;
 using GWGUI.App.Dictionaries.Localization;
@@ -88,7 +89,7 @@ internal sealed class GeneralOptionsController
     private string? SelectImagesFolder()
     {
         var dialog = new OpenFolderDialog { Multiselect = false, Title = _localize("Options.ImagesFolder", []) };
-        return dialog.ShowDialog(_owner) == true ? dialog.FolderName : null;
+        return WpfFileDialogService.ShowFolderDialog(dialog, _owner) == true ? dialog.FolderName : null;
     }
 
 }

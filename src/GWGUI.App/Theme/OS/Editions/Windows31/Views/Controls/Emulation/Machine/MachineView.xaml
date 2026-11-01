@@ -1,0 +1,62 @@
+﻿<common:EmulationMachinePresentation x:Class="GWGUI.App.Theme.OS.Editions.Windows31.Views.MachineView"
+             x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:common="clr-namespace:GWGUI.App.Theme.Common"
+             xmlns:w="clr-namespace:GWGUI.App.Theme.OS.Editions.Windows31"
+             xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{l:Loc Emulation.Configuration.Machine}">
+                <MenuItem x:Name="PowerCommand" Header="{l:Loc Emulation.Shortcut.Power}"/>
+                <MenuItem x:Name="PauseCommand" Header="{l:Loc Emulation.Shortcut.PauseResume}"/>
+                <Separator/>
+                <MenuItem x:Name="SoftResetCommand" Header="{l:Loc Emulation.Shortcut.SoftReset}"/>
+                <MenuItem x:Name="HardResetCommand" Header="{l:Loc Emulation.Shortcut.HardReset}"/>
+                <Separator/>
+                <MenuItem x:Name="QuickSaveCommand" Header="{l:Loc Emulation.Shortcut.QuickSave}"/>
+                <MenuItem x:Name="QuickLoadCommand" Header="{l:Loc Emulation.Shortcut.QuickLoad}"/>
+                <Separator/>
+                <MenuItem x:Name="AudioCommand" Header="{l:Loc Emulation.Shortcut.Mute}"/>
+                <MenuItem x:Name="PointerCommand" Header="{l:Loc Emulation.Controller.Action.SwitchJoystickMouse}"/>
+                <MenuItem x:Name="CoreCommand" Header="{l:Loc Emulation.Core.NameOptions}"/>
+            </MenuItem>
+            <MenuItem x:Name="SupportsMenu" Header="{l:Loc Emulation.Tab.Storage}"/>
+            <MenuItem Header="{l:Loc Emulation.Tab.Video}">
+                <MenuItem x:Name="CaptureCommand" Header="{l:Loc Emulation.Shortcut.Screenshot}"/>
+                <MenuItem x:Name="FullscreenCommand" Header="{l:Loc Emulation.Shortcut.Fullscreen}"/>
+            </MenuItem>
+        </Menu>
+        <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" Padding="4,2"
+                BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonShadow}}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <TextBlock Text="{l:Loc Emulation.Tab.Controller}" Margin="8,0,4,0"/>
+                    <Ellipse x:Name="ControllerLight" Width="8" Height="8"/>
+                    <TextBlock Text="{l:Loc Emulation.Tab.Mouse}" Margin="8,0,4,0"/>
+                    <Ellipse x:Name="PointerLight" Width="8" Height="8"/>
+                </StackPanel>
+                <TextBlock x:Name="Renderer" DockPanel.Dock="Left" Margin="0,0,12,0"/>
+                <TextBlock x:Name="Status" TextTrimming="CharacterEllipsis"/>
+            </DockPanel>
+        </Border>
+        <ScrollViewer DockPanel.Dock="Bottom" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
+            <StackPanel x:Name="Devices" Orientation="Horizontal"/>
+        </ScrollViewer>
+        <Grid x:Name="DisplayArea" Background="{DynamicResource {x:Static w:Windows31PaletteResources.ApplicationWorkspace}}">
+            <Border x:Name="ScreenArea" Background="Black" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                <Grid x:Name="VideoArea" Background="Black">
+                    <Border x:Name="Loading" Panel.ZIndex="1" Visibility="Collapsed" IsHitTestVisible="False"
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Padding="12" BorderThickness="1"
+                            BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.WindowFrame}}"
+                            Background="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonFace}}">
+                        <StackPanel>
+                            <TextBlock Text="{l:Loc Emulation.Video.Shader.Loading}"/>
+                            <ProgressBar IsIndeterminate="True" Height="12" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </DockPanel>
+</common:EmulationMachinePresentation>

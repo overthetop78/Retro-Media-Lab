@@ -1,3 +1,5 @@
+using GWGUI.App.Services.Dialogs;
+using GWGUI.App.Views.Controls.Emulation.Options;
 using GWGUI.App.Contracts.Emulation.Machine;
 using GWGUI.App.Functions.Localization;
 using GWGUI.App.Localization.Extensions;
@@ -14,6 +16,12 @@ namespace GWGUI.App.Views.Windows.EmulationPreferences;
 
 public partial class EmulationPreferencesWindow : Window
 {
+    internal EmulationPreferencesSection PresentationSection => EmulationSection;
+    internal void RequestPresentationClose()
+    {
+        if (!_closingAfterSave) BeginClose();
+    }
+
     private readonly AppSettings _settings;
     private readonly ISettingsStore _settingsStore;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
@@ -30,8 +38,8 @@ public partial class EmulationPreferencesWindow : Window
         _reportSaveError = reportSaveError ?? (error => ShowLoggedError(error, "Saving Emulation options"));
         EmulationSection.EditConfigurationRequested += async (module, configuration) =>
         {
-            var window = new EmulationModuleOptionsWindow(module, configuration, reservedBindings: _settings.EmulationShortcuts.Values) { Owner = this };
-            window.ShowDialog();
+            var window = new EmulationModuleOptionsWindow(module, configuration, reservedBindings: _settings.EmulationShortcuts.Values);
+            GWGUI.App.Services.Windows.WpfWindowNavigationService.ShowOwnedDialog(this, window);
             await EmulationSection.ReloadConfigurationsForWindowAsync();
         };
         EmulationSection.Configure(settings, SaveFromEditorAsync);
@@ -68,7 +76,7 @@ public partial class EmulationPreferencesWindow : Window
     {
         ErrorLog.Write(exception, context);
         var detail = ExceptionDescriptionFunctions.Describe(exception);
-        MessageBox.Show(this, LocExtension.Get("Error.Unexpected", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
+        WpfMessageDialogService.ShowMessage(this, LocExtension.Get("Error.Unexpected", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => BeginClose();
@@ -89,6 +97,8 @@ public partial class EmulationPreferencesWindow : Window
 
     private async Task SaveAndCloseAsync()
     {
+        try { await EmulationSection.WaitForConfigurationsAsync().ConfigureAwait(false); }
+        catch (Exception error) { ErrorLog.Write(error, "Finishing configuration loading while closing Emulation options"); }
         try { await PersistSettingsAsync().ConfigureAwait(false); }
         catch (Exception exception)
         {
@@ -100,7 +110,7 @@ public partial class EmulationPreferencesWindow : Window
                     await Dispatcher.InvokeAsync(() =>
                     {
                         if (IsLoaded)
-                            MessageBox.Show(this, LocExtension.Get("Error.SaveFailed", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                            WpfMessageDialogService.ShowMessage(this, LocExtension.Get("Error.SaveFailed", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     }).Task.ConfigureAwait(false);
             }
             catch (Exception dialogException)

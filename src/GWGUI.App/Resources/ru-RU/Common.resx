@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Дискета</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Жесткий диск</value></data>
   <data name="Common.MediaKind.Optical"><value>Оптический диск</value></data>
-  <data name="Common.MediaKind.Tape"><value>Лента</value></data>
+  <data name="Common.MediaKind.Tape"><value>Магнитная лента</value></data>
   <data name="Common.Representation.Flux"><value>флюкс</value></data>
   <data name="Common.Representation.Sectors"><value>Секторы</value></data>
   <data name="Common.Representation.Blocks"><value>Блоки</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Disk Images|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|все файлы|*.*</value></data>
   <data name="Common.Console"><value>Консоль</value></data>
   <data name="Common.Command"><value>Команда</value></data>
+  <data name="FileDialog.Open"><value>Открыть</value></data>
+  <data name="FileDialog.SaveAs"><value>Сохранить как</value></data>
+  <data name="FileDialog.SelectFolder"><value>Выбрать папку</value></data>
+  <data name="FileDialog.Directories"><value>Каталоги</value></data>
+  <data name="FileDialog.Drives"><value>Диски</value></data>
+  <data name="FileDialog.FileTypes"><value>Типы файлов</value></data>
+  <data name="FileDialog.AllFiles"><value>Все файлы</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>файл уже существует. Заменить его?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Введите действительное имя файла.</value></data>
 </root>

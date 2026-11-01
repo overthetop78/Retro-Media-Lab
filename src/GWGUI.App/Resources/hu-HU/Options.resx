@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Munkaterület mozgatható és átméretezhető ablakokkal. Tartson nyitva több eszközt, és váltson közöttük a beállítások elvesztése nélkül.</value></data>
   <data name="Options.Themes.Minimize"><value>Kis méret</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Teljes méret vagy visszaállítás</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Programkezelő</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Rendszer</value></data>
+  <data name="Options.Themes.OS.File"><value>Fájl</value></data>
+  <data name="Options.Themes.OS.Window"><value>Ablak</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Lépcsőzetes</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Mozaik</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Ikonok elrendezése</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Visszaállítás</value></data>
+  <data name="Options.Themes.OS.Move"><value>Áthelyezés</value></data>
+  <data name="Options.Themes.OS.Size"><value>Méretezés</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Teljes méret</value></data>
+  <data name="Options.Themes.OS.Open"><value>Megnyitás</value></data>
+  <data name="Options.Themes.OS.Description"><value>Eredeti operációs rendszer interfészek, beleértve az ablakokat, vezérléseket és kölcsönhatásokat.</value></data>
+  <data name="Options.Themes.Edition"><value>Változat</value></data>
+  <data name="Options.Themes.OS.Start"><value>Kezdés</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programok</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Számozás</value></data>
 </root>

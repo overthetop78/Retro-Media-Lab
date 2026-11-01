@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Кнопка</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Переключатель</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>Оси: {0} · кнопки: {1} · переключатели: {2}</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Да</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Нет</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Нет</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Общий геймпад</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Гоночное колесо</value></data>

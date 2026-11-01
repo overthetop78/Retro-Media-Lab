@@ -7,6 +7,8 @@ namespace GWGUI.App.Views.Windows.About;
 
 public partial class AboutWindow : Window
 {
+    internal System.Windows.Controls.TextBlock PresentationVersion => VersionText;
+    internal System.Collections.IEnumerable PresentationComponents => ComponentVersions.ItemsSource;
     public AboutWindow()
     {
         InitializeComponent();

@@ -141,6 +141,6 @@ internal static class GameInputDescriptorPresenter
     }
 
     private static void Add(ICollection<ControllerAnalogRow> rows, string key, float value) => rows.Add(new(LocExtension.Get(key), value.ToString("0.000", CultureInfo.CurrentCulture)));
-    private static string Bool(bool value) => LocExtension.Get(value ? "Controllers.Yes" : "Controllers.No");
+    private static string Bool(bool value) => LocExtension.Get(value ? "Common.Yes" : "Common.No");
     private static string TrimPrefix(string value) => value.StartsWith("gameinput:", StringComparison.OrdinalIgnoreCase) ? value["gameinput:".Length..] : value;
 }

@@ -58,9 +58,7 @@ public partial class ExplorerSection
     private void FolderToggle_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: ExplorerFolderItem item } || item.Children.Count == 0) return;
-        item.IsExpanded = !item.IsExpanded;
-        RefreshVisibleFolders(item);
-        ShowContents(item.Entry?.Children ?? _rootEntries);
+        RequestToggleFolder(item);
         e.Handled = true;
     }
 
@@ -82,18 +80,14 @@ public partial class ExplorerSection
     private void ContentsList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (ContentsList.SelectedItem is not ExplorerContentItem { Entry.Kind: FileSystemEntryKind.Directory } selected || _rootFolder is null) return;
-        var folder = ExplorerTreeNavigator.Find(_rootFolder, selected.Entry);
-        if (folder is null) return;
-        ExplorerTreeNavigator.ExpandPathTo(_rootFolder, folder);
-        RefreshVisibleFolders(folder);
-        ShowContents(folder.Entry!.Children);
+        RequestOpenEntry(selected);
     }
 
     private void WarningsButton_Click(object sender, RoutedEventArgs e)
     {
-        var issues = _document is not null ? BuildIssues(_document) : _mediaDocument is not null && _mediaVolume is not null ? ExplorerIssueBuilder.Build(_mediaDocument, _mediaVolume) : [];
+        var issues = CurrentIssues;
         if (issues.Count == 0) return;
-        new ExplorerIssuesWindow(issues) { Owner = Window.GetWindow(this) }.ShowDialog();
+        GWGUI.App.Services.Windows.WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), new ExplorerIssuesWindow(issues));
     }
 
     public static IReadOnlyList<string> BuildIssues(ExploredDiskImage document) => ExplorerIssueBuilder.Build(document);

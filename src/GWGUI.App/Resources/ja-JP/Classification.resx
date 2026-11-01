@@ -6,6 +6,6 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Classification.Automatic"><value>自動検出</value></data>
   <data name="Classification.Machine"><value>コンピューター</value></data>
-  <data name="Classification.Format"><value>フォーマット</value></data>
+  <data name="Classification.Format"><value>ディスクフォーマット</value></data>
   <data name="Classification.Protection"><value>プロテクト</value></data>
 </root>

@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Area di lavoro con finestre spostabili e ridimensionabili. Tieni aperti più strumenti e passa da uno all’altro senza perdere le impostazioni.</value></data>
   <data name="Options.Themes.Minimize"><value>Riduci a icona</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Ingrandisci o ripristina</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Gestione programmi</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Sistema</value></data>
+  <data name="Options.Themes.OS.File"><value>File</value></data>
+  <data name="Options.Themes.OS.Window"><value>Finestra</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Sovrapponi</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Affianca</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Disponi icone</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Ripristina</value></data>
+  <data name="Options.Themes.OS.Move"><value>Sposta</value></data>
+  <data name="Options.Themes.OS.Size"><value>Ridimensiona</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Ingrandisci</value></data>
+  <data name="Options.Themes.OS.Open"><value>Apri</value></data>
+  <data name="Options.Themes.OS.Description"><value>Interfacce di sistema operativo originali, comprese finestre, controlli e interazioni.</value></data>
+  <data name="Options.Themes.Edition"><value>Variante</value></data>
+  <data name="Options.Themes.OS.Start"><value>Avvio</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programmi</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numerazione</value></data>
 </root>

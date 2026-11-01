@@ -14,6 +14,11 @@ internal static class ThemeCatalog
             WindowStyleResource = GWGUI.App.Theme.Studio.StudioConstants.WindowStyle,
             ControlsUri = ThemeConstants.PackPrefix + "Studio/Controls.xaml",
             CreateWorkspace = (root, tabs) => new GWGUI.App.Theme.Studio.StudioWorkspace(root, tabs)
+        },
+        Profile(AppThemeDesign.OS, [AppTheme.Light], AppTheme.Light) with
+        {
+            EditionHeadingResourceKey = "Options.Themes.Edition",
+            Editions = Array.AsReadOnly<ThemeEditionDefinition>([GWGUI.App.Theme.OS.Editions.Windows31.Windows31Edition.Definition])
         }
     ]);
 

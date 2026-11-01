@@ -24,4 +24,5 @@ public partial class ConversionTabSection : UserControl
     public ConversionOutputSection OutputBlock => OutputSection;
     public ConversionFormatsSection FormatsBlock => FormatsSection;
     public Button ExecuteActionButton => ExecuteButton;
+    public Button MigrationActionButton => MigrationButton;
 }

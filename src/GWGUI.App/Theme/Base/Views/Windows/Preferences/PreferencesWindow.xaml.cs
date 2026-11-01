@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.Hardware;
 using GWGUI.Infrastructure.HostTools;
 using GWGUI.Infrastructure.Settings;
@@ -25,6 +26,12 @@ using GWGUI.Infrastructure.Processes;
 namespace GWGUI.App.Views.Windows.Preferences;
 public partial class PreferencesWindow : Window
 {
+    internal TabControl PresentationNavigation => Navigation;
+    internal void RequestPresentationClose()
+    {
+        if (!_closingAfterSave) BeginClose();
+    }
+
     private ScrollViewer GeneralScrollViewer => GeneralSection.Scroller;
     private TextBox ImagesFolderText => GeneralSection.ImagesFolder;
     private ComboBox LanguageCombo => GeneralSection.Languages;
@@ -133,7 +140,7 @@ public partial class PreferencesWindow : Window
             PreferencesSection.Controllers => 6,
             _ => 0
         };
-        ThemesSection.Configure(settings.ThemeDesign, settings.Theme, SaveThemeAsync);
+        ThemesSection.Configure(settings.ThemeDesign, settings.Theme, settings.ThemeEditions, SaveThemeAsync);
         _initializing = false;
     }
 
@@ -234,12 +241,15 @@ public partial class PreferencesWindow : Window
         }
     }
 
-    private async Task<bool> SaveThemeAsync(AppThemeDesign selected, AppTheme variant)
+    private async Task<bool> SaveThemeAsync(AppThemeDesign selected, AppTheme variant, ThemeEditionSettings edition)
     {
         var previous = _settings.Theme;
         var previousDesign = _settings.ThemeDesign;
+        var hadEdition = _settings.ThemeEditions.TryGetValue(selected, out var previousEdition);
         try
         {
+            _settings.ThemeEditions[selected] = edition.Copy();
+            GWGUI.App.Services.Theming.ThemeManager.ConfigureEditions(_settings.ThemeEditions);
             GWGUI.App.Services.Theming.ThemeManager.Apply(selected, variant);
             _settings.ThemeDesign = selected;
             _settings.Theme = variant;
@@ -251,6 +261,9 @@ public partial class PreferencesWindow : Window
         {
             _settings.Theme = previous;
             _settings.ThemeDesign = previousDesign;
+            if (hadEdition) _settings.ThemeEditions[selected] = previousEdition!;
+            else _settings.ThemeEditions.Remove(selected);
+            GWGUI.App.Services.Theming.ThemeManager.ConfigureEditions(_settings.ThemeEditions);
             if (Application.Current is App app) app.SetTheme(previousDesign, previous);
             else GWGUI.App.Services.Theming.ThemeManager.Apply(previousDesign, previous);
             _reportSaveError(error);
@@ -283,7 +296,7 @@ public partial class PreferencesWindow : Window
     {
         ErrorLog.Write(exception, context);
         var detail = ExceptionDescriptionFunctions.Describe(exception);
-        MessageBox.Show(this, LocExtension.Get("Error.Unexpected", detail), LocExtension.Get(titleKey), MessageBoxButton.OK, icon);
+        WpfMessageDialogService.ShowMessage(this, LocExtension.Get("Error.Unexpected", detail), LocExtension.Get(titleKey), MessageBoxButton.OK, icon);
     }
 
     private void BeginClose()
@@ -310,7 +323,7 @@ public partial class PreferencesWindow : Window
                     await Dispatcher.InvokeAsync(() =>
                     {
                         if (IsLoaded)
-                            MessageBox.Show(this, LocExtension.Get("Error.SaveFailed", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                            WpfMessageDialogService.ShowMessage(this, LocExtension.Get("Error.SaveFailed", detail), LocExtension.Get("Error.Title"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     }).Task.ConfigureAwait(false);
             }
             catch (Exception dialogException)

@@ -10,6 +10,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using GWGUI.Emulation;
+using System.Runtime.ExceptionServices;
 
 
 namespace GWGUI.App.Views.Controls.Emulation.Machine;
@@ -21,7 +22,7 @@ public sealed partial class EmulationSection
         var presentation = GWGUI.App.Services.Emulation.EmulationVideoPresentationProfiles.Store.Get(selected.Module.Id, selected.Configuration.Id);
         var runtime = await CreateRuntimeAsync(selected.Module, selected.Configuration);
         MachineController? view = null;
-        view = new MachineController(new MachineControllerOptions(
+        view = await MachineController.CreateAsync(new MachineControllerOptions(
             selected.Module.Id, selected.Configuration.MachineId, selected.Configuration.Id,
             runtime.CreateMachine(runtime.MountedMedia), runtime.CreateMachine,
             (configuration, cancellationToken) => CreateRuntimeAsync(selected.Module, configuration, cancellationToken),
@@ -65,25 +66,38 @@ public sealed partial class EmulationSection
         _openMachines.Add(key, tab);
         _machines.Items.Add(tab);
         _machines.SelectedItem = tab;
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
         return Task.CompletedTask;
     }
 
     internal async Task CloseMachineAsync((string ModuleId, Guid Id) key, TabItem tab, Func<Task> stop)
     {
         if (!_openMachines.ContainsKey(key)) return;
-        await stop();
-        _openMachines.Remove(key);
-        _machines.Items.Remove(tab);
-        RefreshSelector();
+        var stopped = false;
+        try { await stop(); stopped = true; }
+        finally
+        {
+            if (stopped || tab.Content is MachineController { IsStopped: true })
+            {
+                _openMachines.Remove(key);
+                _machines.Items.Remove(tab);
+                RefreshSelector();
+            }
+        }
     }
 
     public async Task StopAllAsync()
     {
-        foreach (var tab in _openMachines.Values.ToArray())
+        Exception? failure = null;
+        var tabs = _openMachines.Values.ToArray();
+        foreach (var tab in tabs)
         {
-            if (tab.Content is MachineController machine) await machine.StopAsync();
+            try { if (tab.Content is MachineController machine) await machine.StopAsync(); }
+            catch (Exception error) { failure ??= error; }
         }
         _openMachines.Clear();
+        foreach (var tab in tabs) _machines.Items.Remove(tab);
         RefreshSelector();
+        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
     }
 }

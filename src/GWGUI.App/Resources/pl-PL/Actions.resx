@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Odśwież</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Otwórz folder</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Pauza</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Tak</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Nie</value></data>
+  <data name="Common.Abort"><value>Przerwij</value></data>
+  <data name="Common.Retry"><value>Ponów próbę</value></data>
+  <data name="Common.Ignore"><value>Ignoruj</value></data>
+  <data name="Common.TryAgain"><value>Spróbuj ponownie</value></data>
 </root>

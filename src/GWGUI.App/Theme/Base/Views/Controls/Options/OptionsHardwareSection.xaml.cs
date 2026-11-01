@@ -14,6 +14,13 @@ public partial class OptionsHardwareSection : UserControl
     public Button DownloadAction => DownloadHostToolsButton;
     public ProgressBar DownloadProgress => HostToolsProgress;
     public TextBlock HostToolsState => HostToolsStatus;
+    internal void RequestSaveDrive(object sender, RoutedEventArgs args) => SaveHardwareRow_Click(sender, args);
+    internal void RequestForgetDrive(object sender, RoutedEventArgs args) => ForgetHardwareRow_Click(sender, args);
+    internal void RequestPathEditingFinished(object sender, KeyboardFocusChangedEventArgs args) => AutoSaveText_LostKeyboardFocus(sender, args);
+    internal void RequestBrowseTool() => BrowseGw_Click(this, new RoutedEventArgs());
+    internal void RequestDetectTool() => DetectHostTools_Click(this, new RoutedEventArgs());
+    internal void RequestCheckTool() => CheckHostTools_Click(this, new RoutedEventArgs());
+    internal void RequestRollbackTool() => RollbackHostTools_Click(this, new RoutedEventArgs());
     public event RoutedEventHandler? ScanRequested;
     public event RoutedEventHandler? AddDriveRequested;
     public event RoutedEventHandler? SaveDriveRequested;

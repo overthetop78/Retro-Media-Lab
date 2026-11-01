@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Pracovní plocha s přesouvatelnými okny a nastavitelnou velikostí. Nechte otevřených několik nástrojů a přepínejte mezi nimi bez ztráty nastavení.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimalizovat</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maximalizovat nebo obnovit</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Správce programů</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Systém</value></data>
+  <data name="Options.Themes.OS.File"><value>Soubor</value></data>
+  <data name="Options.Themes.OS.Window"><value>Okno</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Kaskáda</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Vedle sebe</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Uspořádat ikony</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Obnovit</value></data>
+  <data name="Options.Themes.OS.Move"><value>Přesunout</value></data>
+  <data name="Options.Themes.OS.Size"><value>Změnit velikost</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maximalizovat</value></data>
+  <data name="Options.Themes.OS.Open"><value>Otevřít</value></data>
+  <data name="Options.Themes.OS.Description"><value>Původní rozhraní operačního systému, včetně oken, ovládačů a interakcí.</value></data>
+  <data name="Options.Themes.Edition"><value>Varianta</value></data>
+  <data name="Options.Themes.OS.Start"><value>Spustit</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programy</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Číslování</value></data>
 </root>

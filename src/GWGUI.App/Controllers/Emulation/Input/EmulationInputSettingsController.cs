@@ -27,6 +27,7 @@ internal sealed class EmulationInputSettingsController
     private readonly IReadOnlyList<string> _reservedBindings;
     private InputBindingEditor? _keyboard;
     private InputBindingEditor? _mouse;
+    private ControllerVisualizer? _mouseDrawing;
     private IReadOnlyList<EmulationControllerPortEditor> _ports = [];
     private IReadOnlyDictionary<int, EmulationControllerPort> _portDefinitions = new Dictionary<int, EmulationControllerPort>();
     private EmulationInputSettings _settings = new(null, null, []);
@@ -40,6 +41,14 @@ internal sealed class EmulationInputSettingsController
         _reservedBindings = (reservedBindings ?? GWGUI.Infrastructure.Settings.Emulation.EmulationShortcutDefaults.Values.Values).ToArray();
     }
 
+    internal InputBindingEditor? PresentationKeyboard => _keyboard;
+    internal InputBindingEditor? PresentationMouse => _mouse;
+    internal ControllerVisualizer? PresentationMouseDrawing => _mouseDrawing;
+    internal IReadOnlyList<EmulationControllerPortEditor> PresentationPorts => _ports;
+    internal string PresentationKeyboardHint => _settings.Keyboard?.Definitions.Count > 0
+        ? string.Empty : LocExtension.Get("Emulation.Keyboard.SpecialKeysOnlyHint");
+    internal ImageSource? PresentationKeyboardArtwork => _settings.Keyboard?.DefaultVisualId is { } visualId
+        && ControllerArtworkCatalog.TryGetProfile(visualId, out var profile) ? profile.Artwork : null;
     internal event EventHandler? SettingsChanged;
     internal bool HasErrors => _keyboard?.HasErrors == true || _mouse?.HasErrors == true || _ports.Any(port => port.Bindings.HasErrors);
 
@@ -52,6 +61,7 @@ internal sealed class EmulationInputSettingsController
             _machineId = configuration.MachineId;
             _keyboard = null;
             _mouse = null;
+            _mouseDrawing = null;
             _ports = [];
             _portDefinitions = new Dictionary<int, EmulationControllerPort>();
             _settings = _manager.DescribeInputSettings(configuration);
@@ -119,6 +129,7 @@ internal sealed class EmulationInputSettingsController
             visualizer.Loaded += (_, _) => visualization.Start();
             visualizer.Unloaded += (_, _) => visualization.Stop();
         }
+        _mouseDrawing = visualizer;
         return EmulationSettingsLayout.MouseSettingsPage(fields, null, _mouse, visualizer: visualizer);
     }
 

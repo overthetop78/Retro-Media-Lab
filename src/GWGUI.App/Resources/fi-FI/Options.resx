@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Työtila, jossa ikkunoita voi siirtää ja niiden kokoa muuttaa. Pidä useita työkaluja avoinna ja vaihda niiden välillä menettämättä asetuksia.</value></data>
   <data name="Options.Themes.Minimize"><value>Pienennä</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Suurenna tai palauta</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Ohjelmanhallinta</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Järjestelmä</value></data>
+  <data name="Options.Themes.OS.File"><value>Tiedosto</value></data>
+  <data name="Options.Themes.OS.Window"><value>Ikkuna</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Limittäin</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Vierekkäin</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Järjestä kuvakkeet</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Palauta</value></data>
+  <data name="Options.Themes.OS.Move"><value>Siirrä</value></data>
+  <data name="Options.Themes.OS.Size"><value>Koko</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maksimoi</value></data>
+  <data name="Options.Themes.OS.Open"><value>Avaa</value></data>
+  <data name="Options.Themes.OS.Description"><value>Alkuperäiset käyttöjärjestelmän liitännät, mukaan lukien ikkunat, ohjaimet ja vuorovaikutus.</value></data>
+  <data name="Options.Themes.Edition"><value>Variantti</value></data>
+  <data name="Options.Themes.OS.Start"><value>Käynnistä</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Ohjelmat</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Numerointi</value></data>
 </root>

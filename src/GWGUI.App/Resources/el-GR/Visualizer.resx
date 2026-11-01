@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>Νεκρός τομέας</value></data>
   <data name="Visual.SectorWithoutData"><value>Τομέας χωρίς δεδομένα</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>Πληροφορίες κασέτας</value></data>
+  <data name="Visual.Representation"><value>Λειτουργία εμφάνισης</value></data>
 </root>

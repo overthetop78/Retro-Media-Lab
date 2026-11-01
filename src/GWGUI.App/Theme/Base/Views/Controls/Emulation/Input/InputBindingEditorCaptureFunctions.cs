@@ -39,7 +39,7 @@ public partial class InputBindingEditor
         _captureDeadlineUtc = DateTime.UtcNow.AddSeconds(15);
         if (button is not null)
         {
-            button.Content = new TextBlock
+            button.Content = presentationCaptureCaption?.Invoke() ?? new TextBlock
             {
                 Text = LocExtension.Get("Emulation.Input.Press"),
                 FontSize = 11,
@@ -162,9 +162,9 @@ public partial class InputBindingEditor
         e.Handled = true;
     }
 
-    private void AttachWindowHook()
+    private void AttachWindowHook(FrameworkElement? presentation = null)
     {
-        if (_windowSource is not null || Window.GetWindow(this) is not Window window) return;
+        if (_windowSource is not null || Window.GetWindow(presentation ?? this) is not Window window) return;
         _windowSource = PresentationSource.FromVisual(window) as HwndSource;
         _windowSource?.AddHook(WindowMessageHook);
         _captureWindow = window;

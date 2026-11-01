@@ -7,19 +7,19 @@ using GWGUI.App.Functions.Input.Bindings;
 using GWGUI.App.Functions.Input.Keyboard;
 using GWGUI.App.Input.Mouse;
 using GWGUI.App.Services.Input.GameInput;
-using GWGUI.App.Views.Controls.Emulation.Machine;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using GWGUI.Emulation;
+using GWGUI.App.Theme.Common;
 
 
 namespace GWGUI.App.Controllers.Emulation.Machine;
 
 internal sealed class MachineInputController : IDisposable
 {
-    private readonly MachineView _view;
+    private EmulationMachinePresentation _view;
     private readonly MachineControllerFeedbackController _feedback;
     private readonly Func<IEmulatedMachine> _machine;
     private readonly IReadOnlyList<GlobalShortcutBinding> _globalShortcuts;
@@ -40,18 +40,21 @@ internal sealed class MachineInputController : IDisposable
         Interval = EmulationRuntimeConstants.EmulationInputPollingInterval
     };
     private FrameworkElement _inputView;
-    private IntPtr _inputHandle;
+    private IntPtr _configuredInputHandle;
+    private readonly Func<IntPtr>? _inputHandleProvider;
+    private IntPtr InputHandle => _inputHandleProvider?.Invoke() ?? _configuredInputHandle;
     private HwndSource? _windowSource;
     private bool _powered;
     private bool _hostTransition;
     private bool _restorePointerAfterHostTransition;
     private bool _disposed;
 
-    internal MachineInputController(MachineView view, FrameworkElement inputView, IntPtr inputHandle,
+    internal MachineInputController(EmulationMachinePresentation view, FrameworkElement inputView, IntPtr inputHandle,
         Func<IEmulatedMachine> machine, IReadOnlyList<GlobalShortcutBinding> globalShortcuts,
         Func<string, Task> executeShortcut, Func<bool> isActive,
         IRelativeMouseCapture? pointerCapture = null, Func<GameInputPhysicalState>? readPhysicalInput = null,
-        Action<FrameworkElement, IntPtr>? focus = null, bool automaticPolling = true, IGameInputControllerSource? feedbackSource = null)
+        Action<FrameworkElement, IntPtr>? focus = null, bool automaticPolling = true, IGameInputControllerSource? feedbackSource = null,
+        Func<IntPtr>? inputHandleProvider = null)
     {
         _view = view;
         _feedback = new MachineControllerFeedbackController(feedbackSource ?? GameInputControllerSource.Instance);
@@ -60,7 +63,8 @@ internal sealed class MachineInputController : IDisposable
         _focus = focus ?? RelativeMouseCapture.Focus;
         _automaticPolling = automaticPolling;
         _inputView = inputView;
-        _inputHandle = inputHandle;
+        _configuredInputHandle = inputHandle;
+        _inputHandleProvider = inputHandleProvider;
         _machine = machine;
         _globalShortcuts = globalShortcuts;
         _executeShortcut = executeShortcut;
@@ -96,17 +100,33 @@ internal sealed class MachineInputController : IDisposable
         ReleasePointer();
         Detach();
         _inputView = inputView;
-        _inputHandle = inputHandle;
+        _configuredInputHandle = inputHandle;
         Attach();
+    }
+
+    internal void SetPresentation(EmulationMachinePresentation presentation)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (ReferenceEquals(_view, presentation)) return;
+        ReleasePointer();
+        DetachWindowHook();
+        _view.Loaded -= ViewLoaded;
+        _view.Unloaded -= ViewUnloaded;
+        _view.DisplayHost.MouseLeftButtonDown -= DisplayHostMouseLeftButtonDown;
+        _view = presentation;
+        _view.Loaded += ViewLoaded;
+        _view.Unloaded += ViewUnloaded;
+        _view.DisplayHost.MouseLeftButtonDown += DisplayHostMouseLeftButtonDown;
+        if (_view.IsLoaded) AttachWindowHook();
     }
 
     internal void RestoreFocus()
     {
         if (!_powered || !_isActive()) return;
-        _focus(_inputView, _inputHandle);
+        _focus(_inputView, InputHandle);
     }
 
-    internal void ReleasePointer() => _pointerCapture.Release(_inputView, _inputHandle);
+    internal void ReleasePointer() => _pointerCapture.Release(_inputView, InputHandle);
 
     internal void BeginHostTransition()
     {
@@ -124,7 +144,7 @@ internal sealed class MachineInputController : IDisposable
             if (!_powered || _disposed) return;
             RestoreFocus();
             if (restorePointer)
-                _pointerCapture.Capture(_inputView, _view.Screen, _inputHandle);
+                _pointerCapture.Capture(_inputView, _view.Screen, InputHandle);
         });
     }
 
@@ -249,10 +269,10 @@ internal sealed class MachineInputController : IDisposable
     internal void RequestPointerCapture()
     {
         if (!_powered || _disposed || !_isActive()) return;
-        _focus(_inputView, _inputHandle);
+        _focus(_inputView, InputHandle);
         if (_machine().Input.SupportsPointerCapture && _machine().Input.CapturePointerOnClick
             && !_pointerCapture.IsCaptured)
-            _pointerCapture.Capture(_inputView, _view.Screen, _inputHandle);
+            _pointerCapture.Capture(_inputView, _view.Screen, InputHandle);
         Publish();
     }
 
@@ -391,7 +411,7 @@ internal sealed class MachineInputController : IDisposable
                 RelativeMouseCapture.FocusNative(hwnd);
                 if (_machine().Input.SupportsPointerCapture && _machine().Input.CapturePointerOnClick
                     && !_pointerCapture.IsCaptured)
-                    _pointerCapture.Capture(_inputView, _view.Screen, _inputHandle);
+                    _pointerCapture.Capture(_inputView, _view.Screen, InputHandle);
                 Publish();
                 break;
             case WindowsInputMessages.LeftButtonUp:

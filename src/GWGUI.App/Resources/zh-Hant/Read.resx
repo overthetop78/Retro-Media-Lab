@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>使用下一個數字</value></data>
   <data name="Read.ConflictEditName"><value>讓我編輯一下名字</value></data>
   <data name="Read.ImageToCreate"><value>要建立的圖像</value></data>
-  <data name="Read.Extension"><value>擴大</value></data>
+  <data name="Read.Extension"><value>副檔名</value></data>
   <data name="Read.RawScp"><value>原始影像 (SCP)</value></data>
   <data name="Read.KnownFormat"><value>已知磁碟格式</value></data>
   <data name="Read.FileName"><value>檔案名稱</value></data>

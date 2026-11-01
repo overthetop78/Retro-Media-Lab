@@ -23,6 +23,6 @@
   <data name="Emulation.Core.Emulator"><value>エミュレーター</value></data>
   <data name="Emulation.Core.Install"><value>インストール</value></data>
   <data name="Emulation.Core.InstalledBadge"><value>インストール済み</value></data>
-  <data name="Emulation.Core.NameOptions" xml:space="preserve"><value>コアオプション</value></data>
+  <data name="Emulation.Core.NameOptions"><value>エミュレーションコアの設定</value></data>
   <data name="Emulation.Core.NameNoEmulatorAvailable"><value>エミュレーターを選択すると、このマシンを作成できます。</value></data>
 </root>

@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Arbejdsområde med vinduer, der kan flyttes og ændres i størrelse. Hold flere værktøjer åbne, og skift mellem dem uden at miste indstillingerne.</value></data>
   <data name="Options.Themes.Minimize"><value>Minimér</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Maksimér eller gendan</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Programstyring</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>System</value></data>
+  <data name="Options.Themes.OS.File"><value>Fil</value></data>
+  <data name="Options.Themes.OS.Window"><value>Vindue</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Overlappende</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Side om side</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Arranger ikoner</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Gendan</value></data>
+  <data name="Options.Themes.OS.Move"><value>Flyt</value></data>
+  <data name="Options.Themes.OS.Size"><value>Størrelse</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Maksimer</value></data>
+  <data name="Options.Themes.OS.Open"><value>Åbn</value></data>
+  <data name="Options.Themes.OS.Description"><value>Originale styresystemgrænseflader, herunder vinduer, betjeningsorganer og interaktioner.</value></data>
+  <data name="Options.Themes.Edition"><value>Variant</value></data>
+  <data name="Options.Themes.OS.Start"><value>Start</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Programmer</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Nummerering</value></data>
 </root>

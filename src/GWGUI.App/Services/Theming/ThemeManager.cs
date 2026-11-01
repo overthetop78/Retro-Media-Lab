@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using GWGUI.App.Constants.Theming;
 using GWGUI.App.Dictionaries.Theming;
+using GWGUI.App.Contracts.Theming;
 
 namespace GWGUI.App.Services.Theming;
 
@@ -33,6 +34,13 @@ public static class ThemeManager
     public static bool IsDark { get; private set; }
     public static AppTheme Current { get; private set; } = AppTheme.System;
     public static AppThemeDesign CurrentDesign { get; private set; } = AppThemeDesign.Base;
+    private static IReadOnlyDictionary<AppThemeDesign, ThemeEditionSettings> editionSettings = new Dictionary<AppThemeDesign, ThemeEditionSettings>();
+
+    internal static ThemeEditionDefinition? CurrentEdition => ThemeCatalog.Get(CurrentDesign).FindEdition(
+        editionSettings.TryGetValue(CurrentDesign, out var settings) ? settings.Edition : null);
+
+    public static void ConfigureEditions(IReadOnlyDictionary<AppThemeDesign, ThemeEditionSettings> settings)
+        => editionSettings = settings.ToDictionary(pair => pair.Key, pair => pair.Value.Copy());
     public static void Apply(AppTheme requested) => Apply(CurrentDesign, requested);
 
     public static void Apply(AppThemeDesign design, AppTheme variant) => Apply(design, variant,
@@ -104,11 +112,22 @@ public static class ThemeManager
         if (window.ReadLocalValue(Control.ForegroundProperty) == DependencyProperty.UnsetValue)
             window.SetResourceReference(Control.ForegroundProperty, ThemeConstants.TextResource);
         if (window is GWGUI.App.Views.Windows.Shell.MainWindow shell) shell.ApplyThemeWorkspace();
+        ApplyEdition(window);
         var handle = new WindowInteropHelper(window).Handle;
         if (handle == IntPtr.Zero) return;
         var enabled = IsDark ? 1 : 0;
         _ = DwmSetWindowAttribute(handle, 20, ref enabled, sizeof(int));
         _ = DwmSetWindowAttribute(handle, 19, ref enabled, sizeof(int));
+    }
+
+    private static void ApplyEdition(FrameworkElement target)
+    {
+        editionSettings.TryGetValue(CurrentDesign, out var settings);
+        var edition = ThemeCatalog.Get(CurrentDesign).FindEdition(settings?.Edition);
+        if (edition is null) return;
+        string? style = null;
+        settings?.Styles.TryGetValue(edition.Id, out style);
+        edition.ApplyStyle?.Invoke(target, edition.NormalizeStyle(style));
     }
 
     [DllImport("dwmapi.dll")]

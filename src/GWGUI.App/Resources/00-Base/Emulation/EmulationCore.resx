@@ -24,5 +24,5 @@
   <data name="Emulation.Core.Emulator"><value>Emulator</value></data>
   <data name="Emulation.Core.Install"><value>Install</value></data>
   <data name="Emulation.Core.InstalledBadge"><value>Installed</value></data>
-  <data name="Emulation.Core.NameOptions" xml:space="preserve"><value>Core options</value></data>
+  <data name="Emulation.Core.NameOptions"><value>Emulation core options</value></data>
 </root>

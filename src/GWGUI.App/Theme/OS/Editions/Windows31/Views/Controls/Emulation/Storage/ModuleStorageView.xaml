@@ -1,0 +1,32 @@
+<UserControl x:Class="GWGUI.App.Theme.OS.Editions.Windows31.Views.ModuleStorageView" x:ClassModifier="internal"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions">
+ <DockPanel Margin="0,0,0,12">
+  <TextBlock DockPanel.Dock="Top" Text="{l:Loc Emulation.Storage.Device.List}" Margin="0,0,0,8"/>
+  <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+   <WrapPanel><Button x:Name="Add" Content="{l:Loc Emulation.Storage.Device.Add}" Margin="0,0,8,4"/>
+    <Button x:Name="Configure" Content="{l:Loc Emulation.Storage.Device.Configure}" Click="ConfigureClicked" Margin="0,0,8,4"/>
+    <Button x:Name="Remove" Content="{l:Loc Common.Delete}" Click="RemoveClicked" Margin="0,0,0,4"/></WrapPanel>
+   <TextBlock Text="{l:Loc Emulation.Storage.Device.CapabilitiesHint}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+  </StackPanel>
+  <Grid>
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
+   <Grid Margin="4,0,4,4"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/><ColumnDefinition Width="2*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
+    <TextBlock Text="{l:Loc Emulation.Device.Name.Id}"/>
+    <TextBlock Grid.Column="1" Text="{l:Loc Emulation.Device.Name.Type}"/>
+    <TextBlock Grid.Column="2" Text="{l:Loc Emulation.Machine.Model}"/>
+    <TextBlock Grid.Column="3" Text="{l:Loc Emulation.Storage.Media.Associated}"/>
+   </Grid>
+   <ListBox x:Name="Devices" Grid.Row="1" MinHeight="120" MaxHeight="320" HorizontalContentAlignment="Stretch" SelectionChanged="SelectionChanged">
+    <ListBox.ItemTemplate><DataTemplate>
+     <Grid Margin="0,3"><Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/><ColumnDefinition Width="2*"/><ColumnDefinition Width="2*"/></Grid.ColumnDefinitions>
+      <TextBlock Text="{Binding Device.Identifier}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,6,0"/>
+      <TextBlock Grid.Column="1" Text="{Binding Type}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,6,0"/>
+      <TextBlock Grid.Column="2" Text="{Binding Device.Model}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,6,0"/>
+      <TextBlock Grid.Column="3" Text="{Binding Support}" ToolTip="{Binding Device.SupportPath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+     </Grid>
+    </DataTemplate></ListBox.ItemTemplate>
+   </ListBox>
+  </Grid>
+ </DockPanel>
+</UserControl>

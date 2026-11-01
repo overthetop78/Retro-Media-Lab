@@ -35,9 +35,9 @@
             <DockPanel LastChildFill="True">
                 <Border DockPanel.Dock="Right" Padding="2" Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="17">
                     <StackPanel Orientation="Horizontal">
-                        <Button Style="{StaticResource SequentialZoomButton}" Content="&#x2212;" Click="ZoomOutButton_Click"/>
+                        <Button x:Name="ZoomOutButton" Style="{StaticResource SequentialZoomButton}" Content="&#x2212;" Click="ZoomOutButton_Click"/>
                         <Button x:Name="ResetZoomButton" Style="{StaticResource SequentialZoomButton}" Width="62" FontSize="13" Content="100 %" Click="ResetZoomButton_Click"/>
-                        <Button Style="{StaticResource SequentialZoomButton}" Content="+" Click="ZoomInButton_Click"/>
+                        <Button x:Name="ZoomInButton" Style="{StaticResource SequentialZoomButton}" Content="+" Click="ZoomInButton_Click"/>
                     </StackPanel>
                 </Border>
                 <WrapPanel VerticalAlignment="Center">

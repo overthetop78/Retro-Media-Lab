@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Gunakan nomor berikutnya</value></data>
   <data name="Read.ConflictEditName"><value>Biarkan saya mengedit namanya</value></data>
   <data name="Read.ImageToCreate"><value>Gambar untuk dibuat</value></data>
-  <data name="Read.Extension"><value>Perpanjangan</value></data>
+  <data name="Read.Extension"><value>Ekstensi berkas</value></data>
   <data name="Read.RawScp"><value>Gambar mentah (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Format disk yang dikenal</value></data>
   <data name="Read.FileName"><value>Nama file</value></data>

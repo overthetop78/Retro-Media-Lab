@@ -19,6 +19,10 @@ namespace GWGUI.App.Views.Controls.Emulation.Storage;
 /// </summary>
 public sealed class EmulationStorageDeviceList : UserControl
 {
+    internal sealed record PresentationRow(EmulationStorageDeviceItem Device, string Type, string Support);
+    internal IReadOnlyList<PresentationRow> PresentationRows { get; private set; } = [];
+    internal Button PresentationAdd => _add;
+    internal event EventHandler? PresentationChanged;
     private readonly StackPanel _rows = new();
     private readonly Button _add;
     private IReadOnlyList<EmulationStorageDeviceItem> _devices = [];
@@ -72,6 +76,17 @@ public sealed class EmulationStorageDeviceList : UserControl
 
     public void SetCanAdd(bool canAdd) => _add.Visibility = canAdd ? Visibility.Visible : Visibility.Collapsed;
 
+    internal void RequestPresentationConfigure(EmulationStorageDeviceItem device)
+    {
+        if (IsEnabled && device.CanConfigure && _devices.Contains(device))
+            ConfigureRequested?.Invoke(this, new EmulationStorageDeviceEventArgs(device));
+    }
+    internal void RequestPresentationRemove(EmulationStorageDeviceItem device)
+    {
+        if (IsEnabled && device.CanRemove && _devices.Contains(device))
+            RemoveRequested?.Invoke(this, new EmulationStorageDeviceEventArgs(device));
+    }
+
     private static Grid BuildHeader()
     {
         var header = CreateColumns();
@@ -87,14 +102,18 @@ public sealed class EmulationStorageDeviceList : UserControl
     private void RebuildRows()
     {
         _rows.Children.Clear();
-        foreach (var device in _devices)
+        PresentationRows = _devices.Select(device => new PresentationRow(device, device.TypeDisplayName ?? TypeLabel(device.Type),
+            device.SupportDisplayName ?? (string.IsNullOrWhiteSpace(device.SupportPath)
+                ? LocExtension.Get(EmulationResourceKeys.NotUsed) : SupportSummary(device.SupportPath)))).ToArray();
+        foreach (var presentation in PresentationRows)
         {
+            var device = presentation.Device;
             var row = CreateColumns();
             row.MinHeight = EmulationStorageDeviceListConstants.RowMinimumHeight;
             row.Children.Add(Cell(device.Identifier, FontWeights.SemiBold));
-            AddCell(row, device.TypeDisplayName ?? TypeLabel(device.Type), 1);
+            AddCell(row, presentation.Type, 1);
             AddCell(row, device.Model, 2);
-            var support = device.SupportDisplayName ?? (string.IsNullOrWhiteSpace(device.SupportPath) ? LocExtension.Get(EmulationResourceKeys.NotUsed) : SupportSummary(device.SupportPath));
+            var support = presentation.Support;
             var supportText = Cell(support);
             if (string.IsNullOrWhiteSpace(device.SupportPath) && device.SupportDisplayName is null)
                 supportText.SetResourceReference(ForegroundProperty, "MutedTextBrush");
@@ -142,6 +161,7 @@ public sealed class EmulationStorageDeviceList : UserControl
             separator.SetResourceReference(BorderBrushProperty, "BorderBrush");
             _rows.Children.Add(separator);
         }
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private static Grid CreateColumns()

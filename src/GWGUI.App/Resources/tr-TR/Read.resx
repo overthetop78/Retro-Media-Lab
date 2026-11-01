@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Sonraki numarayı kullan</value></data>
   <data name="Read.ConflictEditName"><value>İsmi düzenleyeyim</value></data>
   <data name="Read.ImageToCreate"><value>Oluşturulacak resim</value></data>
-  <data name="Read.Extension"><value>Eklenti</value></data>
+  <data name="Read.Extension"><value>Dosya uzantısı</value></data>
   <data name="Read.RawScp"><value>Ham resim (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Bilinen disk formatı</value></data>
   <data name="Read.FileName"><value>Dosya adı</value></data>

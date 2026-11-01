@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.Settings.Emulation;
 using GWGUI.App.Constants.Emulation;
 using GWGUI.App.Constants.Machine;
@@ -20,6 +21,8 @@ using GWGUI.App.Views.Dialogs.Emulation;
 using Microsoft.Win32;
 using GWGUI.App.Views.Dialogs.Emulation.Storage;
 using GWGUI.App.Services.Storage;
+using GWGUI.App.Services.Windows;
+using GWGUI.App.Theme.Common;
 
 namespace GWGUI.App.Views.Controls.Emulation.Machine;
 
@@ -36,7 +39,9 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     ];
 
     private readonly MachineControllerOptions _options;
-    private readonly MachineView _view = new();
+    private EmulationMachinePresentation _view;
+    private ContentControl _presentationHost;
+    private Func<EmulationMachinePresentation> _presentationFactory;
     private readonly MachineSession _session;
     private readonly MachineQuickStates _quickStates;
     private readonly MachineVideoPresenter _video;
@@ -50,51 +55,184 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     private bool _audioMuted;
     private bool _disposed;
 
-    internal MachineController(MachineControllerOptions options)
+    internal static async Task<MachineController> CreateAsync(MachineControllerOptions options)
+    {
+        MachineSession? session = null;
+        MachineController? controller = null;
+        try
+        {
+            session = new MachineSession(options.ModuleId, options.ConfigurationId, options.WindowTitle,
+                options.Machine, options.MachineFactory, options.MountedMedia);
+            controller = new MachineController(options, session);
+            return controller;
+        }
+        finally
+        {
+            if (controller is null)
+            {
+                if (session is not null) await session.DisposeAsync();
+                else await options.Machine.DisposeAsync();
+            }
+        }
+    }
+
+    private MachineController(MachineControllerOptions options, MachineSession session)
     {
         _options = options;
-        _mediaDevices = options.MediaDevices;
-        _prepareMediaAsync = options.PrepareMediaAsync;
-        _audioMuted = options.Machine.Audio.IsMuted;
-        _session = new MachineSession(options.ModuleId, options.ConfigurationId, options.WindowTitle, options.Machine, options.MachineFactory, options.MountedMedia);
-        _quickStates = new MachineQuickStates(() => _session.Machine.SavedStates, options.QuickStatePath);
-        _video = new MachineVideoPresenter(_view, options.Machine, options.VideoRenderer, options.VideoProcessing);
-        _video.FramePresented += FramePresented;
-        _video.ShaderLoadingChanged += VideoShaderLoadingChanged;
-        VideoShaderLoadingChanged(_video.IsShaderLoading);
-        _session.MachineChanged += MachineChanged;
-        _input = new MachineInputController(_view, _video.InputView, _video.InputHandle, () => _session.Machine, options.GlobalShortcuts, ExecuteShortcutAsync, options.IsActive);
-        _commands = new MachineCommandBar(_view.Toolbar, CreateActions(), options.GlobalShortcuts, options.ShowError, _input.RestoreFocus);
-        _commands.SetSavedStateAvailability(_quickStates.IsSupported, _quickStates.IsAvailable);
-        _video.SurfaceChanged += VideoSurfaceChanged;
-        _commands.RendererStatus.Text = MachinePresentationFunctions.RendererName(_video.Renderer);
-        _commands.SetPowered(false);
-        _video.SetVisible(false);
-        RebuildMediaDevices();
-        Content = _view;
+        _session = session;
+        _presentationHost = this;
+        _presentationFactory = options.CreatePresentation ?? CreateBasePresentation;
+        var initialized = false;
+        try
+        {
+            _view = _presentationFactory();
+            _mediaDevices = options.MediaDevices;
+            _prepareMediaAsync = options.PrepareMediaAsync;
+            _audioMuted = options.Machine.Audio.IsMuted;
+            _quickStates = new MachineQuickStates(() => _session.Machine.SavedStates, options.QuickStatePath);
+            _video = new MachineVideoPresenter(_view, options.Machine, options.VideoRenderer, options.VideoProcessing);
+            _video.FramePresented += FramePresented;
+            _video.ShaderLoadingChanged += VideoShaderLoadingChanged;
+            VideoShaderLoadingChanged(_video.IsShaderLoading);
+            _session.MachineChanged += MachineChanged;
+            _input = new MachineInputController(_view, _video.InputView, _video.InputHandle, () => _session.Machine, options.GlobalShortcuts, ExecuteShortcutAsync,
+                () => PresentationActivation?.Invoke() ?? options.IsActive(), inputHandleProvider: () => _video.InputHandle);
+            _commands = new MachineCommandBar(_view.Toolbar, CreateActions(), options.GlobalShortcuts, options.ShowError, _input.RestoreFocus);
+            _view.AttachCommands(_commands.Presentation);
+            _commands.SetSavedStateAvailability(_quickStates.IsSupported, _quickStates.IsAvailable);
+            _video.SurfaceChanged += VideoSurfaceChanged;
+            _commands.RendererStatus.Text = MachinePresentationFunctions.RendererName(_video.Renderer);
+            _commands.SetPowered(false);
+            _commands.SetMuted(_audioMuted);
+            _video.SetVisible(false);
+            RebuildMediaDevices();
+            Content = _view;
+            initialized = true;
+        }
+        finally
+        {
+            if (!initialized)
+            {
+                _session.MachineChanged -= MachineChanged;
+                if (_video is not null)
+                {
+                    _video.FramePresented -= FramePresented;
+                    _video.ShaderLoadingChanged -= VideoShaderLoadingChanged;
+                    _video.SurfaceChanged -= VideoSurfaceChanged;
+                }
+                EmulationVideoCleanupFunctions.RunAll(() => _input?.Dispose(), () => _video?.Dispose(), () => _view?.Dispose());
+            }
+        }
     }
 
     internal IEmulatedMachine Machine => _session.Machine;
     internal bool IsFullscreen => _fullscreenWindow is not null;
+    internal EmulationMachinePresentation Presentation => _view;
+    internal ContentControl PresentationHost => _presentationHost;
+    internal Func<EmulationMachinePresentation> PresentationFactory => _presentationFactory;
+    internal Func<bool>? PresentationActivation { get; set; }
+    internal bool IsStopped => _disposed;
+
+    private static EmulationMachinePresentation CreateBasePresentation() => new MachineView();
+
+    internal void MovePresentationTo(ContentControl host)
+    {
+        if (ReferenceEquals(host, _presentationHost)) return;
+        if (host.Content is not null) throw new InvalidOperationException(nameof(host));
+        var previous = _presentationHost;
+        if (!_disposed) _input.BeginHostTransition();
+        try
+        {
+            if (ReferenceEquals(previous.Content, _view)) previous.Content = null;
+            try
+            {
+                if (!_disposed) host.Content = _view;
+                _presentationHost = host;
+            }
+            catch
+            {
+                if (!_disposed) previous.Content = _view;
+                throw;
+            }
+        }
+        finally { if (!_disposed) _input.CompleteHostTransition(); }
+    }
+
+    internal void SetPresentation(Func<EmulationMachinePresentation> create)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_presentationFactory == create) return;
+        var previous = _view;
+        var next = create() ?? throw new InvalidOperationException(nameof(create));
+        if (ReferenceEquals(previous, next)) return;
+        var committed = false;
+        try
+        {
+            next.AttachCommands(_commands.Presentation);
+            if (IsFullscreen) ExitFullscreen();
+            _input.BeginHostTransition();
+            try
+            {
+                _presentationHost.Content = null;
+                _commands.Rehost(next.Toolbar);
+                _video.SetPresentation(next);
+                _input.SetPresentation(next);
+                _view = next;
+                RebuildMediaDevices();
+                _presentationHost.Content = next;
+                _presentationFactory = create;
+                committed = true;
+            }
+            catch
+            {
+                _view = previous;
+                try
+                {
+                    _commands.Rehost(previous.Toolbar);
+                    _video.SetPresentation(previous);
+                    _input.SetPresentation(previous);
+                    RebuildMediaDevices();
+                }
+                finally { _presentationHost.Content = previous; }
+                throw;
+            }
+            finally { _input.CompleteHostTransition(); }
+        }
+        finally
+        {
+            if (committed) previous.Dispose();
+            else next.Dispose();
+        }
+    }
 
     internal async Task StopAsync()
     {
         if (_disposed) return;
         _disposed = true;
-        ExitFullscreen();
-        _video.FramePresented -= FramePresented;
-        _video.ShaderLoadingChanged -= VideoShaderLoadingChanged;
-        _video.SurfaceChanged -= VideoSurfaceChanged;
-        _session.MachineChanged -= MachineChanged;
-        try
-        {
-            _input.Dispose();
-            _video.Dispose();
-        }
+        try { ExitFullscreen(); }
         finally
         {
-            EmulationVideoShaderLoadingStatus.Set(_options.ModuleId, _options.ConfigurationId, false);
-            await _session.DisposeAsync();
+            _video.FramePresented -= FramePresented;
+            _video.ShaderLoadingChanged -= VideoShaderLoadingChanged;
+            _video.SurfaceChanged -= VideoSurfaceChanged;
+            _session.MachineChanged -= MachineChanged;
+            try { EmulationVideoCleanupFunctions.RunAll(_input.Dispose, _video.Dispose); }
+            finally
+            {
+                try { EmulationVideoShaderLoadingStatus.Set(_options.ModuleId, _options.ConfigurationId, false); }
+                finally
+                {
+                    try { await _session.DisposeAsync(); }
+                    finally
+                    {
+                        try { _view.Dispose(); }
+                        finally
+                        {
+                            if (ReferenceEquals(_presentationHost.Content, _view)) _presentationHost.Content = null;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -156,7 +294,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         var dialog = new CoreOptionsDialog(runtime.EmulatorName, runtime.EmulatorVersion, runtime.AvailableOptions, _options.ModuleId);
         try
         {
-            if (dialog.ShowDialog() != true) return;
+            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), dialog) != true) return;
             var values = dialog.Values;
             foreach (var option in runtime.AvailableOptions)
             {
@@ -167,7 +305,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
             if (_options.PersistRuntimeOptions is not null)
                 await _options.PersistRuntimeOptions(values);
         }
-        finally { dialog.Close(); }
+        finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
     }
 
     private async Task SwitchControllerPointerAsync()
@@ -308,7 +446,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
                 canOpenMedia ? () => InsertMediaAsync(device) : null,
                 canOpenMedia && mounted is not null ? () => EjectMediaAsync(device) : null,
                 device.MediaType == EmulationMediaType.Cassette ? CassetteStateText(state) : null,
-                device.MediaType == EmulationMediaType.Cassette ? CassetteCommandOrder.Select(command => CassetteCommand(command, cassette, state, activeOperation)).ToArray() : null);
+                device.MediaType == EmulationMediaType.Cassette ? CassetteCommandOrder.Select(command => CassetteCommand(command, cassette, state, activeOperation)).ToArray() : null, device.MediaType);
         }), _options.ShowError, _input.RestoreFocus);
     }
 
@@ -338,7 +476,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
             ShowReadOnly = device.MediaType is EmulationMediaType.Floppy or EmulationMediaType.Cassette,
             ClientGuid = EmulationMediaDialogFunctions.ClientGuid(_options.ModuleId, _options.MachineId, device.Slot)
         };
-        if (dialog.ShowDialog() != true) return;
+        if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) != true) return;
         var directory = Path.GetDirectoryName(dialog.FileName);
         if (!string.IsNullOrWhiteSpace(directory)) _options.RememberMediaDirectory(device, directory);
         var media = new EmulationMedia(dialog.FileName, device.Slot, device.MediaType, dialog.ReadOnlyChecked || new FileInfo(dialog.FileName).IsReadOnly, true);
@@ -358,8 +496,8 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         if (device.UsesDirectory)
         {
             var dialog = new MemoryCardDirectoryConfigurationDialog(device.DisplayLabel ?? device.Slot.ToString(), current, folder);
-            try { if (dialog.ShowDialog() != true) return; selected = dialog.SupportPath; }
-            finally { dialog.Close(); }
+            try { if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), dialog) != true) return; selected = dialog.SupportPath; }
+            finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
         }
         else
         {
@@ -368,8 +506,8 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
                 EmulationMediaDialogFunctions.ClientGuid(_options.ModuleId, _options.MachineId, device.Slot),
                 fixedImageSizeBytes: device.FixedImageSizeBytes, defaultImageFileName: device.DefaultImageFileName,
                 presentation: device.DialogPresentation);
-            try { if (dialog.ShowDialog() != true) return; selected = dialog.SupportPath; }
-            finally { dialog.Close(); }
+            try { if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), dialog) != true) return; selected = dialog.SupportPath; }
+            finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
         }
         if (string.IsNullOrWhiteSpace(selected))
             await _session.EjectAsync(device.Slot, device.RequiresMachineRecreation);
@@ -402,7 +540,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
                 InitialDirectory = _options.InitialMediaDirectory(device),
                 ClientGuid = EmulationMediaDialogFunctions.ClientGuid(_options.ModuleId, _options.MachineId, device.Slot)
             };
-            if (dialog.ShowDialog() != true) return;
+            if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) != true) return;
             IReadOnlyDictionary<string, string>? pcm = null;
             var recordingRate = new EmulationCassettePcmSettings().SampleRate;
             if (Path.GetExtension(dialog.FileName).Equals(EmulationSdk.MediaProcessing.FileExtensions["Raw"], StringComparison.OrdinalIgnoreCase))
@@ -411,16 +549,16 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
                 var profileDialog = new ManagedStorageConfigurationDialog(CassetteCommandText(command), "RAW", _options.ModuleId, EmulationCassettePcmSettings.Describe(defaults), null);
                 try
                 {
-                    if (profileDialog.ShowDialog() != true) return;
+                    if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), profileDialog) != true) return;
                     var profile = EmulationCassettePcmSettings.Read(profileDialog.Options);
                     pcm = profile.ToParameters(); recordingRate = profile.SampleRate;
                 }
-                finally { profileDialog.Close(); }
+                finally { WpfWindowNavigationService.CloseOwnedDialog(profileDialog); }
             }
             var creation = new MediaCreationDialog(Window.GetWindow(this)!, CassetteCommandText(command), dialog.FileName,
                 () => EmulationSdk.MediaProcessing.WriteCassetteAsync(dialog.FileName, new EmulationCassetteSignal(ReadOnlyMemory<short>.Empty, recordingRate), parameters: pcm));
-            try { if (creation.ShowDialog() != true) return; }
-            finally { creation.Close(); }
+            try { if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), creation) != true) return; }
+            finally { WpfWindowNavigationService.CloseOwnedDialog(creation); }
             if (cassette.AvailableCommands.Contains(EmulationCassetteCommand.Stop)) await cassette.ExecuteAsync(EmulationCassetteCommand.Stop);
             var current = _session.MountedMedia.FirstOrDefault(media => media.Slot == device.Slot);
             var profileChanged = pcm is not null && (current?.Parameters is null || pcm.Any(pair => !current.Parameters.TryGetValue(pair.Key, out var value) || value != pair.Value));

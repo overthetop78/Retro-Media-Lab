@@ -23,6 +23,10 @@ public partial class SequentialMediaView : UserControl, IMediaVisualizationView
     private int _renderPixelWidth = 1;
     private int _renderPixelHeight = 1;
     private Point? _panDragLast;
+    private ScrollViewer? presentationViewport;
+    private DispatcherOperation? pendingZoomPlacement;
+
+    internal ScrollViewer ActiveViewport => presentationViewport ?? TimelineScrollViewer;
 
     public SequentialMediaView()
     {
@@ -31,10 +35,40 @@ public partial class SequentialMediaView : UserControl, IMediaVisualizationView
         TrackSelector.DisplayMemberPath = "Value";
         ChannelSelector.DisplayMemberPath = "Value";
         SizeChanged += (_, _) => UpdateCanvasWidth();
+        Unloaded += (_, _) => CancelZoomPlacement();
     }
 
     public event Action<int, long>? ElementSelected;
     public event Action<SequentialMediaSegment?>? SegmentSelected;
+
+    internal void SetPresentationViewport(ScrollViewer? viewport)
+    {
+        if (ReferenceEquals(presentationViewport, viewport)) return;
+        CancelZoomPlacement();
+        if (_panDragLast is not null)
+        {
+            _panDragLast = null;
+            if (Canvas.IsMouseCaptured) Canvas.ReleaseMouseCapture();
+        }
+        if (presentationViewport is not null)
+        {
+            presentationViewport.SizeChanged -= TimelineScrollViewer_SizeChanged;
+            presentationViewport.PreviewMouseWheel -= TimelineScrollViewer_PreviewMouseWheel;
+        }
+        presentationViewport = viewport;
+        if (presentationViewport is not null)
+        {
+            presentationViewport.SizeChanged += TimelineScrollViewer_SizeChanged;
+            presentationViewport.PreviewMouseWheel += TimelineScrollViewer_PreviewMouseWheel;
+        }
+        UpdateCanvasWidth();
+    }
+
+    private void CancelZoomPlacement()
+    {
+        pendingZoomPlacement?.Abort();
+        pendingZoomPlacement = null;
+    }
 
     public void SetDocument(SequentialMediaRenderModel model)
     {
@@ -76,14 +110,14 @@ public partial class SequentialMediaView : UserControl, IMediaVisualizationView
     private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => SelectAt(e.GetPosition(Canvas));
 
     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
-        => VisualizationPanFunctions.Begin(Canvas, TimelineScrollViewer, _zoom, ref _panDragLast, e);
+        => VisualizationPanFunctions.Begin(Canvas, ActiveViewport, _zoom, ref _panDragLast, e);
 
     private void Canvas_MouseMove(object sender, MouseEventArgs e)
     {
         if (_panDragLast is not Point last || e.MiddleButton != MouseButtonState.Pressed) return;
-        var point = e.GetPosition(TimelineScrollViewer);
-        TimelineScrollViewer.ScrollToHorizontalOffset(TimelineScrollViewer.HorizontalOffset - (point.X - last.X));
-        TimelineScrollViewer.ScrollToVerticalOffset(TimelineScrollViewer.VerticalOffset - (point.Y - last.Y));
+        var point = e.GetPosition(ActiveViewport);
+        ActiveViewport.ScrollToHorizontalOffset(ActiveViewport.HorizontalOffset - (point.X - last.X));
+        ActiveViewport.ScrollToVerticalOffset(ActiveViewport.VerticalOffset - (point.Y - last.Y));
         _panDragLast = point;
     }
 
@@ -118,34 +152,42 @@ public partial class SequentialMediaView : UserControl, IMediaVisualizationView
 
     private void TimelineScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
     {
-        SetZoom(_zoom * (e.Delta > 0 ? 1.15f : 1 / 1.15f), e.GetPosition(TimelineScrollViewer));
+        if (!ReferenceEquals(sender, ActiveViewport)) return;
+        SetZoom(_zoom * (e.Delta > 0 ? 1.15f : 1 / 1.15f), e.GetPosition(ActiveViewport));
         e.Handled = true;
     }
 
-    private void TimelineScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateCanvasWidth();
+    private void TimelineScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (ReferenceEquals(sender, ActiveViewport)) UpdateCanvasWidth();
+    }
 
     private void SetZoom(float zoom, Point? anchor = null)
     {
-        var point = anchor ?? new Point(TimelineScrollViewer.ViewportWidth / 2, TimelineScrollViewer.ViewportHeight / 2);
+        CancelZoomPlacement();
+        var viewport = ActiveViewport;
+        var point = anchor ?? new Point(ActiveViewport.ViewportWidth / 2, ActiveViewport.ViewportHeight / 2);
         var oldWidth = Math.Max(1, Canvas.ActualWidth);
         var oldHeight = Math.Max(1, Canvas.ActualHeight);
-        var relativeX = (TimelineScrollViewer.HorizontalOffset + point.X) / oldWidth;
-        var relativeY = (TimelineScrollViewer.VerticalOffset + point.Y) / oldHeight;
+        var relativeX = (ActiveViewport.HorizontalOffset + point.X) / oldWidth;
+        var relativeY = (ActiveViewport.VerticalOffset + point.Y) / oldHeight;
         _zoom = Math.Clamp(zoom, 1, 8);
         ResetZoomButton.Content = $"{_zoom:P0}";
         UpdateCanvasWidth();
-        Dispatcher.BeginInvoke(() =>
+        pendingZoomPlacement = Dispatcher.BeginInvoke(() =>
         {
-            TimelineScrollViewer.ScrollToHorizontalOffset(relativeX * Canvas.ActualWidth - point.X);
-            TimelineScrollViewer.ScrollToVerticalOffset(relativeY * Canvas.ActualHeight - point.Y);
+            pendingZoomPlacement = null;
+            if (!ReferenceEquals(viewport, ActiveViewport)) return;
+            viewport.ScrollToHorizontalOffset(relativeX * Canvas.ActualWidth - point.X);
+            viewport.ScrollToVerticalOffset(relativeY * Canvas.ActualHeight - point.Y);
         }, DispatcherPriority.Loaded);
     }
 
     private void UpdateCanvasWidth()
     {
-        var viewportWidth = Math.Max(TimelineScrollViewer.ViewportWidth, TimelineScrollViewer.ActualWidth - 2);
+        var viewportWidth = Math.Max(ActiveViewport.ViewportWidth, ActiveViewport.ActualWidth - 2);
         Canvas.Width = Math.Max(640, viewportWidth) * _zoom;
-        var viewportHeight = Math.Max(TimelineScrollViewer.ViewportHeight, TimelineScrollViewer.ActualHeight - 2);
+        var viewportHeight = Math.Max(ActiveViewport.ViewportHeight, ActiveViewport.ActualHeight - 2);
         Canvas.Height = Math.Max(360, viewportHeight) * _zoom;
         Canvas.InvalidateVisual();
     }

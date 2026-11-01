@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>ソースと目的地を選択します。</value></data>
   <data name="Migration.Severity"><value>重症度</value></data>
   <data name="Migration.Path"><value>ソースパス</value></data>
-  <data name="Migration.Description"><value>コンテンツ</value></data>
+  <data name="Migration.Description"><value>問題の説明</value></data>
   <data name="Migration.AcceptLosses"><value>リストされたメタデータの損失を受け入れる</value></data>
   <data name="Migration.Execute"><value>ファイルを移行する</value></data>
   <data name="Migration.Blocking"><value>ブロック</value></data>

@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>قرص مرن</value></data>
   <data name="Common.MediaKind.HardDisk"><value>قرص صلب</value></data>
   <data name="Common.MediaKind.Optical"><value>قرص غير مرئي</value></data>
-  <data name="Common.MediaKind.Tape"><value>تايب</value></data>
+  <data name="Common.MediaKind.Tape"><value>شريط مغناطيسي</value></data>
   <data name="Common.Representation.Flux"><value>Flux</value></data>
   <data name="Common.Representation.Sectors"><value>القطاعات</value></data>
   <data name="Common.Representation.Blocks"><value>القفل</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>صور قرصية|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|جميع الملفات|*.*</value></data>
   <data name="Common.Console"><value>وحدة التحكم</value></data>
   <data name="Common.Command"><value>يأمر</value></data>
+  <data name="FileDialog.Open"><value>فتح</value></data>
+  <data name="FileDialog.SaveAs"><value>حفظ باسم</value></data>
+  <data name="FileDialog.SelectFolder"><value>اختيار مجلد</value></data>
+  <data name="FileDialog.Directories"><value>المجلدات</value></data>
+  <data name="FileDialog.Drives"><value>محركات الأقراص</value></data>
+  <data name="FileDialog.FileTypes"><value>أنواع الملفات</value></data>
+  <data name="FileDialog.AllFiles"><value>جميع الملفات</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>الملف موجود بالفعل، أستبدله؟&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>أدخل اسم ملف صالح.</value></data>
 </root>

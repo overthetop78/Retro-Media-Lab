@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Кнопка</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Перемикач</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>Осі: {0} · кнопки: {1} · перемикачі: {2}</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Так</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Ні</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Немає</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Генетичні ігрові блоки</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Колесо гонщика</value></data>

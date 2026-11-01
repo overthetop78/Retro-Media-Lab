@@ -2,6 +2,7 @@ using GWGUI.App.Constants.Controls.Visual;
 using GWGUI.App.Factories.Views.Common;
 using GWGUI.App.Localization.Extensions;
 using System.Windows;
+using GWGUI.App.Theme.Common;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Data;
@@ -286,11 +287,12 @@ internal static class StorageDialogUi
         var ok = new Button { Content = acceptText, IsDefault = true, MinWidth = compact ? 100 : 140 };
         ok.Click += (_, _) =>
         {
-            if (accept is null) window.DialogResult = true;
+            if (accept is null) ThemeDialogCompletion.Complete(window, true);
             else accept();
         };
         footer.Children.Add(cancel);
         footer.Children.Add(ok);
+        ThemeDialogCompletion.SetCommands(window, ok, cancel);
         return footer;
     }
 }

@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Оновити</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Відкрити папку</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Пауза</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Так</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Ні</value></data>
+  <data name="Common.Abort"><value>Перервати</value></data>
+  <data name="Common.Retry"><value>Повторити</value></data>
+  <data name="Common.Ignore"><value>Пропустити</value></data>
+  <data name="Common.TryAgain"><value>Спробувати знову</value></data>
 </root>

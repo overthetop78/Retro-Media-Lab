@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Reîmprospătează</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Deschideți folderul</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Pauză</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Da</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Nu</value></data>
+  <data name="Common.Abort"><value>Abandonare</value></data>
+  <data name="Common.Retry"><value>Reîncercare</value></data>
+  <data name="Common.Ignore"><value>Ignorare</value></data>
+  <data name="Common.TryAgain"><value>Încercați din nou</value></data>
 </root>

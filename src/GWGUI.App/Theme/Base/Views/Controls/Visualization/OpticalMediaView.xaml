@@ -12,9 +12,9 @@
         <Border Style="{StaticResource SubtlePanel}" Margin="4,4,4,6" Padding="8">
             <DockPanel LastChildFill="True">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button Width="32" Content="−" Click="ZoomOutButton_Click"/>
+                    <Button x:Name="ZoomOutButton" Width="32" Content="−" Click="ZoomOutButton_Click"/>
                     <Button x:Name="ResetZoomButton" MinWidth="58" Margin="4,0" Content="100 %" Click="ResetZoomButton_Click"/>
-                    <Button Width="32" Content="+" Click="ZoomInButton_Click"/>
+                    <Button x:Name="ZoomInButton" Width="32" Content="+" Click="ZoomInButton_Click"/>
                 </StackPanel>
                 <WrapPanel VerticalAlignment="Center">
                     <TextBlock Margin="0,0,6,0" VerticalAlignment="Center" Text="{l:Loc Visual.SideLabel}"/>

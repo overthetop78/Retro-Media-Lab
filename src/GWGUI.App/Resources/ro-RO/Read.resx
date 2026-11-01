@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>Folosiți următorul număr</value></data>
   <data name="Read.ConflictEditName"><value>Lasă-mă să editez numele</value></data>
   <data name="Read.ImageToCreate"><value>Imagine de creat</value></data>
-  <data name="Read.Extension"><value>Extensie</value></data>
+  <data name="Read.Extension"><value>Extensie de fișier</value></data>
   <data name="Read.RawScp"><value>Imagine brută (SCP)</value></data>
   <data name="Read.KnownFormat"><value>Format de disc cunoscut</value></data>
   <data name="Read.FileName"><value>Nume de fișier</value></data>

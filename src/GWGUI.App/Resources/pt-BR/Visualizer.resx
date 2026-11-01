@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>Sector morto</value></data>
   <data name="Visual.SectorWithoutData"><value>Sector sem dados</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>Informações da fita cassete</value></data>
+  <data name="Visual.Representation"><value>Modo de visualização</value></data>
 </root>

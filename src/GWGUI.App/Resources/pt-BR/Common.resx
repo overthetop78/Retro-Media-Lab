@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Disquete</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Disco rígido</value></data>
   <data name="Common.MediaKind.Optical"><value>Disco óptico</value></data>
-  <data name="Common.MediaKind.Tape"><value>Fita</value></data>
+  <data name="Common.MediaKind.Tape"><value>Fita magnética</value></data>
   <data name="Common.Representation.Flux"><value>Fluxo</value></data>
   <data name="Common.Representation.Sectors"><value>Sectores</value></data>
   <data name="Common.Representation.Blocks"><value>Blocos</value></data>
@@ -22,4 +22,14 @@
   <data name="Common.DiskImageFilter"><value>Imagens de disco|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Todos os arquivos|*.*</value></data>
   <data name="Common.Console"><value>Consola</value></data>
   <data name="Common.Command"><value>Comando</value></data>
+  <data name="FileDialog.Open"><value>Abrir</value></data>
+  <data name="FileDialog.SaveAs"><value>Salvar como</value></data>
+  <data name="FileDialog.SelectFolder"><value>Selecionar uma pasta</value></data>
+  <data name="FileDialog.Directories"><value>Pastas</value></data>
+  <data name="FileDialog.Drives"><value>Unidades</value></data>
+  <data name="FileDialog.FileTypes"><value>Tipos de arquivo</value></data>
+  <data name="FileDialog.AllFiles"><value>Todos os arquivos</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>O arquivo já existe. Substituí-lo?
+{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Digite um nome de arquivo válido.</value></data>
 </root>

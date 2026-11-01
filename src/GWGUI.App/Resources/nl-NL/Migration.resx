@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Selecteer een bron en een bestemming.</value></data>
   <data name="Migration.Severity"><value>Severity</value></data>
   <data name="Migration.Path"><value>Bronpad</value></data>
-  <data name="Migration.Description"><value>Omschrijving</value></data>
+  <data name="Migration.Description"><value>Beschrijving van het probleem</value></data>
   <data name="Migration.AcceptLosses"><value>Accepteer de verliezen aan opgenomen metagegevens</value></data>
   <data name="Migration.Execute"><value>Bestanden migreren</value></data>
   <data name="Migration.Blocking"><value>Blokkeren</value></data>

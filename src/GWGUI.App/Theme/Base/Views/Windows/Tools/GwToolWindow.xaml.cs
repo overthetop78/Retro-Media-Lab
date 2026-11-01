@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.Commands;
 using GWGUI.Infrastructure.Commands.Building;
 using GWGUI.Infrastructure.Commands.Execution;
@@ -9,6 +10,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using GWGUI.Infrastructure.Processes;
+using System.Windows.Threading;
 
 namespace GWGUI.App.Views.Windows.Tools;
 public partial class GwToolWindow : Window
@@ -23,10 +25,19 @@ public partial class GwToolWindow : Window
     private CancellationTokenSource? _cancellation;
     private readonly Dictionary<string, TextBox> _fields = [];
     private readonly Dictionary<string, CheckBox> _checks = [];
-    private bool _closeWhenOperationStops;
-    private bool _operationHasStopped;
+    private Task _operation = Task.CompletedTask;
+    private Task _closing = Task.CompletedTask;
+    private bool _closeRequested;
+    private bool _allowClose;
     private readonly Func<string, string, bool> _confirm;
     private readonly Action<Exception, string> _logError;
+    internal IReadOnlyDictionary<string, TextBox> PresentationFields => _fields;
+    internal IReadOnlyDictionary<string, CheckBox> PresentationChecks => _checks;
+    internal TextBlock PresentationSummary => Summary;
+    internal TextBox PresentationOutput => RawOutput;
+    internal TextBox PresentationCommand => CommandText;
+    internal Button PresentationExecute => ExecuteButton;
+    internal Task PresentationOperation => Task.WhenAll(_operation, _closing);
     public GwToolWindow(
         string executable,
         string verb,
@@ -47,7 +58,7 @@ public partial class GwToolWindow : Window
         _runner = runner ?? new GreaseweazleRunner();
         _commandBuilder = commandBuilder ?? new GwCommandBuilder();
         _consoleLog = consoleLog;
-        _confirm = confirm ?? ((message, title) => MessageBox.Show(this, message, title, MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes);
+        _confirm = confirm ?? ((message, title) => WpfMessageDialogService.ShowMessage(this, message, title, MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes);
         _logError = logError ?? ((exception, context) => ErrorLog.Write(exception, context));
         Heading.Text = Title = TitleFor(verb);
         CreateParameters();
@@ -56,14 +67,31 @@ public partial class GwToolWindow : Window
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
-        if (_cancellation is not null && !_operationHasStopped)
+        if (!_allowClose)
         {
             e.Cancel = true;
-            _closeWhenOperationStops = true;
-            _cancellation.Cancel();
+            RequestPresentationClose();
         }
 
         base.OnClosing(e);
+    }
+
+    internal void RequestPresentationClose()
+    {
+        if (_closeRequested) return;
+        _closeRequested = true;
+        _cancellation?.Cancel();
+        _closing = CloseAfterOperationAsync();
+    }
+
+    private async Task CloseAfterOperationAsync()
+    {
+        try { await _operation; }
+        finally
+        {
+            _allowClose = true;
+            await Dispatcher.InvokeAsync(Close);
+        }
     }
 
     private void CreateParameters()
@@ -197,25 +225,39 @@ public partial class GwToolWindow : Window
     }
 
     private async void Execute_Click(object sender, RoutedEventArgs e) => await ExecuteAsync();
-    internal async Task ExecuteAsync()
+    internal Task ExecuteAsync()
     {
-        if (_runner.IsRunning)
+        if (_closeRequested) return Task.CompletedTask;
+        if (_cancellation is not null || _runner.IsRunning)
         {
             if (_confirm(LocExtension.Get("Operation.StopConfirm"), LocExtension.Get("Operation.StopTitle")))
                 _cancellation?.Cancel();
-            return;
+            return Task.CompletedTask;
         }
 
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _operation = completion.Task;
+        return ExecuteTrackedAsync(completion);
+    }
+
+    private async Task ExecuteTrackedAsync(TaskCompletionSource completion)
+    {
+        try { await RunToolAsync(); }
+        finally { completion.SetResult(); }
+    }
+
+    private async Task RunToolAsync()
+    {
         _cancellation = new CancellationTokenSource();
         ExecuteButton.Content = LocExtension.Get("Common.Stop");
         RawOutput.Clear();
         Summary.Text = L("Tool.Running");
-        var progress = new Progress<GwOutputLine>(line =>
+        var progress = new ToolProgress(Dispatcher, async line =>
         {
             RawOutput.AppendText(line.Text + Environment.NewLine);
             RawOutput.ScrollToEnd();
             if (_consoleLog is not null)
-                _ = _consoleLog.AppendAsync(line.Text);
+                await _consoleLog.AppendAsync(line.Text);
         });
         try
         {
@@ -225,6 +267,7 @@ public partial class GwToolWindow : Window
             if (_consoleLog is not null)
                 await _consoleLog.BeginAsync(_verb, command.ToDisplayString());
             var result = await _runner.RunAsync(command, progress, _cancellation.Token);
+            await progress.CompleteAsync();
             if (_verb == "info")
             {
                 var info = GwInfoParser.Parse(string.Join(Environment.NewLine, result.Output.Select(x => x.Text)));
@@ -245,14 +288,30 @@ public partial class GwToolWindow : Window
         }
         finally
         {
-            ExecuteButton.Content = LocExtension.Get("Common.Execute");
-            _cancellation.Dispose();
-            _cancellation = null;
-            if (_closeWhenOperationStops)
+            try { await progress.CompleteAsync(); }
+            finally
             {
-                _operationHasStopped = true;
-                Close();
+                ExecuteButton.Content = LocExtension.Get("Common.Execute");
+                _cancellation.Dispose();
+                _cancellation = null;
             }
+        }
+    }
+
+    private sealed class ToolProgress(Dispatcher dispatcher, Func<GwOutputLine, Task> publish) : IProgress<GwOutputLine>
+    {
+        private readonly List<Task> pending = [];
+        private readonly object gate = new();
+
+        public void Report(GwOutputLine line)
+        {
+            var task = dispatcher.CheckAccess() ? publish(line) : dispatcher.InvokeAsync(() => publish(line)).Task.Unwrap();
+            lock (gate) pending.Add(task);
+        }
+
+        internal Task CompleteAsync()
+        {
+            lock (gate) return Task.WhenAll(pending);
         }
     }
 

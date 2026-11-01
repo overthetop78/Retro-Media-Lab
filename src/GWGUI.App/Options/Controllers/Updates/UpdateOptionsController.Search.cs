@@ -18,10 +18,10 @@ namespace GWGUI.App.Options.Controllers;
 internal sealed partial class UpdateOptionsController : IDisposable
 {
     private async void SearchApplication(object sender, RoutedEventArgs e)
-        => await SearchAsync(UpdateSearchScope.Application);
+        => await TrackAsync(() => SearchAsync(UpdateSearchScope.Application));
 
     private async void SearchModules(object sender, RoutedEventArgs e)
-        => await SearchAsync(UpdateSearchScope.Modules);
+        => await TrackAsync(() => SearchAsync(UpdateSearchScope.Modules));
 
     private async Task SearchAsync(UpdateSearchScope scope)
     {
@@ -38,16 +38,17 @@ internal sealed partial class UpdateOptionsController : IDisposable
         {
             if (isApplication)
             {
-                _applicationResult = await _applicationService.SearchAsync(_applicationSelections);
+                _applicationResult = await _applicationService.SearchAsync(_applicationSelections, _lifetime.Token);
                 RenderApplication(_applicationResult);
                 _applicationState = StateFor(_applicationResult);
             }
             else
             {
-                var result = await _moduleService.SearchAsync(moduleId!, _moduleSelections);
+                var result = await _moduleService.SearchAsync(moduleId!, _moduleSelections, _lifetime.Token);
                 AcceptModuleResult(moduleId!, result);
             }
         }
+        catch (OperationCanceledException) when (_stopping) { }
         catch (Exception exception)
         {
             if (isApplication || string.Equals(_section.SelectedModuleId, moduleId, StringComparison.OrdinalIgnoreCase)) status.Text = _localize("Updates.SearchFailed", []);
@@ -67,7 +68,9 @@ internal sealed partial class UpdateOptionsController : IDisposable
         }
     }
 
-    private async void SearchAvailableModules(object sender, RoutedEventArgs e)
+    private async void SearchAvailableModules(object sender, RoutedEventArgs e) => await TrackAsync(SearchAvailableModulesAsync);
+
+    private async Task SearchAvailableModulesAsync()
     {
         _section.SearchAvailableModulesButton.IsEnabled = false;
         _directoryState = UpdateVisualState.Busy;
@@ -77,7 +80,7 @@ internal sealed partial class UpdateOptionsController : IDisposable
         _section.AvailableModuleStatus.Text = _localize("Updates.ModuleDirectorySearching", []);
         try
         {
-            var modules = await _moduleDirectoryService.SearchAsync();
+            var modules = await _moduleDirectoryService.SearchAsync(_lifetime.Token);
             AvailableModuleResults.Clear();
             foreach (var module in modules)
             {
@@ -94,6 +97,7 @@ internal sealed partial class UpdateOptionsController : IDisposable
             _section.AvailableModuleStatus.Text = AvailableModuleResults.Count == 0 ? _localize("Updates.ModuleDirectoryEmpty", []) : _localize("Updates.ModuleDirectoryResults", [AvailableModuleResults.Count]);
             _directoryState = UpdateVisualState.Current;
         }
+        catch (OperationCanceledException) when (_stopping) { }
         catch (Exception exception)
         {
             _section.AvailableModuleStatus.Text = _localize("Updates.ModuleDirectoryFailed", []);

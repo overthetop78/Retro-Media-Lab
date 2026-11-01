@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>Yenile</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>Klasörü aç</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>Duraklat</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="Common.No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Common.Abort"><value>Durdur</value></data>
+  <data name="Common.Retry"><value>Yeniden dene</value></data>
+  <data name="Common.Ignore"><value>Yoksay</value></data>
+  <data name="Common.TryAgain"><value>Tekrar dene</value></data>
 </root>

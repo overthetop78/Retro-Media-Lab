@@ -1,4 +1,4 @@
-using GWGUI.App.Localization.Extensions;
+﻿using GWGUI.App.Localization.Extensions;
 using GWGUI.App.Services.Input.GameInput;
 using GWGUI.App.Services.Logging;
 using GWGUI.App.Views.Controls.Options.ControllerPresentation;
@@ -42,7 +42,7 @@ public partial class OptionsControllersSection
             if (refreshVersion == _deviceRefreshVersion && force)
             {
                 DetectButton.IsEnabled = true;
-                if (restartTimer && IsVisible) _timer.Start();
+                if (restartTimer && PresentationIsVisible) _timer.Start();
             }
         }
     }
@@ -121,7 +121,7 @@ public partial class OptionsControllersSection
         _updatingSelectors = false;
         ClearControls();
         UpdateDescriptor();
-        if (IsLoaded && IsVisible) _ = RefreshLiveStateAsync();
+        if (PresentationIsLoaded && PresentationIsVisible) _ = RefreshLiveStateAsync();
     }
 
     private void LoadAnalogDeadZones(GameInputDeviceDescriptor device)

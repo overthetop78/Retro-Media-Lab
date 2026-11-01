@@ -6,6 +6,6 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Classification.Automatic"><value>Automatische detectie</value></data>
   <data name="Classification.Machine"><value>Computer</value></data>
-  <data name="Classification.Format"><value>Formaat</value></data>
+  <data name="Classification.Format"><value>Schijfformaat</value></data>
   <data name="Classification.Protection"><value>Beveiliging</value></data>
 </root>

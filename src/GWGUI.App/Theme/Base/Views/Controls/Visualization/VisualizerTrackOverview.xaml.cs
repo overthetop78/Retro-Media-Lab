@@ -12,6 +12,7 @@ using GWGUI.App.Rendering.Sequential;
 using GWGUI.MediaEngine.Enums;
 
 using GWGUI.MediaEngine.Images.Visualization;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -25,7 +26,16 @@ public partial class VisualizerTrackOverview : UserControl
     private readonly Dictionary<(int Lane, long Position), (int Row, long Position)> _sequentialLocations = [];
     private bool _sequentialLayout;
 
-    public VisualizerTrackOverview() => InitializeComponent();
+    public VisualizerTrackOverview()
+    {
+        Rows = new ReadOnlyDictionary<int, TrackProgressStrip>(_strips);
+        InitializeComponent();
+    }
+
+    internal IReadOnlyDictionary<int, TrackProgressStrip> Rows { get; }
+    internal event EventHandler? RowsChanged;
+
+    internal void RequestSelection(int surface, long position) => HandleElementSelected(surface, position);
 
     public event Action<int, long>? ElementSelected;
 
@@ -62,6 +72,7 @@ public partial class VisualizerTrackOverview : UserControl
         }
 
         Visibility = _strips.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        RowsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void AddStrip(MediaVisualizationProgressUnit progressUnit, int surface, IReadOnlyList<long> positions, string label)
@@ -148,6 +159,7 @@ public partial class VisualizerTrackOverview : UserControl
         }
 
         Visibility = _strips.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        RowsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void MarkSequentialSegment(SequentialMediaSegment segment)

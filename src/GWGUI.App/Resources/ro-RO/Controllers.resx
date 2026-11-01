@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Buton</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Comutator</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} axe · {1} butoane · {2} comutatoare</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Da</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Nu</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Niciunul</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Pavilion generic</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Roată de curse</value></data>

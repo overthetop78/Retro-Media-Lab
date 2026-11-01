@@ -23,7 +23,7 @@ public sealed partial class EmulationSection : UserControl
     private readonly TabControl _machines = new();
     private readonly MainTabHeader _welcomeHeader = new();
     private readonly TextBlock _welcomeText = new();
-    private readonly IReadOnlyList<IEmulationModule> _modules = EmulationModuleRegistry.Modules;
+    private readonly IReadOnlyList<IEmulationModule> _modules;
     private IReadOnlyList<EmulationConfigurationListItem> _configurations = [];
     private readonly Dictionary<(string ModuleId, Guid Id), TabItem> _openMachines = [];
     private IEmulationModule? _selectedModule;
@@ -37,8 +37,11 @@ public sealed partial class EmulationSection : UserControl
     private Point _tabDragOffset;
     private MachineTabDragAdorner? _tabDragAdorner;
 
-    public EmulationSection()
+    public EmulationSection() : this(EmulationModuleRegistry.Modules) { }
+
+    internal EmulationSection(IReadOnlyList<IEmulationModule> modules)
     {
+        _modules = modules;
         AutomationProperties.SetName(_open, LocExtension.Get(ControlVisualConstants.OpenMachineResource));
         AutomationProperties.SetName(_machines, LocExtension.Get(ControlVisualConstants.MachinesResource));
         _open.Content = LocExtension.Get(ControlVisualConstants.OpenMachineResource);

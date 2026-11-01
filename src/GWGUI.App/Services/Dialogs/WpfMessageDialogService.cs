@@ -1,6 +1,8 @@
 using GWGUI.App.Enums.Services.Dialogs;
 using GWGUI.App.Interfaces.Services.Dialogs;
 using GWGUI.App.Services.Windows;
+using GWGUI.App.Theme.Common;
+using GWGUI.App.Views.Dialogs.Common;
 using System.Windows;
 
 namespace GWGUI.App.Services.Dialogs;
@@ -9,7 +11,7 @@ public sealed class WpfMessageDialogService(Window owner) : IMessageDialogServic
 {
     public UserDialogResult Show(string message, string title, UserDialogButtons buttons = UserDialogButtons.Ok, UserDialogIcon icon = UserDialogIcon.None)
     {
-        var result = MessageBox.Show(WpfDialogOwner.Resolve(owner) ?? owner, message, title, buttons switch
+        var result = ShowMessage(owner, message, title, buttons switch
         {
             UserDialogButtons.OkCancel => MessageBoxButton.OKCancel,
             UserDialogButtons.YesNo => MessageBoxButton.YesNo,
@@ -32,4 +34,30 @@ public sealed class WpfMessageDialogService(Window owner) : IMessageDialogServic
             _ => UserDialogResult.None
         };
     }
+
+    internal static MessageBoxResult ShowMessage(string message, string title, MessageBoxButton buttons = MessageBoxButton.OK,
+        MessageBoxImage icon = MessageBoxImage.None, MessageBoxResult defaultResult = MessageBoxResult.None)
+        => ShowMessage(WpfDialogOwner.Resolve(), message, title, buttons, icon, defaultResult);
+
+    internal static MessageBoxResult ShowMessage(Window? owner, string message, string title, MessageBoxButton buttons = MessageBoxButton.OK,
+        MessageBoxImage icon = MessageBoxImage.None, MessageBoxResult defaultResult = MessageBoxResult.None)
+        => ShowMessage(owner, message, title, buttons, icon, defaultResult,
+            (nativeOwner, text, caption, choices, image, preferred) =>
+                MessageBox.Show(nativeOwner, text, caption, choices, image, preferred));
+
+    internal static MessageBoxResult ShowMessage(Window? owner, string message, string title, MessageBoxButton buttons,
+        MessageBoxImage icon, MessageBoxResult defaultResult,
+        Func<Window?, string, string, MessageBoxButton, MessageBoxImage, MessageBoxResult, MessageBoxResult> native)
+    {
+        owner ??= WpfDialogOwner.Resolve();
+        var request = new MessageDialog(message, title, buttons, icon, defaultResult);
+        try
+        {
+            using var ownership = owner is null ? null : ThemeDialogCompletion.AttachOwner(request, owner);
+            if (owner is not null && WpfWindowNavigationService.TryShowThemeWindow(owner, request)) return request.Result;
+        }
+        finally { request.Close(); }
+        return native(WpfDialogOwner.Resolve(owner) ?? owner, message, title, buttons, icon, defaultResult);
+    }
+
 }

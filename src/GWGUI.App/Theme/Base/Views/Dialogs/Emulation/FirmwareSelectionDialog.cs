@@ -1,4 +1,5 @@
 using System.Globalization;
+using GWGUI.App.Theme.Common;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -19,6 +20,8 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
     private readonly ListBox _firmwares = new();
     private readonly Button _save = new() { IsDefault = true, MinWidth = 90 };
     private readonly Button _refresh;
+    private readonly Button _open;
+    private bool _closing;
     private readonly TextBlock _empty = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
     private readonly TextBlock _path = new() { TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 4, 0, 8), Opacity = 0.7 };
     private Task _refreshTask = Task.CompletedTask;
@@ -27,11 +30,35 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
 
     internal EmulationFirmwareCandidate? SelectedFirmware { get; private set; }
 
+    internal ListBox PresentationList => _firmwares;
+    internal Button PresentationSave => _save;
+    internal Button PresentationRefresh => _refresh;
+    internal Button PresentationOpen => _open;
+    internal TextBlock PresentationPath => _path;
+    internal TextBlock PresentationEmpty => _empty;
+    internal string PresentationDestination => _settings.Destination;
+    internal IReadOnlyList<EmulationFirmwareCandidate> PresentationCandidates => _firmwares.Items.Cast<ListBoxItem>()
+        .Select(item => (EmulationFirmwareCandidate)item.Tag).ToArray();
+    internal string DestinationLabel(EmulationFirmwareCandidate candidate) => _settings.DestinationLabel(candidate);
+    internal event EventHandler? PresentationChanged;
+
+    internal async void RequestPresentationClose()
+    {
+        if (_closing || _disposed) return;
+        _closing = true;
+        try
+        {
+            _lifetime.Cancel();
+            await _refreshTask;
+        }
+        finally { Close(); }
+    }
+
     internal FirmwareSelectionDialog(EmulationFirmwareSettingsContent settings, Window? owner)
     {
         _settings = settings;
         Title = LocExtension.Get("Emulation.Firmware.Select");
-        Owner = owner;
+        if (owner?.IsVisible == true) Owner = owner;
         ShowInTaskbar = false;
         WindowStartupLocation = owner is null ? WindowStartupLocation.CenterScreen : WindowStartupLocation.CenterOwner;
         FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
@@ -46,10 +73,10 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
 
         _refresh = ControlUiFactory.IconTextButton(EmulationFirmwareSettingsConstants.RefreshIcon, LocExtension.Get("Common.Refresh"));
         _refresh.Click += RefreshClicked;
-        var open = ControlUiFactory.IconTextButton(EmulationFirmwareSettingsConstants.OpenFolderIcon, LocExtension.Get("Emulation.Firmware.Rom.OpenFolder"));
-        CompactButton(open);
+        _open = ControlUiFactory.IconTextButton(EmulationFirmwareSettingsConstants.OpenFolderIcon, LocExtension.Get("Emulation.Firmware.Rom.OpenFolder"));
+        CompactButton(_open);
         CompactButton(_refresh);
-        open.Click += async (_, _) =>
+        _open.Click += async (_, _) =>
         {
             try { await _settings.OpenFolder(); }
             catch (Exception error) { _settings.ShowError(error); }
@@ -57,7 +84,7 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
         var actions = new DockPanel { Margin = new Thickness(0, 8, 0, 10), LastChildFill = false };
         DockPanel.SetDock(_refresh, Dock.Right);
         actions.Children.Add(_refresh);
-        actions.Children.Add(open);
+        actions.Children.Add(_open);
 
         _firmwares.HorizontalContentAlignment = HorizontalAlignment.Stretch;
         _firmwares.BorderThickness = new Thickness(0);
@@ -151,6 +178,7 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
             _busy = false;
             _refresh.IsEnabled = !_lifetime.IsCancellationRequested;
             UpdateSelection();
+            PresentationChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -168,7 +196,7 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
     {
         if (!_save.IsEnabled || (_firmwares.SelectedItem as ListBoxItem)?.Tag is not EmulationFirmwareCandidate candidate) return;
         SelectedFirmware = candidate;
-        DialogResult = true;
+        ThemeDialogCompletion.Complete(this, true);
     }
 
     public async ValueTask DisposeAsync()
@@ -189,6 +217,7 @@ internal sealed class FirmwareSelectionDialog : Window, IAsyncDisposable
             _save.Click -= SaveClicked;
             _firmwares.SelectionChanged -= SelectionChanged;
             _firmwares.Items.Clear();
+            PresentationChanged = null;
             Content = null;
             Owner = null;
             _lifetime.Dispose();

@@ -1,0 +1,60 @@
+<UserControl x:Class="GWGUI.App.Theme.OS.Editions.Windows31.Views.ToolsView"
+             x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:w="clr-namespace:GWGUI.App.Theme.OS.Editions.Windows31"
+             xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{l:Loc Options.Themes.OS.File}">
+                <MenuItem x:Name="ExecuteCommand"/>
+                <Separator/>
+                <MenuItem x:Name="CloseCommand" Header="{l:Loc Common.Close}" Click="CloseClick"/>
+            </MenuItem>
+        </Menu>
+        <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" Padding="6,3"
+                BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonShadow}}">
+            <TextBlock x:Name="Hardware" TextTrimming="CharacterEllipsis"/>
+        </Border>
+        <TabControl x:Name="Modes" Margin="8" SelectionChanged="ModeChanged">
+            <TabItem Header="{l:Loc Tools.Erase}">
+                <DockPanel Margin="8">
+                    <Button x:Name="EraseExecute" DockPanel.Dock="Bottom" HorizontalAlignment="Right" MinWidth="100" Margin="0,10,0,0"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="160"/></Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <TextBlock Grid.ColumnSpan="2" Text="{l:Loc Tools.EraseWarning}" TextWrapping="Wrap" FontWeight="Bold" Margin="0,0,0,14"/>
+                            <CheckBox x:Name="EraseTracksEnabled" Grid.Row="1" Content="{l:Loc Tools.LimitTracks}" VerticalAlignment="Center"/>
+                            <TextBox x:Name="EraseTracks" Grid.Row="1" Grid.Column="1" Margin="8,3,0,3"/>
+                            <CheckBox x:Name="EraseRevolutionsEnabled" Grid.Row="2" Content="{l:Loc Tools.Revolutions}" VerticalAlignment="Center"/>
+                            <TextBox x:Name="EraseRevolutions" Grid.Row="2" Grid.Column="1" Margin="8,3,0,3"/>
+                            <Label Grid.Row="3" Content="{l:Loc Common.ExpertArguments}" Target="{Binding ElementName=EraseArguments}" Margin="0,10,0,2"/>
+                            <TextBox x:Name="EraseArguments" Grid.Row="4" Grid.ColumnSpan="2"/>
+                        </Grid>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="{l:Loc Tools.Clean}">
+                <DockPanel Margin="8">
+                    <Button x:Name="CleanExecute" DockPanel.Dock="Bottom" HorizontalAlignment="Right" MinWidth="100" Margin="0,10,0,0"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="160"/></Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <TextBlock Grid.ColumnSpan="2" Text="{l:Loc Tools.CleanWarning}" TextWrapping="Wrap" FontWeight="Bold" Margin="0,0,0,14"/>
+                            <CheckBox x:Name="CleanCylindersEnabled" Grid.Row="1" Content="{l:Loc Tools.Cylinders}" VerticalAlignment="Center"/>
+                            <TextBox x:Name="CleanCylinders" Grid.Row="1" Grid.Column="1" Margin="8,3,0,3"/>
+                            <CheckBox x:Name="CleanPassesEnabled" Grid.Row="2" Content="{l:Loc Tools.Passes}" VerticalAlignment="Center"/>
+                            <TextBox x:Name="CleanPasses" Grid.Row="2" Grid.Column="1" Margin="8,3,0,3"/>
+                            <CheckBox x:Name="CleanLingerEnabled" Grid.Row="3" Content="{l:Loc Tools.Linger}" VerticalAlignment="Center"/>
+                            <TextBox x:Name="CleanLinger" Grid.Row="3" Grid.Column="1" Margin="8,3,0,3"/>
+                            <Label Grid.Row="4" Content="{l:Loc Common.ExpertArguments}" Target="{Binding ElementName=CleanArguments}" Margin="0,10,0,2"/>
+                            <TextBox x:Name="CleanArguments" Grid.Row="5" Grid.ColumnSpan="2"/>
+                        </Grid>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

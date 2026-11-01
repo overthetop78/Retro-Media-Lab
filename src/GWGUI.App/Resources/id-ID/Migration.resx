@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Pilih suatu sumber dan suatu tujuan.</value></data>
   <data name="Migration.Severity"><value>Severity</value></data>
   <data name="Migration.Path"><value>Lokasi sumber</value></data>
-  <data name="Migration.Description"><value>Deskripsi</value></data>
+  <data name="Migration.Description"><value>Keterangan masalah</value></data>
   <data name="Migration.AcceptLosses"><value>Menerima kerugian metadata yang terdaftar</value></data>
   <data name="Migration.Execute"><value>Berkas migrasikan</value></data>
   <data name="Migration.Blocking"><value>Blocking</value></data>

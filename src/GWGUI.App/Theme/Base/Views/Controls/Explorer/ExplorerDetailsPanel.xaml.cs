@@ -30,6 +30,8 @@ public partial class ExplorerDetailsPanel : UserControl
     }
 
     public string DisplayedTitle => DetailsTitle.Text;
+    internal event EventHandler? PresentationChanged;
+    internal ExplorerDetailsPresentation Presentation { get; private set; } = new(string.Empty, ExplorerIconCategory.DiskImage, []);
     public bool IsShowingDisk => (_document is not null || _mediaDocument is not null) && _item is null && _opticalTrack is null;
 
     public void Clear()
@@ -46,6 +48,8 @@ public partial class ExplorerDetailsPanel : UserControl
         DetailsTitle.Foreground = BrushFor(false);
         DetailsTitle.FontWeight = FontWeights.Normal;
         SetRows([]);
+        Presentation = new(DetailsTitle.Text, ExplorerIconCategory.DiskImage, []);
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void ShowDisk(ExploredDiskImage document, string? currentSystem = null)
@@ -147,6 +151,7 @@ public partial class ExplorerDetailsPanel : UserControl
 
     private void Apply(ExplorerDetailsPresentation presentation)
     {
+        Presentation = presentation;
         DetailsIcon.Category = presentation.IconCategory;
         DetailsIcon.Tone = presentation.Tone;
         DetailsTitle.Text = presentation.Title;
@@ -158,6 +163,7 @@ public partial class ExplorerDetailsPanel : UserControl
         };
         DetailsTitle.FontWeight = presentation.Tone == ExplorerEntryTone.Executable ? FontWeights.SemiBold : FontWeights.Normal;
         SetRows(presentation.Rows.Select(row => ((string?)row.Key, (string?)row.Value, row.IsSyntheticValue)).ToArray());
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private Brush BrushFor(bool synthetic)

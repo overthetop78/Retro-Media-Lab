@@ -10,6 +10,11 @@ public partial class OptionsProfilesSection : UserControl
     public ListBox ReadProfiles => ReadProfilesList;
     public ListBox WriteProfiles => WriteProfilesList;
     public ListBox ConvertProfiles => ConvertProfilesList;
+    internal void RequestRename(ListBox list) => RenameProfile_Click(list, new RoutedEventArgs());
+    internal void RequestDelete(ListBox list) => DeleteProfile_Click(list, new RoutedEventArgs());
+    internal void RequestKeyDown(object sender, KeyEventArgs args) => ProfileList_KeyDown(sender, args);
+    internal void RequestLeftButtonDown(object sender, MouseButtonEventArgs args) => ProfileList_PreviewMouseLeftButtonDown(sender, args);
+    internal void RequestRightButtonDown(object sender, MouseButtonEventArgs args) => ProfileList_PreviewMouseRightButtonDown(sender, args);
     public event RoutedEventHandler? RenameRequested;
     public event RoutedEventHandler? DeleteRequested;
     public event KeyEventHandler? ProfileKeyDown;

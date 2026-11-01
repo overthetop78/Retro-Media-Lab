@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>Dead sector</value></data>
   <data name="Visual.SectorWithoutData"><value>Sector without data</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>Cassette information</value></data>
+  <data name="Visual.Representation"><value>Display mode</value></data>
 </root>

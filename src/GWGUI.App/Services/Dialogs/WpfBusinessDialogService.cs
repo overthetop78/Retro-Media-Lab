@@ -8,6 +8,7 @@ using GWGUI.App.Views.Dialogs.Hardware;
 using GWGUI.App.Views.Dialogs.Profiles;
 using GWGUI.App.Views.Dialogs.Read;
 using System.Windows;
+using GWGUI.App.Services.Windows;
 
 namespace GWGUI.App.Services.Dialogs;
 
@@ -15,25 +16,25 @@ public sealed class WpfBusinessDialogService(Window owner) : IBusinessDialogServ
 {
     public string? PromptProfileName(string? initialName = null)
     {
-        var dialog = new ProfileNameWindow(initialName) { Owner = owner };
-        return dialog.ShowDialog() == true ? dialog.ProfileName : null;
+        var dialog = new ProfileNameWindow(initialName);
+        return WpfWindowNavigationService.ShowOwnedDialog(owner, dialog) == true ? dialog.ProfileName : null;
     }
 
     public ReadConflictChoice? ResolveReadConflict(string outputPath)
     {
-        var dialog = new ReadConflictWindow(outputPath) { Owner = owner };
-        return dialog.ShowDialog() == true ? dialog.Choice : null;
+        var dialog = new ReadConflictWindow(outputPath);
+        return WpfWindowNavigationService.ShowOwnedDialog(owner, dialog) == true ? dialog.Choice : null;
     }
 
     public IReadOnlyList<ConversionConflictDecision>? ResolveConversionConflicts(IReadOnlyList<ConversionOutput> outputs)
     {
-        var dialog = new ConversionConflictWindow(outputs) { Owner = owner };
-        return dialog.ShowDialog() == true ? dialog.Rows.Select(row => new ConversionConflictDecision(row.Output, row.Choice)).ToArray() : null;
+        var dialog = new ConversionConflictWindow(outputs);
+        return WpfWindowNavigationService.ShowOwnedDialog(owner, dialog) == true ? dialog.Rows.Select(row => new ConversionConflictDecision(row.Output, row.Choice)).ToArray() : null;
     }
 
     public MissingHardwareChoice ResolveMissingHardware(IReadOnlyList<ControllerSettings> controllers)
     {
-        var dialog = new HardwareUnavailableWindow(controllers) { Owner = owner };
-        return dialog.ShowDialog() == true ? dialog.Choice : MissingHardwareChoice.Continue;
+        var dialog = new HardwareUnavailableWindow(controllers);
+        return WpfWindowNavigationService.ShowOwnedDialog(owner, dialog) == true ? dialog.Choice : MissingHardwareChoice.Continue;
     }
 }

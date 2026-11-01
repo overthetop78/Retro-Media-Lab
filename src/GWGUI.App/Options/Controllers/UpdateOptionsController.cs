@@ -19,6 +19,29 @@ namespace GWGUI.App.Options.Controllers;
 internal sealed partial class UpdateOptionsController : IDisposable
 {
     private readonly OptionsUpdatesSection _section;
+    private readonly HashSet<Task> _pendingOperations = [];
+    private readonly CancellationTokenSource _lifetime = new();
+    private bool _stopping;
+    private bool _disposed;
+
+    internal Task PendingOperations => Task.WhenAll(_pendingOperations);
+
+    internal Task StopAsync()
+    {
+        _stopping = true;
+        _lifetime.Cancel();
+        _preparationCancellation?.Cancel();
+        return PendingOperations;
+    }
+
+    private async Task TrackAsync(Func<Task> action)
+    {
+        if (_stopping) return;
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _pendingOperations.Add(completion.Task);
+        try { await action(); }
+        finally { _pendingOperations.Remove(completion.Task); completion.SetResult(); }
+    }
     private readonly Window _owner;
     private readonly ApplicationUpdateService _applicationService;
     private readonly ModuleUpdateService _moduleService;
@@ -93,8 +116,25 @@ internal sealed partial class UpdateOptionsController : IDisposable
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+        _stopping = true;
+        _lifetime.Cancel();
+        _preparationCancellation?.Cancel();
         _pendingInstallations.Changed -= PendingInstallationsChanged;
         _section.SelectedModuleChanged -= ShowModuleResult;
+        _section.SearchRequested -= SearchApplication;
+        _section.SearchModulesRequested -= SearchModules;
+        _section.SearchAvailableModulesRequested -= SearchAvailableModules;
+        _section.InstallAvailableModuleRequested -= InstallAvailableModule;
+        _section.VersionSelectionChanged -= VersionChanged;
+        _section.InstallRequested -= InstallApplication;
+        _section.InstallModulesRequested -= InstallModules;
+        _section.CancelRequested -= Cancel;
+        _section.CancelModulesRequested -= Cancel;
+        _section.InstallModuleFileRequested -= InstallModuleFromFile;
+        _section.InstallModuleUrlRequested -= InstallModuleFromUrl;
+        _lifetime.Dispose();
     }
 
     internal void RefreshLocalizedContent()

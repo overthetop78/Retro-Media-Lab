@@ -1,0 +1,95 @@
+﻿<UserControl x:Class="GWGUI.App.Theme.OS.Editions.Windows31.Views.ExplorerView" x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:w="clr-namespace:GWGUI.App.Theme.OS.Editions.Windows31"
+             xmlns:common="clr-namespace:GWGUI.App.Views.Controls.Common"
+             xmlns:l="clr-namespace:GWGUI.App.Localization.Extensions">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{l:Loc Options.Themes.OS.File}">
+                <MenuItem x:Name="OpenCommand" Header="{l:Loc Explorer.OpenImage}"/>
+                <MenuItem x:Name="ReadCommand" Header="{l:Loc Explorer.ReadDisk}"/>
+                <Separator/>
+                <MenuItem x:Name="InformationCommand" Header="{l:Loc Menu.Information}" Click="InformationClick"/>
+                <Separator/>
+                <MenuItem x:Name="CloseCommand" Header="{l:Loc Common.Close}" Click="CloseClick"/>
+            </MenuItem>
+            <MenuItem Header="{l:Loc Menu.Options}">
+                <MenuItem x:Name="ClassificationCommand" Header="{l:Loc Classification.Format}" Click="ClassificationClick"/>
+                <MenuItem x:Name="AutomaticCommand" Header="{l:Loc Classification.Automatic}" IsCheckable="True"/>
+                <MenuItem x:Name="WarningsCommand" Header="{l:Loc Explorer.Warnings}" Click="WarningsClick"/>
+            </MenuItem>
+        </Menu>
+        <StackPanel DockPanel.Dock="Top" Margin="5,4">
+            <TextBox x:Name="Path" IsReadOnly="True"/>
+            <WrapPanel Margin="0,4,0,0">
+                <TextBlock x:Name="SessionLabel" Text="{l:Loc Explorer.Session}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <ComboBox x:Name="Sessions" DisplayMemberPath="DisplayName" MinWidth="140" Margin="0,0,10,0"/>
+                <TextBlock x:Name="VolumeLabel" Text="{l:Loc Explorer.Volume}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <ComboBox x:Name="Volumes" DisplayMemberPath="DisplayName" MinWidth="160" Margin="0,0,10,0"/>
+                <ComboBox x:Name="Formats" DisplayMemberPath="DisplayName" MinWidth="180"/>
+            </WrapPanel>
+            <GroupBox x:Name="OpticalTracks" Header="{l:Loc Explorer.AudioTracks}" Margin="0,4,0,0">
+                <ListBox x:Name="Tracks" DisplayMemberPath="DisplayName" MaxHeight="80"/>
+            </GroupBox>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom">
+            <StackPanel x:Name="Recognition" Margin="5,2">
+                <TextBlock x:Name="RecognitionStage" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="RecognitionDetail" TextTrimming="CharacterEllipsis"/>
+                <ProgressBar x:Name="RecognitionProgress" Height="13" Minimum="0" Maximum="100"/>
+            </StackPanel>
+            <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonShadow}}" Padding="5,3">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <TextBlock x:Name="VolumeName" TextTrimming="CharacterEllipsis"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal"><TextBlock x:Name="CapacityCaption" Margin="0,0,5,0"/><TextBlock x:Name="Capacity"/></StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal"><TextBlock x:Name="FreeCaption" Margin="0,0,5,0"/><TextBlock x:Name="Free"/></StackPanel>
+                    <StackPanel Grid.Column="3" Orientation="Horizontal"><TextBlock x:Name="EntriesCaption" Margin="0,0,5,0"/><TextBlock x:Name="Entries"/></StackPanel>
+                </Grid>
+            </Border>
+        </StackPanel>
+        <Grid Margin="5,0,5,4">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="2*" MinWidth="115"/><ColumnDefinition Width="5"/><ColumnDefinition Width="5*" MinWidth="170"/></Grid.ColumnDefinitions>
+            <ListBox x:Name="Folders" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <ListBox.ItemTemplate><DataTemplate>
+                    <DockPanel>
+                        <w:Windows31FolderBranch Folder="{Binding}" Rows="{Binding ItemsSource, ElementName=Folders}"
+                            Margin="0,0,4,0" MouseLeftButtonDown="FolderBranchClick" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                    </DockPanel>
+                </DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
+            <DockPanel Grid.Column="2">
+                <Grid DockPanel.Dock="Top" Margin="4,2">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
+                    <TextBlock Text="{l:Loc Explorer.Name}"/>
+                    <TextBlock Grid.Column="1" Text="{l:Loc Explorer.Modified}"/>
+                    <TextBlock Grid.Column="2" Text="{l:Loc Explorer.Type}"/>
+                    <TextBlock Grid.Column="3" Text="{l:Loc Explorer.Size}"/>
+                </Grid>
+                <ListBox x:Name="Files" HorizontalContentAlignment="Stretch" MouseDoubleClick="FileDoubleClick" KeyDown="FileKeyDown">
+                    <ListBox.ItemTemplate><DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
+                            <DockPanel Margin="0,0,5,0">
+                                <common:FileEntryIcon Category="{Binding IconCategory}" Width="16" Height="16" Margin="0,0,4,0" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                            </DockPanel>
+                            <TextBlock Grid.Column="1" Text="{Binding ModifiedText}" Margin="0,0,5,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="2" Text="{Binding TypeText}" Margin="0,0,5,0" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="3" Text="{Binding SizeText}"/>
+                        </Grid>
+                    </DataTemplate></ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+            <Border x:Name="EmptyState" Grid.ColumnSpan="3" Background="{DynamicResource {x:Static w:Windows31PaletteResources.ButtonFace}}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="{l:Loc Visual.NoFile}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                    <Button x:Name="EmptyOpen" Content="{l:Loc Explorer.OpenImage}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>

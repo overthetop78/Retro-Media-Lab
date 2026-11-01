@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Đĩa mềm</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Đĩa cứng</value></data>
   <data name="Common.MediaKind.Optical"><value>Đĩa quang</value></data>
-  <data name="Common.MediaKind.Tape"><value>Băng</value></data>
+  <data name="Common.MediaKind.Tape"><value>Băng từ</value></data>
   <data name="Common.Representation.Flux"><value>Dòng chảy</value></data>
   <data name="Common.Representation.Sectors"><value>Khu vực</value></data>
   <data name="Common.Representation.Blocks"><value>Khối</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>ảnh đĩa|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Mọi tập tin|*.*</value></data>
   <data name="Common.Console"><value>Bảng điều khiển</value></data>
   <data name="Common.Command"><value>Yêu cầu</value></data>
+  <data name="FileDialog.Open"><value>Mở</value></data>
+  <data name="FileDialog.SaveAs"><value>Lưu thành</value></data>
+  <data name="FileDialog.SelectFolder"><value>Chọn thư mục</value></data>
+  <data name="FileDialog.Directories"><value>Thư mục</value></data>
+  <data name="FileDialog.Drives"><value>Ổ đĩa</value></data>
+  <data name="FileDialog.FileTypes"><value>Loại tập tin</value></data>
+  <data name="FileDialog.AllFiles"><value>Mọi tập tin</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>tập tin đã có. Thay thế nó?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Hãy nhập tên tập tin hợp lệ.</value></data>
 </root>

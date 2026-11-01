@@ -3,6 +3,7 @@ using GWGUI.App.Constants.Machine;
 using GWGUI.App.Contracts.Dialogs;
 using GWGUI.App.Enums.Dialogs;
 using GWGUI.App.Services.Windows;
+using GWGUI.App.Theme.Common;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -14,11 +15,14 @@ namespace GWGUI.App.Views.Dialogs.Common;
 
 internal sealed class CommonErrorDialog : Window
 {
+    internal CommonErrorDialogContent PresentationContent { get; }
     internal static string ErrorIcon => IconGlyphs.Error;
     internal static string InformationIcon => IconGlyphs.Information;
 
     internal CommonErrorDialog(CommonErrorDialogContent content)
     {
+        PresentationContent = content;
+        Title = content.Heading;
         WindowStyle = WindowStyle.None;
         ResizeMode = ResizeMode.NoResize;
         SizeToContent = SizeToContent.WidthAndHeight;
@@ -67,7 +71,7 @@ internal sealed class CommonErrorDialog : Window
             HorizontalAlignment = HorizontalAlignment.Right,
             Margin = new Thickness(0, 0, 22, 18)
         };
-        ok.Click += (_, _) => DialogResult = true;
+        ok.Click += (_, _) => ThemeDialogCompletion.Complete(this, true);
         AutomationProperties.SetName(ok, "OK");
 
         var layout = new Grid();
@@ -91,8 +95,9 @@ internal sealed class CommonErrorDialog : Window
 
     internal static void Show(FrameworkElement owner, CommonErrorDialogContent content)
     {
-        var dialog = new CommonErrorDialog(content) { Owner = WpfDialogOwner.Resolve(owner) };
-        dialog.ShowDialog();
+        var dialog = new CommonErrorDialog(content);
+        try { WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(owner) ?? WpfDialogOwner.Resolve(owner), dialog); }
+        finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
     }
 
     private static FrameworkElement Details(IEnumerable<CommonErrorDialogDetail> details)

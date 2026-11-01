@@ -1,4 +1,5 @@
 using GWGUI.App.Contracts.Input;
+using GWGUI.App.Theme.Common;
 using GWGUI.Emulation;
 
 namespace GWGUI.App.Contracts.Machine;
@@ -25,4 +26,5 @@ internal sealed record MachineControllerOptions(
     Func<bool> IsActive,
     Func<EmulationMedia, CancellationToken, ValueTask<EmulationMedia>>? PrepareMediaAsync = null,
     Func<Task>? SwitchControllerPointer = null,
-    Func<IReadOnlyDictionary<string, string>, Task>? PersistRuntimeOptions = null);
+    Func<IReadOnlyDictionary<string, string>, Task>? PersistRuntimeOptions = null,
+    Func<EmulationMachinePresentation>? CreatePresentation = null);

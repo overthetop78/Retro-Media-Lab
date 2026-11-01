@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using GWGUI.App.ViewModels.Operations;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -7,11 +9,15 @@ public partial class ReadCompletionBanner : UserControl
 {
     private readonly TextBlock fallbackSummary = new() { TextWrapping = TextWrapping.Wrap };
     private ReadCaptureCard? currentCapture;
+    private readonly ObservableCollection<ReadCaptureViewModel> captures = [];
 
     public ReadCompletionBanner()
     {
         InitializeComponent();
+        Captures = new ReadOnlyObservableCollection<ReadCaptureViewModel>(captures);
     }
+
+    public ReadOnlyObservableCollection<ReadCaptureViewModel> Captures { get; }
 
     public event Action<string>? ExploreRequested;
     public event Action<string>? VisualizeRequested;
@@ -26,6 +32,7 @@ public partial class ReadCompletionBanner : UserControl
         capture.VisualizeRequested += requestedPath => VisualizeRequested?.Invoke(requestedPath);
         CaptureHistoryPanel.Children.Insert(0, capture);
         currentCapture = capture;
+        captures.Insert(0, capture.State);
         Visibility = Visibility.Visible;
     }
 
@@ -42,9 +49,19 @@ public partial class ReadCompletionBanner : UserControl
         if (currentCapture is null || !string.Equals(currentCapture.Path, path, StringComparison.OrdinalIgnoreCase))
             return;
 
+        captures.Remove(currentCapture.State);
         CaptureHistoryPanel.Children.Remove(currentCapture);
         currentCapture = null;
         if (CaptureHistoryPanel.Children.Count == 0)
             Visibility = Visibility.Collapsed;
+    }
+    public void RequestExplore(ReadCaptureViewModel capture)
+    {
+        if (capture.IsCompleted && captures.Contains(capture)) ExploreRequested?.Invoke(capture.Path);
+    }
+
+    public void RequestVisualization(ReadCaptureViewModel capture)
+    {
+        if (capture.IsCompleted && captures.Contains(capture)) VisualizeRequested?.Invoke(capture.Path);
     }
 }

@@ -42,8 +42,13 @@
                 <StackPanel>
                     <TextBlock x:Name="ThemeName" FontSize="20" FontWeight="SemiBold" Margin="0,16,0,6" TextWrapping="Wrap"/>
                     <TextBlock x:Name="Description" TextWrapping="Wrap" LineHeight="21"/>
+                    <TextBlock x:Name="EditionHeading" Margin="0,12,0,4" Visibility="Collapsed"/>
+                    <ComboBox x:Name="EditionChoices" DisplayMemberPath="Name" Visibility="Collapsed"
+                              SelectionChanged="EditionChanged" HorizontalAlignment="Left" MinWidth="220"/>
                     <TextBlock x:Name="AppearanceHeading" Text="{l:Loc Options.Themes.Appearance}" Margin="0,12,0,4"/>
                     <StackPanel x:Name="Variants" Orientation="Horizontal"/>
+                    <ComboBox x:Name="EditionAppearance" DisplayMemberPath="Name" Visibility="Collapsed"
+                              SelectionChanged="EditionStyleChanged" HorizontalAlignment="Left" MinWidth="220"/>
                     <TextBlock x:Name="ActiveTheme" Foreground="{DynamicResource MutedTextBrush}" Margin="0,12,0,4" TextWrapping="Wrap"/>
                     <TextBlock Text="{l:Loc Options.Themes.ApplyHint}" Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"/>
                 </StackPanel>

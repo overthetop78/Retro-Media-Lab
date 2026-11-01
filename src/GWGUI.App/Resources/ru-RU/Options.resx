@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Рабочее пространство с окнами, которые можно перемещать и изменять в размере. Держите несколько инструментов открытыми и переключайтесь между ними без потери настроек.</value></data>
   <data name="Options.Themes.Minimize"><value>Свернуть</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Развернуть или восстановить</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Диспетчер программ</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Система</value></data>
+  <data name="Options.Themes.OS.File"><value>Файл</value></data>
+  <data name="Options.Themes.OS.Window"><value>Окно</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Каскадом</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Мозаикой</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Упорядочить значки</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Восстановить</value></data>
+  <data name="Options.Themes.OS.Move"><value>Переместить</value></data>
+  <data name="Options.Themes.OS.Size"><value>Изменить размер</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Развернуть</value></data>
+  <data name="Options.Themes.OS.Open"><value>Открыть</value></data>
+  <data name="Options.Themes.OS.Description"><value>Оригинальные интерфейсы операционной системы, включая окна, элементы управления и взаимодействия.</value></data>
+  <data name="Options.Themes.Edition"><value>Вариант</value></data>
+  <data name="Options.Themes.OS.Start"><value>Пуск</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Программы</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Нумерация</value></data>
 </root>

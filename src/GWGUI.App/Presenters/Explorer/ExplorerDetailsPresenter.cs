@@ -140,7 +140,7 @@ public static class ExplorerDetailsPresenter
             new("Explorer.SectorCount", track.SectorCount.ToString()),
             new("Explorer.StoredSectorSize", StorageSizeFormatter.FormatBytes(track.StoredSectorSize)),
             new("Explorer.UserDataSize", StorageSizeFormatter.FormatBytes(track.UserDataLength)),
-            new("Explorer.Subchannels", track.HasSubchannels ? LocExtension.Get("Controllers.Yes") : LocExtension.Get("Controllers.No"))
+            new("Explorer.Subchannels", track.HasSubchannels ? LocExtension.Get("Common.Yes") : LocExtension.Get("Common.No"))
         };
         return new($"{LocExtension.Get("Explorer.Track")} {track.TrackNumber}", track.IsAudio ? ExplorerIconCategory.Audio : ExplorerIconCategory.DiskImage, rows);
     }
@@ -169,7 +169,7 @@ public static class ExplorerDetailsPresenter
         AddMetadataRow(rows, item.Entry.Metadata, "partialRecordCount", "Explorer.PartialRecords");
         AddMetadataRow(rows, item.Entry.Metadata, "baudRates", "Explorer.BaudRates", "baud");
         if (item.Entry.Metadata.TryGetValue("endRecordPresent", out var endRecordPresent))
-            rows.Add(new("Explorer.EndRecord", bool.TryParse(endRecordPresent, out var present) && present ? LocExtension.Get("Controllers.Yes") : LocExtension.Get("Controllers.No")));
+            rows.Add(new("Explorer.EndRecord", bool.TryParse(endRecordPresent, out var present) && present ? LocExtension.Get("Common.Yes") : LocExtension.Get("Common.No")));
         return new(item.Name, item.IconCategory, rows, false, item.Tone);
     }
 

@@ -1,3 +1,4 @@
+using GWGUI.App.Services.Dialogs;
 using GWGUI.Infrastructure.Hardware;
 using GWGUI.Infrastructure.Settings;
 using GWGUI.Infrastructure.Settings.Hardware;
@@ -34,7 +35,7 @@ internal sealed class HardwareOptionsController(
         var path = executablePath();
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
-            MessageBox.Show(owner, LocExtension.Get("Hardware.GwRequired"), LocExtension.Get("Hardware.ScanTitle"));
+            WpfMessageDialogService.ShowMessage(owner, LocExtension.Get("Hardware.GwRequired"), LocExtension.Get("Hardware.ScanTitle"));
             return;
         }
 
@@ -64,12 +65,12 @@ internal sealed class HardwareOptionsController(
         var controllerId = selected?.UsbId ?? (state.Controllers.Count == 1 ? state.Controllers[0].UsbId : null);
         if (controllerId is null)
         {
-            MessageBox.Show(owner, LocExtension.Get("Hardware.SelectController"), LocExtension.Get("Hardware.DriveDialogTitle"));
+            WpfMessageDialogService.ShowMessage(owner, LocExtension.Get("Hardware.SelectController"), LocExtension.Get("Hardware.DriveDialogTitle"));
             return;
         }
         if (state.HasMaximumDrives(controllerId))
         {
-            MessageBox.Show(owner, LocExtension.Get("Hardware.MaximumDrives"), LocExtension.Get("Hardware.DriveDialogTitle"));
+            WpfMessageDialogService.ShowMessage(owner, LocExtension.Get("Hardware.MaximumDrives"), LocExtension.Get("Hardware.DriveDialogTitle"));
             return;
         }
         rows.Add(state.CreateDraftRow(controllerId));
@@ -80,7 +81,7 @@ internal sealed class HardwareOptionsController(
     {
         if (!state.Save(row))
         {
-            MessageBox.Show(owner, LocExtension.Get("Hardware.MaximumDrives"), LocExtension.Get("Hardware.DriveDialogTitle"));
+            WpfMessageDialogService.ShowMessage(owner, LocExtension.Get("Hardware.MaximumDrives"), LocExtension.Get("Hardware.DriveDialogTitle"));
             return;
         }
         RefreshRows();
@@ -91,7 +92,7 @@ internal sealed class HardwareOptionsController(
     {
         var lastDrive = row.DriveId is not null && state.Drives.Count(item => item.ControllerUsbId == row.UsbId) == 1;
         var message = lastDrive ? LocExtension.Get("Hardware.ForgetLastConfirm") : LocExtension.Get("Hardware.ForgetConfirm");
-        if (MessageBox.Show(owner, message, LocExtension.Get("Hardware.Forget"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+        if (WpfMessageDialogService.ShowMessage(owner, message, LocExtension.Get("Hardware.Forget"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
             return;
         Remove(row);
         await persistSettings();

@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>ใช้หมายเลขถัดไป</value></data>
   <data name="Read.ConflictEditName"><value>ขอแก้ไขชื่อครับ</value></data>
   <data name="Read.ImageToCreate"><value>รูปภาพที่จะสร้าง</value></data>
-  <data name="Read.Extension"><value>ส่วนขยาย</value></data>
+  <data name="Read.Extension"><value>นามสกุลไฟล์</value></data>
   <data name="Read.RawScp"><value>ภาพดิบ (SCP)</value></data>
   <data name="Read.KnownFormat"><value>รูปแบบดิสก์ที่รู้จัก</value></data>
   <data name="Read.FileName"><value>ชื่อไฟล์</value></data>

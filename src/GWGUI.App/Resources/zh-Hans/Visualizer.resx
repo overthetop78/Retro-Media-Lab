@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>死区</value></data>
   <data name="Visual.SectorWithoutData"><value>无数据部门</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>盒式磁带信息</value></data>
+  <data name="Visual.Representation"><value>显示模式</value></data>
 </root>

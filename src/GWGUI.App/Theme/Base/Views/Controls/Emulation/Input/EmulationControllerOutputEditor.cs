@@ -12,6 +12,10 @@ namespace GWGUI.App.Views.Controls.Emulation.Input;
 
 internal sealed class EmulationControllerOutputEditor : StackPanel
 {
+    internal sealed record PresentationRow(string Label, ComboBox Selector, Action Refresh);
+    private readonly List<PresentationRow> _presentationRows = [];
+    internal IReadOnlyList<PresentationRow> PresentationRows => _presentationRows;
+    internal event EventHandler? PresentationChanged;
     private readonly IGameInputControllerSource _source;
     private readonly Dictionary<string, EmulationControllerOutputBinding> _bindings = new(StringComparer.Ordinal);
     private IReadOnlyList<EmulationControllerOutputDefinition> _definitions = [];
@@ -38,11 +42,13 @@ internal sealed class EmulationControllerOutputEditor : StackPanel
     {
         _definitions = definitions ?? [];
         Children.Clear();
+        _presentationRows.Clear();
         Visibility = _definitions.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
         if (_definitions.Count > 0 && _definitions.All(definition => definition.Id is
             EmulationControllerFeedbackCommands.Strong or EmulationControllerFeedbackCommands.Weak))
         {
             BuildRumbleDeviceSelector();
+            PresentationChanged?.Invoke(this, EventArgs.Empty);
             return;
         }
         foreach (var definition in _definitions)
@@ -64,7 +70,9 @@ internal sealed class EmulationControllerOutputEditor : StackPanel
             Grid.SetColumn(selector, 1);
             row.Children.Add(selector);
             Children.Add(row);
+            _presentationRows.Add(new(((TextBlock)row.Children[0]).Text, selector, () => Populate(selector, definition.Id)));
         }
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void BuildRumbleDeviceSelector()
@@ -116,6 +124,7 @@ internal sealed class EmulationControllerOutputEditor : StackPanel
         Grid.SetColumn(selector, 1);
         row.Children.Add(selector);
         Children.Add(row);
+        _presentationRows.Add(new(((TextBlock)row.Children[0]).Text, selector, PopulateDevices));
     }
 
     private sealed record RumbleDeviceChoice(string? DeviceId, string Label);

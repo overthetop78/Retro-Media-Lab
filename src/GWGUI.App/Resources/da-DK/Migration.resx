@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Vælg en kilde og en destination.</value></data>
   <data name="Migration.Severity"><value>Sværhedsgrad</value></data>
   <data name="Migration.Path"><value>Kildesti</value></data>
-  <data name="Migration.Description"><value>Varebeskrivelse</value></data>
+  <data name="Migration.Description"><value>Beskrivelse af problemet</value></data>
   <data name="Migration.AcceptLosses"><value>Acceptér de anførte metadatatab</value></data>
   <data name="Migration.Execute"><value>Migrér filer</value></data>
   <data name="Migration.Blocking"><value>Blokering</value></data>

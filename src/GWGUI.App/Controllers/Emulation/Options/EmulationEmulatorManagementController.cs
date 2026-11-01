@@ -38,6 +38,7 @@ internal sealed class EmulationEmulatorManagementController : IAsyncDisposable
         _localization = localization;
     }
 
+    internal EmulationCoreManagementPanel? PresentationPanel => _view;
     internal event EventHandler? ConfigurationChanged;
 
     internal UIElement CreateView(Button createButton)

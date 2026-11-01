@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Tlačítko</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Přepínač</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>Osy: {0} · tlačítka: {1} · přepínače: {2}</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Ano</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Ne</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Žádné</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Generická hrací plocha</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Závodní kolo</value></data>

@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>พื้นที่ทำงานพร้อมหน้าต่างที่ย้ายและปรับขนาดได้ เปิดเครื่องมือหลายตัวค้างไว้และสลับใช้งานโดยไม่สูญเสียการตั้งค่า</value></data>
   <data name="Options.Themes.Minimize"><value>ย่อเล็กสุด</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>ขยายใหญ่สุดหรือคืนค่า</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>ตัวจัดการโปรแกรม</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>ระบบ</value></data>
+  <data name="Options.Themes.OS.File"><value>แฟ้ม</value></data>
+  <data name="Options.Themes.OS.Window"><value>หน้าต่าง</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>เรียงซ้อน</value></data>
+  <data name="Options.Themes.OS.Tile"><value>เรียงต่อกัน</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>จัดเรียงไอคอน</value></data>
+  <data name="Options.Themes.OS.Restore"><value>คืนค่า</value></data>
+  <data name="Options.Themes.OS.Move"><value>ย้าย</value></data>
+  <data name="Options.Themes.OS.Size"><value>ปรับขนาด</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>ขยายใหญ่สุด</value></data>
+  <data name="Options.Themes.OS.Open"><value>เปิด</value></data>
+  <data name="Options.Themes.OS.Description"><value>ระบบปฏิบัติการดั้งเดิม รวมถึงหน้าต่าง, ควบคุม และโต้ตอบ</value></data>
+  <data name="Options.Themes.Edition"><value>าร</value></data>
+  <data name="Options.Themes.OS.Start"><value>เริ่ม</value></data>
+  <data name="Options.Themes.OS.Programs"><value>โปรแกรม</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>การกำหนดหมายเลข</value></data>
 </root>

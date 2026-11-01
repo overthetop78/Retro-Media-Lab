@@ -167,4 +167,5 @@
   <data name="Visual.SectorDead"><value>Мертвый сектор</value></data>
   <data name="Visual.SectorWithoutData"><value>Сектор без данных</value></data>
   <data name="Visual.CassetteInspectorTitle"><value>Сведения о кассете</value></data>
+  <data name="Visual.Representation"><value>Режим отображения</value></data>
 </root>

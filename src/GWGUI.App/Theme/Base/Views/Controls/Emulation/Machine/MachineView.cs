@@ -10,11 +10,12 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using GWGUI.App.Theme.Common;
 
 namespace GWGUI.App.Views.Controls.Emulation.Machine;
 
 /// <summary>The single visual shell used by every emulated machine.</summary>
-internal sealed class MachineView : UserControl
+internal sealed class MachineView : EmulationMachinePresentation
 {
     private readonly Dictionary<string, Ellipse> _deviceLeds = new(StringComparer.Ordinal);
     private readonly Dictionary<string, TextBlock> _deviceStatuses = new(StringComparer.Ordinal);
@@ -105,13 +106,16 @@ internal sealed class MachineView : UserControl
     }
 
     internal Grid Root { get; }
-    internal DockPanel Toolbar { get; }
-    internal Grid VideoHost { get; }
-    internal Border Screen { get; }
-    internal Grid DisplayHost { get; }
+    internal override DockPanel Toolbar { get; }
+    internal override Grid VideoHost { get; }
+    internal override Border Screen { get; }
+    internal override Grid DisplayHost { get; }
     internal StackPanel DeviceStrip { get; }
     internal Border BottomBar { get; }
-    internal IReadOnlyDictionary<string, Ellipse> DeviceLeds => _deviceLeds;
+    internal override IReadOnlyDictionary<string, Ellipse> DeviceLeds => _deviceLeds;
+
+    // Base already displays the original functional toolbar.
+    internal override void AttachCommands(MachineCommandPresentation commands) { }
 
     internal static Button CreateCommandButton(string glyph, string tooltip)
     {
@@ -153,7 +157,7 @@ internal sealed class MachineView : UserControl
         return border;
     }
 
-    internal void SetVideoView(FrameworkElement view)
+    internal override void SetVideoView(FrameworkElement view)
     {
         if (_videoView is not null) VideoHost.Children.Remove(_videoView);
         _videoView = view;
@@ -161,7 +165,15 @@ internal sealed class MachineView : UserControl
         VideoHost.Children.Insert(0, view);
     }
 
-    internal void SetShaderLoading(bool isLoading)
+    internal override FrameworkElement? DetachVideoView()
+    {
+        var view = _videoView;
+        if (view is not null) VideoHost.Children.Remove(view);
+        _videoView = null;
+        return view;
+    }
+
+    internal override void SetShaderLoading(bool isLoading)
     {
         _shaderLoadingText.Text = LocExtension.Get(EmulationResourceKeys.VideoShaderLoading);
         _shaderLoading = isLoading;
@@ -170,7 +182,7 @@ internal sealed class MachineView : UserControl
         _shaderLoadingOverlay.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    internal void SetDevices(IEnumerable<MachineViewDevice> devices, Action<Exception> showError, Action restoreFocus)
+    internal override void SetDevices(IEnumerable<MachineViewDevice> devices, Action<Exception> showError, Action restoreFocus)
     {
         DeviceStrip.Children.Clear();
         _deviceLeds.Clear();
@@ -358,12 +370,12 @@ internal sealed class MachineView : UserControl
         };
     }
 
-    internal void SetDeviceStatus(string key, string status)
+    internal override void SetDeviceStatus(string key, string status)
     {
         if (_deviceStatuses.TryGetValue(key, out var text)) text.Text = status;
     }
 
-    internal void SetCassetteTransport(string key, EmulationCassetteState state, EmulationCassetteCommand? activeOperation, IReadOnlySet<EmulationCassetteCommand> supportedCommands, bool powered)
+    internal override void SetCassetteTransport(string key, EmulationCassetteState state, EmulationCassetteCommand? activeOperation, IReadOnlySet<EmulationCassetteCommand> supportedCommands, bool powered)
     {
         if (!_cassetteButtons.TryGetValue(key, out var buttons)) return;
         foreach (var (command, button) in buttons)
@@ -428,6 +440,24 @@ internal sealed class MachineView : UserControl
         _cassetteBlinkVisible = !_cassetteBlinkVisible;
         foreach (var button in _blinkingCassetteButtons)
             button.Opacity = _cassetteBlinkVisible ? 1 : 0.25;
+    }
+
+    public override void Dispose()
+    {
+        try { _cassetteBlinkTimer.Stop(); }
+        finally
+        {
+            _cassetteBlinkTimer.Tick -= CassetteBlinkTick;
+            _blinkingCassetteButtons.Clear();
+            _cassetteButtons.Clear();
+            _deviceStatuses.Clear();
+            _deviceLeds.Clear();
+            DeviceStrip.Children.Clear();
+            Toolbar.Children.Clear();
+            VideoHost.Children.Clear();
+            _videoView = null;
+            Content = null;
+        }
     }
 
     private static async Task RunAsync(Func<Task> action, Action<Exception> showError, Action restoreFocus)

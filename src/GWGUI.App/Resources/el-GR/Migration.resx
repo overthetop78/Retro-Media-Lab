@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Επιλέξτε μια πηγή και έναν προορισμό.</value></data>
   <data name="Migration.Severity"><value>Σοβαρότητα</value></data>
   <data name="Migration.Path"><value>Διαδρομή πηγής</value></data>
-  <data name="Migration.Description"><value>Περιγραφή εμπορευμάτων</value></data>
+  <data name="Migration.Description"><value>Περιγραφή του προβλήματος</value></data>
   <data name="Migration.AcceptLosses"><value>Αποδοχή των απωλειών μεταδεδομένων που αναφέρονται</value></data>
   <data name="Migration.Execute"><value>Μετακίνηση αρχείων</value></data>
   <data name="Migration.Blocking"><value>Αποκλεισμός</value></data>

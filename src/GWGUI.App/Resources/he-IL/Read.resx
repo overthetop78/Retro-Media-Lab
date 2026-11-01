@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>השתמש במספר הבא</value></data>
   <data name="Read.ConflictEditName"><value>תן לי לערוך את השם</value></data>
   <data name="Read.ImageToCreate"><value>תמונה ליצירה</value></data>
-  <data name="Read.Extension"><value>הַרחָבָה</value></data>
+  <data name="Read.Extension"><value>סיומת קובץ</value></data>
   <data name="Read.RawScp"><value>תמונה גולמית (SCP)</value></data>
   <data name="Read.KnownFormat"><value>פורמט דיסק ידוע</value></data>
   <data name="Read.FileName"><value>שם הקובץ</value></data>

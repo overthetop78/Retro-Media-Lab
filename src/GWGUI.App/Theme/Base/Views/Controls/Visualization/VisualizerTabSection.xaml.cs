@@ -4,6 +4,7 @@ using GWGUI.App.Localization.Extensions;
 using GWGUI.MediaEngine.Enums;
 using GWGUI.MediaEngine.Contracts;
 using GWGUI.MediaEngine.Images.Visualization;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -16,6 +17,7 @@ public partial class VisualizerTabSection : UserControl
 
     public VisualizerTabSection()
     {
+        RegisteredRepresentationViews = new ReadOnlyDictionary<MediaRepresentationKind, FrameworkElement>(representationViews);
         InitializeComponent();
         TrackOverview.ElementSelected += HandleOverviewElementSelected;
         Side0.ElementSelected += HandleViewElementSelected;
@@ -35,6 +37,10 @@ public partial class VisualizerTabSection : UserControl
     }
 
     public event RoutedEventHandler? OpenRequested;
+    internal event EventHandler? PresentationChanged;
+
+    internal IReadOnlyDictionary<MediaRepresentationKind, FrameworkElement> RegisteredRepresentationViews { get; }
+    internal VisualizerLegend ProgressLegend => Legend;
 
     public VisualizerHeaderSection Header => HeaderSection;
     public ScpDiskView FirstSide => Side0;
@@ -48,6 +54,7 @@ public partial class VisualizerTabSection : UserControl
     {
         RecognitionCard.SetProgress(stage, detail, value, indeterminate);
         RecognitionOverlay.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public MediaRepresentationKind? ActiveRepresentationKind { get; private set; }
@@ -59,6 +66,7 @@ public partial class VisualizerTabSection : UserControl
     internal string RecognitionStage => RecognitionCard.Stage;
     internal string RecognitionDetail => RecognitionCard.Detail;
     internal double RecognitionValue => RecognitionCard.Value;
+    internal bool RecognitionIsIndeterminate => RecognitionCard.IsIndeterminate;
 
     public void ClearDocumentForLoading()
     {
@@ -72,6 +80,7 @@ public partial class VisualizerTabSection : UserControl
         InspectorBand.Visibility = Visibility.Collapsed;
         OverviewBar.Visibility = Visibility.Collapsed;
         ClearInspectorModels();
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void RegisterRepresentationView(MediaRepresentationKind representationKind, FrameworkElement view)
@@ -101,6 +110,7 @@ public partial class VisualizerTabSection : UserControl
 
         if (ActiveRepresentationKind is null) ActiveRepresentationKind = representationKind;
         view.Visibility = ActiveRepresentationKind == representationKind ? Visibility.Visible : Visibility.Collapsed;
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public bool ShowDocument(MediaImageDocument document, MediaVisualizationDescriptor descriptor, MediaInspectorModel? inspectorModel = null)
@@ -127,7 +137,11 @@ public partial class VisualizerTabSection : UserControl
         ConfigureInspectorSurfaces(descriptor);
         SetInspectorModel(0, inspectorModel);
 
-        if (!representationViews.TryGetValue(representationKind, out var selectedView)) return false;
+        if (!representationViews.TryGetValue(representationKind, out var selectedView))
+        {
+            PresentationChanged?.Invoke(this, EventArgs.Empty);
+            return false;
+        }
         ActivateRepresentationView(representationKind, selectedView);
         return true;
     }
@@ -174,6 +188,7 @@ public partial class VisualizerTabSection : UserControl
         foreach (var view in representationViews.Values)
             view.Visibility = ReferenceEquals(view, selectedView) ? Visibility.Visible : Visibility.Collapsed;
         ActiveRepresentationKind = representationKind;
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void HandleOverviewElementSelected(int surface, long position)

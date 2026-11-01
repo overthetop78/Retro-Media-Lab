@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>زر</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>مفتاح</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} محاور · {1} أزرار · {2} مفاتيح</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>نعم</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>لا</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>لا شيء</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>معبأة لعبة جينية(د)</value></data>
   <data name="Controllers.Model.RacingWheel"><value>عجلة السباق</value></data>

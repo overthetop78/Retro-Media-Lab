@@ -15,6 +15,17 @@ namespace GWGUI.Tests.Emulation.Nintendo;
 
 public sealed class NintendoEmulatorCatalogTests
 {
+    public static IEnumerable<object[]> ModelsWithoutSelectedCore() => ModelCatalog.All.Select(model => new object[] { model.Id });
+
+    [Theory]
+    [MemberData(nameof(ModelsWithoutSelectedCore))]
+    public void StorageRemainsDescribableWithoutSelectingACore(string machineId)
+    {
+        var engine = new Engine();
+        var settings = engine.DescribeStorageSettings(new MachineConfiguration(machineId, string.Empty));
+        Assert.All(settings.ConfiguredSlots, slot => Assert.Contains(settings.AvailableDevices, device => device.Slot == slot));
+    }
+
     [Theory]
     [InlineData("GameWatch", "gw")]
     [InlineData("Nes", "mesen")]

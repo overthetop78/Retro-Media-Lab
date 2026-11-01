@@ -109,6 +109,7 @@ internal sealed partial class EmulationModuleSettingsSection
         EmulationSettingsLayout.DetachReusableElement(_videoProcessing);
         var rebuilt = BuildEditor();
         Content = rebuilt;
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
         if (_emulatorManagement is not null)
             _ = ExecuteAsync(_emulatorManagement.RefreshAsync);
         if (HasFirmwareFields(_selectedTab) && _firmwareManagement is not null)

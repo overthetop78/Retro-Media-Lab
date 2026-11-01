@@ -23,6 +23,6 @@
   <data name="Emulation.Core.Emulator"><value>Trình giả lập</value></data>
   <data name="Emulation.Core.Install"><value>Cài đặt</value></data>
   <data name="Emulation.Core.InstalledBadge"><value>Đã cài đặt</value></data>
-  <data name="Emulation.Core.NameOptions" xml:space="preserve"><value>Tùy chọn lõi</value></data>
+  <data name="Emulation.Core.NameOptions"><value>Tùy chọn lõi giả lập</value></data>
   <data name="Emulation.Core.NameNoEmulatorAvailable"><value>Hãy chọn một trình giả lập trước khi tạo máy này.</value></data>
 </root>

@@ -14,7 +14,7 @@
   <data name="Read.ConflictNextNumber"><value>استخدم الرقم التالي</value></data>
   <data name="Read.ConflictEditName"><value>اسمحوا لي أن تعديل الاسم</value></data>
   <data name="Read.ImageToCreate"><value>صورة للإنشاء</value></data>
-  <data name="Read.Extension"><value>امتداد</value></data>
+  <data name="Read.Extension"><value>امتداد الملف</value></data>
   <data name="Read.RawScp"><value>صورة أولية (SCP)</value></data>
   <data name="Read.KnownFormat"><value>تنسيق القرص المعروف</value></data>
   <data name="Read.FileName"><value>اسم الملف</value></data>

@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>Робочий простір із вікнами, які можна переміщувати та змінювати в розмірі. Тримайте кілька інструментів відкритими й перемикайтеся між ними без втрати налаштувань.</value></data>
   <data name="Options.Themes.Minimize"><value>Згорнути</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>Розгорнути або відновити</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>Диспетчер програм</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>Система</value></data>
+  <data name="Options.Themes.OS.File"><value>Файл</value></data>
+  <data name="Options.Themes.OS.Window"><value>Вікно</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>Каскадом</value></data>
+  <data name="Options.Themes.OS.Tile"><value>Поруч</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>Упорядкувати піктограми</value></data>
+  <data name="Options.Themes.OS.Restore"><value>Відновити</value></data>
+  <data name="Options.Themes.OS.Move"><value>Перемістити</value></data>
+  <data name="Options.Themes.OS.Size"><value>Змінити розмір</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>Розгорнути</value></data>
+  <data name="Options.Themes.OS.Open"><value>Відкрити</value></data>
+  <data name="Options.Themes.OS.Description"><value>Оригінальні інтерфейси операційної системи, включаючи вікна, контрольні та взаємовідносини.</value></data>
+  <data name="Options.Themes.Edition"><value>Сортування</value></data>
+  <data name="Options.Themes.OS.Start"><value>Почати</value></data>
+  <data name="Options.Themes.OS.Programs"><value>Програми</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>Нумерація</value></data>
 </root>

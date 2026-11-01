@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Valitse lähde ja kohde.</value></data>
   <data name="Migration.Severity"><value>Vakavuus</value></data>
   <data name="Migration.Path"><value>Lähdepolku</value></data>
-  <data name="Migration.Description"><value>Tavaran kuvaus</value></data>
+  <data name="Migration.Description"><value>Ongelman kuvaus</value></data>
   <data name="Migration.AcceptLosses"><value>Hyväksy listatut metatietohäviöt</value></data>
   <data name="Migration.Execute"><value>Siirrä tiedostoja</value></data>
   <data name="Migration.Blocking"><value>Esteet</value></data>

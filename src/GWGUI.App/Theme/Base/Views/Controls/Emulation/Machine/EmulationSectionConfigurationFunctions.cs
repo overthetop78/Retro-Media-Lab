@@ -157,6 +157,7 @@ public sealed partial class EmulationSection
         {
             _selectorRendering = false;
         }
+        PresentationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void RefreshOpenButtonVisibility()
@@ -177,9 +178,13 @@ public sealed partial class EmulationSection
         _selectedMachineId = runtime.Configuration.MachineId;
         _selectedConfigurationId = runtime.Configuration.Id;
         RefreshSelector();
+        NotifySelectedMachine();
     }
 
     private async void OpenSelectedMachine(object sender, RoutedEventArgs args)
+        => await OpenSelectedConfigurationAsync();
+
+    private async Task OpenSelectedConfigurationAsync()
     {
         var selected = FindSelectedConfiguration();
         if (selected is null) return;
@@ -187,6 +192,7 @@ public sealed partial class EmulationSection
         if (_openMachines.TryGetValue(key, out var existing))
         {
             _machines.SelectedItem = existing;
+            NotifySelectedMachine();
             return;
         }
         try

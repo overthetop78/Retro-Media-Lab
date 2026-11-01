@@ -23,6 +23,6 @@
   <data name="Emulation.Core.Emulator"><value>Emulator</value></data>
   <data name="Emulation.Core.Install"><value>Pasang</value></data>
   <data name="Emulation.Core.InstalledBadge"><value>Terpasang</value></data>
-  <data name="Emulation.Core.NameOptions" xml:space="preserve"><value>Opsi core</value></data>
+  <data name="Emulation.Core.NameOptions"><value>Opsi inti emulasi</value></data>
   <data name="Emulation.Core.NameNoEmulatorAvailable"><value>Pilih emulator sebelum membuat mesin ini.</value></data>
 </root>

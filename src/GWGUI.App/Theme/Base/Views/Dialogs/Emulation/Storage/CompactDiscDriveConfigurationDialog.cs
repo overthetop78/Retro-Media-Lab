@@ -16,6 +16,10 @@ public sealed class CompactDiscDriveConfigurationDialog : Window
     private readonly CheckBox _cache = new();
     private readonly CheckBox _ignoreErrors = new();
     private readonly Dictionary<string, FrameworkElement> _options = new(StringComparer.Ordinal);
+    internal IReadOnlyList<(string Label, FrameworkElement Control)> PresentationEntries { get; }
+    internal IReadOnlyList<EmulationSettingsField> PresentationFields { get; }
+    internal IReadOnlyDictionary<string, FrameworkElement> PresentationControls => _options;
+    internal string? PresentationModule { get; }
 
     public EmulationCompactDiscDriveSettings Settings => new(
         (_speed.SelectedItem as StorageDialogChoice)?.Value
@@ -51,6 +55,9 @@ public sealed class CompactDiscDriveConfigurationDialog : Window
         if (!string.IsNullOrWhiteSpace(cacheLabel)) entries.Add((cacheLabel, _cache));
         if (!string.IsNullOrWhiteSpace(ignoreErrorsLabel))
             entries.Add((ignoreErrorsLabel, _ignoreErrors));
+        PresentationEntries = entries.ToArray();
+        PresentationModule = moduleId;
+        PresentationFields = configurationFields ?? [];
         var fields = StorageDialogUi.TwoColumnFields(entries.ToArray());
         var body = new StackPanel();
         body.Children.Add(fields);

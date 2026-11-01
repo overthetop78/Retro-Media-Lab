@@ -14,9 +14,14 @@ public partial class EmulationModuleOptionsWindow : Window
     private readonly IEmulationModule _module;
     private readonly EmulationModuleSettingsSection _section;
     private readonly IEmulationConfiguration? _initialConfiguration;
-    private bool _initialConfigurationLoaded;
+    private Task? _initialization;
+    private Task? _cleanup;
     private bool _cleanupStarted;
     private bool _cleanupCompleted;
+    internal EmulationModuleSettingsSection PresentationSection => _section;
+    internal Task PresentationOperation => _cleanup ?? _initialization ?? Task.CompletedTask;
+    internal void RequestPresentationClose() => Close();
+    internal Task InitializePresentationAsync() => _initialization ??= LoadInitialConfigurationAsync();
 
     public EmulationModuleOptionsWindow(IEmulationModule module, IEmulationConfiguration? initialConfiguration = null, Action<Exception>? showError = null, GWGUI.VideoPresentation.Services.VideoPresentationProfileStore? profiles = null, IEnumerable<string>? reservedBindings = null)
     {
@@ -39,10 +44,12 @@ public partial class EmulationModuleOptionsWindow : Window
         _section.RefreshLocalizedContent();
     }
 
-    private async void LoadInitialConfiguration(object? sender, EventArgs e)
+    private async void LoadInitialConfiguration(object? sender, EventArgs e) => await InitializePresentationAsync();
+
+    private async Task LoadInitialConfigurationAsync()
     {
-        if (_initialConfigurationLoaded || _initialConfiguration is null) return;
-        _initialConfigurationLoaded = true;
+        await _section.EnsureInitializedAsync();
+        if (_cleanupStarted || _initialConfiguration is null) return;
         await _section.EditConfigurationAsync(_initialConfiguration);
     }
 
@@ -52,15 +59,21 @@ public partial class EmulationModuleOptionsWindow : Window
 
     private void VideoShaderLoadingChanged(object? sender, EmulationVideoShaderLoadingChangedEventArgs args) => _section.SetVideoShaderLoading(args.ModuleId, args.ConfigurationId, args.IsLoading);
 
-    private async void WindowClosing(object? sender, CancelEventArgs args)
+    private void WindowClosing(object? sender, CancelEventArgs args)
     {
         if (_cleanupCompleted) return;
         args.Cancel = true;
         if (_cleanupStarted) return;
         _cleanupStarted = true;
+        _cleanup = CleanupAsync();
+    }
+
+    private async Task CleanupAsync()
+    {
         try
         {
-            await _section.DisposeAsync();
+            try { if (_initialization is not null) await _initialization; }
+            finally { await _section.DisposeAsync(); }
         }
         catch (Exception error)
         {

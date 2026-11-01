@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>重新整理</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>開啟資料夾</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>暫停</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>是</value></data>
+  <data name="Common.No" xml:space="preserve"><value>否</value></data>
+  <data name="Common.Abort"><value>中止</value></data>
+  <data name="Common.Retry"><value>重試</value></data>
+  <data name="Common.Ignore"><value>略過</value></data>
+  <data name="Common.TryAgain"><value>再試一次</value></data>
 </root>

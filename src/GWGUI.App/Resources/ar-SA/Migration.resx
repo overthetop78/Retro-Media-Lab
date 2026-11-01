@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>اختيار مصدر و وجهة.</value></data>
   <data name="Migration.Severity"><value>الشدة</value></data>
   <data name="Migration.Path"><value>مسار المصدر</value></data>
-  <data name="Migration.Description"><value>الوصف</value></data>
+  <data name="Migration.Description"><value>وصف المشكلة</value></data>
   <data name="Migration.AcceptLosses"><value>قبول الخسائر المدرجة في البيانات الفوقية</value></data>
   <data name="Migration.Execute"><value>ملفات Migrate</value></data>
   <data name="Migration.Blocking"><value>القفل</value></data>

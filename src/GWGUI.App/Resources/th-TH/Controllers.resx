@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>ปุ่ม</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>สวิตช์</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} แกน · {1} ปุ่ม · {2} สวิตช์</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>ใช่</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>ไม่</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>ไม่มี</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>เกมแพดทั่วไป</value></data>
   <data name="Controllers.Model.RacingWheel"><value>หมุนล้อ</value></data>

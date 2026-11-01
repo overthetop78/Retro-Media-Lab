@@ -39,8 +39,7 @@
   <data name="Controllers.ControlType.Button" xml:space="preserve"><value>Knap</value></data>
   <data name="Controllers.ControlType.Switch" xml:space="preserve"><value>Kontakt</value></data>
   <data name="Controllers.ControlCounts" xml:space="preserve"><value>{0} akser · {1} knapper · {2} kontakter</value></data>
-  <data name="Controllers.Yes" xml:space="preserve"><value>Ja</value></data>
-  <data name="Controllers.No" xml:space="preserve"><value>Nej</value></data>
+
   <data name="Controllers.None" xml:space="preserve"><value>Ingen</value></data>
   <data name="Controllers.Model.GenericGamepad"><value>Generisk gamepad</value></data>
   <data name="Controllers.Model.RacingWheel"><value>Racerhjul</value></data>

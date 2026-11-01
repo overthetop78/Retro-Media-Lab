@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Δισκέτα</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Σκληρός δίσκος</value></data>
   <data name="Common.MediaKind.Optical"><value>Οπτικός δίσκος</value></data>
-  <data name="Common.MediaKind.Tape"><value>Ταινία</value></data>
+  <data name="Common.MediaKind.Tape"><value>Μαγνητική ταινία</value></data>
   <data name="Common.Representation.Flux"><value>Φλούξ</value></data>
   <data name="Common.Representation.Sectors"><value>Τομείς</value></data>
   <data name="Common.Representation.Blocks"><value>Πλευρά</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Εικόνες δίσκου|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Όλα τα αρχεία|*.*</value></data>
   <data name="Common.Console"><value>Κονσόλα</value></data>
   <data name="Common.Command"><value>Εντολή</value></data>
+  <data name="FileDialog.Open"><value>Άνοιγμα</value></data>
+  <data name="FileDialog.SaveAs"><value>Αποθήκευση ως</value></data>
+  <data name="FileDialog.SelectFolder"><value>Επιλογή φακέλου</value></data>
+  <data name="FileDialog.Directories"><value>Κατάλογοι</value></data>
+  <data name="FileDialog.Drives"><value>Μονάδες δίσκου</value></data>
+  <data name="FileDialog.FileTypes"><value>Τύποι αρχείων</value></data>
+  <data name="FileDialog.AllFiles"><value>Όλα τα αρχεία</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>Το αρχείο υπάρχει ήδη. Αντικατάσταση του;&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Εισάγετε ένα έγκυρο όνομα αρχείου.</value></data>
 </root>

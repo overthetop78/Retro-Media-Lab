@@ -77,4 +77,21 @@
   <data name="Options.Themes.Studio.Description"><value>ウィンドウを移動・サイズ変更できる作業領域です。複数のツールを開いたまま、設定を保持して切り替えられます。</value></data>
   <data name="Options.Themes.Minimize"><value>最小化</value></data>
   <data name="Options.Themes.MaximizeRestore"><value>最大化または元に戻す</value></data>
+  <data name="Options.Themes.OS.ProgramManager"><value>プログラム マネージャー</value></data>
+  <data name="Options.Themes.OS.SystemGroup"><value>システム</value></data>
+  <data name="Options.Themes.OS.File"><value>ファイル</value></data>
+  <data name="Options.Themes.OS.Window"><value>ウィンドウ</value></data>
+  <data name="Options.Themes.OS.Cascade"><value>重ねて表示</value></data>
+  <data name="Options.Themes.OS.Tile"><value>並べて表示</value></data>
+  <data name="Options.Themes.OS.ArrangeIcons"><value>アイコンの整列</value></data>
+  <data name="Options.Themes.OS.Restore"><value>元のサイズに戻す</value></data>
+  <data name="Options.Themes.OS.Move"><value>移動</value></data>
+  <data name="Options.Themes.OS.Size"><value>サイズ変更</value></data>
+  <data name="Options.Themes.OS.Maximize"><value>最大化</value></data>
+  <data name="Options.Themes.OS.Open"><value>開く</value></data>
+  <data name="Options.Themes.OS.Description"><value>ウィンドウ、制御および相互作用を含む元のオペレーティング システム インターフェイス。</value></data>
+  <data name="Options.Themes.Edition"><value>バリアント</value></data>
+  <data name="Options.Themes.OS.Start"><value>スタート</value></data>
+  <data name="Options.Themes.OS.Programs"><value>プログラム</value></data>
+  <data name="Options.Themes.OS.Numbering"><value>番号付け</value></data>
 </root>

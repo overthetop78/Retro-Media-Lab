@@ -15,7 +15,7 @@
   <data name="Migration.Waiting"><value>Chọn một nguồn và đích.</value></data>
   <data name="Migration.Severity"><value>Độ dốc</value></data>
   <data name="Migration.Path"><value>Đường dẫn nguồn</value></data>
-  <data name="Migration.Description"><value>Mô tả</value></data>
+  <data name="Migration.Description"><value>Mô tả vấn đề</value></data>
   <data name="Migration.AcceptLosses"><value>Chấp nhận tổn thất siêu dữ liệu được liệt kê</value></data>
   <data name="Migration.Execute"><value>Chuyển tập tin</value></data>
   <data name="Migration.Blocking"><value>Chặn</value></data>

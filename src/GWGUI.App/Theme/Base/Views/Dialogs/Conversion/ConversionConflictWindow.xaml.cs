@@ -1,9 +1,11 @@
+using GWGUI.App.Theme.Common;
 using ConversionOutput = GWGUI.MediaEngine.Images.Conversion.ConversionOutput;
 using GWGUI.App.Localization.Extensions;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.IO;
+using System.ComponentModel;
 
 namespace GWGUI.App.Views.Dialogs.Conversion;
 public enum ConversionConflictChoice
@@ -14,7 +16,7 @@ public enum ConversionConflictChoice
 }
 
 public sealed record ConversionConflictOption(ConversionConflictChoice Value, string Label);
-public sealed class ConversionConflictRow
+public sealed class ConversionConflictRow : INotifyPropertyChanged
 {
     public ConversionOutput Output { get; }
     public string FileName => Path.GetFileName(Output.OutputPath);
@@ -23,7 +25,19 @@ public sealed class ConversionConflictRow
         new(ConversionConflictChoice.Skip, LocExtension.Get("Conflict.Skip")),
         new(ConversionConflictChoice.Number, LocExtension.Get("Conflict.Number"))
     ];
-    public ConversionConflictOption SelectedChoice { get; set; }
+    private ConversionConflictOption selectedChoice = null!;
+    public ConversionConflictOption SelectedChoice
+    {
+        get => selectedChoice;
+        set
+        {
+            if (Equals(selectedChoice, value)) return;
+            selectedChoice = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedChoice)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Choice)));
+        }
+    }
+    public event PropertyChangedEventHandler? PropertyChanged;
     public ConversionConflictChoice Choice => SelectedChoice.Value;
 
     public ConversionConflictRow(ConversionOutput output)
@@ -44,14 +58,20 @@ public partial class ConversionConflictWindow : Window
         DataContext = this;
     }
 
+    internal void RequestApplyAll(ConversionConflictChoice choice)
+    {
+        foreach (var row in Rows) row.SelectedChoice = row.Choices.Single(option => option.Value == choice);
+    }
+
+    internal void RequestContinue() => ThemeDialogCompletion.Complete(this, true);
+
     private void ApplyAll_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: string value } && Enum.TryParse<ConversionConflictChoice>(value, out var choice))
-            foreach (var row in Rows)
-                row.SelectedChoice = row.Choices.Single(x => x.Value == choice);
+            RequestApplyAll(choice);
         DataContext = null;
         DataContext = this;
     }
 
-    private void Continue_Click(object sender, RoutedEventArgs e) => DialogResult = true;
+    private void Continue_Click(object sender, RoutedEventArgs e) => ThemeDialogCompletion.Complete(this, true);
 }

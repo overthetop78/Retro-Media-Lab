@@ -10,7 +10,7 @@
   <data name="Common.MediaKind.Floppy"><value>Дискета</value></data>
   <data name="Common.MediaKind.HardDisk"><value>Жорсткий диск</value></data>
   <data name="Common.MediaKind.Optical"><value>Оптичний диск</value></data>
-  <data name="Common.MediaKind.Tape"><value>Панчохи</value></data>
+  <data name="Common.MediaKind.Tape"><value>Магнітна стрічка</value></data>
   <data name="Common.Representation.Flux"><value>Флюс</value></data>
   <data name="Common.Representation.Sectors"><value>Сектори</value></data>
   <data name="Common.Representation.Blocks"><value>Блоки</value></data>
@@ -22,4 +22,13 @@
   <data name="Common.DiskImageFilter"><value>Дискові зображення|*.scp;*.adf;*.st;*.msa;*.atr;*.atx;*.xfd;*.cas;*.ima;*.img;*.hfe;*.d64;*.d71;*.d81;*.dsk;*.edsk;*.do;*.po;*.2mg;*.image;*.dc42;*.d13;*.nib;*.woz|Всі файли|*.*</value></data>
   <data name="Common.Console"><value>Консоль</value></data>
   <data name="Common.Command"><value>Команда</value></data>
+  <data name="FileDialog.Open"><value>Відкрити</value></data>
+  <data name="FileDialog.SaveAs"><value>Зберегти як</value></data>
+  <data name="FileDialog.SelectFolder"><value>Вибрати папку</value></data>
+  <data name="FileDialog.Directories"><value>Каталоги</value></data>
+  <data name="FileDialog.Drives"><value>Диски</value></data>
+  <data name="FileDialog.FileTypes"><value>Типи файлів</value></data>
+  <data name="FileDialog.AllFiles"><value>Усі файли</value></data>
+  <data name="FileDialog.OverwriteConfirm"><value>Файл вже існує. Замініть його?&#xA;{0}</value></data>
+  <data name="FileDialog.InvalidName"><value>Введіть ім'я файлу.</value></data>
 </root>

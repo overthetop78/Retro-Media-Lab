@@ -23,4 +23,10 @@
   <data name="Common.Refresh" xml:space="preserve"><value>تحديث</value></data>
   <data name="Common.OpenFolder" xml:space="preserve"><value>فتح المجلد</value></data>
   <data name="Common.Pause" xml:space="preserve"><value>إيقاف مؤقت</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="Common.No" xml:space="preserve"><value>لا</value></data>
+  <data name="Common.Abort"><value>إيقاف</value></data>
+  <data name="Common.Retry"><value>إعادة المحاولة</value></data>
+  <data name="Common.Ignore"><value>تجاهل</value></data>
+  <data name="Common.TryAgain"><value>حاول مرة أخرى</value></data>
 </root>

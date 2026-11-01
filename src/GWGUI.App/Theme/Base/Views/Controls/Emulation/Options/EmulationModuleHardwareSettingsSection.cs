@@ -102,14 +102,9 @@ internal sealed partial class EmulationModuleSettingsSection
         var fields = mainFields.Concat(extensionFields).ToArray();
         var machineName = (_machines.SelectedItem as EmulationMachineChoice)?.DisplayName ?? settings.MachineId;
         var total = new TextBlock();
+        presentationMemoryTotal = total;
         foreach (var control in mainControls.Concat(extensionControls).Select(field => field.Control))
-            if (control is ComboBox selection)
-                selection.SelectionChanged += (_, _) => UpdateMemoryTotal(fields, total);
-            else if (control is CheckBox toggle)
-            {
-                toggle.Checked += (_, _) => UpdateMemoryTotal(fields, total);
-                toggle.Unchecked += (_, _) => UpdateMemoryTotal(fields, total);
-            }
+            AttachValueChanged(control, () => UpdateMemoryTotal(fields, total));
         UpdateMemoryTotal(fields, total);
         var page = EmulationSettingsLayout.MemorySettingsPage(new EmulationMemorySettingsContent(
             mainControls,
