@@ -4,13 +4,18 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6809.Ser
 
 internal sealed partial class Cpu6809
 {
-    private ushort Address(int mode) => mode switch
+    private ushort Address(int mode)
     {
-        1 => (ushort)(DP << C.ByteBits | Fetch()),
-        2 => Indexed(),
-        3 => FetchWord(),
-        _ => throw new InvalidOperationException()
-    };
+        if (mode == 2) return Indexed();
+        var address = mode switch
+        {
+            1 => (ushort)(DP << C.ByteBits | Fetch()),
+            3 => FetchWord(),
+            _ => throw new InvalidOperationException()
+        };
+        Idle();
+        return address;
+    }
 
     private ushort IndexRegister(int register) => register switch { 0 => X, 1 => Y, 2 => U, _ => S };
     private void SetIndexRegister(int register, ushort value)
@@ -28,6 +33,8 @@ internal sealed partial class Cpu6809
             var offset = post & C.IndexedSmallMask;
             if ((offset & C.IndexedSmallSign) != 0) offset -= C.IndexedSmallMask + 1;
             _indexedCycles++;
+            Read(PC);
+            Idle();
             return (ushort)(basis + offset);
         }
         var indirect = (post & C.IndexedIndirect) != 0;
@@ -35,31 +42,28 @@ internal sealed partial class Cpu6809
         switch (post & C.NibbleMask)
         {
             case 0:
-                if (indirect) throw Illegal(post);
-                address = basis; SetIndexRegister(register, (ushort)(basis + 1)); _indexedCycles += 2; break;
+                address = basis; SetIndexRegister(register, (ushort)(basis + 1)); _indexedCycles += 2; Read(PC); Idle(2); break;
             case 1:
-                address = basis; SetIndexRegister(register, (ushort)(basis + 2)); _indexedCycles += 3; break;
+                address = basis; SetIndexRegister(register, (ushort)(basis + 2)); _indexedCycles += 3; Read(PC); Idle(3); break;
             case 2:
-                if (indirect) throw Illegal(post);
-                address = (ushort)(basis - 1); SetIndexRegister(register, address); _indexedCycles += 2; break;
+                address = (ushort)(basis - 1); SetIndexRegister(register, address); _indexedCycles += 2; Read(PC); Idle(2); break;
             case 3:
-                address = (ushort)(basis - 2); SetIndexRegister(register, address); _indexedCycles += 3; break;
-            case 4: address = basis; break;
-            case 5: address = (ushort)(basis + (sbyte)B); _indexedCycles++; break;
-            case 6: address = (ushort)(basis + (sbyte)A); _indexedCycles++; break;
-            case 8: address = (ushort)(basis + (sbyte)Fetch()); _indexedCycles++; break;
-            case 9: address = (ushort)(basis + (short)FetchWord()); _indexedCycles += 4; break;
-            case 11: address = (ushort)(basis + (short)D); _indexedCycles += 4; break;
+                address = (ushort)(basis - 2); SetIndexRegister(register, address); _indexedCycles += 3; Read(PC); Idle(3); break;
+            case 4: address = basis; Read(PC); break;
+            case 5: address = (ushort)(basis + (sbyte)B); _indexedCycles++; Read(PC); Idle(); break;
+            case 6: address = (ushort)(basis + (sbyte)A); _indexedCycles++; Read(PC); Idle(); break;
+            case 8: address = (ushort)(basis + (sbyte)Fetch()); _indexedCycles++; Read(PC); break;
+            case 9: address = (ushort)(basis + (short)FetchWord()); _indexedCycles += 4; Idle(3); break;
+            case 11: address = (ushort)(basis + (short)D); _indexedCycles += 4; Read(PC); Read((ushort)(PC + 1)); Idle(3); break;
             case 12:
-                var byteOffset = (sbyte)Fetch(); address = (ushort)(PC + byteOffset); _indexedCycles++; break;
+                var byteOffset = (sbyte)Fetch(); address = (ushort)(PC + byteOffset); _indexedCycles++; Idle(); break;
             case 13:
-                var wordOffset = (short)FetchWord(); address = (ushort)(PC + wordOffset); _indexedCycles += 5; break;
+                var wordOffset = (short)FetchWord(); address = (ushort)(PC + wordOffset); _indexedCycles += 5; Idle(4); break;
             case 15:
-                if (!indirect) throw Illegal(post);
-                address = FetchWord(); _indexedCycles += 2; break;
-            default: throw Illegal(post);
+                address = FetchWord(); _indexedCycles += 2; Idle(); break;
+            default: address = 0; break;
         }
-        if (indirect) { address = ReadWord(address); _indexedCycles += 3; }
+        if (indirect) { address = ReadWord(address); Idle(); _indexedCycles += 3; }
         return address;
     }
 
@@ -84,6 +88,24 @@ internal sealed partial class Cpu6809
         return count;
     }
 
+    private int StackInstruction(bool pull, bool user)
+    {
+        var mask = Fetch();
+        Idle(C.StackAddressCycles);
+        int count;
+        if (pull)
+        {
+            count = PullRegisters(mask, user);
+            Read(user ? U : S);
+        }
+        else
+        {
+            Read(user ? U : S);
+            count = PushRegisters(mask, user);
+        }
+        return C.StackInstructionBaseCycles + count;
+    }
+
     private int PullRegisters(byte mask, bool user)
     {
         var stack = user ? U : S;
@@ -94,7 +116,7 @@ internal sealed partial class Cpu6809
         if ((mask & 0x08) != 0) { DP = PullByte(ref stack); count++; }
         if ((mask & 0x10) != 0) { X = PullWord(ref stack); count += 2; }
         if ((mask & 0x20) != 0) { Y = PullWord(ref stack); count += 2; }
-        if ((mask & 0x40) != 0) { var value = PullWord(ref stack); if (user) S = value; else U = value; count += 2; }
+        if ((mask & 0x40) != 0) { var value = PullWord(ref stack); if (user) { S = value; _stackInitialized = true; } else U = value; count += 2; }
         if ((mask & 0x80) != 0) { PC = PullWord(ref stack); count += 2; }
         if (user) U = stack; else S = stack;
         return count;

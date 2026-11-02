@@ -26,16 +26,23 @@ internal sealed partial class Cpu6809(ICpuBus bus)
     private bool _stackInitialized;
     private bool _sync;
     private bool _cwai;
+    private bool _freeRun;
     private int _indexedCycles;
+    private int _pendingPage;
+    private ushort _wordResult;
+    private byte _immediateStoreFlags = C.Negative;
     private ushort D { get => (ushort)(A << C.ByteBits | B); set { A = (byte)(value >> C.ByteBits); B = (byte)value; } }
 
     internal void Reset()
     {
-        CC = C.IrqMask | C.FirqMask;
+        CC |= C.IrqMask | C.FirqMask;
         DP = 0;
-        _nmiPending = _stackInitialized = _sync = _cwai = false;
+        _nmiPending = _stackInitialized = _sync = _cwai = _freeRun = false;
         _nmiLevel = bus.Nmi;
+        _pendingPage = 0;
+        _immediateStoreFlags = C.Negative;
         var start = Cycles;
+        Idle(C.ResetInternalCycles);
         PC = ReadWord(C.ResetVector);
         Pad(start, 7);
     }
@@ -43,14 +50,23 @@ internal sealed partial class Cpu6809(ICpuBus bus)
     internal void Step()
     {
         var start = Cycles;
-        if (ServiceInterrupt()) return;
+        if (_freeRun) { Fetch(); return; }
+        if (_pendingPage == 0 && ServiceInterrupt()) return;
         if (_sync || _cwai) { Tick(); return; }
         _indexedCycles = 0;
         var opcode = Fetch();
-        var page = opcode is 0x10 or 0x11 ? opcode : 0;
-        if (page != 0) opcode = Fetch();
+        var page = _pendingPage;
+        var prefixes = 0;
+        while (opcode is C.FirstPrefix or C.SecondPrefix)
+        {
+            if (page == 0) page = opcode;
+            if (++prefixes == C.AddressSpaceSize) { _pendingPage = page; return; }
+            opcode = Fetch();
+        }
+        _pendingPage = 0;
         var cycles = Execute(opcode, page);
-        Pad(start, cycles + _indexedCycles);
+        RememberStoreFlags(opcode, page);
+        Pad(start, cycles + _indexedCycles + prefixes - (page == 0 ? 0 : 1));
     }
 
     private void Tick()
@@ -58,7 +74,7 @@ internal sealed partial class Cpu6809(ICpuBus bus)
         bus.Tick();
         Cycles++;
         var nmi = bus.Nmi;
-        if (_stackInitialized && nmi && !_nmiLevel) _nmiPending = true;
+        if (nmi && !_nmiLevel) _nmiPending = true;
         _nmiLevel = nmi;
     }
     private byte Read(ushort address) { Tick(); return bus.Read(address); }
@@ -68,6 +84,7 @@ internal sealed partial class Cpu6809(ICpuBus bus)
     private ushort ReadWord(ushort address) { var high = Read(address); return (ushort)(high << C.ByteBits | Read((ushort)(address + 1))); }
     private void WriteWord(ushort address, ushort value) { Write(address, (byte)(value >> C.ByteBits)); Write((ushort)(address + 1), (byte)value); }
     private void Pad(long start, int cycles) { while (Cycles - start < cycles) Tick(); }
+    private void Idle(int cycles = 1) { for (var cycle = 0; cycle < cycles; cycle++) Tick(); }
     private bool IsSet(byte flag) => (CC & flag) != 0;
     private void Flag(byte flag, bool set) => CC = set ? (byte)(CC | flag) : (byte)(CC & ~flag);
     private byte Nz(byte value) { Flag(C.Negative, (value & C.ByteSign) != 0); Flag(C.Zero, value == 0); return value; }

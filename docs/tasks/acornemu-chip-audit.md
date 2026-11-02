@@ -4,15 +4,15 @@
 
 - [ ] Confronter tous les composants utilisés aux documents constructeur et aux sources d'émulateurs, puis corriger les écarts.
 
-  - [ ] Compléter le VIA 6522 en cours.
+  - [x] Compléter le VIA 6522 en cours.
 
-    - [ ] Créer `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Components/Mos6522/Constants/Via6522Constants.cs` : constantes distinctes des registres, masques, modes et broches, une déclaration par ligne.
+    - [x] Créer `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Components/Mos6522/Constants/Via6522Constants.cs` : constantes distinctes des registres, masques, modes et broches, une déclaration par ligne.
 
-    - [ ] Créer `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Components/Mos6522/Enums/ViaControlMode.cs` : huit modes PCR nommés, distincts des bits encodés dans chaque moitié du registre.
+    - [x] Créer `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Components/Mos6522/Enums/ViaControlMode.cs` : huit modes PCR nommés, distincts des bits encodés dans chaque moitié du registre.
 
     - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Components/Mos6522/Services/Via6522.cs` et créer `Components/Mos6522/Services/Via6522.Ports.cs` : séparer registres et broches, entrées CA2/CB2, modes indépendants d'interruption, impulsions/handshake, latches d'entrée et PB6 de T2 ; conserver les callbacks des cartes existantes et leur propriété des périphériques.
 
-    - [ ] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuVia6522Tests.cs` : cas autonomes des modes PCR/ACR, fronts, acquittements, broches et comptage PB6. Contrôler ce groupe après les modifications regroupées ; aucun fichier externe.
+    - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuVia6522Tests.cs` : cas autonomes des modes PCR/ACR, fronts, acquittements, broches et comptage PB6. Contrôler ce groupe après les modifications regroupées ; aucun fichier externe.
 
   - [ ] CPU et bus des machines.
     - [x] Créer `Components/Mos6502/Constants/Cpu6502Constants.cs` et modifier `Components/Mos6502/Services/Cpu6502.cs`, `Cpu6502.Instructions.cs`, `Cpu6502.Interrupts.cs`, `Cpu6502.Cmos.cs` : cycles de bus explicites pour les adressages indexés, branchements, pile et vecteurs ; reconnaissance IRQ de CLI/SEI/PLP conforme au NMOS et différences CMOS conservées.
@@ -109,7 +109,7 @@ Livraison CPU du 2 novembre : script Debug All terminé avec code 0, exécutable
 
 Commit CPU créé : `c2fa3f8ac` — `fix(acorn): correct 6502 and 65C12 bus cycles and interrupt polling`. Les modifications de puces sont exclusivement celles du groupe 6502. Le prochain composant peut maintenant être repris.
 
-- [ ] Terminer le VIA 6522 avant son commit séparé.
+- [x] Terminer le VIA 6522 avant son commit séparé.
   - [x] Modifier `Components/Mos6522/Constants/Via6522Constants.cs` et créer `Components/Mos6522/Enums/ViaShiftMode.cs` : modes ACR, bits PB7/SR et délais nommés, une constante par ligne.
   - [x] Créer `Components/Mos6522/Services/Via6522.Timers.cs` et modifier `Via6522.cs` : minuteries continues après l'interruption unique, retard de chargement, rechargement T1 et sortie PB7, T2 bas utilisé pour l'horloge série et conservation du compteur haut.
   - [x] Créer `Components/Mos6522/Services/Via6522.Shift.cs` et modifier `Via6522.cs` et `Via6522.Ports.cs` : huit modes, broches CB1/CB2, décalage entrant/sortant, interruption SR et acquittement ; lecture des broches du port A distincte du latch de sortie B.
@@ -124,8 +124,38 @@ VIA 6522 : 1 031 tests AcornEmu réussis. Modes série ACR 0 à 7 raccordés : r
 
 Références VIA : fiche MOS 6522 (https://www.princeton.edu/~mae412/HANDOUTS/Datasheets/6522.pdf), séquences MAME du registre série (https://github.com/mamedev/mame/blob/master/src/devices/machine/6522via.cpp), comparaisons BBC jsbeeb (https://github.com/mattgodbolt/jsbeeb/blob/main/src/via.js) et beebjit (https://github.com/scarybeasts/beebjit/blob/master/via.c). Tick reste une horloge VIA ; les cartes gardent leur rapport CPU/VIA et leurs périphériques.
 
-- [ ] Livrer et committer le VIA avant toute autre puce.
+- [x] Livrer et committer le VIA avant toute autre puce.
   - [x] Modifier `build/Debug` avec `scripts/local-building.cmd --building=debug --modules=A`, puis modifier le suivi avec la vérification de l'exécutable et des 24 modules.
-  - [ ] Modifier l'index Git pour `Components/Mos6522`, les tests VIA concernés et ce suivi ; créer le commit VIA indépendant et consigner son identifiant.
+  - [x] Modifier l'index Git pour `Components/Mos6522`, les tests VIA concernés et ce suivi ; créer le commit VIA indépendant et consigner son identifiant.
 
 Livraison VIA : Debug All terminé avec code 0, exécutable et 24 modules présents. Les corrections et leurs tests sont prêts pour le commit VIA indépendant.
+
+Commit VIA créé : `98af9043b` — `fix(acorn): complete VIA timers, PB7 output and serial shift modes`. Livraison Debug All et contrôle groupé de 1 031 tests réussis avant le commit ; aucune autre puce corrigée entre la fin du VIA et ce commit.
+
+- [ ] Auditer et corriger le MC6809 avant son commit indépendant.
+  - [x] Modifier `Components/Mc6809/Services/Cpu6809.cs`, `Cpu6809.Interrupts.cs` et `Cpu6809.Addressing.cs` : mémoriser la NMI avant LDS, autoriser sa prise après toute instruction chargeant S, et distinguer l'attente SYNC de CWAI selon les masques.
+  - [x] Modifier `Components/Mc6809/Services/Cpu6809.Addressing.cs`, `Cpu6809.Instructions.cs` et les constantes : placer les cycles internes et lectures transitoires dans les séquences d'adressage et de lecture-modification-écriture ; vérifier les registres/indicateurs et codes physiques documentés par les sources.
+  - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6809Tests.cs` : régressions autonomes NMI/pile/attentes, indicateurs, séquences mémoire et modes indexés, en conservant les tests System existants.
+  - [ ] Modifier ce suivi avec les corrections, références et résultats groupés ; construire Debug All et committer le 6809 séparément avant une autre puce.
+
+  - [x] Modifier `Components/Mc6809/Services/Cpu6809.Instructions.cs`, `Cpu6809.Interrupts.cs`, `Cpu6809.Addressing.cs` et `Constants/Cpu6809Constants.cs` : séquencer PSH/PUL avant les accès pile, ajouter les lectures finales RTS/RTI et les prélectures CWAI/ABX/MUL ; nommer les délais ajoutés.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6809Tests.cs` : vérifier les cycles des accès pile PSHS/PULS/RTS/RTI et CWAI avec un bus autonome.
+  - [x] Modifier `Components/Mc6809/Services/Cpu6809.Instructions.cs`, `Cpu6809.Addressing.cs`, `Cpu6809.cs` et `Constants/Cpu6809Constants.cs` : reproduire les alias unaires et NOP, le mode de test HCF jusqu'à RESET et les formes indexées non documentées, sans exception hôte pour ces codes physiques ; ajouter leurs régressions dans `AcornEmu6809Tests.cs`.
+  - [x] Modifier `Components/Mc6809/Services/Cpu6809.Instructions.cs` et `AcornEmu6809Tests.cs` : reproduire CC/DP sur les deux octets lors de TFR et EXG avec source 8 bits, conserver la différence EXG avec source 16 bits et calculer V après DAA selon les mesures matérielles publiées.
+
+Références MC6809 de ce complément : manuel Motorola, annexe instructions https://www.maddes.net/m6809pm/appendix_a.htm ; séquences mémoire https://github.com/mamedev/mame/blob/master/src/devices/cpu/m6809/base6x09.lst et m6809.lst ; lecture TFR/EXG dans m6809.cpp ; mesures originales des codes non documentés https://github.com/hoglet67/6809Decoder/wiki/Undocumented-6809-Behaviours. Les accès invalides VMA restent des cycles internes du contrat de bus actuel.
+
+Points encore ouverts à ce stade intermédiaire : décodage des préfixes multiples et alias des pages 2/3, opcodes X18/XANDCC/XRES et stores immédiats (leurs indicateurs dépendent de l'instruction précédente), puis contrôle des séquences RESET. Leur clôture figure dans le complément ci-dessous.
+
+Vérification groupée du complément : 1 066 tests AcornEmu réussis, aucun échec (18 s). Le premier passage a détecté un mauvais emplacement de la garde HCF dans RESET au lieu de Step ; cette erreur introduite dans le complément a été corrigée et les trois variantes HCF passent désormais. Aucun test ni fichier externe temporaire ajouté. Aucun build de livraison ni commit MC6809 effectué à ce stade.
+
+- [ ] Achever le décodage MC6809 dans le groupe en cours.
+  - [x] Créer `Components/Mc6809/Services/Cpu6809.Unofficial.cs` et modifier `Cpu6809.cs`, `Cpu6809.Instructions.cs`, `Cpu6809.Interrupts.cs`, `Cpu6809Constants.cs` : préfixes répétés, alias de pages, X18/XANDCC/XRES, stores immédiats avec état des indicateurs issu de l'instruction précédente et RESET avec lectures du vecteur après les cycles internes.
+  - [x] Modifier `AcornEmu6809Tests.cs` : régressions autonomes des préfixes et cycles, vecteurs, stores immédiats et séquence RESET ; modifier ce suivi avec les résultats du contrôle groupé.
+  - [ ] Modifier `build/Debug` par le script Debug All, puis ce suivi avec le résultat ; modifier l'index Git pour la puce MC6809, ses tests et ce suivi et créer son commit indépendant.
+
+Clôture des points de décodage identifiés : première page de préfixe conservée, préfixes suivants consommés chacun sur un cycle, repli des alias vers l'instruction de base et compléments spécifiques XLBRA/XADDD/XADDU/XRES/XSWI2/XFIRQ. Un flux sans fin de préfixes rend la main à l'hôte après un tour d'adressage sans accepter d'interruption au milieu de l'instruction. Les stores immédiats lisent l'octet haut et écrivent uniquement l'octet bas pour les formes 16 bits ; NZV dépend du groupe d'instruction précédent pour les formes non préfixées. RESET conserve les indicateurs arithmétiques, force I/F et DP=0 ; le vecteur est lu aux cycles 5 et 6 d'une entrée de 7 cycles.
+
+Résultat final groupé : 1 088 tests AcornEmu réussis en 18 s, dont 57 cas MC6809 autonomes. Le contrôle de décodage des 256 codes des trois pages prouve l'absence d'exception hôte pour ces codes ; les autres cas vérifient les états et séquences précisés dans leurs assertions, sans prétendre couvrir toutes les combinaisons d'opérandes ni toutes les révisions physiques. Aucun corpus, firmware ou processus externe temporaire utilisé dans ces tests. Références supplémentaires : mesures de bus et groupes d'indicateurs de https://github.com/hoglet67/6809Decoder/blob/master/src/em_6809.c. Debug All en cours avant le commit séparé.
+
+Livraison MC6809 : `scripts/local-building.cmd --building=debug --modules=A` terminé avec code 0. Exécutable `build/Debug/Retro Media Lab/retromedialab.exe` présent et 24 DLL de modules vérifiées. `git diff --check` ne signale aucune erreur de contenu. Le commit suivant porte exclusivement sur la puce MC6809, ses régressions et ce suivi.

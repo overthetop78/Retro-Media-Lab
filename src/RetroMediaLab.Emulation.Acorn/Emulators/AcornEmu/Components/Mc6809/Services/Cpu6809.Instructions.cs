@@ -6,16 +6,18 @@ internal sealed partial class Cpu6809
 {
     private int Execute(byte opcode, int page)
     {
+        if (opcode == C.FreeRunOpcode) { _freeRun = true; return page == 0 ? 1 : 2; }
         if (opcode == 0x3f) return SoftwareInterrupt(page);
-        if (page == 0x10 && opcode is >= 0x21 and <= 0x2f)
+        if (opcode == 0x3e) return UndocumentedInterrupt(page);
+        if (page == 0x10 && opcode is >= 0x20 and <= 0x2f)
         {
             var displacement = (short)FetchWord();
             var taken = Condition(opcode & C.NibbleMask);
             if (taken) PC = (ushort)(PC + displacement);
-            return taken ? 6 : 5;
+            return taken && opcode != 0x20 ? 6 : 5;
         }
         if (opcode >= 0x80) return DataInstruction(opcode, page);
-        if (page != 0) throw Illegal(opcode);
+        if (page != 0) return Execute(opcode, 0) + 1;
         if (opcode <= 0x0f || opcode is >= 0x40 and <= 0x7f) return UnaryInstruction(opcode);
         if (opcode is >= 0x20 and <= 0x2f)
         {
@@ -25,33 +27,40 @@ internal sealed partial class Cpu6809
         }
         switch (opcode)
         {
-            case 0x12: return 2;
-            case 0x13: _sync = true; return 4;
+            case 0x12:
+            case 0x1b: Read(PC); return 2;
+            case 0x13: Read(PC); _sync = true; return 4;
+            case 0x14:
+            case 0x15: _freeRun = true; return 1;
             case 0x16:
                 var jump = (short)FetchWord(); PC = (ushort)(PC + jump); return 5;
             case 0x17:
-                var call = (short)FetchWord(); PushPc(); PC = (ushort)(PC + call); return 9;
-            case 0x19: DecimalAdjust(); return 2;
+                var call = (short)FetchWord(); Idle(4); PushPc(); PC = (ushort)(PC + call); return 9;
+            case 0x18:
+                CC = (byte)(((CC & Read(PC)) << 1) | ((CC & C.Zero) >> 1)); return 3;
+            case 0x19: Read(PC); DecimalAdjust(); return 2;
             case 0x1a: CC |= Fetch(); return 3;
             case 0x1c: CC &= Fetch(); return 3;
-            case 0x1d: A = (B & C.ByteSign) != 0 ? byte.MaxValue : (byte)0; Nz(D); return 2;
+            case 0x1d: Read(PC); A = (B & C.ByteSign) != 0 ? byte.MaxValue : (byte)0; Nz(D); return 2;
             case 0x1e: Transfer(true); return 8;
             case 0x1f: Transfer(false); return 6;
             case 0x30: X = Indexed(); Flag(C.Zero, X == 0); return 4;
             case 0x31: Y = Indexed(); Flag(C.Zero, Y == 0); return 4;
             case 0x32: S = Indexed(); _stackInitialized = true; return 4;
             case 0x33: U = Indexed(); return 4;
-            case 0x34: return 5 + PushRegisters(Fetch(), false);
-            case 0x35: return 5 + PullRegisters(Fetch(), false);
-            case 0x36: return 5 + PushRegisters(Fetch(), true);
-            case 0x37: return 5 + PullRegisters(Fetch(), true);
-            case 0x39: PC = PullPc(); return 5;
-            case 0x3a: X = (ushort)(X + B); return 3;
+            case 0x34: return StackInstruction(false, false);
+            case 0x35: return StackInstruction(true, false);
+            case 0x36: return StackInstruction(false, true);
+            case 0x37: return StackInstruction(true, true);
+            case 0x38: Idle(); CC &= Fetch(); return 4;
+            case 0x39: Read(PC); PC = PullPc(); Read(S); return 5;
+            case 0x3a: Read(PC); X = (ushort)(X + B); return 3;
             case 0x3b: return ReturnInterrupt();
             case 0x3c:
-                CC &= Fetch(); Flag(C.EntireState, true); PushRegisters(byte.MaxValue, false); _cwai = true; return 20;
+                CC &= Fetch(); Read(PC); Idle(); Flag(C.EntireState, true);
+                PushRegisters(byte.MaxValue, false); _cwai = true; return 20;
             case 0x3d:
-                D = (ushort)(A * B); Flag(C.Zero, D == 0); Flag(C.Carry, (B & C.ByteSign) != 0); return 11;
+                Read(PC); D = (ushort)(A * B); Flag(C.Zero, D == 0); Flag(C.Carry, (B & C.ByteSign) != 0); return 11;
             default: throw Illegal(opcode);
         }
     }
@@ -60,10 +69,11 @@ internal sealed partial class Cpu6809
     {
         var operation = opcode & C.NibbleMask;
         var accumulator = opcode is >= 0x40 and <= 0x5f;
+        if (operation == 0x01) operation = 0x00;
+        if (operation == 0x05) operation = 0x04;
         var address = accumulator ? (ushort)0 : Address(opcode < 0x10 ? 1 : opcode < 0x70 ? 2 : 3);
-        if (operation == 0x0e)
+        if (operation == 0x0e && !accumulator)
         {
-            if (accumulator) throw Illegal(opcode);
             PC = address;
             return opcode >= 0x70 ? 4 : 3;
         }
@@ -72,6 +82,10 @@ internal sealed partial class Cpu6809
         switch (operation)
         {
             case 0x00: result = Subtract(value: 0, operand: value); break;
+            case 0x02:
+                if (IsSet(C.Carry)) { result = Load((byte)~value); Flag(C.Carry, true); }
+                else result = Subtract(value: 0, operand: value);
+                break;
             case 0x03: result = Nz((byte)~value); Flag(C.Overflow, false); Flag(C.Carry, true); break;
             case 0x04: Flag(C.Carry, (value & 1) != 0); result = Nz((byte)(value >> 1)); break;
             case 0x06:
@@ -86,13 +100,16 @@ internal sealed partial class Cpu6809
                 result = Nz((byte)(value << 1 | low)); Flag(C.Carry, (value & C.ByteSign) != 0);
                 Flag(C.Overflow, ((value ^ result) & C.ByteSign) != 0); break;
             case 0x0a: result = Nz((byte)(value - 1)); Flag(C.Overflow, value == C.ByteSign); break;
+            case 0x0b:
+                result = Nz((byte)(value - 1)); Flag(C.Overflow, value == C.ByteSign); Flag(C.Carry, value != 0); break;
             case 0x0c: result = Nz((byte)(value + 1)); Flag(C.Overflow, value == C.ByteSign - 1); break;
-            case 0x0d: Load(value); return accumulator ? 2 : opcode >= 0x70 ? 7 : 6;
+            case 0x0d: Read(PC); Load(value); return accumulator ? 2 : opcode >= 0x70 ? 7 : 6;
+            case 0x0e: result = Load((byte)0); break;
             case 0x0f: result = Load((byte)0); Flag(C.Carry, false); break;
             default: throw Illegal(opcode);
         }
-        if (accumulator) { if (opcode < 0x50) A = result; else B = result; }
-        else Write(address, result);
+        if (accumulator) { Read(PC); if (opcode < 0x50) A = result; else B = result; }
+        else { Read(PC); Write(address, result); }
         return accumulator ? 2 : opcode >= 0x70 ? 7 : 6;
     }
 
@@ -106,13 +123,13 @@ internal sealed partial class Cpu6809
         {
             if (mode == 0)
             {
-                var displacement = (sbyte)Fetch(); PushPc(); PC = (ushort)(PC + displacement); return 7;
+                var displacement = (sbyte)Fetch(); Idle(3); PushPc(); PC = (ushort)(PC + displacement); return 7;
             }
-            var target = Address(mode); PushPc(); PC = target; return mode == 3 ? 8 : 7;
+            var target = Address(mode); Read(PC); Idle(); PushPc(); PC = target; return mode == 3 ? 8 : 7;
         }
         var word = operation == 3 || operation >= 0x0c;
         var store = operation == 7 || operation == 0x0f || second && operation == 0x0d;
-        if (mode == 0 && store) throw Illegal(opcode);
+        if (mode == 0 && store) return StoreImmediate(opcode, page);
         var address = mode == 0 ? (ushort)0 : Address(mode);
         var cycles = mode == 0 ? 2 : mode == 3 ? 5 : 4;
         if (word)
@@ -127,10 +144,10 @@ internal sealed partial class Cpu6809
             switch (operation)
             {
                 case 3:
-                    D = second ? AddWord(D, operand) : SubtractWord(D, operand); return cycles + 2;
+                    D = second ? AddWord(D, operand) : SubtractWord(D, operand); Read(PC); return cycles + 2;
                 case 0x0c:
                     if (second) { D = Load(operand); return cycles + 1; }
-                    SubtractWord(X, operand); return cycles + 2;
+                    SubtractWord(X, operand); Read(PC); return cycles + 2;
                 case 0x0e:
                     if (second) U = Load(operand); else X = Load(operand); return cycles + 1;
                 default: throw Illegal(opcode);
@@ -161,17 +178,26 @@ internal sealed partial class Cpu6809
     private int PrefixedData(byte opcode, int page, int mode, int operation, bool second)
     {
         var compare = !second && (operation == 3 || operation == 0x0c);
+        var addCompare = second && operation == 3;
         var load = page == 0x10 && operation == 0x0e;
         var store = page == 0x10 && operation == 0x0f && mode != 0;
-        if (!compare && !load && !store) throw Illegal(opcode);
+        if (mode == 0 && operation is 7 or 0x0f) return StoreImmediate(opcode, page);
+        if (!compare && !load && !store && !addCompare) return DataInstruction(opcode, 0) + 1;
         var address = mode == 0 ? (ushort)0 : Address(mode);
         var cycles = mode == 0 ? 4 : mode == 3 ? 7 : 6;
         if (store) { WriteWord(address, Load(second ? S : Y)); return cycles; }
         var operand = mode == 0 ? FetchWord() : ReadWord(address);
+        if (addCompare)
+        {
+            AddWord(page == C.FirstPrefix ? D : (ushort)(U | C.WordHighByte), operand);
+            Read(PC);
+            return cycles + 1;
+        }
         if (compare)
         {
             var register = page == 0x10 ? operation == 3 ? D : Y : operation == 3 ? U : S;
             SubtractWord(register, operand);
+            Read(PC);
             return cycles + 1;
         }
         if (second) { S = Load(operand); _stackInitialized = true; }
@@ -201,7 +227,8 @@ internal sealed partial class Cpu6809
         var sum = value + operand;
         Flag(C.Carry, sum > ushort.MaxValue);
         Flag(C.Overflow, (~(value ^ operand) & (value ^ sum) & C.WordSign) != 0);
-        return Nz((ushort)sum);
+        _wordResult = (ushort)sum;
+        return Nz(_wordResult);
     }
 
     private ushort SubtractWord(ushort value, ushort operand)
@@ -209,7 +236,8 @@ internal sealed partial class Cpu6809
         var difference = value - operand;
         Flag(C.Carry, difference < 0);
         Flag(C.Overflow, ((value ^ operand) & (value ^ difference) & C.WordSign) != 0);
-        return Nz((ushort)difference);
+        _wordResult = (ushort)difference;
+        return Nz(_wordResult);
     }
 
     private bool Condition(int condition)
@@ -235,13 +263,15 @@ internal sealed partial class Cpu6809
         var sum = A + correction;
         Flag(C.Carry, IsSet(C.Carry) || sum > byte.MaxValue);
         A = Nz((byte)sum);
+        Flag(C.Overflow, IsSet(C.Carry) != ((A & C.ByteSign) != 0));
     }
 
-    private ushort ReadTransferRegister(int register) => register switch
+    private ushort ReadTransferRegister(int register, bool exchangeFromWord = false) => register switch
     {
         0 => D, 1 => X, 2 => Y, 3 => U, 4 => S, 5 => PC,
         8 => (ushort)(C.WordHighByte | A), 9 => (ushort)(C.WordHighByte | B),
-        10 => (ushort)(C.WordHighByte | CC), 11 => (ushort)(C.WordHighByte | DP),
+        10 => (ushort)(exchangeFromWord ? C.WordHighByte | CC : CC << C.ByteBits | CC),
+        11 => (ushort)(exchangeFromWord ? C.WordHighByte | DP : DP << C.ByteBits | DP),
         _ => ushort.MaxValue
     };
 
@@ -267,8 +297,9 @@ internal sealed partial class Cpu6809
         var post = Fetch();
         var source = post >> 4;
         var destination = post & C.NibbleMask;
-        var first = ReadTransferRegister(source);
-        var second = ReadTransferRegister(destination);
+        var exchangeFromWord = exchange && (source & C.ByteRegisterMask) == 0;
+        var first = ReadTransferRegister(source, exchangeFromWord);
+        var second = ReadTransferRegister(destination, exchangeFromWord);
         WriteTransferRegister(destination, first);
         if (exchange) WriteTransferRegister(source, second);
     }

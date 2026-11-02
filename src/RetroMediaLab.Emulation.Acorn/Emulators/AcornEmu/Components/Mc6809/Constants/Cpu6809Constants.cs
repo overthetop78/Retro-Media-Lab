@@ -28,5 +28,14 @@ internal static class Cpu6809Constants
     internal const int IndexedSmallSign = 0x10;
     internal const int RegisterMask = 3;
     internal const int RegisterShift = 5;
+    internal const int StackInstructionBaseCycles = 5;
+    internal const int StackAddressCycles = 2;
+    internal const byte FreeRunOpcode = 0xcd;
+    internal const int ByteRegisterMask = 0x08;
+    internal const int FirstPrefix = 0x10;
+    internal const int SecondPrefix = 0x11;
+    internal const int AddressSpaceSize = 0x10000;
+    internal const int ResetInternalCycles = 4;
+    internal const byte NzvMask = Negative | Zero | Overflow;
     internal const string OpcodeFormat = "X2";
 }
