@@ -8,12 +8,16 @@ internal static class VideoProcessingScenarios
 {
     internal sealed class VideoSource : RetroMediaLab.Emulation.Interfaces.IEmulationVideo
     {
+        private readonly RetroMediaLab.Emulation.Interfaces.IEmulationRuntime _runtime;
+        internal long? ProcessorClockHz { get; set; }
+        internal VideoSource() => _runtime = RetroMediaLab.Tests.Application.TestInfrastructure.ControlledDependencies.Simulate<RetroMediaLab.Emulation.Interfaces.IEmulationRuntime>(
+            (method, _) => method.Name == "get_ProcessorClockHz" ? ProcessorClockHz : throw new InvalidOperationException(method.Name));
         public VideoFrame? LatestFrame { get; private set; }
         public double FramesPerSecond => 50;
         public event EventHandler<VideoFrame>? FrameReady;
         public int Subscribers => FrameReady?.GetInvocationList().Length ?? 0;
         public void Send(VideoFrame frame) { LatestFrame=frame; FrameReady?.Invoke(this,frame); }
-        public RetroMediaLab.Emulation.Interfaces.IEmulatedMachine Machine => RetroMediaLab.Tests.Application.TestInfrastructure.ControlledDependencies.Simulate<RetroMediaLab.Emulation.Interfaces.IEmulatedMachine>((method,_) => method.Name=="get_Video" ? this : throw new InvalidOperationException(method.Name));
+        public RetroMediaLab.Emulation.Interfaces.IEmulatedMachine Machine => RetroMediaLab.Tests.Application.TestInfrastructure.ControlledDependencies.Simulate<RetroMediaLab.Emulation.Interfaces.IEmulatedMachine>((method,_) => method.Name switch { "get_Video" => this, "get_Runtime" => _runtime, _ => throw new InvalidOperationException(method.Name) });
     }
     private sealed class Surface(EmulationVideoRenderer renderer) : RetroMediaLab.App.Interfaces.Rendering.Emulation.IEmulationVideoSurface
     {

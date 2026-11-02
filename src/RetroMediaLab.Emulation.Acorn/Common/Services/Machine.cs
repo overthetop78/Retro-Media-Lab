@@ -96,6 +96,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public string CoreVersion => _core.CoreVersion;
     public IReadOnlySet<string> SupportedContentExtensions => _core.SupportedContentExtensions;
     public bool SupportsSaveStates => _core.SupportsSaveStates;
+    public long? ProcessorClockHz => _core.ProcessorClockHz;
     public bool IsAudioMuted => _audio.IsMuted;
     public float AudioVolume => _audio.Volume;
     public RuntimeStatus RuntimeStatus => RuntimeFunctions.Status(Configuration, _core, _mediaCapabilities);

@@ -55,6 +55,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public string CoreVersion => EmulatorConstants.Version;
     public string CoreSha256 { get; } = CommonCoreHostFunctions.StateFiles.HashBytes(File.ReadAllBytes(typeof(EmulatorCore).Assembly.Location)).ToLowerInvariant();
     public double FramesPerSecond => _machine?.VideoFramesPerSecond ?? _definition.FramesPerSecond;
+    public long? ProcessorClockHz => _machine?.ProcessorClockHz;
     public int SampleRate => BbcAudioConstants.SampleRate;
     public bool SupportsSaveStates => false;
     public bool SupportsPointerCapture => ArchimedesFunctions.IsModel(_definition.Model);
@@ -141,17 +142,21 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         ObjectDisposedException.ThrowIf(_disposed, this);
         var machine = _machine ?? throw new InvalidOperationException();
         var image = machine.RunFrame();
+        _videoTimeSeconds += machine.VideoFrameDurationSeconds ?? 1d / FramesPerSecond;
         // Le matériel continue de tourner et de décoder chaque bit ; seule l'attente de présentation est supprimée.
         if (_cassetteSettings.Mode != EmulationCassettePlaybackMode.RealTime)
-            for (var frame = 0; frame < 31 && CassetteActive; frame++) { machine.DrainAudio(); image = machine.RunFrame(); }
+            for (var frame = 0; frame < 31 && CassetteActive; frame++)
+            {
+                machine.DrainAudio();
+                image = machine.RunFrame();
+                _videoTimeSeconds += machine.VideoFrameDurationSeconds ?? 1d / FramesPerSecond;
+            }
         // La coupure moteur du MOS termine un SAVE même lorsque le bouton REC reste armé sur le magnétophone.
         if (!CassetteActive && machine.CassetteHasChanges) SaveMediaChanges(EmulationMediaSlot.Cassette0);
         FlushStoppedDisks();
         FlushStoppedHardDisks();
         var width = machine.VideoWidth ?? _definition.Width;
         var height = machine.VideoHeight ?? _definition.Height;
-        _videoTimeSeconds = machine.VideoFrameDurationSeconds is { } duration
-            ? _videoTimeSeconds + duration : (_sequence + 1) / FramesPerSecond;
         LatestVideoFrame = new VideoFrame(image, width, height, width * _definition.BytesPerPixel, _definition.PixelFormat, _definition.AspectRatio, ++_sequence, TimeSpan.FromSeconds(_videoTimeSeconds));
         var samples = machine.DrainAudio();
         var mixed = samples.Select(value => (double)value).ToArray();

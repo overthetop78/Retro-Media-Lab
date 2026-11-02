@@ -11,6 +11,9 @@ internal static class MachinePresentationConstants
     internal const string Direct3D11Renderer = "Direct3D 11";
     internal const string WpfRenderer = "WPF";
     internal const string StatusFormat = "{0} × {1} · {2:0.0} Hz · {3:0.0} FPS";
+    internal const string ExecutionRateResourceKey = "Emulation.Status.ExecutionRate";
+    internal const double PercentScale = 100d;
+    internal const double StatusMaximumWidth = 360d;
     internal static string FloppyGlyph => IconGlyphs.FloppyDisk;
     internal static string HardDiskGlyph => IconGlyphs.HardDisk;
     internal static string CompactDiscGlyph => IconGlyphs.OpticalDisc;

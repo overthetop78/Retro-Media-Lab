@@ -31,8 +31,16 @@ internal sealed class Audio
     internal void Tick()
     {
         for (var clock = 0; clock < AudioConstants.SoundClock / AudioConstants.CpuClock; clock++) _chip.Tick();
-        var remaining = AudioConstants.SampleRate;
         var level = _chip.Output;
+        // La majorité des cycles ne franchit aucune frontière PCM. Conserver exactement
+        // la même intégrale entière, sans boucle ni recherche de minimum dans ce cas.
+        if (AudioConstants.SampleRate < AudioConstants.CpuClock - _phase)
+        {
+            _area += (long)level * AudioConstants.SampleRate;
+            _phase += AudioConstants.SampleRate;
+            return;
+        }
+        var remaining = AudioConstants.SampleRate;
         while (remaining > 0)
         {
             var duration = Math.Min(remaining, AudioConstants.CpuClock - _phase);

@@ -1,9 +1,13 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Enums;
+
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Interfaces;
 
 /// <summary>Broches vues par le 6502 ; le CPU ignore le modèle de machine et le SDK de l'application.</summary>
 /// <remarks>Chaque lecture ou écriture du processeur avance d'abord l'horloge par Tick. Le bus appartient à la machine.</remarks>
 internal interface ICpuBus
 {
+    /// <summary>Raccordement fixe des broches auxiliaires. All préserve les bus existants et les bancs de signaux.</summary>
+    CpuBusControlSignals ControlSignals => CpuBusControlSignals.All;
     byte Read(ushort address);
     void Write(ushort address, byte value);
     void Tick();

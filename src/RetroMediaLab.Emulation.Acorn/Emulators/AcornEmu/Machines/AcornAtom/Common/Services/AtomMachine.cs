@@ -13,6 +13,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Co
 /// <summary>Carte Atom : 6502, 8255, 6522, MC6847, buzzer et extension Disc Pack.</summary>
 internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
 {
+    public long? ProcessorClockHz => C.CpuClock;
     private readonly byte[] _ram = new byte[C.AddressBytes];
     private readonly byte[] _basicOs;
     private readonly byte[] _floatingPoint;

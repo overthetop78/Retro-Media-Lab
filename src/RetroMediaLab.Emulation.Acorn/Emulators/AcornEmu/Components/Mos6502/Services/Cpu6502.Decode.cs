@@ -4,7 +4,18 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Se
 
 internal sealed partial class Cpu6502
 {
-    private readonly record struct NmosInstruction(Cpu6502Operation Operation, Cpu6502AddressMode Mode);
+    // Champs directs : ces données immuables sont consultées à chaque phase de bus,
+    // sans appels d'accesseurs supplémentaires lorsque le cœur est compilé en Debug.
+    private readonly struct NmosInstruction(Cpu6502Operation operation, Cpu6502AddressMode mode)
+    {
+        internal readonly Cpu6502Operation Operation = operation;
+        internal readonly Cpu6502AddressMode Mode = mode;
+        internal readonly bool Stores = operation is Cpu6502Operation.Sta or Cpu6502Operation.Stx or Cpu6502Operation.Sty
+            or Cpu6502Operation.Sax or Cpu6502Operation.Ahx or Cpu6502Operation.Shx or Cpu6502Operation.Shy or Cpu6502Operation.Tas;
+        internal readonly bool Modifies = operation is Cpu6502Operation.Asl or Cpu6502Operation.Lsr or Cpu6502Operation.Rol
+            or Cpu6502Operation.Ror or Cpu6502Operation.Inc or Cpu6502Operation.Dec or Cpu6502Operation.Slo or Cpu6502Operation.Rla
+            or Cpu6502Operation.Sre or Cpu6502Operation.Rra or Cpu6502Operation.Dcp or Cpu6502Operation.Isc;
+    }
 
     // L'index est le codage de l'opcode ; chaque ligne correspond à son quartet de poids fort.
     private static readonly NmosInstruction[] NmosInstructions =

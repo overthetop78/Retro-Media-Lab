@@ -26,15 +26,23 @@ internal sealed class EmulationFrameTimer : IEmulationFrameTimer
     public static void RunLoop(long nextFrame, object gate, ConcurrentQueue<EmulationMachineCommand> commands,
         Func<bool> isPaused, Action runFrame, Func<double> framesPerSecond,
         Func<long, double, long> nextFrameTimestamp, Action<long, CancellationToken> waitUntil,
-        CancellationToken cancellationToken, int pauseWaitMilliseconds, Func<bool>? keepRunning = null)
+        CancellationToken cancellationToken, int pauseWaitMilliseconds, Func<bool>? keepRunning = null,
+        TimeProvider? clock = null)
     {
+        var frameClock = clock ?? TimeProvider.System;
         RunFrames(gate, commands, isPaused, () =>
         {
             runFrame();
             if (keepRunning?.Invoke() == false) return false;
+            var previousDeadline = nextFrame;
             nextFrame = nextFrameTimestamp(nextFrame, framesPerSecond());
+            var frameDuration = nextFrame - previousDeadline;
             waitUntil(nextFrame, cancellationToken);
-            if (nextFrame < Stopwatch.GetTimestamp()) nextFrame = Stopwatch.GetTimestamp();
+            var now = frameClock.GetTimestamp();
+            // Conserver l'échéance absolue après un petit retard du réveil Windows.
+            // Un retard d'une frame entière (pause ou surcharge) abandonne la dette,
+            // sans lancer une rafale de rattrapage ni accumuler des images/audio.
+            if (frameDuration <= 0 || now - nextFrame >= frameDuration) nextFrame = now;
             return true;
         }, () => !cancellationToken.IsCancellationRequested && keepRunning?.Invoke() != false,
             static command => command.Execute(rethrow: true), cancellationToken, pauseWaitMilliseconds);

@@ -5,6 +5,10 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 /// <summary>Matrice des touches maintenues ; la carte l'interroge depuis le bus lent du VIA.</summary>
 internal sealed class Keyboard
 {
+    private const int ColumnCount = 16;
+    private const int ColumnMask = ColumnCount - 1;
+    private const int FirstScannedContact = ColumnCount;
+    private ushort _activeColumns;
     private readonly bool[] _matrix = new bool[128];
     internal bool BreakPressed { get; private set; }
     /// <summary>Traduit les caractères hôtes puis applique les commandes physiques non traduites.</summary>
@@ -41,14 +45,13 @@ internal sealed class Keyboard
             else if (BbcMicroKeyboardDictionary.Matrix.TryGetValue(key, out var position)) _matrix[position] = true;
         }
         if (characterShift.HasValue) _matrix[0] = characterShift.Value;
+        _activeColumns = 0;
+        for (var contact = FirstScannedContact; contact < _matrix.Length; contact++)
+            if (_matrix[contact]) _activeColumns |= (ushort)(1 << (contact & ColumnMask));
         BreakPressed = keys.Contains(EmulationKey.Break);
     }
     /// <summary>PA0–PA6 sélectionnent la touche et PA7 rapporte son état.</summary>
     internal byte Read(byte selection) => (byte)((selection & 127) | (_matrix[selection & 127] ? 128 : 0));
     /// <summary>Recherche dans la colonne, hors SHIFT/CTRL, pour la détection automatique.</summary>
-    internal bool ColumnPressed(int column)
-    {
-        for (var row = 1; row < 8; row++) if (_matrix[row * 16 + (column & 15)]) return true;
-        return false;
-    }
+    internal bool ColumnPressed(int column) => (_activeColumns & (1 << (column & ColumnMask))) != 0;
 }

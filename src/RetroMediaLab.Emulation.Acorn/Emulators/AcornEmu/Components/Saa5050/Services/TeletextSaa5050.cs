@@ -8,12 +8,22 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Saa5050.Se
 internal sealed class TeletextSaa5050
 {
     private readonly byte[] _characters;
+    private const int FirstCharacter = 32;
+    private const int CharacterCount = 96;
+    private const int CharacterRows = 10;
+    private const int RasterParities = 2;
+    private readonly int[] _glyphs;
     private int _foreground, _background, _held = 32, _row = -1;
     private bool _graphics, _flash, _conceal, _separated, _hold, _double, _bottom, _rowDouble, _heldSeparated;
     internal TeletextSaa5050(ReadOnlySpan<byte> characters)
     {
         if (characters.Length != 0 && characters.Length != BbcMicroFirmwareConstants.CharacterRomSize) throw new ArgumentException(nameof(characters));
         _characters = characters.ToArray();
+        _glyphs = new int[CharacterCount * CharacterRows * RasterParities];
+        for (var glyph = 0; glyph < CharacterCount; glyph++)
+            for (var row = 0; row < CharacterRows; row++)
+                for (var parity = 0; parity < RasterParities; parity++)
+                    _glyphs[(glyph * CharacterRows + row) * RasterParities + parity] = BuildGlyph(glyph + FirstCharacter, row, parity);
     }
 
     internal void Reset() { _row = -1; _bottom = _rowDouble = false; BeginLine(0); }
@@ -75,6 +85,12 @@ internal sealed class TeletextSaa5050
     }
 
     private int Glyph(int data, int row, int raster)
+    {
+        if (data < FirstCharacter || data >= FirstCharacter + CharacterCount || (uint)row >= CharacterRows) return 0;
+        return _glyphs[((data - FirstCharacter) * CharacterRows + row) * RasterParities + (raster & 1)];
+    }
+
+    private int BuildGlyph(int data, int row, int raster)
     {
         if (data < 32 || data > 127 || row is < 0 or >= 10 || _characters.Length == 0) return 0;
         var current = Expanded(_characters[(data - 32) * 10 + row]);

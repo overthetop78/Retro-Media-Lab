@@ -15,7 +15,7 @@ internal sealed partial class Cpu6502
     {
         var pointer = Fetch();
         Read(pointer);
-        return ZeroPageWord((byte)(pointer + X));
+        return ZeroPageWord((byte)(pointer + _x));
     }
 
     private ushort IndexedAddress(ushort address, byte index, bool forceRead, bool indirect = false)
@@ -28,7 +28,7 @@ internal sealed partial class Cpu6502
                 var crossing = (address & C.PageMask) != (result & C.PageMask);
                 // Le 65C12 reprend l'octet d'opérande en cas de retenue.
                 // STA (zp),Y reprend également son opérande, sans accéder à l'E/S cible.
-                Read(crossing || indirect ? (ushort)(PC - 1) : result);
+                Read(crossing || indirect ? (ushort)(_pc - 1) : result);
             }
             else Read((ushort)((address & C.PageMask) | (byte)result));
         }
@@ -41,12 +41,12 @@ internal sealed partial class Cpu6502
         if (!taken) return 2;
         // NMOS : le sondage normal reste celui du cycle de lecture de l'opcode,
         // même si le branchement pris ajoute ensuite un cycle.
-        var earlyIrq = _irqPrevious && (P & InterruptDisable) == 0;
+        var earlyIrq = _irqPrevious && (_p & InterruptDisable) == 0;
         var earlyNmi = _nmiPrevious;
-        var previous = PC;
+        var previous = _pc;
         Read(previous);
-        PC = (ushort)(previous + displacement);
-        if ((previous & C.PageMask) == (PC & C.PageMask))
+        _pc = (ushort)(previous + displacement);
+        if ((previous & C.PageMask) == (_pc & C.PageMask))
         {
             if (!cmos)
             {
@@ -55,13 +55,13 @@ internal sealed partial class Cpu6502
             }
             return 3;
         }
-        if (cmos) Read((ushort)((previous & C.PageMask) | (byte)PC));
+        if (cmos) Read((ushort)((previous & C.PageMask) | (byte)_pc));
         else
         {
-            Read((ushort)((previous & C.PageMask) | (byte)PC));
+            Read((ushort)((previous & C.PageMask) | (byte)_pc));
             // Le franchissement de page fournit un second sondage ; les deux
             // peuvent déclencher l'IRQ, y compris une impulsion déjà retombée.
-            _branchIrqSample = earlyIrq || (_irqPrevious && (P & InterruptDisable) == 0);
+            _branchIrqSample = earlyIrq || (_irqPrevious && (_p & InterruptDisable) == 0);
             _branchNmiSample = earlyNmi || _nmiPrevious;
         }
         return 4;
@@ -69,8 +69,8 @@ internal sealed partial class Cpu6502
 
     private void PreparePull()
     {
-        Read(PC);
-        Read((ushort)(C.StackBase | S));
+        Read(_pc);
+        Read((ushort)(C.StackBase | _s));
     }
 
     private ushort InterruptVector(ushort requested, bool hardware = false)

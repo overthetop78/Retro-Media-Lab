@@ -5,6 +5,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.C
 /// <summary>Adaptation de la carte aux sorties communes, sans ajouter de périphérique absent.</summary>
 internal sealed partial class ArchimedesMachine
 {
+    public long? ProcessorClockHz => _cpuClockHz;
     public int? VideoWidth => Width;
     public int? VideoHeight => Height;
     public double? VideoFramesPerSecond => _vidc.FramesPerSecond;

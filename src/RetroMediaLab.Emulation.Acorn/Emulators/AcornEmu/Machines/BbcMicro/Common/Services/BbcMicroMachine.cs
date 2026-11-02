@@ -1,3 +1,4 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Constants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6850.Services;
@@ -58,6 +59,11 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly int _cyclesPerFrame;
     private bool _break;
     internal Cpu6502 Cpu { get; }
+    // Ces lignes conservent les niveaux par défaut du bus BBC : RDY/DBE hauts,
+    // SO/RESET inactifs ; SYNC n'a pas de récepteur sur cet assemblage.
+    public CpuBusControlSignals ControlSignals =>
+        CpuBusControlSignals.None;
+    public long? ProcessorClockHz => BbcMicroModelConstants.CpuFrequencyHz;
     internal Video Video { get; }
     public bool Irq => _via.Irq || _userVia?.Irq == true || _acia.Irq || _winchester.Irq || _masterMemory?.Irq == true || _tube?.HostIrq == true;
     public bool Nmi => _disks.Nmi || _econet.Nmi;
@@ -167,7 +173,13 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     }
     public byte[] RunFrame()
     {
-        while (_ticks < _nextFrame) { if (!BbcCassetteFunctions.TryDirectLoad(Cpu, this, _cassette)) Cpu.Step(); }
+        // Les commandes hôtes sont sérialisées entre les frames : le mode de chargement
+        // ne change pas dans cette boucle. La lecture matérielle n'a aucun appel MOS à intercepter.
+        if (_cassette.Settings.Mode == EmulationCassettePlaybackMode.Direct)
+        {
+            while (_ticks < _nextFrame) { if (!BbcCassetteFunctions.TryDirectLoad(Cpu, this, _cassette)) Cpu.Step(); }
+        }
+        else while (_ticks < _nextFrame) Cpu.Step();
         _nextFrame += _cyclesPerFrame;
         return Video.Render();
     }

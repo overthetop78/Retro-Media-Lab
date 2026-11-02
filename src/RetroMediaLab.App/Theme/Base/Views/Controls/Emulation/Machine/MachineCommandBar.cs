@@ -80,7 +80,8 @@ internal sealed class MachineCommandBar
         statusItems.Add(ControllerStatus);
         statusItems.Add(PointerStatus);
         right.Children.Add(MachineView.CreateToolbarGroup(statusItems.ToArray()));
-        Status = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
+        Status = new TextBlock { VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap,
+            MaxWidth = MachinePresentationConstants.StatusMaximumWidth };
         right.Children.Add(MachineView.CreateToolbarGroup(Status));
         DockPanel.SetDock(right, Dock.Right);
         host.Children.Add(right);

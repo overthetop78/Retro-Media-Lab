@@ -11,18 +11,18 @@ internal sealed class Sn76489
     private readonly int[] _periods = new int[3], _counts = new int[4], _attenuations = new int[4];
     private readonly bool[] _levels = new bool[3];
     private int _divider, _selected, _noise, _shift;
+    private int _output;
 
     internal Sn76489() => Reset();
 
     /// <summary>Somme instantanée, sans duplication stéréo ni application du volume de l'hôte.</summary>
-    internal int Output
+    internal int Output => _output;
+
+    private void UpdateOutput()
     {
-        get
-        {
-            var level = (_shift & 1) != 0 ? SoundConstants.Amplitudes[_attenuations[3]] : 0;
-            for (var channel = 0; channel < 3; channel++) if (_levels[channel]) level += SoundConstants.Amplitudes[_attenuations[channel]];
-            return level;
-        }
+        var level = (_shift & 1) != 0 ? SoundConstants.Amplitudes[_attenuations[3]] : 0;
+        for (var channel = 0; channel < 3; channel++) if (_levels[channel]) level += SoundConstants.Amplitudes[_attenuations[channel]];
+        _output = level;
     }
 
     /// <summary>Réinitialise les registres et oscillateurs ; le MOS écrit ensuite ses volumes de démarrage.</summary>
@@ -30,6 +30,7 @@ internal sealed class Sn76489
     {
         Array.Clear(_periods); Array.Clear(_counts); Array.Clear(_attenuations); Array.Clear(_levels);
         _divider = _selected = _noise = 0; _shift = SoundConstants.NoiseSeed;
+        UpdateOutput();
     }
 
     /// <summary>Accepte un octet du bus lorsque le câblage propriétaire valide une écriture.</summary>
@@ -41,6 +42,7 @@ internal sealed class Sn76489
         if ((_selected & 1) != 0) _attenuations[channel] = value & 15;
         else if (channel == 3) { _noise = value & 7; _shift = SoundConstants.NoiseSeed; }
         else _periods[channel] = latch ? (_periods[channel] & 0x3f0) | (value & 15) : (_periods[channel] & 15) | ((value & 63) << 4);
+        UpdateOutput();
     }
 
     /// <summary>Avance d'une période d'entrée ; les compteurs internes travaillent après division par seize.</summary>
@@ -50,10 +52,13 @@ internal sealed class Sn76489
         _divider = 0;
         for (var channel = 0; channel < 3; channel++)
             if (--_counts[channel] <= 0) { _levels[channel] = !_levels[channel]; _counts[channel] = Period(channel); }
-        if (--_counts[3] > 0) return;
-        var feedback = ((_shift & 4) != 0) ^ ((_noise & 4) != 0 && (_shift & 8) != 0);
-        _shift = (_shift >> 1) | (feedback ? SoundConstants.NoiseSeed : 0);
-        _counts[3] = (_noise & 3) == 3 ? 2 * Period(2) : 1 << (5 + (_noise & 3));
+        if (--_counts[3] <= 0)
+        {
+            var feedback = ((_shift & 4) != 0) ^ ((_noise & 4) != 0 && (_shift & 8) != 0);
+            _shift = (_shift >> 1) | (feedback ? SoundConstants.NoiseSeed : 0);
+            _counts[3] = (_noise & 3) == 3 ? 2 * Period(2) : 1 << (5 + (_noise & 3));
+        }
+        UpdateOutput();
     }
 
     /// <summary>Résout le diviseur TI ; fréquence du ton = horloge / (32 × période).</summary>

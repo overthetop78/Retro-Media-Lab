@@ -10,33 +10,33 @@ internal sealed partial class Cpu6502
     {
         switch (_nmosInstruction.Operation)
         {
-            case Op.Ora: A = Nz((byte)(A | value)); break;
-            case Op.And: A = Nz((byte)(A & value)); break;
-            case Op.Eor: A = Nz((byte)(A ^ value)); break;
+            case Op.Ora: _a = Nz((byte)(_a | value)); break;
+            case Op.And: _a = Nz((byte)(_a & value)); break;
+            case Op.Eor: _a = Nz((byte)(_a ^ value)); break;
             case Op.Adc: Add(value); break;
             case Op.Sbc: Subtract(value); break;
-            case Op.Lda: A = Nz(value); break;
-            case Op.Ldx: X = Nz(value); break;
-            case Op.Ldy: Y = Nz(value); break;
-            case Op.Cmp: Compare(A, value); break;
-            case Op.Cpx: Compare(X, value); break;
-            case Op.Cpy: Compare(Y, value); break;
+            case Op.Lda: _a = Nz(value); break;
+            case Op.Ldx: _x = Nz(value); break;
+            case Op.Ldy: _y = Nz(value); break;
+            case Op.Cmp: Compare(_a, value); break;
+            case Op.Cpx: Compare(_x, value); break;
+            case Op.Cpy: Compare(_y, value); break;
             case Op.Bit: Bit(value); break;
-            case Op.Lax: A = X = Nz(value); break;
-            case Op.Las: A = X = S = Nz((byte)(value & S)); break;
-            case Op.Anc: A = Nz((byte)(A & value)); Flag(Carry, (A & Negative) != 0); break;
+            case Op.Lax: _a = _x = Nz(value); break;
+            case Op.Las: _a = _x = _s = Nz((byte)(value & _s)); break;
+            case Op.Anc: _a = Nz((byte)(_a & value)); Flag(Carry, (_a & Negative) != 0); break;
             case Op.Alr:
-                var masked = A & value;
+                var masked = _a & value;
                 Flag(Carry, (masked & Carry) != 0);
-                A = Nz((byte)(masked >> 1));
+                _a = Nz((byte)(masked >> 1));
                 break;
             case Op.Arr: Arr(value); break;
-            case Op.Xaa: A = Nz((byte)((A | C.UnstableBusMask) & X & value)); break;
-            case Op.Lxa: A = X = Nz((byte)((A | C.UnstableBusMask) & value)); break;
+            case Op.Xaa: _a = Nz((byte)((_a | C.UnstableBusMask) & _x & value)); break;
+            case Op.Lxa: _a = _x = Nz((byte)((_a | C.UnstableBusMask) & value)); break;
             case Op.Axs:
-                var difference = (A & X) - value;
+                var difference = (_a & _x) - value;
                 Flag(Carry, difference >= 0);
-                X = Nz((byte)difference);
+                _x = Nz((byte)difference);
                 break;
             case Op.Nop: break;
             default: throw new InvalidOperationException(nameof(_nmosInstruction.Operation));
@@ -45,7 +45,7 @@ internal sealed partial class Cpu6502
 
     private byte ModifyNmosValue(byte value)
     {
-        var carry = P & Carry;
+        var carry = _p & Carry;
         switch (_nmosInstruction.Operation)
         {
             case Op.Asl or Op.Slo:
@@ -70,11 +70,11 @@ internal sealed partial class Cpu6502
     {
         switch (_nmosInstruction.Operation)
         {
-            case Op.Slo: A = Nz((byte)(A | value)); break;
-            case Op.Rla: A = Nz((byte)(A & value)); break;
-            case Op.Sre: A = Nz((byte)(A ^ value)); break;
+            case Op.Slo: _a = Nz((byte)(_a | value)); break;
+            case Op.Rla: _a = Nz((byte)(_a & value)); break;
+            case Op.Sre: _a = Nz((byte)(_a ^ value)); break;
             case Op.Rra: Add(value); break;
-            case Op.Dcp: Compare(A, value); break;
+            case Op.Dcp: Compare(_a, value); break;
             case Op.Isc: Subtract(value); break;
             default: Nz(value); break;
         }
@@ -84,28 +84,28 @@ internal sealed partial class Cpu6502
     {
         if (_nmosInstruction.Mode == Mode.Accumulator)
         {
-            A = Nz(ModifyNmosValue(A));
+            _a = Nz(ModifyNmosValue(_a));
             return;
         }
         switch (_nmosInstruction.Operation)
         {
-            case Op.Tax: X = Nz(A); break;
-            case Op.Tay: Y = Nz(A); break;
-            case Op.Txa: A = Nz(X); break;
-            case Op.Tya: A = Nz(Y); break;
-            case Op.Tsx: X = Nz(S); break;
-            case Op.Txs: S = X; break;
-            case Op.Dex: X = Nz((byte)(X - 1)); break;
-            case Op.Dey: Y = Nz((byte)(Y - 1)); break;
-            case Op.Inx: X = Nz((byte)(X + 1)); break;
-            case Op.Iny: Y = Nz((byte)(Y + 1)); break;
-            case Op.Clc: P &= unchecked((byte)~Carry); break;
-            case Op.Sec: P |= Carry; break;
-            case Op.Cli: P &= unchecked((byte)~InterruptDisable); break;
-            case Op.Sei: P |= InterruptDisable; break;
-            case Op.Clv: P &= unchecked((byte)~Overflow); break;
-            case Op.Cld: P &= unchecked((byte)~Decimal); break;
-            case Op.Sed: P |= Decimal; break;
+            case Op.Tax: _x = Nz(_a); break;
+            case Op.Tay: _y = Nz(_a); break;
+            case Op.Txa: _a = Nz(_x); break;
+            case Op.Tya: _a = Nz(_y); break;
+            case Op.Tsx: _x = Nz(_s); break;
+            case Op.Txs: _s = _x; break;
+            case Op.Dex: _x = Nz((byte)(_x - 1)); break;
+            case Op.Dey: _y = Nz((byte)(_y - 1)); break;
+            case Op.Inx: _x = Nz((byte)(_x + 1)); break;
+            case Op.Iny: _y = Nz((byte)(_y + 1)); break;
+            case Op.Clc: _p &= unchecked((byte)~Carry); break;
+            case Op.Sec: _p |= Carry; break;
+            case Op.Cli: _p &= unchecked((byte)~InterruptDisable); break;
+            case Op.Sei: _p |= InterruptDisable; break;
+            case Op.Clv: _p &= unchecked((byte)~Overflow); break;
+            case Op.Cld: _p &= unchecked((byte)~Decimal); break;
+            case Op.Sed: _p |= Decimal; break;
             case Op.Nop: break;
             default: throw new InvalidOperationException(nameof(_nmosInstruction.Operation));
         }
@@ -113,32 +113,32 @@ internal sealed partial class Cpu6502
 
     private bool NmosBranchTaken => _nmosInstruction.Operation switch
     {
-        Op.Bpl => (P & Negative) == 0,
-        Op.Bmi => (P & Negative) != 0,
-        Op.Bvc => (P & Overflow) == 0,
-        Op.Bvs => (P & Overflow) != 0,
-        Op.Bcc => (P & Carry) == 0,
-        Op.Bcs => (P & Carry) != 0,
-        Op.Bne => (P & Zero) == 0,
-        Op.Beq => (P & Zero) != 0,
+        Op.Bpl => (_p & Negative) == 0,
+        Op.Bmi => (_p & Negative) != 0,
+        Op.Bvc => (_p & Overflow) == 0,
+        Op.Bvs => (_p & Overflow) != 0,
+        Op.Bcc => (_p & Carry) == 0,
+        Op.Bcs => (_p & Carry) != 0,
+        Op.Bne => (_p & Zero) == 0,
+        Op.Beq => (_p & Zero) != 0,
         _ => throw new InvalidOperationException(nameof(_nmosInstruction.Operation))
     };
 
     private void Arr(byte operand)
     {
-        var masked = (byte)(A & operand);
-        var rotated = Nz((byte)((masked >> 1) | (P & Carry) << 7));
+        var masked = (byte)(_a & operand);
+        var rotated = Nz((byte)((masked >> 1) | (_p & Carry) << 7));
         Flag(Overflow, ((rotated ^ (rotated << 1)) & 0x40) != 0);
-        if ((P & Decimal) == 0)
+        if ((_p & Decimal) == 0)
         {
             Flag(Carry, (rotated & 0x40) != 0);
-            A = rotated;
+            _a = rotated;
             return;
         }
-        A = rotated;
-        if ((masked & 15) + (masked & 1) > 5) A = (byte)((A & 0xf0) | ((A + 6) & 15));
+        _a = rotated;
+        if ((masked & 15) + (masked & 1) > 5) _a = (byte)((_a & 0xf0) | ((_a + 6) & 15));
         var carry = (masked & 0xf0) + (masked & 0x10) > 0x50;
-        if (carry) A = (byte)(A + 0x60);
+        if (carry) _a = (byte)(_a + 0x60);
         Flag(Carry, carry);
     }
 }

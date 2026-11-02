@@ -317,6 +317,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     private async Task TogglePowerAsync()
     {
         await _session.TogglePowerAsync();
+        _video.ResetFrameRate();
         _input.SetPowered(_session.IsPowered);
         _commands.SetPowered(_session.IsPowered);
         _video.SetVisible(_session.IsPowered);
@@ -333,6 +334,9 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     private async Task TogglePauseAsync()
     {
         await _session.TogglePauseAsync();
+        _video.ResetFrameRate();
+        if (_session.Machine.Video.LatestFrame is { } frame)
+            _commands.Status.Text = MachinePresentationFunctions.Status(frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond);
         _commands.SetPaused(_session.Machine.State == EmulationMachineState.Paused);
     }
 
@@ -635,7 +639,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
 
     private void FramePresented(object? sender, VideoFrame frame)
     {
-        _commands.Status.Text = MachinePresentationFunctions.Status(frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond);
+        _commands.Status.Text = MachinePresentationFunctions.Status(frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond, _video.ExecutionRate);
         var now = DateTime.UtcNow;
         var activityStates = _session.Machine.Runtime.MediaActivity;
         if (_session.Machine.CassetteTransport is { } cassette) UpdateCassetteTransport(cassette);

@@ -11,46 +11,46 @@ internal sealed partial class Cpu6502
         {
             case 0x04: case 0x0c: case 0x14: case 0x1c:
                 address = (opcode & 8) == 0 ? Fetch() : FetchWord();
-                value = Read(address); Flag(Zero, (A & value) == 0);
+                value = Read(address); Flag(Zero, (_a & value) == 0);
                 _ = Read(address);
-                Write(address, (opcode & 0x10) == 0 ? (byte)(value | A) : (byte)(value & ~A));
+                Write(address, (opcode & 0x10) == 0 ? (byte)(value | _a) : (byte)(value & ~_a));
                 return (opcode & 8) == 0 ? 5 : 6;
-            case 0x1a: A = Nz((byte)(A + 1)); return 2;
-            case 0x3a: A = Nz((byte)(A - 1)); return 2;
-            case 0x5a: Read(PC); Push(Y); return 3;
-            case 0x7a: PreparePull(); Y = Nz(Pop()); return 4;
-            case 0xda: Read(PC); Push(X); return 3;
-            case 0xfa: PreparePull(); X = Nz(Pop()); return 4;
+            case 0x1a: _a = Nz((byte)(_a + 1)); return 2;
+            case 0x3a: _a = Nz((byte)(_a - 1)); return 2;
+            case 0x5a: Read(_pc); Push(_y); return 3;
+            case 0x7a: PreparePull(); _y = Nz(Pop()); return 4;
+            case 0xda: Read(_pc); Push(_x); return 3;
+            case 0xfa: PreparePull(); _x = Nz(Pop()); return 4;
             case 0x64: Write(Fetch(), 0); return 3;
-            case 0x74: Write(IndexedZeroPage(X), 0); return 4;
+            case 0x74: Write(IndexedZeroPage(_x), 0); return 4;
             case 0x9c: Write(FetchWord(), 0); return 4;
-            case 0x9e: Write(IndexedAddress(FetchWord(), X, true), 0); return 5;
+            case 0x9e: Write(IndexedAddress(FetchWord(), _x, true), 0); return 5;
             case 0x80:
                 return Branch(true);
-            case 0x89: Flag(Zero, (A & Fetch()) == 0); return 2;
-            case 0x34: Bit(Read(IndexedZeroPage(X))); return 4;
-            case 0x3c: address = FetchWord(); Bit(Read(IndexedAddress(address, X, false))); return 4 + PageCross(address, X);
+            case 0x89: Flag(Zero, (_a & Fetch()) == 0); return 2;
+            case 0x34: Bit(Read(IndexedZeroPage(_x))); return 4;
+            case 0x3c: address = FetchWord(); Bit(Read(IndexedAddress(address, _x, false))); return 4 + PageCross(address, _x);
             case 0x7c:
-                address = (ushort)(FetchWord() + X);
-                Read((ushort)(PC - 2));
-                PC = ReadWord(address);
+                address = (ushort)(FetchWord() + _x);
+                Read((ushort)(_pc - 2));
+                _pc = ReadWord(address);
                 return 6;
         }
         if ((opcode & 0x1f) == 0x12)
         {
             address = ZeroPageWord(Fetch());
-            if (opcode == 0x92) Write(address, A);
+            if (opcode == 0x92) Write(address, _a);
             else
             {
                 value = Read(address);
                 switch (opcode >> 5)
                 {
-                    case 0: A = Nz((byte)(A | value)); break;
-                    case 1: A = Nz((byte)(A & value)); break;
-                    case 2: A = Nz((byte)(A ^ value)); break;
+                    case 0: _a = Nz((byte)(_a | value)); break;
+                    case 1: _a = Nz((byte)(_a & value)); break;
+                    case 2: _a = Nz((byte)(_a ^ value)); break;
                     case 3: Add(value); break;
-                    case 5: A = Nz(value); break;
-                    case 6: Compare(A, value); break;
+                    case 5: _a = Nz(value); break;
+                    case 6: Compare(_a, value); break;
                     case 7: Subtract(value); break;
                 }
             }

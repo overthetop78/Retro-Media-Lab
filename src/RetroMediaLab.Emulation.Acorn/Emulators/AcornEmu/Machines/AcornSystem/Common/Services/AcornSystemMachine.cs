@@ -14,6 +14,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.
 /// <summary>Bus Eurocard des Acorn System ; les profils déterminent les cartes réellement installées.</summary>
 internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
 {
+    public long? ProcessorClockHz => _clock;
     private readonly SystemCpuCard _card;
     private readonly int _clock;
     private readonly byte[] _ram = new byte[C.AddressBytes];

@@ -8,6 +8,10 @@ namespace RetroMediaLab.Emulation.Interfaces;
 /// leur arrêt puis attend leur destruction effective dans son finally avant de libérer ses autres ressources.</remarks>
 public interface IEmulationMachineExecution
 {
+    /// <summary>Compare le temps émulé au temps réel et calcule, si possible, l'horloge effective principale.</summary>
+    /// <remarks>Les durées sont des différences sur une même fenêtre active, hors pause et réinitialisation.</remarks>
+    EmulationExecutionRate? MeasureExecutionRate(TimeSpan emulatedElapsed, TimeSpan realElapsed, long? processorClockHz)
+        => EmulationExecutionRateFunctions.Measure(emulatedElapsed, realElapsed, processorClockHz);
     /// <summary>Exécute la réinitialisation logicielle par les touches du profil ou par sa commande native.</summary>
     /// <param name="keys">Ensemble de touches emprunté ; vide pour appeler directement la commande native.</param>
     /// <param name="setInput">Callback emprunté appliquant les entrées au cœur, puis les libérant avec un instantané vide.</param>

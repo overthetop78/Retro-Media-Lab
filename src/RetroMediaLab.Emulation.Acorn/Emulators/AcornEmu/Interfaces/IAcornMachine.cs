@@ -7,6 +7,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 /// Chaque assemblage possède ses composants gérés ; le thread et la présentation restent possédés par la session Common.</remarks>
 internal interface IAcornMachine
 {
+    long? ProcessorClockHz => null;
     byte[] RunFrame();
     /// <summary>Dimensions programmables ; null conserve les dimensions fixes du modèle.</summary>
     int? VideoWidth => null;

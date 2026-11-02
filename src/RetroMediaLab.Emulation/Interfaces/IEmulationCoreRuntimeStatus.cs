@@ -3,6 +3,9 @@ namespace RetroMediaLab.Emulation.Interfaces;
 /// <summary>Capacités et compteurs réels du cœur, indépendants de la présentation de l’application.</summary>
 public interface IEmulationCoreRuntimeStatus
 {
+    /// <summary>Horloge nominale du processeur principal, en Hz ; null si le cœur ne la fournit pas.</summary>
+    /// <remarks>Ne décrit ni les coprocesseurs ni le nombre d'instructions exécutées.</remarks>
+    long? ProcessorClockHz => null;
     /// <summary>Indique si le cœur courant peut produire et restaurer un état.</summary>
     bool SupportsSaveStates { get; }
     /// <summary>Standard vidéo détecté, ou null lorsqu’il n’est pas connu.</summary>

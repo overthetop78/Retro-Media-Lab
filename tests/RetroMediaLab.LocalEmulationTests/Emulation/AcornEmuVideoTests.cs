@@ -9,12 +9,37 @@ using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
 using Firmware = RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions.BbcMicroFirmwareFunctions;
 using NativeFirmware = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions.FirmwareFunctions;
+using System.Security.Cryptography;
 
 namespace RetroMediaLab.Tests.Emulation;
 
 /// <summary>Contrôles vidéo autonomes : RAM et glyphes synthétiques, sans ROM ni écran externes.</summary>
 public sealed class AcornEmuVideoTests
 {
+    [Theory]
+    [InlineData(false, 0, "34EB9F1F6BF5DD10601C36181E00E16C33614F6822E3C5641C7247374EEA4867")]
+    [InlineData(false, 1, "DE0D1D3B743AC069B1D77931A5064E0B75A7906758D04FF14A0FF1C11597CB0B")]
+    [InlineData(false, 2, "33E81598DB095A2EF4573080DCA8AAB6B0393AC02D0C8BD46A07F2FCFEF44116")]
+    [InlineData(false, 3, "33E81598DB095A2EF4573080DCA8AAB6B0393AC02D0C8BD46A07F2FCFEF44116")]
+    [InlineData(true, 0, "81EBCFD035ECCC8DFB2B840953FE1A170804DF6599AB48E05B5A4E8C41DEBB9D")]
+    [InlineData(true, 1, "C550D4F171F08AA2DDBF8B7A4DA617C927987547D3FAF464828B15D0F8B55B4D")]
+    [InlineData(true, 2, "554FB20BB9B8ED3BD16676DDEC1D5ECC4CAC6D0C6E7E2B05F8048B900F15CBF8")]
+    [InlineData(true, 3, "542A94539CF4F6DA218D2A05FBCE640DE29E331D1A579EF92660367A425D5F5B")]
+    public void AllBitmapDecodeModesPreserveTheReferenceFrame(bool fast, int mode, string expected)
+    {
+        // Captured from the scalar scanout before replacing its pixel decoder.
+        // The pattern exercises all 256 byte values and every logical palette entry.
+        var ram = new byte[32768];
+        for (var i = 0; i < ram.Length; i++) ram[i] = (byte)(i * 73 + 19);
+        var video = Bitmap(ram);
+        Set(video, 0, fast ? (byte)127 : (byte)63);
+        Set(video, 1, fast ? (byte)80 : (byte)40);
+        video.WriteUla(0xfe20, (byte)(mode * 4 + (fast ? 16 : 0)));
+        for (var i = 0; i < 16; i++) video.WriteUla(0xfe21, (byte)(i * 16 + (i ^ 7)));
+        Advance(video, 39936 * 2);
+        Assert.Equal(expected, Convert.ToHexString(SHA256.HashData(video.Render())));
+    }
+
     [Fact]
     public void UnknownCharacterRomRemainsSelectableWithoutAssumingItsRole()
     {

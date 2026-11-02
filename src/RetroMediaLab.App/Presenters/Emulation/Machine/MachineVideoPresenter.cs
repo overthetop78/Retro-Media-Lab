@@ -20,9 +20,15 @@ internal sealed class MachineVideoPresenter : IDisposable
     private int _framePending;
     private int _uiFramePending;
     private int _framesInWindow;
-    private long _frameWindowStarted = Stopwatch.GetTimestamp();
+    private readonly TimeProvider _measurementClock;
+    private long _frameWindowStarted;
     private long _lastUiFrameNotification;
     private double _measuredFramesPerSecond;
+    private readonly object _frameRateGate = new();
+    private TimeSpan? _emulatedWindowStarted;
+    private TimeSpan _previousEmulatedTime;
+    private long _previousFrameSequence;
+    private EmulationExecutionRate? _executionRate;
     private readonly object _surfaceGate = new();
     private readonly object _gpuFrameGate = new();
     private readonly AutoResetEvent _gpuFrameAvailable = new(false);
@@ -43,8 +49,11 @@ internal sealed class MachineVideoPresenter : IDisposable
     internal MachineVideoPresenter(EmulationMachinePresentation view, IEmulatedMachine machine,
         EmulationVideoRenderer renderer,
         EmulationVideoProcessingConfiguration? videoProcessing = null,
-        Func<EmulationVideoRenderer, IEmulationVideoSurface>? createSurface = null)
+        Func<EmulationVideoRenderer, IEmulationVideoSurface>? createSurface = null,
+        TimeProvider? measurementClock = null)
     {
+        _measurementClock = measurementClock ?? TimeProvider.System;
+        _frameWindowStarted = _measurementClock.GetTimestamp();
         _view = view;
         _createSurface = createSurface ?? EmulationVideoSurfaceFactory.Create;
         _displayHost = view.DisplayHost;
@@ -77,6 +86,7 @@ internal sealed class MachineVideoPresenter : IDisposable
     internal Task<System.Windows.Media.Imaging.BitmapSource?> CaptureSnapshotAsync() =>
         _presentationEnabled ? _surface.CaptureSnapshotAsync() : EmulationVideoSnapshotFunctions.CreateAsync(_machine.Video.LatestFrame, _videoProcessing, new EmulationVideoProcessingSize(Math.Max(1, (int)_view.Screen.ActualWidth), Math.Max(1, (int)_view.Screen.ActualHeight)));
     internal double MeasuredFramesPerSecond => _measuredFramesPerSecond;
+    internal EmulationExecutionRate? ExecutionRate { get { lock (_frameRateGate) return _executionRate; } }
     internal bool IsShaderLoading => _shaderLoading;
     internal event EventHandler<VideoFrame>? FramePresented;
     internal event EventHandler? SurfaceChanged;
@@ -199,9 +209,16 @@ internal sealed class MachineVideoPresenter : IDisposable
 
     internal void ResetFrameRate()
     {
-        Interlocked.Exchange(ref _framesInWindow, MachinePresentationConstants.InactiveFramePending);
-        _frameWindowStarted = Stopwatch.GetTimestamp();
-        _measuredFramesPerSecond = MachinePresentationConstants.EmptyMeasurement;
+        lock (_frameRateGate)
+        {
+            _framesInWindow = MachinePresentationConstants.InactiveFramePending;
+            _frameWindowStarted = _measurementClock.GetTimestamp();
+            _measuredFramesPerSecond = MachinePresentationConstants.EmptyMeasurement;
+            _emulatedWindowStarted = null;
+            _previousEmulatedTime = TimeSpan.Zero;
+            _previousFrameSequence = 0;
+            _executionRate = null;
+        }
     }
 
     public void Dispose()
@@ -287,7 +304,7 @@ internal sealed class MachineVideoPresenter : IDisposable
 
     private void VideoFrameReady(object? sender, VideoFrame frame)
     {
-        Interlocked.Increment(ref _framesInWindow);
+        UpdateFrameRate(frame);
         if (!_presentationEnabled)
         {
             if (!_disposed) NotifyFrameCompleted(frame);
@@ -414,7 +431,6 @@ internal sealed class MachineVideoPresenter : IDisposable
     private void FrameCompleted(VideoFrame frame)
     {
         if (_disposed) return;
-        UpdateFrameRate();
         if (_presentationEnabled) FitScreen(FrameAspectRatio(frame));
         FramePresented?.Invoke(this, frame);
     }
@@ -447,14 +463,33 @@ internal sealed class MachineVideoPresenter : IDisposable
         });
     }
 
-    private void UpdateFrameRate()
+    private void UpdateFrameRate(VideoFrame frame)
     {
-        var now = Stopwatch.GetTimestamp();
-        var elapsed = Stopwatch.GetElapsedTime(_frameWindowStarted, now);
-        if (elapsed < TimeSpan.FromSeconds(MachinePresentationConstants.FrameRateWindowSeconds)) return;
-        var frames = Interlocked.Exchange(ref _framesInWindow, MachinePresentationConstants.InactiveFramePending);
-        _measuredFramesPerSecond = frames / elapsed.TotalSeconds;
-        _frameWindowStarted = now;
+        lock (_frameRateGate)
+        {
+            if (_disposed) return;
+            var now = _measurementClock.GetTimestamp();
+            // A new sequence or emulated-time origin starts a new measurement, never a negative rate.
+            if (_emulatedWindowStarted is null || frame.Sequence <= _previousFrameSequence || frame.Timestamp < _previousEmulatedTime)
+            {
+                _frameWindowStarted = now;
+                _emulatedWindowStarted = frame.Timestamp;
+                _framesInWindow = MachinePresentationConstants.InactiveFramePending;
+                _measuredFramesPerSecond = MachinePresentationConstants.EmptyMeasurement;
+                _executionRate = null;
+            }
+            else _framesInWindow++;
+            _previousFrameSequence = frame.Sequence;
+            _previousEmulatedTime = frame.Timestamp;
+            var elapsed = _measurementClock.GetElapsedTime(_frameWindowStarted, now);
+            if (elapsed < TimeSpan.FromSeconds(MachinePresentationConstants.FrameRateWindowSeconds)) return;
+            _measuredFramesPerSecond = _framesInWindow / elapsed.TotalSeconds;
+            _executionRate = EmulationSdk.MachineExecution.MeasureExecutionRate(frame.Timestamp - _emulatedWindowStarted.Value,
+                elapsed, _machine.Runtime.ProcessorClockHz);
+            _framesInWindow = MachinePresentationConstants.InactiveFramePending;
+            _frameWindowStarted = now;
+            _emulatedWindowStarted = frame.Timestamp;
+        }
     }
 
     private IEmulationVideoSurface CreateSurface(EmulationVideoRenderer renderer)

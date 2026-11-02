@@ -1,6 +1,7 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6845.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Saa5050.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
+using System.Runtime.InteropServices;
 using VideoConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.VideoConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
@@ -14,13 +15,21 @@ internal sealed class Video
     private readonly Crtc6845 _crtc = new();
     private readonly TeletextSaa5050 _teletext;
     private readonly byte[] _palette = new byte[16];
+    private readonly uint[] _bitmapPalette = new uint[VideoConstants.PaletteEntries * 2];
+    private int _bitmapDecodeOffset;
+    private int _bitmapWidth = VideoConstants.WideBitmapCellWidth;
+    private bool _monochrome;
     private byte[] _drawing;
     private byte[] _completed;
     internal int Height { get; }
     private byte _control;
     private int _phase, _cursorRemaining;
     internal int ScreenWrap { get; set; } = 0x5800;
-    internal bool Monochrome { get; set; }
+    internal bool Monochrome
+    {
+        get => _monochrome;
+        set { _monochrome = value; UpdateBitmapPalette(); }
+    }
     internal Func<int, byte>? ReadMemory { get; set; }
     internal bool VSync => _crtc.VSync;
     internal long Frame => _crtc.Frame;
@@ -34,19 +43,24 @@ internal sealed class Video
         Height = height;
         _drawing = new byte[VideoConstants.Width * Height * 4];
         _completed = new byte[_drawing.Length];
+        UpdateBitmapMode();
+        UpdateBitmapPalette();
     }
     internal void Reset()
     {
         _crtc.Reset(); _teletext.Reset(); Array.Clear(_palette);
         Array.Clear(_drawing); Array.Clear(_completed); _control = 0; _phase = _cursorRemaining = 0; ScreenWrap = 0x5800;
+        UpdateBitmapMode();
+        UpdateBitmapPalette();
     }
     internal void Select(byte value) => _crtc.Select(value);
     internal void WriteRegister(byte value) => _crtc.Write(value);
     internal byte ReadRegister() => _crtc.Read();
     internal void WriteUla(ushort address, byte value)
     {
-        if ((address & 1) == 0) _control = value;
+        if ((address & 1) == 0) { _control = value; UpdateBitmapMode(); }
         else _palette[value >> 4] = (byte)((value & 15) ^ 7);
+        UpdateBitmapPalette();
     }
 
     /// <summary>Avance depuis l'horloge CPU de 2 MHz ; l'ULA choisit un caractère à 1 ou 2 MHz.</summary>
@@ -64,19 +78,34 @@ internal sealed class Video
         }
         if (_crtc.Tick() && _crtc.IsProgrammed)
         {
-            // L'image terminée est détachée avant de commencer la suivante.
-            _completed = _drawing;
-            _drawing = new byte[_completed.Length];
+            // Render publie une copie immuable : les deux tampons internes restent
+            // possédés par la vidéo et peuvent donc être réutilisés sans modifier une image publiée.
+            (_completed, _drawing) = (_drawing, _completed);
+            Array.Clear(_drawing);
         }
     }
 
     /// <summary>Retourne une copie de la dernière image terminée, sans relire les registres après coup.</summary>
     internal byte[] Render() => _completed.ToArray();
 
-    private int Color(int logical)
+    private void UpdateBitmapMode()
     {
-        var physical = _palette[logical & 15];
-        return (physical & 8) != 0 && (_control & 1) != 0 ? (physical ^ 7) & 7 : physical & 7;
+        var wide = (_control & 16) == 0;
+        _bitmapWidth = wide ? VideoConstants.WideBitmapCellWidth : VideoConstants.BitmapCellWidth;
+        var mode = Math.Min(((_control >> 2) & 3) + (wide ? 1 : 0), VideoConstants.BitmapDecodeModes - 1);
+        _bitmapDecodeOffset = mode * VideoConstants.BitmapByteValues * VideoConstants.BitmapCellWidth;
+    }
+
+    private void UpdateBitmapPalette()
+    {
+        var colours = _monochrome ? VideoConstants.PackedMonochrome : VideoConstants.PackedColours;
+        for (var logical = 0; logical < VideoConstants.PaletteEntries; logical++)
+        {
+            var physical = _palette[logical];
+            var colour = (physical & 8) != 0 && (_control & 1) != 0 ? (physical ^ 7) & 7 : physical & 7;
+            _bitmapPalette[logical] = colours[colour];
+            _bitmapPalette[logical + VideoConstants.CursorPaletteOffset] = colours[colour ^ 7];
+        }
     }
 
     private void BitmapCharacter()
@@ -86,17 +115,21 @@ internal sealed class Video
         if (address >= 0x8000) address = (address + ScreenWrap) & 0x7fff;
         var offset = address & (_ram.Length - 1);
         var data = ReadMemory?.Invoke(offset) ?? _ram[offset];
-        var count = Math.Clamp(1 << (((_control >> 2) & 3) + ((_control & 16) == 0 ? 1 : 0)), 1, 8);
-        var width = (_control & 16) == 0 ? 16 : 8;
-        for (var x = 0; x < width; x++)
+        var width = _bitmapWidth;
+        var left = _crtc.DisplayColumn * width;
+        var y = _crtc.Scanline;
+        if ((uint)y >= Height) return;
+        var first = Math.Max(0, -left);
+        var last = Math.Min(width, VideoConstants.Width - left);
+        var source = _bitmapDecodeOffset + data * VideoConstants.BitmapCellWidth;
+        var logicalPixels = VideoConstants.BitmapLogicalPixels;
+        var pixels = MemoryMarshal.Cast<byte, uint>(_drawing.AsSpan());
+        var destination = y * VideoConstants.Width + left;
+        var cursor = _cursorRemaining > 0 ? VideoConstants.CursorPaletteOffset : 0;
+        var shift = width == VideoConstants.WideBitmapCellWidth ? 1 : 0;
+        for (var x = first; x < last; x++)
         {
-            var pixel = x * count / width;
-            var logical = count == 8 ? ((data >> (7 - pixel)) & 1) * 15
-                : count == 4 ? (((data >> (7 - pixel)) & 1) * 5 | ((data >> (3 - pixel)) & 1) * 10)
-                : ((data >> (7 - pixel)) & 1) | (((data >> (5 - pixel)) & 1) << 1) | (((data >> (3 - pixel)) & 1) << 2) | (((data >> (1 - pixel)) & 1) << 3);
-            var color = Color(logical);
-            if (_cursorRemaining > 0) color ^= 7;
-            Pixel(_crtc.DisplayColumn * width + x, _crtc.Scanline, color);
+            pixels[destination + x] = _bitmapPalette[logicalPixels[source + (x >> shift)] + cursor];
         }
     }
 
@@ -106,22 +139,22 @@ internal sealed class Video
         var data = ReadMemory?.Invoke(offset) ?? _ram[offset];
         var raster = _crtc.InterlaceVideo ? _crtc.RasterAddress : _crtc.RasterAddress * 2;
         var cell = _teletext.Character(data, raster, _crtc.Frame);
-        for (var x = 0; x < 16; x++)
+        var left = _crtc.DisplayColumn * VideoConstants.TeletextCellWidth;
+        var y = _crtc.Scanline;
+        if ((uint)y >= Height) return;
+        var first = Math.Max(0, -left);
+        var last = Math.Min(VideoConstants.TeletextCellWidth, VideoConstants.Width - left);
+        var masks = VideoConstants.TeletextPixelMasks;
+        var colours = Monochrome ? VideoConstants.PackedMonochrome : VideoConstants.PackedColours;
+        var cursor = _cursorRemaining > 0 ? 7 : 0;
+        var foreground = colours[cell.Foreground ^ cursor];
+        var background = colours[cell.Background ^ cursor];
+        var pixels = MemoryMarshal.Cast<byte, uint>(_drawing.AsSpan());
+        var destination = y * VideoConstants.Width + left;
+        for (var x = first; x < last; x++)
         {
-            var color = (cell.Mask & (1 << (11 - x * 12 / 16))) != 0 ? cell.Foreground : cell.Background;
-            if (_cursorRemaining > 0) color ^= 7;
-            Pixel(_crtc.DisplayColumn * 16 + x, _crtc.Scanline, color);
+            pixels[destination + x] = (cell.Mask & masks[x]) != 0 ? foreground : background;
         }
     }
 
-    private void Pixel(int x, int y, int color)
-    {
-        if ((uint)x >= VideoConstants.Width || (uint)y >= Height) return;
-        var offset = (y * VideoConstants.Width + x) * 4;
-        var red = (color & 1) != 0 ? 255 : 0;
-        var green = (color & 2) != 0 ? 255 : 0;
-        var blue = (color & 4) != 0 ? 255 : 0;
-        if (Monochrome) red = green = blue = (red * 299 + green * 587 + blue * 114) / 1000;
-        _drawing[offset] = (byte)blue; _drawing[offset + 1] = (byte)green; _drawing[offset + 2] = (byte)red; _drawing[offset + 3] = 255;
-    }
 }

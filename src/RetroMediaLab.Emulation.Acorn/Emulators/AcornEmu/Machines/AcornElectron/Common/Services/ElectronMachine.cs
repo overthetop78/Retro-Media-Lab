@@ -9,6 +9,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornElectro
 /// <summary>Carte Electron 32K : 6502, RAM partagée avec la vidéo et ULA de la machine.</summary>
 internal sealed partial class ElectronMachine : ICpuBus, IAcornMachine
 {
+    public long? ProcessorClockHz => C.CpuClock;
     private readonly byte[] _ram = new byte[C.RamBytes];
     private readonly byte[] _basic;
     private readonly byte[] _mos;

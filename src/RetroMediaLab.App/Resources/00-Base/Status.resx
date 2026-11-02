@@ -15,4 +15,5 @@
   <data name="Status.Success"><value>Success</value></data>
   <data name="Status.Error"><value>Error</value></data>
   <data name="Status.Cancelled"><value>Cancelled</value></data>
+  <data name="Emulation.Status.ExecutionRate"><value> · {0:0.00} MHz · {1:0} %</value></data>
 </root>

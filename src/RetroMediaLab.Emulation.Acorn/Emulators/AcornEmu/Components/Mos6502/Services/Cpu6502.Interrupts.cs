@@ -12,7 +12,7 @@ internal sealed partial class Cpu6502
     private void SampleOverflow()
     {
         var active = bus.SetOverflow;
-        if (active && !_overflowLevel) P |= Overflow;
+        if (active && !_overflowLevel) _p |= Overflow;
         _overflowLevel = active;
     }
 
@@ -28,14 +28,14 @@ internal sealed partial class Cpu6502
     private void EnterInterrupt(long start, ushort vector)
     {
         _irqPending = false;
-        bus.SetSync(true);
-        try { Read(PC); }
-        finally { bus.SetSync(false); }
-        Read(PC);
-        Push((byte)(PC >> 8)); Push((byte)PC); Push((byte)((P | Unused) & ~Break));
-        P |= InterruptDisable;
-        if (cmos) P &= unchecked((byte)~Decimal);
-        PC = ReadWord(InterruptVector(vector, hardware: true));
+        if (_publishesSync) bus.SetSync(true);
+        try { Read(_pc); }
+        finally { if (_publishesSync) bus.SetSync(false); }
+        Read(_pc);
+        Push((byte)(_pc >> 8)); Push((byte)_pc); Push((byte)((_p | Unused) & ~Break));
+        _p |= InterruptDisable;
+        if (cmos) _p &= unchecked((byte)~Decimal);
+        _pc = ReadWord(InterruptVector(vector, hardware: true));
         Pad(start, 7);
         _nmiAccepted = _nmiPrevious;
     }
