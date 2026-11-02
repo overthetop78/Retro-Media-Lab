@@ -1,44 +1,50 @@
+using static RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Constants.Cpu80186Constants;
+using T = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Constants.Cpu80186Timings;
+
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Services;
 
-/// <summary>Intel 80186 en mode réel : registres, bus 20 bits, segments et pile. Les périphériques restent sur la carte.</summary>
+/// <summary>Intel 80186 en mode réel : registres, bus 20 bits, segments et pile. DMA intégré ; les bus externes sont fournis par la carte.</summary>
 internal sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> write, Func<ushort, byte> input, Action<ushort, byte> output)
 {
-    private const int Ax = 0;
-    private const int Cx = 1;
-    private const int Dx = 2;
-    private const int Bx = 3;
-    private const int Sp = 4;
-    private const int Bp = 5;
-    private const int Si = 6;
-    private const int Di = 7;
-    private const int Es = 0;
-    private const int Cs = 1;
-    private const int Ss = 2;
-    private const int Ds = 3;
-    private const ushort Carry = 0x0001;
-    private const ushort Reserved = 0x0002;
-    private const ushort ReservedHigh = 0xf000;
-    private const ushort Parity = 0x0004;
-    private const ushort Auxiliary = 0x0010;
-    private const ushort Zero = 0x0040;
-    private const ushort Sign = 0x0080;
-    private const ushort Trap = 0x0100;
-    private const ushort InterruptEnable = 0x0200;
-    private const ushort Direction = 0x0400;
-    private const ushort Overflow = 0x0800;
-    private const int AddressMask = 0xfffff;
     private readonly ushort[] _registers = new ushort[8];
     private readonly ushort[] _segments = new ushort[4];
     private ushort _flags = Reserved;
     private ushort _start;
+    private int _diagnosticInvalidCount;
     private int _segmentOverride = -1;
     private byte _repeat;
     private bool _halted;
     private int _interruptDelay;
+    private bool _suppressSingleStep;
+    private bool _enteredInterrupt;
+    private int _busPenalty;
+    private bool _repeatContinuation;
+    private bool _continuingRepeat;
+    private ushort _repeatStart;
+    private ushort _repeatSegment;
+    private byte _suspendedOpcode;
+    private ushort _suspendedEnd;
+    private int _suspendedSegmentOverride;
+    private byte _suspendedRepeat;
+    private bool _waiting;
+    private bool _nmiLevel;
+    private bool _nmiPending;
+    private bool _prefixPending;
+    private bool _prefixTrace;
     internal ushort IP { get; private set; }
     internal long Cycles { get; private set; }
     internal bool InterruptPending { get; set; }
     internal byte InterruptVector { get; set; }
+    internal bool CoprocessorBusy { get; set; }
+    internal bool Nmi
+    {
+        get => _nmiLevel;
+        set
+        {
+            if (value && !_nmiLevel) _nmiPending = true;
+            _nmiLevel = value;
+        }
+    }
     internal ushort Register(int index) => _registers[index];
     internal ushort Segment(int index) => _segments[index];
     internal ushort Flags => _flags;
@@ -46,16 +52,29 @@ internal sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> w
     {
         Array.Clear(_registers); Array.Clear(_segments);
         _segments[Cs] = 0xffff; IP = 0; _flags = Reserved; _halted = false; _interruptDelay = 0;
+        _repeatContinuation = _continuingRepeat = _waiting = false;
+        _nmiPending = _prefixPending = _prefixTrace = false;
+        _enteredInterrupt = _suppressSingleStep = false;
+        _lockPrefix = _repeatBusLock = false;
+        SetHoldAcknowledged(false);
+        ResetDma();
+        _peripheralRelocation = Constants.Peripheral80186Constants.ResetRelocation;
+        ResetInterruptController();
+        ResetTimers();
+        ResetChipSelects();
+        ResetPrefetch();
     }
     private int Physical(int segment, ushort offset) => ((_segments[segment] << 4) + offset) & AddressMask;
-    private byte ReadByte(int segment, ushort offset) => read(Physical(segment, offset));
-    private ushort ReadWord(int segment, ushort offset) => (ushort)(ReadByte(segment, offset) | ReadByte(segment, (ushort)(offset + 1)) << 8);
-    private void WriteByte(int segment, ushort offset, byte value) => write(Physical(segment, offset), value);
-    private void WriteWord(int segment, ushort offset, ushort value)
-    { WriteByte(segment, offset, (byte)value); WriteByte(segment, (ushort)(offset + 1), (byte)(value >> 8)); }
-    private byte Fetch() => ReadByte(Cs, IP++);
+    private byte ReadByte(int segment, ushort offset) => ReadMemoryByte(Physical(segment, offset));
+    private ushort ReadWord(int segment, ushort offset, int displacement = 0) =>
+        ReadMemoryWord((Physical(segment, offset) + displacement) & AddressMask);
+    private void WriteByte(int segment, ushort offset, byte value) => WriteMemoryByte(Physical(segment, offset), value);
+    private void WriteWord(int segment, ushort offset, ushort value) => WriteMemoryWord(Physical(segment, offset), value);
+    private byte Fetch() => FetchPrefetched();
     private ushort FetchWord() { var low = Fetch(); return (ushort)(low | Fetch() << 8); }
-    private void Push(ushort value) { _registers[Sp] -= 2; WriteWord(Ss, _registers[Sp], value); }
+    private void Push(ushort value) { _registers[Sp] -= StackWordBytes; WriteWord(Ss, _registers[Sp], value); }
+    private void PushRegister(int register) =>
+        Push(register == Sp ? (ushort)(_registers[Sp] - StackWordBytes) : _registers[register]);
     private ushort Pop() { var value = ReadWord(Ss, _registers[Sp]); _registers[Sp] += 2; return value; }
     private int ByteRegister(int index) => index < 4 ? _registers[index] & 255 : _registers[index - 4] >> 8;
     private void SetByteRegister(int index, int value)
@@ -90,27 +109,103 @@ internal sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> w
     private bool Has(ushort flag) => (_flags & flag) != 0;
     private void Interrupt(byte vector, bool fault = false)
     {
+        if (vector == InvalidOpcodeVector && _diagnosticInvalidCount++ < 6)
+            Console.WriteLine($"INVALID {_segments[Cs]:X4}:{_start:X4} next={IP:X4} bytes={string.Join(' ', Enumerable.Range(0, 12).Select(index => read((Physical(Cs, _start) + index) & AddressMask).ToString("X2")))} AX={_registers[Ax]:X4} SP={_registers[Sp]:X4} DMA={_dma[0].Control:X4}:{_dma[0].Source:X5}->{_dma[0].Destination:X5}/{_dma[0].Count:X4} TIMER1={_timers[1].Control:X4}");
+        _enteredInterrupt = true;
+        _repeatContinuation = _repeatBusLock = _lockPrefix = _waiting = false;
+        Cycles += InterruptCycles;
         _halted = false; Push((ushort)(_flags | ReservedHigh)); Push(_segments[Cs]); Push(fault ? _start : IP);
         _flags &= unchecked((ushort)~(InterruptEnable | Trap));
-        IP = (ushort)(read(vector * 4) | read(vector * 4 + 1) << 8);
-        _segments[Cs] = (ushort)(read(vector * 4 + 2) | read(vector * 4 + 3) << 8);
+        IP = ReadMemoryWord(vector * 4);
+        _segments[Cs] = ReadMemoryWord(vector * 4 + 2);
+        FlushPrefetch();
     }
     internal void Step()
     {
-        if (InterruptPending && Has(InterruptEnable) && _interruptDelay == 0) { Interrupt(InterruptVector); Cycles += 45; return; }
-        if (_interruptDelay > 0) _interruptDelay--;
-        if (_halted) { Cycles++; return; }
-        _start = IP; _segmentOverride = -1; _repeat = 0;
-        var trace = Has(Trap); byte opcode;
-        while (true)
+        var previousCycles = Cycles;
+        ExecuteStep();
+        Cycles += _prefetchStalls;
+        var elapsed = Cycles - previousCycles;
+        AdvanceTimers(elapsed);
+        BusClocksAdvanced?.Invoke(elapsed);
+    }
+
+    private void ExecuteStep()
+    {
+        _busPenalty = 0;
+        _prefetchStalls = _prefetchAdvancedClocks = _executionBusClocks = _executionWaitClocks = 0;
+        if (GrantExternalBus()) return;
+        if (!_prefixPending && !ExternalBusLocked && TransferDma()) return;
+        if (!_prefixPending)
+        {
+            if (_interruptDelay == 0)
+            {
+                if (_nmiPending)
+                {
+                    _nmiPending = false;
+                    Interrupt(NmiVector);
+                    PrefetchDuringExecution(InterruptCycles);
+                    Cycles += _busPenalty;
+                    return;
+                }
+                if (Has(InterruptEnable) && TryAcknowledgeMaskableInterrupt(out var vector))
+                {
+                    Interrupt(vector);
+                    PrefetchDuringExecution(InterruptCycles);
+                    Cycles += _busPenalty;
+                    return;
+                }
+            }
+            if (_interruptDelay > 0) _interruptDelay--;
+            if (_halted) { Cycles++; return; }
+            _continuingRepeat = _repeatContinuation && _repeatSegment == _segments[Cs] && _repeatStart == IP;
+            _repeatContinuation = false;
+            _lockPrefix = _continuingRepeat && _repeatBusLock;
+            _start = IP;
+            _segmentOverride = _continuingRepeat || _waiting ? _suspendedSegmentOverride : -1;
+            _repeat = _continuingRepeat || _waiting ? _suspendedRepeat : (byte)0;
+            _prefixTrace = Has(Trap);
+        }
+        var prefixCycles = 0;
+        _enteredInterrupt = _suppressSingleStep = false;
+        var prefixCount = 0;
+        byte opcode;
+        if (_continuingRepeat || _waiting)
+        {
+            opcode = _suspendedOpcode;
+            IP = _suspendedEnd;
+            _waiting = false;
+        }
+        else while (true)
         {
             opcode = Fetch();
-            if (opcode is 0x26 or 0x2e or 0x36 or 0x3e) _segmentOverride = (opcode >> 3) & 3;
-            else if (opcode is 0xf2 or 0xf3) _repeat = opcode;
-            else if (opcode != 0xf0) break;
+            if (opcode is 0x26 or 0x2e or 0x36 or 0x3e) { _segmentOverride = (opcode >> 3) & 3; prefixCycles += T.Prefix; }
+            else if (opcode is 0xf2 or 0xf3) { _repeat = opcode; prefixCycles += T.Prefix; }
+            else if (opcode == 0xf0) { _lockPrefix = true; prefixCycles += T.Prefix; }
+            else break;
+            PrefetchDuringPrefix(T.Prefix);
+            if (++prefixCount == PrefixWorkLimit)
+            {
+                _prefixPending = true;
+                Cycles += prefixCycles;
+                return;
+            }
         }
-        Cycles += Execute(opcode);
+        _prefixPending = false;
+        if (_repeat != 0 && IsStringInstruction(opcode)) prefixCycles -= T.Prefix;
+        _suspendedOpcode = opcode;
+        _suspendedEnd = IP;
+        _suspendedSegmentOverride = _segmentOverride;
+        _suspendedRepeat = _repeat;
+        var executionStart = Cycles;
+        var instructionCycles = Execute(opcode);
+        Cycles += instructionCycles + (_continuingRepeat ? 0 : prefixCycles);
         _flags |= Reserved;
-        if (trace && Has(Trap)) Interrupt(1);
+        if (_prefixTrace && !_suppressSingleStep && !_enteredInterrupt) Interrupt(SingleStepVector);
+        PrefetchDuringExecution((int)(Cycles - executionStart));
+        Cycles += _busPenalty;
     }
+
+    private static bool IsStringInstruction(byte opcode) =>
+        opcode is >= 0x6c and <= 0x6f or >= 0xa4 and <= 0xa7 or >= 0xaa and <= 0xaf;
 }

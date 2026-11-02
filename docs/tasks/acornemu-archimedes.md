@@ -1,5 +1,17 @@
 # AcornEmu — Archimedes
 
+## Reprise prioritaire : terminer le premier assemblage avant les cartes suivantes
+
+- [ ] Finaliser la première carte Archimedes enregistrée, puis A3000, avant A5000/ARM250/A540/A4.
+  - [ ] Vérifier les performances et les sorties du premier assemblage courant.
+    - [ ] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornArchimedesPerformanceDiagnostic.cs` : mesurer un nombre fixe de frames avec ROM réelle, durée émulée, instructions, ticks et empreintes vidéo/audio ; ne créer aucun fichier de résultat ni fenêtre et libérer la carte dans finally.
+    - [ ] Modifier `Components/Vidc/Services/ArchimedesVidc*.cs` et `Machines/Archimedes/Common/Services/ArchimedesMachine*.cs` seulement selon les coûts établis, en conservant les événements DMA/IRQ et les sorties ; compléter les tests autonomes existants pour les changements temporels concernés avant le contrôle groupé.
+    - [ ] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornArchimedesPerformanceDiagnostic.cs` après comparaison, puis modifier ce suivi avec les mesures et les limites restantes.
+
+Les chemins `Components` et `Machines` sont relatifs à `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu`. Les anciens chemins Services/Constants/Enums des composants, conservés dans l'historique ci-dessous, ont été rangés dans Components par le commit cbaa7056a.
+
+Mesure avant reprise de l'audit CPU/chipset demandée par l'utilisateur : Arthur 1.20, 300 frames, 19,245939 s hôte pour 5,972412 s émulées, 143337891 ticks et 12162013 instructions. Vidéo SHA256 277D556669229C5E1363BFC34BA43760204B7567C597D006D14DB77A50BAB6F9 ; audio 62A764CC8432E372D53EA8A977A8E242A45EE97FA07862693A998F14BD5E5697. Le diagnostic a été supprimé ; aucun fichier de résultat créé. L'optimisation n'est pas déclarée terminée. L'audit global des composants est prioritaire avant la reprise des machines, suivant la dernière demande.
+
 - [ ] Réaliser le bloc Archimedes après le commit Electron cd5243b6d.
   - [ ] Processeur ARM de première génération et bus de la carte.
     - [x] Créer `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Interfaces/IArmBus.cs` : transferts octet/mot avec privilège, séquentialité, distinction instruction/données et abandon matériel ; cycles internes et broches IRQ/FIQ.

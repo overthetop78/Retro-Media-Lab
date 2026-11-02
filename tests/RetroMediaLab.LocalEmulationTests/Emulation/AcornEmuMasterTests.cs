@@ -100,12 +100,12 @@ public sealed class AcornEmuMasterTests
         var tube = new TubeUla();
         var rom = new byte[16384];
         byte[] program = [
-            0xba, 0xc0, 0xff, 0xb0, 0x8a, 0xee, // Source : port Tube R3.
-            0xba, 0xc4, 0xff, 0xb0, 0, 0xee, 0x42, 0xb0, 1, 0xee, // Destination 0100.
-            0xba, 0xca, 0xff, 0xb0, 2, 0xee, 0xf4 // DMA activé, HLT.
+            0xba, 0xc0, 0xff, 0xb8, 0x8a, 0, 0xef, // Source : port Tube R3.
+            0xba, 0xc4, 0xff, 0xb8, 0, 1, 0xef, // Destination 0100.
+            0xba, 0xc8, 0xff, 0xb8, 2, 0, 0xef, // Deux octets.
+            0xba, 0xca, 0xff, 0xb8, 0x46, 0xa2, 0xef, 0xf4 // MIO destination, INC, TC, SYN source, CHG/ST.
         ];
-        program.CopyTo(rom, 0);
-        new byte[] { 0xea, 0, 0, 0, 0xf0 }.CopyTo(rom, 0x3ff0);
+        InitializeMaster512Rom(rom, program);
         var card = new Master512Board(tube, rom);
         tube.HostWrite(0, 0x88);
         tube.HostWrite(5, 0x5a);
@@ -117,6 +117,128 @@ public sealed class AcornEmuMasterTests
         for (var cycle = 0; cycle < 1000; cycle++) card.RunHostCycle();
         Assert.Equal(0xa5, card.ReadMemory(0x101));
         Assert.Equal(0, card.ReadMemory(0x102));
+    }
+
+    [Theory]
+    [InlineData(0x82)]
+    [InlineData(0x92)]
+    [InlineData(0xf2)]
+    public void Master512TubeUsesOnlyLowByteLaneAndMirrorsItsRegistersWithinPcs1(int port)
+    {
+        var tube = new TubeUla();
+        var rom = new byte[16384];
+        byte[] program = [0xba, (byte)port, 0, 0xed, 0xa3, 0, 1, 0xf4];
+        InitializeMaster512Rom(rom, program);
+        tube.HostWrite(1, 0x5a);
+        var card = new Master512Board(tube, rom);
+        for (var cycle = 0; cycle < 1000; cycle++) card.RunHostCycle();
+        Assert.Equal(0x5a, card.ReadMemory(0x100));
+        Assert.Equal(0xff, card.ReadMemory(0x101));
+    }
+
+    [Fact]
+    public void Master512TimersHaveHighInputsAndRefreshReturnsBusBeforeTimer1Nmi()
+    {
+        var rom = new byte[16384];
+        byte[] program = [
+            0xb8, 0, 2, 0xa3, 8, 0, // Vecteur NMI : F000:0200.
+            0xb8, 0, 0xf0, 0xa3, 10, 0,
+            0xba, 0x52, 0xff, 0xb8, 1, 0, 0xef, // Timer0 : demande de rafraîchissement.
+            0xba, 0x56, 0xff, 0xb8, 0, 0xc0, 0xef,
+            0xba, 0x5a, 0xff, 0xb8, 3, 0, 0xef, // Maximum A du timer 1.
+            0xba, 0x5e, 0xff, 0xb8, 0, 0xc0, 0xef, 0xf4
+        ];
+        InitializeMaster512Rom(rom, program);
+        new byte[] { 0xb0, 0x5a, 0xa2, 0, 1, 0xf4 }.CopyTo(rom, 0x200);
+        var card = new Master512Board(new TubeUla(), rom);
+        for (var cycle = 0; cycle < 1000; cycle++) card.RunHostCycle();
+        Assert.Equal(0x5a, card.ReadMemory(0x100));
+    }
+
+    [Fact]
+    public void Master512RefreshLatchesTimerEdgeUntilHldaAndIgnoresRequestsDuringAcknowledge()
+    {
+        var refresh = new Master512Refresh();
+        refresh.TimerOutput(false);
+        Assert.True(refresh.HoldRequested);
+        refresh.TimerOutput(true);
+        Assert.True(refresh.HoldRequested);
+        refresh.HoldAcknowledged(true);
+        Assert.False(refresh.HoldRequested);
+        refresh.TimerOutput(false);
+        Assert.False(refresh.HoldRequested);
+        refresh.HoldAcknowledged(false);
+        Assert.False(refresh.HoldRequested);
+        refresh.TimerOutput(true);
+        refresh.TimerOutput(false);
+        Assert.True(refresh.HoldRequested);
+    }
+
+    [Fact]
+    public void Master512RefreshSamplesHldaOnClockAndRomSelectPresetsItsSecondFlipFlop()
+    {
+        var refresh = new Master512Refresh();
+        refresh.TimerOutput(false);
+        refresh.HoldAcknowledged(true);
+        Assert.False(refresh.RefreshActive);
+        refresh.AdvanceClocks(1);
+        Assert.True(refresh.RefreshActive);
+        refresh.UpperMemorySelected(true);
+        Assert.False(refresh.RefreshActive);
+        refresh.AdvanceClocks(1);
+        Assert.False(refresh.RefreshActive);
+        refresh.UpperMemorySelected(false);
+        Assert.False(refresh.RefreshActive);
+        refresh.AdvanceClocks(1);
+        Assert.True(refresh.RefreshActive);
+        refresh.HoldAcknowledged(false);
+        Assert.True(refresh.RefreshActive);
+        refresh.AdvanceClocks(1);
+        Assert.False(refresh.RefreshActive);
+    }
+
+    [Fact]
+    public void Master512RefreshResetClearsBothFlipFlopsAndRestoresTimerEdgeDetection()
+    {
+        var refresh = new Master512Refresh();
+        refresh.HoldAcknowledged(true);
+        refresh.AdvanceClocks(1);
+        refresh.Reset();
+        Assert.False(refresh.HoldRequested);
+        Assert.False(refresh.RefreshActive);
+        refresh.TimerOutput(false);
+        Assert.True(refresh.HoldRequested);
+    }
+
+    [Theory]
+    [InlineData(false, 0xff)]
+    [InlineData(true, 0x5a)]
+    public void Master512TubeRespondsOnlyAfterItsPeripheralChipSelectHasBeenProgrammed(bool enabled, int expected)
+    {
+        var tube = new TubeUla();
+        tube.HostWrite(1, 0x5a);
+        var rom = new byte[16384];
+        byte[] program = [0xba, 0x82, 0, 0xec, 0xa2, 0, 1, 0xf4];
+        InitializeMaster512Rom(rom, program, enabled);
+        var card = new Master512Board(tube, rom);
+        for (var cycle = 0; cycle < 1000; cycle++) card.RunHostCycle();
+        Assert.Equal(expected, card.ReadMemory(0x100));
+    }
+
+    private static void InitializeMaster512Rom(byte[] rom, byte[] program, bool enableTube = true)
+    {
+        // RESET ne sélectionne qu'un Kio à FFC00. Étendre UCS avant le saut vers F000:0000.
+        byte[] reset = [0xba, 0xa0, 0xff, 0xb8, 4, 0xc0, 0xef, 0xea, 0, 0, 0, 0xf0];
+        reset.CopyTo(rom, 0x3ff0);
+        byte[] selects = [
+            0xba, 0xa2, 0xff, 0xb8, 0xc4, 0x3f, 0xef, // LCS, limite basse RAM.
+            0xba, 0xa4, 0xff, 0xb8, 4, 0, 0xef, // PCS : base I/O 0.
+            0xba, 0xa8, 0xff, 0xb8, 0x84, 0, 0xef, // Sept sélections, PCS1 à 0080.
+            0xea, 0x40, 0, 0, 0xf0
+        ];
+        if (enableTube) selects.CopyTo(rom, 0);
+        else new byte[] { 0xea, 0x40, 0, 0, 0xf0 }.CopyTo(rom, 0);
+        program.CopyTo(rom, 0x40);
     }
 
     [Fact]

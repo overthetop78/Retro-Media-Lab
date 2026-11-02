@@ -1,0 +1,50 @@
+namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Constants;
+
+internal static class Interrupt80186Constants
+{
+    internal const int Vector = 0x20;
+    internal const int EndOfInterrupt = 0x22;
+    internal const int Poll = 0x24;
+    internal const int PollStatus = 0x26;
+    internal const int Mask = 0x28;
+    internal const int PriorityMask = 0x2a;
+    internal const int InService = 0x2c;
+    internal const int Request = 0x2e;
+    internal const int Status = 0x30;
+    internal const int TimerControl = 0x32;
+    internal const int DmaControl = 0x34;
+    internal const int ExternalControl = 0x38;
+    internal const int LastControl = 0x3e;
+    internal const int RegisterStride = 2;
+    internal const int SourceCount = 7;
+    internal const int SlaveSourceCount = 5;
+    internal const int ExternalCount = 4;
+    internal const int TimerSource = 0;
+    internal const int FirstDmaSource = 1;
+    internal const int FirstExternalSource = 3;
+    internal const int CascadeCount = 2;
+    internal const ushort PriorityBits = 0x0007;
+    internal const ushort MaskBit = 0x0008;
+    internal const ushort ControlBits = 0x000f;
+    internal const ushort LevelTriggered = 0x0010;
+    internal const ushort Cascade = 0x0020;
+    internal const ushort SpecialFullyNested = 0x0040;
+    internal const ushort CascadedControlBits = 0x007f;
+    internal const ushort ExternalControlBits = 0x001f;
+    internal const ushort PollPending = 0x8000;
+    internal const ushort NonSpecificEoi = 0x8000;
+    internal const ushort TimerRequest = 0x0001;
+    internal const ushort FirstDmaRequest = 0x0004;
+    internal const ushort FirstExternalRequest = 0x0010;
+    internal const ushort DmaRequests = 0x000c;
+    internal const ushort SourceBits = 0x00ff;
+    internal const ushort TimerStatusBits = 0x0007;
+    internal const ushort WritableStatus = 0x8007;
+    internal const byte VectorBaseMask = 0xf8;
+    internal const int EoiVectorMask = 0x1f;
+    internal const byte Timer0Vector = 0x08;
+    internal const byte Timer1Vector = 0x12;
+    internal const byte Timer2Vector = 0x13;
+    internal const byte FirstDmaVector = 0x0a;
+    internal const byte FirstExternalVector = 0x0c;
+}

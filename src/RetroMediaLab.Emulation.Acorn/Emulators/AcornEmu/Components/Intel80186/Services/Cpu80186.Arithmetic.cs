@@ -1,3 +1,5 @@
+using static RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Constants.Cpu80186Constants;
+
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Services;
 
 internal sealed partial class Cpu80186
@@ -82,12 +84,12 @@ internal sealed partial class Cpu80186
             var overflow = operation == 4 ? product > (word ? 65535 : 255) : product != truncated;
             Flag(Carry, overflow); Flag(Overflow, overflow); return;
         }
-        if (operand == 0) { Interrupt(0, true); return; }
+        if (operand == 0) { Interrupt(DivideVector); return; }
         if (operation == 6)
         {
             var dividend = word ? ((ulong)_registers[Dx] << 16) | _registers[Ax] : _registers[Ax];
             var quotient = dividend / (uint)operand; var remainder = dividend % (uint)operand;
-            if (quotient > (word ? 65535ul : 255ul)) { Interrupt(0, true); return; }
+            if (quotient > (word ? 65535ul : 255ul)) { Interrupt(DivideVector); return; }
             if (word) { _registers[Ax] = (ushort)quotient; _registers[Dx] = (ushort)remainder; }
             else { SetByteRegister(Ax, (int)quotient); SetByteRegister(4, (int)remainder); }
         }
@@ -96,7 +98,7 @@ internal sealed partial class Cpu80186
             long dividend = word ? (int)(((uint)_registers[Dx] << 16) | _registers[Ax]) : (short)_registers[Ax];
             long divisor = word ? (short)operand : (sbyte)operand;
             var quotient = dividend / divisor; var remainder = dividend % divisor;
-            if (quotient < (word ? -32768 : -128) || quotient > (word ? 32767 : 127)) { Interrupt(0, true); return; }
+            if (quotient < (word ? -32768 : -128) || quotient > (word ? 32767 : 127)) { Interrupt(DivideVector); return; }
             if (word) { _registers[Ax] = (ushort)quotient; _registers[Dx] = (ushort)remainder; }
             else { SetByteRegister(Ax, (int)quotient); SetByteRegister(4, (int)remainder); }
         }
