@@ -65,6 +65,8 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     public Action<int>? NetworkPoll { get; set; }
     public bool ReceiveNetworkFrame(ReadOnlySpan<byte> frame, bool validFcs = true) => _econet.Receive(frame, validFcs);
     public void SetNetworkLine(bool clockPresent, bool clearToSend = true, bool idle = true) => _econet.SetLine(clockPresent, clearToSend, idle);
+    public int FloppyDriveCount => StorageConstants.DriveCount;
+    public int HardDiskDriveCount => StorageConstants.HardDiskCount;
     public void AttachFloppy(int index, IEmulationDiskImage? image) => _disks.Attach(index, image);
     public bool FloppyActive(int index) => _disks.Active(index);
     public bool FloppyMotor(int index) => _disks.Motor(index);

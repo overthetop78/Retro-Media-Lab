@@ -13,6 +13,22 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuAtomTests
 {
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 2)]
+    public void BoardRequestsOnlyInstalledDiskControllers(bool discPack, int drives)
+    {
+        RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces.IAcornMachine machine =
+            new AtomMachine(new byte[8192], new byte[280], 1024, 1024,
+                dos: discPack ? new byte[4096] : null);
+        try
+        {
+            Assert.Equal(drives, machine.FloppyDriveCount);
+            Assert.Equal(0, machine.HardDiskDriveCount);
+        }
+        finally { machine.EjectCassette(); }
+    }
+
     [Fact]
     public void PpiDirectionsAndBitCommandsKeepInputsSeparateFromOutputLatches()
     {

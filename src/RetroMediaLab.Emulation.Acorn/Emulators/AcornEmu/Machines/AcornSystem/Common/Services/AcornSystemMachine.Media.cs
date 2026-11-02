@@ -1,9 +1,13 @@
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants.SystemConstants;
+using Storage = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 
 internal sealed partial class AcornSystemMachine
 {
+    public int FloppyDriveCount => _fdc is null
+        ? Storage.NoDrives
+        : C.FloppyDrives;
     public IEmulatorCassetteTransport CassetteTransport => _cassette;
     public bool CassetteHasChanges => _cassette.HasChanges;
     public EmulationCassetteSignal RecordedCassette => _cassette.RecordedSignal;

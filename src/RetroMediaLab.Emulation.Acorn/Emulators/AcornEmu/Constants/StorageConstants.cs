@@ -8,6 +8,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 /// <summary>Identifiants persistants des lecteurs de l'émulateur interne et choix des dialogues partagés.</summary>
 internal static class StorageConstants
 {
+    internal const int NoDrives = 0;
     /// <summary>Clé d’option indiquant si le périphérique est connecté.</summary>
     internal const string ConnectedOption = "connected";
     /// <summary>Clé d’option du modèle physique de lecteur.</summary>

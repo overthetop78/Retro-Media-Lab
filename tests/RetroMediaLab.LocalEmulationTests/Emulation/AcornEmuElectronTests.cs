@@ -11,6 +11,21 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuElectronTests
 {
     [Fact]
+    public void CassetteOnlyBoardDoesNotRequestUnsupportedDiskConfiguration()
+    {
+        RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces.IAcornMachine machine =
+            new ElectronMachine(new byte[16384], new byte[16384]);
+        try
+        {
+            Assert.Equal(0, machine.FloppyDriveCount);
+            Assert.Equal(0, machine.HardDiskDriveCount);
+            machine.RunFrame();
+            Assert.NotEmpty(machine.DrainAudio());
+        }
+        finally { machine.EjectCassette(); }
+    }
+
+    [Fact]
     public void KeyboardCombinesOnlySelectedLinesAndBothModifierKeys()
     {
         var keyboard = new ElectronKeyboard();

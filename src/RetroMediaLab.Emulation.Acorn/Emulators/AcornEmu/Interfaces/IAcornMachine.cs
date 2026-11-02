@@ -15,8 +15,8 @@ internal interface IAcornMachine
     double? VideoFramesPerSecond => null;
     /// <summary>Durée réellement exécutée par le dernier RunFrame, pour les cartes à balayage programmable.</summary>
     double? VideoFrameDurationSeconds => null;
-    int FloppyDriveCount => Storage.DriveCount;
-    int HardDiskDriveCount => Storage.HardDiskCount;
+    int FloppyDriveCount => Storage.NoDrives;
+    int HardDiskDriveCount => Storage.NoDrives;
     EmulationAudioChannelLayout AudioChannelLayout => EmulationAudioChannelLayout.Mono;
     string? NonvolatileMemoryFile => null;
     /// <summary>Transfère les échantillons entrelacés produits depuis le dernier prélèvement.</summary>
