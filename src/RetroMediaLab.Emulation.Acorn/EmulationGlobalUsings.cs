@@ -55,3 +55,4 @@ global using HostError = RetroMediaLab.Emulation.Contracts.HostError<RetroMediaL
 global using ConfigurationDocument = RetroMediaLab.Emulation.Contracts.EmulationConfigurationDocument<RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums.MachineModel, RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums.Emulator, RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.FirmwareConfiguration, RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.MediaConfiguration, RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.InputConfiguration, RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.FolderConfiguration>;
 
 global using EmulatorCreationContext = RetroMediaLab.Emulation.Contracts.EmulatorCreationContext<RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.MachineConfiguration>;
+global using RetroMediaLab.Emulation.Acorn.Common.Machines.AcornElectron.Dictionaries;

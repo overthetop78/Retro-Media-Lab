@@ -26,7 +26,8 @@ internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = 
     private EmulationCassetteState _state = EmulationCassetteState.Empty;
 
     internal bool InputBit { get; private set; } = true;
-    internal bool InputHigh => _latency == 0 && _state == EmulationCassetteState.Playing && _hasLevel && _inputLevel;
+    internal bool InputPresent => _latency == 0 && _state == EmulationCassetteState.Playing && _hasLevel;
+    internal bool InputHigh => InputPresent && _inputLevel;
     internal bool HasChanges { get; private set; }
     internal int Position => _position;
     internal short MonitorSample => _latency > 0 ? (short)0 : _state == EmulationCassetteState.Recording
@@ -149,9 +150,10 @@ internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = 
         }
     }
 
-    internal void Tick()
+    internal void Tick(bool motorEnabled = true)
     {
         if (!CassetteActive || _signal is null) return;
+        if (!motorEnabled && _seekTarget is null) return;
         if (_latency > 0) { _latency--; return; }
         if (_seekTarget is { } target)
         {

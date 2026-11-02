@@ -29,6 +29,8 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         _definition = NativeModelCatalog.Get(model);
         if (model == MachineModel.AcornAtom)
             SupportedContentExtensions = new HashSet<string>(CassetteConstants.Extensions.Concat(AtomFloppyDriveModels.All.SelectMany(drive => drive.AcceptedExtensions)), StringComparer.OrdinalIgnoreCase);
+        else if (model == MachineModel.AcornElectron)
+            SupportedContentExtensions = new HashSet<string>(CassetteConstants.Extensions, StringComparer.OrdinalIgnoreCase);
     }
     private bool _disposed;
     private long _sequence;
@@ -64,7 +66,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public int CurrentDiskIndex => -1;
     public VideoFrame? LatestVideoFrame { get; private set; }
     public AudioChunk? LatestAudioChunk { get; private set; }
-    public IReadOnlyList<CoreOption> Options => SystemModelCatalog.IsSystem(_definition.Model) || _definition.Model == MachineModel.AcornAtom ? [] :
+    public IReadOnlyList<CoreOption> Options => SystemModelCatalog.IsSystem(_definition.Model) || _definition.Model is MachineModel.AcornAtom or MachineModel.AcornElectron ? [] :
     [
         new(EmulatorConstants.VideoOutput, "Emulation.Acorn.Video.Output", null, null, EmulatorConstants.UhfOutput, _videoOutput,
             [new(EmulatorConstants.UhfOutput, "UHF PAL", "Emulation.Acorn.Video.Output.Uhf"), new(EmulatorConstants.MonochromeOutput, "Composite", "Emulation.Acorn.Video.Output.Monochrome"), new(EmulatorConstants.ColourCompositeOutput, "Composite", "Emulation.Acorn.Video.Output.ColourComposite"), new(EmulatorConstants.RgbOutput, "RGB", "Emulation.Acorn.Video.Output.Rgb")], ResourceKey: "Emulation.Acorn.Video.Output", Tab: EmulationMachineTab.Video)
