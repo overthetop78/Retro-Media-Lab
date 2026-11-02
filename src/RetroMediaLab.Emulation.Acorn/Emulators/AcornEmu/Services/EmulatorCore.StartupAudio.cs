@@ -11,7 +11,7 @@ internal sealed partial class EmulatorCore
         _mechanicalEvent = null;
         _mechanicalOperation = S.None;
         _mechanicalOffset = 0;
-        for (var drive = 0; drive < C.DriveCount; drive++)
+        for (var drive = 0; drive < _floppyImages.Length; drive++)
         {
             if (_floppyMechanics[drive] is not { } mechanics) continue;
             ConfigureFloppySound(drive, allowSound: false);
@@ -22,7 +22,7 @@ internal sealed partial class EmulatorCore
             }
             finally { ConfigureFloppySound(drive); }
         }
-        for (var unit = 0; unit < C.HardDiskCount; unit++)
+        for (var unit = 0; unit < _hardDisks.Length; unit++)
         {
             _hardDiskMechanics[unit]?.Reset();
             ConfigureHardDiskSound(unit);

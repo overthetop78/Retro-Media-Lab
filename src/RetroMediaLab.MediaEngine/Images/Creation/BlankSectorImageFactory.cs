@@ -20,6 +20,12 @@ internal static class BlankSectorImageFactory
 {
     public static SectorImage Create(string formatId)
     {
+        if (formatId == DiskImageFormatIds.AcornAdfs800)
+        {
+            var bytes = new byte[AcornAdfGeometry.Capacity];
+            RetroMediaLab.MediaFileSystems.FileSystems.Acorn.Adfs.AcornAdfsFormatter.CreateDFormatHeader().CopyTo(bytes, 0);
+            return RegularSectorImageBuilder.Create(bytes, AcornAdfGeometry.Geometry, CancellationToken.None);
+        }
         if (formatId == DiskImageFormatIds.AcornAtomDos)
         {
             var bytes = new byte[AcornAtomDskReader.Capacity];

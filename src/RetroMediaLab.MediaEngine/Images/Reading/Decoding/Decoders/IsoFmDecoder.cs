@@ -37,7 +37,12 @@ public sealed class IsoFmDecoder : IFluxDecoder
                 structures.Add(new(dataMark.Definition.Kind, dataMark.Offset, data is null ? IsoFmFormat.EncodedMarkBitCount : IsoFmFormat.EncodedMarkBitCount + data.Bytes.Length * IsoFmFormat.EncodedByteBitCount, IsoFmDescriptions.Data(header, dataMark.Definition, data?.CrcValid)));
             }
             bool? integrity = header.CrcValid == false || data?.CrcValid == false ? false : data is null ? null : true;
-            sectors.Add(new(header.Cylinder, header.Head, header.Sector, header.SizeCode, header.Size, integrity, header.Offset, Data: data?.Payload));
+            sectors.Add(new(header.Cylinder, header.Head, header.Sector, header.SizeCode, header.Size, integrity, header.Offset, Data: data?.Payload)
+            {
+                HeaderIntegrityValid = header.CrcValid,
+                DataIntegrityValid = data?.CrcValid,
+                DeletedDataMark = dataMark is null ? null : dataMark.Definition.Kind == FluxStructureKind.DeletedDataAddressMark
+            });
             structures.Add(new(FluxStructureKind.IdAddressMark, header.Offset, header.CrcValid is null ? IsoFmFormat.EncodedMarkBitCount : IsoFmFormat.HeaderBitCount, IsoFmDescriptions.Header(header, data?.CrcValid)));
         }
         foreach (var mark in dataMarks.Where(mark => !pairedData.Contains(mark)))

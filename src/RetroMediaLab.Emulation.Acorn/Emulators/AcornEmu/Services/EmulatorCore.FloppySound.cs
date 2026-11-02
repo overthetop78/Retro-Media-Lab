@@ -6,13 +6,13 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 
 internal sealed partial class EmulatorCore
 {
-    private readonly IEmulationDriveMechanics?[] _floppyMechanics = new IEmulationDriveMechanics?[C.DriveCount];
+    private IEmulationDriveMechanics?[] _floppyMechanics = [];
 
     /// <summary>Rend la mécanique commune à partir du moteur et des transferts du contrôleur.</summary>
     private void MixFloppySound(double[] samples)
     {
         if (_machine is not { } machine) return;
-        for (var drive = 0; drive < C.DriveCount; drive++)
+        for (var drive = 0; drive < _floppyImages.Length; drive++)
         {
             if (_floppyMechanics[drive] is not { } mechanics) continue;
             ConfigureFloppySound(drive);
@@ -29,7 +29,7 @@ internal sealed partial class EmulatorCore
         var settings = _floppySettings[drive];
         var enabled = allowSound && _floppyConnected[drive] && settings is { Speed: C.DefaultSpeed }
             && bool.Parse(settings.Options?.GetValueOrDefault(C.MechanicalSoundOption, bool.TrueString) ?? bool.TrueString);
-        mechanics.Configure(StoragePresentationConstants.FloppySound,
+        mechanics.Configure(Functions.ArchimedesFunctions.IsModel(_definition.Model) ? S.Floppy35 : StoragePresentationConstants.FloppySound,
             EmulationMechanicalSoundSettings.ReadVolume(settings?.Options), enabled);
     }
 

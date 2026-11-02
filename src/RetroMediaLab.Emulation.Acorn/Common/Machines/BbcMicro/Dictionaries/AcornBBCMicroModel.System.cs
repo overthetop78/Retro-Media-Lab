@@ -1,3 +1,5 @@
+using RetroMediaLab.Emulation.Acorn.Common.Machines.Archimedes.Dictionaries;
+
 namespace RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Dictionaries;
 
 internal static partial class AcornBBCMicroModel
@@ -12,6 +14,7 @@ internal static partial class AcornBBCMicroModel
         if (IsStandard(model) && StandardSystemOfficial.Contains(sha1) || IsPlus(model) && BPlusSystemOfficial.Contains(sha1))
             return EmulationFirmwareCompatibility.Official;
         if (IsStandard(model) && BPlusSystemOfficial.Contains(sha1)) return EmulationFirmwareCompatibility.Incompatible;
+        if (AcornArchimedesModel.IsSystemRom(sha1)) return EmulationFirmwareCompatibility.Incompatible;
         if (IsPlus(model) && AcornFirmware.BySha1[sha1].Category == FirmwareCategory.OperatingSystem && !AcornFirmware.BySha1[sha1].Combined)
             return EmulationFirmwareCompatibility.Incompatible;
         return null;

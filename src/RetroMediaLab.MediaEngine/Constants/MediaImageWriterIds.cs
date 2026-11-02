@@ -23,6 +23,7 @@ public static class MediaImageWriterIds
     public const string CommodoreD81 = "commodore-d81";
     public const string DecRx02 = "dec-rx02";
     public const string EpsonQx10 = "epson-qx10";
+    public const string ImageDisk = "imagedisk";
     public const string Hfe = "hfe";
     public const string HardDiskRaw = "hard-disk-raw";
     public const string AcornWinchester = "acorn-winchester";

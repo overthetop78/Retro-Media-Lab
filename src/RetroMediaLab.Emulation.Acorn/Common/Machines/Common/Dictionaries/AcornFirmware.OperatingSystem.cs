@@ -6,6 +6,13 @@ internal static partial class AcornFirmware
     private static IReadOnlyDictionary<string, FirmwareDefinition> OperatingSystemRoms() =>
         new Dictionary<string, FirmwareDefinition>(StringComparer.OrdinalIgnoreCase)
         {
+            ["6aebd686d97dfdf6726fa5f3246ef35b840b286d"] = new("Arthur", "0.30", FirmwareCategory.OperatingSystem),
+            ["1181ff9c2c2f3d6d414054ec33b2260404bafc81"] = new("Arthur", "1.20", FirmwareCategory.OperatingSystem),
+            ["b82a78830dac386f9b649b6d32a34f9c6910546d"] = new("RISC OS", "2.00", FirmwareCategory.OperatingSystem),
+            ["9ed7dee8553d96a6d58dd23d31682234f57beb62"] = new("RISC OS", "2.01", FirmwareCategory.OperatingSystem),
+            ["b4fa494d51dd704c9da9653c2acc6acd08cc8cf4"] = new("RISC OS", "3.00", FirmwareCategory.OperatingSystem),
+            ["68533e0a93657a879c1697c04f32d517345b1a61"] = new("RISC OS", "3.10", FirmwareCategory.OperatingSystem),
+            ["3487729e87bebc9cb51665838c27beff22f7b3bd"] = new("RISC OS", "3.11", FirmwareCategory.OperatingSystem),
             ["4a66c83aba07d0a8e76ed8a5545af04e11c19fdc"] = new("Acorn Electron BASIC / MOS", "1.00", FirmwareCategory.OperatingSystem, Combined: true),
             ["9ac82b4ab1be8d4456a9946b3931cdbdc759a167"] = new("Acorn Electron MOS", "1.00", FirmwareCategory.OperatingSystem),
             ["0072c83458a9690a3ea1f6094f0f38cf8e96a445"] = new("Acorn Atom BASIC / OS", null, FirmwareCategory.OperatingSystem, Combined: true),

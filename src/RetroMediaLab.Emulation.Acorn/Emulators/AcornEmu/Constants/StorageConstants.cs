@@ -1,3 +1,5 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Constants;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel8271.Services;
 using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries;
 
@@ -111,6 +113,7 @@ internal static class StorageConstants
 
     /// <summary>Indice de l’indicateur d’activité du second lecteur de disquettes.</summary>
     internal const int SecondDriveLed = 4;
+    internal static int FloppyLed(int drive) => drive == 0 ? 0 : SecondDriveLed + drive - 1;
     /// <summary>Préfixe des options persistantes des disques durs AcornEmu.</summary>
     internal const string HardDiskPrefix = "acornemu.hdd.";
 

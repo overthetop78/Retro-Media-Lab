@@ -15,8 +15,9 @@ public static class CpcDskImageBuilder
         {
             for (var head = 0; head < image.Heads; head++)
             {
-                var blocks = image.AvailableBlocks.Where(block => block.Address.Cylinder == cylinder && block.Address.Head == head).OrderBy(block => block.Address.Number).ToArray();
-                var sectors = blocks.Select(block => BuildSector(block, cylinder, head)).ToArray();
+                var blocks = image.AvailableBlocks.Where(block => block.Address.Cylinder == cylinder && block.Address.Head == head)
+                    .OrderBy(block => block.RecordedTrackOrder ?? block.LogicalBlock).ToArray();
+                var sectors = blocks.Select(BuildSector).ToArray();
                 var defaultSizeCode = sectors.Length == 0 ? (byte)0 : sectors.GroupBy(sector => sector.SizeCode).OrderByDescending(group => group.Count()).First().Key;
                 tracks.Add(new(tracks.Count, sectors.Length > 0, checked((byte)cylinder), checked((byte)head), defaultSizeCode, CpcDskFormat.DefaultGap3Length, CpcDskFormat.DefaultFillerByte, sectors));
             }
@@ -24,11 +25,15 @@ public static class CpcDskImageBuilder
         return new(kind, checked((byte)image.Cylinders), checked((byte)image.Heads), tracks, image);
     }
 
-    private static CpcDskSector BuildSector(SectorBlock block, int cylinder, int head)
+    private static CpcDskSector BuildSector(SectorBlock block)
     {
-        var sizeCode = block.FormatCode is { } declared && NominalSize(declared) == block.Data.Count ? declared : GetSizeCode(block.Data.Count);
-        var status1 = block.IntegrityValid == false ? checked((byte)CpcDskLayout.DataErrorMask) : (byte)0;
-        return new(checked((byte)cylinder), checked((byte)head), checked((byte)block.Address.Number), sizeCode, status1, 0, block.Data.ToArray());
+        var sizeCode = block.RecordedSizeCode ?? (block.FormatCode is { } declared && NominalSize(declared) == block.Data.Count ? declared : GetSizeCode(block.Data.Count));
+        var dataError = block.DataIntegrityValid == false || block.IntegrityValid == false && block.HeaderIntegrityValid != false;
+        var status1 = block.HeaderIntegrityValid == false || dataError ? checked((byte)CpcDskLayout.DataErrorMask) : (byte)0;
+        var status2 = (byte)((dataError ? CpcDskLayout.DataErrorMask : 0)
+            | (block.DeletedDataMark == true ? CpcDskLayout.DeletedDataMarkMask : 0));
+        var recorded = block.RecordedAddress ?? block.Address;
+        return new(checked((byte)recorded.Cylinder), checked((byte)recorded.Head), checked((byte)recorded.Number), sizeCode, status1, status2, block.Data.ToArray());
     }
 
     private static byte GetSizeCode(int size)

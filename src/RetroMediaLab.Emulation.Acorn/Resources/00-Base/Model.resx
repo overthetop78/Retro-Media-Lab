@@ -25,5 +25,16 @@
   <data name="Emulation.Acorn.Cpu.Motorola6809"><value>Motorola MC6809</value></data>
   <data name="Emulation.Acorn.Model.AcornAtom"><value>Acorn Atom</value></data>
   <data name="Emulation.Acorn.Model.AcornElectron"><value>Acorn Electron</value></data>
+  <data name="Emulation.Acorn.Model.AcornArchimedes"><value>Acorn Archimedes</value></data>
+  <data name="Emulation.Acorn.Cpu.Arm2"><value>ARM2</value></data>
+  <data name="Emulation.Acorn.Cpu.Arm3"><value>ARM3</value></data>
+  <data name="Emulation.Acorn.Archimedes.Arm2"><value>ARM2 · 8 MHz</value></data>
+  <data name="Emulation.Acorn.Archimedes.Arm3"><value>ARM3 · 25 MHz</value></data>
+  <data name="Emulation.Acorn.Archimedes.Memc"><value>MEMC</value></data>
+  <data name="Emulation.Acorn.Archimedes.Memc1"><value>MEMC1</value></data>
+  <data name="Emulation.Acorn.Archimedes.Memc1A"><value>MEMC1A</value></data>
+  <data name="Emulation.Acorn.Archimedes.St506"><value>ST506</value></data>
+  <data name="Emulation.Acorn.Model.AcornA3000"><value>BBC A3000</value></data>
+  <data name="Emulation.Acorn.Archimedes.Serial"><value>MOS 6551 / RS423</value></data>
 </root>
 

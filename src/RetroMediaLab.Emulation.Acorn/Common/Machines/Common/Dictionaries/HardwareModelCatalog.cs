@@ -1,8 +1,10 @@
+using RetroMediaLab.Emulation.Acorn.Common.Machines.Archimedes.Dictionaries;
+
 namespace RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Dictionaries;
 
 public static class HardwareModelCatalog
 {
-    private static readonly IReadOnlyList<HardwareModelDefinition> Definitions = BbcMicroModelCatalog.All.Concat(MasterModelCatalog.All).Concat(SystemModelCatalog.All).Concat(AtomModelCatalog.All).Concat(ElectronModelCatalog.All).ToArray();
+    private static readonly IReadOnlyList<HardwareModelDefinition> Definitions = BbcMicroModelCatalog.All.Concat(MasterModelCatalog.All).Concat(SystemModelCatalog.All).Concat(AtomModelCatalog.All).Concat(ElectronModelCatalog.All).Concat(ArchimedesModelCatalog.All).ToArray();
     private static readonly IReadOnlyDictionary<MachineModel, HardwareModelDefinition> ByModel = HardwareModelFunctions.Index(Definitions);
 
     public static IReadOnlyList<HardwareModelDefinition> All => Definitions;

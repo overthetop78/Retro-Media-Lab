@@ -177,9 +177,21 @@ public sealed class MediaWritingComposition
                 (image, _, path, formatId, token) => WriteCommodoreDosAsync(commodoreDos, image, path, formatId, token)),
             Sector(MediaImageWriterIds.CoherentRaw, [DiskImageFileExtensions.Bin, DiskImageFileExtensions.Img], CoherentConversionService.CanCreate,
                 (image, _, path, _, token) => WriteSingleAsync(coherent.WriteAsync(image, path, token), path)),
-            Sector(MediaImageWriterIds.AmstradDsk, [DiskImageFileExtensions.Dsk, DiskImageFileExtensions.Edsk], AmstradDskConversionService.CanCreate, (image, _, path, _, token) => WriteAmstradAsync(amstrad, image, path, token)),
+            new SectorMediaImageWriterAdapter(MediaImageWriterIds.AmstradDsk,
+                FormatIds(AmstradDskConversionService.CanCreate, [DiskImageFileExtensions.Dsk, DiskImageFileExtensions.Edsk]).Append(CpcDskFormat.FormatId),
+                [DiskImageFileExtensions.Dsk, DiskImageFileExtensions.Edsk],
+                (_, _, format, extension) => AmstradDskConversionService.CanCreate(format, extension)
+                    || format.Equals(CpcDskFormat.FormatId, StringComparison.OrdinalIgnoreCase)
+                    && (extension.Equals(DiskImageFileExtensions.Dsk, StringComparison.OrdinalIgnoreCase) || extension.Equals(DiskImageFileExtensions.Edsk, StringComparison.OrdinalIgnoreCase)),
+                (image, _, path, _, token) => WriteAmstradAsync(amstrad, image, path, token)),
             Sector(MediaImageWriterIds.EpsonQx10, [DiskImageFileExtensions.Img, DiskImageFileExtensions.Imd], EpsonQx10ConversionService.CanCreate,
                 (image, document, path, formatId, token) => WriteEpsonAsync(epsonRaw, imd, image, document, path, formatId, token)),
+            new SectorMediaImageWriterAdapter(MediaImageWriterIds.ImageDisk, [DiskImageFormatIds.Imd], [DiskImageFileExtensions.Imd],
+                (_, document, format, extension) => format.Equals(DiskImageFormatIds.Imd, StringComparison.OrdinalIgnoreCase)
+                    && extension.Equals(DiskImageFileExtensions.Imd, StringComparison.OrdinalIgnoreCase)
+                    && document.Metadata.ContainsKey(ImdMetadataKeys.Structure),
+                (image, document, path, _, token) => WriteSingleAsync(imd.WriteAsync(
+                    ImdMetadataFunctions.Restore(image, document.Metadata) ?? throw new NotSupportedException(), path, token), path)),
             Sector(MediaImageWriterIds.DecRx02, [DiskImageFileExtensions.Img], DecRx02ConversionService.CanCreate, (image, _, path, _, token) => WriteSingleAsync(decRx02.WriteAsync(image, path, token), path)),
             Sector(MediaImageWriterIds.Ucsd, [DiskImageFileExtensions.Img, DiskImageFileExtensions.Td0], UcsdImgConversionService.CanCreate, (image, _, path, _, token) => WriteUcsdAsync(linear, td0, image, path, token)),
             Flux(MediaImageWriterIds.Scp, DiskImageFormatIds.RawScp, DiskImageFileExtensions.Scp, (image, metadata, path, token) => WriteSingleAsync(scp.WriteAsync(path, ProtectedTrackScpImageAdapter.Create(image, metadata), token), path)),
@@ -272,7 +284,12 @@ public sealed class MediaWritingComposition
     private static Task<IReadOnlyList<string>> WriteAmstradAsync(CpcDskWriter writer, SectorImage image, string path, CancellationToken cancellationToken)
     {
         var kind = Path.GetExtension(path).Equals(DiskImageFileExtensions.Edsk, StringComparison.OrdinalIgnoreCase) ? CpcDskContainerKind.Extended : CpcDskContainerKind.Standard;
-        return WriteSingleAsync(writer.WriteAsync(CpcDskImageBuilder.Build(image, kind), path, cancellationToken), path);
+        var container = CpcDskImageBuilder.Build(image, kind);
+        if (kind == CpcDskContainerKind.Standard && (container.Tracks.Any(track => !track.IsPresent
+            || track.Sectors.Any(sector => sector.Data.Count != (CpcDskLayout.MinimumSectorSize << (sector.SizeCode & CpcDskLayout.SectorSizeCodeMask))))
+            || container.Tracks.Select(track => CpcDskLayout.TrackInformationBlockSize + track.Sectors.Sum(sector => sector.Data.Count)).Distinct().Skip(1).Any()))
+            container = container with { Kind = CpcDskContainerKind.Extended };
+        return WriteSingleAsync(writer.WriteAsync(container, path, cancellationToken), path);
     }
 
     private static Task<IReadOnlyList<string>> WriteEpsonAsync(EpsonQx10RawImageWriter raw, ImdWriter imd, SectorImage image, MediaImageDocument document, string path, string formatId, CancellationToken cancellationToken)

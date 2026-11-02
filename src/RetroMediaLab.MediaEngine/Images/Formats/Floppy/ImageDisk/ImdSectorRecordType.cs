@@ -32,4 +32,19 @@ internal static class ImdSectorRecordTypeExtensions
     public static bool IsCompressed(this ImdSectorRecordType type) => type is ImdSectorRecordType.Compressed or ImdSectorRecordType.CompressedDeleted or ImdSectorRecordType.CompressedWithError or ImdSectorRecordType.CompressedDeletedWithError;
     /// <summary>Indique si ImageDisk ne signale aucune erreur sur le secteur.</summary>
     public static bool IsIntegrityValid(this ImdSectorRecordType type) => type is ImdSectorRecordType.Normal or ImdSectorRecordType.Compressed or ImdSectorRecordType.Deleted or ImdSectorRecordType.CompressedDeleted;
+    /// <summary>Indique la présence d'une marque de données supprimées, indépendamment du CRC.</summary>
+    public static bool IsDeleted(this ImdSectorRecordType type) => type is ImdSectorRecordType.Deleted
+        or ImdSectorRecordType.CompressedDeleted or ImdSectorRecordType.DeletedWithError or ImdSectorRecordType.CompressedDeletedWithError;
+    /// <summary>Choisit un enregistrement à partir de l'état courant des données.</summary>
+    public static ImdSectorRecordType ForState(bool compressed, bool valid, bool deleted) => (compressed, valid, deleted) switch
+    {
+        (true, true, true) => ImdSectorRecordType.CompressedDeleted,
+        (false, true, true) => ImdSectorRecordType.Deleted,
+        (true, false, true) => ImdSectorRecordType.CompressedDeletedWithError,
+        (false, false, true) => ImdSectorRecordType.DeletedWithError,
+        (true, true, false) => ImdSectorRecordType.Compressed,
+        (false, true, false) => ImdSectorRecordType.Normal,
+        (true, false, false) => ImdSectorRecordType.CompressedWithError,
+        _ => ImdSectorRecordType.NormalWithError
+    };
 }

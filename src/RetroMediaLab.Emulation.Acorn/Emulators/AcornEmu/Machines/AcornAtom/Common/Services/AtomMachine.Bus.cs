@@ -1,5 +1,5 @@
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Constants.AtomConstants;
-using D = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.Intel8271Constants;
+using D = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel8271.Constants.Intel8271Constants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Services;
 

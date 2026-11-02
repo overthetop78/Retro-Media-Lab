@@ -3,6 +3,9 @@ namespace RetroMediaLab.MediaEngine.Images.Formats.Floppy.ImageDisk;
 /// <summary>Décrit les positions et tailles binaires d'un conteneur ImageDisk.</summary>
 internal static class ImdLayout
 {
+    public const int Rate250Kbps = 250000;
+    public const int Rate300Kbps = 300000;
+    public const int Rate500Kbps = 500000;
     /// <summary>Longueur de l'en-tête d'une piste, en octets.</summary>
     public const int TrackHeaderSize = 5;
     /// <summary>Position relative du mode.</summary>

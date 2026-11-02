@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using RetroMediaLab.Emulation.Contracts;
@@ -57,6 +57,7 @@ public sealed class AcornModuleTests
         var master = MachineCatalog.All.Single(machine => machine.Id == nameof(MachineModel.BbcMaster128));
         Assert.Equal(modelA.ImagePath, modelB.ImagePath);
         Assert.NotEqual(modelB.ImagePath, master.ImagePath);
+        Assert.All(MachineCatalog.All, machine => Assert.False(string.IsNullOrWhiteSpace(machine.ImagePath), machine.Id));
         var illustrated = MachineCatalog.All.Where(machine => machine.ImagePath is not null).ToArray();
         var resources = illustrated.Select(machine => machine.ImagePath!).ToArray();
         Assert.NotNull(modelA.ImagePath);

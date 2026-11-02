@@ -45,6 +45,10 @@ internal static class ImdMetadataFunctions
                 var mode = (ImdMode)trackElement.GetProperty("Mode").GetByte();
                 if (!Enum.IsDefined(mode)) throw new InvalidDataException("The ImageDisk metadata contains an invalid track mode.");
                 var sectors = new List<ImdSector>();
+                var trackCylinder = trackElement.GetProperty("Cylinder").GetByte();
+                var trackHead = trackElement.GetProperty("Head").GetByte();
+                var trackBlocks = blocks.Values.Where(block => block.Address.Cylinder == trackCylinder && block.Address.Head == trackHead).ToArray();
+                var trackOrder = 0;
                 foreach (var sectorElement in trackElement.GetProperty("Sectors").EnumerateArray())
                 {
                     var recordType = (ImdSectorRecordType)sectorElement.GetProperty("RecordType").GetByte();
@@ -54,9 +58,15 @@ internal static class ImdMetadataFunctions
                     IReadOnlyList<byte> data;
                     if (recordType.HasData())
                     {
-                        if (!blocks.TryGetValue(logicalBlock, out var block) || block.Data.Count != size)
+                        var block = trackBlocks.FirstOrDefault(block => block.RecordedTrackOrder == trackOrder);
+                        if (block is null) blocks.TryGetValue(logicalBlock, out block);
+                        if (block is null || block.Data.Count != size)
                             throw new InvalidDataException($"The ImageDisk metadata does not match logical block '{logicalBlock}'.");
                         data = block.Data.ToArray();
+                        recordType = ImdSectorRecordTypeExtensions.ForState(
+                            recordType.IsCompressed() && data.All(value => value == data[0]),
+                            block.IntegrityValid != false,
+                            block.DeletedDataMark ?? recordType.IsDeleted());
                     }
                     else
                     {
@@ -65,6 +75,7 @@ internal static class ImdMetadataFunctions
 
                     sectors.Add(new ImdSector(sectorElement.GetProperty("Cylinder").GetByte(), sectorElement.GetProperty("Head").GetByte(), sectorElement.GetProperty("Number").GetByte(), size, recordType, data));
                     logicalBlock++;
+                    trackOrder++;
                 }
 
                 tracks.Add(new ImdTrack(mode, trackElement.GetProperty("Cylinder").GetByte(), trackElement.GetProperty("Head").GetByte(), sectors));

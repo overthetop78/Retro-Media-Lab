@@ -2,7 +2,7 @@ using RetroMediaLab.Emulation.HardDisks;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
 using W = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.WinchesterModelConstants;
-using S = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.AcornScsiConstants;
+using S = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Constants.AcornScsiConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries;
 
@@ -29,6 +29,6 @@ internal static class HardDiskFormats
             SupportsFixedAllocation = true,
             InvariantDisplayName = name,
             Operations = DiskFormatOperations.Create | DiskFormatOperations.Read | DiskFormatOperations.Modify,
-            ImageCreator = BbcMicroDiskFunctions.CreateWinchester
+            ImageCreator = AcornDiskFunctions.CreateWinchester
         };
 }

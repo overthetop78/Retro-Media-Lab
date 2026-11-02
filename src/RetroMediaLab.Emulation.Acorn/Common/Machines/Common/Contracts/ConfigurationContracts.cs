@@ -49,7 +49,8 @@ public sealed record MachineConfiguration : IEmulationConfiguration
     public string MachineId => Model.ToString();
     public MachineFamily Family => SystemModelCatalog.IsSystem(Model) ? MachineFamily.AcornSystem
         : Model == MachineModel.AcornAtom ? MachineFamily.AcornAtom
-        : Model == MachineModel.AcornElectron ? MachineFamily.AcornElectron : MachineFamily.BbcMicro;
+        : Model == MachineModel.AcornElectron ? MachineFamily.AcornElectron
+        : Model is MachineModel.AcornArchimedes or MachineModel.AcornA3000 ? MachineFamily.Archimedes : MachineFamily.BbcMicro;
     public Emulator Core { get; init; }
     public IReadOnlyList<FirmwareConfiguration> Firmwares { get; init; }
     public IReadOnlyList<MediaConfiguration> Media { get; init; }

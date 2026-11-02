@@ -3,6 +3,22 @@ namespace RetroMediaLab.MediaFileSystems.FileSystems.Acorn.Adfs;
 /// <summary>Définit la disposition des catalogues ADFS au format Hugo ou Nick.</summary>
 public static class AcornAdfsLayout
 {
+    public const int DFormatRootAddress = 4;
+    public const int DFormatRootOffset = DFormatRootAddress * FileCoreUnitSize;
+    public const int DFormatHeaderSize = DFormatRootOffset + DirectorySize;
+    public const int DFormatFirstFreeUnit = DFormatHeaderSize / FileCoreUnitSize;
+    public const int ParentAddressOffset = TailOffset + 3;
+    public const int CheckByteOffset = DirectorySize - 1;
+    public const int CheckWordBytes = sizeof(uint);
+    public const int CheckWordRotation = 13;
+    public const int ByteBits = 8;
+    public const int OldMapFreeLengthsOffset = FileCoreUnitSize;
+    public const int OldMapSizeOffset = 0xfc;
+    public const int OldMapFreeEndOffset = 0x1fe;
+    public const int OldMapFirstNameOffset = 0xf7;
+    public const int OldMapSecondNameOffset = 0x1f6;
+    public const int OldMapNameHalfBytes = 5;
+    public const int OldMapEntryBytes = 3;
     /// <summary>Taille d'un bloc logique.</summary>
     public const int BlockSize = 1024;
     /// <summary>Taille de l'unité d'adressage FileCore.</summary>

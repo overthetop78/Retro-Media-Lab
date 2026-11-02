@@ -1,3 +1,8 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Interfaces;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel8271.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6809.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;

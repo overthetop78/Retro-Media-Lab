@@ -1,4 +1,4 @@
-using RetroMediaLab.MediaEngine.Interfaces;
+﻿using RetroMediaLab.MediaEngine.Interfaces;
 
 namespace RetroMediaLab.Emulation.Services;
 
@@ -34,13 +34,35 @@ internal sealed partial class EmulationMediaProcessingService
         public IReadOnlyDictionary<string, string> Metadata => image.Metadata;
         public void UpdateMetadata(IReadOnlyDictionary<string, string> metadata) => image.UpdateMetadata(metadata);
         public long? FindSector(int cylinder, int head, int number) => image.FindSector(cylinder, head, number);
+        public IReadOnlyList<long> GetTrackSectors(int cylinder, int head) => image.GetTrackSectors(cylinder, head);
         public async ValueTask<EmulationDiskSector> ReadSectorAsync(long index, CancellationToken cancellationToken = default)
         {
             var sector = await image.ReadSectorAsync(index, cancellationToken).ConfigureAwait(false);
-            return new(sector.Index, sector.Data, sector.Cylinder, sector.Head, sector.Number, sector.IntegrityValid, sector.DiagnosticCode);
+            return new(sector.Index, sector.Data, sector.Cylinder, sector.Head, sector.Number, sector.IntegrityValid, sector.DiagnosticCode)
+            {
+                RecordedErrorCheckCode = sector.RecordedErrorCheckCode,
+                RecordedDataPrefix = sector.RecordedDataPrefix,
+                HeaderIntegrityValid = sector.HeaderIntegrityValid,
+                DataIntegrityValid = sector.DataIntegrityValid,
+                DeletedDataMark = sector.DeletedDataMark,
+                RecordedSizeCode = sector.RecordedSizeCode
+            };
         }
         public void WriteSector(long index, ReadOnlySpan<byte> data) => image.WriteSector(index, data);
+        public void WriteSector(long index, ReadOnlySpan<byte> data, bool deletedDataMark) => image.WriteSector(index, data, deletedDataMark);
         public Task FlushAsync(CancellationToken cancellationToken = default) => image.FlushAsync(cancellationToken);
+        public void FormatTrack(int cylinder, int head, IReadOnlyList<EmulationDiskSector> sectors,
+            int? dataRate = null, bool? mfm = null) => image.FormatTrack(cylinder, head,
+            sectors.Select(sector => new RetroMediaLab.MediaEngine.Contracts.MediaDiskSector(sector.Index, sector.Data,
+                sector.Cylinder, sector.Head, sector.Number, sector.IntegrityValid, sector.DiagnosticCode)
+            {
+                HeaderIntegrityValid = sector.HeaderIntegrityValid,
+                DataIntegrityValid = sector.DataIntegrityValid,
+                DeletedDataMark = sector.DeletedDataMark,
+                RecordedSizeCode = sector.RecordedSizeCode,
+                RecordedErrorCheckCode = sector.RecordedErrorCheckCode,
+                RecordedDataPrefix = sector.RecordedDataPrefix
+            }).ToArray(), dataRate, mfm);
         public void Dispose() => image.Dispose();
     }
 }

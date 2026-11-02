@@ -32,7 +32,7 @@ public static class ImdImageBuilder
                     }
                     if (block.Data.Count != track.SectorSize) throw new InvalidDataException($"Epson sector {cylinder}:{head}:{address.Number} has an invalid size.");
                     var compressed = block.Data.All(value => value == block.Data[0]);
-                    var type = SelectRecordType(compressed, block.IntegrityValid != false);
+                    var type = ImdSectorRecordTypeExtensions.ForState(compressed, block.IntegrityValid != false, block.DeletedDataMark == true);
                     sectors.Add(new(checked((byte)cylinder), checked((byte)head), checked((byte)address.Number), track.SectorSize, type, block.Data.ToArray()));
                 }
                 tracks.Add(new(mode, checked((byte)cylinder), checked((byte)head), sectors));
@@ -41,11 +41,4 @@ public static class ImdImageBuilder
         return new(ImdFormat.DefaultComment, tracks, image);
     }
 
-    private static ImdSectorRecordType SelectRecordType(bool compressed, bool valid) => (compressed, valid) switch
-    {
-        (true, true) => ImdSectorRecordType.Compressed,
-        (false, true) => ImdSectorRecordType.Normal,
-        (true, false) => ImdSectorRecordType.CompressedWithError,
-        _ => ImdSectorRecordType.NormalWithError
-    };
 }

@@ -54,4 +54,10 @@ public sealed record DecodedSector
     public IReadOnlyList<byte>? Tag { get; }
     /// <summary>Obtient l'octet de format sectoriel, ou une valeur nulle lorsqu'il n'existe pas.</summary>
     public byte? FormatCode { get; init; }
+    /// <summary>Intégrité du champ identifiant ; null si le conteneur ne la distingue pas.</summary>
+    public bool? HeaderIntegrityValid { get; init; }
+    /// <summary>Intégrité du champ de données, distincte de celle de son identifiant.</summary>
+    public bool? DataIntegrityValid { get; init; }
+    /// <summary>Marque de données supprimées réellement observée ; null si elle n'est pas conservée.</summary>
+    public bool? DeletedDataMark { get; init; }
 }

@@ -50,6 +50,9 @@ internal static class IsoSectorImageBuilder
         Func<IReadOnlyList<byte>, byte[]>? normalizeData = null)
     {
         var blocks = new List<SectorBlock>();
+        var trackOrders = candidates.GroupBy(pair => (pair.Key.Cylinder, pair.Key.Head))
+            .SelectMany(track => track.OrderBy(pair => Best(pair.Value).Sector.BitOffset)
+                .Select((pair, order) => (pair.Key, Order: order))).ToDictionary(item => item.Key, item => item.Order);
         foreach (var (address, values) in candidates)
         {
             if (!allowSectorNumbersBeyondGeometry && address.Number > sectorsPerTrack) continue;
@@ -60,7 +63,15 @@ internal static class IsoSectorImageBuilder
             var data = normalizeData is null ? best.Sector.Data!.ToArray() : normalizeData(best.Sector.Data!);
             if (data.Length == 0) continue;
             var logical = (address.Cylinder * heads + address.Head) * sectorsPerTrack + index;
-            blocks.Add(new(logical, address, data, best.Sector.IntegrityValid, best.Revolution));
+            blocks.Add(new(logical, address, data, best.Sector.IntegrityValid, best.Revolution)
+            {
+                HeaderIntegrityValid = best.Sector.HeaderIntegrityValid,
+                DataIntegrityValid = best.Sector.DataIntegrityValid,
+                DeletedDataMark = best.Sector.DeletedDataMark,
+                RecordedAddress = new(best.Sector.Cylinder, best.Sector.Head, best.Sector.Number),
+                RecordedTrackOrder = trackOrders[address],
+                RecordedSizeCode = best.Sector.SizeCode
+            });
         }
         return new(formatId, sectorSize, cylinders, heads, sectorsPerTrack, blocks, allowVariableBlockSize: allowVariableBlockSize, capacity: capacity);
     }

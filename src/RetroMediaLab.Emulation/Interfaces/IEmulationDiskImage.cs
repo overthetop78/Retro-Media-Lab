@@ -21,8 +21,21 @@ public interface IEmulationDiskImage : IDisposable
     void UpdateMetadata(IReadOnlyDictionary<string, string> metadata);
     /// <summary>Recherche l'identifiant physique d'un secteur sans supposer une numérotation universelle à zéro ou un.</summary>
     long? FindSector(int cylinder, int head, int number);
+    /// <summary>Indices des champs d'une piste physique dans leur ordre enregistré, doublons compris.</summary>
+    IReadOnlyList<long> GetTrackSectors(int cylinder, int head) => Enumerable.Range(0, checked(SectorsPerTrack + 1))
+        .Select(number => FindSector(cylinder, head, number)).Where(index => index.HasValue)
+        .Select(index => index!.Value).Distinct().ToArray();
     ValueTask<EmulationDiskSector> ReadSectorAsync(long index, CancellationToken cancellationToken = default);
     /// <summary>Conserve un secteur modifié ; l'écriture physique utilise FlushAsync.</summary>
     void WriteSector(long index, ReadOnlySpan<byte> data);
+    /// <summary>Écrit le champ de données avec une marque explicite ; une marque non représentable est refusée.</summary>
+    void WriteSector(long index, ReadOnlySpan<byte> data, bool deletedDataMark)
+    {
+        if (deletedDataMark) throw new NotSupportedException();
+        WriteSector(index, data);
+    }
     Task FlushAsync(CancellationToken cancellationToken = default);
+    /// <summary>Remplace les champs d'une piste physique dans l'ordre fourni, avec leurs identifiants enregistrés.</summary>
+    void FormatTrack(int cylinder, int head, IReadOnlyList<EmulationDiskSector> sectors,
+        int? dataRate = null, bool? mfm = null) => throw new NotSupportedException();
 }

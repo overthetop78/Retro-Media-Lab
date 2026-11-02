@@ -1,3 +1,5 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6845.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Saa5050.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using VideoConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.VideoConstants;
 

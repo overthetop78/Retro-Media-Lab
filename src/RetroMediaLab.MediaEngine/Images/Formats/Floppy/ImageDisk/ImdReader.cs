@@ -81,13 +81,13 @@ public sealed class ImdReader : IMediaImageReader
                 if (!Enum.IsDefined(recordType))
                     throw ImdExceptions.InvalidRecordType((byte)recordType);
                 var bytes = ReadSectorRecord(data, ref offset, recordType, sizes[index]);
-                sectors.Add(new(cylinders?[index] ?? header.Cylinder, checked((byte)((heads?[index] ?? header.Head) & (int)ImdHeadFlags.HeadMask)), numbers[index], sizes[index], recordType, bytes));
+                sectors.Add(new(cylinders?[index] ?? header.Cylinder, heads?[index] ?? checked((byte)header.Head), numbers[index], sizes[index], recordType, bytes));
             }
 
             tracks.Add(new(header.Mode, header.Cylinder, checked((byte)header.Head), sectors));
         }
 
-        return new(comment, tracks, BuildImage(tracks.SelectMany(track => track.Sectors).ToArray()));
+        return new(comment, tracks, BuildImage(tracks));
     }
 
     async ValueTask<bool> IMediaImageReader.CanReadAsync(MediaRecognitionContext context, CancellationToken cancellationToken)
@@ -171,23 +171,33 @@ public sealed class ImdReader : IMediaImageReader
         return bytes;
     }
 
-    private static SectorImage BuildImage(IReadOnlyList<ImdSector> sectors)
+    internal static SectorImage BuildImage(IReadOnlyList<ImdTrack> tracks)
     {
-        if (sectors.Count == 0)
+        var ordered = tracks.SelectMany(track => track.Sectors.Select((sector, order) => (Track: track, Sector: sector, Order: order)))
+            .OrderBy(item => item.Track.Cylinder).ThenBy(item => item.Track.Head).ThenBy(item => item.Sector.Number).ToArray();
+        var sectors = ordered.Select(item => item.Sector).ToArray();
+        if (sectors.Length == 0)
             throw ImdExceptions.NoSectors();
         var blockSize = sectors.GroupBy(sector => sector.Size).OrderByDescending(group => group.Count()).First().Key;
-        var cylinders = sectors.Max(sector => sector.Cylinder) + 1;
-        var heads = sectors.Max(sector => sector.Head) + 1;
-        var sectorsPerTrack = sectors.GroupBy(sector => (sector.Cylinder, sector.Head)).Max(group => group.Count());
-        var ordered = sectors.OrderBy(sector => sector.Cylinder).ThenBy(sector => sector.Head).ThenBy(sector => sector.Number).ToArray();
-        var blocks = ordered.Select((sector, logical) => (sector, logical)).Where(item => item.sector.RecordType.HasData()).Select(item => new SectorBlock(item.logical,
-            new(item.sector.Cylinder, item.sector.Head, item.sector.Number),
-            item.sector.Data,
-            item.sector.RecordType.IsIntegrityValid(),
-            DiagnosticCode: (byte)item.sector.RecordType)).ToArray();
+        var cylinders = tracks.Max(track => track.Cylinder) + 1;
+        var heads = tracks.Max(track => track.Head) + 1;
+        var sectorsPerTrack = tracks.Max(track => track.Sectors.Count);
+        var blocks = ordered.Select((item, logical) => (item.Track, item.Sector, item.Order, Logical: logical))
+            .Where(item => item.Sector.RecordType.HasData()).Select(item => new SectorBlock(item.Logical,
+            new(item.Track.Cylinder, item.Track.Head, item.Sector.Number),
+            item.Sector.Data,
+            item.Sector.RecordType.IsIntegrityValid(),
+            DiagnosticCode: (byte)item.Sector.RecordType)
+            {
+                RecordedAddress = new(item.Sector.Cylinder, item.Sector.Head, item.Sector.Number),
+                RecordedTrackOrder = item.Order,
+                DataIntegrityValid = item.Sector.RecordType.IsIntegrityValid(),
+                DeletedDataMark = item.Sector.RecordType.IsDeleted()
+            }).ToArray();
         var descriptors = sectors.Select(sector => new EpsonQx10SectorDescriptor(sector.Cylinder, sector.Head, sector.Number, sector.Size)).ToArray();
-        var formatId = EpsonQx10FormatDetector.TryDetect(descriptors, out var detected) ? detected : DiskImageFormatIds.Imd;
-        return new(formatId, blockSize, cylinders, heads, sectorsPerTrack, blocks, sectors.Any(sector => sector.Size != blockSize), ordered.Sum(sector => (long)sector.Size), ordered.Length);
+        var addressesMatch = ordered.All(item => item.Sector.Cylinder == item.Track.Cylinder && item.Sector.Head == item.Track.Head);
+        var formatId = addressesMatch && EpsonQx10FormatDetector.TryDetect(descriptors, out var detected) ? detected : DiskImageFormatIds.Imd;
+        return new(formatId, blockSize, cylinders, heads, sectorsPerTrack, blocks, sectors.Any(sector => sector.Size != blockSize), sectors.Sum(sector => (long)sector.Size), ordered.Length);
     }
 
     private static void EnsureAvailable(ReadOnlySpan<byte> data, int offset, int count, ImdSection section)

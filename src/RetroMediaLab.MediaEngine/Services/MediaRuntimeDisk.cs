@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using RetroMediaLab.MediaEngine.Contracts;
 using RetroMediaLab.MediaEngine.Enums;
 using RetroMediaLab.MediaEngine.Images.Models.Blocks;
@@ -8,19 +8,22 @@ using RetroMediaLab.MediaEngine.Images.Reading.Sources;
 using RetroMediaLab.MediaEngine.Interfaces;
 using RetroMediaLab.MediaEngine.Constants;
 using RetroMediaLab.MediaEngine.Images.Formats.HardDisk.Acorn;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.CpcDsk;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.ImageDisk;
 
 namespace RetroMediaLab.MediaEngine.Services;
 
 /// <summary>Réutilise les représentations et écrivains d'images pour les accès d'un contrôleur émulé.</summary>
 /// <remarks>Les secteurs modifiés sont possédés en mémoire ; les sources ne conservent aucun flux de fichier.
 /// Cette classe ne simule ni contrôleur ni temporisation : ces responsabilités restent dans la machine.</remarks>
-internal sealed class MediaRuntimeDisk : IMediaRuntimeDisk
+internal sealed partial class MediaRuntimeDisk : IMediaRuntimeDisk
 {
     private readonly MediaEngineComposition _engine;
     private MediaImageDocument _document;
     private readonly SortedDictionary<long, byte[]> _changes = new();
+    private readonly Dictionary<long, bool> _dataMarks = new();
     private bool _disposed;
-    private bool _metadataChanged;
+    private bool _documentChanged;
     private readonly bool _ownsMechanics;
     public IMediaDriveMechanics Mechanics => _document.Source.Drive!;
     private SectorImage? Sectors => (_document.Representation as SectorMediaImageRepresentation)?.Image;
@@ -32,7 +35,7 @@ internal sealed class MediaRuntimeDisk : IMediaRuntimeDisk
     public int Heads => Sectors?.Heads ?? Blocks?.Geometry?.Heads ?? 0;
     public int SectorsPerTrack => Sectors?.SectorsPerTrack ?? Blocks?.Geometry?.SectorsPerTrack ?? 0;
     public bool IsReadOnly { get; }
-    public bool HasChanges => _changes.Count > 0 || _metadataChanged;
+    public bool HasChanges => _changes.Count > 0 || _documentChanged;
     public IReadOnlyDictionary<string, string> Metadata => _document.Metadata;
 
     /// <summary>Conserve les paramètres de contrôleur dans le document et emploie sa publication multifichier normale.</summary>
@@ -54,7 +57,7 @@ internal sealed class MediaRuntimeDisk : IMediaRuntimeDisk
         var values = new Dictionary<string, string>(Metadata) { [AcornWinchesterFormat.DescriptorMetadataKey] = Convert.ToBase64String(descriptor) };
         if (Metadata.TryGetValue(AcornWinchesterFormat.DescriptorMetadataKey, out var previous) && previous == values[AcornWinchesterFormat.DescriptorMetadataKey]) return;
         _document = MediaImageDocument.CreateUnexplored(_document.Source, FormatId, _document.MediaKind, new BlockMediaImageRepresentation(blocks.Capacity, blocks.LogicalBlockSize, blocks.Ranges, geometry), _document.Diagnostics, values);
-        _metadataChanged = true;
+        _documentChanged = true;
     }
 
     internal MediaRuntimeDisk(MediaEngineComposition engine, MediaImageDocument document, bool writable, bool ownsMechanics = true)
@@ -72,17 +75,42 @@ internal sealed class MediaRuntimeDisk : IMediaRuntimeDisk
         return ((long)cylinder * Heads + head) * SectorsPerTrack + number;
     }
 
+    public IReadOnlyList<long> GetTrackSectors(int cylinder, int head)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (Sectors is { } sectors) return sectors.AvailableBlocks
+            .Where(block => block.Address.Cylinder == cylinder && block.Address.Head == head)
+            .OrderBy(block => block.RecordedTrackOrder ?? block.LogicalBlock).Select(block => (long)block.LogicalBlock).ToArray();
+        if (cylinder < 0 || cylinder >= Cylinders || head < 0 || head >= Heads) return [];
+        return Enumerable.Range(0, SectorsPerTrack).Select(number => ((long)cylinder * Heads + head) * SectorsPerTrack + number).ToArray();
+    }
+
     public async ValueTask<MediaDiskSector> ReadSectorAsync(long index, CancellationToken cancellationToken = default)
     {
         Validate(index); cancellationToken.ThrowIfCancellationRequested();
         SectorBlock? sector = null;
         if (Sectors is { } image) image.TryGetBlock(checked((int)index), out sector!);
-        var address = sector?.Address ?? Address(index);
-        Mechanics.BeginRead(Position(index, address));
+        var physical = sector?.Address ?? Address(index);
+        var address = sector?.RecordedAddress ?? physical;
+        Mechanics.BeginRead(Position(index, physical));
         try
         {
-        if (_changes.TryGetValue(index, out var changed)) return new(index, changed.ToArray(), address.Cylinder, address.Head, address.Number, true);
-        if (sector is not null) return new(index, sector.Data.ToArray(), address.Cylinder, address.Head, address.Number, sector.IntegrityValid, sector.DiagnosticCode);
+        if (_changes.TryGetValue(index, out var changed)) return new(index, changed.ToArray(), address.Cylinder, address.Head, address.Number, sector?.HeaderIntegrityValid == false ? false : true)
+        {
+            HeaderIntegrityValid = sector?.HeaderIntegrityValid,
+            DataIntegrityValid = true,
+            DeletedDataMark = _dataMarks.TryGetValue(index, out var deleted) ? deleted : sector?.DeletedDataMark,
+            RecordedSizeCode = sector?.RecordedSizeCode
+        };
+        if (sector is not null) return new(index, sector.Data.ToArray(), address.Cylinder, address.Head, address.Number, sector.IntegrityValid, sector.DiagnosticCode)
+        {
+            RecordedErrorCheckCode = sector.RecordedErrorCheckCode.ToArray(),
+            RecordedDataPrefix = sector.RecordedDataPrefix.ToArray(),
+            HeaderIntegrityValid = sector.HeaderIntegrityValid,
+            DataIntegrityValid = sector.DataIntegrityValid,
+            DeletedDataMark = sector.DeletedDataMark,
+            RecordedSizeCode = sector.RecordedSizeCode
+        };
         if (Blocks is not { } blocks) throw new InvalidDataException($"Sector {index} is unavailable in the source image.");
         var data = new byte[SectorSize];
         await BlockMediaDataReader.ReadExactlyAsync(blocks, checked(index * SectorSize), data, cancellationToken).ConfigureAwait(false);
@@ -103,6 +131,15 @@ internal sealed class MediaRuntimeDisk : IMediaRuntimeDisk
         finally { Mechanics.EndAccess(); }
     }
 
+    public void WriteSector(long index, ReadOnlySpan<byte> data, bool deletedDataMark)
+    {
+        Validate(index);
+        if (deletedDataMark && (Sectors is null || FormatId != CpcDskFormat.FormatId && !Metadata.ContainsKey(ImdMetadataKeys.Structure)))
+            throw new NotSupportedException();
+        WriteSector(index, data);
+        _dataMarks[index] = deletedDataMark;
+    }
+
     public async Task FlushAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -113,7 +150,8 @@ internal sealed class MediaRuntimeDisk : IMediaRuntimeDisk
         await _engine.Writing.WritingService.WriteAsync(document, _document.Source.PrimaryPath, FormatId, cancellationToken: cancellationToken).ConfigureAwait(false);
         _document = await _engine.ReadingService.ReadAsync(_document.Source with { KnownLength = null, RequestedFormatId = FormatId }, cancellationToken).ConfigureAwait(false);
         _changes.Clear();
-        _metadataChanged = false;
+        _dataMarks.Clear();
+        _documentChanged = false;
     }
 
     private MediaImageDocument UpdatedDocument()
@@ -125,7 +163,8 @@ internal sealed class MediaRuntimeDisk : IMediaRuntimeDisk
             foreach (var change in _changes)
             {
                 var index = checked((int)change.Key);
-                updated[index] = updated.TryGetValue(index, out var original) ? original with { Data = change.Value, IntegrityValid = true, DiagnosticCode = null } : new(index, Address(index), change.Value);
+                updated[index] = updated.TryGetValue(index, out var original) ? original with { Data = change.Value, IntegrityValid = original.HeaderIntegrityValid == false ? false : true, DataIntegrityValid = true, DiagnosticCode = null, RecordedErrorCheckCode = default, RecordedDataPrefix = default } : new(index, Address(index), change.Value);
+                if (_dataMarks.TryGetValue(change.Key, out var deleted)) updated[index] = updated[index] with { DeletedDataMark = deleted };
             }
             representation = new SectorMediaImageRepresentation(new SectorImage(sectors.FormatId, sectors.BlockSize, sectors.Cylinders, sectors.Heads, sectors.SectorsPerTrack, updated.Values, sectors.AllowsVariableBlockSize, sectors.Capacity, sectors.BlockCount, sectors.AddressingKind));
         }
@@ -163,7 +202,7 @@ internal sealed class MediaRuntimeDisk : IMediaRuntimeDisk
         finally
         {
             try { if (_ownsMechanics) Mechanics.Reset(); }
-            finally { _changes.Clear(); _disposed = true; }
+            finally { _changes.Clear(); _dataMarks.Clear(); _disposed = true; }
         }
     }
 }

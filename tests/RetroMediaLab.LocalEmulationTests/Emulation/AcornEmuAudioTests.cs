@@ -1,3 +1,4 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Sn76489.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using System.Reflection;
 using RetroMediaLab.Emulation;
@@ -165,6 +166,7 @@ public sealed class AcornEmuAudioTests
     public void StartupRestoresInsertedMediaSilentlyAndKeepsLaterPhysicalActions(bool soundEnabled)
     {
         using var core = new EmulatorCore(MachineModel.BbcMicroModelA);
+        ConfigureSyntheticDrives(core);
         var mechanics = EmulationSdk.MediaProcessing.CreateDriveMechanics(S.Floppy);
         var image = ControlledDependencies.Simulate<IEmulationDiskImage>((method, _) => method.Name switch
         {
@@ -195,6 +197,7 @@ public sealed class AcornEmuAudioTests
     public void StartupDoesNotPretendThatAnEmptyDriveContainsADisk()
     {
         using var core = new EmulatorCore(MachineModel.BbcMicroModelA);
+        ConfigureSyntheticDrives(core);
         var mechanics = EmulationSdk.MediaProcessing.CreateDriveMechanics(S.Floppy);
         Field<IEmulationDriveMechanics?[]>(core, "_floppyMechanics")[0] = mechanics;
         Field<bool[]>(core, "_floppyConnected")[0] = true;
@@ -240,6 +243,16 @@ public sealed class AcornEmuAudioTests
             return core;
         }
         finally { if (!transferred) core.Dispose(); }
+    }
+
+    private static void ConfigureSyntheticDrives(EmulatorCore core)
+    {
+        typeof(EmulatorCore).GetField("_machine", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(core, new ModelAMachine(new byte[16384], new byte[16384]));
+        var configuration = new RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.MachineConfiguration(
+            MachineModel.BbcMicroModelA);
+        typeof(EmulatorCore).GetMethod("ConfigureDisks", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(core, [configuration]);
     }
 
     private static T Field<T>(EmulatorCore core, string name) =>

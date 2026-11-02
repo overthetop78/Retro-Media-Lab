@@ -5,15 +5,15 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 
 internal sealed partial class EmulatorCore
 {
-    private readonly int[] _hardDiskSoundVolume = new int[C.HardDiskCount];
-    private readonly bool[] _hardDiskSoundEnabled = new bool[C.HardDiskCount];
-    private readonly IEmulationDriveMechanics?[] _hardDiskMechanics = new IEmulationDriveMechanics?[C.HardDiskCount];
+    private int[] _hardDiskSoundVolume = [];
+    private bool[] _hardDiskSoundEnabled = [];
+    private IEmulationDriveMechanics?[] _hardDiskMechanics = [];
 
     /// <summary>Rend les mouvements et la rotation du Winchester par la mécanique commune.</summary>
     private void MixHardDiskSound(double[] samples)
     {
         if (_machine is not { } machine) return;
-        for (var unit = 0; unit < C.HardDiskCount; unit++)
+        for (var unit = 0; unit < _hardDisks.Length; unit++)
         {
             if (_hardDiskMechanics[unit] is not { } mechanics) continue;
             ConfigureHardDiskSound(unit);

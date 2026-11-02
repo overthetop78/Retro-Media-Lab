@@ -9,15 +9,21 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 /// <summary>Possession et persistance des images disque ; les contrôleurs de la carte les empruntent seulement.</summary>
 internal sealed partial class EmulatorCore
 {
-    private readonly IEmulationDiskImage?[] _floppyImages = new IEmulationDiskImage?[C.DriveCount];
-    private readonly FloppyDriveSettings?[] _floppySettings = new FloppyDriveSettings?[C.DriveCount];
-    private readonly bool[] _floppyConnected = new bool[C.DriveCount];
+    private IEmulationDiskImage?[] _floppyImages = [];
+    private FloppyDriveSettings?[] _floppySettings = [];
+    private bool[] _floppyConnected = [];
     private IReadOnlyList<string> _diskExtensions = C.Extensions;
 
     private void ConfigureDisks(MachineConfiguration configuration)
     {
+        var count = _machine!.FloppyDriveCount;
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        _floppyImages = new IEmulationDiskImage?[count];
+        _floppySettings = new FloppyDriveSettings?[count];
+        _floppyConnected = new bool[count];
+        _floppyMechanics = new IEmulationDriveMechanics?[count];
         _diskExtensions = NativeStorage.Extensions(configuration);
-        for (var drive = 0; drive < C.DriveCount; drive++)
+        for (var drive = 0; drive < _floppyImages.Length; drive++)
         {
             _floppyMechanics[drive] ??= RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions.MediaProcessing.CreateDriveMechanics(S.Floppy);
             _floppyConnected[drive] = NativeStorage.Connected(configuration, drive);
@@ -29,9 +35,9 @@ internal sealed partial class EmulatorCore
     private void InsertFloppy(MediaConfiguration media)
     {
         var drive = media.Slot.Index;
-        if (media.Category != MediaCategory.Floppy || drive is < 0 or >= C.DriveCount || !_floppyConnected[drive] || !_diskExtensions.Contains(Path.GetExtension(media.Path), StringComparer.OrdinalIgnoreCase)) throw new ArgumentException(nameof(media));
+        if (media.Category != MediaCategory.Floppy || drive < 0 || drive >= _floppyImages.Length || !_floppyConnected[drive] || !_diskExtensions.Contains(Path.GetExtension(media.Path), StringComparer.OrdinalIgnoreCase)) throw new ArgumentException(nameof(media));
         var settings = _floppySettings[drive]!;
-        var image = BbcMicroDiskFunctions.Open(media.Path, !media.IsReadOnly && !settings.WriteProtected, mechanics: _floppyMechanics[drive]);
+        var image = AcornDiskFunctions.Open(media.Path, !media.IsReadOnly && !settings.WriteProtected, mechanics: _floppyMechanics[drive]);
         var transferred = false;
         try
         {
@@ -43,10 +49,10 @@ internal sealed partial class EmulatorCore
         finally { if (!transferred) image.Dispose(); }
     }
 
-    private void SaveFloppy(int drive) { if (_floppyImages[drive] is { HasChanges: true } image) BbcMicroDiskFunctions.Save(image); }
+    private void SaveFloppy(int drive) { if (_floppyImages[drive] is { HasChanges: true } image) AcornDiskFunctions.Save(image); }
     private void EjectFloppy(int drive)
     {
-        if (drive is < 0 or >= C.DriveCount) throw new ArgumentOutOfRangeException(nameof(drive));
+        if (drive < 0 || drive >= _floppyImages.Length) throw new ArgumentOutOfRangeException(nameof(drive));
         SaveFloppy(drive);
         _machine?.AttachFloppy(drive, null);
         var image = _floppyImages[drive]; _floppyImages[drive] = null;
@@ -58,15 +64,16 @@ internal sealed partial class EmulatorCore
     private void DisposeDisks()
     {
         var errors = new List<Exception>();
-        for (var drive = 0; drive < C.DriveCount; drive++)
+        for (var drive = 0; drive < _floppyImages.Length; drive++)
         {
             var image = _floppyImages[drive]; _floppyImages[drive] = null;
             try { _machine?.AttachFloppy(drive, null); }
+            catch (Exception error) { errors.Add(error); }
             finally { try { image?.Dispose(); } catch (Exception error) { errors.Add(error); } finally { _floppyMechanics[drive]?.Reset(); _floppyMechanics[drive] = null; } }
         }
         if (errors.Count > 0) throw new AggregateException(errors);
     }
 
-    private void SaveDisks() { for (var drive = 0; drive < C.DriveCount; drive++) SaveFloppy(drive); }
-    private void FlushStoppedDisks() { for (var drive = 0; drive < C.DriveCount; drive++) if (_machine?.FloppyActive(drive) != true) SaveFloppy(drive); }
+    private void SaveDisks() { for (var drive = 0; drive < _floppyImages.Length; drive++) SaveFloppy(drive); }
+    private void FlushStoppedDisks() { for (var drive = 0; drive < _floppyImages.Length; drive++) if (_machine?.FloppyActive(drive) != true) SaveFloppy(drive); }
 }

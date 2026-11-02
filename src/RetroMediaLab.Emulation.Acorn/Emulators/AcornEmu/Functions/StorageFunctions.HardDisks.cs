@@ -10,7 +10,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 /// <summary>Unités Winchester optionnelles et paramètres persistants transmis par les contrats de stockage communs.</summary>
 internal static partial class StorageFunctions
 {
-    internal static bool HardDiskConnected(MachineConfiguration configuration, int unit) => !MasterFunctions.IsEt(configuration) && !MasterFunctions.IsCompact(configuration) && ( configuration.Options.TryGetValue(C.HardDiskKey(unit, C.ConnectedOption), out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == new EmulationMediaSlot(EmulationMediaCategory.HardDisk, unit)));
+    internal static bool HardDiskConnected(MachineConfiguration configuration, int unit) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.HardDiskConnected(configuration, unit) : !MasterFunctions.IsEt(configuration) && !MasterFunctions.IsCompact(configuration) && ( configuration.Options.TryGetValue(C.HardDiskKey(unit, C.ConnectedOption), out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == new EmulationMediaSlot(EmulationMediaCategory.HardDisk, unit)));
     internal static bool HasWinchester(MachineConfiguration configuration) => Enumerable.Range(0, C.HardDiskCount).Any(unit => HardDiskConnected(configuration, unit));
     internal static bool NeedsDiskRom(MachineConfiguration configuration) => HasInterface(configuration) || HasWinchester(configuration);
 
@@ -25,7 +25,7 @@ internal static partial class StorageFunctions
         IsRemovable: false, InterfaceChoices: [new(C.ScsiInterface, string.Empty, C.ScsiDisplay)], HardDiskFormats: WinchesterFormats.All,
         ConfigurationKind: EmulationStorageConfigurationKind.HardDiskDrive, ConfigurationFields: HardDiskFields(configuration, unit))).ToArray();
 
-    private static IReadOnlyList<EmulationSettingsField> HardDiskFields(MachineConfiguration configuration, int unit)
+    internal static IReadOnlyList<EmulationSettingsField> HardDiskFields(MachineConfiguration configuration, int unit)
     {
         var settings = HardDiskSettings(configuration, unit);
         EmulationSettingsField Flag(string id, string key, bool value) => new(id, EmulationMachineTab.Storage, StoragePresentationConstants.BehaviorGroup, key, EmulationSettingsEditor.Toggle, value.ToString(), EnabledValue: bool.TrueString, DisabledValue: bool.FalseString, RequiresRestart: id != C.MechanicalSoundOption);

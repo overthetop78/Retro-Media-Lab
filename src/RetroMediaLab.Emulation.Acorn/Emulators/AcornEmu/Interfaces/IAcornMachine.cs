@@ -1,3 +1,5 @@
+using Storage = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
+
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 
 /// <summary>Échanges entre le cœur AcornEmu et l'assemblage matériel choisi dans son catalogue de modèles.</summary>
@@ -6,9 +8,20 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 internal interface IAcornMachine
 {
     byte[] RunFrame();
-    /// <summary>Transfère les échantillons mono produits depuis le dernier prélèvement.</summary>
+    /// <summary>Dimensions programmables ; null conserve les dimensions fixes du modèle.</summary>
+    int? VideoWidth => null;
+    int? VideoHeight => null;
+    /// <summary>Cadence programmable ; null conserve celle du catalogue.</summary>
+    double? VideoFramesPerSecond => null;
+    /// <summary>Durée réellement exécutée par le dernier RunFrame, pour les cartes à balayage programmable.</summary>
+    double? VideoFrameDurationSeconds => null;
+    int FloppyDriveCount => Storage.DriveCount;
+    int HardDiskDriveCount => Storage.HardDiskCount;
+    EmulationAudioChannelLayout AudioChannelLayout => EmulationAudioChannelLayout.Mono;
+    string? NonvolatileMemoryFile => null;
+    /// <summary>Transfère les échantillons entrelacés produits depuis le dernier prélèvement.</summary>
     short[] DrainAudio();
-    IEmulatorCassetteTransport CassetteTransport { get; }
+    IEmulatorCassetteTransport? CassetteTransport { get; }
     void InsertCassette(EmulationCassetteSignal signal, bool writable = false);
     bool CassetteHasChanges { get; }
     EmulationCassetteSignal RecordedCassette { get; }

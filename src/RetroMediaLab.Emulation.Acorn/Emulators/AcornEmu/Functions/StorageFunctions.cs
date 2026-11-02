@@ -4,20 +4,23 @@ using System.IO;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Dictionaries;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Dictionaries;
+using ArchBoard = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Constants.ArchimedesBoardConstants;
+using ArchDrive = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Constants.ArchimedesDriveConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 
 /// <summary>Descriptions et persistance des lecteurs natifs par les contrats de stockage déjà utilisés.</summary>
 internal static partial class StorageFunctions
 {
-    internal static bool Connected(MachineConfiguration configuration, int drive) => !MasterFunctions.IsEt(configuration) && ((ModelBPlusFunctions.IsModel(configuration) || MasterFunctions.HasFixedDrive(configuration)) && drive == EmulationMediaSlot.Floppy0.Index || (configuration.Options.TryGetValue(C.Key(drive, C.ConnectedOption), out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == new EmulationMediaSlot(EmulationMediaCategory.FloppyDrive, drive))));
-    internal static bool HasInterface(MachineConfiguration configuration) => !MasterFunctions.IsEt(configuration) && (MasterFunctions.IsModel(configuration) || FloppyExtensionFunctions.HasInterface(configuration) || Enumerable.Range(0, C.DriveCount).Any(drive => Connected(configuration, drive)));
-    internal static bool UsesWd1770(MachineConfiguration configuration) => MasterFunctions.IsModel(configuration) || FloppyExtensionFunctions.UsesWd1770(configuration);
+    internal static bool Connected(MachineConfiguration configuration, int drive) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.FloppyConnected(configuration, drive) : !MasterFunctions.IsEt(configuration) && ((ModelBPlusFunctions.IsModel(configuration) || MasterFunctions.HasFixedDrive(configuration)) && drive == EmulationMediaSlot.Floppy0.Index || (configuration.Options.TryGetValue(C.Key(drive, C.ConnectedOption), out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == new EmulationMediaSlot(EmulationMediaCategory.FloppyDrive, drive))));
+    internal static bool HasInterface(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) || !MasterFunctions.IsEt(configuration) && (MasterFunctions.IsModel(configuration) || FloppyExtensionFunctions.HasInterface(configuration) || Enumerable.Range(0, C.DriveCount).Any(drive => Connected(configuration, drive)));
+    internal static bool UsesWd1770(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) || MasterFunctions.IsModel(configuration) || FloppyExtensionFunctions.UsesWd1770(configuration);
     internal static IReadOnlyList<string> Extensions(MachineConfiguration configuration) => CreationModels(configuration).SelectMany(model => model.AcceptedExtensions).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     private static IReadOnlyList<string> DriveExtensions(MachineConfiguration configuration, int drive) => CreationModels(configuration).Single(model => model.Value == Settings(configuration, drive).Model).AcceptedExtensions;
     internal static FloppyDriveSettings Settings(MachineConfiguration configuration, int drive) => new(Model(configuration, drive), configuration.Options.GetValueOrDefault(C.Key(drive, C.SpeedOption), C.DefaultSpeed), bool.Parse(configuration.Options.GetValueOrDefault(C.Key(drive, C.ProtectedOption), bool.FalseString)), false, new Dictionary<string, string> { [C.MechanicalSoundOption] = configuration.Options.GetValueOrDefault(C.Key(drive, C.MechanicalSoundOption), bool.TrueString), [C.SoundVolumeOption] = EmulationMechanicalSoundSettings.ReadVolume(configuration.Options, C.Key(drive, C.SoundVolumeOption)).ToString(System.Globalization.CultureInfo.InvariantCulture) });
 
-    internal static IReadOnlyList<EmulationMediaDevice> Devices(MachineConfiguration configuration) => Enumerable.Range(0, C.DriveCount).Select(drive => new EmulationMediaDevice(new(EmulationMediaCategory.FloppyDrive, drive), EmulationMediaType.Floppy, DriveExtensions(configuration, drive),
+    internal static IReadOnlyList<EmulationMediaDevice> Devices(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.FloppyDevices(configuration) : Enumerable.Range(0, C.DriveCount).Select(drive => new EmulationMediaDevice(new(EmulationMediaCategory.FloppyDrive, drive), EmulationMediaType.Floppy, DriveExtensions(configuration, drive),
         FloppyOptions: new(CreationModels(configuration), configuration.Folders.Floppies ?? string.Empty, string.Empty, DriveExtensions(configuration, drive).First(), CanCreateBlankMedia: true, CanRedirectWrites: false) { SpeedChoices = EmulationDriveSpeedChoices.Standard, CanConfigureWriteProtection = false }, IsPermanent: (ModelBPlusFunctions.IsModel(configuration) || MasterFunctions.HasFixedDrive(configuration)) && drive == EmulationMediaSlot.Floppy0.Index, ConfigurationKind: EmulationStorageConfigurationKind.FloppyDrive, ConfigurationFields: [new(C.MechanicalSoundOption, EmulationMachineTab.Storage, StoragePresentationConstants.SoundGroup, C.SoundResource, EmulationSettingsEditor.Toggle, configuration.Options.GetValueOrDefault(C.Key(drive, C.MechanicalSoundOption), bool.TrueString), EnabledValue: bool.TrueString, DisabledValue: bool.FalseString), SoundVolumeField(configuration, drive, false)])).ToArray();
 
     private static EmulationSettingsField SoundVolumeField(MachineConfiguration configuration, int index, bool hardDisk) =>
@@ -31,7 +34,7 @@ internal static partial class StorageFunctions
     internal static bool TryGetMechanicalSoundOption(string key, out bool hardDisk, out int index, out string option)
     {
         foreach (var device in new[] { false, true })
-        for (var drive = 0; drive < (device ? C.HardDiskCount : C.DriveCount); drive++)
+        for (var drive = 0; drive < (device ? C.HardDiskCount : Math.Max(C.DriveCount, ArchBoard.FloppyDrives)); drive++)
         foreach (var name in new[] { C.MechanicalSoundOption, C.SoundVolumeOption })
             if (key == (device ? C.HardDiskKey(drive, name) : C.Key(drive, name)))
             {
@@ -40,9 +43,10 @@ internal static partial class StorageFunctions
         hardDisk = false; index = default; option = string.Empty; return false;
     }
     private static IReadOnlyList<FloppyDriveModelChoice> CreationModels(MachineConfiguration configuration) =>
-        configuration.Model == MachineModel.AcornAtom ? AtomFloppyDriveModels.All : FloppyDriveModels.Available(UsesWd1770(configuration), MasterFunctions.IsCompact(configuration));
+        ArchimedesFunctions.IsModel(configuration) ? ArchimedesDriveModels.Floppies : configuration.Model == MachineModel.AcornAtom ? AtomFloppyDriveModels.All : FloppyDriveModels.Available(UsesWd1770(configuration), MasterFunctions.IsCompact(configuration));
     private static string Model(MachineConfiguration configuration, int drive)
     {
+        if (ArchimedesFunctions.IsModel(configuration)) return ArchimedesFunctions.DriveModel(configuration, drive);
         var requested = configuration.Options.GetValueOrDefault(C.Key(drive, C.ModelOption), configuration.Model == MachineModel.AcornAtom ? C.Single40 : MasterFunctions.IsCompact(configuration) ? C.CompactDriveModel : MasterFunctions.IsModel(configuration) ? C.Double80Dd : C.DefaultModel);
         var profile = C.Models.SingleOrDefault(model => model.Value == requested) ?? throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
         var available = CreationModels(configuration);
@@ -53,6 +57,7 @@ internal static partial class StorageFunctions
 
     internal static MachineConfiguration SelectSlots(MachineConfiguration configuration, IReadOnlyList<EmulationMediaSlot> slots)
     {
+        if (ArchimedesFunctions.IsModel(configuration)) return ArchimedesFunctions.SelectSlots(configuration, slots);
         if (slots.Distinct().Count() != slots.Count) throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(slots));
         var options = new Dictionary<string, string>(configuration.Options, StringComparer.Ordinal);
         for (var drive = 0; drive < C.DriveCount; drive++) options[C.Key(drive, C.ConnectedOption)] = ((ModelBPlusFunctions.IsModel(configuration) || MasterFunctions.HasFixedDrive(configuration)) && drive == EmulationMediaSlot.Floppy0.Index || slots.Contains(new(EmulationMediaCategory.FloppyDrive, drive))).ToString();
@@ -61,6 +66,7 @@ internal static partial class StorageFunctions
 
     internal static MachineConfiguration ApplySettings(MachineConfiguration configuration, IReadOnlyList<EmulationStorageDeviceSettings> settings)
     {
+        if (ArchimedesFunctions.IsModel(configuration)) return ArchimedesFunctions.ApplyDeviceSettings(configuration, settings);
         var options = new Dictionary<string, string>(configuration.Options, StringComparer.Ordinal);
         foreach (var entry in settings)
         {
@@ -91,6 +97,7 @@ internal static partial class StorageFunctions
 
     internal static void Validate(MachineConfiguration configuration)
     {
+        if (ArchimedesFunctions.IsModel(configuration)) { ArchimedesFunctions.Validate(configuration); return; }
         ValidateHardDisks(configuration);
         _ = FloppyExtensionFunctions.HasSolidisk(configuration);
         if (configuration.Options.GetValueOrDefault(C.ControllerOption, C.Intel8271) is not (C.Intel8271 or C.AcornWd1770)) throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
@@ -104,6 +111,7 @@ internal static partial class StorageFunctions
 
     internal static void ValidateMedia(IEmulationDiskImage image, FloppyDriveSettings settings)
     {
-        if (!FloppyDriveModels.Supports(settings.Model, image)) throw new InvalidDataException(ErrorMessages.IncompatibleMedia);
+        if (!(settings.Model == ArchDrive.Model ? ArchimedesDriveModels.SupportsFloppy(image) : FloppyDriveModels.Supports(settings.Model, image)))
+            throw new InvalidDataException(ErrorMessages.IncompatibleMedia);
     }
 }

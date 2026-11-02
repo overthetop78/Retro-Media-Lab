@@ -221,3 +221,25 @@ Photograph by Bill Bertram (Pixel8), 21 August 2006. Licensed under Creative Com
 Source: https://commons.wikimedia.org/wiki/File:ZX_Spectrum128K.jpg
 Original: https://upload.wikimedia.org/wikipedia/commons/1/1b/ZX_Spectrum128K.jpg
 Adaptation: classical exterior flood-fill and silhouette alpha mask, removal of the cast shadow, proportional resizing and transparent padding to 512 x 276 pixels. The complete photographed case, keyboard legends and heatsink are preserved; no generated or reconstructed parts. The adapted photograph remains under CC BY-SA 2.5.
+
+
+## Acorn System, Atom, Electron and later machines
+
+Assets in `src/RetroMediaLab.Emulation.Acorn/Assets/Machines/`. Source photographs credited below. Adaptation: AI-assisted background removal with imagegen, removal of surrounding scenery and peripherals, then proportional resizing and transparent padding to 512 x 512 pixels. These retouched images are not unchanged archival photographs. The original attribution and share-alike terms remain applicable to the adaptations.
+
+| Asset | Credit and source | License |
+| --- | --- | --- |
+| `AcornSystem1.png` | Flibble, [Acorn-System-1-Front-Board.jpg](https://commons.wikimedia.org/wiki/File:Acorn-System-1-Front-Board.jpg) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) |
+| `AcornSystem2.png` | Control Universal Ltd catalogue, [Chris's Acorns / Centre for Computing History archive](https://chrisacorns.computinghistory.org.uk/Computers/System2.html), image `AcornPics/acornsys2.jpg` | No individual photographer or specific reuse license stated by the archive. |
+| `AcornSystem3.png` | [Chris Whytehead collection / Centre for Computing History archive](https://chrisacorns.computinghistory.org.uk/Computers/System3.html), image `Pics/Acorn_System3A.jpg` | No specific reuse license stated by the archive. |
+| `AcornSystem4.png` | Control Universal Ltd catalogue, [Chris's Acorns / Centre for Computing History archive](https://chrisacorns.computinghistory.org.uk/Computers/System4.html), image `AcornPics/acornsys4a.jpg` | No individual photographer or specific reuse license stated by the archive. |
+| `AcornSystem5.png` | [Chris Whytehead collection / Centre for Computing History archive](https://chrisacorns.computinghistory.org.uk/Computers/System5.html), image `Pics/Acorn_System5A.jpg` | No specific reuse license stated by the archive. |
+| `AcornAtom.png` | Jamesfcarter, [Acorn Atom.jpg](https://commons.wikimedia.org/wiki/File:Acorn_Atom.jpg) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) |
+| `AcornElectron.png` | Bilby, [Acorn Electron 4x3.jpg](https://commons.wikimedia.org/wiki/File:Acorn_Electron_4x3.jpg) | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
+| `AcornArchimedes.png` | PaulVernon1974, [AcornArchimedes-Wiki.jpg](https://commons.wikimedia.org/wiki/File:AcornArchimedes-Wiki.jpg), depicting an A410/1 | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) |
+| `AcornRiscPC.png` | Christof Efkemann, [Acorn Risc PC 600.jpg](https://commons.wikimedia.org/wiki/File:Acorn_Risc_PC_600.jpg) | [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/) |
+| `AcornA7000.png` | cpcmaniaco, shared by Deep Fried Brains, [Acorn Archimedes A7000, Tasca Party Madrid 5 de junio 2010.jpg](https://commons.wikimedia.org/wiki/File:Acorn_Archimedes_A7000,_Tasca_Party_Madrid_5_de_junio_2010.jpg) | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/) |
+
+The last three assets are prepared for their corresponding machines, which are still being integrated. Different case variants require the corresponding photograph when their model is added.
+
+AcornA3000.png: adapted from Chris Whytehead, BBC A3000 front photograph, https://chrisacorns.computinghistory.org.uk/Pics/A30002A.jpg , documented at https://chrisacorns.computinghistory.org.uk/Computers/A3000.html . The archive states no specific reuse license. Background extraction and retouching with imagegen, followed by proportional resizing on a transparent 512 x 512 canvas; generated retouching is not a pixel-identical copy of the original photograph.

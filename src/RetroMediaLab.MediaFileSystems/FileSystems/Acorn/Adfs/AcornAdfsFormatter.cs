@@ -1,7 +1,7 @@
 namespace RetroMediaLab.MediaFileSystems.FileSystems.Acorn.Adfs;
 
 /// <summary>Initialise une carte ADFS BBC ancienne et son répertoire racine, sans conteneur ni accès fichier.</summary>
-public static class AcornAdfsFormatter
+public static partial class AcornAdfsFormatter
 {
     public const int SectorSize = 256, FirstFreeSector = 7, HeaderSize = FirstFreeSector * SectorSize;
 

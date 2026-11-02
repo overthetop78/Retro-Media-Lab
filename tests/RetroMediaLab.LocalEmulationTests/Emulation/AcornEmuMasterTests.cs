@@ -125,7 +125,7 @@ public sealed class AcornEmuMasterTests
         var memory = new byte[1048576];
         byte[] program = [0xbc, 0, 1, 0x54, 0x58, 0x9c, 0x5b, 0xf4];
         program.CopyTo(memory, 0xffff0);
-        var cpu = new RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services.Cpu80186(a => memory[a], (a,v) => memory[a]=v, _ => 255, (_,_) => { });
+        var cpu = new RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Services.Cpu80186(a => memory[a], (a,v) => memory[a]=v, _ => 255, (_,_) => { });
         cpu.Reset(); for (var i=0;i<6;i++) cpu.Step();
         Assert.Equal(0x00fe, cpu.Register(0));
         Assert.Equal(0xf002, cpu.Register(3));

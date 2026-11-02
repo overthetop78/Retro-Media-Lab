@@ -1,3 +1,5 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6845.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Saa5050.Services;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Common.Services;

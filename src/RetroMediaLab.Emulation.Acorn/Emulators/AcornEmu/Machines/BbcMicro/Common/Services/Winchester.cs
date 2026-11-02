@@ -1,5 +1,6 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
-using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.AcornScsiConstants;
+using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Constants.AcornScsiConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 

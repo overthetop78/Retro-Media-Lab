@@ -1,3 +1,4 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
@@ -14,6 +15,91 @@ namespace RetroMediaLab.Tests.Emulation;
 /// <summary>Protocole WD1770 exercé avec une image empruntée entièrement en mémoire.</summary>
 public sealed class AcornEmuWd1770Tests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EventAdvanceMatchesIndividualTicksAcrossTransfersLostDataAndIndex(bool wd1772)
+    {
+        using var diskA = new Disk(25);
+        using var diskB = new Disk(25);
+        var model = wd1772 ? RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1772
+            : RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1770;
+        var cycle = new Wd1770(_ => diskA, model: model);
+        var events = new Wd1770(_ => diskB, model: model);
+        foreach (byte command in new byte[] { 0x5a, 0x88, 0xa8, 0xd4, 0x08 })
+        {
+            cycle.Write(2, 0);
+            events.Write(2, 0);
+            cycle.Write(0, command);
+            events.Write(0, command);
+            foreach (var ticks in new[] { 0, 1, 63, 64, 95, 1000, 50000, 800003 })
+            {
+                for (var tick = 0; tick < ticks; tick++) cycle.Tick();
+                events.Advance(ticks);
+                Assert.Equal(cycle.Irq, events.Irq);
+                Assert.Equal(cycle.Drq, events.Drq);
+                Assert.Equal(cycle.Active, events.Active);
+                Assert.Equal(cycle.Motor, events.Motor);
+                Assert.Equal(cycle.Read(0), events.Read(0));
+                Assert.Equal(cycle.Read(1), events.Read(1));
+                Assert.Equal(cycle.Read(2), events.Read(2));
+                Assert.Equal(cycle.Read(3), events.Read(3));
+                Assert.Equal(cycle.SeekSteps(0), events.SeekSteps(0));
+                Assert.Equal(cycle.ReadBytes(0), events.ReadBytes(0));
+                Assert.Equal(cycle.WrittenBytes(0), events.WrittenBytes(0));
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false, 0, 6)]
+    [InlineData(false, 1, 12)]
+    [InlineData(false, 2, 20)]
+    [InlineData(false, 3, 30)]
+    [InlineData(true, 0, 6)]
+    [InlineData(true, 1, 12)]
+    [InlineData(true, 2, 2)]
+    [InlineData(true, 3, 3)]
+    public void SteppingCadenceBelongsToTheControllerSilicon(bool wd1772, int rate, int milliseconds)
+    {
+        var model = wd1772 ? RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1772
+            : RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1770;
+        var controller = new Wd1770(_ => null, model: model);
+        controller.Write(0, (byte)(0x58 | rate));
+        for (var tick = 1; tick < milliseconds * 2000; tick++) controller.Tick();
+        Assert.True(controller.Active);
+        Assert.Equal(0, controller.SeekSteps(0));
+        controller.Tick();
+        Assert.False(controller.Active);
+        Assert.Equal(1, controller.SeekSteps(0));
+        Assert.Equal(1, controller.Read(1));
+    }
+
+    [Fact]
+    public void FourDriveBoardKeepsIndependentHeadPositionsAndMedia()
+    {
+        using var first = new Disk(10);
+        using var second = new Disk(20);
+        using var third = new Disk(30);
+        using var fourth = new Disk(40);
+        Disk[] disks = [first, second, third, fourth];
+        var controller = new Wd1770(index => disks[index],
+            model: RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1772, driveCount: 4)
+        { MechanicalSpeedPercent = 0 };
+        for (var drive = 0; drive < disks.Length; drive++)
+        {
+            controller.Drive = drive;
+            controller.Write(1, 0);
+            Seek(controller, (byte)(drive % 3));
+            controller.Write(2, 0);
+            controller.Write(0, 0x88);
+            Assert.Equal(disks[drive].Bytes(drive % 3, 0, 0), Transfer(controller).Data);
+        }
+        for (var drive = 0; drive < disks.Length; drive++) Assert.Equal(drive % 3, controller.SeekSteps(drive));
+        controller.Reset();
+        Assert.All(disks, disk => Assert.False(disk.Disposed));
+    }
+
     [Fact]
     public void DfsCanProbeTrackRegisterBeforeReleasingControllerReset()
     {

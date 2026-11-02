@@ -17,6 +17,7 @@ internal abstract class SectorImageVisualizationPolicy : ISectorImageVisualizati
     public virtual IReadOnlyList<TrackSector> CreateTrackSectors(SectorImage image,
         IReadOnlyList<(SectorBlock Block, SectorAddress Address)> items) => items.Select(item => new TrackSector(item.Address.Number,
         item.Block.Data,
+        Deleted: item.Block.DeletedDataMark == true,
         SizeCode: SectorSizeCode.TryFromByteCount(item.Block.Data.Count, out var code) ? code : null,
         Attributes: TagAttributes(item.Block.Tag))).ToArray();
     /// <inheritdoc/>
