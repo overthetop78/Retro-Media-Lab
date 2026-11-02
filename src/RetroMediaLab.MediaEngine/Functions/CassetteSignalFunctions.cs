@@ -13,6 +13,7 @@ using RetroMediaLab.MediaEngine.Images.Reading.Recognition;
 using RetroMediaLab.MediaEngine.Images.Reading.Sources;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.Csw;
+using RetroMediaLab.MediaEngine.Images.Formats.Tape.AtomTap;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.Raw;
 
 namespace RetroMediaLab.MediaEngine.Functions;
@@ -125,14 +126,20 @@ internal static class CassetteSignalFunctions
         {
             ".uef" => new UefReader(), ".wav" => new WavTapeReader(),
             ".csw" => new CswReader(), ".raw" => new RawTapeReader(),
+            ".tap" => new AtomTapReader(),
             _ => throw new NotSupportedException("This cassette signal format is not supported.")
         };
         var document = await reader.ReadAsync(new MediaRecognitionContext(new MediaSourceDescriptor(path, []) { Parameters = parameters }), cancellationToken).ConfigureAwait(false);
         var representation = (SequentialMediaImageRepresentation)document.Representation;
         var positions = new Dictionary<long, int>();
-        var signal = document.FormatId == TapeImageFormatIds.Uef ? await UefAsync(representation, positions, cancellationToken).ConfigureAwait(false) : await WaveAsync(document, representation, cancellationToken).ConfigureAwait(false);
+        var signal = document.FormatId is TapeImageFormatIds.Uef or TapeImageFormatIds.AtomTap
+            ? await UefAsync(representation, positions, cancellationToken).ConfigureAwait(false)
+            : await WaveAsync(document, representation, cancellationToken).ConfigureAwait(false);
         if (machineId is null || signal.Samples.IsEmpty) return signal;
         var decoders = SequentialMediaComposition.CreateDefault().Decoders;
+        // Le signal est indépendant de l'index de fichiers : une ROM peut lire une bande
+        // dont le protocole n'est pas encore indexé par les outils d'exploration.
+        if (decoders.FindCompatible(document, machineId).Count == 0) return signal;
         var decoded = await decoders.DecodeAsync(document, machineId, cancellationToken).ConfigureAwait(false);
         // Un UEF de cycles ne contient pas d'octets implicites : le même décodeur existant reçoit alors son signal PCM.
         if (decoded.Blocks.Count == 0 && document.FormatId == TapeImageFormatIds.Uef)
@@ -185,6 +192,7 @@ internal static class CassetteSignalFunctions
                     for (var bit = 0; bit < bitCount; bit++) Bit((data[1 + bit / 8] & (1 << (bit & 7))) != 0);
                     break;
                 case UefConstants.DefinedData:
+                    positions[segment.Position] = samples.Count;
                     if (data.Length < 3 || data[0] is < 1 or > 8 || data[1] is not ((byte)'N' or (byte)'E' or (byte)'O')) throw new InvalidDataException("Invalid UEF serial format.");
                     var stops = (sbyte)data[2];
                     for (var index = 3; index < data.Length; index++)

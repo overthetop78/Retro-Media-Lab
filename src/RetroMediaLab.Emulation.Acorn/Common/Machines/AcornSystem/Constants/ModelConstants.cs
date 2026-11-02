@@ -22,7 +22,7 @@ internal static class SystemModelConstants
     internal const string MonitorLabel = "Emulation.Acorn.System.MonitorRom";
     internal const string BasicLabel = "Emulation.Firmware.Rom.Basic";
     internal const string CharactersLabel = "Emulation.Acorn.Firmware.CharacterGenerator";
-    internal const string BreakLabel = "Emulation.Acorn.Input.Break";
+    internal const string BreakLabel = "Emulation.Acorn.Key.Break";
     internal const int FrameRate = 50;
     internal const int PixelBytes = 4;
     internal const int PixelsWide = 480;

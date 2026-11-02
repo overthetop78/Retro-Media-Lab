@@ -28,7 +28,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     {
         _definition = NativeModelCatalog.Get(model);
         if (model == MachineModel.AcornAtom)
-            SupportedContentExtensions = new HashSet<string>(CassetteConstants.Extensions.Concat(AtomFloppyDriveModels.All.SelectMany(drive => drive.AcceptedExtensions)), StringComparer.OrdinalIgnoreCase);
+            SupportedContentExtensions = new HashSet<string>(AtomFunctions.TapeExtensions.Concat(AtomFloppyDriveModels.All.SelectMany(drive => drive.AcceptedExtensions)), StringComparer.OrdinalIgnoreCase);
         else if (model == MachineModel.AcornElectron)
             SupportedContentExtensions = new HashSet<string>(CassetteConstants.Extensions, StringComparer.OrdinalIgnoreCase);
     }

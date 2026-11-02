@@ -1,5 +1,6 @@
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Apple;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.Csw;
+using RetroMediaLab.MediaEngine.Images.Formats.Tape.AtomTap;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.Raw;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.AcornAtom;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Apridisk;
@@ -140,6 +141,7 @@ public sealed class MediaRecognitionComposition
                 new CommodoreTapReader(),
                 new MsxCasReader(),
                 new SpectrumTapReader(),
+                new AtomTapReader(),
                 new SimhTapeReader(),
                 new Qcow2Reader(),
                 new VhdxReader(),

@@ -5,6 +5,7 @@ internal static class AtomModelConstants
     internal const string ResourcePrefix = "Emulation.Acorn.Model.";
     internal const string OptionPrefix = "acornemu.atom.";
     internal const string CassetteMachineId = "acorn-atom";
+    internal const string TapExtension = ".tap";
     internal const string TextRamOption = OptionPrefix + "textRam";
     internal const string VideoRamOption = OptionPrefix + "videoRam";
     internal const string DiscPackOption = OptionPrefix + "discPack";
@@ -23,7 +24,7 @@ internal static class AtomModelConstants
     internal const string UtilityLabel = "Emulation.Acorn.Atom.UtilityRom";
     internal const string DosLabel = "Emulation.Acorn.Atom.DosRom";
     internal const string CharacterLabel = "Emulation.Acorn.Firmware.CharacterGenerator";
-    internal const string BreakLabel = "Emulation.Acorn.Input.Break";
+    internal const string BreakLabel = "Emulation.Acorn.Key.Break";
     internal const string CpuSummaryFormat = "CPU {0}";
     internal const string MemorySummaryFormat = "RAM {0} KiB";
     internal const string CoreSummaryFormat = "Core {0}";

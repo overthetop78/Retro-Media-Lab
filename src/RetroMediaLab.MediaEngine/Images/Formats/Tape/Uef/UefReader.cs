@@ -86,9 +86,11 @@ public sealed class UefReader : IMediaImageReader
                 if (float.IsFinite(value) && value > 0) baseFrequency = value;
                 metadata[UefConstants.BaseFrequencyMetadataKey] = baseFrequency.ToString(CultureInfo.InvariantCulture);
             }
-            else if (id == UefConstants.BaudRate && payload.Length == sizeof(float))
+            else if (id == UefConstants.BaudRate && payload.Length is sizeof(ushort) or sizeof(float))
             {
-                var value = BinaryPrimitives.ReadSingleLittleEndian(payload);
+                var value = payload.Length == sizeof(ushort)
+                    ? BinaryPrimitives.ReadUInt16LittleEndian(payload)
+                    : BinaryPrimitives.ReadSingleLittleEndian(payload);
                 if (float.IsFinite(value) && value > 0) baudRate = checked((int)Math.Round(value));
                 metadata[UefConstants.BaudRateMetadataKey] = baudRate.ToString(CultureInfo.InvariantCulture);
             }

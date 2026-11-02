@@ -6,9 +6,10 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 
 internal static partial class AtomFunctions
 {
+    internal static readonly IReadOnlyList<string> TapeExtensions = Array.AsReadOnly(Tape.Extensions.Append(C.TapExtension).ToArray());
     private static bool TapeConnected(MachineConfiguration configuration) => bool.Parse(configuration.Options.GetValueOrDefault(Tape.ConnectedOption, bool.TrueString));
     private static IReadOnlyList<EmulationMediaDevice> TapeDevices(MachineConfiguration configuration) =>
-        [new(EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, Tape.Extensions,
+        [new(EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, TapeExtensions,
             ConfigurationKind: EmulationStorageConfigurationKind.CassetteDrive,
             ConfigurationBlocks: EmulationCassetteSettings.DescribeBlocks(configuration.Options, [C.CassetteBaud]))];
 

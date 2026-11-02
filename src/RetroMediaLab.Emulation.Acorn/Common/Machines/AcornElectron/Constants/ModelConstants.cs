@@ -8,7 +8,7 @@ internal static class ElectronModelConstants
     internal const string RomGroup = "Rom";
     internal const string SystemRomLabel = "Emulation.Acorn.Firmware.Mos";
     internal const string BasicRomLabel = "Emulation.Firmware.Rom.Basic";
-    internal const string BreakLabel = "Emulation.Acorn.Input.Break";
+    internal const string BreakLabel = "Emulation.Acorn.Key.Break";
     internal const string CpuSummaryFormat = "CPU {0}";
     internal const string MemorySummaryFormat = "RAM {0} KiB";
     internal const string CoreSummaryFormat = "Core {0}";

@@ -11,6 +11,7 @@ public static class TapeImageFormatIds
     public const string AtariCas = "tape.atari-cas";
     public const string Tzx = "tape.tzx";
     public const string SpectrumTap = "tape.spectrum-tap";
+    public const string AtomTap = "tape.atom-tap";
     public const string CommodoreTap = "tape.commodore-tap";
     public const string Uef = "tape.uef";
     public const string MsxCas = "tape.msx-cas";
