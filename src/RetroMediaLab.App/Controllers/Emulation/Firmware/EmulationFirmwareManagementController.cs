@@ -65,8 +65,10 @@ internal sealed class EmulationFirmwareManagementController : IAsyncDisposable
         if (_disposed || _views.Count == 0) return;
         var configuration = _getConfiguration();
         var generation = _generation;
-        var entries = await ScanAsync(configuration, CancellationToken.None);
-        if (generation != _generation || configuration.Id != _getConfiguration().Id || configuration.MachineId != _getConfiguration().MachineId) return;
+        IReadOnlyList<EmulationFirmwareCandidate> entries;
+        try { entries = await ScanAsync(configuration, CancellationToken.None); }
+        catch (OperationCanceledException) when (_disposed) { return; }
+        if (_disposed || generation != _generation || configuration.Id != _getConfiguration().Id || configuration.MachineId != _getConfiguration().MachineId) return;
         _entries = entries;
         UpdateNames();
     }
