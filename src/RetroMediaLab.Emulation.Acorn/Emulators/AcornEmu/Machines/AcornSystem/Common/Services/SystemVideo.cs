@@ -1,5 +1,5 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6845.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Saa5050.Services;
+using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services;
+using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants.SystemVideoConstants;
 

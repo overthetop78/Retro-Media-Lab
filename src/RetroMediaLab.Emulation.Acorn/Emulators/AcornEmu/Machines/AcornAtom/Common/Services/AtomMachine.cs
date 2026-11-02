@@ -1,12 +1,12 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Interfaces;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel8271.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Services;
+using RetroMediaLab.Chips.CPU.Common.Interfaces;
+using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Constants.AtomConstants;
-using V = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Constants.AtomVideoConstants;
+using V = RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Constants.AtomVideoConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Services;
 

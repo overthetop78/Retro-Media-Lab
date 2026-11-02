@@ -1,0 +1,50 @@
+namespace RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Constants;
+
+public static class Ns16450Constants
+{
+    public const int RegisterMask = 7;
+    public const int ByteBits = 8;
+    public const int ByteMask = 0xff;
+    public const int DefaultClockHz = 1843200;
+    public const int Oversampling = 16;
+    public const int HalfBit = Oversampling / 2;
+    public const int MinimumDataBits = 5;
+    public const int WordLengthMask = 3;
+    public const byte ExtraStop = 0x04;
+    public const byte ParityEnable = 0x08;
+    public const byte EvenParity = 0x10;
+    public const byte StickParity = 0x20;
+    public const byte Break = 0x40;
+    public const byte DivisorAccess = 0x80;
+    public const byte DataReady = 0x01;
+    public const byte OverrunError = 0x02;
+    public const byte ParityError = 0x04;
+    public const byte FramingError = 0x08;
+    public const byte BreakInterrupt = 0x10;
+    public const byte HoldingEmpty = 0x20;
+    public const byte TransmitterEmpty = 0x40;
+    public const byte ReceiveErrors = OverrunError | ParityError | FramingError | BreakInterrupt;
+    public const byte InitialLineStatus = HoldingEmpty | TransmitterEmpty;
+    public const byte EnableReceivedData = 0x01;
+    public const byte EnableTransmitEmpty = 0x02;
+    public const byte EnableLineStatus = 0x04;
+    public const byte EnableModemStatus = 0x08;
+    public const byte InterruptEnableMask = 0x0f;
+    public const byte Dtr = 0x01;
+    public const byte Rts = 0x02;
+    public const byte Out1 = 0x04;
+    public const byte Out2 = 0x08;
+    public const byte Loopback = 0x10;
+    public const byte ModemControlMask = 0x1f;
+    public const byte DeltaCts = 0x01;
+    public const byte DeltaDsr = 0x02;
+    public const byte TrailingRing = 0x04;
+    public const byte DeltaDcd = 0x08;
+    public const byte StatusCts = 0x10;
+    public const byte StatusDsr = 0x20;
+    public const byte StatusRing = 0x40;
+    public const byte StatusDcd = 0x80;
+    public const int IdleReceive = -1;
+    public const int ResynchronizingReceive = -2;
+    public const int ResynchronizationSamples = 2;
+}

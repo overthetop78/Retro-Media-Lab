@@ -1,0 +1,40 @@
+namespace RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6551.Constants;
+
+public static class Mos6551Constants
+{
+    public const int RegisterMask = 3;
+    public const byte ParityError = 0x01;
+    public const byte FramingError = 0x02;
+    public const byte Overrun = 0x04;
+    public const byte ReceiveFull = 0x08;
+    public const byte TransmitEmpty = 0x10;
+    public const byte CarrierAbsent = 0x20;
+    public const byte DataSetAbsent = 0x40;
+    public const byte Interrupt = 0x80;
+    public const byte ReceiveStatusMask = ParityError | FramingError | Overrun | ReceiveFull;
+    public const byte Enable = 0x01;
+    public const byte DisableReceiveInterrupt = 0x02;
+    public const byte TransmitControlMask = 0x0c;
+    public const byte TransmitInterrupt = 0x04;
+    public const byte TransmitBreak = 0x0c;
+    public const byte Echo = 0x10;
+    public const byte ParityEnable = 0x20;
+    public const byte ParityMask = 0xe0;
+    public const byte OddParity = 0x20;
+    public const byte EvenParity = 0x60;
+    public const byte MarkParity = 0xa0;
+    public const byte SpaceParity = 0xe0;
+    public const byte ProgramResetPreserve = ParityMask;
+    public const byte BaudMask = 0x0f;
+    public const byte InternalReceiveClock = 0x10;
+    public const int WordLengthShift = 5;
+    public const int WordLengthMask = 3;
+    public const byte ExtraStop = 0x80;
+    public const int MaximumDataBits = 8;
+    public const int MinimumDataBits = 5;
+    public const int Oversampling = 16;
+    public const int HalfBit = Oversampling / 2;
+    public const int CrystalClockHz = 1843200;
+    public const int IdleReceive = -1;
+    public static ReadOnlySpan<int> BaudDivisors => [1, 2304, 1536, 1048, 856, 768, 384, 192, 96, 64, 48, 32, 24, 16, 12, 6];
+}

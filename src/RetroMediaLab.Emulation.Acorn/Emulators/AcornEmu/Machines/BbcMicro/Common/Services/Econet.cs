@@ -1,6 +1,6 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6854.Services;
+using RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
-using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6854.Constants.Mc6854Constants;
+using C = RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Constants.Mc6854Constants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 

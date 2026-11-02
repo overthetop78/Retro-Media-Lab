@@ -90,6 +90,9 @@ try {
     if ($currentRegistration.DisplayVersion -ne $CurrentVersion) {
         throw "Upgrade registered version $($currentRegistration.DisplayVersion), expected $CurrentVersion."
     }
+    if (-not (Test-Path -LiteralPath (Join-Path $destination 'lib\retromedialab.chips.dll') -PathType Leaf)) {
+        throw 'Upgraded installation is missing lib/retromedialab.chips.dll.'
+    }
     $productVersion = (Get-Item -LiteralPath (Join-Path $destination 'retromedialab.exe')).VersionInfo.ProductVersion
     if (-not $productVersion.StartsWith($CurrentVersion, [StringComparison]::Ordinal)) {
         throw "Upgraded executable version is $productVersion, expected $CurrentVersion."

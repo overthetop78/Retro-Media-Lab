@@ -1,6 +1,6 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
-using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Constants.AtomVideoConstants;
+using C = RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Constants.AtomVideoConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Dictionaries;
 

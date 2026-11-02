@@ -7,7 +7,7 @@ using RetroMediaLab.Emulation.Enums;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Interfaces;
 using RetroMediaLab.Emulation.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Services;
+using RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Enums;

@@ -32,11 +32,11 @@ $uninstaller = Join-Path $destination 'unins000.exe'
 $install = $null
 $uninstall = $null
 try {
-    $install = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/LANG=$InstallerLanguage", "/DIR=`"$destination`"") -PassThru
+    $install = Start-Process -FilePath $setup -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/LANG=$InstallerLanguage", "/DIR=`"$destination`"") -WindowStyle Hidden -PassThru
     $install.WaitForExit()
     if ($install.ExitCode -ne 0) { throw "Installer exited with code $($install.ExitCode)." }
 
-    $required = @('retromedialab.exe', 'unins000.exe', 'Modules\example\module.json',
+    $required = @('retromedialab.exe', 'lib\retromedialab.chips.dll', 'unins000.exe', 'Modules\example\module.json',
         'Modules\example\retromedialab.emulation.example.dll', 'Modules\example\retromedialab.emulation.example.deps.json')
     foreach ($relative in $required) {
         $path = Join-Path $destination $relative

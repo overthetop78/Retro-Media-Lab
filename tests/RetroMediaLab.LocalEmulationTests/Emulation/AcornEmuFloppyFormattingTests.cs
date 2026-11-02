@@ -1,4 +1,4 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Upd765.Services;
+using RetroMediaLab.Chips.Controllers.NEC.UPD765.UPD765.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using RetroMediaLab.Emulation.Constants;
 using RetroMediaLab.Emulation;
@@ -8,7 +8,7 @@ using RetroMediaLab.MediaEngine.Functions;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.CpcDsk;
 using RetroMediaLab.MediaEngine.Images.Models.Sectors;
 using MediaSector = RetroMediaLab.MediaEngine.Contracts.MediaDiskSector;
-using static RetroMediaLab.Tests.Emulation.AcornEmuUpd765Tests;
+using static RetroMediaLab.Chips.Tests.Shared.Upd765TestCommands;
 
 namespace RetroMediaLab.Tests.Emulation;
 

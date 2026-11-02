@@ -42,7 +42,7 @@ try {
     }
 
     foreach ($source in Get-ChildItem -LiteralPath $publish -Recurse -File) {
-        $isShared = $source.Name -imatch '^retromedialab\.(emulation|mediaengine)\.(dll|pdb)$' `
+        $isShared = $source.Name -imatch '^retromedialab\.(emulation|mediaengine|chips)\.(dll|pdb)$' `
             -or $source.Name -imatch '^(DiscUtils|LTRData)\..*\.dll$'
         if ($isShared) { continue }
         if ($Configuration -eq 'Release' -and $source.Extension -ieq '.pdb') { continue }

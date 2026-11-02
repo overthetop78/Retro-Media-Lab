@@ -2,7 +2,7 @@ using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Constants;
 using C = RetroMediaLab.Emulation.Acorn.Common.Machines.Archimedes.Constants.ArchimedesModelConstants;
-using V = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Vidc.Constants.ArchimedesVidcConstants;
+using V = RetroMediaLab.Chips.Video.Acorn.Archimedes.VIDC.Constants.ArchimedesVidcConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Dictionaries;
 

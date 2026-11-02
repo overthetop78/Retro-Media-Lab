@@ -6,7 +6,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 /// <summary>Magnétophone analogique, avec broches directes ou modem FSK 1 200/2 400 Hz.</summary>
 /// <remarks>La ROM effectue elle-même la sérialisation. Ce composant présente les
 /// bits électriques et conserve le signal ; il ne charge pas directement un programme.</remarks>
-internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = CassetteSignalMode.FrequencyShiftKeying) : IEmulatorCassetteTransport
+internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = CassetteSignalMode.FrequencyShiftKeying) : IEmulatorCassetteTransport, RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins
 {
     private EmulationCassetteSignal? _signal;
     private EmulationCassetteSettings _settings = new();
@@ -243,4 +243,8 @@ internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = 
         _hasLevel = false;
         InputBit = true;
     }
+    bool RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.InputPresent => InputPresent;
+    bool RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.InputBit => InputBit;
+    void RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.SetOutputBit(bool value) => SetOutputBit(value);
+    void RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.Tick(bool motor) => Tick(motor);
 }

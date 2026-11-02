@@ -12,5 +12,5 @@ internal static class BbcMicroFirmwareConstants
     internal const int MaximumRomImageBytes = 131_072;
     internal const int BankSize = 16_384;
     /// <summary>96 glyphes de dix lignes ; la ROM interne SAA505x ne contient pas les codes de contrôle.</summary>
-    internal const int CharacterRomSize = 960;
+    internal const int CharacterRomSize = RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Services.TeletextSaa5050.CharacterRomSize;
 }

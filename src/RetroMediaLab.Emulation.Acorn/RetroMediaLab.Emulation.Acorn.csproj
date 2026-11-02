@@ -29,5 +29,8 @@
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(ReferenceCopyLocalPaths.Filename)').StartsWith('retromedialab.'))" />
     </ItemGroup>
   </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\RetroMediaLab.Chips\RetroMediaLab.Chips.csproj" />
+  </ItemGroup>
 </Project>
 

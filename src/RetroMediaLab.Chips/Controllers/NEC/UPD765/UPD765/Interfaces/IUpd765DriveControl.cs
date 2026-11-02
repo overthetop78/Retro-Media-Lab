@@ -1,0 +1,31 @@
+using C = RetroMediaLab.Chips.Controllers.NEC.UPD765.UPD765.Constants.Upd765Constants;
+
+namespace RetroMediaLab.Chips.Controllers.NEC.UPD765.UPD765.Interfaces;
+/// <summary>Contrat matériel du composant Upd765DriveControl ; aucune ressource hôte n'est possédée par ce contrat.</summary>
+public interface IUpd765DriveControl
+{
+    Action<bool>? InterruptChanged { get; set; }
+
+    bool Irq { get; }
+
+    byte BusyMask { get; }
+
+    bool NonDma { get; }
+
+    long HeadLoadTicks { get; }
+
+    long HeadUnloadTicks { get; }
+
+    bool PollingEnabled { get; set; }
+
+    byte PresentCylinder(int unit);
+    long NextEventTicks { get; }
+
+    void Reset();
+    void Specify(byte rates, byte load);
+    byte SenseDriveStatus(byte unitHead);
+    bool Seek(byte unitHead, byte cylinder);
+    bool Recalibrate(byte unit);
+    bool TrySenseInterrupt(out byte status, out byte cylinder);
+    void Advance(int ticks);
+}

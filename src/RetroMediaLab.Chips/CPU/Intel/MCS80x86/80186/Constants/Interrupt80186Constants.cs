@@ -1,0 +1,50 @@
+namespace RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Constants;
+
+public static class Interrupt80186Constants
+{
+    public const int Vector = 0x20;
+    public const int EndOfInterrupt = 0x22;
+    public const int Poll = 0x24;
+    public const int PollStatus = 0x26;
+    public const int Mask = 0x28;
+    public const int PriorityMask = 0x2a;
+    public const int InService = 0x2c;
+    public const int Request = 0x2e;
+    public const int Status = 0x30;
+    public const int TimerControl = 0x32;
+    public const int DmaControl = 0x34;
+    public const int ExternalControl = 0x38;
+    public const int LastControl = 0x3e;
+    public const int RegisterStride = 2;
+    public const int SourceCount = 7;
+    public const int SlaveSourceCount = 5;
+    public const int ExternalCount = 4;
+    public const int TimerSource = 0;
+    public const int FirstDmaSource = 1;
+    public const int FirstExternalSource = 3;
+    public const int CascadeCount = 2;
+    public const ushort PriorityBits = 0x0007;
+    public const ushort MaskBit = 0x0008;
+    public const ushort ControlBits = 0x000f;
+    public const ushort LevelTriggered = 0x0010;
+    public const ushort Cascade = 0x0020;
+    public const ushort SpecialFullyNested = 0x0040;
+    public const ushort CascadedControlBits = 0x007f;
+    public const ushort ExternalControlBits = 0x001f;
+    public const ushort PollPending = 0x8000;
+    public const ushort NonSpecificEoi = 0x8000;
+    public const ushort TimerRequest = 0x0001;
+    public const ushort FirstDmaRequest = 0x0004;
+    public const ushort FirstExternalRequest = 0x0010;
+    public const ushort DmaRequests = 0x000c;
+    public const ushort SourceBits = 0x00ff;
+    public const ushort TimerStatusBits = 0x0007;
+    public const ushort WritableStatus = 0x8007;
+    public const byte VectorBaseMask = 0xf8;
+    public const int EoiVectorMask = 0x1f;
+    public const byte Timer0Vector = 0x08;
+    public const byte Timer1Vector = 0x12;
+    public const byte Timer2Vector = 0x13;
+    public const byte FirstDmaVector = 0x0a;
+    public const byte FirstExternalVector = 0x0c;
+}

@@ -1,0 +1,55 @@
+namespace RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants;
+
+public static class ElectronVideoConstants
+{
+    public const int Width = 640;
+    public const int Height = 256;
+    public const int PixelBytes = 4;
+    public const int FrameBytes = Width * Height * PixelBytes;
+    public const int CyclesPerLine = 128;
+    public const int LinesPerFrame = 312;
+    public const int CyclesPerFrame = CyclesPerLine * LinesPerFrame;
+    public const int ActiveCycles = 80;
+    public const int PixelsPerCycle = Width / ActiveCycles;
+    public const int ClockInterruptLine = 100;
+    public const int ActiveRasters = 8;
+    public const int SpacedRasters = 10;
+    public const int SpacedHeight = 250;
+    public const int ModeShift = 3;
+    public const int ModeMask = 7;
+    public const int LowBandwidthMask = 4;
+    public const int HighBandwidthColumns = 80;
+    public const int LowBandwidthColumns = 40;
+    public const int DefaultStart = 0x3000;
+    public const int VideoWrapAddress = 0x8000;
+    public const int StartLowMask = 0xe0;
+    public const int StartLowShift = 1;
+    public const int StartHighMask = 0x3f;
+    public const int StartHighShift = 9;
+    public const int StartRetainedHighMask = 0x7e00;
+    public const int StartRetainedLowMask = 0x01ff;
+    public const int PaletteRegisters = 8;
+    public const int PaletteEntries = 16;
+    public const int PalettePairMask = 6;
+    public const int PalettePairShift = 1;
+    public const int ByteBits = 8;
+    public const int ByteMask = 255;
+    public const int OneBitPixel = 1;
+    public const int TwoBitPixel = 2;
+    public const int FourBitPixel = 4;
+    public const int TwoColorMask = 8;
+    public const int FourColorMask = 10;
+    public const int SixteenColorMask = 15;
+    public const int BlueShift = 16;
+    public const int GreenShift = 8;
+    public const int RedComponent = 1;
+    public const int GreenComponent = 2;
+    public const int BlueComponent = 4;
+    public const double FramesPerSecond = (double)ElectronUlaConstants.CpuClock / CyclesPerFrame;
+    public const float AspectRatio = 4f / 3f;
+    public static IReadOnlyList<int> ModeBytes { get; } = Array.AsReadOnly<int>([0x5000, 0x5000, 0x5000, 0x4000, 0x2800, 0x2800, 0x2000, 0x2000]);
+    public static IReadOnlyList<int> ModeHeight { get; } = Array.AsReadOnly<int>([Height, Height, Height, SpacedHeight, Height, Height, SpacedHeight, SpacedHeight]);
+    public static IReadOnlyList<int> ModeRasters { get; } = Array.AsReadOnly<int>([ActiveRasters, ActiveRasters, ActiveRasters, SpacedRasters, ActiveRasters, ActiveRasters, SpacedRasters, SpacedRasters]);
+    public static IReadOnlyList<int> ModeBits { get; } = Array.AsReadOnly<int>([OneBitPixel, TwoBitPixel, FourBitPixel, OneBitPixel, OneBitPixel, TwoBitPixel, OneBitPixel, OneBitPixel]);
+    public static IReadOnlyList<int> PaletteBases { get; } = Array.AsReadOnly<int>([0, 4, 5, 1]);
+}

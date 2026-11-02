@@ -2,7 +2,7 @@ using RetroMediaLab.Emulation.HardDisks;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
 using W = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.WinchesterModelConstants;
-using S = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Constants.AcornScsiConstants;
+using S = RetroMediaLab.Chips.Controllers.Acorn.Winchester.Scsi.Constants.AcornScsiConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries;
 

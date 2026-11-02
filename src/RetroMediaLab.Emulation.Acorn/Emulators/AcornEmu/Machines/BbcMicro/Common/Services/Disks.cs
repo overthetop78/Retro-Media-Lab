@@ -1,5 +1,5 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel8271.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Services;
+using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
+using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.DiskConstants;
 

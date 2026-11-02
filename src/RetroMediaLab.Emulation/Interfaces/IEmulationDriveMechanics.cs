@@ -1,7 +1,7 @@
 namespace RetroMediaLab.Emulation.Interfaces;
 
 /// <summary>Mécanique commune d’un lecteur, sans sortie audio ni ressources natives possédées.</summary>
-public interface IEmulationDriveMechanics
+public interface IEmulationDriveMechanics : RetroMediaLab.Chips.Controllers.Common.Interfaces.IDriveSignals
 {
     /// <summary>Indique si le lecteur a encore une rotation ou un événement sonore à rendre.</summary>
     bool HasPendingAudio { get; }
@@ -12,11 +12,14 @@ public interface IEmulationDriveMechanics
     /// <summary>Signale une éjection et arrête la rotation du support.</summary>
     void Eject();
     /// <summary>Commande la rotation depuis le contrôleur matériel.</summary>
-    void SetMotor(bool running);
+    new void SetMotor(bool running);
     /// <summary>Signale les transferts en cours du contrôleur.</summary>
-    void SetActivity(bool reading, bool writing);
+    new void SetActivity(bool reading, bool writing);
     /// <summary>Transmet une position physique ou, si elle est inconnue, une adresse logique.</summary>
-    void Seek(int cylinder, int head, int sector = -1, long logicalBlock = -1);
+    new void Seek(int cylinder, int head, int sector = -1, long logicalBlock = -1);
+    void RetroMediaLab.Chips.Controllers.Common.Interfaces.IDriveSignals.SetMotor(bool running) => SetMotor(running);
+    void RetroMediaLab.Chips.Controllers.Common.Interfaces.IDriveSignals.SetActivity(bool reading, bool writing) => SetActivity(reading, writing);
+    void RetroMediaLab.Chips.Controllers.Common.Interfaces.IDriveSignals.Seek(int cylinder, int head, int sector, long logicalBlock) => Seek(cylinder, head, sector, logicalBlock);
     /// <summary>Produit le fragment mono PCM signé 16 bits demandé par l’horloge de l’émulateur.</summary>
     short[] RenderAudio(int sampleRate, int sampleCount);
     /// <summary>Libère les états et sons en attente lorsque le propriétaire détruit son lecteur.</summary>

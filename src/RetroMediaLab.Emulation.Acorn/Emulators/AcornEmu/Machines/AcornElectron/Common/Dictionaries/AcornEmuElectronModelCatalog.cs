@@ -1,6 +1,6 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
-using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornElectron.Common.Constants.ElectronVideoConstants;
+using C = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronVideoConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornElectron.Common.Dictionaries;
 

@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Services;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;

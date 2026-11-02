@@ -38,6 +38,12 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
+      - name: Test shared Chips library
+        shell: pwsh
+        run: |
+          dotnet test .\tests\RetroMediaLab.Chips.Tests\RetroMediaLab.Chips.Tests.csproj --configuration Release
+          if ($LASTEXITCODE -ne 0) { throw 'Shared Chips tests failed.' }
+
       - name: Normalize tag version
         shell: pwsh
         run: |

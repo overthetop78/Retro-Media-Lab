@@ -8,6 +8,10 @@
   #define OutputDir "..\dist"
 #endif
 
+#if !FileExists(SourceDir + "\lib\retromedialab.chips.dll")
+  #error "Shared Chips library is missing from SourceDir/lib"
+#endif
+
 #define LegacyAppName "GW GUI"
 #define LegacyExecutable "gwgui.exe"
 

@@ -3,39 +3,65 @@ namespace RetroMediaLab.Emulation.Interfaces;
 /// <summary>Accès disque commun aux émulateurs internes, relayé vers les lecteurs et écrivains de MediaEngine.</summary>
 /// <remarks>Le cœur possède cette image, sérialise ses appels, la sauvegarde et la libère dans finally.
 /// Une géométrie nulle est représentée par zéro ; elle n'est pas déduite d'une simple capacité.</remarks>
-public interface IEmulationDiskImage : IDisposable
+public interface IEmulationDiskImage : IDisposable, RetroMediaLab.Chips.Controllers.Common.Interfaces.IDiskImage
 {
     /// <summary>Mécanique du lecteur emprunté ; fermer cette image ne détruit pas un lecteur fourni.</summary>
-    IEmulationDriveMechanics Mechanics { get; }
-    string FormatId { get; }
-    int SectorSize { get; }
-    long SectorCount { get; }
-    long Cylinders { get; }
-    int Heads { get; }
-    int SectorsPerTrack { get; }
-    bool IsReadOnly { get; }
-    bool HasChanges { get; }
-    IReadOnlyDictionary<string, string> Metadata { get; }
+    new IEmulationDriveMechanics Mechanics { get; }
+    new string FormatId { get; }
+    new int SectorSize { get; }
+    new long SectorCount { get; }
+    new long Cylinders { get; }
+    new int Heads { get; }
+    new int SectorsPerTrack { get; }
+    new bool IsReadOnly { get; }
+    new bool HasChanges { get; }
+    new IReadOnlyDictionary<string, string> Metadata { get; }
     /// <summary>Prépare les métadonnées prises en charge par le format ; FlushAsync les publie avec les secteurs.</summary>
     /// <remarks>Une clé non prise en charge ou une géométrie modifiant la capacité est refusée.</remarks>
-    void UpdateMetadata(IReadOnlyDictionary<string, string> metadata);
+    new void UpdateMetadata(IReadOnlyDictionary<string, string> metadata);
     /// <summary>Recherche l'identifiant physique d'un secteur sans supposer une numérotation universelle à zéro ou un.</summary>
-    long? FindSector(int cylinder, int head, int number);
+    new long? FindSector(int cylinder, int head, int number);
     /// <summary>Indices des champs d'une piste physique dans leur ordre enregistré, doublons compris.</summary>
-    IReadOnlyList<long> GetTrackSectors(int cylinder, int head) => Enumerable.Range(0, checked(SectorsPerTrack + 1))
+    new IReadOnlyList<long> GetTrackSectors(int cylinder, int head) => Enumerable.Range(0, checked(SectorsPerTrack + 1))
         .Select(number => FindSector(cylinder, head, number)).Where(index => index.HasValue)
         .Select(index => index!.Value).Distinct().ToArray();
-    ValueTask<EmulationDiskSector> ReadSectorAsync(long index, CancellationToken cancellationToken = default);
+    new ValueTask<EmulationDiskSector> ReadSectorAsync(long index, CancellationToken cancellationToken = default);
     /// <summary>Conserve un secteur modifié ; l'écriture physique utilise FlushAsync.</summary>
-    void WriteSector(long index, ReadOnlySpan<byte> data);
+    new void WriteSector(long index, ReadOnlySpan<byte> data);
     /// <summary>Écrit le champ de données avec une marque explicite ; une marque non représentable est refusée.</summary>
-    void WriteSector(long index, ReadOnlySpan<byte> data, bool deletedDataMark)
+    new void WriteSector(long index, ReadOnlySpan<byte> data, bool deletedDataMark)
     {
         if (deletedDataMark) throw new NotSupportedException();
         WriteSector(index, data);
     }
-    Task FlushAsync(CancellationToken cancellationToken = default);
+    new Task FlushAsync(CancellationToken cancellationToken = default);
     /// <summary>Remplace les champs d'une piste physique dans l'ordre fourni, avec leurs identifiants enregistrés.</summary>
     void FormatTrack(int cylinder, int head, IReadOnlyList<EmulationDiskSector> sectors,
         int? dataRate = null, bool? mfm = null) => throw new NotSupportedException();
+    RetroMediaLab.Chips.Controllers.Common.Interfaces.IDriveSignals RetroMediaLab.Chips.Controllers.Common.Interfaces.IDiskImage.Mechanics => Mechanics;
+
+    ValueTask<RetroMediaLab.Chips.Controllers.Common.Contracts.DiskSector> RetroMediaLab.Chips.Controllers.Common.Interfaces.IDiskImage.ReadSectorAsync(long index, CancellationToken cancellationToken)
+    {
+        var read = ReadSectorAsync(index, cancellationToken);
+        return read.IsCompletedSuccessfully
+            ? new ValueTask<RetroMediaLab.Chips.Controllers.Common.Contracts.DiskSector>(read.Result)
+            : AwaitSectorAsync(read);
+    }
+
+    private static async ValueTask<RetroMediaLab.Chips.Controllers.Common.Contracts.DiskSector> AwaitSectorAsync(ValueTask<EmulationDiskSector> read) => await read.ConfigureAwait(false);
+
+    void RetroMediaLab.Chips.Controllers.Common.Interfaces.IDiskImage.FormatTrack(int cylinder, int head,
+        IReadOnlyList<RetroMediaLab.Chips.Controllers.Common.Contracts.DiskSector> sectors, int? dataRate, bool? mfm)
+        => FormatTrack(cylinder, head, sectors.Select(sector => sector as EmulationDiskSector ?? new EmulationDiskSector(
+            sector.Index, sector.Data, sector.Cylinder, sector.Head, sector.Number, sector.IntegrityValid, sector.DiagnosticCode)
+        {
+            RecordedErrorCheckCode = sector.RecordedErrorCheckCode,
+            RecordedDataPrefix = sector.RecordedDataPrefix,
+            HeaderIntegrityValid = sector.HeaderIntegrityValid,
+            DataIntegrityValid = sector.DataIntegrityValid,
+            DeletedDataMark = sector.DeletedDataMark,
+            RecordedSizeCode = sector.RecordedSizeCode
+        }).ToArray(), dataRate, mfm);
+    IReadOnlyList<long> RetroMediaLab.Chips.Controllers.Common.Interfaces.IDiskImage.GetTrackSectors(int cylinder, int head) => GetTrackSectors(cylinder, head);
+    void RetroMediaLab.Chips.Controllers.Common.Interfaces.IDiskImage.WriteSector(long index, ReadOnlySpan<byte> data, bool deletedDataMark) => WriteSector(index, data, deletedDataMark);
 }

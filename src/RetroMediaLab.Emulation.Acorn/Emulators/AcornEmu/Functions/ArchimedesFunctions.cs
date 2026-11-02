@@ -1,5 +1,5 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Arm26.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Memc.Enums;
+using RetroMediaLab.Chips.CPU.ARM.ARMv2.ARM2.Enums;
+using RetroMediaLab.Chips.Memory.Acorn.Archimedes.MEMC.Enums;
 using System.Globalization;
 using System.Security.Cryptography;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;

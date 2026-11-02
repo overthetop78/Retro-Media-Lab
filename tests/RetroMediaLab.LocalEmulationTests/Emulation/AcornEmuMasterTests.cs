@@ -1,3 +1,7 @@
+using RetroMediaLab.Chips.Memory.Generic.I2C.EEPROM128.Services;
+using RetroMediaLab.Chips.IO.Acorn.Tube.ULA.Services;
+using RetroMediaLab.Chips.Custom.Acorn.Master512.Refresh.Services;
+using RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Services;
 using RetroMediaLab.Emulation;
 using RetroMediaLab.Emulation.Enums;
 using RetroMediaLab.Emulation.Contracts;
@@ -70,31 +74,6 @@ public sealed class AcornEmuMasterTests
     }
 
     [Fact]
-    public void TubeTwoByteTransferKeepsItsRequestUntilTheFifoIsEmpty()
-    {
-        var tube = new TubeUla();
-        tube.HostRead(5); // Octet initial du canal parasite vers hôte.
-        tube.HostWrite(0, 0x98); // M et V : NMI et transfert de deux octets.
-        tube.ParasiteWrite(5, 0x11);
-        tube.ParasiteWrite(5, 0x22);
-        Assert.False(tube.ParasiteNmi);
-        Assert.Equal(0x11, tube.HostRead(5));
-        Assert.False(tube.ParasiteNmi);
-        Assert.Equal(0x22, tube.HostRead(5));
-        Assert.True(tube.ParasiteNmi);
-        tube.ParasiteWrite(5, 0x33);
-        tube.ParasiteWrite(5, 0x44);
-        tube.HostWrite(5, 0x55);
-        Assert.False(tube.ParasiteNmi);
-        tube.HostWrite(5, 0x66);
-        Assert.True(tube.ParasiteNmi);
-        Assert.Equal(0x55, tube.ParasiteRead(5));
-        Assert.True(tube.ParasiteNmi);
-        Assert.Equal(0x66, tube.ParasiteRead(5));
-        Assert.False(tube.ParasiteNmi);
-    }
-
-    [Fact]
     public void Master512DmaConsumesEachIncomingTubeByteOnlyOnce()
     {
         var tube = new TubeUla();
@@ -155,61 +134,6 @@ public sealed class AcornEmuMasterTests
         Assert.Equal(0x5a, card.ReadMemory(0x100));
     }
 
-    [Fact]
-    public void Master512RefreshLatchesTimerEdgeUntilHldaAndIgnoresRequestsDuringAcknowledge()
-    {
-        var refresh = new Master512Refresh();
-        refresh.TimerOutput(false);
-        Assert.True(refresh.HoldRequested);
-        refresh.TimerOutput(true);
-        Assert.True(refresh.HoldRequested);
-        refresh.HoldAcknowledged(true);
-        Assert.False(refresh.HoldRequested);
-        refresh.TimerOutput(false);
-        Assert.False(refresh.HoldRequested);
-        refresh.HoldAcknowledged(false);
-        Assert.False(refresh.HoldRequested);
-        refresh.TimerOutput(true);
-        refresh.TimerOutput(false);
-        Assert.True(refresh.HoldRequested);
-    }
-
-    [Fact]
-    public void Master512RefreshSamplesHldaOnClockAndRomSelectPresetsItsSecondFlipFlop()
-    {
-        var refresh = new Master512Refresh();
-        refresh.TimerOutput(false);
-        refresh.HoldAcknowledged(true);
-        Assert.False(refresh.RefreshActive);
-        refresh.AdvanceClocks(1);
-        Assert.True(refresh.RefreshActive);
-        refresh.UpperMemorySelected(true);
-        Assert.False(refresh.RefreshActive);
-        refresh.AdvanceClocks(1);
-        Assert.False(refresh.RefreshActive);
-        refresh.UpperMemorySelected(false);
-        Assert.False(refresh.RefreshActive);
-        refresh.AdvanceClocks(1);
-        Assert.True(refresh.RefreshActive);
-        refresh.HoldAcknowledged(false);
-        Assert.True(refresh.RefreshActive);
-        refresh.AdvanceClocks(1);
-        Assert.False(refresh.RefreshActive);
-    }
-
-    [Fact]
-    public void Master512RefreshResetClearsBothFlipFlopsAndRestoresTimerEdgeDetection()
-    {
-        var refresh = new Master512Refresh();
-        refresh.HoldAcknowledged(true);
-        refresh.AdvanceClocks(1);
-        refresh.Reset();
-        Assert.False(refresh.HoldRequested);
-        Assert.False(refresh.RefreshActive);
-        refresh.TimerOutput(false);
-        Assert.True(refresh.HoldRequested);
-    }
-
     [Theory]
     [InlineData(false, 0xff)]
     [InlineData(true, 0x5a)]
@@ -247,7 +171,7 @@ public sealed class AcornEmuMasterTests
         var memory = new byte[1048576];
         byte[] program = [0xbc, 0, 1, 0x54, 0x58, 0x9c, 0x5b, 0xf4];
         program.CopyTo(memory, 0xffff0);
-        var cpu = new RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Services.Cpu80186(a => memory[a], (a,v) => memory[a]=v, _ => 255, (_,_) => { });
+        var cpu = new RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Services.Cpu80186(a => memory[a], (a,v) => memory[a]=v, _ => 255, (_,_) => { });
         cpu.Reset(); for (var i=0;i<6;i++) cpu.Step();
         Assert.Equal(0x00fe, cpu.Register(0));
         Assert.Equal(0xf002, cpu.Register(3));
@@ -291,26 +215,6 @@ public sealed class AcornEmuMasterTests
         clock.Address(0, 0); Assert.Equal(255, clock.ReadBus());
         var restored = new MasterClock(); restored.Import(clock.Export());
         Assert.Equal(0x5a, restored.ReadRegister(32));
-    }
-    [Fact]
-    public void CompactEepromAcceptsI2cWritesAndRepeatedStartReads()
-    {
-        var chip = new CompactEeprom();
-        void Pins(bool clock, bool data) => chip.WritePort((byte)((clock ? 0x20 : 0) | (data ? 0x10 : 0)));
-        void Start() { Pins(false, true); Pins(true, true); Pins(true, false); Pins(false, false); }
-        void Stop() { Pins(false, false); Pins(true, false); Pins(true, true); }
-        void Send(byte value)
-        {
-            for (var bit = 7; bit >= 0; bit--) { var high = (value & (1 << bit)) != 0; Pins(false, high); Pins(true, high); }
-            Pins(false, true); Pins(true, true); Assert.Equal(0, chip.ReadPort & 0x10); Pins(false, true);
-        }
-        Start(); Send(0xa0); Send(32); Send(0x5a); Stop();
-        Assert.Equal(0x5a, chip.Export()[32]);
-        Start(); Send(0xa0); Send(32); Start(); Send(0xa1);
-        var value = 0;
-        for (var bit = 0; bit < 8; bit++) { Pins(true, true); value = (value << 1) | ((chip.ReadPort & 0x10) != 0 ? 1 : 0); Pins(false, true); }
-        Pins(true, true); Pins(false, true); Stop();
-        Assert.Equal(0x5a, value);
     }
     [Fact]
     public void MasterCpuExecutesCmosInstructionsAndKeepsSidewaysRamWritable()

@@ -1,4 +1,4 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel8271.Services;
+using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
 namespace RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 
 /// <summary>Interfaces disque reconnues pour une identité de ROM, indépendamment du cœur.</summary>

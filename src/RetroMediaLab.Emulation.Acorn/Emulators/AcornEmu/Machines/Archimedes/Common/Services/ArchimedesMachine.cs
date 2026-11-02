@@ -1,21 +1,21 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Arm26.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Arm26.Interfaces;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Arm26.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Hd63463.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Ioc.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Memc.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Memc.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6551.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Pcf8583.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Vidc.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Services;
+using RetroMediaLab.Chips.CPU.ARM.ARMv2.ARM2.Enums;
+using RetroMediaLab.Chips.CPU.ARM.ARMv2.ARM2.Interfaces;
+using RetroMediaLab.Chips.CPU.ARM.ARMv2.ARM2.Services;
+using RetroMediaLab.Chips.Controllers.Hitachi.HDC.HD63463.Services;
+using RetroMediaLab.Chips.IO.Acorn.Archimedes.IOC.Services;
+using RetroMediaLab.Chips.Memory.Acorn.Archimedes.MEMC.Enums;
+using RetroMediaLab.Chips.Memory.Acorn.Archimedes.MEMC.Services;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6551.Services;
+using RetroMediaLab.Chips.Timers.Philips.PCF85xx.PCF8583.Services;
+using RetroMediaLab.Chips.Video.Acorn.Archimedes.VIDC.Services;
+using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums;
+using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Constants.ArchimedesBoardConstants;
-using Ioc = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Ioc.Constants.ArchimedesIocConstants;
+using Ioc = RetroMediaLab.Chips.IO.Acorn.Archimedes.IOC.Constants.ArchimedesIocConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Services;
 

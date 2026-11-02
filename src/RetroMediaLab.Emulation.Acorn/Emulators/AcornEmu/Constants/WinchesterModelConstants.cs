@@ -1,4 +1,4 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Constants;
+using RetroMediaLab.Chips.Controllers.Acorn.Winchester.Scsi.Constants;
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 
 /// <summary>Mécanismes Winchester proposés par Acorn et limite d'adressage du contrôleur émulé.</summary>

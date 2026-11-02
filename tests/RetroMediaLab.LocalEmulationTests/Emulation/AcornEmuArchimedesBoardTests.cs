@@ -1,6 +1,6 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Arm26.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Memc.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Vidc.Enums;
+using RetroMediaLab.Chips.CPU.ARM.ARMv2.ARM2.Enums;
+using RetroMediaLab.Chips.Memory.Acorn.Archimedes.MEMC.Enums;
+using RetroMediaLab.Chips.Video.Acorn.Archimedes.VIDC.Enums;
 using System.Buffers.Binary;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
@@ -75,7 +75,7 @@ public sealed class AcornEmuArchimedesBoardTests
     public void St506IsAbsentUnlessInstalledAndDoesNotOwnTheAttachedDisks()
     {
         var machine = Board();
-        using var disk = new AcornEmuHd63463Tests.Disk();
+        using var disk = new AcornTestDisk();
         Assert.Equal(uint.MaxValue, Read(machine, 0x03250020));
         Assert.Throws<NotSupportedException>(() => machine.AttachHardDisk(0, disk));
         Assert.False(machine.HardDiskMotor(0));
@@ -94,7 +94,7 @@ public sealed class AcornEmuArchimedesBoardTests
     [Fact]
     public void St506DmaAndCompletionShareTheBoardInterruptWithoutConfusingDataLanes()
     {
-        using var disk = new AcornEmuHd63463Tests.Disk(0x31);
+        using var disk = new AcornTestDisk(0x31);
         var machine = new ArchimedesMachine(Rom(), 4 << 20, st506: true);
         machine.AttachHardDisk(0, disk);
         machine.ConfigureHardDisk(0, 0, 0);
@@ -122,7 +122,7 @@ public sealed class AcornEmuArchimedesBoardTests
     [Fact]
     public void DisconnectingSt506DuringDrqCancelsTheCommandAndKeepsTheImageBorrowed()
     {
-        using var disk = new AcornEmuHd63463Tests.Disk();
+        using var disk = new AcornTestDisk();
         var machine = new ArchimedesMachine(Rom(), 4 << 20, st506: true);
         machine.AttachHardDisk(0, disk);
         machine.ConfigureHardDisk(0, 0, 0);

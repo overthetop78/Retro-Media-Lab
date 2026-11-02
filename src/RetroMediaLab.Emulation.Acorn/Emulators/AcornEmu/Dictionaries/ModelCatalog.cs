@@ -8,7 +8,7 @@ using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
-using VideoConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.VideoConstants;
+using VideoConstants = RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries;

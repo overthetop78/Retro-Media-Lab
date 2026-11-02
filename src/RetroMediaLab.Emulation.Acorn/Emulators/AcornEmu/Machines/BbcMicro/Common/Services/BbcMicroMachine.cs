@@ -1,10 +1,10 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Constants;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Interfaces;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6850.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6854.Constants;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Services;
+using RetroMediaLab.Chips.CPU.Common.Enums;
+using RetroMediaLab.Chips.Controllers.Acorn.Winchester.Scsi.Constants;
+using RetroMediaLab.Chips.CPU.Common.Interfaces;
+using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Services;
+using RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Constants;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Services;
@@ -49,6 +49,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly Via6522 _via = new();
     private readonly Via6522? _userVia;
     private readonly Adc7002? _adc;
+    private byte _fireInputs = Io.OpenInputs;
     private readonly Keyboard _keyboard = new();
     private readonly Audio _audio = new();
     private readonly Acia6850 _acia = new(CassetteConstants.CpuClock, CassetteConstants.SerialClock);
@@ -129,7 +130,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (videoStandard is not (EmulationVideoStandard.Pal or EmulationVideoStandard.Ntsc)) throw new ArgumentOutOfRangeException(nameof(videoStandard));
         _cyclesPerFrame = videoStandard == EmulationVideoStandard.Ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame;
         _nextFrame = _cyclesPerFrame;
-        Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? Constants.VideoConstants.NtscHeight : Constants.VideoConstants.Height);
+        Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.NtscHeight : RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.Height);
         if (_masterMemory is not null) Video.ReadMemory = address => _masterMemory.ReadVideo(address, _ram);
         else if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
         _cassette = new Cassette(_acia);
@@ -137,8 +138,8 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _userVia = expandedIo ? new Via6522() : null;
         if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;
         _adc = expandedIo && !compact ? new Adc7002(_via.SetCb1) : null;
-        _adc?.SetInput(EmulationInputSnapshot.Empty.Controllers);
-        _via.ReadPortB = () => _compactEeprom?.ReadPort ?? _adc?.FireInputs ?? Io.OpenInputs;
+        UpdateAnalogInputs(EmulationInputSnapshot.Empty.Controllers);
+        _via.ReadPortB = () => _compactEeprom?.ReadPort ?? (_adc is null ? null : (byte?)_fireInputs) ?? Io.OpenInputs;
         _via.WritePortB = WriteLatch;
         if (_compactEeprom is not null) _via.PortBPinsChanged = _compactEeprom.WritePort;
         _via.WritePortA = value => { _masterClock?.Update(_latch, value); if ((_latch & 1) == 0) _audio.Write(value); };
@@ -160,7 +161,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     public void SetInput(EmulationInputSnapshot snapshot)
     {
         _keyboard.SetInput(snapshot.Keys, snapshot.HostCharacters);
-        _adc?.SetInput(snapshot.Controllers);
+        UpdateAnalogInputs(snapshot.Controllers);
         _compactJoystick?.SetInput(snapshot.Controllers);
         if (_keyboard.BreakPressed && !_break) Reset(false);
         _break = _keyboard.BreakPressed;
@@ -282,5 +283,18 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if ((previous & 1) != 0 && (_latch & 1) == 0) _audio.Write(_via.OutputA);
         _masterClock?.Update(_latch, _via.OutputA);
         Video.ScreenWrap = ((_latch >> 4) & 3) switch { 0 => 0x4000, 1 => 0x6000, 2 => 0x3000, _ => 0x5800 };
+    }
+    private void UpdateAnalogInputs(IReadOnlyList<EmulationControllerState> controllers)
+    {
+        _fireInputs = Io.OpenInputs;
+        if (_adc is null) return;
+        var fireMask = 1u << EmulationSdk.InputProcessing.ControllerButtonIndex(EmulationControllerCommandIds.A);
+        for (var index = 0; index < Io.ControllerCount; index++)
+        {
+            var controller = index < controllers.Count ? controllers[index] : EmulationControllerState.Empty;
+            _adc.SetChannel(index * Io.AxesPerController, (ushort)(short.MaxValue - controller.LeftX));
+            _adc.SetChannel(index * Io.AxesPerController + 1, (ushort)(short.MaxValue - controller.LeftY));
+            if ((controller.Buttons & fireMask) != 0) _fireInputs &= (byte)~(Io.FirstFireLine << index);
+        }
     }
 }

@@ -48,6 +48,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Retro Media Lab bootstrap publish failed.' }
 Copy-Item -Path (Join-Path $applicationPublish '*') -Destination $publish -Recurse -Force
 Remove-Item -LiteralPath (Join-Path $publish 'retromedialab.app.exe'),(Join-Path $publish 'retromedialab.app.runtimeconfig.json') -Force
 & (Join-Path $PSScriptRoot 'organize_app\organize-application-output.ps1') -OutputDirectory $publish
+Assert-RetroMediaLabSharedLibraries -ApplicationDirectory $publish
 New-Item -ItemType Directory -Path (Join-Path $publish 'Modules') -Force | Out-Null
 dotnet publish (Join-Path $repository 'src\RetroMediaLab.Updater\RetroMediaLab.Updater.csproj') -c $Configuration `
     -r win-x64 --self-contained false -p:Version=$Version -o $updaterPublish --disable-build-servers

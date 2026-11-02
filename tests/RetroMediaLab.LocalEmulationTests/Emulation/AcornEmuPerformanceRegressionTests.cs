@@ -1,7 +1,7 @@
 using RetroMediaLab.Emulation.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Interfaces;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Services;
+using RetroMediaLab.Chips.CPU.Common.Enums;
+using RetroMediaLab.Chips.CPU.Common.Interfaces;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 using BbcKeyboard = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.Keyboard;
 
 namespace RetroMediaLab.Tests.Emulation;

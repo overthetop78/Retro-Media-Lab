@@ -1,0 +1,53 @@
+namespace RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Constants;
+
+public static class Via6522Constants
+{
+    public const int RegisterCount = 16;
+    public const int RegisterMask = RegisterCount - 1;
+    public const int PortB = 0;
+    public const int PortA = 1;
+    public const int DirectionB = 2;
+    public const int DirectionA = 3;
+    public const int Timer1Low = 4;
+    public const int Timer1High = 5;
+    public const int Latch1Low = 6;
+    public const int Latch1High = 7;
+    public const int Timer2Low = 8;
+    public const int Timer2High = 9;
+    public const int Shift = 10;
+    public const int Auxiliary = 11;
+    public const int Peripheral = 12;
+    public const int Flags = 13;
+    public const int Enable = 14;
+    public const int PortANoHandshake = 15;
+    public const int CounterMask = ushort.MaxValue;
+    public const int HighByteShift = 8;
+    public const int HighByteMask = 0xff00;
+    public const byte Ca2Interrupt = 0x01;
+    public const byte Ca1Interrupt = 0x02;
+    public const byte ShiftInterrupt = 0x04;
+    public const byte Cb2Interrupt = 0x08;
+    public const byte Cb1Interrupt = 0x10;
+    public const byte Timer2Interrupt = 0x20;
+    public const byte Timer1Interrupt = 0x40;
+    public const byte InterruptSummary = 0x80;
+    public const byte InterruptMask = 0x7f;
+    public const byte LatchA = 0x01;
+    public const byte LatchB = 0x02;
+    public const byte Timer2PulseCount = 0x20;
+    public const byte Timer1Continuous = 0x40;
+    public const byte Timer1Pb7 = 0x80;
+    public const byte Pb6 = 0x40;
+    public const byte Pb7 = 0x80;
+    public const byte Ca1Rising = 0x01;
+    public const byte Cb1Rising = 0x10;
+    public const int Ca2ModeShift = 1;
+    public const int Cb2ModeShift = 5;
+    public const int ControlModeMask = 7;
+    public const int PulseCycles = 1;
+    public const int TimerLoadCycles = 1;
+    public const int ShiftModeShift = 2;
+    public const int ShiftModeMask = 7;
+    public const int ShiftBitCount = 8;
+    public const int ShiftClockDelay = 1;
+}

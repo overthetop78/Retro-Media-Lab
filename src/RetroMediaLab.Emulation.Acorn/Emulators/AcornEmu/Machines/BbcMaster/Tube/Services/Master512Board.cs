@@ -1,7 +1,7 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel80186.Services;
+using RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Enums;
+using RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
-using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Constants.TubeConstants;
+using C = RetroMediaLab.Chips.IO.Acorn.Tube.ULA.Constants.TubeConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Services;
 

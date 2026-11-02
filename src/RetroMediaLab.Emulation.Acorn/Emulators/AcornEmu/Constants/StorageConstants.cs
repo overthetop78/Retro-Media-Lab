@@ -1,5 +1,5 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.AcornScsi.Constants;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel8271.Services;
+using RetroMediaLab.Chips.Controllers.Acorn.Winchester.Scsi.Constants;
+using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
 using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries;
 
@@ -56,13 +56,13 @@ internal static class StorageConstants
     /// <summary>Suffixe affiché après une durée exprimée en millisecondes.</summary>
     internal const string MillisecondsSuffix = "ms";
     /// <summary>Vitesse de transfert initiale, en pourcentage de la vitesse normale.</summary>
-    internal const int DefaultSpeedPercent = 100;
+    internal const int DefaultSpeedPercent = RetroMediaLab.Chips.Controllers.Generic.ATA.PIO.Constants.AtaTimingConstants.DefaultSpeedPercent;
 
     /// <summary>Latence initiale des accès au disque dur, en millisecondes.</summary>
-    internal const int DefaultHardDiskLatencyMilliseconds = 2;
+    internal const int DefaultHardDiskLatencyMilliseconds = RetroMediaLab.Chips.Controllers.Generic.ATA.PIO.Constants.AtaTimingConstants.DefaultHardDiskLatencyMilliseconds;
 
     /// <summary>Latence maximale configurable, en millisecondes.</summary>
-    internal const int MaximumLatencyMilliseconds = 10000;
+    internal const int MaximumLatencyMilliseconds = RetroMediaLab.Chips.Controllers.Generic.ATA.PIO.Constants.AtaTimingConstants.MaximumLatencyMilliseconds;
     internal static IReadOnlyList<string> HardDiskOptions { get; } = Array.AsReadOnly<string>([ProtectedOption, ReadLatencyOption, WriteLatencyOption, SpeedOption, MechanicalSoundOption, SoundVolumeOption]);
     /// <summary>Préfixe des options persistantes des lecteurs de disquettes AcornEmu.</summary>
     internal const string FloppyPrefix = "acornemu.floppy.";

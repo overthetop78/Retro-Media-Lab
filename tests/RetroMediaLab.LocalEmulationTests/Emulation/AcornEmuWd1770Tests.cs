@@ -1,4 +1,4 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Services;
+using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
@@ -22,8 +22,8 @@ public sealed class AcornEmuWd1770Tests
     {
         using var diskA = new Disk(25);
         using var diskB = new Disk(25);
-        var model = wd1772 ? RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1772
-            : RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1770;
+        var model = wd1772 ? RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1772
+            : RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1770;
         var cycle = new Wd1770(_ => diskA, model: model);
         var events = new Wd1770(_ => diskB, model: model);
         foreach (byte command in new byte[] { 0x5a, 0x88, 0xa8, 0xd4, 0x08 })
@@ -62,8 +62,8 @@ public sealed class AcornEmuWd1770Tests
     [InlineData(true, 3, 3)]
     public void SteppingCadenceBelongsToTheControllerSilicon(bool wd1772, int rate, int milliseconds)
     {
-        var model = wd1772 ? RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1772
-            : RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1770;
+        var model = wd1772 ? RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1772
+            : RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1770;
         var controller = new Wd1770(_ => null, model: model);
         controller.Write(0, (byte)(0x58 | rate));
         for (var tick = 1; tick < milliseconds * 2000; tick++) controller.Tick();
@@ -84,7 +84,7 @@ public sealed class AcornEmuWd1770Tests
         using var fourth = new Disk(40);
         Disk[] disks = [first, second, third, fourth];
         var controller = new Wd1770(index => disks[index],
-            model: RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Wd1770.Enums.Wd1770Model.Wd1772, driveCount: 4)
+            model: RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1772, driveCount: 4)
         { MechanicalSpeedPercent = 0 };
         for (var drive = 0; drive < disks.Length; drive++)
         {

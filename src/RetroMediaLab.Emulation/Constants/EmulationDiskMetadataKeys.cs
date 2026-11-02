@@ -4,5 +4,5 @@ namespace RetroMediaLab.Emulation.Constants;
 public static class EmulationDiskMetadataKeys
 {
     /// <summary>Paramètres matériels SCSI du descripteur Acorn DSC, indépendants des secteurs de données.</summary>
-    public const string AcornScsiParameters = "acorn.dsc";
+    public const string AcornScsiParameters = RetroMediaLab.Chips.Controllers.Acorn.Winchester.Scsi.Constants.ScsiMetadataKeys.Parameters;
 }

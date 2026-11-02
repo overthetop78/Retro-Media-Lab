@@ -1,4 +1,4 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Memc.Enums;
+using RetroMediaLab.Chips.Memory.Acorn.Archimedes.MEMC.Enums;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Factories;

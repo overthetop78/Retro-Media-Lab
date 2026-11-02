@@ -67,4 +67,10 @@
     <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\CassetteTransportPresentationScenarios.cs" Link="Shared\Interface\EmulationViews\CassetteTransportPresentationScenarios.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\RetroMediaLab.Chips.Tests\Shared\Upd765TestCommands.cs" Link="Shared\Upd765TestCommands.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RetroMediaLab.Chips\RetroMediaLab.Chips.csproj" />
+  </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Sn76489.Services;
+using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Services;
 namespace RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 
 public enum HardwareAudioCapability { Sn76489, Buzzer, VidcStereo }

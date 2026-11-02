@@ -1,4 +1,4 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Sn76489.Services;
+using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Services;
 using AudioConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.AudioConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 

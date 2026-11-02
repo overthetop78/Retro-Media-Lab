@@ -1,5 +1,5 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Enums;
-using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Pcf8583.Constants.Pcf8583Constants;
+using C = RetroMediaLab.Chips.Timers.Philips.PCF85xx.PCF8583.Constants.Pcf8583Constants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Constants;
 

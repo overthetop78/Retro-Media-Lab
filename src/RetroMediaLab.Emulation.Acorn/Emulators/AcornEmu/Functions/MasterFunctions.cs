@@ -8,7 +8,7 @@ using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants.MasterConstants;
 using S = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants.MasterSettingsConstants;
-using Tube = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Constants.TubeConstants;
+using Tube = RetroMediaLab.Chips.IO.Acorn.Tube.ULA.Constants.TubeConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 

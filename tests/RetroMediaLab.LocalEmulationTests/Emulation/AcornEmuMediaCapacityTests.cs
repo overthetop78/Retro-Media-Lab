@@ -46,7 +46,7 @@ public sealed class AcornEmuMediaCapacityTests
     public void HostDisposesOwnedImagesInAllFourFloppySlots()
     {
         var core = new EmulatorCore(MachineModel.BbcMicroModelA);
-        var disks = new AcornEmuHd63463Tests.Disk?[4];
+        var disks = new AcornTestDisk?[4];
         try
         {
             var board = new ArchimedesMachine(new byte[256], 4 << 20);
@@ -55,7 +55,7 @@ public sealed class AcornEmuMediaCapacityTests
             var owned = (Array)Field("_floppyImages").GetValue(core)!;
             for (var drive = 0; drive < disks.Length; drive++)
             {
-                disks[drive] = new AcornEmuHd63463Tests.Disk();
+                disks[drive] = new AcornTestDisk();
                 owned.SetValue(disks[drive], drive);
                 board.AttachFloppy(drive, disks[drive]);
             }

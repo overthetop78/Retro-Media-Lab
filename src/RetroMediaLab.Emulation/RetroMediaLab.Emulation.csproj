@@ -42,7 +42,11 @@
   <Target Name="IncludeMediaEngineRuntime" DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(TargetPath)" PackagePath="runtimes/any/lib/$(TargetFramework)/" />
-      <TfmSpecificPackageFile Include="@(ReferenceCopyLocalPaths)" PackagePath="runtimes/any/lib/$(TargetFramework)/" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' And ('%(ReferenceCopyLocalPaths.Filename)' == 'retromedialab.mediaengine' Or '%(ReferenceCopyLocalPaths.Filename)' == 'retromedialab.mediafilesystems' Or '%(ReferenceCopyLocalPaths.Filename)' == 'retromedialab.mediaanalysis')" />
+      <TfmSpecificPackageFile Include="@(ReferenceCopyLocalPaths)" PackagePath="runtimes/any/lib/$(TargetFramework)/" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' And ('%(ReferenceCopyLocalPaths.Filename)' == 'retromedialab.mediaengine' Or '%(ReferenceCopyLocalPaths.Filename)' == 'retromedialab.mediafilesystems' Or '%(ReferenceCopyLocalPaths.Filename)' == 'retromedialab.mediaanalysis' Or '%(ReferenceCopyLocalPaths.Filename)' == 'retromedialab.chips')" />
+      <TfmSpecificPackageFile Include="@(ReferenceCopyLocalPaths)" PackagePath="lib/$(TargetFramework)/" Condition="'%(ReferenceCopyLocalPaths.Filename)' == 'retromedialab.chips' And '%(ReferenceCopyLocalPaths.Extension)' == '.dll'" />
     </ItemGroup>
   </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\RetroMediaLab.Chips\RetroMediaLab.Chips.csproj" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

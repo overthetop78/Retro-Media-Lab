@@ -1,8 +1,8 @@
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Interfaces;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Intel8271.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mc6809.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Services;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Services;
+using RetroMediaLab.Chips.CPU.Common.Interfaces;
+using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
+using RetroMediaLab.Chips.CPU.Motorola.M6800.Chip6809.Services;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;

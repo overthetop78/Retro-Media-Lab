@@ -37,3 +37,17 @@ function Copy-RetroMediaLabComponentFiles {
         Copy-Item -LiteralPath $source.FullName -Destination $target -Force
     }
 }
+
+function Assert-RetroMediaLabSharedLibraries {
+    param([Parameter(Mandatory = $true)][string]$ApplicationDirectory)
+
+    $chipsName = 'retromedialab.chips.dll'
+    $expected = [IO.Path]::GetFullPath((Join-Path $ApplicationDirectory "lib\$chipsName"))
+    if (-not (Test-Path -LiteralPath $expected -PathType Leaf)) {
+        throw "Shared Chips library is missing: $expected"
+    }
+    $copies = @(Get-ChildItem -LiteralPath $ApplicationDirectory -Recurse -File -Filter $chipsName)
+    if ($copies.Count -ne 1 -or $copies[0].FullName -ine $expected) {
+        throw 'Chips must be supplied once by the application, in lib, not copied into modules.'
+    }
+}

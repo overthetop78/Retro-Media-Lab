@@ -144,6 +144,7 @@ function New-RetroMediaLabBuild {
     Remove-Item -LiteralPath (Join-Path $output 'retromedialab.app.exe'),(Join-Path $output 'retromedialab.app.runtimeconfig.json') -Force
 
     & (Join-Path $repository 'scripts\release\package\organize_app\organize-application-output.ps1') -OutputDirectory $output
+    Assert-RetroMediaLabSharedLibraries -ApplicationDirectory $output
     dotnet publish (Join-Path $repository 'src\RetroMediaLab.Updater\RetroMediaLab.Updater.csproj') `
         -c $BuildConfiguration -r win-x64 --self-contained false -p:Version=$Version -o $updaterPublish --disable-build-servers
     if ($LASTEXITCODE -ne 0) { throw "$BuildConfiguration updater publish failed." }
