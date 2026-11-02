@@ -14,3 +14,5 @@
     - [ ] Modifier l'index Git et crÃ©er les commits indÃ©pendants des corrections de dÃ©marrage et du VIA ; vÃ©rifier l'historique et les fichiers restant en attente aprÃ¨s les commits. Les machines System/Atom/Electron sont dÃ©jÃ  dans les commits 8224c1751/0ac0700d4/cd5243b6d et ne doivent pas Ãªtre recrÃ©Ã©es.
 
 Rangement rÃ©alisÃ© : 118 fichiers dÃ©placÃ©s, rÃ©fÃ©rences ajustÃ©es dans les sources et tests. Compilation corrigÃ©e pour la rÃ©fÃ©rence MEMC aux constantes de carte. ContrÃ´le groupÃ© : 972 tests AcornEmu rÃ©ussis en 16 s. Commit cassette/BREAK : 910a25983.
+
+Commits créés : 910a25983 (cassette/BREAK), cbaa7056a (Archimedes/A3000 et rangement, explicitement in-progress), 7ff372e6f (démarrage et contrôleurs installés). Le correctif VIA est préparé séparément après les 972 tests réussis. Les points matériels encore ouverts restent dans le suivi Archimedes et l'audit des composants.

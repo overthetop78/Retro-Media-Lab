@@ -1,104 +1,137 @@
+using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Constants.Via6522Constants;
+
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Services;
 
-/// <summary>VIA 6522 indépendant de son câblage BBC : ports, compteurs, contrôle et interruptions.</summary>
-/// <remarks>Tick représente un cycle à 1 MHz. Les fonctions des broches sont fournies par la carte propriétaire.
-/// Les acquittements à la lecture restent dans le VIA pour les logiciels accédant directement aux registres.</remarks>
-internal sealed class Via6522
+/// <summary>VIA 6522 ; Tick correspond à un cycle de son horloge, indépendamment de la carte propriétaire.</summary>
+internal sealed partial class Via6522
 {
-    private readonly byte[] _registers = new byte[16];
-    private int _timer1, _timer2, _latch1;
-    private bool _timer1Running, _timer2Running, _ca1, _ca2, _cb1;
-    private byte _flags, _enabled;
+    private readonly byte[] _registers = new byte[C.RegisterCount];
+    private int _timer1;
+    private int _timer2;
+    private int _latch1;
+    private bool _timer1Running;
+    private bool _timer2Running;
+    private bool _timer2Armed;
+    private byte _flags;
+    private byte _enabled;
+
     internal Func<byte>? ReadPortA { get; set; }
     internal Func<byte>? ReadPortB { get; set; }
     internal Action<byte>? WritePortA { get; set; }
     internal Action<byte>? WritePortB { get; set; }
     internal Action<byte>? PortBPinsChanged { get; set; }
-    private byte PortBPins => (byte)(_registers[0] | ~_registers[2]);
-    internal byte OutputA => _registers[1];
-    internal bool Irq => (_flags & _enabled & 0x7f) != 0;
+    internal byte OutputA => _registers[C.PortA];
+    internal bool Irq => (_flags & _enabled & C.InterruptMask) != 0;
+    private byte PortBPins => (byte)(_registers[C.PortB] | ~_registers[C.DirectionB]);
 
     internal void Reset()
     {
         Array.Clear(_registers);
-        _timer1 = _timer2 = _latch1 = 0xffff;
+        _timer1 = _timer2 = _latch1 = C.CounterMask;
         _flags = _enabled = 0;
-        _timer1Running = _timer2Running = _ca1 = _ca2 = _cb1 = false;
-    }
-
-    /// <summary>Événement de synchronisation verticale raccordé à CA1 sur le BBC.</summary>
-    internal void VSync() => _flags |= 2;
-    /// <summary>Entrée CA1 générique ; le PCR choisit le front qui positionne le drapeau.</summary>
-    internal void SetCa1(bool level)
-    {
-        const int peripheralControlRegister = 12;
-        const byte positiveEdge = 0x01;
-        const byte interrupt = 0x02;
-        if (level != _ca1 && level == ((_registers[peripheralControlRegister] & positiveEdge) != 0)) _flags |= interrupt;
-        _ca1 = level;
-    }
-    /// <summary>Niveau de détection clavier sur CA2 ; le front actif dépend du PCR.</summary>
-    internal void SetKeyboardLine(bool level)
-    {
-        if (level != _ca2 && level == ((_registers[12] & 4) != 0)) _flags |= 1;
-        _ca2 = level;
-    }
-    /// <summary>Entrée CB1 ; le front actif dépend du PCR, la lecture de port B acquitte l’interruption.</summary>
-    internal void SetCb1(bool level)
-    {
-        const byte interrupt = Machines.BbcMicro.Common.Constants.BbcMicroIoConstants.Cb1Interrupt;
-        if (level != _cb1 && level == ((_registers[12] & interrupt) != 0)) _flags |= interrupt;
-        _cb1 = level;
+        _timer1Running = _timer2Running = _timer2Armed = false;
+        ResetPorts();
     }
 
     internal void Tick()
     {
+        TickControlOutputs();
         if (_timer1Running && --_timer1 < 0)
         {
-            _flags |= 0x40;
-            if ((_registers[11] & 0x40) != 0) _timer1 = _latch1 + 1;
-            else { _timer1Running = false; _timer1 = 0xffff; }
+            _flags |= C.Timer1Interrupt;
+            if ((_registers[C.Auxiliary] & C.Timer1Continuous) != 0) _timer1 = _latch1 + 1;
+            else { _timer1Running = false; _timer1 = C.CounterMask; }
         }
-        if (_timer2Running && (_registers[11] & 0x20) == 0 && --_timer2 < 0)
+        if (!_timer2Running) return;
+        if ((_registers[C.Auxiliary] & C.Timer2PulseCount) != 0)
         {
-            _flags |= 0x20; _timer2Running = false; _timer2 = 0xffff;
+            var level = Pb6Level;
+            if (_lastPb6 && !level) CountTimer2(true);
+            _lastPb6 = level;
         }
+        else CountTimer2(false);
     }
+
+    private void CountTimer2(bool pulseCount)
+    {
+        _timer2--;
+        if (pulseCount ? _timer2 > 0 : _timer2 >= 0) return;
+        if (_timer2 < 0) _timer2 = C.CounterMask;
+        if (!_timer2Armed) return;
+        _flags |= C.Timer2Interrupt;
+        _timer2Armed = false;
+    }
+
     internal byte Read(int register)
     {
-        register &= 15;
+        register &= C.RegisterMask;
         switch (register)
         {
-            case 0: _flags &= 0xe7; return (byte)((_registers[0] & _registers[2]) | ((ReadPortB?.Invoke() ?? 0xff) & ~_registers[2]));
-            case 1: _flags &= 0xfc; goto case 15;
-            case 15: return (byte)((_registers[1] & _registers[3]) | ((ReadPortA?.Invoke() ?? 0xff) & ~_registers[3]));
-            case 4: _flags &= 0xbf; return (byte)_timer1;
-            case 5: return (byte)(_timer1 >> 8);
-            case 6: return (byte)_latch1;
-            case 7: return (byte)(_latch1 >> 8);
-            case 8: _flags &= 0xdf; return (byte)_timer2;
-            case 9: return (byte)(_timer2 >> 8);
-            case 13: return (byte)(_flags | (Irq ? 128 : 0));
-            case 14: return (byte)(_enabled | 128);
+            case C.PortB: AcknowledgePort(false, false); return ReadPinsB();
+            case C.PortA: AcknowledgePort(true, true); return ReadPinsA();
+            case C.PortANoHandshake: return ReadPinsA();
+            case C.Timer1Low: _flags &= unchecked((byte)~C.Timer1Interrupt); return (byte)_timer1;
+            case C.Timer1High: return (byte)(_timer1 >> C.HighByteShift);
+            case C.Latch1Low: return (byte)_latch1;
+            case C.Latch1High: return (byte)(_latch1 >> C.HighByteShift);
+            case C.Timer2Low: _flags &= unchecked((byte)~C.Timer2Interrupt); return (byte)_timer2;
+            case C.Timer2High: return (byte)(_timer2 >> C.HighByteShift);
+            case C.Flags: return (byte)(_flags | (Irq ? C.InterruptSummary : 0));
+            case C.Enable: return (byte)(_enabled | C.InterruptSummary);
             default: return _registers[register];
         }
     }
+
     internal void Write(int register, byte value)
     {
-        register &= 15;
+        register &= C.RegisterMask;
         switch (register)
         {
-            case 0: _registers[0] = value; _flags &= 0xe7; WritePortB?.Invoke(value); PortBPinsChanged?.Invoke(PortBPins); break;
-            case 2: _registers[2] = value; PortBPinsChanged?.Invoke(PortBPins); break;
-            case 1: _flags &= 0xfc; goto case 15;
-            case 15: _registers[1] = value; WritePortA?.Invoke(value); break;
-            case 4: case 6: _latch1 = (_latch1 & 0xff00) | value; break;
-            case 5: _latch1 = (_latch1 & 255) | value << 8; _timer1 = _latch1; _timer1Running = true; _flags &= 0xbf; break;
-            case 7: _latch1 = (_latch1 & 255) | value << 8; _flags &= 0xbf; break;
-            case 8: _registers[8] = value; break;
-            case 9: _timer2 = _registers[8] | value << 8; _timer2Running = true; _flags &= 0xdf; break;
-            case 13: _flags &= (byte)~value; break;
-            case 14: _enabled = (value & 128) != 0 ? (byte)(_enabled | (value & 127)) : (byte)(_enabled & ~value); break;
+            case C.PortB:
+                _registers[C.PortB] = value;
+                WritePortB?.Invoke(value);
+                PortBPinsChanged?.Invoke(PortBPins);
+                AcknowledgePort(false, true);
+                break;
+            case C.DirectionB:
+                _registers[C.DirectionB] = value;
+                PortBPinsChanged?.Invoke(PortBPins);
+                break;
+            case C.PortA:
+            case C.PortANoHandshake:
+                _registers[C.PortA] = value;
+                WritePortA?.Invoke(value);
+                if (register == C.PortA) AcknowledgePort(true, true);
+                break;
+            case C.Timer1Low:
+            case C.Latch1Low: _latch1 = (_latch1 & C.HighByteMask) | value; break;
+            case C.Timer1High:
+                _latch1 = (_latch1 & byte.MaxValue) | value << C.HighByteShift;
+                _timer1 = _latch1;
+                _timer1Running = true;
+                _flags &= unchecked((byte)~C.Timer1Interrupt);
+                break;
+            case C.Latch1High:
+                _latch1 = (_latch1 & byte.MaxValue) | value << C.HighByteShift;
+                _flags &= unchecked((byte)~C.Timer1Interrupt);
+                break;
+            case C.Timer2Low: _registers[C.Timer2Low] = value; break;
+            case C.Timer2High:
+                _timer2 = _registers[C.Timer2Low] | value << C.HighByteShift;
+                _timer2Running = _timer2Armed = true;
+                _lastPb6 = Pb6Level;
+                _flags &= unchecked((byte)~C.Timer2Interrupt);
+                break;
+            case C.Peripheral:
+                _registers[C.Peripheral] = value;
+                ConfigureControlOutputs();
+                break;
+            case C.Flags: _flags &= (byte)~(value & C.InterruptMask); break;
+            case C.Enable:
+                _enabled = (value & C.InterruptSummary) != 0
+                    ? (byte)(_enabled | (value & C.InterruptMask))
+                    : (byte)(_enabled & ~value);
+                break;
             default: _registers[register] = value; break;
         }
     }
