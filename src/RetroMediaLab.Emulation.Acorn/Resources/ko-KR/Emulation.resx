@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>메모리 조직</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ROM 의 Slot</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>잘못된 시스템 ROM 이 마스터 모델의 크기.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>가공업자 카드</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>설치된 메모리</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>시스템 ROM</value></data>
 </root>

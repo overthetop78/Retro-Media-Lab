@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>ארגון זיכרון</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>פרטים נוספים ROM חריצים</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>מערכת לא נכונה ROM גודל למודל המאסטר הזה.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>כרטיס מעבד</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>זיכרון מתוק</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>מערכת מערכת ROM</value></data>
 </root>

@@ -1,4 +1,5 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Dictionaries;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Dictionaries;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Constants;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
@@ -25,7 +26,8 @@ internal static class ModelCatalog
         new(MachineModel.BbcMicroModelBPlus, (double)BbcMicroModelConstants.CpuFrequencyHz / BbcMicroModelConstants.CyclesPerFrame,
             VideoConstants.Width, VideoConstants.Height, 4, EmulationPixelFormat.Xrgb8888, 4f / 3, EmulationVideoStandard.Pal,
             CreateModelB),
-        .. AcornEmuMasterModelCatalog.All
+        .. AcornEmuMasterModelCatalog.All,
+        .. AcornEmuSystemModelCatalog.All
     ];
 
     private static BbcMicroMachine CreateModelA(MachineConfiguration configuration) => CreateBoard(configuration, expandedIo: false);
@@ -46,6 +48,7 @@ internal static class ModelCatalog
 
     internal static AcornEmuModelDefinition Get(MachineConfiguration configuration)
     {
+        if (SystemFunctions.IsModel(configuration)) return Get(configuration.Model);
         var standard = VideoStandardFunctions.Resolve(configuration);
         var ntsc = standard == EmulationVideoStandard.Ntsc;
         return Get(configuration.Model) with

@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Hukommelsesorganisation</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Yderligere ROM slots</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Forkert system ROM størrelse for denne Master model.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Processorkort</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Installeret hukommelse</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>System ROM</value></data>
 </root>

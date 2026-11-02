@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Tổ chức bộ nhớ</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Thêm ROM khe</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Hệ thống sai ROM Kích cỡ cho mô hình Master này.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Thẻ xử lý</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Bộ nhớ đã cài đặt</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>Hệ thống ROM</value></data>
 </root>

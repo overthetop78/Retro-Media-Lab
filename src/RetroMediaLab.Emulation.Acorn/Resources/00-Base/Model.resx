@@ -16,4 +16,11 @@
   <data name="Emulation.Acorn.Model.BbcMasterCompact"><value>BBC Master Compact</value></data>
   <data name="Emulation.Acorn.Cpu.Gte65C102"><value>65C102</value></data>
   <data name="Emulation.Acorn.Cpu.Intel80186"><value>Intel 80186</value></data>
+  <data name="Emulation.Acorn.Model.AcornSystem1"><value>Acorn System 1</value></data>
+  <data name="Emulation.Acorn.Model.AcornSystem2"><value>Acorn System 2</value></data>
+  <data name="Emulation.Acorn.Model.AcornSystem3"><value>Acorn System 3</value></data>
+  <data name="Emulation.Acorn.Model.AcornSystem4"><value>Acorn System 4</value></data>
+  <data name="Emulation.Acorn.Model.AcornSystem5"><value>Acorn System 5</value></data>
+  <data name="Emulation.Acorn.Cpu.Mos6502"><value>MOS 6502</value></data>
+  <data name="Emulation.Acorn.Cpu.Motorola6809"><value>Motorola MC6809</value></data>
 </root>

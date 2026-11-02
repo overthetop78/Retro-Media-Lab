@@ -18,8 +18,9 @@ internal sealed partial class EmulatorCore
     {
         for (var unit = 0; unit < C.HardDiskCount; unit++)
         {
-            _hardDiskMechanics[unit] ??= RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions.MediaProcessing.CreateDriveMechanics(S.HardDisk);
             _hardDiskConnected[unit] = NativeStorage.HardDiskConnected(configuration, unit);
+            if (!_hardDiskConnected[unit]) continue;
+            _hardDiskMechanics[unit] ??= RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions.MediaProcessing.CreateDriveMechanics(S.HardDisk);
             var settings = _hardDiskSettings[unit] = NativeStorage.HardDiskSettings(configuration, unit);
             _hardDiskSoundEnabled[unit] = bool.Parse(configuration.Options.GetValueOrDefault(C.HardDiskKey(unit, C.MechanicalSoundOption), bool.TrueString));
             _hardDiskSoundVolume[unit] = EmulationMechanicalSoundSettings.ReadVolume(configuration.Options, C.HardDiskKey(unit, C.SoundVolumeOption));

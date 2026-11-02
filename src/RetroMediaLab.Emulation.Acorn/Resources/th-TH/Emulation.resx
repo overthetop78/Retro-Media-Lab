@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>การตั้งค่าหน่วยความจํา</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>เพิ่มเติม ROM ช่อง</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>ระบบไม่ถูกต้อง ROM ขนาดสําหรับรุ่นใหญ่</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>ไพ่ประมวลผล</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>หน่วยความจําที่ติดตั้ง</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>ระบบ ROM</value></data>
 </root>

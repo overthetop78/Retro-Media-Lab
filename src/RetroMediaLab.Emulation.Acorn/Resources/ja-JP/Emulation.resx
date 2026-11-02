@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>メモリ組織</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>参加申し込み ROM スロット</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>誤ったシステム ROM マスターモデルのサイズ</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>プロセッサ カード</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>インストールされたメモリ</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>ソリューション ROM</value></data>
 </root>

@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Memóriaszervezés</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Kiegészítő ROM rések</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Helytelen rendszer ROM A Mester modell mérete.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Feldolgozói kártya</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Telepített memória</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>Rendszer ROM</value></data>
 </root>

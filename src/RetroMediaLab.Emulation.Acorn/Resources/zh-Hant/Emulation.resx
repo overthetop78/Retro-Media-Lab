@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>记忆组织</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>额外 ROM 插槽</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>系统错误 ROM 大小用于此主模型。</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>处理卡</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>安装的内存</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>系统 ROM</value></data>
 </root>

@@ -6,6 +6,15 @@ internal static partial class AcornFirmware
     private static IReadOnlyDictionary<string, FirmwareDefinition> OperatingSystemRoms() =>
         new Dictionary<string, FirmwareDefinition>(StringComparer.OrdinalIgnoreCase)
         {
+            ["b987354c55beb5e2ced761970c3339b895a8c09d"] = new("Acorn System 1 Monitor", null, FirmwareCategory.OperatingSystem),
+            ["c587da5dcc6878dcd0bc823c508472d38296003e"] = new("Acorn System COS", null, FirmwareCategory.OperatingSystem),
+            ["4cb322dadcfba9c452797d6cc2096f0c92e8792c"] = new("Acorn System DOS", null, FirmwareCategory.OperatingSystem),
+            ["b14a884bf82a7a8c23bc03c2e112728dd1a74896"] = new("Acorn System 6809 Monitor", "4.9", FirmwareCategory.OperatingSystem),
+            ["e588298239b5360b5d1e15d5cd9f7fe2b1693e5d"] = new("Acorn System 5F", null, FirmwareCategory.OperatingSystem),
+            ["3becc10f6a938971f83b8898c28cfdd3e6897a41"] = new("Acorn System DOS40A", null, FirmwareCategory.OperatingSystem),
+            ["8d492106a1b06aa8ae2744919fcd83c7b42a2612"] = new("Acorn System DOS40B", null, FirmwareCategory.OperatingSystem),
+            ["df68b30e6f804fc3f9b1e642e968a872de0c11cd"] = new("Acorn System DOS80A", null, FirmwareCategory.OperatingSystem),
+            ["3f787ab83e41e50889e367cbccddfa716b6a5c2b4"] = new("Acorn System 5 DOS80", null, FirmwareCategory.OperatingSystem),
             ["ea7d3a7e3ee1ecfaa1483af994048057362b01f2"] = new("MOS / BASIC II", "2.00", FirmwareCategory.OperatingSystem, Combined: true, VideoStandard: EmulationVideoStandard.Pal),
             ["d9426dd7454ca199cdef9435daa332cdf405c965"] = new("MOS B+", "2.00", FirmwareCategory.OperatingSystem, VideoStandard: EmulationVideoStandard.Pal),
             ["4b0ece6dc139d5d3f4fabd023716fb6f25149b80"] = new("MOS 0.10", "0.10", FirmwareCategory.OperatingSystem, VideoStandard: EmulationVideoStandard.Pal),

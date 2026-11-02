@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Minneorganisasjon</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Tilleggsverdi ROM spilleautomater</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Feil system ROM Størrelse på denne mastermodellen.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Prosessorkort</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Installert minne</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>System ROM</value></data>
 </root>

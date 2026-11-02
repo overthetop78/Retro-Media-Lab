@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>منظمة الذاكرة</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>إضافة ROM الطوابق</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>النظام غير الصحيح ROM حجم هذا النموذج المعلم</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>بطاقة التجهيز</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>الذاكرة المثبتة</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>النظام ROM</value></data>
 </root>

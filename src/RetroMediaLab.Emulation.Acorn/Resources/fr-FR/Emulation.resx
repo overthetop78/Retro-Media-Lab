@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Organisation de la mémoire</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Emplacements ROM supplémentaires</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>La taille de la ROM système ne correspond pas à ce modèle Master.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Carte processeur</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Mémoire installée</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>ROM système</value></data>
 </root>

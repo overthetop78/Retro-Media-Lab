@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Organisasi memori</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Tambahan ROM Slots</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Sistem tidak benar ROM ukuran untuk model Master ini.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Kartu prosesor</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Memori terpasang</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>Sistem ROM</value></data>
 </root>

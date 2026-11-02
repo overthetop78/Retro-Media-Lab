@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Geheugenorganisatie</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Aanvullend ROM slots</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Onjuist systeem ROM maat voor dit Master model.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Processorkaart</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Geïnstalleerd geheugen</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>Systeem ROM</value></data>
 </root>

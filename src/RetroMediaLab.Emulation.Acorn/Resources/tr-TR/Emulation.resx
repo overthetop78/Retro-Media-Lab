@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Hafıza Organizasyonu</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek ROM slotlar yuvalar</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Incorrect system ROM Bu Master modeli için boyut.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Processor kart</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Yüklemek için</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>Sistem Sistem Sistemi ROM</value></data>
 </root>

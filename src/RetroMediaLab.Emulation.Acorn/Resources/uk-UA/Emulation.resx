@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Організація пам'яті</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Додатково ROM ксерокс</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Некоректна система ROM розмір для цієї моделі майстра.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Картка процесора</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Встановлена пам'ять</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>Системы ROM</value></data>
 </root>

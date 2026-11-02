@@ -57,7 +57,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public int CurrentDiskIndex => -1;
     public VideoFrame? LatestVideoFrame { get; private set; }
     public AudioChunk? LatestAudioChunk { get; private set; }
-    public IReadOnlyList<CoreOption> Options =>
+    public IReadOnlyList<CoreOption> Options => SystemModelCatalog.IsSystem(_definition.Model) ? [] :
     [
         new(EmulatorConstants.VideoOutput, "Emulation.Acorn.Video.Output", null, null, EmulatorConstants.UhfOutput, _videoOutput,
             [new(EmulatorConstants.UhfOutput, "UHF PAL", "Emulation.Acorn.Video.Output.Uhf"), new(EmulatorConstants.MonochromeOutput, "Composite", "Emulation.Acorn.Video.Output.Monochrome"), new(EmulatorConstants.ColourCompositeOutput, "Composite", "Emulation.Acorn.Video.Output.ColourComposite"), new(EmulatorConstants.RgbOutput, "RGB", "Emulation.Acorn.Video.Output.Rgb")], ResourceKey: "Emulation.Acorn.Video.Output", Tab: EmulationMachineTab.Video)

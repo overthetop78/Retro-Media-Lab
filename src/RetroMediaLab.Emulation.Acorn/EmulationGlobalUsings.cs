@@ -22,6 +22,7 @@ global using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Constants;
 global using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Dictionaries;
 global using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMaster.Constants;
 global using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMaster.Dictionaries;
+global using RetroMediaLab.Emulation.Acorn.Common.Machines.AcornSystem.Dictionaries;
 global using RetroMediaLab.Emulation;
 global using RetroMediaLab.Emulation.Acorn.Common.Services;
 global using RetroMediaLab.Emulation.Acorn.Common.Enums;

@@ -57,8 +57,11 @@ public sealed class AcornModuleTests
         var master = MachineCatalog.All.Single(machine => machine.Id == nameof(MachineModel.BbcMaster128));
         Assert.Equal(modelA.ImagePath, modelB.ImagePath);
         Assert.NotEqual(modelB.ImagePath, master.ImagePath);
-        var resources = MachineCatalog.All.Select(machine => machine.ImagePath!).ToArray();
-        foreach (var machine in MachineCatalog.All)
+        var illustrated = MachineCatalog.All.Where(machine => machine.ImagePath is not null).ToArray();
+        var resources = illustrated.Select(machine => machine.ImagePath!).ToArray();
+        Assert.NotNull(modelA.ImagePath);
+        Assert.NotNull(master.ImagePath);
+        foreach (var machine in illustrated)
             Assert.True(File.Exists(Path.Combine(AppContext.BaseDirectory, machine.ImagePath!)), machine.ImagePath);
         Assert.DoesNotContain(resources, name => name.EndsWith("/BbcMicroModelA.png", StringComparison.Ordinal));
         Assert.DoesNotContain(resources, name => name.EndsWith("/BbcMicroModelB.png", StringComparison.Ordinal));

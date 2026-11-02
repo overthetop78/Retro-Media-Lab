@@ -68,4 +68,7 @@
   <data name="Emulation.Acorn.Master.MemoryDescription"><value>Организация памяти</value></data>
   <data name="Emulation.Acorn.Master.RomSlots"><value>Дополнительный ROM слоты</value></data>
   <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Неправильная система ROM Размер для этой модели мастера.</value></data>
+  <data name="Emulation.Acorn.System.Cpu"><value>Карта процессора</value></data>
+  <data name="Emulation.Acorn.System.Memory"><value>Установленная память</value></data>
+  <data name="Emulation.Acorn.System.MonitorRom"><value>Система ROM</value></data>
 </root>

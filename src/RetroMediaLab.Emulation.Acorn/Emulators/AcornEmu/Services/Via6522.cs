@@ -7,7 +7,7 @@ internal sealed class Via6522
 {
     private readonly byte[] _registers = new byte[16];
     private int _timer1, _timer2, _latch1;
-    private bool _timer1Running, _timer2Running, _ca2, _cb1;
+    private bool _timer1Running, _timer2Running, _ca1, _ca2, _cb1;
     private byte _flags, _enabled;
     internal Func<byte>? ReadPortA { get; set; }
     internal Func<byte>? ReadPortB { get; set; }
@@ -23,11 +23,20 @@ internal sealed class Via6522
         Array.Clear(_registers);
         _timer1 = _timer2 = _latch1 = 0xffff;
         _flags = _enabled = 0;
-        _timer1Running = _timer2Running = _ca2 = _cb1 = false;
+        _timer1Running = _timer2Running = _ca1 = _ca2 = _cb1 = false;
     }
 
     /// <summary>Événement de synchronisation verticale raccordé à CA1 sur le BBC.</summary>
     internal void VSync() => _flags |= 2;
+    /// <summary>Entrée CA1 générique ; le PCR choisit le front qui positionne le drapeau.</summary>
+    internal void SetCa1(bool level)
+    {
+        const int peripheralControlRegister = 12;
+        const byte positiveEdge = 0x01;
+        const byte interrupt = 0x02;
+        if (level != _ca1 && level == ((_registers[peripheralControlRegister] & positiveEdge) != 0)) _flags |= interrupt;
+        _ca1 = level;
+    }
     /// <summary>Niveau de détection clavier sur CA2 ; le front actif dépend du PCR.</summary>
     internal void SetKeyboardLine(bool level)
     {
