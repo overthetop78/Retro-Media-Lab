@@ -11,6 +11,9 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 using RetroMediaLab.Emulation;
 using RetroMediaLab.App.Theme.Common;
 
@@ -44,6 +47,8 @@ internal sealed class MachineInputController : IDisposable
     private readonly Func<IntPtr>? _inputHandleProvider;
     private IntPtr InputHandle => _inputHandleProvider?.Invoke() ?? _configuredInputHandle;
     private HwndSource? _windowSource;
+    private Window? _focusWindow;
+    private DispatcherOperation? _clickFocus;
     private bool _powered;
     private bool _hostTransition;
     private bool _restorePointerAfterHostTransition;
@@ -98,10 +103,12 @@ internal sealed class MachineInputController : IDisposable
     internal void SetInputView(FrameworkElement inputView, IntPtr inputHandle)
     {
         ReleasePointer();
+        DetachWindowHook();
         Detach();
         _inputView = inputView;
         _configuredInputHandle = inputHandle;
         Attach();
+        if (_inputView.IsLoaded) AttachWindowHook();
     }
 
     internal void SetPresentation(EmulationMachinePresentation presentation)
@@ -122,7 +129,7 @@ internal sealed class MachineInputController : IDisposable
 
     internal void RestoreFocus()
     {
-        if (!_powered || !_isActive()) return;
+        if (_disposed || !_powered || !_isActive()) return;
         _focus(_inputView, InputHandle);
     }
 
@@ -142,6 +149,8 @@ internal sealed class MachineInputController : IDisposable
             _restorePointerAfterHostTransition = false;
             _hostTransition = false;
             if (!_powered || _disposed) return;
+            DetachWindowHook();
+            AttachWindowHook();
             RestoreFocus();
             if (restorePointer)
                 _pointerCapture.Capture(_inputView, _view.Screen, InputHandle);
@@ -302,15 +311,42 @@ internal sealed class MachineInputController : IDisposable
 
     private void AttachWindowHook()
     {
-        if (_windowSource is not null || Window.GetWindow(_view) is not Window window) return;
+        if (_focusWindow is not null || (Window.GetWindow(_inputView) ?? Window.GetWindow(_view)) is not Window window) return;
+        _focusWindow = window;
+        window.AddHandler(Mouse.PreviewMouseUpEvent, new MouseButtonEventHandler(WindowMouseUp), handledEventsToo: true);
         _windowSource = PresentationSource.FromVisual(window) as HwndSource;
         _windowSource?.AddHook(WindowMessage);
     }
 
     private void DetachWindowHook()
     {
+        _clickFocus?.Abort();
+        _clickFocus = null;
+        _focusWindow?.RemoveHandler(Mouse.PreviewMouseUpEvent, new MouseButtonEventHandler(WindowMouseUp));
+        _focusWindow = null;
         _windowSource?.RemoveHook(WindowMessage);
         _windowSource = null;
+    }
+
+    private void WindowMouseUp(object sender, MouseButtonEventArgs args)
+    {
+        if (_disposed || !_powered || !_isActive() || !_inputView.IsVisible || _hostTransition) return;
+        var editor = Keyboard.FocusedElement is TextBoxBase { IsReadOnly: false } or PasswordBox
+            ? Keyboard.FocusedElement as Visual : null;
+        var clickedEditor = editor is not null && args.OriginalSource is DependencyObject source
+            && (ReferenceEquals(source, editor) || source is Visual && editor.IsAncestorOf(source));
+        _clickFocus?.Abort();
+        // Let the clicked command and tab selection finish before returning keyboard input.
+        _clickFocus = _inputView.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, () =>
+        {
+            _clickFocus = null;
+            if (_disposed || !_powered || !_isActive() || !_inputView.IsVisible || _hostTransition
+                || _focusWindow is not { IsActive: true, IsEnabled: true }) return;
+            // Editing and open popups keep keyboard ownership until their interaction ends.
+            if (clickedEditor || Mouse.Captured is MenuBase or MenuItem or ComboBox
+                || Keyboard.FocusedElement is ComboBox { IsDropDownOpen: true }) return;
+            RestoreFocus();
+        });
     }
 
     private IntPtr WindowMessage(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
