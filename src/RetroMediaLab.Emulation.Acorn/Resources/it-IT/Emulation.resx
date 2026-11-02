@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Scheda di processore</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Memoria installata</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>Sistema ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Memoria di testo inferiore</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Video memoria</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Installare l'interfaccia del disco</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Estensione del punto di galleggiamento ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>Utilità ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Sistema operativo disco ROM</value></data>
 </root>

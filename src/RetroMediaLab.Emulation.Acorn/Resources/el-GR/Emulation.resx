@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Κάρτα επεξεργαστή</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Εγκαταστημένη μνήμη</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>Σύστημα ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Χαμηλότερη μνήμη κειμένου</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>μνήμη βίντεο</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Εγκατάσταση διεπαφής δίσκου</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Επέκταση κινητής υποδιαστολής ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>Βοηθητικότητα ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Λειτουργικό σύστημα δίσκου ROM</value></data>
 </root>

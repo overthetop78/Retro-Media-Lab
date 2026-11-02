@@ -1,11 +1,12 @@
-using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants.SystemCassetteConstants;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
+using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.AnalogCassetteConstants;
 
-namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
+namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 
-/// <summary>Magnétophone System et modem 1 200/2 400 Hz relié aux broches de la carte CPU.</summary>
+/// <summary>Magnétophone analogique, avec broches directes ou modem FSK 1 200/2 400 Hz.</summary>
 /// <remarks>La ROM effectue elle-même la sérialisation. Ce composant présente les
 /// bits électriques et conserve le signal ; il ne charge pas directement un programme.</remarks>
-internal sealed class SystemCassette(int clock) : IEmulatorCassetteTransport
+internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = CassetteSignalMode.FrequencyShiftKeying) : IEmulatorCassetteTransport
 {
     private EmulationCassetteSignal? _signal;
     private EmulationCassetteSettings _settings = new();
@@ -25,6 +26,7 @@ internal sealed class SystemCassette(int clock) : IEmulatorCassetteTransport
     private EmulationCassetteState _state = EmulationCassetteState.Empty;
 
     internal bool InputBit { get; private set; } = true;
+    internal bool InputHigh => _latency == 0 && _state == EmulationCassetteState.Playing && _hasLevel && _inputLevel;
     internal bool HasChanges { get; private set; }
     internal int Position => _position;
     internal short MonitorSample => _latency > 0 ? (short)0 : _state == EmulationCassetteState.Recording
@@ -108,6 +110,8 @@ internal sealed class SystemCassette(int clock) : IEmulatorCassetteTransport
         _outputPhase = 0;
         _outputLevel = false;
     }
+
+    internal void SetOutputLevel(bool value) => _outputLevel = value;
 
     public void ExecuteCassette(EmulationCassetteCommand command)
     {
@@ -194,8 +198,11 @@ internal sealed class SystemCassette(int clock) : IEmulatorCassetteTransport
 
     private void Record()
     {
-        _outputPhase += C.HalfWavesPerCycle * (_outputBit ? C.MarkFrequency : C.SpaceFrequency);
-        if (_outputPhase >= clock) { _outputPhase -= clock; _outputLevel = !_outputLevel; }
+        if (signalMode == CassetteSignalMode.FrequencyShiftKeying)
+        {
+            _outputPhase += C.HalfWavesPerCycle * (_outputBit ? C.MarkFrequency : C.SpaceFrequency);
+            if (_outputPhase >= clock) { _outputPhase -= clock; _outputLevel = !_outputLevel; }
+        }
         AdvancePhase(1);
         while (_samplePhase >= clock)
         {

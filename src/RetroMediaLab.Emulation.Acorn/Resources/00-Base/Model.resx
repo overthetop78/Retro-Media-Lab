@@ -23,4 +23,6 @@
   <data name="Emulation.Acorn.Model.AcornSystem5"><value>Acorn System 5</value></data>
   <data name="Emulation.Acorn.Cpu.Mos6502"><value>MOS 6502</value></data>
   <data name="Emulation.Acorn.Cpu.Motorola6809"><value>Motorola MC6809</value></data>
+  <data name="Emulation.Acorn.Model.AcornAtom"><value>Acorn Atom</value></data>
 </root>
+

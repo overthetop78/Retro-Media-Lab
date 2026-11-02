@@ -1,6 +1,6 @@
-namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants;
+namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 
-internal static class SystemCassetteConstants
+internal static class AnalogCassetteConstants
 {
     internal const int MarkFrequency = 2400;
     internal const int SpaceFrequency = 1200;

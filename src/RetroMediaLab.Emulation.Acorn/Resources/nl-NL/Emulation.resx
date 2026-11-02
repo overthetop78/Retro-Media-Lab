@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Processorkaart</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Geïnstalleerd geheugen</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>Systeem ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Tekstgeheugen onderaan</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Videogeheugen</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Schijfinterface installeren</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC ' OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Drijvende puntuitbreiding ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>Hulpmiddel ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Schijfbesturingssysteem ROM</value></data>
 </root>

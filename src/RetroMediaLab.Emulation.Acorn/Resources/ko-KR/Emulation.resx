@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>가공업자 카드</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>설치된 메모리</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>시스템 ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>낮은 텍스트 메모리</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>영상 기억</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>디스크 인터페이스</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Floating-point 확장 ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Disk 운영 시스템 ROM</value></data>
 </root>

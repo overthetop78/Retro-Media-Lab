@@ -5,11 +5,13 @@ using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Apple;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.CommodoreDos;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Raw;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.BbcDfs;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.AcornAtom;
 using RetroMediaLab.MediaEngine.Images.Models.Sectors;
 using RetroMediaLab.MediaEngine.Images.Reading.Reconstruction;
 using RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.Sectors;
 using RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.Sectors.Apple;
 using RetroMediaLab.MediaFileSystems.Formats.Commodore;
+using RetroMediaLab.MediaFileSystems.FileSystems.Acorn.BbcDfs;
 
 namespace RetroMediaLab.MediaEngine.Images.Creation;
 
@@ -18,6 +20,16 @@ internal static class BlankSectorImageFactory
 {
     public static SectorImage Create(string formatId)
     {
+        if (formatId == DiskImageFormatIds.AcornAtomDos)
+        {
+            var bytes = new byte[AcornAtomDskReader.Capacity];
+            var count = AcornAtomDskReader.Cylinders * AcornAtomDskReader.Heads * AcornAtomDskReader.SectorsPerTrack;
+            var catalogue = bytes.AsSpan(AcornAtomDskReader.BlockSize, AcornAtomDskReader.BlockSize);
+            catalogue[BbcDfsFileSystemLayout.TotalSectorsHighOffset] = (byte)(count >> 8);
+            catalogue[BbcDfsFileSystemLayout.TotalSectorsLowOffset] = (byte)count;
+            return LinearSectorImageBuilder.Create(bytes, formatId, new LinearSectorImageGeometry(AcornAtomDskReader.BlockSize,
+                AcornAtomDskReader.Cylinders, AcornAtomDskReader.Heads, AcornAtomDskReader.SectorsPerTrack));
+        }
         if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.FormatId == formatId) is { } adfs)
         {
             var bytes = new byte[adfs.Capacity];

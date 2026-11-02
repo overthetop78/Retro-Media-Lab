@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Prosessorikortti</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Asennettu muisti</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>Järjestelmä ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Alempi tekstimuisti</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Videomuisti</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Asenna levyliittymä</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Kelluva pistelaajennus ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>Hyödyllisyys ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Levyn käyttöjärjestelmä ROM</value></data>
 </root>

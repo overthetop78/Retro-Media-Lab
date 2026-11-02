@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Thẻ xử lý</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Bộ nhớ đã cài đặt</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>Hệ thống ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Bộ nhớ văn bản thấp hơn</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Bộ nhớ phim</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Cài đặt giao diện đĩa</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Phần mở rộng điểm nổi ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>Tiện ích ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Hệ điều hành đĩa ROM</value></data>
 </root>

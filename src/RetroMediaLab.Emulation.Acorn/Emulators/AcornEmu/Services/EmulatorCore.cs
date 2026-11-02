@@ -10,6 +10,8 @@ using NativeModelCatalog = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dict
 using BbcAudioConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.AudioConstants;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions;
 using CassetteConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.CassetteConstants;
+using AtomSettings = RetroMediaLab.Emulation.Acorn.Common.Machines.AcornAtom.Constants.AtomModelConstants;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Dictionaries;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 
@@ -22,7 +24,12 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     private IAcornMachine? _machine;
 
     /// <summary>Sélectionne le constructeur et les sorties du modèle sans charger de ROM ni créer de session.</summary>
-    internal EmulatorCore(MachineModel model) => _definition = NativeModelCatalog.Get(model);
+    internal EmulatorCore(MachineModel model)
+    {
+        _definition = NativeModelCatalog.Get(model);
+        if (model == MachineModel.AcornAtom)
+            SupportedContentExtensions = new HashSet<string>(CassetteConstants.Extensions.Concat(AtomFloppyDriveModels.All.SelectMany(drive => drive.AcceptedExtensions)), StringComparer.OrdinalIgnoreCase);
+    }
     private bool _disposed;
     private long _sequence;
     private long _audioSequence, _audioFrames;
@@ -57,7 +64,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public int CurrentDiskIndex => -1;
     public VideoFrame? LatestVideoFrame { get; private set; }
     public AudioChunk? LatestAudioChunk { get; private set; }
-    public IReadOnlyList<CoreOption> Options => SystemModelCatalog.IsSystem(_definition.Model) ? [] :
+    public IReadOnlyList<CoreOption> Options => SystemModelCatalog.IsSystem(_definition.Model) || _definition.Model == MachineModel.AcornAtom ? [] :
     [
         new(EmulatorConstants.VideoOutput, "Emulation.Acorn.Video.Output", null, null, EmulatorConstants.UhfOutput, _videoOutput,
             [new(EmulatorConstants.UhfOutput, "UHF PAL", "Emulation.Acorn.Video.Output.Uhf"), new(EmulatorConstants.MonochromeOutput, "Composite", "Emulation.Acorn.Video.Output.Monochrome"), new(EmulatorConstants.ColourCompositeOutput, "Composite", "Emulation.Acorn.Video.Output.ColourComposite"), new(EmulatorConstants.RgbOutput, "RGB", "Emulation.Acorn.Video.Output.Rgb")], ResourceKey: "Emulation.Acorn.Video.Output", Tab: EmulationMachineTab.Video)
@@ -174,7 +181,9 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         if (media.Slot.Category == EmulationMediaCategory.HardDisk) { InsertHardDisk(media); return; }
         if (media.Slot != EmulationMediaSlot.Cassette0 || media.Category != MediaCategory.Cassette || !SupportedContentExtensions.Contains(Path.GetExtension(media.Path))) throw new ArgumentException(nameof(media));
         var parameters = media.Parameters ?? _cassettePcm.ToParameters();
-        var signal = BbcMicroCassetteFunctions.Read(media.Path, parameters);
+        var signal = _definition.Model == MachineModel.AcornAtom
+            ? CommonCoreHostFunctions.MediaProcessing.ReadCassetteAsync(media.Path, machineId: AtomSettings.CassetteMachineId, parameters: parameters).GetAwaiter().GetResult()
+            : BbcMicroCassetteFunctions.Read(media.Path, parameters);
         SaveMediaChanges(EmulationMediaSlot.Cassette0);
         (_machine ?? throw new InvalidOperationException()).InsertCassette(signal, !media.IsReadOnly && BbcMicroCassetteFunctions.RecordingExtensions.Contains(Path.GetExtension(media.Path), StringComparer.OrdinalIgnoreCase));
         _cassettePath = media.Path;

@@ -71,4 +71,12 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Carte processeur</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Mémoire installée</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>ROM système</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Mémoire texte basse</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Mémoire vidéo</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Installer l'interface disque</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>ROM BASIC / OS</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>ROM de calcul en virgule flottante</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>ROM utilitaire</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>ROM DOS</value></data>
 </root>
+

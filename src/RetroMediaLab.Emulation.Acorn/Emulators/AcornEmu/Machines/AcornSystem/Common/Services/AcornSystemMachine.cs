@@ -19,7 +19,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private readonly RamIo8154 _ramIo = new();
     private readonly Via6522 _via = new();
     private readonly SystemKeyboard _keyboard;
-    private readonly SystemCassette _cassette;
+    private readonly AnalogCassette _cassette;
     private readonly SystemVideo? _video;
     private readonly SystemHexDisplay? _display;
     private readonly Cpu6502? _cpu6502;
@@ -54,7 +54,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             Array.Fill(_ramMapped, true, start, bytes);
         }
         _keyboard = new SystemKeyboard(_clock);
-        _cassette = new SystemCassette(_clock);
+        _cassette = new AnalogCassette(_clock);
         if (card == SystemCpuCard.Keypad6502)
         {
             _display = new SystemHexDisplay();

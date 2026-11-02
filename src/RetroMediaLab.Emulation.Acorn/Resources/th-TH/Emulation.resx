@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>ไพ่ประมวลผล</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>หน่วยความจําที่ติดตั้ง</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>ระบบ ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>หน่วยความจําของข้อความด้านล่าง</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>หน่วยความจําวีดิทัศน์</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>ติดตั้งส่วนติดต่อบนดิสก์</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>ส่วนขยายการไล่ระดับสี ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>ความจุ ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>ระบบปฏิบัติการของดิสก์ ROM</value></data>
 </root>

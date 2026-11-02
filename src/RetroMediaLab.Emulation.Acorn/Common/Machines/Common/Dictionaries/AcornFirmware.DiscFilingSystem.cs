@@ -6,6 +6,7 @@ internal static partial class AcornFirmware
     private static IReadOnlyDictionary<string, FirmwareDefinition> DiscFilingSystemRoms() =>
         new Dictionary<string, FirmwareDefinition>(StringComparer.OrdinalIgnoreCase)
         {
+            ["71ea0a4b8d9c3caf9718fc7cc279f4306a23b39c"] = new("Acorn Atom DOS", null, FirmwareCategory.DiscFilingSystem, DiskController: FirmwareDiskController.Intel8271),
             ["301fd05c475a629c4bec70510d4507256a5b00d8"] = new("Acorn ADFS", "1.30", FirmwareCategory.DiscFilingSystem, DiskController: FirmwareDiskController.AcornWd1770),
             ["0d7ed0b0b3852cb61970ada1993244f2896896aa"] = new("Acorn 1770 DFS", "2.23", FirmwareCategory.DiscFilingSystem, DiskController: FirmwareDiskController.AcornWd1770),
             ["cf2ebc422a8d24ec6f1a0320520c38a0e704109a"] = new("Acorn 1770 DFS", "2.26", FirmwareCategory.DiscFilingSystem, DiskController: FirmwareDiskController.AcornWd1770),

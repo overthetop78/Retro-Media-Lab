@@ -2,6 +2,7 @@ using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
 using System.IO;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Dictionaries;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
@@ -38,10 +39,11 @@ internal static partial class StorageFunctions
             }
         hardDisk = false; index = default; option = string.Empty; return false;
     }
-    private static IReadOnlyList<FloppyDriveModelChoice> CreationModels(MachineConfiguration configuration) => FloppyDriveModels.Available(UsesWd1770(configuration), MasterFunctions.IsCompact(configuration));
+    private static IReadOnlyList<FloppyDriveModelChoice> CreationModels(MachineConfiguration configuration) =>
+        configuration.Model == MachineModel.AcornAtom ? AtomFloppyDriveModels.All : FloppyDriveModels.Available(UsesWd1770(configuration), MasterFunctions.IsCompact(configuration));
     private static string Model(MachineConfiguration configuration, int drive)
     {
-        var requested = configuration.Options.GetValueOrDefault(C.Key(drive, C.ModelOption), MasterFunctions.IsCompact(configuration) ? C.CompactDriveModel : MasterFunctions.IsModel(configuration) ? C.Double80Dd : C.DefaultModel);
+        var requested = configuration.Options.GetValueOrDefault(C.Key(drive, C.ModelOption), configuration.Model == MachineModel.AcornAtom ? C.Single40 : MasterFunctions.IsCompact(configuration) ? C.CompactDriveModel : MasterFunctions.IsModel(configuration) ? C.Double80Dd : C.DefaultModel);
         var profile = C.Models.SingleOrDefault(model => model.Value == requested) ?? throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
         var available = CreationModels(configuration);
         return available.Any(model => model.Value == requested) ? requested

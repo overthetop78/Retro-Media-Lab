@@ -47,7 +47,8 @@ public sealed record MachineConfiguration : IEmulationConfiguration
     public Guid Id { get; init; }
     public MachineModel Model { get; }
     public string MachineId => Model.ToString();
-    public MachineFamily Family => MachineFamily.BbcMicro;
+    public MachineFamily Family => SystemModelCatalog.IsSystem(Model) ? MachineFamily.AcornSystem
+        : Model == MachineModel.AcornAtom ? MachineFamily.AcornAtom : MachineFamily.BbcMicro;
     public Emulator Core { get; init; }
     public IReadOnlyList<FirmwareConfiguration> Firmwares { get; init; }
     public IReadOnlyList<MediaConfiguration> Media { get; init; }

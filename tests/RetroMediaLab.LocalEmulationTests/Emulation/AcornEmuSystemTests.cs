@@ -159,7 +159,7 @@ public sealed class AcornEmuSystemTests
     [Fact]
     public void CassetteStaysStoppedUntilPlayAndPreservesRecordingsAcrossPause()
     {
-        var cassette = new SystemCassette(1000000);
+        var cassette = new AnalogCassette(1000000);
         cassette.Insert(new EmulationCassetteSignal(new short[480], 48000), true);
         Assert.Equal(EmulationCassetteState.Stopped, cassette.CassetteState);
         cassette.ExecuteCassette(EmulationCassetteCommand.Record);

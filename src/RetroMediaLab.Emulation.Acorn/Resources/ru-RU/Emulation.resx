@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Карта процессора</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Установленная память</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>Система ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Низкая текстовая память</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Видеопамять</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Установить интерфейс диска</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Расширение плавающей точки ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>полезность ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Дисковая операционная система ROM</value></data>
 </root>

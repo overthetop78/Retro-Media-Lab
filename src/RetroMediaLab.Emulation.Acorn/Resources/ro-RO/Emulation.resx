@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Card procesor</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Memorie instalată</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>Sistem ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Memorie text mai mică</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Memorie video</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Instalează interfața discului</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Extensie punct plutitor ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>Utilitate ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Sistem de operare disc ROM</value></data>
 </root>

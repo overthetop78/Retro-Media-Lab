@@ -6,6 +6,7 @@ internal static partial class AcornFirmware
     private static IReadOnlyDictionary<string, FirmwareDefinition> CharacterGeneratorRoms() =>
         new Dictionary<string, FirmwareDefinition>(StringComparer.OrdinalIgnoreCase)
         {
+            ["5e9d68e55e73cae3d28adaff34fe115e00029009"] = new("MC6847", null, FirmwareCategory.CharacterGenerator),
             ["04c326a745ba6a78185ebc2adeecb53a166a6ab3"] = new("Acorn System 80-column VDU", null, FirmwareCategory.CharacterGenerator),
             ["6c8daba70374e5aa3a6402f24cdc5f8677d58a0f"] = new("SAA5050", null, FirmwareCategory.CharacterGenerator),
             ["9ab9d24b845fe2964fba2f4770d54025d2c8026a"] = new("SAA5051", "MAME 0.203", FirmwareCategory.CharacterGenerator),

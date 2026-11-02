@@ -128,4 +128,13 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Processor card</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Installed memory</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>System ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DiscPack"><value>Disc Pack</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Lower text memory</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Video memory</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Install disk interface</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Floating-point extension ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>Utility ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Disk operating system ROM</value></data>
 </root>
+

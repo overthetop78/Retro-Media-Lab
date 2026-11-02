@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>بطاقة التجهيز</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>الذاكرة المثبتة</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>النظام ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>ترجمه ترجمه</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>ذكرى فيديو</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>واجهة قرص إنزال</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>تمديد نقطة التقلب ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>القدرة على العمل ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>نظام التشغيل ROM</value></data>
 </root>

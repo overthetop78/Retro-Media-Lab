@@ -71,4 +71,11 @@
   <data name="Emulation.Acorn.System.Cpu"><value>Prosessorkort</value></data>
   <data name="Emulation.Acorn.System.Memory"><value>Installert minne</value></data>
   <data name="Emulation.Acorn.System.MonitorRom"><value>System ROM</value></data>
+  <data name="Emulation.Acorn.Atom.TextRam"><value>Lavere tekstminne</value></data>
+  <data name="Emulation.Acorn.Atom.VideoRam"><value>Videominne</value></data>
+  <data name="Emulation.Acorn.Atom.InstallDiscPack"><value>Installer diskgrensesnitt</value></data>
+  <data name="Emulation.Acorn.Atom.BasicOsRom"><value>BASIC / OS ROM</value></data>
+  <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Floating-punkt forlengelse ROM</value></data>
+  <data name="Emulation.Acorn.Atom.UtilityRom"><value>Verktøy ROM</value></data>
+  <data name="Emulation.Acorn.Atom.DosRom"><value>Diskoperativsystem ROM</value></data>
 </root>

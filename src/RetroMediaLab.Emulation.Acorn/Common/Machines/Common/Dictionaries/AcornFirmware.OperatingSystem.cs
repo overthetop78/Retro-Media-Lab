@@ -6,6 +6,7 @@ internal static partial class AcornFirmware
     private static IReadOnlyDictionary<string, FirmwareDefinition> OperatingSystemRoms() =>
         new Dictionary<string, FirmwareDefinition>(StringComparer.OrdinalIgnoreCase)
         {
+            ["0072c83458a9690a3ea1f6094f0f38cf8e96a445"] = new("Acorn Atom BASIC / OS", null, FirmwareCategory.OperatingSystem, Combined: true),
             ["b987354c55beb5e2ced761970c3339b895a8c09d"] = new("Acorn System 1 Monitor", null, FirmwareCategory.OperatingSystem),
             ["c587da5dcc6878dcd0bc823c508472d38296003e"] = new("Acorn System COS", null, FirmwareCategory.OperatingSystem),
             ["4cb322dadcfba9c452797d6cc2096f0c92e8792c"] = new("Acorn System DOS", null, FirmwareCategory.OperatingSystem),
