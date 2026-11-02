@@ -85,7 +85,7 @@ Validation après suppression du diagnostic : 989 tests AcornEmu réussis. `scri
   - [x] Modifier `Components/Mos6502/Services/Cpu6502*.cs` et `AcornEmu65C12Tests.cs` avec les corrections des accès de bus confirmés par ces vecteurs et les sources des émulateurs BBC.
   - [x] Supprimer le diagnostic `AcornEmu65C12ReferenceDiagnostic.cs` et le dossier temporaire `artifacts/acorn-65c12-reference` après utilisation, puis modifier le suivi avec les résultats.
   - [x] Modifier `Components/Mos6502/Services/Cpu6502.cs`, `Cpu6502.Interrupts.cs` et `Cpu6502.Bus.cs` : séparer le front NMI mémorisé de son acceptation au sondage, appliquer le sondage IRQ au CMOS et conserver le détournement du vecteur matériel ; compléter les régressions dans `AcornEmu6502BusTests.cs` et `AcornEmu65C12Tests.cs`.
-  - [ ] Modifier l'index Git et créer le commit dédié au 6502 après validation de ses corrections, avant de reprendre le VIA ou un autre composant.
+  - [x] Modifier l'index Git et créer le commit dédié au 6502 après validation de ses corrections, avant de reprendre le VIA ou un autre composant.
 
 Complément du 2 novembre : sondages IRQ NMOS des branches pris/croisés, JMP indirect CMOS six cycles, décalages indexés CMOS 6/7 cycles et SBC décimal invalide corrigés. Contrôle groupé : 1004 tests AcornEmu réussis. Pas de nouveau build de livraison ni de commit tant que la puce reste en cours.
 
@@ -103,6 +103,29 @@ Le cycle supplémentaire BCD du 65C12 reste un cycle interne, sans appel de lect
 
 - [ ] Livrer et committer ce groupe CPU avant tout autre composant.
   - [x] Modifier `build/Debug` avec `scripts/local-building.cmd --building=debug --modules=A`, puis modifier ce suivi avec le résultat et les 24 modules vérifiés.
-  - [ ] Modifier l'index Git pour les seuls fichiers 6502, ses tests et ce suivi ; créer le commit CPU indépendant et modifier le suivi avec son identifiant avant de passer au composant suivant.
+  - [x] Modifier l'index Git pour les seuls fichiers 6502, ses tests et ce suivi ; créer le commit CPU indépendant et modifier le suivi avec son identifiant avant de passer au composant suivant.
 
 Livraison CPU du 2 novembre : script Debug All terminé avec code 0, exécutable présent et 24 DLL de modules vérifiées. Les corrections CPU sont prêtes pour leur commit séparé.
+
+Commit CPU créé : `c2fa3f8ac` — `fix(acorn): correct 6502 and 65C12 bus cycles and interrupt polling`. Les modifications de puces sont exclusivement celles du groupe 6502. Le prochain composant peut maintenant être repris.
+
+- [ ] Terminer le VIA 6522 avant son commit séparé.
+  - [x] Modifier `Components/Mos6522/Constants/Via6522Constants.cs` et créer `Components/Mos6522/Enums/ViaShiftMode.cs` : modes ACR, bits PB7/SR et délais nommés, une constante par ligne.
+  - [x] Créer `Components/Mos6522/Services/Via6522.Timers.cs` et modifier `Via6522.cs` : minuteries continues après l'interruption unique, retard de chargement, rechargement T1 et sortie PB7, T2 bas utilisé pour l'horloge série et conservation du compteur haut.
+  - [x] Créer `Components/Mos6522/Services/Via6522.Shift.cs` et modifier `Via6522.cs` et `Via6522.Ports.cs` : huit modes, broches CB1/CB2, décalage entrant/sortant, interruption SR et acquittement ; lecture des broches du port A distincte du latch de sortie B.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuVia6522Tests.cs` et les attentes VIA préexistantes concernées : régressions autonomes des registres, temporisations, PB7 et huit modes série ; ne pas utiliser de firmware externe.
+  - [ ] Modifier ce suivi avec les résultats groupés, références et éventuelles limites après correction ; livrer par Debug All et créer le commit VIA indépendant avant toute autre puce.
+
+  - [x] Modifier `Components/Mos6522/Services/Via6522.Timers.cs`, `Via6522.cs` et les tests VIA : préserver l'interruption déclenchée sur le cycle même d'un acquittement et conserver les compteurs/SR à RESET ; vérifier ces deux séquences avant livraison.
+
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuModelBTests.cs` : avancer une horloge VIA avant l'acquittement effectué directement sur le bus de carte, pour distinguer ce cas de la collision d'interruption désormais testée séparément.
+
+VIA 6522 : 1 031 tests AcornEmu réussis. Modes série ACR 0 à 7 raccordés : réception CB2, émission MSB d'abord, CB1 externe ou généré, horloge système ou T2 bas, recirculation continue sans IRQ SR, IRQ de fin et relance/acquittement par accès SR. Le compteur haut de T2 reste décrémenté quand son compteur bas fournit l'horloge série. T1 continue après son interruption unique, recharge en continu et pilote PB7 ; durée initiale N+2 et collision d'acquittement vérifiées. Lecture des broches A distincte du latch de sortie B ; RESET conserve compteurs/SR et efface contrôle/interruptions. Aucun diagnostic ou artefact de test externe ajouté.
+
+Références VIA : fiche MOS 6522 (https://www.princeton.edu/~mae412/HANDOUTS/Datasheets/6522.pdf), séquences MAME du registre série (https://github.com/mamedev/mame/blob/master/src/devices/machine/6522via.cpp), comparaisons BBC jsbeeb (https://github.com/mattgodbolt/jsbeeb/blob/main/src/via.js) et beebjit (https://github.com/scarybeasts/beebjit/blob/master/via.c). Tick reste une horloge VIA ; les cartes gardent leur rapport CPU/VIA et leurs périphériques.
+
+- [ ] Livrer et committer le VIA avant toute autre puce.
+  - [x] Modifier `build/Debug` avec `scripts/local-building.cmd --building=debug --modules=A`, puis modifier le suivi avec la vérification de l'exécutable et des 24 modules.
+  - [ ] Modifier l'index Git pour `Components/Mos6522`, les tests VIA concernés et ce suivi ; créer le commit VIA indépendant et consigner son identifiant.
+
+Livraison VIA : Debug All terminé avec code 0, exécutable et 24 modules présents. Les corrections et leurs tests sont prêts pour le commit VIA indépendant.

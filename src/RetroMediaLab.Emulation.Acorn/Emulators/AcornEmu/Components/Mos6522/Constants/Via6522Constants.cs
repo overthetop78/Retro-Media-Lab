@@ -25,6 +25,7 @@ internal static class Via6522Constants
     internal const int HighByteMask = 0xff00;
     internal const byte Ca2Interrupt = 0x01;
     internal const byte Ca1Interrupt = 0x02;
+    internal const byte ShiftInterrupt = 0x04;
     internal const byte Cb2Interrupt = 0x08;
     internal const byte Cb1Interrupt = 0x10;
     internal const byte Timer2Interrupt = 0x20;
@@ -35,11 +36,18 @@ internal static class Via6522Constants
     internal const byte LatchB = 0x02;
     internal const byte Timer2PulseCount = 0x20;
     internal const byte Timer1Continuous = 0x40;
+    internal const byte Timer1Pb7 = 0x80;
     internal const byte Pb6 = 0x40;
+    internal const byte Pb7 = 0x80;
     internal const byte Ca1Rising = 0x01;
     internal const byte Cb1Rising = 0x10;
     internal const int Ca2ModeShift = 1;
     internal const int Cb2ModeShift = 5;
     internal const int ControlModeMask = 7;
     internal const int PulseCycles = 1;
+    internal const int TimerLoadCycles = 1;
+    internal const int ShiftModeShift = 2;
+    internal const int ShiftModeMask = 7;
+    internal const int ShiftBitCount = 8;
+    internal const int ShiftClockDelay = 1;
 }

@@ -130,6 +130,8 @@ public sealed class AcornEmuVia6522Tests
         Fall();
         Assert.True(via.Irq);
         Assert.Equal(0, via.Read(8));
+        via.Tick();
+        via.Read(8);
         Assert.False(via.Irq);
         Fall();
         Assert.Equal(0xff, via.Read(8));
@@ -139,5 +141,198 @@ public sealed class AcornEmuVia6522Tests
         Fall();
         Assert.True(via.Irq);
         void Fall() { via.SetPb6(true); via.Tick(); via.SetPb6(false); via.Tick(); }
+    }
+
+    [Fact]
+    public void Timer1OneShotKeepsCountingWithoutRaisingAnotherInterrupt()
+    {
+        var via = new Via6522();
+        via.Reset();
+        via.Write(14, 0xc0);
+        via.Write(4, 1); via.Write(5, 0);
+        via.Tick(); via.Tick();
+        Assert.False(via.Irq);
+        via.Tick();
+        Assert.True(via.Irq);
+        Assert.Equal(0xff, via.Read(4));
+        via.Tick();
+        Assert.Equal(0xfe, via.Read(4));
+        Assert.False(via.Irq);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Timer1Pb7OverridesDirectionAndTogglesAtTimeout(bool continuous)
+    {
+        var via = new Via6522();
+        via.Reset();
+        via.Write(11, continuous ? (byte)0xc0 : (byte)0x80);
+        via.Write(4, 1); via.Write(5, 0);
+        Assert.Equal(0, via.Read(0) & 0x80);
+        via.Tick(); via.Tick(); via.Tick();
+        Assert.Equal(0x80, via.Read(0) & 0x80);
+        via.Tick(); via.Tick(); via.Tick();
+        Assert.Equal(continuous ? 0 : 0x80, via.Read(0) & 0x80);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void PortAReadsActualOutputPinWhilePortBReadsOutputLatch(bool portA)
+    {
+        var via = new Via6522();
+        via.Reset();
+        if (portA) via.ReadPortA = () => 0; else via.ReadPortB = () => 0;
+        via.Write(portA ? 3 : 2, 0xff);
+        via.Write(portA ? 1 : 0, 0xff);
+        Assert.Equal(portA ? 0 : 0xff, via.Read(portA ? 1 : 0));
+    }
+
+    [Theory]
+    [InlineData(3)]
+    [InlineData(2)]
+    [InlineData(1)]
+    public void ShiftInputCollectsEightBitsWithSelectedClock(int mode)
+    {
+        var via = new Via6522();
+        via.Reset();
+        via.Write(11, (byte)(mode << 2));
+        via.Write(14, 0x84);
+        via.Write(8, 0);
+        via.Write(10, 0);
+        const byte data = 0xa6;
+        for (var bit = 7; bit >= 0; bit--)
+        {
+            via.SetCb2((data & (1 << bit)) != 0);
+            if (mode == 3) { via.SetCb1(false); via.SetCb1(true); }
+            else
+            {
+                var edges = 0;
+                var last = via.Cb1;
+                for (var tick = 0; tick < 100 && edges < 2; tick++)
+                {
+                    via.Tick();
+                    if (last == via.Cb1) continue;
+                    last = via.Cb1;
+                    edges++;
+                }
+                Assert.Equal(2, edges);
+            }
+            if (bit != 0) Assert.False(via.Irq);
+        }
+        if (mode != 3) via.Tick();
+        Assert.True(via.Irq);
+        Assert.Equal(data, via.Read(10));
+        Assert.False(via.Irq);
+    }
+
+    [Theory]
+    [InlineData(7)]
+    [InlineData(6)]
+    [InlineData(5)]
+    [InlineData(4)]
+    public void ShiftOutputUsesMsbFirstAndContinuousModeDoesNotInterrupt(int mode)
+    {
+        var via = new Via6522();
+        via.Reset();
+        via.Write(11, (byte)(mode << 2));
+        via.Write(14, 0x84);
+        via.Write(8, 0);
+        var bits = new List<bool>();
+        via.Cb1PinsChanged = level => { if (level) bits.Add(via.Cb2); };
+        via.Write(10, 0xa6);
+        if (mode == 7)
+        {
+            for (var bit = 0; bit < 8; bit++)
+            {
+                via.SetCb1(true); via.SetCb1(false);
+                bits.Add(via.Cb2);
+            }
+        }
+        else for (var tick = 0; tick < 100 && bits.Count < 8; tick++) via.Tick();
+        Assert.Equal(new[] { true, false, true, false, false, true, true, false }, bits);
+        Assert.Equal(mode != 4, via.Irq);
+        if (mode == 4)
+        {
+            for (var tick = 0; tick < 32; tick++) via.Tick();
+            Assert.False(via.Irq);
+        }
+        Assert.Equal(0xa6, via.Read(10));
+        Assert.False(via.Irq);
+    }
+
+    [Fact]
+    public void DisabledShiftModeLeavesTheRegisterAndPcrPinsIndependent()
+    {
+        var via = new Via6522();
+        via.Reset();
+        via.Write(10, 0xa6);
+        via.Write(12, 0xe0);
+        for (var tick = 0; tick < 32; tick++)
+        {
+            via.SetCb1((tick & 1) != 0);
+            via.Tick();
+        }
+        Assert.True(via.Cb2);
+        Assert.Equal(0xa6, via.Read(10));
+        Assert.Equal(0, via.Read(13) & 4);
+    }
+
+    [Fact]
+    public void ResetClearsControlAndInterruptsWithoutErasingTimerAndShiftContents()
+    {
+        var via = new Via6522();
+        via.Reset();
+        via.Write(10, 0xa6);
+        via.Write(4, 0x34); via.Write(5, 0x12);
+        via.Write(14, 0xff);
+        via.Reset();
+        Assert.Equal(0xa6, via.Read(10));
+        Assert.Equal(0x34, via.Read(4));
+        Assert.Equal(0x12, via.Read(5));
+        Assert.Equal(0, via.Read(11));
+        Assert.Equal(0x80, via.Read(14));
+        Assert.False(via.Irq);
+        via.Tick();
+        Assert.Equal(0x33, via.Read(4));
+    }
+
+    [Theory]
+    [InlineData(4, 0x40)]
+    [InlineData(8, 0x20)]
+    public void TimerInterruptCannotBeAcknowledgedOnItsExpiryClock(int lowRegister, int flag)
+    {
+        var via = new Via6522();
+        via.Reset();
+        via.Write(14, (byte)(0x80 | flag));
+        via.Write(lowRegister, 0); via.Write(lowRegister + 1, 0);
+        via.Tick(); via.Tick();
+        Assert.True(via.Irq);
+        via.Read(lowRegister);
+        Assert.True(via.Irq);
+        via.Tick();
+        via.Read(lowRegister);
+        Assert.False(via.Irq);
+    }
+
+    [Fact]
+    public void Timer2ShiftClockReloadsLowByteWhileHighByteRetainsItsInterruptCounter()
+    {
+        var via = new Via6522();
+        via.Reset();
+        via.Write(11, 0x10);
+        via.Write(14, 0xa0);
+        via.Write(8, 0); via.Write(9, 1);
+        via.Write(10, 0xa6);
+        via.Tick(); via.Tick();
+        Assert.False(via.Irq);
+        Assert.Equal(0, via.Read(9));
+        via.Tick(); via.Tick();
+        Assert.True(via.Irq);
+        Assert.Equal(0xff, via.Read(9));
+        Assert.Equal(0, via.Read(13) & 4);
+        via.Tick(); via.Read(8);
+        Assert.False(via.Irq);
     }
 }

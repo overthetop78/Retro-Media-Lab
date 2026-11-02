@@ -311,9 +311,10 @@ public sealed class AcornEmuTests
     {
         var via = new Via6522();
         via.Reset(); via.Write(14, 0xc0); via.Write(4, 1); via.Write(5, 0);
-        via.Tick(); via.Tick();
+        via.Tick(); via.Tick(); via.Tick(); // Chargement puis N+1 décrémentations.
         Assert.True(via.Irq);
         Assert.Equal(0xc0, via.Read(13));
+        via.Tick();
         via.Read(4);
         Assert.False(via.Irq);
     }

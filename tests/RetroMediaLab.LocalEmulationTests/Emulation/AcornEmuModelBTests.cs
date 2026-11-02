@@ -52,6 +52,7 @@ public sealed class AcornEmuModelBTests
         for (var tick = 0; tick < 8; tick++) board.Tick();
         Assert.True(board.Irq);
         Assert.Equal(0xc0, board.Read(0xfe6d) & 0xc0);
+        board.Tick(); board.Tick(); // Une horloge VIA après le cycle de déclenchement.
         board.Read(0xfe64);
         Assert.False(board.Irq);
         var modelA = new BbcMicroMachine(new byte[16384], new byte[16384]);

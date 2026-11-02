@@ -6,9 +6,9 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Se
 internal sealed partial class Via6522
 {
     private readonly byte[] _registers = new byte[C.RegisterCount];
-    private int _timer1;
-    private int _timer2;
-    private int _latch1;
+    private int _timer1 = C.CounterMask;
+    private int _timer2 = C.CounterMask;
+    private int _latch1 = C.CounterMask;
     private bool _timer1Running;
     private bool _timer2Running;
     private bool _timer2Armed;
@@ -22,34 +22,27 @@ internal sealed partial class Via6522
     internal Action<byte>? PortBPinsChanged { get; set; }
     internal byte OutputA => _registers[C.PortA];
     internal bool Irq => (_flags & _enabled & C.InterruptMask) != 0;
-    private byte PortBPins => (byte)(_registers[C.PortB] | ~_registers[C.DirectionB]);
+    private byte PortBPins => ApplyTimerPb7((byte)(_registers[C.PortB] | ~_registers[C.DirectionB]));
 
     internal void Reset()
     {
+        var shift = _registers[C.Shift];
+        var latch2Low = _registers[C.Timer2Low];
         Array.Clear(_registers);
-        _timer1 = _timer2 = _latch1 = C.CounterMask;
+        _registers[C.Shift] = shift;
+        _registers[C.Timer2Low] = latch2Low;
         _flags = _enabled = 0;
-        _timer1Running = _timer2Running = _timer2Armed = false;
+        _timer2Armed = false;
+        ResetTimers();
+        ResetShift();
         ResetPorts();
     }
 
     internal void Tick()
     {
         TickControlOutputs();
-        if (_timer1Running && --_timer1 < 0)
-        {
-            _flags |= C.Timer1Interrupt;
-            if ((_registers[C.Auxiliary] & C.Timer1Continuous) != 0) _timer1 = _latch1 + 1;
-            else { _timer1Running = false; _timer1 = C.CounterMask; }
-        }
-        if (!_timer2Running) return;
-        if ((_registers[C.Auxiliary] & C.Timer2PulseCount) != 0)
-        {
-            var level = Pb6Level;
-            if (_lastPb6 && !level) CountTimer2(true);
-            _lastPb6 = level;
-        }
-        else CountTimer2(false);
+        TickShift();
+        TickTimers();
     }
 
     private void CountTimer2(bool pulseCount)
@@ -57,9 +50,7 @@ internal sealed partial class Via6522
         _timer2--;
         if (pulseCount ? _timer2 > 0 : _timer2 >= 0) return;
         if (_timer2 < 0) _timer2 = C.CounterMask;
-        if (!_timer2Armed) return;
-        _flags |= C.Timer2Interrupt;
-        _timer2Armed = false;
+        FireTimer2();
     }
 
     internal byte Read(int register)
@@ -70,14 +61,22 @@ internal sealed partial class Via6522
             case C.PortB: AcknowledgePort(false, false); return ReadPinsB();
             case C.PortA: AcknowledgePort(true, true); return ReadPinsA();
             case C.PortANoHandshake: return ReadPinsA();
-            case C.Timer1Low: _flags &= unchecked((byte)~C.Timer1Interrupt); return (byte)_timer1;
+            case C.Timer1Low:
+                if (!_timer1JustFired) _flags &= unchecked((byte)~C.Timer1Interrupt);
+                return (byte)_timer1;
             case C.Timer1High: return (byte)(_timer1 >> C.HighByteShift);
             case C.Latch1Low: return (byte)_latch1;
             case C.Latch1High: return (byte)(_latch1 >> C.HighByteShift);
-            case C.Timer2Low: _flags &= unchecked((byte)~C.Timer2Interrupt); return (byte)_timer2;
+            case C.Timer2Low:
+                if (!_timer2JustFired) _flags &= unchecked((byte)~C.Timer2Interrupt);
+                return (byte)_timer2;
             case C.Timer2High: return (byte)(_timer2 >> C.HighByteShift);
             case C.Flags: return (byte)(_flags | (Irq ? C.InterruptSummary : 0));
             case C.Enable: return (byte)(_enabled | C.InterruptSummary);
+            case C.Shift:
+                var shifted = _registers[C.Shift];
+                StartShift();
+                return shifted;
             default: return _registers[register];
         }
     }
@@ -107,20 +106,31 @@ internal sealed partial class Via6522
             case C.Latch1Low: _latch1 = (_latch1 & C.HighByteMask) | value; break;
             case C.Timer1High:
                 _latch1 = (_latch1 & byte.MaxValue) | value << C.HighByteShift;
-                _timer1 = _latch1;
-                _timer1Running = true;
-                _flags &= unchecked((byte)~C.Timer1Interrupt);
+                LoadTimer1();
+                if (!_timer1JustFired) _flags &= unchecked((byte)~C.Timer1Interrupt);
                 break;
             case C.Latch1High:
                 _latch1 = (_latch1 & byte.MaxValue) | value << C.HighByteShift;
-                _flags &= unchecked((byte)~C.Timer1Interrupt);
+                if (!_timer1JustFired) _flags &= unchecked((byte)~C.Timer1Interrupt);
                 break;
             case C.Timer2Low: _registers[C.Timer2Low] = value; break;
             case C.Timer2High:
                 _timer2 = _registers[C.Timer2Low] | value << C.HighByteShift;
                 _timer2Running = _timer2Armed = true;
+                _timer2LoadDelay = C.TimerLoadCycles;
+                _timer2Reload = false;
                 _lastPb6 = Pb6Level;
-                _flags &= unchecked((byte)~C.Timer2Interrupt);
+                if (!_timer2JustFired) _flags &= unchecked((byte)~C.Timer2Interrupt);
+                break;
+            case C.Shift:
+                _registers[C.Shift] = value;
+                StartShift();
+                break;
+            case C.Auxiliary:
+                var previousMode = ShiftMode;
+                _registers[C.Auxiliary] = value;
+                ConfigureShift(previousMode);
+                PortBPinsChanged?.Invoke(PortBPins);
                 break;
             case C.Peripheral:
                 _registers[C.Peripheral] = value;

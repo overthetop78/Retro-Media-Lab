@@ -1,5 +1,4 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Enums;
-using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Constants.Via6522Constants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6522.Services;
@@ -22,7 +21,8 @@ internal sealed partial class Via6522
     internal Action<bool>? Ca2PinsChanged { get; set; }
     internal Action<bool>? Cb2PinsChanged { get; set; }
     internal bool Ca2 => ModeA >= ViaControlMode.HandshakeOutput ? _ca2Output : _ca2;
-    internal bool Cb2 => ModeB >= ViaControlMode.HandshakeOutput ? _cb2Output : _cb2;
+    internal bool Cb2 => ShiftMode != ViaShiftMode.Disabled ? ShiftOutput ? _cb2Output : _cb2
+        : ModeB >= ViaControlMode.HandshakeOutput ? _cb2Output : _cb2;
     private ViaControlMode ModeA => (ViaControlMode)(_registers[C.Peripheral] >> C.Ca2ModeShift & C.ControlModeMask);
     private ViaControlMode ModeB => (ViaControlMode)(_registers[C.Peripheral] >> C.Cb2ModeShift & C.ControlModeMask);
     private byte InputA => ReadPortA?.Invoke() ?? byte.MaxValue;
@@ -43,7 +43,7 @@ internal sealed partial class Via6522
     {
         if (level != _ca1 && level == ((_registers[C.Peripheral] & C.Ca1Rising) != 0))
         {
-            if ((_registers[C.Auxiliary] & C.LatchA) != 0) _inputLatchA = InputA;
+            if ((_registers[C.Auxiliary] & C.LatchA) != 0) _inputLatchA = LivePinsA;
             _flags |= C.Ca1Interrupt;
             if (ModeA == ViaControlMode.HandshakeOutput) SetControlOutput(true, true);
         }
@@ -59,6 +59,16 @@ internal sealed partial class Via6522
 
     internal void SetCb1(bool level)
     {
+        if (ShiftMode != ViaShiftMode.Disabled)
+        {
+            if (_cb1 != level && ShiftMode is (ViaShiftMode.InputExternalClock or ViaShiftMode.OutputExternalClock))
+            {
+                _cb1 = level;
+                ShiftEdge(level, true);
+            }
+            _cb1 = level;
+            return;
+        }
         if (level != _cb1 && level == ((_registers[C.Peripheral] & C.Cb1Rising) != 0))
         {
             if ((_registers[C.Auxiliary] & C.LatchB) != 0) _inputLatchB = InputB;
@@ -70,7 +80,7 @@ internal sealed partial class Via6522
 
     internal void SetCb2(bool level)
     {
-        if (level != _cb2 && ActiveControlEdge(ModeB, level)) _flags |= C.Cb2Interrupt;
+        if (ShiftMode == ViaShiftMode.Disabled && level != _cb2 && ActiveControlEdge(ModeB, level)) _flags |= C.Cb2Interrupt;
         _cb2 = level;
     }
 
@@ -81,15 +91,12 @@ internal sealed partial class Via6522
         _ => false
     };
 
-    private byte ReadPinsA()
-    {
-        var inputs = (_registers[C.Auxiliary] & C.LatchA) != 0 ? _inputLatchA : InputA;
-        return (byte)(_registers[C.PortA] & _registers[C.DirectionA] | inputs & ~_registers[C.DirectionA]);
-    }
+    private byte LivePinsA => (byte)((_registers[C.PortA] | ~_registers[C.DirectionA]) & InputA);
+    private byte ReadPinsA() => (_registers[C.Auxiliary] & C.LatchA) != 0 ? _inputLatchA : LivePinsA;
     private byte ReadPinsB()
     {
         var inputs = (_registers[C.Auxiliary] & C.LatchB) != 0 ? _inputLatchB : InputB;
-        return (byte)(_registers[C.PortB] & _registers[C.DirectionB] | inputs & ~_registers[C.DirectionB]);
+        return ApplyTimerPb7((byte)(_registers[C.PortB] & _registers[C.DirectionB] | inputs & ~_registers[C.DirectionB]));
     }
 
     private void AcknowledgePort(bool portA, bool strobe)
@@ -98,7 +105,7 @@ internal sealed partial class Via6522
         _flags &= unchecked((byte)~(portA ? C.Ca1Interrupt : C.Cb1Interrupt));
         if (mode is not (ViaControlMode.IndependentFallingInput or ViaControlMode.IndependentRisingInput))
             _flags &= unchecked((byte)~(portA ? C.Ca2Interrupt : C.Cb2Interrupt));
-        if (!strobe || mode is not (ViaControlMode.HandshakeOutput or ViaControlMode.PulseOutput)) return;
+        if (!strobe || (!portA && ShiftMode != ViaShiftMode.Disabled) || mode is not (ViaControlMode.HandshakeOutput or ViaControlMode.PulseOutput)) return;
         SetControlOutput(portA, false);
         if (mode != ViaControlMode.PulseOutput) return;
         if (portA) _ca2Pulse = C.PulseCycles;
@@ -125,7 +132,7 @@ internal sealed partial class Via6522
     {
         _ca2Pulse = _cb2Pulse = 0;
         if (ModeA >= ViaControlMode.HandshakeOutput) SetControlOutput(true, ModeA != ViaControlMode.LowOutput);
-        if (ModeB >= ViaControlMode.HandshakeOutput) SetControlOutput(false, ModeB != ViaControlMode.LowOutput);
+        if (ShiftMode == ViaShiftMode.Disabled && ModeB >= ViaControlMode.HandshakeOutput) SetControlOutput(false, ModeB != ViaControlMode.LowOutput);
     }
 
     private void TickControlOutputs()
