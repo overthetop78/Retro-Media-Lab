@@ -12,7 +12,9 @@ internal static partial class AcornFirmware
         BasicRoms(),
         LanguageRoms(),
         SpeechRoms(),
-        ApplicationRoms());
+        ApplicationRoms(),
+        MasterMosRoms(),
+        CoprocessorRoms());
 
     private static IReadOnlyDictionary<string, FirmwareDefinition> Assemble(params IReadOnlyDictionary<string, FirmwareDefinition>[] categories)
     {

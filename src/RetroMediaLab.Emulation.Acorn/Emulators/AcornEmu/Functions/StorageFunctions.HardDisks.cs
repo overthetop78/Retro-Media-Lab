@@ -10,7 +10,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 /// <summary>Unités Winchester optionnelles et paramètres persistants transmis par les contrats de stockage communs.</summary>
 internal static partial class StorageFunctions
 {
-    internal static bool HardDiskConnected(MachineConfiguration configuration, int unit) => configuration.Options.TryGetValue(C.HardDiskKey(unit, C.ConnectedOption), out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == new EmulationMediaSlot(EmulationMediaCategory.HardDisk, unit));
+    internal static bool HardDiskConnected(MachineConfiguration configuration, int unit) => !MasterFunctions.IsEt(configuration) && !MasterFunctions.IsCompact(configuration) && ( configuration.Options.TryGetValue(C.HardDiskKey(unit, C.ConnectedOption), out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == new EmulationMediaSlot(EmulationMediaCategory.HardDisk, unit)));
     internal static bool HasWinchester(MachineConfiguration configuration) => Enumerable.Range(0, C.HardDiskCount).Any(unit => HardDiskConnected(configuration, unit));
     internal static bool NeedsDiskRom(MachineConfiguration configuration) => HasInterface(configuration) || HasWinchester(configuration);
 
@@ -21,7 +21,7 @@ internal static partial class StorageFunctions
         return (Flag(C.ProtectedOption), Number(C.ReadLatencyOption, C.DefaultHardDiskLatencyMilliseconds), Number(C.WriteLatencyOption, C.DefaultHardDiskLatencyMilliseconds), Number(C.SpeedOption, C.DefaultSpeedPercent));
     }
 
-    internal static IReadOnlyList<EmulationMediaDevice> HardDiskDevices(MachineConfiguration configuration) => Enumerable.Range(0, C.HardDiskCount).Select(unit => new EmulationMediaDevice(new(EmulationMediaCategory.HardDisk, unit), EmulationMediaType.HardDisk, C.HardDiskExtensions,
+    internal static IReadOnlyList<EmulationMediaDevice> HardDiskDevices(MachineConfiguration configuration) => MasterFunctions.IsEt(configuration) || MasterFunctions.IsCompact(configuration) ? [] : Enumerable.Range(0, C.HardDiskCount).Select(unit => new EmulationMediaDevice(new(EmulationMediaCategory.HardDisk, unit), EmulationMediaType.HardDisk, C.HardDiskExtensions,
         IsRemovable: false, InterfaceChoices: [new(C.ScsiInterface, string.Empty, C.ScsiDisplay)], HardDiskFormats: WinchesterFormats.All,
         ConfigurationKind: EmulationStorageConfigurationKind.HardDiskDrive, ConfigurationFields: HardDiskFields(configuration, unit))).ToArray();
 

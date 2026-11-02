@@ -270,7 +270,9 @@ public class EmulationViewsTests(RetroMediaLab.Tests.Application.TestInfrastruct
     {
         using var http = new HttpClient();
         var module = new RetroMediaLab.Emulation.Acorn.Modules.AcornEmulationModule(Path.GetTempPath(), Path.GetTempPath(), http, Path.GetTempPath());
-        var configuration = module.CreateConfiguration("BbcMicroModelB");
+        var configuration = new RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.MachineConfiguration(
+            RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums.MachineModel.BbcMicroModelB,
+            core: RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums.Emulator.B2);
         var storage = module.DescribeStorageSettings(configuration);
         var device = Assert.Single(storage.AvailableDevices);
         var drive = Assert.Single(storage.DeviceSettings!);

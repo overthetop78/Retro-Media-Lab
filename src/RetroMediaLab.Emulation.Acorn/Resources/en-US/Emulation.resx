@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Network filing system ROM. Requires the Econet interface and compatible network equipment.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Speech data ROM for the speech synthesizer. Cannot be used as MOS or as a sideways program ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>System ROM. Must match the machine model; the B+ uses a combined 32 KiB BASIC and MOS image.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Coprocessor expansion card</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Coprocessor ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Physical memory</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Memory organisation</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Additional ROM slots</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Incorrect system ROM size for this Master model.</value></data>
 </root>

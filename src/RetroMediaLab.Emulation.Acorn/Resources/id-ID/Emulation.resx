@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Sistem pengajuan jaringan ROM. Membutuhkan antarmuka Econet dan peralatan jaringan yang kompatibel.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Data pidato ROM untuk synthesizer pidato. Tidak dapat digunakan sebagai MOS atau sebagai program samping ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Sistem ROM. Harus sesuai dengan model mesin; B+ menggunakan sebuah gabungan 32 KiB BASIC dan MOS gambar.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Kartu ekspansi Cocrocessor</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Koprover ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Memori fisik</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Organisasi memori</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Tambahan ROM Slots</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Sistem tidak benar ROM ukuran untuk model Master ini.</value></data>
 </root>

@@ -9,15 +9,15 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 /// <summary>Descriptions et persistance des lecteurs natifs par les contrats de stockage déjà utilisés.</summary>
 internal static partial class StorageFunctions
 {
-    internal static bool Connected(MachineConfiguration configuration, int drive) => ModelBPlusFunctions.IsModel(configuration) && drive == EmulationMediaSlot.Floppy0.Index || (configuration.Options.TryGetValue(C.Key(drive, C.ConnectedOption), out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == new EmulationMediaSlot(EmulationMediaCategory.FloppyDrive, drive)));
-    internal static bool HasInterface(MachineConfiguration configuration) => FloppyExtensionFunctions.HasInterface(configuration) || Enumerable.Range(0, C.DriveCount).Any(drive => Connected(configuration, drive));
-    internal static bool UsesWd1770(MachineConfiguration configuration) => FloppyExtensionFunctions.UsesWd1770(configuration);
+    internal static bool Connected(MachineConfiguration configuration, int drive) => !MasterFunctions.IsEt(configuration) && ((ModelBPlusFunctions.IsModel(configuration) || MasterFunctions.HasFixedDrive(configuration)) && drive == EmulationMediaSlot.Floppy0.Index || (configuration.Options.TryGetValue(C.Key(drive, C.ConnectedOption), out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == new EmulationMediaSlot(EmulationMediaCategory.FloppyDrive, drive))));
+    internal static bool HasInterface(MachineConfiguration configuration) => !MasterFunctions.IsEt(configuration) && (MasterFunctions.IsModel(configuration) || FloppyExtensionFunctions.HasInterface(configuration) || Enumerable.Range(0, C.DriveCount).Any(drive => Connected(configuration, drive)));
+    internal static bool UsesWd1770(MachineConfiguration configuration) => MasterFunctions.IsModel(configuration) || FloppyExtensionFunctions.UsesWd1770(configuration);
     internal static IReadOnlyList<string> Extensions(MachineConfiguration configuration) => CreationModels(configuration).SelectMany(model => model.AcceptedExtensions).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     private static IReadOnlyList<string> DriveExtensions(MachineConfiguration configuration, int drive) => CreationModels(configuration).Single(model => model.Value == Settings(configuration, drive).Model).AcceptedExtensions;
     internal static FloppyDriveSettings Settings(MachineConfiguration configuration, int drive) => new(Model(configuration, drive), configuration.Options.GetValueOrDefault(C.Key(drive, C.SpeedOption), C.DefaultSpeed), bool.Parse(configuration.Options.GetValueOrDefault(C.Key(drive, C.ProtectedOption), bool.FalseString)), false, new Dictionary<string, string> { [C.MechanicalSoundOption] = configuration.Options.GetValueOrDefault(C.Key(drive, C.MechanicalSoundOption), bool.TrueString), [C.SoundVolumeOption] = EmulationMechanicalSoundSettings.ReadVolume(configuration.Options, C.Key(drive, C.SoundVolumeOption)).ToString(System.Globalization.CultureInfo.InvariantCulture) });
 
     internal static IReadOnlyList<EmulationMediaDevice> Devices(MachineConfiguration configuration) => Enumerable.Range(0, C.DriveCount).Select(drive => new EmulationMediaDevice(new(EmulationMediaCategory.FloppyDrive, drive), EmulationMediaType.Floppy, DriveExtensions(configuration, drive),
-        FloppyOptions: new(CreationModels(configuration), configuration.Folders.Floppies ?? string.Empty, string.Empty, DriveExtensions(configuration, drive).First(), CanCreateBlankMedia: true, CanRedirectWrites: false) { SpeedChoices = EmulationDriveSpeedChoices.Standard, CanConfigureWriteProtection = false }, IsPermanent: ModelBPlusFunctions.IsModel(configuration) && drive == EmulationMediaSlot.Floppy0.Index, ConfigurationKind: EmulationStorageConfigurationKind.FloppyDrive, ConfigurationFields: [new(C.MechanicalSoundOption, EmulationMachineTab.Storage, StoragePresentationConstants.SoundGroup, C.SoundResource, EmulationSettingsEditor.Toggle, configuration.Options.GetValueOrDefault(C.Key(drive, C.MechanicalSoundOption), bool.TrueString), EnabledValue: bool.TrueString, DisabledValue: bool.FalseString), SoundVolumeField(configuration, drive, false)])).ToArray();
+        FloppyOptions: new(CreationModels(configuration), configuration.Folders.Floppies ?? string.Empty, string.Empty, DriveExtensions(configuration, drive).First(), CanCreateBlankMedia: true, CanRedirectWrites: false) { SpeedChoices = EmulationDriveSpeedChoices.Standard, CanConfigureWriteProtection = false }, IsPermanent: (ModelBPlusFunctions.IsModel(configuration) || MasterFunctions.HasFixedDrive(configuration)) && drive == EmulationMediaSlot.Floppy0.Index, ConfigurationKind: EmulationStorageConfigurationKind.FloppyDrive, ConfigurationFields: [new(C.MechanicalSoundOption, EmulationMachineTab.Storage, StoragePresentationConstants.SoundGroup, C.SoundResource, EmulationSettingsEditor.Toggle, configuration.Options.GetValueOrDefault(C.Key(drive, C.MechanicalSoundOption), bool.TrueString), EnabledValue: bool.TrueString, DisabledValue: bool.FalseString), SoundVolumeField(configuration, drive, false)])).ToArray();
 
     private static EmulationSettingsField SoundVolumeField(MachineConfiguration configuration, int index, bool hardDisk) =>
         EmulationMechanicalSoundSettings.DescribeVolume(C.SoundVolumeOption, StoragePresentationConstants.SoundGroup,
@@ -38,10 +38,10 @@ internal static partial class StorageFunctions
             }
         hardDisk = false; index = default; option = string.Empty; return false;
     }
-    private static IReadOnlyList<FloppyDriveModelChoice> CreationModels(MachineConfiguration configuration) => FloppyDriveModels.Available(UsesWd1770(configuration));
+    private static IReadOnlyList<FloppyDriveModelChoice> CreationModels(MachineConfiguration configuration) => FloppyDriveModels.Available(UsesWd1770(configuration), MasterFunctions.IsCompact(configuration));
     private static string Model(MachineConfiguration configuration, int drive)
     {
-        var requested = configuration.Options.GetValueOrDefault(C.Key(drive, C.ModelOption), C.DefaultModel);
+        var requested = configuration.Options.GetValueOrDefault(C.Key(drive, C.ModelOption), MasterFunctions.IsCompact(configuration) ? C.CompactDriveModel : MasterFunctions.IsModel(configuration) ? C.Double80Dd : C.DefaultModel);
         var profile = C.Models.SingleOrDefault(model => model.Value == requested) ?? throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
         var available = CreationModels(configuration);
         return available.Any(model => model.Value == requested) ? requested
@@ -53,7 +53,7 @@ internal static partial class StorageFunctions
     {
         if (slots.Distinct().Count() != slots.Count) throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(slots));
         var options = new Dictionary<string, string>(configuration.Options, StringComparer.Ordinal);
-        for (var drive = 0; drive < C.DriveCount; drive++) options[C.Key(drive, C.ConnectedOption)] = (ModelBPlusFunctions.IsModel(configuration) && drive == EmulationMediaSlot.Floppy0.Index || slots.Contains(new(EmulationMediaCategory.FloppyDrive, drive))).ToString();
+        for (var drive = 0; drive < C.DriveCount; drive++) options[C.Key(drive, C.ConnectedOption)] = ((ModelBPlusFunctions.IsModel(configuration) || MasterFunctions.HasFixedDrive(configuration)) && drive == EmulationMediaSlot.Floppy0.Index || slots.Contains(new(EmulationMediaCategory.FloppyDrive, drive))).ToString();
         return SelectHardDiskSlots(configuration with { Options = options }, slots);
     }
 

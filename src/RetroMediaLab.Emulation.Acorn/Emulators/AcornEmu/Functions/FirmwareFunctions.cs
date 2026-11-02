@@ -13,7 +13,7 @@ internal static class FirmwareFunctions
 {
     internal static string? Field(FirmwareCategory category) => category switch
     {
-        FirmwareCategory.OperatingSystem => EmulatorConstants.SystemFirmware,
+        FirmwareCategory.OperatingSystem or FirmwareCategory.MasterMos => EmulatorConstants.SystemFirmware,
         FirmwareCategory.Basic => EmulatorConstants.BasicFirmware,
         FirmwareCategory.CharacterGenerator => EmulatorConstants.CharacterFirmware,
         FirmwareCategory.Network => NetworkConstants.Firmware,

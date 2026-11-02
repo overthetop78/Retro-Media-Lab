@@ -29,7 +29,7 @@ internal sealed partial class Cpu6502
         switch (opcode)
         {
             case 0x00:
-                Fetch(); Push((byte)(PC >> 8)); Push((byte)PC); Push((byte)(P | Break | Unused)); P |= InterruptDisable; PC = ReadWord(0xfffe); return 7;
+                Fetch(); Push((byte)(PC >> 8)); Push((byte)PC); Push((byte)(P | Break | Unused)); P |= InterruptDisable; if (cmos) P &= unchecked((byte)~Decimal); PC = ReadWord(0xfffe); return 7;
             case 0x08: Push((byte)(P | Break | Unused)); return 3;
             case 0x28: P = (byte)((Pop() & ~Break) | Unused); return 4;
             case 0x48: Push(A); return 3;
@@ -47,7 +47,7 @@ internal sealed partial class Cpu6502
             case 0x60: var low = Pop(); PC = (ushort)((low | Pop() << 8) + 1); return 6;
             case 0x4c: PC = FetchWord(); return 3;
             case 0x6c:
-                var indirect = FetchWord(); var l = Read(indirect); PC = (ushort)(l | Read((ushort)((indirect & 0xff00) | (byte)(indirect + 1))) << 8); return 5;
+                var indirect = FetchWord(); var l = Read(indirect); PC = (ushort)(l | Read(cmos ? (ushort)(indirect + 1) : (ushort)((indirect & 0xff00) | (byte)(indirect + 1))) << 8); return 5;
             case 0x24: Bit(Read(Fetch())); return 3;
             case 0x2c: Bit(Read(FetchWord())); return 4;
             case 0x84: Write(Fetch(), Y); return 3;
@@ -149,7 +149,7 @@ internal sealed partial class Cpu6502
         }
         result = Nz(result);
         if (accumulator) A = result;
-        else { Write(address, old); Write(address, result); }
+        else { if (cmos) _ = Read(address); else Write(address, old); Write(address, result); }
         return cycles;
     }
 }

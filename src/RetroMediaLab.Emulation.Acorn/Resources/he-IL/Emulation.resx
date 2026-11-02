@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>מערכת Network Giving ROM. נדרש ממשק Econet וציוד רשת תואם.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>נתוני דיבור ROM עבור הנאום סינתזייזר.לא ניתן להשתמש בו כמו MOS או כתכנית צד ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>מערכת מערכת ROM. צריך להתאים את מודל המכונה; B+ שימוש ב- 32 KiB BASIC ו MOS תמונה</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>כרטיס הרחבה Coprocessor</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Coprocessor ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>זיכרון פיזי</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>ארגון זיכרון</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>פרטים נוספים ROM חריצים</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>מערכת לא נכונה ROM גודל למודל המאסטר הזה.</value></data>
 </root>

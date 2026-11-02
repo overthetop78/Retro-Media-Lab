@@ -71,6 +71,7 @@ internal static class ControllerFunctions
     {
         HardwarePortCapability.Keyboard => PeripheralCategory.Keyboard,
         HardwarePortCapability.AnalogJoystick => PeripheralCategory.AnalogJoystick,
+        HardwarePortCapability.DigitalJoystick => PeripheralCategory.DigitalJoystick,
         _ => throw new ArgumentOutOfRangeException(nameof(capability), capability, null)
     };
     /// <summary>Lit une commande native de souris à partir du pointeur de la frame.</summary>

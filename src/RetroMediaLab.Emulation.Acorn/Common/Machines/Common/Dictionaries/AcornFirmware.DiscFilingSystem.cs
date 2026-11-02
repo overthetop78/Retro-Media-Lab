@@ -1203,6 +1203,8 @@ internal static partial class AcornFirmware
             ["4604331c12ac264910d8f94779e7857d3babe409"] = new("ZDFS v0.9s (E00) [variant 2]", "0.9s", FirmwareCategory.DiscFilingSystem),
             ["b6b353597afa5ccb7591e0be88a7467801bbcde8"] = new("ZDFS v0.9s (E00) [variant 1]", "0.9s", FirmwareCategory.DiscFilingSystem),
             ["0322bacb0f0a8b068fffc40bfc7b64d305db5117"] = new("ZDFS v0.9R (E00) [variant 2]", "0.9R", FirmwareCategory.DiscFilingSystem),
-            ["6d3f19dfc5a992756dd68f8d779836e1df764974"] = new("ZDFS v0.9R (E00) [variant 1]", "0.9R", FirmwareCategory.DiscFilingSystem)
+            ["6d3f19dfc5a992756dd68f8d779836e1df764974"] = new("ZDFS v0.9R (E00) [variant 1]", "0.9R", FirmwareCategory.DiscFilingSystem),
+            ["e5b6988ada0971761cd4804fe0e6fb2457f9e965"] = new("Acorn Master Compact 5.00 adfs", null, FirmwareCategory.DiscFilingSystem),
+            ["a080fff109e19d189c324eb8537e1764b6fb0a01"] = new("Acorn Master Compact 5.10 adfs", null, FirmwareCategory.DiscFilingSystem),
         };
 }

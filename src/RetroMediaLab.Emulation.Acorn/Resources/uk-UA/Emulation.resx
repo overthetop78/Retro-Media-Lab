@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Система мережевого герлінгу ROM. Вимагає інтерфейс Econet і сумісне мережеве обладнання.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Дані про мову ROM для синтезатора мови. Не можна використовувати як MOS або як програма бокових шляхів ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Системы ROM. Повинна відповідати моделі машини; B+ використовує комбінований 32 KiB BASIC і MOS зображення.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Картка розширення копроцесора</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Копроцесор ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Фізична пам'ять</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Організація пам'яті</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Додатково ROM ксерокс</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Некоректна система ROM розмір для цієї моделі майстра.</value></data>
 </root>

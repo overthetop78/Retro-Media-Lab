@@ -18,6 +18,9 @@ internal static partial class AcornBBCMicroModel
 
     private static EmulationFirmwareCompatibility? Rule(MachineModel model, string sha1, FirmwareCategory category)
     {
+        if (AcornMasterModel.IsMaster(model))
+            return category == FirmwareCategory.CharacterGenerator ? CharacterRom(sha1)
+                : AcornMasterModel.Get(model, sha1, category);
         if (!IsStandard(model) && !IsPlus(model)) return null;
         var rule = category switch
         {

@@ -9,7 +9,7 @@ internal static class BbcMicroFirmwareConstants
     internal const string SpeechExplanation = "Emulation.Acorn.Firmware.SpeechRequirements";
     internal const string SystemExplanation = "Emulation.Acorn.Firmware.SystemRequirements";
     internal const string HardwareExplanation = "Emulation.Acorn.Firmware.HardwareRequirements";
-    internal const int MaximumRomImageBytes = 65_536;
+    internal const int MaximumRomImageBytes = 131_072;
     internal const int BankSize = 16_384;
     /// <summary>96 glyphes de dix lignes ; la ROM interne SAA505x ne contient pas les codes de contrôle.</summary>
     internal const int CharacterRomSize = 960;

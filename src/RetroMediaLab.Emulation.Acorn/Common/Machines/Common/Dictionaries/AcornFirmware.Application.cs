@@ -342,7 +342,6 @@ internal static partial class AcornFirmware
             ["b814667bc4201a1895cc245db9dd4c419ca1bbcf"] = new("BBC Terminal Control ROM v0.23 [variant 1]", "0.23", FirmwareCategory.Application),
             ["3f6cb47d380b82115e5ed0fb911fb899ab96ba94"] = new("BBC Terminal Control ROM v0.3", "0.3", FirmwareCategory.Application),
             ["c376a6741e40d5b37a2e1fa7c2d766b9a575c57c"] = new("Tuberom 68000", "*", FirmwareCategory.Application),
-            ["8acaf42a4a6b5f62f6be5e62df5fcffbf48890dd"] = new("Client86 101", "", FirmwareCategory.Application),
             ["bfa252de2af0d20db87af554fff99f158e267ace"] = new("Brazil 006", "", FirmwareCategory.Application),
             ["7ecfe0582e5b7a34d2ca38798d3f4b503fde6413"] = new("BBPROM v1.0", "1.0", FirmwareCategory.Application),
             ["712f862aefb1ebe654b094c9e04be0a5228f9d3a"] = new("Oostrom BROM v1.14 + Misc [hacked]", "1.14", FirmwareCategory.Application),
@@ -2466,6 +2465,9 @@ internal static partial class AcornFirmware
             ["74c64ce449ff57bf1082509793fa1005ddaab6d7"] = new("The Publisher v1.10", "", FirmwareCategory.Application),
             ["726a091ad1b3e64e9ebff6e405d508288c2bc78b"] = new("Acornsoft View Trilogy v0.9 [64K]", "0.9", FirmwareCategory.Application),
             ["af2420d234afafdd9905f9c1c31caf1c16b2e1a6"] = new("Acornsoft ViewSpell v1.1 [variant 1]", "1.1", FirmwareCategory.Application),
-            ["2bb36ec8f22ab1858ffd4da343d131140b29a46d"] = new("Wapping Editor v1.30", "1.30", FirmwareCategory.Application)
+            ["2bb36ec8f22ab1858ffd4da343d131140b29a46d"] = new("Wapping Editor v1.30", "1.30", FirmwareCategory.Application),
+            ["b8ebb39e6373ddaa81fb0c6eb572a9f1a30402c4"] = new("Acorn Master Compact 5.00 utils", null, FirmwareCategory.Application),
+            ["8134476d88509b024fbc81cba1b4e89cb8e3d655"] = new("Acorn Master Compact 5.10 utils", null, FirmwareCategory.Application),
+            ["0b4425149ca93dddf8d03da3767635dc3f1eecb8"] = new("Acorn Master ET Terminal", null, FirmwareCategory.Application),
         };
 }

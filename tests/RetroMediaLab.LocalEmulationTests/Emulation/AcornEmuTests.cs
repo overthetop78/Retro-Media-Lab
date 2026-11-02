@@ -69,19 +69,19 @@ public sealed class AcornEmuTests
     }
 
     [Theory]
-    [InlineData("0d9bcaf6a393c9ce2359ed700ddb53c232c2c45d", EmulationFirmwareCompatibility.Official)]
+    [InlineData("0d9bcaf6a393c9ce2359ed700ddb53c232c2c45d", EmulationFirmwareCompatibility.Official, EmulationFirmwareCompatibility.Incompatible)]
     [InlineData("890f6e3e7fab3340f75b85e93ff29332bc9ecb2e", EmulationFirmwareCompatibility.Official)]
     [InlineData("4a7393f3a45ea309f744441c16723e2ef447a281", EmulationFirmwareCompatibility.Official)]
-    [InlineData("4b0ece6dc139d5d3f4fabd023716fb6f25149b80", EmulationFirmwareCompatibility.Official)]
-    [InlineData("dca33995c0d008a527efe923d03333394b01022c", EmulationFirmwareCompatibility.Official)]
-    [InlineData("d35f6723132aabe3c4d00fc16fd9ecc6768df753", EmulationFirmwareCompatibility.Official)]
-    [InlineData("2b6aecd33a43f296c20832524e47cc7e3a9c3b17", EmulationFirmwareCompatibility.Unknown)]
+    [InlineData("4b0ece6dc139d5d3f4fabd023716fb6f25149b80", EmulationFirmwareCompatibility.Official, EmulationFirmwareCompatibility.Incompatible)]
+    [InlineData("dca33995c0d008a527efe923d03333394b01022c", EmulationFirmwareCompatibility.Official, EmulationFirmwareCompatibility.Incompatible)]
+    [InlineData("d35f6723132aabe3c4d00fc16fd9ecc6768df753", EmulationFirmwareCompatibility.Official, EmulationFirmwareCompatibility.Incompatible)]
+    [InlineData("2b6aecd33a43f296c20832524e47cc7e3a9c3b17", EmulationFirmwareCompatibility.Unknown, EmulationFirmwareCompatibility.Incompatible)]
     [InlineData("b369809275cb67dfd8a749265e91adb2d2558ae6", EmulationFirmwareCompatibility.Incompatible)]
-    public void FirmwareCompatibilityIsSharedByStandardModelsWithoutExtendingOtherVariants(string sha1, EmulationFirmwareCompatibility compatibility)
+    public void FirmwareCompatibilityIsSharedByStandardModelsWithoutExtendingOtherVariants(string sha1, EmulationFirmwareCompatibility compatibility, EmulationFirmwareCompatibility masterCompatibility = EmulationFirmwareCompatibility.Unknown)
     {
         Assert.Equal(compatibility, AcornBBCMicroModel.Get(MachineModel.BbcMicroModelA, sha1));
         Assert.Equal(compatibility, AcornBBCMicroModel.Get(MachineModel.BbcMicroModelB, sha1));
-        Assert.Equal(EmulationFirmwareCompatibility.Unknown, AcornBBCMicroModel.Get(MachineModel.BbcMaster128, sha1));
+        Assert.Equal(masterCompatibility, AcornBBCMicroModel.Get(MachineModel.BbcMaster128, sha1));
         Assert.Equal(EmulationFirmwareCompatibility.Unknown, AcornBBCMicroModel.Get(MachineModel.BbcMicroModelA, new string('0', 40)));
     }
 

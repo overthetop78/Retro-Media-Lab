@@ -18,6 +18,7 @@ internal sealed partial class Cpu6502
     {
         Push((byte)(PC >> 8)); Push((byte)PC); Push((byte)((P | Unused) & ~Break));
         P |= InterruptDisable;
+        if (cmos) P &= unchecked((byte)~Decimal);
         PC = ReadWord(vector);
         Pad(start, 7);
     }

@@ -13,6 +13,8 @@ internal sealed class Via6522
     internal Func<byte>? ReadPortB { get; set; }
     internal Action<byte>? WritePortA { get; set; }
     internal Action<byte>? WritePortB { get; set; }
+    internal Action<byte>? PortBPinsChanged { get; set; }
+    private byte PortBPins => (byte)(_registers[0] | ~_registers[2]);
     internal byte OutputA => _registers[1];
     internal bool Irq => (_flags & _enabled & 0x7f) != 0;
 
@@ -77,7 +79,8 @@ internal sealed class Via6522
         register &= 15;
         switch (register)
         {
-            case 0: _registers[0] = value; _flags &= 0xe7; WritePortB?.Invoke(value); break;
+            case 0: _registers[0] = value; _flags &= 0xe7; WritePortB?.Invoke(value); PortBPinsChanged?.Invoke(PortBPins); break;
+            case 2: _registers[2] = value; PortBPinsChanged?.Invoke(PortBPins); break;
             case 1: _flags &= 0xfc; goto case 15;
             case 15: _registers[1] = value; WritePortA?.Invoke(value); break;
             case 4: case 6: _latch1 = (_latch1 & 0xff00) | value; break;

@@ -6,7 +6,7 @@ internal static class ConfigurationFunctions
 {
     internal static bool SupportsRuntime(MachineModel model) => EmulatorCatalog.GetAll(model.ToString()).Count > 0;
 
-    internal static int ControllerPortCount(MachineModel model) => HardwareModelCatalog.Get(model).Ports.Where(port => port.Capability == HardwarePortCapability.AnalogJoystick).Sum(port => port.Count);
+    internal static int ControllerPortCount(MachineModel model) => HardwareModelCatalog.Get(model).Ports.Where(port => port.Capability is HardwarePortCapability.AnalogJoystick or HardwarePortCapability.DigitalJoystick).Sum(port => port.Count);
 
     internal static Emulator DefaultEmulator(MachineModel model)
     {

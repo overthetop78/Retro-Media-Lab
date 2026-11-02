@@ -39,6 +39,8 @@ internal interface IAcornMachine
     bool ReceiveNetworkFrame(ReadOnlySpan<byte> frame, bool validFcs = true);
     void SetNetworkLine(bool clockPresent, bool clearToSend = true, bool idle = true);
     void SetInput(EmulationInputSnapshot snapshot);
+    byte[]? ReadNonvolatileMemory();
+    void WriteNonvolatileMemory(ReadOnlySpan<byte> bytes);
     void Reset(bool cold);
     void SetOption(string key, string value);
 }

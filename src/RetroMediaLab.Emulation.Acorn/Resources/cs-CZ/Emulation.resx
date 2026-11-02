@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Síťový systém pro podávání zpráv ROM. Vyžaduje rozhraní Econet a kompatibilní síťové vybavení.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Údaje o řeči ROM pro reproduktor. Nelze použít jako MOS nebo jako vedlejší program ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Systém ROM. Musí odpovídat modelu stroje; B+ používá kombinovanou 32 KiB BASIC a MOS obrázek.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Rozšiřovací karta koprocesoru</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Koprocesor ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Fyzická paměť</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Organizace paměti</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Dodatečné ROM sloty</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Nesprávný systém ROM velikost pro tento model Master.</value></data>
 </root>

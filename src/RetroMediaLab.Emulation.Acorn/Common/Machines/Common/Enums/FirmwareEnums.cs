@@ -1,6 +1,6 @@
 namespace RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 
-public enum FirmwareCategory { OperatingSystem, Basic, DiscFilingSystem, MasterMos, Language, Speech, Network, Application, CharacterGenerator, MemoryExtension }
+public enum FirmwareCategory { OperatingSystem, Basic, DiscFilingSystem, MasterMos, Language, Speech, Network, Application, CharacterGenerator, MemoryExtension, Coprocessor }
 
 public enum FirmwareCompatibility { Compatible, PartiallyCompatible, Incompatible }
 

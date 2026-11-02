@@ -1,3 +1,5 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
 using System.IO;
 using CommonCoreHostFunctions = RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions;
@@ -84,12 +86,21 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         else if (command == EmulationCassetteCommand.Pause) SetCassetteSoundEvent(S.Pause);
     }
 
+    private string? _nonvolatilePath;
+    private void SaveNonvolatileMemory()
+    {
+        if (_nonvolatilePath is null || _machine?.ReadNonvolatileMemory() is not { } bytes) return;
+        Directory.CreateDirectory(Path.GetDirectoryName(_nonvolatilePath)!);
+        File.WriteAllBytes(_nonvolatilePath, bytes);
+    }
     public void Initialize(MachineConfiguration configuration, string sessionDirectory, string? saveDirectory = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (configuration.Model != _definition.Model) throw new ArgumentOutOfRangeException(nameof(configuration));
         _definition = NativeModelCatalog.Get(configuration);
         _machine = _definition.Create(configuration);
+        _nonvolatilePath = MasterFunctions.IsModel(configuration) ? Path.Combine(saveDirectory ?? sessionDirectory, MasterSettingsConstants.CmosFile) : null;
+        if (_nonvolatilePath is not null && File.Exists(_nonvolatilePath)) _machine.WriteNonvolatileMemory(File.ReadAllBytes(_nonvolatilePath));
         _cassetteSettings = EmulationCassetteSettings.Read(configuration.Options);
         _runtimeOptions = new(configuration.Options, StringComparer.Ordinal);
         _cassettePcm = EmulationCassettePcmSettings.Read(configuration.Options);
@@ -134,7 +145,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public void SetInput(EmulationInputSnapshot snapshot) => _machine?.SetInput(snapshot);
     public void SoftReset() { _network?.Reset(); _machine?.Reset(false); ClearAudio(); }
     public void HardReset() { _network?.Reset(); _machine?.Reset(true); ClearAudio(); }
-    public void Stop() { try { SaveMediaChanges(EmulationMediaSlot.Cassette0); SaveDisks(); SaveHardDisks(); } finally { try { DisposeNetwork(); } finally { ShutdownRequested = true; ClearAudio(); } } }
+    public void Stop() { try { SaveNonvolatileMemory(); SaveMediaChanges(EmulationMediaSlot.Cassette0); SaveDisks(); SaveHardDisks(); } finally { try { DisposeNetwork(); } finally { ShutdownRequested = true; ClearAudio(); } } }
     /// <summary>Transfère un bloc mono possédé au parcours audio Common déjà utilisé par les autres cœurs.</summary>
     public bool TryDequeueAudio(out AudioChunk? chunk) => _audio.TryDequeue(out chunk);
     /// <summary>Détache les blocs non lus pour ne pas rejouer d'ancien son après arrêt ou reset.</summary>
@@ -211,7 +222,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public void Dispose()
     {
         if (_disposed) return;
-        try { SaveMediaChanges(EmulationMediaSlot.Cassette0); SaveDisks(); SaveHardDisks(); ShutdownRequested = true; }
+        try { SaveNonvolatileMemory(); SaveMediaChanges(EmulationMediaSlot.Cassette0); SaveDisks(); SaveHardDisks(); ShutdownRequested = true; }
         finally
         {
             try { DisposeDisks(); }

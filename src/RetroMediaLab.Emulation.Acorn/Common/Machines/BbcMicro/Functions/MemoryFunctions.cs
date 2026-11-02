@@ -8,6 +8,7 @@ internal static class BbcMicroMemoryFunctions
     /// <summary>Conserve 16 Kio lorsque le réglage est absent ; seules les capacités matérielles 16/32 Kio sont acceptées.</summary>
     internal static int MainBytes(MachineConfiguration configuration)
     {
+        if (configuration.Model is MachineModel.BbcMaster128 or MachineModel.BbcMasterET or MachineModel.BbcMasterCompact) return (int)BbcMicroModelConstants.ThirtyTwoKibibytes;
         if (configuration.Model is MachineModel.BbcMicroModelBPlus or MachineModel.BbcMicroModelBPlus128)
         {
             var total = configuration.Options.GetValueOrDefault(SettingsConstants.MainMemory,

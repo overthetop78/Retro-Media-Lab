@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Nettverksfilsystem ROM. Krever Econet-grensesnittet og kompatibelt nettverksutstyr.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Taledata ROM for talesynthesizer. Kan ikke brukes som MOS eller som et sideveis program ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>System ROM. Må matche maskinmodellen; den B+ Bruker en kombinert 32 KiB BASIC og MOS Bilde.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Koprosessorekspansjonskort</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Koprosessor ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Fysisk minne</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Minneorganisasjon</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Tilleggsverdi ROM spilleautomater</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Feil system ROM Størrelse på denne mastermodellen.</value></data>
 </root>

@@ -15,8 +15,8 @@ internal static class InputSettingsFunctions
         var ports = Enumerable.Range(ControllerPortConstants.MinimumControllerPort, CommonControllerFunctions.PortCount(configuration)).Select(index =>
         {
             var current = configured.FirstOrDefault(binding => binding.Port == index);
-            var peripheral = current?.Peripheral ?? PeripheralCategory.AnalogJoystick;
-            if (peripheral == PeripheralCategory.Automatic) peripheral = PeripheralCategory.AnalogJoystick;
+            var peripheral = current?.Peripheral ?? (configuration.Model == MachineModel.BbcMasterCompact ? PeripheralCategory.DigitalJoystick : PeripheralCategory.AnalogJoystick);
+            if (peripheral == PeripheralCategory.Automatic) peripheral = configuration.Model == MachineModel.BbcMasterCompact ? PeripheralCategory.DigitalJoystick : PeripheralCategory.AnalogJoystick;
             return new EmulationControllerPort(
                 index + BufferConstants.IndexIncrement,
                 choices,
@@ -64,13 +64,13 @@ internal static class InputSettingsFunctions
         {
             PeripheralCategory.None => InputSettingsFunctionsConstants.ResourceControllerNone,
             PeripheralCategory.Automatic => InputSettingsFunctionsConstants.ResourceControllerAutomatic,
-            PeripheralCategory.AnalogJoystick => "Controllers.Enum.Joystick",
+            PeripheralCategory.AnalogJoystick or PeripheralCategory.DigitalJoystick => "Controllers.Enum.Joystick",
             _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
         },
         BindingDefinitions: ControllerDefinitions(category),
-        CompatibleVisualIds: category == PeripheralCategory.AnalogJoystick ? [EmulationControllerVisualIds.CompetitionPro5000] : [],
-        DefaultVisualId: category == PeripheralCategory.AnalogJoystick ? EmulationControllerVisualIds.CompetitionPro5000 : null,
-        VisualCommandIds: category == PeripheralCategory.AnalogJoystick ? new Dictionary<EmulationControllerVisualControl, string>
+        CompatibleVisualIds: category is PeripheralCategory.AnalogJoystick or PeripheralCategory.DigitalJoystick ? [EmulationControllerVisualIds.CompetitionPro5000] : [],
+        DefaultVisualId: category is PeripheralCategory.AnalogJoystick or PeripheralCategory.DigitalJoystick ? EmulationControllerVisualIds.CompetitionPro5000 : null,
+        VisualCommandIds: category is PeripheralCategory.AnalogJoystick or PeripheralCategory.DigitalJoystick ? new Dictionary<EmulationControllerVisualControl, string>
         {
             [EmulationControllerVisualControl.DirectionUp] = EmulationControllerCommandIds.Up,
             [EmulationControllerVisualControl.DirectionDown] = EmulationControllerCommandIds.Down,
@@ -79,7 +79,7 @@ internal static class InputSettingsFunctions
             [EmulationControllerVisualControl.PrimaryAction] = EmulationControllerCommandIds.Fire1,
             [EmulationControllerVisualControl.SecondaryAction] = EmulationControllerCommandIds.Fire1
         } : null,
-        VisualBindingDefinitions: category == PeripheralCategory.AnalogJoystick ? new Dictionary<string, IReadOnlyList<InputBindingDefinition>>
+        VisualBindingDefinitions: category is PeripheralCategory.AnalogJoystick or PeripheralCategory.DigitalJoystick ? new Dictionary<string, IReadOnlyList<InputBindingDefinition>>
         {
             [EmulationControllerVisualIds.CompetitionPro5000] = ControllerDefinitions(category)
         } : null
@@ -88,7 +88,7 @@ internal static class InputSettingsFunctions
         ? [] 
         : InputSettingsFunctionsConstants.ControllerActions.Select(action => new InputBindingDefinition(action, InputSettingsFunctionsConstants.ResourceActionPrefix + action, string.Empty)
         {
-            OppositeDirectionId = category is PeripheralCategory.AnalogJoystick or PeripheralCategory.Automatic ? action switch
+            OppositeDirectionId = category is PeripheralCategory.AnalogJoystick or PeripheralCategory.DigitalJoystick or PeripheralCategory.Automatic ? action switch
             {
                 EmulationControllerCommandIds.Up => EmulationControllerCommandIds.Down,
                 EmulationControllerCommandIds.Down => EmulationControllerCommandIds.Up,

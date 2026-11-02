@@ -33,13 +33,7 @@ public static class BbcMicroModelCatalog
             HardwareCpu.Rockwell6512, ComputerPorts,
             HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),
             HardwareModelFunctions.Values(FirmwareCategory.OperatingSystem, FirmwareCategory.Basic, FirmwareCategory.DiscFilingSystem),
-            HardwareModelFunctions.Values(MediaCategory.Floppy, MediaCategory.Cassette)),
-        Create(MachineModel.BbcMaster128, BbcMicroModelConstants.Master128Id,
-            BbcMicroModelConstants.Master128DisplayNameResource, BbcMicroModelConstants.OneHundredTwentyEightKibibytes,
-            HardwareCpu.Rockwell65C12, ComputerPorts,
-            HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge),
-            HardwareModelFunctions.Values(FirmwareCategory.MasterMos, FirmwareCategory.Basic, FirmwareCategory.DiscFilingSystem),
-            HardwareModelFunctions.Values(MediaCategory.Floppy, MediaCategory.Cassette, MediaCategory.Cartridge)));
+            HardwareModelFunctions.Values(MediaCategory.Floppy, MediaCategory.Cassette)));
 
     private static HardwareModelDefinition Create(MachineModel model, string modelId, string resourceKey,
         long memoryBytes, HardwareCpu cpu, IReadOnlyList<HardwarePortDefinition> ports,

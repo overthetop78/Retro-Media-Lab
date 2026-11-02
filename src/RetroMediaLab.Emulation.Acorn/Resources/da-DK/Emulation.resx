@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Netværksarkiveringssystem ROM. Kræver Econet interface og kompatibelt netværksapparat.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Taledata ROM til talesyntesizeren. Kan ikke bruges som MOS eller som et sidevejsprogram ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>System ROM. skal være i overensstemmelse med maskinmodellen B+ bruger en kombineret 32 KiB BASIC og MOS billede.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Coprocessorudvidelseskort</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Coprocessor ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Fysisk hukommelse</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Hukommelsesorganisation</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Yderligere ROM slots</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Forkert system ROM størrelse for denne Master model.</value></data>
 </root>

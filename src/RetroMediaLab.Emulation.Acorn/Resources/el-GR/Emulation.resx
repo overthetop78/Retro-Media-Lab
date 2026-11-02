@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Σύστημα αρχειοθέτησης δικτύου ROM. Απαιτεί τη διεπαφή Econet και συμβατό εξοπλισμό δικτύου.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Στοιχεία λόγου ROM για το συνθεσάιζερ ομιλίας. Αδυναμία χρήσης ως MOS ή ως πλευρικό πρόγραμμα ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Σύστημα ROM. Πρέπει να ταιριάζει με το μοντέλο μηχανής? B+ χρησιμοποιεί συνδυασμένο 32 KiB BASIC και MOS εικόνα.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Κάρτα επέκτασης του συνεπεξεργαστή</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Συνεπεξεργαστής ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Φυσική μνήμη</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Οργάνωση μνήμης</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Πρόσθετα ROM υποδοχές</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Λάθος σύστημα ROM μέγεθος για αυτό το μοντέλο Master.</value></data>
 </root>

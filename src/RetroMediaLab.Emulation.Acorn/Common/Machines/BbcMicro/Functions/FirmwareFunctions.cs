@@ -24,7 +24,7 @@ internal static class BbcMicroFirmwareFunctions
     /// Une image sans rôle déterminé conserve les choix matériels possibles, sans installation ni sélection automatique.</remarks>
     internal static IReadOnlyList<EmulationFirmwareCandidate> Inspect(ReadOnlySpan<byte> bytes, string path, MachineModel model, Func<FirmwareCategory, string?> destination)
     {
-        if (!BbcMicroModelCatalog.All.Any(item => item.Model == model)) throw new ArgumentOutOfRangeException(nameof(model));
+        if (!HardwareModelCatalog.All.Any(item => item.Model == model)) throw new ArgumentOutOfRangeException(nameof(model));
         var hash = Convert.ToHexString(SHA1.HashData(bytes));
         if (AcornFirmware.BySha1.TryGetValue(hash, out var known))
         {

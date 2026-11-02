@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>نظام تقديم الطلبات الشبكي ROM. يتطلب واجهة إيكونت ومعدات شبكة متوافقة.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>بيانات عن الخطابات ROM "للمُغنية "سينثيزر لا يمكن أن تُستخدم MOS أو كبرنامج جانبي ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>النظام ROM. يجب أن يطابق نموذج الآلة B+ استخدامات مجمَّعة BASIC و MOS صورة</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>بطاقة توسيع النطاق</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Coprocessor ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>الذاكرة البدنية</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>منظمة الذاكرة</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>إضافة ROM الطوابق</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>النظام غير الصحيح ROM حجم هذا النموذج المعلم</value></data>
 </root>

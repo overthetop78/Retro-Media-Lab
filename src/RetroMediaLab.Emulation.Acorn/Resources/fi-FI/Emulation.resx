@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Verkkorekisteröintijärjestelmä ROM. Vaatii Econet-liitäntää ja yhteensopivia verkkolaitteita.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Puhetiedot ROM puhe syntetisaattori. Ei voida käyttää MOS tai sivuttain ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Järjestelmä ROM. Täytyy vastata koneen malli; B+ käyttää yhdistettyä 32 KiB:tä BASIC sekä MOS Kuva.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Coprocess lisäkortti</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Kojaprosessori ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Fyysinen muisti</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Muistiorganisaatio</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Lisätiedot ROM lähtö- ja saapumisajat</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Virheellinen järjestelmä ROM koko tämän Master malli.</value></data>
 </root>

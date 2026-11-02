@@ -5,7 +5,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 /// <summary>CPU NMOS 6502 : registres et accès au bus, sans dépendance envers un modèle BBC.</summary>
 /// <remarks>Les instructions officielles sont décodées dans le fichier associé. Les cycles internes font également avancer
 /// le bus. Ce premier moteur n'est pas encore une reproduction de toutes les lectures transitoires du circuit NMOS.</remarks>
-internal sealed partial class Cpu6502(ICpuBus bus)
+internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
 {
     private const byte Carry = 1, Zero = 2, InterruptDisable = 4, Decimal = 8, Break = 16, Unused = 32, Overflow = 64, Negative = 128;
 
@@ -32,6 +32,7 @@ internal sealed partial class Cpu6502(ICpuBus bus)
         _nmiPending = false; _nmiLevel = bus.Nmi;
         S = 0xfd;
         P = (byte)(P | InterruptDisable | Unused);
+        if (cmos) P &= unchecked((byte)~Decimal);
         for (var i = 0; i < 5; i++) Tick();
         PC = ReadWord(0xfffc);
     }
@@ -53,7 +54,7 @@ internal sealed partial class Cpu6502(ICpuBus bus)
         }
         InstructionAddress = PC;
         var opcode = Fetch();
-        var expected = Execute(opcode);
+        var expected = cmos ? ExecuteCmos(opcode) : Execute(opcode);
         Pad(start, expected);
         P |= Unused;
     }
@@ -88,6 +89,7 @@ internal sealed partial class Cpu6502(ICpuBus bus)
             if (sum > 0x99) sum += 0x60;
             Flag(Carry, sum > 255);
             A = (byte)sum;
+            if (cmos) { Nz(A); Tick(); }
         }
         else
         {
@@ -112,6 +114,7 @@ internal sealed partial class Cpu6502(ICpuBus bus)
             if (low < 0) { low -= 6; high--; }
             if (high < 0) high -= 6;
             A = (byte)((high << 4) | (low & 15));
+            if (cmos) { Nz(A); Tick(); }
         }
         else A = (byte)binary;
     }

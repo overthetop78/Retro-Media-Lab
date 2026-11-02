@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Hệ thống lọc mạng ROM. Cần thiết giao diện Econet và thiết bị mạng tương thích.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Dữ liệu giọng nói ROM Trình tổng hợp giọng nói. Không thể dùng làm MOS hoặc như một chương trình sang một bên ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Hệ thống ROM. Phải phù hợp với mô hình máy; B+ sử dụng một kết hợp 32 KiB BASIC và MOS hình ảnh.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Phiếu mở rộng Cosolor</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Bộ đối xử ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Bộ nhớ vật lý</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Tổ chức bộ nhớ</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Thêm ROM khe</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Hệ thống sai ROM Kích cỡ cho mô hình Master này.</value></data>
 </root>

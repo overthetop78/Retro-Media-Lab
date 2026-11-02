@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Ağ filing sistemi ROM. Econet arayüzü ve uyumlu ağ ekipmanları gerektirir.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Konuşma verileri ROM Konuşma sentezleyicisi için. MOS veya yan yollar programı olarak ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Sistem Sistem Sistemi ROM. Makine modelini maçlamalı; The Must match the machine model; the Must match the machine model; the B+ Birleştirilmiş 32 KiB kullanır BASIC ve MOS Görüntü.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Co processingor genişleme kartı</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Co processingor ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Fiziksel hafıza</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Hafıza Organizasyonu</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek Ek ROM slotlar yuvalar</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Incorrect system ROM Bu Master modeli için boyut.</value></data>
 </root>

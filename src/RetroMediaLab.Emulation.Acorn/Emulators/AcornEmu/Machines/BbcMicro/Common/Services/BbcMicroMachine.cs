@@ -1,3 +1,7 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Enums;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Services;
+using Master = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants.MasterConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Services;
 using Plus = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
@@ -17,10 +21,18 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 /// <remarks>Les composants ne connaissent pas les services de l'application. Cette carte possède leur câblage et leur horloge.
 /// À 16 Kio, les adresses 4000–7FFF sont des alias de la RAM basse ; l'extension 32 Kio les rend indépendantes.
 /// Le bus CPU et la vidéo partagent la même mémoire physique.</remarks>
-internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
+internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
 {
     private readonly byte[] _ram;
     private readonly ModelBPlusMemory? _plusMemory;
+    private readonly MasterMemory? _masterMemory;
+    private readonly MasterClock? _masterClock;
+    private readonly bool _compact;
+    private readonly CompactEeprom? _compactEeprom;
+    private readonly CompactJoystick? _compactJoystick;
+    private readonly TubeUla? _tube;
+    private readonly TurboBoard? _turbo;
+    private readonly Master512Board? _master512;
     private readonly MemoryExtension _memoryExtension;
     private readonly byte[] _mos;
     private readonly SidewaysRoms _roms;
@@ -41,7 +53,7 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     private bool _break;
     internal Cpu6502 Cpu { get; }
     internal Video Video { get; }
-    public bool Irq => _via.Irq || _userVia?.Irq == true || _acia.Irq || _winchester.Irq;
+    public bool Irq => _via.Irq || _userVia?.Irq == true || _acia.Irq || _winchester.Irq || _masterMemory?.Irq == true || _tube?.HostIrq == true;
     public bool Nmi => _disks.Nmi || _econet.Nmi;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get => _econet.FrameTransmitted; set => _econet.FrameTransmitted = value; }
     public Action<int>? NetworkPoll { get; set; }
@@ -73,7 +85,7 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     public void ConfigureCassette(EmulationCassetteSettings settings) => _cassette.Configure(settings);
     public void EjectCassette() => _cassette.Eject();
 
-    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false, EmulationVideoStandard videoStandard = EmulationVideoStandard.Pal, int modelBPlusMemory = 0)
+    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false, EmulationVideoStandard videoStandard = EmulationVideoStandard.Pal, int modelBPlusMemory = 0, bool master = false, bool compact = false, MasterCoprocessor coprocessor = MasterCoprocessor.None, ReadOnlySpan<byte> coprocessorRom = default)
     {
         if (mos.Length != BbcMicroFirmwareConstants.BankSize || basic.Length != BbcMicroFirmwareConstants.BankSize) throw new ArgumentException("MOS et BASIC doivent chacun contenir 16 384 octets.");
         if (memoryBytes != BbcMicroModelConstants.SixteenKibibytes && memoryBytes != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentOutOfRangeException(nameof(memoryBytes));
@@ -81,10 +93,22 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
         if (memoryExtension.Enabled && memoryBytes != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentOutOfRangeException(nameof(memoryBytes));
         if (modelBPlusMemory is not (0 or Plus.BaseBytes or Plus.ExpandedBytes)) throw new ArgumentOutOfRangeException(nameof(modelBPlusMemory));
         _plusMemory = modelBPlusMemory == 0 ? null : new ModelBPlusMemory();
+        _masterMemory = master ? new MasterMemory() : null;
+        _masterClock = master && !compact ? new MasterClock((byte)econetStation, diskInterface ? (byte)9 : (byte)8) : null;
+        _compact = compact;
+        _compactEeprom = compact ? new CompactEeprom() : null;
+        _compactJoystick = compact ? new CompactJoystick() : null;
+        if (coprocessor != MasterCoprocessor.None)
+        {
+            if (!master || compact) throw new ArgumentException(nameof(coprocessor));
+            _tube = new TubeUla();
+            if (coprocessor == MasterCoprocessor.Turbo) { _turbo = new TurboBoard(_tube, coprocessorRom); _tube.ResetParasite = _turbo.Reset; }
+            else { _master512 = new Master512Board(_tube, coprocessorRom); _tube.ResetParasite = _master512.Reset; }
+        }
         _ram = new byte[memoryBytes];
         _memoryExtension = new(memoryExtension);
         _mos = mos.ToArray();
-        _roms = new SidewaysRoms(basic, optionRoms, sidewaysExpansion, modelBPlusMemory);
+        _roms = new SidewaysRoms(basic, optionRoms, sidewaysExpansion, modelBPlusMemory, master, compact ? Master.CompactBasicBank : Master.BasicBank);
         _disks = new Disks(diskInterface, wd1770);
         _winchester = new Winchester(winchesterInterface);
         _econet = new Econet(econetInterface, econetStation, econetCyclesPerByte);
@@ -92,16 +116,19 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
         _cyclesPerFrame = videoStandard == EmulationVideoStandard.Ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame;
         _nextFrame = _cyclesPerFrame;
         Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? Constants.VideoConstants.NtscHeight : Constants.VideoConstants.Height);
-        if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
+        if (_masterMemory is not null) Video.ReadMemory = address => _masterMemory.ReadVideo(address, _ram);
+        else if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
         _cassette = new Cassette(_acia);
-        _via.ReadPortA = () => (_latch & 8) == 0 ? _keyboard.Read(_via.OutputA) : (byte)255;
+        _via.ReadPortA = () => (_latch & 8) == 0 ? (byte)(_keyboard.Read(_via.OutputA) & (_masterClock?.ReadBus() ?? byte.MaxValue)) : _masterClock?.ReadBus() ?? byte.MaxValue;
         _userVia = expandedIo ? new Via6522() : null;
-        _adc = expandedIo ? new Adc7002(_via.SetCb1) : null;
+        if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;
+        _adc = expandedIo && !compact ? new Adc7002(_via.SetCb1) : null;
         _adc?.SetInput(EmulationInputSnapshot.Empty.Controllers);
-        _via.ReadPortB = () => _adc?.FireInputs ?? Io.OpenInputs;
+        _via.ReadPortB = () => _compactEeprom?.ReadPort ?? _adc?.FireInputs ?? Io.OpenInputs;
         _via.WritePortB = WriteLatch;
-        _via.WritePortA = value => { if ((_latch & 1) == 0) _audio.Write(value); };
-        Cpu = new Cpu6502(this);
+        if (_compactEeprom is not null) _via.PortBPinsChanged = _compactEeprom.WritePort;
+        _via.WritePortA = value => { _masterClock?.Update(_latch, value); if ((_latch & 1) == 0) _audio.Write(value); };
+        Cpu = new Cpu6502(this, cmos: master);
         Reset(true);
     }
     public void Reset(bool cold)
@@ -109,6 +136,8 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
         if (cold) { Array.Clear(_ram); _via.Reset(); _userVia?.Reset(); _adc?.Reset(); Video.Reset(); _audio.Reset(); _cassette.ResetHardware(); _roms.Reset(); _latch = 255; }
         _memoryExtension.Reset(cold);
         _plusMemory?.Reset(cold);
+        _masterMemory?.Reset(cold);
+        _tube?.Reset(); _turbo?.Reset(); _master512?.Reset();
         _disks.Reset();
         _winchester.Reset();
         _econet.Reset();
@@ -118,6 +147,7 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     {
         _keyboard.SetInput(snapshot.Keys, snapshot.HostCharacters);
         _adc?.SetInput(snapshot.Controllers);
+        _compactJoystick?.SetInput(snapshot.Controllers);
         if (_keyboard.BreakPressed && !_break) Reset(false);
         _break = _keyboard.BreakPressed;
     }
@@ -138,6 +168,8 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     public void Tick()
     {
         _ticks++;
+        _turbo?.RunHostCycle();
+        _master512?.RunHostCycle();
         if ((_ticks & 127) == 0) NetworkPoll?.Invoke(128);
         _audio.Tick();
         _cassette.Tick();
@@ -159,6 +191,12 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     }
     public byte Read(ushort address)
     {
+        if (_masterMemory is not null)
+        {
+            if (address < Master.RamEnd || _masterMemory.Private(address)) return _masterMemory.Read(address, Cpu.InstructionAddress, _ram);
+            if (_masterMemory.TestRom(address)) return _mos[address & (Master.BankBytes - 1)];
+            if (TryReadMasterBus(address, out var masterValue)) return masterValue;
+        }
         if (address < MemoryExtensionConstants.RamEnd) return _plusMemory?.Read(address, Cpu.InstructionAddress, _ram) ?? _memoryExtension.Read(address, _ram);
         if (_plusMemory?.PrivateSelected(address) == true) return _plusMemory.ReadPrivate(address);
         if (address < 0xc000) return _roms.Read(address);
@@ -179,6 +217,11 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     }
     public void Write(ushort address, byte value)
     {
+        if (_masterMemory is not null)
+        {
+            if (address < Master.RamEnd || _masterMemory.Private(address)) { _masterMemory.Write(address, Cpu.InstructionAddress, value, _ram); return; }
+            if (TryWriteMasterBus(address, value)) return;
+        }
         if (address < MemoryExtensionConstants.RamEnd)
         {
             if (_plusMemory is not null) _plusMemory.Write(address, Cpu.InstructionAddress, value, _ram);
@@ -211,11 +254,13 @@ internal sealed class BbcMicroMachine : ICpuBus, IAcornMachine
     /// <summary>PB0–PB2 désignent la sortie du verrou ; PB3 fournit le niveau à mémoriser.</summary>
     private void WriteLatch(byte value)
     {
+        _masterClock?.Address(value, _via.OutputA);
         var previous = _latch;
         var mask = 1 << (value & 7);
         _latch = (value & 8) != 0 ? (byte)(_latch | mask) : (byte)(_latch & ~mask);
         // IC32 sortie 0 : validation active basse du PSG sur le bus lent PA0–PA7.
         if ((previous & 1) != 0 && (_latch & 1) == 0) _audio.Write(_via.OutputA);
+        _masterClock?.Update(_latch, _via.OutputA);
         Video.ScreenWrap = ((_latch >> 4) & 3) switch { 0 => 0x4000, 1 => 0x6000, 2 => 0x3000, _ => 0x5800 };
     }
 }

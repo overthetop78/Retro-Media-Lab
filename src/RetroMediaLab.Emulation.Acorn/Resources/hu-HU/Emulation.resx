@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>Hálózati adatrögzítési rendszer ROM. Az Econet interfészt és a kompatibilis hálózati berendezéseket igényli.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>Beszédadatok ROM a beszédszintetizátorhoz. Nem használható MOS vagy oldalsó programként ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>Rendszer ROM. A gép modelljének meg kell felelnie; B+ 32 KiB kombinált használatát BASIC és MOS Képek.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>A társprocesszoros bővítő kártya</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>Együttfeldolgozó ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>Fizikai memória</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>Memóriaszervezés</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>Kiegészítő ROM rések</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>Helytelen rendszer ROM A Mester modell mérete.</value></data>
 </root>

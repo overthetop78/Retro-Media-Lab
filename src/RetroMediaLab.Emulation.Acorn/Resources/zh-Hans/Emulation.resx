@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>网络归档系统 ROM. 需要Econet接口和相容的网络设备.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>语音数据 ROM 用于语音合成器。不能用作 MOS 或作为侧道程序 ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>系统 ROM. 必须与机器模型匹配; B+ 使用一个组合的32 KB BASIC 财务报告和已审计财务报表 MOS 图像。</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>相机扩展卡</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>相机处理器 ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>物理内存</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>记忆组织</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>额外 ROM 插槽</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>系统错误 ROM 大小用于此主模型。</value></data>
 </root>

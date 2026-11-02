@@ -67,7 +67,7 @@ public sealed class AcornModuleTests
     [Fact]
     public void ModelARemainsDistinctWithoutPretendingB2SupportsIt()
     {
-        Assert.Equal(5, ModelCatalog.All.Count);
+        Assert.Contains(ModelCatalog.All, model => model.Id == nameof(MachineModel.BbcMicroModelA));
         var modelA = new MachineConfiguration(MachineModel.BbcMicroModelA);
         Assert.True(ConfigurationFunctions.SupportsRuntime(modelA.Model));
         Assert.Equal(Emulator.AcornEmu, modelA.Core);
@@ -81,11 +81,11 @@ public sealed class AcornModuleTests
     }
 
     [Theory]
-    [InlineData(MachineModel.BbcMicroModelA, 3)]
-    [InlineData(MachineModel.BbcMicroModelB, 3)]
-    [InlineData(MachineModel.BbcMicroModelBPlus, 3)]
-    [InlineData(MachineModel.BbcMicroModelBPlus128, 3)]
-    [InlineData(MachineModel.BbcMaster128, 6)]
+    [InlineData(MachineModel.BbcMicroModelA, 4)]
+    [InlineData(MachineModel.BbcMicroModelB, 4)]
+    [InlineData(MachineModel.BbcMicroModelBPlus, 4)]
+    [InlineData(MachineModel.BbcMicroModelBPlus128, 4)]
+    [InlineData(MachineModel.BbcMaster128, 7)]
     public void KeyboardEditorContainsOnlyMachineSpecificKeys(MachineModel model, int count)
     {
         var keyboard = InputSettingsFunctions.Describe(new MachineConfiguration(model)).Keyboard!;
@@ -137,16 +137,16 @@ public sealed class AcornModuleTests
     [Fact]
     public void NativeModelCannotCrossBetweenModelBAndMaster()
     {
-        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, options: new Dictionary<string, string> { [OptionConstants.Model] = OptionConstants.Master128 }));
-        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMaster128, options: new Dictionary<string, string> { [OptionConstants.Model] = OptionConstants.ModelBAcorn1770 }));
+        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2, options: new Dictionary<string, string> { [OptionConstants.Model] = OptionConstants.Master128 }));
+        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMaster128, core: Emulator.B2, options: new Dictionary<string, string> { [OptionConstants.Model] = OptionConstants.ModelBAcorn1770 }));
     }
 
     [Fact]
     public void NativeDiskLimitRejectsUnsupportedSlotsAndCassette()
     {
-        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, media: [new("disk.ssd", MediaCategory.Floppy, EmulationMediaSlot.Floppy1)]));
-        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, media: [new("tape.uef", MediaCategory.Cassette, EmulationMediaSlot.Floppy0)]));
-        var accepted = new MachineConfiguration(MachineModel.BbcMicroModelB, media: [new("disk.ssd", MediaCategory.Floppy, EmulationMediaSlot.Floppy0)]);
+        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2, media: [new("disk.ssd", MediaCategory.Floppy, EmulationMediaSlot.Floppy1)]));
+        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2, media: [new("tape.uef", MediaCategory.Cassette, EmulationMediaSlot.Floppy0)]));
+        var accepted = new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2, media: [new("disk.ssd", MediaCategory.Floppy, EmulationMediaSlot.Floppy0)]);
         Assert.Single(accepted.Media);
     }
 
@@ -156,7 +156,7 @@ public sealed class AcornModuleTests
     public void LegacyBPlusConfigurationKeepsItsNativeChoiceAndMachineIdentity(string native, MachineModel expectedModel, int kibibytes)
     {
         var id = Guid.NewGuid();
-        var configuration = new MachineConfiguration(MachineModel.BbcMicroModelB, id: id,
+        var configuration = new MachineConfiguration(MachineModel.BbcMicroModelB, id: id, core: Emulator.B2,
             options: new Dictionary<string, string> { [OptionConstants.Model] = native });
         Assert.Equal(expectedModel, configuration.Model);
         Assert.Equal(id, configuration.Id);
@@ -173,7 +173,7 @@ public sealed class AcornModuleTests
     {
         using var http = new HttpClient();
         var module = new RetroMediaLab.Emulation.Acorn.Modules.AcornEmulationModule(Path.GetTempPath(), Path.GetTempPath(), http, Path.GetTempPath());
-        var configuration = new MachineConfiguration(MachineModel.BbcMicroModelB);
+        var configuration = new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2);
         Assert.DoesNotContain(SettingsDescriptionFunctions.Create(configuration), block => block.Tab == EmulationMachineTab.General);
         Assert.DoesNotContain(SettingsDescriptionFunctions.Create(configuration), block => block.Tab == EmulationMachineTab.Storage);
         var storage = module.DescribeStorageSettings(configuration);

@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>ネットワークファイリングシステム ROM. エコネットインターフェイスと互換性のあるネットワーク機器が必要です。</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>音声データ ROM スピーチシンセサイザー用。 として使用できません MOS またはサイドウェイプログラムとして ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>ソリューション ROM. マシンモデルにマッチしなければならない。 B+ 組み合わせた32 KiBを使用する BASIC と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と と MOS 映像。</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>加工業者の拡大カード</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>共同加工業者 ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>物理メモリ</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>メモリ組織</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>参加申し込み ROM スロット</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>誤ったシステム ROM マスターモデルのサイズ</value></data>
 </root>

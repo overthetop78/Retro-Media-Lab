@@ -38,6 +38,7 @@ internal static partial class AcornFirmware
             ["e5d178d19b2c22852f576a90fae4109e22d324ac"] = new("Reuters System ROM v6", "6", FirmwareCategory.Network),
             ["9a8c1977b08399455a55f4b83f4b8f637cf2bc04"] = new("Acorn NFS v3.65 (for Reuters)", "3.65", FirmwareCategory.Network),
             ["6a5c7ace255c8ac96c983d5ba67084fbd71ff61e"] = new("Acorn MOS v2.30R (for Reuters)", "2.30R", FirmwareCategory.Network),
-            ["08cec09c3459ea87a93d57c7bd6f4ddb9a7bcc89"] = new("Wild ROM v1.27 [variant 2] ['21.3.90']", "1.27", FirmwareCategory.Network)
+            ["08cec09c3459ea87a93d57c7bd6f4ddb9a7bcc89"] = new("Wild ROM v1.27 [variant 2] ['21.3.90']", "1.27", FirmwareCategory.Network),
+            ["14f75d36ffe9af14aaac42df55b4fe3729ba75cf"] = new("Acorn Master ET ANFS425", null, FirmwareCategory.Network),
         };
 }

@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>ระบบจัดเก็บเครือข่าย ROM. ต้องการอินเทอร์เฟส Econet และอุปกรณ์เครือข่ายที่เข้ากันได้</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>ข้อมูลคําพูด ROM สําหรับตัวสังเคราะห์คําพูด ไม่สามารถนําไปใช้เป็นตัวสังเคราะห์ได้ MOS หรือเป็นโปรแกรมที่ด้านข้าง ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>ระบบ ROM. ต้องตรงกับโมเดลของเครื่องจักร B+ ใช้รวม 32 กิโลไบต์ BASIC และ MOS ภาพลักษณ์</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>นามบัตรของโพรเซสประมวลผล</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>ตัวประมวลผล ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>หน่วยความจําหลัก</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>การตั้งค่าหน่วยความจํา</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>เพิ่มเติม ROM ช่อง</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>ระบบไม่ถูกต้อง ROM ขนาดสําหรับรุ่นใหญ่</value></data>
 </root>

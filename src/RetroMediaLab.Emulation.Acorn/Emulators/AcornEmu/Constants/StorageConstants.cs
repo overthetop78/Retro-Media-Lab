@@ -75,6 +75,7 @@ internal static class StorageConstants
     /// <summary>Identifiant persistant du contrôleur Acorn WD1770.</summary>
     internal const string AcornWd1770 = "acorn-wd1770";
     /// <summary>Identifiant du lecteur de disquettes double face à 80 pistes sélectionné initialement.</summary>
+    internal const string CompactDriveModel = "ds80-dd-35";
     internal const string DefaultModel = "ds80";
 
     /// <summary>Identifiant du lecteur simple face à 40 pistes par face en simple densité.</summary>

@@ -1,3 +1,4 @@
+using Master = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants.MasterConstants;
 using Plus = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
 using E = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.SidewaysExpansionConstants;
@@ -15,12 +16,12 @@ internal sealed class SidewaysRoms
     private readonly bool _modelBPlus;
     private readonly bool _broadcastToBankZero;
     private int _selected;
-    internal SidewaysRoms(ReadOnlySpan<byte> basic, IReadOnlyDictionary<int, byte[]>? additional = null, SidewaysExpansionSettings? expansion = null, int modelBPlusMemory = 0)
+    internal SidewaysRoms(ReadOnlySpan<byte> basic, IReadOnlyDictionary<int, byte[]>? additional = null, SidewaysExpansionSettings? expansion = null, int modelBPlusMemory = 0, bool master = false, int masterBasicBank = Master.BasicBank)
     {
         if (basic.Length != C.RomBankSize) throw new ArgumentException(nameof(basic));
         expansion ??= new();
         if (expansion.Modules is < 0 or > E.SocketCount || expansion.AriesB12 && !E.AriesModels.Values.Contains(expansion.AriesRamBytes)) throw new ArgumentOutOfRangeException(nameof(expansion));
-        _basicBank = expansion.MapNativeBank(C.BasicBank);
+        _basicBank = master ? masterBasicBank : expansion.MapNativeBank(C.BasicBank);
         _selected = _basicBank;
         _broadcastToBankZero = expansion.AriesB12;
         _banks[_basicBank] = basic.ToArray();
@@ -31,8 +32,8 @@ internal sealed class SidewaysRoms
             if (bank.Key < 0 || bank.Key >= C.RomBankCount || bank.Key == _basicBank || bank.Value.Length != C.RomBankSize) throw new ArgumentException(nameof(additional));
             _banks[bank.Key] = bank.Value.ToArray();
         }
-        if (modelBPlusMemory == Plus.ExpandedBytes)
-            foreach (var bank in Plus.RamBanks)
+        if (modelBPlusMemory == Plus.ExpandedBytes || master)
+            foreach (var bank in master ? Master.RamBanks : Plus.RamBanks)
             {
                 if (_banks[bank] is not null) throw new ArgumentException(nameof(additional));
                 _banks[bank] = new byte[C.RomBankSize];

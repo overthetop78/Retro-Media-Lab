@@ -62,4 +62,10 @@
   <data name="Emulation.Acorn.Firmware.NetworkRequirements"><value>네트워크 시스템 ROM. Econet 인터페이스 및 호환 네트워크 장비가 필요합니다.</value></data>
   <data name="Emulation.Acorn.Firmware.SpeechRequirements"><value>발표자료 ROM 음성 합성기. 사용될 수 없습니다 MOS 또는 sideways 프로그램으로 ROM.</value></data>
   <data name="Emulation.Acorn.Firmware.SystemRequirements"><value>시스템 ROM. 기계 모형을 일치해야 합니다; B+ 결합된 32 KiB를 사용하십시오 BASIC 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 MOS 이미지.</value></data>
+  <data name="Emulation.Acorn.Master.Coprocessor"><value>Coprocessor 확장 카드</value></data>
+  <data name="Emulation.Acorn.Master.CoprocessorRom"><value>회사 소개 ROM</value></data>
+  <data name="Emulation.Acorn.Master.Memory"><value>물리적 기억</value></data>
+  <data name="Emulation.Acorn.Master.MemoryDescription"><value>메모리 조직</value></data>
+  <data name="Emulation.Acorn.Master.RomSlots"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ROM 의 Slot</value></data>
+  <data name="Emulation.Acorn.Master.InvalidSystemRom"><value>잘못된 시스템 ROM 이 마스터 모델의 크기.</value></data>
 </root>

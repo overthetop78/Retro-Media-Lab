@@ -12,4 +12,8 @@
   <data name="Emulation.Acorn.Cpu.Rockwell6512"><value>Rockwell 6512</value></data>
   <data name="Emulation.Acorn.Model.BbcMicroModelBPlus"><value>BBC Micro Model B+</value></data>
   <data name="Emulation.Acorn.Model.BbcMicroModelBPlus128"><value>BBC Micro Model B+ 128</value></data>
+  <data name="Emulation.Acorn.Model.BbcMasterET"><value>BBC Master ET</value></data>
+  <data name="Emulation.Acorn.Model.BbcMasterCompact"><value>BBC Master Compact</value></data>
+  <data name="Emulation.Acorn.Cpu.Gte65C102"><value>65C102</value></data>
+  <data name="Emulation.Acorn.Cpu.Intel80186"><value>Intel 80186</value></data>
 </root>
