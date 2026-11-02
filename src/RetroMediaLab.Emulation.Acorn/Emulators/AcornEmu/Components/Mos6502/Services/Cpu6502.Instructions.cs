@@ -2,10 +2,9 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Se
 
 internal sealed partial class Cpu6502
 {
-    /// <summary>Décode les instructions officielles, en réunissant les familles ayant le même adressage.</summary>
-    private int Execute(byte opcode)
+    /// <summary>Instructions de base du chemin CMOS ; le NMOS utilise son séquenceur de bus.</summary>
+    private int ExecuteCmosBase(byte opcode)
     {
-        if (!cmos && TryExecuteUnofficial(opcode, out var unofficialCycles)) return unofficialCycles;
         // Ces instructions occupent les positions irrégulières du groupe des décalages/chargements.
         switch (opcode)
         {

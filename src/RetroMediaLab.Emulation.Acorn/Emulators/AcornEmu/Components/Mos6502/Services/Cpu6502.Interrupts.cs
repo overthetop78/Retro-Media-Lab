@@ -7,6 +7,14 @@ internal sealed partial class Cpu6502
     private bool _nmiPending;
     private bool _nmiPrevious;
     private bool _nmiAccepted;
+    private bool _overflowLevel;
+
+    private void SampleOverflow()
+    {
+        var active = bus.SetOverflow;
+        if (active && !_overflowLevel) P |= Overflow;
+        _overflowLevel = active;
+    }
 
     /// <summary>La NMI est mémorisée sur front actif ; un niveau maintenu ne déclenche pas plusieurs entrées.</summary>
     private void SampleNmi()
@@ -20,7 +28,9 @@ internal sealed partial class Cpu6502
     private void EnterInterrupt(long start, ushort vector)
     {
         _irqPending = false;
-        Read(PC);
+        bus.SetSync(true);
+        try { Read(PC); }
+        finally { bus.SetSync(false); }
         Read(PC);
         Push((byte)(PC >> 8)); Push((byte)PC); Push((byte)((P | Unused) & ~Break));
         P |= InterruptDisable;

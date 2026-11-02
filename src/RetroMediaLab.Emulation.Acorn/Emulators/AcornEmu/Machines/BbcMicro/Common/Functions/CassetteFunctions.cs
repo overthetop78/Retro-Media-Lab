@@ -14,7 +14,7 @@ internal static class CassetteFunctions
     /// Le bus et le CPU sont empruntés ; le modèle possède leurs ressources et leur horloge.</remarks>
     internal static bool TryDirectLoad(Cpu6502 cpu, ICpuBus bus, Cassette cassette)
     {
-        if (cassette.Settings.Mode != EmulationCassettePlaybackMode.Direct || cpu.PC != 0xffdd || cpu.A != 255) return false;
+        if (!cpu.AtInstructionBoundary || cassette.Settings.Mode != EmulationCassettePlaybackMode.Direct || cpu.PC != 0xffdd || cpu.A != 255) return false;
         var block = cpu.X | cpu.Y << 8;
         var pointer = bus.Read((ushort)block) | bus.Read((ushort)(block + 1)) << 8;
         var name = new System.Text.StringBuilder();

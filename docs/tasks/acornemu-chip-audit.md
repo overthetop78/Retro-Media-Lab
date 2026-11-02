@@ -159,3 +159,102 @@ Clôture des points de décodage identifiés : première page de préfixe conser
 Résultat final groupé : 1 088 tests AcornEmu réussis en 18 s, dont 57 cas MC6809 autonomes. Le contrôle de décodage des 256 codes des trois pages prouve l'absence d'exception hôte pour ces codes ; les autres cas vérifient les états et séquences précisés dans leurs assertions, sans prétendre couvrir toutes les combinaisons d'opérandes ni toutes les révisions physiques. Aucun corpus, firmware ou processus externe temporaire utilisé dans ces tests. Références supplémentaires : mesures de bus et groupes d'indicateurs de https://github.com/hoglet67/6809Decoder/blob/master/src/em_6809.c. Debug All en cours avant le commit séparé.
 
 Livraison MC6809 : `scripts/local-building.cmd --building=debug --modules=A` terminé avec code 0. Exécutable `build/Debug/Retro Media Lab/retromedialab.exe` présent et 24 DLL de modules vérifiées. `git diff --check` ne signale aucune erreur de contenu. Le commit suivant porte exclusivement sur la puce MC6809, ses régressions et ce suivi.
+
+## Reprise de toutes les puces demandée par l’utilisateur
+
+- [ ] Reprendre toutes les puces Acorn depuis les BBC Micro, une par une, sans passer à la suivante tant que la précédente n’est pas terminée.
+  - [ ] Retirer les fichiers génériques refusés.
+    - [x] Supprimer les 39 fichiers créés dans `docs/chips/acorn/` et ce dossier ; supprimer également `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502ConformanceDiagnostic.cs` après arrêt de son exécution, qui écrit dans ce dossier.
+  - [ ] Réaliser le travail demandé pour le MOS 6502.
+    - [ ] Créer un document MOS 6502 indiquant si tout est implémenté et listant ce qui doit être testé, sans liste de tâches ; préciser le chemin avant création.
+    - [ ] Modifier les fichiers du composant et des tests selon les écarts constatés ; détailler chaque chemin et contenu attendu avant modification.
+    - [ ] Créer les captures des essais réalisés dans `artifacts/TestsChips/Mos6502/<Machine>/`, puis supprimer les diagnostics et fichiers externes temporaires utilisés.
+    - [ ] Modifier le document avec les résultats réels et committer le composant terminé avant de passer au suivant.
+
+### MOS 6502 : fichiers du bloc en cours
+
+- [x] Consigner la couverture dans l’emplacement demandé.
+  - [x] Créer `docs/chips/CPU/Mos6502.md` : identifier les fonctions présentes dans les six fichiers CPU existants, les signaux absents du contrat ICpuBus et les vérifications par domaine ; citer les sources MOS, MAME et SingleStepTests, sans créer d’autre fiche générique.
+- [x] Corriger le bus des opcodes JAM après comparaison de leur séquence externe.
+  - [x] Modifier `Components/Mos6502/Constants/Cpu6502Constants.cs`, `Services/Cpu6502.cs` et `Cpu6502.Unofficial.cs` : séquence d’entrée JAM puis adresse de lecture maintenue, sans accepter IRQ/NMI, et RESET rétablit le décodage.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502BusTests.cs` : vérifier les douze opcodes JAM, leur trace de bus et la reprise RESET ; conserver la vérification des autres opcodes.
+
+- [x] Raccorder les signaux SO et SYNC du même 6502.
+  - [x] Modifier `Components/Common/Interfaces/ICpuBus.cs`, `Components/Mos6502/Services/Cpu6502.cs` et `Cpu6502.Interrupts.cs` : entrée SO active logiquement avec détection de front, signal SYNC autour des lectures d’opcode y compris le cycle abandonné d’entrée d’interruption, désassertion en finally ; valeurs par défaut pour les cartes existantes.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502BusTests.cs` : SO actif/maintenu/relâché, CLV et JAM, SYNC sur opcode et sur entrée IRQ, absence de SYNC sur données et RESET.
+- [x] Produire une preuve fonctionnelle dans le BBC Micro émulé.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502MachineDiagnostic.cs` : télécharger en mémoire le binaire et le listing officiels de Klaus Dormann ; exécuter ses instructions dans `BbcMicroMachine` avec sa ROM de test et RAM 32 Kio ; brancher uniquement son point de succès vers un affichage produit par le CPU sur la vraie vidéo de la machine. Enregistrer `artifacts/TestsChips/Mos6502/BbcMicroModelB/klaus-functional.png`, sans modifier les fichiers utilisateur ni prétendre tester RDY/SO/SYNC avec ce programme.
+  - [x] Modifier `docs/chips/CPU/Mos6502.md` avec les résultats du groupe de tests et la configuration exacte de cette capture.
+  - [x] Supprimer `AcornEmu6502MachineDiagnostic.cs` après l’essai, puis reconstruire les tests pour retirer le diagnostic ; aucun binaire, listing ou JSON externe conservé.
+
+Exigence utilisateur transversale, valable également pour les futurs cœurs Nintendo 64, PlayStation/PS2/PS3 et Dreamcast : reproduire le comportement original et les cycles sans limiter les performances hôte à la seule fréquence temps réel ; mesurer le débit non bridé et optimiser les coûts réels sans dégrader la fidélité.
+
+- [x] Mesurer les performances du même 6502 lors de sa validation.
+  - [x] Modifier `docs/chips/CPU/Mos6502.md` : consigner le débit de cycles non bridé réellement obtenu avec sa configuration et la portée de la mesure ; distinguer exécution CPU seule, machine complète et rendu. Aucune vitesse supposée ni extrapolation aux futures consoles.
+
+MOS 6502 : JAM, SO et SYNC corrigés et 46 cas ciblés réussis, dont le programme fonctionnel Klaus Dormann exécuté par le CPU dans le BBC Micro Model B. Capture réelle inspectée : `artifacts/TestsChips/Mos6502/BbcMicroModelB/klaus-functional.png`. Diagnostic temporaire supprimé puis assembly reconstruit ; 1 237 tests permanents AcornEmu réussis en 21 s, diagnostic externe 80186 exclu. La fiche réelle est `docs/chips/CPU/Mos6502.md`. État historique avant la réécriture RDY décrite ci-dessous ; les résultats finaux figurent en fin de section.
+
+### Suspension RDY du 6502 NMOS sans bloquer l’hôte
+
+- [x] Remplacer le séquencement NMOS indivisible par des phases de bus mémorisées, sans allocation par instruction.
+  - [x] Créer `Components/Mos6502/Enums/Cpu6502Operation.cs`, `Cpu6502AddressMode.cs`, `Cpu6502BusPhase.cs` et `Services/Cpu6502.Decode.cs` : opérations, modes et phases nommés, table immuable des 256 décodages NMOS.
+  - [x] Créer `Components/Mos6502/Services/Cpu6502.Nmos.cs` et `Cpu6502.NmosOperations.cs` : sélection et accomplissement d’un cycle, conservation des phases lors d’une lecture RDY inactive, poursuite des écritures NMOS, pile/branches/vecteurs/JAM et application des opérations sans allocations ni répétition d’écritures.
+  - [x] Modifier `Components/Common/Interfaces/ICpuBus.cs`, `Components/Mos6502/Services/Cpu6502.cs` et `Machines/BbcMicro/Common/Functions/CassetteFunctions.cs` : entrée Ready par défaut active, Step NMOS utilisant le séquenceur, RESET annulant une instruction suspendue, interception cassette seulement à la frontière d’instruction ; conserver le chemin CMOS existant jusqu’à sa propre reprise.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502BusTests.cs` : attentes à l’opcode, aux opérandes, aux données, dans les accès RMW et la pile ; écritures non répétées, SYNC maintenu, interruptions et RESET pendant RDY.
+  - [x] Modifier `docs/chips/CPU/Mos6502.md` après le contrôle groupé avec les fonctions effectivement vérifiées et leurs limites ; détailler les preuves de machine et mesures avant de les ajouter.
+
+- [x] Retirer les anciens chemins NMOS devenus inutilisés.
+  - [x] Modifier `Components/Mos6502/Services/Cpu6502.Instructions.cs` et `Cpu6502.Cmos.cs` : nommer explicitement le décodeur de base CMOS et retirer l’appel à l’ancien décodeur NMOS.
+  - [x] Déplacer la seule opération ARR encore partagée de `Cpu6502.Unofficial.cs` vers `Cpu6502.NmosOperations.cs`, puis supprimer `Cpu6502.Unofficial.cs` et ses anciens décodeurs/adressages NMOS ; conserver toute leur sémantique dans la table et les phases déjà créées.
+  - [x] Modifier `AcornEmu6502BusTests.cs` : remplacer les deux assertions de collection filtrée par `Assert.DoesNotContain` sans changer leur portée.
+- [x] Confronter les 256 décodages NMOS complets à un corpus indépendant.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502ConformanceDiagnostic.cs` : lire les jeux SingleStepTests en mémoire à une révision identifiée, quatre téléchargements anticipés au maximum, vérifier les 10 000 cas de chaque opcode et chaque cycle ; pour JAM, comparer la fenêtre de blocage demandée par le corpus sans le traiter comme une instruction terminée. Écrire le seul bilan dans `docs/chips/CPU/Mos6502.md`, sans conserver de données externes.
+  - [x] Supprimer `AcornEmu6502ConformanceDiagnostic.cs` après utilisation puis reconstruire l’assembly ; annuler/attendre tous les téléchargements en finally, aucun fichier externe temporaire conservé.
+
+- [x] Vérifier la reprise RDY de tous les décodages, pas seulement quelques instructions.
+  - [x] Modifier `AcornEmu6502BusTests.cs` : pour les 256 opcodes avec index franchissant une page, suspendre séparément chacune de leurs lectures pendant deux cycles ; comparer tous les registres et la trace complète au même programme sans attente, avec uniquement les deux répétitions de lecture attendues.
+- [x] Mesurer le coût d’exécution et d’allocation du séquenceur.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502PerformanceDiagnostic.cs` : boucle CPU seule non bridée, échauffement JIT, mesure cycles/secondes et octets alloués par thread sur cinq millions d’instructions ; écrire la mesure et sa configuration dans `docs/chips/CPU/Mos6502.md` après la fin du corpus pour éviter deux rédacteurs concurrents.
+  - [x] Supprimer `AcornEmu6502PerformanceDiagnostic.cs` après mesure puis reconstruire l’assembly ; ne conserver que le résultat documentaire.
+
+- [x] Capturer les résultats du séquenceur complet dans la machine émulée.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502ScreenDiagnostic.cs` : refaire le programme Klaus sur le nouveau séquenceur et produire `artifacts/TestsChips/Mos6502/BbcMicroModelB/klaus-functional.png` ; ajouter un banc numérique de test connecté au bus BBC, contrôlé par le programme 6502, pour RDY/SO/SYNC/IRQ/NMI et produire `pins-rdy-so-sync-irq-nmi.png`. Le programme doit brancher lui-même vers échec ou succès et écrire son résultat en RAM télétexte. Aucune assertion de couverture hors de ces scénarios.
+  - [x] Modifier `docs/chips/CPU/Mos6502.md` avec la configuration et les résultats de ces captures, puis supprimer `AcornEmu6502ScreenDiagnostic.cs` et reconstruire l’assembly pour retirer tous les diagnostics temporaires.
+
+- [x] Retirer l’état JAM de l’ancien interpréteur, désormais porté uniquement par la phase NMOS.
+  - [x] Modifier `Components/Mos6502/Services/Cpu6502.cs`, `Cpu6502.Nmos.cs` et `Constants/Cpu6502Constants.cs` : supprimer `_jammed`, son test CMOS inaccessible et la constante de durée inutilisée ; conserver la phase JAM et toutes ses lectures.
+
+- [x] Conserver la métadonnée d’instruction utilisée par le décodage mémoire des cartes.
+  - [x] Modifier `Components/Mos6502/Services/Cpu6502.Nmos.cs` et `Cpu6502.cs` : publier InstructionAddress avant la lecture d’opcode, comme avant la refonte, afin que le bus B+ puisse choisir la banque au bon cycle ; préciser que Step peut rendre la main sur RDY.
+  - [x] Modifier `AcornEmu6502BusTests.cs` : vérifier, dans le rappel de lecture du bus, l’adresse publiée sur les opcodes avant et après un saut, en NMOS et CMOS.
+
+- [x] Fermer la fenêtre RESET/NMI identifiée dans la comparaison du séquenceur.
+  - [x] Modifier `Components/Mos6502/Services/Cpu6502.cs` : à la fin du RESET NMOS, conserver le sondage NMI du cycle précédent pour accepter un front suffisamment précoce avant la première instruction ; laisser un front du dernier cycle attendre le sondage suivant.
+  - [x] Modifier `AcornEmu6502BusTests.cs` : injecter une impulsion NMI séparément à chacun des sept cycles RESET et vérifier le vecteur, l’instruction non exécutée/exécutée selon la fenêtre, le retour RTI, ainsi qu’IRQ masquée et conservation de D/V au RESET NMOS.
+
+- [x] Confronter la durée de RESET aux signaux de la fiche MOS originale.
+  - [x] Créer temporairement `%TEMP%/RetroMediaLab-6502-signals.png` : aperçu des pages de signaux de la fiche MCS6500 pour distinguer la séquence numérique du CPU et le maintien externe de RESET ; supprimer l’aperçu après lecture et inscrire la conclusion vérifiable dans `docs/chips/CPU/Mos6502.md`.
+
+Instruction utilisateur : après achèvement et commit du MOS 6502, s’arrêter pour discuter avec l’utilisateur avant toute autre puce. Ne commencer aucun autre circuit entre-temps.
+
+- [x] Lire la fiche constructeur avec la chaîne de certificats Windows.
+  - [x] Créer temporairement `%TEMP%/RetroMediaLab-6502-signals.pdf` avec `Invoke-WebRequest` et TLS normal : le téléchargement Python échoue sur la chaîne de certificats du site, aucun contrôle TLS ne doit être désactivé ; produire l’aperçu déjà prévu avec PyMuPDF puis supprimer PDF et aperçu après lecture.
+
+- [x] Représenter le maintien externe de RESET, confirmé page 6 de la fiche Synertek SY6500.
+  - [x] Modifier `Components/Common/Interfaces/ICpuBus.cs`, `Components/Mos6502/Enums/Cpu6502BusPhase.cs`, `Services/Cpu6502.cs` et `Cpu6502.Nmos.cs` : entrée logique ResetRequested, horloges sans transfert pendant le maintien, séquence de sept lectures après libération, annulation de l’instruction interrompue, phases RESET conservées si RDY retient une lecture, sondage NMI final ; chemin CMOS conservé.
+  - [x] Modifier `AcornEmu6502BusTests.cs` : RESET au milieu d’un STA, absence de transfert tant que la ligne est maintenue, reprise au vecteur et conservation des registres, puis RDY retenant une lecture de pile du RESET sans double décrément de S.
+
+- [x] Raccorder DBE, décrit page 6 de la fiche SY6500 et présent sur le 6502, absent du 6512.
+  - [x] Modifier `Components/Common/Interfaces/ICpuBus.cs` et `Components/Mos6502/Services/Cpu6502.Nmos.cs` : entrée DataBusEnabled active par défaut ; signaler les écritures haute impédance via WriteUndriven sans inventer un octet ni une règle mémoire ; conserver adresse/RW et effets internes du CPU. Les cartes 6512 n’exploitent pas cette broche inexistante.
+  - [x] Modifier `AcornEmu6502BusTests.cs` : écriture mémoire et empilement sans pilotage des données, lectures inchangées, reprise du pilotage sans blocage du CPU.
+
+- [x] Utiliser l’opération décodée dans le sondage d’interruption.
+  - [x] Modifier `Components/Mos6502/Services/Cpu6502.Nmos.cs` : remplacer les trois valeurs d’opcode brutes CLI/SEI/PLP par les valeurs de l’enum et supprimer le champ d’opcode devenu inutile.
+- [x] Compléter la preuve vidéo de RESET et DBE.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502ResetScreenDiagnostic.cs` : un programme en ROM de test BBC pilote un maintien RESET de quatre cycles, compare sa reprise au vecteur, le décrément de pile, I et D, puis vérifie une écriture haute impédance DBE et le retour du pilotage. Le banc externe signale la haute impédance sans écrire de donnée à sa mémoire de test ; les comparaisons et l’affichage sont exécutés par le CPU. Capturer `artifacts/TestsChips/Mos6502/BbcMicroModelB/reset-dbe.png`.
+  - [x] Supprimer `AcornEmu6502ResetScreenDiagnostic.cs` et les deux fichiers `%TEMP%/RetroMediaLab-6502-signals.pdf` et `.png` après inspection ; modifier la fiche avec le résultat, puis reconstruire les tests pour retirer le diagnostic.
+- [ ] Livrer le bloc MOS 6502 terminé, puis s’arrêter avant toute autre puce.
+  - [x] Modifier `docs/chips/CPU/Mos6502.md` : clôturer chaque domaine seulement après ses contrôles et préciser les variantes et comportements indéfinis, les preuves et les mesures finales.
+  - [ ] Modifier `docs/tasks/acornemu-chip-audit.md` avec les résultats finaux du contrôle Acorn, du script Debug modules A et des fichiers de sortie ; indexer uniquement les fichiers MOS 6502, contrat de bus, raccordement cassette, tests et fiche/captures concernés, puis créer leur commit indépendant.
+
+Validation finale du séquenceur MOS 6502 : 1 260 tests permanents AcornEmu réussis, zéro échec, 22 s ; diagnostic externe 80186 exclu. Capture RESET/DBE inspectée, diagnostic supprimé et assembly reconstruit. Script Debug modules A terminé avec code 0 ; exécutable build/Debug/Retro Media Lab/retromedialab.exe présent et 24 DLL de modules vérifiées.

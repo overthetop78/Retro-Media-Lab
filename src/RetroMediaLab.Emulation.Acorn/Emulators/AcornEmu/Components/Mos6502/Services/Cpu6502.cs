@@ -20,7 +20,6 @@ internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
     private bool _irqPending;
     private bool _irqLevel;
     private bool _irqPrevious;
-    private bool _jammed;
     private bool? _branchIrqSample;
     private bool? _branchNmiSample;
 
@@ -51,9 +50,12 @@ internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
     /// <summary>Applique RESET et lit le vecteur FFFC/FFFD. Le bus et les périphériques sont réinitialisés par leur propriétaire.</summary>
     internal void Reset()
     {
+        if (!cmos) { BeginNmosReset(); StepNmos(); return; }
+        ResetNmosSequence();
+        _overflowLevel = bus.SetOverflow;
         _nmiPending = false; _nmiLevel = bus.Nmi;
         _nmiAccepted = _nmiPrevious = false;
-        _jammed = _irqPending = _irqPrevious = _irqLevel = false;
+        _irqPending = _irqPrevious = _irqLevel = false;
         P = (byte)(P | InterruptDisable | Unused);
         if (cmos) P &= unchecked((byte)~Decimal);
         Read(PC);
@@ -63,11 +65,11 @@ internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
         _irqPending = false;
     }
 
-    /// <summary>Exécute une instruction, une NMI ou une IRQ et renvoie au planificateur de la machine.</summary>
+    /// <summary>Exécute jusqu'à la fin de l'instruction/interruption ou une lecture NMOS retenue par RDY, puis rend la main.</summary>
     internal void Step()
     {
+        if (!cmos) { StepNmos(); return; }
         var start = Cycles;
-        if (_jammed) { Read(PC); return; }
         if (_nmiAccepted)
         {
             _nmiPending = _nmiAccepted = false;
@@ -83,8 +85,8 @@ internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
         _branchIrqSample = null;
         _branchNmiSample = null;
         var previousFlags = P;
-        var opcode = Fetch();
-        var expected = cmos ? ExecuteCmos(opcode) : Execute(opcode);
+        var opcode = FetchOpcode();
+        var expected = ExecuteCmos(opcode);
         Pad(start, expected);
         P |= Unused;
         var interruptFlags = opcode is (0x58 or 0x78 or 0x28) ? previousFlags : P;
@@ -92,10 +94,25 @@ internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
         _nmiAccepted = _branchNmiSample ?? _nmiPrevious;
     }
 
-    private void Tick() { bus.Tick(); Cycles++; _irqPrevious = _irqLevel; _irqLevel = bus.Irq; _nmiPrevious = _nmiPending; SampleNmi(); }
+    private void Tick()
+    {
+        bus.Tick();
+        Cycles++;
+        _irqPrevious = _irqLevel;
+        _irqLevel = bus.Irq;
+        _nmiPrevious = _nmiPending;
+        SampleNmi();
+        SampleOverflow();
+    }
     private byte Read(ushort address) { Tick(); return bus.Read(address); }
     private void Write(ushort address, byte value) { Tick(); bus.Write(address, value); }
     private byte Fetch() => Read(PC++);
+    private byte FetchOpcode()
+    {
+        bus.SetSync(true);
+        try { return Fetch(); }
+        finally { bus.SetSync(false); }
+    }
     private ushort FetchWord() { var low = Fetch(); return (ushort)(low | Fetch() << 8); }
     private ushort ReadWord(ushort address) { var low = Read(address); return (ushort)(low | Read((ushort)(address + 1)) << 8); }
     private ushort ZeroPageWord(byte address) { var low = Read(address); return (ushort)(low | Read((byte)(address + 1)) << 8); }

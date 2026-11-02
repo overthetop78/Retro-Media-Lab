@@ -62,6 +62,6 @@ internal sealed partial class Cpu6502
         if (opcode == 0x44) { Fetch(); return 3; }
         if (opcode is 0x54 or 0xd4 or 0xf4) { Fetch(); return 4; }
         if (opcode is 0x5c or 0xdc or 0xfc) { FetchWord(); return opcode == 0x5c ? 8 : 4; }
-        return Execute(opcode);
+        return ExecuteCmosBase(opcode);
     }
 }

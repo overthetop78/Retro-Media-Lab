@@ -9,4 +9,16 @@ internal interface ICpuBus
     void Tick();
     bool Irq { get; }
     bool Nmi { get; }
+    /// <summary>RDY haut : la lecture peut se terminer. Les écritures NMOS continuent même quand RDY est bas.</summary>
+    bool Ready => true;
+    /// <summary>RESET actif logiquement : inhibe les transferts jusqu'à sa libération.</summary>
+    bool ResetRequested => false;
+    /// <summary>DBE haut pendant le transfert : le 6502 peut piloter ses sorties de données.</summary>
+    bool DataBusEnabled => true;
+    /// <summary>Cycle d'écriture dont les données CPU sont en haute impédance ; le bus détermine sa réponse électrique.</summary>
+    void WriteUndriven(ushort address) { }
+    /// <summary>SO actif : un front inactif vers actif positionne V sur le 6502.</summary>
+    bool SetOverflow => false;
+    /// <summary>SYNC est actif pendant la lecture d'un opcode, y compris une lecture abandonnée pour interruption.</summary>
+    void SetSync(bool asserted) { }
 }
