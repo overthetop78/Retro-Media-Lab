@@ -3,7 +3,10 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Se
 /// <summary>Broches d'interruption du NMOS 6502, indépendantes des périphériques raccordés.</summary>
 internal sealed partial class Cpu6502
 {
-    private bool _nmiLevel, _nmiPending;
+    private bool _nmiLevel;
+    private bool _nmiPending;
+    private bool _nmiPrevious;
+    private bool _nmiAccepted;
 
     /// <summary>La NMI est mémorisée sur front actif ; un niveau maintenu ne déclenche pas plusieurs entrées.</summary>
     private void SampleNmi()
@@ -16,10 +19,14 @@ internal sealed partial class Cpu6502
     /// <summary>Empile le retour et l'état sans indicateur BRK, puis charge le vecteur choisi en sept cycles.</summary>
     private void EnterInterrupt(long start, ushort vector)
     {
+        _irqPending = false;
+        Read(PC);
+        Read(PC);
         Push((byte)(PC >> 8)); Push((byte)PC); Push((byte)((P | Unused) & ~Break));
         P |= InterruptDisable;
         if (cmos) P &= unchecked((byte)~Decimal);
-        PC = ReadWord(vector);
+        PC = ReadWord(InterruptVector(vector, hardware: true));
         Pad(start, 7);
+        _nmiAccepted = _nmiPrevious;
     }
 }

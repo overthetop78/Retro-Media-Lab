@@ -17,21 +17,24 @@ internal sealed partial class Cpu6502
                 return (opcode & 8) == 0 ? 5 : 6;
             case 0x1a: A = Nz((byte)(A + 1)); return 2;
             case 0x3a: A = Nz((byte)(A - 1)); return 2;
-            case 0x5a: Push(Y); return 3;
-            case 0x7a: Y = Nz(Pop()); return 4;
-            case 0xda: Push(X); return 3;
-            case 0xfa: X = Nz(Pop()); return 4;
+            case 0x5a: Read(PC); Push(Y); return 3;
+            case 0x7a: PreparePull(); Y = Nz(Pop()); return 4;
+            case 0xda: Read(PC); Push(X); return 3;
+            case 0xfa: PreparePull(); X = Nz(Pop()); return 4;
             case 0x64: Write(Fetch(), 0); return 3;
-            case 0x74: Write((byte)(Fetch() + X), 0); return 4;
+            case 0x74: Write(IndexedZeroPage(X), 0); return 4;
             case 0x9c: Write(FetchWord(), 0); return 4;
-            case 0x9e: Write((ushort)(FetchWord() + X), 0); return 5;
+            case 0x9e: Write(IndexedAddress(FetchWord(), X, true), 0); return 5;
             case 0x80:
-                var displacement = (sbyte)Fetch(); var previous = PC; PC = (ushort)(PC + displacement);
-                return (PC & 0xff00) == (previous & 0xff00) ? 3 : 4;
+                return Branch(true);
             case 0x89: Flag(Zero, (A & Fetch()) == 0); return 2;
-            case 0x34: Bit(Read((byte)(Fetch() + X))); return 4;
-            case 0x3c: address = FetchWord(); Bit(Read((ushort)(address + X))); return 4 + PageCross(address, X);
-            case 0x7c: address = (ushort)(FetchWord() + X); PC = ReadWord(address); return 6;
+            case 0x34: Bit(Read(IndexedZeroPage(X))); return 4;
+            case 0x3c: address = FetchWord(); Bit(Read(IndexedAddress(address, X, false))); return 4 + PageCross(address, X);
+            case 0x7c:
+                address = (ushort)(FetchWord() + X);
+                Read((ushort)(PC - 2));
+                PC = ReadWord(address);
+                return 6;
         }
         if ((opcode & 0x1f) == 0x12)
         {

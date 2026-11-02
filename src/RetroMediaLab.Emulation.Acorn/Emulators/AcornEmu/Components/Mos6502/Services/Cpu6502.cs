@@ -1,20 +1,34 @@
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Common.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
+using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Constants.Cpu6502Constants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Components.Mos6502.Services;
 
-/// <summary>CPU NMOS 6502 : registres et accès au bus, sans dépendance envers un modèle BBC.</summary>
-/// <remarks>Les instructions officielles sont décodées dans le fichier associé. Les cycles internes font également avancer
-/// le bus. Ce premier moteur n'est pas encore une reproduction de toutes les lectures transitoires du circuit NMOS.</remarks>
+/// <summary>6502 NMOS et 65C12/65C102 CMOS : registres, séquences d'instructions et sondages d'interruption.</summary>
+/// <remarks>Les accès transitoires avancent le bus comme les accès utiles. Les cycles internes CMOS font avancer
+/// l'horloge sans inventer un accès d'E/S ; les opcodes instables NMOS utilisent le modèle déterministe documenté.</remarks>
 internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
 {
-    private const byte Carry = 1, Zero = 2, InterruptDisable = 4, Decimal = 8, Break = 16, Unused = 32, Overflow = 64, Negative = 128;
+    private const byte Carry = 1;
+    private const byte Zero = 2;
+    private const byte InterruptDisable = 4;
+    private const byte Decimal = 8;
+    private const byte Break = 16;
+    private const byte Unused = 32;
+    private const byte Overflow = 64;
+    private const byte Negative = 128;
+    private bool _irqPending;
+    private bool _irqLevel;
+    private bool _irqPrevious;
+    private bool _jammed;
+    private bool? _branchIrqSample;
+    private bool? _branchNmiSample;
 
     /// <summary>Registres du CPU ; la pile matérielle occupe la page 01 du bus.</summary>
     internal byte A { get; private set; }
     internal byte X { get; private set; }
     internal byte Y { get; private set; }
-    internal byte S { get; private set; } = 0xfd;
+    internal byte S { get; private set; }
     internal byte P { get; private set; } = InterruptDisable | Unused;
     internal ushort PC { get; private set; }
     internal ushort InstructionAddress { get; private set; }
@@ -24,52 +38,70 @@ internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
     internal void CompleteHostCall(byte result)
     {
         A = result; P &= unchecked((byte)~Carry);
-        var start = Cycles; var low = Pop(); PC = (ushort)((low | Pop() << 8) + 1); Pad(start, 6);
+        var start = Cycles;
+        Read(PC);
+        PreparePull();
+        var low = Pop();
+        var last = (ushort)(low | Pop() << C.HighByteShift);
+        Read(last);
+        PC = (ushort)(last + 1);
+        Pad(start, 6);
     }
 
     /// <summary>Applique RESET et lit le vecteur FFFC/FFFD. Le bus et les périphériques sont réinitialisés par leur propriétaire.</summary>
     internal void Reset()
     {
         _nmiPending = false; _nmiLevel = bus.Nmi;
-        S = 0xfd;
+        _nmiAccepted = _nmiPrevious = false;
+        _jammed = _irqPending = _irqPrevious = _irqLevel = false;
         P = (byte)(P | InterruptDisable | Unused);
         if (cmos) P &= unchecked((byte)~Decimal);
-        for (var i = 0; i < 5; i++) Tick();
-        PC = ReadWord(0xfffc);
+        Read(PC);
+        Read(PC);
+        for (var i = 0; i < 3; i++) Read((ushort)(C.StackBase | S--));
+        PC = ReadWord(C.ResetVector);
+        _irqPending = false;
     }
 
     /// <summary>Exécute une instruction, une NMI ou une IRQ et renvoie au planificateur de la machine.</summary>
     internal void Step()
     {
         var start = Cycles;
-        if (_nmiPending)
+        if (_jammed) { Read(PC); return; }
+        if (_nmiAccepted)
         {
-            _nmiPending = false;
-            EnterInterrupt(start, 0xfffa);
+            _nmiPending = _nmiAccepted = false;
+            EnterInterrupt(start, C.NmiVector);
             return;
         }
-        if (bus.Irq && (P & InterruptDisable) == 0)
+        if (_irqPending)
         {
-            EnterInterrupt(start, 0xfffe);
+            EnterInterrupt(start, C.IrqVector);
             return;
         }
         InstructionAddress = PC;
+        _branchIrqSample = null;
+        _branchNmiSample = null;
+        var previousFlags = P;
         var opcode = Fetch();
         var expected = cmos ? ExecuteCmos(opcode) : Execute(opcode);
         Pad(start, expected);
         P |= Unused;
+        var interruptFlags = opcode is (0x58 or 0x78 or 0x28) ? previousFlags : P;
+        _irqPending = _branchIrqSample ?? (_irqPrevious && (interruptFlags & InterruptDisable) == 0);
+        _nmiAccepted = _branchNmiSample ?? _nmiPrevious;
     }
 
-    private void Tick() { bus.Tick(); Cycles++; SampleNmi(); }
+    private void Tick() { bus.Tick(); Cycles++; _irqPrevious = _irqLevel; _irqLevel = bus.Irq; _nmiPrevious = _nmiPending; SampleNmi(); }
     private byte Read(ushort address) { Tick(); return bus.Read(address); }
     private void Write(ushort address, byte value) { Tick(); bus.Write(address, value); }
     private byte Fetch() => Read(PC++);
     private ushort FetchWord() { var low = Fetch(); return (ushort)(low | Fetch() << 8); }
     private ushort ReadWord(ushort address) { var low = Read(address); return (ushort)(low | Read((ushort)(address + 1)) << 8); }
     private ushort ZeroPageWord(byte address) { var low = Read(address); return (ushort)(low | Read((byte)(address + 1)) << 8); }
-    private void Push(byte value) => Write((ushort)(0x100 | S--), value);
-    private byte Pop() => Read((ushort)(0x100 | ++S));
-    private void Pad(long start, int length) { while (Cycles - start < length) Tick(); }
+    private void Push(byte value) => Write((ushort)(C.StackBase | S--), value);
+    private byte Pop() => Read((ushort)(C.StackBase | ++S));
+    private void Pad(long start, int length) { while (Cycles - start < length) { if (cmos) Tick(); else Read(PC); } }
     private void Flag(byte flag, bool set) => P = set ? (byte)(P | flag) : (byte)(P & ~flag);
     private byte Nz(byte value) { Flag(Zero, value == 0); Flag(Negative, (value & 0x80) != 0); return value; }
     private void Compare(byte left, byte right) { Flag(Carry, left >= right); Nz((byte)(left - right)); }
@@ -87,7 +119,7 @@ internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
             Flag(Zero, (byte)binary == 0);
             Flag(Negative, (sum & 0x80) != 0);
             Flag(Overflow, (~(A ^ value) & (A ^ sum) & 0x80) != 0);
-            if (sum > 0x99) sum += 0x60;
+            if (sum >= 0xa0) sum += 0x60;
             Flag(Carry, sum > 255);
             A = (byte)sum;
             if (cmos) { Nz(A); Tick(); }
@@ -110,12 +142,20 @@ internal sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
         Nz((byte)binary);
         if ((P & Decimal) != 0)
         {
+            if (cmos)
+            {
+                var corrected = binary;
+                if (binary < 0) corrected -= 0x60;
+                if ((A & 15) - (value & 15) - borrow < 0) corrected -= 6;
+                A = Nz((byte)corrected);
+                Tick();
+                return;
+            }
             var low = (A & 15) - (value & 15) - borrow;
             var high = (A >> 4) - (value >> 4);
             if (low < 0) { low -= 6; high--; }
             if (high < 0) high -= 6;
             A = (byte)((high << 4) | (low & 15));
-            if (cmos) { Nz(A); Tick(); }
         }
         else A = (byte)binary;
     }

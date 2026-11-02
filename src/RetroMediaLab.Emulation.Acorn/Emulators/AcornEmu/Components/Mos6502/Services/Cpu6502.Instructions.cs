@@ -5,6 +5,7 @@ internal sealed partial class Cpu6502
     /// <summary>Décode les instructions officielles, en réunissant les familles ayant le même adressage.</summary>
     private int Execute(byte opcode)
     {
+        if (!cmos && TryExecuteUnofficial(opcode, out var unofficialCycles)) return unofficialCycles;
         // Ces instructions occupent les positions irrégulières du groupe des décalages/chargements.
         switch (opcode)
         {
@@ -20,20 +21,16 @@ internal sealed partial class Cpu6502
         if ((opcode & 0x1f) == 0x10)
         {
             var test = (opcode >> 6) switch { 0 => Negative, 1 => Overflow, 2 => Carry, _ => Zero };
-            var displacement = (sbyte)Fetch();
-            if (((P & test) != 0) != ((opcode & 0x20) != 0)) return 2;
-            var previous = PC;
-            PC = (ushort)(PC + displacement);
-            return (previous & 0xff00) == (PC & 0xff00) ? 3 : 4;
+            return Branch(((P & test) != 0) == ((opcode & 0x20) != 0));
         }
         switch (opcode)
         {
             case 0x00:
-                Fetch(); Push((byte)(PC >> 8)); Push((byte)PC); Push((byte)(P | Break | Unused)); P |= InterruptDisable; if (cmos) P &= unchecked((byte)~Decimal); PC = ReadWord(0xfffe); return 7;
-            case 0x08: Push((byte)(P | Break | Unused)); return 3;
-            case 0x28: P = (byte)((Pop() & ~Break) | Unused); return 4;
-            case 0x48: Push(A); return 3;
-            case 0x68: A = Nz(Pop()); return 4;
+                Fetch(); Push((byte)(PC >> 8)); Push((byte)PC); Push((byte)(P | Break | Unused)); P |= InterruptDisable; if (cmos) P &= unchecked((byte)~Decimal); PC = ReadWord(InterruptVector(0xfffe)); return 7;
+            case 0x08: Read(PC); Push((byte)(P | Break | Unused)); return 3;
+            case 0x28: PreparePull(); P = (byte)((Pop() & ~Break) | Unused); return 4;
+            case 0x48: Read(PC); Push(A); return 3;
+            case 0x68: PreparePull(); A = Nz(Pop()); return 4;
             case 0x18: P &= unchecked((byte)~Carry); return 2;
             case 0x38: P |= Carry; return 2;
             case 0x58: P &= unchecked((byte)~InterruptDisable); return 2;
@@ -42,22 +39,26 @@ internal sealed partial class Cpu6502
             case 0xd8: P &= unchecked((byte)~Decimal); return 2;
             case 0xf8: P |= Decimal; return 2;
             case 0x20:
-                var target = FetchWord(); var last = (ushort)(PC - 1); Push((byte)(last >> 8)); Push((byte)last); PC = target; return 6;
-            case 0x40: P = (byte)((Pop() & ~Break) | Unused); var lo = Pop(); PC = (ushort)(lo | Pop() << 8); return 6;
-            case 0x60: var low = Pop(); PC = (ushort)((low | Pop() << 8) + 1); return 6;
+                var targetLow = Fetch(); Read((ushort)(0x100 | S)); Push((byte)(PC >> 8)); Push((byte)PC); PC = (ushort)(targetLow | Fetch() << 8); return 6;
+            case 0x40: PreparePull(); P = (byte)((Pop() & ~Break) | Unused); var lo = Pop(); PC = (ushort)(lo | Pop() << 8); return 6;
+            case 0x60: PreparePull(); var low = Pop(); var last = (ushort)(low | Pop() << 8); Read(last); PC = (ushort)(last + 1); return 6;
             case 0x4c: PC = FetchWord(); return 3;
             case 0x6c:
-                var indirect = FetchWord(); var l = Read(indirect); PC = (ushort)(l | Read(cmos ? (ushort)(indirect + 1) : (ushort)((indirect & 0xff00) | (byte)(indirect + 1))) << 8); return 5;
+                var indirect = FetchWord();
+                var l = Read(indirect);
+                if (cmos) Read((ushort)((indirect & 0xff00) | (byte)(indirect + 1)));
+                PC = (ushort)(l | Read(cmos ? (ushort)(indirect + 1) : (ushort)((indirect & 0xff00) | (byte)(indirect + 1))) << 8);
+                return cmos ? 6 : 5;
             case 0x24: Bit(Read(Fetch())); return 3;
             case 0x2c: Bit(Read(FetchWord())); return 4;
             case 0x84: Write(Fetch(), Y); return 3;
-            case 0x94: Write((byte)(Fetch() + X), Y); return 4;
+            case 0x94: Write(IndexedZeroPage(X), Y); return 4;
             case 0x8c: Write(FetchWord(), Y); return 4;
             case 0xa0: Y = Nz(Fetch()); return 2;
             case 0xa4: Y = Nz(Read(Fetch())); return 3;
-            case 0xb4: Y = Nz(Read((byte)(Fetch() + X))); return 4;
+            case 0xb4: Y = Nz(Read(IndexedZeroPage(X))); return 4;
             case 0xac: Y = Nz(Read(FetchWord())); return 4;
-            case 0xbc: var address = FetchWord(); Y = Nz(Read((ushort)(address + X))); return 4 + PageCross(address, X);
+            case 0xbc: var address = FetchWord(); Y = Nz(Read(IndexedAddress(address, X, false))); return 4 + PageCross(address, X);
             case 0xc0: Compare(Y, Fetch()); return 2;
             case 0xc4: Compare(Y, Read(Fetch())); return 3;
             case 0xcc: Compare(Y, Read(FetchWord())); return 4;
@@ -86,16 +87,16 @@ internal sealed partial class Cpu6502
         var cycles = 0;
         switch (mode)
         {
-            case 0: address = ZeroPageWord((byte)(Fetch() + X)); cycles = 6; break;
+            case 0: address = IndexedIndirect(); cycles = 6; break;
             case 1: address = Fetch(); cycles = 3; break;
             case 2:
                 if (operation == 4) throw new InvalidOperationException("6502: STA immédiat invalide.");
                 address = PC++; cycles = 2; break;
             case 3: address = FetchWord(); cycles = 4; break;
-            case 4: var pointer = ZeroPageWord(Fetch()); extra = PageCross(pointer, Y); address = (ushort)(pointer + Y); cycles = operation == 4 ? 6 : 5; break;
-            case 5: address = (byte)(Fetch() + X); cycles = 4; break;
-            case 6: var ay = FetchWord(); extra = PageCross(ay, Y); address = (ushort)(ay + Y); cycles = operation == 4 ? 5 : 4; break;
-            default: var ax = FetchWord(); extra = PageCross(ax, X); address = (ushort)(ax + X); cycles = operation == 4 ? 5 : 4; break;
+            case 4: var pointer = ZeroPageWord(Fetch()); extra = PageCross(pointer, Y); address = IndexedAddress(pointer, Y, operation == 4, indirect: true); cycles = operation == 4 ? 6 : 5; break;
+            case 5: address = IndexedZeroPage(X); cycles = 4; break;
+            case 6: var ay = FetchWord(); extra = PageCross(ay, Y); address = IndexedAddress(ay, Y, operation == 4); cycles = operation == 4 ? 5 : 4; break;
+            default: var ax = FetchWord(); extra = PageCross(ax, X); address = IndexedAddress(ax, X, operation == 4); cycles = operation == 4 ? 5 : 4; break;
         }
         if (operation == 4) { Write(address, A); return cycles; }
         var value = Read(address);
@@ -128,8 +129,15 @@ internal sealed partial class Cpu6502
             {
                 case 1: address = Fetch(); cycles = operation is 4 or 5 ? 3 : 5; break;
                 case 3: address = FetchWord(); cycles = operation is 4 or 5 ? 4 : 6; break;
-                case 5: address = (byte)(Fetch() + (operation is 4 or 5 ? Y : X)); cycles = operation is 4 or 5 ? 4 : 6; break;
-                case 7 when operation != 4: var a = FetchWord(); var index = operation == 5 ? Y : X; address = (ushort)(a + index); extra = operation == 5 ? PageCross(a, index) : 0; cycles = operation == 5 ? 4 : 7; break;
+                case 5: address = IndexedZeroPage(operation is 4 or 5 ? Y : X); cycles = operation is 4 or 5 ? 4 : 6; break;
+                case 7 when operation != 4:
+                    var a = FetchWord();
+                    var index = operation == 5 ? Y : X;
+                    var cmosRotate = cmos && operation < 4;
+                    address = IndexedAddress(a, index, operation != 5 && !cmosRotate);
+                    extra = operation == 5 || cmosRotate ? PageCross(a, index) : 0;
+                    cycles = operation == 5 ? 4 : cmosRotate ? 6 : 7;
+                    break;
                 default: throw new InvalidOperationException($"6502: opcode {opcode:X2} non pris en charge.");
             }
         }
@@ -150,6 +158,6 @@ internal sealed partial class Cpu6502
         result = Nz(result);
         if (accumulator) A = result;
         else { if (cmos) _ = Read(address); else Write(address, old); Write(address, result); }
-        return cycles;
+        return cycles + extra;
     }
 }
