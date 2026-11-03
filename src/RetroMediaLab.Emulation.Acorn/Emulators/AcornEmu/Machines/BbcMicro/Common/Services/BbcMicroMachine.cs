@@ -148,6 +148,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     }
     public void Reset(bool cold)
     {
+        CompleteViaBusCycle();
         if (cold) { Array.Clear(_ram); _via.Reset(); _userVia?.Reset(); _adc?.Reset(); Video.Reset(); _audio.Reset(); _cassette.ResetHardware(); _roms.Reset(); _latch = 255; }
         _memoryExtension.Reset(cold);
         _plusMemory?.Reset(cold);
@@ -181,6 +182,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
             while (_ticks < _nextFrame) { if (!BbcCassetteFunctions.TryDirectLoad(Cpu, this, _cassette)) Cpu.Step(); }
         }
         else while (_ticks < _nextFrame) Cpu.Step();
+        CompleteViaBusCycle();
         _nextFrame += _cyclesPerFrame;
         return Video.Render();
     }
@@ -188,6 +190,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     public short[] DrainAudio() => _audio.DrainSamples();
     public void Tick()
     {
+        CompleteViaBusCycle();
         _ticks++;
         _turbo?.RunHostCycle();
         _master512?.RunHostCycle();
@@ -201,16 +204,15 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         var sync = Video.VSync;
         Video.Tick();
         if (!sync && Video.VSync) _via.VSync();
-        if ((_ticks & 1) == 0)
+        ClockVia();
+        if ((_ticks & Io.ViaPhaseMask) == Io.ViaTrailingPhase)
         {
-            _via.Tick();
-            _userVia?.Tick();
             if ((_latch & 8) != 0) _keyboardColumn = (_keyboardColumn + 1) & 15;
             else _keyboardColumn = _via.OutputA & 15;
             _via.SetKeyboardLine(_keyboard.ColumnPressed(_keyboardColumn));
         }
     }
-    public byte Read(ushort address)
+    private byte ReadBus(ushort address)
     {
         if (_masterMemory is not null)
         {
@@ -236,7 +238,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (address is >= 0xfea0 and < 0xfec0) return _econet.Read(address);
         return 0xfe;
     }
-    public void Write(ushort address, byte value)
+    private void WriteBus(ushort address, byte value)
     {
         if (_masterMemory is not null)
         {

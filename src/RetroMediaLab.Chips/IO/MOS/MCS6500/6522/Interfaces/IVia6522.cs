@@ -1,4 +1,3 @@
-using C = RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Constants.Via6522Constants;
 using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Enums;
 
 namespace RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Interfaces;
@@ -13,6 +12,8 @@ public interface IVia6522
 
     Action<byte>? WritePortB { get; set; }
 
+    Action<byte>? PortAPinsChanged { get; set; }
+
     Action<byte>? PortBPinsChanged { get; set; }
 
     byte OutputA { get; }
@@ -21,6 +22,8 @@ public interface IVia6522
 
     void Reset();
     void Tick();
+    void Phi2LeadingEdge();
+    void Phi2TrailingEdge();
     byte Read(int register);
     void Write(int register, byte value);
     Action<bool>? Ca2PinsChanged { get; set; }
@@ -30,6 +33,9 @@ public interface IVia6522
     bool Ca2 { get; }
 
     bool Cb2 { get; }
+
+    ViaControlOutputs ControlOutputs { get; }
+    Action<ViaControlOutputs>? ControlOutputsChanged { get; set; }
 
     void SetPb6(bool level);
     void VSync();

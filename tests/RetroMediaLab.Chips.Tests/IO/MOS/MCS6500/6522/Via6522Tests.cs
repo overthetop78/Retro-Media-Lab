@@ -66,6 +66,9 @@ public sealed class Via6522Tests
         if (portA) { via.SetCa2(true); via.SetCa2(false); }
         else { via.SetCb2(true); via.SetCb2(false); }
         Assert.Equal(0, via.Read(13) & (portA ? 1 : 8));
+        via.Phi2TrailingEdge(); // Fin de l'accès qui déclenche l'impulsion.
+        Assert.False(portA ? via.Ca2 : via.Cb2);
+        via.Phi2LeadingEdge();
         via.Tick();
         Assert.True(portA ? via.Ca2 : via.Cb2);
         via.Write(12, (byte)(6 << (portA ? 1 : 5)));
@@ -128,23 +131,28 @@ public sealed class Via6522Tests
         for (var tick = 0; tick < 20; tick++) via.Tick();
         Assert.False(via.Irq);
         Fall();
-        Assert.True(via.Irq);
+        Assert.False(via.Irq);
         Assert.Equal(0, via.Read(8));
+        Fall();
+        Assert.True(via.Irq);
+        Assert.Equal(0xff, via.Read(8));
         via.Tick();
         via.Read(8);
         Assert.False(via.Irq);
         Fall();
-        Assert.Equal(0xff, via.Read(8));
+        Assert.Equal(0xfe, via.Read(8));
         Assert.Equal(0xff, via.Read(9));
         Assert.False(via.Irq);
         via.Write(8, 1); via.Write(9, 0);
         Fall();
+        Assert.False(via.Irq);
+        Fall();
         Assert.True(via.Irq);
-        void Fall() { via.SetPb6(true); via.Tick(); via.SetPb6(false); via.Tick(); }
+        void Fall() { via.SetPb6(true); via.Tick(); via.SetPb6(false); via.Tick(); via.Tick(); }
     }
 
     [Fact]
-    public void Timer1OneShotKeepsCountingWithoutRaisingAnotherInterrupt()
+    public void Timer1OneShotReloadsItsLatchWithoutRaisingAnotherInterrupt()
     {
         var via = new Via6522();
         via.Reset();
@@ -156,7 +164,7 @@ public sealed class Via6522Tests
         Assert.True(via.Irq);
         Assert.Equal(0xff, via.Read(4));
         via.Tick();
-        Assert.Equal(0xfe, via.Read(4));
+        Assert.Equal(1, via.Read(4));
         Assert.False(via.Irq);
     }
 
@@ -205,19 +213,12 @@ public sealed class Via6522Tests
         for (var bit = 7; bit >= 0; bit--)
         {
             via.SetCb2((data & (1 << bit)) != 0);
-            if (mode == 3) { via.SetCb1(false); via.SetCb1(true); }
+            if (mode == 3) { via.SetCb1(false); via.SetCb1(true); via.Tick(); }
             else
             {
-                var edges = 0;
-                var last = via.Cb1;
-                for (var tick = 0; tick < 100 && edges < 2; tick++)
-                {
-                    via.Tick();
-                    if (last == via.Cb1) continue;
-                    last = via.Cb1;
-                    edges++;
-                }
-                Assert.Equal(2, edges);
+                if (via.Cb1) WaitForClock(false);
+                WaitForClock(true);
+                via.Tick(); // CB2 reste stable pendant le cycle suivant le front CB1.
             }
             if (bit != 0) Assert.False(via.Irq);
         }
@@ -225,6 +226,12 @@ public sealed class Via6522Tests
         Assert.True(via.Irq);
         Assert.Equal(data, via.Read(10));
         Assert.False(via.Irq);
+        void WaitForClock(bool level)
+        {
+            var ticks = 0;
+            do { via.Tick(); ticks++; } while (via.Cb1 != level && ticks < 100);
+            Assert.InRange(ticks, 1, 99);
+        }
     }
 
     [Theory]
@@ -263,7 +270,7 @@ public sealed class Via6522Tests
     }
 
     [Fact]
-    public void DisabledShiftModeLeavesTheRegisterAndPcrPinsIndependent()
+    public void StaticShiftModeSamplesCb2WithoutTakingItsDirectionFromPcr()
     {
         var via = new Via6522();
         via.Reset();
@@ -275,7 +282,7 @@ public sealed class Via6522Tests
             via.Tick();
         }
         Assert.True(via.Cb2);
-        Assert.Equal(0xa6, via.Read(10));
+        Assert.Equal(byte.MaxValue, via.Read(10));
         Assert.Equal(0, via.Read(13) & 4);
     }
 

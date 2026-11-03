@@ -1,10 +1,12 @@
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Enums;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Interfaces;
 using C = RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Constants.Via6522Constants;
 
 namespace RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services;
 
 /// <summary>VIA 6522 ; Tick correspond à un cycle de son horloge, indépendamment de la carte propriétaire.</summary>
-public sealed partial class Via6522
-:RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Interfaces.IVia6522{
+public sealed partial class Via6522 : IVia6522
+{
     private readonly byte[] _registers = new byte[C.RegisterCount];
     private int _timer1 = C.CounterMask;
     private int _timer2 = C.CounterMask;
@@ -19,6 +21,7 @@ public sealed partial class Via6522
     public Func<byte>? ReadPortB { get; set; }
     public Action<byte>? WritePortA { get; set; }
     public Action<byte>? WritePortB { get; set; }
+    public Action<byte>? PortAPinsChanged { get; set; }
     public Action<byte>? PortBPinsChanged { get; set; }
     public byte OutputA => _registers[C.PortA];
     public bool Irq => (_flags & _enabled & C.InterruptMask) != 0;
@@ -26,29 +29,27 @@ public sealed partial class Via6522
 
     public void Reset()
     {
+        var previousOutputs = ControlOutputs;
         var shift = _registers[C.Shift];
         var latch2Low = _registers[C.Timer2Low];
         Array.Clear(_registers);
         _registers[C.Shift] = shift;
         _registers[C.Timer2Low] = latch2Low;
         _flags = _enabled = 0;
+        _shiftMode = ViaShiftMode.Disabled;
+        _shiftOutput = _shiftUsesTimer = false;
+        _controlModeA = _controlModeB = ViaControlMode.FallingInput;
         _timer2Armed = false;
         ResetTimers();
         ResetShift();
         ResetPorts();
+        PublishControlOwnership(previousOutputs);
     }
 
-    public void Tick()
-    {
-        TickControlOutputs();
-        TickShift();
-        TickTimers();
-    }
-
-    private void CountTimer2(bool pulseCount)
+    private void CountTimer2()
     {
         _timer2--;
-        if (pulseCount ? _timer2 > 0 : _timer2 >= 0) return;
+        if (_timer2 >= 0) return;
         if (_timer2 < 0) _timer2 = C.CounterMask;
         FireTimer2();
     }
@@ -58,8 +59,14 @@ public sealed partial class Via6522
         register &= C.RegisterMask;
         switch (register)
         {
-            case C.PortB: AcknowledgePort(false, false); return ReadPinsB();
-            case C.PortA: AcknowledgePort(true, true); return ReadPinsA();
+            case C.PortB:
+                var inputB = ReadPinsB();
+                AcknowledgePort(false, false);
+                return inputB;
+            case C.PortA:
+                var inputA = ReadPinsA();
+                AcknowledgePort(true, true);
+                return inputA;
             case C.PortANoHandshake: return ReadPinsA();
             case C.Timer1Low:
                 if (!_timer1JustFired) _flags &= unchecked((byte)~C.Timer1Interrupt);
@@ -96,10 +103,15 @@ public sealed partial class Via6522
                 _registers[C.DirectionB] = value;
                 PortBPinsChanged?.Invoke(PortBPins);
                 break;
+            case C.DirectionA:
+                _registers[C.DirectionA] = value;
+                PortAPinsChanged?.Invoke(PortAPins);
+                break;
             case C.PortA:
             case C.PortANoHandshake:
                 _registers[C.PortA] = value;
                 WritePortA?.Invoke(value);
+                PortAPinsChanged?.Invoke(PortAPins);
                 if (register == C.PortA) AcknowledgePort(true, true);
                 break;
             case C.Timer1Low:
@@ -120,6 +132,7 @@ public sealed partial class Via6522
                 _timer2LoadDelay = C.TimerLoadCycles;
                 _timer2Reload = false;
                 _lastPb6 = Pb6Level;
+                _timer2PulseSampled = false;
                 if (!_timer2JustFired) _flags &= unchecked((byte)~C.Timer2Interrupt);
                 break;
             case C.Shift:
@@ -127,14 +140,31 @@ public sealed partial class Via6522
                 StartShift();
                 break;
             case C.Auxiliary:
-                var previousMode = ShiftMode;
+                var previousShiftOutputs = ControlOutputs;
+                var previousMode = _shiftMode;
                 _registers[C.Auxiliary] = value;
+                _shiftMode = (ViaShiftMode)(value >> C.ShiftModeShift & C.ShiftModeMask);
+                _shiftOutput = _shiftMode >= ViaShiftMode.OutputTimer2Continuous;
+                _shiftUsesTimer = _shiftMode is ViaShiftMode.InputTimer2 or ViaShiftMode.OutputTimer2Continuous or ViaShiftMode.OutputTimer2;
+                _shiftInternalClock = _shiftMode is not (ViaShiftMode.Disabled or ViaShiftMode.InputExternalClock or ViaShiftMode.OutputExternalClock);
+                _shiftSystemClock = _shiftMode is ViaShiftMode.InputSystemClock or ViaShiftMode.OutputSystemClock;
+                _timer1Continuous = (value & C.Timer1Continuous) != 0;
+                _timer1Output = (value & C.Timer1Pb7) != 0;
+                _timer2PulseMode = (value & C.Timer2PulseCount) != 0;
+                if (_timer1JustFired && (value & C.Timer1Continuous) == 0) _timer1Armed = false;
                 ConfigureShift(previousMode);
                 PortBPinsChanged?.Invoke(PortBPins);
+                PublishControlOwnership(previousShiftOutputs);
                 break;
             case C.Peripheral:
+                var previousPeripheralOutputs = ControlOutputs;
+                var previousA = _controlModeA;
+                var previousB = _controlModeB;
                 _registers[C.Peripheral] = value;
-                ConfigureControlOutputs();
+                _controlModeA = (ViaControlMode)(value >> C.Ca2ModeShift & C.ControlModeMask);
+                _controlModeB = (ViaControlMode)(value >> C.Cb2ModeShift & C.ControlModeMask);
+                ConfigureControlOutputs(previousA, previousB);
+                PublishControlOwnership(previousPeripheralOutputs);
                 break;
             case C.Flags: _flags &= (byte)~(value & C.InterruptMask); break;
             case C.Enable:

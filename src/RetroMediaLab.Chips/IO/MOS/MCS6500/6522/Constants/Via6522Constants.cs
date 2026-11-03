@@ -45,9 +45,11 @@ public static class Via6522Constants
     public const int Cb2ModeShift = 5;
     public const int ControlModeMask = 7;
     public const int PulseCycles = 1;
+    public const int PulseLoadCycles = 1;
     public const int TimerLoadCycles = 1;
     public const int ShiftModeShift = 2;
     public const int ShiftModeMask = 7;
     public const int ShiftBitCount = 8;
     public const int ShiftClockDelay = 1;
+    public const int ShiftStartDelay = 2;
 }

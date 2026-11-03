@@ -12,8 +12,13 @@ public sealed partial class Via6522
     private bool _timerPb7 = true;
     private bool _timer1JustFired;
     private bool _timer2JustFired;
+    private byte _timerInterruptsPending;
+    private bool _timer2PulseSampled;
+    private bool _timer1Continuous;
+    private bool _timer1Output;
+    private bool _timer2PulseMode;
 
-    private byte ApplyTimerPb7(byte pins) => (_registers[C.Auxiliary] & C.Timer1Pb7) == 0
+    private byte ApplyTimerPb7(byte pins) => !_timer1Output
         ? pins : _timerPb7 ? (byte)(pins | C.Pb7) : (byte)(pins & ~C.Pb7);
 
     private void TickTimers()
@@ -32,26 +37,22 @@ public sealed partial class Via6522
                 _timer1 = C.CounterMask;
                 if (_timer1Armed)
                 {
-                    _flags |= C.Timer1Interrupt;
+                    _timerInterruptsPending |= C.Timer1Interrupt;
                     _timer1JustFired = true;
-                    _timerPb7 = !_timerPb7;
-                    PortBPinsChanged?.Invoke(PortBPins);
                 }
-                var continuous = (_registers[C.Auxiliary] & C.Timer1Continuous) != 0;
-                _timer1Armed &= continuous;
-                _timer1Reload = continuous;
+                _timer1Armed &= _timer1Continuous;
+                _timer1Reload = true;
             }
         }
         if (!_timer2Running) return;
-        if ((_registers[C.Auxiliary] & C.Timer2PulseCount) != 0)
+        if (_timer2PulseMode)
         {
-            var level = Pb6Level;
-            if (_lastPb6 && !level) CountTimer2(true);
-            _lastPb6 = level;
+            if (_timer2PulseSampled) CountTimer2();
+            _timer2PulseSampled = false;
             return;
         }
         if (_timer2LoadDelay > 0) { _timer2LoadDelay--; return; }
-        if (!ShiftUsesTimer) { CountTimer2(false); return; }
+        if (!_shiftUsesTimer) { CountTimer2(); return; }
         if (_timer2Reload)
         {
             _timer2 = (_timer2 & C.HighByteMask) | _registers[C.Timer2Low];
@@ -71,7 +72,7 @@ public sealed partial class Via6522
     private void FireTimer2()
     {
         if (!_timer2Armed) return;
-        _flags |= C.Timer2Interrupt;
+        _timerInterruptsPending |= C.Timer2Interrupt;
         _timer2JustFired = true;
         _timer2Armed = false;
     }
@@ -92,5 +93,8 @@ public sealed partial class Via6522
         _timer1LoadDelay = _timer2LoadDelay = 0;
         _timerPb7 = true;
         _timer1JustFired = _timer2JustFired = false;
+        _timerInterruptsPending = 0;
+        _timer2PulseSampled = false;
+        _timer1Continuous = _timer1Output = _timer2PulseMode = false;
     }
 }

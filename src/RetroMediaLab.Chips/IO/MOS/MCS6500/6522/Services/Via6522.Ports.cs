@@ -20,11 +20,24 @@ public sealed partial class Via6522
 
     public Action<bool>? Ca2PinsChanged { get; set; }
     public Action<bool>? Cb2PinsChanged { get; set; }
-    public bool Ca2 => ModeA >= ViaControlMode.HandshakeOutput ? _ca2Output : _ca2;
-    public bool Cb2 => ShiftMode != ViaShiftMode.Disabled ? ShiftOutput ? _cb2Output : _cb2
-        : ModeB >= ViaControlMode.HandshakeOutput ? _cb2Output : _cb2;
-    private ViaControlMode ModeA => (ViaControlMode)(_registers[C.Peripheral] >> C.Ca2ModeShift & C.ControlModeMask);
-    private ViaControlMode ModeB => (ViaControlMode)(_registers[C.Peripheral] >> C.Cb2ModeShift & C.ControlModeMask);
+    public Action<ViaControlOutputs>? ControlOutputsChanged { get; set; }
+    public ViaControlOutputs ControlOutputs =>
+        (_controlModeA >= ViaControlMode.HandshakeOutput ? ViaControlOutputs.Ca2 : ViaControlOutputs.None)
+        | (_shiftInternalClock ? ViaControlOutputs.Cb1 : ViaControlOutputs.None)
+        | ((ShiftOwnsCb2 ? _shiftOutput : _controlModeB >= ViaControlMode.HandshakeOutput)
+            ? ViaControlOutputs.Cb2 : ViaControlOutputs.None);
+    public bool Ca2 => _controlModeA >= ViaControlMode.HandshakeOutput ? _ca2Output : _ca2;
+    public bool Cb2 => ShiftOwnsCb2 ? _shiftOutput ? _cb2Output : _cb2
+        : _controlModeB >= ViaControlMode.HandshakeOutput ? _cb2Output : _cb2;
+    private ViaControlMode _controlModeA;
+    private ViaControlMode _controlModeB;
+    private bool ShiftOwnsCb2 => _shiftMode != ViaShiftMode.Disabled && (!_shiftOutput || _shiftActive);
+    private void PublishControlOwnership(ViaControlOutputs previous)
+    {
+        var current = ControlOutputs;
+        if (current != previous) ControlOutputsChanged?.Invoke(current);
+    }
+    private byte PortAPins => (byte)(_registers[C.PortA] | ~_registers[C.DirectionA]);
     private byte InputA => ReadPortA?.Invoke() ?? byte.MaxValue;
     private byte InputB
     {
@@ -45,7 +58,7 @@ public sealed partial class Via6522
         {
             if ((_registers[C.Auxiliary] & C.LatchA) != 0) _inputLatchA = LivePinsA;
             _flags |= C.Ca1Interrupt;
-            if (ModeA == ViaControlMode.HandshakeOutput) SetControlOutput(true, true);
+            if (_controlModeA == ViaControlMode.HandshakeOutput) SetControlOutput(true, true);
         }
         _ca1 = level;
     }
@@ -53,34 +66,45 @@ public sealed partial class Via6522
     public void SetKeyboardLine(bool level) => SetCa2(level);
     public void SetCa2(bool level)
     {
-        if (level != _ca2 && ActiveControlEdge(ModeA, level)) _flags |= C.Ca2Interrupt;
+        if (level != _ca2 && ActiveControlEdge(_controlModeA, level)) _flags |= C.Ca2Interrupt;
         _ca2 = level;
     }
 
     public void SetCb1(bool level)
     {
-        if (ShiftMode != ViaShiftMode.Disabled)
+        if (!_shiftInternalClock)
         {
-            if (_cb1 != level && ShiftMode is (ViaShiftMode.InputExternalClock or ViaShiftMode.OutputExternalClock))
+            CaptureCb1Edge(_cb1, level);
+            // Le mode 0 interdit l'IRQ série, mais conserve le décalage statique
+            // de CB2 par CB1 (notamment utilisé par les interfaces MMFS).
+            if (!_cb1 && level && _shiftMode == ViaShiftMode.Disabled)
+                _registers[C.Shift] = (byte)((_registers[C.Shift] << 1) | (Cb2 ? 1 : 0));
+            if (_cb1 != level && _shiftMode != ViaShiftMode.Disabled)
             {
                 _cb1 = level;
-                ShiftEdge(level, true);
+                if (_shiftMode == ViaShiftMode.InputExternalClock)
+                {
+                    if (level && _shiftActive) _externalShiftPending = true;
+                }
+                else ShiftEdge(level, true);
             }
-            _cb1 = level;
-            return;
-        }
-        if (level != _cb1 && level == ((_registers[C.Peripheral] & C.Cb1Rising) != 0))
-        {
-            if ((_registers[C.Auxiliary] & C.LatchB) != 0) _inputLatchB = InputB;
-            _flags |= C.Cb1Interrupt;
-            if (ModeB == ViaControlMode.HandshakeOutput) SetControlOutput(false, true);
         }
         _cb1 = level;
     }
 
+    private void CaptureCb1Edge(bool previous, bool level)
+    {
+        if (level != previous && level == ((_registers[C.Peripheral] & C.Cb1Rising) != 0))
+        {
+            if ((_registers[C.Auxiliary] & C.LatchB) != 0) _inputLatchB = InputB;
+            _flags |= C.Cb1Interrupt;
+            if (!ShiftOwnsCb2 && _controlModeB == ViaControlMode.HandshakeOutput) SetControlOutput(false, true);
+        }
+    }
+
     public void SetCb2(bool level)
     {
-        if (ShiftMode == ViaShiftMode.Disabled && level != _cb2 && ActiveControlEdge(ModeB, level)) _flags |= C.Cb2Interrupt;
+        if (!ShiftOwnsCb2 && level != _cb2 && ActiveControlEdge(_controlModeB, level)) _flags |= C.Cb2Interrupt;
         _cb2 = level;
     }
 
@@ -101,15 +125,16 @@ public sealed partial class Via6522
 
     private void AcknowledgePort(bool portA, bool strobe)
     {
-        var mode = portA ? ModeA : ModeB;
+        var mode = portA ? _controlModeA : _controlModeB;
         _flags &= unchecked((byte)~(portA ? C.Ca1Interrupt : C.Cb1Interrupt));
         if (mode is not (ViaControlMode.IndependentFallingInput or ViaControlMode.IndependentRisingInput))
             _flags &= unchecked((byte)~(portA ? C.Ca2Interrupt : C.Cb2Interrupt));
-        if (!strobe || (!portA && ShiftMode != ViaShiftMode.Disabled) || mode is not (ViaControlMode.HandshakeOutput or ViaControlMode.PulseOutput)) return;
+        if (!strobe || (!portA && ShiftOwnsCb2) || mode is not (ViaControlMode.HandshakeOutput or ViaControlMode.PulseOutput)) return;
         SetControlOutput(portA, false);
         if (mode != ViaControlMode.PulseOutput) return;
-        if (portA) _ca2Pulse = C.PulseCycles;
-        else _cb2Pulse = C.PulseCycles;
+        var clocks = C.PulseCycles + (_phi2High ? C.PulseLoadCycles : 0);
+        if (portA) _ca2Pulse = clocks;
+        else _cb2Pulse = clocks;
     }
 
     private void SetControlOutput(bool portA, bool level)
@@ -128,11 +153,23 @@ public sealed partial class Via6522
         }
     }
 
-    private void ConfigureControlOutputs()
+    private void ConfigureControlOutputs(ViaControlMode previousA, ViaControlMode previousB)
     {
-        _ca2Pulse = _cb2Pulse = 0;
-        if (ModeA >= ViaControlMode.HandshakeOutput) SetControlOutput(true, ModeA != ViaControlMode.LowOutput);
-        if (ShiftMode == ViaShiftMode.Disabled && ModeB >= ViaControlMode.HandshakeOutput) SetControlOutput(false, ModeB != ViaControlMode.LowOutput);
+        if (previousA != _controlModeA)
+        {
+            _ca2Pulse = 0;
+            if (_controlModeA >= ViaControlMode.HandshakeOutput) SetControlOutput(true, _controlModeA != ViaControlMode.LowOutput);
+        }
+        if (previousB == _controlModeB) return;
+        _cb2Pulse = 0;
+        if (!ShiftOwnsCb2) RestoreCb2Control();
+    }
+
+    private void RestoreCb2Control()
+    {
+        _cb2Pulse = 0;
+        SetControlOutput(false, _controlModeB >= ViaControlMode.HandshakeOutput
+            ? _controlModeB != ViaControlMode.LowOutput : _cb2);
     }
 
     private void TickControlOutputs()
@@ -143,11 +180,12 @@ public sealed partial class Via6522
 
     private void ResetPorts()
     {
-        _ca1 = _ca2 = _cb1 = _cb2 = false;
         _inputLatchA = _inputLatchB = 0;
         _ca2Pulse = _cb2Pulse = 0;
         _lastPb6 = true;
         SetControlOutput(true, true);
         SetControlOutput(false, true);
+        PortAPinsChanged?.Invoke(PortAPins);
+        PortBPinsChanged?.Invoke(PortBPins);
     }
 }
