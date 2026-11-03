@@ -3,6 +3,8 @@ namespace RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Interfaces;
 public interface IAcia6850
 {
     bool TransmitBit { get; }
+    /// <summary>Niveau physique de RTS : false correspond a la demande active basse.</summary>
+    bool RtsHigh { get; }
 
     int BaudRateOverride { get; set; }
 
@@ -20,5 +22,9 @@ public interface IAcia6850
     void BeginReceive();
     void CancelReceive();
     void ReceiveBit(bool value);
+    /// <summary>Front montant de l'horloge RxC, RXD stable.</summary>
+    void ClockReceive(bool value);
+    /// <summary>Front descendant de l'horloge TxC.</summary>
+    void ClockTransmit();
     void Tick();
 }

@@ -1,96 +1,197 @@
+using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Enums;
+using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Interfaces;
+using C = RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Constants.Acia6850Constants;
+
 namespace RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Services;
 
-/// <summary>Récepteur/transmetteur MC6850 : format série, registre de données, statut et interruptions.</summary>
-/// <remarks>Le démodulateur fournit les bits reçus à leur cadence. Ce composant ne connaît ni les images cassette,
-/// ni le clavier, ni le MOS. Le constructeur reçoit les horloges de la carte propriétaire.</remarks>
-public sealed class Acia6850(int ticksPerSecond, int serialClock)
-:RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Interfaces.IAcia6850{
-    private byte _control, _data, _status = 2;
-    private bool _dcd, _dcdPending, _parity, _framing;
-    private int _receiveStep = -1, _receiveValue, _transmitPhase, _transmitBits;
-    private byte _transmitData;
-    private uint _transmitFrame;
-    private bool _transmitPending;
-    /// <summary>Niveau série TXD : repos haut, start bas, données LSB, parité et stop ; utilisé par le modulateur de la carte.</summary>
-    public bool TransmitBit => (_control & 0x60) != 0x60 && (_transmitBits == 0 || (_transmitFrame & 1) != 0);
-    /// <summary>Débit imposé par le lecteur, ou zéro pour suivre la programmation du matériel par le MOS.</summary>
-    public int BaudRateOverride { get; set; }
-    public bool Receiving => _receiveStep >= 0;
-    public int BaudRate => BaudRateOverride > 0 ? BaudRateOverride : serialClock / ((_control & 3) switch { 1 => 16, 2 => 64, _ => 1 });
-    private int Format => (_control >> 2) & 7;
-    private int DataBits => Format < 4 ? 7 : 8;
-    private bool HasParity => Format is not (4 or 5);
-    private bool OddParity => (Format & 1) != 0;
-    private int StopBits => Format is 0 or 1 or 4 ? 2 : 1;
-    public bool Irq => ((_control & 128) != 0 && ((_status & 1) != 0 || _dcdPending)) || ((_control & 0x60) == 0x20 && (_status & 10) == 2);
+/// <summary>MC6850 : registres de bus, signaux modem et deux chemins serie a horloges independantes.</summary>
+/// <remarks>La modulation, les supports et les fichiers appartiennent a la carte. Read/Write correspondent
+/// a un acces de bus deja valide par CS/E. Les broches serie se cadencent explicitement, ou par Tick pour TxC.</remarks>
+public sealed partial class Acia6850 : IAcia6850
+{
+    private readonly int _ticksPerSecond;
+    private readonly int _serialClock;
+    private byte _control;
+    private byte _data;
+    private byte _status;
+    private bool _masterReset;
+    private bool _firstMasterReset;
+    private bool _dcdInput;
+    private bool _dcdObserved;
+    private bool _dcdPending;
+    private bool _dcdStatusRead;
+    private bool _ctsBlocked;
+    private bool _overrunPending;
+    private bool _receiveIrqEnabled;
+    private bool _transmitIrqEnabled;
+    private bool _break;
+    private bool _irq;
+    private int _divider;
+    private int _dataBits;
+    private bool _hasParity;
+    private bool _oddParity;
+    private int _stopBits;
+    private int _baudRateOverride;
+    private int _baudRate;
+    private long _inputClockRate;
+    private long _clockPhase;
 
-    /// <summary>Réinitialise les registres de transfert, sans déplacer le média ou le moteur.</summary>
+    public Acia6850(int ticksPerSecond, int serialClock)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ticksPerSecond);
+        ArgumentOutOfRangeException.ThrowIfNegative(serialClock);
+        _ticksPerSecond = ticksPerSecond;
+        _serialClock = serialClock;
+        Reset();
+    }
+
+    /// <summary>Niveau physique de TXD : true au repos (mark), false pour start/space/break.</summary>
+    public bool TransmitBit => _masterReset || (!_break && _transmitLine);
+    /// <summary>Niveau physique de RTS : false est la demande active basse.</summary>
+    public bool RtsHigh { get; private set; }
+    public bool Irq => _irq;
+    public int BaudRate => _baudRate;
+    public Acia6850WordFormat WordFormat { get; private set; }
+    public Acia6850TransmitControl TransmitControl { get; private set; }
+
+    /// <summary>Adaptation de l'horloge par la carte ; zero suit le diviseur programme.</summary>
+    public int BaudRateOverride
+    {
+        get => _baudRateOverride;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            _baudRateOverride = value;
+            UpdateClockRate();
+        }
+    }
+
+    /// <summary>Initialisation du modele, et non une broche RESET inexistante sur le boitier.</summary>
+    /// <remarks>Les entrees CTS/DCD restent des conditions externes. Le logiciel doit programmer le controle.</remarks>
     public void Reset()
     {
-        _control = _data = 0; _status = 2; _dcd = _dcdPending = false;
-        _receiveStep = -1; _transmitPhase = _transmitBits = 0;
-        _transmitPending = false; _transmitFrame = uint.MaxValue;
+        _data = 0;
+        _clockPhase = 0;
+        _firstMasterReset = true;
+        _control = C.MasterResetSelection;
+        DecodeControl();
+        ClearTransfers();
+        RtsHigh = true;
     }
+
     public byte Read(bool data)
     {
-        if (!data) return (byte)((_status & ~4) | (_dcd || _dcdPending ? 4 : 0) | (Irq ? 128 : 0));
-        var value = _data; _status &= 0x0e; _dcdPending = false; return value;
+        if (!data)
+        {
+            _dcdStatusRead = _dcdPending;
+            var status = _status;
+            if (_ctsBlocked) status |= C.ClearToSendBlocked;
+            if (_dcdObserved || _dcdPending) status |= C.CarrierAbsent;
+            if (_masterReset || _ctsBlocked) status &= unchecked((byte)~C.TransmitDataEmpty);
+            if (_masterReset || _dcdObserved) status &= unchecked((byte)~C.ReceiveDataFull);
+            if (_irq) status |= C.InterruptRequest;
+            return status;
+        }
+
+        // The unread byte survives an overrun; only this read exposes the pending loss.
+        if (_overrunPending)
+        {
+            _status |= C.Overrun | C.ReceiveDataFull;
+            _overrunPending = false;
+        }
+        else
+            _status &= unchecked((byte)~(C.Overrun | C.ReceiveDataFull));
+        if (_dcdStatusRead)
+        {
+            _dcdPending = false;
+            _dcdStatusRead = false;
+        }
+        UpdateIrq();
+        return _data;
     }
+
     public void Write(bool data, byte value)
     {
-        if (data) { _status &= 0xfd; _transmitData = value; _transmitPending = true; }
-        else if ((value & 3) == 3)
+        if (data)
         {
-            _status &= 8; _status |= 2; _dcdPending = false; _receiveStep = -1; _transmitBits = 0; _transmitPending = false;
+            if (_masterReset) return;
+            _transmitData = value;
+            _transmitPending = true;
+            _status &= unchecked((byte)~C.TransmitDataEmpty);
         }
-        else _control = value;
-    }
-    /// <summary>Le démodulateur BBC applique une impulsion DCD après détection prolongée de la porteuse.</summary>
-    public void SetDcd(bool high) { if (high && !_dcd) _dcdPending = true; _dcd = high; }
-    public void SetCts(bool blocked) => _status = blocked ? (byte)(_status | 8) : (byte)(_status & ~8);
-    public void BeginReceive() { if (Receiving) return; _receiveStep = 0; _receiveValue = 0; _parity = _framing = false; }
-    public void CancelReceive() => _receiveStep = -1;
-
-    /// <summary>Reçoit successivement données de poids faible, parité éventuelle, puis bits d'arrêt.</summary>
-    public void ReceiveBit(bool value)
-    {
-        if (!Receiving) return;
-        if (_receiveStep < DataBits)
+        else
         {
-            if (value) _receiveValue |= 1 << _receiveStep;
-            _parity ^= value;
-        }
-        else if (HasParity && _receiveStep == DataBits) _parity ^= value;
-        else if (!value) _framing = true;
-        if (++_receiveStep < DataBits + (HasParity ? 1 : 0) + StopBits) return;
-        _receiveStep = -1;
-        if ((_status & 1) != 0) { _status |= 0x20; return; }
-        _data = (byte)_receiveValue;
-        _status = (byte)(_status | 1 | (_framing ? 0x10 : 0) | (HasParity && _parity != OddParity ? 0x40 : 0));
-    }
-
-    /// <summary>Décale réellement TXD ; le registre de données se libère dès son transfert au registre série.</summary>
-    public void Tick()
-    {
-        if (_transmitBits == 0)
-        {
-            if (!_transmitPending || (_status & 8) != 0) return;
-            var count = 1 + DataBits;
-            _transmitFrame = (uint)(_transmitData & ((1 << DataBits) - 1)) << 1;
-            if (HasParity)
+            _control = value;
+            DecodeControl();
+            if (_masterReset)
             {
-                var odd = (System.Numerics.BitOperations.PopCount((uint)_transmitData & ((1u << DataBits) - 1)) & 1) != 0;
-                if (odd != OddParity) _transmitFrame |= 1u << count;
-                count++;
+                ClearTransfers();
+                if (_firstMasterReset) RtsHigh = true;
+                _firstMasterReset = false;
             }
-            _transmitFrame |= ((1u << StopBits) - 1) << count;
-            _transmitBits = count + StopBits; _transmitPhase = 0;
-            _transmitPending = false; _status |= 2;
         }
-        _transmitPhase += BaudRate;
-        if (_transmitPhase < ticksPerSecond) return;
-        _transmitPhase -= ticksPerSecond;
-        _transmitFrame >>= 1;
-        --_transmitBits;
+        UpdateIrq();
     }
+
+    public void SetCts(bool blocked)
+    {
+        _ctsBlocked = blocked;
+        UpdateIrq();
+    }
+
+    /// <summary>DCD est echantillonne par RxC ; changer cette entree ne cree pas une horloge.</summary>
+    public void SetDcd(bool high) => _dcdInput = high;
+
+    private void DecodeControl()
+    {
+        _divider = (_control & C.DividerMask) switch
+        {
+            0 => C.DirectClockDivider,
+            1 => C.ClockDivider16,
+            2 => C.ClockDivider64,
+            _ => C.ResetClockDivider
+        };
+        _masterReset = _divider == C.ResetClockDivider;
+        WordFormat = (Acia6850WordFormat)((_control >> C.WordFormatShift) & C.WordFormatMask);
+        _dataBits = (int)WordFormat < C.FirstEightBitFormat ? C.SevenDataBits : C.EightDataBits;
+        _hasParity = WordFormat is not (Acia6850WordFormat.EightNoParityOneStop or Acia6850WordFormat.EightNoParityTwoStops);
+        _oddParity = ((int)WordFormat & C.LeastSignificantBit) != 0;
+        _stopBits = WordFormat is Acia6850WordFormat.SevenEvenTwoStops or Acia6850WordFormat.SevenOddTwoStops
+            or Acia6850WordFormat.EightNoParityTwoStops ? C.TwoStopBits : C.OneStopBit;
+        TransmitControl = (Acia6850TransmitControl)((_control >> C.TransmitControlShift) & C.TransmitControlMask);
+        _break = TransmitControl == Acia6850TransmitControl.SendBreak;
+        RtsHigh = TransmitControl == Acia6850TransmitControl.ReleaseRequestToSend;
+        _transmitIrqEnabled = TransmitControl == Acia6850TransmitControl.RequestToSendWithInterrupt;
+        _receiveIrqEnabled = (_control & C.ReceiveInterruptEnable) != 0;
+        UpdateClockRate();
+    }
+
+    private void UpdateClockRate()
+    {
+        _baudRate = _masterReset ? 0 : _baudRateOverride > C.FollowProgrammedBaudRate
+            ? _baudRateOverride : _serialClock / _divider;
+        _inputClockRate = _baudRateOverride > C.FollowProgrammedBaudRate && !_masterReset
+            ? (long)_baudRateOverride * _divider : _serialClock;
+    }
+
+    private void ClearTransfers()
+    {
+        _status = C.TransmitDataEmpty;
+        _dcdObserved = _dcdInput;
+        _dcdPending = false;
+        _dcdStatusRead = false;
+        _overrunPending = false;
+        CancelReceive();
+        _receiveClockCounter = 0;
+        _receiveWaitMark = false;
+        _transmitState = Acia6850TransmitState.Idle;
+        _transmitPending = false;
+        _transmitClockCounter = 0;
+        _transmitLine = true;
+        _irq = false;
+    }
+
+    private void UpdateIrq() => _irq = !_masterReset
+        && ((_receiveIrqEnabled && ((_status & C.ReceiveDataFull) != 0 || _overrunPending || _dcdPending))
+            || (_transmitIrqEnabled && (_status & C.TransmitDataEmpty) != 0 && !_ctsBlocked));
 }

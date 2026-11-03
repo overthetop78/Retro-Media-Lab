@@ -19,12 +19,18 @@ public sealed class AciaTests
         Receive(42);
         Receive(99);
         Assert.True(acia.Irq);
-        Assert.Equal(0x20, acia.Read(false) & 0x20);
+        Assert.Equal(0, acia.Read(false) & 0x20); // La perte est encore latente.
         Assert.Equal(42, acia.Read(true));
+        Assert.Equal(0x21, acia.Read(false) & 0x21);
+        Assert.True(acia.Irq);
+        acia.Read(true);
         Assert.False(acia.Irq);
         acia.SetDcd(true);
+        acia.ClockReceive(true);
         acia.SetDcd(false);
+        acia.ClockReceive(true);
         Assert.True(acia.Irq);
+        acia.Read(false);
         acia.Read(true);
         Assert.False(acia.Irq);
     }

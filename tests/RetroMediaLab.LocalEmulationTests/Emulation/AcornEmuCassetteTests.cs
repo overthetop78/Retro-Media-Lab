@@ -88,7 +88,14 @@ public sealed class AcornEmuCassetteTests
     }
 
     [Theory]
+    [InlineData(1200, 0x81)]
+    [InlineData(1200, 0x85)]
+    [InlineData(1200, 0x89)]
+    [InlineData(1200, 0x8d)]
+    [InlineData(1200, 0x91)]
     [InlineData(1200, 0x95)]
+    [InlineData(1200, 0x99)]
+    [InlineData(1200, 0x9d)]
     [InlineData(300, 0x96)]
     public void RecordingProducesAReplayableSerialSignalWithoutErasingTheRestOfTheTape(int baud, byte control)
     {
@@ -116,7 +123,8 @@ public sealed class AcornEmuCassetteTests
             if ((status & 1) != 0) bytes.Add(receiver.Read(true));
             else if ((status & 0x84) == 0x84) receiver.Read(true);
         }
-        Assert.Equal(new byte[] { 0xa5 }, bytes);
+        var expected = ((control >> 2) & 7) < 4 ? (byte)0x25 : (byte)0xa5;
+        Assert.Equal(new byte[] { expected }, bytes);
         writer.MarkSaved(); Assert.False(writer.HasChanges);
     }
 
