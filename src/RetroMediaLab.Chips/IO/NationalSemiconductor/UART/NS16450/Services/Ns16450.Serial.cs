@@ -5,31 +5,13 @@ namespace RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Services;
 
 public sealed partial class Ns16450
 {
-    private bool _rxd = true;
-    private bool _transmitLine = true;
-    private bool _transmitActive;
-    private uint _transmitFrame;
-    private int _transmitRemaining;
-    private int _transmitTicks;
-    private int _transmitStopTicks;
-    private int _receiveStage = C.IdleReceive;
-    private int _receiveTicks;
-    private int _receiveValue;
-    private byte _receiveControl;
-    private bool _receiveParityError;
-    private bool _receiveBreak;
-    private int _lowTicks;
-    private int _lowFrameTicks;
-    private int _markTicks;
-
     private bool ReceiveInput => Loopback
         ? _transmitLine && (_lineControl & C.Break) == 0 : _rxd;
 
     private bool ReceiverCanSkip => _receiveStage == C.IdleReceive && _receiveTicks == 0
-        && _lowTicks == 0 && !_receiveBreak && ReceiveInput;
+        && _lowTicks == 0 && !_receiveBreak && _receiveInterruptTicks == 0 && ReceiveInput;
 
-    private bool CanSkipClocks => !_transmitActive && !_holdingFull
-        && (_externalReceiveClock || ReceiverCanSkip);
+    private bool CanSkipClocks => _transmitIdle && (_externalReceiveClock || ReceiverCanSkip);
 
     public void SetRxd(bool high) => _rxd = high;
 
@@ -37,48 +19,119 @@ public sealed partial class Ns16450
     public void Advance(int ticks)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(ticks);
-        if (_divisor == 0 || ticks == 0) return;
-        var period = (long)_ticksPerSecond * _clockDivider * _divisor;
-        var elapsed = (long)ticks * _sourceClock;
-        ulong clocks;
-        if (elapsed <= long.MaxValue - _clockPhase)
+        if (_clockPeriod == 0 || ticks == 0) return;
+        var budget = (long)ticks * _sourceClock;
+        if (BaudOutChanged is not null || _baudHalfPhase)
         {
-            elapsed += _clockPhase;
-            clocks = (ulong)(elapsed / period);
-            _clockPhase = elapsed % period;
+            AdvanceObservedBaud((UInt128)(ulong)budget * C.HalfClocksPerSourceClock);
+            return;
+        }
+        if (_reset || CanSkipClocks)
+        {
+            AdvanceIdlePhase(budget);
+            return;
+        }
+        while (budget > 0 && !_reset && _clockPeriod != 0)
+        {
+            if (BaudOutChanged is not null)
+            {
+                AdvanceObservedBaud((UInt128)(ulong)budget * C.HalfClocksPerSourceClock);
+                return;
+            }
+            var distance = _clockPeriod - _clockPhase;
+            if (budget < distance)
+            {
+                _clockPhase += budget;
+                return;
+            }
+            if (CanSkipClocks)
+            {
+                // Do not iterate idle baud edges, but preserve the divider's phase.
+                AdvanceIdlePhase(budget);
+                return;
+            }
+            if (budget - distance >= _clockPeriod && SkipQuietClocks(ref budget, distance)) continue;
+            budget -= distance;
+            _clockPhase = 0;
+            TransmitClock();
+            if (!_reset && !_externalReceiveClock) ReceiveClock();
+            // A pin callback may have reloaded either divisor latch or asserted MR.
+            // The remaining source-clock budget must use that new state.
+        }
+        if (budget > 0 && _reset && _clockPeriod != 0)
+        {
+            if (BaudOutChanged is not null)
+                AdvanceObservedBaud((UInt128)(ulong)budget * C.HalfClocksPerSourceClock);
+            else AdvanceIdlePhase(budget);
+        }
+    }
+
+    private void ReloadClockPeriod(bool previousBaudOut)
+    {
+        _clockPeriod = (long)_ticksPerSecond * _clockDivider * _divisor;
+        _clockPhase = 0;
+        _baudHalfPhase = false;
+        if (!previousBaudOut) BaudOutChanged?.Invoke(true);
+    }
+
+    private void AdvanceIdlePhase(long budget)
+    {
+        if (budget <= long.MaxValue - _clockPhase)
+        {
+            var phase = budget + _clockPhase;
+            _clockPhase = phase < _clockPeriod ? phase : phase == _clockPeriod ? 0 : phase % _clockPeriod;
         }
         else
-        {
-            var total = (UInt128)(ulong)elapsed + (ulong)_clockPhase;
-            clocks = (ulong)(total / (ulong)period);
-            _clockPhase = (long)(total % (ulong)period);
-        }
-        while (clocks > 0 && !CanSkipClocks)
-        {
-            clocks--;
-            TransmitClock();
-            if (!_externalReceiveClock) ReceiveClock();
-        }
+            _clockPhase = (long)(((UInt128)(ulong)budget + (ulong)_clockPhase) % (ulong)_clockPeriod);
+    }
+
+    private bool SkipQuietClocks(ref long budget, long distance)
+    {
+        if ((!_externalReceiveClock && !ReceiverCanSkip) || _busWriteActive) return false;
+        var next = int.MaxValue;
+        if (_transmitActive) next = _transmitTicks;
+        if (_transmitStartTicks != 0) next = Math.Min(next, _transmitStartTicks);
+        if (!_externalReceiveClock && _transmitEmptyTicks != 0) next = Math.Min(next, _transmitEmptyTicks);
+        if (_transmitInterruptTicks != 0) next = Math.Min(next, _transmitInterruptTicks);
+        if (next <= 1) return false;
+        var count = (int)Math.Min(next - 1L, 1 + (budget - distance) / _clockPeriod);
+        // Every skipped edge precedes all deadlines. No pins, receiver samples or IRQs can change.
+        budget -= distance + (count - 1L) * _clockPeriod;
+        _clockPhase = 0;
+        if (_transmitActive) _transmitTicks -= count;
+        if (_transmitStartTicks != 0) _transmitStartTicks -= count;
+        if (!_externalReceiveClock && _transmitEmptyTicks != 0) _transmitEmptyTicks -= count;
+        if (_transmitInterruptTicks != 0) _transmitInterruptTicks -= count;
+        return true;
     }
 
     /// <summary>Rising edges on a separately wired RCLK input, already at sixteen times the baud rate.</summary>
     public void AdvanceReceiveClock(int risingEdges)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(risingEdges);
-        if (!_externalReceiveClock) return;
-        for (var edge = 0; edge < risingEdges && !ReceiverCanSkip; edge++) ReceiveClock();
+        if (_reset || !_externalReceiveClock) return;
+        for (var edge = 0; edge < risingEdges && !_reset
+            && (!ReceiverCanSkip || _transmitEmptyTicks != 0); edge++)
+        {
+            TransmitterEmptyClock();
+            ReceiveClock();
+        }
     }
 
     private void ResetSerial()
     {
         _transmitLine = true;
+        _transmitIdle = true;
         _transmitActive = false;
         _transmitFrame = 0;
         _transmitRemaining = _transmitTicks = _transmitStopTicks = 0;
+        _transmitStartTicks = _transmitEmptyTicks = _transmitInterruptTicks = 0;
         _receiveStage = C.IdleReceive;
         _receiveTicks = _receiveValue = _lowTicks = _lowFrameTicks = _markTicks = 0;
         _receiveControl = 0;
         _receiveParityError = _receiveBreak = false;
+        _receiveInterruptTicks = 0;
+        _receiveInterruptStatus = _pendingReceiveInterruptStatus = 0;
     }
 
     private static int DataBits(byte control) => C.MinimumDataBits + (control & C.WordLengthMask);
@@ -94,125 +147,4 @@ public sealed partial class Ns16450
         return even ? odd : !odd;
     }
 
-    private void TransmitClock()
-    {
-        if (_transmitActive)
-        {
-            if (--_transmitTicks > 0) return;
-            if (_transmitRemaining > 0)
-            {
-                _transmitLine = (_transmitFrame & 1) != 0;
-                _transmitFrame >>= 1;
-                _transmitRemaining--;
-                _transmitTicks = _transmitRemaining == 0 ? _transmitStopTicks : C.Oversampling;
-                RefreshOutputs();
-                return;
-            }
-            _transmitActive = false;
-        }
-        if (!_holdingFull)
-        {
-            _lineStatus |= C.TransmitterEmpty;
-            _transmitLine = true;
-            RefreshOutputs();
-            return;
-        }
-        var bits = DataBits(_lineControl);
-        var data = _holding & ((1 << bits) - 1);
-        _transmitFrame = (uint)data;
-        if ((_lineControl & C.ParityEnable) != 0)
-        {
-            if (ParityBit(data, _lineControl)) _transmitFrame |= 1u << bits;
-            bits++;
-        }
-        _transmitFrame |= 1u << bits;
-        _transmitRemaining = bits + 1;
-        _transmitStopTicks = StopTicks(_lineControl);
-        _transmitTicks = C.Oversampling;
-        _transmitActive = true;
-        _transmitLine = false;
-        _holdingFull = false;
-        _lineStatus |= C.HoldingEmpty;
-        _lineStatus &= unchecked((byte)~C.TransmitterEmpty);
-        _transmitInterrupt = true;
-        RefreshOutputs();
-        UpdateInterrupt();
-    }
-
-    private void ReceiveClock()
-    {
-        var high = ReceiveInput;
-        if (high)
-        {
-            _lowTicks = 0;
-            if (_receiveBreak)
-            {
-                if (++_markTicks >= C.HalfBit) _receiveBreak = false;
-                return;
-            }
-        }
-        else
-        {
-            _markTicks = 0;
-            if (_lowTicks == 0)
-                _lowFrameTicks = C.Oversampling * (1 + DataBits(_lineControl)
-                    + ((_lineControl & C.ParityEnable) != 0 ? 1 : 0)) + StopTicks(_lineControl);
-            if (_lowTicks <= _lowFrameTicks) _lowTicks++;
-            if (!_receiveBreak && _lowTicks > _lowFrameTicks)
-            {
-                _receiveBreak = true;
-                _receiveStage = C.IdleReceive;
-                _receiveTicks = 0;
-                _lineStatus |= C.BreakInterrupt;
-                UpdateInterrupt();
-            }
-            if (_receiveBreak) return;
-        }
-        if (_receiveStage == C.ResynchronizingReceive)
-        {
-            if (high)
-            {
-                _receiveStage = C.IdleReceive;
-                _receiveTicks = 0;
-                return;
-            }
-            if (++_receiveTicks < C.ResynchronizationSamples) return;
-            _receiveControl = _lineControl;
-            _receiveStage = 0;
-            _receiveValue = 0;
-            _receiveParityError = false;
-            return;
-        }
-        if (_receiveStage == C.IdleReceive)
-        {
-            if (high) { _receiveTicks = 0; return; }
-            if (++_receiveTicks < C.HalfBit) return;
-            _receiveControl = _lineControl;
-            _receiveStage = 0;
-            _receiveTicks = _receiveValue = 0;
-            _receiveParityError = false;
-            return;
-        }
-        if (++_receiveTicks < C.Oversampling) return;
-        _receiveTicks = 0;
-        var bits = DataBits(_receiveControl);
-        if (_receiveStage < bits)
-        {
-            if (high) _receiveValue |= 1 << _receiveStage;
-            _receiveStage++;
-            return;
-        }
-        if ((_receiveControl & C.ParityEnable) != 0 && _receiveStage == bits)
-        {
-            _receiveParityError = high != ParityBit(_receiveValue, _receiveControl);
-            _receiveStage++;
-            return;
-        }
-        var errors = (_receiveParityError ? C.ParityError : 0) | (!high ? C.FramingError : 0)
-            | ((_lineStatus & C.DataReady) != 0 ? C.OverrunError : 0);
-        _received = (byte)_receiveValue;
-        _lineStatus |= (byte)(C.DataReady | errors);
-        _receiveStage = high ? C.IdleReceive : C.ResynchronizingReceive;
-        UpdateInterrupt();
-    }
 }

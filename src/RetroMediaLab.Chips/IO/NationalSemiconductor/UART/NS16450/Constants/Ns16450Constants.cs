@@ -8,6 +8,12 @@ public static class Ns16450Constants
     public const int DefaultClockHz = 1843200;
     public const int Oversampling = 16;
     public const int HalfBit = Oversampling / 2;
+    public const int TransmitStartDelay = Oversampling;
+    public const int TransmitEmptyDelay = 2;
+    public const int QueuedTransmitInterruptDelay = HalfBit;
+    public const int ReceiveInterruptDelay = 1;
+    public const int HalfClocksPerSourceClock = 2;
+    public const int MaximumBaudLowSourceClocks = 2;
     public const int MinimumDataBits = 5;
     public const int WordLengthMask = 3;
     public const byte ExtraStop = 0x04;

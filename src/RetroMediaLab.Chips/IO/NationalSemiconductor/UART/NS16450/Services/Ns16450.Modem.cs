@@ -54,6 +54,11 @@ public sealed partial class Ns16450
             | ((_modemControl & C.Out1) != 0 ? C.StatusRing : 0)
             | ((_modemControl & C.Out2) != 0 ? C.StatusDcd : 0)) : ExternalModemStatus();
         var changed = _modemStatus ^ status;
+        if (_reset)
+        {
+            _modemStatus = status;
+            return;
+        }
         if ((changed & C.StatusCts) != 0) _modemDelta |= C.DeltaCts;
         if ((changed & C.StatusDsr) != 0) _modemDelta |= C.DeltaDsr;
         if ((changed & C.StatusDcd) != 0) _modemDelta |= C.DeltaDcd;

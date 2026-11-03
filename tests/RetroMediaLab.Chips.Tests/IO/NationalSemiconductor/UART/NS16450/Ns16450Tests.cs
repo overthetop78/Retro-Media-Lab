@@ -1,7 +1,7 @@
 using RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Services;
 namespace RetroMediaLab.Chips.Tests.IO.NationalSemiconductor.UART.NS16450;
 
-public sealed class Ns16450Tests
+public sealed partial class Ns16450Tests
 {
     [Fact]
     public void RegisterAliasesMasksAndReadOnlyPortsMatchThe16450WithoutAFifo()
@@ -65,6 +65,9 @@ public sealed class Ns16450Tests
         Assert.False(device.Irq);
         device.Write(0, 0x53);
         Assert.Equal(0, device.Read(5));
+        device.Advance(15);
+        Assert.Equal(0, device.Read(5));
+        Assert.True(device.Txd);
         device.Advance(1);
         Assert.Equal(0x20, device.Read(5));
         Assert.True(device.Irq);
@@ -72,6 +75,8 @@ public sealed class Ns16450Tests
         Assert.False(device.Irq);
         Assert.Equal(1, device.Read(2));
         device.Advance(159);
+        Assert.Equal(0x20, device.Read(5));
+        device.Advance(2);
         Assert.Equal(0x20, device.Read(5));
         device.Advance(1);
         Assert.Equal(0x60, device.Read(5));
@@ -85,14 +90,14 @@ public sealed class Ns16450Tests
         var receiver = Device();
         sender.TransmitChanged = receiver.SetRxd;
         sender.Write(0, 0x35);
-        ClockPair(sender, receiver, 1);
+        ClockPair(sender, receiver, 16);
         sender.Write(0, 0xb2);
         Assert.Equal(0, sender.Read(5));
         ClockPair(sender, receiver, 151);
         Assert.Equal(0x35, receiver.Read(0));
         ClockPair(sender, receiver, 160);
         Assert.Equal(0xb2, receiver.Read(0));
-        ClockPair(sender, receiver, 9);
+        ClockPair(sender, receiver, 11);
         Assert.Equal(0x60, sender.Read(5));
     }
 
@@ -103,7 +108,7 @@ public sealed class Ns16450Tests
         var receiver = Device(7);
         sender.TransmitChanged = receiver.SetRxd;
         sender.Write(0, 0x81);
-        ClockPair(sender, receiver, 1);
+        ClockPair(sender, receiver, 16);
         sender.Write(0, 0x24);
         ClockPair(sender, receiver, 151);
         Assert.Equal(0x61, receiver.Read(5));
@@ -114,9 +119,9 @@ public sealed class Ns16450Tests
     }
 
     [Theory]
-    [InlineData(4, 121)]
-    [InlineData(7, 177)]
-    [InlineData(0x1f, 193)]
+    [InlineData(4, 138)]
+    [InlineData(7, 194)]
+    [InlineData(0x1f, 210)]
     public void TransmitterWaitsForTheEntireConfiguredStopInterval(int control, int clocks)
     {
         var device = Device((byte)control);
@@ -308,8 +313,8 @@ public sealed class Ns16450Tests
         stepped.TransmitChanged = second.Add;
         batched.Write(0, 0x53);
         stepped.Write(0, 0x53);
-        batched.Advance(5000);
-        for (var clock = 0; clock < 5000; clock++) stepped.Advance(1);
+        batched.Advance(6000);
+        for (var clock = 0; clock < 6000; clock++) stepped.Advance(1);
         Assert.Equal(first, second);
         Assert.Equal(0x60, batched.Read(5));
         Assert.Equal(0x60, stepped.Read(5));
@@ -327,6 +332,8 @@ public sealed class Ns16450Tests
         device.Write(0, 7);
         device.Write(3, 3);
         device.Advance(30);
+        Assert.True(device.Txd);
+        device.Advance(455);
         Assert.True(device.Txd);
         device.Advance(1);
         Assert.False(device.Txd);

@@ -1,4 +1,5 @@
 using RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Enums;
+using RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Interfaces;
 using C = RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Constants.Ns16450Constants;
 
 namespace RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Services;
@@ -6,8 +7,8 @@ namespace RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Services;
 /// <summary>NS16450 registers and electrical pins, without a FIFO or host serial transport.</summary>
 /// <remarks>National Semiconductor datasheet, sections 7–8. Modem inputs and outputs use
 /// physical pin levels; the status register exposes the complemented input signals.</remarks>
-public sealed partial class Ns16450
-:RetroMediaLab.Chips.IO.NationalSemiconductor.UART.NS16450.Interfaces.INs16450{
+public sealed partial class Ns16450 : INs16450
+{
     private readonly int _ticksPerSecond;
     private readonly int _sourceClock;
     private readonly int _clockDivider;
@@ -24,6 +25,8 @@ public sealed partial class Ns16450
     private bool _transmitInterrupt;
     private bool _irq;
     private long _clockPhase;
+    private long _clockPeriod;
+    private bool _reset;
 
     public Ns16450(int ticksPerSecond, int sourceClockHz = C.DefaultClockHz,
         int clockDivider = 1, bool externalReceiveClock = false)
@@ -55,14 +58,21 @@ public sealed partial class Ns16450
     private bool Loopback => (_modemControl & C.Loopback) != 0;
     private bool DivisorAccess => (_lineControl & C.DivisorAccess) != 0;
 
+    public void SetReset(bool active)
+    {
+        if (_reset == active) return;
+        _reset = active;
+        if (active) Reset();
+    }
+
     public void Reset()
     {
         // DLL/DLM and SCR have no specified master-reset value in the reset-function table.
-        _interruptEnable = _lineControl = _modemControl = _received = _holding = 0;
+        _interruptEnable = _lineControl = _modemControl = 0;
         _lineStatus = C.InitialLineStatus;
         _holdingFull = _transmitInterrupt = false;
-        _clockPhase = 0;
         ResetSerial();
+        _busWriteActive = _busReadActive = false;
         _modemStatus = ExternalModemStatus();
         _modemDelta = 0;
         RefreshOutputs();
@@ -75,9 +85,11 @@ public sealed partial class Ns16450
         {
             case Ns16450Register.DataDivisorLow:
                 if (DivisorAccess) return (byte)_divisor;
+                var received = _received;
                 _lineStatus &= unchecked((byte)~C.DataReady);
+                ClearReceiveInterrupt(C.DataReady);
                 UpdateInterrupt();
-                return _received;
+                return received;
             case Ns16450Register.InterruptEnableDivisorHigh:
                 return DivisorAccess ? (byte)(_divisor >> C.ByteBits) : _interruptEnable;
             case Ns16450Register.InterruptId:
@@ -93,6 +105,7 @@ public sealed partial class Ns16450
             case Ns16450Register.LineStatus:
                 var status = _lineStatus;
                 _lineStatus &= unchecked((byte)~C.ReceiveErrors);
+                ClearReceiveInterrupt(C.ReceiveErrors);
                 UpdateInterrupt();
                 return status;
             case Ns16450Register.ModemStatus:
@@ -106,27 +119,27 @@ public sealed partial class Ns16450
 
     public void Write(int register, byte value)
     {
+        if (_reset) return;
         switch ((Ns16450Register)(register & C.RegisterMask))
         {
             case Ns16450Register.DataDivisorLow:
                 if (DivisorAccess)
                 {
+                    var previousBaudOut = BaudOutHigh;
                     _divisor = (ushort)((_divisor & ~C.ByteMask) | value);
-                    _clockPhase = 0;
+                    ReloadClockPeriod(previousBaudOut);
                 }
                 else
                 {
-                    _holding = value;
-                    _holdingFull = true;
-                    _lineStatus &= unchecked((byte)~(C.HoldingEmpty | C.TransmitterEmpty));
-                    _transmitInterrupt = false;
+                    WriteHolding(value);
                 }
                 break;
             case Ns16450Register.InterruptEnableDivisorHigh:
                 if (DivisorAccess)
                 {
+                    var previousBaudOut = BaudOutHigh;
                     _divisor = (ushort)((_divisor & C.ByteMask) | value << C.ByteBits);
-                    _clockPhase = 0;
+                    ReloadClockPeriod(previousBaudOut);
                 }
                 else
                 {
@@ -154,9 +167,9 @@ public sealed partial class Ns16450
 
     private Ns16450Interrupt PendingInterrupt()
     {
-        if ((_interruptEnable & C.EnableLineStatus) != 0 && (_lineStatus & C.ReceiveErrors) != 0)
+        if ((_interruptEnable & C.EnableLineStatus) != 0 && (_receiveInterruptStatus & C.ReceiveErrors) != 0)
             return Ns16450Interrupt.LineStatus;
-        if ((_interruptEnable & C.EnableReceivedData) != 0 && (_lineStatus & C.DataReady) != 0)
+        if ((_interruptEnable & C.EnableReceivedData) != 0 && (_receiveInterruptStatus & C.DataReady) != 0)
             return Ns16450Interrupt.ReceivedData;
         if ((_interruptEnable & C.EnableTransmitEmpty) != 0 && _transmitInterrupt)
             return Ns16450Interrupt.TransmitEmpty;
