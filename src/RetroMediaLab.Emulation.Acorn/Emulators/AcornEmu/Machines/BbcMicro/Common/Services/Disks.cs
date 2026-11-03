@@ -11,13 +11,24 @@ internal sealed class Disks(bool enabled, bool wd1770 = false)
     private readonly IEmulationDiskImage?[] _images = new IEmulationDiskImage?[C.DriveCount];
     private readonly int[] _speeds = [100, 100];
     private Intel8271? _controller;
-    private Intel8271 Controller => _controller ??= new Intel8271(index => _images[index]);
+    private Intel8271Drive? _intelDrive;
+    private Intel8271 Controller
+    {
+        get
+        {
+            if (_controller is not null) return _controller;
+            _controller = new(C.IntelOwnerClock, C.IntelChipClock);
+            _intelDrive = new(_controller, index => _images[index], C.IntelOwnerClock, C.IntelChipClock,
+                static output => (output & C.IntelSideSelect) != 0 ? 1 : 0);
+            return _controller;
+        }
+    }
     private Wd1770? _wd;
     private byte _control;
     private Wd1770 Wd => _wd ??= new Wd1770(index => _images[index]) { Selected = false };
     internal bool Nmi => enabled && (wd1770 ? Wd.Nmi : Controller.Nmi);
-    internal void Tick() { if (enabled) { if (wd1770) { if ((_control & 0x20) != 0) Wd.Tick(); } else Controller.Tick(); } }
-    internal void Reset() { if (enabled) { if (wd1770) { _control = 0; Wd.Reset(); Wd.Selected = false; } else Controller.Reset(); } }
+    internal void Tick() { if (enabled) { if (wd1770) { if ((_control & 0x20) != 0) Wd.Tick(); } else { _ = Controller; _intelDrive!.Tick(); } } }
+    internal void Reset() { if (enabled) { if (wd1770) { _control = 0; Wd.Reset(); Wd.Selected = false; } else { Controller.Reset(); _intelDrive!.Reset(); } } }
     internal byte Read(ushort address) => !enabled ? (byte)0xfe : wd1770 ? (address & 4) != 0 ? Wd.Read(address & 3) : (byte)0xfe : Controller.Read(address & 7);
     internal void Write(ushort address, byte value)
     {
@@ -40,6 +51,7 @@ internal sealed class Disks(bool enabled, bool wd1770 = false)
         }
         if ((address & 7) == 0) Controller.MechanicalSpeedPercent = _speeds[(value & 0x80) == 0 ? 0 : 1];
         Controller.Write(address & 7, value);
+        _intelDrive!.Synchronize();
     }
     internal bool Active(int drive) => enabled && _images[drive] is not null && (wd1770 ? Wd.Selected && Wd.Motor && Wd.Drive == drive : Controller.Motor && Controller.ActiveDrive == drive);
     internal bool Motor(int drive) => enabled && (wd1770 ? Wd.Selected && Wd.Motor && Wd.Drive == drive : Controller.Motor && Controller.ActiveDrive == drive);
@@ -60,8 +72,9 @@ internal sealed class Disks(bool enabled, bool wd1770 = false)
         if (enabled)
         {
             if (wd1770) { if (Wd.Active && Wd.Drive == drive) Wd.Reset(); }
-            else if (Controller.Active && Controller.ActiveDrive == drive) Controller.Reset();
+            else if (Controller.Active && Controller.ActiveDrive == drive) { Controller.Reset(); _intelDrive!.Reset(); }
         }
         _images[drive] = image;
+        if (enabled && !wd1770) _intelDrive!.MediaChanged(drive);
     }
 }

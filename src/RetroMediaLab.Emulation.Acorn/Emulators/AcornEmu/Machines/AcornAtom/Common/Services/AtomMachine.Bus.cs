@@ -31,6 +31,7 @@ internal sealed partial class AtomMachine
         {
             if (disk == 0) _fdc.MechanicalSpeedPercent = _speeds[(value & D.Drive1Select) != 0 ? 1 : 0];
             _fdc.Write(disk, value);
+            _fdcDrive!.Synchronize();
             return;
         }
         if (IsRam(address)) _ram[address] = value;

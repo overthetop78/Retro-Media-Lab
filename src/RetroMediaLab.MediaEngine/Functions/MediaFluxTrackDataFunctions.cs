@@ -1,3 +1,4 @@
+using System.IO;
 using System.Buffers.Binary;
 using MediaPhysicalEncodingIds = RetroMediaLab.MediaEngine.Constants.MediaPhysicalEncodingIds;
 using MediaFluxRevolutionData = RetroMediaLab.MediaEngine.Contracts.MediaFluxRevolutionData;
@@ -8,6 +9,62 @@ namespace RetroMediaLab.MediaEngine.Functions;
 /// <summary>Serializes and deserializes the versioned neutral flux-track payload.</summary>
 public static class MediaFluxTrackDataFunctions
 {
+    /// <summary>Remplace uniquement les transitions traversées par une fenêtre d'écriture physique.</summary>
+    /// <param name="revolution">Révolution empruntée, jamais modifiée.</param>
+    /// <param name="startNanoseconds">Position de début, ramenée modulo la révolution.</param>
+    /// <param name="durationNanoseconds">Durée effective d'ouverture de la porte d'écriture.</param>
+    /// <param name="transitionOffsetsNanoseconds">Instants strictement croissants des impulsions réellement émises,
+    /// relatifs au début de la fenêtre.</param>
+    /// <param name="includeEndingInstant">Inclut l’instant final déjà traité avant fermeture de la porte.
+    /// Faux pour découper une écriture continue : cet instant appartient alors au morceau suivant.</param>
+    /// <remarks>Le passage de l'index ne clôt pas la fenêtre. Une impulsion à l'index est représentée
+    /// à la fin de la révolution. Aucune transition n'est inventée pour combler sa fin silencieuse.</remarks>
+    public static MediaFluxRevolutionData ReplaceWindow(MediaFluxRevolutionData revolution,
+        uint startNanoseconds, uint durationNanoseconds, IReadOnlyList<uint> transitionOffsetsNanoseconds,
+        bool includeEndingInstant = false)
+    {
+        ArgumentNullException.ThrowIfNull(revolution);
+        ArgumentNullException.ThrowIfNull(transitionOffsetsNanoseconds);
+        uint previous = 0;
+        for (var index = 0; index < transitionOffsetsNanoseconds.Count; index++)
+        {
+            var offset = transitionOffsetsNanoseconds[index];
+            if (offset > durationNanoseconds || !includeEndingInstant && offset == durationNanoseconds
+                || index > 0 && offset <= previous)
+                throw new ArgumentOutOfRangeException(nameof(transitionOffsetsNanoseconds));
+            previous = offset;
+        }
+        var period = revolution.IndexTimeNanoseconds;
+        var start = startNanoseconds % period;
+        var transitions = new SortedSet<uint>();
+        ulong position = 0;
+        foreach (var interval in revolution.FluxIntervalsNanoseconds)
+        {
+            position += interval;
+            if (position > period) throw new InvalidDataException(nameof(revolution));
+            var relative = (position % period + period - start) % period;
+            if (relative > durationNanoseconds || !includeEndingInstant && relative == durationNanoseconds)
+                transitions.Add((uint)position);
+        }
+        foreach (var offset in transitionOffsetsNanoseconds)
+        {
+            // Un passage ultérieur de la porte efface aussi une ancienne impulsion sans impulsion de remplacement.
+            var nextVisit = (ulong)offset + period;
+            if (nextVisit < durationNanoseconds || includeEndingInstant && nextVisit == durationNanoseconds) continue;
+            var phase = (uint)(((ulong)start + offset) % period);
+            transitions.Add(phase == 0 ? period : phase);
+        }
+        var intervals = new uint[transitions.Count];
+        previous = 0;
+        var output = 0;
+        foreach (var transition in transitions)
+        {
+            intervals[output++] = transition - previous;
+            previous = transition;
+        }
+        return new(period, intervals);
+    }
+
     public static byte[] Serialize(MediaFluxTrackData track)
     {
         ArgumentNullException.ThrowIfNull(track);

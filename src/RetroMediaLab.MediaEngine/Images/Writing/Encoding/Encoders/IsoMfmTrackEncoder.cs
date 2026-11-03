@@ -28,9 +28,9 @@ public sealed class IsoMfmTrackEncoder : TrackEncoderBase
     }
 
     /// <summary>Écrit les synchronisations spéciales, l'adresse CHRN, son CRC et le gap.</summary>
-    private static void WriteAddress(List<bool> bits, TrackEncodeRequest request, int sector, byte sizeCode)
+    private static void WriteAddress(List<bool> bits, TrackEncodeRequest request, TrackSector sector, byte sizeCode)
     {
-        byte[] values = [IsoMfmFormat.SyncByte, IsoMfmFormat.SyncByte, IsoMfmFormat.SyncByte, IsoMfmFormat.IdAddressMark, (byte)request.Cylinder, (byte)request.Head, (byte)sector, sizeCode];
+        byte[] values = [IsoMfmFormat.SyncByte, IsoMfmFormat.SyncByte, IsoMfmFormat.SyncByte, IsoMfmFormat.IdAddressMark, (byte)request.Cylinder, (byte)request.Head, (byte)sector.Number, sizeCode];
         WriteField(bits, values.Skip(IsoMfmFormat.SyncByteCount), Crc16Calculator.Compute(values, IsoMfmFormat.CrcPolynomial, IsoMfmFormat.CrcInitialValue), IsoMfmFormat.HeaderGapBitCount);
     }
 

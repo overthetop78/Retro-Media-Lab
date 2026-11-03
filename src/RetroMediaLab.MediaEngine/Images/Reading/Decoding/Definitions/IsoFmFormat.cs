@@ -31,6 +31,8 @@ internal static class IsoFmFormat
     public const int EncodedMarkBitCount = 16;
     /// <summary>Longueur d'un octet FM.</summary>
     public const int EncodedByteBitCount = 16;
+    /// <summary>Distance entre une cellule d'horloge et la cellule de données suivante.</summary>
+    public const int CellsPerDataBit = 2;
     /// <summary>Nombre de champs CHRN.</summary>
     public const int HeaderFieldByteCount = 4;
     /// <summary>Position du cylindre.</summary>
@@ -61,6 +63,20 @@ internal static class IsoFmFormat
     public const int HeaderGapBitCount = 160;
     /// <summary>Remplissage suivant les données.</summary>
     public const int DataGapBitCount = 256;
+    /// <summary>Valeur d'attribut activant la disposition physique FM.</summary>
+    public const int PhysicalLayoutEnabled = 1;
+    /// <summary>Octet de remplissage FM entre les champs.</summary>
+    public const byte GapFill = 0xff;
+    /// <summary>Octet de synchronisation précédant une marque.</summary>
+    public const byte SyncFill = 0;
+    /// <summary>Remplissage initial d'une piste sectorielle synthétisée.</summary>
+    public const int InitialGapByteCount = 16;
+    /// <summary>Synchronisation précédant chaque marque.</summary>
+    public const int SyncByteCount = 6;
+    /// <summary>Remplissage entre l'identifiant et les données.</summary>
+    public const int InterFieldGapByteCount = 11;
+    /// <summary>Remplissage entre deux secteurs.</summary>
+    public const int InterSectorGapByteCount = 11;
     /// <summary>Polynôme CRC.</summary>
     public const ushort CrcPolynomial = Crc16Calculator.CcittPolynomial;
     /// <summary>Valeur initiale du CRC.</summary>

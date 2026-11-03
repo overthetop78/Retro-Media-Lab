@@ -29,6 +29,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
     private readonly AtomVideo _video;
     private readonly AnalogCassette _cassette = new(C.CpuClock, CassetteSignalMode.DirectWaveform);
     private readonly Intel8271? _fdc;
+    private readonly Intel8271Drive? _fdcDrive;
     private readonly IEmulationDiskImage?[] _disks = new IEmulationDiskImage?[C.FloppyDrives];
     private readonly int[] _speeds = [C.DefaultSpeedPercent, C.DefaultSpeedPercent];
     private readonly List<short> _samples = [];
@@ -64,7 +65,11 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
         _ppi.ReadPortB = _keyboard.Read;
         _ppi.ReadPortC = ReadInputs;
         _ppi.PortCPinsChanged = value => { _outputs = value; _video.SetColorSet((value & V.ColorSetSelect) != 0); UpdateCassetteOutput(); };
-        if (_dos.Length != 0) _fdc = new Intel8271(index => _disks[index], C.CpuClock);
+        if (_dos.Length != 0)
+        {
+            _fdc = new Intel8271(C.CpuClock);
+            _fdcDrive = new(_fdc, index => _disks[index], C.CpuClock);
+        }
         _cpu = new Cpu6502(this);
         Reset(true);
     }
@@ -91,7 +96,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
     public void Tick()
     {
         _via.Tick();
-        _fdc?.Tick();
+        _fdcDrive?.Tick();
         if (++_cassettePhase >= C.CassetteHalfPeriod)
         {
             _cassettePhase = 0;
@@ -151,6 +156,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
         _ppi.Reset();
         _ppi.SetPortCInput(ReadInputs());
         _fdc?.Reset();
+        _fdcDrive?.Reset();
         _cpu.Reset();
     }
 

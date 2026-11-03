@@ -1,7 +1,3 @@
-using Phase = RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Enums.Intel8271Phase;
-using C = RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Constants.Intel8271Constants;
-using System.IO;
-
 namespace RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Interfaces;
 /// <summary>Contrat matériel du composant Intel8271 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface IIntel8271
@@ -10,6 +6,26 @@ public interface IIntel8271
     long ReadBytes(int drive);
     long WrittenBytes(int drive);
     bool Nmi { get; }
+    bool Drq { get; }
+    bool InSync { get; }
+    bool WriteData { get; }
+    event Action<bool>? WriteDataChanged;
+    void SetDataWindow(bool clockWindow);
+    void SetPhaseLockedSeparator(bool enabled);
+    void SetUnseparatedData(bool asserted);
+    bool ResetAsserted { get; }
+    byte DriveControl { get; }
+    void SetReset(bool asserted);
+    void SetReady(int drive, bool? ready);
+    void SetWriteProtected(int drive, bool? writeProtected);
+    void SetWriteFault(int drive, bool fault);
+    void SetTrackZero(int drive, bool? atTrackZero);
+    void SetIndex(int drive, bool? asserted);
+    void SetCount(bool asserted);
+    byte? ReadBus(bool selected, bool dmaAcknowledge, int register);
+    void WriteBus(bool selected, bool dmaAcknowledge, int register, byte value);
+    byte? BusData { get; }
+    void SetBus(bool selected, bool read, bool write, bool dmaAcknowledge, int register, byte value = 0);
 
     bool Motor { get; }
 

@@ -24,6 +24,23 @@ public sealed class SectorImageTrackEncoder
     /// <summary>Indique si une politique d'encodage accepte l'image.</summary>
     public bool CanEncode(SectorImage image) => image.AddressingKind == SectorImageAddressingKind.Physical && policies.Resolve(image) is not null;
 
+    /// <summary>Encode une piste ciblée avec le codage et les durées fournis par le lecteur.</summary>
+    /// <remarks>Le conteneur reste propriétaire des données ; aucune activité mécanique n'est déclenchée ici.</remarks>
+    public EncodedTrack EncodeTrack(SectorImage image, int cylinder, int head, string encoderId,
+        IReadOnlyDictionary<string, int>? attributes, uint bitCellTicks, uint indexTimeTicks)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        if (image.AddressingKind == SectorImageAddressingKind.Logical)
+            throw SectorImageVisualizationExceptions.LogicalAddressing(image.FormatId);
+        var policy = policies.Resolve(image) ?? throw SectorImageVisualizationExceptions.MissingPolicy(image.FormatId);
+        var items = image.AvailableBlocks
+            .Select(block => (Block: block, Address: policy.VisualAddress(image, block.Address)))
+            .Where(item => item.Address.Cylinder == cylinder && item.Address.Head == head)
+            .OrderBy(item => item.Block.RecordedTrackOrder ?? item.Address.Number).ToArray();
+        var sectors = policy.CreateTrackSectors(image, items);
+        return encoders.Encode(encoderId, new(cylinder, head, sectors, attributes, bitCellTicks, indexTimeTicks));
+    }
+
     /// <summary>Encode toutes les pistes disponibles dans l'ordre cylindre puis face.</summary>
     public IReadOnlyList<EncodedDiskTrack> Encode(SectorImage image, CancellationToken cancellationToken = default)
     {
@@ -34,7 +51,7 @@ public sealed class SectorImageTrackEncoder
         foreach (var group in image.AvailableBlocks.Select(block => (Block: block, Address: policy.VisualAddress(image, block.Address))).GroupBy(item => (item.Address.Cylinder, item.Address.Head)).OrderBy(group => group.Key.Cylinder).ThenBy(group => group.Key.Head))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var items = group.OrderBy(item => item.Address.Number).ToArray();
+            var items = group.OrderBy(item => item.Block.RecordedTrackOrder ?? item.Address.Number).ToArray();
             var sectors = policy.CreateTrackSectors(image, items);
             if (sectors.Count == 0) continue;
             var bitCellTicks = policy.BitCellTicks(image, group.Key.Cylinder);

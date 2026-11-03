@@ -28,6 +28,7 @@ internal sealed partial class AcornSystemMachine
         {
             if (disk == 0) _fdc.MechanicalSpeedPercent = _speeds[(value & Disk.Drive1Select) == 0 ? 0 : 1];
             _fdc.Write(disk, value);
+            _fdcDrive!.Synchronize();
             return;
         }
         if (ViaAddress(address))

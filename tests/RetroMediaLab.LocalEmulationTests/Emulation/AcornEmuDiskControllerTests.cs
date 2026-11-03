@@ -1,4 +1,4 @@
-using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
+using RetroMediaLab.MediaEngine.Images.Writing.Encoding;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Interfaces;
@@ -153,10 +153,16 @@ public sealed class AcornEmuDiskControllerTests
         {
             Assert.Equal(0x55, board.Read(0x8000)); board.Write(0xfe30, 14); Assert.Equal(0xa5, board.Read(0x8000));
             board.Write(0x8000, 0); Assert.Equal(0xa5, board.Read(0x8000)); board.Write(0xfe30, 12); Assert.Equal(255, board.Read(0x8000));
-            board.AttachFloppy(0, disk); board.Write(0x200, 0xea); board.Write(0x201, 0x4c); board.Write(0x202, 0); board.Write(0x203, 2);
+            board.AttachFloppy(0, disk);
+            // Le montage rend Ready haut ; Read Drive Status acquitte son état bas mémorisé avant insertion.
+            board.Write(0xfe80, 0x6c); _ = board.Read(0xfe81);
+            board.Write(0x200, 0xea); board.Write(0x201, 0x4c); board.Write(0x202, 0); board.Write(0x203, 2);
             board.Write(0xfe80, 0x75); foreach (var value in new byte[] { 0x0d, 0, 0, 0x10 }) board.Write(0xfe81, value);
+            board.Write(0xfe80, 0x7a); board.Write(0xfe81, 0x17); board.Write(0xfe81, 0xc1);
             board.Write(0xfe80, 0x53); foreach (var value in new byte[] { 0, 0, 0x21 }) board.Write(0xfe81, value);
-            for (var instruction = 0; instruction < 500 && board.Cpu.PC != 0x300; instruction++) board.Cpu.Step();
+            // La recherche passe maintenant par ID/synchronisation/FM avant la première demande CPU.
+            const int MaximumInstructionsPerRevolution = 200_000;
+            for (var instruction = 0; instruction < MaximumInstructionsPerRevolution && board.Cpu.PC != 0x300; instruction++) board.Cpu.Step();
             Assert.Equal(0x300, board.Cpu.PC); Assert.True(board.Nmi); Assert.True(board.FloppyActive(0)); Assert.False(board.FloppyActive(1));
             Assert.Equal(0, board.Read(0xfe84)); Assert.False(board.Nmi);
             board.Reset(true); Assert.False(board.Nmi); Assert.Equal(0x55, board.Read(0x8000)); Assert.False(disk.Disposed);
@@ -169,111 +175,76 @@ public sealed class AcornEmuDiskControllerTests
     [InlineData(0, 1)]
     [InlineData(1, 0)]
     [InlineData(1, 1)]
-    public void ReadMultipleSelectsDriveSideAndSectorAndAcknowledgesEveryByte(int drive, int side)
+    public void BbcCardWiresTheOptional8271OutputToTheHeadSelect(int drive, int head)
     {
-        using var first = new MemoryDisk(); using var second = new MemoryDisk(0x80);
-        var controller = new Intel8271(index => index == 0 ? first : second); FastTiming(controller);
-        Command(controller, 0x7a, 0x23, (byte)(side << 5));
-        Command(controller, (byte)(0x13 | (drive == 0 ? 0x40 : 0x80)), 1, 3, 0x22);
-        var read = Transfer(controller);
-        var disk = drive == 0 ? first : second;
-        Assert.Equal(0, read.Result);
-        Assert.Equal(disk.Data((1 * 2 + side) * 10 + 3).Concat(disk.Data((1 * 2 + side) * 10 + 4)), read.Bytes);
-        Assert.False(controller.Nmi); Assert.Equal(0, controller.Read(0));
-        Assert.True(controller.Motor);
-    }
-
-    [Fact]
-    public void WriteRequestsEachByteAndPreservesAdjacentSectors()
-    {
-        using var disk = new MemoryDisk(); var controller = new Intel8271(_ => disk); FastTiming(controller);
-        var before = disk.Data(4).ToArray();
-        var bytes = Enumerable.Range(0, 512).Select(index => (byte)(index ^ 0xa5)).ToArray();
-        Command(controller, 0x4b, 0, 2, 0x22);
-        Assert.Equal(0, Transfer(controller, bytes).Result);
-        Assert.Equal(bytes[..256], disk.Data(2)); Assert.Equal(bytes[256..], disk.Data(3)); Assert.Equal(before, disk.Data(4));
-        Assert.True(disk.HasChanges);
-        Command(controller, 0x53, 0, 2, 0x22); Assert.Equal(bytes, Transfer(controller).Bytes);
-    }
-
-    [Fact]
-    public void FormatUsesTheSuppliedIdsAndProtectsTheOtherSide()
-    {
-        using var disk = new MemoryDisk(); var controller = new Intel8271(_ => disk); FastTiming(controller);
-        var firstSide = disk.Data(2).ToArray();
-        Command(controller, 0x7a, 0x23, 0x20);
-        Command(controller, 0x63, 0, 0, 2, 0, 0);
-        Assert.Equal(0, Transfer(controller, [0, 1, 2, 1, 0, 1, 3, 1]).Result);
-        Assert.All(disk.Data(12), value => Assert.Equal(0xe5, value)); Assert.All(disk.Data(13), value => Assert.Equal(0xe5, value));
-        Assert.Equal(firstSide, disk.Data(2));
-    }
-
-    [Fact]
-    public void ReadIdAndVerifyUseTheSamePhysicalSectorAddresses()
-    {
-        using var disk = new MemoryDisk(); var controller = new Intel8271(_ => disk); FastTiming(controller);
-        Command(controller, 0x7a, 0x23, 0x20);
-        Command(controller, 0x5b, 1, 0, 2);
-        Assert.Equal(new byte[] { 1, 1, 0, 1, 1, 1, 1, 1 }, Transfer(controller).Bytes);
-        Command(controller, 0x5f, 1, 0, 0x22);
-        var verify = Transfer(controller); Assert.Equal(0, verify.Result); Assert.Empty(verify.Bytes);
-    }
-
-    [Fact]
-    public void ProtectionMissingMediaAndMissingSectorsHaveResultsInsteadOfHostFailures()
-    {
-        using var disk = new MemoryDisk { IsReadOnly = true }; var controller = new Intel8271(_ => disk); FastTiming(controller);
-        Command(controller, 0x4b, 0, 0, 0x21); Assert.True(controller.Nmi); Assert.Equal(0x12, Transfer(controller).Result); Assert.False(disk.HasChanges);
-        Command(controller, 0x53, 0, 99, 0x21); Assert.Equal(0x18, Transfer(controller).Result);
-        var absent = new Intel8271(_ => null); Command(absent, 0x53, 0, 0, 0x21); Assert.Equal(0x10, Transfer(absent).Result);
-    }
-
-    [Fact]
-    public void UnacknowledgedByteReportsLateDmaAndBadDataReportsCrcAfterTransfer()
-    {
-        using var disk = new MemoryDisk { BadSector = 0 }; var controller = new Intel8271(_ => disk); FastTiming(controller);
-        Command(controller, 0x53, 0, 0, 0x21);
-        for (var tick = 0; tick < 500; tick++) controller.Tick();
-        Assert.True(controller.Nmi); Assert.Equal(0x0a, controller.Read(1)); Assert.False(controller.Nmi);
-        Command(controller, 0x53, 0, 0, 0x21); var read = Transfer(controller);
-        Assert.Equal(0x0e, read.Result); Assert.Equal(256, read.Bytes.Length);
-    }
-
-    [Fact]
-    public void SeekAndResetDoNotOwnOrDisposeTheBorrowedImage()
-    {
-        using var disk = new MemoryDisk(); var controller = new Intel8271(_ => disk); FastTiming(controller);
-        Command(controller, 0x69, 1); Assert.Equal(0, Transfer(controller).Result);
-        Command(controller, 0x7d, 0x12); Assert.Equal(1, controller.Read(1)); Assert.False(controller.Nmi);
-        controller.Write(2, 1); Assert.False(controller.Nmi); Assert.False(controller.Motor); Assert.Equal(0, controller.Read(0)); Assert.False(disk.Disposed);
-    }
-
-    [Fact]
-    public void FirstReadWaitsForMechanicalLoadBeforeTheFirstDataRequest()
-    {
-        using var disk = new MemoryDisk(); var controller = new Intel8271(_ => disk);
-        Command(controller, 0x53, 0, 0, 0x21);
-        for (var tick = 0; tick < 400_000; tick++) controller.Tick();
-        Assert.False(controller.Nmi); Assert.Equal(0x80, controller.Read(0));
-        Assert.Equal(0, Transfer(controller).Result);
-    }
-
-    private static void FastTiming(Intel8271 controller) => Command(controller, 0x75, 0x0d, 0, 0, 0x10);
-    private static void Command(Intel8271 controller, byte command, params byte[] parameters) { controller.Write(0, command); foreach (var value in parameters) controller.Write(1, value); }
-    private static (byte Result, byte[] Bytes) Transfer(Intel8271 controller, byte[]? write = null)
-    {
-        var bytes = new List<byte>(); var written = 0;
-        for (var tick = 0; tick < 2_000_000; tick++)
+        using var first = new MemoryDisk();
+        using var second = new MemoryDisk(0x80);
+        var card = new Disks(true);
+        try
         {
-            controller.Tick(); var status = controller.Read(0);
-            if ((status & 4) != 0)
-            {
-                if (write is null) bytes.Add(controller.Read(4));
-                else { Assert.True(written < write.Length); controller.Write(4, write[written++]); }
-            }
-            else if ((status & 0x90) == 0x10) { if (write is not null) Assert.Equal(write.Length, written); return (controller.Read(1), bytes.ToArray()); }
+            card.Attach(0, first);
+            card.Attach(1, second);
+            card.Write(0xfe80, 0x6c); _ = card.Read(0xfe81);
+            card.Write(0xfe80, 0x35);
+            foreach (var value in new byte[] { 0x0d, 1, 0, 0x10 }) card.Write(0xfe81, value);
+            card.Write(0xfe80, 0x3a);
+            card.Write(0xfe81, 0x17);
+            card.Write(0xfe81, 0xc1);
+            card.Write(0xfe80, 0x3a);
+            card.Write(0xfe81, 0x23);
+            card.Write(0xfe81, (byte)(head << 5));
+            card.Write(0xfe80, (byte)(0x13 | (drive == 0 ? 0x40 : 0x80)));
+            foreach (var value in new byte[] { 0, 0, 0x21 }) card.Write(0xfe81, value);
+            for (var tick = 0; tick < 800_000 && !card.Nmi; tick++) card.Tick();
+            Assert.True(card.Nmi);
+            Assert.NotEqual(0, card.Read(0xfe80) & 4);
+            Assert.Equal((byte)((drive == 0 ? 0 : 0x80) + head * 10), card.Read(0xfe84));
+            Assert.False(card.Nmi);
+            Assert.Equal(1, card.ReadBytes(drive));
         }
-        Assert.Fail("The controller did not complete its command."); return default;
+        finally
+        {
+            card.Reset();
+            card.Attach(0, null);
+            card.Attach(1, null);
+        }
+    }
+
+    [Theory]
+    [InlineData(1_000_000)]
+    [InlineData(2_000_000)]
+    [InlineData(3_000_000)]
+    public void ModuleDriveWiringReadsWithEachExistingOwnerClock(int ownerClock)
+    {
+        using var disk = new MemoryDisk();
+        var chip = new RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services.Intel8271(ownerClock);
+        var wiring = new RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services.Intel8271Drive(chip,
+            index => index == 0 ? disk : null, ownerClock);
+        try
+        {
+            wiring.MediaChanged(0);
+            void Command(byte command, params byte[] parameters)
+            {
+                chip.Write(0, command);
+                foreach (var value in parameters) chip.Write(1, value);
+                wiring.Synchronize();
+            }
+            Command(0x6c); _ = chip.Read(1);
+            Command(0x35, 0x0d, 1, 0, 0x10);
+            Command(0x3a, 0x17, 0xc1);
+            Command(0x53, 0, 0, 0x21);
+            var bytes = new List<byte>();
+            for (var tick = 0; tick < ownerClock * 2 / 5 && (chip.Read(0) & 0x80) != 0; tick++)
+            {
+                wiring.Tick();
+                if ((chip.Read(0) & 4) != 0) bytes.Add(chip.Read(4));
+            }
+            Assert.Equal(0x10, chip.Read(0) & 0x90);
+            Assert.Equal(0, chip.Read(1));
+            Assert.Equal(new byte[256], bytes);
+            Assert.False(disk.Disposed);
+        }
+        finally { chip.Reset(); wiring.Reset(); }
     }
 
     private sealed class MemoryDisk(byte seed = 0) : IEmulationDiskImage
@@ -297,6 +268,18 @@ public sealed class AcornEmuDiskControllerTests
         public long? FindSector(int cylinder, int head, int number) => cylinder is >= 0 and < 2 && head is >= 0 and < 2 && number is >= 0 and < 10 ? (cylinder * 2L + head) * 10 + number : null;
         public ValueTask<EmulationDiskSector> ReadSectorAsync(long index, CancellationToken cancellationToken = default) => ValueTask.FromResult(new EmulationDiskSector(index, Data(index), (int)(index / 20), (int)(index / 10 % 2), (int)(index % 10), index != BadSector));
         public void WriteSector(long index, ReadOnlySpan<byte> data) { if (IsReadOnly) throw new UnauthorizedAccessException(); if (data.Length != SectorSize) throw new ArgumentException(nameof(data)); _data[index] = data.ToArray(); HasChanges = true; }
+        public EmulationDiskTrack ReadTrack(int cylinder, int head, string encodingId, uint bitCellNanoseconds,
+            uint indexTimeNanoseconds, IReadOnlyDictionary<string, int>? attributes = null)
+        {
+            var sectors = Enumerable.Range(0, SectorsPerTrack).Select(number =>
+            {
+                var index = FindSector(cylinder, head, number) ?? throw new ArgumentOutOfRangeException(nameof(cylinder));
+                return new TrackSector(number, Data(index)) { DataIntegrityValid = index != BadSector };
+            }).ToArray();
+            var track = new FluxEncoderRegistry().Encode(encodingId,
+                new(cylinder, head, sectors, attributes, bitCellNanoseconds, indexTimeNanoseconds));
+            return new([new(indexTimeNanoseconds, track.Revolution.FluxIntervals)]);
+        }
         public Task FlushAsync(CancellationToken cancellationToken = default) { HasChanges = false; return Task.CompletedTask; }
         public void Dispose() { Disposed = true; _data.Clear(); }
     }

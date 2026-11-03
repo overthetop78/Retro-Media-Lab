@@ -24,13 +24,20 @@ public abstract class TrackEncoderBase : ITrackEncoder
         ArgumentNullException.ThrowIfNull(request);
         if (request.Cylinder is < TrackEncodingLimits.MinimumCylinder or > TrackEncodingLimits.MaximumCylinder) throw TrackEncodingExceptions.InvalidCylinder(request.Cylinder);
         if (request.Head is < TrackEncodingLimits.MinimumHead or > TrackEncodingLimits.MaximumHead) throw TrackEncodingExceptions.InvalidHead(request.Head);
-        if (request.Sectors.Count < TrackEncodingLimits.MinimumSectorCount) throw TrackEncodingExceptions.MissingSectors(request.Sectors.Count);
+        if (request.Sectors.Count < TrackEncodingLimits.MinimumSectorCount && !CanEncodeEmptyTrack(request)) throw TrackEncodingExceptions.MissingSectors(request.Sectors.Count);
         if (request.BitCellTicks == 0) throw TrackEncodingExceptions.ZeroBitCell(request.BitCellTicks);
         if (request.IndexTimeTicks == 0) throw TrackEncodingExceptions.ZeroIndexTime(request.IndexTimeTicks);
         var bits = EncodeBits(request);
         if (bits.Count == 0) throw TrackEncodingExceptions.EmptyTrack(Id, bits.Count);
-        return new(Id, bits, FluxRevolutionFactory.Create(bits, request.BitCellTicks, request.IndexTimeTicks));
+        return new(Id, bits, EncodeRevolution(request, bits));
     }
+
+    /// <summary>Construit la révolution correspondant aux cellules encodées.</summary>
+    protected virtual FluxRevolution EncodeRevolution(TrackEncodeRequest request, IReadOnlyList<bool> bits)
+        => FluxRevolutionFactory.Create(bits, request.BitCellTicks, request.IndexTimeTicks);
+
+    /// <summary>Autorise uniquement les formats sachant représenter physiquement une piste sans secteur.</summary>
+    protected virtual bool CanEncodeEmptyTrack(TrackEncodeRequest request) => false;
 
     /// <summary>Produit les cellules binaires propres au format de l'encodeur.</summary>
     /// <param name="request">Requête déjà validée par les règles communes.</param>
@@ -46,7 +53,7 @@ public abstract class TrackEncoderBase : ITrackEncoder
     /// <returns>Cellules binaires dans l'ordre des secteurs fournis.</returns>
     protected static IReadOnlyList<bool> EncodeIsoBits(TrackEncodeRequest request,
         Action<string, int> validateAddress, Func<TrackSector, byte> resolveSizeCode,
-        Action<List<bool>, TrackEncodeRequest, int, byte> writeAddress, Action<List<bool>, TrackSector> writeData)
+        Action<List<bool>, TrackEncodeRequest, TrackSector, byte> writeAddress, Action<List<bool>, TrackSector> writeData)
     {
         var bits = TrackBitEncoding.Bits();
         validateAddress(nameof(request.Cylinder), request.Cylinder);
@@ -55,7 +62,7 @@ public abstract class TrackEncoderBase : ITrackEncoder
         {
             validateAddress(nameof(sector.Number), sector.Number);
             var sizeCode = resolveSizeCode(sector);
-            writeAddress(bits, request, sector.Number, sizeCode);
+            writeAddress(bits, request, sector, sizeCode);
             writeData(bits, sector);
         }
         return bits;

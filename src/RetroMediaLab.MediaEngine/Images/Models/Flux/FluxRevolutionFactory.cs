@@ -9,11 +9,12 @@ internal static class FluxRevolutionFactory
     /// <param name="bits">Cellules binaires ; une cellule à un représente une transition.</param>
     /// <param name="cellTicks">Durée d'une cellule, en ticks.</param>
     /// <param name="indexTimeTicks">Durée de la révolution complète, en ticks.</param>
+    /// <param name="includeTrailingInterval">Conserve le segment final historique ; false pour des intervalles représentant uniquement les transitions physiques.</param>
     /// <returns>Révolution contenant les intervalles copiés.</returns>
     /// <exception cref="ArgumentNullException">La collection de cellules est nulle.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Une durée est nulle.</exception>
     /// <exception cref="OverflowException">Le produit du nombre de cellules par leur durée dépasse un entier non signé.</exception>
-    public static FluxRevolution Create(IReadOnlyList<bool> bits, uint cellTicks, uint indexTimeTicks)
+    public static FluxRevolution Create(IReadOnlyList<bool> bits, uint cellTicks, uint indexTimeTicks, bool includeTrailingInterval = true)
     {
         ArgumentNullException.ThrowIfNull(bits);
         if (cellTicks == 0) throw TrackEncodingExceptions.ZeroBitCell(cellTicks);
@@ -27,7 +28,7 @@ internal static class FluxRevolutionFactory
             intervals.Add(Interval(cells, cellTicks));
             cells = 0;
         }
-        if (cells > 0) intervals.Add(Interval(cells, cellTicks));
+        if (includeTrailingInterval && cells > 0) intervals.Add(Interval(cells, cellTicks));
         return new(indexTimeTicks, intervals);
     }
 

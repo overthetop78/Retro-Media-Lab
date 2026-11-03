@@ -50,6 +50,19 @@ internal sealed partial class EmulationMediaProcessingService
         }
         public void WriteSector(long index, ReadOnlySpan<byte> data) => image.WriteSector(index, data);
         public void WriteSector(long index, ReadOnlySpan<byte> data, bool deletedDataMark) => image.WriteSector(index, data, deletedDataMark);
+        public EmulationDiskTrack ReadTrack(int cylinder, int head, string encodingId, uint bitCellNanoseconds,
+            uint indexTimeNanoseconds, IReadOnlyDictionary<string, int>? attributes = null)
+        {
+            var track = image.ReadTrack(cylinder, head, encodingId, bitCellNanoseconds, indexTimeNanoseconds, attributes);
+            return new(track.Revolutions.Select(revolution => new EmulationDiskRevolution(
+                revolution.IndexTimeNanoseconds, revolution.FluxIntervalsNanoseconds)).ToArray());
+        }
+        public void WriteTrackWindow(int cylinder, int head, string encodingId, uint bitCellNanoseconds,
+            uint indexTimeNanoseconds, uint startNanoseconds, uint durationNanoseconds,
+            IReadOnlyList<uint> transitionOffsetsNanoseconds, IReadOnlyDictionary<string, int>? attributes = null,
+        bool includeEndingInstant = false)
+            => image.WriteTrackWindow(cylinder, head, encodingId, bitCellNanoseconds, indexTimeNanoseconds,
+                startNanoseconds, durationNanoseconds, transitionOffsetsNanoseconds, attributes, includeEndingInstant);
         public Task FlushAsync(CancellationToken cancellationToken = default) => image.FlushAsync(cancellationToken);
         public void FormatTrack(int cylinder, int head, IReadOnlyList<EmulationDiskSector> sectors,
             int? dataRate = null, bool? mfm = null) => image.FormatTrack(cylinder, head,

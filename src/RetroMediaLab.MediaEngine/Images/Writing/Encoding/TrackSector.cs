@@ -31,4 +31,17 @@ public sealed record TrackSector
     public byte? SizeCode { get; }
     /// <summary>Obtient une copie non modifiable des attributs propres au format.</summary>
     public IReadOnlyDictionary<string, int>? Attributes { get; }
+
+    /// <summary>Champ C réellement enregistré, lorsqu'il diffère du cylindre physique de la piste.</summary>
+    public int? RecordedCylinder { get; init; }
+    /// <summary>Champ H réellement enregistré, distinct de la face physique de la piste.</summary>
+    public int? RecordedHead { get; init; }
+    /// <summary>Champ N lu sur le support ; il ne redéfinit pas la longueur des données disponibles.</summary>
+    public byte? RecordedSizeCode { get; init; }
+    /// <summary>Intégrité connue du champ ID, conservée lors de l'encodage d'un support existant.</summary>
+    public bool? HeaderIntegrityValid { get; init; }
+    /// <summary>Intégrité connue du champ DATA, conservée si aucun CRC enregistré n'est disponible.</summary>
+    public bool? DataIntegrityValid { get; init; }
+    /// <summary>Deux octets CRC réellement enregistrés après DATA, prioritaires sur un CRC recalculé.</summary>
+    public ReadOnlyMemory<byte> RecordedErrorCheckCode { get; init; }
 }

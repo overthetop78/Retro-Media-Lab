@@ -21,8 +21,9 @@ internal sealed partial class AtomMachine
     {
         CheckDrive(index);
         if (_fdc is null && image is not null) throw new NotSupportedException();
-        if (_fdc?.Active == true && _fdc.ActiveDrive == index) _fdc.Reset();
+        if (_fdc?.Active == true && _fdc.ActiveDrive == index) { _fdc.Reset(); _fdcDrive!.Reset(); }
         _disks[index] = image;
+        _fdcDrive?.MediaChanged(index);
     }
 
     public bool FloppyActive(int index) => FloppyMotor(index) && _disks[index] is not null;

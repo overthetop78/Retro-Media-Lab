@@ -127,7 +127,11 @@ internal sealed partial class MediaRuntimeDisk : IMediaRuntimeDisk
         if (data.Length != size) throw new ArgumentException("The data must contain exactly one sector.", nameof(data));
         var address = Sectors is { } image && image.TryGetBlock(checked((int)index), out var sector) ? sector.Address : Address(index);
         Mechanics.BeginWrite(Position(index, address));
-        try { _changes[index] = data.ToArray(); }
+        try
+        {
+            _changes[index] = data.ToArray();
+            InvalidateWrittenTrack(address.Cylinder, address.Head);
+        }
         finally { Mechanics.EndAccess(); }
     }
 
@@ -144,6 +148,7 @@ internal sealed partial class MediaRuntimeDisk : IMediaRuntimeDisk
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (!HasChanges) return;
+        RetryTrackProjection();
         var document = UpdatedDocument();
         document = new(document.Source with { Drive = null }, document.FormatId, document.MediaKind,
             document.Representation, document.FileSystemVolumes, document.Diagnostics, document.Metadata);
@@ -202,7 +207,7 @@ internal sealed partial class MediaRuntimeDisk : IMediaRuntimeDisk
         finally
         {
             try { if (_ownsMechanics) Mechanics.Reset(); }
-            finally { _changes.Clear(); _dataMarks.Clear(); _disposed = true; }
+            finally { _changes.Clear(); _dataMarks.Clear(); _writtenTracks.Clear(); _trackProjectionErrors.Clear(); _trackTemplates.Clear(); _disposed = true; }
         }
     }
 }

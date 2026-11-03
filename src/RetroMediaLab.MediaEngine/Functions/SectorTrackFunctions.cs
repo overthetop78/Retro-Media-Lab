@@ -7,11 +7,11 @@ namespace RetroMediaLab.MediaEngine.Functions;
 internal static class SectorTrackFunctions
 {
     internal static SectorImage Replace(SectorImage image, int cylinder, int head,
-        IReadOnlyList<MediaDiskSector> fields, bool retainGeometry)
+        IReadOnlyList<MediaDiskSector> fields, bool retainGeometry, IReadOnlyList<SectorBlock>? previousTrack = null)
     {
         Validate(image, cylinder, head, fields);
         var original = image.AvailableBlocks.ToArray();
-        var previous = original.Where(block => block.Address.Cylinder == cylinder && block.Address.Head == head).ToArray();
+        var previous = previousTrack?.ToArray() ?? original.Where(block => block.Address.Cylinder == cylinder && block.Address.Head == head).ToArray();
         SectorBlock Create(MediaDiskSector field, int logical, int order) => new(logical,
             new(cylinder, head, field.Number), field.Data.ToArray(), field.IntegrityValid)
         {
@@ -43,7 +43,7 @@ internal static class SectorTrackFunctions
                 replacements.Add(block.LogicalBlock, Create(field, block.LogicalBlock, order));
             }
             return new(image.FormatId, image.BlockSize, image.Cylinders, image.Heads, image.SectorsPerTrack,
-                original.Select(block => replacements.GetValueOrDefault(block.LogicalBlock, block)),
+                original.Where(block => block.Address.Cylinder != cylinder || block.Address.Head != head).Concat(replacements.Values),
                 image.AllowsVariableBlockSize, image.Capacity, image.BlockCount, image.AddressingKind);
         }
 
@@ -57,6 +57,39 @@ internal static class SectorTrackFunctions
         var sectorsPerTrack = blocks.GroupBy(block => (block.Address.Cylinder, block.Address.Head)).Max(track => track.Count());
         return new(image.FormatId, image.BlockSize, image.Cylinders, image.Heads, sectorsPerTrack, blocks,
             blocks.Any(block => block.Data.Count != image.BlockSize), blocks.Sum(block => (long)block.Data.Count), blocks.Length, image.AddressingKind);
+    }
+
+    /// <summary>Projette les champs observés en mémoire sans prétendre que le conteneur peut tous les enregistrer.</summary>
+    internal static SectorImage Project(SectorImage image, int cylinder, int head, IReadOnlyList<MediaDiskSector> fields)
+    {
+        var previous = image.AvailableBlocks
+            .Where(block => block.Address.Cylinder == cylinder && block.Address.Head == head)
+            .OrderBy(block => block.RecordedTrackOrder ?? block.LogicalBlock).ToArray();
+        var blocks = image.AvailableBlocks
+            .Where(block => block.Address.Cylinder != cylinder || block.Address.Head != head)
+            .ToDictionary(block => block.LogicalBlock);
+        var next = image.BlockCount;
+        for (var order = 0; order < fields.Count; order++)
+        {
+            var field = fields[order];
+            var logical = order < previous.Length ? previous[order].LogicalBlock : next++;
+            blocks.Add(logical, new(logical, new(cylinder, head, field.Number), field.Data.ToArray(), field.IntegrityValid)
+            {
+                RecordedAddress = new(field.Cylinder, field.Head, field.Number),
+                RecordedTrackOrder = order,
+                RecordedSizeCode = field.RecordedSizeCode,
+                HeaderIntegrityValid = field.HeaderIntegrityValid,
+                DataIntegrityValid = field.DataIntegrityValid,
+                DeletedDataMark = field.DeletedDataMark,
+                RecordedErrorCheckCode = field.RecordedErrorCheckCode.ToArray(),
+                RecordedDataPrefix = field.RecordedDataPrefix.ToArray(),
+                DiagnosticCode = field.DiagnosticCode
+            });
+        }
+        return new(image.FormatId, image.BlockSize, image.Cylinders, image.Heads, image.SectorsPerTrack,
+            blocks.Values, allowVariableBlockSize: true,
+            capacity: Math.Max(image.Capacity, blocks.Values.Sum(block => (long)block.Data.Count)),
+            logicalBlockCount: next, addressingKind: image.AddressingKind);
     }
 
     internal static void Validate(SectorImage image, int cylinder, int head, IReadOnlyList<MediaDiskSector> fields)

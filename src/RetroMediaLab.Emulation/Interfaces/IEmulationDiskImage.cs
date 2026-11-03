@@ -34,6 +34,16 @@ public interface IEmulationDiskImage : IDisposable, RetroMediaLab.Chips.Controll
         if (deletedDataMark) throw new NotSupportedException();
         WriteSector(index, data);
     }
+    /// <summary>Prépare les révolutions physiques depuis l'état actuel du média, sans accès mécanique.</summary>
+    EmulationDiskTrack ReadTrack(int cylinder, int head, string encodingId, uint bitCellNanoseconds,
+        uint indexTimeNanoseconds, IReadOnlyDictionary<string, int>? attributes = null)
+        => throw new NotSupportedException();
+    /// <summary>Transmet les impulsions réellement émises pendant une fenêtre d'écriture ; durées en nanosecondes.</summary>
+    void WriteTrackWindow(int cylinder, int head, string encodingId, uint bitCellNanoseconds,
+        uint indexTimeNanoseconds, uint startNanoseconds, uint durationNanoseconds,
+        IReadOnlyList<uint> transitionOffsetsNanoseconds, IReadOnlyDictionary<string, int>? attributes = null,
+        bool includeEndingInstant = false)
+        => throw new NotSupportedException();
     new Task FlushAsync(CancellationToken cancellationToken = default);
     /// <summary>Remplace les champs d'une piste physique dans l'ordre fourni, avec leurs identifiants enregistrés.</summary>
     void FormatTrack(int cylinder, int head, IReadOnlyList<EmulationDiskSector> sectors,

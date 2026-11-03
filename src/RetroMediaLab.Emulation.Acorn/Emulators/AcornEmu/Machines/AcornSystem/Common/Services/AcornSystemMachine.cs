@@ -31,6 +31,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private readonly Cpu6502? _cpu6502;
     private readonly Cpu6809? _cpu6809;
     private readonly Intel8271? _fdc;
+    private readonly Intel8271Drive? _fdcDrive;
     private readonly IEmulationDiskImage?[] _disks = new IEmulationDiskImage?[C.FloppyDrives];
     private readonly int[] _speeds = [C.DefaultSpeedPercent, C.DefaultSpeedPercent];
     private readonly List<short> _samples = [];
@@ -81,7 +82,11 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             }
             else if (card == SystemCpuCard.Fast6502A) _via.ReadPortA = () => _keyboard.DataWithStrobe;
         }
-        if (diskInterface) _fdc = new Intel8271(index => _disks[index], _clock);
+        if (diskInterface)
+        {
+            _fdc = new Intel8271(_clock);
+            _fdcDrive = new(_fdc, index => _disks[index], _clock);
+        }
         if (card == SystemCpuCard.Motorola6809) _cpu6809 = new Cpu6809(this);
         else _cpu6502 = new Cpu6502(this);
         Reset(true);
@@ -105,6 +110,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         _ramIo.Reset();
         _cassette.ResetHardware();
         _fdc?.Reset();
+        _fdcDrive?.Reset();
         if (_cpu6809 is not null) _cpu6809.Reset(); else _cpu6502!.Reset();
         _nextFrame = _ticks + _clock / C.PresentationRate;
     }
@@ -132,7 +138,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         _ticks++;
         _keyboard.Tick();
         _cassette.Tick();
-        _fdc?.Tick();
+        _fdcDrive?.Tick();
         _viaPhase += C.ViaClock;
         while (_viaPhase >= _clock) { _viaPhase -= _clock; _via.Tick(); }
         if (_video is not null)
