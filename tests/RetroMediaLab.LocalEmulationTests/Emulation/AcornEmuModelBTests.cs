@@ -101,8 +101,9 @@ public sealed class AcornEmuModelBTests
         ] });
         board.Write(Io.AdcStart, (byte)(channel | Io.TwelveBitMode));
         for (var tick = 0; tick < Io.TwelveBitCycles; tick++) board.Tick();
-        Assert.Equal(expectedHigh, board.Read(Io.AdcStart + Io.HighRegister));
         Assert.Equal(Io.Complete, board.Read(Io.AdcStart) & (Io.Busy | Io.Complete));
+        Assert.Equal(expectedHigh, board.Read(Io.AdcStart + Io.HighRegister));
+        Assert.Equal(Io.Busy | Io.Complete, board.Read(Io.AdcStart) & (Io.Busy | Io.Complete));
     }
 
     [Theory]
