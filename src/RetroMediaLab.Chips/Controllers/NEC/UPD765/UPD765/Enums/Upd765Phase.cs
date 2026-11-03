@@ -12,5 +12,7 @@ public enum Upd765Phase
     Result,
     FormatLead,
     FormatGap,
-    FormatTail
+    FormatTail,
+    DrivePrepare,
+    SenseDrive
 }

@@ -8,14 +8,11 @@ public sealed partial class Upd765
     private byte ConsumeRead()
     {
         if (_phase != Upd765Phase.Reading || !_request) return C.OpenBus;
-        var value = _buffer[_offset++];
+        var value = _dataLatch;
         _readBytes[_unit]++;
+        _hostOffset++;
         SetRequest(false);
-        if (_offset == _length || _tcPin && !Formatting)
-        {
-            _terminalCount |= _tcPin;
-            EndHostTransfer();
-        }
+        _terminalCount |= _tcPin;
         return value;
     }
 
@@ -24,45 +21,39 @@ public sealed partial class Upd765
         if (_phase != Upd765Phase.Writing || !_request) return;
         if (Scanning)
         {
-            var data = _buffer[_offset++];
             _readBytes[_unit]++;
-            if (data != C.ScanMask && value != C.ScanMask)
+            if (_dataLatch != C.ScanMask && value != C.ScanMask)
             {
-                _scanEqual &= data == value;
+                _scanEqual &= _dataLatch == value;
                 _scanSatisfied &= _command switch
                 {
-                    Upd765Command.ScanLowEqual => data <= value,
-                    Upd765Command.ScanHighEqual => data >= value,
-                    _ => data == value
+                    Upd765Command.ScanLowEqual => _dataLatch <= value,
+                    Upd765Command.ScanHighEqual => _dataLatch >= value,
+                    _ => _dataLatch == value
                 };
             }
         }
-        else _buffer[_offset++] = value;
+        else { _hostData = value; _hostDataReady = true; }
+        _hostOffset++;
         SetRequest(false);
-        if (_offset == _length || _tcPin && !Formatting)
-        {
-            _terminalCount |= _tcPin;
-            EndHostTransfer();
-        }
+        if (!Formatting) _terminalCount |= _tcPin;
     }
 
-    private void EndHostTransfer()
+    private void Overrun(bool finalByte = false)
     {
-        SetRequest(false);
-        _phase = Upd765Phase.DataEnd;
-        if (Formatting)
+        var original = _model == Upd765Model.Upd765A;
+        if (original && finalByte && !Scanning)
         {
-            var lead = (_parameters[0] & C.Mfm) == 0 ? C.FormatAfterIdFmBytes : C.FormatAfterIdMfmBytes;
-            var dataLength = C.MinimumSectorBytes << _parameters[C.FormatSizeParameter];
-            _delay = Math.Max(1, _delay) + (lead + dataLength + C.CrcBytes - 1) * ByteTicks;
+            _stickyDrq = !_drives.NonDma && !_dmaSuppressed;
+            SetRequest(false);
             return;
         }
-        _delay = Math.Max(1, _delay) + (_buffer.Length - _offset + C.CrcBytes - 1) * ByteTicks;
+        _stickyDrq = original && !_drives.NonDma && !_dmaSuppressed;
+        FinishData(C.Overrun);
     }
 
     private void FinishSector()
     {
-        if (Formatting) { FinishFormatSector(); return; }
         if (_command == Upd765Command.ReadTrack)
         {
             if (_dataError) { _trackStatus1 |= C.DataError; _trackStatus2 |= C.DataFieldError; }
@@ -70,29 +61,14 @@ public sealed partial class Upd765
             _record++;
             if (_terminalCount || _trackFields >= _parameters[C.EndParameter])
                 FinishData((byte)(_trackStatus1 | (_terminalCount ? 0 : C.EndOfCylinder)), _trackStatus2);
-            else SearchSector();
+            else SearchSector(NextSearchGapBytes);
             return;
-        }
-        if (WriteCommand)
-        {
-            try
-            {
-                if (_image!.IsReadOnly || (_statusPins(_unit) & C.WriteProtectedPin) != 0)
-                { FinishData(C.WriteProtected); return; }
-                _image.WriteSector(_recordIndex, _buffer, _command == Upd765Command.WriteDeleted);
-                _writtenBytes[_unit] += _buffer.Length;
-            }
-            catch (Exception error) when (MediaFailure(error)) { FinishData(C.NoData); return; }
         }
         if (_dataError) { FinishData(C.DataError, (byte)(C.DataFieldError | (_controlMark ? C.ControlMark : 0))); return; }
         if (_controlMark) { FinishData(detail: C.ControlMark); return; }
         if (Scanning)
         {
-            if (_scanSatisfied)
-            {
-                FinishData(detail: _scanEqual ? C.ScanEqualHit : (byte)0);
-                return;
-            }
+            if (_scanSatisfied) { FinishData(detail: _scanEqual ? C.ScanEqualHit : (byte)0); return; }
             if (_terminalCount) { FinishData(detail: C.ScanNotSatisfied); return; }
             if (_record >= _parameters[C.EndParameter])
             {
@@ -101,29 +77,30 @@ public sealed partial class Upd765
                 else { FinishData(C.EndOfCylinder, C.ScanNotSatisfied); return; }
             }
             else _record += _parameters[C.LengthParameter];
-            SearchSector();
+            SearchSector(NextSearchGapBytes);
             return;
         }
         var more = AdvanceSectorAddress();
         if (_terminalCount) FinishData();
         else if (!more) FinishData(C.EndOfCylinder);
-        else SearchSector();
+        else SearchSector(NextSearchGapBytes);
     }
+
+    private int NextSearchGapBytes => Math.Max(0,
+        _parameters[C.GapParameter] - (WriteCommand ? C.WriteTailBytes : 0));
 
     private bool AdvanceSectorAddress()
     {
         var end = _record == _parameters[C.EndParameter];
-        var nextSide = end && (_parameters[0] & C.MultiTrack) != 0 && _head == 0;
+        var multi = (_parameters[0] & C.MultiTrack) != 0;
+        var nextSide = end && multi && _head == 0;
         if (!end) _record++;
         else
         {
-            _record = 1;
-            if (nextSide) { _head = 1; _logicalHead = 1; }
-            else
-            {
-                _cylinder++;
-                if ((_parameters[0] & C.MultiTrack) != 0) _logicalHead = 0;
-            }
+            _record = C.FirstSectorNumber;
+            if (multi) _logicalHead ^= C.LowBit;
+            if (nextSide) _head = 1;
+            else _cylinder++;
         }
         return !end || nextSide;
     }

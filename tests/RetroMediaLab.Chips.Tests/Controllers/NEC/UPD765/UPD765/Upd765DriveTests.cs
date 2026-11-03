@@ -4,6 +4,28 @@ namespace RetroMediaLab.Chips.Tests.Controllers.NEC.UPD765.UPD765;
 public sealed class Upd765DriveTests
 {
     [Theory]
+    [InlineData(8000000, 0xb3, 0x0a, 5, 48, 10)]
+    [InlineData(4000000, 0xb3, 0x0a, 10, 96, 20)]
+    [InlineData(8000000, 0xf0, 0x00, 1, 256, 256)]
+    [InlineData(4000000, 0x00, 0x00, 32, 512, 512)]
+    public void ResetPreservesAllThreeSpecifyTimingParameters(int clock, byte rate, byte load,
+        int stepTicks, int unloadTicks, int loadTicks)
+    {
+        var pins = new Pins();
+        var control = pins.Control(clock);
+        control.Specify(rate, load);
+        control.Reset();
+        Assert.Equal(unloadTicks, control.HeadUnloadTicks);
+        Assert.Equal(loadTicks, control.HeadLoadTicks);
+        control.Seek(0, 1);
+        control.Advance(stepTicks - 1);
+        Assert.Empty(pins.Steps);
+        control.Advance(1);
+        Assert.Single(pins.Steps);
+        Assert.Equal(1, pins.Position[0]);
+    }
+
+    [Theory]
     [InlineData(8000000, 1)]
     [InlineData(4000000, 2)]
     public void SpecifyStepRateUsesTheControllerClockAndBoardClock(int controllerClock, int stepTicks)
@@ -57,7 +79,7 @@ public sealed class Upd765DriveTests
         control.Specify(0xf1, 2);
         control.Seek(4, 5); // Head 1, unit 0.
         control.Seek(1, 2);
-        control.Advance(2);
+        control.Advance(3);
         Assert.Equal(3, control.BusyMask);
         Assert.True(control.Irq);
         Assert.True(control.TrySenseInterrupt(out var first, out var firstCylinder));
@@ -142,13 +164,16 @@ public sealed class Upd765DriveTests
         var pins = new Pins();
         var control = pins.Control();
         control.Specify(0xf1, 2);
-        Assert.Equal(0x3d, control.SenseDriveStatus(5));
+        byte status = 0;
+        control.DriveStatusCompleted = value => status = value;
+        control.SenseDriveStatus(5); control.Advance(1);
+        Assert.Equal(0x3d, status);
         pins.Ready[1] = false;
-        control.Advance(1);
+        control.Advance(2); // At 1 kHz, two owner ticks cover the complete 1.024 ms scan period.
         Assert.True(control.TrySenseInterrupt(out var absent, out _));
         Assert.Equal(0xc9, absent);
         pins.Ready[1] = true;
-        control.Advance(1);
+        control.Advance(2); // At 1 kHz, two owner ticks cover the complete 1.024 ms scan period.
         Assert.True(control.TrySenseInterrupt(out var present, out _));
         Assert.Equal(0xc1, present);
         Assert.Equal(0, control.BusyMask);
@@ -185,6 +210,118 @@ public sealed class Upd765DriveTests
         Assert.Equal(0, control.BusyMask);
         Assert.False(control.Irq);
         Assert.False(control.NonDma);
+    }
+
+    [Theory]
+    [InlineData(8_000_000, 8_000_000)]
+    [InlineData(8_000_000, 4_000_000)]
+    [InlineData(1_000_000, 8_000_000)]
+    [InlineData(3_000_001, 8_000_000)]
+    public void ReadyChangesAreSampledAtTheControllerClockBoundary(int boardClock, int chipClock)
+    {
+        var ready = true;
+        var control = new Upd765DriveControl(_ => ready ? (byte)0x20 : (byte)0,
+            (_, _) => { }, boardClock, chipClock);
+        control.Specify(0xf1, 2);
+        ready = false;
+        var sample = ((long)boardClock * 8192 + chipClock - 1) / chipClock;
+        var firstSample = ((long)boardClock * (8192 - 360) + chipClock - 1) / chipClock;
+        var start = ((long)boardClock * (8192 - 364) + chipClock - 1) / chipClock;
+        Assert.Equal(start, control.NextEventTicks);
+        control.Advance((int)firstSample - 1);
+        Assert.False(control.Irq);
+        control.Advance((int)(sample - firstSample + 1));
+        Assert.True(control.Irq);
+        for (var unit = 0; unit < 4; unit++)
+        {
+            Assert.True(control.TrySenseInterrupt(out var status, out var cylinder));
+            Assert.Equal(0xc8 | unit, status);
+            Assert.Equal(0, cylinder);
+        }
+        Assert.False(control.Irq);
+    }
+
+    [Fact]
+    public void AReadyPulseBetweenSamplesDoesNotCreateAPolledInterrupt()
+    {
+        var ready = true;
+        var control = new Upd765DriveControl(_ => ready ? (byte)0x20 : (byte)0,
+            (_, _) => { });
+        control.Specify(0xf1, 2);
+        ready = false;
+        control.Advance(4096);
+        ready = true;
+        control.Advance(4096);
+        Assert.False(control.Irq);
+    }
+
+    [Theory]
+    [InlineData(8_000_000)]
+    [InlineData(3_000_001)]
+    [InlineData(1000)]
+    [InlineData(1)]
+    public void PollingKeepsTheFractionAcrossManyPeriods(int boardClock)
+    {
+        var batchedSamples = new List<byte>();
+        var steppedSamples = new List<byte>();
+        var batched = new Upd765DriveControl(unit => { batchedSamples.Add((byte)unit); return 0x20; },
+            (_, _) => { }, boardClock);
+        var stepped = new Upd765DriveControl(unit => { steppedSamples.Add((byte)unit); return 0x20; },
+            (_, _) => { }, boardClock);
+        batched.Specify(0xf1, 2);
+        stepped.Specify(0xf1, 2);
+        batchedSamples.Clear();
+        steppedSamples.Clear();
+        var duration = Math.Max(1, (int)((long)boardClock * 8192 * 12 / 8_000_000));
+        batched.Advance(duration);
+        for (var index = 0; index < duration; index++) stepped.Advance(1);
+        Assert.Equal(steppedSamples, batchedSamples);
+        Assert.Equal(stepped.NextEventTicks, batched.NextEventTicks);
+        Assert.InRange(batched.NextEventTicks, 1, long.MaxValue);
+    }
+
+    [Fact]
+    public void ResetReleaseReportsOnlyTheReadyDrivesOnceWithoutSpecify()
+    {
+        var control = new Upd765DriveControl(unit => unit is 1 or 3 ? (byte)0x20 : (byte)0,
+            (_, _) => { });
+        control.ReleaseReset();
+        control.Advance(7951);
+        Assert.False(control.Irq);
+        control.Advance(241);
+        Assert.True(control.TrySenseInterrupt(out var first, out _));
+        Assert.Equal(0xc1, first);
+        Assert.True(control.TrySenseInterrupt(out var second, out _));
+        Assert.Equal(0xc3, second);
+        control.Advance(81920);
+        Assert.False(control.Irq);
+        Assert.False(control.TrySenseInterrupt(out _, out _));
+    }
+
+    [Fact]
+    public void ResetCancelsTheDeferredReadyReport()
+    {
+        var control = new Upd765DriveControl(_ => 0x20, (_, _) => { });
+        control.ReleaseReset();
+        control.Advance(8191);
+        control.Reset();
+        control.Advance(81920);
+        Assert.False(control.Irq);
+    }
+
+    [Fact]
+    public void ResetInsideAStepCallbackCannotResumeTheCancelledSeek()
+    {
+        Upd765DriveControl? control = null;
+        var steps = 0;
+        control = new(_ => 0x20, (_, _) => { steps++; control!.Reset(); }, boardClockHz: 1000);
+        control.Specify(0xf1, 2);
+        control.Seek(0, 3);
+        control.Advance(100);
+        Assert.Equal(1, steps);
+        Assert.Equal(0, control.BusyMask);
+        Assert.Equal(0, control.PresentCylinder(0));
+        Assert.False(control.Irq);
     }
 
     private sealed class Pins

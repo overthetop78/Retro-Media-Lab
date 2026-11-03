@@ -1,3 +1,4 @@
+using C = RetroMediaLab.Chips.Controllers.NEC.UPD765.UPD765.Constants.Upd765Constants;
 using RetroMediaLab.Chips.Controllers.NEC.UPD765.UPD765.Enums;
 using RetroMediaLab.Chips.Controllers.NEC.UPD765.UPD765.Services;
 
@@ -11,8 +12,13 @@ internal static class Upd765TestCommands
         {
             Wait(device, () => (device.ReadMainStatus() & 0xc0) == 0x80);
             device.WriteFifo(value);
-            Event(device);
+            device.Advance(C.RegisterClocks);
         }
+        Wait(device, () =>
+        {
+            var status = device.ReadMainStatus();
+            return device.Active || status == 0 || (status & C.RequestForMaster) != 0;
+        });
     }
 
     internal static byte[] Result(Upd765 device, int count = 7)
