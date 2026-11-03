@@ -11,6 +11,8 @@ public static class TrackEncodingAttributeKeys
     public const string TracksPerSide = "tracksPerSide";
     /// <summary>Active la disposition physique FM complète, limitée à une révolution.</summary>
     public const string FmPhysicalLayout = "fmPhysicalLayout";
+    /// <summary>Active la disposition physique MFM complète, limitée à une révolution.</summary>
+    public const string MfmPhysicalLayout = "mfmPhysicalLayout";
     /// <summary>Retourne la clé technique du tag portant l'index indiqué.</summary>
     /// <param name="index">Index du tag.</param>
     /// <returns>Clé technique correspondante.</returns>

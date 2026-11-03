@@ -1,155 +1,191 @@
 using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums;
 using Phase = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Phase;
-using System.IO;
 using C = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Constants.Wd1770Constants;
+
 namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 
-/// <summary>WD1770 : protocole de registres et transferts cadencés sur les secteurs du SDK.</summary>
-/// <remarks>La carte possède la sélection du lecteur et la ligne NMI ; le cœur possède les images.
-/// Le composant ne crée ni fichier ni thread. Chaque Tick représente un cycle de son horloge d'entrée.</remarks>
-public sealed partial class Wd1770
+/// <summary>Contrôleur physique WD1770/1772 : registres, séquenceur et broches, sans image ni mécanique de lecteur.</summary>
+public sealed partial class Wd1770 : Interfaces.IWd1770
 {
-    private readonly Func<int, IDiskImage?> _disk;
+    private readonly Wd1770Model _model;
     private readonly int _clock;
-    private readonly int[] _physicalTracks;
-    private readonly long[] _seekSteps;
-    private readonly long[] _readBytes;
-    private readonly long[] _writtenBytes;
     private readonly IReadOnlyList<int> _stepMilliseconds;
-    private int _drive;
-    public long SeekSteps(int drive) => _seekSteps[drive];
-    public long ReadBytes(int drive) => _readBytes[drive];
-    public long WrittenBytes(int drive) => _writtenBytes[drive];
-    private byte _command, _track, _sector = 1, _data, _errors;
-    private int _delay, _offset, _targetTrack, _motorTicks, _rotation, _idIndex, _direction = 1;
-    private byte[] _buffer = [];
-    private bool _drq, _irq, _typeOne, _crcError, _forceIndex, _forceReady, _forceNotReady, _wasReady;
+    private readonly Wd1770ReadChannel _reader = new();
+    private readonly Wd1770WriteChannel _writer = new();
+    private readonly byte[] _id = new byte[C.IdBytes];
+    private byte _command;
+    private byte _track;
+    private byte _sector;
+    private byte _data;
+    private byte _errors;
+    private byte _seekTarget;
+    private byte _writeLatch;
+    private bool _drq;
+    private bool _irq;
+    private bool _typeOne;
+    private bool _forceIndex;
+    private bool _forceImmediate;
+    private bool _index;
+    private bool _trackZero;
+    private bool _writeProtected;
+    private bool _readData;
+    private bool _reset;
+    private bool _motor;
+    private bool _spinComplete;
+    private bool _step;
+    private bool _direction;
+    private bool _verify;
+    private bool _writeLatchFull;
+    private bool _formatCrc;
+    private bool _formatCrcRequested;
+    private int _timer;
+    private int _motorIndexes;
+    private int _idleIndexes;
+    private int _spinIndexes;
+    private int _searchIndexes;
+    private int _restoreSteps;
+    private int _idOffset;
+    private int _remaining;
+    private int _searchBytes;
+    private int _writeRun;
+    private int _writeGapBytes;
+    private ushort _crc;
     private Phase _phase;
-    public int Drive
-    {
-        get => _drive;
-        set
-        {
-            ArgumentOutOfRangeException.ThrowIfNegative(value);
-            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, _physicalTracks.Length);
-            _drive = value;
-        }
-    }
-    public int Side { get; set; }
-    public bool Selected { get; set; } = true;
-    public bool DoubleDensity { get; set; } = true;
-    public int MechanicalSpeedPercent { get; set; } = 100;
+
+    public int ClockFrequency => _clock;
+    public ulong HalfClocks => _writer.HalfClocks;
+    public long StepPulses { get; private set; }
+    public long DataBytesRead { get; private set; }
+    public long DataBytesWritten { get; private set; }
     public bool Irq => _irq;
     public bool Drq => _drq;
     public bool Nmi => _irq || _drq;
-    public bool Motor => _motorTicks > 0;
+    public bool Motor => _motor;
+    public bool Step => _step;
+    public bool Direction => _direction;
+    public bool WriteGate => _writer.Gate;
+    public bool WriteData => _writer.WriteData;
     public bool Active => _phase != Phase.Idle;
-    public bool Writing => _phase is Phase.WriteSector or Phase.WriteTrack;
-    public bool Reading => _phase is Phase.ReadSector or Phase.ReadAddress or Phase.ReadTrack;
-    private IDiskImage? Image => Selected ? _disk(Drive) : null;
-    private int ByteTicks => Math.Max(1, _clock / (DoubleDensity ? C.DoubleDensityBytesPerSecond : C.SingleDensityBytesPerSecond));
-    private int RevolutionTicks => _clock / C.RevolutionsPerSecond;
-
-    public Wd1770(Func<int, IDiskImage?> disk, int ticksPerSecond = C.CpuClock,
-        Wd1770Model model = Wd1770Model.Wd1770, int driveCount = C.DefaultDriveCount)
+    private bool CommandWrites => (_command & C.CommandGroupMask) == C.WriteSectorCommand
+        || (_command & C.CommandMask) == C.WriteTrackCommand;
+    public bool Writing => Active && CommandWrites;
+    public bool Reading => Active && !_typeOne && !CommandWrites;
+    public bool DoubleDensity
     {
-        ArgumentNullException.ThrowIfNull(disk); ArgumentOutOfRangeException.ThrowIfLessThan(ticksPerSecond, C.DoubleDensityBytesPerSecond);
-        ArgumentOutOfRangeException.ThrowIfLessThan(driveCount, 1);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(driveCount, C.MaximumDriveCount);
+        get => _reader.DoubleDensity;
+        set { _reader.DoubleDensity = value; _writer.DoubleDensity = value; }
+    }
+    public event Action<ulong, bool>? WriteDataChanged;
+    public event Action? DriveSignalsChanged;
+    private int ByteClocks => (DoubleDensity ? C.MfmCellClocks : C.FmCellClocks) * C.CellsPerWord;
+    private int CellClocks => DoubleDensity ? C.MfmCellClocks : C.FmCellClocks;
+
+    public Wd1770(Wd1770Model model = Wd1770Model.Wd1770, int clockFrequency = C.SiliconClock)
+    {
         if (!Enum.IsDefined(model)) throw new ArgumentOutOfRangeException(nameof(model));
-        _disk = disk;
-        _clock = ticksPerSecond;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(clockFrequency);
+        _model = model;
+        _clock = clockFrequency;
         _stepMilliseconds = model == Wd1770Model.Wd1772 ? C.Wd1772StepMilliseconds : C.StepMilliseconds;
-        _physicalTracks = new int[driveCount];
-        _seekSteps = new long[driveCount];
-        _readBytes = new long[driveCount];
-        _writtenBytes = new long[driveCount];
+        _reader.ByteReceived += ReceiveByte;
+        _writer.WriteDataChanged += (time, high) => WriteDataChanged?.Invoke(time, high);
         Reset();
     }
 
-    /// <summary>Réinitialise l'électronique ; la position mécanique des têtes et les images restent en place.</summary>
     public void Reset()
     {
-        _command = _track = _data = _errors = 0; _sector = 1;
-        _phase = Phase.Idle; _buffer = []; _delay = _offset = _motorTicks = _rotation = _idIndex = 0;
-        _drq = _irq = _crcError = _forceIndex = _forceReady = _forceNotReady = false; _typeOne = true; _wasReady = Image is not null;
+        _command = _track = _data = _errors = 0;
+        _sector = C.InitialSector;
+        _phase = Phase.Idle;
+        _timer = 0;
+        _drq = _irq = _forceIndex = _forceImmediate = _step = _direction = false;
+        _motor = _spinComplete = _verify = _writeLatchFull = false;
+        _typeOne = true;
+        _motorIndexes = _idleIndexes = _spinIndexes = _searchIndexes = 0;
+        _reader.Reset();
+        _writer.Reset();
+        ResetBus();
+        DriveSignalsChanged?.Invoke();
     }
 
-    public byte Read(int register)
+    /// <summary>Niveaux normalisés actifs des entrées du lecteur ; CLK est avancé par Tick/Advance.</summary>
+    public void SetReadData(bool active) => _readData = active;
+    public void SetTrackZero(bool active) => _trackZero = active;
+    public void SetWriteProtected(bool active) => _writeProtected = active;
+    public void SetReset(bool active)
     {
-        switch (register & 3)
-        {
-            case 0:
-                _irq = false;
-                var status = (byte)(_errors | (Active ? C.Busy : 0) | (Motor ? C.Motor : 0));
-                if (_typeOne)
-                {
-                    if (_physicalTracks[Drive] == 0) status |= 4;
-                    if (Motor && _rotation < _clock / 250) status |= 2;
-                    if (Motor) status |= 0x20;
-                    if (Image?.IsReadOnly == true) status |= C.WriteProtected;
-                }
-                else if (_drq) status |= C.DataRequest;
-                return status;
-            case 1: return _track;
-            case 2: return _sector;
-            default: if (_drq && Reading) _readBytes[Drive]++; _drq = false; return _data;
-        }
+        if (active && !_reset) Reset();
+        _reset = active;
     }
-
-    public void Write(int register, byte value)
+    public void SetIndex(bool active)
     {
-        switch (register & 3)
+        var rising = active && !_index;
+        _index = active;
+        if (!rising || _reset) return;
+        if (_forceIndex) _irq = true;
+        if (_motor && ++_motorIndexes >= C.SpinUpIndexes) _spinComplete = true;
+        if (_phase == Phase.Idle)
         {
-            case 0: Command(value); break;
-            case 1: if (!Active) _track = value; break;
-            case 2: if (!Active) _sector = value; break;
-            case 3:
-                _data = value;
-                if (_drq && Writing && _offset < _buffer.Length) { _buffer[_offset++] = value; _writtenBytes[Drive]++; }
-                _drq = false; break;
-        }
-    }
-
-    /// <summary>Avance le moteur, les délais mécaniques et la fenêtre de service des octets DRQ.</summary>
-    public void Tick() => Advance(1);
-
-    /// <summary>Saute les intervalles sans événement tout en conservant les échéances DRQ, moteur et index.</summary>
-    public void Advance(int ticks)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(ticks);
-        while (ticks > 0)
-        {
-            var elapsed = Active ? Math.Min(ticks, Math.Max(1, _delay)) : ticks;
-            if (_forceIndex) elapsed = Math.Min(elapsed, RevolutionTicks - _rotation);
-            _motorTicks = Math.Max(0, _motorTicks - elapsed);
-            _rotation = (int)(((long)_rotation + elapsed) % RevolutionTicks);
-            var ready = Image is not null;
-            if (_forceIndex && _rotation == 0 || _forceReady && ready && !_wasReady || _forceNotReady && !ready && _wasReady) _irq = true;
-            _wasReady = ready;
-            ticks -= elapsed;
-            if (!Active) continue;
-            _delay -= elapsed;
-            if (_delay > 0) continue;
-            if (_phase == Phase.Positioning) { Positioned(); continue; }
-            if (_drq)
+            if (_motor && ++_idleIndexes >= C.MotorOffIndexes)
             {
-                _errors |= C.LostData;
-                if (Writing && _offset < _buffer.Length) _buffer[_offset++] = 0;
+                _motor = false;
+                DriveSignalsChanged?.Invoke();
             }
-            if (_offset == _buffer.Length) { TransferCompleted(); continue; }
-            if (!Writing) _data = _buffer[_offset++];
-            _drq = true;
-            _delay = ByteTicks;
-            _motorTicks = RevolutionTicks * 10;
+            return;
         }
+        if (_phase == Phase.SpinUp)
+        {
+            if (++_spinIndexes == C.SpinUpIndexes) Dispatch();
+            return;
+        }
+        if (_phase == Phase.WaitReadTrack) { _reader.Reset(readTrack: true); _phase = Phase.ReadTrack; return; }
+        if (_phase == Phase.ReadTrack) { Complete(); return; }
+        if (_phase == Phase.WaitWriteTrack)
+        {
+            _writer.SetGate(true);
+            _phase = Phase.WriteTrack;
+            QueueWriteWord();
+            DriveSignalsChanged?.Invoke();
+            return;
+        }
+        if (_phase == Phase.WriteTrack) { Complete(); return; }
+        if (_phase is Phase.SearchId or Phase.ReadId or Phase.SearchData)
+            if (++_searchIndexes >= (_verify ? C.VerifyIndexes : C.SearchIndexes)) Complete(C.NotFound);
     }
 
-    private int MechanicalDelay(int ticks) => MechanicalSpeedPercent == 0 ? 0 : checked((int)((long)ticks * 100 / MechanicalSpeedPercent));
+    public void Tick()
+    {
+        _writer.Tick();
+        if (_reset) return;
+        if (_phase == Phase.WriteTrack && _formatCrc && !_formatCrcRequested
+            && _writer.RemainingCells <= C.CellsPerWord)
+        {
+            _formatCrcRequested = true;
+            RequestWriteData();
+        }
+        if (_timer > 0 && --_timer == 0) TimerFinished();
+        if (_phase is Phase.SearchId or Phase.ReadId or Phase.SearchData or Phase.ReadData or Phase.ReadDataCrc or Phase.ReadTrack)
+            _reader.Tick(_readData);
+        if (_timer == 0 && _writer.CanLoad && _phase is Phase.WriteLead or Phase.WriteMark or Phase.WriteData
+            or Phase.WriteCrc or Phase.WriteTail or Phase.WriteFinish or Phase.WriteTrack)
+            QueueWriteWord();
+    }
+    public void Advance(int clocks)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(clocks);
+        if (_phase == Phase.Idle) { _writer.AdvanceIdle(clocks); return; }
+        for (var clock = 0; clock < clocks; clock++) Tick();
+    }
+    private int Milliseconds(int value) => checked((int)((long)C.SiliconClock * value / C.MillisecondsPerSecond));
     private void Complete(byte errors = 0)
     {
-        _errors |= errors; _phase = Phase.Idle; _drq = false; _irq = true; _buffer = [];
-        _motorTicks = Math.Max(_motorTicks, RevolutionTicks * 9);
+        _errors |= errors;
+        _phase = Phase.Idle;
+        _timer = 0;
+        _step = _drq = false;
+        _irq = true;
+        _idleIndexes = 0;
+        _writer.SetGate(false);
+        DriveSignalsChanged?.Invoke();
     }
-    private static bool MediaFailure(Exception error) => error is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException;
 }

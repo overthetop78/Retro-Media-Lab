@@ -44,6 +44,7 @@ internal sealed partial class ArchimedesMachine
     {
         ValidateDrive(index);
         _disks[index] = image;
+        _floppy.MediaChanged(index);
         RefreshControlInputs();
     }
 
@@ -72,6 +73,7 @@ internal sealed partial class ArchimedesMachine
     private void WriteFloppyLatchA(byte value)
     {
         _floppyLatchA = value;
+        _floppy.MotorOverride = (value & C.FloppyMotor) == 0;
         _floppy.Selected = false;
         for (var drive = 0; drive < C.FloppyDrives; drive++)
         {
@@ -88,7 +90,7 @@ internal sealed partial class ArchimedesMachine
     {
         _floppyLatchB = value;
         _floppy.DoubleDensity = (value & C.FloppyDensity) == 0;
-        if ((value & C.FloppyReset) == 0) _floppy.Reset();
+        _floppy.SetReset((value & C.FloppyReset) == 0);
         RefreshControlInputs();
     }
 }

@@ -2,6 +2,8 @@ using RetroMediaLab.MediaEngine.Images.Visualization;
 
 using RetroMediaLab.MediaEngine.Images.Models.Sectors;
 using RetroMediaLab.MediaEngine.Enums;
+using RetroMediaLab.MediaEngine.Constants;
+using RetroMediaLab.MediaEngine.Images.Reading.Decoding.Definitions;
 
 namespace RetroMediaLab.MediaEngine.Images.Writing.Encoding;
 
@@ -39,6 +41,26 @@ public sealed class SectorImageTrackEncoder
             .OrderBy(item => item.Block.RecordedTrackOrder ?? item.Address.Number).ToArray();
         var sectors = policy.CreateTrackSectors(image, items);
         return encoders.Encode(encoderId, new(cylinder, head, sectors, attributes, bitCellTicks, indexTimeTicks));
+    }
+
+    /// <summary>Produit les transitions physiques dans le codage du média ; le réglage du contrôleur ne le transforme pas.</summary>
+    /// <remarks>Contrairement à Encode, toutes les durées de cette opération sont en nanosecondes.</remarks>
+    public EncodedTrack EncodePhysicalTrack(SectorImage image, int cylinder, int head, uint indexTimeNanoseconds)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        var policy = policies.Resolve(image) ?? throw SectorImageVisualizationExceptions.MissingPolicy(image.FormatId);
+        var encoding = policy.EncoderId(image);
+        var count = image.AvailableBlocks.Count(block =>
+        {
+            var address = policy.VisualAddress(image, block.Address);
+            return address.Cylinder == cylinder && address.Head == head;
+        });
+        var supplied = policy.TrackAttributes(image, count);
+        var attributes = supplied is null ? new Dictionary<string, int>() : new Dictionary<string, int>(supplied);
+        if (encoding == FluxCodecIds.IsoFm) attributes[TrackEncodingAttributeKeys.FmPhysicalLayout] = IsoFmFormat.PhysicalLayoutEnabled;
+        else if (encoding == FluxCodecIds.IsoMfm) attributes[TrackEncodingAttributeKeys.MfmPhysicalLayout] = IsoMfmFormat.PhysicalLayoutEnabled;
+        return EncodeTrack(image, cylinder, head, encoding, attributes,
+            checked(policy.BitCellTicks(image, cylinder) * EncodedTrackTiming.TickNanoseconds), indexTimeNanoseconds);
     }
 
     /// <summary>Encode toutes les pistes disponibles dans l'ordre cylindre puis face.</summary>

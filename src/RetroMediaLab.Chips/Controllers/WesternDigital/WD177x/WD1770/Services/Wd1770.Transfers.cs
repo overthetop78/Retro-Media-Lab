@@ -1,119 +1,202 @@
+using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums;
 using Phase = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Phase;
 using C = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Constants.Wd1770Constants;
 
 namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 
-/// <summary>Transfert des secteurs et représentation des marques, identifiants et CRC d'une piste régulière.</summary>
 public sealed partial class Wd1770
 {
-    private void TransferCompleted()
+    private ushort FieldCrc(byte mark) => Wd1770Crc.Add(DoubleDensity ? C.MfmCrcInitial : C.CrcInitial, mark);
+    private void ReceiveData(byte value)
     {
+        if (_drq) _errors |= C.LostData;
+        _data = value;
+        _drq = true;
+    }
+    private void ReceiveByte(byte value, Wd1770ReadWordKind kind, bool validClocks)
+    {
+        var mark = kind == Wd1770ReadWordKind.AddressMark;
+        if (_phase == Phase.ReadTrack) { ReceiveData(value); return; }
+        if (_phase == Phase.SearchId)
+        {
+            if (!mark || value != C.IdAddressMark) return;
+            _idOffset = 0;
+            _crc = FieldCrc(value);
+            _phase = Phase.ReadId;
+            return;
+        }
+        if (_phase == Phase.ReadId)
+        {
+            if (_idOffset < C.IdBytes) _id[_idOffset] = value;
+            _crc = Wd1770Crc.Add(_crc, value);
+            if (!_verify && (_command & C.CommandMask) == C.ReadAddressCommand) ReceiveData(value);
+            if (++_idOffset < C.IdBytes + C.CrcBytes) return;
+            if (!_verify && (_command & C.CommandMask) == C.ReadAddressCommand)
+            {
+                _sector = _id[C.IdCylinder];
+                if (_crc != 0) _errors |= C.CrcError;
+                _phase = Phase.AddressTail;
+                _timer = ByteClocks;
+                return;
+            }
+            if (_id[C.IdCylinder] != _track || !_verify && _id[C.IdSector] != _sector)
+            { _phase = Phase.SearchId; return; }
+            if (_crc != 0)
+            {
+                if (_verify) Complete(C.CrcError | C.NotFound);
+                else { _errors |= C.CrcError; _phase = Phase.SearchId; }
+                return;
+            }
+            _errors &= unchecked((byte)~C.CrcError);
+            if (_verify) { Complete(); return; }
+            _remaining = C.SectorSizeBase << (_id[C.IdSize] & C.SectorSizeMask);
+            if (CommandWrites)
+            {
+                _phase = Phase.WriteGap;
+                _writeGapBytes = 0;
+                _timer = ByteClocks;
+            }
+            else
+            {
+                _phase = Phase.SearchData;
+                _searchBytes = DoubleDensity ? C.MfmDataSearchBytes : C.FmDataSearchBytes;
+            }
+            return;
+        }
+        if (_phase == Phase.SearchData)
+        {
+            if (mark && value is >= C.FirstDataAddressMark and <= C.LastDataAddressMark)
+            {
+                _crc = FieldCrc(value);
+                _errors = (byte)((_errors & ~C.RecordType) | ((value & C.DeletedMarkMask) == 0 ? C.RecordType : 0));
+                _phase = Phase.ReadData;
+            }
+            else if (--_searchBytes == 0) _phase = Phase.SearchId;
+            return;
+        }
+        if (_phase == Phase.ReadData)
+        {
+            ReceiveData(value);
+            _crc = Wd1770Crc.Add(_crc, value);
+            if (--_remaining != 0) return;
+            _phase = Phase.ReadDataCrc;
+            _remaining = C.CrcBytes;
+            return;
+        }
+        if (_phase != Phase.ReadDataCrc) return;
+        if (_drq) _errors |= C.LostData;
+        _crc = Wd1770Crc.Add(_crc, value);
+        if (--_remaining != 0) return;
+        if (_crc != 0) { Complete(C.CrcError); return; }
+        FinishSector();
+    }
+
+    private void FinishSector()
+    {
+        _writer.SetGate(false);
+        DriveSignalsChanged?.Invoke();
+        if ((_command & C.MultiSectorFlag) != 0)
+        {
+            _sector = unchecked((byte)(_sector + 1));
+            StartSearch();
+        }
+        else Complete();
+    }
+
+    private void RequestWriteData()
+    {
+        _writeLatchFull = false;
+        _drq = true;
+    }
+
+    private void AdvanceWriteGap()
+    {
+        _writeGapBytes++;
+        if (_writeGapBytes == C.InitialWriteRequestByte) RequestWriteData();
+        if (_writeGapBytes == C.InitialWriteDeadlineByte && !_writeLatchFull) { Complete(C.LostData); return; }
+        if (_writeGapBytes < (DoubleDensity ? C.MfmWriteGateByte : C.FmWriteGateByte))
+        { _timer = ByteClocks; return; }
+        _writer.SetGate(true);
+        _writeRun = DoubleDensity ? C.MfmLeadBytes : C.FmLeadBytes;
+        _phase = Phase.WriteLead;
+        QueueWriteWord();
+        DriveSignalsChanged?.Invoke();
+    }
+
+    private byte TakeWriteData()
+    {
+        if (!_writeLatchFull) { _errors |= C.LostData; return 0; }
+        var data = _writeLatch;
+        _writeLatchFull = false;
         _drq = false;
-        if (_phase == Phase.WriteTrack) { StoreTrack(); return; }
-        if (_phase == Phase.WriteSector)
-        {
-            try
-            {
-                var image = Image;
-                if (image?.FindSector(_physicalTracks[Drive], Side, _sector) is not { } index) { Complete(C.NotFound); return; }
-                image.WriteSector(index, _buffer);
-            }
-            catch (Exception error) when (MediaFailure(error)) { Complete(Image?.IsReadOnly == true ? C.WriteProtected : C.NotFound); return; }
-        }
-        if (_crcError) { Complete(C.CrcError); return; }
-        if (_phase is Phase.ReadSector or Phase.WriteSector && (_command & 0x10) != 0)
-        {
-            var write = _phase == Phase.WriteSector; _sector++; BeginSector(write); return;
-        }
-        Complete();
+        return data;
     }
 
-    private void BeginTrack(bool write)
+    private byte FormatLookAhead(byte value) => !DoubleDensity ? value : value switch
     {
-        if (write)
+        C.FormatA1 => C.SyncA1,
+        C.FormatC2 => C.SyncC2,
+        C.FormatCrc => (byte)(_writer.PredictCrc() >> C.BitsPerByte),
+        _ => value
+    };
+
+    private void QueueWriteWord()
+    {
+        switch (_phase)
         {
-            _buffer = new byte[(DoubleDensity ? C.DoubleDensityBytesPerSecond : C.SingleDensityBytesPerSecond) / C.RevolutionsPerSecond];
-            _phase = Phase.WriteTrack; _offset = 0; _delay = ByteTicks; return;
+            case Phase.WriteLead:
+                if (_writeRun-- > 0)
+                {
+                    _writer.TryLoadData(0);
+                    _writer.SetLookAhead(_writeRun == 0 && DoubleDensity ? C.SyncA1 : (byte)0);
+                    return;
+                }
+                _phase = Phase.WriteMark;
+                _writeRun = DoubleDensity ? C.MfmSyncWords : 0;
+                QueueWriteWord();
+                break;
+            case Phase.WriteMark:
+                if (_writeRun-- > 0)
+                {
+                    _writer.TryLoadFormat(C.FormatA1);
+                    _writer.SetLookAhead(C.SyncA1);
+                    return;
+                }
+                var mark = (_command & C.DeletedDataFlag) != 0 ? C.DeletedDataMark : C.DataAddressMark;
+                _writer.TryLoadFormat(mark);
+                _writer.SetLookAhead(_writeLatchFull ? _writeLatch : (byte)0);
+                _phase = Phase.WriteData;
+                break;
+            case Phase.WriteData:
+                if (_remaining-- > 0)
+                {
+                    _writer.TryLoadData(TakeWriteData());
+                    if (_remaining != 0) RequestWriteData();
+                    else _writer.SetLookAhead((byte)(_writer.PredictCrc() >> C.BitsPerByte));
+                    return;
+                }
+                _phase = Phase.WriteCrc;
+                QueueWriteWord();
+                break;
+            case Phase.WriteCrc:
+                _writer.TryLoadFormat(C.FormatCrc);
+                _writer.SetLookAhead(C.FmOrdinaryClock);
+                _phase = Phase.WriteTail;
+                break;
+            case Phase.WriteTail:
+                _writer.TryLoadData(C.FmOrdinaryClock);
+                _phase = Phase.WriteFinish;
+                break;
+            case Phase.WriteFinish:
+                _timer = CellClocks;
+                break;
+            case Phase.WriteTrack:
+                var value = TakeWriteData();
+                _writer.TryLoadFormat(value);
+                _formatCrc = value == C.FormatCrc;
+                _formatCrcRequested = false;
+                if (!_formatCrc) RequestWriteData();
+                break;
         }
-        var bytes = new List<byte>(); var image = Image!;
-        bytes.AddRange(Enumerable.Repeat((byte)(DoubleDensity ? 0x4e : 0xff), 40));
-        try
-        {
-            foreach (var sector in TrackSectors(image))
-            {
-                var code = SizeCode(sector.Data.Length);
-                if (code < 0) { Complete(C.NotFound); return; }
-                AddRecord(bytes, 0xfe, [(byte)sector.Cylinder, (byte)sector.Head, (byte)sector.Number, (byte)code]);
-                bytes.AddRange(Enumerable.Repeat((byte)(DoubleDensity ? 0x4e : 0xff), DoubleDensity ? 22 : 11));
-                AddRecord(bytes, 0xfb, sector.Data.ToArray(), sector.IntegrityValid == false);
-                bytes.AddRange(Enumerable.Repeat((byte)(DoubleDensity ? 0x4e : 0xff), DoubleDensity ? 24 : 10));
-            }
-        }
-        catch (Exception error) when (MediaFailure(error)) { Complete(C.NotFound); return; }
-        var count = (DoubleDensity ? C.DoubleDensityBytesPerSecond : C.SingleDensityBytesPerSecond) / C.RevolutionsPerSecond;
-        if (bytes.Count > count) { Complete(C.NotFound); return; }
-        bytes.AddRange(Enumerable.Repeat((byte)(DoubleDensity ? 0x4e : 0xff), count - bytes.Count));
-        _buffer = bytes.ToArray(); _phase = Phase.ReadTrack; _offset = 0; _delay = ByteTicks;
-    }
-
-    private IEnumerable<DiskSector> TrackSectors(IDiskImage image)
-    {
-        for (var number = 0; number <= image.SectorsPerTrack; number++)
-            if (image.FindSector(_physicalTracks[Drive], Side, number) is { } index)
-                yield return image.ReadSectorAsync(index).GetAwaiter().GetResult();
-    }
-
-    private void AddRecord(List<byte> bytes, byte mark, byte[] data, bool badCrc = false)
-    {
-        bytes.AddRange(Enumerable.Repeat((byte)0, DoubleDensity ? 12 : 6));
-        var start = bytes.Count;
-        if (DoubleDensity) bytes.AddRange([0xa1, 0xa1, 0xa1]);
-        bytes.Add(mark); bytes.AddRange(data);
-        var crc = Crc(bytes.Skip(start));
-        if (badCrc) crc ^= 1;
-        bytes.Add((byte)(crc >> 8)); bytes.Add((byte)crc);
-    }
-
-    /// <summary>Applique les blocs de données dont les identifiants existent dans le conteneur sectoriel.</summary>
-    private void StoreTrack()
-    {
-        var image = Image;
-        if (image is null) { Complete(C.NotFound); return; }
-        if (image.IsReadOnly) { Complete(C.WriteProtected); return; }
-        var pending = new List<(long Index, byte[] Data)>();
-        int cylinder = -1, head = -1, number = -1, size = 0;
-        for (var offset = 0; offset < _buffer.Length; offset++)
-        {
-            if (_buffer[offset] == 0xfe && HasSync(offset) && offset + 4 < _buffer.Length)
-            {
-                cylinder = _buffer[++offset]; head = _buffer[++offset]; number = _buffer[++offset];
-                var code = _buffer[++offset]; size = code <= C.MaximumSectorSizeCode ? C.SectorSizeBase << code : 0;
-            }
-            else if (_buffer[offset] is 0xfb or 0xf8 && HasSync(offset) && size > 0)
-            {
-                if (_buffer[offset] == 0xf8 || cylinder != _physicalTracks[Drive] || head != Side || offset + size >= _buffer.Length || image.FindSector(cylinder, head, number) is not { } index) { Complete(C.NotFound); return; }
-                var data = _buffer.AsSpan(offset + 1, size).ToArray(); offset += size;
-                pending.Add((index, data)); size = 0;
-            }
-        }
-        if (pending.Count == 0) { Complete(C.NotFound); return; }
-        try { foreach (var sector in pending) image.WriteSector(sector.Index, sector.Data); }
-        catch (Exception error) when (MediaFailure(error)) { Complete(Image?.IsReadOnly == true ? C.WriteProtected : C.NotFound); return; }
-        Complete();
-    }
-
-    private bool HasSync(int offset) => offset >= 3 && (DoubleDensity
-        ? _buffer[offset - 1] is 0xa1 or 0xf5 && _buffer[offset - 2] is 0xa1 or 0xf5 && _buffer[offset - 3] is 0xa1 or 0xf5
-        : _buffer[offset - 1] == 0 && _buffer[offset - 2] == 0 && _buffer[offset - 3] == 0);
-
-    private static ushort Crc(IEnumerable<byte> bytes)
-    {
-        ushort value = 0xffff;
-        foreach (var item in bytes)
-        {
-            value ^= (ushort)(item << 8);
-            for (var bit = 0; bit < 8; bit++) value = (ushort)((value & 0x8000) != 0 ? value << 1 ^ 0x1021 : value << 1);
-        }
-        return value;
     }
 }

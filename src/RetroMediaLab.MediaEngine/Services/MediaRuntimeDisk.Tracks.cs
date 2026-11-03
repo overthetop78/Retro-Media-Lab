@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using RetroMediaLab.MediaEngine.Images.Models.Flux;
 using RetroMediaLab.MediaEngine.Images.Reading.Decoding;
 using RetroMediaLab.MediaEngine.Images.Reading.Decoding.Definitions;
@@ -16,7 +16,7 @@ internal sealed partial class MediaRuntimeDisk
     private const uint NanosecondsPerSecond = 1_000_000_000;
     private readonly Dictionary<(int Cylinder, int Head), MediaFluxTrackData> _writtenTracks = new();
     private readonly Dictionary<(int Cylinder, int Head), SectorBlock[]> _trackTemplates = new();
-    private readonly Dictionary<(int Cylinder, int Head), (uint Cell, Exception Error)> _trackProjectionErrors = new();
+    private readonly Dictionary<(int Cylinder, int Head), (uint Cell, bool Mfm, Exception Error)> _trackProjectionErrors = new();
 
     public MediaFluxTrackData ReadTrack(int cylinder, int head, string encodingId, uint bitCellNanoseconds,
         uint indexTimeNanoseconds, IReadOnlyDictionary<string, int>? attributes = null)
@@ -32,8 +32,28 @@ internal sealed partial class MediaRuntimeDisk
         var document = UpdatedDocument();
         if (document.Representation is not SectorMediaImageRepresentation representation)
             throw new NotSupportedException();
-        var track = new SectorImageTrackEncoder().EncodeTrack(representation.Image, cylinder, head,
-            encodingId, attributes, bitCellNanoseconds, indexTimeNanoseconds);
+        var track = new SectorImageTrackEncoder().EncodePhysicalTrack(representation.Image, cylinder, head,
+            indexTimeNanoseconds);
+        if (document.Metadata.ContainsKey(ImdMetadataKeys.Structure)
+            && ImdMetadataFunctions.Restore(representation.Image, document.Metadata)?.Tracks
+                .FirstOrDefault(item => item.Cylinder == cylinder && item.Head == head) is { } imdTrack)
+        {
+            var mfm = imdTrack.Mode >= ImdMode.Mfm500Kbps;
+            var rate = imdTrack.Mode switch
+            {
+                ImdMode.Fm500Kbps or ImdMode.Mfm500Kbps => ImdLayout.Rate500Kbps,
+                ImdMode.Fm300Kbps or ImdMode.Mfm300Kbps => ImdLayout.Rate300Kbps,
+                _ => ImdLayout.Rate250Kbps
+            };
+            var cell = checked((uint)(NanosecondsPerSecond / ((ulong)rate * (mfm ? (uint)IsoFmFormat.CellsPerDataBit : 1U))));
+            var physical = new Dictionary<string, int>
+            {
+                [mfm ? TrackEncodingAttributeKeys.MfmPhysicalLayout : TrackEncodingAttributeKeys.FmPhysicalLayout]
+                    = mfm ? IsoMfmFormat.PhysicalLayoutEnabled : IsoFmFormat.PhysicalLayoutEnabled
+            };
+            track = new SectorImageTrackEncoder().EncodeTrack(representation.Image, cylinder, head,
+                mfm ? IsoMfmFormat.CodecId : IsoFmFormat.CodecId, physical, cell, indexTimeNanoseconds);
+        }
         return new([new(indexTimeNanoseconds, track.Revolution.FluxIntervals)]);
     }
 
@@ -44,13 +64,16 @@ internal sealed partial class MediaRuntimeDisk
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (IsReadOnly) throw new UnauthorizedAccessException();
-        if (encodingId != IsoFmFormat.CodecId) throw new NotSupportedException(nameof(encodingId));
+        if (encodingId != IsoFmFormat.CodecId && encodingId != IsoMfmFormat.CodecId)
+            throw new NotSupportedException(nameof(encodingId));
+        var mfm = encodingId == IsoMfmFormat.CodecId;
         var source = ReadTrack(cylinder, head, encodingId, bitCellNanoseconds, indexTimeNanoseconds, attributes);
         var revolution = MediaFluxTrackDataFunctions.ReplaceWindow(source.Revolutions[0],
             startNanoseconds, durationNanoseconds, transitionOffsetsNanoseconds, includeEndingInstant);
         if (durationNanoseconds == 0) return;
-        var decoded = new IsoFmDecoder().Decode(new(revolution.IndexTimeNanoseconds,
-            revolution.FluxIntervalsNanoseconds), bitCellNanoseconds);
+        var flux = new FluxRevolution(revolution.IndexTimeNanoseconds, revolution.FluxIntervalsNanoseconds);
+        var decoded = mfm ? new IsoMfmDecoder().Decode(flux)
+            : new IsoFmDecoder().Decode(flux, bitCellNanoseconds);
         var fields = decoded.Sectors.Select((sector, index) => new MediaDiskSector(index,
             sector.Data?.ToArray() ?? [], sector.Cylinder, sector.Head, sector.Number, sector.IntegrityValid)
         {
@@ -66,7 +89,7 @@ internal sealed partial class MediaRuntimeDisk
         _documentChanged = true;
         try
         {
-            try { FormatTrack(cylinder, head, fields, checked((int)(NanosecondsPerSecond / bitCellNanoseconds)), mfm: false); }
+            try { FormatTrack(cylinder, head, fields, TrackDataRate(bitCellNanoseconds, mfm), mfm); }
             catch (Exception error) when (error is NotSupportedException or ArgumentException)
             {
                 // La piste physique reste utilisable ; sa projection en mémoire ne vaut pas autorisation
@@ -78,7 +101,7 @@ internal sealed partial class MediaRuntimeDisk
                     new SectorMediaImageRepresentation(projected), pending.Diagnostics, pending.Metadata);
                 _changes.Clear();
                 _dataMarks.Clear();
-                _trackProjectionErrors[(cylinder, head)] = (bitCellNanoseconds, error);
+                _trackProjectionErrors[(cylinder, head)] = (bitCellNanoseconds, mfm, error);
             }
         }
         finally { _writtenTracks[(cylinder, head)] = new([revolution]); }
@@ -105,7 +128,7 @@ internal sealed partial class MediaRuntimeDisk
                 }).ToArray();
             var raw = _writtenTracks.GetValueOrDefault(entry.Key);
             try { FormatTrack(entry.Key.Cylinder, entry.Key.Head, fields,
-                checked((int)(NanosecondsPerSecond / entry.Value.Cell)), mfm: false); }
+                TrackDataRate(entry.Value.Cell, entry.Value.Mfm), entry.Value.Mfm); }
             catch (Exception error) when (error is NotSupportedException or ArgumentException)
             { throw new NotSupportedException(nameof(WriteTrackWindow), error); }
             finally { if (raw is not null) _writtenTracks[entry.Key] = raw; }
@@ -113,6 +136,9 @@ internal sealed partial class MediaRuntimeDisk
     }
 
     private void InvalidateWrittenTrack(int cylinder, int head) => _writtenTracks.Remove((cylinder, head));
+
+    private static int TrackDataRate(uint cellNanoseconds, bool mfm) => checked((int)(
+        NanosecondsPerSecond / ((ulong)cellNanoseconds * (mfm ? (uint)IsoFmFormat.CellsPerDataBit : 1U))));
 
     public void FormatTrack(int cylinder, int head, IReadOnlyList<MediaDiskSector> sectors,
         int? dataRate = null, bool? mfm = null)

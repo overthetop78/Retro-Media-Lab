@@ -10,7 +10,6 @@ using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6551.Enums;
 using RetroMediaLab.Chips.Timers.Philips.PCF85xx.PCF8583.Services;
 using RetroMediaLab.Chips.Video.Acorn.Archimedes.VIDC.Services;
 using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums;
-using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.Archimedes.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
@@ -30,7 +29,7 @@ internal sealed partial class ArchimedesMachine : IArmBus, IAcornMachine
     private readonly ArchimedesKeyboard _keyboard = new();
     private readonly Pcf8583 _cmos;
     private readonly CpuArm26 _cpu;
-    private readonly Wd1770 _floppy;
+    private readonly Wd1770Drive _floppy;
     private readonly Mos6551? _serial;
     private readonly int _floppyDriveCount;
     private readonly Hd63463? _hardDisk;
@@ -68,7 +67,7 @@ internal sealed partial class ArchimedesMachine : IArmBus, IAcornMachine
         _stretchInternalCycles = memoryRevision == ArchimedesMemcRevision.Memc1 && processor == Arm26Model.Arm2;
         _memc = new ArchimedesMemc(ramBytes, rom);
         _cmos = new Pcf8583(C.IocClockHz, initialTime, initialRam: initialCmosRam);
-        _floppy = new Wd1770(index => _disks[index], C.ReferenceClockHz, Wd1770Model.Wd1772, C.FloppyDrives);
+        _floppy = new Wd1770Drive(index => _disks[index], C.ReferenceClockHz, Wd1770Model.Wd1772, C.FloppyDrives);
         _memc.SoundInterruptChanged = active => _ioc.SetIrqB(Ioc.SoundInterrupt, active);
         _vidc.FlybackChanged = _ioc.SetFlyback;
         _vidc.VideoFrameStarted = _memc.BeginVideoFrame;

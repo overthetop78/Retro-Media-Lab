@@ -1,4 +1,5 @@
-using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
+﻿using Controller = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services.Wd1770Drive;
+using Disk = RetroMediaLab.Tests.Emulation.Wd1770.MemoryTrackDisk;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
@@ -16,6 +17,30 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuWd1770Tests
 {
     [Theory]
+    [InlineData(1_000_000)]
+    [InlineData(3_000_001)]
+    [InlineData(8_000_000)]
+    [InlineData(16_000_000)]
+    public void ReaderKeepsItsSiliconClockWhenTheOwnerClockIsDifferent(int ownerClock)
+    {
+        using var disk = new Disk(0x55);
+        var controller = new Controller(_ => disk, ticksPerSecond: ownerClock);
+        controller.Write(2, 0);
+        controller.Write(0, 0x88);
+        var bytes = new List<byte>();
+        var ticks = 0;
+        for (; ticks < ownerClock / 2 && controller.Active; ticks++)
+        {
+            controller.Tick();
+            if (controller.Drq) bytes.Add(controller.Read(3));
+        }
+        Assert.False(controller.Active);
+        Assert.Equal(0, controller.Read(0) & 0x7c);
+        Assert.Equal(disk.Bytes(0, 0, 0), bytes);
+        Assert.Equal((ulong)((long)ticks * 8_000_000 / ownerClock) * 2, controller.Chip.HalfClocks);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void EventAdvanceMatchesIndividualTicksAcrossTransfersLostDataAndIndex(bool wd1772)
@@ -24,8 +49,8 @@ public sealed class AcornEmuWd1770Tests
         using var diskB = new Disk(25);
         var model = wd1772 ? RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1772
             : RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1770;
-        var cycle = new Wd1770(_ => diskA, model: model);
-        var events = new Wd1770(_ => diskB, model: model);
+        var cycle = new Controller(_ => diskA, model: model);
+        var events = new Controller(_ => diskB, model: model);
         foreach (byte command in new byte[] { 0x5a, 0x88, 0xa8, 0xd4, 0x08 })
         {
             cycle.Write(2, 0);
@@ -64,15 +89,22 @@ public sealed class AcornEmuWd1770Tests
     {
         var model = wd1772 ? RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1772
             : RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1770;
-        var controller = new Wd1770(_ => null, model: model);
-        controller.Write(0, (byte)(0x58 | rate));
-        for (var tick = 1; tick < milliseconds * 2000; tick++) controller.Tick();
-        Assert.True(controller.Active);
-        Assert.Equal(0, controller.SeekSteps(0));
-        controller.Tick();
-        Assert.False(controller.Active);
+        var controller = new Controller(_ => null, model: model);
+        controller.Write(3, 2);
+        controller.Write(0, (byte)(0x18 | rate));
+        for (var tick = 0; tick < 100 && controller.SeekSteps(0) == 0; tick++) controller.Tick();
         Assert.Equal(1, controller.SeekSteps(0));
-        Assert.Equal(1, controller.Read(1));
+        var interval = 0;
+        while (controller.SeekSteps(0) == 1 && interval <= milliseconds * 2000)
+        {
+            controller.Tick();
+            interval++;
+        }
+        Assert.Equal(milliseconds * 2000, interval);
+        Assert.Equal(2, controller.SeekSteps(0));
+        Assert.Equal(2, controller.Read(1));
+        controller.Advance(milliseconds * 2000);
+        Assert.False(controller.Active);
     }
 
     [Fact]
@@ -83,7 +115,7 @@ public sealed class AcornEmuWd1770Tests
         using var third = new Disk(30);
         using var fourth = new Disk(40);
         Disk[] disks = [first, second, third, fourth];
-        var controller = new Wd1770(index => disks[index],
+        var controller = new Controller(index => disks[index],
             model: RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1772, driveCount: 4)
         { MechanicalSpeedPercent = 0 };
         for (var drive = 0; drive < disks.Length; drive++)
@@ -125,7 +157,7 @@ public sealed class AcornEmuWd1770Tests
             machine.AttachFloppy(1, disk); machine.ConfigureFloppySpeed(1, 0);
             machine.Write(0xfe80, 0x26); // Reset désactivé, lecteur 1, face 1, double densité.
             machine.Write(0xfe86, 0); machine.Write(0xfe84, 0x88);
-            for (var tick = 0; tick < 100; tick++) machine.Tick();
+            for (var tick = 0; tick < 100_000 && !machine.Nmi; tick++) machine.Tick();
             Assert.True(machine.Nmi); Assert.True(machine.FloppyActive(1)); Assert.False(machine.FloppyActive(0));
             Assert.Equal(disk.Bytes(0, 1, 0)[0], machine.Read(0xfe87)); Assert.False(machine.Nmi);
             machine.Write(0xfe80, 0); Assert.False(machine.Nmi); Assert.False(machine.FloppyActive(1)); Assert.False(disk.Disposed);
@@ -173,63 +205,112 @@ public sealed class AcornEmuWd1770Tests
     public void ReadsAndWritesTheSelectedPhysicalSide(int drive, int side)
     {
         using var first = new Disk(1); using var second = new Disk(70);
-        var controller = new Wd1770(index => index == 0 ? first : second) { Drive = drive, Side = side, MechanicalSpeedPercent = 0 };
+        var controller = new Controller(index => index == 0 ? first : second) { Drive = drive, Side = side, MechanicalSpeedPercent = 0 };
         var disk = drive == 0 ? first : second;
         Seek(controller, 2); controller.Write(2, 3); controller.Write(0, 0x88);
         var read = Transfer(controller); Assert.Equal(0, read.Status & 0x7c); Assert.Equal(disk.Bytes(2, side, 3), read.Data);
-        var replacement = Enumerable.Repeat((byte)0xc7, 256).ToArray();
+        var replacement = Enumerable.Range(0, 256).Select(index => (byte)(index ^ 0xa5)).ToArray();
         controller.Write(0, 0xa8); Assert.Equal(0, Transfer(controller, replacement).Status & 0x7c);
         Assert.Equal(replacement, disk.Bytes(2, side, 3)); Assert.NotEqual(replacement, disk.Bytes(2, 1 - side, 3));
         Assert.True(disk.HasChanges);
+        controller.Write(0, 0x88);
+        var reread = Transfer(controller);
+        Assert.Equal(0, reread.Status & 0x7c);
+        Assert.Equal(replacement, reread.Data);
     }
 
     [Fact]
     public void MultiSectorReadStopsAtTheMissingNextIdAndForcedInterruptCanCancelIt()
     {
-        using var disk = new Disk(); var controller = new Wd1770(_ => disk) { MechanicalSpeedPercent = 0 };
+        using var disk = new Disk(); var controller = new Controller(_ => disk) { MechanicalSpeedPercent = 0 };
         controller.Write(2, 14); controller.Write(0, 0x98);
         var read = Transfer(controller); Assert.Equal(16, read.Status & 16); Assert.Equal(disk.Bytes(0, 0, 14).Concat(disk.Bytes(0, 0, 15)), read.Data);
         controller.Write(2, 0); controller.Write(0, 0x98);
-        while (!controller.Drq) controller.Tick();
+        for (var tick = 0; tick < 400_000 && !controller.Drq && controller.Active; tick++) controller.Tick();
+        Assert.True(controller.Drq);
         Assert.True(controller.Nmi); controller.Write(0, 0xd0);
         Assert.False(controller.Nmi); Assert.False(controller.Active);
-        controller.Write(0, 0xd8); Assert.True(controller.Irq); controller.Read(0); Assert.False(controller.Irq);
+        controller.Write(0, 0xd8); Assert.True(controller.Irq); controller.Read(0); Assert.True(controller.Irq);
+        controller.Write(0, 0xd0); Assert.False(controller.Irq);
     }
 
     [Fact]
     public void ReadAddressAndTrackContainThePhysicalIdsAndDataAndTrackCanBeRewritten()
     {
-        using var disk = new Disk(); var controller = new Wd1770(_ => disk) { MechanicalSpeedPercent = 0, Side = 1 };
+        using var disk = new Disk(); var controller = new Controller(_ => disk) { MechanicalSpeedPercent = 0, Side = 1 };
         Seek(controller, 1); controller.Write(0, 0xc8);
-        Assert.Equal(new byte[] { 1, 1, 0, 1 }, Transfer(controller).Data.Take(4));
-        controller.Write(0, 0xe8); var track = Transfer(controller);
-        Assert.Equal(6250, track.Data.Length); Assert.Equal(0, track.Status & 0x7c);
-        var mark = Find(track.Data, [0xa1, 0xa1, 0xa1, 0xfb]); Assert.True(mark >= 0);
-        track.Data[mark + 4] = 0x99;
-        controller.Write(0, 0xf8); var written = Transfer(controller, track.Data);
-        Assert.Equal(0, written.Status & 0x7c); Assert.Equal(0x99, disk.Bytes(1, 1, 0)[0]);
-        Assert.NotEqual(0x99, disk.Bytes(1, 0, 0)[0]);
+        var address = Transfer(controller).Data;
+        Assert.Equal(6, address.Length);
+        Assert.Equal(new byte[] { 1, 1 }, address.Take(2));
+        Assert.InRange(address[2], (byte)0, (byte)15);
+        Assert.Equal(1, address[3]);
+        controller.Write(0, 0xe8);
+        var track = Transfer(controller);
+        Assert.InRange(track.Data.Length, 6240, 6250); // La synchronisation sur AM peut modifier l'alignement des gaps (WD 1-13).
+        Assert.Equal(0, track.Status & 0x7c);
+        var mark = Find(track.Data, [0xa1, 0xa1, 0xa1, 0xfb]);
+        Assert.True(mark >= 0);
+        Assert.Equal(disk.Bytes(1, 1, 0), track.Data.AsSpan(mark + 4, 256).ToArray());
+        var format = new List<byte>();
+        format.AddRange(Enumerable.Repeat((byte)0x4e, 80));
+        for (byte sector = 0; sector < 16; sector++)
+        {
+            format.AddRange(new byte[12]);
+            format.AddRange(new byte[] { 0xf5, 0xf5, 0xf5, 0xfe, 1, 1, sector, 1, 0xf7 });
+            format.AddRange(Enumerable.Repeat((byte)0x4e, 22));
+            format.AddRange(new byte[12]);
+            format.AddRange(new byte[] { 0xf5, 0xf5, 0xf5, 0xfb });
+            format.AddRange(Enumerable.Repeat((byte)0x99, 256));
+            format.Add(0xf7);
+            format.AddRange(Enumerable.Repeat((byte)0x4e, 24));
+        }
+        var offset = 0;
+        controller.Write(0, 0xf8);
+        for (var tick = 0; tick < 800_000 && controller.Active; tick++)
+        {
+            if (controller.Drq) controller.Write(3, offset < format.Count ? format[offset++] : (byte)0x4e);
+            controller.Tick();
+        }
+        Assert.False(controller.Active);
+        Assert.Equal(format.Count, offset);
+        Assert.Equal(0, controller.Read(0) & 0x7c);
+        for (byte sector = 0; sector < 16; sector++)
+        {
+            controller.Write(2, sector);
+            controller.Write(0, 0x88);
+            var read = Transfer(controller);
+            Assert.Equal(0, read.Status & 0x7c);
+            Assert.Equal(Enumerable.Repeat((byte)0x99, 256), read.Data);
+            Assert.NotEqual((byte)0x99, disk.Bytes(1, 0, sector)[0]);
+        }
     }
 
     [Fact]
     public void ProtectionDensityCrcMissingMediaAndUnservicedBytesAreReported()
     {
         using var disk = new Disk { IsReadOnly = true };
-        var controller = new Wd1770(_ => disk) { MechanicalSpeedPercent = 0 };
+        var controller = new Controller(_ => disk) { MechanicalSpeedPercent = 0 };
         controller.Write(0, 0xa8); Assert.Equal(64, Transfer(controller).Status & 64); Assert.False(disk.HasChanges);
         controller.DoubleDensity = false; controller.Write(0, 0x88); Assert.Equal(16, Transfer(controller).Status & 16);
-        controller.DoubleDensity = true; disk.Bad = true; controller.Write(2, 0); controller.Write(0, 0x88);
+        controller.DoubleDensity = true; disk.Bad = true; controller.MediaChanged(0); controller.Write(2, 0); controller.Write(0, 0x88);
         var crc = Transfer(controller); Assert.Equal(8, crc.Status & 8); Assert.Equal(256, crc.Data.Length);
-        disk.Bad = false; controller.Write(0, 0x88);
-        for (var tick = 0; tick < 20_000; tick++) controller.Tick();
+        disk.Bad = false; controller.MediaChanged(0); controller.Write(0, 0x88);
+        for (var tick = 0; tick < 400_000 && controller.Active; tick++) controller.Tick();
         Assert.False(controller.Active); Assert.Equal(4, controller.Read(0) & 4);
-        var absent = new Wd1770(_ => null) { MechanicalSpeedPercent = 0 }; absent.Write(0, 0x88); Assert.Equal(16, Transfer(absent).Status & 16);
+        var absent = new Controller(_ => null);
+        absent.Write(0, 0x88);
+        absent.Advance(400_000);
+        Assert.True(absent.Active);
+        Assert.False(absent.Drq);
+        Assert.False(absent.Irq);
+        absent.Write(0, 0xd0);
+        Assert.False(absent.Active);
     }
 
     [Fact]
     public void StepRegisterUpdatesAndResetRespectTheMechanicalPositionAndBorrowedImage()
     {
-        using var disk = new Disk(); var controller = new Wd1770(_ => disk) { MechanicalSpeedPercent = 0 };
+        using var disk = new Disk(); var controller = new Controller(_ => disk) { MechanicalSpeedPercent = 0 };
         controller.Write(0, 0x48); Transfer(controller); Assert.Equal(0, controller.Read(1));
         controller.Write(0, 0x58); Transfer(controller); Assert.Equal(1, controller.Read(1));
         controller.Write(0, 0x08); Transfer(controller); Assert.Equal(0, controller.Read(1)); Assert.Equal(4, controller.Read(0) & 4);
@@ -239,15 +320,15 @@ public sealed class AcornEmuWd1770Tests
     [Fact]
     public void RealSpeedWaitsForMotorSpinupBeforeRequestingBytes()
     {
-        using var disk = new Disk(); var controller = new Wd1770(_ => disk);
+        using var disk = new Disk(); var controller = new Controller(_ => disk);
         controller.Write(2, 0); controller.Write(0, 0x80);
         for (var tick = 0; tick < 400_000; tick++) controller.Tick();
         Assert.True(controller.Active); Assert.False(controller.Drq);
         Assert.Equal(256, Transfer(controller).Data.Length);
     }
 
-    private static void Seek(Wd1770 controller, byte track) { controller.Write(3, track); controller.Write(0, 0x18); Transfer(controller); }
-    private static (byte Status, byte[] Data) Transfer(Wd1770 controller, byte[]? write = null)
+    private static void Seek(Controller controller, byte track) { controller.Write(3, track); controller.Write(0, 0x18); Transfer(controller); }
+    private static (byte Status, byte[] Data) Transfer(Controller controller, byte[]? write = null)
     {
         var bytes = new List<byte>(); var offset = 0;
         for (var tick = 0; tick < 4_000_000; tick++)
@@ -274,36 +355,4 @@ public sealed class AcornEmuWd1770Tests
         return -1;
     }
 
-    private sealed class Disk(byte seed = 0) : IEmulationDiskImage
-    {
-        private readonly Dictionary<long, byte[]> _data = new();
-        public IEmulationDriveMechanics Mechanics { get; } = RetroMediaLab.Emulation.EmulationSdk.MediaProcessing.CreateDriveMechanics(RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants.Floppy);
-        public string FormatId => "acorn.adfs.640";
-        public int SectorSize => 256;
-        public long SectorCount => 96;
-        public long Cylinders => 3;
-        public int Heads => 2;
-        public int SectorsPerTrack => 16;
-        public bool IsReadOnly { get; init; }
-        public bool HasChanges { get; private set; }
-        public IReadOnlyDictionary<string, string> Metadata { get; } = new Dictionary<string, string>();
-        public void UpdateMetadata(IReadOnlyDictionary<string, string> metadata) => throw new NotSupportedException();
-        internal bool Bad { get; set; }
-        internal bool Disposed { get; private set; }
-        internal byte[] Bytes(int cylinder, int head, int number)
-        {
-            var index = FindSector(cylinder, head, number)!.Value;
-            if (!_data.TryGetValue(index, out var data)) _data[index] = data = Enumerable.Repeat((byte)(seed + index), 256).ToArray();
-            return data;
-        }
-        public long? FindSector(int cylinder, int head, int number) => cylinder is >= 0 and < 3 && head is >= 0 and < 2 && number is >= 0 and < 16 ? (cylinder * 2L + head) * 16 + number : null;
-        public ValueTask<EmulationDiskSector> ReadSectorAsync(long index, CancellationToken cancellationToken = default)
-        {
-            var cylinder = (int)(index / 32); var head = (int)(index / 16 % 2); var number = (int)(index % 16);
-            return ValueTask.FromResult(new EmulationDiskSector(index, Bytes(cylinder, head, number), cylinder, head, number, !Bad));
-        }
-        public void WriteSector(long index, ReadOnlySpan<byte> data) { if (IsReadOnly) throw new UnauthorizedAccessException(); if (data.Length != 256) throw new ArgumentException(nameof(data)); _data[index] = data.ToArray(); HasChanges = true; }
-        public Task FlushAsync(CancellationToken cancellationToken = default) { HasChanges = false; return Task.CompletedTask; }
-        public void Dispose() { Disposed = true; _data.Clear(); }
-    }
 }

@@ -1,42 +1,38 @@
-using Phase = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Phase;
-using C = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Constants.Wd1770Constants;
-using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums;
-using System.IO;
-
 namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Interfaces;
-/// <summary>Contrat matériel du composant Wd1770 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
+
+/// <summary>Broches et registres du WD1770/1772 ; le composant ne possède aucun lecteur ni média.</summary>
 public interface IWd1770
 {
-    long SeekSteps(int drive);
-    long ReadBytes(int drive);
-    long WrittenBytes(int drive);
-    int Drive { get; set; }
-
-    int Side { get; set; }
-
-    bool Selected { get; set; }
-
+    int ClockFrequency { get; }
+    ulong HalfClocks { get; }
+    long StepPulses { get; }
+    long DataBytesRead { get; }
+    long DataBytesWritten { get; }
     bool DoubleDensity { get; set; }
-
-    int MechanicalSpeedPercent { get; set; }
-
     bool Irq { get; }
-
     bool Drq { get; }
-
     bool Nmi { get; }
-
     bool Motor { get; }
-
+    bool Step { get; }
+    bool Direction { get; }
+    bool WriteGate { get; }
+    bool WriteData { get; }
     bool Active { get; }
-
     bool Writing { get; }
-
     bool Reading { get; }
-
+    byte? BusData { get; }
+    event Action<ulong, bool>? WriteDataChanged;
+    /// <summary>MO, STEP, DIRC, WG ou activité de commande modifiés ; les niveaux sont lisibles après l'appel courant.</summary>
+    event Action? DriveSignalsChanged;
+    void SetBus(bool selected, bool read, int register, byte value = 0);
+    void SetReadData(bool active);
+    void SetTrackZero(bool active);
+    void SetWriteProtected(bool active);
+    void SetIndex(bool active);
+    void SetReset(bool active);
     void Reset();
     byte Read(int register);
     void Write(int register, byte value);
     void Tick();
-    void Advance(int ticks);
+    void Advance(int clocks);
 }

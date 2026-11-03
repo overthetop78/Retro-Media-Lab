@@ -1,5 +1,4 @@
 using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
-using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.DiskConstants;
 
@@ -23,12 +22,12 @@ internal sealed class Disks(bool enabled, bool wd1770 = false)
             return _controller;
         }
     }
-    private Wd1770? _wd;
+    private Wd1770Drive? _wd;
     private byte _control;
-    private Wd1770 Wd => _wd ??= new Wd1770(index => _images[index]) { Selected = false };
+    private Wd1770Drive Wd => _wd ??= new Wd1770Drive(index => _images[index]) { Selected = false };
     internal bool Nmi => enabled && (wd1770 ? Wd.Nmi : Controller.Nmi);
     internal void Tick() { if (enabled) { if (wd1770) { if ((_control & 0x20) != 0) Wd.Tick(); } else { _ = Controller; _intelDrive!.Tick(); } } }
-    internal void Reset() { if (enabled) { if (wd1770) { _control = 0; Wd.Reset(); Wd.Selected = false; } else { Controller.Reset(); _intelDrive!.Reset(); } } }
+    internal void Reset() { if (enabled) { if (wd1770) { _control = 0; Wd.SetReset(true); Wd.Selected = false; } else { Controller.Reset(); _intelDrive!.Reset(); } } }
     internal byte Read(ushort address) => !enabled ? (byte)0xfe : wd1770 ? (address & 4) != 0 ? Wd.Read(address & 3) : (byte)0xfe : Controller.Read(address & 7);
     internal void Write(ushort address, byte value)
     {
@@ -42,7 +41,7 @@ internal sealed class Disks(bool enabled, bool wd1770 = false)
             }
             else
             {
-                if ((value & 0x20) == 0) Wd.Reset();
+                Wd.SetReset((value & 0x20) == 0);
                 _control = value; Wd.Drive = (value & 2) != 0 ? 1 : 0; Wd.Side = (value & 4) != 0 ? 1 : 0;
                 Wd.Selected = (value & 3) != 0; Wd.DoubleDensity = (value & 8) == 0;
                 Wd.MechanicalSpeedPercent = _speeds[Wd.Drive];
@@ -75,6 +74,6 @@ internal sealed class Disks(bool enabled, bool wd1770 = false)
             else if (Controller.Active && Controller.ActiveDrive == drive) { Controller.Reset(); _intelDrive!.Reset(); }
         }
         _images[drive] = image;
-        if (enabled && !wd1770) _intelDrive!.MediaChanged(drive);
+        if (enabled) { if (wd1770) Wd.MediaChanged(drive); else _intelDrive!.MediaChanged(drive); }
     }
 }

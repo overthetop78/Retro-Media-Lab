@@ -1,4 +1,30 @@
 namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums;
 
-/// <summary>Étapes internes du contrôleur Wd1770.</summary>
-public enum Wd1770Phase { Idle, Positioning, ReadSector, WriteSector, ReadAddress, ReadTrack, WriteTrack }
+/// <summary>États du séquenceur physique ; aucun état ne représente un format d’image.</summary>
+public enum Wd1770Phase
+{
+    Idle,
+    SpinUp,
+    DirectionSetup,
+    StepPulse,
+    StepDelay,
+    Settle,
+    SearchId,
+    ReadId,
+    SearchData,
+    ReadData,
+    ReadDataCrc,
+    AddressTail,
+    WaitReadTrack,
+    ReadTrack,
+    WriteGap,
+    WriteLead,
+    WriteMark,
+    WriteData,
+    WriteCrc,
+    WriteTail,
+    WriteFinish,
+    WriteTrackPrime,
+    WaitWriteTrack,
+    WriteTrack
+}

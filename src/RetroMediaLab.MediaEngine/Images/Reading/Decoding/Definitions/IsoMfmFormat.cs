@@ -10,6 +10,13 @@ internal sealed record IsoMfmMarkDefinition(byte Mark, FluxStructureKind Kind, b
 internal static class IsoMfmFormat
 {
     /// <summary>Identifiant technique.</summary>
+    public const int PhysicalLayoutEnabled = 1;
+    public const int InitialGapByteCount = 80;
+    public const int SyncZeroByteCount = 12;
+    public const int InterFieldGapByteCount = 22;
+    public const int InterSectorGapByteCount = 24;
+    public const byte GapFill = 0x4e;
+    public const byte SyncFill = 0;
     public const string CodecId = FluxCodecIds.IsoMfm;
     /// <summary>Nom affiché.</summary>
     public const string CodecDisplayName = FluxCodecDisplayNames.IsoMfm;

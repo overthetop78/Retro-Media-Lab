@@ -293,7 +293,7 @@ public sealed class AcornEmuArchimedesBoardTests
             for (var other = 0; other < 4; other++)
                 if (other != drive) Assert.False(machine.FloppyMotor(other));
             Write(machine, 0x03210000, 0x58);
-            for (var cycle = 0; cycle < 5; cycle++) machine.InternalCycle();
+            for (var cycle = 0; cycle < 10_000 && !machine.Fiq; cycle++) machine.InternalCycle();
             Assert.Equal(1, machine.FloppySeekSteps(drive));
             Assert.True(machine.Fiq);
             Read(machine, 0x03210000);
@@ -301,6 +301,70 @@ public sealed class AcornEmuArchimedesBoardTests
         }
         Write(machine, 0x03250040, 0xff);
         Assert.DoesNotContain(Enumerable.Range(0, 4), machine.FloppyMotor);
+    }
+
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(0, 1)]
+    [InlineData(1, 0)]
+    [InlineData(1, 1)]
+    [InlineData(2, 0)]
+    [InlineData(2, 1)]
+    [InlineData(3, 0)]
+    [InlineData(3, 1)]
+    public void Wd1772FluxTransfersUseTheSelectedHeadAndTheArmFiqHandshake(int drive, int side)
+    {
+        using var disk = new Wd1770.MemoryTrackDisk((byte)(0x30 + drive));
+        var machine = Board();
+        try
+        {
+            machine.AttachFloppy(drive, disk);
+            WriteIoc(machine, 0x38, 3);
+            Write(machine, 0x03250018, 8);
+            var latch = 0xdf & ~(1 << drive);
+            if (side == 1) latch &= ~0x10;
+            Write(machine, 0x03250040, (uint)latch);
+            Write(machine, 0x03210008, 0);
+            Assert.Equal(disk.Bytes(0, side, 0), Transfer(0x88));
+            var replacement = Enumerable.Range(0, 256).Select(index => (byte)(index ^ 0xa5)).ToArray();
+            Transfer(0xa8, replacement);
+            Assert.Equal(replacement, Transfer(0x88));
+            Assert.NotEqual(replacement, disk.Bytes(0, 1 - side, 0));
+            Assert.Equal(512, machine.FloppyReadBytes(drive));
+            Assert.Equal(256, machine.FloppyWrittenBytes(drive));
+
+            byte[] Transfer(byte command, byte[]? data = null)
+            {
+                var received = new List<byte>();
+                var offset = 0;
+                Write(machine, 0x03210000, command);
+                for (var cycle = 0; cycle < 2_000_000; cycle++)
+                {
+                    machine.InternalCycle();
+                    if (!machine.Fiq) continue;
+                    var status = Read(machine, 0x03210000);
+                    if ((status & 2) != 0)
+                    {
+                        if (data is null) received.Add((byte)Read(machine, 0x0321000c));
+                        else { Assert.True(offset < data.Length); Write(machine, 0x0321000c, data[offset++]); }
+                    }
+                    if ((status & 1) == 0)
+                    {
+                        Assert.Equal(0u, status & 0x7c);
+                        Assert.False(machine.Fiq);
+                        Assert.Equal(256, data is null ? received.Count : offset);
+                        return received.ToArray();
+                    }
+                }
+                Assert.Fail("WD1772 ARM transfer did not complete.");
+                return [];
+            }
+        }
+        finally
+        {
+            machine.AttachFloppy(drive, null);
+            machine.Reset(true);
+        }
     }
 
     [Fact]
