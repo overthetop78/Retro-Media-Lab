@@ -19,19 +19,29 @@ public sealed class AcornEmuEconetTests
 {
 
     [Fact]
-    public void BbcRtsReleaseLetsTheLastByteCompleteBeforeCtsRises()
+    public void BbcRtsReleaseLetsClosingFlagCompleteBeforeCtsRises()
     {
         var board = new ModelAMachine(new byte[16384], new byte[16384], econetInterface: true, econetCyclesPerByte: 4);
-        var frames = new List<byte[]>(); board.NetworkFrameTransmitted = frame => frames.Add(frame.ToArray());
+        var frames = new List<byte[]>();
+        board.NetworkFrameTransmitted = frame => frames.Add(frame.ToArray());
         try
         {
-            board.SetNetworkLine(true); board.Write(0xfea0, C.AddressControl); board.Write(0xfea3, 0x1e); board.Write(0xfea0, 0);
+            board.SetNetworkLine(true);
+            board.Write(0xfea0, C.AddressControl);
+            board.Write(0xfea3, 0x1e);
+            board.Write(0xfea0, 0);
             Assert.NotEqual(0, board.Read(0xfea0) & C.NotClearToSend);
-            board.Write(0xfea1, C.Rts | C.ClearTransmit); Assert.Equal(0, board.Read(0xfea0) & C.NotClearToSend);
-            board.Write(0xfea2, 0xa5); for (var tick = 0; tick < 4; tick++) board.Tick();
-            board.Write(0xfea1, C.LastData | C.FrameCompleteMode); Assert.Empty(frames);
-            for (var tick = 0; tick < 4; tick++) board.Tick();
-            Assert.Equal(new byte[] { 0xa5 }, Assert.Single(frames)); Assert.NotEqual(0, board.Read(0xfea0) & C.NotClearToSend);
+            board.Write(0xfea1, C.Rts | C.ClearTransmit);
+            Assert.Equal(0, board.Read(0xfea0) & C.NotClearToSend);
+            board.Write(0xfea2, 0xa5);
+            for (var tick = 0; tick < 4; tick++) board.Tick(); // Le flag seul est parti.
+            board.Write(0xfea1, C.LastData | C.FrameCompleteMode);
+            Assert.Empty(frames);
+            Assert.Equal(0, board.Read(0xfea0) & C.NotClearToSend);
+            for (var tick = 0; tick < 128 && frames.Count == 0; tick++) board.Tick();
+            Assert.Equal(new byte[] { 0xa5 }, Assert.Single(frames));
+            for (var tick = 0; tick < 4 && (board.Read(0xfea0) & C.NotClearToSend) == 0; tick++) board.Tick();
+            Assert.NotEqual(0, board.Read(0xfea0) & C.NotClearToSend);
             Assert.NotEqual(0, board.Read(0xfea0) & C.TransmitAvailable);
         }
         finally { board.NetworkFrameTransmitted = null; }
@@ -166,61 +176,32 @@ public sealed class AcornEmuEconetTests
     public void BbcClockAndRepeatedAdlcAddressesReachTheSameFifo()
     {
         var board = new ModelAMachine(new byte[16384], new byte[16384], econetInterface: true, econetCyclesPerByte: 4);
-        board.SetNetworkLine(true); board.Write(0xfea0, C.AddressControl); board.Write(0xfea3, 0x1e); board.Write(0xfea0, 0); board.Write(0xfea1, C.ClearReceive);
-        Assert.True(board.ReceiveNetworkFrame([0xa5]));
+        board.SetNetworkLine(true);
+        board.Write(0xfea0, C.AddressControl);
+        board.Write(0xfea3, 0x1e);
+        board.Write(0xfea0, 0);
+        Assert.True(board.ReceiveNetworkFrame([0xa5, 0x80]));
         for (var tick = 0; tick < 4; tick++) board.Tick();
-        Assert.Equal(C.FrameValid | C.ReceiveAvailable | C.AddressPresent, board.Read(0xfebd));
-        Assert.Equal(0xa5, board.Read(0xfebe)); Assert.Equal(0, board.Read(0xfea2));
+        Assert.Equal(0, board.Read(0xfebd) & C.ReceiveAvailable); // Pas de raccourci par octet.
+        for (var tick = 0; tick < 128 && (board.Read(0xfebd) & C.ReceiveAvailable) == 0; tick++) board.Tick();
+        Assert.Equal(C.ReceiveAvailable | C.AddressPresent, board.Read(0xfebd));
+        Assert.Equal(0xa5, board.Read(0xfebe));
+        for (var tick = 0; tick < 128 && (board.Read(0xfebd) & C.ReceiveAvailable) == 0; tick++) board.Tick();
+        Assert.Equal(C.ReceiveAvailable | C.FrameValid, board.Read(0xfebd));
+        Assert.Equal(0x80, board.Read(0xfebf));
+        Assert.Equal(0, board.Read(0xfea2));
     }
 
     private static Mc6854 Device(byte control = 0)
     {
-        var device = new Mc6854(4); device.SetLine(true);
-        device.Write(0, C.AddressControl); device.Write(3, 0x1e); device.Write(0, control); device.Read(0); device.Read(1); device.Write(1, C.ClearReceive | C.ClearTransmit);
+        var device = new Mc6854(4);
+        device.SetLine(true);
+        device.Write(0, C.AddressControl);
+        device.Write(3, 0x1e);
+        device.Write(0, control);
+        device.Read(0);
+        device.Read(1);
+        device.Write(1, C.ClearReceive | C.ClearTransmit);
         return device;
-    }
-    private static void ByteTime(Mc6854 device) { for (var index = 0; index < 4; index++) device.Tick(); }
-
-    [Fact]
-    public void ReceiveFifoOverrunIsReportedAndDoesNotGrowBeyondThreeBytes()
-    {
-        var device = Device(); Assert.True(device.ReceiveFrame([1, 2, 3, 4, 5]));
-        for (var index = 0; index < 4; index++) ByteTime(device);
-        Assert.NotEqual(0, device.Read(1) & C.ReceiveOverrun);
-        Assert.Equal(1, device.Read(2)); Assert.Equal(2, device.Read(2)); Assert.Equal(3, device.Read(2)); Assert.Equal(0, device.Read(2));
-        device.Write(1, C.ClearReceive); Assert.True(device.ReceiveFrame([6]));
-    }
-
-    [Fact]
-    public void InvalidFcsAndLossOfClockRemainVisibleUntilAcknowledged()
-    {
-        var device = Device(C.ReceiveInterrupt); Assert.True(device.ReceiveFrame([7], false)); ByteTime(device);
-        Assert.NotEqual(0, device.Read(1) & C.FcsError); Assert.Equal(7, device.Read(2)); Assert.True(device.Irq);
-        device.Write(1, C.ClearReceive); Assert.False(device.Irq);
-        Assert.True(device.ReceiveFrame([1, 2, 3])); ByteTime(device); device.SetLine(false);
-        Assert.Equal(C.NoClock | C.AbortReceived, device.Read(1) & (C.NoClock | C.AbortReceived));
-        device.Write(1, C.ClearReceive); Assert.NotEqual(0, device.Read(1) & C.NoClock);
-    }
-
-    [Fact]
-    public void TransmitFifoAndLastByteEmitExactlyOneOrderedFrame()
-    {
-        var device = Device(); var frames = new List<byte[]>(); device.FrameTransmitted = frame => frames.Add(frame.ToArray());
-        device.Write(2, 0x81); device.Write(2, 0xa5); device.Write(3, 0xff);
-        Assert.Equal(0, device.Read(0) & C.TransmitAvailable); Assert.Empty(frames);
-        ByteTime(device); Assert.Empty(frames); ByteTime(device); ByteTime(device);
-        Assert.Equal(new byte[] { 0x81, 0xa5, 0xff }, Assert.Single(frames));
-        ByteTime(device); Assert.Equal(0, device.Read(0) & C.TransmitUnderrun);
-        Assert.False(device.Transmitting);
-    }
-
-    [Fact]
-    public void LateLastDataAndFrameCompleteModeUseTheCurrentTransmission()
-    {
-        var device = Device(); var frames = new List<byte[]>(); device.FrameTransmitted = frame => frames.Add(frame.ToArray());
-        device.Write(1, C.FrameCompleteMode | C.ClearTransmit); Assert.Equal(0, device.Read(0) & C.TransmitAvailable);
-        device.Write(2, 0x55); ByteTime(device); device.Write(1, C.FrameCompleteMode | C.LastData); ByteTime(device);
-        Assert.Equal(new byte[] { 0x55 }, Assert.Single(frames)); Assert.NotEqual(0, device.Read(0) & C.TransmitAvailable);
-        device.Write(1, C.FrameCompleteMode | C.ClearTransmit); Assert.Equal(0, device.Read(0) & C.TransmitAvailable);
     }
 }

@@ -1,168 +1,129 @@
 using RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Services;
 using C = RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Constants.Mc6854Constants;
+using B = RetroMediaLab.Chips.Tests.Network.Motorola.M6800.Chip6854.AdlcTestBench;
 
 namespace RetroMediaLab.Chips.Tests.Network.Motorola.M6800.Chip6854;
+
 public sealed class AdlcTests
 {
     [Fact]
-    public void ReceiverResetRearmsTheDisconnectedClockStatus()
+    public void ReceiverResetRearmsDisconnectedCarrierInterrupt()
     {
-        var device = new Mc6854();
-        device.Write(0, C.ReceiveInterrupt);
-        Assert.True(device.Irq);
-        device.Read(0);
-        device.Read(1);
-        device.Write(1, C.ClearReceive);
-        Assert.False(device.Irq);
-        device.Write(0, C.ReceiveReset);
-        device.Write(0, C.ReceiveInterrupt);
-        Assert.True(device.Irq);
+        var chip = new Mc6854();
+        chip.Write(0, C.ReceiveInterrupt);
+        Assert.True(chip.Irq);
+        chip.Read(1);
+        chip.Write(1, C.ClearReceive);
+        Assert.False(chip.Irq);
+        chip.Write(0, C.ReceiveReset);
+        chip.Write(0, C.ReceiveInterrupt);
+        Assert.True(chip.Irq);
     }
 
     [Fact]
-    public void AcknowledgedIdleRemainsReadableWithoutRepeatedInterrupts()
+    public void AcknowledgedIdleStaysVisibleWithoutRepeatedInterrupts()
     {
-        var device = Device(C.ReceiveInterrupt);
-        for (var tick = 0; tick < 16; tick++)
-            device.Tick();
-        Assert.NotEqual(0, device.Read(1) & C.Idle);
-        device.Read(0);
-        device.Write(1, C.ClearReceive);
-        for (var tick = 0; tick < 32; tick++)
-            device.Tick();
-        Assert.NotEqual(0, device.Read(1) & C.Idle);
-        Assert.False(device.Irq);
-        Assert.True(device.ReceiveFrame([0x42]));
-        ByteTime(device);
-        Assert.True(device.Irq);
+        var chip = B.Device(control1: C.ReceiveInterrupt);
+        for (var bit = 0; bit < 15; bit++)
+            B.ClockReceive(chip, true);
+        Assert.NotEqual(0, chip.Read(1) & C.Idle);
+        chip.Write(1, C.ClearReceive);
+        Assert.False(chip.Irq);
+        for (var bit = 0; bit < 50; bit++)
+            B.ClockReceive(chip, true);
+        Assert.NotEqual(0, chip.Read(1) & C.Idle);
+        Assert.False(chip.Irq);
+        Assert.Equal(new byte[] { 1, 2, 3 }, B.ReceivePacket(chip, [1, 2, 3]));
+        Assert.True(chip.Irq);
     }
 
     [Fact]
-    public void ReceiveClearPreservesAnEventThatHasNotBeenRead()
+    public void ClearReceiveDoesNotAcknowledgeAnUnreadEvent()
     {
-        var device = Device(C.ReceiveInterrupt);
-        Assert.True(device.ReceiveFrame([0x42]));
-        ByteTime(device);
-        device.Write(1, C.ClearReceive);
-        Assert.NotEqual(0, device.Read(1) & C.FrameValid);
-        device.Write(1, C.ClearReceive);
-        Assert.Equal(0, device.Read(1) & C.FrameValid);
-        Assert.Equal(0x42, device.Read(2));
-    }
-
-    private static Mc6854 Device(byte control = 0)
-    {
-        var device = new Mc6854(4);
-        device.SetLine(true);
-        device.Write(0, C.AddressControl);
-        device.Write(3, 0x1e);
-        device.Write(0, control);
-        device.Read(0);
-        device.Read(1);
-        device.Write(1, C.ClearReceive | C.ClearTransmit);
-        return device;
-    }
-
-    private static void ByteTime(Mc6854 device)
-    {
-        for (var index = 0; index < 4; index++)
-            device.Tick();
+        var chip = B.Device(control1: C.ReceiveInterrupt);
+        chip.SetCarrierPresent(false);
+        chip.Write(1, C.ClearReceive);
+        Assert.True(chip.Irq);
+        chip.Read(0); // SR1 n’est pas la lecture de SR2 requise pour DCD.
+        chip.Write(1, C.ClearReceive);
+        Assert.True(chip.Irq);
+        chip.Read(1);
+        chip.Write(1, C.ClearReceive);
+        Assert.False(chip.Irq);
     }
 
     [Fact]
-    public void ResetAndDisconnectedClockDoNotPretendTheNetworkIsReady()
+    public void ReceiveFrameIsCopiedAndRequiresCarrierAndReleasedReset()
     {
-        var device = new Mc6854();
-        Assert.Equal(C.NoClock, device.Read(1));
-        Assert.False(device.Irq);
-        Assert.False(device.ReceiveFrame([1, 2]));
-        device.SetLine(true);
-        Assert.False(device.ReceiveFrame([1, 2]));
-        device.Write(0, 0);
-        Assert.True((device.Read(0) & C.TransmitAvailable) != 0);
-        device.Reset();
-        Assert.Equal(0, device.Read(0) & C.TransmitAvailable);
-        Assert.False(device.Irq);
-    }
-
-    [Fact]
-    public void ReceivedBytesFollowTheClockAndRetainAddressAndEndMarkers()
-    {
-        var device = Device(C.ReceiveInterrupt);
-        byte[] frame = [254, 0, 1, 0, 0x80, 0x99, 0xa5];
-        Assert.True(device.ReceiveFrame(frame));
-        frame[0] = 12;
-        for (var tick = 0; tick < 3; tick++)
-            device.Tick();
-        Assert.Equal(0, device.Read(0) & C.DataAvailable);
-        device.Tick();
-        Assert.True(device.Irq);
-        Assert.Equal(C.AddressPresent | C.ReceiveAvailable, device.Read(1));
-        Assert.Equal(254, device.Read(2));
-        byte[] remaining = [0, 1, 0, 0x80, 0x99, 0xa5];
-        for (var index = 0; index < remaining.Length; index++)
+        var chip = new Mc6854(8);
+        Assert.Equal(C.DataCarrierDetect, chip.Read(1));
+        Assert.False(chip.Irq);
+        Assert.False(chip.ReceiveFrame([1, 2]));
+        chip.SetLine(true);
+        Assert.False(chip.ReceiveFrame([1, 2]));
+        chip.Write(0, C.AddressControl);
+        chip.Write(3, 0x1e);
+        chip.Write(0, 0);
+        byte[] data = [0xfe, 0, 1, 0x80, 0x99, 0xa5];
+        Assert.True(chip.ReceiveFrame(data));
+        data[0] = 12;
+        var actual = new List<byte>();
+        for (var tick = 0; tick < 200 && actual.Count < data.Length; tick++)
         {
-            ByteTime(device);
-            if (index == remaining.Length - 1)
-                Assert.NotEqual(0, device.Read(1) & C.FrameValid);
-            Assert.Equal(remaining[index], device.Read(3));
+            chip.Tick();
+            if ((chip.Read(1) & C.ReceiveAvailable) != 0)
+                actual.Add(chip.Read(2));
         }
-
-        Assert.False(device.ReceiveFrame([1]));
-        device.Write(1, C.ClearReceive);
-        Assert.False(device.Irq);
-        Assert.True(device.ReceiveFrame([2]));
+        Assert.Equal(new byte[] { 0xfe, 0, 1, 0x80, 0x99, 0xa5 }, actual);
+        Assert.NotEqual(0, chip.Read(1) & C.FrameValid);
+        Assert.False(chip.ReceiveFrame([1, 2]));
+        chip.Write(1, C.ClearReceive);
+        Assert.True(chip.ReceiveFrame([1, 2]));
     }
 
     [Fact]
-    public void TransmitUnderrunAndResetDiscardAnIncompleteFrame()
+    public void UnderrunAbortsAndResetClearsOnlyTransmitter()
     {
-        var device = Device(C.TransmitInterrupt);
-        var frames = new List<byte[]>();
-        device.FrameTransmitted = frame => frames.Add(frame.ToArray());
-        device.Write(2, 0x55);
-        ByteTime(device);
-        ByteTime(device);
-        Assert.NotEqual(0, device.Read(0) & C.TransmitUnderrun);
-        Assert.Empty(frames);
-        device.Write(0, C.TransmitReset);
-        device.Write(0, 0);
-        Assert.Equal(0, device.Read(0) & C.TransmitUnderrun);
-        device.Write(3, 0x66);
-        ByteTime(device);
-        Assert.Equal(new byte[] { 0x66 }, Assert.Single(frames));
+        var chip = B.Device();
+        var frames = 0;
+        chip.FrameTransmitted = _ => frames++;
+        try
+        {
+            chip.Write(2, 0x55);
+            for (var bit = 0; bit < 40; bit++)
+                B.ClockTransmit(chip);
+            Assert.NotEqual(0, chip.Read(0) & C.TransmitUnderrun);
+            Assert.Equal(0, frames);
+            chip.Write(0, C.TransmitReset);
+            chip.Write(0, 0);
+            Assert.Equal(0, chip.Read(0) & C.TransmitUnderrun);
+        }
+        finally { chip.FrameTransmitted = null; }
+        Assert.Equal(new byte[] { 0x66, 0x77 }, B.Transmit(chip, [0x66, 0x77]).Frame);
     }
 
     [Fact]
-    public void AddressControlSeparatesWordLengthAndTransmitData()
+    public void AddressHasEightBitsEvenWhenInformationHasFive()
     {
-        var device = Device();
-        var frames = new List<byte[]>();
-        device.FrameTransmitted = frame => frames.Add(frame.ToArray());
-        device.Write(0, C.AddressControl);
-        device.Write(3, 0);
-        device.Write(0, 0);
-        device.Write(3, 0xff);
-        ByteTime(device);
-        Assert.Equal(new byte[] { 31 }, Assert.Single(frames));
+        var chip = B.Device(5);
+        Assert.Equal(new byte[] { 0xff, 0xff, 0x1f }, B.Transmit(chip, [0xff, 0xff, 0xff]).Frame);
     }
 
     [Fact]
-    public void PrioritizedReceiveStatusHidesDataUntilAddressIsAcknowledged()
+    public void PriorityAddressRequiresADataReadAndCannotBeClearedAsStatus()
     {
-        var device = Device(C.ReceiveInterrupt);
-        device.Write(1, C.Prioritize | C.ClearReceive);
-        Assert.True(device.ReceiveFrame([1, 2]));
-        ByteTime(device);
-        Assert.Equal(C.AddressPresent, device.Read(1));
-        Assert.Equal(0, device.Read(0) & C.DataAvailable);
-        device.Write(1, C.Prioritize | C.ClearReceive);
-        Assert.NotEqual(0, device.Read(0) & C.DataAvailable);
-        Assert.Equal(1, device.Read(2));
-        ByteTime(device);
-        Assert.Equal(2, device.Read(2));
-        Assert.NotEqual(0, device.Read(1) & C.FrameValid);
-        device.Write(1, C.Prioritize | C.ClearReceive);
-        Assert.Equal(0, device.Read(1) & C.FrameValid);
+        var chip = B.Device(control1: C.ReceiveInterrupt);
+        chip.Write(1, C.Prioritize);
+        var wire = B.Encode(B.Octets(1, 2, 3, 4, 5, 6));
+        var position = 0;
+        while (position < wire.Length && (chip.Read(1) & C.AddressPresent) == 0)
+            B.ClockReceive(chip, wire[position++]);
+        Assert.Equal(C.AddressPresent, chip.Read(1));
+        Assert.Equal(0, chip.Read(0) & C.DataAvailable);
+        chip.Write(1, C.Prioritize | C.ClearReceive);
+        Assert.True(chip.Irq);
+        Assert.Equal(C.AddressPresent, chip.Read(1));
+        Assert.Equal(1, chip.Read(2));
+        Assert.Equal(0, chip.Read(1) & C.AddressPresent);
     }
 }

@@ -38,7 +38,10 @@ internal sealed class Econet
         if (!_enabled) return;
         if (_controller.Rts) _driving = true;
         else if (!_controller.Transmitting) _driving = false;
-        _controller.SetLine(_clockPresent, _clearToSend && _driving, _idle);
+        // IC87 détecte l’horloge vers DCD ; CTS est fourni séparément par la logique de collision.
+        _controller.SetClockPresent(_clockPresent, _idle);
+        _controller.SetCarrierPresent(_clockPresent);
+        _controller.SetClearToSend(_clockPresent && _clearToSend && _driving);
     }
     internal bool Receive(ReadOnlySpan<byte> frame, bool validFcs) => _enabled && _controller.ReceiveFrame(frame, validFcs);
 

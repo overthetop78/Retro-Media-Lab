@@ -1,137 +1,244 @@
+using RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Interfaces;
 using C = RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Constants.Mc6854Constants;
 
 namespace RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Services;
 
-/// <summary>Registres et horloge de l'ADLC, indépendants du BBC, des sockets et des fichiers.</summary>
-/// <remarks>Le transport remet des trames déjà délimitées et sans FCS. Les FIFO avancent avec Tick,
-/// et non avec les lectures CPU. La carte propriétaire relie Irq à sa porte NMI.</remarks>
-public sealed partial class Mc6854
-:RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Interfaces.IMc6854{
-    private byte _control1, _control2, _control3, _control4, _receiveStatus;
-    private int _priority, _cycle, _idleCycles;
+/// <summary>ADLC Motorola : registres, FIFO et broches, sans socket ni connaissance des machines.</summary>
+public sealed partial class Mc6854 : IMc6854
+{
+    private byte _control1;
+    private byte _control2;
+    private byte _control3;
+    private byte _control4;
+    private byte _receiveStatus;
     private byte _readReceiveStatus;
+    private byte _readTransmitStatus;
     private byte _acknowledgedReceive;
-    private bool _ctsRaised, _lineIdle = true;
+    private byte _acknowledgedTransmit;
     private readonly int _cyclesPerByte;
-    private bool _clockPresent, _clearToSend;
+    private long _clockFraction;
+    private bool _stableIdle;
+    private bool _clockPresent;
+    private bool _clearToSend;
+    private bool _carrierPresent;
+    private bool _ctsRaised;
+    private bool _dcdRaised;
+    private bool _resetAsserted;
+    private bool _lineIdle = true;
+    private bool _rtsAsserted;
+    private int _rtsReleaseBits;
+
     public Action<ReadOnlyMemory<byte>>? FrameTransmitted { get; set; }
     public bool Irq => (StatusOne() & C.Interrupt) != 0;
-    public bool Receiving => _incoming is not null || _receive.Count != 0;
-    public bool Transmitting => _transmitting || _transmit.Count != 0;
-    public bool Rts => (_control2 & C.Rts) != 0;
+    public bool Receiving => (_rxInFrame && _rxTotalBits != 0) || _packetBits is not null || _receiveCount != 0;
+    public bool Transmitting => _transmitting || _transmitCount != 0;
+    public bool Rts => _rtsAsserted;
+    public bool DataTerminalReady => (_control3 & C.Loop) != 0 ? _loopOnline : (_control3 & C.LoopOnline) != 0;
+    public bool ReceiveServiceRequest => !_receiveDmaSuppressed && (StatusTwo() & C.ReceiveAvailable) != 0 &&
+        ((_control2 & C.Prioritize) == 0 || (RawReceiveStatus() & ~C.ReceiveAvailable) == 0);
+    public bool TransmitServiceRequest => !_transmitDmaSuppressed && (_control1 & C.TransmitReset) == 0 && _clearToSend &&
+        (_control2 & C.FrameCompleteMode) == 0 && TransmitRoom &&
+        ((_control2 & C.Prioritize) == 0 || (!_underrun && !_ctsRaised));
 
     public Mc6854(int cyclesPerByte = C.DefaultCyclesPerByte)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(cyclesPerByte);
-        _cyclesPerByte = cyclesPerByte; Reset();
+        _cyclesPerByte = cyclesPerByte;
+        Reset();
     }
 
-    /// <summary>Réinitialise la puce sans modifier l'horloge fournie par le réseau ni son destinataire.</summary>
+    /// <summary>Impulsion RESET matériel ; les entrées physiques et rappels restent ceux du propriétaire.</summary>
     public void Reset()
     {
-        _control1 = C.ReceiveReset | C.TransmitReset; _control2 = _control3 = _control4 = _receiveStatus = 0;
-        _priority = _cycle = _idleCycles = 0; _readReceiveStatus = _acknowledgedReceive = 0; _ctsRaised = false; ResetReceive(); ResetTransmit();
+        SetReset(true);
+        SetReset(false);
     }
 
+    public void SetReset(bool asserted)
+    {
+        _stableIdle = false;
+        _statusDirty = true;
+        _resetAsserted = asserted;
+        if (!asserted)
+            return;
+        // Seuls les bits nommés par Motorola sont affectés par RESET.
+        _control1 |= C.ReceiveReset | C.TransmitReset;
+        _control2 &= unchecked((byte)~C.Rts);
+        _control3 &= unchecked((byte)~(C.Loop | C.LoopOnline));
+        _control4 &= unchecked((byte)~C.TransmitAbort);
+        _readReceiveStatus = _readTransmitStatus = 0;
+        _acknowledgedReceive = _acknowledgedTransmit = 0;
+        _receiveStatus = 0;
+        _ctsRaised = _dcdRaised = false;
+        _receiveDmaSuppressed = _transmitDmaSuppressed = false;
+        _rtsAsserted = false;
+        _rtsReleaseBits = 0;
+        ResetReceive();
+        ResetTransmit();
+        ResetLoop();
+        _busData = _busEnable && _busSelected && _busRead ? Read(_busRegister) : null;
+    }
+
+    /// <summary>Adaptateur d’horloge et de ligne pour les transports par trames ; pas une détection interne de câble.</summary>
     public void SetLine(bool clockPresent, bool clearToSend = true, bool idle = true)
     {
-        if (_clockPresent && !clockPresent && Receiving) { ResetReceive(); _receiveStatus |= C.AbortReceived; }
-        if (!_clockPresent && clockPresent) _receiveStatus |= C.Idle;
-        _clockPresent = clockPresent; _clearToSend = clearToSend;
+        SetClockPresent(clockPresent, idle);
+        SetCarrierPresent(clockPresent);
+        SetClearToSend(clockPresent && clearToSend);
+    }
+
+    /// <summary>Horloge de l’adaptateur par trames, sans modifier les entrées CTS/DCD.</summary>
+    public void SetClockPresent(bool present, bool idle = true)
+    {
+        if (_clockPresent == present && _lineIdle == idle)
+            return;
+        _stableIdle = false;
+        _clockPresent = present;
         _lineIdle = idle;
-        if ((!clockPresent || !clearToSend) && (_control1 & C.TransmitReset) == 0) _ctsRaised = true;
-        if (!idle) { _receiveStatus &= unchecked((byte)~C.Idle); _idleCycles = 0; }
+    }
+
+    public void SetClearToSend(bool allowed)
+    {
+        if (_clearToSend == allowed)
+            return;
+        _stableIdle = false;
+        _statusDirty = true;
+        if (_clearToSend && !allowed && (_control1 & C.TransmitReset) == 0)
+        {
+            _ctsRaised = true;
+            _acknowledgedTransmit &= unchecked((byte)~C.NotClearToSend);
+        }
+        _clearToSend = allowed;
+    }
+
+    public void SetCarrierPresent(bool present)
+    {
+        if (_carrierPresent == present)
+            return;
+        _stableIdle = false;
+        _statusDirty = true;
+        if (_carrierPresent && !present && (_control1 & C.ReceiveReset) == 0)
+        {
+            _dcdRaised = true;
+            _acknowledgedReceive &= unchecked((byte)~C.DataCarrierDetect);
+            DiscardCurrentReceive();
+        }
+        _carrierPresent = present;
     }
 
     public byte Read(int register)
     {
-        if ((register & 3) > 1) return ReadReceive();
-        var receive = StatusTwo(); _readReceiveStatus |= receive;
-        return (register & 3) == 0 ? StatusOne() : receive;
+        register &= C.RegisterMask;
+        if (register > 1)
+            return ReadReceive();
+        if (register == 0)
+        {
+            var status = StatusOne();
+            _flagRead |= (status & C.FlagDetected) != 0;
+            _readTransmitStatus |= (byte)(status & (C.NotClearToSend | C.TransmitUnderrun | C.TransmitAvailable));
+            return status;
+        }
+        var receive = StatusTwo();
+        _readReceiveStatus |= receive;
+        return receive;
     }
 
     public void Write(int register, byte value)
     {
-        switch (register & 3)
+        _stableIdle = false;
+        _statusDirty = true;
+        register &= C.RegisterMask;
+        switch (register)
         {
             case 0:
-                _control1 = value;
-                if ((value & C.ReceiveReset) != 0) { ResetReceive(); _receiveStatus = _readReceiveStatus = _acknowledgedReceive = 0; _priority = 0; }
-                if ((value & C.TransmitReset) != 0) { ResetTransmit(); _ctsRaised = false; }
-                if ((value & C.Discontinue) != 0) { ResetReceive(); _control1 &= unchecked((byte)~C.Discontinue); }
-                break;
-            case 1 when (_control1 & C.AddressControl) != 0: _control3 = value; break;
-            case 1:
-                _control2 = (byte)(value & ~(C.ClearReceive | C.ClearTransmit | C.LastData));
-                if ((value & C.ClearReceive) != 0)
+                _control1 = _resetAsserted ? (byte)(value | C.ReceiveReset | C.TransmitReset) : value;
+                if ((_control1 & C.ReceiveReset) != 0)
                 {
-                    var idle = (byte)(_receiveStatus & C.Idle);
-                    _acknowledgedReceive |= _readReceiveStatus;
-                    _receiveStatus &= (byte)~_readReceiveStatus;
-                    // Une ligne toujours inactive reste lisible, mais son état acquitté ne redemande pas une NMI.
-                    if (_lineIdle && !Receiving && !Transmitting) _receiveStatus |= idle;
-                    _readReceiveStatus = 0; _flagDetected = false; _idleCycles = 0;
-                    _priority = (value & C.Prioritize) != 0 && _priority is > 0 and < 4 ? _priority + 1 : 0;
+                    ResetReceive();
+                    _receiveStatus = _readReceiveStatus = _acknowledgedReceive = 0;
+                    _dcdRaised = false;
                 }
-                if ((value & C.ClearTransmit) != 0) { _underrun = false; _transmitComplete = false; _ctsRaised = false; }
-                if ((value & C.LastData) != 0) MarkTransmitEnd();
+                if ((_control1 & C.TransmitReset) != 0)
+                {
+                    ResetTransmit();
+                    _readTransmitStatus = _acknowledgedTransmit = 0;
+                    _ctsRaised = false;
+                }
+                if ((_control1 & C.Discontinue) != 0)
+                    DiscontinueReceive();
+                break;
+            case 1 when (_control1 & C.AddressControl) != 0:
+                var oldControl = _control3;
+                _control3 = _resetAsserted ? (byte)(value & ~(C.Loop | C.LoopOnline)) : value;
+                if (((oldControl ^ _control3) & C.Loop) != 0)
+                    ResetLoop();
+                if (((oldControl ^ _control3) & C.ZeroIdle) != 0 && (_control3 & C.ZeroIdle) != 0)
+                    _markIdlePrefix = true;
+                break;
+            case 1:
+                if (((_control2 ^ value) & C.FrameCompleteMode) != 0)
+                    _readTransmitStatus &= unchecked((byte)~C.TransmitAvailable);
+                _control2 = (byte)(value & ~(C.ClearReceive | C.ClearTransmit | C.LastData));
+                if (_resetAsserted)
+                    _control2 &= unchecked((byte)~C.Rts);
+                if ((value & C.ClearReceive) != 0)
+                    ClearReceiveStatus();
+                if ((value & C.ClearTransmit) != 0)
+                    ClearTransmitStatus();
+                if ((value & C.LastData) != 0)
+                    MarkTransmitEnd();
+                if ((_control2 & C.Rts) != 0)
+                {
+                    _rtsAsserted = true;
+                    _rtsReleaseBits = 0;
+                }
                 break;
             case 3 when (_control1 & C.AddressControl) != 0:
                 _control4 = (byte)(value & ~C.TransmitAbort);
-                if ((value & C.TransmitAbort) != 0) ResetTransmit();
+                if ((value & C.TransmitAbort) != 0 && !_resetAsserted)
+                    RequestAbort();
                 break;
-            default: WriteTransmit(value, (register & 3) == 3); break;
+            default:
+                WriteTransmit(value, register == C.RegisterMask);
+                break;
         }
     }
 
+    /// <summary>Un cycle du propriétaire. Le rapport configuré conserve l’horloge des bits dans le temps émulé.</summary>
     public void Tick()
     {
-        if (!_clockPresent) return;
-        if (_lineIdle && !Receiving && !Transmitting && (_control1 & C.ReceiveReset) == 0)
-        {
-            if (++_idleCycles >= _cyclesPerByte * 2) { _receiveStatus |= C.Idle; _idleCycles = 0; }
-        }
-        else { _idleCycles = 0; _receiveStatus &= unchecked((byte)~C.Idle); }
-        if (++_cycle < _cyclesPerByte) return;
-        _cycle = 0; TickTransmit(); TickReceive();
+        if (!_clockPresent)
+            return;
+        _clockFraction += C.BitsPerOctet;
+        if (_clockFraction < _cyclesPerByte)
+            return;
+        AdvanceClockBits();
     }
 
-    private byte StatusTwo()
+    private void AdvanceClockBits()
     {
-        var status = _receiveStatus;
-        if (!_clockPresent) status |= C.NoClock;
-        if ((_control1 & C.ReceiveReset) == 0)
+        if (_stableIdle || CanAdvanceStableIdle())
         {
-            if (_receive.Count != 0 && _receive[0].Address) status |= C.AddressPresent;
-            if (_receive.Count >= ((_control2 & C.TwoByte) != 0 ? 2 : 1)) status |= C.ReceiveAvailable;
+            _stableIdle = true;
+            do
+            {
+                _clockFraction -= _cyclesPerByte;
+                _fillBit = (_fillBit + 1) & (C.BitsPerOctet - 1);
+            }
+            while (_clockFraction >= _cyclesPerByte);
+            // Un cycle complet conserve les mêmes niveaux de fin TxC/RxC.
+            _txClock = false;
+            _rxClock = true;
+            return;
         }
-        _acknowledgedReceive &= status;
-        if ((_control2 & C.Prioritize) != 0)
+        while (_clockFraction >= _cyclesPerByte)
         {
-            if (_priority <= 1 && (status & C.ReceiveErrors) != 0) { _priority = 1; status &= C.ReceiveErrors; }
-            else if (_priority <= 2 && (status & C.Idle) != 0) { _priority = 2; status &= C.Idle; }
-            else if (_priority <= 3 && (status & C.AddressPresent) != 0) { _priority = 3; status &= C.AddressPresent; }
-            else if ((status & C.ReceiveAvailable) != 0) { _priority = 4; status &= unchecked((byte)~C.FrameValid); }
-            else _priority = 0;
+            _clockFraction -= _cyclesPerByte;
+            SetTransmitClock(true);
+            SetTransmitClock(false);
+            SetReceiveClock(false);
+            SetReceiveData(NextPacketBit());
+            SetReceiveClock(true);
         }
-        return status;
-    }
-
-    private byte StatusOne()
-    {
-        var receive = StatusTwo(); var status = 0;
-        if ((receive & C.ReceiveAvailable) != 0) status |= C.DataAvailable;
-        if ((receive & ~C.ReceiveAvailable & ~_acknowledgedReceive) != 0) status |= C.StatusTwoRequest;
-        if ((_control3 & C.Loop) != 0) status |= C.LoopStatus;
-        if (_flagDetected && (_control3 & C.FlagDetectEnable) != 0) status |= C.FlagDetected;
-        if (!_clockPresent || !_clearToSend || _ctsRaised) status |= C.NotClearToSend;
-        if (_underrun) status |= C.TransmitUnderrun;
-        if ((_control1 & C.TransmitReset) == 0 && ((_control2 & C.FrameCompleteMode) != 0 ? _transmitComplete : _transmit.Count <= ((_control2 & C.TwoByte) != 0 ? 1 : 2) && (status & C.NotClearToSend) == 0)) status |= C.TransmitAvailable;
-        var rxInterrupt = (_control1 & (C.ReceiveReset | C.ReceiveInterrupt)) == C.ReceiveInterrupt &&
-            ((status & (C.StatusTwoRequest | C.FlagDetected)) != 0 || (_control1 & C.ReceiveDma) == 0 && (status & C.DataAvailable) != 0);
-        var txInterrupt = (_control1 & (C.TransmitReset | C.TransmitInterrupt)) == C.TransmitInterrupt &&
-            ((status & (C.TransmitUnderrun | C.NotClearToSend)) != 0 || (_control1 & C.TransmitDma) == 0 && (status & C.TransmitAvailable) != 0);
-        if (rxInterrupt || txInterrupt) status |= C.Interrupt;
-        return (byte)status;
     }
 }
