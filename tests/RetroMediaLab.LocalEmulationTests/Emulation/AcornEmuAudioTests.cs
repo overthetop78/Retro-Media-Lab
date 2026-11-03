@@ -100,6 +100,7 @@ public sealed class AcornEmuAudioTests
         {
             machine.Write(0xfe41, value); // Bus PA : données.
             machine.Write(0xfe40, 0);     // IC32 sortie 0 basse : validation PSG.
+            for (var cycle = 0; cycle < 16; cycle++) machine.Tick(); // 32 horloges PSG, données stables.
             machine.Write(0xfe40, 8);     // Relâche la validation avant l'octet suivant.
         }
         machine.Write(0xfe43, 255); machine.Write(0xfe42, 15);
@@ -120,6 +121,64 @@ public sealed class AcornEmuAudioTests
         Assert.Null(core.LatestAudioChunk); Assert.False(core.TryDequeueAudio(out _));
         core.RunFrame(); core.Stop();
         Assert.False(core.TryDequeueAudio(out _));
+    }
+
+    [Fact]
+    public void ViaHeldWriteEnableKeepsNoiseResetAndDataChangesWorkWithoutAnotherStrobe()
+    {
+        var machine = new ModelAMachine(new byte[16384], new byte[16384]);
+        using var core = new EmulatorCore(MachineModel.BbcMicroModelA);
+        typeof(EmulatorCore).GetField("_machine", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(core, machine);
+        var audio = (BbcAudio)typeof(ModelAMachine).GetField("_audio", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(machine)!;
+        var chip = (Sn76489)typeof(BbcAudio).GetField("_chip", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(audio)!;
+        machine.Write(0xfe43, byte.MaxValue);
+        machine.Write(0xfe42, 15);
+        void Write(byte value)
+        {
+            machine.Write(0xfe41, value);
+            machine.Write(0xfe40, 0);
+            for (var cycle = 0; cycle < 16; cycle++) machine.Tick();
+            machine.Write(0xfe40, 8);
+        }
+        Mute(Write);
+        Write(0xf0);
+        machine.Write(0xfe41, 0xe4);
+        machine.Write(0xfe40, 0);
+        for (var cycle = 0; cycle < 40000; cycle++)
+        {
+            machine.Tick();
+            Assert.Equal(0, chip.Output);
+        }
+        // WE stays low: changing PA alone must start the noise, as on the hardware test.
+        machine.Write(0xfe41, 0xf0);
+        var sawNonzero = false;
+        for (var cycle = 0; cycle < 40000; cycle++)
+        {
+            machine.Tick();
+            sawNonzero |= chip.Output != 0;
+        }
+        Assert.True(sawNonzero);
+
+        machine.Write(0xfe40, 8);
+        Mute(Write);
+        // An ORA value is not the bus level while DDRA disconnects its drivers.
+        machine.Write(0xfe43, 0);
+        machine.Write(0xfe41, 0x90);
+        machine.Write(0xfe40, 0);
+        for (var cycle = 0; cycle < 200; cycle++)
+        {
+            machine.Tick();
+            Assert.Equal(0, chip.Output);
+        }
+        // Enable the PA drivers without a new ORA or IC32 access: the PSG must see that change.
+        machine.Write(0xfe43, byte.MaxValue);
+        sawNonzero = false;
+        for (var cycle = 0; cycle < 10000; cycle++)
+        {
+            machine.Tick();
+            sawNonzero |= chip.Output != 0;
+        }
+        Assert.True(sawNonzero);
     }
 
     [Theory]

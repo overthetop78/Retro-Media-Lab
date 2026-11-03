@@ -1,5 +1,4 @@
 using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Services;
-using System.Reflection;
 
 namespace RetroMediaLab.Chips.Tests.Audio.TexasInstruments.SN764xx.SN76489;
 public sealed class Sn76489Tests

@@ -55,6 +55,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly Acia6850 _acia = new(CassetteConstants.CpuClock, CassetteConstants.SerialClock);
     private readonly Cassette _cassette;
     private byte _latch = 255;
+    private byte _soundDataBus = byte.MaxValue;
     private int _keyboardColumn;
     private long _ticks, _nextFrame;
     private readonly int _cyclesPerFrame;
@@ -142,14 +143,32 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _via.ReadPortB = () => _compactEeprom?.ReadPort ?? (_adc is null ? null : (byte?)_fireInputs) ?? Io.OpenInputs;
         _via.WritePortB = WriteLatch;
         if (_compactEeprom is not null) _via.PortBPinsChanged = _compactEeprom.WritePort;
-        _via.WritePortA = value => { _masterClock?.Update(_latch, value); if ((_latch & 1) == 0) _audio.Write(value); };
+        _via.WritePortA = value => _masterClock?.Update(_latch, value);
+        _via.PortAPinsChanged = value =>
+        {
+            _soundDataBus = value;
+            _audio.SetBus(value, (_latch & Io.SoundWriteEnableMask) == 0);
+        };
         Cpu = new Cpu6502(this, cmos: master);
         Reset(true);
     }
     public void Reset(bool cold)
     {
         CompleteViaBusCycle();
-        if (cold) { Array.Clear(_ram); _via.Reset(); _userVia?.Reset(); _adc?.Reset(); Video.Reset(); _audio.Reset(); _cassette.ResetHardware(); _roms.Reset(); _latch = 255; }
+        if (cold)
+        {
+            Array.Clear(_ram);
+            _via.Reset();
+            _userVia?.Reset();
+            _adc?.Reset();
+            Video.Reset();
+            _audio.Reset();
+            _cassette.ResetHardware();
+            _roms.Reset();
+            _latch = byte.MaxValue;
+            _soundDataBus = byte.MaxValue;
+            _audio.SetBus(_soundDataBus, writeEnabled: false);
+        }
         _memoryExtension.Reset(cold);
         _plusMemory?.Reset(cold);
         _masterMemory?.Reset(cold);
@@ -278,11 +297,10 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private void WriteLatch(byte value)
     {
         _masterClock?.Address(value, _via.OutputA);
-        var previous = _latch;
         var mask = 1 << (value & 7);
         _latch = (value & 8) != 0 ? (byte)(_latch | mask) : (byte)(_latch & ~mask);
         // IC32 sortie 0 : validation active basse du PSG sur le bus lent PA0–PA7.
-        if ((previous & 1) != 0 && (_latch & 1) == 0) _audio.Write(_via.OutputA);
+        _audio.SetBus(_soundDataBus, (_latch & Io.SoundWriteEnableMask) == 0);
         _masterClock?.Update(_latch, _via.OutputA);
         Video.ScreenWrap = ((_latch >> 4) & 3) switch { 0 => 0x4000, 1 => 0x6000, 2 => 0x3000, _ => 0x5800 };
     }

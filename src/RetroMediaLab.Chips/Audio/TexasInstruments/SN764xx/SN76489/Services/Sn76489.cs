@@ -1,14 +1,27 @@
+using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Constants;
+using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Interfaces;
+
 namespace RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Services;
 
 /// <summary>Générateur TI SN76489AN : trois tons carrés et un bruit périodique ou pseudo-aléatoire.</summary>
 /// <remarks>Ce composant ignore le modèle BBC, le VIA et la sortie physique. Tick reçoit une horloge d'entrée ;
 /// Output représente la somme unipolaire des quatre voies avant le couplage analogique.
 /// Les registres sont sélectionnés par les octets portant le bit 7 ; les octets suivants complètent le registre sélectionné.</remarks>
-public sealed class Sn76489
-:RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Interfaces.ISn76489{
-    private readonly int[] _periods = new int[3], _counts = new int[4], _attenuations = new int[4];
-    private readonly bool[] _levels = new bool[3];
-    private int _divider, _selected, _noise, _shift;
+public sealed class Sn76489 : ISn76489
+{
+    private readonly int[] _periods = new int[Sn76489Constants.ToneChannels];
+    private readonly int[] _counts = new int[Sn76489Constants.ChannelCount];
+    private readonly int[] _amplitudes = new int[Sn76489Constants.ChannelCount];
+    private readonly bool[] _levels = new bool[Sn76489Constants.ToneChannels];
+    private int _divider;
+    private int _selected;
+    private int _noise;
+    private int _noisePeriod;
+    private int _shift;
+    private int _transferClocks;
+    private byte _busData;
+    private bool _chipSelected;
+    private bool _writeEnabled;
     private int _output;
 
     public Sn76489() => Reset();
@@ -16,49 +29,119 @@ public sealed class Sn76489
     /// <summary>Somme instantanée, sans duplication stéréo ni application du volume de l'hôte.</summary>
     public int Output => _output;
 
+    /// <summary>État relâché de READY (collecteur ouvert) ; false représente le niveau bas.</summary>
+    public bool Ready => _transferClocks == 0;
+
     private void UpdateOutput()
     {
-        var level = (_shift & 1) != 0 ? Sn76489Constants.Amplitudes[_attenuations[3]] : 0;
-        for (var channel = 0; channel < 3; channel++) if (_levels[channel]) level += Sn76489Constants.Amplitudes[_attenuations[channel]];
-        _output = level;
+        // Les gains ne changent qu'à l'écriture : aucun indexeur de collection ni calcul de dB dans Tick.
+        _output = (_levels[0] ? _amplitudes[0] : 0)
+            + (_levels[1] ? _amplitudes[1] : 0)
+            + (_levels[2] ? _amplitudes[2] : 0)
+            + ((_shift & Sn76489Constants.NoiseOutputBit) != 0 ? _amplitudes[Sn76489Constants.NoiseChannel] : 0);
     }
 
-    /// <summary>Réinitialise les registres et oscillateurs ; le MOS écrit ensuite ses volumes de démarrage.</summary>
+    /// <summary>Initialisation du modèle ; le circuit ne possède pas de broche RESET externe.</summary>
     public void Reset()
     {
-        Array.Clear(_periods); Array.Clear(_counts); Array.Clear(_attenuations); Array.Clear(_levels);
-        _divider = _selected = _noise = 0; _shift = Sn76489Constants.NoiseSeed;
+        Array.Clear(_periods);
+        Array.Clear(_counts);
+        Array.Clear(_levels);
+        // Les atténuateurs TI démarrent à zéro dB ; le logiciel les programme ensuite.
+        Array.Fill(_amplitudes, Sn76489Constants.Amplitudes[0]);
+        _divider = 0;
+        _selected = 0;
+        _noise = 0;
+        _noisePeriod = FixedNoisePeriod();
+        _shift = Sn76489Constants.NoiseSeed;
+        _transferClocks = 0;
+        _busData = 0;
+        _chipSelected = false;
+        _writeEnabled = false;
         UpdateOutput();
     }
 
     /// <summary>Accepte un octet du bus lorsque le câblage propriétaire valide une écriture.</summary>
     public void Write(byte value)
     {
-        var latch = (value & 0x80) != 0;
-        if (latch) _selected = (value >> 4) & 7;
-        var channel = _selected >> 1;
-        if ((_selected & 1) != 0) _attenuations[channel] = value & 15;
-        else if (channel == 3) { _noise = value & 7; _shift = Sn76489Constants.NoiseSeed; }
-        else _periods[channel] = latch ? (_periods[channel] & 0x3f0) | (value & 15) : (_periods[channel] & 15) | ((value & 63) << 4);
+        _transferClocks = Sn76489Constants.TransferClocks;
+        ApplyData(value);
         UpdateOutput();
+    }
+
+    private void ApplyData(byte value)
+    {
+        var latch = (value & Sn76489Constants.LatchFlag) != 0;
+        if (latch)
+            _selected = (value >> Sn76489Constants.RegisterShift) & Sn76489Constants.RegisterMask;
+        var channel = _selected >> Sn76489Constants.ChannelShift;
+        if ((_selected & Sn76489Constants.AttenuationRegisterFlag) != 0)
+            _amplitudes[channel] = Sn76489Constants.Amplitudes[value & Sn76489Constants.LowDataMask];
+        else if (channel == Sn76489Constants.NoiseChannel)
+        {
+            _noise = value & Sn76489Constants.NoiseControlMask;
+            _shift = Sn76489Constants.NoiseSeed;
+            UpdateNoisePeriod();
+        }
+        else
+        {
+            _periods[channel] = latch
+                ? (_periods[channel] & Sn76489Constants.HighPeriodMask) | (value & Sn76489Constants.LowDataMask)
+                : (_periods[channel] & Sn76489Constants.LowDataMask)
+                    | ((value & Sn76489Constants.HighDataMask) << Sn76489Constants.PeriodDataShift);
+            if (channel == Sn76489Constants.ToneChannels - 1
+                && (_noise & Sn76489Constants.NoiseRateMask) == Sn76489Constants.NoiseToneRate)
+                UpdateNoisePeriod();
+        }
+    }
+
+    /// <summary>Niveaux du bus : true signifie CE/WE actifs (broches basses). Le bus reste présenté jusqu'au prochain appel.</summary>
+    /// <remarks>Les registres capturent le bus à l'horloge interne, même sans nouveau front de WE.
+    /// La carte conserve la responsabilité de la stabilité des données pendant le transfert.</remarks>
+    public void SetBus(byte value, bool chipSelected, bool writeEnabled)
+    {
+        if (chipSelected && (!_chipSelected || writeEnabled && !_writeEnabled))
+            _transferClocks = Sn76489Constants.TransferClocks;
+        _busData = value;
+        _chipSelected = chipSelected;
+        _writeEnabled = writeEnabled;
     }
 
     /// <summary>Avance d'une période d'entrée ; les compteurs internes travaillent après division par seize.</summary>
     public void Tick()
     {
-        if (++_divider < Sn76489Constants.ClockDivider) return;
+        if (_transferClocks != 0)
+            --_transferClocks;
+        if (++_divider < Sn76489Constants.ClockDivider)
+            return;
         _divider = 0;
-        for (var channel = 0; channel < 3; channel++)
-            if (--_counts[channel] <= 0) { _levels[channel] = !_levels[channel]; _counts[channel] = Period(channel); }
-        if (--_counts[3] <= 0)
+        for (var channel = 0; channel < Sn76489Constants.ToneChannels; channel++)
         {
-            var feedback = ((_shift & 4) != 0) ^ ((_noise & 4) != 0 && (_shift & 8) != 0);
-            _shift = (_shift >> 1) | (feedback ? Sn76489Constants.NoiseSeed : 0);
-            _counts[3] = (_noise & 3) == 3 ? 2 * Period(2) : 1 << (5 + (_noise & 3));
+            if (--_counts[channel] > 0)
+                continue;
+            _levels[channel] = !_levels[channel];
+            _counts[channel] = Period(channel);
         }
+        if (--_counts[Sn76489Constants.NoiseChannel] <= 0)
+        {
+            var feedback = (_shift & Sn76489Constants.NoiseFeedbackTap) != 0;
+            if ((_noise & Sn76489Constants.WhiteNoiseFlag) != 0)
+                feedback ^= (_shift & Sn76489Constants.WhiteNoiseFeedbackTap) != 0;
+            _shift = (_shift >> 1) | (feedback ? Sn76489Constants.NoiseSeed : 0);
+            _counts[Sn76489Constants.NoiseChannel] = _noisePeriod;
+        }
+        if (_chipSelected && _writeEnabled)
+            ApplyData(_busData);
         UpdateOutput();
     }
 
     /// <summary>Résout le diviseur TI ; fréquence du ton = horloge / (32 × période).</summary>
     private int Period(int channel) => _periods[channel] == 0 ? Sn76489Constants.ZeroPeriod : _periods[channel];
+
+    private int FixedNoisePeriod() => 1 << (Sn76489Constants.FixedNoisePeriodShift
+        + (_noise & Sn76489Constants.NoiseRateMask));
+
+    private void UpdateNoisePeriod() => _noisePeriod = (_noise & Sn76489Constants.NoiseRateMask) == Sn76489Constants.NoiseToneRate
+        ? Sn76489Constants.ToneNoisePeriodMultiplier * Period(Sn76489Constants.ToneChannels - 1)
+        : FixedNoisePeriod();
 }

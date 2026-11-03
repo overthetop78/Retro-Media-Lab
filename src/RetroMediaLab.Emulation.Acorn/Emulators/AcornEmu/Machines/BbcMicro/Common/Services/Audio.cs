@@ -21,6 +21,9 @@ internal sealed class Audio
     /// <summary>Écrit le bus lent lorsque la carte valide le PSG.</summary>
     internal void Write(byte value) => _chip.Write(value);
 
+    /// <summary>CE est câblé bas sur le BBC ; IC32 pilote WE. Les données restent présentes entre les accès CPU.</summary>
+    internal void SetBus(byte value, bool writeEnabled) => _chip.SetBus(value, chipSelected: true, writeEnabled);
+
     /// <summary>Réinitialise le circuit, la phase et les données non encore transmises.</summary>
     internal void Reset()
     {

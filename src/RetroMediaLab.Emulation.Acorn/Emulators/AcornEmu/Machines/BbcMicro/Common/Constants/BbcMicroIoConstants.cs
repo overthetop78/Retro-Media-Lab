@@ -5,6 +5,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 /// <summary>Décodage du VIA utilisateur et du convertisseur uPD7002 équipant le Model B.</summary>
 internal static class BbcMicroIoConstants
 {
+    internal const byte SoundWriteEnableMask = 1;
     internal const int ViaPhaseMask = 1;
     internal const int ViaTrailingPhase = 0;
     internal const byte UnconnectedBus = 0xfe;
