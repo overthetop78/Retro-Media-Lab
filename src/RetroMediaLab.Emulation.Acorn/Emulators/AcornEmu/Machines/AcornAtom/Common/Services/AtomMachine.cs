@@ -2,6 +2,7 @@ using RetroMediaLab.Chips.CPU.Common.Interfaces;
 using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services;
+using RetroMediaLab.Chips.IO.Intel.MCS80.Chip8255.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
@@ -23,7 +24,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
     private readonly int _videoRamBytes;
     private readonly Cpu6502 _cpu;
     private readonly Via6522 _via = new();
-    private readonly AtomPpi8255 _ppi = new();
+    private readonly Ppi8255 _ppi = new();
     private readonly AtomKeyboard _keyboard = new();
     private readonly AtomVideo _video;
     private readonly AnalogCassette _cassette = new(C.CpuClock, CassetteSignalMode.DirectWaveform);
@@ -100,6 +101,10 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
         _cassette.Tick();
         _videoPhase += V.CharacterClock;
         while (_videoPhase >= C.CpuClock) { _videoPhase -= C.CpuClock; _video.Tick(); }
+        // In strobed modes, C pins are asynchronous handshake inputs as well as readable levels.
+        // Keep the ordinary mode-0 hot path free of peripheral handshake polling.
+        if (_ppi.GroupAMode != PpiMode.Basic || _ppi.GroupBMode != PpiMode.Basic)
+            _ppi.SetPortCInput(ReadInputs());
         _audioPhase += C.AudioSampleRate;
         if (_audioPhase < C.CpuClock) return;
         _audioPhase -= C.CpuClock;
@@ -124,6 +129,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
     public void SetInput(EmulationInputSnapshot snapshot)
     {
         _keyboard.SetInput(snapshot);
+        _ppi.SetPortCInput(ReadInputs());
         if (_keyboard.Break && !_break) Reset(false);
         _break = _keyboard.Break;
     }
@@ -143,6 +149,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
         _via.Reset();
         _cassette.ResetHardware();
         _ppi.Reset();
+        _ppi.SetPortCInput(ReadInputs());
         _fdc?.Reset();
         _cpu.Reset();
     }

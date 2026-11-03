@@ -1,11 +1,11 @@
 using RetroMediaLab.Chips.IO.Intel.MCS80.Chip8255.Services;
 namespace RetroMediaLab.Chips.Tests.IO.Intel.MCS80.Chip8255;
-public sealed class Ppi8255Tests
+public sealed partial class Ppi8255Tests
 {
     [Fact]
     public void PpiDirectionsAndBitCommandsKeepInputsSeparateFromOutputLatches()
     {
-        var ppi = new AtomPpi8255
+        var ppi = new Ppi8255
         {
             ReadPortA = () => 0x55,
             ReadPortB = () => 0xaa,
