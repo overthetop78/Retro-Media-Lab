@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Enums;
 using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services;
 using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
@@ -10,7 +11,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.
 /// du CRTC existant ; aucune position de curseur n’est inventée à partir du texte.</remarks>
 internal sealed class SystemVideo
 {
-    private readonly Crtc6845 _crtc = new();
+    private readonly Crtc6845 _crtc = new(Crtc6845Model.Hd6845S);
     private readonly bool _eightyColumns;
     private readonly bool _inverted;
     private readonly byte[] _ram;

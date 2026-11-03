@@ -162,6 +162,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
             _userVia?.Reset();
             _adc?.Reset();
             Video.Reset();
+            _via.SetCa1(Video.VSync);
             _audio.Reset();
             _cassette.ResetHardware();
             _roms.Reset();
@@ -222,7 +223,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _econet.Tick();
         var sync = Video.VSync;
         Video.Tick();
-        if (!sync && Video.VSync) _via.VSync();
+        if (sync != Video.VSync) _via.SetCa1(Video.VSync);
         ClockVia();
         if ((_ticks & Io.ViaPhaseMask) == Io.ViaTrailingPhase)
         {

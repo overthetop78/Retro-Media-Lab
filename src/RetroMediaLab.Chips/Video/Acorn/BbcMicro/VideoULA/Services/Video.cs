@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Enums;
 using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services;
 using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Services;
 using System.Runtime.InteropServices;
@@ -11,7 +12,7 @@ namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services;
 public sealed class Video
 :RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Interfaces.IVideo{
     private readonly byte[] _ram;
-    private readonly Crtc6845 _crtc = new();
+    private readonly Crtc6845 _crtc = new(Crtc6845Model.Hd6845S);
     private readonly TeletextSaa5050 _teletext;
     private readonly byte[] _palette = new byte[16];
     private readonly uint[] _bitmapPalette = new uint[VideoConstants.PaletteEntries * 2];
