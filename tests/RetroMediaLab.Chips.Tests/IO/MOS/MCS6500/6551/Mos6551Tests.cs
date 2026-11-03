@@ -4,8 +4,8 @@ namespace RetroMediaLab.Chips.Tests.IO.MOS.MCS6500.Chip6551;
 public sealed class Mos6551Tests
 {
     [Theory]
-    [InlineData(0x9f, 8, 32)]
-    [InlineData(0xff, 5, 24)]
+    [InlineData(0x9f, 8, 33)]
+    [InlineData(0xff, 5, 28)]
     public void ReceiveRegisterIsNotReleasedBeforeConfiguredStopTime(int control, int bits, int stopClocks)
     {
         var receiver = Device((byte)control);
@@ -52,12 +52,12 @@ public sealed class Mos6551Tests
         var receiver = Device();
         sender.TransmitChanged = receiver.SetRxd;
         sender.Write(0, 0x41);
-        ClockPair(sender, receiver, 1);
+        ClockPair(sender, receiver, 2);
         Assert.True(sender.Irq);
         Assert.Equal(0x90, sender.Read(1) & 0x90);
         sender.Write(0, 0x42);
         Assert.Equal(0, sender.Read(1) & 0x10);
-        ClockPair(sender, receiver, 154);
+        ClockPair(sender, receiver, 153);
         Assert.Equal(0x41, receiver.Read(0));
         ClockPair(sender, receiver, 161);
         Assert.Equal(0x42, receiver.Read(0));
@@ -86,7 +86,7 @@ public sealed class Mos6551Tests
         Send(receiver, 0x31);
         Send(receiver, 0x32);
         Assert.Equal(0x0c, receiver.Read(1) & 0x0f);
-        Assert.Equal(0x32, receiver.Read(0));
+        Assert.Equal(0x31, receiver.Read(0));
         Assert.Equal(0, receiver.Read(1) & 0x0f);
     }
 
@@ -152,12 +152,14 @@ public sealed class Mos6551Tests
         var device = Device(0x1f, 0xa9);
         Send(device, 0x56, parity: true);
         device.Write(1, 0xff);
-        Assert.Equal(0xa0, device.Read(2));
+        Assert.Equal(0xa2, device.Read(2));
         Assert.Equal(0x1f, device.Read(3));
         Assert.Equal(0x56, device.Read(0));
+        Assert.True(device.Irq); // Program reset disables new RX IRQ but does not acknowledge its existing latch.
+        Assert.Equal(0x80, device.Read(1) & 0x80);
         Assert.False(device.Irq);
         device.Reset();
-        Assert.Equal(0, device.Read(2));
+        Assert.Equal(2, device.Read(2));
         Assert.Equal(0, device.Read(3));
         Assert.Equal(0x10, device.Read(1));
     }
@@ -173,7 +175,7 @@ public sealed class Mos6551Tests
         device.Advance(6);
         Assert.True(device.Txd);
         device.SetRxd(false);
-        device.Advance(6);
+        device.Advance(6 * 10);
         Assert.False(device.Txd);
     }
 

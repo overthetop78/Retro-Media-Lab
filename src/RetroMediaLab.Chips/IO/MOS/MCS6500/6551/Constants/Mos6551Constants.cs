@@ -36,5 +36,15 @@ public static class Mos6551Constants
     public const int HalfBit = Oversampling / 2;
     public const int CrystalClockHz = 1843200;
     public const int IdleReceive = -1;
-    public static ReadOnlySpan<int> BaudDivisors => [1, 2304, 1536, 1048, 856, 768, 384, 192, 96, 64, 48, 32, 24, 16, 12, 6];
+    public const byte MosResetCommand = DisableReceiveInterrupt;
+    public const int LeastSignificantBit = 1;
+    public const int ClockEdgesPerPeriod = 2;
+    public const int ParityShift = 5;
+    public const int TransmitControlShift = 2;
+    public const int ReceiveStopSampleOffset = 1;
+    public const int OneAndHalfStopTicks = Oversampling + HalfBit;
+    public const int OneAndHalfStopSample = Oversampling + HalfBit + HalfBit / 2;
+    public const uint EchoInitialHistory = (1u << HalfBit) - 1;
+    private static readonly int[] Divisors = [1, 2304, 1536, 1048, 856, 768, 384, 192, 96, 64, 48, 32, 24, 16, 12, 6];
+    public static ReadOnlySpan<int> BaudDivisors => Divisors;
 }

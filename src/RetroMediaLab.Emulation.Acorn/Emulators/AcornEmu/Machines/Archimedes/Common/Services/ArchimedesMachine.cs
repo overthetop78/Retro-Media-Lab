@@ -6,6 +6,7 @@ using RetroMediaLab.Chips.IO.Acorn.Archimedes.IOC.Services;
 using RetroMediaLab.Chips.Memory.Acorn.Archimedes.MEMC.Enums;
 using RetroMediaLab.Chips.Memory.Acorn.Archimedes.MEMC.Services;
 using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6551.Services;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6551.Enums;
 using RetroMediaLab.Chips.Timers.Philips.PCF85xx.PCF8583.Services;
 using RetroMediaLab.Chips.Video.Acorn.Archimedes.VIDC.Services;
 using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums;
@@ -76,7 +77,7 @@ internal sealed partial class ArchimedesMachine : IArmBus, IAcornMachine
         _ioc.ControlWritten = WriteControlPins;
         if (serialPort)
         {
-            _serial = new Mos6551(C.IocClockHz);
+            _serial = new Mos6551(C.IocClockHz, variant: Mos6551Variant.Rockwell65C51);
             _ioc.BaudTransitions = _serial.AdvanceReceiveClock;
             _serial.InterruptChanged = active => _ioc.SetIrqB(C.SerialInterrupt, active);
         }
