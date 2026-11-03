@@ -1,9 +1,7 @@
 using RetroMediaLab.Chips.IO.NationalSemiconductor.INS815x.Chip8154.Services;
-using RetroMediaLab.Chips.CPU.Common.Interfaces;
-using RetroMediaLab.Chips.CPU.Motorola.M6800.Chip6809.Services;
 
 namespace RetroMediaLab.Chips.Tests.IO.NationalSemiconductor.INS815x.Chip8154;
-public sealed class RamIoTests
+public sealed partial class RamIoTests
 {
     [Fact]
     public void RamIoBitAddressesSelectBothPortsAndPreserveInputPins()
@@ -18,9 +16,10 @@ public sealed class RamIoTests
         port.WriteIo(0x10, 0);
         port.WriteIo(0x1f, 0);
         Assert.Equal(0xa1, port.ReadIo(0x20));
-        Assert.Equal(0x8a, port.ReadIo(0x21));
+        Assert.Equal(0x0a, port.ReadIo(0x21)); // PB7 output is loaded low by the external pad level.
+        Assert.Equal(0x80, port.OutputB);
         Assert.Equal(0x80, port.ReadIo(0));
-        Assert.Equal(0x80, port.ReadIo(0x0f));
+        Assert.Equal(0, port.ReadIo(0x0f));
         port.WriteIo(0, 0xff);
         port.WriteIo(0x0f, 0xff);
         Assert.Equal(0xa0, port.ReadIo(0x20));

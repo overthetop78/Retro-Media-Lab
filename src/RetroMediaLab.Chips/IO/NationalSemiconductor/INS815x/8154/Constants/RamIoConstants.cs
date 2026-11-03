@@ -15,4 +15,11 @@ public static class RamIoConstants
     public const int Mode = 0x24;
     public const byte BitReadHigh = 0x80;
     public const byte BasicMode = 0;
+    public const byte StrobedMode = 0x20;
+    public const byte OutputMode = 0x40;
+    public const byte ThreeStateMode = 0x80;
+    public const byte BufferFlag = 0x40;
+    public const byte InterruptEnable = 0x80;
+    public const byte HandshakeBits = BufferFlag | InterruptEnable;
+    public const byte StrobeLowInputs = 0x7f;
 }
