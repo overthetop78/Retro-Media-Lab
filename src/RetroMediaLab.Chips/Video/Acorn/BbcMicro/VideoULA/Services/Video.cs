@@ -9,7 +9,7 @@ namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services;
 /// <summary>Câblage vidéo BBC : bus RAM emprunté, CRTC, ULA et générateur télétexte.</summary>
 /// <remarks>Chaque caractère est dessiné pendant son cycle de lecture. Une modification ultérieure de RAM,
 /// de palette ou de registres ne redessine pas les pixels déjà balayés. Les images publiées restent immuables.</remarks>
-public sealed class Video
+public sealed partial class Video
 :RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Interfaces.IVideo{
     private readonly byte[] _ram;
     private readonly Crtc6845 _crtc = new(Crtc6845Model.Hd6845S);
@@ -40,6 +40,7 @@ public sealed class Video
         if (height is not (VideoConstants.Height or VideoConstants.NtscHeight)) throw new ArgumentOutOfRangeException(nameof(height));
         _ram = ram;
         _teletext = new(characters);
+        ConfigureTeletextPins();
         Height = height;
         _drawing = new byte[VideoConstants.Width * Height * 4];
         _completed = new byte[_drawing.Length];
@@ -48,7 +49,7 @@ public sealed class Video
     }
     public void Reset()
     {
-        _crtc.Reset(); _teletext.Reset(); Array.Clear(_palette);
+        _crtc.Reset(); _teletext.Reset(); ResetTeletextWiring(); Array.Clear(_palette);
         Array.Clear(_drawing); Array.Clear(_completed); _control = 0; _phase = _cursorRemaining = 0; ScreenWrap = 0x5800;
         UpdateBitmapMode();
         UpdateBitmapPalette();
@@ -67,16 +68,18 @@ public sealed class Video
     public void Tick()
     {
         _phase ^= 1;
-        if ((_control & 16) == 0 && _phase != 0) return;
-        if (_crtc.Column == 0) { _teletext.BeginLine(_crtc.Row); _cursorRemaining = 0; }
-        if (_crtc.IsProgrammed && _crtc.DisplayEnabled && _crtc.Scanline < Height)
+        ClockTeletext();
+        if ((_control & VideoConstants.FastCharacterClockBit) == 0 && _phase != 0) return;
+        if (_crtc.Column == 0) _cursorRemaining = 0;
+        if ((_control & VideoConstants.TeletextControlBit) == 0 && _crtc.IsProgrammed && _crtc.DisplayEnabled && _crtc.Scanline < Height)
         {
-            if (_crtc.CursorForCell(_crtc.Address)) _cursorRemaining = (_control & 2) != 0 ? 1 : VideoConstants.CursorWidths[_control >> 5];
-            if ((_control & 2) != 0) TeletextCharacter();
-            else BitmapCharacter();
+            if (_crtc.CursorForCell(_crtc.Address)) _cursorRemaining = VideoConstants.CursorWidths[_control >> 5];
+            BitmapCharacter();
             if (_cursorRemaining > 0) _cursorRemaining--;
         }
-        if (_crtc.Tick() && _crtc.IsProgrammed)
+        var frameStarted = _crtc.Tick();
+        if (_crtc.Column == 0) _teletextLineHalfDot = 0;
+        if (frameStarted && _crtc.IsProgrammed)
         {
             // Render publie une copie immuable : les deux tampons internes restent
             // possédés par la vidéo et peuvent donc être réutilisés sans modifier une image publiée.
@@ -130,30 +133,6 @@ public sealed class Video
         for (var x = first; x < last; x++)
         {
             pixels[destination + x] = _bitmapPalette[logicalPixels[source + (x >> shift)] + cursor];
-        }
-    }
-
-    private void TeletextCharacter()
-    {
-        var offset = (0x7c00 | (_crtc.Address & 0x3ff)) & (_ram.Length - 1);
-        var data = ReadMemory?.Invoke(offset) ?? _ram[offset];
-        var raster = _crtc.InterlaceVideo ? _crtc.RasterAddress : _crtc.RasterAddress * 2;
-        var cell = _teletext.Character(data, raster, _crtc.Frame);
-        var left = _crtc.DisplayColumn * VideoConstants.TeletextCellWidth;
-        var y = _crtc.Scanline;
-        if ((uint)y >= Height) return;
-        var first = Math.Max(0, -left);
-        var last = Math.Min(VideoConstants.TeletextCellWidth, VideoConstants.Width - left);
-        var masks = VideoConstants.TeletextPixelMasks;
-        var colours = Monochrome ? VideoConstants.PackedMonochrome : VideoConstants.PackedColours;
-        var cursor = _cursorRemaining > 0 ? 7 : 0;
-        var foreground = colours[cell.Foreground ^ cursor];
-        var background = colours[cell.Background ^ cursor];
-        var pixels = MemoryMarshal.Cast<byte, uint>(_drawing.AsSpan());
-        var destination = y * VideoConstants.Width + left;
-        for (var x = first; x < last; x++)
-        {
-            pixels[destination + x] = (cell.Mask & masks[x]) != 0 ? foreground : background;
         }
     }
 

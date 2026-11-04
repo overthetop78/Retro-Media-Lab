@@ -1,3 +1,5 @@
+using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Constants;
+
 namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants;
 
 /// <summary>Dimensions du tampon du rendu BBC courant ; elles ne définissent pas toutes les machines Acorn.</summary>
@@ -13,6 +15,20 @@ public static class VideoConstants
     public const int CursorPaletteOffset = PaletteEntries;
     public const int BitmapByteValues = 256;
     public const int BitmapDecodeModes = 4;
+    public const int TeletextControlBit = 2;
+    public const int FastCharacterClockBit = 16;
+    public const int TeletextHalfDotsPerCpuClock = 6;
+    public const int TeletextHalfDotsPerCharacter = 12;
+    public const int TeletextF1PhaseHalfDots = 6;
+    public const int TeletextInputLatchHalfDots = 12;
+    public const int TeletextWindowDelayHalfDots = Saa5050Constants.GraphicsDelayHalfClocks;
+    public const int TeletextViewportHalfDots = TeletextF1PhaseHalfDots + TeletextInputLatchHalfDots + TeletextWindowDelayHalfDots;
+    public const int TeletextPixelNumerator = 4;
+    public const int TeletextPixelDenominator = 3;
+    public const int TeletextRamBase = 0x7c00;
+    public const int TeletextRamMask = 0x3ff;
+    public const int CrtcMemoryMask = 0x3fff;
+    public const int TeletextSpace = 32;
     private static readonly byte[] BitmapPixels = CreateBitmapPixels();
     private static readonly int[] TeletextMasks = [0x800, 0x800, 0x400, 0x200, 0x100, 0x100, 0x080, 0x040, 0x020, 0x020, 0x010, 0x008, 0x004, 0x004, 0x002, 0x001];
     private static readonly uint[] ColourPixels = [0xff000000, 0xffff0000, 0xff00ff00, 0xffffff00, 0xff0000ff, 0xffff00ff, 0xff00ffff, 0xffffffff];

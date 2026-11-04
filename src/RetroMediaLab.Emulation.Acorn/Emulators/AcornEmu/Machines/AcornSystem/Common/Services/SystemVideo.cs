@@ -9,7 +9,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.
 /// <summary>Cartes VDU System 40 colonnes SAA5050 et 80 colonnes à ROM de caractères.</summary>
 /// <remarks>L’assemblage fournit l’horloge des caractères. Les adresses proviennent
 /// du CRTC existant ; aucune position de curseur n’est inventée à partir du texte.</remarks>
-internal sealed class SystemVideo
+internal sealed partial class SystemVideo
 {
     private readonly Crtc6845 _crtc = new(Crtc6845Model.Hd6845S);
     private readonly bool _eightyColumns;
@@ -31,7 +31,11 @@ internal sealed class SystemVideo
         _ram = new byte[eightyColumns ? C.MonochromeRamBytes : C.TeletextRamBytes];
         _ramStart = eightyColumns ? relocated ? C.RelocatedMonochromeRamStart : C.MonochromeRamStart : C.TeletextRamStart;
         _crtcStart = eightyColumns ? relocated ? C.RelocatedMonochromeCrtcStart : C.MonochromeCrtcStart : C.TeletextCrtcStart;
-        if (!eightyColumns) _teletext = new TeletextSaa5050(characters);
+        if (!eightyColumns)
+        {
+            _teletext = new TeletextSaa5050(characters);
+            ConfigureTeletextPins();
+        }
     }
 
     internal long Frame => _crtc.Frame;
@@ -61,14 +65,21 @@ internal sealed class SystemVideo
     {
         _crtc.Reset();
         _teletext?.Reset();
+        ResetTeletextWiring();
         Array.Clear(_drawing);
         Array.Clear(_completed);
     }
 
     internal bool TickCharacter()
     {
-        if (_crtc.DisplayEnabled) DrawCell();
-        if (!_crtc.Tick()) return false;
+        if (_eightyColumns)
+        {
+            if (_crtc.DisplayEnabled) DrawMonochromeCell();
+        }
+        else ClockTeletext();
+        var frameStarted = _crtc.Tick();
+        if (_crtc.Column == 0) _teletextLineHalfDot = 0;
+        if (!frameStarted) return false;
         (_drawing, _completed) = (_completed, _drawing);
         Array.Clear(_drawing);
         return true;
@@ -82,33 +93,20 @@ internal sealed class SystemVideo
         return decoded == _crtcStart ? 0 : decoded == _crtcStart + 1 ? 1 : -1;
     }
 
-    private void DrawCell()
+    private void DrawMonochromeCell()
     {
-        var cellPixels = _eightyColumns ? C.MonochromeCellPixels : C.TeletextCellPixels;
+        var cellPixels = C.MonochromeCellPixels;
         var x = _crtc.DisplayColumn * cellPixels;
         var fieldStep = _crtc.InterlaceVideo ? C.InterlaceFieldStep : 1;
         var rowHeight = (_crtc[C.CrtcRasterHeight] + fieldStep) / fieldStep;
         var y = _crtc.Row * rowHeight + _crtc.Raster / fieldStep;
         if (x < 0 || x + cellPixels > C.Width || y < 0 || y >= C.Height) return;
         var code = _ram[_crtc.Address & (_ram.Length - 1)];
-        int mask;
-        int foreground;
-        int background;
-        if (_eightyColumns)
-        {
-            var glyphAddress = code * C.MonochromeGlyphBytes + (_crtc.RasterAddress & C.MonochromeRasterMask);
-            var glyph = _crtc.Cursor ? byte.MaxValue : _characters[glyphAddress & (C.CharacterRomBytes - 1)];
-            mask = glyph >> C.MonochromeGlyphPadding;
-            foreground = _inverted ? 0 : C.White;
-            background = _inverted ? C.White : 0;
-        }
-        else
-        {
-            if (_crtc.DisplayColumn == 0) _teletext!.BeginLine(_crtc.Row);
-            var raster = _crtc.InterlaceVideo ? _crtc.RasterAddress : _crtc.RasterAddress * C.TeletextRasterMultiplier;
-            (mask, foreground, background) = _teletext!.Character(code, raster, _crtc.Frame);
-            if (_crtc.Cursor) mask ^= (1 << cellPixels) - 1;
-        }
+        var glyphAddress = code * C.MonochromeGlyphBytes + (_crtc.RasterAddress & C.MonochromeRasterMask);
+        var glyph = _crtc.Cursor ? byte.MaxValue : _characters[glyphAddress & (C.CharacterRomBytes - 1)];
+        var mask = glyph >> C.MonochromeGlyphPadding;
+        var foreground = _inverted ? 0 : C.White;
+        var background = _inverted ? C.White : 0;
         for (var pixel = 0; pixel < cellPixels; pixel++)
         {
             var color = (mask & (1 << (cellPixels - pixel - 1))) != 0 ? foreground : background;

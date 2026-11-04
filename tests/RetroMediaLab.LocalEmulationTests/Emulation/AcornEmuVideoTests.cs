@@ -201,6 +201,81 @@ public sealed class AcornEmuVideoTests
         Assert.Equal(0, text.Character(127, 2, 0).Mask);
     }
 
+    [Fact]
+    public void NativeTeletextUsesLatchedMemoryAndRetainsTheFortiethCharacter()
+    {
+        var ram = Enumerable.Repeat((byte)32, 32768).ToArray();
+        ram[0x7c00] = 17;
+        ram[0x7c01] = 127;
+        ram[0x7c02] = 18;
+        ram[0x7c03] = 127;
+        ram[0x7c27] = 127;
+        var video = TeletextBoard(ram, new byte[960]);
+        try
+        {
+            Advance(video, 39936 * 3);
+            var image = video.Render();
+            for (var x = 16; x < 32; x++)
+            {
+                Assert.Equal(255, image[(x * 4) + 2]);
+                Assert.Equal(0, image[(x * 4) + 1]);
+            }
+            foreach (var x in new[] { 48, 55, 63, 624, 632, 639 })
+            {
+                Assert.Equal(255, image[x * 4 + 1]);
+                Assert.Equal(0, image[x * 4 + 2]);
+            }
+        }
+        finally { video.Reset(); }
+    }
+
+    [Fact]
+    public void NativeTeletextLineCounterFollowsLoseRatherThanTheCrtcRasterRegister()
+    {
+        var rom = new byte[960];
+        rom[('A' - 32) * 10 + 3] = 31;
+        var video = TeletextBoard(Enumerable.Repeat((byte)'A', 32768).ToArray(), rom);
+        try
+        {
+            Set(video, 9, 1); // une ligne par rangée CRTC, dix par caractère SAA5050.
+            Advance(video, 39936);
+            var image = video.Render();
+            foreach (var y in new[] { 3, 13, 23 }) Assert.Equal(255, image[(y * 640 + 8) * 4 + 2]);
+            foreach (var y in new[] { 2, 4, 12, 14, 22, 24 }) Assert.Equal(0, image[(y * 640 + 8) * 4 + 2]);
+        }
+        finally { video.Reset(); }
+    }
+
+    [Fact]
+    public void NativeTeletextWiringKeepsBoardTieOffsAndClocksFlashInBitmapMode()
+    {
+        var video = TeletextBoard(new byte[32768], new byte[960]);
+        try
+        {
+            var field = typeof(BbcVideo).GetField("_teletext", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+            var chip = Assert.IsType<TeletextSaa5050>(field.GetValue(video));
+            Assert.True(chip.DisplayEnabled);
+            Assert.True(chip.BigCharacterSelectHigh);
+            Assert.True(chip.RemoteData);
+            Assert.False(chip.PictureOn);
+            Assert.False(chip.SuperimposeInputHigh);
+            var before = chip.FlashField;
+            video.WriteUla(0xfe20, 0x48); // sortie bitmap, horloges du SAA5050 toujours présentes.
+            Advance(video, 39936 * 3);
+            Assert.NotEqual(before, chip.FlashField);
+        }
+        finally { video.Reset(); }
+    }
+
+    private static BbcVideo TeletextBoard(byte[] ram, byte[] rom)
+    {
+        var video = new BbcVideo(ram, rom);
+        byte[] registers = [63, 40, 51, 0x24, 30, 2, 25, 28, 0x93, 19, 0x20, 19, 0x28, 0, 0x28, 0];
+        for (byte register = 0; register < registers.Length; register++) Set(video, register, registers[register]);
+        video.WriteUla(0xfe20, 0x4b);
+        return video;
+    }
+
     private static BbcVideo Bitmap(byte[] ram)
     {
         var video = new BbcVideo(ram, ReadOnlySpan<byte>.Empty);
