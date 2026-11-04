@@ -3,7 +3,8 @@ using RetroMediaLab.Chips.CPU.Common.Enums;
 namespace RetroMediaLab.Chips.CPU.Common.Interfaces;
 
 /// <summary>Broches vues par le 6502 ; le CPU ignore le modèle de machine et le SDK de l'application.</summary>
-/// <remarks>Chaque lecture ou écriture du processeur avance d'abord l'horloge par Tick. Le bus appartient à la machine.</remarks>
+/// <remarks>Chaque transfert de lecture/écriture suit Tick. Si le bus implémente ICpuBusCyclePins,
+/// le CPU lui présente préalablement l'adresse et le sens. Le bus appartient à la machine.</remarks>
 public interface ICpuBus
 {
     /// <summary>Raccordement fixe des broches auxiliaires. All préserve les bus existants et les bancs de signaux.</summary>

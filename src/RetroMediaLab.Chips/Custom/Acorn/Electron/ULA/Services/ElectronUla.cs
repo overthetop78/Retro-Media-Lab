@@ -1,26 +1,22 @@
 using RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces;
 using C = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronUlaConstants;
-using V = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronVideoConstants;
 
 namespace RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Services;
 
 /// <summary>Registres et interruptions de l’ULA ; le CPU exécute lui-même le MOS Electron.</summary>
-public sealed partial class ElectronUla
-:RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronUla{
+public sealed partial class ElectronUla : IElectronUla
+{
     private readonly ElectronVideo _video;
     private readonly IElectronCassettePins _cassette;
     private byte _status;
     private byte _interrupts;
     private int _comms;
-    private int _divider;
-    private int _tonePhase;
-    private bool _tone;
+    private readonly ElectronCommsCounter _commsCounter = new();
 
     public ElectronUla(ElectronVideo video, IElectronCassettePins cassette)
     {
         _video = video;
         _cassette = cassette;
-        video.LineStarted = OnLineStarted;
         Reset(true);
     }
 
@@ -28,19 +24,20 @@ public sealed partial class ElectronUla
     public bool Motor { get; private set; }
     public bool CapsLock { get; private set; }
     public bool Irq => (_status & _interrupts & C.EnabledInterruptMask) != 0;
-    public short SoundSample => _comms == C.SoundMode ? (_tone ? (short)C.SpeakerAmplitude : (short)-C.SpeakerAmplitude) : (short)0;
+    public short SoundSample => _comms == C.SoundMode ? (_commsCounter.SoundLevel ? (short)C.SpeakerAmplitude : (short)-C.SpeakerAmplitude) : (short)0;
 
     public void Reset(bool cold)
     {
-        _status = cold ? C.PowerOnInterrupt : (byte)0;
+        // BREAK drives the CPU reset output, not the ULA power-on input.
+        if (!cold) return;
+        _status = C.PowerOnInterrupt;
         _interrupts = 0;
         RomPage = 0;
         _comms = C.UnusedCommsMode;
-        _divider = C.InitialSoundDivider;
-        _tonePhase = 0;
-        _tone = false;
+        _commsCounter.Reset();
         Motor = CapsLock = false;
         ResetSerial();
+        ResetBus(cold);
     }
 
     public byte Read(int register)
@@ -72,11 +69,10 @@ public sealed partial class ElectronUla
                 _video.WriteStart(register == C.ScreenStartHighRegister, value);
                 break;
             case C.TapeDataRegister:
-                _pendingByte = value;
-                _transmitPending = true;
-                _status &= unchecked((byte)~C.TransmitEmptyInterrupt);
+                LoadTransmitter(value);
                 break;
             case C.PageInterruptRegister:
+                if ((value & C.ClearNmiPriority) != 0) ClearRamPriority();
                 if ((RomPage & C.InternalPageMask) != C.InternalPageSelect || (value & C.InternalPageSelect) != 0)
                     RomPage = value & C.PageMask;
                 if ((value & C.ClearDisplayEnd) != 0) _status &= unchecked((byte)~C.DisplayEndInterrupt);
@@ -84,20 +80,10 @@ public sealed partial class ElectronUla
                 if ((value & C.ClearHighTone) != 0) _status &= unchecked((byte)~C.HighToneInterrupt);
                 break;
             case C.DividerRegister:
-                _divider = value;
-                _tonePhase = 0;
-                _tone = false;
+                _commsCounter.WriteDivider(value);
                 break;
             case C.ControlRegister:
-                var next = (value >> C.CommsShift) & C.CommsMask;
-                if (next != _comms)
-                {
-                    ResetSerial();
-                    _tonePhase = 0;
-                    _tone = false;
-                    if (next == C.TapeOutputMode) _status |= C.ReceiveFullInterrupt;
-                }
-                _comms = next;
+                _comms = (value >> C.CommsShift) & C.CommsMask;
                 Motor = (value & C.TapeMotorMask) != 0;
                 CapsLock = (value & C.CapsLockMask) != 0;
                 _video.SetMode(value);
@@ -110,19 +96,11 @@ public sealed partial class ElectronUla
 
     public void Tick()
     {
-        if (_comms == C.SoundMode && ++_tonePhase >= C.SoundHalfPeriodDivider * (_divider + 1))
-        {
-            _tonePhase = 0;
-            _tone = !_tone;
-        }
+        TickBus();
         TickSerial();
         _cassette.Tick(Motor);
         _video.Tick();
-    }
-
-    private void OnLineStarted(int line)
-    {
-        if (line == V.ClockInterruptLine) _status |= C.ClockInterrupt;
-        if (line == V.ModeHeight[_video.Mode]) _status |= C.DisplayEndInterrupt;
+        if (_video.ClockInterruptEdge) _status |= C.ClockInterrupt;
+        if (_video.DisplayEndInterruptEdge) _status |= C.DisplayEndInterrupt;
     }
 }

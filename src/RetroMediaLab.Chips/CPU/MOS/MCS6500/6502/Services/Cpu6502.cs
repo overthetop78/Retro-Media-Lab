@@ -9,6 +9,7 @@ namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 /// l'horloge sans inventer un accès d'E/S ; les opcodes instables NMOS utilisent le modèle déterministe documenté.</remarks>
 public sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
 {
+    private readonly ICpuBusCyclePins? _cyclePins = bus as ICpuBusCyclePins;
     private readonly bool _samplesReady = (bus.ControlSignals & CpuBusControlSignals.Ready) != 0;
     private readonly bool _samplesReset = (bus.ControlSignals & CpuBusControlSignals.Reset) != 0;
     private readonly bool _samplesOverflow = (bus.ControlSignals & CpuBusControlSignals.SetOverflow) != 0;
@@ -117,8 +118,18 @@ public sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
         SampleNmi();
         if (_samplesOverflow) SampleOverflow();
     }
-    private byte Read(ushort address) { Tick(); return bus.Read(address); }
-    private void Write(ushort address, byte value) { Tick(); bus.Write(address, value); }
+    private byte Read(ushort address)
+    {
+        _cyclePins?.PrepareRead(address);
+        Tick();
+        return bus.Read(address);
+    }
+    private void Write(ushort address, byte value)
+    {
+        _cyclePins?.PrepareWrite(address, value);
+        Tick();
+        bus.Write(address, value);
+    }
     private byte Fetch() => Read(_pc++);
     private byte FetchOpcode()
     {

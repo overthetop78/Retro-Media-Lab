@@ -243,8 +243,9 @@ internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = 
         _hasLevel = false;
         InputBit = true;
     }
-    bool RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.InputPresent => InputPresent;
-    bool RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.InputBit => InputBit;
-    void RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.SetOutputBit(bool value) => SetOutputBit(value);
+    bool RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.InputPresent =>
+        _latency == 0 && _state == EmulationCassetteState.Playing;
+    bool RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.InputLevel => _inputLevel;
+    void RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.SetOutputLevel(bool value) => SetOutputLevel(value);
     void RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.Tick(bool motor) => Tick(motor);
 }

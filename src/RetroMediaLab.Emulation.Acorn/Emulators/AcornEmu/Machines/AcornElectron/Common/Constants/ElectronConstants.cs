@@ -4,6 +4,7 @@ internal static class ElectronConstants
 {
     internal const int CpuClock = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronUlaConstants.CpuClock;
     internal const int RamBytes = 32768;
+    internal const int RamOddColumnMask = 0x80;
     internal const int RomBytes = 16384;
     internal const int CombinedRomBytes = RomBytes * 2;
     internal const int PagedRomStart = 0x8000;
@@ -62,9 +63,7 @@ internal static class ElectronConstants
     internal const int TapeTransmitReadyBits = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronUlaConstants.TapeTransmitReadyBits;
     internal const int TapeFirstDataPosition = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronUlaConstants.TapeFirstDataPosition;
     internal const int SlowClockCycles = 2;
-    internal const int InitialSoundDivider = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronUlaConstants.InitialSoundDivider;
     internal const int AudioSampleRate = 48000;
     internal const int SoundClockDivider = 16;
-    internal const int SoundHalfPeriodDivider = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronUlaConstants.SoundHalfPeriodDivider;
     internal const int SpeakerAmplitude = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronUlaConstants.SpeakerAmplitude;
 }

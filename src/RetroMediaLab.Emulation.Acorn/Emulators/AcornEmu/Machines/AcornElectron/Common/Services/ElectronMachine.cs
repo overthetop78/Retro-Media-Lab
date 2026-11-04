@@ -1,4 +1,5 @@
 using RetroMediaLab.Chips.CPU.Common.Interfaces;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
@@ -7,7 +8,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornElectro
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornElectron.Common.Services;
 
 /// <summary>Carte Electron 32K : 6502, RAM partagée avec la vidéo et ULA de la machine.</summary>
-internal sealed partial class ElectronMachine : ICpuBus, IAcornMachine
+internal sealed partial class ElectronMachine : ICpuBus, ICpuBusCyclePins, IAcornMachine
 {
     public long? ProcessorClockHz => C.CpuClock;
     private readonly byte[] _ram = new byte[C.RamBytes];
@@ -15,7 +16,7 @@ internal sealed partial class ElectronMachine : ICpuBus, IAcornMachine
     private readonly byte[] _mos;
     private readonly Cpu6502 _cpu;
     private readonly ElectronKeyboard _keyboard = new();
-    private readonly AnalogCassette _cassette = new(C.CpuClock);
+    private readonly AnalogCassette _cassette = new(C.CpuClock, CassetteSignalMode.DirectWaveform);
     private readonly ElectronVideo _video;
     private readonly ElectronUla _ula;
     private readonly List<short> _audio = [];
@@ -29,14 +30,15 @@ internal sealed partial class ElectronMachine : ICpuBus, IAcornMachine
         if (basic.Length != C.RomBytes) throw new ArgumentException(nameof(basic));
         _mos = mos.ToArray();
         _basic = basic.ToArray();
-        _video = new ElectronVideo(address => _ram[address]);
+        _video = new ElectronVideo(this);
         _ula = new ElectronUla(_video, _cassette);
         _cpu = new Cpu6502(this);
         Reset(true);
     }
 
     public bool Irq => _ula.Irq;
-    public bool Nmi => false;
+    public bool Nmi => _ula.Nmi;
+    public bool ResetRequested => _break;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get; set; }
     public Action<int>? NetworkPoll { get; set; }
 
@@ -56,6 +58,7 @@ internal sealed partial class ElectronMachine : ICpuBus, IAcornMachine
 
     public void Tick()
     {
+        if (_break && _cpuPrepared) EndCpuAccess();
         _ticks++;
         _ula.Tick();
         _audioPhase += C.AudioSampleRate;
@@ -67,22 +70,23 @@ internal sealed partial class ElectronMachine : ICpuBus, IAcornMachine
     public void SetInput(EmulationInputSnapshot snapshot)
     {
         _keyboard.SetInput(snapshot);
-        if (_keyboard.Break && !_break) Reset(false);
         _break = _keyboard.Break;
     }
 
     public void Reset(bool cold)
     {
+        EndCpuAccess();
         if (cold)
         {
             Array.Clear(_ram);
             _video.Reset();
             _keyboard.Reset();
+            _break = false;
             _audio.Clear();
             _audioPhase = 0;
             _ticks = 0;
+            _cassette.ResetHardware();
         }
-        _cassette.ResetHardware();
         _ula.Reset(cold);
         _cpu.Reset();
     }

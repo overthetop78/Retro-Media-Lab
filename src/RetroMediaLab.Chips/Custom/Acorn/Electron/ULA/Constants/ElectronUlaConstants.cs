@@ -3,6 +3,16 @@ namespace RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants;
 public static class ElectronUlaConstants
 {
     public const int CpuClock = 2000000;
+    public const int RamEndAddress = 0x8000;
+    public const int PagedRomEndAddress = 0xc000;
+    public const int ExternalIoStartAddress = 0xfc00;
+    public const int ExternalIoEndAddress = 0xfe00;
+    public const int KeyboardPageMask = 0x0e;
+    public const int KeyboardPage = 8;
+    public const int SlowClockPhaseMask = 1;
+    public const int AlignedSlowWait = 2;
+    public const int MisalignedSlowCycle = 3;
+    public const byte ClearNmiPriority = 0x80;
     public const int RegisterMask = 0x0f;
     public const int PageMask = 0x0f;
     public const int InternalPageMask = 0x0c;
@@ -37,15 +47,39 @@ public static class ElectronUlaConstants
     public const int TapeMotorMask = 0x40;
     public const int CapsLockMask = 0x80;
     public const int TapeBaud = 1200;
+    public const int MasterClock = 16_000_000;
+    public const int TapeClockDivider = 13;
+    public const int TapeMasterClocksPerBit = TapeClockDivider * 1024;
+    public const int TapeClocksPerBit = TapeMasterClocksPerBit / (MasterClock / CpuClock);
+    public const int TapeSpaceHalfPeriod = TapeClocksPerBit / 2;
+    public const int TapeMarkHalfPeriod = TapeClocksPerBit / 4;
+    public const int TapeMarkSecondHighStart = TapeMarkHalfPeriod * 3;
+    public const int TapePeriodThreshold = TapeClocksPerBit * 3 / 8;
+    public const int TapeMarkPeriodsPerBit = 4;
+    public const int TapeSpacePeriodsPerBit = 2;
     public const int TapeFrameBits = 10;
     public const int TapeDataBits = 8;
+    public const int TapeReceiveShift = 1;
+    public const int TapeReceiveHighBit = 0x80;
     public const int TapeReceivePhaseDelay = 4;
+    public const int TapeReceivePhaseMask = TapeMarkPeriodsPerBit - 1;
+    public const int TapeReceiveMidpoint = TapeMarkPeriodsPerBit / 2;
+    public const int TapeReceiveStartAndDataBits = TapeDataBits + 1;
     public const int TapeCarrierBits = 10;
     public const int TapeStopBitPosition = 9;
     public const int TapeTransmitReadyBits = 1;
     public const int TapeFirstDataPosition = 1;
-    public const int InitialSoundDivider = 0;
-    public const int SoundHalfPeriodDivider = 32;
+    public const int CommsCounterStep = 1;
+    public const int SoundCounterClockDivider = 32;
+    public const int MasterClocksPerCpuClock = MasterClock / CpuClock;
+    public const int CommsCounterMask = 0xffff;
+    public const int CommsLowMask = 0x0fff;
+    public const int CommsFrameMask = 0x3fff;
+    public const int CommsTransmitSkip = 0x0301;
+    public const int CommsMarkBit = 0x1000;
+    public const int CommsSpaceBit = 0x2000;
+    public const int SoundDividerShift = 8;
+    public const int SoundReloadMask = 0xff;
     public const int SpeakerAmplitude = 8192;
 
 }

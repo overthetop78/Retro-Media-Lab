@@ -99,6 +99,7 @@ public sealed partial class Cpu6502
     {
         value = default;
         SetNmosSync(sync);
+        _cyclePins?.PrepareRead(address);
         Tick();
         if (_samplesReset && bus.ResetRequested) { HoldNmosReset(); return false; }
         value = bus.Read(address);
@@ -111,6 +112,7 @@ public sealed partial class Cpu6502
     private bool WriteNmosCycle(ushort address, byte value)
     {
         SetNmosSync(false);
+        _cyclePins?.PrepareWrite(address, value);
         Tick();
         if (_samplesReset && bus.ResetRequested) { HoldNmosReset(); return false; }
         // Les écritures NMOS ne sont jamais retenues par RDY.
