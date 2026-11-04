@@ -52,7 +52,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private byte _fireInputs = Io.OpenInputs;
     private readonly Keyboard _keyboard = new();
     private readonly Audio _audio = new();
-    private readonly Acia6850 _acia = new(CassetteConstants.CpuClock, CassetteConstants.SerialClock);
+    private readonly Acia6850 _acia = new(CassetteConstants.CpuClock, CassetteConstants.ExternalAciaClock);
     private readonly Cassette _cassette;
     private byte _latch = 255;
     private byte _soundDataBus = byte.MaxValue;
@@ -134,7 +134,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.NtscHeight : RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.Height, teletextHighBankOnly: _masterMemory is not null || _plusMemory is not null);
         if (_masterMemory is not null) Video.ReadMemory = address => _masterMemory.ReadVideo(address, _ram);
         else if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
-        _cassette = new Cassette(_acia);
+        _cassette = new Cassette(new Serial(_acia));
         _via.ReadPortA = () => (_latch & 8) == 0 ? (byte)(_keyboard.Read(_via.OutputA) & (_masterClock?.ReadBus() ?? byte.MaxValue)) : _masterClock?.ReadBus() ?? byte.MaxValue;
         _userVia = expandedIo ? new Via6522() : null;
         if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;

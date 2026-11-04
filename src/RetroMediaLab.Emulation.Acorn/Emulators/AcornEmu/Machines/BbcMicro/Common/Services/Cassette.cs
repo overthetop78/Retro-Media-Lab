@@ -1,23 +1,20 @@
-using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.CassetteConstants;
+using UlaConstants = RetroMediaLab.Chips.IO.Acorn.SerialUla.BbcSerialUla.Constants.BbcSerialUlaConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
-/// <summary>Magnétophone externe et démodulateur cassette BBC : signal FSK, commande moteur et horloge de réception.</summary>
+/// <summary>Magnétophone externe BBC : échantillons, tête, touches et latences ; l'électronique est empruntée.</summary>
 /// <remarks>Possède le signal en mémoire, sans conserver de fichier ouvert. Le lecteur avance seulement lorsque
 /// Play et le moteur MOS sont actifs. L'ACIA reste un composant distinct, emprunté à la carte.
 /// La cadence du fichier est suivie par un accumulateur entier ; elle ne dépend pas du nombre d'images vidéo.</remarks>
-internal sealed class Cassette(Acia6850 acia) : IEmulatorCassetteTransport
+internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
 {
     private EmulationCassetteSignal? _signal;
-    private int _position, _samplePhase, _sinceEdge, _receivePhase, _carrierEdges, _pulseTicks;
-    private bool _level, _hasSignal, _inputBit = true;
-    private byte _ula;
+    private int _position, _samplePhase;
+    private bool _inputLevel;
     private List<short>? _recorded;
     private bool _writable;
-    private int _recordPhase;
-    private bool _recordLevel;
     private EmulationCassetteSettings _settings = new();
     private int? _seekTarget;
     private EmulationCassetteCommand? _operation;
@@ -27,7 +24,7 @@ internal sealed class Cassette(Acia6850 acia) : IEmulatorCassetteTransport
     public EmulationCassetteCommand? CassetteOperation => _state == EmulationCassetteState.Paused ? _operation : _seekTarget is not null ? _operation : _state == EmulationCassetteState.Recording ? EmulationCassetteCommand.Record : _state == EmulationCassetteState.Playing ? EmulationCassetteCommand.Play : null;
     internal void Configure(EmulationCassetteSettings settings)
     {
-        _settings = settings; acia.BaudRateOverride = settings.BaudRate;
+        _settings = settings; serial.BaudRateOverride = settings.BaudRate;
         if (settings.WriteProtected && _state == EmulationCassetteState.Recording) _state = EmulationCassetteState.Stopped;
         if (settings.Mode != EmulationCassettePlaybackMode.RealTime && _seekTarget is { } target) { _position = target; CompleteSeek(); }
     }
@@ -39,30 +36,31 @@ internal sealed class Cassette(Acia6850 acia) : IEmulatorCassetteTransport
     internal void MarkSaved() => HasChanges = false;
     private volatile EmulationCassetteState _state = EmulationCassetteState.Empty;
     internal int Position => _position;
-    internal bool Motor => (_ula & 128) != 0;
+    internal bool Motor => serial.Ula.Motor;
     public EmulationCassetteState CassetteState => _state;
-    public bool CassetteActive => _seekTarget is not null && _state != EmulationCassetteState.Paused || Motor && (_ula & 64) == 0 && _state is EmulationCassetteState.Playing or EmulationCassetteState.Recording;
+    public bool CassetteActive => _seekTarget is not null && _state != EmulationCassetteState.Paused || Motor && !serial.Ula.Rs423Selected && _state is EmulationCassetteState.Playing or EmulationCassetteState.Recording;
     public IReadOnlySet<EmulationCassetteCommand> CassetteCommands => _signal is null ? new HashSet<EmulationCassetteCommand>() : _writable && !_settings.WriteProtected ? C.RecordingCommands : C.Commands;
 
     /// <summary>Insère le signal au début ; Play est prêt, comme sur un lecteur laissé en lecture sous contrôle moteur.</summary>
     internal void Insert(EmulationCassetteSignal signal, bool writable = false)
     {
         if (signal.SampleRate <= 0) throw new ArgumentOutOfRangeException(nameof(signal));
-        _signal = signal; _recorded = null; _writable = writable; HasChanges = false; _recordPhase = 0; _seekTarget = null;
+        _signal = signal; _recorded = null; _writable = writable; HasChanges = false; _seekTarget = null;
         _position = _samplePhase = 0; _state = signal.Samples.Length == 0 ? EmulationCassetteState.Stopped : EmulationCassetteState.Playing; ResetDecoder();
     }
     internal void Eject() { _signal = null; _recorded = null; _writable = HasChanges = false; _position = _samplePhase = 0; _state = EmulationCassetteState.Empty; ResetDecoder(); }
     /// <summary>Reset électrique : ne rembobine pas une bande déjà insérée.</summary>
-    internal void ResetHardware() { _ula = 0; acia.Reset(); ResetDecoder(); }
+    internal void ResetHardware() { serial.PowerOn(); ResetDecoder(); }
     internal void WriteUla(byte value)
     {
-        var starting = !Motor && (value & 128) != 0;
-        _ula = value; acia.SetCts((value & 64) != 0);
+        var starting = !Motor;
+        serial.Ula.Write(value);
+        starting &= Motor;
         if (starting) _latencyTicks = (long)C.CpuClock * (_state == EmulationCassetteState.Recording ? _settings.WriteLatencyMilliseconds : _settings.ReadLatencyMilliseconds) / 1000;
         if (!CassetteActive) ResetDecoder();
     }
-    internal byte ReadUla() { WriteUla(0xfe); return 0; }
-    private void ResetDecoder() { _sinceEdge = _receivePhase = _carrierEdges = _pulseTicks = 0; _hasSignal = false; _inputBit = true; acia.CancelReceive(); acia.SetDcd(false); }
+    internal byte ReadUla() { WriteUla(UlaConstants.ReadControlValue); return UlaConstants.ReadBusValue; }
+    private void ResetDecoder() => serial.Ula.SetCassetteInput(null);
 
     public void ExecuteCassette(EmulationCassetteCommand command)
     {
@@ -81,10 +79,17 @@ internal sealed class Cassette(Acia6850 acia) : IEmulatorCassetteTransport
         }
     }
 
-    /// <summary>Avance d'un cycle CPU, détecte les demi-ondes et présente les bits à l'ACIA au débit programmé.</summary>
+    /// <summary>Avance le support d'un cycle de carte et présente son niveau à l'électronique série.</summary>
     internal void Tick()
     {
-        acia.Tick();
+        bool? input = null;
+        if (CassetteActive && _signal is not null && _latencyTicks == 0 && _state == EmulationCassetteState.Playing && _position < Length)
+        {
+            var sample = _recorded is null ? _signal.Samples.Span[_position] : _recorded[_position];
+            if (sample != 0) _inputLevel = sample > 0;
+            input = _inputLevel;
+        }
+        serial.Tick(input);
         if (_seekTarget is { } target)
         {
             if (_state == EmulationCassetteState.Paused) return;
@@ -97,30 +102,6 @@ internal sealed class Cassette(Acia6850 acia) : IEmulatorCassetteTransport
         if (_latencyTicks > 0) { _latencyTicks--; return; }
         if (_state == EmulationCassetteState.Recording) { RecordTick(); return; }
         if (_position >= Length) { _state = EmulationCassetteState.EndOfTape; ResetDecoder(); return; }
-        if (_pulseTicks > 0 && --_pulseTicks == 0) acia.SetDcd(false);
-        _sinceEdge++;
-        var sample = _recorded is null ? _signal.Samples.Span[_position] : _recorded[_position];
-        var level = sample > 0;
-        if (sample != 0 && _hasSignal && level != _level)
-        {
-            var duration = _sinceEdge; _sinceEdge = 0;
-            if (duration >= C.CpuClock / 8000 && duration <= C.CpuClock / 1800)
-            {
-                var bit = duration < C.HalfWaveThreshold;
-                if (!bit) _carrierEdges = 0;
-                else if (++_carrierEdges == C.CarrierHalfWaves) { acia.SetDcd(true); _pulseTicks = C.CarrierPulseTicks; }
-                if (_inputBit && !bit && !acia.Receiving) { acia.BeginReceive(); _receivePhase = -C.CpuClock / 4; }
-                _inputBit = bit;
-            }
-        }
-        if (sample != 0) { if (!_hasSignal) _sinceEdge = 0; _level = level; _hasSignal = true; }
-        else _hasSignal = false;
-        if (_sinceEdge > C.CpuClock / 600) { _carrierEdges = 0; _inputBit = true; acia.SetDcd(false); }
-        if (acia.Receiving)
-        {
-            _receivePhase += acia.BaudRate;
-            if (_receivePhase >= C.CpuClock) { _receivePhase -= C.CpuClock; acia.ReceiveBit(_inputBit); }
-        }
         _samplePhase += _signal.SampleRate * _settings.SpeedPercent / 100;
         while (_samplePhase >= C.CpuClock) { _samplePhase -= C.CpuClock; _position++; }
     }
@@ -163,14 +144,12 @@ internal sealed class Cassette(Acia6850 acia) : IEmulatorCassetteTransport
     /// Les silences, fichiers précédents et fichiers suivants restent présents. L'appelant possède la sauvegarde.</remarks>
     private void RecordTick()
     {
-        _recordPhase += 2 * (acia.TransmitBit ? 2400 : 1200);
-        if (_recordPhase >= C.CpuClock) { _recordPhase -= C.CpuClock; _recordLevel = !_recordLevel; }
         _samplePhase += _signal!.SampleRate * _settings.SpeedPercent / 100;
         while (_samplePhase >= C.CpuClock)
         {
             _samplePhase -= C.CpuClock;
             _recorded ??= _signal.Samples.ToArray().ToList();
-            var value = (short)(_recordLevel ? 16000 : -16000);
+            var value = serial.Ula.CassetteOutput;
             if (_position < _recorded.Count) _recorded[_position] = value; else _recorded.Add(value);
             _position++; HasChanges = true;
         }

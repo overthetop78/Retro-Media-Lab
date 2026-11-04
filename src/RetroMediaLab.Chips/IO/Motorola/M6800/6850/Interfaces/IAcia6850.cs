@@ -11,6 +11,8 @@ public interface IAcia6850
     bool Receiving { get; }
 
     int BaudRate { get; }
+    /// <summary>Division appliquée aux broches TxC/RxC ; zéro pendant master reset.</summary>
+    int ClockDivider { get; }
 
     bool Irq { get; }
 

@@ -23,7 +23,7 @@ public sealed class AcornEmuCassetteTests
         byte[] expected = [0x2a, 0, 0x55, 0xaa, 0xff, 0x34];
         var signal = Signal(expected, baud);
         machine.InsertCassette(signal);
-        machine.Write(0xfe08, control); machine.Write(0xfe10, 0x80);
+        machine.Write(0xfe08, control); machine.Write(0xfe10, 0x85);
         var received = new List<byte>(); var carrierInterrupt = false;
         for (var tick = 0; tick < (long)signal.Samples.Length * 2_000_000 / signal.SampleRate + 2000; tick++)
         {
@@ -41,12 +41,12 @@ public sealed class AcornEmuCassetteTests
     public void MotorAndTransportControlPositionWithoutChangingTheSignal()
     {
         var acia = new Acia6850(2_000_000, 19200);
-        var tape = new BbcCassette(acia);
+        var tape = new BbcCassette(new Serial(acia));
         Assert.Empty(tape.CassetteCommands);
         tape.Insert(Signal([42], 1200));
         for (var tick = 0; tick < 5000; tick++) tape.Tick();
         Assert.Equal(0, tape.Position); Assert.False(tape.CassetteActive); // Play seul ne fournit pas l'alimentation moteur.
-        tape.WriteUla(0x80);
+        tape.WriteUla(0x85);
         for (var tick = 0; tick < 5000; tick++) tape.Tick();
         Assert.True(tape.Position > 0); Assert.True(tape.CassetteActive); var position = tape.Position;
         tape.ExecuteCassette(EmulationCassetteCommand.Pause);
@@ -102,9 +102,9 @@ public sealed class AcornEmuCassetteTests
         var original = new short[48000];
         original[^1] = 1234;
         var transmitter = new Acia6850(2_000_000, 19200);
-        var writer = new BbcCassette(transmitter);
+        var writer = new BbcCassette(new Serial(transmitter));
         writer.Insert(new(original, 48000), writable: true);
-        transmitter.Write(false, control); writer.WriteUla(0x80); writer.ExecuteCassette(EmulationCassetteCommand.Record);
+        transmitter.Write(false, control); writer.WriteUla(0x85); writer.ExecuteCassette(EmulationCassetteCommand.Record);
         Assert.Equal(baud, transmitter.BaudRate);
         Assert.True(writer.CassetteActive);
         for (var tick = 0; tick < 500000; tick++) writer.Tick();
@@ -115,7 +115,7 @@ public sealed class AcornEmuCassetteTests
         var signal = writer.RecordedSignal;
         Assert.Equal(48000, signal.Samples.Length); Assert.Equal(1234, signal.Samples.Span[^1]); Assert.Equal(0, original[0]);
         var receiver = new Acia6850(2_000_000, 19200); receiver.Write(false, control);
-        var reader = new BbcCassette(receiver); reader.Insert(signal); reader.WriteUla(0x80);
+        var reader = new BbcCassette(new Serial(receiver)); reader.Insert(signal); reader.WriteUla(0x85);
         var bytes = new List<byte>();
         for (var tick = 0; tick < 2_000_000; tick++)
         {
@@ -131,7 +131,7 @@ public sealed class AcornEmuCassetteTests
     [Fact]
     public void WriteProtectionAndMotorPreventRecording()
     {
-        var writer = new BbcCassette(new Acia6850(2_000_000, 19200));
+        var writer = new BbcCassette(new Serial(new Acia6850(2_000_000, 19200)));
         writer.Insert(new(new short[48000], 48000));
         Assert.Throws<NotSupportedException>(() => writer.ExecuteCassette(EmulationCassetteCommand.Record));
         writer.Insert(new(new short[48000], 48000), writable: true);
@@ -154,7 +154,7 @@ public sealed class AcornEmuCassetteTests
         byte[] expected = [0x2a, 0x5a, 0x81, 0, 0xff];
         foreach (var value in expected) RetroMediaLab.MediaEngine.Functions.FskSerialFunctions.AppendPcmFrame(samples, ref level, rate, 1200, 1200, 2400, 8, 1, value);
         var receiver = new Acia6850(2_000_000, 19200); receiver.Write(false, 0x95);
-        var reader = new BbcCassette(receiver); reader.Insert(new(samples.ToArray(), rate)); reader.WriteUla(0x80);
+        var reader = new BbcCassette(new Serial(receiver)); reader.Insert(new(samples.ToArray(), rate)); reader.WriteUla(0x85);
         var bytes = new List<byte>();
         for (var tick = 0; tick < (long)samples.Count * 2_000_000 / rate + 2000; tick++)
         {
@@ -167,7 +167,7 @@ public sealed class AcornEmuCassetteTests
     [Fact]
     public void WindingTargetsTheNextBlockWithRealTimeOrInstantMovement()
     {
-        var tape = new BbcCassette(new Acia6850(2_000_000, 19200));
+        var tape = new BbcCassette(new Serial(new Acia6850(2_000_000, 19200)));
         tape.Insert(new(new short[192000], 48000, [0, 48000, 96000, 144000]));
         tape.ExecuteCassette(EmulationCassetteCommand.FastForward);
         Assert.Equal(0, tape.Position); Assert.True(tape.CassetteActive);
@@ -185,9 +185,9 @@ public sealed class AcornEmuCassetteTests
     [InlineData(true, 400000)]
     public void ReadAndWriteStartupDelaysUseTheEmulatedClock(bool recording, int delayCycles)
     {
-        var tape = new BbcCassette(new Acia6850(2_000_000, 19200));
+        var tape = new BbcCassette(new Serial(new Acia6850(2_000_000, 19200)));
         tape.Configure(new(ReadLatencyMilliseconds: 100, WriteLatencyMilliseconds: 200));
-        tape.Insert(Signal([42], 1200), writable: true); tape.WriteUla(0x80);
+        tape.Insert(Signal([42], 1200), writable: true); tape.WriteUla(0x85);
         if (recording) tape.ExecuteCassette(EmulationCassetteCommand.Record);
         for (var tick = 0; tick < delayCycles; tick++) tape.Tick();
         Assert.Equal(0, tape.Position); Assert.False(tape.HasChanges);
@@ -199,7 +199,7 @@ public sealed class AcornEmuCassetteTests
     public void DirectLoadingRequiresCompleteValidatedFileBlocks()
     {
         Dictionary<string, string> Header(int number, string flags) => new() { ["fileName"] = "TEST", ["blockNumber"] = number.ToString(), ["flags"] = flags, ["loadAddress"] = "ffff1900", ["executionAddress"] = "ffff1900" };
-        var tape = new BbcCassette(new Acia6850(2_000_000, 19200));
+        var tape = new BbcCassette(new Serial(new Acia6850(2_000_000, 19200)));
         tape.Configure(new(Mode: EmulationCassettePlaybackMode.Direct));
         tape.Insert(new(new short[1000], 48000, [0, 500], [new(0, new byte[] { 1, 2 }, true, Header(0, "00")), new(500, new byte[] { 3, 4 }, true, Header(1, "80"))]));
         Assert.True(tape.TryReadFile("TEST", out var bytes, out var load, out _, out _));

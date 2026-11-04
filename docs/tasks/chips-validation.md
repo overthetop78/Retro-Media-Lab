@@ -650,7 +650,45 @@ Précision de l'utilisateur : traiter entièrement les fonctions documentées ; 
     - [x] Supprimer `artifacts/.tmp-electron-ula/` après fin des examens et diagnostics ; conserver seulement les captures hors Git et les résultats dans `docs/chips/Custom/ElectronUla.md`.
     - [x] Modifier l’index Git et créer le commit distinct de l’ULA Electron avec ses sources, intégration, tests permanents et documentation ; exclure `artifacts/`, tous les diagnostics temporaires et `docs/prompts-objectifs.md`, puis modifier ce suivi avec l’état réellement terminé.
 
-- [ ] Machines et médias, après clôture des puces.
+- [ ] HD146818 : réaliser l’horloge complète et son raccordement BBC Master après le commit ULA Electron.
+  - [ ] Établir les fonctions, variantes utilisées et écarts du composant existant.
+    - [x] Créer temporairement `artifacts/.tmp-hd146818/references/` avec les fiches Hitachi HD146818/HD146818A et les sources RTC de MAME, B-Em et JSBeeb ; créer `docs/chips/Timers/Hd146818.md` avec le comportement réel initial, les registres/signaux manquants, la distinction puce/câblage Master et la matrice de vérifications fondée sur ces références.
+    - [ ] Modifier `docs/tasks/chips-validation.md` avec les fichiers précis du circuit, de ses interfaces, constantes, horloges, calendrier, bus, tests autonomes et raccordement Master, après établissement des exigences ; prévoir les preuves invitées, mesures, suppression des diagnostics et build de tous les modules avant le commit distinct.
+
+## Ordre de finalisation demandé le 4 novembre 2026
+
+La priorité est désormais donnée aux familles complètes dans l’ordre ci-dessous : toutes leurs puces, puis leur émulateur fonctionnel et ses médias. La recherche HD146818 déjà effectuée reste conservée ; sa réalisation reprend dans le bloc Master, après les BBC Micro. Les puces déjà clôturées sont réutilisées ; aucune famille n’est déclarée finie sur la seule base d’un démarrage.
+
+- [ ] Acorn BBC Micro A, B, B+ 64/128 Kio : terminer les composants et leurs raccordements.
+  - [x] Établir les écarts matériels réels avant les dernières reprises.
+    - [x] Créer `docs/machines/AcornBBCMicro.md` avec la liste des circuits réellement instanciés, leurs fiches/commits terminés et les écarts restants dans le code : ULA série encore mélangée au transport cassette, interface Winchester/SCSI, options mémoire et validations natives des trois modèles. Distinguer les équipements Master présents dans la classe partagée et les circuits réellement utilisés par A/B/B+.
+  - [x] ULA série BBC : réaliser le composant matériel avant le contrôleur Winchester.
+    - [x] Créer temporairement `artifacts/.tmp-bbc-serial-ula/references/` avec les documents Acorn et les sources b2, B-Em, JSBeeb/MAME pertinentes ; créer `docs/chips/IO/BbcSerialUla.md` avec registres, horloges, sélection cassette/RS423, signaux, modem et comportement de lecture confrontés au code existant ; préciser les limites établies par les sources.
+    - [x] Modifier ce fichier avec les fichiers précis du circuit, de son interface, du raccordement, des tests autonomes et invités avant modification de production ; prévoir mesures, captures, suppression des diagnostics, build Debug All et commit distinct après réalisation complète.
+    - [x] Créer `src/RetroMediaLab.Chips/IO/Acorn/SerialUla/BbcSerialUla/Constants/BbcSerialUlaConstants.cs`, `Interfaces/IBbcSerialUla.cs`, `Services/BbcSerialUla.cs` et `Services/BbcSerialUla.Cassette.cs` : registre, diviseurs documentés, accumulateurs entiers, multiplexage des broches, modulation et séparation cassette, porteuse nominale explicitée ; aucun média ni dépendance Acorn dans Chips.
+    - [x] Créer `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMicro/Common/Services/Serial.cs` pour raccorder les broches ULA/ACIA ; modifier `Cassette.cs`, `CassetteConstants.cs` et `BbcMicroMachine.cs` pour retirer le matériel du transport, conserver les opérations/médias et raccorder les registres et horloges.
+      - [x] Modifier `src/RetroMediaLab.Chips/IO/Motorola/M6800/6850/Interfaces/IAcia6850.cs` et `Services/Acia6850.cs` avec la lecture du diviseur de broche programmé ; le raccordement peut ainsi conserver l'option de débit cassette existante sans modifier le fonctionnement matériel du MC6850.
+    - [x] Créer `tests/RetroMediaLab.Chips.Tests/IO/Acorn/SerialUla/BbcSerialUla/BbcSerialUlaTests.cs` avec sélections, fréquences, mux, moteur, RTS/CTS/DCD, tonalités et ACIA réels ; modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuCassetteTests.cs` pour le raccordement et la réception/enregistrement à 300/1200, sans fichiers externes.
+    - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuBbcSerialDiagnostic.cs` : programme invité et banc natif A/B/B+, captures dans `artifacts/TestsChips/BbcSerialUla/<Machine>/`, mesures et libération finally ; modifier `docs/chips/IO/BbcSerialUla.md` et `docs/machines/AcornBBCMicro.md` avec les résultats réels après tests regroupés et corrections.
+    - [x] Supprimer les sources/bancs/références temporaires de `artifacts/.tmp-bbc-serial-ula/` et tout diagnostic temporaire ajouté aux tests, reconstruire les assemblies concernées ; modifier cette fiche avec les résultats du build Debug All et les preuves conservées hors Git, puis committer uniquement la puce série complète et son raccordement.
+  - [ ] Contrôleur Winchester et raccordement des équipements BBC restant à terminer.
+    - [ ] Modifier ce fichier avec les actions concrètes du contrôleur et du raccordement après examen des documents Acorn et du code existant, puis modifier `docs/machines/AcornBBCMicro.md` avec les fonctions prouvées et leurs limites ; garder images et systèmes de fichiers dans leurs bibliothèques propriétaires.
+  - [ ] Vérifier les machines BBC Micro complètes après clôture des composants concernés.
+    - [ ] Modifier `docs/machines/AcornBBCMicro.md` avec les résultats réellement obtenus pour A, B et B+ 64/128 : démarrage, clavier, affichage, son, mémoire/extensions proposées, cassette et disquette en lecture/écriture, HDD et réseau lorsque installés ; conserver les captures sous `artifacts/TestsChips/<Chip>/<Machine>/` pour les puces et référencer les médias de `F:\Retro` utilisés sans les modifier.
+- [ ] Acorn BBC Master : terminer toutes les puces et valider chaque machine exposée.
+  - [ ] Modifier `docs/tasks/acornemu-master.md` avec les actions concrètes encore nécessaires après inventaire des dépendances et réalisation des puces communes ; consigner les validations natives des variantes et médias après réalisation, avec captures et build des modules.
+- [ ] Acorn System : terminer toutes les puces et valider les variantes exposées.
+  - [ ] Modifier `docs/tasks/acornemu-system.md` avec les actions concrètes restantes, notamment la carte CPU 6809, après clôture du bloc Master ; consigner les tests de tous les modèles/équipements, médias et captures réellement obtenus.
+- [ ] Acorn Atom : terminer toutes les puces et valider la machine complète.
+  - [ ] Modifier `docs/tasks/acornemu-atom.md` après inventaire final des circuits et équipements proposés ; compléter les actions et résultats de lecture/écriture, formats cassette/disquette et preuves sur médias réels.
+- [ ] Acorn Electron : terminer toutes les puces et valider la machine complète.
+  - [ ] Modifier `docs/tasks/acornemu-electron.md` avec le bilan d’intégration après réutilisation de l’ULA clôturée, les formats et fonctions médias restant à vérifier, puis leurs tests et preuves réels.
+- [ ] Acorn Archimedes : terminer toutes les puces et valider les machines du groupe.
+  - [ ] Modifier `docs/tasks/acornemu-archimedes.md` avec les actions concrètes des circuits et modèles non terminés, puis les résultats CPU/vidéo/audio/E/S/stockage/réseau et captures par machine après réalisation complète.
+- [ ] Acorn Risc PC et A7000/A7000+ : terminer toutes les puces et valider les machines.
+  - [ ] Modifier ce fichier avec les fichiers de code et de validation précis après inventaire des modèles, variantes et composants effectivement présents, puis créer leur documentation de machine avec les résultats réels, médias et captures ; ne pas déclarer leur achèvement à partir d’un simple bureau affiché.
+
+- [ ] Machines et médias, dans chaque famille après clôture de ses puces.
   - [ ] Modifier ce fichier avec les actions par bloc des machines Acorn réellement présentes/restantes et les composants médias concernés, après lecture des tableaux de référence ; ne pas déclarer les machines ni les formats fonctionnels à partir d’un simple démarrage.
 
 ## File conservée, à détailler sans générer de fiches vides

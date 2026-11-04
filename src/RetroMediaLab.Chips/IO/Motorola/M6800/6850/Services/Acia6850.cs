@@ -51,6 +51,7 @@ public sealed partial class Acia6850 : IAcia6850
     public bool RtsHigh { get; private set; }
     public bool Irq => _irq;
     public int BaudRate => _baudRate;
+    public int ClockDivider => _masterReset ? 0 : _divider;
     public Acia6850WordFormat WordFormat { get; private set; }
     public Acia6850TransmitControl TransmitControl { get; private set; }
 
