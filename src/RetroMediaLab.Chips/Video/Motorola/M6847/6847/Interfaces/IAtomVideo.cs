@@ -1,5 +1,3 @@
-using C = RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Constants.AtomVideoConstants;
-
 namespace RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Interfaces;
 /// <summary>Contrat matériel du composant AtomVideo ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface IAtomVideo

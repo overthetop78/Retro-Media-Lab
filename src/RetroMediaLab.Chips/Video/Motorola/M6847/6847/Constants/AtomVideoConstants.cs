@@ -1,3 +1,5 @@
+using RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Enums;
+
 namespace RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Constants;
 
 public static class AtomVideoConstants
@@ -8,15 +10,16 @@ public static class AtomVideoConstants
     public const int FrameBytes = Width * Height * PixelBytes;
     public const int CharacterClock = 3579545;
     public const int ClocksPerLine = 228;
-    public const int ActiveClockStart = 29;
+    public const int ActiveClockStart = Mc6847Constants.ActiveHalfClockStart / Mc6847Constants.HalfClocksPerClock;
     public const int ActiveClocks = 128;
     public const int PixelsPerClock = 2;
-    public const int ActiveLineStart = 25;
-    public const int FrameSyncLine = ActiveLineStart + Height - 1;
+    public const int ActiveLineStart = Mc6847Constants.ActiveLineStart;
+    public const int FrameSyncLine = Mc6847Constants.FieldSyncStart;
     public const int LinesPerFrame = 262;
     public const int ClocksPerFrame = ClocksPerLine * LinesPerFrame;
     public const double FramesPerSecond = (double)CharacterClock / ClocksPerFrame;
     public const float AspectRatio = 4f / 3f;
+    internal const Mc6847Mode DataModeMask = Mc6847Mode.Inverse | Mc6847Mode.External | Mc6847Mode.Semigraphics;
     public const int GraphicsSelect = 0x10;
     public const int GraphicsModeShift = 5;
     public const int GraphicsModeMask = 7;

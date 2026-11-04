@@ -1,100 +1,93 @@
+using RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Enums;
 using C = RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Constants.AtomVideoConstants;
+using V = RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Constants.Mc6847Constants;
 
 namespace RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Services;
 
-/// <summary>MC6847 d’Atom : pixels actifs, modes texte/semi-graphiques/graphiques et FS.</summary>
-/// <remarks>Le bus fournit la RAM vidéo ; la machine fournit l’horloge VDG.
-/// Les tampons et la copie des caractères sont possédés par ce composant géré.</remarks>
-public sealed class AtomVideo
-:RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Interfaces.IAtomVideo{
+/// <summary>Connexions vidéo Atom et récepteur RGB du MC6847 ; aucun second décodeur de pixels.</summary>
+public sealed class AtomVideo : Interfaces.IAtomVideo
+{
     private readonly Func<int, byte> _read;
-    private readonly byte[] _characters;
+    private readonly Mc6847 _chip;
     private byte[] _drawing = new byte[C.FrameBytes];
     private byte[] _completed = new byte[C.FrameBytes];
-    private int _clock;
-    private int _line;
-    private byte _mode;
-    private bool _colorSet;
-    private static readonly int[] Colors = [C.Green, C.Yellow, C.Blue, C.Red, C.Buff, C.Cyan, C.Magenta, C.Orange];
+    private Mc6847Mode _controls;
+    private static readonly int[] Colours =
+    [
+        C.Black, C.Green, C.Yellow, C.Blue, C.Red, C.Buff, C.Cyan, C.Magenta, C.Orange,
+        C.TextDarkGreen, C.TextDarkOrange, C.TextBrightOrange
+    ];
 
     public AtomVideo(Func<int, byte> read, ReadOnlySpan<byte> characters)
     {
         ArgumentNullException.ThrowIfNull(read);
         _read = read;
-        _characters = AtomCharacterGenerator.Decode(characters);
+        _chip = new(characters);
+        _chip.DataRequested = ReadData;
     }
 
     public byte[] CompletedFrame => _completed;
-    public long Frame { get; private set; }
-    public bool FrameSync => _line < C.FrameSyncLine;
-    public void SetMode(byte value) => _mode = value;
-    public void SetColorSet(bool value) => _colorSet = value;
+    public long Frame => _chip.Field;
+    public bool FrameSync => _chip.FieldSync;
+
+    public void SetMode(byte value)
+    {
+        var graphics = (value & C.GraphicsSelect) != 0 ? Mc6847Mode.Graphics : Mc6847Mode.None;
+        var modes = (Mc6847Mode)(((value >> C.GraphicsModeShift) & C.GraphicsModeMask) << V.GraphicsModeShift);
+        _controls = (_controls & Mc6847Mode.ColourSet) | graphics | modes;
+        ApplyControls();
+    }
+
+    public void SetColorSet(bool value)
+    {
+        _controls = value ? _controls | Mc6847Mode.ColourSet : _controls & ~Mc6847Mode.ColourSet;
+        ApplyControls();
+    }
+
+    private void ApplyControls() => _chip.Mode = (_chip.Mode & C.DataModeMask) | _controls;
+
+    private void ReadData()
+    {
+        var address = _chip.Address;
+        if (address is null) return;
+        var data = _read(address.Value);
+        _chip.Data = data;
+        var alpha = (data & C.SemiGraphicsSelect) != 0 ? Mc6847Mode.Semigraphics | Mc6847Mode.External : Mc6847Mode.None;
+        if ((data & C.InverseSelect) != 0) alpha |= Mc6847Mode.Inverse;
+        _chip.Mode = _controls | alpha;
+    }
 
     public void Reset()
     {
-        _clock = _line = 0;
-        _mode = 0;
-        _colorSet = false;
-        Frame = 0;
+        _controls = Mc6847Mode.None;
+        _chip.Reset();
         Array.Clear(_drawing);
         Array.Clear(_completed);
     }
 
+    /// <summary>Une période CLK du VDG, soit deux points ; les demi-cellules ne sont pas dessinées à l’avance.</summary>
     public bool Tick()
     {
-        var y = _line - C.ActiveLineStart;
-        var column = _clock - C.ActiveClockStart;
-        if (y is >= 0 and < C.Height && column is >= 0 and < C.ActiveClocks)
+        var frame = Frame;
+        for (var half = 0; half < V.HalfClocksPerClock; half++)
         {
-            var x = column * C.PixelsPerClock;
-            for (var pixel = 0; pixel < C.PixelsPerClock; pixel++) WritePixel(x + pixel, y, ColorAt(x + pixel, y));
+            _chip.SetClock(!_chip.Clock);
+            if (_chip.Active)
+            {
+                var x = _chip.HalfClock - V.ActiveHalfClockStart;
+                var y = _chip.Scanline - V.ActiveLineStart;
+                WritePixel(x, y, Colours[(int)_chip.Colour]);
+            }
+            if (Frame != frame) (_drawing, _completed) = (_completed, _drawing);
         }
-        if (++_clock < C.ClocksPerLine) return false;
-        _clock = 0;
-        if (++_line < C.LinesPerFrame) return false;
-        _line = 0;
-        Frame++;
-        (_drawing, _completed) = (_completed, _drawing);
-        return true;
+        return Frame != frame;
     }
 
-    private int ColorAt(int x, int y)
-    {
-        if ((_mode & C.GraphicsSelect) != 0)
-        {
-            var mode = (_mode >> C.GraphicsModeShift) & C.GraphicsModeMask;
-            var (samples, rows) = C.GraphicsGeometry[mode];
-            var bits = (mode & C.MonochromeModeBit) == 0 ? C.BitsPerColorPixel : 1;
-            var width = samples * C.ByteBits / bits;
-            var sourceX = x * width / C.Width;
-            var value = _read(y * rows / C.Height * samples + sourceX * bits / C.ByteBits);
-            var shift = C.ByteBits - bits - sourceX * bits % C.ByteBits;
-            var index = (value >> shift) & ((1 << bits) - 1);
-            return bits == C.BitsPerColorPixel ? Colors[index + (_colorSet ? C.ColorSetOffset : 0)]
-                : index == 0 ? C.Black : _colorSet ? C.Buff : C.Green;
-        }
-        var code = _read(y / C.CharacterHeight * C.Columns + x / C.CharacterWidth);
-        var cellX = x % C.CharacterWidth;
-        var cellY = y % C.CharacterHeight;
-        if ((code & C.SemiGraphicsSelect) != 0)
-        {
-            var blockX = cellX * C.SemiGraphicsColumns / C.CharacterWidth;
-            var blockY = cellY * C.SemiGraphicsRows / C.CharacterHeight;
-            var block = C.SemiGraphicsRows * C.SemiGraphicsColumns - 1 - blockY * C.SemiGraphicsColumns - blockX;
-            return (code & (1 << block)) == 0 ? C.Black
-                : Colors[((code >> C.SemiGraphicsColorShift) & C.ColorPixelMask) + (_colorSet ? C.ColorSetOffset : 0)];
-        }
-        var glyph = _characters[(code & C.CharacterMask) * C.CharacterHeight + cellY];
-        var lit = ((glyph >> (C.ByteHighBit - cellX)) & 1) != 0;
-        if ((code & C.InverseSelect) != 0) lit = !lit;
-        return _colorSet ? lit ? C.TextBrightOrange : C.TextDarkOrange : lit ? C.TextBrightGreen : C.TextDarkGreen;
-    }
-
-    private void WritePixel(int x, int y, int color)
+    private void WritePixel(int x, int y, int colour)
     {
         var offset = (y * C.Width + x) * C.PixelBytes;
-        _drawing[offset] = (byte)(color & C.ColorChannelMask);
-        _drawing[offset + 1] = (byte)((color >> C.ColorChannelShift) & C.ColorChannelMask);
-        _drawing[offset + 2] = (byte)((color >> C.RedChannelShift) & C.ColorChannelMask);
+        _drawing[offset] = (byte)(colour & C.ColorChannelMask);
+        _drawing[offset + 1] = (byte)((colour >> C.ColorChannelShift) & C.ColorChannelMask);
+        _drawing[offset + 2] = (byte)((colour >> C.RedChannelShift) & C.ColorChannelMask);
     }
 }
