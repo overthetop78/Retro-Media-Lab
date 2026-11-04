@@ -9,7 +9,6 @@ using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
 using Firmware = RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions.BbcMicroFirmwareFunctions;
 using NativeFirmware = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions.FirmwareFunctions;
-using System.Security.Cryptography;
 
 namespace RetroMediaLab.Tests.Emulation;
 
@@ -17,27 +16,37 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuVideoTests
 {
     [Theory]
-    [InlineData(false, 0, "34EB9F1F6BF5DD10601C36181E00E16C33614F6822E3C5641C7247374EEA4867")]
-    [InlineData(false, 1, "DE0D1D3B743AC069B1D77931A5064E0B75A7906758D04FF14A0FF1C11597CB0B")]
-    [InlineData(false, 2, "33E81598DB095A2EF4573080DCA8AAB6B0393AC02D0C8BD46A07F2FCFEF44116")]
-    [InlineData(false, 3, "33E81598DB095A2EF4573080DCA8AAB6B0393AC02D0C8BD46A07F2FCFEF44116")]
-    [InlineData(true, 0, "81EBCFD035ECCC8DFB2B840953FE1A170804DF6599AB48E05B5A4E8C41DEBB9D")]
-    [InlineData(true, 1, "C550D4F171F08AA2DDBF8B7A4DA617C927987547D3FAF464828B15D0F8B55B4D")]
-    [InlineData(true, 2, "554FB20BB9B8ED3BD16676DDEC1D5ECC4CAC6D0C6E7E2B05F8048B900F15CBF8")]
-    [InlineData(true, 3, "542A94539CF4F6DA218D2A05FBCE640DE29E331D1A579EF92660367A425D5F5B")]
-    public void AllBitmapDecodeModesPreserveTheReferenceFrame(bool fast, int mode, string expected)
+    [InlineData(false, 0)] [InlineData(false, 1)] [InlineData(false, 2)] [InlineData(false, 3)]
+    [InlineData(true, 0)] [InlineData(true, 1)] [InlineData(true, 2)] [InlineData(true, 3)]
+    public void AllBitmapClockCombinationsFollowThePhysicalShiftRegister(bool fast, int mode)
     {
-        // Captured from the scalar scanout before replacing its pixel decoder.
-        // The pattern exercises all 256 byte values and every logical palette entry.
         var ram = new byte[32768];
         for (var i = 0; i < ram.Length; i++) ram[i] = (byte)(i * 73 + 19);
         var video = Bitmap(ram);
-        Set(video, 0, fast ? (byte)127 : (byte)63);
-        Set(video, 1, fast ? (byte)80 : (byte)40);
-        video.WriteUla(0xfe20, (byte)(mode * 4 + (fast ? 16 : 0)));
-        for (var i = 0; i < 16; i++) video.WriteUla(0xfe21, (byte)(i * 16 + (i ^ 7)));
-        Advance(video, 39936 * 2);
-        Assert.Equal(expected, Convert.ToHexString(SHA256.HashData(video.Render())));
+        try
+        {
+            Set(video, 0, fast ? (byte)127 : (byte)63);
+            Set(video, 1, fast ? (byte)80 : (byte)40);
+            video.WriteUla(0xfe20, (byte)(mode * 4 + (fast ? 16 : 0)));
+            for (var i = 0; i < 16; i++) video.WriteUla(0xfe21, (byte)(i * 16 + (i ^ 7)));
+            Advance(video, 39936 * 2);
+            var image = video.Render();
+            var width = fast ? 8 : 16;
+            var columns = fast ? 80 : 40;
+            for (var x = 0; x < 640; x++)
+            {
+                var address = (0x5800 + (8 * columns + x / width) * 8) & 0x7fff;
+                var data = ram[address];
+                var shift = x % width / (8 >> mode);
+                int Bit(int tap) => tap < shift ? 1 : data >> (tap - shift) & 1;
+                var colour = (Bit(5) * 4 + Bit(3) * 2 + Bit(1)) & 7;
+                var offset = (64 * 640 + x) * 4;
+                Assert.Equal((colour & 1) != 0 ? 255 : 0, image[offset + 2]);
+                Assert.Equal((colour & 2) != 0 ? 255 : 0, image[offset + 1]);
+                Assert.Equal((colour & 4) != 0 ? 255 : 0, image[offset]);
+            }
+        }
+        finally { video.Reset(); }
     }
 
     [Fact]
@@ -86,17 +95,19 @@ public sealed class AcornEmuVideoTests
     }
 
     [Fact]
-    public void BitmapCursorRespectsStartEndAndDisableRegisters()
+    public void BitmapCursorUsesCrtcPinSkewStartEndAndDisableRegisters()
     {
         var video = Bitmap(new byte[32768]);
         Set(video, 10, 7); Set(video, 11, 7); Set(video, 14, 0x0b); Set(video, 15, 0);
         Set(video, 8, 0x90); // retards CRTC utilisés par le MOS : le curseur reste sur sa cellule utile.
         Advance(video, 39936 * 2);
         var image = video.Render();
-        Assert.Equal(0, image[(6 * 640) * 4 + 2]);
-        Assert.Equal(255, image[(7 * 640) * 4 + 2]);
+        // DE est retardé d'une cellule, CURSOR de deux : la broche place le curseur une cellule après l'origine.
+        Assert.Equal(0, image[(6 * 640 + 16) * 4 + 2]);
+        Assert.Equal(0, image[(7 * 640) * 4 + 2]);
+        Assert.Equal(255, image[(7 * 640 + 16) * 4 + 2]);
         Set(video, 10, 32); Advance(video, 39936);
-        Assert.Equal(0, video.Render()[(7 * 640) * 4 + 2]);
+        Assert.Equal(0, video.Render()[(7 * 640 + 16) * 4 + 2]);
     }
 
     [Fact]

@@ -131,7 +131,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (videoStandard is not (EmulationVideoStandard.Pal or EmulationVideoStandard.Ntsc)) throw new ArgumentOutOfRangeException(nameof(videoStandard));
         _cyclesPerFrame = videoStandard == EmulationVideoStandard.Ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame;
         _nextFrame = _cyclesPerFrame;
-        Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.NtscHeight : RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.Height);
+        Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.NtscHeight : RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.Height, teletextHighBankOnly: _masterMemory is not null || _plusMemory is not null);
         if (_masterMemory is not null) Video.ReadMemory = address => _masterMemory.ReadVideo(address, _ram);
         else if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
         _cassette = new Cassette(_acia);

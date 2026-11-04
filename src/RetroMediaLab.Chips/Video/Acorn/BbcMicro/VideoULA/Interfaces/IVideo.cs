@@ -1,8 +1,3 @@
-using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services;
-using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Services;
-using System.Runtime.InteropServices;
-using VideoConstants = RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants;
-
 namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Interfaces;
 /// <summary>Contrat matériel du composant Video ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface IVideo

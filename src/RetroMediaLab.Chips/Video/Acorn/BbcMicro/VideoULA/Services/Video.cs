@@ -6,134 +6,131 @@ using VideoConstants = RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constan
 
 namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services;
 
-/// <summary>Câblage vidéo BBC : bus RAM emprunté, CRTC, ULA et générateur télétexte.</summary>
-/// <remarks>Chaque caractère est dessiné pendant son cycle de lecture. Une modification ultérieure de RAM,
-/// de palette ou de registres ne redessine pas les pixels déjà balayés. Les images publiées restent immuables.</remarks>
-public sealed partial class Video
-:RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Interfaces.IVideo{
+/// <summary>Carte vidéo BBC : le CRTC, VIDPROC, SAA5050 et leurs connexions restent distincts.</summary>
+public sealed partial class Video : Interfaces.IVideo
+{
     private readonly byte[] _ram;
+    private readonly bool _teletextHighBankOnly;
     private readonly Crtc6845 _crtc = new(Crtc6845Model.Hd6845S);
     private readonly TeletextSaa5050 _teletext;
-    private readonly byte[] _palette = new byte[16];
-    private readonly uint[] _bitmapPalette = new uint[VideoConstants.PaletteEntries * 2];
-    private int _bitmapDecodeOffset;
-    private int _bitmapWidth = VideoConstants.WideBitmapCellWidth;
+    private readonly BbcVideoUla _ula = new();
+    private static readonly uint[] ColourPixels = VideoConstants.PackedColours.ToArray();
+    private static readonly uint[] MonochromePixels = VideoConstants.PackedMonochrome.ToArray();
+    private uint[] _outputColours = ColourPixels;
+    private uint[] _drawing;
+    private uint[] _completed;
     private bool _monochrome;
-    private byte[] _drawing;
-    private byte[] _completed;
+    private int _phase;
+    private bool _characterPending;
+    private int _scanoutX;
+    private int _scanoutLine;
+    private bool _scanoutVisible;
+    private int _lineMasterDot;
+    private int _teletextClockPhase;
+
     public int Height { get; }
-    private byte _control;
-    private int _phase, _cursorRemaining;
-    public int ScreenWrap { get; set; } = 0x5800;
+    public int ScreenWrap { get; set; } = VideoConstants.DefaultScreenWrap;
     public bool Monochrome
     {
         get => _monochrome;
-        set { _monochrome = value; UpdateBitmapPalette(); }
+        set { _monochrome = value; _outputColours = value ? MonochromePixels : ColourPixels; }
     }
     public Func<int, byte>? ReadMemory { get; set; }
     public bool VSync => _crtc.VSync;
     public long Frame => _crtc.Frame;
 
-    /// <summary>La RAM reste possédée par la carte ; le générateur conserve sa propre copie de ROM externe.</summary>
+    /// <summary>La carte emprunte la RAM ; ses circuits et tampons lui appartiennent.</summary>
     public Video(byte[] ram, ReadOnlySpan<byte> characters, int height = VideoConstants.Height)
+        : this(ram, characters, height, false)
+    {
+    }
+
+    public Video(byte[] ram, ReadOnlySpan<byte> characters, int height, bool teletextHighBankOnly)
     {
         if (height is not (VideoConstants.Height or VideoConstants.NtscHeight)) throw new ArgumentOutOfRangeException(nameof(height));
         _ram = ram;
+        _teletextHighBankOnly = teletextHighBankOnly;
         _teletext = new(characters);
-        ConfigureTeletextPins();
         Height = height;
-        _drawing = new byte[VideoConstants.Width * Height * 4];
-        _completed = new byte[_drawing.Length];
-        UpdateBitmapMode();
-        UpdateBitmapPalette();
+        _drawing = new uint[VideoConstants.Width * Height];
+        _completed = new uint[_drawing.Length];
+        Reset();
     }
+
     public void Reset()
     {
-        _crtc.Reset(); _teletext.Reset(); ResetTeletextWiring(); Array.Clear(_palette);
-        Array.Clear(_drawing); Array.Clear(_completed); _control = 0; _phase = _cursorRemaining = 0; ScreenWrap = 0x5800;
-        UpdateBitmapMode();
-        UpdateBitmapPalette();
+        _crtc.Reset();
+        _teletext.Reset();
+        _ula.Reset();
+        ResetTeletextWiring();
+        Array.Clear(_drawing);
+        Array.Clear(_completed);
+        _phase = VideoConstants.CpuPhaseMask;
+        _scanoutX = _scanoutLine = _lineMasterDot = _teletextClockPhase = 0;
+        _characterPending = _scanoutVisible = false;
+        ScreenWrap = VideoConstants.DefaultScreenWrap;
     }
+
     public void Select(byte value) => _crtc.Select(value);
     public void WriteRegister(byte value) => _crtc.Write(value);
     public byte ReadRegister() => _crtc.Read();
-    public void WriteUla(ushort address, byte value)
-    {
-        if ((address & 1) == 0) { _control = value; UpdateBitmapMode(); }
-        else _palette[value >> 4] = (byte)((value & 15) ^ 7);
-        UpdateBitmapPalette();
-    }
+    public void WriteUla(ushort address, byte value) => _ula.Write(address, value);
 
-    /// <summary>Avance depuis l'horloge CPU de 2 MHz ; l'ULA choisit un caractère à 1 ou 2 MHz.</summary>
+    /// <summary>Un cycle CPU 2 MHz : huit périodes 16 MHz, sans dessiner à l'avance la demi-cellule suivante.</summary>
     public void Tick()
     {
-        _phase ^= 1;
-        ClockTeletext();
-        if ((_control & VideoConstants.FastCharacterClockBit) == 0 && _phase != 0) return;
-        if (_crtc.Column == 0) _cursorRemaining = 0;
-        if ((_control & VideoConstants.TeletextControlBit) == 0 && _crtc.IsProgrammed && _crtc.DisplayEnabled && _crtc.Scanline < Height)
+        _phase ^= VideoConstants.CpuPhaseMask;
+        PrepareTeletext();
+        var fast = _ula.FastCrtc;
+        if (fast || _phase == 0)
         {
-            if (_crtc.CursorForCell(_crtc.Address)) _cursorRemaining = VideoConstants.CursorWidths[_control >> 5];
-            BitmapCharacter();
-            if (_cursorRemaining > 0) _cursorRemaining--;
+            _characterPending = true;
+            _ula.Data = ReadVideoMemory(_crtc.MemoryAddress, _crtc.RasterAddress);
+            _ula.Cursor = _crtc.Cursor;
+            _ula.DisplayEnabled = _crtc.DisplayEnabled && (_crtc.RasterAddress & VideoConstants.BitmapRasterBlankBit) == 0;
+            var width = fast ? VideoConstants.BitmapCellWidth : VideoConstants.WideBitmapCellWidth;
+            _scanoutX = _crtc.DisplayColumn * width;
+            _scanoutLine = _crtc.Scanline;
+            _scanoutVisible = _crtc.IsProgrammed;
         }
+        uint teletext = 0;
+        for (var dot = 0; dot < VideoConstants.CpuMasterDots; dot++)
+        {
+            _teletextClockPhase += VideoConstants.TeletextClockNumerator;
+            if (_teletextClockPhase >= VideoConstants.TeletextClockDenominator)
+            {
+                _teletextClockPhase -= VideoConstants.TeletextClockDenominator;
+                _teletextDotLevel = !_teletextDotLevel;
+                _teletext.SetDotClock(_teletextDotLevel);
+            }
+            teletext |= (uint)_teletext.Rgb << (dot * VideoConstants.ColourBits);
+        }
+        var output = _ula.EmitCpuPixels(teletext);
+        var selected = _ula.TeletextSelected;
+        var left = selected ? _lineMasterDot + 1 - VideoConstants.TeletextViewportMasterDots : _scanoutX;
+        _lineMasterDot += VideoConstants.CpuMasterDots;
+        _scanoutX += VideoConstants.CpuMasterDots;
+        if (_scanoutVisible && (uint)_scanoutLine < Height)
+        {
+            var first = Math.Max(0, -left);
+            var last = Math.Min(VideoConstants.CpuMasterDots, VideoConstants.Width - left);
+            if (first < last)
+            {
+                var destination = _scanoutLine * VideoConstants.Width + left;
+                for (var dot = first; dot < last; dot++) _drawing[destination + dot] = _outputColours[(int)(output >> (dot * VideoConstants.ColourBits)) & VideoConstants.ColourMask];
+            }
+        }
+        if (!_characterPending || (!fast && _phase == 0)) return;
+        _characterPending = false;
         var frameStarted = _crtc.Tick();
-        if (_crtc.Column == 0) _teletextLineHalfDot = 0;
+        if (_crtc.Column == 0) _lineMasterDot = 0;
         if (frameStarted && _crtc.IsProgrammed)
         {
-            // Render publie une copie immuable : les deux tampons internes restent
-            // possédés par la vidéo et peuvent donc être réutilisés sans modifier une image publiée.
             (_completed, _drawing) = (_drawing, _completed);
             Array.Clear(_drawing);
         }
     }
 
-    /// <summary>Retourne une copie de la dernière image terminée, sans relire les registres après coup.</summary>
-    public byte[] Render() => _completed.ToArray();
-
-    private void UpdateBitmapMode()
-    {
-        var wide = (_control & 16) == 0;
-        _bitmapWidth = wide ? VideoConstants.WideBitmapCellWidth : VideoConstants.BitmapCellWidth;
-        var mode = Math.Min(((_control >> 2) & 3) + (wide ? 1 : 0), VideoConstants.BitmapDecodeModes - 1);
-        _bitmapDecodeOffset = mode * VideoConstants.BitmapByteValues * VideoConstants.BitmapCellWidth;
-    }
-
-    private void UpdateBitmapPalette()
-    {
-        var colours = _monochrome ? VideoConstants.PackedMonochrome : VideoConstants.PackedColours;
-        for (var logical = 0; logical < VideoConstants.PaletteEntries; logical++)
-        {
-            var physical = _palette[logical];
-            var colour = (physical & 8) != 0 && (_control & 1) != 0 ? (physical ^ 7) & 7 : physical & 7;
-            _bitmapPalette[logical] = colours[colour];
-            _bitmapPalette[logical + VideoConstants.CursorPaletteOffset] = colours[colour ^ 7];
-        }
-    }
-
-    private void BitmapCharacter()
-    {
-        if (_crtc.RasterAddress >= 8) return;
-        var address = (_crtc.Address << 3) | _crtc.RasterAddress;
-        if (address >= 0x8000) address = (address + ScreenWrap) & 0x7fff;
-        var offset = address & (_ram.Length - 1);
-        var data = ReadMemory?.Invoke(offset) ?? _ram[offset];
-        var width = _bitmapWidth;
-        var left = _crtc.DisplayColumn * width;
-        var y = _crtc.Scanline;
-        if ((uint)y >= Height) return;
-        var first = Math.Max(0, -left);
-        var last = Math.Min(width, VideoConstants.Width - left);
-        var source = _bitmapDecodeOffset + data * VideoConstants.BitmapCellWidth;
-        var logicalPixels = VideoConstants.BitmapLogicalPixels;
-        var pixels = MemoryMarshal.Cast<byte, uint>(_drawing.AsSpan());
-        var destination = y * VideoConstants.Width + left;
-        var cursor = _cursorRemaining > 0 ? VideoConstants.CursorPaletteOffset : 0;
-        var shift = width == VideoConstants.WideBitmapCellWidth ? 1 : 0;
-        for (var x = first; x < last; x++)
-        {
-            pixels[destination + x] = _bitmapPalette[logicalPixels[source + (x >> shift)] + cursor];
-        }
-    }
-
+    /// <summary>Copie immuable de la dernière image terminée.</summary>
+    public byte[] Render() => MemoryMarshal.AsBytes(_completed.AsSpan()).ToArray();
 }
