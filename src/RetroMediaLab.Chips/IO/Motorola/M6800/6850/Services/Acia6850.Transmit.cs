@@ -54,7 +54,6 @@ public sealed partial class Acia6850
         if (!_transmitPending || _ctsBlocked || _break)
         {
             _transmitLine = true;
-            _transmitClockCounter = 0;
             return;
         }
         _transmitShift = _transmitData;

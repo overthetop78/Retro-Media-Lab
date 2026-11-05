@@ -5,6 +5,31 @@ namespace RetroMediaLab.Chips.Tests.IO.Motorola.M6800.Chip6850;
 
 public sealed class Acia6850FormatTests
 {
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(1, 16)]
+    [InlineData(2, 64)]
+    public void IdleTransmitterPreservesTheProgrammedDividerPhase(int selector, int divider)
+    {
+        const byte eightNoParityOneStop = 0x14;
+        const byte transmitEmpty = 0x02;
+        var acia = new Acia6850(2_000_000, 0);
+        acia.Write(false, (byte)(eightNoParityOneStop | selector));
+        acia.ClockTransmit();
+        var elapsed = divider / 2;
+        for (var tick = 0; tick < elapsed; tick++) acia.ClockTransmit();
+        acia.Write(true, 0x5a);
+        for (var tick = 1; tick < divider - elapsed; tick++)
+        {
+            acia.ClockTransmit();
+            Assert.True(acia.TransmitBit);
+            Assert.Equal(0, acia.Read(false) & transmitEmpty);
+        }
+        acia.ClockTransmit();
+        Assert.False(acia.TransmitBit);
+        Assert.Equal(transmitEmpty, acia.Read(false) & transmitEmpty);
+    }
+
     public static IEnumerable<object[]> Formats()
     {
         for (var format = 0; format < 8; format++)
