@@ -136,7 +136,21 @@ Ces essais couvrent les deux combinaisons indiquées, pas toutes les permutation
 
 Le diagnostic temporaire est supprimé, son assembly Release reconstruite et aucun DSD de travail ne subsiste. Les cinq contrôles autonomes réussissent également en Debug (365 ms). Le build Debug avec `--modules=A` termine avec code zéro : exécutable et Chips présents, 24 manifestes et DLL d’entrée présents ; l’empreinte SHA-256 de MediaEngine dans `lib` correspond à celle de l’assembly Debug compilée.
 
-### Écritures sur quatre unités DFS
+### Validation ADFS S/M/L avec la ROM Acorn 1.30
+
+Le B+ 64 Kio démarre avec MOS/BASIC 2.00 et `Acorn ADFS v1.30 [variant 1].rom`, déjà présents dans le dossier Firmware. Les images ADS 160 Kio, ADM 320 Kio et ADL 640 Kio sont créées par le SDK puis montées par `*ADFS`, `*MOUNT 0` et `*CAT`. Pour chacune, la ROM sauvegarde un motif de 8 192 octets par `*SAVE $.RML 2000 4000` ; la RAM est vidée avant chaque LOAD et tous les octets sont comparés, également après fermeture et réouverture du conteneur. Les trois cas initiaux réussissent en 1,0572 minute hôte.
+
+ADFS L numérote d’abord les 1 280 secteurs d’une face avant ceux de l’autre : ce premier petit fichier ne prouvait donc pas l’accès à la seconde face. Le cas renforcé réserve un fichier par `PTR#OPENOUT "$.FILL"=&4F500:CLOSE#0`, attend le retour effectif de BASIC puis sauvegarde le motif. Il réussit en 2,4958 minutes : des octets du motif sont présents sur la face physique 1, le LOAD après réouverture est exact et l’explorateur MediaEngine extrait exactement les 8 192 octets du fichier RML. L’attente initiale fixe de ce banc était trop courte pendant l’allocation ; ce n’était pas une panne de l’émulateur.
+
+Le média réel `F:/Retro/Image Disquette/Acorn BBC - Applications - [ADL] (TOSEC-v2013-10-16)/Scrabble Dictionary (19xx)(-)[ADFS]/Scrabble Dictionary (19xx)(-)[ADFS].adl` est ouvert en lecture seule. La ROM affiche son catalogue et charge `$.!BOOT` en RAM ; ses 16 octets correspondent au contenu extrait par l’explorateur. Ce cas réussit en neuf secondes, sans écrire l’original. Son catalogue contient aussi DICMAP, Info, MAPMAP, OLDDM, OLDMM, SCRABDIC et SDIC ; leur présence n’est pas une preuve de chargement de chacun.
+
+Captures inspectées et conservées hors Git sous `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus64/` : `adfs-adl-save-load.png` montre l’allocation, SAVE, les deux LOAD et « ADFS ADL 8192 BYTES REOPEN OK » ; `adfs-real-scrabble-save-load.png` montre le catalogue réel, LOAD de !BOOT et « F RETRO ADL LOAD OK ». Les passages ADS et ADM disposent également de leurs captures.
+
+Le formateur `$.LIBRARY.Aform` du disque `MasterWelcome.adl` distribué dans les [sources BeebEm](https://github.com/stardot/beebem-windows/tree/master/UserData/DiscIms) refuse le B+ avec « This is the wrong type of machine ». Ce refus ne démontre pas un défaut du WD1770 : ce programme n’a pas servi à valider le formatage B+. Il reste à employer un AFORM prévu pour B/B+ et à vérifier les pistes après ce formatage. Le [guide Acorn ADFS](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_ADFSUG.pdf), chapitre 9, distingue le programme utilitaire AFORM de la ROM et décrit les formats S/M/L ainsi que sa confirmation.
+
+Les deux passages S/M complémentaires réussissent en 41 secondes : l’explorateur extrait exactement les fichiers créés par la ROM et `SectorImageFluxVisualizer` construit respectivement les 40 et 80 pistes attendues. C’est un contrôle du pipeline de visualisation, pas une capture de son interface graphique. Ces résultats ne finalisent pas la machine entière, les autres conteneurs, la création non formatée ou l’affichage interactif des secteurs. Aucun code de puce ni timing n’a été modifié pendant ces essais ADFS. Le diagnostic, les médias de travail et la capture de la tentative AFORM refusée sont supprimés ; l’assembly Release est reconstruite sans ce diagnostic.
+
+### Résultats DFS sur deux lecteurs
 
 Le passage du 5 novembre crée deux DSD de 80 pistes par `EmulationSdk.MediaProcessing.CreateBlankDiskAsync`, avec catalogues DFS vierges. Chaque carte saisit par son clavier `*DISC`, puis SAVE et LOAD de quatre fichiers distincts de 512 octets sur les unités DFS 0, 1, 2 et 3. Les unités 0/2 correspondent aux deux faces du premier lecteur, 1/3 à celles du second. La RAM est effacée avant chaque LOAD et comparée intégralement au motif attendu.
 
