@@ -10,6 +10,7 @@ public interface IIntel8271
     bool InSync { get; }
     bool WriteData { get; }
     event Action<bool>? WriteDataChanged;
+    event Action? DriveSignalsChanged;
     void SetDataWindow(bool clockWindow);
     void SetPhaseLockedSeparator(bool enabled);
     void SetUnseparatedData(bool asserted);

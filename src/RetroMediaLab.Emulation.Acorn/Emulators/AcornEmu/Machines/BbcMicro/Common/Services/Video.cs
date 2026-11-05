@@ -1,22 +1,19 @@
 using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Enums;
 using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services;
 using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Services;
-using System.Runtime.InteropServices;
-using VideoConstants = RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants;
+using RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services;
+using VideoConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.VideoConstants;
 
-namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services;
+namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
 /// <summary>Carte vidéo BBC : le CRTC, VIDPROC, SAA5050 et leurs connexions restent distincts.</summary>
-public sealed partial class Video : Interfaces.IVideo
+internal sealed partial class Video
 {
     private readonly byte[] _ram;
     private readonly bool _teletextHighBankOnly;
     private readonly Crtc6845 _crtc = new(Crtc6845Model.Hd6845S);
     private readonly TeletextSaa5050 _teletext;
     private readonly BbcVideoUla _ula = new();
-    private static readonly uint[] ColourPixels = VideoConstants.PackedColours.ToArray();
-    private static readonly uint[] MonochromePixels = VideoConstants.PackedMonochrome.ToArray();
-    private uint[] _outputColours = ColourPixels;
     private uint[] _drawing;
     private uint[] _completed;
     private bool _monochrome;
@@ -26,17 +23,20 @@ public sealed partial class Video : Interfaces.IVideo
     private int _scanoutLine;
     private bool _scanoutVisible;
     private int _lineMasterDot;
-    private int _teletextClockPhase;
 
     public int Height { get; }
     public int ScreenWrap { get; set; } = VideoConstants.DefaultScreenWrap;
     public bool Monochrome
     {
         get => _monochrome;
-        set { _monochrome = value; _outputColours = value ? MonochromePixels : ColourPixels; }
+        set
+        {
+            _monochrome = value;
+            _scanoutLookup = value ? MonochromeScanoutLookup : ColourScanoutLookup;
+        }
     }
     public Func<int, byte>? ReadMemory { get; set; }
-    public bool VSync => _crtc.VSync;
+    public bool VSync => _crtcVSync;
     public long Frame => _crtc.Frame;
 
     /// <summary>La carte emprunte la RAM ; ses circuits et tampons lui appartiennent.</summary>
@@ -52,27 +52,34 @@ public sealed partial class Video : Interfaces.IVideo
         _teletextHighBankOnly = teletextHighBankOnly;
         _teletext = new(characters);
         Height = height;
-        _drawing = new uint[VideoConstants.Width * Height];
+        _drawing = new uint[VideoConstants.ScanoutWordsPerLine * Height];
         _completed = new uint[_drawing.Length];
+        _previousField = new uint[_drawing.Length];
         Reset();
     }
 
     public void Reset()
     {
         _crtc.Reset();
+        RefreshCrtcSignals();
         _teletext.Reset();
         _ula.Reset();
         ResetTeletextWiring();
         Array.Clear(_drawing);
         Array.Clear(_completed);
+        ResetFields();
         _phase = VideoConstants.CpuPhaseMask;
-        _scanoutX = _scanoutLine = _lineMasterDot = _teletextClockPhase = 0;
+        _scanoutX = _scanoutLine = _lineMasterDot = 0;
         _characterPending = _scanoutVisible = false;
         ScreenWrap = VideoConstants.DefaultScreenWrap;
     }
 
     public void Select(byte value) => _crtc.Select(value);
-    public void WriteRegister(byte value) => _crtc.Write(value);
+    public void WriteRegister(byte value)
+    {
+        _crtc.Write(value);
+        RefreshCrtcSignals();
+    }
     public byte ReadRegister() => _crtc.Read();
     public void WriteUla(ushort address, byte value) => _ula.Write(address, value);
 
@@ -85,52 +92,39 @@ public sealed partial class Video : Interfaces.IVideo
         if (fast || _phase == 0)
         {
             _characterPending = true;
-            _ula.Data = ReadVideoMemory(_crtc.MemoryAddress, _crtc.RasterAddress);
-            _ula.Cursor = _crtc.Cursor;
-            _ula.DisplayEnabled = _crtc.DisplayEnabled && (_crtc.RasterAddress & VideoConstants.BitmapRasterBlankBit) == 0;
+            _ula.SetCharacterInputs(ReadVideoMemory(_crtcMemoryAddress, _crtcRaster), _crtcCursor,
+                _crtcDisplayEnabled && (_crtcRaster & VideoConstants.BitmapRasterBlankBit) == 0);
             var width = fast ? VideoConstants.BitmapCellWidth : VideoConstants.WideBitmapCellWidth;
-            _scanoutX = _crtc.DisplayColumn * width;
-            _scanoutLine = _crtc.Scanline;
-            _scanoutVisible = _crtc.IsProgrammed;
+            _scanoutX = _crtcDisplayColumn * width;
+            _scanoutLine = _crtcScanline;
+            _scanoutVisible = _crtcProgrammed;
         }
-        uint teletext = 0;
-        for (var dot = 0; dot < VideoConstants.CpuMasterDots; dot++)
-        {
-            _teletextClockPhase += VideoConstants.TeletextClockNumerator;
-            if (_teletextClockPhase >= VideoConstants.TeletextClockDenominator)
-            {
-                _teletextClockPhase -= VideoConstants.TeletextClockDenominator;
-                _teletextDotLevel = !_teletextDotLevel;
-                _teletext.SetDotClock(_teletextDotLevel);
-            }
-            teletext |= (uint)_teletext.Rgb << (dot * VideoConstants.ColourBits);
-        }
-        var output = _ula.EmitCpuPixels(teletext);
+        // Huit points 16 MHz contiennent exactement six transitions TR6 :
+        // RGB initial, puis échantillons 0,1,2,2,3,4,5. Aucun front n'est supprimé.
+        var initialRgb = (uint)_teletext.Rgb;
+        var samples = (uint)_teletext.ClockHalfDots(VideoConstants.TeletextHalfDotsPerCpuCycle);
+        var teletext = initialRgb |
+            ((samples & VideoConstants.TeletextFirstSampleGroupMask) << VideoConstants.ColourBits) |
+            (((samples >> VideoConstants.TeletextRepeatedSampleShift) & VideoConstants.ColourMask) << VideoConstants.TeletextRepeatedOutputShift) |
+            ((samples >> VideoConstants.TeletextFirstSampleGroupBits) << VideoConstants.TeletextLastOutputGroupShift);
+        var output = _ula.ClockMasterPeriods(teletext);
         var selected = _ula.TeletextSelected;
         var left = selected ? _lineMasterDot + 1 - VideoConstants.TeletextViewportMasterDots : _scanoutX;
         _lineMasterDot += VideoConstants.CpuMasterDots;
         _scanoutX += VideoConstants.CpuMasterDots;
-        if (_scanoutVisible && (uint)_scanoutLine < Height)
-        {
-            var first = Math.Max(0, -left);
-            var last = Math.Min(VideoConstants.CpuMasterDots, VideoConstants.Width - left);
-            if (first < last)
-            {
-                var destination = _scanoutLine * VideoConstants.Width + left;
-                for (var dot = first; dot < last; dot++) _drawing[destination + dot] = _outputColours[(int)(output >> (dot * VideoConstants.ColourBits)) & VideoConstants.ColourMask];
-            }
-        }
+        if (_scanoutVisible && (uint)_scanoutLine < Height) WriteScanout(left, _scanoutLine, output);
         if (!_characterPending || (!fast && _phase == 0)) return;
         _characterPending = false;
         var frameStarted = _crtc.Tick();
+        RefreshCrtcSignals();
         if (_crtc.Column == 0) _lineMasterDot = 0;
-        if (frameStarted && _crtc.IsProgrammed)
+        if (frameStarted && _crtcProgrammed)
         {
-            (_completed, _drawing) = (_drawing, _completed);
-            Array.Clear(_drawing);
+            CompleteField();
         }
     }
 
     /// <summary>Copie immuable de la dernière image terminée.</summary>
-    public byte[] Render() => MemoryMarshal.AsBytes(_completed.AsSpan()).ToArray();
+    public byte[] Render() => _completedInterlaced ? ExpandInterlacedScanout() : ExpandScanout(_completed);
+
 }

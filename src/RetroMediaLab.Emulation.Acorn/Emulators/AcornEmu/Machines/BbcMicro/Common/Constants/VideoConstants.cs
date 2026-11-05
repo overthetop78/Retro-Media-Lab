@@ -1,9 +1,10 @@
 using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Constants;
+using RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants;
 
-namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants;
+namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants;
 
 /// <summary>Dimensions du tampon du rendu BBC courant ; elles ne définissent pas toutes les machines Acorn.</summary>
-public static class VideoConstants
+internal static class VideoConstants
 {
     public const int CpuMasterDots = 8;
     public const int ColourBits = BbcVideoUlaConstants.ColourBits;
@@ -11,6 +12,12 @@ public static class VideoConstants
     public const int CpuPhaseMask = 1;
     public const int TeletextClockNumerator = 3;
     public const int TeletextClockDenominator = 4;
+    public const int TeletextHalfDotsPerCpuCycle = CpuMasterDots * TeletextClockNumerator / TeletextClockDenominator;
+    public const int TeletextFirstSampleGroupBits = TeletextClockNumerator * ColourBits;
+    public const uint TeletextFirstSampleGroupMask = (1u << TeletextFirstSampleGroupBits) - 1;
+    public const int TeletextRepeatedSampleShift = (TeletextClockNumerator - 1) * ColourBits;
+    public const int TeletextRepeatedOutputShift = TeletextClockDenominator * ColourBits;
+    public const int TeletextLastOutputGroupShift = (TeletextClockDenominator + 1) * ColourBits;
     public const int TeletextViewportMasterDots = (TeletextViewportHalfDots * TeletextPixelNumerator + TeletextPixelDenominator - 1) / TeletextPixelDenominator - CpuMasterDots;
     public const int MemoryRasterBits = 3;
     public const int MemoryRasterMask = 7;
@@ -25,8 +32,23 @@ public static class VideoConstants
     public const int MemoryTopBankBit = 8;
     public const int DefaultScreenWrap = 0x5800;
     public const int PackedPixelBytes = 4;
+    public const int ScanoutPixelBits = 4;
+    public const int ScanoutPixelMask = (1 << ScanoutPixelBits) - 1;
+    public const int ScanoutPairBits = ScanoutPixelBits * 2;
+    public const int ScanoutPairMask = (1 << ScanoutPairBits) - 1;
+    public const int ScanoutPairsPerWord = CpuMasterDots / 2;
+    public const int ScanoutWordBits = CpuMasterDots * ScanoutPixelBits;
+    public const int PackedPixelBits = PackedPixelBytes * 8;
+    public const int ScanoutHalfPixels = CpuMasterDots / 2;
+    public const int ScanoutHalfBits = ScanoutHalfPixels * ColourBits;
+    public const int ScanoutHalfMask = (1 << ScanoutHalfBits) - 1;
+    public const int ScanoutPackedHalfBits = ScanoutHalfPixels * ScanoutPixelBits;
+    public const int ScanoutMonochromeOffset = ColourMask + 1;
+    public const int ScanoutWordsPerLine = Width / CpuMasterDots;
     public const int Width = 640;
     public const int Height = 256;
+    public const int FieldsPerInterlacedImage = 2;
+    public const int FieldParityMask = FieldsPerInterlacedImage - 1;
     public const int NtscHeight = 200;
     public const int BitmapCellWidth = 8;
     public const int WideBitmapCellWidth = 16;

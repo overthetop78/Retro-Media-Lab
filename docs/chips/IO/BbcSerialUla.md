@@ -1,5 +1,11 @@
 # ULA série BBC — SERPROC (Acorn 201602 / 2C199)
 
+## Accès internes et réutilisation — 5 novembre 2026
+
+Les sélections moteur/RS423 sont décodées aux écritures du registre, et les accès internes aux sorties de la puce utilisent leurs champs, sans modifier l'interface publique ni les horloges. Le module conserve la référence du composant série et l'override de débit dont il possède les écritures ; il évite de redemander ces valeurs à chaque accès. Une cassette absente est vérifiée avant de consulter son moteur, mais l'électronique série continue de recevoir tous ses cycles.
+
+L'essai de calcul différé du synthétiseur a été retiré faute de gain isolé établi : sa phase et sa sortie sont toujours calculées à chaque Tick comme précédemment. Le groupe de puces SAA5050/VIDPROC/SERPROC compte **210 réussites en Debug et Release** après ces changements. Les essais supplémentaires temporaires liés au synthétiseur différé sont retirés avec cette tentative ; aucune optimisation propre au seul BBC n'est intégrée au modèle du SERPROC.
+
 ## Périmètre et constat initial
 
 Circuit des BBC Micro A/B/B+, réutilisé dans le Master équipé du port série. L’ULA ne possède ni fichier cassette, ni index de blocs, ni pilote série Windows. Elle fournit les horloges et le multiplexage TTL autour du MC6850, le séparateur cassette, la détection de porteuse et le modulateur de sortie. Les buffers RS423, l’amplificateur d’entrée, le relais et les composants RC sont externes.
@@ -103,3 +109,38 @@ Le diagnostic temporaire `AcornEmuBbcSerialDiagnostic.cs` a été supprimé apr�
 `scripts/local-building.cmd --building=debug --modules=A` est terminé avec code de sortie zéro : exécutable `build/Debug/Retro Media Lab/retromedialab.exe`, DLL Chips dans `lib`, 24 manifestes de modules avec chacune leur DLL d’entrée présente. L’empreinte de la DLL Chips livrée correspond à celle du build Debug testé. Les références et journaux temporaires sont supprimés ; les seize captures restent hors Git.
 
 Les fonctions numériques décrites sont réalisées et validées ; les seules limites retenues sont celles du détail analogique/interne non publié, explicitement décrites plus haut. La clôture de ce circuit ne ferme pas les points machine encore ouverts.
+
+### Essai des invariants de calcul, 5 novembre 2026
+
+Essai groupé : périodes des deux tons et masques de diviseur préparés hors Tick, masque de phase à seize pas, sortie anticipée du séparateur déconnecté après silence établi. Les cinq nouveaux cas vérifient la phase exacte de synthèse à 1 230 769, 2 000 000, 2 000 003 et 4 000 000 ticks/s, en changeant TXD, RTS et les 256 contrôles, ainsi que la reprise du séparateur après une longue déconnexion. Les 105 contrôles série passent en Debug avec l'essai ; les cinq contrôles de raccordement passent également.
+
+Le banc Debug de carte donne 31,0414 ms/tranche, 32,21 FPS, 1,29 MHz ; cassette/série isolée 3,1710 ms pour 39 936 cycles, contre 3,1501–3,3050 ms dans les passages précédents. Aucun gain global n'est établi. L'essai de production a donc été retiré, sans réintroduire d'ancien code antérieur aux corrections de porteuse et de câblage. Les cinq tests autonomes supplémentaires restent utiles pour les phases fractionnaires et la reprise d'entrée. Les 105 cas passent sur le code restauré en Debug (926 ms) et Release (441 ms) ; les cinq raccordements passent dans chaque configuration. Les journaux temporaires du passage sont supprimés après consignation. L'échec à améliorer les performances ne constitue pas une correction du déficit de vitesse de la machine.
+
+## Essai retiré : instantané des sorties SERPROC — 5 novembre 2026
+
+Le regroupement de TXCLK/RXCLK/CTS/DCD dans une structure retournée après le Tick existant a été comparé au module Debug livré, dans deux contextes collectables utilisant exactement la même assembly Chips. Sept passages alternés de 200 000 cycles après 20 000 cycles de chauffe, compilation tiercée désactivée uniquement pour ce processus de mesure ; aucune option du produit modifiée. Entrée cassette déconnectée, quatre commandes et deux débits forcés. Les deux contextes ont été déchargés en finally et leur disparition vérifiée après collecte.
+
+| Contrôle | Débit forcé | Avant ns/cycle | Essai ns/cycle |
+|---|---:|---:|---:|
+| 00 | 0 | 93,394 | 109,814 |
+| 00 | 1200 | 72,129 | 84,379 |
+| 85 | 0 | 91,204 | 105,700 |
+| 85 | 1200 | 86,585 | 86,519 |
+| 40 | 0 | 93,112 | 89,775 |
+| 40 | 1200 | 69,477 | 81,389 |
+| FF | 0 | 61,346 | 72,060 |
+| FF | 1200 | 65,273 | 79,611 |
+
+109 contrôles autonomes réussis, dont quatre comparaisons cycle par cycle à 1 230 769 / 2 000 000 / 2 000 003 / 4 000 000 Hz : toutes commandes, signaux RS423, entrée cassette nullable, synthèse et remise sous tension. Les cinq contrôles du raccordement ACIA et la comparaison appariée passent également. Le regroupement est néanmoins plus lent dans six charges sur huit : API, structure, utilisation et quatre tests spécifiques retirés intégralement. Le banc temporaire et la copie Release ont été supprimés ; mesure Release annulée après ce rejet. Les tests préexistants et les optimisations antérieures restent conservés. Aucun nouveau résultat de cadence native ne découle de cet essai.
+
+## Essai retiré : intervalles stables et raccordement BBC — 5 novembre 2026
+
+**État actuel : essai retiré du circuit, du contrat et du module. Les descriptions et mesures ci-dessous sont historiques. Aucun cycle série n’est différé dans la version restaurée.**
+
+`Advance(cycles, TXD, RTS, out TXC, out RXC)` avance les accumulateurs de source, diviseurs, séparateur et synthèse avec les mêmes états finaux que les appels unitaires. Le premier cycle conserve la reconnaissance d'une éventuelle transition cassette. La suite compte les périodes et les échéances sans répéter chaque appel. Les nombres de fronts transmis sont complets ; les propriétés de fronts décrivent le dernier cycle. L'appelant reste responsable de découper avant une modification d'entrée ou une échéance qu'un autre composant doit observer.
+
+La limite basse de fréquence acceptée reste strictement équivalente : le modèle unitaire ne produit qu'un front source par cycle, même lorsque son petit reliquat de phase s'accumule. L'avancement groupé conserve cette borne. Les tests comparent tous les champs internes et les nombres de fronts aux fréquences 1 230 769, 2 000 000 et 3 000 000 Hz, tous les contrôles, les changements de niveaux, TXD/RTS, la qualification porteuse, son impulsion et son expiration. Un intervalle de 5 400 000 cycles vérifie le reliquat à la fréquence minimale.
+
+Le module BBC regroupe au plus 64 cycles seulement lorsque RS423 est sélectionné, RXD haut, TX/RX au repos et les broches modem stables. Les accès ACIA/SERPROC et l'observation du composant synchronisent d'abord les cycles écoulés. Tout état actif et toute entrée cassette restent sur le chemin unitaire. Aucun circuit ne connaît une autre puce : c'est le câblage du module qui applique ces conditions. 182 contrôles MC6850/SERPROC et six raccordements BBC réussissent dans chaque configuration Debug/Release.
+
+Après retrait : groupes série/vidéo sélectionnés 271 cas réussis par configuration, raccordements BBC 158 cas réussis par configuration. Les horloges de chaque cycle sont de nouveau traitées immédiatement. Les anciennes captures du regroupement ne décrivent plus le chemin actuellement conservé.

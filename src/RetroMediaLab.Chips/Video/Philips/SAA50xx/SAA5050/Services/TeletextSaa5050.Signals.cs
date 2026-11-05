@@ -19,9 +19,12 @@ public sealed partial class TeletextSaa5050
     private int _flashField;
 
     public byte Data { get => _data; set => _data = (byte)(value & C.CharacterDataMask); }
-    public bool CharacterRoundingSelect { get; set; } = true;
-    public bool BigCharacterSelectHigh { get; set; } = true;
-    public bool RemoteData { get; set; } = true;
+    private bool _characterRoundingSelect = true;
+    private bool _bigCharacterSelectHigh = true;
+    private bool _remoteData = true;
+    public bool CharacterRoundingSelect { get => _characterRoundingSelect; set => _characterRoundingSelect = value; }
+    public bool BigCharacterSelectHigh { get => _bigCharacterSelectHigh; set => _bigCharacterSelectHigh = value; }
+    public bool RemoteData { get => _remoteData; set => _remoteData = value; }
     public int CharacterRow => _characterRow;
     public int CharacterScanline => _scanline;
     public int FlashField => _flashField;
@@ -34,7 +37,7 @@ public sealed partial class TeletextSaa5050
         _f1 = level;
         if (level) return;
         ClockRemoteTimer();
-        var raster = _scanline * C.RasterParities + (CharacterRoundingSelect ? 0 : 1);
+        var raster = _scanline * C.RasterParities + (_characterRoundingSelect ? 0 : 1);
         QueueInput(_data, raster, _flashField, _characterRow);
     }
 
@@ -57,7 +60,7 @@ public sealed partial class TeletextSaa5050
         }
         else if (!_dew)
         {
-            if (++_scanline == (BigCharacterSelectHigh ? C.CharacterRows : C.CharacterRows * C.RasterParities))
+            if (++_scanline == (_bigCharacterSelectHigh ? C.CharacterRows : C.CharacterRows * C.RasterParities))
             {
                 _scanline = 0;
                 _characterRow++;
@@ -96,7 +99,7 @@ public sealed partial class TeletextSaa5050
         _remoteHalf = !_remoteHalf;
         if (_remoteHalf) return;
         var bit = _remoteBit == 0 ? C.RemoteFirstBit : _remoteBit - 1;
-        if (RemoteData) _remoteCommand |= (byte)(1 << bit);
+        if (_remoteData) _remoteCommand |= (byte)(1 << bit);
         if (++_remoteBit != C.RemoteCommandBits) return;
         ReceiveRemoteCommand(_remoteCommand);
         _remoteBit = 0;

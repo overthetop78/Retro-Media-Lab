@@ -46,6 +46,7 @@ public interface ICrtc6845
 
     bool IsProgrammed { get; }
 
+
     void Select(byte value);
     byte Read();
     void Write(byte value);

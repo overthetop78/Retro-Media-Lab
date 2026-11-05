@@ -14,8 +14,6 @@ public sealed partial class Via6522 : IVia6522
     private bool _timer1Running;
     private bool _timer2Running;
     private bool _timer2Armed;
-    private byte _flags;
-    private byte _enabled;
 
     public Func<byte>? ReadPortA { get; set; }
     public Func<byte>? ReadPortB { get; set; }
@@ -24,7 +22,7 @@ public sealed partial class Via6522 : IVia6522
     public Action<byte>? PortAPinsChanged { get; set; }
     public Action<byte>? PortBPinsChanged { get; set; }
     public byte OutputA => _registers[C.PortA];
-    public bool Irq => (_flags & _enabled & C.InterruptMask) != 0;
+    public bool Irq => _irq;
     private byte PortBPins => ApplyTimerPb7((byte)(_registers[C.PortB] | ~_registers[C.DirectionB]));
 
     public void Reset()
@@ -35,7 +33,7 @@ public sealed partial class Via6522 : IVia6522
         Array.Clear(_registers);
         _registers[C.Shift] = shift;
         _registers[C.Timer2Low] = latch2Low;
-        _flags = _enabled = 0;
+        InterruptFlags = InterruptEnabled = 0;
         _shiftMode = ViaShiftMode.Disabled;
         _shiftOutput = _shiftUsesTimer = false;
         _controlModeA = _controlModeB = ViaControlMode.FallingInput;
@@ -69,17 +67,17 @@ public sealed partial class Via6522 : IVia6522
                 return inputA;
             case C.PortANoHandshake: return ReadPinsA();
             case C.Timer1Low:
-                if (!_timer1JustFired) _flags &= unchecked((byte)~C.Timer1Interrupt);
+                if (!_timer1JustFired) InterruptFlags &= unchecked((byte)~C.Timer1Interrupt);
                 return (byte)_timer1;
             case C.Timer1High: return (byte)(_timer1 >> C.HighByteShift);
             case C.Latch1Low: return (byte)_latch1;
             case C.Latch1High: return (byte)(_latch1 >> C.HighByteShift);
             case C.Timer2Low:
-                if (!_timer2JustFired) _flags &= unchecked((byte)~C.Timer2Interrupt);
+                if (!_timer2JustFired) InterruptFlags &= unchecked((byte)~C.Timer2Interrupt);
                 return (byte)_timer2;
             case C.Timer2High: return (byte)(_timer2 >> C.HighByteShift);
-            case C.Flags: return (byte)(_flags | (Irq ? C.InterruptSummary : 0));
-            case C.Enable: return (byte)(_enabled | C.InterruptSummary);
+            case C.Flags: return (byte)(InterruptFlags | (Irq ? C.InterruptSummary : 0));
+            case C.Enable: return (byte)(InterruptEnabled | C.InterruptSummary);
             case C.Shift:
                 var shifted = _registers[C.Shift];
                 StartShift();
@@ -119,11 +117,11 @@ public sealed partial class Via6522 : IVia6522
             case C.Timer1High:
                 _latch1 = (_latch1 & byte.MaxValue) | value << C.HighByteShift;
                 LoadTimer1();
-                if (!_timer1JustFired) _flags &= unchecked((byte)~C.Timer1Interrupt);
+                if (!_timer1JustFired) InterruptFlags &= unchecked((byte)~C.Timer1Interrupt);
                 break;
             case C.Latch1High:
                 _latch1 = (_latch1 & byte.MaxValue) | value << C.HighByteShift;
-                if (!_timer1JustFired) _flags &= unchecked((byte)~C.Timer1Interrupt);
+                if (!_timer1JustFired) InterruptFlags &= unchecked((byte)~C.Timer1Interrupt);
                 break;
             case C.Timer2Low: _registers[C.Timer2Low] = value; break;
             case C.Timer2High:
@@ -133,7 +131,7 @@ public sealed partial class Via6522 : IVia6522
                 _timer2Reload = false;
                 _lastPb6 = Pb6Level;
                 _timer2PulseSampled = false;
-                if (!_timer2JustFired) _flags &= unchecked((byte)~C.Timer2Interrupt);
+                if (!_timer2JustFired) InterruptFlags &= unchecked((byte)~C.Timer2Interrupt);
                 break;
             case C.Shift:
                 _registers[C.Shift] = value;
@@ -166,11 +164,11 @@ public sealed partial class Via6522 : IVia6522
                 ConfigureControlOutputs(previousA, previousB);
                 PublishControlOwnership(previousPeripheralOutputs);
                 break;
-            case C.Flags: _flags &= (byte)~(value & C.InterruptMask); break;
+            case C.Flags: InterruptFlags &= (byte)~(value & C.InterruptMask); break;
             case C.Enable:
-                _enabled = (value & C.InterruptSummary) != 0
-                    ? (byte)(_enabled | (value & C.InterruptMask))
-                    : (byte)(_enabled & ~value);
+                InterruptEnabled = (value & C.InterruptSummary) != 0
+                    ? (byte)(InterruptEnabled | (value & C.InterruptMask))
+                    : (byte)(InterruptEnabled & ~value);
                 break;
             default: _registers[register] = value; break;
         }

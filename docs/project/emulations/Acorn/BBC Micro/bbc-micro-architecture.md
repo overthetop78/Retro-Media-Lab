@@ -223,3 +223,61 @@ La documentation décrit aussi le changement de disque, l'amorçage automatique 
 - Chronologie complète du protocole cassette et de ses blocs de fichiers ; la spécification UEF décrit un conteneur, pas à elle seule le système de fichiers du MOS.
 
 Ces points sont identifiés comme recherches complémentaires, pas présentés comme des caractéristiques déjà vérifiées sur une machine physique.
+
+## Examen de la synchronisation — 5 novembre 2026
+
+Statut : constat du code actuel et proposition, avant une nouvelle modification de production. Le fonctionnement n'est pas encore entièrement événementiel. Le schéma général est décrit dans [l'architecture Chips](../../../../architecture/chips.md#proposition-de-synchronisation-événementielle--examen-du-5-novembre-2026).
+
+### Constat et remplacements proposés
+
+Les comptages viennent du BBC Model B complet au prompt BASIC, 200 tranches après 80 tranches d'échauffement. Une tranche comporte environ 39 936 cycles CPU. Ils ne prétendent pas décrire toutes les charges ou tous les modèles.
+
+| Interaction | Ce qui existe | Interrogation évitable / traitement à conserver | Proposition |
+|---|---|---|---|
+| CPU → carte/bus | Chaque transfert CPU fait avancer la carte ; IRQ/NMI sont lus après Tick et avant le transfert mémoire | La lecture des niveaux locaux est un échantillonnage ; recalculer toutes les sources pour obtenir ces niveaux ne l'est pas | Conserver les points d'échantillonnage ; résoudre les contributions sur la carte au changement et fournir seulement la ligne locale au CPU |
+| IRQ partagée | Bloc candidat de notifications sur les deux VIA, ACIA et SCSI ; sources Master/Tube encore lues séparément | 39 936 demandes IRQ pour environ 9,82 changements observés au repos | Compléter les sources réellement raccordées, garder les contributions séparées, initialiser au raccordement et retirer seulement la source désactivée ; gain candidat encore à confirmer |
+| NMI disque/réseau | Lecture de Disks.Nmi puis Econet.Nmi à chaque cycle CPU | Environ 39 936 demandes pour zéro changement observé dans ce scénario ; les autres scénarios comportent des fronts nécessaires | Notifier les sorties des contrôleurs et les changements du verrou d'autorisation réseau, résoudre la ligne commune ; conserver l'ordre de ses transitions et la détection de front du CPU |
+| CRTC → carte vidéo/SAA/VIA | Environ 19 968 RefreshCrtcSignals lisant huit sorties, 39 936 PrepareTeletext et comparaisons VSYNC sur la carte | VSYNC : 2 changements ; RA : 312 ; DE : 499 ; curseur : 1,03. MA et colonne changent à cadence caractère | Notifications ciblées pour les sorties rares et état de câblage local ; voie directe pour les données à cadence caractère ; appliquer DEW/CRS/LOSE à leurs phases actuelles, pas au hasard du callback |
+| SAA5050/VIDPROC | 39 936 paquets de six demi-points SAA et huit périodes maître VIDPROC | Ces paquets transportent des transitions utiles, même si le logiciel hôte montre une image immobile | Conserver le traitement dense et les délais du pipeline ; ne grouper davantage qu'entre deux événements d'entrée démontrés sans effet intermédiaire |
+| VIA | Deux fronts Phi2 distincts ; front descendant en attente jusqu'à la fin de l'accès bus ; callbacks de ports et contrôle déjà présents | 79 873 appels de fin de cycle pour 19 968 fronts descendants, mais la simple garde déplacée n'a pas amélioré le BBC | Intégrer le traitement à la phase bus due plutôt que créer des sondages de fin de cycle partout ; échéances de timers seulement avec prise en compte des lectures, reloads, PB6 et décalages |
+| Cassette/SERPROC/ACIA | La chaîne cassette/série est appelée 39 936 fois ; aucun échantillon cassette lu/avancé/enregistré au repos ; CTS/DCD sont déjà filtrés | Environ 12 288 fronts TxC et autant de RxC subsistent : ils ne peuvent être supprimés avec le moteur arrêté | Entrée cassette sur changement, échéances de silence/carrier et synthèse, fronts série aux diviseurs exacts ; pas de suspension globale de la série |
+| Contrôleurs et entrées | Chaînes disque, Winchester, réseau, ADC appelées à chaque cycle ; notifications de sorties 8271 déjà présentes ; avance idle exacte déjà partielle côté Winchester | Les circuits actifs ont encore des délais et fronts nécessaires ; l'appel de l'enveloppe ne prouve pas le travail du circuit | Étendre les échéances au propriétaire seulement quand le circuit fournit une borne sûre ; réveiller avant accès, changement de broche, index, IRQ ou fin d'opération |
+
+Les changements IRQ comptés sont ceux observés lors des lectures CPU : ce nombre ne prouve pas l'absence de toute impulsion intermédiaire.
+
+### Ordre logiciel actuel à préserver dans les comparaisons
+
+Le chemin 6502 est `PrepareRead/PrepareWrite` éventuel, puis `Cpu.Tick`, puis transfert `Read/Write` du bus. Dans Tick, la carte avance ses composants avant le sondage IRQ/NMI du CPU. La fin de phase VIA attendue est exécutée après le transfert dans le finally du bus ; les fronts montants sont traités séparément. Les verrous `_irqPrevious`, `_nmiPrevious`, les prélèvements particuliers des branches et les règles d'acceptation d'interruption ne sont pas équivalents à un simple appel « interrompre le CPU » depuis un callback.
+
+Un événement doit donc porter un instant matériel et une phase lorsque c'est nécessaire. Les étapes ayant le même compteur CPU ne sont pas fusionnables pour autant. Une notification de timeout VIA ne peut pas passer devant une écriture ou un acquittement qui la précédait. Une entrée NMI doit conserver ses fronts ; une IRQ de niveau doit rester assertée si une autre source est encore active.
+
+### Raccordement vidéo proposé
+
+Le CRTC doit publier les changements de sorties rares aux seuls consommateurs concernés. La carte conserve les niveaux câblés et les présente à SAA/VIA au même point qu'actuellement. Si une sortie change pendant une opération du producteur, son destinataire ne doit pas observer un état interne partiellement actualisé ni un front à une autre phase.
+
+MA et le flux de pixels ne deviennent pas des objets événements alloués par caractère ou par point. Ils gardent un chemin direct et les paquets déjà validés. Une écriture RAM, palette, contrôle ULA ou registre CRTC coupe toute possibilité d'avancement anticipé qui traverserait cette modification. Le rafraîchissement vidéo de la fenêtre n'est pas une horloge de circuit.
+
+Les essais de copie groupée des sorties et de vue ref readonly n'ont pas donné de gain global confirmé : ils sont retirés. Leur échec ne valide pas des callbacks indiscriminés ; il oriente vers des notifications sélectives des changements, avec mesure de la carte complète.
+
+### Cassette et série proposées
+
+Le transport signale une nouvelle transition d'entrée ou l'absence de signal au changement de son état. La logique SERPROC conserve le temps écoulé, le timeout de silence et le pulse carrier ; la synthèse conserve sa phase même lorsque sa sortie n'est pas sélectionnée. Les changements de TXD/RTS, du diviseur ou du contrôle imposent une frontière de traitement.
+
+L'ACIA reçoit TxC/RxC dans leur ordre actuel. DCD reste prélevé par RxC et les acquittements restent liés aux accès aux registres. Un état inactif d'émission ne suffit pas à ignorer la phase du diviseur, l'attente de marque ou un changement CTS/DCD. Une avance groupée exige une preuve de l'équivalence avec chaque front parcouru.
+
+### Ordre de migration proposé, sans nouveau code à ce stade
+
+1. Fixer les traces de référence des phases CPU/bus, VIA, VSYNC/DEW/LOSE, TxC/RxC et IRQ/NMI sur la machine complète, avec les événements simultanés et les accès sur front.
+2. Terminer la propagation des lignes IRQ/NMI et leur agrégation locale, sans remplacer les règles d'échantillonnage du CPU. Confirmer le coût global du bloc IRQ candidat avant de le considérer acquis.
+3. Remplacer les consultations de sorties vidéo rares par des notifications ciblées, tout en conservant le chemin direct des données à cadence élevée.
+4. Migrer les délais cassette/série et les opérations de contrôleurs vers des échéances exactes, une chaîne cohérente à la fois ; conserver les horloges nécessaires entre ces échéances.
+5. Étendre l'avancement jusqu'au prochain événement seulement aux intervalles dont toutes les observations et transitions sont couvertes par l'équivalence. Réutiliser l'architecture pour les autres machines sans intégrer de connaissance BBC dans une puce réutilisable.
+
+Pour chaque migration : mêmes configurations, scénarios, cycles et sorties ; traces de phases et interruptions, puis coût du BBC complet Debug et Release. Aucun gain n'est acquis par le seul passage d'un test isolé ou par la suppression d'appels visibles dans un compteur.
+
+### Pas d'attente réciproque entre puces
+
+Les sorties notifiées ne remplacent pas les horloges. Le moteur temporel de la carte fait avancer les cycles CPU et les échéances autonomes. Un timer VIA armé publie son IRQ à son échéance sans attendre que le CPU le consulte ; le CPU continue entre-temps et échantillonne sa ligne au point prévu. Les fronts CRTC, les délais de pipeline SAA, les diviseurs série et les autres opérations périodiques utiles restent également sources d'événements. Seuls les intervalles sans traitement matériel nécessaire peuvent être parcourus sans recalcul.
+## Évaluation du raccordement CRTC événementiel du 5 novembre 2026
+
+La proposition de notifications ciblées ne constitue pas une obligation d'ajouter des callbacks à chaque horloge. Son premier raccordement CRTC/BBC conserve les sorties et les timings vérifiés, mais ralentit le BBC complet en Release de 5,32 % pour seulement 3,06 % de mieux en Debug : il est retiré. L'architecture doit éviter le travail sans effet dans les deux configurations ; les fronts périodiques nécessaires et les instants de réception des entrées restent imposés par le matériel.

@@ -1,10 +1,46 @@
 using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Services;
+using System.Reflection;
 using Xunit;
 
 namespace RetroMediaLab.Chips.Tests.Video.Philips.SAA50xx.SAA5050;
 
 public sealed class OutputControlTests
 {
+    [Fact]
+    public void SerialOutputPairMatchesTruthTableForEveryGateAndColour()
+    {
+        var chip = new TeletextSaa5050([]);
+        var type = typeof(TeletextSaa5050);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var update = type.GetMethod("UpdateSerialOutputs", flags)!;
+        var resolve = type.GetMethod("ResolveVideo", flags, [typeof(bool), typeof(int), typeof(int), typeof(bool), typeof(bool), typeof(int)])!;
+        var on = type.GetField("_serialOn", flags)!;
+        var off = type.GetField("_serialOff", flags)!;
+        for (var gates = 0; gates < 32; gates++)
+        foreach (var row in new[] { 0, 1, 24 })
+        for (var foreground = 0; foreground < 8; foreground++)
+        for (var background = 0; background < 8; background++)
+        {
+            var window = (gates & 1) != 0;
+            var box = (gates & 2) != 0;
+            type.GetField("_outputWindow", flags)!.SetValue(chip, window);
+            type.GetField("_serialBox", flags)!.SetValue(chip, box);
+            type.GetField("_serialRow", flags)!.SetValue(chip, row);
+            type.GetField("_serialForeground", flags)!.SetValue(chip, foreground);
+            type.GetField("_serialBackground", flags)!.SetValue(chip, background);
+            chip.PictureOn = (gates & 4) != 0;
+            chip.DisplayEnabled = (gates & 8) != 0;
+            chip.SuperimposeInputHigh = (gates & 16) != 0;
+            foreach (var command in new byte[] { 0x00, 0x5e, 0x5f })
+            {
+                chip.ReceiveRemoteCommand(command);
+                update.Invoke(chip, null);
+                Assert.Equal(resolve.Invoke(chip, [true, foreground, background, window, box, row]), on.GetValue(chip));
+                Assert.Equal(resolve.Invoke(chip, [false, foreground, background, window, box, row]), off.GetValue(chip));
+            }
+        }
+    }
+
     // PO, DE, superposition, boîte : transcription des sept lignes de table 3.
     public static TheoryData<bool, bool, bool, bool, bool, bool> Table => new()
     {

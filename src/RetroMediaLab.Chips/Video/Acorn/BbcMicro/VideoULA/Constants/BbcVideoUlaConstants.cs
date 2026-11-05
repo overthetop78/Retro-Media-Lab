@@ -4,9 +4,14 @@ namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants;
 public static class BbcVideoUlaConstants
 {
     public const int MasterClockHz = 16000000;
-    public const int CpuMasterClocks = 8;
+    public const int PackedMasterPeriods = 8;
     public const int ColourBits = 3;
-    public const int LastCpuPixelShift = (CpuMasterClocks - 1) * ColourBits;
+    public const uint PackedPixelMask = (1u << (PackedMasterPeriods * ColourBits)) - 1;
+    public const uint RepeatedPackedColour = PackedPixelMask / ColourMask;
+    public const int LastPackedPixelShift = (PackedMasterPeriods - 1) * ColourBits;
+    internal const int PackedPatternCount = (PixelRateMask + 1) * (ShiftDataMask + 1);
+    internal const int PaletteRevisionShift = 32;
+    internal const uint InitialPaletteRevision = 1;
     public const int ClockPhaseMask = 15;
     public const int SlowCharacterPeriod = 16;
     public const int FastCharacterPeriod = 8;

@@ -15,7 +15,7 @@ public sealed partial class Intel8271
     private void AcceptCommand(byte value)
     {
         _seekRetryCount = 0;
-        _command = (byte)(value & C.CommandMask); _drive = (value & C.Drive1Select) != 0 ? 1 : 0;
+        _command = (byte)(value & C.CommandMask); SetActiveDrive((value & C.Drive1Select) != 0 ? 1 : 0);
         Array.Clear(_parameters); _parameterCount = 0; _awaitingData = _dataRequest = false; _status = C.Busy; _deletedResult = 0;
         _requiredParameters = _command switch
         {

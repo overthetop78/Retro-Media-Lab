@@ -26,6 +26,8 @@ public interface ITeletextSaa5050
     bool Blanking { get; }
     void SetCharacterClock(bool level);
     void SetDotClock(bool level);
+    /// <summary>Transitions TR6 sans changement des autres broches ; RGB successifs, trois bits par transition.</summary>
+    ulong ClockHalfDots(int count);
     void SetLoadOutputShiftEnable(bool level);
     void SetDataEntryWindow(bool level);
     void SetGeneralLineReset(bool level);

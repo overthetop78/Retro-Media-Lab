@@ -1,6 +1,6 @@
 namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Interfaces;
 
-/// <summary>VIDPROC seul : la mémoire vidéo, le CRTC et le SAA5050 appartiennent à la carte appelante.</summary>
+/// <summary>VIDPROC seul : les autres circuits et la mémoire appartiennent à la carte appelante.</summary>
 public interface IBbcVideoUla
 {
     byte Data { get; set; }
@@ -9,6 +9,8 @@ public interface IBbcVideoUla
     int TeletextRgb { get; set; }
     bool Inverted { get; set; }
     byte Control { get; }
+    /// <summary>Présente DATA, CURSOR et DE ensemble, sans produire de front d'horloge.</summary>
+    void SetCharacterInputs(byte data, bool cursor, bool displayEnabled);
     bool TeletextSelected { get; }
     bool FastCrtc { get; }
     bool Clock8 { get; }
@@ -23,5 +25,7 @@ public interface IBbcVideoUla
     bool Blue { get; }
     void Write(ushort address, byte value);
     void SetMasterClock(bool level);
+    /// <summary>Huit périodes maître complètes ; RGB externe fourni pour chaque période, trois bits par couleur.</summary>
+    uint ClockMasterPeriods(uint inputRgb);
     void Reset();
 }

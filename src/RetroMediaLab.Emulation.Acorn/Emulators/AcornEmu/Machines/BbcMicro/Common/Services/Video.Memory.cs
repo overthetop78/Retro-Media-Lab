@@ -1,8 +1,8 @@
-using C = RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants;
+using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.VideoConstants;
 
-namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services;
+namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
-public sealed partial class Video
+internal sealed partial class Video
 {
     private byte ReadVideoMemory(int ma, int raster)
     {

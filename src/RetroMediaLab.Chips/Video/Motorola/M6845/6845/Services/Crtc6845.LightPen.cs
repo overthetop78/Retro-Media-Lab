@@ -22,7 +22,7 @@ public sealed partial class Crtc6845
     {
         if (!_lightPenPending) return;
         _lightPenPending = false;
-        var address = MemoryAddress;
+        var address = _memoryAddress;
         _registers[Crtc6845Constants.LightPenAddressHigh] = (byte)(address >> Crtc6845Constants.AddressByteShift);
         _registers[Crtc6845Constants.LightPenAddressLow] = (byte)address;
     }

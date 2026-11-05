@@ -46,7 +46,7 @@ public sealed partial class Intel8271
         {
             _scanResult = _scanEqual ? C.ScanEqual : C.ScanNotEqual;
             // Le verdict est rendu après le reste du secteur et son CRC, sans nouveau DMA pour les octets restants.
-            _phase = Phase.ScanTail;
+            SetPhase(Phase.ScanTail);
         }
         _scanFieldOffset = 0;
         _scanMatches = _scanEqual = true;

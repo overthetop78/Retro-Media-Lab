@@ -14,6 +14,8 @@ internal sealed class Intel8271Drive
     private readonly Func<int, IEmulationDiskImage?> _images;
     private readonly Func<byte, int> _headSelect;
     private readonly int _ownerClock;
+    private readonly uint _nanosecondsPerTick;
+    private readonly int _nanosecondRemainder;
     private readonly uint _cellNanoseconds;
     private readonly uint _dataWindowThresholdNanoseconds;
     private long _timeFraction;
@@ -22,8 +24,7 @@ internal sealed class Intel8271Drive
     private byte _previousControl;
     private bool _signalsChanged = true;
     private int _previousDrive;
-    private bool _previousReading;
-    private bool _previousWriting;
+    private bool _motor;
     private ulong _time;
     private ulong _lastReadPulse;
     private bool _hasReadPulse;
@@ -50,24 +51,31 @@ internal sealed class Intel8271Drive
         _chip = chip;
         _images = images;
         _ownerClock = ownerClock;
+        _nanosecondsPerTick = checked((uint)(C.NanosecondsPerSecond / ownerClock));
+        _nanosecondRemainder = checked((int)(C.NanosecondsPerSecond % ownerClock));
         _headSelect = headSelect ?? (static _ => 0);
         _cellNanoseconds = checked((uint)((long)H.ChipCyclesPerHalfBit * C.NanosecondsPerSecond / chipClock));
         _dataWindowThresholdNanoseconds = checked((uint)((long)C.StandardSingleShotWindowNanoseconds
             * H.StandardClock / chipClock));
         _chip.WriteDataChanged += WriteDataChanged;
+        _chip.DriveSignalsChanged += () => _signalsChanged = true;
     }
 
     internal void Tick()
     {
-        _timeFraction += C.NanosecondsPerSecond;
-        var elapsed = checked((uint)(_timeFraction / _ownerClock));
-        _timeFraction %= _ownerClock;
+        var elapsed = _nanosecondsPerTick;
+        _timeFraction += _nanosecondRemainder;
+        if (_timeFraction >= _ownerClock)
+        {
+            _timeFraction -= _ownerClock;
+            elapsed++;
+        }
         _time += elapsed;
         Synchronize();
         _chip.SetUnseparatedData(false);
-        if (_chip.Motor)
+        if (_motor)
         {
-            var drive = _chip.ActiveDrive;
+            var drive = _previousDrive;
             if (_writingImage is null) EnsureTrack(drive);
             _rotation[drive] += elapsed;
             if (_rotation[drive] >= C.RevolutionNanoseconds)
@@ -90,18 +98,18 @@ internal sealed class Intel8271Drive
 
     internal void Synchronize()
     {
+        if (!_signalsChanged)
+        {
+            if (_writingImage is not null && _time - _writeStarted >= C.RevolutionNanoseconds)
+            {
+                PublishWindow(continueWriting: true);
+                _motor = _chip.Motor;
+            }
+            return;
+        }
         var control = _chip.DriveControl;
         var drive = _chip.ActiveDrive;
         var head = _headSelect(control);
-        var reading = _chip.Reading;
-        var writing = _chip.Writing;
-        if (!_signalsChanged && control == _previousControl && drive == _previousDrive
-            && reading == _previousReading && writing == _previousWriting)
-        {
-            if (_writingImage is not null && _time - _writeStarted >= C.RevolutionNanoseconds)
-                PublishWindow(continueWriting: true);
-            return;
-        }
         _signalsChanged = false;
         if ((_previousControl & H.OutputStep) == 0 && (control & H.OutputStep) != 0
             && (control & H.DriveSelectMask) != 0)
@@ -136,8 +144,7 @@ internal sealed class Intel8271Drive
             PublishWindow(continueWriting: true);
         _previousControl = control;
         _previousDrive = drive;
-        _previousReading = reading;
-        _previousWriting = writing;
+        _motor = _chip.Motor;
     }
 
     internal void Reset()

@@ -18,6 +18,7 @@ public sealed class ScsiHostAdapter : IAcornScsiHostAdapter
     public bool Acknowledge { get; private set; }
     public bool IrqEnabled { get; private set; }
     public bool Irq { get; private set; }
+    public Action<bool>? IrqChanged { get; set; }
     public bool ResetAsserted { get; private set; }
     public ScsiBusSignals TargetSignals { get; private set; }
 
@@ -35,7 +36,8 @@ public sealed class ScsiHostAdapter : IAcornScsiHostAdapter
     {
         ResetAsserted = asserted;
         if (!asserted) return;
-        IrqEnabled = Irq = Select = false;
+        IrqEnabled = Select = false;
+        SetIrq(false);
         // Neither the data latch nor the ACK flip-flop has an NRST connection.
         // The target's response to RST releases REQ and therefore clears ACK via SetTarget.
     }
@@ -76,5 +78,12 @@ public sealed class ScsiHostAdapter : IAcornScsiHostAdapter
     private void StrobeAcknowledge() => Acknowledge = (TargetSignals & ScsiBusSignals.Request) != 0;
 
     // IC12's NAND SR latch: REQ active sets it while enabled; only disabling / reset clears it.
-    private void UpdateInterruptLatch() => Irq = IrqEnabled && (Irq || (TargetSignals & ScsiBusSignals.Request) != 0);
+    private void UpdateInterruptLatch() => SetIrq(IrqEnabled && (Irq || (TargetSignals & ScsiBusSignals.Request) != 0));
+
+    private void SetIrq(bool asserted)
+    {
+        if (Irq == asserted) return;
+        Irq = asserted;
+        IrqChanged?.Invoke(asserted);
+    }
 }

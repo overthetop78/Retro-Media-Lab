@@ -32,13 +32,13 @@ public sealed partial class Crtc6845
         var parity = (int)(_blinkFields & InterlaceSyncMask);
         // Hitachi table 9 : avec Nr+2 impair, la parité s'inverse à chaque ligne de caractères.
         if (_hitachi && (_registers[MaximumRaster] & InterlaceSyncMask) != 0)
-            parity ^= Row & InterlaceSyncMask;
+            parity ^= _row & InterlaceSyncMask;
         return parity;
     }
 
     private bool AdvanceCharacter()
     {
-        if (Column == _registers[HorizontalDisplayed]) _nextLineAddress = _memoryAddress;
+        if (_column == _registers[HorizontalDisplayed]) _nextLineAddress = _memoryAddress;
         if (_hitachi)
         {
             if (_checkAdjust)
@@ -50,9 +50,9 @@ public sealed partial class Crtc6845
                     _adjustCounter = (_adjustCounter + 1) & RasterMask;
                 }
             }
-            if (Column == LastRasterLatchColumn)
+            if (_column == LastRasterLatchColumn)
             {
-                if (!_adjusting && !_extraScanline && Row == _registers[VerticalTotal] && LastRaster())
+                if (!_adjusting && !_extraScanline && _row == _registers[VerticalTotal] && LastRaster())
                 {
                     _endMain = true;
                     _adjustCounter = 0;
@@ -62,19 +62,19 @@ public sealed partial class Crtc6845
         }
         _memoryAddress = (_memoryAddress + 1) & MemoryAddressMask;
         var frameStarted = false;
-        if (Column == _registers[HorizontalTotal])
+        if (_column == _registers[HorizontalTotal])
         {
             frameStarted = EndScanline();
             RefreshCursorVisibility();
-            Column = 0;
+            _column = 0;
             _horizontalDisplay = true;
             _memoryAddress = _lineAddress;
         }
-        else Column = (Column + 1) & DataMask;
+        else _column = (_column + 1) & DataMask;
 
-        if (Column == _registers[HorizontalDisplayed] || Column == _registers[HorizontalTotal])
+        if (_column == _registers[HorizontalDisplayed] || _column == _registers[HorizontalTotal])
             _horizontalDisplay = false;
-        if (_verticalDisplay && Row == _registers[VerticalDisplayed]
+        if (_verticalDisplay && _row == _registers[VerticalDisplayed]
             && (!_hitachi || !_firstScanline))
         {
             _verticalDisplay = false;
@@ -86,7 +86,7 @@ public sealed partial class Crtc6845
 
     private bool EndScanline()
     {
-        Scanline++;
+        _scanline++;
         _firstScanline = false;
         if (_verticalSyncCounter >= 0)
         {
@@ -107,7 +107,7 @@ public sealed partial class Crtc6845
             }
             else if (lastRaster)
             {
-                if (Row == _registers[VerticalTotal])
+                if (_row == _registers[VerticalTotal])
                 {
                     if (_registers[VerticalAdjust] == 0) return FinishMainField();
                     _adjusting = true;
@@ -140,15 +140,15 @@ public sealed partial class Crtc6845
 
     private void BeginRow()
     {
-        Row = (Row + 1) & RowMask;
+        _row = (_row + 1) & RowMask;
         _rasterAddress = FirstRaster();
         _syncSeenInRow = false;
     }
 
     private bool BeginFrame()
     {
-        Row = 0;
-        Scanline = 0;
+        _row = 0;
+        _scanline = 0;
         _rasterAddress = FirstRaster();
         _lineAddress = _registers[StartAddressHigh] << AddressByteShift | _registers[StartAddressLow];
         _nextLineAddress = _lineAddress;
@@ -162,7 +162,7 @@ public sealed partial class Crtc6845
         _endAdjust = false;
         _checkAdjust = false;
         _syncSeenInRow = false;
-        Frame++;
+        _frame++;
         return true;
     }
 
@@ -174,11 +174,11 @@ public sealed partial class Crtc6845
             if (_horizontalWidth == 0 || _horizontalSyncCounter == (_horizontalWidth & SyncCounterMask))
                 _horizontalSyncCounter = InactiveSyncCounter;
         }
-        if (_horizontalSyncCounter < 0 && _horizontalWidth != 0 && Column == _registers[HorizontalSyncPosition])
+        if (_horizontalSyncCounter < 0 && _horizontalWidth != 0 && _column == _registers[HorizontalSyncPosition])
             _horizontalSyncCounter = 0;
 
         var syncPoint = !_interlaceSync || (_blinkFields & InterlaceSyncMask) == 0
-            || Column == ((_registers[HorizontalTotal] + 1) >> 1);
+            || _column == ((_registers[HorizontalTotal] + 1) >> 1);
         var ended = false;
         if (_verticalSyncCounter >= 0 && _verticalSyncCounted
             && _verticalSyncCounter == (_verticalWidth & SyncCounterMask) && syncPoint)
@@ -187,7 +187,7 @@ public sealed partial class Crtc6845
             ended = true;
         }
         if (!ended && _verticalSyncCounter < 0 && !_syncSeenInRow
-            && Row == _registers[VerticalSyncPosition] && !_adjusting && !_extraScanline && syncPoint)
+            && _row == _registers[VerticalSyncPosition] && !_adjusting && !_extraScanline && syncPoint)
         {
             _verticalSyncCounter = 0;
             _verticalSyncCounted = false;

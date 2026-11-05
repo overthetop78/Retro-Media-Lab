@@ -10,7 +10,15 @@ internal sealed class Winchester(bool enabled)
     private readonly IEmulationDiskImage?[] _images = new IEmulationDiskImage?[C.DriveCount];
     private readonly WinchesterStorage?[] _storage = new WinchesterStorage?[C.DriveCount];
     private WinchesterController? _controller;
-    private WinchesterController Controller => _controller ??= new WinchesterController(unit => _storage[unit]);
+    private WinchesterController Controller => _controller ??= CreateController();
+    internal Action<bool>? IrqChanged { get; set; }
+
+    private WinchesterController CreateController()
+    {
+        var controller = new WinchesterController(unit => _storage[unit]);
+        controller.IrqChanged = asserted => IrqChanged?.Invoke(asserted);
+        return controller;
+    }
     internal bool Irq => enabled && Controller.Irq;
     internal byte Read(ushort address) => enabled ? Controller.Read(address) : H.OpenBus;
     internal void Write(ushort address, byte value) { if (enabled) Controller.Write(address, value); }

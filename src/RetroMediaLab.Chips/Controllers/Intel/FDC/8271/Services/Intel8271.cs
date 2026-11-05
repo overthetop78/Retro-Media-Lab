@@ -30,6 +30,29 @@ public sealed partial class Intel8271 : IIntel8271
     private bool _awaitingData;
     private byte _deletedResult;
     private Phase _phase;
+    /// <summary>Notification des changements de DriveControl, ActiveDrive, Reading ou Writing.</summary>
+    public event Action? DriveSignalsChanged;
+
+    private void SetPhase(Phase value)
+    {
+        if (_phase == value) return;
+        _phase = value;
+        DriveSignalsChanged?.Invoke();
+    }
+
+    private void SetActiveDrive(int value)
+    {
+        if (_drive == value) return;
+        _drive = value;
+        DriveSignalsChanged?.Invoke();
+    }
+
+    private void PublishDriveControl(byte value)
+    {
+        if (_driveOutput == value) return;
+        _driveOutput = value;
+        DriveSignalsChanged?.Invoke();
+    }
     public bool Drq => _dataRequest && (_mode & C.NonDmaMode) == 0;
     public bool ResetAsserted => _resetAsserted;
     public byte DriveControl => _driveOutput;
@@ -64,7 +87,8 @@ public sealed partial class Intel8271 : IIntel8271
     {
         _resetAsserted = false;
         ResetSerialRead();
-        _status = _result = _data = _command = _driveOutput = 0;
+        _status = _result = _data = _command = 0;
+        PublishDriveControl(0);
         ResetBus();
         _mode = C.ModeFixed;
         _dataRequest = false;
@@ -74,12 +98,13 @@ public sealed partial class Intel8271 : IIntel8271
         _special[C.SettleTime] = C.DefaultSettleTime;
         _special[C.LoadUnload] = C.DefaultLoadUnload;
         _special[C.BadTrack00] = _special[C.BadTrack01] = _special[C.BadTrack10] = _special[C.BadTrack11] = byte.MaxValue;
-        _parameterCount = _requiredParameters = _drive = _sector = _remaining = _offset = _delay = 0;
+        _parameterCount = _requiredParameters = _sector = _remaining = _offset = _delay = 0;
+        SetActiveDrive(0);
         _seekRemaining = 0;
         _externalCount = false;
         Array.Clear(_notReadyLatched);
         UpdateTiming();
-        Array.Clear(_tracks); Array.Clear(_parameters); _buffer = []; _awaitingData = false; _phase = Phase.Idle;
+        Array.Clear(_tracks); Array.Clear(_parameters); _buffer = []; _awaitingData = false; SetPhase(Phase.Idle);
     }
 
     public byte Read(int register)
@@ -131,9 +156,9 @@ public sealed partial class Intel8271 : IIntel8271
     private void Complete(byte result, bool interrupt = true)
     {
         StopSerialRead();
-        _driveOutput &= unchecked((byte)~(C.OutputWriteEnable | C.OutputStep));
+        PublishDriveControl((byte)(_driveOutput & ~(C.OutputWriteEnable | C.OutputStep)));
         _result = result; _status = (byte)(C.ResultFull | (interrupt ? C.Interrupt : 0));
-        _phase = Phase.Idle; _awaitingData = _dataRequest = false; _buffer = []; _delay = 0;
+        SetPhase(Phase.Idle); _awaitingData = _dataRequest = false; _buffer = []; _delay = 0;
         _unloadCount = _special[C.LoadUnload] >> 4;
         if (_unloadCount == 0 && Motor) UnloadHead();
     }

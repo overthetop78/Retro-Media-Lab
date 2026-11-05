@@ -14,6 +14,7 @@ public sealed partial class TeletextSaa5050
     private ulong _halfDotTime;
     private bool _outputWindow;
     private int _serialMask;
+    private int _serialReversedMask;
     private int _serialForeground;
     private int _serialBackground;
     private int _serialPixel = C.HalfDotsPerCharacter;
@@ -22,12 +23,85 @@ public sealed partial class TeletextSaa5050
     private (int Rgb, bool Monochrome, bool Blanking) _serialOn;
     private (int Rgb, bool Monochrome, bool Blanking) _serialOff;
 
-    public int Rgb { get; private set; }
-    public bool Red => (Rgb & C.RedBit) != 0;
-    public bool Green => (Rgb & C.GreenBit) != 0;
-    public bool Blue => (Rgb & C.BlueBit) != 0;
-    public bool Monochrome { get; private set; }
-    public bool Blanking { get; private set; }
+    private int _rgb;
+    private bool _monochrome;
+    private bool _blanking;
+    public int Rgb => _rgb;
+    public bool Red => (_rgb & C.RedBit) != 0;
+    public bool Green => (_rgb & C.GreenBit) != 0;
+    public bool Blue => (_rgb & C.BlueBit) != 0;
+    public bool Monochrome => _monochrome;
+    public bool Blanking => _blanking;
+
+    /// <summary>Avance entre les échéances du pipeline ; conserve chaque RGB et les sorties finales.</summary>
+    public ulong ClockHalfDots(int count)
+    {
+        if ((uint)count > C.MaximumPackedHalfDots) throw new ArgumentOutOfRangeException(nameof(count));
+        if (!_outputWindow && _windowCount == 0)
+        {
+            // Sans front LOSE en vol, toutes les entrées échues seraient ignorées.
+            // Les entrées futures restent en file pour une éventuelle réouverture.
+            _halfDotTime += (uint)count;
+            if (_serialPixel < C.HalfDotsPerCharacter)
+            {
+                _serialPixel += count;
+                if (_serialPixel > C.HalfDotsPerCharacter) _serialPixel = C.HalfDotsPerCharacter;
+            }
+            while (_pipelineCount > 0 && unchecked((long)(_pipeline[_pipelineHead].Due - _halfDotTime)) <= 0)
+            {
+                _pipelineHead = (_pipelineHead + 1) & C.PipelineIndexMask;
+                _pipelineCount--;
+            }
+            if ((count & 1) != 0) _tr6 = !_tr6;
+            // La fermeture et les changements de commandes publient déjà _serialOff.
+            // Aucun état de sortie ne change dans cet intervalle sans front LOSE.
+            return (C.RepeatedColour * (uint)_serialOff.Rgb) & ((1UL << (count * C.ColourBits)) - 1);
+        }
+        ulong samples = 0;
+        var completed = 0;
+        while (completed < count)
+        {
+            var run = count - completed;
+            if (_windowCount > 0)
+            {
+                var remaining = unchecked((long)(_windowPipeline[_windowHead].Due - _halfDotTime));
+                if (remaining <= run) run = remaining > 1 ? (int)remaining - 1 : 0;
+            }
+            if (_pipelineCount > 0)
+            {
+                var remaining = unchecked((long)(_pipeline[_pipelineHead].Due - _halfDotTime));
+                if (remaining <= run) run = remaining > 1 ? (int)remaining - 1 : 0;
+            }
+            if (run == 0)
+            {
+                AdvanceHalfDot();
+                samples |= (ulong)_rgb << (completed++ * C.ColourBits);
+                continue;
+            }
+            _halfDotTime += (uint)run;
+            if (_serialMask == 0 || _serialOn.Rgb == _serialOff.Rgb || !_outputWindow
+                || _serialPixel >= C.HalfDotsPerCharacter)
+            {
+                // Le paquet expose les RGB intermédiaires. Même si les couleurs
+                // coïncident, les broches monochrome/blanking finales sont résolues
+                // après l'avancement exact du décalage et de tous les événements.
+                samples |= ((C.RepeatedColour * (uint)_serialOff.Rgb)
+                    & ((1UL << (run * C.ColourBits)) - 1)) << (completed * C.ColourBits);
+                _serialPixel += run;
+                if (_serialPixel > C.HalfDotsPerCharacter) _serialPixel = C.HalfDotsPerCharacter;
+                completed += run;
+                continue;
+            }
+            samples |= PackSerialColours(_serialReversedMask >> (_serialPixel + 1), run,
+                _serialOn.Rgb, _serialOff.Rgb) << (completed * C.ColourBits);
+            _serialPixel += run;
+            if (_serialPixel > C.HalfDotsPerCharacter) _serialPixel = C.HalfDotsPerCharacter;
+            completed += run;
+        }
+        if ((count & 1) != 0) _tr6 = !_tr6;
+        if (count != 0) RenderSerialOutputs();
+        return samples;
+    }
 
     private void QueueInput(byte data, int raster, int frame, int row)
     {
@@ -75,6 +149,7 @@ public sealed partial class TeletextSaa5050
             if (!_outputWindow) continue;
             var cell = Character(input.Data, input.Raster, input.Frame);
             _serialMask = cell.Mask;
+            _serialReversedMask = ReverseSerialMask(cell.Mask);
             _serialForeground = cell.Foreground;
             _serialBackground = cell.Background;
             _serialBox = _boxed;
@@ -90,19 +165,31 @@ public sealed partial class TeletextSaa5050
 
     private void UpdateSerialOutputs()
     {
-        _serialOn = ResolveVideo(true, _serialForeground, _serialBackground, _outputWindow, _serialBox, _serialRow);
-        _serialOff = ResolveVideo(false, _serialForeground, _serialBackground, _outputWindow, _serialBox, _serialRow);
+        // Les portes sont identiques pour les deux valeurs du point série.
+        // Character a déjà appliqué tous les attributs et effets de contrôle.
+        if (!_outputWindow)
+            _serialOn = _serialOff = (C.Black, false, !_pictureOn);
+        else if (_pictureOn && !_textMode && _superimposeInputHigh && _serialRow != 0)
+            _serialOn = _serialOff = (C.Black, false, false);
+        else
+        {
+            var blanking = !_pictureOn || (_displayEnabled && _serialBox);
+            var enabled = _displayEnabled && (!_pictureOn || _superimpose || _serialBox);
+            _serialOn = (enabled ? _serialForeground & C.ColourMask : C.Black, enabled, blanking);
+            _serialOff = (enabled && blanking ? _serialBackground & C.ColourMask : C.Black, false, blanking);
+        }
         RenderSerialOutputs();
     }
+
 
     private void RenderSerialOutputs()
     {
         var valid = _outputWindow && _serialPixel < C.HalfDotsPerCharacter;
         var dot = valid && (_serialMask & (1 << (C.HalfDotsPerCharacter - 1 - _serialPixel))) != 0;
         var output = dot ? _serialOn : _serialOff;
-        Rgb = output.Rgb;
-        Monochrome = output.Monochrome;
-        Blanking = output.Blanking;
+        _rgb = output.Rgb;
+        _monochrome = output.Monochrome;
+        _blanking = output.Blanking;
     }
 
     private void ResetPipeline()
@@ -112,7 +199,7 @@ public sealed partial class TeletextSaa5050
         _pipelineHead = _pipelineCount = _windowHead = _windowCount = 0;
         _halfDotTime = 0;
         _outputWindow = false;
-        _serialMask = _serialForeground = _serialBackground = _serialRow = 0;
+        _serialMask = _serialReversedMask = _serialForeground = _serialBackground = _serialRow = 0;
         _serialPixel = C.HalfDotsPerCharacter;
         _serialBox = false;
         UpdateSerialOutputs();

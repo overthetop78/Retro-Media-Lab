@@ -7,7 +7,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.NetworkCons
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 
-/// <summary>Possède une socket UDP non bloquante ; le cœur avance ce transport sur son propre thread.</summary>
+/// <summary>Possède la socket et sa réception UDP en attente ; seul le thread du cœur remet les données à la machine.</summary>
 internal sealed class EconetTransport : IDisposable
 {
     private readonly Socket _socket;
@@ -19,7 +19,10 @@ internal sealed class EconetTransport : IDisposable
     private readonly IEmulationNetworkRegistration? _registration;
     private IReadOnlyList<EconetPeer> _peers;
     private long _registryVersion = C.UnobservedRegistryVersion;
-    private readonly byte[] _buffer = new byte[65535];
+    private readonly byte[] _buffer = new byte[C.MaximumDatagramBytes];
+    private readonly EndPoint _receiveAddress = new IPEndPoint(IPAddress.Any, 0);
+    private ValueTask<SocketReceiveFromResult> _receive;
+    private bool _receivePending;
     private readonly Queue<(byte[] Frame, double Ready, double Expires)> _pending = new();
     private long _cycles;
     private double _flagFillUntil;
@@ -85,11 +88,27 @@ internal sealed class EconetTransport : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this); _cycles += cycles; _aun?.Advance(Now);
         RefreshPeers();
-        for (var count = 0; count < 32 && _socket.Poll(0, SelectMode.SelectRead); count++)
+        for (var count = 0; count < C.MaximumDatagramsPerAdvance; count++)
         {
-            EndPoint source = new IPEndPoint(IPAddress.Any, 0); int size;
-            try { size = _socket.ReceiveFrom(_buffer, SocketFlags.None, ref source); }
-            catch (SocketException error) when (error.SocketErrorCode is SocketError.WouldBlock or SocketError.ConnectionReset or SocketError.ConnectionRefused or SocketError.MessageSize) { continue; }
+            SocketReceiveFromResult received;
+            try
+            {
+                if (!_receivePending)
+                {
+                    _receive = _socket.ReceiveFromAsync(_buffer.AsMemory(), SocketFlags.None, _receiveAddress);
+                    _receivePending = true;
+                }
+                if (!_receive.IsCompleted) break;
+                _receivePending = false;
+                received = _receive.GetAwaiter().GetResult();
+            }
+            catch (SocketException error) when (error.SocketErrorCode is SocketError.WouldBlock or SocketError.ConnectionReset or SocketError.ConnectionRefused or SocketError.MessageSize)
+            {
+                _receivePending = false;
+                continue;
+            }
+            var size = received.ReceivedBytes;
+            var source = received.RemoteEndPoint;
             var packet = _buffer.AsSpan(0, size);
             var sourceStation = size >= 4 ? packet[2] : -1;
             var peer = _peers.FirstOrDefault(item => item.EndPoint.Equals(source) && (_aun is not null || item.Station == sourceStation));
@@ -124,7 +143,27 @@ internal sealed class EconetTransport : IDisposable
         finally
         {
             try { _socket.Dispose(); }
-            finally { _disposed = true; _pending.Clear(); _aun?.Reset(); _peers = []; }
+            finally
+            {
+                try
+                {
+                    if (_receivePending)
+                    {
+                        _receivePending = false;
+                        try { _receive.AsTask().GetAwaiter().GetResult(); }
+                        catch (SocketException) { }
+                        catch (ObjectDisposedException) { }
+                    }
+                }
+                finally
+                {
+                    _receive = default;
+                    _disposed = true;
+                    _pending.Clear();
+                    _aun?.Reset();
+                    _peers = [];
+                }
+            }
         }
     }
 }

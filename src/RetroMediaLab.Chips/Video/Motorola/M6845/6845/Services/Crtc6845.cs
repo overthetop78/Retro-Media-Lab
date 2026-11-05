@@ -30,13 +30,17 @@ public sealed partial class Crtc6845 : ICrtc6845
     private int _horizontalWidth;
     private int _verticalWidth;
 
-    public int Column { get; private set; }
-    public int Row { get; private set; }
+    private int _column;
+    private int _row;
+    private int _scanline;
+    private long _frame;
+    public int Column => _column;
+    public int Row => _row;
     /// <summary>Position de balayage pour les propriétaires de rendu ; RA est exposé par RasterAddress.</summary>
     public int Raster => _interlaceVideo ? _rasterAddress & Crtc6845Constants.EvenRasterMask : _rasterAddress;
     public int RasterAddress => _rasterAddress;
-    public int Scanline { get; private set; }
-    public long Frame { get; private set; }
+    public int Scanline => _scanline;
+    public long Frame => _frame;
     public int this[int index] => _registers[index];
     public bool InterlaceVideo => _interlaceVideo;
     public bool IsProgrammed => _programmed;

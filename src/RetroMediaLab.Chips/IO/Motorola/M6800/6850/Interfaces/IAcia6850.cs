@@ -15,6 +15,7 @@ public interface IAcia6850
     int ClockDivider { get; }
 
     bool Irq { get; }
+    Action<bool>? IrqChanged { get; set; }
 
     void Reset();
     byte Read(bool data);

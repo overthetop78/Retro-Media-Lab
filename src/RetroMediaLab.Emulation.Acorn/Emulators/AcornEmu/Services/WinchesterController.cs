@@ -26,6 +26,7 @@ internal sealed class WinchesterController
     }
 
     internal bool Irq => host.Irq;
+    internal Action<bool>? IrqChanged { get => host.IrqChanged; set => host.IrqChanged = value; }
     internal bool Busy => target.Bus.Busy;
     internal int Unit => target.Unit;
     internal bool Active(int unit) => target.Unit == unit && (target.ReadGate || target.WriteGate);

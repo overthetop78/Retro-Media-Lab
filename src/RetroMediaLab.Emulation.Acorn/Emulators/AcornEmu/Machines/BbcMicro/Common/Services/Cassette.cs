@@ -83,7 +83,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     internal void Tick()
     {
         bool? input = null;
-        if (CassetteActive && _signal is not null && _latencyTicks == 0 && _state == EmulationCassetteState.Playing && _position < Length)
+        if (_signal is not null && CassetteActive && _latencyTicks == 0 && _state == EmulationCassetteState.Playing && _position < Length)
         {
             var sample = _recorded is null ? _signal.Samples.Span[_position] : _recorded[_position];
             if (sample != 0) _inputLevel = sample > 0;
@@ -98,7 +98,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
             if (_position == target) CompleteSeek();
             return;
         }
-        if (!CassetteActive || _signal is null) return;
+        if (_signal is null || !CassetteActive) return;
         if (_latencyTicks > 0) { _latencyTicks--; return; }
         if (_state == EmulationCassetteState.Recording) { RecordTick(); return; }
         if (_position >= Length) { _state = EmulationCassetteState.EndOfTape; ResetDecoder(); return; }

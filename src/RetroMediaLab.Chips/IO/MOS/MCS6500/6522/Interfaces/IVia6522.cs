@@ -19,6 +19,7 @@ public interface IVia6522
     byte OutputA { get; }
 
     bool Irq { get; }
+    Action<bool>? IrqChanged { get; set; }
 
     void Reset();
     void Tick();

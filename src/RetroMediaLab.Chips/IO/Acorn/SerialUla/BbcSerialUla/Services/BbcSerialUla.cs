@@ -16,19 +16,26 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
     private int _dividerCounter;
     private int _transmitDivider;
     private int _receiveDivider;
+    private bool _motor;
+    private bool _rs423Selected;
+    private bool _transmitClockEdge;
+    private bool _receiveClockEdge;
+    private bool _rs423TransmitData = true;
+    private bool _rs423RequestToSendHigh = true;
+    private short _cassetteOutput;
     public byte Control { get; private set; }
-    public bool Motor => (Control & C.MotorMask) != 0;
-    public bool Rs423Selected => (Control & C.Rs423Mask) != 0;
+    public bool Motor => _motor;
+    public bool Rs423Selected => _rs423Selected;
     public bool Rs423ReceiveData { get; set; } = true;
     public bool Rs423ClearToSendHigh { get; set; } = true;
-    public bool Rs423TransmitData { get; private set; } = true;
-    public bool Rs423RequestToSendHigh { get; private set; } = true;
-    public bool ReceiveData => Rs423Selected ? Rs423ReceiveData : _cassetteData;
-    public bool ClearToSendHigh => Rs423Selected && Rs423ClearToSendHigh;
-    public bool DataCarrierDetectHigh => !Rs423Selected && _carrierPulse > 0;
-    public bool TransmitClockEdge { get; private set; }
-    public bool ReceiveClockEdge { get; private set; }
-    public short CassetteOutput { get; private set; }
+    public bool Rs423TransmitData => _rs423TransmitData;
+    public bool Rs423RequestToSendHigh => _rs423RequestToSendHigh;
+    public bool ReceiveData => _rs423Selected ? Rs423ReceiveData : _cassetteData;
+    public bool ClearToSendHigh => _rs423Selected && Rs423ClearToSendHigh;
+    public bool DataCarrierDetectHigh => !_rs423Selected && _carrierPulse > 0;
+    public bool TransmitClockEdge => _transmitClockEdge;
+    public bool ReceiveClockEdge => _receiveClockEdge;
+    public short CassetteOutput => _cassetteOutput;
 
     public BbcSerialUla(int ticksPerSecond)
     {
@@ -49,9 +56,9 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
         _sourcePhase = _synthesisPhase = 0;
         _dividerCounter = 0;
         _synthesisStep = 0;
-        TransmitClockEdge = ReceiveClockEdge = false;
-        Rs423TransmitData = Rs423RequestToSendHigh = true;
-        CassetteOutput = 0;
+        _transmitClockEdge = _receiveClockEdge = false;
+        _rs423TransmitData = _rs423RequestToSendHigh = true;
+        _cassetteOutput = 0;
         ResetSeparator();
         Write(0);
     }
@@ -59,6 +66,8 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
     public void Write(byte value)
     {
         Control = value;
+        _motor = (value & C.MotorMask) != 0;
+        _rs423Selected = (value & C.Rs423Mask) != 0;
         _transmitDivider = C.Dividers[value & C.RateMask];
         _receiveDivider = C.Dividers[(value >> C.ReceiveRateShift) & C.RateMask];
         // Free-running divider phase is preserved across register writes.
@@ -79,13 +88,13 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
             _sourcePhase -= _clockDenominator;
             _dividerCounter = (_dividerCounter + 1) & C.DividerCounterMask;
         }
-        TransmitClockEdge = sourceEdge && (_dividerCounter & (_transmitDivider - 1)) == 0;
+        _transmitClockEdge = sourceEdge && (_dividerCounter & (_transmitDivider - 1)) == 0;
         var serialReceiveEdge = sourceEdge && (_dividerCounter & (_receiveDivider - 1)) == 0;
         var cassetteReceiveEdge = sourceEdge && (_dividerCounter & (C.CassetteClockDivider - 1)) == 0;
         TickSeparator();
-        ReceiveClockEdge = Rs423Selected ? serialReceiveEdge : cassetteReceiveEdge;
-        Rs423TransmitData = !Rs423Selected || transmitData;
-        Rs423RequestToSendHigh = !Rs423Selected || requestToSendHigh;
-        TickSynthesis(transmitData, requestToSendHigh || Rs423Selected);
+        _receiveClockEdge = _rs423Selected ? serialReceiveEdge : cassetteReceiveEdge;
+        _rs423TransmitData = !_rs423Selected || transmitData;
+        _rs423RequestToSendHigh = !_rs423Selected || requestToSendHigh;
+        TickSynthesis(transmitData, requestToSendHigh || _rs423Selected);
     }
 }

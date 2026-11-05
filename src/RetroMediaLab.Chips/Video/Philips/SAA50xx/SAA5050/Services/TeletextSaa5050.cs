@@ -44,7 +44,7 @@ public sealed partial class TeletextSaa5050
         }
         _boxed = false;
         _previousCode = 0;
-        if (!BigCharacterSelectHigh) _bottom = false;
+        if (!_bigCharacterSelectHigh) _bottom = false;
         _foreground = C.White; _background = C.Black; _held = C.FirstCharacter;
         _graphics = _flash = _conceal = _separated = _hold = _double = _heldSeparated = false;
     }
@@ -85,10 +85,10 @@ public sealed partial class TeletextSaa5050
         else if (_graphics && (data & C.GraphicsCharacterBit) != 0) { _held = data; _heldSeparated = _separated; }
         _rowDouble |= _double;
         var mask = 0;
-        var large = _double || !BigCharacterSelectHigh;
-        var fontRow = !BigCharacterSelectHigh ? raster / C.DoubleHeightRasterDivisor : _double ? (_bottom ? C.HalfCharacterRows : 0) + raster / C.DoubleHeightRasterDivisor : raster / 2;
+        var large = _double || !_bigCharacterSelectHigh;
+        var fontRow = !_bigCharacterSelectHigh ? raster / C.DoubleHeightRasterDivisor : _double ? (_bottom ? C.HalfCharacterRows : 0) + raster / C.DoubleHeightRasterDivisor : raster / 2;
         var isMosaic = _graphics && (glyph & C.GraphicsCharacterBit) != 0;
-        var rasterLimit = C.CharacterRows * C.RasterParities * (BigCharacterSelectHigh ? 1 : C.RasterParities);
+        var rasterLimit = C.CharacterRows * C.RasterParities * (_bigCharacterSelectHigh ? 1 : C.RasterParities);
         if ((uint)raster < rasterLimit && (!_bottom || large) && (!_conceal || _reveal) && (!_flash || frame % C.FlashFields < C.FlashVisibleFields))
             mask = isMosaic ? Mosaic(glyph, fontRow, separated) : Glyph(glyph, fontRow, large ? raster / C.RasterParities : raster);
         var result = (mask, foreground, _background);

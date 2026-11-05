@@ -2,7 +2,7 @@
 
 ## Périmètre et références
 
-Le code existant `Video/Acorn/BbcMicro/VideoULA/Services/Video.cs` réunit actuellement le propriétaire vidéo BBC, le CRTC et le SAA5050, la traduction mémoire de carte, la palette et un rendu par caractère. Cette classe n'est donc pas encore une description isolée de toutes les broches de l'ULA. Les deux autres générateurs ont leurs propres fiches et restent distincts.
+Le VIDPROC est isolé dans `src/RetroMediaLab.Chips/Video/Acorn/BbcMicro/VideoULA/Services/BbcVideoUla.cs` et ses fichiers partiels. Il ne référence aucun modèle de CRTC ni de générateur télétexte. La carte BBC qui assemble ces circuits, traduit les adresses RAM et possède le framebuffer est dans `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMicro/Common/Services/Video.cs` ; ses constantes de câblage restent dans le module. Les deux autres générateurs ont leurs propres fiches et restent distincts.
 
 Référence principale : [Acorn, BBC Microcomputer Service Manual, section 3.3 et schéma](https://acorn.huininga.nl/pub/unsorted/manuals/BBC%20Microcomputer%20Service%20Manual-HTML/BBCServiceManual.html), confrontée au [schéma BBC](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_BBCCctDiagram.pdf). Le schéma IC6 montre D0–D7, A0, sélection CS, horloge 16 MHz, sorties 8/4/2/1 MHz et CRTC CLK, DISEN, CURSOR, INVERT, entrées RGB SAA5050 et sorties RGB. Le lien S26 sélectionne la vidéo normale/inversée. La ROM, le calcul d'adresse RAM et le PAL encodeur ne sont pas internes à cette ULA.
 
@@ -10,7 +10,7 @@ Comparaisons : [b2 VideoULA.cpp](https://github.com/tom-seddon/b2/blob/master/sr
 
 ## Écarts établis avant reprise
 
-| Fonction | État actuel | Vérification à réaliser |
+| Fonction | État initial | Vérification à réaliser |
 |---|---|---|
 | Deux registres | A0 distingue contrôle/palette, toutes les autres adresses sont miroirs | Les 256 valeurs et les alias ; aucune lecture de registre inventée |
 | Contrôle | Flash, télétexte, fréquence CRTC et mode existent sous forme de rendu | Bits indépendants, commutation pendant le balayage et état initial |
@@ -110,6 +110,72 @@ Les registres et tous les chemins numériques décrits par les sources examinée
 
 Le diagnostic invité et son répertoire de références/banc temporaires sont supprimés. Les assemblies locales sont reconstruites en Debug et Release ; leur découverte de tests ne contient plus BbcVideoUlaGuestProof. Les suites définitives passent : **2 019 tests Chips** et **35 contrôles natifs** (33 vidéo/System et 2 raccordement CRTC), dans chacune des deux configurations. Les huit captures demeurent dans artifacts/TestsChips/BbcVideoUla/BbcMicroModelB, ignorées par Git.
 
-## Livraison
+## Livraison initiale
 
 Le script `scripts/local-building.cmd --building=debug --modules=A` termine avec le code 0. L’exécutable `build/Debug/Retro Media Lab/retromedialab.exe`, les 24 DLL de modules attendues et `lib/retromedialab.chips.dll` sont présents. La DLL Chips livrée correspond exactement à celle construite dans le projet : SHA-256 `05E3582B0836D0002744F85EDFC43078C10E065C9070D23E0D48633A741C8D85`. Les captures et temporaires ne sont pas inclus dans le commit.
+
+## Séparation du câblage et réutilisation — 5 novembre 2026
+
+La classe de carte `Video`, ses deux fichiers partiels et ses constantes sont déplacés hors de Chips vers le module Acorn. L'ancienne interface `IVideo`, inutilisée hors de cette classe de carte, est retirée ; `IBbcVideoUla` reste le contrat du véritable circuit. Les cinq contrôles de câblage sont déplacés dans `AcornEmuBbcVideoWiringTests` du projet local d'émulation, sans référence du projet de tests Chips vers Acorn.
+
+`ClockMasterPeriods` reçoit les huit valeurs RGB externes correspondant à huit périodes maître, et rend les huit sorties. Il ne choisit ni CPU, ni cadence de carte, ni SAA5050, ni CRTC. La comparaison avec les transitions unitaires du VIDPROC conserve les 256 contrôles, changements de palette et de phase, curseur et RGB, y compris une entrée de paquet décalée. La carte BBC choisit seule de consommer un paquet par cycle de son CPU et de lui relier son SAA5050. Le chemin télétexte exploite le paquet RGB directement au lieu de redécoder huit couleurs ; registres, décalage, horloges et curseur restent inchangés.
+
+Après séparation : **210 contrôles de puces ciblés réussis en Debug et Release**. Les contrôles locaux regroupant vidéo, standards PAL/NTSC, câblage et diagnostic de débit donnent **42 réussites Debug** (une variante de débit) et **43 Release** (deux variantes). La correction de débit du BBC reste ouverte ; ces résultats ne la déclarent pas terminée.
+
+Build après séparation : `scripts/local-building.cmd --building=debug --modules=A` terminé avec code 0. Exécutable et 24 DLL d'entrée de modules présents ; `lib/retromedialab.chips.dll` livré correspond au build Debug, SHA-256 `72226A840E682CFBFEE713839810DABC22D3B8DD5BE00C63AF6B6312C154B4CB`.
+
+Essai de raccordement du 5 novembre : partage des valeurs CRTC et de la lecture RAM lorsqu'IC15 et VIDPROC échantillonnent la même adresse. Les 28 contrôles vidéo Debug ont réussi, dont deux cas comptant les lectures aux cadences lente/rapide. Sur 500 images la variante donne 30,10 FPS / 1,20 MHz avec la configuration utilisateur et 34,35 FPS / 1,37 MHz à vide ; le raccordement précédent donne 30,40 FPS / 1,21 MHz et 32,42 FPS / 1,29 MHz. Les cycles, PC et empreintes vidéo concordent. Aucun gain utile n'est établi sur la configuration utilisateur ; la modification et ses deux tests spécifiques sont retirés. Le câblage antérieur est conservé, sans modification des circuits.
+
+Essai suivant dans le tampon de la carte, sans changement de VIDPROC : les huit pixels d'un paquet RGB constant sont remplis par Span.Fill, les paquets variables restant scalaires. Les 26 contrôles vidéo Debug passent, mais le banc de 500 images donne 29,18 FPS / 1,17 MHz avec la configuration utilisateur, 32,46 FPS / 1,30 MHz à vide, contre 30,40/32,42 FPS sur le raccordement précédent. Le chemin Span.Fill et sa constante de répétition sont retirés faute de gain établi ; l'écriture scalaire reste utilisée.
+
+Le profil suivant attribue 4 620,78 ms inclusives au raccordement vidéo sur 10 019,26 ms du thread, dont 1 321,18 ms dans PrepareTeletext. Les sorties du CRTC, possédé exclusivement par la carte, sont désormais lues une fois après chaque horloge caractère, écriture de registre ou reset et conservées au niveau du raccordement. Les mêmes niveaux sont consommés pendant les cycles CPU intermédiaires, sans modifier le CRTC, les lectures RAM, les fronts F1/TR6 ni l'instant des mises à jour VIA. Le nouveau test vérifie les huit valeurs après 4 096 cycles entrecoupés de changements de cadence, écritures de registre et resets.
+
+Les 27 contrôles vidéo passent en Debug et Release. Banc de 500 images : 32,0661 ms/image, 31,19 FPS / 1,25 MHz, CPU 31,2188 ms/image ; à vide 29,1522 ms/image, 34,30 FPS / 1,37 MHz, CPU 28,3125 ms/image. Cycles, PC et empreintes vidéo identiques aux passages de même longueur. L'amélioration observée est modeste ; elle ne prouve pas que la fenêtre réelle tient les 50 FPS.
+
+Build Debug complet livré avec les 24 modules et contrôlé par empreintes. La capture native suivante reste à 27,2 FPS / 1,09 MHz ; elle est conservée sous `artifacts/TestsChips/Mos6502/BbcMicroModelB/application-debug-crtc-signals.png`, hors Git. La différence entre l'ancien rendu par caractère et le nouveau balayage par transitions reste la cible principale ; les optimisations ponctuelles ne démontrent pas de rétablissement de la cadence native.
+
+### Tampon de balayage compact — 5 novembre 2026
+
+Le raccordement conserve huit pixels déjà résolus dans un uint, puis développe le BGRA à la publication. Les index conservent séparément le pixel absent, les couleurs et les gris appliqués lors du balayage. Les écritures superposées et découpées restent exactes, sans relire la RAM, rejouer une puce ni réappliquer une palette ultérieure. Les deux tampons de travail passent de 640 × hauteur uint à 80 × hauteur uint ; le tampon livré reste un tableau BGRA immuable de même dimension.
+
+Huit contrôles autonomes de raccordement Debug passent, dont la comparaison pixel à pixel de 8 192 écritures avec 4 096 motifs, deux palettes et découpes/chevauchements. Le banc vidéo seul passe de 9,1911 à 8,6967 ms sur 500 tranches ; le cœur de 32,1227 à 31,4865 ms, soit 31,76 FPS / 1,27 MHz. Les empreintes finales sont identiques. Ce gain limité ne constitue pas une validation à 50 FPS dans l'application.
+
+Validation regroupée : 44 contrôles vidéo/raccordement réussis en Debug et Release. Build Debug All réussi, 24 modules présents et empreintes Chips/Acorn vérifiées. Capture native `artifacts/TestsChips/Mos6502/BbcMicroModelB/application-debug-compact-scanout.png` à 28,4 FPS / 1,13 MHz, après une observation à 27,4 / 1,10 ; cadence toujours insuffisante. Fenêtre et processus possédés fermés et disparition vérifiée.
+
+### Paquets de palette et décodage invariant — 5 novembre 2026
+
+Livraison : build Debug avec les 24 modules terminé code 0, exécutable et toutes les entrées présents ; Chips livré/source SHA-256 `0028D0A74776D364D0BC4891343D76C9D702426206B5ED752D05739B737AA3A1`, Acorn `FE8B05113098547E042E70BA5BA6BB323A2DAFADA4E85087F38D618B942D5B74`. Fenêtre réelle au prompt BASIC : observation 31,0 FPS / 1,24 MHz, puis capture `artifacts/TestsChips/BbcVideoUla/BbcMicroModelB/application-debug-palette-cache.png` à 29,4 FPS / 1,17 MHz / 59 %. Cette variation et le banc complet ne prouvent pas un gain global stable. La vitesse normale reste non rétablie. Session possédée PID 27016 fermée en finally, sortie effective vérifiée ; capture ignorée par Git. Le banc temporaire de comparaison, sa référence externe et ses journaux sont supprimés ; assemblies de tests Debug et Release reconstruites sans ce banc.
+
+Le contrôle prépare désormais le masque de chargement caractère, les segments de curseur, la base du motif et le nombre de décalages/remplissage d'un paquet. Les méthodes internes accèdent aux champs, sans repasser par leurs propriétés publiques ; les contrats de broches restent inchangés. Chaque motif bitmap possède un cache RGB associé à la révision des couleurs résolues. Une écriture palette ou flash qui change une couleur invalide les anciens paquets immédiatement ; les paquets sont recalculés à leur prochaine utilisation, pas tous à chaque écriture. Le retour à zéro du compteur de révision vide les entrées avant de réutiliser la première révision. Le cache ajoute 8 Kio par composant, sans allocation dans l'horloge. DISEN, curseur, inversion et RGB télétexte sont appliqués à chaque appel ; le décalage et les diviseurs continuent toujours, même lorsque la sortie est masquée. Aucun CPU, SAA5050 ou CRTC n'est référencé par ce circuit.
+
+Les **23 tests VIDPROC passent en Debug et Release**, avec 65 536 couples contrôle/octet comparés point par point au chemin des broches, et une seconde séquence de 65 536 paquets réutilisés couvrant palette/flash, reset, masquage, inversion et curseur. Le débordement du compteur purement logiciel est forcé dans un test autonome pour vérifier qu'aucun ancien paquet n'est réutilisé. Les **29 contrôles de vidéo et raccordement natifs passent dans chaque configuration** ; les diagnostics temporaires expliquent les totaux 32 Debug et 31 Release, ils ne sont pas des tests matériels supplémentaires.
+
+Comparaison temporaire appariée : ancien build livré et nouveau build de même configuration chargés chacun dans un contexte collectible distinct, même delegate et mêmes entrées ; déchargement des deux contextes vérifié après finally. 100 000 paquets d'échauffement, sept passages de 2 000 000 paquets, ordre alterné, médiane. DISEN actif, curseur inactif, données 5A, palette stable préparée sur les seize entrées ; ce banc mesure la réutilisation chaude, pas des écritures palette à chaque période. Un premier passage Release avec contextes de chargement différents a été écarté ; les chiffres ci-dessous proviennent des deux contextes identiques.
+
+| Contrôle | Debug avant / après (ns/paquet) | Release avant / après (ns/paquet) |
+|---|---:|---:|
+| 1C, bitmap rapide | 58,233 / 22,462 | 14,500 / 8,150 |
+| 08, bitmap lent | 55,031 / 19,779 | 13,791 / 7,062 |
+| 02, télétexte | 21,241 / 14,415 | 5,511 / 4,932 |
+
+Debug conserve bien DisableOptimizations dans les deux DLL ; Release ne le porte pas. Le gain est local au VIDPROC. Le banc complet BBC B Debug reste à **31,4953 ms/tranche, 31,75 FPS, 1,27 MHz**, vidéo seule 8,9767 ms. Release : **4,6133 ms/tranche, 216,76 FPS, 8,66 MHz**. Dans chaque cas, les 19 967 997 cycles des 500 tranches, PC E460 et empreinte vidéo `12C94B65ECCF8B9650F2210900471F90D4C08E41476E0ACFAD6AFA5703436BE0` restent identiques. Ces valeurs de banc ne prouvent pas encore 50 FPS/2 MHz dans la fenêtre Debug.
+
+## Présentation groupée des entrées DATA/CURSOR/DE — 5 novembre 2026
+
+`SetCharacterInputs` présente les trois entrées dans le même ordre que leurs setters successifs et recalcule la sortie combinatoire seulement si DE change, comme le setter individuel. L'appel ne charge pas le registre à décalage et ne produit aucun front : les périodes restent assurées par les fonctions d'horloge existantes. Les trois accès individuels restent disponibles. Le raccordement BBC utilise ce point d'entrée au même emplacement que les trois écritures précédentes ; aucune lecture RAM n'est retirée ni déplacée.
+
+Contrôle autonome : 256 valeurs de contrôle, 256 données, quatre combinaisons CURSOR/DE, écritures de palette, phases non alignées et resets. Comparaison des entrées, RGB, diviseurs et curseur avant horloge, puis des huit sorties sérialisées après horloge. Les 24 contrôles VIDPROC permanents passent en Debug et Release.
+
+Mesure isolée des entrées suivies de huit périodes, deux instances du même composant ; 20 000 cellules de chauffe puis médiane de sept passages alternés de 500 000 cellules. Sommes de paquets identiques. Compilation tiercée désactivée uniquement dans le processus de mesure, aucune option du produit modifiée.
+
+| Contrôle | Debug setters → groupé (ns/cellule) | Release setters → groupé (ns/cellule) |
+|---|---:|---:|
+| 00 | 31,827 → 27,689 | 9,045 → 8,793 |
+| 02 | 27,799 → 24,053 | 7,229 → 7,433 |
+| 10 | 31,777 → 28,690 | 9,343 → 9,348 |
+| 1C | 31,348 → 28,741 | 8,889 → 8,978 |
+| FF | 29,757 → 25,521 | 7,453 → 7,468 |
+
+Le gain local Debug est mesuré dans les cinq charges. Les faibles variations Release incluent des ralentissements : aucun gain Release général n'est revendiqué. Le coût local épargné ne permet pas à lui seul de déduire un gain de cadence de la machine complète. Le premier passage Debug avec les autres tests sert uniquement à la validation ; seules les mesures isolées figurent ci-dessus.
+
+Raccordement : 32 contrôles vidéo passent en Debug et Release. Banc BBC B, 80 tranches de chauffe puis 500 mesurées avec les réglages JIT ordinaires : Debug 28,3522 ms / 35,27 FPS / 1,41 MHz ; Release 4,8987 ms / 204,14 FPS / 8,15 MHz. PC E460, 19 967 997 cycles et SHA-256 vidéo `12C94B65ECCF8B9650F2210900471F90D4C08E41476E0ACFAD6AFA5703436BE0` identiques. Ces passages complets ne sont pas une comparaison appariée et ne prouvent pas une hausse globale stable. L'accès groupé reste conservé pour son coût Debug local inférieur et son équivalence vérifiée ; le déficit de cadence global reste ouvert. Banc de coût temporaire supprimé après consignation.

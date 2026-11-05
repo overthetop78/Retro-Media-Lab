@@ -50,6 +50,7 @@ public sealed partial class Acia6850 : IAcia6850
     /// <summary>Niveau physique de RTS : false est la demande active basse.</summary>
     public bool RtsHigh { get; private set; }
     public bool Irq => _irq;
+    public Action<bool>? IrqChanged { get; set; }
     public int BaudRate => _baudRate;
     public int ClockDivider => _masterReset ? 0 : _divider;
     public Acia6850WordFormat WordFormat { get; private set; }
@@ -189,10 +190,17 @@ public sealed partial class Acia6850 : IAcia6850
         _transmitPending = false;
         _transmitClockCounter = 0;
         _transmitLine = true;
-        _irq = false;
+        SetIrq(false);
     }
 
-    private void UpdateIrq() => _irq = !_masterReset
+    private void UpdateIrq() => SetIrq(!_masterReset
         && ((_receiveIrqEnabled && ((_status & C.ReceiveDataFull) != 0 || _overrunPending || _dcdPending))
-            || (_transmitIrqEnabled && (_status & C.TransmitDataEmpty) != 0 && !_ctsBlocked));
+            || (_transmitIrqEnabled && (_status & C.TransmitDataEmpty) != 0 && !_ctsBlocked)));
+
+    private void SetIrq(bool asserted)
+    {
+        if (_irq == asserted) return;
+        _irq = asserted;
+        IrqChanged?.Invoke(asserted);
+    }
 }

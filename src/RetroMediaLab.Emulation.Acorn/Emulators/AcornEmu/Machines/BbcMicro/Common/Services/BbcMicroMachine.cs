@@ -1,3 +1,4 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Enums;
 using RetroMediaLab.Chips.CPU.Common.Enums;
 using RetroMediaLab.Chips.CPU.Common.Interfaces;
 using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Services;
@@ -66,7 +67,8 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         CpuBusControlSignals.None;
     public long? ProcessorClockHz => BbcMicroModelConstants.CpuFrequencyHz;
     internal Video Video { get; }
-    public bool Irq => _via.Irq || _userVia?.Irq == true || _acia.Irq || _winchester.Irq || _masterMemory?.Irq == true || _tube?.HostIrq == true;
+    public int? VideoHeight => Video.OutputHeight;
+    public bool Irq => _interruptSources != BbcInterruptSources.None || _masterMemory?.Irq == true || _tube?.HostIrq == true;
     public bool Nmi => _disks.Nmi || _econet.Nmi;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get => _econet.FrameTransmitted; set => _econet.FrameTransmitted = value; }
     public Action<int>? NetworkPoll { get; set; }
@@ -130,7 +132,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (videoStandard is not (EmulationVideoStandard.Pal or EmulationVideoStandard.Ntsc)) throw new ArgumentOutOfRangeException(nameof(videoStandard));
         _cyclesPerFrame = videoStandard == EmulationVideoStandard.Ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame;
         _nextFrame = _cyclesPerFrame;
-        Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.NtscHeight : RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants.VideoConstants.Height, teletextHighBankOnly: _masterMemory is not null || _plusMemory is not null);
+        Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? Constants.VideoConstants.NtscHeight : Constants.VideoConstants.Height, teletextHighBankOnly: _masterMemory is not null || _plusMemory is not null);
         if (_masterMemory is not null) Video.ReadMemory = address => _masterMemory.ReadVideo(address, _ram);
         else if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
         _cassette = new Cassette(new Serial(_acia));
@@ -148,6 +150,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
             _soundDataBus = value;
             _audio.SetBus(value, (_latch & Io.SoundWriteEnableMask) == 0);
         };
+        ConnectInterrupts();
         Cpu = new Cpu6502(this, cmos: master);
         Reset(true);
     }

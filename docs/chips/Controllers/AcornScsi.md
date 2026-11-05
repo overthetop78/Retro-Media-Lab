@@ -92,3 +92,11 @@ La référence projet directe à `RetroMediaLab.MediaEngine` ajoutée au module 
 `ScsiHostAdapterCostTests` effectue dix millions d'accès de chauffe puis cinq lots d'un million de lectures ou écritures FC40, avec REQ et direction stables. Les données reçues ou conservées et ACK sont vérifiés, ainsi que zéro allocation. Les médianes sont **Debug lecture 13,461 ns/accès, écriture 8,868 ns ; Release lecture 0,463 ns, écriture 0,391 ns**. Les plages observées sont respectivement 12,713–14,493 ; 8,354–9,938 ; 0,460–0,882 ; 0,379–0,401 ns.
 
 Ce sont des répétitions à entrées constantes : le JIT peut simplifier ce chemin, et ces valeurs ne représentent ni un débit physique SCSI ni tous les changements de pins. Aucun délai de matériel n'est raccourci ; le modèle reste une logique passive de quelques opérations sur bits, sans allocation ni boucle d'horloge propre. Les deux cas passent séparément en Debug et Release. La cible, ses horloges, ses médias et la machine complète sont mesurés ou vérifiés séparément dans leurs fiches.
+
+### Notification de sortie IRQ — optimisation globale BBC, 5 novembre 2026
+
+Le composant expose IrqChanged en complément de la lecture Irq. Le callback ne s'exécute qu'au changement de niveau et Irq expose déjà le nouveau niveau pendant l'appel. L'abonnement ne publie pas d'état initial : le propriétaire lit Irq au raccordement. Les callbacks restent installés après reset. Ils ne créent ni thread ni horloge et ne connaissent aucune machine.
+
+La bascule IRQ conserve son assertion après relâchement de REQ. UpdateInterruptLatch et SetReset publient uniquement ses changements effectifs. Ni les équations de SEL/ACK ni les phases de la cible ne sont modifiées.
+
+InterruptNotificationsTests vérifie l'assertion par REQ lorsque l'interruption est autorisée, l'absence de doublon, le maintien après relâchement de REQ et la désactivation par masque/reset. Les tests de registres et bascules existants sont inclus dans les 288 validations groupées VIA/ACIA/SCSI réussies en Debug et Release. La carte BBC relaie ce callback via WinchesterController/Winchester ; elle conserve les autres sources IRQ simultanées. Coût du BBC complet : docs/chips/CPU/Mos6502.md.

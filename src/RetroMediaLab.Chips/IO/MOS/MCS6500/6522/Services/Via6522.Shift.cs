@@ -31,7 +31,7 @@ public sealed partial class Via6522
     {
         var previousOutputs = ControlOutputs;
         var keepClockPhase = _shiftActive && _shiftInternalClock;
-        _flags &= unchecked((byte)~C.ShiftInterrupt);
+        InterruptFlags &= unchecked((byte)~C.ShiftInterrupt);
         _shiftBits = 0;
         _shiftOutputComplete = _shiftFinishOutputPending = false;
         _externalShiftPending = _internalShiftPending = _shiftInterruptPending = _shiftLeadingPending = false;
@@ -56,7 +56,7 @@ public sealed partial class Via6522
 
     private void ConfigureShift(ViaShiftMode previous)
     {
-        if (_shiftMode == ViaShiftMode.Disabled) _flags &= unchecked((byte)~C.ShiftInterrupt);
+        if (_shiftMode == ViaShiftMode.Disabled) InterruptFlags &= unchecked((byte)~C.ShiftInterrupt);
         if (previous == _shiftMode) return;
         _externalShiftPending = _internalShiftPending = false;
         _shiftActive = _shiftArmed && _shiftMode != ViaShiftMode.Disabled;
@@ -127,7 +127,7 @@ public sealed partial class Via6522
         {
             var previousOutputs = ControlOutputs;
             _shiftFinishOutputPending = false;
-            _flags |= C.ShiftInterrupt;
+            InterruptFlags |= C.ShiftInterrupt;
             _shiftActive = _shiftArmed = _shiftOutputComplete = false;
             RestoreCb2Control();
             PublishControlOwnership(previousOutputs);
@@ -135,7 +135,7 @@ public sealed partial class Via6522
         if (_shiftInterruptPending)
         {
             _shiftInterruptPending = false;
-            _flags |= C.ShiftInterrupt;
+            InterruptFlags |= C.ShiftInterrupt;
         }
         UpdateShiftLeadingPending();
     }
@@ -165,7 +165,7 @@ public sealed partial class Via6522
                 if (_shiftMode == ViaShiftMode.OutputTimer2Continuous) return;
                 if (++_shiftBits != C.ShiftBitCount) return;
                 _shiftBits = 0;
-                if (external) _flags |= C.ShiftInterrupt;
+                if (external) InterruptFlags |= C.ShiftInterrupt;
                 else _shiftOutputComplete = true;
             }
             else if (_shiftOutputComplete)
@@ -181,7 +181,7 @@ public sealed partial class Via6522
         _registers[C.Shift] = (byte)((_registers[C.Shift] << 1) | (input ? 1 : 0));
         if (++_shiftBits != C.ShiftBitCount) return;
         _shiftBits = 0;
-        if (external) _flags |= C.ShiftInterrupt;
+        if (external) InterruptFlags |= C.ShiftInterrupt;
         else
         {
             _shiftActive = _shiftArmed = false;

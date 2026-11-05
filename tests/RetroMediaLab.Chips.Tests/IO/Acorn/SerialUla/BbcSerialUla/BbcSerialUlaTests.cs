@@ -8,6 +8,55 @@ public sealed class BbcSerialUlaTests
 {
     private const int Clock = 2_000_000;
     private const int Window = 104_001;
+
+    [Theory]
+    [InlineData(1_230_769)]
+    [InlineData(2_000_000)]
+    [InlineData(2_000_003)]
+    [InlineData(4_000_000)]
+    public void SynthesisRetainsItsFractionalPhaseAcrossDataAndOutputGates(int clock)
+    {
+        short[] sine = [0, 6123, 11314, 14782, 16000, 14782, 11314, 6123, 0, -6123, -11314, -14782, -16000, -14782, -11314, -6123];
+        var ula = new Ula(clock);
+        long phase = 0;
+        var step = 0;
+        for (var tick = 0; tick < Window; tick++)
+        {
+            var tx = tick % 137 < 61;
+            var rts = tick % 251 < 71;
+            var control = (byte)((tick / 193) & byte.MaxValue);
+            ula.Write(control);
+            ula.Tick(tx, rts);
+            phase += 16_000_000L * 16;
+            var period = clock * 13L * (tx ? 512 : 1024);
+            while (phase >= period)
+            {
+                phase -= period;
+                step = (step + 1) % 16;
+            }
+            var expected = rts || (control & 0x40) != 0 ? (short)0 : sine[step];
+            Assert.Equal(expected, ula.CassetteOutput);
+        }
+    }
+
+    [Fact]
+    public void SeparatorResumesAfterLongDisconnectedSilenceWithoutLosingFirstEdge()
+    {
+        var idle = new Ula(Clock);
+        for (var tick = 0; tick < Window; tick++) idle.Tick(true, true);
+        var fresh = new Ula(Clock);
+        for (var tick = 0; tick < Clock / 4; tick++)
+        {
+            var level = ((long)tick * 4800 / Clock & 1) != 0;
+            idle.SetCassetteInput(level);
+            fresh.SetCassetteInput(level);
+            idle.Tick(true, true);
+            fresh.Tick(true, true);
+            Assert.Equal(fresh.ReceiveData, idle.ReceiveData);
+            Assert.Equal(fresh.DataCarrierDetectHigh, idle.DataCarrierDetectHigh);
+        }
+        Assert.True(idle.DataCarrierDetectHigh);
+    }
     // Independent table transcribed from AUG 20.9, not from the production constants.
     public static IEnumerable<object[]> Rates()
     {

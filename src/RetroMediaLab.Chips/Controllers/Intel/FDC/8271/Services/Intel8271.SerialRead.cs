@@ -115,7 +115,7 @@ public sealed partial class Intel8271
     {
         ResetSerialRead();
         _serialPhase = _command == C.ReadId ? SerialPhase.WaitIndex : SerialPhase.SearchId;
-        _phase = IsWriteCommand ? Phase.Write : _command is C.VerifySingle or C.VerifyMultiple ? Phase.Verify : Phase.Read;
+        SetPhase(IsWriteCommand ? Phase.Write : _command is C.VerifySingle or C.VerifyMultiple ? Phase.Verify : Phase.Read);
         _buffer = [];
     }
 
@@ -209,12 +209,12 @@ public sealed partial class Intel8271
             _serialPhase = SerialPhase.Data;
             _serialPayloadOffset = 0;
             _serialCrc = CrcByte(C.CrcInitial, mark);
-            _phase = _command switch
+            SetPhase(_command switch
             {
                 C.VerifySingle or C.VerifyMultiple => Phase.Verify,
                 C.ScanData or C.ScanIncludingDeleted => Phase.Scan,
                 _ => Phase.Read
-            };
+            });
             if (_phase == Phase.Scan) { _buffer = new byte[_sectorSize]; ResetScanSector(); }
             return;
         }

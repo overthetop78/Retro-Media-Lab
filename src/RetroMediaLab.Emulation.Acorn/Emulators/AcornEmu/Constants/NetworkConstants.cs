@@ -31,5 +31,7 @@ internal static class NetworkConstants
     internal const int MaximumStation = 254;
     internal const int MinimumPort = 1;
     internal const int MaximumPort = 65535;
+    internal const int MaximumDatagramBytes = 65535;
+    internal const int MaximumDatagramsPerAdvance = 32;
     internal static IReadOnlyList<int> ClockRates { get; } = Array.AsReadOnly<int>([125000, 250000, 500000]);
 }

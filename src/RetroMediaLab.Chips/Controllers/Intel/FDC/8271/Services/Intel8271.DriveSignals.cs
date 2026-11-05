@@ -68,7 +68,7 @@ public sealed partial class Intel8271
         StepDrive();
         if (SeekFinished())
         {
-            _driveOutput &= unchecked((byte)~C.OutputStep);
+            PublishDriveControl((byte)(_driveOutput & ~C.OutputStep));
             FinishSeek();
         }
     }
@@ -99,7 +99,7 @@ public sealed partial class Intel8271
 
     private void Faulted()
     {
-        _driveOutput &= unchecked((byte)~(C.OutputWriteEnable | C.OutputStep | C.OutputDirection | C.OutputLowCurrent));
+        PublishDriveControl((byte)(_driveOutput & ~(C.OutputWriteEnable | C.OutputStep | C.OutputDirection | C.OutputLowCurrent)));
         Complete(C.WriteFault);
     }
 
@@ -107,15 +107,15 @@ public sealed partial class Intel8271
     {
         var select = _drive == 0 ? C.Drive0Select : C.Drive1Select;
         if ((_driveOutput & C.DriveSelectMask) != select)
-            _driveOutput = (byte)((_driveOutput & C.OptionalOutput) | select);
+            PublishDriveControl((byte)((_driveOutput & C.OptionalOutput) | select));
     }
 
     private void SetDriveOutput(byte value)
     {
         var old = _driveOutput;
-        _driveOutput = value;
-        if ((value & C.Drive1Select) != 0) _drive = 1;
-        else if ((value & C.Drive0Select) != 0) _drive = 0;
+        PublishDriveControl(value);
+        if ((value & C.Drive1Select) != 0) SetActiveDrive(1);
+        else if ((value & C.Drive0Select) != 0) SetActiveDrive(0);
         // Les pas manuels par Write Special sont de vraies sorties du composant, même hors commande Seek.
         if ((old & C.OutputStep) == 0 && (value & C.OutputStep) != 0 && (value & C.DriveSelectMask) != 0)
             MovePhysicalTrack((value & C.OutputDirection) != 0 ? 1 : -1);
@@ -129,7 +129,7 @@ public sealed partial class Intel8271
     }
 
     private void UnloadHead() =>
-        _driveOutput &= unchecked((byte)~(C.OutputLoadHead | C.DriveSelectMask | C.OutputWriteEnable | C.OutputStep | C.OutputDirection | C.OutputLowCurrent));
+        PublishDriveControl((byte)(_driveOutput & ~(C.OutputLoadHead | C.DriveSelectMask | C.OutputWriteEnable | C.OutputStep | C.OutputDirection | C.OutputLowCurrent)));
 
     private int MechanicalDelay(int ticks) => MechanicalSpeedPercent == 0 ? 1 :
         Math.Max(1, checked((int)((long)ticks * C.PercentageScale / MechanicalSpeedPercent)));
@@ -147,12 +147,12 @@ public sealed partial class Intel8271
         _seekDirection = _recalibrating || _seekTarget < _tracks[_drive] ? -1 : 1;
         _seekRemaining = _recalibrating ? C.MaximumRecalibrateSteps : Math.Abs(_seekTarget - _tracks[_drive]);
         _didStep = false;
-        _driveOutput = (byte)((_driveOutput & ~(C.OutputDirection | C.OutputLowCurrent | C.OutputStep)) |
-            (_seekDirection > 0 ? C.OutputDirection : 0) | (_seekTarget >= C.LowCurrentTrack ? C.OutputLowCurrent : 0));
+        PublishDriveControl((byte)((_driveOutput & ~(C.OutputDirection | C.OutputLowCurrent | C.OutputStep)) |
+            (_seekDirection > 0 ? C.OutputDirection : 0) | (_seekTarget >= C.LowCurrentTrack ? C.OutputLowCurrent : 0)));
         _tracks[_drive] = (byte)_seekTarget;
         if ((_mode & C.SingleActuator) != 0) _tracks[0] = _tracks[1] = (byte)_seekTarget;
         if (SeekFinished()) { FinishSeek(); return; }
-        _phase = Phase.SeekSetup;
+        SetPhase(Phase.SeekSetup);
         _delay = MechanicalDelay(checked(_clock * C.DirectionSetupMicroseconds / C.MicrosecondsPerSecond));
     }
 
@@ -174,9 +174,9 @@ public sealed partial class Intel8271
 
     private void RaiseStep()
     {
-        _driveOutput |= C.OutputStep;
+        PublishDriveControl((byte)(_driveOutput | C.OutputStep));
         StepDrive();
-        _phase = Phase.StepHigh;
+        SetPhase(Phase.StepHigh);
         _delay = MechanicalDelay(checked(_clock * C.StepPulseMicroseconds / C.MicrosecondsPerSecond));
     }
 
@@ -189,8 +189,8 @@ public sealed partial class Intel8271
             if ((_mode & C.SingleActuator) != 0) _physicalTracks[1 - _drive] = 0;
         }
         var delay = !Motor ? _loadTicks : _didStep ? _settleTicks : 0;
-        _driveOutput |= C.OutputLoadHead;
-        _phase = Phase.HeadLoad;
+        PublishDriveControl((byte)(_driveOutput | C.OutputLoadHead));
+        SetPhase(Phase.HeadLoad);
         _delay = delay == 0 ? 0 : MechanicalDelay(delay);
     }
 
@@ -199,12 +199,12 @@ public sealed partial class Intel8271
         switch (_phase)
         {
             case Phase.SeekSetup:
-                if (_stepTicks == 0) { _driveOutput |= C.OutputStep; _phase = Phase.ExternalSeek; }
+                if (_stepTicks == 0) { PublishDriveControl((byte)(_driveOutput | C.OutputStep)); SetPhase(Phase.ExternalSeek); }
                 else RaiseStep();
                 return true;
             case Phase.StepHigh:
-                _driveOutput &= unchecked((byte)~C.OutputStep);
-                _phase = Phase.StepWait;
+                PublishDriveControl((byte)(_driveOutput & ~C.OutputStep));
+                SetPhase(Phase.StepWait);
                 _delay = Math.Max(1, MechanicalDelay(_stepTicks) - MechanicalDelay(checked(_clock * C.StepPulseMicroseconds / C.MicrosecondsPerSecond)));
                 return true;
             case Phase.StepWait:

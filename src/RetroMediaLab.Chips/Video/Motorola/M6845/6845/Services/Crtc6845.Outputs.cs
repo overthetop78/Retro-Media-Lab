@@ -10,11 +10,15 @@ public sealed partial class Crtc6845
     private int _addressDelayOne;
     private int _addressDelayTwo;
 
-    public bool DisplayEnabled { get; private set; }
-    public bool Cursor { get; private set; }
-    public int DisplayColumn => Column - _displaySkew;
+    private bool _displayEnabled;
+    private bool _cursor;
+
+    private int _address;
+    public bool DisplayEnabled => _displayEnabled;
+    public bool Cursor => _cursor;
+    public int DisplayColumn => _column - _displaySkew;
     /// <summary>Adresse associée à DE retardé pour les propriétaires de rendu ; la broche MA est MemoryAddress.</summary>
-    public int Address { get; private set; }
+    public int Address => _address;
 
     public bool CursorForCell(int address)
     {
@@ -34,9 +38,9 @@ public sealed partial class Crtc6845
         var rawDisplay = _horizontalDisplay && _verticalDisplay && !_adjusting && !_extraScanline && !_suppressDisplay;
         _displayHistory = ((_displayHistory << 1) | (rawDisplay ? 1 : 0)) & OutputHistoryMask;
         _cursorHistory = ((_cursorHistory << 1) | (rawDisplay && _cursorOnRaster && _memoryAddress == _cursorAddress ? 1 : 0)) & OutputHistoryMask;
-        DisplayEnabled = _displaySkew != SuppressedSkew && ((_displayHistory >> _displaySkew) & 1) != 0;
-        Cursor = DisplayEnabled && _cursorSkew != SuppressedSkew && ((_cursorHistory >> _cursorSkew) & 1) != 0;
-        Address = _displaySkew switch { 1 => _addressDelayOne, 2 => _addressDelayTwo, _ => _memoryAddress };
+        _displayEnabled = _displaySkew != SuppressedSkew && ((_displayHistory >> _displaySkew) & 1) != 0;
+        _cursor = _displayEnabled && _cursorSkew != SuppressedSkew && ((_cursorHistory >> _cursorSkew) & 1) != 0;
+        _address = _displaySkew switch { 1 => _addressDelayOne, 2 => _addressDelayTwo, _ => _memoryAddress };
         _addressDelayTwo = _addressDelayOne;
         _addressDelayOne = _memoryAddress;
     }
@@ -63,10 +67,10 @@ public sealed partial class Crtc6845
         }
         if (_displaySkew == SuppressedSkew)
         {
-            DisplayEnabled = false;
-            Cursor = false;
+            _displayEnabled = false;
+            _cursor = false;
         }
-        if (_cursorSkew == SuppressedSkew) Cursor = false;
+        if (_cursorSkew == SuppressedSkew) _cursor = false;
         _programmed = _registers[HorizontalTotal] != 0 && _registers[HorizontalDisplayed] != 0
             && _registers[VerticalTotal] != 0 && _registers[VerticalDisplayed] != 0;
     }

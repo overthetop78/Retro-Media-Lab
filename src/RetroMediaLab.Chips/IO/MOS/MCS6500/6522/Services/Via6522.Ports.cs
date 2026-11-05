@@ -57,7 +57,7 @@ public sealed partial class Via6522
         if (level != _ca1 && level == ((_registers[C.Peripheral] & C.Ca1Rising) != 0))
         {
             if ((_registers[C.Auxiliary] & C.LatchA) != 0) _inputLatchA = LivePinsA;
-            _flags |= C.Ca1Interrupt;
+            InterruptFlags |= C.Ca1Interrupt;
             if (_controlModeA == ViaControlMode.HandshakeOutput) SetControlOutput(true, true);
         }
         _ca1 = level;
@@ -66,7 +66,7 @@ public sealed partial class Via6522
     public void SetKeyboardLine(bool level) => SetCa2(level);
     public void SetCa2(bool level)
     {
-        if (level != _ca2 && ActiveControlEdge(_controlModeA, level)) _flags |= C.Ca2Interrupt;
+        if (level != _ca2 && ActiveControlEdge(_controlModeA, level)) InterruptFlags |= C.Ca2Interrupt;
         _ca2 = level;
     }
 
@@ -97,14 +97,14 @@ public sealed partial class Via6522
         if (level != previous && level == ((_registers[C.Peripheral] & C.Cb1Rising) != 0))
         {
             if ((_registers[C.Auxiliary] & C.LatchB) != 0) _inputLatchB = InputB;
-            _flags |= C.Cb1Interrupt;
+            InterruptFlags |= C.Cb1Interrupt;
             if (!ShiftOwnsCb2 && _controlModeB == ViaControlMode.HandshakeOutput) SetControlOutput(false, true);
         }
     }
 
     public void SetCb2(bool level)
     {
-        if (!ShiftOwnsCb2 && level != _cb2 && ActiveControlEdge(_controlModeB, level)) _flags |= C.Cb2Interrupt;
+        if (!ShiftOwnsCb2 && level != _cb2 && ActiveControlEdge(_controlModeB, level)) InterruptFlags |= C.Cb2Interrupt;
         _cb2 = level;
     }
 
@@ -126,9 +126,9 @@ public sealed partial class Via6522
     private void AcknowledgePort(bool portA, bool strobe)
     {
         var mode = portA ? _controlModeA : _controlModeB;
-        _flags &= unchecked((byte)~(portA ? C.Ca1Interrupt : C.Cb1Interrupt));
+        InterruptFlags &= unchecked((byte)~(portA ? C.Ca1Interrupt : C.Cb1Interrupt));
         if (mode is not (ViaControlMode.IndependentFallingInput or ViaControlMode.IndependentRisingInput))
-            _flags &= unchecked((byte)~(portA ? C.Ca2Interrupt : C.Cb2Interrupt));
+            InterruptFlags &= unchecked((byte)~(portA ? C.Ca2Interrupt : C.Cb2Interrupt));
         if (!strobe || (!portA && ShiftOwnsCb2) || mode is not (ViaControlMode.HandshakeOutput or ViaControlMode.PulseOutput)) return;
         SetControlOutput(portA, false);
         if (mode != ViaControlMode.PulseOutput) return;

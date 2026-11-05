@@ -49,8 +49,8 @@ public sealed partial class Crtc6845
                 _testHighCounter = (_testHighCounter + 1) & TestCounterMask;
                 _memoryAddress = _testHighCounter << TestCounterShift | _testLowCounter;
                 _testModeActive = true;
-                DisplayEnabled = false;
-                Cursor = false;
+                _displayEnabled = false;
+                _cursor = false;
             }
             return true;
         }
@@ -61,10 +61,10 @@ public sealed partial class Crtc6845
 
     private void ClearTiming(bool suppressDisplay)
     {
-        Column = 0;
-        Row = 0;
-        Scanline = 0;
-        Frame = 0;
+        _column = 0;
+        _row = 0;
+        _scanline = 0;
+        _frame = 0;
         _rasterAddress = 0;
         _memoryAddress = 0;
         _lineAddress = 0;
@@ -90,9 +90,9 @@ public sealed partial class Crtc6845
         _addressDelayTwo = 0;
         _testLowCounter = 0;
         _testHighCounter = 0;
-        Address = 0;
-        DisplayEnabled = false;
-        Cursor = false;
+        _address = 0;
+        _displayEnabled = false;
+        _cursor = false;
         RefreshCursorVisibility();
     }
 }

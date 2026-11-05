@@ -67,6 +67,6 @@ public sealed partial class BbcSerialUla
             _synthesisPhase -= period;
             _synthesisStep = (_synthesisStep + 1) % C.SynthesisSteps;
         }
-        CassetteOutput = disabled ? (short)0 : C.Sine[_synthesisStep];
+        _cassetteOutput = disabled ? (short)0 : C.Sine[_synthesisStep];
     }
 }

@@ -46,7 +46,7 @@ public sealed partial class Via6522
     {
         var interrupts = _timerInterruptsPending;
         _timerInterruptsPending = 0;
-        _flags |= interrupts;
+        InterruptFlags |= interrupts;
         if ((interrupts & C.Timer1Interrupt) != 0)
         {
             _timerPb7 = !_timerPb7;

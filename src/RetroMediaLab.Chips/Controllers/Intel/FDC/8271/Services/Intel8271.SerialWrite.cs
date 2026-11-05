@@ -51,7 +51,7 @@ public sealed partial class Intel8271
     private void StartSerialFormat()
     {
         ResetSerialRead();
-        _phase = Phase.Format;
+        SetPhase(Phase.Format);
         _serialPhase = SerialPhase.WaitFormatIndex;
         _writePhase = WritePhase.WaitIndex;
         _buffer = [];
@@ -60,7 +60,7 @@ public sealed partial class Intel8271
     private void BeginFormatAtIndex()
     {
         _serialPhase = SerialPhase.Writing;
-        _driveOutput |= C.OutputWriteEnable;
+        PublishDriveControl((byte)(_driveOutput | C.OutputWriteEnable));
         _writePhase = _parameters[3] == 0 ? WritePhase.Gap1 : WritePhase.Gap5;
         _writeRun = _parameters[3] == 0 ? _parameters[4] : _parameters[3];
         _writeHalfBit = C.FmBitsPerWord;
@@ -79,8 +79,8 @@ public sealed partial class Intel8271
     private void BeginSectorWrite()
     {
         _serialPhase = SerialPhase.Writing;
-        _phase = Phase.Write;
-        _driveOutput |= C.OutputWriteEnable;
+        SetPhase(Phase.Write);
+        PublishDriveControl((byte)(_driveOutput | C.OutputWriteEnable));
         _writePhase = WritePhase.DataSync;
         _writeRun = C.FmSyncBytes;
         _writeHalfBit = C.FmBitsPerWord;
@@ -147,7 +147,7 @@ public sealed partial class Intel8271
             Complete(0);
             return;
         }
-        _driveOutput &= unchecked((byte)~C.OutputWriteEnable);
+        PublishDriveControl((byte)(_driveOutput & ~C.OutputWriteEnable));
         _writePhase = WritePhase.Inactive;
         _serialClockStarted = _clockPulse = _dataPulse = false;
         _serialFraction = 0;

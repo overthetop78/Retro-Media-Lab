@@ -4,7 +4,7 @@ using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Common.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
-using BbcVideo = RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services.Video;
+using BbcVideo = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.Video;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
 using Firmware = RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions.BbcMicroFirmwareFunctions;
