@@ -92,7 +92,9 @@ La correction réalisée réarme le maintien nominal à chaque demi-onde haute v
 
 Le banc MOS B réel reproduit toutefois encore `Data?` après cette correction, avec la DLL Chips effectivement recopiée et son empreinte vérifiée. Le maintien DCD est un défaut corrigé, mais n’est pas établi comme la cause suffisante de l’échec SAVE/LOAD. La trace des écritures CPU vers FE09 contient deux synchronisations 2A avant le nom, les données source intactes et des CRC d’en-tête cohérents lorsqu’on exclut le 2A supplémentaire ; le rôle des horloges/interruptions dans cette séquence reste à isoler. Aucune correction du MC6850 ou du CPU n’est déduite de cette observation seule.
 
-La clôture précédente reste historique : l’intégration d’enregistrement MOS est réouverte, et aucune réussite WAV/UEF/CSW/RAW n’est annoncée pour ce nouveau scénario. Sa capture d’échec est conservée hors Git sous `artifacts/TestsChips/BbcSerialUla/BbcMicroModelB/record-replay-wav.png` ; le message `Data?` y est le résultat réel, pas une preuve de réussite.
+La clôture précédente est historique : l’intégration d’enregistrement MOS a été réouverte après le résultat `Data?`. La capture `record-replay-wav.png` du Model B est renouvelée par chaque passage ; elle ne constitue donc pas une archive de cet échec intermédiaire.
+
+Le passage final du 5 novembre réussit les 16 combinaisons A/B/B+ 64/B+ 128 × WAV/UEF/CSW/RAW : les 512 octets enregistrés par SAVE sont restitués par LOAD en lecture physique, et les blocs indexés ont leur intégrité valide et leurs données exactes. Outre le maintien de porteuse ULA, ce résultat nécessite la correction distincte de phase de transmission MC6850 (`6b9ee07bb`) et le recalage UART de l’indexeur MediaEngine. Les preuves par machine sont décrites dans [AcornBBCMicro.md](../../machines/AcornBBCMicro.md). Cette réussite ne doit pas être attribuée à la seule ULA.
 
 Le passage Debug des **100 tests ULA réussit également (658 ms)**. La correction autonome du maintien de porteuse est validée dans les deux configurations ; l’écart MOS restant est traité séparément, sans déclarer que cette correction suffit au chargement d’un enregistrement complet.
 

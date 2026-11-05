@@ -128,6 +128,56 @@ public sealed class AcornEmuCassetteTests
         writer.MarkSaved(); Assert.False(writer.HasChanges);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(37)]
+    [InlineData(1021)]
+    [InlineData(20003)]
+    [InlineData(50003)]
+    public void RecordingPreservesEveryByteInBurstsAndWithIntercharacterGaps(int gapTicks)
+    {
+        const int clock = 2_000_000;
+        const int rate = 48000;
+        const byte control = 0x95;
+        const byte ulaControl = 0x85;
+        var expected = Enumerable.Range(0, 256).Select(index => (byte)(index ^ 0x5a)).ToArray();
+        var transmitter = new Acia6850(clock, 19200);
+        var writer = new BbcCassette(new Serial(transmitter));
+        writer.Insert(new(ReadOnlyMemory<short>.Empty, rate), writable: true);
+        transmitter.Write(false, control);
+        writer.WriteUla(ulaControl);
+        writer.ExecuteCassette(EmulationCassetteCommand.Record);
+        for (var tick = 0; tick < clock / 4; tick++) writer.Tick();
+        var next = 0;
+        var wait = 0;
+        for (var tick = 0; tick < clock * 8; tick++)
+        {
+            writer.Tick();
+            if (next == expected.Length) continue;
+            if (wait > 0) { --wait; continue; }
+            if ((transmitter.Read(false) & 2) == 0) continue;
+            transmitter.Write(true, expected[next++]);
+            wait = gapTicks;
+        }
+        Assert.Equal(expected.Length, next);
+        writer.ExecuteCassette(EmulationCassetteCommand.Stop);
+        var signal = writer.RecordedSignal;
+        var receiver = new Acia6850(clock, 19200);
+        var reader = new BbcCassette(new Serial(receiver));
+        receiver.Write(false, control);
+        reader.Insert(signal);
+        reader.WriteUla(ulaControl);
+        var actual = new List<byte>();
+        for (var tick = 0; tick < (long)signal.Samples.Length * clock / rate + 2000; tick++)
+        {
+            reader.Tick();
+            var status = receiver.Read(false);
+            if ((status & 1) != 0) actual.Add(receiver.Read(true));
+            else if ((status & 0x84) == 0x84) receiver.Read(true);
+        }
+        Assert.Equal(expected, actual);
+    }
+
     [Fact]
     public void WriteProtectionAndMotorPreventRecording()
     {

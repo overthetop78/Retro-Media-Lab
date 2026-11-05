@@ -5,6 +5,9 @@ namespace RetroMediaLab.MediaEngine.Functions;
 /// <summary>Provides phase-independent two-frequency FSK classification and configurable UART frame decoding.</summary>
 public static class FskSerialFunctions
 {
+    private const int MinimumCarrierHalfWavesForClockRecovery = 64;
+    private const double MinimumHalfWaveRatio = 0.5;
+    private const double MaximumHalfWaveRatio = 1.5;
     public static void AppendPcmCarrier(List<short> samples, ref short level, int sampleRate, int baudRate, int zeroFrequency, int oneFrequency, double durationSeconds)
     {
         ArgumentNullException.ThrowIfNull(samples);
@@ -40,38 +43,79 @@ public static class FskSerialFunctions
 
         var samplesPerBit = sampleRate / (double)baudRate;
         if (samplesPerBit < minimumSamplesPerBit) return new FskSerialDecodeResult([], 0, 0);
-        var best = new FskSerialDecodeResult([], 0, 0);
-        for (var phase = 0; phase < Math.Max(1, (int)Math.Round(samplesPerBit)); phase++)
+        // Decode the tone intervals once, then synchronize each UART frame separately.
+        // A single grid for the whole tape accumulates oscillator/tape-speed drift.
+        var tones = ToneLevels(samples, sampleRate, zeroFrequency, oneFrequency, out var tapeTimeScale);
+        samplesPerBit *= tapeTimeScale;
+        var bytes = new List<byte>();
+        var positions = new List<int>();
+        var tested = 0;
+        for (var start = 1; start < tones.Length; start++)
         {
-            var bits = new List<bool>();
-            for (var bit = 0; ; bit++)
-            {
-                var start = (int)Math.Round(phase + bit * samplesPerBit);
-                var end = (int)Math.Round(phase + (bit + 1) * samplesPerBit);
-                if (end > samples.Count) break;
-                bits.Add(ClassifyTone(samples, start, end, sampleRate, zeroFrequency, oneFrequency));
-            }
-            var candidate = DecodeFrames(bits, dataBits, stopBits);
-            if (candidate.ValidFrames > best.ValidFrames
-                || candidate.ValidFrames == best.ValidFrames && candidate.Bytes.Count > best.Bytes.Count)
-                best = new FskSerialDecodeResult(candidate.Bytes, candidate.ValidFrames, candidate.TestedFrames, candidate.Positions.Select(position => (int)Math.Round(phase + position * samplesPerBit)).ToArray());
+            var lastStop = (int)Math.Round(start + (dataBits + stopBits + 0.5) * samplesPerBit);
+            if (lastStop >= tones.Length) break;
+            if (tones[start] || !tones[start - 1]) continue;
+            if (tones[(int)Math.Round(start + samplesPerBit / 2)]) continue;
+            tested++;
+            var validStop = true;
+            for (var stop = 0; stop < stopBits; stop++)
+                validStop &= tones[(int)Math.Round(start + (dataBits + 1.5 + stop) * samplesPerBit)];
+            if (!validStop) continue;
+            byte value = 0;
+            for (var bit = 0; bit < dataBits; bit++)
+                if (tones[(int)Math.Round(start + (bit + 1.5) * samplesPerBit)]) value |= (byte)(1 << bit);
+            bytes.Add(value);
+            positions.Add(start);
+            // Resume inside the last stop bit, so an early next start cannot be skipped.
+            start = lastStop;
         }
-        return best;
+        return new FskSerialDecodeResult(bytes, bytes.Count, tested, positions);
     }
 
-    private static bool ClassifyTone(IReadOnlyList<int> samples, int start, int end, int sampleRate, int zeroFrequency, int oneFrequency)
+    private static bool[] ToneLevels(IReadOnlyList<int> samples, int sampleRate, int zeroFrequency, int oneFrequency, out double tapeTimeScale)
     {
-        var crossings = 0;
-        var previous = samples[start];
-        for (var index = start + 1; index < end; index++)
+        var result = new bool[samples.Count];
+        Array.Fill(result, true);
+        var zeroHalfWave = sampleRate / (2.0 * zeroFrequency);
+        var oneHalfWave = sampleRate / (2.0 * oneFrequency);
+        var minimum = Math.Min(zeroHalfWave, oneHalfWave) * MinimumHalfWaveRatio;
+        var maximum = Math.Max(zeroHalfWave, oneHalfWave) * MaximumHalfWaveRatio;
+        var previous = 0;
+        var edge = -1;
+        var carrierWaves = 0;
+        long carrierSamples = 0;
+        var longestCarrier = 0;
+        tapeTimeScale = 1;
+        for (var index = 0; index < samples.Count; index++)
         {
-            var current = samples[index];
-            if (previous < 0 && current >= 0 || previous >= 0 && current < 0) crossings++;
+            var current = Math.Sign(samples[index]);
+            if (current == 0 || current == previous) continue;
+            if (edge >= 0)
+            {
+                var duration = index - edge;
+                if (duration >= minimum && duration <= maximum)
+                {
+                    var mark = Math.Abs(duration - oneHalfWave) < Math.Abs(duration - zeroHalfWave);
+                    Array.Fill(result, mark, edge, duration);
+                    if (mark)
+                    {
+                        ++carrierWaves;
+                        carrierSamples += duration;
+                        if (carrierWaves >= MinimumCarrierHalfWavesForClockRecovery && carrierWaves > longestCarrier)
+                        {
+                            longestCarrier = carrierWaves;
+                            // Tape speed changes both tones and baud rate by the same factor.
+                            tapeTimeScale = carrierSamples / (carrierWaves * oneHalfWave);
+                        }
+                    }
+                    else { carrierWaves = 0; carrierSamples = 0; }
+                }
+                else { carrierWaves = 0; carrierSamples = 0; }
+            }
+            edge = index;
             previous = current;
         }
-        var duration = (end - start) / (double)sampleRate;
-        var frequency = duration <= 0 ? 0 : crossings / (2 * duration);
-        return Math.Abs(frequency - oneFrequency) < Math.Abs(frequency - zeroFrequency);
+        return result;
     }
 
     private static void AppendPcmBit(List<short> samples, ref short level, int sampleRate, int baudRate, int zeroFrequency, int oneFrequency, bool value)
