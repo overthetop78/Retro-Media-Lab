@@ -17,7 +17,12 @@ internal static class ProtectedTrackHfeImageAdapter
         }
         catch (Exception exception) when (exception is InvalidDataException or NotSupportedException or OverflowException)
         {
-            return false;
+            try
+            {
+                HfeV3ImageBuilder.Build(image, new Dictionary<string, string> { [HfeMetadataKeys.Encoding] = "0" });
+                return true;
+            }
+            catch (Exception error) when (error is InvalidDataException or NotSupportedException or OverflowException) { return false; }
         }
     }
 
@@ -26,13 +31,15 @@ internal static class ProtectedTrackHfeImageAdapter
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(metadata);
         var tracks = image.Tracks.Select(ToHfeTrack).ToArray();
+        var commonCellTicks = FluxBitCellConverter.GreatestCommonDivisor(tracks.Select(track => track.BitCellTicks));
+        tracks = tracks.Select(track => track.BitCellTicks == commonCellTicks ? track : new HfeTrack(track.Cylinder, track.Head,
+            FluxBitCellConverter.ToBits(FluxBitCellConverter.ToIntervals(track.Bits, track.BitCellTicks),
+                checked((uint)(track.Bits.Count * (long)track.BitCellTicks)), commonCellTicks), commonCellTicks)).ToArray();
         ValidateTrackLayout(tracks);
         var bitRates = tracks.Select(track => CalculateBitRate(track.BitCellTicks)).Distinct().ToArray();
         if (bitRates.Length != 1)
             throw new NotSupportedException("HFE v1 requires one bit rate for every track.");
-        var bitRate = ReadUInt16(metadata, HfeMetadataKeys.BitRate) ?? bitRates[0];
-        if (bitRate != bitRates[0])
-            throw new InvalidDataException("The HFE metadata bit rate does not match the represented track timing.");
+        var bitRate = bitRates[0];
         return new HfeImage(ReadByte(metadata, HfeMetadataKeys.Revision) ?? HfeFormat.Revision, tracks.Max(track => track.Cylinder) + 1, tracks.Max(track => track.Head) + 1, ResolveEncoding(metadata), bitRate, tracks);
     }
 
@@ -44,14 +51,18 @@ internal static class ProtectedTrackHfeImageAdapter
             throw new NotSupportedException("HFE v1 cannot preserve multiple separate flux revolutions.");
 
         var revolution = track.Revolutions[0];
-        if (revolution.ResolutionNanoseconds % HfeFormat.TickNanoseconds != 0)
-            throw new NotSupportedException("The flux timing resolution cannot be expressed in HFE ticks.");
-        var scale = checked((uint)(revolution.ResolutionNanoseconds / HfeFormat.TickNanoseconds));
-        var values = revolution.Flux.FluxIntervals.Append(revolution.Flux.IndexTimeTicks).Select(value => checked(value * scale));
+        uint ToTicks(uint value)
+        {
+            var nanoseconds = checked((ulong)value * (uint)revolution.ResolutionNanoseconds);
+            if (nanoseconds % HfeFormat.TickNanoseconds != 0)
+                throw new NotSupportedException("The flux timing cannot be expressed in HFE ticks.");
+            return checked((uint)(nanoseconds / HfeFormat.TickNanoseconds));
+        }
+        var values = revolution.Flux.FluxIntervals.Append(revolution.Flux.IndexTimeTicks).Select(ToTicks);
         var bitCellTicks = FluxBitCellConverter.GreatestCommonDivisor(values);
         if (bitCellTicks == 0) throw new InvalidDataException("The flux track does not contain representable timing.");
-        var intervals = revolution.Flux.FluxIntervals.Select(value => checked(value * scale)).ToArray();
-        var indexTime = checked(revolution.Flux.IndexTimeTicks * scale);
+        var intervals = revolution.Flux.FluxIntervals.Select(ToTicks).ToArray();
+        var indexTime = ToTicks(revolution.Flux.IndexTimeTicks);
         if ((long)indexTime / bitCellTicks > ushort.MaxValue / HfeFormat.MaximumHeadCount * HfeFormat.BitsPerByte)
             throw new NotSupportedException("The exact flux timing exceeds the HFE v1 track length limit.");
         var bits = FluxBitCellConverter.ToBits(intervals, indexTime, bitCellTicks);
@@ -87,7 +98,7 @@ internal static class ProtectedTrackHfeImageAdapter
         }
     }
 
-    private static byte ResolveEncoding(IReadOnlyDictionary<string, string> metadata)
+    internal static byte ResolveEncoding(IReadOnlyDictionary<string, string> metadata)
     {
         var hfeEncoding = ReadByte(metadata, HfeMetadataKeys.Encoding);
         if (hfeEncoding.HasValue) return hfeEncoding.Value;
@@ -107,5 +118,4 @@ internal static class ProtectedTrackHfeImageAdapter
 
     private static byte? ReadByte(IReadOnlyDictionary<string, string> metadata, string key) => MediaMetadataFunctions.TryReadByte(metadata, key, out var value) ? value : null;
 
-    private static ushort? ReadUInt16(IReadOnlyDictionary<string, string> metadata, string key) => MediaMetadataFunctions.TryReadUInt16(metadata, key, out var value) ? value : null;
 }

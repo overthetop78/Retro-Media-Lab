@@ -17,6 +17,20 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuDiskControllerTests
 {
     [Theory]
+    [InlineData("ss40", 40, 1, true)]
+    [InlineData("ss40", 41, 1, false)]
+    [InlineData("ss40", 40, 2, false)]
+    [InlineData("ds80", 80, 2, true)]
+    [InlineData("ds80", 81, 2, false)]
+    [InlineData("ds80-dd", 80, 2, true)]
+    public void PhysicalImagesRespectDriveGeometryWithoutInventingASectorLayout(string model, int cylinders, int heads, bool accepted)
+    {
+        using var image = new MemoryDisk { Cylinders = cylinders, Heads = heads, SectorsPerTrack = 0, SectorBytes = 0, DeclaredSectorCount = 0 };
+        if (accepted) NativeStorage.ValidateMedia(image, new(model, "100", false, false));
+        else Assert.Throws<InvalidDataException>(() => NativeStorage.ValidateMedia(image, new(model, "100", false, false)));
+    }
+
+    [Theory]
     [InlineData("ss40", 40, 1, 10, true)]
     [InlineData("ss40", 80, 1, 10, false)]
     [InlineData("ss40", 40, 2, 10, false)]
@@ -252,7 +266,8 @@ public sealed class AcornEmuDiskControllerTests
         private readonly Dictionary<long, byte[]> _data = new();
         public IEmulationDriveMechanics Mechanics { get; } = RetroMediaLab.Emulation.EmulationSdk.MediaProcessing.CreateDriveMechanics(RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants.Floppy);
         public string FormatId => "acorn.dfs.ds";
-        public int SectorSize => 256;
+        internal int SectorBytes { get; init; } = 256;
+        public int SectorSize => SectorBytes;
         public long SectorCount => DeclaredSectorCount ?? Cylinders * Heads * SectorsPerTrack;
         internal long? DeclaredSectorCount { get; init; }
         public long Cylinders { get; init; } = 2;

@@ -46,6 +46,8 @@ internal static class FloppyDriveModels
     {
         var formats = Formats.Where(format => format.Tracks <= profile.Tracks && format.Sides <= profile.Sides && (!format.DoubleDensity || profile.DoubleDensity)).ToArray();
         var extensions = formats.Select(format => format.Extension).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        extensions.Add(CommonHost.MediaProcessing.FileExtensions["Scp"]);
+        extensions.Add(CommonHost.MediaProcessing.FileExtensions["Hfe"]);
         if (profile.DoubleDensity) { extensions.Add(CommonHost.MediaProcessing.FileExtensions["Adf"]); extensions.Add(CommonHost.MediaProcessing.FileExtensions["Img"]); }
         return new(profile.Id, string.Empty, BlankImageSize: Capacity(profile.Tracks, profile.Sides, profile.DoubleDensity))
         {
@@ -58,7 +60,8 @@ internal static class FloppyDriveModels
     internal static bool Supports(string modelId, IEmulationDiskImage image)
     {
         var profile = Profiles.SingleOrDefault(profile => profile.Id == modelId);
-        return profile is not null && (image.SectorSize == C.SectorSize && image.SectorsPerTrack == C.SingleDensitySectors
+        return profile is not null && (image.SectorSize == 0 && image.SectorCount == 0 && image.SectorsPerTrack == 0
+            || image.SectorSize == C.SectorSize && image.SectorsPerTrack == C.SingleDensitySectors
             || profile.DoubleDensity && (image.SectorSize == C.SectorSize && image.SectorsPerTrack == C.DoubleDensitySectors
                 || image.SectorSize == C.DosSectorSize && image.SectorsPerTrack == C.DosSectors
                 || image.SectorSize == C.AdfsLargeSectorSize && image.SectorsPerTrack == C.AdfsLargeSectors))

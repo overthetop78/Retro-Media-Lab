@@ -19,9 +19,22 @@ internal sealed class MediaRuntimePreparationService : IMediaRuntimePreparation
     {
         var engine = Conversion.Value;
         var document = await engine.ReadingService.ReadAsync(new(path, [], RequestedFormatId: formatId) { Drive = mechanics, TrackDriveAccesses = false }, cancellationToken).ConfigureAwait(false);
-        return document.Representation is Images.Formats.HardDisk.MfmEmu.MfmEmuImageRepresentation
-            ? new MediaRuntimeMfmDisk(engine, document, writable, mechanics is null)
-            : new MediaRuntimeDisk(engine, document, writable, mechanics is null);
+        var transferred = false;
+        try
+        {
+            IMediaRuntimeDisk disk = document.Representation switch
+            {
+                Images.Formats.HardDisk.MfmEmu.MfmEmuImageRepresentation => new MediaRuntimeMfmDisk(engine, document, writable, mechanics is null),
+                Images.Models.Flux.FluxMediaImageRepresentation => new MediaRuntimeFluxDisk(engine, document, writable, mechanics is null),
+                _ => new MediaRuntimeDisk(engine, document, writable, mechanics is null)
+            };
+            transferred = true;
+            return disk;
+        }
+        finally
+        {
+            if (!transferred && mechanics is null) document.Source.Drive?.Reset();
+        }
     }
     public Task<RetroMediaLab.MediaEngine.Contracts.MediaCassetteSignal> ReadCassetteAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null) => RetroMediaLab.MediaEngine.Functions.CassetteSignalFunctions.ReadAsync(path, cancellationToken, machineId, parameters);
     public IReadOnlyList<string> CassetteRecordingExtensions => RetroMediaLab.MediaEngine.Functions.CassetteSignalFunctions.WritableExtensions;

@@ -12,6 +12,11 @@ public static class HfeFormat
     public const byte Version3BitRateOpcode = 0x4f;
     public const byte Version3IndexOpcode = 0x8f;
     public const byte Version3SkipBitsOpcode = 0xcf;
+    public const int Version3ClockMegahertz = 36;
+    public const int NanosecondsPerMicrosecond = 1000;
+    public const byte Version3NominalDivider = 144;
+    public const ushort Version3NominalBitRate = 125;
+    public const byte Version3OpcodeMask = 0x0f;
     public const byte IsoMfmEncoding = 0x00;
     public const byte AmigaMfmEncoding = 0x01;
     public const byte IsoFmEncoding = 0x02;

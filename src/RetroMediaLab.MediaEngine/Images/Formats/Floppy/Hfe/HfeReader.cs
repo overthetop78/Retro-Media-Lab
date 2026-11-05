@@ -99,10 +99,11 @@ public sealed class HfeReader : IMediaImageReader
         var timing = new List<TrackTimingSegment>();
         var features = new List<TrackFeature>();
         var intervals = new List<uint>();
-        var currentTicks = nominalTicks;
+        double currentTicks = nominalTicks;
         var timingStart = 0;
-        uint intervalTicks = 0;
-        uint indexTicks = 0;
+        double intervalTicks = 0;
+        double indexTicks = 0;
+        uint previousTransition = 0;
         int? pendingIndex = null;
         var bitOffset = 0;
 
@@ -125,7 +126,8 @@ public sealed class HfeReader : IMediaImageReader
                         if (parameter == 0) throw new InvalidDataException($"L'opcode de débit HFE v3 de la piste {cylinder}/{head} contient une valeur nulle.");
                         if (bits.Count > timingStart)
                             timing.Add(new(timingStart, bits.Count - timingStart, currentTicks * (double)HfeFormat.TickNanoseconds));
-                        currentTicks = checked((uint)Math.Max(1, nominalTicks * (long)parameter / 72));
+                        currentTicks = (double)parameter * HfeFormat.NanosecondsPerMicrosecond
+                            / (HfeFormat.Version3ClockMegahertz * HfeFormat.TickNanoseconds);
                         timingStart = bits.Count;
                         continue;
                     case HfeFormat.Version3SkipBitsOpcode:
@@ -149,7 +151,9 @@ public sealed class HfeReader : IMediaImageReader
                 intervalTicks = checked(intervalTicks + currentTicks);
                 indexTicks = checked(indexTicks + currentTicks);
                 if (!set) continue;
-                intervals.Add(intervalTicks);
+                var transition = checked((uint)Math.Round(indexTicks));
+                intervals.Add(transition - previousTransition);
+                previousTransition = transition;
                 intervalTicks = 0;
             }
             if (weak && bits.Count > firstBit)
@@ -158,12 +162,12 @@ public sealed class HfeReader : IMediaImageReader
         }
 
         if (bits.Count == 0 || indexTicks == 0) throw new InvalidDataException($"La piste HFE v3 {cylinder}/{head} ne contient aucune cellule.");
-        if (intervalTicks > 0) intervals.Add(intervalTicks);
+        if (intervalTicks > 0) intervals.Add(checked((uint)Math.Round(indexTicks)) - previousTransition);
         if (bits.Count > timingStart)
             timing.Add(new(timingStart, bits.Count - timingStart, currentTicks * (double)HfeFormat.TickNanoseconds));
         if (pendingIndex is int index && index < bits.Count)
             features.Add(new(TrackFeatureKind.IndexMark, index, 1, "HFE v3 index opcode"));
-        return new(cylinder, head, bits, nominalTicks, timing, features, new(indexTicks, intervals));
+        return new(cylinder, head, bits, nominalTicks, timing, features, new(checked((uint)Math.Round(indexTicks)), intervals));
     }
 
     private static byte ReverseBits(byte value)

@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using RetroMediaLab.MediaEngine.Images.Models.Flux;
 using RetroMediaLab.MediaEngine.Images.Reading.Decoding.Definitions;
 using RetroMediaLab.MediaEngine.Images.Writing.Encoding;
 
@@ -58,7 +59,7 @@ public sealed class HfeWriter(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageF
         return BuildHeader(image).Concat(trackList).Concat(trackData).ToArray();
     }
 
-    private static void AppendTrackData(ICollection<byte> destination, IReadOnlyList<byte[]> packed, int sideLength)
+    internal static void AppendTrackData(ICollection<byte> destination, IReadOnlyList<byte[]> packed, int sideLength, byte padding = HfeFormat.TrackPadding)
     {
         var sideBlockCount = (sideLength + HfeLayout.SideChunkSize - 1) / HfeLayout.SideChunkSize;
         for (var block = 0; block < sideBlockCount; block++)
@@ -71,12 +72,12 @@ public sealed class HfeWriter(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageF
                     foreach (var value in packed[head].AsSpan(offset, count))
                         destination.Add(value);
                 for (var index = count; index < HfeLayout.SideChunkSize; index++)
-                    destination.Add(HfeFormat.TrackPadding);
+                    destination.Add(padding);
             }
         }
     }
 
-    private static byte[] BuildHeader(HfeImage image)
+    internal static byte[] BuildHeader(HfeImage image)
     {
         var header = Enumerable.Repeat(HfeFormat.HeaderPadding, HfeLayout.BlockSize).ToArray();
         HfeFormat.Signature.CopyTo(header.AsSpan(HfeLayout.SignatureOffset));
@@ -97,6 +98,18 @@ public sealed class HfeWriter(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageF
     private async Task WriteBytesAsync(byte[] bytes, string path, CancellationToken cancellationToken)
     {
         await files.WriteAsync(path, (stream, token) => stream.WriteAsync(bytes, token).AsTask(), cancellationToken).ConfigureAwait(false);
+    }
+
+    internal Task WriteAsync(ProtectedTrackImage image,
+        IReadOnlyDictionary<string, string> metadata, string path, CancellationToken cancellationToken)
+    {
+        HfeImage converted;
+        try { converted = ProtectedTrackHfeImageAdapter.Create(image, metadata); }
+        catch (Exception error) when (error is NotSupportedException or OverflowException)
+        {
+            return WriteBytesAsync(HfeV3ImageBuilder.Build(image, metadata), path, cancellationToken);
+        }
+        return WriteAsync(converted, path, cancellationToken);
     }
 
     private static void Validate(HfeImage image)
