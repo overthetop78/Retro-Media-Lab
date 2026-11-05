@@ -90,7 +90,7 @@ public sealed class HfeWriter(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageF
         header[HfeLayout.InterfaceModeOffset] = HfeFormat.UnknownInterfaceMode;
         header[HfeLayout.WriteProtectedOffset] = HfeFormat.WriteProtected;
         BinaryPrimitives.WriteUInt16LittleEndian(header.AsSpan(HfeLayout.TrackListOffset), 1);
-        header[HfeLayout.WriteAllowedOffset] = HfeFormat.WriteAllowed;
+        header[HfeLayout.WriteAllowedOffset] = image.WriteProtected ? HfeFormat.WriteForbidden : HfeFormat.WriteAllowed;
         header[HfeLayout.SingleStepOffset] = HfeFormat.SingleStep;
         return header;
     }

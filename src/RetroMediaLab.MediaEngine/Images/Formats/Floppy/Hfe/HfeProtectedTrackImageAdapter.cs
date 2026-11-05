@@ -9,6 +9,6 @@ public static class HfeProtectedTrackImageAdapter
     {
         ArgumentNullException.ThrowIfNull(image);
         var tracks = image.Tracks.Select(track => new ProtectedTrack(track.Cylinder, track.Head, track.Bits, track.Timing, [], track.Features, [new TrackFluxRevolution(HfeFormat.TickNanoseconds, track.Revolution)])).ToArray();
-        return new ProtectedTrackImage(tracks, false);
+        return new ProtectedTrackImage(tracks, image.WriteProtected);
     }
 }

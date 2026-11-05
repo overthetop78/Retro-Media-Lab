@@ -36,7 +36,7 @@ internal static class HfeV3ImageBuilder
         var header = HfeWriter.BuildHeader(new(HfeFormat.Version3Revision, cylinders, heads,
             ProtectedTrackHfeImageAdapter.ResolveEncoding(metadata), HfeFormat.Version3NominalBitRate, []));
         HfeFormat.Version3Signature.CopyTo(header);
-        header[HfeLayout.WriteAllowedOffset] = image.WriteProtected ? byte.MinValue : HfeFormat.WriteAllowed;
+        header[HfeLayout.WriteAllowedOffset] = image.WriteProtected ? HfeFormat.WriteForbidden : HfeFormat.WriteAllowed;
         return [.. header, .. table, .. body];
     }
 

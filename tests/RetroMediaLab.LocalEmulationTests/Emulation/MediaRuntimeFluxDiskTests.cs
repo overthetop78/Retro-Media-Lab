@@ -155,4 +155,44 @@ public sealed class MediaRuntimeFluxDiskTests
         var actual = MediaRuntimeFluxDisk.ToRuntimeTrack(HfeProtectedTrackImageAdapter.Create(new HfeReader().Read(bytes)).Tracks[0]);
         Assert.Equal(source.Revolutions[0].FluxIntervalsNanoseconds, actual.Revolutions[0].FluxIntervalsNanoseconds);
     }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HfeHeaderProtectionSurvivesModelAndPhysicalRepresentationRoundTrips(bool version3, bool protectedImage)
+    {
+        var image = new ProtectedTrackImage([Bits([true, false, true, false, true, false, true, false], 4000)], protectedImage);
+        var metadata = new Dictionary<string, string> { [HfeMetadataKeys.Encoding] = "2" };
+        var bytes = version3 ? HfeV3ImageBuilder.Build(image, metadata)
+            : HfeWriter.Build(ProtectedTrackHfeImageAdapter.Create(image, metadata));
+        Assert.Equal(protectedImage ? HfeFormat.WriteForbidden : HfeFormat.WriteAllowed, bytes[HfeLayout.WriteAllowedOffset]);
+        var read = new HfeReader().Read(bytes);
+        Assert.Equal(protectedImage, read.WriteProtected);
+        var physical = HfeProtectedTrackImageAdapter.Create(read);
+        Assert.Equal(protectedImage, physical.WriteProtected);
+        Assert.Equal(image.Tracks[0].Bits, physical.Tracks[0].Bits);
+        var rewritten = HfeWriter.Build(ProtectedTrackHfeImageAdapter.Create(physical, metadata));
+        Assert.Equal(protectedImage ? HfeFormat.WriteForbidden : HfeFormat.WriteAllowed, rewritten[HfeLayout.WriteAllowedOffset]);
+    }
+
+    [Fact]
+    public void ProtectedFluxRuntimeRejectsWriteWindowsEvenWhenTheCallerRequestsWriting()
+    {
+        var image = new ProtectedTrackImage([Bits([true, false, true, false, true, false, true, false], 4000)], true);
+        var document = MediaImageDocument.CreateUnexplored(new("memory.hfe", []), DiskImageFormatIds.RawHfe,
+            MediaKind.Floppy, new FluxMediaImageRepresentation(image), [], new Dictionary<string, string>());
+        MediaRuntimeFluxDisk? runtime = null;
+        try
+        {
+            runtime = new(MediaEngineComposition.CreateDefault(), document, true, false);
+            Assert.True(runtime.IsReadOnly);
+            var before = runtime.ReadTrack(0, 0, string.Empty, 4000, 32000);
+            Assert.Throws<UnauthorizedAccessException>(() => runtime.WriteTrackWindow(0, 0, string.Empty, 4000, 32000, 0, 8000, []));
+            Assert.False(runtime.HasChanges);
+            Assert.Same(before, runtime.ReadTrack(0, 0, string.Empty, 4000, 32000));
+        }
+        finally { runtime?.Dispose(); }
+    }
 }

@@ -40,7 +40,10 @@ internal static class ProtectedTrackHfeImageAdapter
         if (bitRates.Length != 1)
             throw new NotSupportedException("HFE v1 requires one bit rate for every track.");
         var bitRate = bitRates[0];
-        return new HfeImage(ReadByte(metadata, HfeMetadataKeys.Revision) ?? HfeFormat.Revision, tracks.Max(track => track.Cylinder) + 1, tracks.Max(track => track.Head) + 1, ResolveEncoding(metadata), bitRate, tracks);
+        return new HfeImage(ReadByte(metadata, HfeMetadataKeys.Revision) ?? HfeFormat.Revision, tracks.Max(track => track.Cylinder) + 1, tracks.Max(track => track.Head) + 1, ResolveEncoding(metadata), bitRate, tracks)
+        {
+            WriteProtected = image.WriteProtected
+        };
     }
 
     private static HfeTrack ToHfeTrack(ProtectedTrack track)

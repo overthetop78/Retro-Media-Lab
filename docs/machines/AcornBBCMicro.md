@@ -204,3 +204,15 @@ Ces résultats ne constituent pas encore la validation de tous les conteneurs ex
 Les 14 nouveaux contrôles autonomes réussissent aussi en Debug en 431 ms. Le cas de piste absente conserve deux révolutions lorsqu’elles sont présentes sur les autres pistes, afin que son écriture ne réduise pas les captures SCP intactes à une seule révolution.
 
 Livraison finale : `scripts/local-building.cmd --building=debug --modules=A` termine avec code zéro. `build/Debug/Retro Media Lab/retromedialab.exe`, Chips dans `lib`, les 24 manifestes et leurs 24 DLL d’entrée sont présents. Le SHA-256 du MediaEngine livré est identique à celui compilé en Debug ; aucun diagnostic externe ne reste dans les sources.
+
+## Protection en écriture HFE — 5 novembre 2026
+
+La protection intrinsèque du conteneur est conservée à travers HfeImage, la représentation de flux, le runtime et le relais existant vers le contrôleur. Le champ `write_allowed` à l’offset 14h vaut 00h pour une image protégée et FFh pour une image modifiable, conformément à la [spécification HxC](https://www.hxc2001.com/floppy_drive_emulator/HFE-file-format.html). La lecture l’ignorait et le writer v1 réactivait toujours l’écriture ; HFE v1 et v3 conservent maintenant l’état lors des allers-retours. Aucune préférence globale du lecteur, puce ou configuration de machine n’est modifiée.
+
+Les 19 contrôles autonomes de flux réussissent en Release en 548 ms, dont les quatre combinaisons v1/v3 et protégé/modifiable, ainsi qu’un refus d’écriture par le runtime ouvert avec une demande d’accès modifiable. Deux essais natifs BBC B 32 Kio, MOS 1.20/BASIC II, 8271/DFS 0.9H puis WD1770/DFS 2.26, exécutent DISC puis SAVE sur un HFE protégé : le BBC affiche respectivement « Disk read only » et « Disc read only », aucun octet n’est écrit et le fichier reste identique après FlushAsync. Deux réussites en 8,50 s.
+
+Captures natives inspectées hors Git : `artifacts/TestsChips/Intel8271/BbcMicroModelB/hfe-write-protected.png` et `artifacts/TestsChips/Wd1770/BbcMicroModelB/hfe-write-protected.png`. Les médias de travail et le diagnostic externe sont supprimés ; l’assembly Release est reconstruite sans ce diagnostic. Ces preuves concernent la protection d’écriture de l’en-tête HFE, pas l’ensemble des protections logicielles ou régions faibles.
+
+Les mêmes 19 contrôles autonomes réussissent en Debug en 585 ms, sans optimisation forcée du build Debug.
+
+Le build Debug avec `--modules=A` termine avec code zéro : exécutable, Chips dans `lib` et les 24 DLL d’entrée sont présents ; le MediaEngine livré correspond par SHA-256 à sa compilation Debug. Le diagnostic temporaire n’est plus présent dans les sources.

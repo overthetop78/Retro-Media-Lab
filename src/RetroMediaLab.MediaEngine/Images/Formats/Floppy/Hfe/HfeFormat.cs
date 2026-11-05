@@ -23,6 +23,7 @@ public static class HfeFormat
     public const byte UnknownInterfaceMode = 0xff;
     public const byte WriteProtected = 1;
     public const byte WriteAllowed = 0xff;
+    public const byte WriteForbidden = 0x00;
     public const byte SingleStep = 0xff;
     public const byte HeaderPadding = 0xff;
     public const byte TrackPadding = 0x88;
