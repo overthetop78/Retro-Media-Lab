@@ -40,7 +40,7 @@ internal static class BlankSectorImageFactory
         {
             var bytes = new byte[adfs.Capacity];
             RetroMediaLab.MediaFileSystems.FileSystems.Acorn.Adfs.AcornAdfsFormatter.CreateHeader(adfs.BlockCount).CopyTo(bytes, 0);
-            return RegularSectorImageBuilder.Create(bytes, adfs, CancellationToken.None);
+            return AcornAdfLayout.CreateBbc(bytes, adfs, CancellationToken.None);
         }
         if (BbcDfsGeometry.FindByFormatId(formatId) is { } dfs)
         {

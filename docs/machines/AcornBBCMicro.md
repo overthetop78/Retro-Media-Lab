@@ -146,11 +146,31 @@ Le média réel `F:/Retro/Image Disquette/Acorn BBC - Applications - [ADL] (TOSE
 
 Captures inspectées et conservées hors Git sous `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus64/` : `adfs-adl-save-load.png` montre l’allocation, SAVE, les deux LOAD et « ADFS ADL 8192 BYTES REOPEN OK » ; `adfs-real-scrabble-save-load.png` montre le catalogue réel, LOAD de !BOOT et « F RETRO ADL LOAD OK ». Les passages ADS et ADM disposent également de leurs captures.
 
-Le formateur `$.LIBRARY.Aform` du disque `MasterWelcome.adl` distribué dans les [sources BeebEm](https://github.com/stardot/beebem-windows/tree/master/UserData/DiscIms) refuse le B+ avec « This is the wrong type of machine ». Ce refus ne démontre pas un défaut du WD1770 : ce programme n’a pas servi à valider le formatage B+. Il reste à employer un AFORM prévu pour B/B+ et à vérifier les pistes après ce formatage. Le [guide Acorn ADFS](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_ADFSUG.pdf), chapitre 9, distingue le programme utilitaire AFORM de la ROM et décrit les formats S/M/L ainsi que sa confirmation.
+Le formateur `$.LIBRARY.Aform` du disque `MasterWelcome.adl` distribué dans les [sources BeebEm](https://github.com/stardot/beebem-windows/tree/master/UserData/DiscIms) refuse le B+ avec « This is the wrong type of machine ». Ce refus ne démontre pas un défaut du WD1770 : ce programme n’a pas servi à valider le formatage B+. Le passage suivant utilise ADT, compatible B/B+, pour réaliser ce formatage. Le [guide Acorn ADFS](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_ADFSUG.pdf), chapitre 9, distingue le programme utilitaire AFORM de la ROM et décrit les formats S/M/L ainsi que sa confirmation.
 
 Les deux passages S/M complémentaires réussissent en 41 secondes : l’explorateur extrait exactement les fichiers créés par la ROM et `SectorImageFluxVisualizer` construit respectivement les 40 et 80 pistes attendues. C’est un contrôle du pipeline de visualisation, pas une capture de son interface graphique. Ces résultats ne finalisent pas la machine entière, les autres conteneurs, la création non formatée ou l’affichage interactif des secteurs. Aucun code de puce ni timing n’a été modifié pendant ces essais ADFS. Le diagnostic, les médias de travail et la capture de la tentative AFORM refusée sont supprimés ; l’assembly Release est reconstruite sans ce diagnostic.
 
-### Résultats DFS sur deux lecteurs
+### Formatage ADFS natif avec Advanced Disc Toolkit
+
+La ROM `Advanced Disc Toolkit v1.78.rom`, déjà présente dans Firmware, est installée dans le support libre IC35 du B+ 64 Kio par la configuration habituelle du module. Acorn ADFS 1.30 reste dans son emplacement d’interface WD1770. Le [manuel ACP ADT MK2](https://8bs.com/othrdnld/manuals/applications/ADT_Manual_MK2.zip) décrit la syntaxe FORM ; les commandes exécutées sont `*FORM 40 0`, `*FORM 80 0 M` et `*FORM 80 0 L`, chacune confirmée par Y. Aucun programme historique n’a été modifié pour accepter le B+.
+
+| Format | Pistes physiques vérifiées | Secteurs contrôlés | SAVE/LOAD avant et après réouverture |
+|---|---:|---:|---|
+| S, ADS 160 Kio | 40 × 1 face | 640 | 512 octets exacts |
+| M, ADM 320 Kio | 80 × 1 face | 1 280 | 512 octets exacts |
+| L, ADL 640 Kio | 80 × 2 faces | 2 560 | 512 octets exacts |
+
+Avant l’essai, les secteurs de données sont altérés avec A5h, hors sept secteurs de structure nécessaires au montage initial. Après le formatage, toutes les pistes possèdent seize champs de 256 octets avec cylindre attendu, ID de face zéro et intégrité valide ; le remplissage précédent est absent des secteurs de données. Le catalogue créé est monté et relu après sauvegarde, fermeture et réouverture, puis le fichier RML est chargé exactement après effacement de sa RAM.
+
+Le passage L initial a réellement terminé les 160 pistes dans l’émulation mais la projection du flux vers le conteneur refusait son ID H=0 sur la face physique 1. La régression autonome reproduisait ce refus de `SectorTrackFunctions.Replace`. La lecture et la création BBC ADFS S/M/L utilisent maintenant `AcornAdfLayout`, qui sépare ces deux informations comme le fait le formateur. Les formats Archimedes 800/1600 Kio et Amiga conservent leurs identifiants physiques propres. L’ordre des secteurs et leurs octets restent identiques ; ni WD1770 ni ses timings ne sont modifiés.
+
+Validation finale Release : 15 réussites en 2,2785 minutes, comprenant 12 régressions autonomes et les trois formatages natifs suivis de SAVE/LOAD. Les 18 contrôles de stockage Acorn réussissent en 425 ms. Le premier essai S avait fourni un paramètre S non documenté et n’était pas retenu comme preuve ; le passage final utilise la syntaxe correcte et refuse toute sortie « Bad » ou « fault ».
+
+Captures hors Git sous `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus64/` : `adfs-form-s.png`, `adfs-form-m.png`, `adfs-form-l.png`. La capture L inspectée montre les commandes, la fin de piste 9F, le catalogue RML et « ADFS L FORM REOPEN OK 2560 SECTORS ». Ces preuves concernent ce B+ 64 et ce couple de ROM ; elles ne constituent pas la validation de toutes les autres machines, de tous les conteneurs ni de l’interface graphique d’exploration.
+
+Le diagnostic natif est supprimé et son assembly Release reconstruite sans cette classe ; aucun média de travail ne subsiste. Les douze régressions autonomes réussissent en Debug en 802 ms. Le build `--building=debug --modules=A` termine avec code zéro : exécutable, Chips dans `lib`, 24 manifestes et DLL d’entrée présents ; le SHA-256 de MediaEngine livré correspond à l’assembly Debug compilée. La capture S inspectée montre également le catalogue RML et la réussite après réouverture des 640 secteurs.
+
+### SAVE/LOAD DFS sur deux lecteurs
 
 Le passage du 5 novembre crée deux DSD de 80 pistes par `EmulationSdk.MediaProcessing.CreateBlankDiskAsync`, avec catalogues DFS vierges. Chaque carte saisit par son clavier `*DISC`, puis SAVE et LOAD de quatre fichiers distincts de 512 octets sur les unités DFS 0, 1, 2 et 3. Les unités 0/2 correspondent aux deux faces du premier lecteur, 1/3 à celles du second. La RAM est effacée avant chaque LOAD et comparée intégralement au motif attendu.
 

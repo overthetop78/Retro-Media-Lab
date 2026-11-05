@@ -3,12 +3,67 @@ using RetroMediaLab.MediaEngine.Images.Formats.Floppy.CpcDsk;
 using RetroMediaLab.MediaEngine.Images.Models.Sectors;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.BbcDfs;
 using RetroMediaLab.MediaEngine.Images.Creation;
+using RetroMediaLab.MediaEngine.Constants;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Adf;
 using MediaSector = RetroMediaLab.MediaEngine.Contracts.MediaDiskSector;
 
 namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuFloppyFormattingTests
 {
+    [Theory]
+    [InlineData(DiskImageFormatIds.AcornAdfs160)]
+    [InlineData(DiskImageFormatIds.AcornAdfs320)]
+    [InlineData(DiskImageFormatIds.AcornAdfs640)]
+    public async Task BbcAdfsCreationAndReadingKeepPhysicalSidesSeparateFromHeaderIds(string format)
+    {
+        var created = BlankSectorImageFactory.Create(format);
+        var bytes = Enumerable.Range(0, (int)created.Capacity).Select(index => (byte)(index ^ (index >> 8))).ToArray();
+        var read = await new AdfReader((_, _) => Task.FromResult(bytes)).ReadAsync("memory.adf");
+        foreach (var image in new[] { created, read })
+        {
+            Assert.Equal(created.Heads, image.Heads);
+            Assert.Equal(created.BlockCount, image.BlockCount);
+            Assert.All(image.AvailableBlocks, block =>
+            {
+                Assert.Equal(block.LogicalBlock / (image.Heads * image.SectorsPerTrack), block.Address.Cylinder);
+                Assert.Equal(block.LogicalBlock / image.SectorsPerTrack % image.Heads, block.Address.Head);
+                Assert.Equal(block.LogicalBlock % image.SectorsPerTrack, block.Address.Number);
+                Assert.Equal(new SectorAddress(block.Address.Cylinder, AcornAdfLayout.RecordedHead, block.Address.Number), block.RecordedAddress);
+            });
+        }
+        Assert.Equal(bytes, read.AvailableBlocks.SelectMany(block => block.Data));
+    }
+
+    [Theory]
+    [InlineData(AcornAdfGeometry.Capacity)]
+    [InlineData(AcornAdfGeometry.HighDensityCapacity)]
+    [InlineData(AmigaAdfGeometry.DoubleDensityCapacity)]
+    public async Task OtherAdfGeometriesRetainTheirOwnPhysicalHeaderIds(int capacity)
+    {
+        var image = await new AdfReader((_, _) => Task.FromResult(new byte[capacity])).ReadAsync("memory.adf");
+        Assert.Contains(image.AvailableBlocks, block => block.Address.Head == 1);
+        Assert.All(image.AvailableBlocks, block => Assert.Equal(block.Address, block.RecordedAddress ?? block.Address));
+    }
+
+    [Fact]
+    public void AdfsSecondSideAcceptsTheHeaderWrittenByTheBbcFormatter()
+    {
+        var original = BlankSectorImageFactory.Create(DiskImageFormatIds.AcornAdfs640);
+        var fields = original.AvailableBlocks.Where(block => block.Address.Cylinder == 0 && block.Address.Head == 1)
+            .Select(block => new MediaSector(block.LogicalBlock, Enumerable.Repeat((byte)0xe5, original.BlockSize).ToArray(),
+                block.Address.Cylinder, AcornAdfLayout.RecordedHead, block.Address.Number, true) { RecordedSizeCode = 1 }).ToArray();
+        var updated = SectorTrackFunctions.Replace(original, 0, 1, fields, retainGeometry: true);
+        Assert.Equal(original.Capacity, updated.Capacity);
+        Assert.All(updated.AvailableBlocks.Where(block => block.Address.Cylinder == 0 && block.Address.Head == 1), block =>
+        {
+            Assert.Equal(AcornAdfLayout.RecordedHead, block.RecordedAddress!.Head);
+            Assert.All(block.Data, value => Assert.Equal(0xe5, value));
+        });
+        foreach (var block in original.AvailableBlocks.Where(block => block.Address.Head == 0))
+            Assert.Equal(block.Data, updated.AvailableBlocks.Single(candidate => candidate.LogicalBlock == block.LogicalBlock).Data);
+    }
+
     [Theory]
     [InlineData("acorn.dfs.ds")]
     [InlineData("acorn.dfs.ds80")]

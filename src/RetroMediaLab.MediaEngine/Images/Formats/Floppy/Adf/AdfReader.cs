@@ -86,7 +86,7 @@ public sealed class AdfReader : IMediaImageReader
 
     private static SectorImage Read(byte[] data, CancellationToken cancellationToken)
     {
-        if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.Capacity == data.Length) is { } bbc) return RegularSectorImageBuilder.Create(data, bbc, cancellationToken);
+        if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.Capacity == data.Length) is { } bbc) return AcornAdfLayout.CreateBbc(data, bbc, cancellationToken);
         if (data.Length == AcornAdfGeometry.Capacity) return RegularSectorImageBuilder.Create(data, AcornAdfGeometry.Geometry, cancellationToken);
         if (data.Length == AcornAdfGeometry.PaddedCapacity) return RegularSectorImageBuilder.Create(data, AcornAdfGeometry.Geometry, cancellationToken, AcornAdfGeometry.PaddedTrailingByteCount);
         if (data.Length == AcornAdfGeometry.HighDensityCapacity) return RegularSectorImageBuilder.Create(data, AcornAdfGeometry.HighDensityGeometry, cancellationToken);
