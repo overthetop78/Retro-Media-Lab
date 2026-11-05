@@ -38,8 +38,11 @@ public sealed partial class BbcSerialUla
                 {
                     _cassetteData = duration < _halfWaveThresholdTicks;
                     if (!_cassetteData) _carrierEdges = 0;
-                    else if (_carrierEdges < C.CarrierHalfWaves && ++_carrierEdges == C.CarrierHalfWaves)
-                        _carrierPulse = _carrierPulseTicks;
+                    else
+                    {
+                        if (_carrierEdges < C.CarrierHalfWaves) ++_carrierEdges;
+                        if (_carrierEdges == C.CarrierHalfWaves) _carrierPulse = _carrierPulseTicks;
+                    }
                 }
                 else _carrierEdges = 0;
             }

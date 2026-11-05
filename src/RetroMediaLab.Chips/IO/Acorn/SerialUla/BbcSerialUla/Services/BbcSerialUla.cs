@@ -39,7 +39,7 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
         _minimumHalfWaveTicks = ticksPerSecond / C.MaximumHalfWaveRate;
         _maximumHalfWaveTicks = ticksPerSecond / C.MinimumHalfWaveRate;
         _halfWaveThresholdTicks = (int)((long)ticksPerSecond * C.HalfWaveThresholdNumerator / C.HalfWaveThresholdDenominator);
-        _carrierPulseTicks = ticksPerSecond / C.CarrierPulseRate;
+        _carrierPulseTicks = (ticksPerSecond + C.CarrierPulseRate - 1) / C.CarrierPulseRate;
         PowerOn();
     }
 

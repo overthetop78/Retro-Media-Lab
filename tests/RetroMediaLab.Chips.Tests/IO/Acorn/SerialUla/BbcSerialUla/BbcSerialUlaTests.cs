@@ -204,6 +204,25 @@ public sealed class BbcSerialUlaTests
     }
 
     [Fact]
+    public void QualifiedCarrierRemainsAssertedThroughoutTheHighToneThenFallsOnLowTone()
+    {
+        var ula = new Ula(Clock);
+        // 2400 Hz nominal, with fractional half periods; observe well beyond the initial RC charge.
+        for (var tick = 0; tick < Clock / 2; tick++)
+        {
+            ula.SetCassetteInput(((long)tick * 4800 / Clock & 1) != 0);
+            ula.Tick(true, false);
+            if (tick > Clock / 4) Assert.True(ula.DataCarrierDetectHigh);
+        }
+        for (var tick = 0; tick < Clock / 100; tick++)
+        {
+            ula.SetCassetteInput(((long)tick * 2400 / Clock & 1) != 0);
+            ula.Tick(true, false);
+        }
+        Assert.False(ula.DataCarrierDetectHigh);
+    }
+
+    [Fact]
     public void CarrierRequiresAContinuousHighToneAndIsClearedBySilence()
     {
         var ula = new Ula(Clock);

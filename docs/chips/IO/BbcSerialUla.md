@@ -82,6 +82,20 @@ Release normal, même banc final : médianes **4,96 / 4,86 / 5,39 / 6,55 ns/Tick
 
 ## Livraison et clôture
 
+### Réouverture de l’intégration cassette, 5 novembre 2026
+
+Le scénario MOS réel `*SAVE RML 2000 2200`, puis relecture WAV physique, reproduit `Data?` sur les deux blocs. Les cinq régressions autonomes couvrant les 256 octets, en rafale et avec pauses jusqu’à 50 003 cycles, passent : elles ne suffisent donc pas à prouver le protocole MOS complet. La trace du bus montre les données source intactes et deux octets de synchronisation successifs avant chaque en-tête.
+
+Un défaut est établi dans le détecteur : après 836 demi-ondes hautes, `_carrierPulse` était armé une seule fois, puis expirait même si le ton haut continuait. La section 3.5 du [manuel de maintenance Acorn](https://acorn.huininga.nl/pub/unsorted/manuals/BBC%20Microcomputer%20Service%20Manual-HTML/BBCServiceManual.html) décrit la détection du ton entrant et sa temporisation RC ; les [routines MOS de lecture](https://tobylobster.github.io/mos/mos/S-s19.html) attendent effectivement la disparition de DCD après l’amorce avant de chercher la synchronisation. Une impulsion unique au début du ton ne respecte pas ce contrat.
+
+La correction réalisée réarme le maintien nominal à chaque demi-onde haute valide après qualification initiale, avec arrondi du délai au cycle supérieur. Elle conserve les seuils et la retombée sur ton bas/silence. Les **100 tests ULA Release passent**, dont la nouvelle vérification continue après amorçage puis retombée sur ton bas ; les **cinq régressions d’émission/relecture des 256 octets passent** avec pauses de 0, 37, 1 021, 20 003 et 50 003 cycles.
+
+Le banc MOS B réel reproduit toutefois encore `Data?` après cette correction, avec la DLL Chips effectivement recopiée et son empreinte vérifiée. Le maintien DCD est un défaut corrigé, mais n’est pas établi comme la cause suffisante de l’échec SAVE/LOAD. La trace des écritures CPU vers FE09 contient deux synchronisations 2A avant le nom, les données source intactes et des CRC d’en-tête cohérents lorsqu’on exclut le 2A supplémentaire ; le rôle des horloges/interruptions dans cette séquence reste à isoler. Aucune correction du MC6850 ou du CPU n’est déduite de cette observation seule.
+
+La clôture précédente reste historique : l’intégration d’enregistrement MOS est réouverte, et aucune réussite WAV/UEF/CSW/RAW n’est annoncée pour ce nouveau scénario. Sa capture d’échec est conservée hors Git sous `artifacts/TestsChips/BbcSerialUla/BbcMicroModelB/record-replay-wav.png` ; le message `Data?` y est le résultat réel, pas une preuve de réussite.
+
+Le passage Debug des **100 tests ULA réussit également (658 ms)**. La correction autonome du maintien de porteuse est validée dans les deux configurations ; l’écart MOS restant est traité séparément, sans déclarer que cette correction suffit au chargement d’un enregistrement complet.
+
 Le diagnostic temporaire `AcornEmuBbcSerialDiagnostic.cs` a été supprimé après les mesures et captures. Les assemblies de tests ont été reconstruites en Debug et Release ; elles ne contiennent plus cette classe. Les 99 tests autonomes de puce et les 23 tests cassette utiles sont conservés, sans dépendance aux ROM ou fichiers de diagnostic externes.
 
 `scripts/local-building.cmd --building=debug --modules=A` est terminé avec code de sortie zéro : exécutable `build/Debug/Retro Media Lab/retromedialab.exe`, DLL Chips dans `lib`, 24 manifestes de modules avec chacune leur DLL d’entrée présente. L’empreinte de la DLL Chips livrée correspond à celle du build Debug testé. Les références et journaux temporaires sont supprimés ; les seize captures restent hors Git.
