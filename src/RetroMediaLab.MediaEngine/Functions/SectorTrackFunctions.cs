@@ -36,7 +36,9 @@ internal static class SectorTrackFunctions
             {
                 var field = fields[order];
                 var block = previous.FirstOrDefault(block => block.Address.Number == field.Number);
-                if (block is null || field.Cylinder != cylinder || field.Head != head || field.Data.Length != block.Data.Count
+                if (block is null) throw new NotSupportedException();
+                var recorded = block.RecordedAddress ?? block.Address;
+                if (field.Cylinder != recorded.Cylinder || field.Head != recorded.Head || field.Data.Length != block.Data.Count
                     || field.DeletedDataMark == true || field.HeaderIntegrityValid == false || field.DataIntegrityValid == false
                     || field.RecordedSizeCode is { } size && (size > SectorSizeCode.MaximumCode || SectorSizeCode.ToByteCount(size) != field.Data.Length))
                     throw new NotSupportedException();

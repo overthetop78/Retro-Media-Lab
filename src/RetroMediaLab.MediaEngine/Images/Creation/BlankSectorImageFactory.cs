@@ -52,7 +52,7 @@ internal static class BlankSectorImageFactory
                 bytes[catalogue + 6] = (byte)(sectorsPerSide >> 8);
                 bytes[catalogue + 7] = (byte)sectorsPerSide;
             }
-            return LinearSectorImageBuilder.Create(bytes, formatId, new LinearSectorImageGeometry(BbcDfsGeometry.SectorSize, dfs.Cylinders, dfs.Heads, BbcDfsGeometry.SectorsPerTrack, SectorNumbering.ZeroBased));
+            return BbcDfsLayout.CreateImage(bytes, dfs, CancellationToken.None);
         }
         if (Fat12TargetGeometryCatalog.TryResolve(formatId, out var fat))
             return CreateLinearBlank(formatId, fat.SectorSize, fat.Cylinders, fat.Heads, fat.SectorsPerTrack, SectorNumbering.OneBased);

@@ -117,6 +117,27 @@ La validation du composant courant réussit 861 cas puces/hôte en Debug et Rele
 
 ## Deux lecteurs de disquettes : SAVE, LOAD et persistance sur deux faces
 
+### Formatage natif DFS sur B+
+
+Les commandes constructeur `*ENABLE`, puis `*FORM 40 0 2` ou `*FORM 80 0 2`, formatent les deux faces du lecteur 0. La syntaxe est décrite dans l’[addendum Acorn DFS](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_DiscSystemUGI2.pdf), pages 3–4. Les essais utilisent les ROM MOS/BASIC B+ et DFS 2.26 existantes ; seuls des DSD temporaires sont modifiés.
+
+| Configuration testée | Vérification de chaque secteur | SAVE/LOAD et réouverture |
+|---|---|---|
+| B+ 64 Kio, DSD 40 pistes | 800 secteurs, deux faces | Deux fichiers distincts de 512 octets exacts |
+| B+ 128 Kio, DSD 80 pistes | 1 600 secteurs, deux faces | Deux fichiers distincts de 512 octets exacts |
+
+Tous les secteurs sont initialement altérés avec A5h. Après formatage, chaque piste contient dix secteurs de 256 octets, avec intégrité valide, cylindre enregistré attendu et remplissage E5h hors catalogue. Les fichiers sont rechargés après effacement de leur RAM, puis après sauvegarde, fermeture et réouverture du DSD.
+
+Le premier passage a révélé un défaut MediaEngine : DFS inscrit un ID de face zéro sur les deux faces physiques. Le remplacement comparait cet ID à la face physique et refusait la seconde face. Création et lecture DFS partagent désormais cette représentation ; le remplacement compare l’ID enregistré du secteur d’origine, sans déplacer son adresse physique. Le [constructeur SSD/DSD de JSBeeb](https://raw.githubusercontent.com/mattgodbolt/jsbeeb/main/src/disc.js) emploie également cet ID zéro. Aucun code WD1770 ni timing n’a changé pour cette correction.
+
+Le passage Release final réussit sept cas (cinq autonomes et deux natifs) en 1,7408 minute. Les 18 contrôles de stockage Acorn et 98 contrôles d’intégration 8271/WD/métadonnées réussissent également. Captures hors Git : `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus64/dfs-form40-format.png`, `dfs-form40-save-load.png`, et sous `BbcMicroModelBPlus128/`, `dfs-form80-format.png`, `dfs-form80-save-load.png`. La capture du formatage 80 pistes inspectée affiche la fin des deux faces et « FORM 80 OK 1600 SECTORS ».
+
+Ces essais couvrent les deux combinaisons indiquées, pas toutes les permutations RAM/géométrie, tous les conteneurs, le formatage ADFS ou les différents pas mécaniques de lecteurs physiques. Les contrôles existants de stockage ne prouvent pas l’exploration graphique de ces nouveaux DSD.
+
+Le diagnostic temporaire est supprimé, son assembly Release reconstruite et aucun DSD de travail ne subsiste. Les cinq contrôles autonomes réussissent également en Debug (365 ms). Le build Debug avec `--modules=A` termine avec code zéro : exécutable et Chips présents, 24 manifestes et DLL d’entrée présents ; l’empreinte SHA-256 de MediaEngine dans `lib` correspond à celle de l’assembly Debug compilée.
+
+### Écritures sur quatre unités DFS
+
 Le passage du 5 novembre crée deux DSD de 80 pistes par `EmulationSdk.MediaProcessing.CreateBlankDiskAsync`, avec catalogues DFS vierges. Chaque carte saisit par son clavier `*DISC`, puis SAVE et LOAD de quatre fichiers distincts de 512 octets sur les unités DFS 0, 1, 2 et 3. Les unités 0/2 correspondent aux deux faces du premier lecteur, 1/3 à celles du second. La RAM est effacée avant chaque LOAD et comparée intégralement au motif attendu.
 
 | Carte | Contrôleur / ROM | Deux lecteurs et deux faces | Après Flush, fermeture et réouverture des DSD |

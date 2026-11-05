@@ -77,15 +77,7 @@ public sealed class BbcDfsReader : IMediaImageReader
             throw BbcDfsExceptions.IncompleteTrack(data.Length, heads, BbcDfsGeometry.SectorSize);
         var geometry = BbcDfsGeometry.Supported.Where(candidate => candidate.Heads == heads && candidate.Capacity >= completeLength).OrderBy(candidate => candidate.Capacity).FirstOrDefault()
             ?? throw BbcDfsExceptions.UnsupportedCylinderCount(data.Length, (int)Math.Ceiling(data.Length / (double)(BbcDfsGeometry.TrackSize * heads)), heads);
-        var blocks = new SectorBlock[completeLength / BbcDfsGeometry.SectorSize];
-        for (var logical = 0; logical < blocks.Length; logical++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var perCylinder = geometry.Heads * BbcDfsGeometry.SectorsPerTrack;
-            var address = new SectorAddress(logical / perCylinder, logical / BbcDfsGeometry.SectorsPerTrack % geometry.Heads, logical % BbcDfsGeometry.SectorsPerTrack);
-            blocks[logical] = new(logical, address, data.AsSpan(logical * BbcDfsGeometry.SectorSize, BbcDfsGeometry.SectorSize).ToArray());
-        }
-        return new SectorImage(geometry.FormatId, BbcDfsGeometry.SectorSize, geometry.Cylinders, geometry.Heads, BbcDfsGeometry.SectorsPerTrack, blocks);
+        return BbcDfsLayout.CreateImage(data, geometry, cancellationToken);
     }
 
     private static BbcDfsContainerKind? GetContainerKind(string extension)

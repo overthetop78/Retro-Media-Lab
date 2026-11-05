@@ -1,12 +1,58 @@
 using RetroMediaLab.MediaEngine.Functions;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.CpcDsk;
 using RetroMediaLab.MediaEngine.Images.Models.Sectors;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.BbcDfs;
+using RetroMediaLab.MediaEngine.Images.Creation;
 using MediaSector = RetroMediaLab.MediaEngine.Contracts.MediaDiskSector;
 
 namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuFloppyFormattingTests
 {
+    [Theory]
+    [InlineData("acorn.dfs.ds")]
+    [InlineData("acorn.dfs.ds80")]
+    public async Task DfsCreationAndReadingSeparatePhysicalSideFromRecordedHead(string format)
+    {
+        var created = BlankSectorImageFactory.Create(format);
+        var reader = new BbcDfsReader((_, _) => Task.FromResult(new byte[created.Capacity]));
+        var read = await reader.ReadAsync("memory.dsd");
+        foreach (var image in new[] { created, read })
+        {
+            Assert.Contains(image.AvailableBlocks, block => block.Address.Head == 1);
+            Assert.All(image.AvailableBlocks, block =>
+            {
+                Assert.NotNull(block.RecordedAddress);
+                Assert.Equal(BbcDfsLayout.RecordedHead, block.RecordedAddress!.Head);
+                Assert.Equal(block.Address.Cylinder, block.RecordedAddress.Cylinder);
+                Assert.Equal(block.Address.Number, block.RecordedAddress.Number);
+            });
+        }
+    }
+
+    [Theory]
+    [InlineData("acorn.dfs.ds")]
+    [InlineData("acorn.dfs.ds80")]
+    public void DfsSecondSideFormattingKeepsPhysicalLocationAndOtherSide(string format)
+    {
+        var original = BlankSectorImageFactory.Create(format);
+        var fields = original.AvailableBlocks.Where(block => block.Address.Cylinder == 0 && block.Address.Head == 1)
+            .Select(block => new MediaSector(block.LogicalBlock, Enumerable.Repeat((byte)0xe5, BbcDfsGeometry.SectorSize).ToArray(),
+                block.Address.Cylinder, BbcDfsLayout.RecordedHead, block.Address.Number, true) { RecordedSizeCode = 1 }).ToArray();
+        var updated = SectorTrackFunctions.Replace(original, 0, 1, fields, retainGeometry: true);
+        Assert.Equal(original.Capacity, updated.Capacity);
+        foreach (var block in updated.AvailableBlocks.Where(block => block.Address.Cylinder == 0 && block.Address.Head == 1))
+        {
+            Assert.Equal(BbcDfsLayout.RecordedHead, block.RecordedAddress!.Head);
+            Assert.All(block.Data, value => Assert.Equal(0xe5, value));
+        }
+        foreach (var block in original.AvailableBlocks.Where(block => block.Address.Head == 0))
+            Assert.Equal(block.Data, updated.AvailableBlocks.Single(candidate => candidate.LogicalBlock == block.LogicalBlock).Data);
+        var invalid = fields.ToArray();
+        invalid[0] = invalid[0] with { Head = 1 };
+        Assert.Throws<NotSupportedException>(() => SectorTrackFunctions.Replace(original, 0, 1, invalid, retainGeometry: true));
+    }
+
     [Fact]
     public void AGeometryPreservingImageAcceptsCanonicalFieldsWithoutTouchingOtherTracks()
     {
