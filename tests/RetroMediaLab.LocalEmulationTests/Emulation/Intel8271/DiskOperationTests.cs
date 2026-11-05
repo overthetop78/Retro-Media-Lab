@@ -39,6 +39,38 @@ public sealed class DiskOperationTests
         Command(controller, 0x53, 0, 2, 0x22); Assert.Equal(bytes, Transfer(controller).Bytes);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(7)]
+    [InlineData(11)]
+    public void ZeroFilledTrackRemainsSearchableBeyondWrittenCatalogue(int idleTicks)
+    {
+        using var disk = new MemoryDisk();
+        for (var sector = 0; sector < 10; sector++) disk.WriteSector(sector, new byte[256]);
+        using var controller = Controller(_ => disk);
+        FastTiming(controller);
+        Command(controller, 0x53, 0, 0, 0x22);
+        Assert.Equal(0, Transfer(controller).Result);
+        Command(controller, 0x5f, 0, 8, 0x22);
+        Assert.Equal(0, Transfer(controller).Result);
+        for (var tick = 0; tick < idleTicks; tick++) controller.Tick();
+        var catalogue = new byte[512];
+        "RML0   $"u8.CopyTo(catalogue.AsSpan(8));
+        catalogue[0x105] = 8;
+        catalogue[0x106] = 3;
+        catalogue[0x107] = 0x20;
+        catalogue[0x109] = 0x20;
+        catalogue[0x10d] = 2;
+        catalogue[0x10f] = 2;
+        Command(controller, 0x4b, 0, 0, 0x22);
+        Assert.Equal(0, Transfer(controller, catalogue).Result);
+        Command(controller, 0x53, 0, 2, 0x22);
+        var read = Transfer(controller);
+        Assert.Equal(0, read.Result);
+        Assert.Equal(new byte[512], read.Bytes);
+    }
+
     [Fact]
     public void FormatUsesTheSuppliedIdsAndProtectsTheOtherSide()
     {

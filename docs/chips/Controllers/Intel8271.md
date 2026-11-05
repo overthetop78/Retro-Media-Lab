@@ -88,6 +88,20 @@ Le chemin au repos retourne après les buffers sans passer par un appel de préd
 
 ## Livraison et nettoyage
 
+### Régression du 5 novembre : recherche après une jonction d’écriture
+
+La validation complète par les ROM DFS 0.9H a rouvert un défaut absent du premier banc CPU : après SAVE du catalogue, les Model A/B renvoyaient 18h en recherchant le secteur 2. Les dix champs CHRN de la piste restaient valides pour le décodeur média ; aucune exception du relais n’était levée. Le banc synthétique de piste uniforme passait et ne suffisait donc pas à reproduire ce cas.
+
+Le scénario autonome ajouté envoie un champ de données ignoré rempli de zéro pendant une recherche d’ID, décale la phase, puis fournit l’ID et ses données. Avant correction, quatre des huit cas échouaient : retards 9/12 ticks à 2 MHz et 5/7 ticks à 4 MHz. Le séparateur, déjà calé sur le champ ignoré, ne se recalait pas sur la nouvelle synchronisation.
+
+En recherche seulement, le modèle réacquiert désormais le calage au franchissement du seuil existant de seize clocks sans données. Ce recalage intervient une seule fois par plage continue ; il ne redémarre pas le compteur à chaque impulsion, ne touche pas aux transferts déjà synchronisés et ne change ni la cadence des cellules ni les délais matériels. La correction reste à coût constant par front et sans allocation.
+
+Les **148 contrôles 8271 passent en Release (293 ms) et Debug (390 ms)**, ainsi que les **80 contrôles d’intégration 8271 en Release (3 s)**. Ces durées sont des temps de suites, pas un nouveau benchmark du débit de la puce. Les nouveaux tests autonomes conservent les huit décalages et la piste vierge après écriture du catalogue.
+
+Sur les vrais MOS/DFS, A 16 Kio et B 32 Kio réussissent maintenant SAVE puis LOAD de quatre motifs distincts de 512 octets : unités DFS 0/1/2/3, soit deux lecteurs et deux faces. Après détachement, Flush, fermeture et réouverture des deux DSD, les quatre LOAD restituent encore tous les octets exacts. Passage A/B réussi en 52,956 secondes hôte. Captures inspectées sous `artifacts/TestsChips/Intel8271/<Machine>/two-drives-two-sides-save-load.png` ; elles montrent le retour des commandes et le verdict BASIC après les comparaisons, sans exécuter le CPU à une adresse imposée par le banc.
+
+Après ce passage, le diagnostic externe est retiré et l’assembly Release reconstruit sans lui. Le build Debug `--modules=A` réussit ; les 24 modules et l’exécutable sont présents, et la DLL Chips dans `lib` correspond par SHA-256 à la compilation testée. Les captures et médias temporaires ne font pas partie du commit.
+
 `scripts/local-building.cmd --building=debug --modules=A` a terminé avec succès. Exécutable livré : `build/Debug/Retro Media Lab/retromedialab.exe`. La DLL `lib/retromedialab.chips.dll` et chacune des 24 assemblies de modules ont été comparées par SHA-256 aux sorties compilées : elles correspondent.
 
 Le dossier temporaire `artifacts/.tmp-i8271/`, ses références, bancs, journaux et sorties compilées sont supprimés. Les tests autonomes restent dans leurs projets ; la capture locale demeure hors Git. Le commit de clôture exclut artifacts et les images de test. Les limites non publiées ci-dessus restent explicites ; le document ne revendique aucune caractérisation analogique ou latence interne mesurée qui n’existe pas.

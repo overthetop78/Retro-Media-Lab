@@ -114,3 +114,20 @@ La validation du composant courant réussit 861 cas puces/hôte en Debug et Rele
 ## Build après les corrections cassette du 5 novembre
 
 `scripts/local-building.cmd --building=debug --modules=A` termine avec le code zéro. L’exécutable est `build/Debug/Retro Media Lab/retromedialab.exe`, Chips est présent dans `lib/retromedialab.chips.dll` et chacun des 24 manifestes de module possède sa DLL d’entrée. Le banc natif temporaire d’enregistrement a été supprimé puis l’assembly LocalEmulationTests reconstruit en Release sans ce banc. Les deux régressions autonomes utiles sont conservées.
+
+## Deux lecteurs de disquettes : SAVE, LOAD et persistance sur deux faces
+
+Le passage du 5 novembre crée deux DSD de 80 pistes par `EmulationSdk.MediaProcessing.CreateBlankDiskAsync`, avec catalogues DFS vierges. Chaque carte saisit par son clavier `*DISC`, puis SAVE et LOAD de quatre fichiers distincts de 512 octets sur les unités DFS 0, 1, 2 et 3. Les unités 0/2 correspondent aux deux faces du premier lecteur, 1/3 à celles du second. La RAM est effacée avant chaque LOAD et comparée intégralement au motif attendu.
+
+| Carte | Contrôleur / ROM | Deux lecteurs et deux faces | Après Flush, fermeture et réouverture des DSD |
+|---|---|---|---|
+| A 16 Kio | 8271 / DFS 0.9H | Quatre fichiers exacts | Quatre LOAD exacts |
+| B 32 Kio | 8271 / DFS 0.9H | Quatre fichiers exacts | Quatre LOAD exacts |
+| B+ 64 Kio | WD1770 / DFS 2.26 | Quatre fichiers exacts | Quatre LOAD exacts |
+| B+ 128 Kio | WD1770 / DFS 2.26 | Quatre fichiers exacts | Quatre LOAD exacts |
+
+Les B+ ont réussi dès le premier passage (23 et 25 secondes hôte). A/B avaient révélé une perte de recalage du séparateur 8271 après la jonction de champs réécrits ; la fiche `docs/chips/Controllers/Intel8271.md` détaille la régression autonome et sa correction. Leur passage final réussit en 52,956 secondes pour les deux cartes. Les contrôles supplémentaires de piste uniforme n’avaient pas reproduit cette perte : leur réussite seule ne validait pas le scénario natif.
+
+Captures : `artifacts/TestsChips/Intel8271/BbcMicroModelA/two-drives-two-sides-save-load.png`, même chemin pour `BbcMicroModelB`, et `artifacts/TestsChips/Wd1770/<BbcMicroModelBPlus64 ou BbcMicroModelBPlus128>/two-drives-two-sides-save-load.png`. Les images de B et B+ 128 ont été inspectées. Ces preuves couvrent les écritures DFS sur ces DSD ; elles ne prouvent pas encore le formatage par le CPU, tous les conteneurs, la double densité, la protection ou les autres fonctions ouvertes de la machine.
+
+Le banc temporaire a été supprimé et son assembly Release reconstruit sans cette classe. Les médias de travail sont supprimés ; les captures demeurent hors Git. Après la correction 8271, le build Debug avec `--modules=A` termine avec code zéro : exécutable présent, 24 DLL d’entrée présentes et empreinte SHA-256 de la DLL Chips livrée identique à celle compilée en Debug.

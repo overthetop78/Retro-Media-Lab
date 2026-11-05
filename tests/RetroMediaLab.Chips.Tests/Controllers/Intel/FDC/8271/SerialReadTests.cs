@@ -149,6 +149,28 @@ public sealed class SerialReadTests
         Assert.True(wire.Chip.InSync);
     }
 
+    [Theory]
+    [InlineData(2_000_000, 1)]
+    [InlineData(2_000_000, 4)]
+    [InlineData(4_000_000, 1)]
+    [InlineData(4_000_000, 3)]
+    [InlineData(2_000_000, 9)]
+    [InlineData(2_000_000, 12)]
+    [InlineData(4_000_000, 5)]
+    [InlineData(4_000_000, 7)]
+    public void SearchReacquiresClockAfterIgnoredZeroDataAndPhaseChange(int clock, int delay)
+    {
+        using var wire = new Wire(clock);
+        wire.Command(0x52, 0, 2);
+        wire.Field(0xfb, new byte[256]);
+        wire.Delay(delay);
+        wire.Field(0xfe, [0, 0, 2, 0]);
+        var data = Enumerable.Range(0, 128).Select(value => (byte)(value ^ 0x69)).ToArray();
+        wire.Field(0xfb, data);
+        Assert.Equal(data, wire.Bytes);
+        Assert.Equal(0, wire.Result());
+    }
+
     [Fact]
     public void BadIdFcsPreventsAnyDataRequest()
     {

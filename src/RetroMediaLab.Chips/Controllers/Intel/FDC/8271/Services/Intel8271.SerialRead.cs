@@ -56,11 +56,14 @@ public sealed partial class Intel8271
         _readDataLevel = asserted;
         if (!rising || !SerialReading || _resetAsserted) return;
         var fullCell = _readPulseSeen && _readPulseGap >= (long)_clock * C.ChipCyclesPerBit;
+        var synchronizationReached = fullCell && _readFullCellRun == C.SynchronizationZeroBits - 1;
         _readFullCellRun = fullCell ? Math.Min(C.SynchronizationZeroBits, _readFullCellRun + 1) : 1;
-        if (!_inSync && !_separatorSynchronized && _readFullCellRun >= C.SynchronizationZeroBits)
+        if (!_inSync && synchronizationReached)
         {
             // La synchronisation est une suite de clocks sans données ; elle lève aussi
             // l'ambiguïté d'un premier front reçu au milieu d'un champ ou d'un gap.
+            // Une nouvelle plage qualifiée recale aussi une recherche déjà synchronisée,
+            // notamment après la jonction d'un champ réécrit ; une seule fois par plage.
             _ploClockLevel = _clockWindow;
             _separatorSynchronized = true;
             _serialFraction = 0;
