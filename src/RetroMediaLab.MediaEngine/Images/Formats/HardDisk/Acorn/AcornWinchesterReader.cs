@@ -28,7 +28,7 @@ public sealed class AcornWinchesterReader : IMediaImageReader
         if (context.RequestedFormatId is not null) return true;
         if (!Extensions.Contains(context.Extension)) return false;
         var descriptor = DescriptorPath(context.Source);
-        if (File.Exists(descriptor) && AcornWinchesterFormat.Geometry(await File.ReadAllBytesAsync(descriptor, token).ConfigureAwait(false)) is not null) return true;
+        if (File.Exists(descriptor) && AcornWinchesterFormat.Geometry(await File.ReadAllBytesAsync(descriptor, token).ConfigureAwait(false), context.Length) is not null) return true;
         if (context.Length < 0x700) return false;
         var header = await context.ReadAsync(0x201, 4, token).ConfigureAwait(false);
         var footer = await context.ReadAsync(0x6fb, 4, token).ConfigureAwait(false);
@@ -40,8 +40,10 @@ public sealed class AcornWinchesterReader : IMediaImageReader
         if (!await CanReadAsync(context, token).ConfigureAwait(false)) throw new InvalidDataException("The source is not an Acorn Winchester sector image.");
         var descriptorPath = DescriptorPath(context.Source);
         var descriptor = File.Exists(descriptorPath) ? await File.ReadAllBytesAsync(descriptorPath, token).ConfigureAwait(false) : [];
-        var geometry = AcornWinchesterFormat.Geometry(descriptor);
+        var geometry = AcornWinchesterFormat.Geometry(descriptor, context.Length);
         if (geometry is not null && context.Length > geometry.Capacity) throw new InvalidDataException("The DAT image exceeds the geometry declared by its DSC descriptor.");
+        var sectorSize = geometry?.SectorSize ?? AcornWinchesterFormat.SectorSize;
+        if (context.Length % sectorSize != 0) throw new InvalidDataException("The DAT image ends inside a block declared by its DSC descriptor.");
         var capacity = geometry?.Capacity ?? context.Length;
         var data = new FileRandomAccessData(context.Source.PrimaryPath);
         var ranges = new List<MediaDataRange> { new(0, context.Length, MediaDataRangeKind.Stored, data) };
@@ -49,8 +51,8 @@ public sealed class AcornWinchesterReader : IMediaImageReader
         if (capacity > context.Length) { ranges.Add(new(context.Length, capacity - context.Length, MediaDataRangeKind.Unavailable)); diagnostics.Add("The DAT source does not contain all sectors declared by the DSC descriptor."); }
         if (geometry is null) diagnostics.Add("No valid DSC geometry is available; physical surfaces and tracks are unknown.");
         var associated = context.Source.AssociatedPaths.Concat(File.Exists(descriptorPath) ? [descriptorPath] : Array.Empty<string>()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        return MediaImageDocument.CreateUnexplored(context.Source with { AssociatedPaths = associated }, HardDiskImageFormatIds.AcornWinchester, MediaKind.HardDisk, new BlockMediaImageRepresentation(capacity, AcornWinchesterFormat.SectorSize, ranges, geometry), diagnostics,
-            new Dictionary<string, string> { ["logicalBlockSize"] = "256", [AcornWinchesterFormat.DescriptorMetadataKey] = Convert.ToBase64String(descriptor) });
+        return MediaImageDocument.CreateUnexplored(context.Source with { AssociatedPaths = associated }, HardDiskImageFormatIds.AcornWinchester, MediaKind.HardDisk, new BlockMediaImageRepresentation(capacity, sectorSize, ranges, geometry), diagnostics,
+            new Dictionary<string, string> { ["logicalBlockSize"] = sectorSize.ToString(System.Globalization.CultureInfo.InvariantCulture), [AcornWinchesterFormat.DescriptorMetadataKey] = Convert.ToBase64String(descriptor) });
     }
 
     private static string DescriptorPath(MediaSourceDescriptor source) => source.AssociatedPaths.FirstOrDefault(path => Path.GetExtension(path).Equals(DiskImageFileExtensions.Dsc, StringComparison.OrdinalIgnoreCase)) ?? Path.ChangeExtension(source.PrimaryPath, DiskImageFileExtensions.Dsc);

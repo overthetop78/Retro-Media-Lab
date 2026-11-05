@@ -9,6 +9,9 @@ public static class MediaConstants
     internal static string WinchesterDescriptorExtension => CommonHost.MediaProcessing.FileExtensions["Dsc"];
     /// <summary>Identifiant MediaEngine du format d’image Acorn Winchester.</summary>
     internal const string WinchesterFormatId = "hdd.acorn-winchester";
+    internal const string WinchesterPhysicalFormatId = "hdd.mfm-emu";
+    internal const string WinchesterPhysicalExtensionKey = "Emu";
+    internal static string WinchesterPhysicalImageExtension => CommonHost.MediaProcessing.FileExtensions[WinchesterPhysicalExtensionKey];
     /// <summary>Identifiant du système de fichiers Acorn ADFS.</summary>
     internal const string AcornAdfsFileSystemId = "acorn-adfs";
     /// <summary>Séparateur des extensions dans les filtres de sélection de fichiers.</summary>

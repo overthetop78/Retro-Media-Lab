@@ -1,9 +1,0 @@
-namespace RetroMediaLab.Chips.Controllers.Acorn.Winchester.Scsi.Constants;
-
-/// <summary>Interface hôte Winchester Acorn et codes de résultat SCSI/SASI.</summary>
-public static class AcornScsiConstants
-{
-    public const int UnitCount = 4, SectorSize = 256, SectorsPerTrack = 33, DescriptorLength = 33, CpuClock = 2_000_000;
-    public const ushort Start = 0xfc40, End = 0xfc44;
-    public const byte CheckCondition = 2, NotReady = 4, ReadError = 0x11, WriteError = 0x0c, InvalidCommand = 0x20, InvalidAddress = 0x21, InvalidParameter = 0x24, WriteProtected = 0x27;
-}

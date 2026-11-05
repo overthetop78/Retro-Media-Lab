@@ -20,7 +20,8 @@ public sealed class AcornWinchesterWriter : IMediaImageWriter
     public bool ProducesMultipleFiles => true;
 
     public bool CanWrite(MediaImageDocument document, string format, string extension) => FormatIds.Contains(format) && ProducedFileExtensions.Contains(extension) && document.MediaKind == MediaKind.HardDisk
-        && document.Representation is BlockMediaImageRepresentation { LogicalBlockSize: AcornWinchesterFormat.SectorSize, Geometry: { Heads: <= 255, Cylinders: <= 65535, SectorsPerTrack: AcornWinchesterFormat.SectorsPerTrack, SectorSize: AcornWinchesterFormat.SectorSize } geometry } blocks
+        && document.Representation is BlockMediaImageRepresentation { Geometry: { } geometry } blocks
+        && AcornWinchesterFormat.SupportsGeometry(geometry) && blocks.LogicalBlockSize == geometry.SectorSize
         && blocks.Capacity == geometry.Capacity && blocks.HasCompleteReadableCoverage();
 
     public Task<IReadOnlyList<string>> WriteAsync(MediaImageDocument document, string outputPath, string format, CancellationToken token = default) => WriteFilesAsync(document, outputPath, format, true, token);
@@ -30,12 +31,12 @@ public sealed class AcornWinchesterWriter : IMediaImageWriter
 
     private async Task<IReadOnlyList<string>> WriteFilesAsync(MediaImageDocument document, string outputPath, string format, bool replaceExisting, CancellationToken token, bool preallocate = false)
     {
-        if (!CanWrite(document, format, Path.GetExtension(outputPath))) throw new InvalidDataException("Winchester output requires complete 256-byte sectors and a declared 33-sector CHS geometry.");
+        if (!CanWrite(document, format, Path.GetExtension(outputPath))) throw new InvalidDataException("Winchester output requires complete blocks and a supported DSC geometry.");
         var blocks = (BlockMediaImageRepresentation)document.Representation;
         var descriptor = document.Metadata.TryGetValue(AcornWinchesterFormat.DescriptorMetadataKey, out var encoded) ? Convert.FromBase64String(encoded) : [];
         if (descriptor.Length < AcornWinchesterFormat.DescriptorSize) Array.Resize(ref descriptor, AcornWinchesterFormat.DescriptorSize);
         var geometry = blocks.Geometry!;
-        descriptor[13] = (byte)(geometry.Cylinders >> 8); descriptor[14] = (byte)geometry.Cylinders; descriptor[15] = (byte)geometry.Heads;
+        AcornWinchesterFormat.WriteGeometry(descriptor, geometry);
         var dat = Path.GetFullPath(outputPath); var dsc = Path.ChangeExtension(dat, DiskImageFileExtensions.Dsc);
         await AtomicMediaFileSetWriter.WriteAsync(new Dictionary<string, Func<Stream, CancellationToken, Task>>(StringComparer.OrdinalIgnoreCase)
         {

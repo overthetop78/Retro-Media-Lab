@@ -33,6 +33,11 @@ internal sealed partial class EmulationMediaProcessingService
         public bool HasChanges => image.HasChanges;
         public IReadOnlyDictionary<string, string> Metadata => image.Metadata;
         public void UpdateMetadata(IReadOnlyDictionary<string, string> metadata) => image.UpdateMetadata(metadata);
+        public void PrepareBlockFormat(HardDisks.DiskImageGeometry geometry)
+        {
+            ArgumentNullException.ThrowIfNull(geometry);
+            image.PrepareBlockFormat(new(geometry.Cylinders, geometry.Heads, geometry.SectorsPerTrack, geometry.SectorSize));
+        }
         public long? FindSector(int cylinder, int head, int number) => image.FindSector(cylinder, head, number);
         public IReadOnlyList<long> GetTrackSectors(int cylinder, int head) => image.GetTrackSectors(cylinder, head);
         public async ValueTask<EmulationDiskSector> ReadSectorAsync(long index, CancellationToken cancellationToken = default)

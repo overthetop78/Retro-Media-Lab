@@ -11,5 +11,8 @@ public interface IMediaVisualizationProvider
 
     bool CanProvide(MediaImageDocument document);
 
+    /// <summary>Prépare une représentation de présentation sans modifier le document source.</summary>
+    MediaImageDocument PrepareDocument(MediaImageDocument document) => document;
+
     MediaVisualizationDescriptor CreateDescriptor(MediaImageDocument document);
 }

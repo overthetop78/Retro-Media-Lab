@@ -8,6 +8,7 @@ using RetroMediaLab.MediaEngine.Functions;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.CpcDsk;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.ImageDisk;
 using RetroMediaLab.MediaEngine.Images.Models.Sectors;
+using AdaptecFormat = RetroMediaLab.MediaEngine.Images.Formats.HardDisk.Adaptec.AdaptecMfmFormat;
 
 namespace RetroMediaLab.MediaEngine.Services;
 
@@ -29,6 +30,8 @@ internal sealed partial class MediaRuntimeDisk
         ArgumentOutOfRangeException.ThrowIfZero(bitCellNanoseconds);
         ArgumentOutOfRangeException.ThrowIfZero(indexTimeNanoseconds);
         if (_writtenTracks.TryGetValue((cylinder, head), out var written)) return written;
+        if (FormatId == Constants.HardDiskImageFormatIds.AcornWinchester && Blocks is not null)
+            return ReadWinchesterTrack(cylinder, head, indexTimeNanoseconds);
         var document = UpdatedDocument();
         if (document.Representation is not SectorMediaImageRepresentation representation)
             throw new NotSupportedException();
@@ -64,6 +67,14 @@ internal sealed partial class MediaRuntimeDisk
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (IsReadOnly) throw new UnauthorizedAccessException();
+        if (FormatId == Constants.HardDiskImageFormatIds.AcornWinchester && Blocks is not null)
+        {
+            if (encodingId != AdaptecFormat.EncodingId)
+                throw new NotSupportedException(nameof(encodingId));
+            WriteWinchesterWindow(cylinder, head, indexTimeNanoseconds, startNanoseconds,
+                durationNanoseconds, transitionOffsetsNanoseconds, includeEndingInstant);
+            return;
+        }
         if (encodingId != IsoFmFormat.CodecId && encodingId != IsoMfmFormat.CodecId)
             throw new NotSupportedException(nameof(encodingId));
         var mfm = encodingId == IsoMfmFormat.CodecId;
@@ -109,6 +120,7 @@ internal sealed partial class MediaRuntimeDisk
 
     private void RetryTrackProjection()
     {
+        RetryWinchesterTrackProjection();
         foreach (var entry in _trackProjectionErrors.ToArray())
         {
             var pending = UpdatedDocument();

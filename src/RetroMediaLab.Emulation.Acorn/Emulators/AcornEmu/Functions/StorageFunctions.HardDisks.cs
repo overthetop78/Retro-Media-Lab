@@ -33,7 +33,9 @@ internal static partial class StorageFunctions
         return
         [
             new(C.SpeedOption, EmulationMachineTab.Storage, StoragePresentationConstants.BehaviorGroup, C.SpeedResource, EmulationSettingsEditor.Selection, settings.Speed.ToString(CultureInfo.InvariantCulture), C.Speeds.Select(speed => speed == C.MaximumSpeed ? new EmulationSettingsChoice(speed, C.MaximumSpeedResource) : new(speed, string.Empty, speed + C.PercentSuffix)).ToArray(), RequiresRestart: true, UseRadioButtons: true),
-            Delay(C.ReadLatencyOption, C.ReadLatencyResource, settings.ReadLatency), Delay(C.WriteLatencyOption, C.WriteLatencyResource, settings.WriteLatency),
+            .. (ArchimedesFunctions.IsModel(configuration)
+                ? new[] { Delay(C.ReadLatencyOption, C.ReadLatencyResource, settings.ReadLatency), Delay(C.WriteLatencyOption, C.WriteLatencyResource, settings.WriteLatency) }
+                : []),
             Flag(C.ProtectedOption, C.ProtectionResource, settings.Protected),
             Flag(C.MechanicalSoundOption, C.SoundResource, bool.Parse(configuration.Options.GetValueOrDefault(C.HardDiskKey(unit, C.MechanicalSoundOption), bool.TrueString))), SoundVolumeField(configuration, unit, true) with { BlockId = StoragePresentationConstants.BehaviorGroup }
         ];

@@ -150,6 +150,7 @@ public sealed class MediaRecognitionComposition
                 new VmdkReader(),
                 new ChdHardDiskReader(),
                 new RetroMediaLab.MediaEngine.Images.Formats.HardDisk.Acorn.AcornWinchesterReader(),
+                new RetroMediaLab.MediaEngine.Images.Formats.HardDisk.MfmEmu.MfmEmuReader(),
                 new RawHardDiskReader()
             ]);
     }

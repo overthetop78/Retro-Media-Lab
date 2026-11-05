@@ -5,6 +5,7 @@ public static class HardDiskImageFormatIds
 {
     public const string Raw = "hdd.raw";
     public const string AcornWinchester = "hdd.acorn-winchester";
+    public const string MfmEmu = "hdd.mfm-emu";
     public const string Vhd = "hdd.vhd";
     public const string Vhdx = "hdd.vhdx";
     public const string Vdi = "hdd.vdi";

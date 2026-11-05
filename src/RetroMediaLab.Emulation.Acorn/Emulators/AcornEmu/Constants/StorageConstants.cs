@@ -124,13 +124,13 @@ internal static class StorageConstants
     /// <summary>Identifiant MediaEngine du format d’image Acorn Winchester.</summary>
     internal const string HardDiskFormat = "hdd.acorn-winchester";
     /// <summary>Nombre d’unités de disque dur prises en charge par le contrôleur SCSI.</summary>
-    internal const int HardDiskCount = AcornScsiConstants.UnitCount;
+    internal const int HardDiskCount = WinchesterDriveConstants.DriveCount;
 
     /// <summary>Premier indice des indicateurs d’activité des disques durs.</summary>
     internal const int HardDiskLedStart = 8;
     /// <summary>Capacité maximale d’une image de disque dur, en octets.</summary>
     internal static long MaximumHardDiskBytes => WinchesterModelConstants.MaximumBytes;
-    internal static IReadOnlyList<string> HardDiskExtensions => [MediaConstants.WinchesterImageExtension];
+    internal static IReadOnlyList<string> HardDiskExtensions => [MediaConstants.WinchesterImageExtension, MediaConstants.WinchesterPhysicalImageExtension];
     internal static IReadOnlyList<string> Extensions => FloppyDriveModels.Available(false).SelectMany(model => model.AcceptedExtensions).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     internal static IReadOnlyList<string> DoubleDensityExtensions => FloppyDriveModels.All.SelectMany(model => model.AcceptedExtensions).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     internal static IReadOnlyList<string> Speeds { get; } = Array.AsReadOnly<string>(["100", "200", "400", "800", "0"]);

@@ -42,3 +42,11 @@ La validation série du 4 novembre comporte 2 463 tests Chips et 36 tests d’in
 - Formats des conteneurs, création formatée/non formatée, secteurs graphiques et explorateur dans MediaEngine/MediaFileSystems/MediaAnalysis ; ne pas déplacer ces responsabilités dans Chips.
 
 Aucune de ces machines n’est déclarée entièrement finalisée par cette fiche initiale. Les résultats natifs, captures, médias empruntés à `F:\Retro`, builds et commits seront ajoutés après les passages correspondants.
+
+## Winchester : composant raccordé et preuves obtenues
+
+Le 5 novembre 2026, le modèle numérique ACB-4000 documenté et la carte hôte Acorn sont raccordés aux BBC avec interface Winchester installée. Le modèle expose les deux ports matériels ; les conteneurs DAT/DSC et EMU passent par le relais Emulation vers MediaEngine. Chips ne possède pas les fichiers et le module Acorn ne référence pas directement MediaEngine.
+
+Les captures du BBC B sous `artifacts/TestsChips/Acb4000/BbcMicroModelB/Release/` montrent les essais CPU de sauvegarde/chargement ADFS et réouverture, FORMAT de 33 secteurs, lecture du remplissage, écriture/relecture de 256 octets et diagnostic natif 61h de 259 octets. Les contrôles exacts et limites de chaque passage sont consignés dans [AcornWinchester.md](AcornWinchester.md) et la fiche du contrôleur. Les captures sont hors Git ; aucune configuration ni image originale de l’utilisateur n’a été modifiée par ces diagnostics.
+
+La validation du composant courant réussit 861 cas puces/hôte en Debug et Release, 58 cas d’intégration Acorn et 124 cas des formats médias en Release. Elle ne remplace pas les vérifications complètes ci-dessus sur chacun des A, B, B+ 64 et B+ 128 ni les essais ultérieurs sur des médias existants dans `F:\Retro`.

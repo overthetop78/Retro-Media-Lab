@@ -27,4 +27,11 @@ public sealed class MediaVisualizationProviderRegistry
         var provider = Resolve(document) ?? throw new NotSupportedException($"No visualization provider supports representation '{document.Representation.RepresentationKind}' for format '{document.FormatId}'.");
         return provider.CreateDescriptor(document);
     }
+
+    /// <summary>Confie au fournisseur la préparation éventuelle du document à présenter.</summary>
+    public MediaImageDocument PrepareDocument(MediaImageDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        return Resolve(document)?.PrepareDocument(document) ?? document;
+    }
 }

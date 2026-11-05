@@ -91,6 +91,7 @@ internal sealed class MediaVisualizationController
     internal async Task<bool> PresentAsync(MediaImageDocument document, CancellationToken cancellationToken)
     {
         using var activity = new RetroMediaLab.MediaEngine.Services.MediaDriveOperationScope(document.Source.Drive);
+        document = _visualizationProviders?.PrepareDocument(document) ?? document;
         var descriptor = _visualizationProviders?.CreateDescriptor(document);
         if (descriptor is null) return false;
 

@@ -5,6 +5,8 @@ namespace RetroMediaLab.MediaEngine.Constants;
 /// </summary>
 public static class DiskImageFileExtensions
 {
+    /// <summary>Image de pistes MFM physiques du projet MFM Emulator.</summary>
+    public const string Emu = ".emu";
     /// <summary>Extension des fichiers de données des images de disque dur Acorn Winchester.</summary>
     public const string Dat = ".dat";
 

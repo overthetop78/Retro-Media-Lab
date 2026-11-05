@@ -3,6 +3,7 @@ namespace RetroMediaLab.MediaEngine.Constants;
 /// <summary>Stable identifiers for media image writers registered by the default composition.</summary>
 public static class MediaImageWriterIds
 {
+    public const string MfmEmu = "mfm-emu";
     public const string AcornAtomDsk = "acorn-atom-dsk";
     public const string Apridisk = "apridisk";
     public const string AcornAdf = "acorn-adf";

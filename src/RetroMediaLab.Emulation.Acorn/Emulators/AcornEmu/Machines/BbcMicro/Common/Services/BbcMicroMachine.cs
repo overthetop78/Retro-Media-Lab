@@ -1,5 +1,4 @@
 using RetroMediaLab.Chips.CPU.Common.Enums;
-using RetroMediaLab.Chips.Controllers.Acorn.Winchester.Scsi.Constants;
 using RetroMediaLab.Chips.CPU.Common.Interfaces;
 using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Services;
 using RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Constants;
@@ -244,7 +243,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (_plusMemory?.PrivateSelected(address) == true) return _plusMemory.ReadPrivate(address);
         if (address < 0xc000) return _roms.Read(address);
         if (address < 0xfc00 || address >= 0xff00) return _mos[address & 0x3fff];
-        if (address is >= AcornScsiConstants.Start and < AcornScsiConstants.End) return _winchester.Read(address);
+        if (address is >= WinchesterDriveConstants.RegisterStart and < WinchesterDriveConstants.RegisterEnd) return _winchester.Read(address);
         if (address < 0xfe00) return 255;
         if (address < 0xfe08) return (address & 1) != 0 ? Video.ReadRegister() : (byte)0;
         if (address < 0xfe10) return _acia.Read((address & 1) != 0);
@@ -274,7 +273,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (_plusMemory?.PrivateSelected(address) == true) { _plusMemory.WritePrivate(address, value); return; }
         if (address < MemoryExtensionConstants.RamEnd + BbcMicroFirmwareConstants.BankSize) { _roms.Write(address, value); return; }
         if (_memoryExtension.Control(address)) return;
-        if (address is >= AcornScsiConstants.Start and < AcornScsiConstants.End) { _winchester.Write(address, value); return; }
+        if (address is >= WinchesterDriveConstants.RegisterStart and < WinchesterDriveConstants.RegisterEnd) { _winchester.Write(address, value); return; }
         if (address is >= 0xfe00 and < 0xfe08)
         {
             if ((address & 1) == 0) Video.Select(value); else Video.WriteRegister(value);

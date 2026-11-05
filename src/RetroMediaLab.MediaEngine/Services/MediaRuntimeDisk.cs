@@ -52,8 +52,8 @@ internal sealed partial class MediaRuntimeDisk : IMediaRuntimeDisk
         var descriptor = Metadata.TryGetValue(AcornWinchesterFormat.DescriptorMetadataKey, out var old) ? Convert.FromBase64String(old) : [];
         if (descriptor.Length < AcornWinchesterFormat.DescriptorSize) Array.Resize(ref descriptor, AcornWinchesterFormat.DescriptorSize);
         incoming.CopyTo(descriptor, 0);
-        var geometry = AcornWinchesterFormat.Geometry(descriptor);
-        if (geometry is null || geometry.Capacity != blocks.Capacity) throw new ArgumentException("The descriptor geometry must preserve the image capacity.", nameof(metadata));
+        var geometry = AcornWinchesterFormat.Geometry(descriptor, blocks.Capacity);
+        if (geometry is null || geometry.Capacity != blocks.Capacity || geometry.SectorSize != blocks.LogicalBlockSize) throw new ArgumentException("The descriptor geometry must preserve the image capacity and block size.", nameof(metadata));
         var values = new Dictionary<string, string>(Metadata) { [AcornWinchesterFormat.DescriptorMetadataKey] = Convert.ToBase64String(descriptor) };
         if (Metadata.TryGetValue(AcornWinchesterFormat.DescriptorMetadataKey, out var previous) && previous == values[AcornWinchesterFormat.DescriptorMetadataKey]) return;
         _document = MediaImageDocument.CreateUnexplored(_document.Source, FormatId, _document.MediaKind, new BlockMediaImageRepresentation(blocks.Capacity, blocks.LogicalBlockSize, blocks.Ranges, geometry), _document.Diagnostics, values);
@@ -95,6 +95,9 @@ internal sealed partial class MediaRuntimeDisk : IMediaRuntimeDisk
         Mechanics.BeginRead(Position(index, physical));
         try
         {
+        if (FormatId == HardDiskImageFormatIds.AcornWinchester
+            && _writtenTracks.ContainsKey((physical.Cylinder, physical.Head)))
+            return ReadWrittenWinchesterSector(index, physical.Cylinder, physical.Head);
         if (_changes.TryGetValue(index, out var changed)) return new(index, changed.ToArray(), address.Cylinder, address.Head, address.Number, sector?.HeaderIntegrityValid == false ? false : true)
         {
             HeaderIntegrityValid = sector?.HeaderIntegrityValid,
@@ -126,6 +129,8 @@ internal sealed partial class MediaRuntimeDisk : IMediaRuntimeDisk
         var size = Sectors is { } sectors && sectors.TryGetBlock(checked((int)index), out var original) ? original.Data.Count : SectorSize;
         if (data.Length != size) throw new ArgumentException("The data must contain exactly one sector.", nameof(data));
         var address = Sectors is { } image && image.TryGetBlock(checked((int)index), out var sector) ? sector.Address : Address(index);
+        if (_winchesterProjectionErrors.ContainsKey((address.Cylinder, address.Head)))
+            throw new NotSupportedException(nameof(WriteTrackWindow));
         Mechanics.BeginWrite(Position(index, address));
         try
         {

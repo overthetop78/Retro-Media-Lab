@@ -198,6 +198,7 @@ public sealed class MediaWritingComposition
             Flux(MediaImageWriterIds.Hfe, DiskImageFormatIds.RawHfe, DiskImageFileExtensions.Hfe, (image, metadata, path, token) => WriteSingleAsync(hfe.WriteAsync(ProtectedTrackHfeImageAdapter.Create(image, metadata), path, token), path)),
             hardDiskRaw,
             acornWinchester,
+            new RetroMediaLab.MediaEngine.Images.Formats.HardDisk.MfmEmu.MfmEmuWriter(),
             hardDiskQcow2,
             hardDiskVhd,
             hardDiskVhdx,

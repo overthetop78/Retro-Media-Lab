@@ -19,6 +19,13 @@ public interface IEmulationDiskImage : IDisposable, RetroMediaLab.Chips.Controll
     /// <summary>Prépare les métadonnées prises en charge par le format ; FlushAsync les publie avec les secteurs.</summary>
     /// <remarks>Une clé non prise en charge ou une géométrie modifiant la capacité est refusée.</remarks>
     new void UpdateMetadata(IReadOnlyDictionary<string, string> metadata);
+    /// <summary>Paramètres matériels binaires conservés par le format, ou null lorsqu'ils sont absents.</summary>
+    byte[]? ReadDeviceParameters() => Functions.EmulationDiskImageFunctions.ReadDeviceParameters(this);
+    /// <summary>Prépare les paramètres matériels ; le format valide leur prise en charge et FlushAsync les publie.</summary>
+    void WriteDeviceParameters(ReadOnlySpan<byte> parameters)
+        => Functions.EmulationDiskImageFunctions.WriteDeviceParameters(this, parameters);
+    /// <summary>Prépare une géométrie pour les écritures de formatage, sans remplir ni publier l'image.</summary>
+    void PrepareBlockFormat(HardDisks.DiskImageGeometry geometry) => throw new NotSupportedException();
     /// <summary>Recherche l'identifiant physique d'un secteur sans supposer une numérotation universelle à zéro ou un.</summary>
     new long? FindSector(int cylinder, int head, int number);
     /// <summary>Indices des champs d'une piste physique dans leur ordre enregistré, doublons compris.</summary>
@@ -38,12 +45,25 @@ public interface IEmulationDiskImage : IDisposable, RetroMediaLab.Chips.Controll
     EmulationDiskTrack ReadTrack(int cylinder, int head, string encodingId, uint bitCellNanoseconds,
         uint indexTimeNanoseconds, IReadOnlyDictionary<string, int>? attributes = null)
         => throw new NotSupportedException();
+    /// <summary>Prépare une piste selon l'encodage physique du contrat, sans exposer l'identifiant du moteur média.</summary>
+    EmulationDiskTrack ReadTrack(int cylinder, int head, Enums.EmulationDiskTrackEncoding encoding,
+        uint bitCellNanoseconds, uint indexTimeNanoseconds, IReadOnlyDictionary<string, int>? attributes = null)
+        => ReadTrack(cylinder, head, Functions.EmulationDiskImageFunctions.EncodingId(encoding),
+            bitCellNanoseconds, indexTimeNanoseconds, attributes);
     /// <summary>Transmet les impulsions réellement émises pendant une fenêtre d'écriture ; durées en nanosecondes.</summary>
     void WriteTrackWindow(int cylinder, int head, string encodingId, uint bitCellNanoseconds,
         uint indexTimeNanoseconds, uint startNanoseconds, uint durationNanoseconds,
         IReadOnlyList<uint> transitionOffsetsNanoseconds, IReadOnlyDictionary<string, int>? attributes = null,
         bool includeEndingInstant = false)
         => throw new NotSupportedException();
+    /// <summary>Transmet une fenêtre d'écriture au relais SDK avec un encodage physique typé.</summary>
+    void WriteTrackWindow(int cylinder, int head, Enums.EmulationDiskTrackEncoding encoding,
+        uint bitCellNanoseconds, uint indexTimeNanoseconds, uint startNanoseconds, uint durationNanoseconds,
+        IReadOnlyList<uint> transitionOffsetsNanoseconds, IReadOnlyDictionary<string, int>? attributes = null,
+        bool includeEndingInstant = false)
+        => WriteTrackWindow(cylinder, head, Functions.EmulationDiskImageFunctions.EncodingId(encoding),
+            bitCellNanoseconds, indexTimeNanoseconds, startNanoseconds, durationNanoseconds,
+            transitionOffsetsNanoseconds, attributes, includeEndingInstant);
     new Task FlushAsync(CancellationToken cancellationToken = default);
     /// <summary>Remplace les champs d'une piste physique dans l'ordre fourni, avec leurs identifiants enregistrés.</summary>
     void FormatTrack(int cylinder, int head, IReadOnlyList<EmulationDiskSector> sectors,

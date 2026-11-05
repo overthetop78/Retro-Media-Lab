@@ -49,7 +49,7 @@ internal sealed partial class EmulatorCore
         {
             var supported = ArchimedesFunctions.IsModel(_definition.Model)
                 ? ArchimedesDriveModels.SupportsHardDisk(image)
-                : image.FormatId == C.HardDiskFormat && RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries.HardDiskFormats.All.Any(format => HardDiskImageValidation.IsSupportedCapacity(image.SectorCount * image.SectorSize, format));
+                : RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dictionaries.HardDiskFormats.Supports(image);
             if (!supported) throw new InvalidDataException(ErrorMessages.IncompatibleMedia);
             EjectHardDisk(unit); _machine!.AttachHardDisk(unit, image); _hardDisks[unit] = image; transferred = true;
         }
@@ -62,7 +62,7 @@ internal sealed partial class EmulatorCore
     private void EjectHardDisk(int unit)
     {
         if (unit < 0 || unit >= _hardDisks.Length) throw new ArgumentOutOfRangeException(nameof(unit));
-        SaveHardDisk(unit); _machine?.AttachHardDisk(unit, null);
+        _machine?.AttachHardDisk(unit, null); SaveHardDisk(unit);
         var image = _hardDisks[unit]; _hardDisks[unit] = null;
         try { image?.Dispose(); } finally { _hardDiskMechanics[unit]?.SetMotor(false); }
     }
@@ -72,7 +72,11 @@ internal sealed partial class EmulatorCore
         for (var unit = 0; unit < _hardDisks.Length; unit++)
         {
             var image = _hardDisks[unit]; _hardDisks[unit] = null;
-            try { _machine?.AttachHardDisk(unit, null); }
+            try
+            {
+                _machine?.AttachHardDisk(unit, null);
+                if (image is { HasChanges: true }) AcornDiskFunctions.Save(image);
+            }
             catch (Exception error) { errors.Add(error); }
             finally { try { image?.Dispose(); } catch (Exception error) { errors.Add(error); } finally { _hardDiskMechanics[unit]?.Reset(); _hardDiskMechanics[unit] = null; } }
         }

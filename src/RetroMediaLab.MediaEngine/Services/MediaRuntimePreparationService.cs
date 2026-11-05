@@ -19,7 +19,9 @@ internal sealed class MediaRuntimePreparationService : IMediaRuntimePreparation
     {
         var engine = Conversion.Value;
         var document = await engine.ReadingService.ReadAsync(new(path, [], RequestedFormatId: formatId) { Drive = mechanics, TrackDriveAccesses = false }, cancellationToken).ConfigureAwait(false);
-        return new MediaRuntimeDisk(engine, document, writable, mechanics is null);
+        return document.Representation is Images.Formats.HardDisk.MfmEmu.MfmEmuImageRepresentation
+            ? new MediaRuntimeMfmDisk(engine, document, writable, mechanics is null)
+            : new MediaRuntimeDisk(engine, document, writable, mechanics is null);
     }
     public Task<RetroMediaLab.MediaEngine.Contracts.MediaCassetteSignal> ReadCassetteAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null) => RetroMediaLab.MediaEngine.Functions.CassetteSignalFunctions.ReadAsync(path, cancellationToken, machineId, parameters);
     public IReadOnlyList<string> CassetteRecordingExtensions => RetroMediaLab.MediaEngine.Functions.CassetteSignalFunctions.WritableExtensions;
@@ -35,12 +37,15 @@ internal sealed class MediaRuntimePreparationService : IMediaRuntimePreparation
     public Task CreateHardDiskAsync(string path, string formatId, HardDiskGeometry geometry, string? fileSystemId = null, CancellationToken cancellationToken = default, bool preallocate = false)
     {
         ArgumentNullException.ThrowIfNull(geometry); cancellationToken.ThrowIfCancellationRequested();
+        if (formatId == HardDiskImageFormatIds.MfmEmu)
+            return Images.Formats.HardDisk.MfmEmu.MfmEmuCreation.CreateAsync(path, geometry, fileSystemId, cancellationToken, preallocate);
         if (formatId != HardDiskImageFormatIds.AcornWinchester) throw new NotSupportedException("No runtime HDD creator is registered for this format.");
-        if (geometry.SectorSize != 256 || geometry.SectorsPerTrack != 33 || geometry.Heads > 255 || geometry.Cylinders > 65535) throw new ArgumentException("Acorn Winchester requires 256-byte sectors, 33 sectors per track and a DSC-compatible geometry.", nameof(geometry));
+        if (!RetroMediaLab.MediaEngine.Images.Formats.HardDisk.Acorn.AcornWinchesterFormat.SupportsGeometry(geometry)) throw new ArgumentException("Acorn Winchester requires a supported DSC geometry.", nameof(geometry));
         var ranges = new List<MediaDataRange>();
         var position = 0L;
         if (fileSystemId is not null)
         {
+            if (geometry.SectorSize != RetroMediaLab.MediaEngine.Images.Formats.HardDisk.Acorn.AcornWinchesterFormat.SectorSize) throw new NotSupportedException("BBC ADFS preparation requires 256-byte logical blocks.");
             if (fileSystemId != RetroMediaLab.MediaFileSystems.Definitions.FileSystemIds.AcornAdfs) throw new NotSupportedException("The requested filesystem preparation is not registered for this disk.");
             var header = RetroMediaLab.MediaFileSystems.FileSystems.Acorn.Adfs.AcornAdfsFormatter.CreateHeader(checked((int)geometry.LogicalSectorCount));
             ranges.Add(new(0, header.Length, MediaDataRangeKind.Stored, new MemoryRandomAccessData(header))); position = header.Length;
