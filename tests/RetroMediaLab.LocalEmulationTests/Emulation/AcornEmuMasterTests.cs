@@ -208,13 +208,34 @@ public sealed class AcornEmuMasterTests
     public void CmosDataBusIsOnlyDrivenWhenSelectedAndPersistsItsConfiguration()
     {
         var clock = new MasterClock();
-        clock.Address(0xc0, 32); clock.Update(0, 0x5a); clock.Update(4, 0x5a); clock.Update(0, 0x5a);
+        clock.Address(0xc0, 32); clock.Address(0x40, 32);
+        clock.Update(0, 0x5a); clock.Update(4, 0x5a); clock.Update(0, 0x5a);
         Assert.Equal(0x5a, clock.ReadRegister(32));
         clock.Update(2, 0); clock.Update(6, 0);
         Assert.Equal(0x5a, clock.ReadBus());
         clock.Address(0, 0); Assert.Equal(255, clock.ReadBus());
         var restored = new MasterClock(); restored.Import(clock.Export());
         Assert.Equal(0x5a, restored.ReadRegister(32));
+    }
+    [Fact]
+    public void MasterClockPublishesDeadlineAndIrqWithoutSoftwarePollingItsRegisters()
+    {
+        long ticks = 0;
+        var clock = new MasterClock(referenceClock: () => ticks);
+        var interrupts = new List<bool>();
+        var deadlines = new List<long?>();
+        clock.IrqChanged = interrupts.Add;
+        clock.NextClockEventChanged = deadlines.Add;
+        clock.WriteRegister(10, 0x26);
+        clock.WriteRegister(11, 0xc2);
+        Assert.Equal(1954, clock.NextClockEvent);
+        ticks = clock.NextClockEvent!.Value;
+        clock.AdvanceTo(ticks);
+        Assert.True(clock.Irq);
+        Assert.Equal(0xc0, clock.ReadRegister(12));
+        Assert.Equal(new[] { true, false }, interrupts);
+        Assert.NotEmpty(deadlines);
+        Assert.True(clock.NextClockEvent > ticks);
     }
     [Fact]
     public void MasterCpuExecutesCmosInstructionsAndKeepsSidewaysRamWritable()

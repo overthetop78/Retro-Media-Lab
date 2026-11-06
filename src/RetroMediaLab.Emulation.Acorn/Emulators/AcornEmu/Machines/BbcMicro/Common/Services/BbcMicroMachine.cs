@@ -34,6 +34,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly ModelBPlusMemory? _plusMemory;
     private readonly MasterMemory? _masterMemory;
     private readonly MasterClock? _masterClock;
+    private long _masterClockWakeTick = long.MaxValue;
     private readonly bool _compact;
     private readonly CompactEeprom? _compactEeprom;
     private readonly CompactJoystick? _compactJoystick;
@@ -112,7 +113,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (modelBPlusMemory is not (0 or Plus.BaseBytes or Plus.ExpandedBytes)) throw new ArgumentOutOfRangeException(nameof(modelBPlusMemory));
         _plusMemory = modelBPlusMemory == 0 ? null : new ModelBPlusMemory();
         _masterMemory = master ? new MasterMemory() : null;
-        _masterClock = master && !compact ? new MasterClock((byte)econetStation, diskInterface ? (byte)9 : (byte)8) : null;
+        _masterClock = master && !compact ? new MasterClock((byte)econetStation, diskInterface ? (byte)9 : (byte)8, () => _ticks) : null;
         _compact = compact;
         _compactEeprom = compact ? new CompactEeprom() : null;
         _compactJoystick = compact ? new CompactJoystick() : null;
@@ -143,6 +144,11 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;
         _adc = expandedIo && !compact ? new Adc7002(_via.SetCb1) : null;
         if (_adc is not null) _adc.NextClockEventChanged = next => _adcWakeTick = next ?? long.MaxValue;
+        if (_masterClock is not null)
+        {
+            _masterClock.NextClockEventChanged = next => _masterClockWakeTick = next ?? long.MaxValue;
+            _masterClockWakeTick = _masterClock.NextClockEvent ?? long.MaxValue;
+        }
         UpdateAnalogInputs(EmulationInputSnapshot.Empty.Controllers);
         _via.ReadPortB = () => _compactEeprom?.ReadPort ?? (_adc is null ? null : (byte?)_fireInputs) ?? Io.OpenInputs;
         _via.WritePortB = WriteLatch;
@@ -224,6 +230,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _audio.Tick();
         _cassette.Tick();
         if (_ticks >= _adcWakeTick) _adc!.AdvanceTo(_ticks);
+        if (_ticks >= _masterClockWakeTick) _masterClock!.AdvanceTo(_ticks);
         _disks.Tick();
         _winchester.Tick();
         _econet.Tick();

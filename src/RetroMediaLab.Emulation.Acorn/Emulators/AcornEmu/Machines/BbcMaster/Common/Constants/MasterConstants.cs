@@ -34,6 +34,7 @@ internal static class MasterConstants
     internal const int FirstSystemBank = 9;
     internal static IReadOnlyList<int> RamBanks { get; } = [4, 5, 6, 7];
     internal const int CmosBytes = 64;
+    internal const byte CmosOscillatorSelection = 0x20;
     internal const byte CmosEnable = 0x40;
     internal const byte CmosAddressStrobe = 0x80;
     internal const byte CmosRead = 0x02;

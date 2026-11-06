@@ -14,6 +14,8 @@ internal sealed partial class BbcMicroMachine
             _userVia.IrqChanged = asserted => SetInterrupt(BbcInterruptSources.UserVia, asserted);
         _acia.IrqChanged = asserted => SetInterrupt(BbcInterruptSources.Serial, asserted);
         _winchester.IrqChanged = asserted => SetInterrupt(BbcInterruptSources.Winchester, asserted);
+        if (_masterClock is not null)
+            _masterClock.IrqChanged = asserted => SetInterrupt(BbcInterruptSources.RealTimeClock, asserted);
         _disks.NmiChanged = asserted => SetNmi(BbcNmiSources.Disk, asserted);
         _econet.NmiChanged = asserted => SetNmi(BbcNmiSources.Network, asserted);
 
@@ -21,6 +23,7 @@ internal sealed partial class BbcMicroMachine
         SetInterrupt(BbcInterruptSources.UserVia, _userVia?.Irq == true);
         SetInterrupt(BbcInterruptSources.Serial, _acia.Irq);
         SetInterrupt(BbcInterruptSources.Winchester, _winchester.Irq);
+        SetInterrupt(BbcInterruptSources.RealTimeClock, _masterClock?.Irq == true);
         SetNmi(BbcNmiSources.Disk, _disks.Nmi);
         SetNmi(BbcNmiSources.Network, _econet.Nmi);
     }
