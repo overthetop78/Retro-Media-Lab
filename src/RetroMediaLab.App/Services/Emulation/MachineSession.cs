@@ -99,10 +99,11 @@ internal sealed class MachineSession : IAsyncDisposable
         }
     }
 
-    internal Task UpdateMachineFactoryAsync(Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> machineFactory)
+    internal Task UpdateMachineFactoryAsync(Func<IReadOnlyList<EmulationMedia>, IEmulatedMachine> machineFactory, IReadOnlyList<EmulationMediaDevice> mediaDevices)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         _machineFactory = machineFactory;
+        _mountedMedia.RemoveAll(media => !mediaDevices.Any(device => device.Slot == media.Slot && device.MediaType == media.Type));
         if (!IsPowered) _recreateOnPowerOn = true;
         return Task.CompletedTask;
     }

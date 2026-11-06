@@ -88,7 +88,7 @@ internal static class SessionLifecycleScenarios
             factoryCalls++;
             Assert.Equal(Disk, Assert.Single(media));
             return updated.Value;
-        });
+        }, [new EmulationMediaDevice(Disk.Slot, Disk.Type, [])]);
 
         if (powered)
         {
@@ -107,6 +107,37 @@ internal static class SessionLifecycleScenarios
         Assert.Same(updated.Value, session.Machine);
         Assert.Equal(1, factoryCalls);
         Assert.Equal(new[] { "StartAsync" }, updated.Calls);
+    }
+    public static async Task UpdatedDevicesRemoveOnlyUnsupportedMedia(bool powered, bool changedType)
+    {
+        var original = new Machine();
+        var updated = new Machine();
+        var retained = new EmulationMedia("hard-disk", EmulationMediaSlot.HardDisk0, EmulationMediaType.HardDisk, false, true);
+        IReadOnlyList<EmulationMedia>? supplied = null;
+        await using var session = new MachineSession(original.Value, _ => throw new InvalidOperationException(), [Disk, retained]);
+        if (powered) await session.PowerOnAsync();
+        var devices = new List<EmulationMediaDevice> { new(retained.Slot, retained.Type, []) };
+        if (changedType) devices.Add(new(Disk.Slot, EmulationMediaType.Cassette, []));
+
+        await session.UpdateMachineFactoryAsync(media =>
+        {
+            supplied = media.ToArray();
+            return updated.Value;
+        }, devices);
+
+        Assert.Equal(retained, Assert.Single(session.MountedMedia));
+        Assert.Same(original.Value, session.Machine);
+        Assert.Null(supplied);
+        if (powered)
+        {
+            Assert.Equal(new[] { "StartAsync" }, original.Calls);
+            await session.PowerOffAsync();
+        }
+        else Assert.Empty(original.Calls);
+        await session.PowerOnAsync();
+        Assert.Equal(retained, Assert.Single(supplied!));
+        Assert.Same(updated.Value, session.Machine);
+        Assert.True(session.IsPowered);
     }
     private static EmulationMedia Disk => new("virtual", EmulationMediaSlot.Floppy0, EmulationMediaType.Floppy, false, true);
     public static async Task Lifecycle()

@@ -262,7 +262,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         var runtime = await _options.CreateRuntimeAsync(configuration, CancellationToken.None);
         _mediaDevices = runtime.MediaDevices;
         _prepareMediaAsync = runtime.PrepareMediaAsync;
-        await _session.UpdateMachineFactoryAsync(runtime.CreateMachine);
+        await _session.UpdateMachineFactoryAsync(runtime.CreateMachine, runtime.MediaDevices);
         RebuildMediaDevices();
     }
 

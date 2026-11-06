@@ -14,6 +14,9 @@ public class EmulationContractsTests
     [Fact] public void DraftsAreIsolatedByModuleAndMachine() => DraftAndSaveScenarios.Drafts();
     [Fact] public Task SessionPowerPauseAndRecreation() => SessionLifecycleScenarios.Lifecycle();
     [Theory] [InlineData(false)] [InlineData(true)] public Task UpdatedConfigurationIsUsedOnNextStart(bool powered) => SessionLifecycleScenarios.UpdatedConfigurationIsUsedOnNextStart(powered);
+    [Theory]
+    [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
+    public Task UpdatedDevicesRemoveOnlyUnsupportedMedia(bool powered, bool changedType) => SessionLifecycleScenarios.UpdatedDevicesRemoveOnlyUnsupportedMedia(powered, changedType);
     [Fact] public Task FailedStartIsDisposedAndCanRetry() => SessionLifecycleScenarios.Failure();
     [Fact] public Task MediaFailureKeepsMountedSelection() => SessionLifecycleScenarios.MediaFailure();
     [Fact] public void MediaReplacementAndEjectionTargetOnlySelectedSlot()=>MediaAndSavedStateScenarios.Media();
