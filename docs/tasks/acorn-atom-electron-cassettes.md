@@ -22,7 +22,7 @@
   - [x] Livrer les corrections groupées.
     - [x] Modifier les fichiers de livraison sous `build/Debug` par `scripts/local-building.cmd --building=debug --modules=A`, vérifier le lanceur et les modules, puis modifier ce suivi avec les résultats et les limites restantes.
 
-Les travaux Archimedes restent suivis dans `docs/tasks/acornemu-archimedes.md` et reprendront après ces corrections prioritaires. Le diagnostic temporaire de formatage déjà lancé a été terminé avant ce changement de priorité : les deux cas runtime CPCEMU/IMD passent en 448 ms et leurs fichiers ont été nettoyés ; aucun build Archimedes complet ni commit du bloc incomplet.
+Les travaux Archimedes restent suivis dans `docs/tasks/machines/AcornArchimedes/implementation.md` et reprendront après ces corrections prioritaires. Le diagnostic temporaire de formatage déjà lancé a été terminé avant ce changement de priorité : les deux cas runtime CPCEMU/IMD passent en 448 ms et leurs fichiers ont été nettoyés ; aucun build Archimedes complet ni commit du bloc incomplet.
 
 Validation du 2 novembre : 961 tests AcornEmu réussis en 21 s, dont le diagnostic temporaire (depuis supprimé). Les configurations réelles Atom/Electron démarrent par EmulatorCore. La ROM Atom charge un TAP synthétique via les broches cassette et retrouve les 128 octets attendus en RAM. Les deux formats réels TAP/UEF se chargent sans rejet du décodeur BBC ; les 13 TAP de la collection contiennent 29 enregistrements structurellement complets. Les trois tests TAP autonomes restent dans le dépôt. Aucun média ni réglage utilisateur modifié. L'audit des composants et le bloc Archimedes complet restent ouverts.
 

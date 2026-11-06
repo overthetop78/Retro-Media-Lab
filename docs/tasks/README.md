@@ -52,3 +52,9 @@ vérification de l’action correspondante.
 La présence d’une action `commit`, `push` ou création de tag dans une feuille ne l’autorise pas. Ces
 opérations Git sont exécutées uniquement après une demande explicite de l’utilisateur; une demande
 explicite de publication autorise les opérations prévues par sa procédure.
+
+## Suivi matériel par propriétaire
+
+- [Machines](machines/README.md) : ordre, validations et tâches par machine.
+- [Puces communes](chips/README.md) : état et tâches par composant réutilisable.
+- [Index matériel](chips-validation.md) : navigation, sans nouveaux blocs détaillés.

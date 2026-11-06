@@ -8,7 +8,7 @@
 - [x] Rétablir les abonnements de configuration existants.
   - [x] Modifier `src/RetroMediaLab.App/Views/Controls/Emulation/Machine/EmulationSection.cs` : rétablir les abonnements dans Loaded et leur retrait dans Unloaded.
   - [x] Modifier `src/RetroMediaLab.App/Views/Windows/Shell/MainWindow.ComponentConnections.cs` : retirer les deux lignes ajoutées pour déplacer ces abonnements dans la fenêtre.
-  - [x] Modifier `docs/tasks/acornemu-model-a.md` : restauration vérifiée ; les deux fichiers sont identiques à leur version HEAD.
+  - [x] Modifier `docs/tasks/machines/BbcMicroModelA/implementation.md` : restauration vérifiée ; les deux fichiers sont identiques à leur version HEAD.
 - [x] Compléter les composants vidéo BBC et charger les ROM SAA505x externes.
   - [x] Modifier `Common/Machines/Common/Enums/FirmwareEnums.cs`, `Dictionaries/FirmwareCatalog.cs`, `Common/Machines/BbcMicro/Constants/FirmwareConstants.cs`, `Dictionaries/FirmwareCompatibilityCatalog.cs`, `Dictionaries/ModelCatalog.cs` et `Functions/FirmwareFunctions.cs` dans Acorn : identifier les ROM de caractères et leur rôle par machine, y compris l'ancien relevé SAA5051, sans modifier les fichiers utilisateur.
   - [x] Modifier `Emulators/AcornEmu/Constants/EmulatorConstants.cs`, `Functions/FirmwareFunctions.cs`, `Factories/AcornEmuMachineFactory.cs`, `Dictionaries/ModelCatalog.cs` et la carte `Machines/BbcMicro/ModelA/Services/ModelAMachine.cs` : ajouter l'emplacement ROM de caractères externe et le transmettre au circuit vidéo.

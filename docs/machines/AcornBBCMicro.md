@@ -1,6 +1,44 @@
 # Acorn BBC Micro A, B et B+ — état de finalisation
 
+## B+ 64/128 Kio — reprise du 6 novembre 2026
+
+Après la validation utilisateur des Model A/B, les 36 cas existants `AcornEmuModelBPlusTests` passent en Debug puis en Release. Ils vérifient notamment la sélection 64/128, le 6512, les fenêtres Shadow selon la provenance des instructions, la RAM privée, les banques supplémentaires, les supports ROM, le contrôleur fixe et le lecteur permanent. Ce passage ne réexécute pas les validations déjà acquises des puces communes.
+
+Mesure de la carte complète construite par `ModelCatalog`, avec les options de la configuration B+ `ed352680-fd42-484d-b3bc-3910baa64d92` copiées en mémoire et seule la capacité modifiée. ROM existantes : MOS/BASIC B+ 2.00, DFS 2.26, ANFS 4.18 et générateur SAA5050. Aucun média ni configuration utilisateur n'est écrit. Après 80 images de démarrage et la saisie par le clavier émulé, chaque scénario mesure 200 appels `RunFrame` et leur sortie PCM. Les empreintes vidéo sont calculées hors de la région chronométrée ; le cumul PCM est inclus. Les DLL proviennent des constructions cohérentes Debug/Release des tests, avec contrôle explicite du drapeau JIT ; aucune optimisation Release n'est activée en Debug.
+
+| Capacité | Scénario | Debug, ms/image | Release, ms/image | Cycles sur 200 images |
+|---|---|---:|---:|---:|
+| 64 Kio | Repos | 18,1595 | 3,0674 | 7 987 201 |
+| 64 Kio | `SOUND 1,-15,80,255` | 17,7105 | 2,9723 | 7 987 203 |
+| 64 Kio | Boucle MODE 1, COLOUR/CLS | 20,9274 | 3,0613 | 7 987 196 |
+| 128 Kio | Repos | 17,7322 | 2,9603 | 7 987 199 |
+| 128 Kio | `SOUND 1,-15,80,255` | 17,5630 | 3,0628 | 7 987 201 |
+| 128 Kio | Boucle MODE 1, COLOUR/CLS | 20,6817 | 3,0673 | 7 987 196 |
+
+Pour chaque capacité/scénario, Debug et Release produisent exactement les mêmes cycles, PC final, hauteur, nombre d'échantillons non nuls et SHA-256 du flux vidéo, du PCM et de l'image finale. Le scénario SOUND produit 176 118 échantillons non nuls ; repos et redessin restent silencieux. Le redessin travaille en 256 lignes, les scénarios télétexte en 512. Par exemple, l'image finale du redessin 128 Kio vaut `10890B78E70832233F767E9628FB628FA436FD3592056925061631B6E65F187F` dans les deux constructions.
+
+Le redessin Debug reste au-dessus des 19,97 ms ; la Release dispose ici d'une marge importante. Ce sont des mesures de carte et de ses périphériques internes, pas des FPS présentés dans RML : le transport réseau hôte, le périphérique audio Windows, le rendu de l'application et les médias montés ne participent pas à ce banc. Aucune nouvelle optimisation de puce n'a été introduite pour ce passage. L'essai graphique de RML reste à effectuer : le contrôle Windows a échoué avant tout lancement avec « Computer Use native pipe is unavailable », puis après les reprises prévues. Aucune capture de l'application n'est revendiquée.
+
+Le premier assemblage du banc temporaire mélangeait des identités de DLL et a été rejeté avant son entrée principale. Le processus a été arrêté et attendu ; ses sorties ne sont pas utilisées dans les mesures ci-dessus. Le banc a été reconstruit avec les dépendances d'une même construction de tests. Sources, DLL et journaux du banc sont temporaires et supprimés après consignation.
+
+**Observation RML Release du même jour :** le contrôle Windows fonctionne par `cua_repl` ; l'échec précédent concernait l'accès essayé, pas l'absence de contrôle de l'ordinateur. La vraie application `build/Release/Retro Media Lab/retromedialab.exe` a ouvert le B+ 128 existant et atteint BASIC, avec Econet station 4 et 640 × 512. Les observations successives donnent 49,9–50,1 FPS, 1,99–2,00 MHz, 100 %. Capture réelle : `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus128/rml-prompt.png`. Les frappes automatiques ne sont pas apparues dans l'écran invité ; elles ne permettent donc pas de revendiquer le chargement du jeu dans cette fenêtre, ni de conclure à un défaut du clavier physique. La fenêtre possédée a été fermée et sa disparition vérifiée, ainsi que l'absence du processus RML. Aucun réglage de machine ni média n'a été volontairement changé pendant ce passage.
+
 ## Périmètre demandé le 4 novembre 2026
+
+### B+ 64/128 — jeu réel Boulder Dash, 6 novembre 2026
+
+Le disque de la configuration B+ a été ouvert par `EmulationMediaProcessingService` en lecture seule : `F:\Retro\ef_tosec_backup_2024\Acorn BBC - Games - [SSD] (TOSEC-v2024-01-15)\Boulder Dash (1988)(Tynesoft)\Boulder Dash (1988)(Tynesoft).ssd`. Les cartes sont créées par `ModelCatalog`, avec les ROM et options B+ existantes, en changeant uniquement la capacité en mémoire. `*DISC`, puis `*CAT` lisent le catalogue : titre `dash`, sept fichiers dont `!BOOT`, option de démarrage 0/off. Un premier essai par Shift-RESET avait sélectionné ANFS et affiché « No Clock » ; ses mesures ne sont pas des mesures du jeu. Le lancement effectif utilise ensuite `*EXEC !BOOT` sous DFS, sans modifier les options du disque ou supprimer la ROM réseau.
+
+Sur les deux capacités, les ROM chargent 29 184 octets ; l'écran de sélection apparaît et l'appui sur Espace conduit au premier niveau avec le bandeau « PLAYER 1 / 3 MEN / A/1 ». Les images de sélection et de partie ont été inspectées. Le fonctionnement est celui du CPU et des puces de la carte, sans interception du chargeur ni copie directe du programme en RAM.
+
+| Carte | Partie, Release ms/image | Cycles sur 200 images | Échantillons PCM non nuls |
+|---|---:|---:|---:|
+| B+ 64 Kio | 3,8649 | 7 987 200 | 121 145 |
+| B+ 128 Kio | 3,6924 | 7 987 203 | 121 141 |
+
+Ces durées incluent l'extraction PCM et le hachage des images ; elles concernent la carte exécutée hors limitation, sans interface graphique ni sortie sonore Windows. Elles ne mesurent pas les FPS présentés dans RML. Le changement de scène valide une entrée clavier effective et le logiciel reste actif pendant les 200 images mesurées ; ce passage ne revendique pas une partie complète ni tous ses niveaux.
+
+Preuves hors Git, pour chacun de `BbcMicroModelBPlus64` et `BbcMicroModelBPlus128`, dans `artifacts/TestsChips/Wd1770/<Machine>/` : `board-boulder-catalogue.png`, `board-boulder-title.png`, `board-boulder-dash.png`. Ce sont des sorties de la carte émulée, pas des captures de la fenêtre RML. Dans `finally`, chaque image est détachée, libérée et la carte réinitialisée. `HasChanges` reste faux et le SHA-256 du média source est identique avant/après les deux cartes. Le banc et ses journaux sont supprimés après consignation ; les images de preuve sont conservées hors Git.
 
 Terminer les circuits et les raccordements des BBC Micro A, B, B+ 64 Kio et B+ 128 Kio, puis vérifier les machines complètes avec les équipements proposés. Les familles Master, System, Atom, Electron, Archimedes, Risc PC et A7000/A7000+ suivent dans cet ordre et ne doivent pas détourner ce bloc. Le travail préparatoire de la RTC Master est conservé pour le bloc suivant.
 

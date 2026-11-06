@@ -1,4 +1,4 @@
-﻿# Images des machines Acorn
+# Images des machines Acorn
 
 - [x] Compléter les images des machines déjà proposées et préparer les modèles suivants.
   - [x] Ajouter les photographies réelles.
@@ -18,7 +18,7 @@
   - [x] Créer `Assets/Machines/AcornSystem1.png` à `AcornSystem5.png`, `AcornAtom.png`, `AcornElectron.png`, `AcornArchimedes.png`, `AcornRiscPC.png` et `AcornA7000.png` dans le module : détourages produits par l'outil imagegen, canal alpha présent ; le nettoyage final et le gabarit sont traités ci-dessous.
   - [x] Modifier ces dix PNG : gabarit transparent de 512 × 512 pixels, identique à `BbcMicro.png` et `BbcMaster128.png`, proportions conservées et machine centrée. Créer `artifacts/acorn-machine-images/transparent-preview.png` : aperçu sur fonds clair et sombre pour vérifier les contours et les marges.
   - [x] Modifier `Common/Constants/EmulationModuleConstants.cs`, `THIRD-PARTY-NOTICES.md` et ce suivi ; supprimer les dix JPEG remplacés : utiliser les PNG transparents et conserver les crédits des sources.
-  - [x] Modifier les aides des tests ST506 et terminer leur vérification groupée conformément à `docs/tasks/acornemu-archimedes.md` avant de reconstruire les sorties Debug ; livrer les PNG dans le build avec tous les modules, sans conserver les anciens JPEG. 660 contrôles Acorn réussis en 10 s ; build Debug All code 0, 24 manifestes avec DLL, 12 PNG Acorn identiques aux sources, aucun JPEG dans le dossier livré, lanceur présent.
+  - [x] Modifier les aides des tests ST506 et terminer leur vérification groupée conformément à `docs/tasks/machines/AcornArchimedes/implementation.md` avant de reconstruire les sorties Debug ; livrer les PNG dans le build avec tous les modules, sans conserver les anciens JPEG. 660 contrôles Acorn réussis en 10 s ; build Debug All code 0, 24 manifestes avec DLL, 12 PNG Acorn identiques aux sources, aucun JPEG dans le dossier livré, lanceur présent.
 
 ## Résultat
 
@@ -30,4 +30,4 @@ Sept photographies ajoutées et raccordées : System 1, 2, 3, 4, 5, Atom et Elec
 
 Contrôle existant `MachineArtworkUsesExistingSharedFiles` réussi (1 cas, 41 ms). Chaque machine actuellement proposée possède un chemin non vide vers un fichier existant. Les douze images Acorn sont décodables et ont été inspectées visuellement. Aucun nouveau diagnostic ni fichier temporaire.
 
-Build Debug All terminé avec code 0 : `build/Debug/Retro Media Lab/retromedialab.exe`, 24 manifestes et leurs DLL, 12 photographies Acorn copiées et identiques aux sources (SHA256). Le bloc Archimedes continue dans `docs/tasks/acornemu-archimedes.md` : chevauchement des transferts ST506 entre secteurs, échéances DMA en écriture, formatage, ECC et contrôleurs des cartes ultérieures restent à terminer. Aucun commit anticipé du bloc incomplet.
+Build Debug All terminé avec code 0 : `build/Debug/Retro Media Lab/retromedialab.exe`, 24 manifestes et leurs DLL, 12 photographies Acorn copiées et identiques aux sources (SHA256). Le bloc Archimedes continue dans `docs/tasks/machines/AcornArchimedes/implementation.md` : chevauchement des transferts ST506 entre secteurs, échéances DMA en écriture, formatage, ECC et contrôleurs des cartes ultérieures restent à terminer. Aucun commit anticipé du bloc incomplet.

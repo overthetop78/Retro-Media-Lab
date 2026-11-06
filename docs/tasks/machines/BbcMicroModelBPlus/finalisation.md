@@ -1,0 +1,23 @@
+# BBC Micro B+ — finalisation 64/128 Kio
+
+- [ ] Finaliser les deux capacités après les changements communs du BBC.
+  - [x] Créer temporairement `artifacts/bbc-plus-final/Program.cs` et `Benchmark.csproj` : utiliser la configuration B+ en mémoire, comparer 64/128 Kio au repos, avec SOUND et en redessin, conserver cycles et empreintes vidéo/PCM, sans modifier les réglages ni les médias utilisateur.
+  - [x] Créer temporairement `artifacts/bbc-plus-final/tests-<configuration>.log` avec les résultats Debug et Release des tests existants `AcornEmuModelBPlusTests` ; vérifier les mémoires, ROM, périphériques permanents et configurations des deux capacités.
+  - [x] Créer temporairement `artifacts/bbc-plus-final/measurements-<configuration>.jsonl` avec les mesures de carte complète Debug et Release, leurs conditions et sorties ; modifier `docs/machines/AcornBBCMicro.md` avec les résultats réellement obtenus et leurs limites.
+  - [x] Modifier `docs/tasks/machines/BbcMicroModelBPlus/implementation.md` pour relier les preuves réelles déjà présentes et retirer le constat historique devenu faux d'absence de démarrage ROM ; supprimer `artifacts/bbc-plus-final/` après les mesures et l'arrêt effectif des processus de banc.
+  - [x] Modifier ce suivi avec les validations restantes de l'application complète après ces résultats ; ajouter les actions concrètes des captures RML avant leur réalisation, sans confondre les mesures de carte avec la présentation graphique.
+  - [x] Créer temporairement `artifacts/bbc-plus-game/Program.cs` et `Game.csproj` pour démarrer le véritable SSD Boulder Dash de la configuration en lecture seule sur B+ 64 puis 128 Kio ; produire `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus<64|128>/board-boulder-dash.png` et les mesures du jeu, sans présenter ces images de carte comme des captures de RML. Détacher l'image, la libérer et réinitialiser la carte dans `finally`.
+  - [x] Modifier `docs/machines/AcornBBCMicro.md` avec les lectures, l'exécution et les sorties réellement constatées du jeu ; supprimer `artifacts/bbc-plus-game/` et ses journaux après arrêt des processus, en conservant seulement les captures de preuve hors Git.
+  - [x] Créer `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus128/rml-prompt.png` depuis le vrai RML Release, avec son compteur de cadence et son démarrage 128 Kio ; conserver cette preuve distincte de celle du jeu si la saisie automatisée n'est pas reçue par le BBC.
+  - [ ] Créer `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus128/rml-real-game.png` depuis la vraie fenêtre RML Release : lancer le B+ existant, lire le catalogue et démarrer son logiciel réel, observer la vidéo, le son et la cadence ; fermer l'application possédée dans `finally` et attendre sa destruction effective. Ne pas modifier les médias originaux.
+  - [ ] Modifier `docs/machines/AcornBBCMicro.md` avec cette observation et les capacités effectivement exercées ; compléter ici les actions nécessaires aux fonctions encore non vérifiées avant de déclarer le B+ terminé et de passer au Master.
+
+## Résultats du passage du 6 novembre 2026
+
+36 tests B+ réussis dans chaque configuration. Six scénarios de carte mesurés : 17,56–20,93 ms/image Debug et 2,96–3,07 ms/image Release ; cycles et empreintes vidéo/PCM identiques. Résultats détaillés dans le document de machine. Les fichiers temporaires de ce passage sont supprimés.
+
+Le contrôle Windows ne se connecte pas à son canal natif, y compris après nouvelle tentative et réinitialisation. Aucun RML lancé ni capture produite dans ce passage ; les deux actions finales restent ouvertes. Le B+ n'est pas déclaré entièrement terminé sur la seule base du banc de performances.
+
+Le passage suivant exécute le vrai Boulder Dash sur les deux capacités : catalogue, chargement, entrée en partie par Espace, vidéo et PCM, 3,69–3,86 ms/image Release, source inchangée. Les six images de carte sont conservées hors Git. La capture RML reste distincte et ouverte ; la connexion du contrôle Windows a été demandée à l'utilisateur.
+
+L'accès Windows par `cua_repl` fonctionne effectivement : le premier accès utilisé était inadapté. RML Release a été lancé, le B+ 128 ouvert et allumé, et le prompt Acorn OS 128K observé avec environ 49,9–50,1 FPS, 1,99–2,00 MHz et 100 %. Capture réelle `rml-prompt.png` produite. Les commandes clavier automatiques n'ont pas été reprises à l'écran, donc aucune lecture de jeu dans la fenêtre n'est revendiquée ; ce constat ne démontre pas une panne du clavier physique. La session a été fermée et sa fenêtre puis son processus ont disparu. Les actions de jeu dans RML restent ouvertes ; le contrôle de l'ordinateur lui-même n'est plus considéré indisponible.

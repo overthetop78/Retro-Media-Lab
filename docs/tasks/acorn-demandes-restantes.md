@@ -35,10 +35,10 @@ Exécution détaillée : `docs/tasks/acorn-storage-settings.md`. Les corrections
 
 ## 2. Conserver les exigences cassette et audio à vérifier sans les déclarer faites
 
-Le travail historique est détaillé dans `docs/tasks/acornemu-model-a.md`. Avant toute correction supplémentaire, comparer chaque exigence à ses résultats existants ; ne pas refaire un travail déjà validé. L'audit global de tous les fichiers Constants a été reporté par l'utilisateur.
+Le travail historique est détaillé dans `docs/tasks/machines/BbcMicroModelA/implementation.md`. Avant toute correction supplémentaire, comparer chaque exigence à ses résultats existants ; ne pas refaire un travail déjà validé. L'audit global de tous les fichiers Constants a été reporté par l'utilisateur.
 
 - [x] Compléter le suivi des exigences cassette/audio encore non validées.
-  - [x] Modifier `docs/tasks/acornemu-model-a.md` après vérification des résultats déjà consignés : conserver séparément les points ci-dessous, marquer les points effectivement réalisés et définir des actions de fichiers pour les manques établis avant de les exécuter.
+  - [x] Modifier `docs/tasks/machines/BbcMicroModelA/implementation.md` après vérification des résultats déjà consignés : conserver séparément les points ci-dessous, marquer les points effectivement réalisés et définir des actions de fichiers pour les manques établis avant de les exécuter.
 
 ### Cassette : exigences à conserver
 

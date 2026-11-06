@@ -31,8 +31,8 @@
 
 ## Blocs suivants conservés
 
-- [ ] Atom puis Electron : créer les suivis `docs/tasks/acornemu-atom.md` et `docs/tasks/acornemu-electron.md` avec leurs fichiers concrets avant développement.
-- [ ] Archimedes : créer `docs/tasks/acornemu-archimedes.md`, comparer les cartes et options réelles, notamment A440/A440/1 et A5000/Alpha, avant de définir les modèles.
+- [ ] Atom puis Electron : créer les suivis `docs/tasks/machines/AcornAtom/implementation.md` et `docs/tasks/machines/AcornElectron/implementation.md` avec leurs fichiers concrets avant développement.
+- [ ] Archimedes : créer `docs/tasks/machines/AcornArchimedes/implementation.md`, comparer les cartes et options réelles, notamment A440/A440/1 et A5000/Alpha, avant de définir les modèles.
 - [ ] Risc PC et A7000 : créer `docs/tasks/acornemu-riscpc-a7000.md`, comparer A7000/A7000+ avant de définir des modèles séparés.
 
 ABC, Communicator, stations Unix et Pocket Book exclus de la demande actuelle. Le document Google lié exige une authentification actuellement indisponible ; la liste explicite de l’objectif reste conservée ici et sera confrontée au document dès que son accès sera possible.
