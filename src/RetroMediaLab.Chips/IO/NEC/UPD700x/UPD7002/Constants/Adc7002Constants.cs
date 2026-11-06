@@ -2,6 +2,7 @@ namespace RetroMediaLab.Chips.IO.NEC.UPD700x.UPD7002.Constants;
 
 public static class Adc7002Constants
 {
+    public const int StateFormatVersion = 1;
     public const int MillisecondsPerSecond = 1000;
     public const int EightBitMilliseconds = 4;
     public const int TwelveBitMilliseconds = 10;
