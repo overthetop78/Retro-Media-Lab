@@ -1,8 +1,12 @@
+using RetroMediaLab.Chips.IO.Acorn.SerialUla.BbcSerialUla.Contracts;
+
 namespace RetroMediaLab.Chips.IO.Acorn.SerialUla.BbcSerialUla.Interfaces;
 
 /// <summary>Broches TTL, après les buffers de ligne externes. Tick représente un cycle de la carte appelante.</summary>
 public interface IBbcSerialUla
 {
+    BbcSerialUlaState CaptureState();
+    void RestoreState(BbcSerialUlaState state);
     byte Control { get; }
     bool Motor { get; }
     bool Rs423Selected { get; }

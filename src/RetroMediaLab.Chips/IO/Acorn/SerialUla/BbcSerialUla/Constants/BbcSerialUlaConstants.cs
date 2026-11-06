@@ -2,6 +2,7 @@ namespace RetroMediaLab.Chips.IO.Acorn.SerialUla.BbcSerialUla.Constants;
 
 public static class BbcSerialUlaConstants
 {
+    public const int StateFormatVersion = 1;
     public const int MasterClock = 16_000_000;
     public const int ExternalClockDivider = 13;
     public const int CassetteClockDivider = 64;
