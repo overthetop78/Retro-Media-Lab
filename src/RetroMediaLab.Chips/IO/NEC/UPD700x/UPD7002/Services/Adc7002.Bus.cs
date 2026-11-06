@@ -37,6 +37,7 @@ public sealed partial class Adc7002
                 var previousEoc = EndOfConversionHigh;
                 PrepareCommand(input);
                 if (!previousEoc) _endOfConversion(true);
+                PublishClockEvent();
             }
             return null;
         }

@@ -10,7 +10,11 @@ internal sealed partial class AtomMachine
         if (address >= C.PpiStart && address < C.PpiEnd) return _ppi.Read(address - C.PpiStart);
         if (address >= C.ViaStart && address < C.ViaEnd) return _via.Read(address & C.ViaRegisterMask);
         var disk = DiskRegister(address);
-        if (_fdc is not null && disk >= 0) return _fdc.Read(disk);
+        if (_fdc is not null && disk >= 0)
+        {
+            _fdcDrive!.SynchronizeClock();
+            return _fdc.Read(disk);
+        }
         if (address >= C.OsRomStart) return _basicOs[C.BasicRomBytes + address - C.OsRomStart];
         if (address >= C.BasicRomStart && address < C.BasicRomStart + C.BasicRomBytes) return _basicOs[address - C.BasicRomStart];
         if (_floatingPoint.Length != 0 && address >= C.FloatingPointRomStart && address < C.FloatingPointRomStart + _floatingPoint.Length)
@@ -29,6 +33,7 @@ internal sealed partial class AtomMachine
         var disk = DiskRegister(address);
         if (_fdc is not null && disk >= 0)
         {
+            _fdcDrive!.SynchronizeClock();
             if (disk == 0) _fdc.MechanicalSpeedPercent = _speeds[(value & D.Drive1Select) != 0 ? 1 : 0];
             _fdc.Write(disk, value);
             _fdcDrive!.Synchronize();

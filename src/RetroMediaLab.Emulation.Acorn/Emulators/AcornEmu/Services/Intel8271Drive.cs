@@ -23,6 +23,11 @@ internal sealed class Intel8271Drive
     private readonly uint[] _rotation = new uint[H.DriveCount];
     private byte _previousControl;
     private bool _signalsChanged = true;
+    private bool _trackChanged = true;
+    private long _ownerTick;
+    private long _nextControllerTick;
+    private bool _readDataHigh;
+    private readonly bool?[] _indexLevels = new bool?[H.DriveCount];
     private int _previousDrive;
     private bool _motor;
     private ulong _time;
@@ -49,6 +54,9 @@ internal sealed class Intel8271Drive
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ownerClock);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(chipClock);
         _chip = chip;
+        _ownerTick = chip.InputClockCount;
+        _nextControllerTick = chip.NextClockEvent ?? long.MaxValue;
+        _chip.NextClockEventChanged += next => _nextControllerTick = next ?? long.MaxValue;
         _images = images;
         _ownerClock = ownerClock;
         _nanosecondsPerTick = checked((uint)(C.NanosecondsPerSecond / ownerClock));
@@ -58,7 +66,7 @@ internal sealed class Intel8271Drive
         _dataWindowThresholdNanoseconds = checked((uint)((long)C.StandardSingleShotWindowNanoseconds
             * H.StandardClock / chipClock));
         _chip.WriteDataChanged += WriteDataChanged;
-        _chip.DriveSignalsChanged += () => _signalsChanged = true;
+        _chip.DriveSignalsChanged += () => { _signalsChanged = true; _trackChanged = true; };
     }
 
     internal void Tick()
@@ -72,11 +80,16 @@ internal sealed class Intel8271Drive
         }
         _time += elapsed;
         Synchronize();
-        _chip.SetUnseparatedData(false);
+        if (_readDataHigh)
+        {
+            SynchronizeClock();
+            _readDataHigh = false;
+            _chip.SetUnseparatedData(false);
+        }
         if (_motor)
         {
             var drive = _previousDrive;
-            if (_writingImage is null) EnsureTrack(drive);
+            if (_writingImage is null && _trackChanged) EnsureTrack(drive);
             _rotation[drive] += elapsed;
             if (_rotation[drive] >= C.RevolutionNanoseconds)
             {
@@ -85,15 +98,30 @@ internal sealed class Intel8271Drive
                 _rotation[drive] -= C.RevolutionNanoseconds;
                 _nextPulse = 0;
             }
-            _chip.SetIndex(drive, _rotation[drive] < C.IndexNanoseconds);
+            SetIndexInput(drive, _rotation[drive] < C.IndexNanoseconds);
             while (_writingImage is null && _nextPulse < _pulses.Length && _pulses[_nextPulse] <= _rotation[drive])
             {
                 ReadPulse();
                 _nextPulse++;
             }
         }
-        _chip.Tick();
+        ++_ownerTick;
+        if (_ownerTick >= _nextControllerTick) SynchronizeClock();
         Synchronize();
+    }
+
+    internal void SynchronizeClock()
+    {
+        _chip.AdvanceTo(_ownerTick);
+        _nextControllerTick = _chip.NextClockEvent ?? long.MaxValue;
+    }
+
+    private void SetIndexInput(int drive, bool level)
+    {
+        if (_indexLevels[drive] == level) return;
+        SynchronizeClock();
+        _indexLevels[drive] = level;
+        _chip.SetIndex(drive, level);
     }
 
     internal void Synchronize()
@@ -107,6 +135,7 @@ internal sealed class Intel8271Drive
             }
             return;
         }
+        SynchronizeClock();
         var control = _chip.DriveControl;
         var drive = _chip.ActiveDrive;
         var head = _headSelect(control);
@@ -116,6 +145,7 @@ internal sealed class Intel8271Drive
         {
             _tracks[drive] = Math.Clamp(_tracks[drive] + ((control & H.OutputDirection) != 0 ? 1 : -1), 0, byte.MaxValue);
             _cachedImage = null;
+            _trackChanged = true;
             _images(drive)?.Mechanics.Seek(_tracks[drive], head);
         }
         for (var index = 0; index < H.DriveCount; index++)
@@ -124,7 +154,7 @@ internal sealed class Intel8271Drive
             _chip.SetReady(index, image is not null);
             _chip.SetWriteProtected(index, image?.IsReadOnly == true);
             _chip.SetTrackZero(index, _tracks[index] == 0);
-            if (!_chip.Motor || drive != index) _chip.SetIndex(index, false);
+            if (!_chip.Motor || drive != index) SetIndexInput(index, false);
             image?.Mechanics.SetMotor(_chip.Motor && drive == index);
             image?.Mechanics.SetActivity(drive == index && _chip.Reading, drive == index && _chip.Writing);
         }
@@ -149,10 +179,12 @@ internal sealed class Intel8271Drive
 
     internal void Reset()
     {
+        SynchronizeClock();
         _signalsChanged = true;
         EndWrite();
         _previousControl = _chip.DriveControl;
         _cachedImage = null;
+        _trackChanged = true;
         _pulses = [];
         _hasReadPulse = false;
         for (var drive = 0; drive < H.DriveCount; drive++) _chip.SetWriteFault(drive, false);
@@ -161,9 +193,11 @@ internal sealed class Intel8271Drive
 
     internal void MediaChanged(int drive)
     {
+        SynchronizeClock();
         _signalsChanged = true;
         if (_writingImage is not null && _writingDrive == drive) EndWrite();
         _cachedImage = null;
+        _trackChanged = true;
         _pulses = [];
         _hasReadPulse = false;
         _chip.SetWriteFault(drive, false);
@@ -172,6 +206,7 @@ internal sealed class Intel8271Drive
 
     private void EnsureTrack(int drive)
     {
+        _trackChanged = false;
         var image = _images(drive);
         var head = _headSelect(_chip.DriveControl);
         if (ReferenceEquals(image, _cachedImage) && _tracks[drive] == _cachedTrack && head == _cachedHead) return;
@@ -196,10 +231,12 @@ internal sealed class Intel8271Drive
 
     private void ReadPulse()
     {
+        SynchronizeClock();
         // Le monostable externe distingue les intervalles courts et longs ; une frontière
         // exactement égale à la période entière classerait mal les raccordements déphasés.
         _chip.SetDataWindow(!_hasReadPulse || _time - _lastReadPulse >= _dataWindowThresholdNanoseconds);
         _chip.SetUnseparatedData(true);
+        _readDataHigh = true;
         _lastReadPulse = _time;
         _hasReadPulse = true;
     }
@@ -238,6 +275,7 @@ internal sealed class Intel8271Drive
             _writtenPulses.Clear();
             if (_writingImage is not null && edgePulse) _writtenPulses.Add(0);
             _cachedImage = null;
+            _trackChanged = true;
         }
     }
 }

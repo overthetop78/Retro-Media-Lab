@@ -144,3 +144,139 @@ La limite basse de fréquence acceptée reste strictement équivalente : le mod�
 Le module BBC regroupe au plus 64 cycles seulement lorsque RS423 est sélectionné, RXD haut, TX/RX au repos et les broches modem stables. Les accès ACIA/SERPROC et l'observation du composant synchronisent d'abord les cycles écoulés. Tout état actif et toute entrée cassette restent sur le chemin unitaire. Aucun circuit ne connaît une autre puce : c'est le câblage du module qui applique ces conditions. 182 contrôles MC6850/SERPROC et six raccordements BBC réussissent dans chaque configuration Debug/Release.
 
 Après retrait : groupes série/vidéo sélectionnés 271 cas réussis par configuration, raccordements BBC 158 cas réussis par configuration. Les horloges de chaque cycle sont de nouveau traitées immédiatement. Les anciennes captures du regroupement ne décrivent plus le chemin actuellement conservé.
+
+## Raccordement série par notifications — modification du 6 novembre 2026
+
+Les phases TxC/RxC restent dans le MC6850 ; phase source, diviseur et synthèse restent dans SERPROC. Le MC6850 publie les changements TXD/RTS et de diviseur après ses mutations existantes. SERPROC retient ces entrées, publie les changements de ses sorties modem et signale les fronts série produits par sa propre horloge. Le module Serial raccorde ces sorties aux entrées de l'autre circuit ; il ne consulte plus leurs propriétés à chaque tick pour découvrir un changement.
+
+Les connexions sont établies à la construction du câblage, avant toute horloge, et les niveaux initiaux sont présentés une fois. L'option de débit cassette reste gérée par son accumulateur existant ; son pas est mis à jour sur notification du diviseur.
+
+Aucun test, build ou résultat de performance nouveau n'est revendiqué pendant cette correction. La validation comparée des séquences, fronts et sorties reste à effectuer à l'étape finale autorisée.
+
+## Propagation des entrées RS423 et séparation des notifications — 6 novembre 2026
+
+Le manuel Acorn, section 3.5 et figure 9, décrit le routage des données et signaux de contrôle entre ACIA, cassette et RS423, distinct des générateurs d'horloge. Dans le modèle numérique, les propriétés RXD/CTS sont déjà des niveaux multiplexés sans registre d'échantillonnage intermédiaire ; attendre un Tick uniquement pour notifier le récepteur ajoutait un retard absent de ces expressions.
+
+Les setters Rs423ReceiveData et Rs423ClearToSendHigh publient donc maintenant le changement de niveau immédiatement lorsque RS423 est sélectionné. En cassette, ils conservent leurs niveaux sans notifier une sortie masquée. Une écriture du registre de sélection présente immédiatement les nouvelles entrées au récepteur. Cela ne crée aucun front RxC : le MC6850 conserve l'échantillonnage de RXD par son propre chemin de réception.
+
+La publication des niveaux est séparée de SerialClocksRaised. Modifier une entrée ou la sélection ne peut donc pas rejouer un front encore présent dans les indicateurs du dernier Tick. Le séparateur cassette publie après une mutation possible de donnée ou de porteuse, sans inspection globale des quatre sorties à chaque Tick. L'expiration du silence agit au franchissement du seuil, sans réappliquer indéfiniment le même état de silence. Le raccordement Serial présente les niveaux initiaux lors de sa construction et de PowerOn.
+
+OutputNotificationTests ajoute les contrôles des entrées immédiates, de leur masquage, de la phase inchangée et de l'absence de front rejoué. Ils sont écrits mais non exécutés pendant ce bloc de correction ; aucun nouveau résultat de performances, de régression ou de build n'est annoncé.
+
+## Validation groupée des raccordements — 6 novembre 2026
+
+Les cas de ce composant et les autres cas du bloc horloges/signaux réussissent dans le passage Chips Debug complet. Le passage ciblé des sept composants en Release donne 723 réussites, zéro échec ni ignoré, 710 ms. Les contrôles d'intégration sélectionnés BBC Model B, cassette/série, 8271 et WD1770 donnent 166 réussites en Release, 10 s. En Debug, les 160 cas extérieurs au câblage série ont réussi au premier passage ; les six cas de câblage série ont réussi après adaptation de leur relais et de leurs assertions de câblage, 848 ms. Ces comptes sont ceux des groupes, pas un nombre de fonctions propres à cette puce.
+
+Le passage Chips Debug global reste non vert : deux contrôles des contrats publics, notamment sur des classes ACB-4000 déjà présentes et non modifiées, ainsi qu'un contrôle d'allocation SCSI échoué une fois puis réussi isolément. Les exigences correspondantes ne sont pas supprimées. Le détail est consigné dans docs/tasks/chips-validation.md. Ces résultats ne remplacent ni la mesure du BBC complet ni les captures de validation des machines ; aucun nouveau framerate n'est revendiqué.
+
+## Séparateur cassette inactif et niveaux retenus — 6 novembre 2026
+
+Le séparateur conserve un état d'activité interne. Il traite encore chaque cycle tant que la mesure d'une demi-onde, le silence ou la porteuse peut évoluer. Après silence établi, compteur saturé et porteuse expirée, aucun champ ne peut changer avec une entrée stable : ce seul traitement cesse. SetCassetteInput le réactive sur un changement réel null/bas/haut. Le traitement de cette entrée garde le front existant, sans cycle ajouté. PowerOn rétablit sa période initiale.
+
+Les générateurs libres de source, diviseurs TxC/RxC et synthèse continuent tous leurs cycles. Le module présente seulement les changements de niveau et la déconnexion, séparément de Serial.Tick(). L'ancienne méthode Tick(bool?) reste disponible pour les tests. Pause, moteur arrêté, fin de bande et reset déconnectent l'entrée comme précédemment ; les échantillons nuls gardent le dernier niveau.
+
+Validation groupée : 182 cas SERPROC/MC6850 réussis en Debug (environ 1 s) et Release (653 ms) ; 34 intégrations cassette/série BBC réussies en Debug (34 s) et Release (5 s). Les nouveaux cas observent horloges et synthèse pendant le silence stable null/bas/haut, puis réveil, qualification de porteuse et disparition au silence. Les contrôles préexistants de fréquences fractionnaires, taux série, enregistrement et chargement restent exécutés. Aucun gain global n'est revendiqué avant la comparaison du BBC complet.
+
+Comparaison du BBC complet au repos, avant/après ces seuls changements, trois processus alternés par variante : médiane Debug 23,2334 → 22,0819 ms/image (−4,96 %), Release 3,9828 → 3,7215 ms/image (−6,56 %). Cycles, PC et empreintes vidéo/audio identiques dans les douze passages. Conditions et valeurs individuelles dans docs/chips/CPU/Mos6502.md. Aucun gain de chargement cassette ou de fenêtre native n'est extrapolé à partir de ce scénario au repos. Le déficit global Debug demeure ouvert.
+
+## Échéances locales des générateurs libres — 6 novembre 2026
+
+Le chemin Tick() possède un compte à rebours et le nombre de périodes d'entrée conservées. Il ne consulte aucun autre circuit et n'utilise aucun ordonnanceur de machine. Tant que le séparateur est actif, ou qu'un diviseur série unitaire rend les fronts denses, il garde le traitement unitaire. Après silence établi, il peut conserver les seules périodes ne produisant ni front TxC/RxC ni nouveau pas du synthétiseur.
+
+Pour un résidu source p, un dénominateur D et k fronts source avant la prochaine sortie du diviseur, la distance est ceil((kD − p) / MasterClock). Le synthétiseur fournit sa propre distance ceil((période − résidu) / incrément). Le minimum fixe l'échéance : seules les périodes STRICTEMENT antérieures sont regroupées. Le front à l'échéance utilise ClockInputs, le même traitement que Tick(bool,bool), avec le même ordre séparateur, synthèse et notification des horloges. Aucun front utile n'est supprimé.
+
+Avant une mutation TXD/RTS, d'entrée cassette ou de registre, FlushPendingClock actualise les diviseurs libres et les deux résidus jusqu'au dernier front déjà reçu, puis invalide l'échéance. Le nouveau niveau est traité au front suivant existant, sans retard ajouté. La propriété SourceClockPhase projette également le résidu sur les périodes conservées : une lecture entre événements ne retourne pas une phase ancienne. PowerOn annule les périodes conservées avant de réinitialiser les circuits. Les entrées RXD/CTS restent multiplexées et notifiées immédiatement comme auparavant ; elles ne créent aucun RxC.
+
+ClockGroupingTests compare les traces à chaque période avec le chemin unitaire, pour 1 230 770, 2 000 000 et 3 000 001 périodes d'entrée par seconde, toutes les combinaisons des huit diviseurs Tx/Rx et du multiplexeur. TXD/RTS, RXD/CTS, entrée cassette, silence et PowerOn varient au cours des séquences. Les indicateurs de front, notifications, phase source, données et contrôle RS423, RXD/CTS/DCD, moteur, registre et PCM sont comparés. Les 184 cas SERPROC/MC6850 passent en Debug (3 s) et Release (2 s). Les 34 intégrations cassette/série BBC passent en Debug (30 s) et Release (5 s).
+
+Ces contrôles démontrent l'équivalence des séquences couvertes ; la conservation du bloc comme optimisation dépend encore de la comparaison du BBC complet. Ils ne remplacent pas les preuves d'émulation des autres puces ou machines.
+
+Décision après comparaison du BBC complet : bloc conservé. Médiane Debug 21,3913 → 20,6511 ms/image (−3,46 %), Release 3,6480 → 3,4744 ms/image (−4,76 %), mêmes cycles et empreintes dans les douze passages. Les valeurs et conditions sont dans docs/chips/CPU/Mos6502.md. Ces résultats restent ceux du banc complet sans affichage Windows.
+
+## Preuve de lecture cassette avec les ROM du BBC — 6 novembre 2026
+
+Média lu seulement : `F:\Retro\ef_tosec_backup_2024\Acorn BBC - Applications - [UEF] (TOSEC-v2013-10-16)\Beebcalc Spreadsheet (demo) (1983)(Gemini)\Beebcalc Spreadsheet (demo) (1983)(Gemini).uef`. SHA-256 avant et après : `AC02E21AB188068F86B88B821F44C316FE7711D10FE0275A1BEE0B95C8E22835` ; 9 609 600 échantillons préparés à 48 kHz par EmulationSdk.MediaProcessing. Aucune écriture de média ni de configuration.
+
+Le banc possède une carte BBC Model B créée par ModelCatalog, avec une copie en mémoire des options et les ROM MOS 1.20, BASIC II, DFS et NFS de la configuration. Il exécute normalement le CPU et tous les circuits de la carte. *TAPE puis *CAT sont saisis par la matrice clavier ; la cassette est explicitement en mode RealTime, sans injection de données en RAM ni chargement direct.
+
+Le MOS affiche `BCALC 01`. La RAM écran contient ce nom et ce numéro de bloc, sans message `Data?` au point de contrôle. Le support a atteint l'échantillon 197 656 lors de la détection ; après trois trames permettant de terminer les deux champs vidéo, il est à 200 532. La pause conserve exactement cette position pendant 100 trames et désactive CassetteActive. La reprise atteint 219 701 après 20 trames, avec CassetteActive vrai. Les échantillons audio de la machine sont drainés, sans sortie audio Windows.
+
+Captures inspectées, hors Git :
+
+- `artifacts/TestsChips/BbcSerialUla/BbcMicroModelB/cassette-catalogue.png` : trame 640 × 512 réellement calculée par le BBC, catalogue matériel en cours sur BCALC, après stabilisation des deux champs.
+- `artifacts/TestsChips/BbcSerialUla/BbcMicroModelB/cassette-pause.png` : écran calculé après les 100 trames de pause ; la stabilité de la position et la reprise sont démontrées par les assertions du banc, pas par l'image seule.
+
+Ces images sont des sorties du cœur, pas des captures de la fenêtre Windows. Elles prouvent ce parcours de lecture, pas le chargement complet ni l'exécution de Beebcalc, ni toutes les fonctions du SERPROC. Les autres fonctions reposent sur les contrôles détaillés précédents. Pour cette UEF, le SDK retourne le signal mais pas de blocs décodés dans Blocks ; le mode direct et l'indexation ne sont donc pas validés par ce passage.
+
+Le banc termine avec le code 0. La carte ne possède aucun thread ni fenêtre ; elle est détachée de la cassette et des entrées dans finally. Aucun processus d'émulation ou ressource graphique Windows n'est lancé pour ce contrôle.
+
+Livraison : scripts/local-building.cmd --building=debug --modules=A termine avec le code 0. Exécutable build/Debug/Retro Media Lab/retromedialab.exe, manifestes et DLL des 24 modules présents. DLL Chips source/livrée identiques, SHA-256 B30B88C613990BE4D39ABE0BF14FFF4D54599F7CD4B8DEFDE4E0686BE1FAFC93. Cette compilation ne constitue pas une mesure de cadence native.
+
+Observation native du build livré : BBC Model B atteint le prompt ; la capture native-clock-signals.png est dans artifacts/TestsChips/BbcIoLogic/BbcMicroModelB/. Une boîte de dialogue dotnet préexistait au lancement et masque une partie centrale de la capture ; elle ne fait pas partie du rendu BBC et n'a pas été fermée. Les compteurs restent visibles. Les captures cassette précédentes proviennent du cœur et ne contiennent pas cette fenêtre. RML a été fermé après observation, disparition de la fenêtre et du processus vérifiée.
+
+## Essai de synthèse coupée sans échéance intermédiaire retiré — 6 novembre 2026
+
+Le candidat ignore les échéances internes de synthèse lorsque RTS ou le multiplexeur RS423 coupe la sortie cassette. Le résidu et le pas du synthétiseur sont résolus par quotient/reste dans FlushPendingClock avant toute mutation. La sortie active continue à produire chaque pas normalement ; les fronts TxC/RxC restent inchangés. Trois cas supplémentaires comparent de longues périodes coupées puis la reprise avec un chemin scalaire, aux fréquences 1 230 770, 2 000 000 et 3 000 001 Hz, avec diviseurs 256, changements de TXD/RTS/multiplexeur et PowerOn.
+
+Les 187 contrôles SERPROC/MC6850 et les 34 intégrations cassette/série BBC passent dans chaque configuration. Le banc complet reprend les mêmes scénarios, options copiées en mémoire, 80 trames de chauffe puis 200 trames mesurées, trois processus par variante/configuration dans l’ordre référence/candidat/candidat/référence/référence/candidat. Les DLL de référence sont explicitement recopiées après construction du banc ; les options JIT Debug non optimisé/Release sont vérifiées sur Chips et Acorn chargés. Aucun média ni configuration utilisateur modifié. RunFrame et drainage/contrôle PCM sont chronométrés ; le hachage de la séquence vidéo reste hors chronométrage.
+
+| Configuration / scénario | Référence (trois passages ms/image) | Candidat | Médiane avant → essai |
+|---|---|---|---|
+| Debug/idle | 19.761339 / 20.140427 / 20.332299 | 19.264575 / 20.048009 / 19.967438 | 20.140427 → 19.967438 |
+| Debug/sound | 19.884954 / 20.747482 / 20.130310 | 19.865686 / 20.332566 / 19.894571 | 20.130310 → 19.894571 |
+| Debug/drawing | 22.213650 / 22.648886 / 22.911724 | 22.896501 / 22.460143 / 22.322632 | 22.648886 → 22.460143 |
+| Release/idle | 3.344857 / 3.281834 / 3.321680 | 3.335907 / 3.381275 / 3.403491 | 3.321680 → 3.381275 |
+| Release/sound | 3.207461 / 3.186094 / 3.197693 | 3.365053 / 3.210910 / 3.344363 | 3.197693 → 3.344363 |
+| Release/drawing | 3.482076 / 3.274377 / 3.233122 | 3.302045 / 3.323609 / 3.245077 | 3.274377 → 3.302045 |
+
+Dans les 36 passages, les cycles, PC, hauteurs, échantillons non nuls et SHA-256 de la séquence vidéo, du PCM et de la dernière image restent identiques par scénario. Prompt : 7 987 198 / E464 ; SOUND : 7 987 201 / E539 et 176 118 échantillons non nuls ; redessin : 7 987 203 / CCBC. Les empreintes correspondent aux séries précédentes.
+
+**Décision : retrait.** Les faibles gains Debug ne démontrent pas un gain global ; les médianes Release prompt et SOUND reculent. Le changement de Clock.cs et ses trois cas spécifiques sont retirés, leurs sources antérieures restaurées. Les projets concernés sont reconstruits pour ne pas conserver de DLL du candidat. Le banc et ses fichiers temporaires sont supprimés après consignation. Il ne s’agit pas d’une livraison ni d’une validation des 19,97 ms sur tous les scénarios ; aucun nouveau screenshot fonctionnel n’est revendiqué pour un essai retiré.
+
+## Avancement absolu et raccordement par échéances : essai retiré — 6 novembre 2026
+
+Essai : le SERPROC conserve InputClockCount, reçoit AdvanceTo et expose sa prochaine échéance. La carte fournit son temps à Serial.TickAt, synchronise avant les accès MPU/changements d’entrée et ne sollicite le circuit qu’à la date reçue. Aucun thread, calendrier générique, changement des fréquences ou dépendance à Emulation dans la puce n’est ajouté. Les API Tick restent couvertes par comparaison au chemin unitaire. Le reset numérique réinitialise les diviseurs mais pas la référence temporelle monotone.
+
+Les notifications de réarmement sont réservées aux mutations externes ; après un avancement explicitement demandé, le propriétaire récupère l’échéance suivante. Un test vérifie qu’une écriture au même instant qu’un retour TXD réarme bien le circuit : filtrer sur une ancienne date notifiée aurait perdu ce réarmement. Les 189 contrôles SERPROC/MC6850 et les 38 scénarios cassette/série BBC passent en Debug et Release, y compris les débits forcés 300/1200, accès MPU, reset, niveaux et dates des fronts.
+
+### Comptage réel du BBC complet
+
+Diagnostic distinct du chronométrage, avec compteurs temporaires retirés dans finally puis reconstruction : 200 images par scénario, après le même échauffement et les mêmes commandes. Les durées de ce passage instrumenté ne sont pas utilisées comme performance. Le SERPROC est programmé à 100 décimal (0x64) : RS423 sélectionné, diviseurs Tx et Rx égaux à 2, RTS haut, séparateur inactif.
+
+| Scénario | Cycles carte | AdvanceTo | ClockInputs / Tick internes | Séparateur |
+|---|---:|---:|---:|---:|
+| idle | 7987198 | 2458990 | 2457599 | 0 |
+| sound | 7987201 | 2458990 | 2457600 | 0 |
+| drawing | 7987203 | 2458992 | 2457601 | 0 |
+
+Au prompt, cela représente 12 294,95 appels AdvanceTo et 12 287,995 traitements ClockInputs par image. Le nombre de consultations SERPROC passe d’un Tick par cycle carte (7 987 198 sur ces 200 images dans le code de référence) à des intervalles moyens d’environ 3,25 cycles. Ces intervalles restent courts : le relais Synchronize, la boucle AdvanceTo et les consultations de date ajoutées doivent être moins coûteux que les opérations remplacées. Le séparateur ne consomme déjà aucun traitement à ce point ; lui attribuer tout le coût série aurait été incorrect. Les fréquences des horloges série ne doivent pas être supprimées pour gagner du temps.
+
+### Comparaisons complètes
+
+Deux séries indépendantes. Même configuration copiée en mémoire, 80 trames de chauffe, saisie clavier normale de SOUND ou du programme MODE 1 puis 200 trames mesurées ; trois processus par variante dans l’ordre référence/candidat/candidat/référence/référence/candidat. DLL recopiées explicitement après construction du banc et modes JIT vérifiés sur les assemblies chargées. RunFrame et drainage/contrôle PCM chronométrés ; empreinte de la séquence vidéo hors chronométrage. Aucun média ni configuration utilisateur modifié.
+
+#### V1 : avancement avec relais
+
+| Compilation / scénario | Référence (trois passages ms/image) | Candidat | Médiane avant → essai |
+|---|---|---|---|
+| Debug/idle | 19.802532 / 21.604745 / 19.986037 | 20.507222 / 20.416521 / 20.066122 | 19.986037 → 20.416521 |
+| Debug/sound | 20.194966 / 19.950057 / 19.747715 | 20.473009 / 20.051082 / 20.230622 | 19.950057 → 20.230622 |
+| Debug/drawing | 22.316704 / 21.993560 / 22.128679 | 25.146660 / 22.559316 / 22.539527 | 22.128679 → 22.559316 |
+| Release/idle | 3.925976 / 3.906280 / 3.637904 | 3.632235 / 3.776705 / 3.739492 | 3.906280 → 3.739492 |
+| Release/sound | 3.334713 / 3.422638 / 3.288179 | 3.407337 / 3.325525 / 3.302649 | 3.334713 → 3.325525 |
+| Release/drawing | 3.262767 / 3.335325 / 3.443174 | 3.234201 / 3.220155 / 3.250970 | 3.335325 → 3.234201 |
+
+#### V2 : avancement sans Tick imbriqué / Math.Min / relais à l’échéance
+
+| Compilation / scénario | Référence (trois passages ms/image) | Candidat | Médiane avant → essai |
+|---|---|---|---|
+| Debug/idle | 19.388455 / 19.445155 / 19.524392 | 19.614073 / 19.975826 / 22.789797 | 19.445155 → 19.975826 |
+| Debug/sound | 19.484925 / 19.686373 / 19.556142 | 19.653155 / 20.032409 / 19.609126 | 19.556142 → 19.653155 |
+| Debug/drawing | 21.802094 / 21.998515 / 21.726467 | 22.053108 / 22.461504 / 22.250576 | 21.802094 → 22.250576 |
+| Release/idle | 3.794812 / 3.645655 / 3.678164 | 3.605072 / 3.572128 / 3.775584 | 3.678164 → 3.605072 |
+| Release/sound | 3.277774 / 3.201680 / 3.288742 | 3.168531 / 3.236518 / 3.321821 | 3.277774 → 3.236518 |
+| Release/drawing | 3.276119 / 3.281244 / 3.316971 | 3.219499 / 3.251807 / 3.458856 | 3.281244 → 3.251807 |
+
+Dans les 72 passages, les cycles, PC, hauteurs, nombres d’échantillons non nuls et empreintes vidéo complète/PCM/image finale restent identiques par scénario et correspondent aux séries antérieures : prompt 7 987 198 cycles / E464 ; SOUND 7 987 201 / E539, 176 118 échantillons non nuls ; redessin 7 987 203 / CCBC.
+
+**Décision : retrait du bloc.** La seconde version réduit le surcoût de la première mais les trois médianes Debug restent supérieures à leurs références. Le gain Release ne suffit pas à valider ce changement comme optimisation du BBC Debug. Les nouvelles API de temps/échéance, les raccordements, les cinq cas spécifiques de puce et les quatre cas supplémentaires d’intégration sont retirés ; toutes les sources préexistantes sont restaurées depuis leurs copies antérieures et les assemblies reconstruites. Les 184 contrôles de puce et les 34 intégrations d’origine ne sont pas supprimés. Aucune nouvelle livraison ou preuve native n’est revendiquée ; le build natif précédemment livré reste inchangé. Le banc, ses compteurs et toutes ses sorties temporaires sont supprimés après consignation.

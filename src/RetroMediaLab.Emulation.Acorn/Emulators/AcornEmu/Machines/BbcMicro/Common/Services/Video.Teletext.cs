@@ -28,7 +28,7 @@ internal sealed partial class Video
         ConfigureTeletextPins();
     }
 
-    private void PrepareTeletext()
+    private byte PrepareTeletext(bool fetch)
     {
         var window = _crtcVSync;
         if (_teletextWindow != window)
@@ -47,11 +47,16 @@ internal sealed partial class Video
             _teletext.Data = _teletextLatchedData;
             _teletext.SetCharacterClock(false);
             _teletext.SetLoadOutputShiftEnable(_crtcDisplayEnabled);
+            // Le créneau RAM produit un seul octet sur le bus vidéo. IC15 et
+            // VIDPROC voient cette même donnée ; F1 a capturé le latch précédent.
+            var data = ReadVideoMemory(_crtcMemoryAddress, _crtcRaster);
             // IC15 n'est chargé comme caractère télétexte que lorsque MA13 sélectionne cette voie.
             _teletextLatchedData = (_crtcMemoryAddress & C.MemoryTeletextSelect) != 0
-                ? ReadVideoMemory(_crtcMemoryAddress, _crtcRaster) : (byte)0;
+                ? data : (byte)0;
+            return data;
         }
-        else _teletext.SetCharacterClock(true);
+        _teletext.SetCharacterClock(true);
+        return fetch ? ReadVideoMemory(_crtcMemoryAddress, _crtcRaster) : (byte)0;
     }
 
 }

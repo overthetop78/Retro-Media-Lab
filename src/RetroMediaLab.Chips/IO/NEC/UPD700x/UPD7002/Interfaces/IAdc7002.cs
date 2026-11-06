@@ -8,6 +8,12 @@ public interface IAdc7002
     /// <summary>Bit de drapeau logiciel renvoyé par le registre de statut.</summary>
     bool Flag { get; }
     bool Converting { get; }
+    int InputClockFrequency { get; }
+    int ConversionClockFrequency { get; }
+    long InputClockCount { get; }
+    long? NextClockEvent { get; }
+    Action<long?>? NextClockEventChanged { get; set; }
+    void AdvanceTo(long inputClockCount);
     bool TestMode { get; }
     void Reset();
     void SetChannel(int channel, ushort value);

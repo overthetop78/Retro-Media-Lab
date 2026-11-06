@@ -28,6 +28,8 @@ public sealed partial class Adc7002 : IAdc7002
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(clockHz);
         ArgumentOutOfRangeException.ThrowIfNegative(conversionClockHz);
         _endOfConversion = endOfConversion;
+        InputClockFrequency = clockHz;
+        ConversionClockFrequency = conversionClockHz;
         _externalClock = conversionClockHz == 0;
         _eightBitTicks = ConversionTicks(C.EightBitConversionClocks, clockHz, conversionClockHz);
         _twelveBitTicks = ConversionTicks(C.TwelveBitConversionClocks, clockHz, conversionClockHz);
@@ -50,6 +52,7 @@ public sealed partial class Adc7002 : IAdc7002
         TestMode = false;
         _writeActive = false;
         _endOfConversion(false);
+        PublishClockEvent();
     }
 
     public void SetChannel(int channel, ushort value)
@@ -87,27 +90,34 @@ public sealed partial class Adc7002 : IAdc7002
 
     public void Tick()
     {
+        _inputClockCount++;
         if (_remaining <= 0 || --_remaining != 0) return;
         EndPhase();
+        PublishClockEvent();
     }
 
     public void Advance(int cycles)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(cycles);
-        if (_remaining <= 0 || cycles == 0) return;
-        while (_remaining != 0 && cycles >= _remaining)
+        var until = checked(_inputClockCount + cycles);
+        if (_remaining <= 0 || cycles == 0) { _inputClockCount = until; return; }
+        while (_remaining > 0 && cycles >= _remaining)
         {
             cycles -= (int)_remaining;
+            _inputClockCount += _remaining;
             _remaining = 0;
             EndPhase();
         }
         if (_remaining != 0) _remaining -= cycles;
+        _inputClockCount = until;
+        PublishClockEvent();
     }
 
     public void Clock()
     {
         if (_remaining >= 0 || ++_remaining != 0) return;
         EndPhase();
+        PublishClockEvent();
     }
 
     private void Complete()
@@ -139,6 +149,8 @@ public sealed partial class Adc7002 : IAdc7002
         TestMode = false;
     }
 
+    // Première frontière d'entrée atteignant la durée nominale : jamais d'EOC anticipé.
+    // Le mode long soustrait les échéances arrondies, au lieu d'arrondir ses phases séparément.
     private static long ConversionTicks(int clocks, int hostHz, int conversionHz) => conversionHz == 0
         ? clocks
         : ((long)clocks * hostHz + conversionHz - 1) / conversionHz;

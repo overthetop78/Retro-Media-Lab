@@ -49,6 +49,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly Via6522 _via = new();
     private readonly Via6522? _userVia;
     private readonly Adc7002? _adc;
+    private long _adcWakeTick = long.MaxValue;
     private byte _fireInputs = Io.OpenInputs;
     private readonly Keyboard _keyboard = new();
     private readonly Audio _audio = new();
@@ -69,7 +70,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     internal Video Video { get; }
     public int? VideoHeight => Video.OutputHeight;
     public bool Irq => _interruptSources != BbcInterruptSources.None || _masterMemory?.Irq == true || _tube?.HostIrq == true;
-    public bool Nmi => _disks.Nmi || _econet.Nmi;
+    public bool Nmi => _nmiSources != BbcNmiSources.None;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get => _econet.FrameTransmitted; set => _econet.FrameTransmitted = value; }
     public Action<int>? NetworkPoll { get; set; }
     public bool ReceiveNetworkFrame(ReadOnlySpan<byte> frame, bool validFcs = true) => _econet.Receive(frame, validFcs);
@@ -133,6 +134,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _cyclesPerFrame = videoStandard == EmulationVideoStandard.Ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame;
         _nextFrame = _cyclesPerFrame;
         Video = new Video(_ram, characters, videoStandard == EmulationVideoStandard.Ntsc ? Constants.VideoConstants.NtscHeight : Constants.VideoConstants.Height, teletextHighBankOnly: _masterMemory is not null || _plusMemory is not null);
+        Video.VSyncChanged = _via.SetCa1;
         if (_masterMemory is not null) Video.ReadMemory = address => _masterMemory.ReadVideo(address, _ram);
         else if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
         _cassette = new Cassette(new Serial(_acia));
@@ -140,6 +142,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _userVia = expandedIo ? new Via6522() : null;
         if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;
         _adc = expandedIo && !compact ? new Adc7002(_via.SetCb1) : null;
+        if (_adc is not null) _adc.NextClockEventChanged = next => _adcWakeTick = next ?? long.MaxValue;
         UpdateAnalogInputs(EmulationInputSnapshot.Empty.Controllers);
         _via.ReadPortB = () => _compactEeprom?.ReadPort ?? (_adc is null ? null : (byte?)_fireInputs) ?? Io.OpenInputs;
         _via.WritePortB = WriteLatch;
@@ -162,6 +165,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
             Array.Clear(_ram);
             _via.Reset();
             _userVia?.Reset();
+            _adc?.AdvanceTo(_ticks);
             _adc?.Reset();
             Video.Reset();
             _via.SetCa1(Video.VSync);
@@ -219,13 +223,11 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if ((_ticks & 127) == 0) NetworkPoll?.Invoke(128);
         _audio.Tick();
         _cassette.Tick();
-        _adc?.Tick();
+        if (_ticks >= _adcWakeTick) _adc!.AdvanceTo(_ticks);
         _disks.Tick();
         _winchester.Tick();
         _econet.Tick();
-        var sync = Video.VSync;
         Video.Tick();
-        if (sync != Video.VSync) _via.SetCa1(Video.VSync);
         ClockVia();
         if ((_ticks & Io.ViaPhaseMask) == Io.ViaTrailingPhase)
         {
@@ -255,7 +257,11 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (address < 0xfe28) { _econet.EnableNmi(); return 0xfe; }
         if (address is >= 0xfe40 and < 0xfe60) return _via.Read(address & 15);
         if (address is >= Io.UserViaStart and < Io.UserViaEnd) return _userVia?.Read(address & Io.UserViaRegisterMask) ?? Io.UnconnectedBus;
-        if (address is >= Io.AdcStart and < Io.AdcEnd) return _adc?.Read(address & Io.RegisterMask) ?? Io.UnconnectedBus;
+        if (address is >= Io.AdcStart and < Io.AdcEnd)
+        {
+            _adc?.AdvanceTo(_ticks);
+            return _adc?.Read(address & Io.RegisterMask) ?? Io.UnconnectedBus;
+        }
         if (address is >= DiskConstants.ControllerStart and < DiskConstants.ControllerEnd) return _disks.Read(address);
         if (address is >= 0xfea0 and < 0xfec0) return _econet.Read(address);
         return 0xfe;
@@ -292,7 +298,11 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         }
         else if (address is >= 0xfe40 and < 0xfe60) _via.Write(address & 15, value);
         else if (address is >= Io.UserViaStart and < Io.UserViaEnd) _userVia?.Write(address & Io.UserViaRegisterMask, value);
-        else if (address is >= Io.AdcStart and < Io.AdcEnd) _adc?.Write(address & Io.RegisterMask, value);
+        else if (address is >= Io.AdcStart and < Io.AdcEnd)
+        {
+            _adc?.AdvanceTo(_ticks);
+            _adc?.Write(address & Io.RegisterMask, value);
+        }
         else if (address is >= DiskConstants.ControllerStart and < DiskConstants.ControllerEnd) _disks.Write(address, value);
         else if (address is >= 0xfea0 and < 0xfec0) _econet.Write(address, value);
     }
@@ -311,6 +321,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     {
         _fireInputs = Io.OpenInputs;
         if (_adc is null) return;
+        _adc.AdvanceTo(_ticks);
         var fireMask = 1u << EmulationSdk.InputProcessing.ControllerButtonIndex(EmulationControllerCommandIds.A);
         for (var index = 0; index < Io.ControllerCount; index++)
         {

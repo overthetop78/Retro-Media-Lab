@@ -212,8 +212,10 @@ public sealed class AcornEmuVideoTests
         Assert.Equal(0, text.Character(127, 2, 0).Mask);
     }
 
-    [Fact]
-    public void NativeTeletextUsesLatchedMemoryAndRetainsTheFortiethCharacter()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NativeTeletextUsesLatchedMemoryAndRetainsTheFortiethCharacter(bool interlaced)
     {
         var ram = Enumerable.Repeat((byte)32, 32768).ToArray();
         ram[0x7c00] = 17;
@@ -224,35 +226,51 @@ public sealed class AcornEmuVideoTests
         var video = TeletextBoard(ram, new byte[960]);
         try
         {
-            Advance(video, 39936 * 3);
+            Set(video, 8, interlaced ? (byte)0x93 : (byte)0x90);
+            AdvanceCompletedFields(video);
             var image = video.Render();
-            for (var x = 16; x < 32; x++)
+            Assert.Equal(interlaced ? 512 : 256, video.OutputHeight);
+            for (var parity = 0; parity < (interlaced ? 2 : 1); parity++)
             {
-                Assert.Equal(255, image[(x * 4) + 2]);
-                Assert.Equal(0, image[(x * 4) + 1]);
-            }
-            foreach (var x in new[] { 48, 55, 63, 624, 632, 639 })
-            {
-                Assert.Equal(255, image[x * 4 + 1]);
-                Assert.Equal(0, image[x * 4 + 2]);
+                var row = parity * 640;
+                for (var x = 16; x < 32; x++)
+                {
+                    Assert.Equal(255, image[(row + x) * 4 + 2]);
+                    Assert.Equal(0, image[(row + x) * 4 + 1]);
+                }
+                foreach (var x in new[] { 48, 55, 63, 624, 632, 639 })
+                {
+                    Assert.Equal(255, image[(row + x) * 4 + 1]);
+                    Assert.Equal(0, image[(row + x) * 4 + 2]);
+                }
             }
         }
         finally { video.Reset(); }
     }
 
-    [Fact]
-    public void NativeTeletextLineCounterFollowsLoseRatherThanTheCrtcRasterRegister()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NativeTeletextLineCounterFollowsLoseRatherThanTheCrtcRasterRegister(bool interlaced)
     {
         var rom = new byte[960];
         rom[('A' - 32) * 10 + 3] = 31;
         var video = TeletextBoard(Enumerable.Repeat((byte)'A', 32768).ToArray(), rom);
         try
         {
-            Set(video, 9, 1); // une ligne par rangée CRTC, dix par caractère SAA5050.
-            Advance(video, 39936);
+            Set(video, 8, interlaced ? (byte)0x93 : (byte)0x90);
+            Set(video, 9, 1); // Deux rasters progressifs ou un raster par champ ; dix lignes internes SAA5050.
+            AdvanceCompletedFields(video);
             var image = video.Render();
-            foreach (var y in new[] { 3, 13, 23 }) Assert.Equal(255, image[(y * 640 + 8) * 4 + 2]);
-            foreach (var y in new[] { 2, 4, 12, 14, 22, 24 }) Assert.Equal(0, image[(y * 640 + 8) * 4 + 2]);
+            Assert.Equal(interlaced ? 512 : 256, video.OutputHeight);
+            var scale = interlaced ? 2 : 1;
+            for (var parity = 0; parity < scale; parity++)
+            {
+                foreach (var y in new[] { 3, 13, 23 })
+                    Assert.Equal(255, image[((y * scale + parity) * 640 + 8) * 4 + 2]);
+                foreach (var y in new[] { 2, 4, 12, 14, 22, 24 })
+                    Assert.Equal(0, image[((y * scale + parity) * 640 + 8) * 4 + 2]);
+            }
         }
         finally { video.Reset(); }
     }
@@ -296,4 +314,13 @@ public sealed class AcornEmuVideoTests
     }
     private static void Set(BbcVideo video, byte register, byte value) { video.Select(register); video.WriteRegister(value); }
     private static void Advance(BbcVideo video, int cycles) { for (var cycle = 0; cycle < cycles; cycle++) video.Tick(); }
+
+    private static void AdvanceCompletedFields(BbcVideo video)
+    {
+        // Le premier balayage part de RESET ; laisser ensuite les deux parités se terminer.
+        // Borne du cas progressif le plus long de cette fixture : R0=63, R4=30, R9=19, R5=2.
+        const int maximumFieldTicks = 64 * 2 * (31 * 20 + 2);
+        for (var cycle = 0; cycle < maximumFieldTicks * 4 && video.Frame < 3; cycle++) video.Tick();
+        Assert.Equal(3L, video.Frame);
+    }
 }

@@ -16,6 +16,7 @@ internal sealed class WinchesterController
     private int clockFraction;
     private uint deferredIdleTicks;
     private bool canDeferClock;
+    private bool normalSpeedIdle;
 
     internal WinchesterController(Func<int, WinchesterStorage?> storage)
     {
@@ -67,6 +68,13 @@ internal sealed class WinchesterController
 
     internal void Tick()
     {
+        if (normalSpeedIdle)
+        {
+            // La cible ne peut changer de sélection sans accès externe, lequel
+            // restitue d'abord ces périodes et invalide cet état de repos.
+            if (++deferredIdleTicks == C.MaximumDeferredTicks) FlushIdleClock();
+            return;
+        }
         var speed = speeds[target.Unit < C.DriveCount ? target.Unit : 0];
         if (speed == C.UnlimitedSpeed)
         {
@@ -99,6 +107,8 @@ internal sealed class WinchesterController
         signals.Tick();
         if (busCanChange || target.Bus.Busy) Synchronize();
         canDeferClock = !host.Select && signals.CanAdvanceIdleClock;
+        normalSpeedIdle = canDeferClock
+            && speeds[target.Unit < C.DriveCount ? target.Unit : 0] == C.NormalSpeedPercent;
     }
 
     private void FlushIdleClock()
@@ -109,6 +119,7 @@ internal sealed class WinchesterController
             deferredIdleTicks = 0;
         }
         canDeferClock = false;
+        normalSpeedIdle = false;
     }
 
     internal void Reset()

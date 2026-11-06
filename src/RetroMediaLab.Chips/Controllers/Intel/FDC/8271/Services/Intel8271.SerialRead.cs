@@ -293,7 +293,7 @@ public sealed partial class Intel8271
         _data = value;
         _awaitingData = _dataRequest = true;
         _serialRequestTicks = _transferDeadlineTicks;
-        _status = (byte)(C.Busy | ((_mode & C.NonDmaMode) != 0 ? C.Interrupt | C.NonDma : 0));
+        SetStatus((byte)(C.Busy | ((_mode & C.NonDmaMode) != 0 ? C.Interrupt | C.NonDma : 0)));
     }
 
     private void SerialNextSector()

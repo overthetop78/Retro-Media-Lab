@@ -15,7 +15,7 @@ public sealed partial class Wd1770
             _phase = Phase.Idle;
             _timer = 0;
             _writer.SetGate(false);
-            _step = _drq = false;
+            _step = false;
             if (!wasActive)
             {
                 _typeOne = true;
@@ -26,16 +26,16 @@ public sealed partial class Wd1770
             _forceIndex = (value & C.InterruptOnIndex) != 0;
             if ((value & C.ForceConditionMask) == 0) _forceImmediate = false;
             else if ((value & C.InterruptImmediate) != 0) _forceImmediate = true;
-            _irq = _forceImmediate;
-            DriveSignalsChanged?.Invoke();
+            SetInterrupts(_forceImmediate, false);
+            PublishDriveSignals();
             return;
         }
         if (Active) return;
         _command = value;
         _typeOne = value < C.FirstDataCommand;
         _errors = 0;
-        _irq = _forceImmediate;
-        _drq = _forceIndex = _verify = false;
+        SetInterrupts(_forceImmediate, false);
+        _forceIndex = _verify = false;
         _timer = 0;
         _idleIndexes = _searchIndexes = 0;
         _reader.Reset();
@@ -50,15 +50,20 @@ public sealed partial class Wd1770
             {
                 _spinIndexes = 0;
                 _phase = Phase.SpinUp;
-                DriveSignalsChanged?.Invoke();
+                PublishDriveSignals();
                 return;
             }
         }
         Dispatch();
-        DriveSignalsChanged?.Invoke();
     }
 
     private void Dispatch()
+    {
+        DispatchCommand();
+        PublishDriveSignals();
+    }
+
+    private void DispatchCommand()
     {
         if (_typeOne)
         {
@@ -108,7 +113,7 @@ public sealed partial class Wd1770
             _track = unchecked((byte)(_track + (_direction ? 1 : -1)));
         _phase = Phase.StepPulse;
         _timer = DoubleDensity ? C.MfmStepPulseClocks : C.FmStepPulseClocks;
-        DriveSignalsChanged?.Invoke();
+        PublishDriveSignals();
     }
 
     private void AfterStepDelay()
@@ -164,7 +169,7 @@ public sealed partial class Wd1770
             case Phase.DirectionSetup: EmitStep(); break;
             case Phase.StepPulse:
                 _step = false;
-                DriveSignalsChanged?.Invoke();
+                PublishDriveSignals();
                 _phase = Phase.StepDelay;
                 _timer = Math.Max(1, Milliseconds(_stepMilliseconds[_command & C.StepRateMask])
                     - (DoubleDensity ? C.MfmStepPulseClocks : C.FmStepPulseClocks));

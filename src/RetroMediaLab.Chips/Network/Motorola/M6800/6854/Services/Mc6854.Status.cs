@@ -7,6 +7,7 @@ public sealed partial class Mc6854
     private bool _statusDirty = true;
     private byte _cachedStatusOne;
     private byte _cachedStatusTwo;
+    private bool _irqOutput;
 
     private byte StatusOne()
     {
@@ -22,11 +23,16 @@ public sealed partial class Mc6854
 
     private void UpdateStatus()
     {
+        if (_transmitOutputsDirty) PublishTransmitState();
         if (!_statusDirty)
             return;
         _cachedStatusTwo = ComputeStatusTwo();
         _cachedStatusOne = ComputeStatusOne(_cachedStatusTwo);
         _statusDirty = false;
+        var asserted = (_cachedStatusOne & C.Interrupt) != 0;
+        if (_irqOutput == asserted) return;
+        _irqOutput = asserted;
+        IrqChanged?.Invoke(asserted);
     }
 
     private bool TransmitRoom => _transmitCount <= ((_control2 & C.TwoByte) != 0 ? 1 : 2);

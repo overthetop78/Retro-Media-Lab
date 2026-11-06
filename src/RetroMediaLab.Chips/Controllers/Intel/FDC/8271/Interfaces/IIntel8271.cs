@@ -6,6 +6,13 @@ public interface IIntel8271
     long ReadBytes(int drive);
     long WrittenBytes(int drive);
     bool Nmi { get; }
+    int InputClockFrequency { get; }
+    int ControllerClockFrequency { get; }
+    long InputClockCount { get; }
+    long? NextClockEvent { get; }
+    event Action<long?>? NextClockEventChanged;
+    void AdvanceTo(long inputClockCount);
+    Action<bool>? NmiChanged { get; set; }
     bool Drq { get; }
     bool InSync { get; }
     bool WriteData { get; }

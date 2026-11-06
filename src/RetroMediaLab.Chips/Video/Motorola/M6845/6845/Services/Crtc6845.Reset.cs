@@ -28,6 +28,8 @@ public sealed partial class Crtc6845
         ResetLightPen();
         ClearTiming(false);
         RefreshParameters();
+        _restoreSyncOutput = false;
+        PublishVerticalSync();
     }
 
     private bool ClockReset()
@@ -52,8 +54,10 @@ public sealed partial class Crtc6845
                 _displayEnabled = false;
                 _cursor = false;
             }
+            if (_publishedVSync) PublishVerticalSync();
             return true;
         }
+        _restoreSyncOutput = _resetActive || _testModeActive;
         _resetActive = false;
         _testModeActive = false;
         return false;
@@ -94,5 +98,6 @@ public sealed partial class Crtc6845
         _displayEnabled = false;
         _cursor = false;
         RefreshCursorVisibility();
+        RefreshVerticalGates();
     }
 }

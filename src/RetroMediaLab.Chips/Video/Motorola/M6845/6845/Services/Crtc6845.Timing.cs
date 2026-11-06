@@ -14,6 +14,17 @@ public sealed partial class Crtc6845
     private int _horizontalSyncCounter = InactiveSyncCounter;
     private int _verticalSyncCounter = InactiveSyncCounter;
     private bool _verticalSyncCounted;
+    private bool _publishedVSync;
+    private bool _restoreSyncOutput;
+    public Action<bool>? VSyncChanged { get; set; }
+
+    private void PublishVerticalSync()
+    {
+        var level = VSync;
+        if (_publishedVSync == level) return;
+        _publishedVSync = level;
+        VSyncChanged?.Invoke(level);
+    }
 
     public bool HSync => !_resetActive && !_testModeActive && _horizontalSyncCounter >= 0;
     public bool VSync => !_resetActive && !_testModeActive && _verticalSyncCounter >= 0;
@@ -66,6 +77,7 @@ public sealed partial class Crtc6845
         {
             frameStarted = EndScanline();
             RefreshCursorVisibility();
+            RefreshVerticalGates();
             _column = 0;
             _horizontalDisplay = true;
             _memoryAddress = _lineAddress;
@@ -74,11 +86,13 @@ public sealed partial class Crtc6845
 
         if (_column == _registers[HorizontalDisplayed] || _column == _registers[HorizontalTotal])
             _horizontalDisplay = false;
-        if (_verticalDisplay && _row == _registers[VerticalDisplayed]
-            && (!_hitachi || !_firstScanline))
+        if (_verticalDisplayEndPending)
         {
             _verticalDisplay = false;
+            _verticalOutputEnabled = false;
+            _verticalDisplayEndPending = false;
             _blinkFields++;
+            _syncOnEveryCharacter = !_interlaceSync || (_blinkFields & InterlaceSyncMask) == 0;
             RefreshCursorVisibility();
         }
         return frameStarted;
@@ -166,7 +180,7 @@ public sealed partial class Crtc6845
         return true;
     }
 
-    private void UpdateSynchronizations()
+    private bool UpdateSynchronizations()
     {
         if (_horizontalSyncCounter >= 0)
         {
@@ -177,21 +191,25 @@ public sealed partial class Crtc6845
         if (_horizontalSyncCounter < 0 && _horizontalWidth != 0 && _column == _registers[HorizontalSyncPosition])
             _horizontalSyncCounter = 0;
 
-        var syncPoint = !_interlaceSync || (_blinkFields & InterlaceSyncMask) == 0
-            || _column == ((_registers[HorizontalTotal] + 1) >> 1);
+        var syncPoint = _syncOnEveryCharacter || _column == _halfLineColumn;
         var ended = false;
+        var changed = _restoreSyncOutput;
+        _restoreSyncOutput = false;
         if (_verticalSyncCounter >= 0 && _verticalSyncCounted
             && _verticalSyncCounter == (_verticalWidth & SyncCounterMask) && syncPoint)
         {
             _verticalSyncCounter = InactiveSyncCounter;
             ended = true;
+            changed = true;
         }
-        if (!ended && _verticalSyncCounter < 0 && !_syncSeenInRow
-            && _row == _registers[VerticalSyncPosition] && !_adjusting && !_extraScanline && syncPoint)
+        if (!ended && _verticalSyncCounter < 0 && _verticalSyncEligible && syncPoint)
         {
             _verticalSyncCounter = 0;
             _verticalSyncCounted = false;
             _syncSeenInRow = true;
+            _verticalSyncEligible = false;
+            changed = true;
         }
+        return changed;
     }
 }

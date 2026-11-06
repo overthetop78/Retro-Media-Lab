@@ -12,6 +12,11 @@ public sealed partial class Crtc6845
 
     private bool _displayEnabled;
     private bool _cursor;
+    private bool _verticalOutputEnabled;
+    private bool _verticalDisplayEndPending;
+    private bool _verticalSyncEligible;
+    private bool _syncOnEveryCharacter;
+    private int _halfLineColumn;
 
     private int _address;
     public bool DisplayEnabled => _displayEnabled;
@@ -35,7 +40,7 @@ public sealed partial class Crtc6845
 
     private void PublishOutputs()
     {
-        var rawDisplay = _horizontalDisplay && _verticalDisplay && !_adjusting && !_extraScanline && !_suppressDisplay;
+        var rawDisplay = _horizontalDisplay && _verticalOutputEnabled;
         _displayHistory = ((_displayHistory << 1) | (rawDisplay ? 1 : 0)) & OutputHistoryMask;
         _cursorHistory = ((_cursorHistory << 1) | (rawDisplay && _cursorOnRaster && _memoryAddress == _cursorAddress ? 1 : 0)) & OutputHistoryMask;
         _displayEnabled = _displaySkew != SuppressedSkew && ((_displayHistory >> _displaySkew) & 1) != 0;
@@ -73,5 +78,19 @@ public sealed partial class Crtc6845
         if (_cursorSkew == SuppressedSkew) _cursor = false;
         _programmed = _registers[HorizontalTotal] != 0 && _registers[HorizontalDisplayed] != 0
             && _registers[VerticalTotal] != 0 && _registers[VerticalDisplayed] != 0;
+        _halfLineColumn = (_registers[HorizontalTotal] + 1) >> 1;
+        RefreshVerticalGates();
+    }
+
+    // Ces entrées ne changent qu'aux écritures MPU, aux transitions verticales
+    // et à la fin de ligne. Leur résolution ne dépend pas du caractère courant.
+    private void RefreshVerticalGates()
+    {
+        _verticalOutputEnabled = _verticalDisplay && !_adjusting && !_extraScanline && !_suppressDisplay;
+        _verticalDisplayEndPending = _verticalDisplay && _row == _registers[VerticalDisplayed]
+            && (!_hitachi || !_firstScanline);
+        _verticalSyncEligible = !_syncSeenInRow && _row == _registers[VerticalSyncPosition]
+            && !_adjusting && !_extraScanline;
+        _syncOnEveryCharacter = !_interlaceSync || (_blinkFields & InterlaceSyncMask) == 0;
     }
 }

@@ -13,6 +13,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     private EmulationCassetteSignal? _signal;
     private int _position, _samplePhase;
     private bool _inputLevel;
+    private bool _inputPresented;
     private List<short>? _recorded;
     private bool _writable;
     private EmulationCassetteSettings _settings = new();
@@ -60,7 +61,11 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
         if (!CassetteActive) ResetDecoder();
     }
     internal byte ReadUla() { WriteUla(UlaConstants.ReadControlValue); return UlaConstants.ReadBusValue; }
-    private void ResetDecoder() => serial.Ula.SetCassetteInput(null);
+    private void ResetDecoder()
+    {
+        serial.Ula.SetCassetteInput(null);
+        _inputPresented = false;
+    }
 
     public void ExecuteCassette(EmulationCassetteCommand command)
     {
@@ -82,14 +87,16 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     /// <summary>Avance le support d'un cycle de carte et présente son niveau à l'électronique série.</summary>
     internal void Tick()
     {
-        bool? input = null;
         if (_signal is not null && CassetteActive && _latencyTicks == 0 && _state == EmulationCassetteState.Playing && _position < Length)
         {
             var sample = _recorded is null ? _signal.Samples.Span[_position] : _recorded[_position];
-            if (sample != 0) _inputLevel = sample > 0;
-            input = _inputLevel;
+            var level = sample == 0 ? _inputLevel : sample > 0;
+            if (!_inputPresented || level != _inputLevel) serial.Ula.SetCassetteInput(level);
+            _inputLevel = level;
+            _inputPresented = true;
         }
-        serial.Tick(input);
+        else if (_inputPresented) ResetDecoder();
+        serial.Tick();
         if (_seekTarget is { } target)
         {
             if (_state == EmulationCassetteState.Paused) return;

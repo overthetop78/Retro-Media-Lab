@@ -23,11 +23,31 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
     private bool _rs423TransmitData = true;
     private bool _rs423RequestToSendHigh = true;
     private short _cassetteOutput;
+    private bool _rs423ReceiveData = true;
+    private bool _rs423ClearToSendHigh = true;
     public byte Control { get; private set; }
     public bool Motor => _motor;
     public bool Rs423Selected => _rs423Selected;
-    public bool Rs423ReceiveData { get; set; } = true;
-    public bool Rs423ClearToSendHigh { get; set; } = true;
+    public bool Rs423ReceiveData
+    {
+        get => _rs423ReceiveData;
+        set
+        {
+            if (_rs423ReceiveData == value) return;
+            _rs423ReceiveData = value;
+            if (_rs423Selected) PublishSerialPins();
+        }
+    }
+    public bool Rs423ClearToSendHigh
+    {
+        get => _rs423ClearToSendHigh;
+        set
+        {
+            if (_rs423ClearToSendHigh == value) return;
+            _rs423ClearToSendHigh = value;
+            if (_rs423Selected) PublishSerialPins();
+        }
+    }
     public bool Rs423TransmitData => _rs423TransmitData;
     public bool Rs423RequestToSendHigh => _rs423RequestToSendHigh;
     public bool ReceiveData => _rs423Selected ? Rs423ReceiveData : _cassetteData;
@@ -53,6 +73,8 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
     /// <summary>Initialisation de carte ; ne représente pas une broche RESET non documentée du circuit.</summary>
     public void PowerOn()
     {
+        _pendingClockTicks = _clockCountdown = 0;
+        _outputsKnown = false;
         _sourcePhase = _synthesisPhase = 0;
         _dividerCounter = 0;
         _synthesisStep = 0;
@@ -65,12 +87,16 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
 
     public void Write(byte value)
     {
+        FlushPendingClock();
+        _clockCountdown = 0;
+        var previousSelection = _rs423Selected;
         Control = value;
         _motor = (value & C.MotorMask) != 0;
         _rs423Selected = (value & C.Rs423Mask) != 0;
         _transmitDivider = C.Dividers[value & C.RateMask];
         _receiveDivider = C.Dividers[(value >> C.ReceiveRateShift) & C.RateMask];
         // Free-running divider phase is preserved across register writes.
+        if (!_outputsKnown || previousSelection != _rs423Selected) PublishSerialPins();
     }
 
     public byte Read()
@@ -79,7 +105,7 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
         return C.ReadBusValue;
     }
 
-    public void Tick(bool transmitData, bool requestToSendHigh)
+    private void ClockInputs(bool transmitData, bool requestToSendHigh)
     {
         _sourcePhase += C.MasterClock;
         var sourceEdge = _sourcePhase >= _clockDenominator;
@@ -91,10 +117,12 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
         _transmitClockEdge = sourceEdge && (_dividerCounter & (_transmitDivider - 1)) == 0;
         var serialReceiveEdge = sourceEdge && (_dividerCounter & (_receiveDivider - 1)) == 0;
         var cassetteReceiveEdge = sourceEdge && (_dividerCounter & (C.CassetteClockDivider - 1)) == 0;
-        TickSeparator();
+        if (_separatorActive) TickSeparator();
         _receiveClockEdge = _rs423Selected ? serialReceiveEdge : cassetteReceiveEdge;
         _rs423TransmitData = !_rs423Selected || transmitData;
         _rs423RequestToSendHigh = !_rs423Selected || requestToSendHigh;
         TickSynthesis(transmitData, requestToSendHigh || _rs423Selected);
+        if (_transmitClockEdge || _receiveClockEdge)
+            SerialClocksRaised?.Invoke(_transmitClockEdge, _receiveClockEdge, ReceiveData);
     }
 }

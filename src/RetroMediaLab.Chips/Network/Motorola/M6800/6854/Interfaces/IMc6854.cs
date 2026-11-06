@@ -5,12 +5,14 @@ public interface IMc6854
     Action<ReadOnlyMemory<byte>>? FrameTransmitted { get; set; }
 
     bool Irq { get; }
+    Action<bool>? IrqChanged { get; set; }
 
     bool Receiving { get; }
 
     bool Transmitting { get; }
 
     bool Rts { get; }
+    Action<bool, bool>? TransmitStateChanged { get; set; }
 
     bool TransmitData { get; }
     bool FlagDetect { get; }

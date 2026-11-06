@@ -269,11 +269,9 @@ public sealed class AcornEmuTests
         machine.Write(0x4001, 0x34);
         Assert.Equal(mirrored ? 0x34 : 0x12, machine.Read(0x0001));
         Assert.Equal(0x34, machine.Read(0x4001));
-        void Register(byte index, byte value) { machine.Write(0xfe00, index); machine.Write(0xfe01, value); }
-        Register(0, 63); Register(1, 40); Register(4, 38); Register(6, 32); Register(9, 7); Register(10, 32); Register(12, 0x0b); Register(13, 0);
-        machine.Write(0xfe20, 0x88); machine.Write(0xfe21, 0xf0);
+        ConfigureModeFour(machine);
         machine.Write(0x1800, 0); machine.Write(0x5800, 0x80);
-        for (var tick = 0; tick < 39936 * 2; tick++) machine.Video.Tick();
+        AdvanceCompletedBitmap(machine);
         var image = machine.Video.Render();
         Assert.Equal(255, image[2]);
         Assert.Equal(mirrored ? 0x80 : 0, machine.Read(0x1800));
@@ -299,17 +297,50 @@ public sealed class AcornEmuTests
         Assert.Throws<ArgumentException>(() => engine.ApplySettings(configuration, new Dictionary<string, string?> { [fieldId] = "64" }));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ModelAMachine(new byte[16384], new byte[16384], 65536));
     }
-    [Fact]
-    public void ModeFourExpandsEachMemoryBitToTwoDisplayPixels()
+    [Theory]
+    [InlineData(0x00)]
+    [InlineData(0x01)]
+    [InlineData(0x80)]
+    [InlineData(0x55)]
+    [InlineData(0xaa)]
+    [InlineData(0xff)]
+    public void ModeFourExpandsEachMemoryBitToTwoDisplayPixels(byte pattern)
     {
         var machine = new ModelAMachine(new byte[16384], new byte[16384]);
-        void Register(byte index, byte value) { machine.Write(0xfe00, index); machine.Write(0xfe01, value); }
-        Register(0, 63); Register(1, 40); Register(4, 38); Register(6, 32); Register(9, 7); Register(10, 32); Register(12, 0x0b); Register(13, 0);
-        machine.Write(0xfe20, 0x88); machine.Write(0xfe21, 0xf0); machine.Write(0x5800, 0x80);
-        for (var tick = 0; tick < 39936 * 2; tick++) machine.Video.Tick();
+        ConfigureModeFour(machine);
+        machine.Write(0x5800, pattern);
+        AdvanceCompletedBitmap(machine);
         var image = machine.Video.Render();
-        Assert.Equal(255, image[2]);
-        Assert.Equal(255, image[6]);
-        Assert.Equal(0, image[10]);
+        for (var pixel = 0; pixel < 16; pixel++)
+        {
+            var expected = ((pattern >> (7 - pixel / 2)) & 1) * 255;
+            for (var channel = 0; channel < 3; channel++)
+                Assert.Equal(expected, image[pixel * 4 + channel]);
+        }
+        // L'octet suivant vaut zéro : ne pas confondre deux pixels et deux cellules.
+        for (var pixel = 16; pixel < 32; pixel++) Assert.Equal(0, image[pixel * 4 + 2]);
+    }
+
+    private static void ConfigureModeFour(ModelAMachine machine)
+    {
+        byte[] registers = [63, 40, 51, 0x24, 38, 0, 32, 34, 0, 7, 32, 0, 0x0b, 0];
+        for (byte index = 0; index < registers.Length; index++)
+        {
+            machine.Write(0xfe00, index);
+            machine.Write(0xfe01, registers[index]);
+        }
+        machine.Write(0xfe20, 0x88);
+        // Le bit 7 du registre à décalage sélectionne la moitié de la palette.
+        // Les trois autres prises restent actives : programmer les huit alias par couleur.
+        for (var index = 0; index < 16; index++)
+            machine.Write(0xfe21, (byte)((index << 4) | (index < 8 ? 7 : 0)));
+    }
+
+    private static void AdvanceCompletedBitmap(ModelAMachine machine)
+    {
+        const int cyclesPerField = 64 * 2 * 39 * 8;
+        for (var cycle = 0; cycle < cyclesPerField * 4 && machine.Video.Frame < 3; cycle++)
+            machine.Video.Tick();
+        Assert.Equal(3L, machine.Video.Frame);
     }
 }

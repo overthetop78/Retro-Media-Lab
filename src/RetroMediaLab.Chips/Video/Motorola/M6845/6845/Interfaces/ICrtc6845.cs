@@ -41,6 +41,7 @@ public interface ICrtc6845
     int Address { get; }
 
     bool VSync { get; }
+    Action<bool>? VSyncChanged { get; set; }
 
     bool HSync { get; }
 

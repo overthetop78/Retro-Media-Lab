@@ -9,6 +9,7 @@ public sealed partial class Intel8271
     {
         if (asserted && !_resetAsserted) Reset();
         _resetAsserted = asserted;
+        PublishClockEvent();
     }
 
     /// <summary>Cycle CPU avec CS, ou cycle de données avec DACK indépendamment de CS ; null signifie haute impédance.</summary>
@@ -28,7 +29,7 @@ public sealed partial class Intel8271
     {
         if (!_awaitingData) return;
         _dataRequest = _awaitingData = false;
-        _status &= unchecked((byte)~(C.Interrupt | C.NonDma));
+        SetStatus((byte)(_status & ~(C.Interrupt | C.NonDma)));
     }
 
     private void UpdateTiming()

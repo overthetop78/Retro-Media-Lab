@@ -28,17 +28,31 @@ public sealed class Sn76489 : ISn76489
 
     /// <summary>Somme instantanée, sans duplication stéréo ni application du volume de l'hôte.</summary>
     public int Output => _output;
+    public Action<int>? OutputChanged { get; set; }
 
     /// <summary>État relâché de READY (collecteur ouvert) ; false représente le niveau bas.</summary>
     public bool Ready => _transferClocks == 0;
 
+    /// <summary>Périodes d'entrée avant le prochain front interne ou la fin du transfert en cours.</summary>
+    public int ClocksUntilNextEvent
+    {
+        get
+        {
+            var divided = Sn76489Constants.ClockDivider - _divider;
+            return _transferClocks > 0 && _transferClocks < divided ? _transferClocks : divided;
+        }
+    }
+
     private void UpdateOutput()
     {
         // Les gains ne changent qu'à l'écriture : aucun indexeur de collection ni calcul de dB dans Tick.
-        _output = (_levels[0] ? _amplitudes[0] : 0)
+        var output = (_levels[0] ? _amplitudes[0] : 0)
             + (_levels[1] ? _amplitudes[1] : 0)
             + (_levels[2] ? _amplitudes[2] : 0)
             + ((_shift & Sn76489Constants.NoiseOutputBit) != 0 ? _amplitudes[Sn76489Constants.NoiseChannel] : 0);
+        if (_output == output) return;
+        _output = output;
+        OutputChanged?.Invoke(output);
     }
 
     /// <summary>Initialisation du modèle ; le circuit ne possède pas de broche RESET externe.</summary>
@@ -115,6 +129,28 @@ public sealed class Sn76489 : ISn76489
         if (++_divider < Sn76489Constants.ClockDivider)
             return;
         _divider = 0;
+        ClockDivided();
+    }
+
+    /// <summary>Avance des périodes complètes sans entrée intermédiaire ; chaque front interne garde son ordre.</summary>
+    public void AdvanceClocks(int clocks)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(clocks);
+        var distance = Sn76489Constants.ClockDivider - _divider;
+        while (clocks >= distance)
+        {
+            if (_transferClocks != 0) _transferClocks = Math.Max(0, _transferClocks - distance);
+            clocks -= distance;
+            _divider = 0;
+            ClockDivided();
+            distance = Sn76489Constants.ClockDivider;
+        }
+        if (_transferClocks != 0) _transferClocks = Math.Max(0, _transferClocks - clocks);
+        _divider += clocks;
+    }
+
+    private void ClockDivided()
+    {
         for (var channel = 0; channel < Sn76489Constants.ToneChannels; channel++)
         {
             if (--_counts[channel] > 0)

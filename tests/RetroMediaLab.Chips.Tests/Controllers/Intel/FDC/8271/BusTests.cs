@@ -28,7 +28,7 @@ public sealed class BusTests
         Assert.Equal(0, chip.Read(0)); // A held WR has not yet committed its data.
         chip.SetBus(false, false, false, false, 0);
         Assert.Null(chip.BusData);
-        Assert.Equal(0, chip.Read(0));
+        Assert.Equal(selected && write && !read && !dack ? 0xc0 : 0, chip.Read(0));
     }
 
     [Fact]
@@ -101,6 +101,20 @@ public sealed class BusTests
         chip.SetBus(false, false, true, false, 0, 0x2c);
         chip.SetBus(false, false, false, false, 0, 0x2c);
         chip.Tick();
+        Assert.Equal(0, chip.Read(0));
+    }
+
+    [Fact]
+    public void ReleasingSelectWithWriteCommitsThePreviouslySelectedRegisterOnce()
+    {
+        var chip = new Intel8271();
+        chip.SetBus(true, false, true, false, 0, 0x2c);
+        chip.SetBus(false, false, false, false, 2, 0x01);
+        Assert.Equal(0xc0, chip.Read(0));
+        chip.Tick();
+        Assert.Equal(0x10, chip.Read(0));
+        chip.Read(1);
+        chip.SetBus(false, false, false, false, 0, 0x2c);
         Assert.Equal(0, chip.Read(0));
     }
 

@@ -18,9 +18,10 @@ public sealed class ArchitectureTests
         var components = typeof(Cpu6502).Assembly.GetExportedTypes().Where(type => type.IsClass && !type.IsAbstract
             && type.Namespace!.EndsWith(".Services", StringComparison.Ordinal));
         Assert.NotEmpty(components);
-        foreach (var component in components)
-            Assert.Contains(component.GetInterfaces(), contract => contract.Name == "I" + component.Name
-                && contract.Assembly == component.Assembly);
+        var missing = components.Where(component => !component.GetInterfaces().Any(contract =>
+            contract.Name == "I" + component.Name && contract.Assembly == component.Assembly))
+            .Select(component => component.FullName).ToArray();
+        Assert.True(missing.Length == 0, string.Join(Environment.NewLine, missing));
     }
     [Fact]
     public void HardwareContractsExposePublicInstanceSignals()

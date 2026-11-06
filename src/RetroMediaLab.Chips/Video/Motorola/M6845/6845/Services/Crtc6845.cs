@@ -50,9 +50,10 @@ public sealed partial class Crtc6845 : ICrtc6845
     {
         if (ClockReset()) return false;
         var frameStarted = AdvanceCharacter();
-        UpdateSynchronizations();
+        var syncChanged = UpdateSynchronizations();
         PublishOutputs();
         CaptureLightPen();
+        if (syncChanged) PublishVerticalSync();
         return frameStarted;
     }
 }

@@ -4,6 +4,8 @@ namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Interface
 public interface IWd1770
 {
     int ClockFrequency { get; }
+    ulong ClockCount { get; }
+    void AdvanceTo(ulong clockCount);
     ulong HalfClocks { get; }
     long StepPulses { get; }
     long DataBytesRead { get; }
@@ -12,6 +14,7 @@ public interface IWd1770
     bool Irq { get; }
     bool Drq { get; }
     bool Nmi { get; }
+    Action<bool>? NmiChanged { get; set; }
     bool Motor { get; }
     bool Step { get; }
     bool Direction { get; }

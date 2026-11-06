@@ -100,8 +100,8 @@ public sealed class AcornEmuBbcVideoWiringTests
         var video = Create(new byte[32768]);
         const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
         var write = typeof(BbcVideo).GetMethod("WriteScanout", flags)!;
-        var expand = typeof(BbcVideo).GetMethod("ExpandScanout", flags)!;
         var drawing = (uint[])typeof(BbcVideo).GetField("_drawing", flags)!.GetValue(video)!;
+        typeof(BbcVideo).GetField("_completed", flags)!.SetValue(video, drawing);
         var expected = new uint[640 * 256];
         uint[] colours = [0xff000000, 0xffff0000, 0xff00ff00, 0xffffff00, 0xff0000ff, 0xffff00ff, 0xff00ffff, 0xffffffff];
         uint[] monochrome = [0xff000000, 0xff4c4c4c, 0xff959595, 0xffe1e1e1, 0xff1d1d1d, 0xff696969, 0xffb2b2b2, 0xffffffff];
@@ -125,7 +125,7 @@ public sealed class AcornEmuBbcVideoWiringTests
                 }
                 if ((pattern & 127) == 127)
                 {
-                    var actual = (byte[])expand.Invoke(video, [drawing])!;
+                    var actual = video.Render();
                     Assert.Equal(System.Runtime.InteropServices.MemoryMarshal.AsBytes(expected.AsSpan()).ToArray(), actual);
                 }
             }
@@ -143,8 +143,7 @@ public sealed class AcornEmuBbcVideoWiringTests
         var write = (Action<int, int, uint>)typeof(BbcVideo).GetMethod("WriteScanout", flags)!
             .CreateDelegate(typeof(Action<int, int, uint>), video);
         var drawing = (uint[])typeof(BbcVideo).GetField("_drawing", flags)!.GetValue(video)!;
-        var expand = (Func<uint[], byte[]>)typeof(BbcVideo).GetMethod("ExpandScanout", flags)!
-            .CreateDelegate(typeof(Func<uint[], byte[]>), video);
+        typeof(BbcVideo).GetField("_completed", flags)!.SetValue(video, drawing);
         var expected = new uint[640 * height];
         uint[] colours = [0xff000000, 0xffff0000, 0xff00ff00, 0xffffff00, 0xff0000ff, 0xffff00ff, 0xff00ffff, 0xffffffff];
         uint[] monochrome = [0xff000000, 0xff4c4c4c, 0xff959595, 0xffe1e1e1, 0xff1d1d1d, 0xff696969, 0xffb2b2b2, 0xffffffff];
@@ -162,7 +161,7 @@ public sealed class AcornEmuBbcVideoWiringTests
                     var x = left + dot;
                     if ((uint)x < 640) expected[line * 640 + x] = (mono ? monochrome : colours)[(output >> (dot * 3)) & 7];
                 }
-                Assert.Equal(System.Runtime.InteropServices.MemoryMarshal.AsBytes(expected.AsSpan()).ToArray(), expand(drawing));
+                Assert.Equal(System.Runtime.InteropServices.MemoryMarshal.AsBytes(expected.AsSpan()).ToArray(), video.Render());
             }
         }
         finally { video.Reset(); }
@@ -200,8 +199,7 @@ public sealed class AcornEmuBbcVideoWiringTests
                     var fast = (cycle & 32) != 0;
                     video.WriteUla(0, (byte)(fast ? 16 : 0));
                     var nextPhase = (int)phase.GetValue(video)! ^ 1;
-                    var expectedReads = (fast || nextPhase == 0 ? 1 : 0)
-                        + (nextPhase == 0 && (crtc.MemoryAddress & 0x2000) != 0 ? 1 : 0);
+                    var expectedReads = fast || nextPhase == 0 ? 1 : 0;
                     var before = reads;
                     video.Tick();
                     Assert.Equal(expectedReads, reads - before);
@@ -209,6 +207,79 @@ public sealed class AcornEmuBbcVideoWiringTests
             }
             finally { video.ReadMemory = null; video.Reset(); }
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void VideoLatchAndVidprocReceiveTheSameRamTransfer(bool fast)
+    {
+        var video = Create(new byte[32768], 0x2000);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var crtc = (Crtc6845)typeof(BbcVideo).GetField("_crtc", flags)!.GetValue(video)!;
+        var ula = (RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services.BbcVideoUla)
+            typeof(BbcVideo).GetField("_ula", flags)!.GetValue(video)!;
+        var teletext = (RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Services.TeletextSaa5050)
+            typeof(BbcVideo).GetField("_teletext", flags)!.GetValue(video)!;
+        var latch = typeof(BbcVideo).GetField("_teletextLatchedData", flags)!;
+        var phase = typeof(BbcVideo).GetField("_phase", flags)!;
+        var reads = 0;
+        byte busData = 0;
+        video.ReadMemory = _ => busData = (byte)++reads;
+        try
+        {
+            video.WriteUla(0, (byte)(fast ? 16 : 0));
+            for (var tick = 0; tick < 2048; tick++)
+            {
+                var nextPhase = (int)phase.GetValue(video)! ^ 1;
+                var previousLatch = (byte)latch.GetValue(video)!;
+                var teletextAddress = (crtc.MemoryAddress & 0x2000) != 0;
+                var before = reads;
+                video.Tick();
+                Assert.Equal(fast || nextPhase == 0 ? 1 : 0, reads - before);
+                if (fast || nextPhase == 0) Assert.Equal(busData, ula.Data);
+                if (nextPhase == 0)
+                {
+                    Assert.Equal(previousLatch & 0x7f, teletext.Data);
+                    Assert.Equal(teletextAddress ? busData : (byte)0, (byte)latch.GetValue(video)!);
+                }
+                else Assert.Equal(previousLatch, (byte)latch.GetValue(video)!);
+            }
+        }
+        finally { video.ReadMemory = null; video.Reset(); }
+    }
+
+    [Fact]
+    public void BoardVideoClocksContinueWithoutInstructionsAndCpuWritesWaitForTheNextVideoSlot()
+    {
+        var board = new RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.BbcMicroMachine(
+            new byte[16384], new byte[16384], 32768, expandedIo: true);
+        var video = board.Video;
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var ula = (RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Services.BbcVideoUla)
+            typeof(BbcVideo).GetField("_ula", flags)!.GetValue(video)!;
+        try
+        {
+            video.Reset();
+            Set(video, 0, 7); Set(video, 1, 6); Set(video, 2, 6); Set(video, 3, 0x11);
+            Set(video, 4, 3); Set(video, 6, 2); Set(video, 7, 3); Set(video, 9, 2);
+            video.WriteUla(0, 8);
+            board.Write(0, 0x35);
+            var cycles = board.Cpu.Cycles;
+            board.Tick();
+            Assert.Equal(0x35, ula.Data);
+            board.Write(8, 0x5a);
+            Assert.Equal(0x35, ula.Data);
+            board.Tick();
+            Assert.Equal(0x35, ula.Data);
+            board.Tick();
+            Assert.Equal(0x5a, ula.Data);
+            var frame = video.Frame;
+            for (var tick = 0; tick < 1024; tick++) board.Tick();
+            Assert.True(video.Frame > frame);
+            Assert.Equal(cycles, board.Cpu.Cycles);
+        }
+        finally { video.Reset(); }
     }
 
     [Fact]

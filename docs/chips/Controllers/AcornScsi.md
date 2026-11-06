@@ -100,3 +100,13 @@ Le composant expose IrqChanged en complément de la lecture Irq. Le callback ne 
 La bascule IRQ conserve son assertion après relâchement de REQ. UpdateInterruptLatch et SetReset publient uniquement ses changements effectifs. Ni les équations de SEL/ACK ni les phases de la cible ne sont modifiées.
 
 InterruptNotificationsTests vérifie l'assertion par REQ lorsque l'interruption est autorisée, l'absence de doublon, le maintien après relâchement de REQ et la désactivation par masque/reset. Les tests de registres et bascules existants sont inclus dans les 288 validations groupées VIA/ACIA/SCSI réussies en Debug et Release. La carte BBC relaie ce callback via WinchesterController/Winchester ; elle conserve les autres sources IRQ simultanées. Coût du BBC complet : docs/chips/CPU/Mos6502.md.
+
+## Relais hôte : état de repos à vitesse normale retenu — 6 novembre 2026
+
+Le relais dispose déjà d'un cumul exact des périodes de repos, restituées au contrôleur et aux mécanismes avant tout accès. Son Tick relisait néanmoins deux fois la sélection de cible, sa vitesse, puis traversait la boucle de conversion et TickHardware pour incrémenter ce seul cumul.
+
+Le cas repos qualifié/vitesse normale est maintenant retenu lors de l'entrée dans cet état. Tick incrémente directement le même cumul jusqu'au même seuil de restitution. Toute opération qui appelle FlushIdleClock invalide ce cas : lecture, écriture, configuration de vitesse, changement de support, reset et restitution au seuil. À vitesse normale, la fraction conservée ne change pas : ajouter puis soustraire 100 laissait déjà le même reste. Les autres vitesses et les états actifs gardent leur chemin existant. La cible ne peut changer d'unité pendant ce repos sans nouvel accès, lequel restitue d'abord le temps et invalide l'état retenu.
+
+Aucune puce ni horloge physique n'est modifiée ; seul le relais évite une consultation répétée d'un état déjà connu. Les 54 contrôles AcornEmuWinchesterStorageTests réussissent en Debug (15 s) et Release (3 s), avec les scénarios de bus, supports, signaux et restitution temporelle existants. Le gain sur le BBC complet reste à établir avant de retenir le bloc.
+
+Mesure du BBC complet : médiane Debug 22,1058 → 21,7464 ms/image, Release 3,7707 → 3,6331 ms/image, trois passages alternés par variante. Cycles, PC et empreintes vidéo/audio identiques dans les douze passages. Le relais est conservé ; les détails et limites se trouvent dans docs/chips/CPU/Mos6502.md. Aucun gain sur une commande de disque active n'est déduit de ce scénario au repos.

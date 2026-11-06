@@ -39,7 +39,10 @@ public sealed partial class Mc6854
         var rising = level && !_txClock;
         _txClock = level;
         if (rising)
+        {
             PrefetchTransmitWord();
+            UpdateStatus();
+        }
         if (!falling)
             return;
         _stableIdle = false;
@@ -68,10 +71,14 @@ public sealed partial class Mc6854
         if ((_control2 & C.Rts) == 0 && !_transmitting && !wasTransmitting && _transmitCount == 0)
         {
             if (_rtsAsserted && ++_rtsReleaseBits >= C.RtsReleaseBits)
+            {
                 _rtsAsserted = false;
+                _transmitOutputsDirty = true;
+            }
         }
         else
             _rtsReleaseBits = 0;
+        UpdateStatus();
     }
 
     private void ResetTransmit()
@@ -87,6 +94,7 @@ public sealed partial class Mc6854
         _transmitCrc = C.CrcInitial;
         _lastFlagAvailable = _markIdlePrefix = false;
         _txData = _nrziLevel = true;
+        _transmitOutputsDirty = true;
     }
 
     private void WriteTransmit(byte value, bool last)
@@ -98,6 +106,7 @@ public sealed partial class Mc6854
             tail -= C.FifoSize;
         _transmit[tail] = new(value, last);
         _transmitCount++;
+        _transmitOutputsDirty = true;
     }
 
     private void MarkTransmitEnd()
@@ -123,6 +132,7 @@ public sealed partial class Mc6854
         _abortRequested = true;
         _outgoing.Clear();
         _finishPending = false;
+        _transmitOutputsDirty = true;
     }
 
     // Sans données, flag fill ou boucle, la sortie logique reste 1. Les fronts et RTS
@@ -145,6 +155,7 @@ public sealed partial class Mc6854
                 AdlcTransmitPhase.Abort);
             _transmitPhase = AdlcTransmitPhase.Idle;
             _transmitting = true;
+            _transmitOutputsDirty = true;
             _lastFlagAvailable = false;
         }
         if (_transmitBits == 0)
@@ -178,6 +189,7 @@ public sealed partial class Mc6854
                     return;
                 }
                 _transmitting = true;
+                _transmitOutputsDirty = true;
                 _transmitField = AdlcFrameField.Address;
                 _transmitCrc = C.CrcInitial;
                 _transmitOnes = 0;
@@ -241,6 +253,7 @@ public sealed partial class Mc6854
         var next = _transmit[_transmitHead];
         _transmitHead = NextFifoIndex(_transmitHead);
         _transmitCount--;
+        _transmitOutputsDirty = true;
         return next;
     }
 
@@ -277,6 +290,7 @@ public sealed partial class Mc6854
             AdlcTransmitPhase.Abort);
         _transmitPhase = AdlcTransmitPhase.Idle;
         _transmitting = true;
+        _transmitOutputsDirty = true;
     }
 
     private void QueueRaw(uint bits, int count, AdlcTransmitPhase phase)
@@ -319,6 +333,7 @@ public sealed partial class Mc6854
                 _loopWaitingForData = false;
                 _transmitComplete = true;
                 _transmitting = false;
+                _transmitOutputsDirty = true;
             }
             return;
         }
@@ -333,6 +348,7 @@ public sealed partial class Mc6854
         _transmitComplete = true;
         _acknowledgedTransmit &= unchecked((byte)~C.TransmitAvailable);
         _transmitting = false;
+        _transmitOutputsDirty = true;
         _finishPending = false;
         _lastFlagAvailable = _queuedPhase == AdlcTransmitPhase.ClosingFlag;
         _markIdlePrefix = (_control3 & C.ZeroIdle) != 0;

@@ -57,6 +57,14 @@ public sealed partial class Intel8271 : IIntel8271
     public bool ResetAsserted => _resetAsserted;
     public byte DriveControl => _driveOutput;
     public bool Nmi => (_status & C.Interrupt) != 0;
+    public Action<bool>? NmiChanged { get; set; }
+
+    private void SetStatus(byte value)
+    {
+        var changed = ((_status ^ value) & C.Interrupt) != 0;
+        _status = value;
+        if (changed) NmiChanged?.Invoke((value & C.Interrupt) != 0);
+    }
     public bool Motor => (_driveOutput & C.OutputLoadHead) != 0;
     public int ActiveDrive => _drive;
     public bool Reading => _phase is Phase.Read or Phase.Id or Phase.Verify or Phase.Scan or Phase.ScanTail;
@@ -87,7 +95,8 @@ public sealed partial class Intel8271 : IIntel8271
     {
         _resetAsserted = false;
         ResetSerialRead();
-        _status = _result = _data = _command = 0;
+        _result = _data = _command = 0;
+        SetStatus(0);
         PublishDriveControl(0);
         ResetBus();
         _mode = C.ModeFixed;
@@ -105,6 +114,7 @@ public sealed partial class Intel8271 : IIntel8271
         Array.Clear(_notReadyLatched);
         UpdateTiming();
         Array.Clear(_tracks); Array.Clear(_parameters); _buffer = []; _awaitingData = false; SetPhase(Phase.Idle);
+        PublishClockEvent();
     }
 
     public byte Read(int register)
@@ -112,7 +122,7 @@ public sealed partial class Intel8271 : IIntel8271
         switch ((register & 4) != 0 ? 4 : register & C.RegisterMask)
         {
             case 0: return (byte)(_status | (_commandPending ? C.CommandFull : 0) | (_parameterPending ? C.ParameterFull : 0));
-            case 1: _status &= unchecked((byte)~(C.ResultFull | C.Interrupt)); return _result;
+            case 1: SetStatus((byte)(_status & ~(C.ResultFull | C.Interrupt))); return _result;
             case 4:
                 if (_awaitingData && Reading) _readBytes[_drive]++;
                 AcknowledgeData();
@@ -122,6 +132,12 @@ public sealed partial class Intel8271 : IIntel8271
     }
 
     public void Write(int register, byte value)
+    {
+        WriteRegister(register, value);
+        PublishClockEvent();
+    }
+
+    private void WriteRegister(int register, byte value)
     {
         if (_resetAsserted && (register & C.RegisterMask) != 2) return;
         switch ((register & 4) != 0 ? 4 : register & C.RegisterMask)
@@ -145,6 +161,12 @@ public sealed partial class Intel8271 : IIntel8271
     /// <summary>Avance positionnement et échéances des octets ; un octet non acquitté produit Late DMA.</summary>
     public void Tick()
     {
+        _inputClockCount = checked(_inputClockCount + 1);
+        TickCore();
+    }
+
+    private void TickCore()
+    {
         if (_resetAsserted) return;
         if (_commandPending || _parameterPending) TickBusBuffers();
         if (_phase == Phase.Idle) return;
@@ -157,7 +179,7 @@ public sealed partial class Intel8271 : IIntel8271
     {
         StopSerialRead();
         PublishDriveControl((byte)(_driveOutput & ~(C.OutputWriteEnable | C.OutputStep)));
-        _result = result; _status = (byte)(C.ResultFull | (interrupt ? C.Interrupt : 0));
+        _result = result; SetStatus((byte)(C.ResultFull | (interrupt ? C.Interrupt : 0)));
         SetPhase(Phase.Idle); _awaitingData = _dataRequest = false; _buffer = []; _delay = 0;
         _unloadCount = _special[C.LoadUnload] >> 4;
         if (_unloadCount == 0 && Motor) UnloadHead();

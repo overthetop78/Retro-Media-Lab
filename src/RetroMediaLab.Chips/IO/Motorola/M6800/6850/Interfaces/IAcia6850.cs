@@ -5,6 +5,10 @@ public interface IAcia6850
     bool TransmitBit { get; }
     /// <summary>Niveau physique de RTS : false correspond a la demande active basse.</summary>
     bool RtsHigh { get; }
+    Action<bool, bool>? TransmitPinsChanged { get; set; }
+    Action<int>? ClockDividerChanged { get; set; }
+    int TransmitClockPhase { get; }
+    int ReceiveClockPhase { get; }
 
     int BaudRateOverride { get; set; }
 

@@ -181,7 +181,18 @@ public sealed class AdlcSignalTests
     public void RtsReleaseWaitsForClosingFlagAndTwoIdleClocks()
     {
         var chip = B.Device();
+        var previous = (chip.Rts, chip.Transmitting);
+        var notifications = new List<(bool Rts, bool Transmitting)>();
+        chip.TransmitStateChanged = (rts, transmitting) =>
+        {
+            var current = (rts, transmitting);
+            Assert.Equal((chip.Rts, chip.Transmitting), current);
+            Assert.NotEqual(previous, current);
+            previous = current;
+            notifications.Add(current);
+        };
         chip.Write(1, C.Rts);
+        Assert.Equal(new[] { (true, false) }, notifications);
         chip.Write(2, 1);
         chip.Write(3, 2);
         for (var bit = 0; bit < 9; bit++)
@@ -197,6 +208,10 @@ public sealed class AdlcSignalTests
         Assert.True(chip.Rts);
         B.ClockTransmit(chip);
         Assert.False(chip.Rts);
+        Assert.Equal((false, false), notifications[^1]);
+        var stableCount = notifications.Count;
+        for (var bit = 0; bit < 100; ++bit) B.ClockTransmit(chip);
+        Assert.Equal(stableCount, notifications.Count);
     }
 
     [Fact]

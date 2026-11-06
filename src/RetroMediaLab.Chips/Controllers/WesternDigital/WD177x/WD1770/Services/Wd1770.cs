@@ -60,6 +60,15 @@ public sealed partial class Wd1770 : Interfaces.IWd1770
     public bool Irq => _irq;
     public bool Drq => _drq;
     public bool Nmi => _irq || _drq;
+    public Action<bool>? NmiChanged { get; set; }
+    private void SetInterrupts(bool irq, bool drq)
+    {
+        var previous = _irq || _drq;
+        _irq = irq;
+        _drq = drq;
+        var level = irq || drq;
+        if (previous != level) NmiChanged?.Invoke(level);
+    }
     public bool Motor => _motor;
     public bool Step => _step;
     public bool Direction => _direction;
@@ -73,7 +82,13 @@ public sealed partial class Wd1770 : Interfaces.IWd1770
     public bool DoubleDensity
     {
         get => _reader.DoubleDensity;
-        set { _reader.DoubleDensity = value; _writer.DoubleDensity = value; }
+        set
+        {
+            if (_reader.DoubleDensity == value) return;
+            _reader.DoubleDensity = value;
+            _writer.DoubleDensity = value;
+            PublishDriveSignals();
+        }
     }
     public event Action<ulong, bool>? WriteDataChanged;
     public event Action? DriveSignalsChanged;
@@ -98,14 +113,15 @@ public sealed partial class Wd1770 : Interfaces.IWd1770
         _sector = C.InitialSector;
         _phase = Phase.Idle;
         _timer = 0;
-        _drq = _irq = _forceIndex = _forceImmediate = _step = _direction = false;
+        _forceIndex = _forceImmediate = _step = _direction = false;
         _motor = _spinComplete = _verify = _writeLatchFull = false;
         _typeOne = true;
         _motorIndexes = _idleIndexes = _spinIndexes = _searchIndexes = 0;
         _reader.Reset();
         _writer.Reset();
         ResetBus();
-        DriveSignalsChanged?.Invoke();
+        SetInterrupts(false, false);
+        PublishDriveSignals();
     }
 
     /// <summary>Niveaux normalisés actifs des entrées du lecteur ; CLK est avancé par Tick/Advance.</summary>
@@ -122,14 +138,14 @@ public sealed partial class Wd1770 : Interfaces.IWd1770
         var rising = active && !_index;
         _index = active;
         if (!rising || _reset) return;
-        if (_forceIndex) _irq = true;
+        if (_forceIndex) SetInterrupts(true, _drq);
         if (_motor && ++_motorIndexes >= C.SpinUpIndexes) _spinComplete = true;
         if (_phase == Phase.Idle)
         {
             if (_motor && ++_idleIndexes >= C.MotorOffIndexes)
             {
                 _motor = false;
-                DriveSignalsChanged?.Invoke();
+                PublishDriveSignals();
             }
             return;
         }
@@ -145,7 +161,7 @@ public sealed partial class Wd1770 : Interfaces.IWd1770
             _writer.SetGate(true);
             _phase = Phase.WriteTrack;
             QueueWriteWord();
-            DriveSignalsChanged?.Invoke();
+            PublishDriveSignals();
             return;
         }
         if (_phase == Phase.WriteTrack) { Complete(); return; }
@@ -182,10 +198,10 @@ public sealed partial class Wd1770 : Interfaces.IWd1770
         _errors |= errors;
         _phase = Phase.Idle;
         _timer = 0;
-        _step = _drq = false;
-        _irq = true;
+        _step = false;
+        SetInterrupts(true, false);
         _idleIndexes = 0;
         _writer.SetGate(false);
-        DriveSignalsChanged?.Invoke();
+        PublishDriveSignals();
     }
 }

@@ -11,7 +11,7 @@ public sealed partial class Wd1770
     {
         if (_drq) _errors |= C.LostData;
         _data = value;
-        _drq = true;
+        SetInterrupts(_irq, true);
     }
     private void ReceiveByte(byte value, Wd1770ReadWordKind kind, bool validClocks)
     {
@@ -94,7 +94,7 @@ public sealed partial class Wd1770
     private void FinishSector()
     {
         _writer.SetGate(false);
-        DriveSignalsChanged?.Invoke();
+        PublishDriveSignals();
         if ((_command & C.MultiSectorFlag) != 0)
         {
             _sector = unchecked((byte)(_sector + 1));
@@ -106,7 +106,7 @@ public sealed partial class Wd1770
     private void RequestWriteData()
     {
         _writeLatchFull = false;
-        _drq = true;
+        SetInterrupts(_irq, true);
     }
 
     private void AdvanceWriteGap()
@@ -120,7 +120,7 @@ public sealed partial class Wd1770
         _writeRun = DoubleDensity ? C.MfmLeadBytes : C.FmLeadBytes;
         _phase = Phase.WriteLead;
         QueueWriteWord();
-        DriveSignalsChanged?.Invoke();
+        PublishDriveSignals();
     }
 
     private byte TakeWriteData()
@@ -128,7 +128,7 @@ public sealed partial class Wd1770
         if (!_writeLatchFull) { _errors |= C.LostData; return 0; }
         var data = _writeLatch;
         _writeLatchFull = false;
-        _drq = false;
+        SetInterrupts(_irq, false);
         return data;
     }
 

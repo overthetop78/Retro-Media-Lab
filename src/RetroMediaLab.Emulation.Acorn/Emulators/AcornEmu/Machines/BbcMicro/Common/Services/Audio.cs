@@ -15,35 +15,82 @@ internal sealed class Audio
     private readonly List<short> _samples = [];
     private readonly double _coupling = Math.Exp(-1 / (AudioConstants.SampleRate * AudioConstants.CouplingTimeSeconds));
     private int _phase;
+    private int _level;
+    private int _pendingTicks;
+    private int _clockCountdown;
+
+    internal Audio()
+    {
+        _level = _chip.Output;
+        _chip.OutputChanged = level => _level = level;
+        _clockCountdown = NextClockDistance();
+    }
     private long _area;
     private double _previousInput, _previousOutput;
 
     /// <summary>Écrit le bus lent lorsque la carte valide le PSG.</summary>
-    internal void Write(byte value) => _chip.Write(value);
+    internal void Write(byte value)
+    {
+        FlushPendingClock();
+        _chip.Write(value);
+        _clockCountdown = NextClockDistance();
+    }
 
     /// <summary>CE est câblé bas sur le BBC ; IC32 pilote WE. Les données restent présentes entre les accès CPU.</summary>
-    internal void SetBus(byte value, bool writeEnabled) => _chip.SetBus(value, chipSelected: true, writeEnabled);
+    internal void SetBus(byte value, bool writeEnabled)
+    {
+        FlushPendingClock();
+        _chip.SetBus(value, chipSelected: true, writeEnabled);
+        _clockCountdown = NextClockDistance();
+    }
 
     /// <summary>Réinitialise le circuit, la phase et les données non encore transmises.</summary>
     internal void Reset()
     {
         _chip.Reset(); _samples.Clear(); _phase = 0; _area = 0; _previousInput = _previousOutput = 0;
+        _pendingTicks = 0;
+        _clockCountdown = NextClockDistance();
     }
 
     /// <summary>Un cycle CPU apporte deux périodes de l'horloge sonore BBC de 4 MHz.</summary>
     internal void Tick()
     {
-        for (var clock = 0; clock < AudioConstants.SoundClock / AudioConstants.CpuClock; clock++) _chip.Tick();
-        var level = _chip.Output;
+        ++_pendingTicks;
+        if (--_clockCountdown == 0) FlushPendingClock();
+    }
+
+    private int NextClockDistance()
+    {
+        const int clocks = AudioConstants.SoundClock / AudioConstants.CpuClock;
+        var sound = (_chip.ClocksUntilNextEvent + clocks - 1) / clocks;
+        var sample = (AudioConstants.CpuClock - _phase + AudioConstants.SampleRate - 1) / AudioConstants.SampleRate;
+        return sound < sample ? sound : sample;
+    }
+
+    private void FlushPendingClock()
+    {
+        if (_pendingTicks == 0) return;
+        var ticks = _pendingTicks;
+        _pendingTicks = 0;
+        // Aucun front PSG ni frontière PCM ne se trouve avant le dernier cycle
+        // conservé. Son niveau peut changer : il garde son intégration séparée.
+        if (ticks > 1) Integrate(_level, (ticks - 1) * AudioConstants.SampleRate);
+        _chip.AdvanceClocks(ticks * (AudioConstants.SoundClock / AudioConstants.CpuClock));
+        Integrate(_level, AudioConstants.SampleRate);
+        _clockCountdown = NextClockDistance();
+    }
+
+    private void Integrate(int level, int durationUnits)
+    {
         // La majorité des cycles ne franchit aucune frontière PCM. Conserver exactement
         // la même intégrale entière, sans boucle ni recherche de minimum dans ce cas.
-        if (AudioConstants.SampleRate < AudioConstants.CpuClock - _phase)
+        if (durationUnits < AudioConstants.CpuClock - _phase)
         {
-            _area += (long)level * AudioConstants.SampleRate;
-            _phase += AudioConstants.SampleRate;
+            _area += (long)level * durationUnits;
+            _phase += durationUnits;
             return;
         }
-        var remaining = AudioConstants.SampleRate;
+        var remaining = durationUnits;
         while (remaining > 0)
         {
             var duration = Math.Min(remaining, AudioConstants.CpuClock - _phase);
@@ -60,6 +107,7 @@ internal sealed class Audio
     /// <summary>Transfère une copie possédée des échantillons terminés, en conservant l'intégrale partielle.</summary>
     internal short[] DrainSamples()
     {
+        FlushPendingClock();
         var samples = _samples.ToArray(); _samples.Clear(); return samples;
     }
 }

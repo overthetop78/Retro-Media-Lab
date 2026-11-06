@@ -11,6 +11,7 @@ public sealed partial class Intel8271
     private long _registerClockFraction;
     private bool _busReading;
     private bool _busWriting;
+    private bool _busSelected;
     private bool _busDack;
     private int _busRegister;
     private byte _busWriteValue;
@@ -24,14 +25,15 @@ public sealed partial class Intel8271
         var addressed = selected || dmaAcknowledge;
         var reading = addressed && read && !write;
         var writing = addressed && write && !read;
-        if (_busWriting && !write && !read && addressed)
-            WriteBus(selected, _busDack, _busRegister, _busWriteValue);
+        if (_busWriting && !write && !read)
+            WriteBus(_busSelected, _busDack, _busRegister, _busWriteValue);
 
         if (reading && !_busReading) BusData = ReadBus(selected, dmaAcknowledge, register);
         else if (!reading) BusData = null;
         _busReading = reading;
         _busWriting = writing;
         if (!writing) return;
+        _busSelected = selected;
         _busDack = dmaAcknowledge;
         _busRegister = register;
         _busWriteValue = value;
@@ -43,7 +45,7 @@ public sealed partial class Intel8271
         _bufferedCommand = _bufferedParameter = _busWriteValue = 0;
         _registerClockFraction = 0;
         _busRegister = 0;
-        _busDack = false;
+        _busDack = _busSelected = false;
         BusData = null;
     }
 
@@ -57,7 +59,7 @@ public sealed partial class Intel8271
                 if (!_parameterPending) _registerClockFraction = 0;
                 _bufferedCommand = value;
                 _commandPending = true;
-                _status = C.Busy;
+                SetStatus(C.Busy);
                 break;
             case 1:
                 if (!_commandPending && !_parameterPending) _registerClockFraction = 0;
@@ -68,6 +70,7 @@ public sealed partial class Intel8271
                 Write(register, value);
                 break;
         }
+        PublishClockEvent();
     }
 
     private void TickBusBuffers()

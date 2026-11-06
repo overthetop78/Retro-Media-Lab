@@ -10,7 +10,11 @@ internal sealed partial class AcornSystemMachine
     {
         if (_video?.Handles(address) == true) return _video.Read(address);
         var disk = DiskRegister(address);
-        if (_fdc is not null && disk >= 0) return _fdc.Read(disk);
+        if (_fdc is not null && disk >= 0)
+        {
+            _fdcDrive!.SynchronizeClock();
+            return _fdc.Read(disk);
+        }
         if (ViaAddress(address)) return _via.Read(address & C.ViaRegisterMask);
         if (RamIoAddress(address)) return (address & C.RamIoRamSelect) == 0
             ? _ramIo.ReadIo(address & C.RamIoMask) : _ramIo.ReadRam(address & C.RamIoMask);
@@ -26,6 +30,7 @@ internal sealed partial class AcornSystemMachine
         var disk = DiskRegister(address);
         if (_fdc is not null && disk >= 0)
         {
+            _fdcDrive!.SynchronizeClock();
             if (disk == 0) _fdc.MechanicalSpeedPercent = _speeds[(value & Disk.Drive1Select) == 0 ? 0 : 1];
             _fdc.Write(disk, value);
             _fdcDrive!.Synchronize();

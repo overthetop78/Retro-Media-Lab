@@ -1,3 +1,4 @@
+
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
 internal sealed partial class Video
@@ -11,11 +12,16 @@ internal sealed partial class Video
     private int _crtcScanline;
     private bool _crtcProgrammed;
 
+    private void ReceiveVerticalSync(bool level)
+    {
+        _crtcVSync = level;
+        VSyncChanged?.Invoke(level);
+    }
+
     // La carte possède le CRTC et actualise ces niveaux après chaque action
     // susceptible de les modifier : RESET, écriture MPU ou front caractère.
     private void RefreshCrtcSignals()
     {
-        _crtcVSync = _crtc.VSync;
         _crtcRaster = _crtc.RasterAddress;
         _crtcMemoryAddress = _crtc.MemoryAddress;
         _crtcDisplayEnabled = _crtc.DisplayEnabled;

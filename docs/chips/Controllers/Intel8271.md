@@ -111,3 +111,65 @@ Le dossier temporaire `artifacts/.tmp-i8271/`, ses références, bancs, journaux
 DriveSignalsChanged est une notification interne à l'émulation des changements des états déjà exposés (commande lecteur, sélection, lecture/écriture), pas une nouvelle fonction matérielle. Les mutations sont centralisées sans changer les valeurs ni l'ordre des commandes, fronts, échéances ou Tick. Le raccordement conserve chaque cycle du contrôleur, chaque avancement fractionnaire et la rotation, mais ne relit plus quatre états deux fois par cycle s'ils sont inchangés. Les remplacements de média, resets et fins de fenêtre d'écriture conservent leurs chemins explicites.
 
 149 tests autonomes de composant et 135 tests de transferts/raccordement/configuration passent en Debug et Release. Le nouveau contrôle parcourt les 256 valeurs de commande et de sortie manuelle et vérifie les notifications après chaque opération observée ; les tests de flux, DMA, interruptions d'écriture et mécanique préexistants restent exécutés. Sur 500 tranches au repos BBC, le raccordement disquette mesure 1,3277 ms contre 2,5410 ms dans la référence précédente, sans allocation ; le cœur complet reste à 33,16 FPS / 1,32 MHz. Ce résultat sans interface ne prouve ni 50 FPS dans l'application ni l'achèvement des autres puces.
+
+## Sortie NMI sur mutation du statut — 6 novembre 2026
+
+Les écritures du statut passent par SetStatus : le rappel NmiChanged ne s'exécute que si le bit d'interruption change. Demande de données, résultat, acquittement et reset passent par ce chemin. Aucun sondage supplémentaire n'est ajouté à Tick. Le câblage BBC reçoit le niveau et le conserve dans sa contribution NMI. Correction écrite ; tests, build et comparaison temporelle restent à effectuer.
+
+## Sélection au front WR et horloge propre — 6 novembre 2026
+
+La fiche Intel AFN-00223B, page 8-141 (table WRITE CYCLE), donne tCA, maintien de sélection après WR, à 0 ns minimum. Le chronogramme WRITE page 8-142 sépare la sélection, WR et les données. Le modèle rejetait à tort le relâchement simultané CS/WR en utilisant la sélection après le front. SetBus retient désormais CS, DACK, adresse et données du cycle d'écriture engagé. Il utilise cette sélection retenue au relâchement de WR. Une perte de sélection dans un appel antérieur alors que WR reste actif annule toujours le cycle ; elle n'est pas réinterprétée comme une écriture ultérieure. Le maintien DACK constructeur reste de 25 ns : cette correction de CS n'établit pas une garantie sur des cycles DMA qui violent ce maintien.
+
+Le fichier Intel8271.Clock.cs appartient au contrôleur. Il contient son compteur temporel, ses fréquences d'entrée/contrôleur et sa prochaine échéance. AdvanceTo conserve les ticks série actifs et la phase fractionnaire des buffers. Au repos ou sous reset, il avance directement le compteur sans exécuter TickCore. Pendant un délai de positionnement sans buffer ni activité série, il soustrait les périodes sans effet et exécute le traitement au même cycle d'expiration. ExternalSeek sans délai attend l'entrée Count.
+
+Le raccordement Intel8271Drive conserve seulement sa référence temporelle et l'échéance reçue. Il n'appelle plus Tick du contrôleur au repos. Les accès bus BBC, Atom et System synchronisent d'abord le contrôleur ; index et impulsions le synchronisent avant de modifier leurs entrées, puis le tick courant garde son ordre d'origine. Les niveaux index et la fin d'impulsion ne sont envoyés que lorsqu'ils changent. Les échéances de série restent conservatrices, à une période d'entrée : aucune suppression de ces cycles n'est revendiquée. Aucun ordonnanceur global ni thread supplémentaire n'est introduit.
+
+BusTests couvre désormais le relâchement simultané CS/WR, l'adresse retenue et l'absence de seconde écriture. ClockTests ajoute les comparaisons d'avancement groupé/unitaire et de transitions de positionnement. Ces nouveaux contrôles sont écrits mais non exécutés pendant ce bloc ; aucune performance, absence de régression ou livraison compilée n'est encore annoncée pour ces modifications.
+
+## Validation groupée des raccordements — 6 novembre 2026
+
+Les cas de ce composant et les autres cas du bloc horloges/signaux réussissent dans le passage Chips Debug complet. Le passage ciblé des sept composants en Release donne 723 réussites, zéro échec ni ignoré, 710 ms. Les contrôles d'intégration sélectionnés BBC Model B, cassette/série, 8271 et WD1770 donnent 166 réussites en Release, 10 s. En Debug, les 160 cas extérieurs au câblage série ont réussi au premier passage ; les six cas de câblage série ont réussi après adaptation de leur relais et de leurs assertions de câblage, 848 ms. Ces comptes sont ceux des groupes, pas un nombre de fonctions propres à cette puce.
+
+Le passage Chips Debug global reste non vert : deux contrôles des contrats publics, notamment sur des classes ACB-4000 déjà présentes et non modifiées, ainsi qu'un contrôle d'allocation SCSI échoué une fois puis réussi isolément. Les exigences correspondantes ne sont pas supprimées. Le détail est consigné dans docs/tasks/chips-validation.md. Ces résultats ne remplacent ni la mesure du BBC complet ni les captures de validation des machines ; aucun nouveau framerate n'est revendiqué.
+
+## Essai retiré : temps du relais moteur arrêté — 6 novembre 2026
+
+Essai dans Intel8271Drive, sans modification du contrôleur : accumuler les périodes sans moteur, impulsion, écriture, changement de sortie ou échéance, puis consolider exactement nanosecondes et résidu avant toute observation. Les 89 contrôles de raccordement/transfert réussissent en Debug (4 s) et Release (3 s). Les comparaisons temporelles couvraient aussi des fréquences non divisibles et des réveils média/reset.
+
+Comparaison du BBC complet : 80 trames de chauffe puis 200 mesurées, trois processus par variante dans chaque compilation/scénario, ordre référence/candidat/candidat/référence/référence/candidat. RunFrame, drainage audio et empreinte PCM inclus. Configuration copiée en mémoire ; aucune fenêtre, sortie audio Windows ni transport UDP. Les DLL réellement chargées sont contrôlées pour conserver Debug sans optimisation JIT et Release optimisé.
+
+| Scénario | Debug avant → après, ms/image | Release avant → après, ms/image |
+| --- | --- | --- |
+| Prompt sans média | 21,584752 → 20,066061 | 3,469745 → 3,412416 |
+| *DISC / *CAT, DSD en lecture seule | 23,864427 → 23,449641 | 4,770247 → 4,806078 |
+
+Médianes de trois passages. Dans chaque scénario, les six passages de chaque compilation ont exactement les mêmes cycles, PC, activité lecteur, octets lus et empreintes vidéo/PCM. Catalogue : 7 987 199 cycles, PC DEF2, moteur actif sur 130 trames, 512 octets lus. Vidéo SHA256 `12E388C611BDFFCD77A6961533431F748C8ECF9CD2E0F549E621F67B784C69F7`, PCM `3C7700D5B155CCCB980C220182E82858A332451FB727344329DB2B62C4DBB68E`. Au repos : 7 987 198 cycles, PC E464, aucune activité ; empreintes identiques à celles du bloc SERPROC consignées dans Mos6502.md.
+
+Le gain au repos ne suffit pas à retenir cet essai : la médiane Release du catalogue augmente de 0,75 %, avec des plages de mesures qui se chevauchent. Cela ne démontre pas une régression certaine, mais ne confirme pas le bénéfice sur le scénario actif. L'essai et ses seules adaptations de tests sont retirés. Les raccordements et notifications antérieurs sont conservés. Acorn est reconstruit après restauration en Debug et Release, zéro avertissement/erreur. Aucun nouveau build livré ni résultat natif n'est revendiqué. Le budget de 19,97 ms reste ouvert.
+
+## Piste actualisée sur changement des raccordements — 6 novembre 2026
+
+Le relais Intel8271Drive ne recherche plus image/piste/face à chacun des ticks moteur. Une notification DriveSignalsChanged invalide la sélection retenue ; les chemins de changement de média, reset, pas mécanique et publication d'écriture invalident également la piste. Le chargement reste effectué dans le même créneau du prochain Tick moteur avant index et lecture des impulsions. Une piste stable reste directement en mémoire. Les cycles du contrôleur, rotations, fronts d'index, fenêtres d'écriture et monostable ne sont pas modifiés.
+
+Les propriétaires actuels sont vérifiés : BBC décode sa face depuis la sortie optionnelle du 8271, Atom et System utilisent la face zéro fixe. Aucun de ces raccordements ne dépend d'un sélecteur extérieur changeant sans notification. Ce constat concerne ces trois propriétaires existants, pas une hypothétique autre carte. Le contrôle de rotation stable vérifie l'absence de consultations répétées du fournisseur d'image et du décodeur de face, puis leur réveil après changement de face, média et reset. Les 87 cas Intel8271 passent en Debug (4 s) et Release (3 s), dont les transferts, écritures, formatages et deux lecteurs/faces déjà couverts par ce groupe.
+
+Mesures du BBC complet : configuration utilisateur copiée en mémoire, mêmes ROM et options, sans interface, transport UDP ni sortie audio Windows. 80 trames de chauffe puis 200 mesurées, RunFrame/DrainAudio et empreinte PCM inclus. Trois processus par variante, ordre référence/candidat/candidat/référence/référence/candidat. Debug conserve son JIT non optimisé ; ce mode est contrôlé sur les DLL réellement chargées.
+
+| Scénario | Debug médian avant → après, ms/image | Release médian avant → après, ms/image |
+| --- | --- | --- |
+| Prompt sans média | 21,235326 → 21,394956 | 3,443555 → 3,440623 |
+| *DISC puis *CAT, DSD en lecture seule | 23,513850 → 23,123186 | 4,702718 → 4,128318 |
+
+En lecture : coût médian réduit de 1,66 % en Debug et 12,21 % en Release. Au repos : aucun gain établi ; les plages Debug se chevauchent (référence 21,046909–21,342828, candidat 21,023735–21,437429), et ce chemin n'exécute pas la recherche de piste ciblée. Cette variation est conservée dans le résultat, pas remplacée par une valeur choisie.
+
+Dans chaque scénario, les douze passages Debug/Release conservent les mêmes cycles, PC, activité et empreintes. Catalogue : 7 987 199 cycles, PC DEF2, moteur actif sur 130 trames, 512 octets lus ; vidéo SHA256 `12E388C611BDFFCD77A6961533431F748C8ECF9CD2E0F549E621F67B784C69F7`, PCM `3C7700D5B155CCCB980C220182E82858A332451FB727344329DB2B62C4DBB68E`. Prompt : 7 987 198 cycles, PC E464, aucune activité, empreintes déjà consignées dans Mos6502.md.
+
+La première saisie du banc utilisait une touche A pour toutes les lettres : la capture montrait des commandes incomplètes. Ses mesures catalogue sont invalidées. Une copie trop large des DLL restaurait également l'ancien exécutable du banc ; cette invocation est corrigée pour copier seulement les six dépendances nommées. La série catalogue retenue utilise les touches physiques des lettres et vérifie obligatoirement l'empreinte de l'écran attendu, en plus des octets lus. Les résultats au repos ne dépendent pas de cette saisie et sont conservés.
+
+Preuve Debug du catalogue : `artifacts/TestsChips/Intel8271/BbcMicroModelB/catalogue-track-signals.png`, 640 × 512, issue de la trame du cœur sans retouche. Elle montre *DISC, *CAT, Drive 0, Directory :0.$ et le retour au prompt pour `F:\Retro\Vierge_BBC_Model_A.dsd`, catalogue vide. Elle prouve ce scénario, pas un test visuel d'écriture/formatage, ni une cadence native. Le média est ouvert en lecture seule, détaché en finally puis libéré ; la configuration utilisateur n'est jamais écrite. Le tampon brut est supprimé après conversion.
+
+Le bloc est conservé pour son gain en lecture dans les deux configurations et l'identité des sorties contrôlées. Le budget Debug de 19,97 ms reste non atteint ; aucune puce ni machine entière n'est déclarée finalisée sur cette seule optimisation.
+
+### Build Debug livré
+
+`scripts/local-building.cmd --building=debug --modules=A` terminé avec code 0. Exécutable présent : `build/Debug/Retro Media Lab/retromedialab.exe`. Les 24 manifestes sont livrés et chaque entryAssembly existe : acorn, amstrad, apple, atari, bandai, coleco, commodore, epoch, example, fairchild, mattel, microsoft, nec, nintendo, panasonic, philips, sega, sharp, sinclair, snk, sony, thomson, watara, wenquxing. La DLL Acorn livrée est identique à sa sortie win-x64 Debug. Chips est présent dans lib et identique à sa sortie Debug : SHA256 `B30B88C613990BE4D39ABE0BF14FFF4D54599F7CD4B8DEFDE4E0686BE1FAFC93`. Les avertissements CA1416 observés concernent d'autres modules et ne sont pas masqués. Cette livraison n'est pas une nouvelle mesure des FPS de la fenêtre native. Aucun commit effectué dans ce bloc.

@@ -51,6 +51,7 @@ public sealed partial class Mc6854
             return;
         ReceiveLoopBit(bit);
         ReceiveBit(bit);
+        UpdateStatus();
     }
 
     private void ResetReceive()

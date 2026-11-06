@@ -72,6 +72,9 @@ public sealed partial class Acia6850 : IAcia6850
     /// <remarks>Les entrees CTS/DCD restent des conditions externes. Le logiciel doit programmer le controle.</remarks>
     public void Reset()
     {
+        var previousData = TransmitBit;
+        var previousRequest = RtsHigh;
+        var previousDivider = ClockDivider;
         _data = 0;
         _clockPhase = 0;
         _firstMasterReset = true;
@@ -79,6 +82,7 @@ public sealed partial class Acia6850 : IAcia6850
         DecodeControl();
         ClearTransfers();
         RtsHigh = true;
+        NotifyControlChanges(previousData, previousRequest, previousDivider);
     }
 
     public byte Read(bool data)
@@ -123,6 +127,9 @@ public sealed partial class Acia6850 : IAcia6850
         }
         else
         {
+            var previousData = TransmitBit;
+            var previousRequest = RtsHigh;
+            var previousDivider = ClockDivider;
             _control = value;
             DecodeControl();
             if (_masterReset)
@@ -131,6 +138,9 @@ public sealed partial class Acia6850 : IAcia6850
                 if (_firstMasterReset) RtsHigh = true;
                 _firstMasterReset = false;
             }
+            UpdateIrq();
+            NotifyControlChanges(previousData, previousRequest, previousDivider);
+            return;
         }
         UpdateIrq();
     }

@@ -57,7 +57,8 @@ public sealed class AcornEmuSerialWiringTests
         // Check all internal phases after the final status access.
         Assert.Equal(reference.Read(false), actual.Read(false));
         foreach (var field in typeof(Acia6850).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
-            Assert.Equal(field.GetValue(reference), field.GetValue(actual));
+            if (!typeof(Delegate).IsAssignableFrom(field.FieldType))
+                Assert.Equal(field.GetValue(reference), field.GetValue(actual));
     }
 
     [Fact]
@@ -65,23 +66,25 @@ public sealed class AcornEmuSerialWiringTests
     {
         var acia = new ObservedAcia();
         var serial = new BbcSerial(acia);
-        serial.PowerOn();
-        for (var tick = 0; tick < 50_000; tick++) serial.Tick(null);
         Assert.Equal(1, acia.CtsCalls);
         Assert.Equal(1, acia.DcdCalls);
+        serial.PowerOn();
+        for (var tick = 0; tick < 50_000; tick++) serial.Tick(null);
+        Assert.Equal(2, acia.CtsCalls);
+        Assert.Equal(2, acia.DcdCalls);
         serial.Ula.Write(0x40);
         serial.Tick(null);
-        Assert.Equal(2, acia.CtsCalls);
+        Assert.Equal(3, acia.CtsCalls);
         serial.Ula.Rs423ClearToSendHigh = false;
         serial.Tick(null);
-        Assert.Equal(3, acia.CtsCalls);
+        Assert.Equal(4, acia.CtsCalls);
         acia.Write(false, 3);
         serial.Tick(null);
-        Assert.Equal(3, acia.CtsCalls);
+        Assert.Equal(4, acia.CtsCalls);
         serial.PowerOn();
         serial.Tick(null);
-        Assert.Equal(4, acia.CtsCalls);
-        Assert.Equal(2, acia.DcdCalls);
+        Assert.Equal(5, acia.CtsCalls);
+        Assert.Equal(3, acia.DcdCalls);
     }
 
     [Theory]
@@ -178,6 +181,10 @@ public sealed class AcornEmuSerialWiringTests
         public bool Receiving => _chip.Receiving;
         public int BaudRate => _chip.BaudRate;
         public int ClockDivider => _chip.ClockDivider;
+        public int TransmitClockPhase => _chip.TransmitClockPhase;
+        public int ReceiveClockPhase => _chip.ReceiveClockPhase;
+        public Action<bool, bool>? TransmitPinsChanged { get => _chip.TransmitPinsChanged; set => _chip.TransmitPinsChanged = value; }
+        public Action<int>? ClockDividerChanged { get => _chip.ClockDividerChanged; set => _chip.ClockDividerChanged = value; }
         public bool Irq => _chip.Irq;
         public Action<bool>? IrqChanged { get => _chip.IrqChanged; set => _chip.IrqChanged = value; }
         public void Reset() => _chip.Reset();

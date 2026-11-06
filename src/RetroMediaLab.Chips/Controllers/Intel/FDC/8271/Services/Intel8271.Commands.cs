@@ -16,7 +16,7 @@ public sealed partial class Intel8271
     {
         _seekRetryCount = 0;
         _command = (byte)(value & C.CommandMask); SetActiveDrive((value & C.Drive1Select) != 0 ? 1 : 0);
-        Array.Clear(_parameters); _parameterCount = 0; _awaitingData = _dataRequest = false; _status = C.Busy; _deletedResult = 0;
+        Array.Clear(_parameters); _parameterCount = 0; _awaitingData = _dataRequest = false; SetStatus(C.Busy); _deletedResult = 0;
         _requiredParameters = _command switch
         {
             C.DriveStatus => 0,
@@ -40,11 +40,11 @@ public sealed partial class Intel8271
                 Complete(DriveInputs(), false); return;
             case C.Specify:
                 Specify();
-                _status = 0;
+                SetStatus(0);
                 return;
             case C.WriteSpecial:
                 WriteSpecial(_parameters[0], _parameters[1]);
-                _status = 0;
+                SetStatus(0);
                 return;
             case C.ReadSpecial:
                 Complete(ReadSpecial(_parameters[0]), false);

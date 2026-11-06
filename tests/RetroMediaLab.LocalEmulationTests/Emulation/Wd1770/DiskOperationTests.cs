@@ -17,6 +17,30 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuWd1770Tests
 {
     [Theory]
+    [InlineData(1_000_000, false)]
+    [InlineData(2_000_000, false)]
+    [InlineData(3_000_001, false)]
+    [InlineData(16_000_000, false)]
+    [InlineData(1_000_000, true)]
+    [InlineData(3_000_001, true)]
+    [InlineData(16_000_000, true)]
+    public void ClockRateIsPreservedAtRestAndDuringAnActiveCommand(int ownerClock, bool wd1772)
+    {
+        var model = wd1772 ? RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1772
+            : RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1770;
+        var controller = new Controller(_ => null, ticksPerSecond: ownerClock, model: model);
+        const int periods = 10_001;
+        for (var period = 0; period < periods; ++period) controller.Tick();
+        var frequency = controller.Chip.ClockFrequency;
+        Assert.Equal((ulong)((long)periods * frequency / ownerClock), controller.Chip.ClockCount);
+        controller.Write(0, 0x88);
+        Assert.True(controller.Active);
+        for (var period = 0; period < periods; ++period) controller.Tick();
+        Assert.Equal((ulong)((long)periods * 2 * frequency / ownerClock), controller.Chip.ClockCount);
+        Assert.True(controller.Active);
+    }
+
+    [Theory]
     [InlineData(1_000_000)]
     [InlineData(3_000_001)]
     [InlineData(8_000_000)]

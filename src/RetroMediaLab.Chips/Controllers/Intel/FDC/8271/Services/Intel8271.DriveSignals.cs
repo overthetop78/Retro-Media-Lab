@@ -29,6 +29,7 @@ public sealed partial class Intel8271
             _notReadyLatched[drive] = true;
             if (Active && drive == _drive) Complete(C.NotReady);
         }
+        PublishClockEvent();
     }
 
     public void SetWriteProtected(int drive, bool? writeProtected)
@@ -36,6 +37,7 @@ public sealed partial class Intel8271
         ValidateDrive(drive);
         _protectInputs[drive] = writeProtected;
         if (Active && drive == _drive && IsWriteCommand && WriteProtected()) Complete(C.WriteProtected);
+        PublishClockEvent();
     }
 
     public void SetWriteFault(int drive, bool fault)
@@ -43,6 +45,7 @@ public sealed partial class Intel8271
         ValidateDrive(drive);
         _faultInputs[drive] = fault;
         if (Active && drive == _drive && fault) Faulted();
+        PublishClockEvent();
     }
 
     public void SetTrackZero(int drive, bool? atTrackZero)
@@ -57,6 +60,7 @@ public sealed partial class Intel8271
         var previous = _indexInputs[drive];
         _indexInputs[drive] = asserted;
         if (asserted == true && previous != true && drive == _drive) OnIndexPulse();
+        PublishClockEvent();
     }
 
     /// <summary>Un front Count fait avancer le positionnement lorsque Step Rate vaut zéro.</summary>
@@ -71,6 +75,7 @@ public sealed partial class Intel8271
             PublishDriveControl((byte)(_driveOutput & ~C.OutputStep));
             FinishSeek();
         }
+        PublishClockEvent();
     }
 
     private static void ValidateDrive(int drive) =>

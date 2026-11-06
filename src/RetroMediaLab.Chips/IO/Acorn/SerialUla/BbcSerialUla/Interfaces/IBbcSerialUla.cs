@@ -16,6 +16,11 @@ public interface IBbcSerialUla
     bool TransmitClockEdge { get; }
     bool ReceiveClockEdge { get; }
     short CassetteOutput { get; }
+    Action<bool, bool, bool, bool>? SerialPinsChanged { get; set; }
+    Action<bool, bool, bool>? SerialClocksRaised { get; set; }
+    long SourceClockPhase { get; }
+    void SetTransmitPins(bool data, bool requestToSendHigh);
+    void Tick();
     void Write(byte value);
     byte Read();
     void SetCassetteInput(bool? level);

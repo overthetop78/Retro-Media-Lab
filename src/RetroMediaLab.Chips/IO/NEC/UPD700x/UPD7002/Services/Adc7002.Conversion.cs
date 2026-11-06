@@ -25,6 +25,7 @@ public sealed partial class Adc7002
             _sample = (ushort)(_channels[_command & C.ChannelMask] & C.EightBitResultMask);
             SetRemaining(_eightBitTicks);
         }
+        PublishClockEvent();
     }
 
     private void SetRemaining(long ticks)

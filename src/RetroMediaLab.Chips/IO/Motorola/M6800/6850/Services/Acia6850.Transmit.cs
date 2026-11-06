@@ -24,36 +24,37 @@ public sealed partial class Acia6850
 
         if (_transmitState == Acia6850TransmitState.Data)
         {
+            bool nextLine;
             if (_transmitStep < _dataBits)
             {
-                _transmitLine = (_transmitShift & (C.LeastSignificantBit << _transmitStep)) != 0;
-                _transmitParity ^= _transmitLine;
+                nextLine = (_transmitShift & (C.LeastSignificantBit << _transmitStep)) != 0;
+                _transmitParity ^= nextLine;
                 ++_transmitStep;
             }
             else if (_hasParity && _transmitStep == _dataBits)
             {
-                _transmitLine = _transmitParity != _oddParity;
+                nextLine = _transmitParity != _oddParity;
                 ++_transmitStep;
             }
             else
             {
-                _transmitLine = true;
+                nextLine = true;
                 _transmitStopCount = C.OneStopBit;
                 _transmitState = Acia6850TransmitState.Stop;
             }
+            SetTransmitLine(nextLine);
             return;
         }
         if (_transmitState == Acia6850TransmitState.Stop && _transmitStopCount < _stopBits)
         {
             ++_transmitStopCount;
-            _transmitLine = true;
             return;
         }
 
         _transmitState = Acia6850TransmitState.Idle;
         if (!_transmitPending || _ctsBlocked || _break)
         {
-            _transmitLine = true;
+            SetTransmitLine(true);
             return;
         }
         _transmitShift = _transmitData;
@@ -61,9 +62,11 @@ public sealed partial class Acia6850
         _transmitStep = 0;
         _transmitParity = false;
         _transmitState = Acia6850TransmitState.Data;
+        var lineChanged = _transmitLine;
         _transmitLine = false;
         _status |= C.TransmitDataEmpty;
         UpdateIrq();
+        if (lineChanged) TransmitPinsChanged?.Invoke(false, RtsHigh);
     }
 
     /// <summary>Adapte une periode de l'horloge de carte a TxC et a l'echantillonnage DCD.

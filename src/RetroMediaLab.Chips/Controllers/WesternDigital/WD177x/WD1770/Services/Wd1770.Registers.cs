@@ -38,12 +38,12 @@ public sealed partial class Wd1770
     {
         if (register == C.StatusCommandRegister)
         {
-            if (!_forceImmediate) _irq = false;
+            if (!_forceImmediate) SetInterrupts(false, _drq);
         }
         else if (register == C.DataRegister)
         {
             if (_drq && Reading) DataBytesRead++;
-            _drq = false;
+            SetInterrupts(_irq, false);
         }
     }
 
@@ -64,7 +64,7 @@ public sealed partial class Wd1770
                     if (_phase == Enums.Wd1770Phase.WriteTrack) _writer.SetLookAhead(FormatLookAhead(value));
                     else if (_phase == Enums.Wd1770Phase.WriteData && _remaining > 0) _writer.SetLookAhead(value);
                 }
-                _drq = false;
+                SetInterrupts(_irq, false);
                 break;
         }
     }

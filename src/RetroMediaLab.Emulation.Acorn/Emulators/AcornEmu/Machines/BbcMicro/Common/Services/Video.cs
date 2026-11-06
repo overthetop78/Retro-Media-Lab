@@ -37,6 +37,7 @@ internal sealed partial class Video
     }
     public Func<int, byte>? ReadMemory { get; set; }
     public bool VSync => _crtcVSync;
+    public Action<bool>? VSyncChanged { get; set; }
     public long Frame => _crtc.Frame;
 
     /// <summary>La carte emprunte la RAM ; ses circuits et tampons lui appartiennent.</summary>
@@ -51,6 +52,8 @@ internal sealed partial class Video
         _ram = ram;
         _teletextHighBankOnly = teletextHighBankOnly;
         _teletext = new(characters);
+        _crtc.VSyncChanged = ReceiveVerticalSync;
+        _crtcVSync = _crtc.VSync;
         Height = height;
         _drawing = new uint[VideoConstants.ScanoutWordsPerLine * Height];
         _completed = new uint[_drawing.Length];
@@ -87,12 +90,13 @@ internal sealed partial class Video
     public void Tick()
     {
         _phase ^= VideoConstants.CpuPhaseMask;
-        PrepareTeletext();
         var fast = _ula.FastCrtc;
-        if (fast || _phase == 0)
+        var fetch = fast || _phase == 0;
+        var data = PrepareTeletext(fetch);
+        if (fetch)
         {
             _characterPending = true;
-            _ula.SetCharacterInputs(ReadVideoMemory(_crtcMemoryAddress, _crtcRaster), _crtcCursor,
+            _ula.SetCharacterInputs(data, _crtcCursor,
                 _crtcDisplayEnabled && (_crtcRaster & VideoConstants.BitmapRasterBlankBit) == 0);
             var width = fast ? VideoConstants.BitmapCellWidth : VideoConstants.WideBitmapCellWidth;
             _scanoutX = _crtcDisplayColumn * width;
@@ -125,6 +129,6 @@ internal sealed partial class Video
     }
 
     /// <summary>Copie immuable de la dernière image terminée.</summary>
-    public byte[] Render() => _completedInterlaced ? ExpandInterlacedScanout() : ExpandScanout(_completed);
+    public byte[] Render() => RenderCachedScanout();
 
 }

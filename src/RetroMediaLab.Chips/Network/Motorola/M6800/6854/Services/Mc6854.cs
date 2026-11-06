@@ -29,6 +29,7 @@ public sealed partial class Mc6854 : IMc6854
     private int _rtsReleaseBits;
 
     public Action<ReadOnlyMemory<byte>>? FrameTransmitted { get; set; }
+    public Action<bool>? IrqChanged { get; set; }
     public bool Irq => (StatusOne() & C.Interrupt) != 0;
     public bool Receiving => (_rxInFrame && _rxTotalBits != 0) || _packetBits is not null || _receiveCount != 0;
     public bool Transmitting => _transmitting || _transmitCount != 0;
@@ -60,7 +61,10 @@ public sealed partial class Mc6854 : IMc6854
         _statusDirty = true;
         _resetAsserted = asserted;
         if (!asserted)
+        {
+            UpdateStatus();
             return;
+        }
         // Seuls les bits nommés par Motorola sont affectés par RESET.
         _control1 |= C.ReceiveReset | C.TransmitReset;
         _control2 &= unchecked((byte)~C.Rts);
@@ -77,6 +81,7 @@ public sealed partial class Mc6854 : IMc6854
         ResetTransmit();
         ResetLoop();
         _busData = _busEnable && _busSelected && _busRead ? Read(_busRegister) : null;
+        UpdateStatus();
     }
 
     /// <summary>Adaptateur d’horloge et de ligne pour les transports par trames ; pas une détection interne de câble.</summary>
@@ -109,6 +114,7 @@ public sealed partial class Mc6854 : IMc6854
             _acknowledgedTransmit &= unchecked((byte)~C.NotClearToSend);
         }
         _clearToSend = allowed;
+        UpdateStatus();
     }
 
     public void SetCarrierPresent(bool present)
@@ -124,13 +130,18 @@ public sealed partial class Mc6854 : IMc6854
             DiscardCurrentReceive();
         }
         _carrierPresent = present;
+        UpdateStatus();
     }
 
     public byte Read(int register)
     {
         register &= C.RegisterMask;
         if (register > 1)
-            return ReadReceive();
+        {
+            var data = ReadReceive();
+            UpdateStatus();
+            return data;
+        }
         if (register == 0)
         {
             var status = StatusOne();
@@ -190,6 +201,7 @@ public sealed partial class Mc6854 : IMc6854
                 if ((_control2 & C.Rts) != 0)
                 {
                     _rtsAsserted = true;
+                    _transmitOutputsDirty = true;
                     _rtsReleaseBits = 0;
                 }
                 break;
@@ -202,6 +214,7 @@ public sealed partial class Mc6854 : IMc6854
                 WriteTransmit(value, register == C.RegisterMask);
                 break;
         }
+        UpdateStatus();
     }
 
     /// <summary>Un cycle du propriétaire. Le rapport configuré conserve l’horloge des bits dans le temps émulé.</summary>

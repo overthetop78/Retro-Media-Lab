@@ -15,6 +15,8 @@ internal sealed class Disks
     private readonly Intel8271Drive? _intelDrive;
     private readonly Wd1770Drive? _wd;
     private byte _control;
+    private bool _nmi;
+    internal Action<bool>? NmiChanged { get; set; }
 
     internal Disks(bool enabled, bool wd1770 = false)
     {
@@ -22,18 +24,36 @@ internal sealed class Disks
         _wd1770 = wd1770;
         if (!enabled) return;
         if (wd1770)
+        {
             _wd = new Wd1770Drive(index => _images[index]) { Selected = false };
+            _wd.Chip.NmiChanged = SetNmi;
+            SetNmi(_wd.Nmi);
+        }
         else
         {
             _controller = new(C.IntelOwnerClock, C.IntelChipClock);
             _intelDrive = new(_controller, index => _images[index], C.IntelOwnerClock, C.IntelChipClock,
                 static output => (output & C.IntelSideSelect) != 0 ? 1 : 0);
+            _controller.NmiChanged = SetNmi;
+            SetNmi(_controller.Nmi);
         }
     }
-    internal bool Nmi => _enabled && (_wd1770 ? _wd!.Nmi : _controller!.Nmi);
+    internal bool Nmi => _nmi;
+    private void SetNmi(bool asserted)
+    {
+        if (_nmi == asserted) return;
+        _nmi = asserted;
+        NmiChanged?.Invoke(asserted);
+    }
     internal void Tick() { if (_enabled) { if (_wd1770) { if ((_control & 0x20) != 0) _wd!.Tick(); } else _intelDrive!.Tick(); } }
     internal void Reset() { if (_enabled) { if (_wd1770) { _control = 0; _wd!.SetReset(true); _wd.Selected = false; } else { _controller!.Reset(); _intelDrive!.Reset(); } } }
-    internal byte Read(ushort address) => !_enabled ? (byte)0xfe : _wd1770 ? (address & 4) != 0 ? _wd!.Read(address & 3) : (byte)0xfe : _controller!.Read(address & 7);
+    internal byte Read(ushort address)
+    {
+        if (!_enabled) return 0xfe;
+        if (_wd1770) return (address & 4) != 0 ? _wd!.Read(address & 3) : (byte)0xfe;
+        _intelDrive!.SynchronizeClock();
+        return _controller!.Read(address & 7);
+    }
     internal void Write(ushort address, byte value)
     {
         if (!_enabled) return;
@@ -53,6 +73,7 @@ internal sealed class Disks
             }
             return;
         }
+        _intelDrive!.SynchronizeClock();
         if ((address & 7) == 0) _controller!.MechanicalSpeedPercent = _speeds[(value & 0x80) == 0 ? 0 : 1];
         _controller!.Write(address & 7, value);
         _intelDrive!.Synchronize();
