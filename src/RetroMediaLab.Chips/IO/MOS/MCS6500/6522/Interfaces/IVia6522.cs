@@ -1,4 +1,5 @@
 using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Enums;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Contracts;
 
 namespace RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Interfaces;
 /// <summary>Contrat matériel du composant Via6522 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
@@ -22,6 +23,8 @@ public interface IVia6522
     Action<bool>? IrqChanged { get; set; }
 
     void Reset();
+    Via6522State CaptureState();
+    void RestoreState(Via6522State state);
     void Tick();
     void Phi2LeadingEdge();
     void Phi2TrailingEdge();

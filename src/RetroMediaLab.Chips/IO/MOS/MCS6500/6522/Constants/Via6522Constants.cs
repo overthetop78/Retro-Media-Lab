@@ -2,6 +2,7 @@ namespace RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Constants;
 
 public static class Via6522Constants
 {
+    public const int StateFormatVersion = 1;
     public const int RegisterCount = 16;
     public const int RegisterMask = RegisterCount - 1;
     public const int PortB = 0;
