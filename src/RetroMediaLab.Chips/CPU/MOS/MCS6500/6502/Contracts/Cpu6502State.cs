@@ -1,0 +1,93 @@
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums;
+
+namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Contracts;
+
+/// <summary>État du silicium uniquement ; le propriétaire sauvegarde séparément le bus et ses périphériques.</summary>
+public sealed record Cpu6502State
+{
+    public required int FormatVersion { get; init; }
+    public required Cpu6502Variant Variant { get; init; }
+    public required long ClockFrequency { get; init; }
+    public required bool SamplesDataEnable { get; init; }
+    public required bool PublishesSync { get; init; }
+    public required int InputClockPhase { get; init; }
+    public required long ClockCycleStart { get; init; }
+    public required bool ClockPresentOnly { get; init; }
+    public required bool ClockCyclePrepared { get; init; }
+    public required bool ClockResetCycle { get; init; }
+    public required bool ClockPhaseAdvanced { get; init; }
+    public required bool ClockOverflowSampled { get; init; }
+    public required bool ExternalClockDriven { get; init; }
+    public required bool ExternalClockInputHigh { get; init; }
+    public required bool CmosSync { get; init; }
+    public required bool CmosHeldSync { get; init; }
+    public required bool CmosOpcodeHeld { get; init; }
+    public required bool CmosResetHeld { get; init; }
+    public required Cpu6502BusPhase CmosPhase { get; init; }
+    public required Cpu6502Operation CmosOperation { get; init; }
+    public required Cpu6502AddressMode CmosMode { get; init; }
+    public required byte CmosRepeatedCycles { get; init; }
+    public required byte CmosFlagsBefore { get; init; }
+    public required byte CmosLow { get; init; }
+    public required byte CmosPointer { get; init; }
+    public required byte CmosData { get; init; }
+    public required byte CmosNopRemaining { get; init; }
+    public required ushort CmosBase { get; init; }
+    public required ushort CmosAddress { get; init; }
+    public required ushort CmosVector { get; init; }
+    public required bool CmosHardwareInterrupt { get; init; }
+    public required bool SamplesReady { get; init; }
+    public required bool SamplesReset { get; init; }
+    public required bool SamplesOverflow { get; init; }
+    public required bool IrqPending { get; init; }
+    public required bool IrqLevel { get; init; }
+    public required bool IrqPrevious { get; init; }
+    public required bool? BranchIrqSample { get; init; }
+    public required bool? BranchNmiSample { get; init; }
+    public required byte A { get; init; }
+    public required byte X { get; init; }
+    public required byte Y { get; init; }
+    public required byte S { get; init; }
+    public required byte P { get; init; }
+    public required ushort Pc { get; init; }
+    public required ushort InstructionAddress { get; init; }
+    public required long Cycles { get; init; }
+    public required bool NmiLevel { get; init; }
+    public required bool NmiPending { get; init; }
+    public required bool NmiPrevious { get; init; }
+    public required bool NmiAccepted { get; init; }
+    public required bool OverflowLevel { get; init; }
+    public required bool IrqPinConnected { get; init; }
+    public required bool NmiPinConnected { get; init; }
+    public required bool IrqInput { get; init; }
+    public required bool NmiInputEdge { get; init; }
+    public required Cpu6502BusPhase NmosPhase { get; init; }
+    public required Cpu6502Operation NmosOperation { get; init; }
+    public required Cpu6502AddressMode NmosMode { get; init; }
+    public required byte NmosFlagsBefore { get; init; }
+    public required byte NmosLow { get; init; }
+    public required byte NmosPointer { get; init; }
+    public required byte NmosData { get; init; }
+    public required ushort NmosAddress { get; init; }
+    public required ushort NmosBase { get; init; }
+    public required ushort NmosVector { get; init; }
+    public required bool NmosHardwareInterrupt { get; init; }
+    public required bool NmosSync { get; init; }
+    public required bool NmosOpcodeHeld { get; init; }
+    public required bool NmosResetHeld { get; init; }
+    public required bool NmosHeldSync { get; init; }
+    public required bool BusPinsEnabled { get; init; }
+    public required bool MemoryLockAsserted { get; init; }
+    public required bool DirectDataBusEnable { get; init; }
+    public required bool HasDirectDataBusEnable { get; init; }
+    public required bool BusCyclePresented { get; init; }
+    public required bool BusCycleWriting { get; init; }
+    public required ushort BusCycleAddress { get; init; }
+    public required byte BusCycleData { get; init; }
+    public required bool ResetPinConnected { get; init; }
+    public required bool ResetInput { get; init; }
+    public required bool ReadyPinConnected { get; init; }
+    public required bool ReadyInput { get; init; }
+    public required bool OverflowPinConnected { get; init; }
+    public required bool OverflowInputEdge { get; init; }
+}

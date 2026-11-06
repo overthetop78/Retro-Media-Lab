@@ -1,4 +1,5 @@
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Contracts;
 
 namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Interfaces;
 /// <summary>Contrat matériel du composant Cpu6502 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
@@ -41,4 +42,6 @@ public interface ICpu6502
     /// <summary>Avance l'oscillateur d'entrée ; son diviseur et sa phase restent dans la puce.</summary>
     void AdvanceInputClocks(long clocks);
     bool AtInstructionBoundary { get; }
+    Cpu6502State CaptureState();
+    void RestoreState(Cpu6502State state);
 }
