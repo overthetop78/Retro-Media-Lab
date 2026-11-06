@@ -2,6 +2,7 @@ namespace RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Constants;
 
 public static class Sn76489Constants
 {
+    public const int StateFormatVersion = 1;
     public const int ToneChannels = 3;
     public const int ChannelCount = 4;
     public const int NoiseChannel = 3;

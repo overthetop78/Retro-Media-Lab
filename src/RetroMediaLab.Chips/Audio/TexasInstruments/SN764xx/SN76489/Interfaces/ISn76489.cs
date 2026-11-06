@@ -1,7 +1,11 @@
+using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Contracts;
+
 namespace RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Interfaces;
 /// <summary>Contrat matériel du composant Sn76489 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface ISn76489
 {
+    Sn76489State CaptureState();
+    void RestoreState(Sn76489State state);
     /// <summary>Somme mono instantanée, avant le couplage analogique de la carte.</summary>
     int Output { get; }
     /// <summary>Changement de niveau uniquement ; le récepteur conserve sa dernière entrée.</summary>

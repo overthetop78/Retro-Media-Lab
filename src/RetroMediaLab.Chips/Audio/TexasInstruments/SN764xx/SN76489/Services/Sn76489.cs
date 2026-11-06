@@ -7,7 +7,7 @@ namespace RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Services;
 /// <remarks>Ce composant ignore le modèle BBC, le VIA et la sortie physique. Tick reçoit une horloge d'entrée ;
 /// Output représente la somme unipolaire des quatre voies avant le couplage analogique.
 /// Les registres sont sélectionnés par les octets portant le bit 7 ; les octets suivants complètent le registre sélectionné.</remarks>
-public sealed class Sn76489 : ISn76489
+public sealed partial class Sn76489 : ISn76489
 {
     private readonly int[] _periods = new int[Sn76489Constants.ToneChannels];
     private readonly int[] _counts = new int[Sn76489Constants.ChannelCount];
