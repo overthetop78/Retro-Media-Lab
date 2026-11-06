@@ -1,6 +1,6 @@
 namespace RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Enums;
 
-internal enum AdlcTransmitPhase
+public enum AdlcTransmitPhase
 {
     Idle,
     OpeningFlag,

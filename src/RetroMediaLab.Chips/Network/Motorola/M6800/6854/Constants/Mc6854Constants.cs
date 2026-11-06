@@ -3,6 +3,7 @@ namespace RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Constants;
 /// <summary>Bits de l'ADLC Motorola 6854 ; leur décodage BBC appartient à la carte réseau.</summary>
 public static class Mc6854Constants
 {
+    public const int StateFormatVersion = 1;
     public const int FifoSize = 3;
     public const int MaximumFrameBytes = 65535;
     public const int DefaultCyclesPerByte = 64;

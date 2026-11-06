@@ -1,7 +1,11 @@
+using RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Contracts;
+
 namespace RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Interfaces;
 /// <summary>Contrat matériel du composant Mc6854 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface IMc6854
 {
+    Mc6854State CaptureState();
+    void RestoreState(Mc6854State state);
     Action<ReadOnlyMemory<byte>>? FrameTransmitted { get; set; }
 
     bool Irq { get; }
