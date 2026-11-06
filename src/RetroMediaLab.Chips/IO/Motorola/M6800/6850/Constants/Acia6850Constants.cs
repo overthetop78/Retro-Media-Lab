@@ -2,6 +2,7 @@ namespace RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Constants;
 
 public static class Acia6850Constants
 {
+    public const int StateFormatVersion = 1;
     public const byte ReceiveDataFull = 0x01;
     public const byte TransmitDataEmpty = 0x02;
     public const byte CarrierAbsent = 0x04;

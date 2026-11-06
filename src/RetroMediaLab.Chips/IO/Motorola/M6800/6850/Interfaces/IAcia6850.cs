@@ -1,7 +1,11 @@
+using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Contracts;
+
 namespace RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Interfaces;
 /// <summary>Contrat matériel du composant Acia6850 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface IAcia6850
 {
+    Acia6850State CaptureState();
+    void RestoreState(Acia6850State state);
     bool TransmitBit { get; }
     /// <summary>Niveau physique de RTS : false correspond a la demande active basse.</summary>
     bool RtsHigh { get; }
