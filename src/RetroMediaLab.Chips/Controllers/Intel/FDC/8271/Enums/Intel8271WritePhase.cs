@@ -1,6 +1,6 @@
 namespace RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Enums;
 
-internal enum Intel8271WritePhase
+public enum Intel8271WritePhase
 {
     Inactive,
     WaitIndex,

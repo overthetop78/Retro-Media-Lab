@@ -1,7 +1,11 @@
+using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Contracts;
+
 namespace RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Interfaces;
 /// <summary>Contrat matériel du composant Intel8271 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface IIntel8271
 {
+    Intel8271State CaptureState();
+    void RestoreState(Intel8271State state);
     long SeekSteps(int drive);
     long ReadBytes(int drive);
     long WrittenBytes(int drive);

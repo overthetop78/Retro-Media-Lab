@@ -3,6 +3,7 @@ namespace RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Constants;
 /// <summary>Registres, commandes et unités physiques du contrôleur Intel 8271.</summary>
 public static class Intel8271Constants
 {
+    public const int StateFormatVersion = 1;
     public const byte Busy = 0x80;
     public const byte CommandFull = 0x40;
     public const byte ParameterFull = 0x20;

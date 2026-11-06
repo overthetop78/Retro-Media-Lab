@@ -173,3 +173,9 @@ Le bloc est conservé pour son gain en lecture dans les deux configurations et l
 ### Build Debug livré
 
 `scripts/local-building.cmd --building=debug --modules=A` terminé avec code 0. Exécutable présent : `build/Debug/Retro Media Lab/retromedialab.exe`. Les 24 manifestes sont livrés et chaque entryAssembly existe : acorn, amstrad, apple, atari, bandai, coleco, commodore, epoch, example, fairchild, mattel, microsoft, nec, nintendo, panasonic, philips, sega, sharp, sinclair, snk, sony, thomson, watara, wenquxing. La DLL Acorn livrée est identique à sa sortie win-x64 Debug. Chips est présent dans lib et identique à sa sortie Debug : SHA256 `B30B88C613990BE4D39ABE0BF14FFF4D54599F7CD4B8DEFDE4E0686BE1FAFC93`. Les avertissements CA1416 observés concernent d'autres modules et ne sont pas masqués. Cette livraison n'est pas une nouvelle mesure des FPS de la fenêtre native. Aucun commit effectué dans ce bloc.
+
+## Capture et réinjection à l'instant T
+
+`Intel8271State` copie les 90 champs scalaires, les 15 tableaux et la valeur présentée sur le bus : registres, paramètres et commandes tamponnés, séquenceurs FM, CRC partiels, séparateur, données en vol, délais mécaniques, broches et échéances déjà publiées. Les deux horloges configurées sont contrôlées avant restauration. Aucun accès lecteur, acquittement, front ou événement n'est généré par la réinjection ; les récepteurs restent raccordés.
+
+Trois tests Debug réussis (573 ms) : douze reprises au milieu de lectures/écritures FM, puis transfert complet de 128 octets et comparaison des impulsions, DRQ/NMI, échéances et états finaux. Une commande/paramètre en attente sur le bus reprend également à l'identique ; horloge incompatible et tableau mal dimensionné sont refusés avant mutation. Les images et la mécanique du lecteur appartiennent au module et restent distinctes de cet état de puce.
