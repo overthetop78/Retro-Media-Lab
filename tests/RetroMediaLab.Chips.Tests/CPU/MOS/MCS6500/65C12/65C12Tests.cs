@@ -107,6 +107,8 @@ public sealed class Chip65C12Tests
         program.CopyTo(bus.Memory, 0x200);
         var cpu = new Cpu6502(bus, cmos: true);
         cpu.Reset();
+        bus.Reads.Clear();
+        bus.Writes.Clear();
         return (cpu, bus);
     }
 

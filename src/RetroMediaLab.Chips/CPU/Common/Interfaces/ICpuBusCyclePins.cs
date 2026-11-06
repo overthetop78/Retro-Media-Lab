@@ -8,4 +8,6 @@ public interface ICpuBusCyclePins
 {
     void PrepareRead(ushort address);
     void PrepareWrite(ushort address, byte data);
+    /// <summary>BE libère immédiatement adresse, données et R/W ; aucun transfert CPU n'est demandé.</summary>
+    void ReleaseBus() { }
 }

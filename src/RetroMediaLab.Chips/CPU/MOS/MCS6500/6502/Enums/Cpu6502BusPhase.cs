@@ -45,4 +45,8 @@ public enum Cpu6502BusPhase : byte
     ResetStackThird,
     ResetVectorLow,
     ResetVectorHigh,
+    DecimalAdjust,
+    JumpIndexed,
+    JumpIndirectCarry,
+    NopRepeat,
 }

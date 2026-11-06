@@ -10,4 +10,9 @@ public static class Cpu6502Constants
     public const int HighByteShift = 8;
     public const byte UnstableBusMask = 0xee;
     public const ushort JamBusAddress = 0xffff;
+    public const int DirectClockDivider = 1;
+    public const int AdvancedClockDivider = 4;
+    public const int AdvancedPhase2Start = 2;
+    public const int AdvancedPhase4Start = 1;
+    public const int AdvancedPhase4End = 3;
 }

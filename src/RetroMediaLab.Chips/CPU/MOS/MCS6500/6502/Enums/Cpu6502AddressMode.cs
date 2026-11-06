@@ -15,4 +15,10 @@ public enum Cpu6502AddressMode : byte
     IndexedIndirect,
     IndirectIndexed,
     Relative,
+    ZeroPageIndirect,
+    AbsoluteIndexedIndirect,
+    NopOneCycle,
+    NopImmediate,
+    NopRepeatedOperand,
+    NopAbsolute,
 }

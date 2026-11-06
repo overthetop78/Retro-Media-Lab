@@ -4,6 +4,7 @@ using RetroMediaLab.Chips.CPU.Common.Interfaces;
 using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Services;
 using RetroMediaLab.Chips.Network.Motorola.M6800.Chip6854.Constants;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip65C12.Services;
 using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Enums;
@@ -73,7 +74,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     public long? ProcessorClockHz => BbcMicroModelConstants.CpuFrequencyHz;
     internal Video Video { get; }
     public int? VideoHeight => Video.OutputHeight;
-    public bool Irq => _interruptSources != BbcInterruptSources.None || _masterMemory?.Irq == true || _tube?.HostIrq == true;
+    public bool Irq => _interruptSources != BbcInterruptSources.None;
     public bool Nmi => _nmiSources != BbcNmiSources.None;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get => _econet.FrameTransmitted; set => _econet.FrameTransmitted = value; }
     public Action<int>? NetworkPoll { get; set; }
@@ -169,8 +170,8 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
             _soundDataBus = value;
             _audio.SetBus(value, (_latch & Io.SoundWriteEnableMask) == 0);
         };
+        Cpu = master ? new Cpu65C12(this, BbcMicroModelConstants.CpuFrequencyHz) : new Cpu6502(this);
         ConnectInterrupts();
-        Cpu = new Cpu6502(this, cmos: master);
         Reset(true);
     }
     public void Reset(bool cold)

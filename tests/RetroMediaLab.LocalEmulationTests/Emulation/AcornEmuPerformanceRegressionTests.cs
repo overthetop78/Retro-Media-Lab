@@ -35,7 +35,7 @@ public sealed class AcornEmuPerformanceRegressionTests
         var cpu = new Cpu6502(bus, cmos);
         cpu.Reset();
         cpu.Step();
-        Assert.Equal(9, cpu.Cycles);
+        Assert.Equal(cmos ? 8 : 9, cpu.Cycles);
         Assert.Equal(0x201, cpu.PC);
     }
 

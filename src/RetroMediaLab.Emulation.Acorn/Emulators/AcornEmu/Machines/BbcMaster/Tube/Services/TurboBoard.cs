@@ -1,8 +1,9 @@
 using RetroMediaLab.Chips.CPU.Common.Interfaces;
-using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip65C102.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 using C = RetroMediaLab.Chips.IO.Acorn.Tube.ULA.Constants.TubeConstants;
+using Model = RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMaster.Constants.MasterModelConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Services;
 
@@ -12,7 +13,7 @@ internal sealed class TurboBoard : ICpuBus
     private readonly TubeUla _tube;
     private readonly byte[] _ram = new byte[C.TurboRamBytes];
     private readonly byte[] _rom;
-    private readonly Cpu6502 _cpu;
+    private readonly Cpu65C102 _cpu;
     private bool _romMapped;
     private long _target;
     public bool Irq => _tube.ParasiteIrq;
@@ -20,7 +21,11 @@ internal sealed class TurboBoard : ICpuBus
     internal TurboBoard(TubeUla tube, ReadOnlySpan<byte> rom)
     {
         if (rom.Length != C.TurboRomBytes) throw new ArgumentException(nameof(rom));
-        _tube = tube; _rom = rom.ToArray(); _cpu = new Cpu6502(this, cmos: true);
+        _tube = tube; _rom = rom.ToArray(); _cpu = new Cpu65C102(this, Model.CpuFrequency * C.TurboCyclesPerHostCycle);
+        _tube.ParasiteIrqChanged = _cpu.SetIrq;
+        _tube.ParasiteNmiChanged = _cpu.SetNmi;
+        _cpu.SetIrq(_tube.ParasiteIrq);
+        _cpu.SetNmi(_tube.ParasiteNmi);
         Reset();
     }
     internal void Reset() { _romMapped = true; _cpu.Reset(); _target = _cpu.Cycles; }
@@ -28,7 +33,7 @@ internal sealed class TurboBoard : ICpuBus
     {
         if (_tube.ResetHeld) { _target = _cpu.Cycles; return; }
         _target += C.TurboCyclesPerHostCycle;
-        while (_cpu.Cycles < _target) _cpu.Step();
+        while (_cpu.Cycles < _target) _cpu.Clock();
     }
     public void Tick() { }
     public byte Read(ushort address)

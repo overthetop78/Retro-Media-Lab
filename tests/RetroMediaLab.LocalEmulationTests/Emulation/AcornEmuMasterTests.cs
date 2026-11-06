@@ -2,6 +2,7 @@ using RetroMediaLab.Chips.Memory.Generic.I2C.EEPROM128.Services;
 using RetroMediaLab.Chips.IO.Acorn.Tube.ULA.Services;
 using RetroMediaLab.Chips.Custom.Acorn.Master512.Refresh.Services;
 using RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Services;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip65C12.Services;
 using RetroMediaLab.Emulation;
 using RetroMediaLab.Emulation.Enums;
 using RetroMediaLab.Emulation.Contracts;
@@ -192,6 +193,21 @@ public sealed class AcornEmuMasterTests
         Assert.Equal(0x11, memory.Read(0x3000, 0xc000, main));
         Assert.Equal(0x22, memory.Read(0x3000, 0x2000, main));
     }
+
+    [Fact]
+    public void AccessControlPublishesOnlyItsActualInterruptTransitions()
+    {
+        var memory = new MasterMemory();
+        var levels = new List<bool>();
+        memory.IrqChanged = levels.Add;
+        memory.Select(0xfe34, 0x80);
+        memory.Select(0xfe34, 0x81);
+        memory.Select(0xfe30, 4);
+        Assert.Equal(new[] { true }, levels);
+        memory.Reset(false);
+        memory.Reset(false);
+        Assert.Equal(new[] { true, false }, levels);
+    }
     [Fact]
     public void AndyHazelAndMainMemoryAreIndependentAndResetPreservesWarmRam()
     {
@@ -244,7 +260,28 @@ public sealed class AcornEmuMasterTests
         byte[] program = [0xa9, 0x42, 0x64, 0x20, 0x1a, 0x5a, 0x7a, 0x8d, 0x30, 0xfe, 0xa9, 4, 0x8d, 0x30, 0xfe, 0xa9, 0x66, 0x8d, 0, 0x80, 0x4c, 20, 0xc0];
         program.CopyTo(mos, 0); mos[^4] = 0; mos[^3] = 0xc0;
         var machine = new BbcMicroMachine(mos, new byte[16384], 32768, master: true);
+        Assert.IsType<Cpu65C12>(machine.Cpu);
+        Assert.Equal(2_000_000, machine.Cpu.ClockFrequency);
         for (var i = 0; i < 12; i++) machine.Cpu.Step();
         Assert.Equal(0, machine.Read(0x20)); Assert.Equal(0x66, machine.Read(0x8000));
+    }
+
+    [Fact]
+    public void TurboDoesNotExposeAnInstructionWriteBeforeItsActualHostCycle()
+    {
+        var rom = new byte[2048];
+        byte[] program = [0xa9, 0x5a, 0x8d, 0xf9, 0xfe, 0x4c, 5, 0xf0];
+        program.CopyTo(rom, 0);
+        rom[^4] = 0;
+        rom[^3] = 0xf0;
+        var tube = new TubeUla();
+        var turbo = new TurboBoard(tube, rom);
+        turbo.RunHostCycle(); // LDA immediate: two parasite cycles.
+        Assert.Equal(0, tube.HostRead(0) & 0x80);
+        turbo.RunHostCycle(); // STA opcode and low address, not its write cycle.
+        Assert.Equal(0, tube.HostRead(0) & 0x80);
+        turbo.RunHostCycle(); // STA high address and write, sixth parasite cycle.
+        Assert.Equal(0x80, tube.HostRead(0) & 0x80);
+        Assert.Equal(0x5a, tube.HostRead(1));
     }
 }

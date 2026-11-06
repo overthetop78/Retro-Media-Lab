@@ -4,7 +4,7 @@ using Mode = RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums.Cpu6502AddressMo
 
 namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 
-public sealed partial class Cpu6502
+public partial class Cpu6502
 {
     private void ApplyNmosRead(byte value)
     {

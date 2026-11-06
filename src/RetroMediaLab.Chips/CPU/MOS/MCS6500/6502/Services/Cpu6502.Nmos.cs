@@ -7,7 +7,7 @@ using Op = RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums.Cpu6502Operation;
 namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 
 /// <summary>Séquenceur NMOS sans allocation : une phase conservée par cycle de bus, même pendant RDY.</summary>
-public sealed partial class Cpu6502
+public partial class Cpu6502
 {
     private Phase _nmosPhase;
     private NmosInstruction _nmosInstruction;
@@ -23,7 +23,9 @@ public sealed partial class Cpu6502
     private bool _nmosOpcodeHeld;
     private bool _nmosResetHeld;
 
-    public bool AtInstructionBoundary => cmos || _nmosPhase == Phase.Opcode && !_nmosOpcodeHeld;
+    public bool AtInstructionBoundary => cmos
+        ? _cmosPhase == Phase.Opcode && !_cmosOpcodeHeld
+        : _nmosPhase == Phase.Opcode && !_nmosOpcodeHeld;
 
     private bool _nmosHeldSync;
 
@@ -46,8 +48,8 @@ public sealed partial class Cpu6502
     private void BeginNmosReset()
     {
         ResetNmosSequence();
-        _nmiLevel = bus.Nmi;
-        _overflowLevel = _samplesOverflow && bus.SetOverflow;
+        ResetNmiInput();
+        ResetOverflowInput();
         _nmiPending = _nmiPrevious = _nmiAccepted = false;
         _irqPending = _irqPrevious = _irqLevel = false;
         _branchIrqSample = _branchNmiSample = null;
@@ -66,7 +68,7 @@ public sealed partial class Cpu6502
     private void StepNmos()
     {
         _nmosHeldSync = false;
-        if (_samplesReset && bus.ResetRequested)
+        if (_samplesReset && ResetInputActive)
         {
             HoldNmosReset();
             Tick();
@@ -101,9 +103,9 @@ public sealed partial class Cpu6502
         SetNmosSync(sync);
         _cyclePins?.PrepareRead(address);
         Tick();
-        if (_samplesReset && bus.ResetRequested) { HoldNmosReset(); return false; }
+        if (_samplesReset && ResetInputActive) { HoldNmosReset(); return false; }
         value = bus.Read(address);
-        if (!_samplesReady || bus.Ready) return true;
+        if (!_samplesReady || ReadyInputHigh) return true;
         _nmosOpcodeHeld |= _nmosPhase == Phase.Opcode;
         _nmosHeldSync = sync;
         return false;
@@ -114,7 +116,7 @@ public sealed partial class Cpu6502
         SetNmosSync(false);
         _cyclePins?.PrepareWrite(address, value);
         Tick();
-        if (_samplesReset && bus.ResetRequested) { HoldNmosReset(); return false; }
+        if (_samplesReset && ResetInputActive) { HoldNmosReset(); return false; }
         // Les écritures NMOS ne sont jamais retenues par RDY.
         if (!_samplesDataEnable || bus.DataBusEnabled) bus.Write(address, value);
         else bus.WriteUndriven(address);

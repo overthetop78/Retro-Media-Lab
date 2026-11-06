@@ -78,4 +78,13 @@ public enum Cpu6502Operation : byte
     Inx,
     Beq,
     Sed,
+    Tsb,
+    Trb,
+    Phx,
+    Phy,
+    Plx,
+    Ply,
+    Stz,
+    Bra,
+    BitImmediate,
 }

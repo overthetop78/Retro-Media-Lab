@@ -1,5 +1,7 @@
 using RetroMediaLab.Chips.CPU.Common.Interfaces;
 using RetroMediaLab.Chips.CPU.Common.Enums;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums;
+using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Interfaces;
 using C = RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Constants.Cpu6502Constants;
 
 namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
@@ -7,14 +9,52 @@ namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 /// <summary>6502 NMOS et 65C12/65C102 CMOS : registres, séquences d'instructions et sondages d'interruption.</summary>
 /// <remarks>Les accès transitoires avancent le bus comme les accès utiles. Les cycles internes CMOS font avancer
 /// l'horloge sans inventer un accès d'E/S ; les opcodes instables NMOS utilisent le modèle déterministe documenté.</remarks>
-public sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
+public partial class Cpu6502 : ICpu6502
 {
-    private readonly ICpuBusCyclePins? _cyclePins = bus as ICpuBusCyclePins;
-    private readonly bool _samplesReady = (bus.ControlSignals & CpuBusControlSignals.Ready) != 0;
-    private readonly bool _samplesReset = (bus.ControlSignals & CpuBusControlSignals.Reset) != 0;
-    private readonly bool _samplesOverflow = (bus.ControlSignals & CpuBusControlSignals.SetOverflow) != 0;
-    private readonly bool _samplesDataEnable = (bus.ControlSignals & CpuBusControlSignals.DataBusEnable) != 0;
-    private readonly bool _publishesSync = (bus.ControlSignals & CpuBusControlSignals.Sync) != 0;
+    private readonly ICpuBus bus;
+    private readonly bool cmos;
+    private readonly ICpuBusCyclePins? _cyclePins;
+    private bool _samplesReady;
+    private bool _samplesReset;
+    private bool _samplesOverflow;
+    private readonly bool _samplesDataEnable;
+    private readonly bool _publishesSync;
+    private readonly int _clockDivider;
+
+    public Cpu6502(ICpuBus bus, bool cmos = false)
+        : this(bus, cmos ? Cpu6502Variant.Gte65Sc12 : Cpu6502Variant.Nmos6502, 0) { }
+
+    public Cpu6502(ICpuBus bus, long clockFrequency)
+        : this(bus, Cpu6502Variant.Nmos6502, clockFrequency)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(clockFrequency);
+    }
+
+    protected Cpu6502(ICpuBus bus, Cpu6502Variant variant, long clockFrequency)
+    {
+        ArgumentNullException.ThrowIfNull(bus);
+        if (!Enum.IsDefined(variant)) throw new ArgumentOutOfRangeException(nameof(variant));
+        if (clockFrequency < 0 || clockFrequency > long.MaxValue / C.AdvancedClockDivider)
+            throw new ArgumentOutOfRangeException(nameof(clockFrequency));
+        this.bus = bus;
+        Variant = variant;
+        cmos = variant != Cpu6502Variant.Nmos6502;
+        ClockFrequency = clockFrequency;
+        _clockDivider = variant == Cpu6502Variant.Gte65Sc102 ? C.AdvancedClockDivider : C.DirectClockDivider;
+        InputClockFrequency = clockFrequency * _clockDivider;
+        _cyclePins = bus as ICpuBusCyclePins;
+        var signals = bus.ControlSignals;
+        _samplesReady = variant != Cpu6502Variant.Gte65Sc12 && (signals & CpuBusControlSignals.Ready) != 0;
+        _samplesReset = (signals & CpuBusControlSignals.Reset) != 0;
+        _samplesOverflow = (signals & CpuBusControlSignals.SetOverflow) != 0;
+        _samplesDataEnable = variant != Cpu6502Variant.Gte65Sc102 && (signals & CpuBusControlSignals.DataBusEnable) != 0;
+        _publishesSync = (signals & CpuBusControlSignals.Sync) != 0;
+    }
+
+    public Cpu6502Variant Variant { get; }
+    public long ClockFrequency { get; }
+    public long InputClockFrequency { get; }
+    public int ClockDivider => _clockDivider;
     private const byte Carry = 1;
     private const byte Zero = 2;
     private const byte InterruptDisable = 4;
@@ -64,59 +104,47 @@ public sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
     /// <summary>Applique RESET et lit le vecteur FFFC/FFFD. Le bus et les périphériques sont réinitialisés par leur propriétaire.</summary>
     public void Reset()
     {
+        RequireCycleBoundary();
         if (!cmos) { BeginNmosReset(); StepNmos(); return; }
-        ResetNmosSequence();
-        _overflowLevel = _samplesOverflow && bus.SetOverflow;
-        _nmiPending = false; _nmiLevel = bus.Nmi;
-        _nmiAccepted = _nmiPrevious = false;
-        _irqPending = _irqPrevious = _irqLevel = false;
-        _p = (byte)(_p | InterruptDisable | Unused);
-        if (cmos) _p &= unchecked((byte)~Decimal);
-        Read(_pc);
-        Read(_pc);
-        for (var i = 0; i < 3; i++) Read((ushort)(C.StackBase | _s--));
-        _pc = ReadWord(C.ResetVector);
-        _irqPending = false;
+        BeginCmosReset();
+        Step();
     }
 
-    /// <summary>Exécute jusqu'à la fin de l'instruction/interruption ou une lecture NMOS retenue par RDY, puis rend la main.</summary>
+    /// <summary>Exécute jusqu'à la fin de l'instruction/interruption ou un cycle retenu par RDY, puis rend la main.</summary>
     public void Step()
     {
+        RequireCycleBoundary();
         if (!cmos) { StepNmos(); return; }
-        var start = _cycles;
-        if (_nmiAccepted)
+        if (HasClockReceiver)
         {
-            _nmiPending = _nmiAccepted = false;
-            EnterInterrupt(start, C.NmiVector);
+            do { Clock(); }
+            while (_clockPhaseAdvanced && !AtInstructionBoundary);
             return;
         }
-        if (_irqPending)
-        {
-            EnterInterrupt(start, C.IrqVector);
-            return;
-        }
-        _instructionAddress = _pc;
-        _branchIrqSample = null;
-        _branchNmiSample = null;
-        var previousFlags = _p;
-        var opcode = FetchOpcode();
-        var expected = ExecuteCmos(opcode);
-        Pad(start, expected);
-        _p |= Unused;
-        var interruptFlags = opcode is (0x58 or 0x78 or 0x28) ? previousFlags : _p;
-        _irqPending = _branchIrqSample ?? (_irqPrevious && (interruptFlags & InterruptDisable) == 0);
-        _nmiAccepted = _branchNmiSample ?? _nmiPrevious;
+        StepCmos();
     }
 
     private void Tick()
     {
+        // A notified SO edge is captured at rising PHI2, before the bus advances to its trailing edge.
+        if (_overflowPinConnected && !_clockOverflowSampled)
+        {
+            SampleOverflow();
+            _clockOverflowSampled = true;
+        }
         bus.Tick();
         _cycles++;
         _irqPrevious = _irqLevel;
-        _irqLevel = bus.Irq;
+        _irqLevel = _irqPinConnected ? _irqInput : bus.Irq;
         _nmiPrevious = _nmiPending;
-        SampleNmi();
-        if (_samplesOverflow) SampleOverflow();
+        if (_nmiPinConnected)
+        {
+            _nmiPending |= _nmiInputEdge;
+            _nmiInputEdge = false;
+        }
+        else SampleNmi();
+        if (_samplesOverflow && !_clockOverflowSampled) SampleOverflow();
+        _clockOverflowSampled = false;
     }
     private byte Read(ushort address)
     {
@@ -124,23 +152,6 @@ public sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
         Tick();
         return bus.Read(address);
     }
-    private void Write(ushort address, byte value)
-    {
-        _cyclePins?.PrepareWrite(address, value);
-        Tick();
-        bus.Write(address, value);
-    }
-    private byte Fetch() => Read(_pc++);
-    private byte FetchOpcode()
-    {
-        if (_publishesSync) bus.SetSync(true);
-        try { return Fetch(); }
-        finally { if (_publishesSync) bus.SetSync(false); }
-    }
-    private ushort FetchWord() { var low = Fetch(); return (ushort)(low | Fetch() << 8); }
-    private ushort ReadWord(ushort address) { var low = Read(address); return (ushort)(low | Read((ushort)(address + 1)) << 8); }
-    private ushort ZeroPageWord(byte address) { var low = Read(address); return (ushort)(low | Read((byte)(address + 1)) << 8); }
-    private void Push(byte value) => Write((ushort)(C.StackBase | _s--), value);
     private byte Pop() => Read((ushort)(C.StackBase | ++_s));
     private void Pad(long start, int length) { while (_cycles - start < length) { if (cmos) Tick(); else Read(_pc); } }
     private void Flag(byte flag, bool set) => _p = set ? (byte)(_p | flag) : (byte)(_p & ~flag);
@@ -150,6 +161,7 @@ public sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
         return value;
     }
     private void Compare(byte left, byte right) { Flag(Carry, left >= right); Nz((byte)(left - right)); }
+    private void Bit(byte value) { Flag(Zero, (_a & value) == 0); _p = (byte)((_p & 0x3f) | (value & 0xc0)); }
 
     /// <summary>ADC NMOS : les indicateurs ne suivent pas tous le résultat décimal corrigé.</summary>
     private void Add(byte value)
@@ -167,7 +179,6 @@ public sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
             if (sum >= 0xa0) sum += 0x60;
             Flag(Carry, sum > 255);
             _a = (byte)sum;
-            if (cmos) { Nz(_a); Tick(); }
         }
         else
         {
@@ -187,15 +198,6 @@ public sealed partial class Cpu6502(ICpuBus bus, bool cmos = false)
         Nz((byte)binary);
         if ((_p & Decimal) != 0)
         {
-            if (cmos)
-            {
-                var corrected = binary;
-                if (binary < 0) corrected -= 0x60;
-                if ((_a & 15) - (value & 15) - borrow < 0) corrected -= 6;
-                _a = Nz((byte)corrected);
-                Tick();
-                return;
-            }
             var low = (_a & 15) - (value & 15) - borrow;
             var high = (_a >> 4) - (value >> 4);
             if (low < 0) { low -= 6; high--; }

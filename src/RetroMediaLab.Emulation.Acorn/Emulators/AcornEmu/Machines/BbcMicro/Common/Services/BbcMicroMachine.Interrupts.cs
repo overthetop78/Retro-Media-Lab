@@ -16,6 +16,10 @@ internal sealed partial class BbcMicroMachine
         _winchester.IrqChanged = asserted => SetInterrupt(BbcInterruptSources.Winchester, asserted);
         if (_masterClock is not null)
             _masterClock.IrqChanged = asserted => SetInterrupt(BbcInterruptSources.RealTimeClock, asserted);
+        if (_masterMemory is not null)
+            _masterMemory.IrqChanged = asserted => SetInterrupt(BbcInterruptSources.AccessControl, asserted);
+        if (_tube is not null)
+            _tube.HostIrqChanged = asserted => SetInterrupt(BbcInterruptSources.Tube, asserted);
         _disks.NmiChanged = asserted => SetNmi(BbcNmiSources.Disk, asserted);
         _econet.NmiChanged = asserted => SetNmi(BbcNmiSources.Network, asserted);
 
@@ -26,17 +30,25 @@ internal sealed partial class BbcMicroMachine
         SetInterrupt(BbcInterruptSources.RealTimeClock, _masterClock?.Irq == true);
         SetNmi(BbcNmiSources.Disk, _disks.Nmi);
         SetNmi(BbcNmiSources.Network, _econet.Nmi);
+        SetInterrupt(BbcInterruptSources.AccessControl, _masterMemory?.Irq == true);
+        SetInterrupt(BbcInterruptSources.Tube, _tube?.HostIrq == true);
+        Cpu.SetIrq(Irq);
+        Cpu.SetNmi(Nmi);
     }
 
     private void SetInterrupt(BbcInterruptSources source, bool asserted)
     {
+        var previous = _interruptSources;
         if (asserted) _interruptSources |= source;
         else _interruptSources &= ~source;
+        if ((previous == BbcInterruptSources.None) != (_interruptSources == BbcInterruptSources.None)) Cpu.SetIrq(Irq);
     }
 
     private void SetNmi(BbcNmiSources source, bool asserted)
     {
+        var previous = _nmiSources;
         if (asserted) _nmiSources |= source;
         else _nmiSources &= ~source;
+        if ((previous == BbcNmiSources.None) != (_nmiSources == BbcNmiSources.None)) Cpu.SetNmi(Nmi);
     }
 }

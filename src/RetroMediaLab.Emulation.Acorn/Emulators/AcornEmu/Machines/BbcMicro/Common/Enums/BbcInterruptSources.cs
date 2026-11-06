@@ -8,5 +8,7 @@ internal enum BbcInterruptSources
     UserVia = 2,
     Serial = 4,
     Winchester = 8,
-    RealTimeClock = 16
+    RealTimeClock = 16,
+    AccessControl = 32,
+    Tube = 64
 }

@@ -13,6 +13,9 @@ public interface ITubeUla
     bool ParasiteIrq { get; }
 
     bool ParasiteNmi { get; }
+    Action<bool>? HostIrqChanged { get; set; }
+    Action<bool>? ParasiteIrqChanged { get; set; }
+    Action<bool>? ParasiteNmiChanged { get; set; }
 
     void Reset(bool clearControl = true);
     byte HostRead(int register);

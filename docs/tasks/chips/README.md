@@ -4,6 +4,7 @@ Chaque puce possède un seul suivi, réutilisé par les machines qui la câblent
 
 ## Accès direct
 
+- [Mos65C12 / Mos65C102](Mos65C12/suivi.md)
 - [Mos6522](Mos6522/suivi.md)
 - [Sn76489](Sn76489/suivi.md)
 - [Mc6850](Mc6850/suivi.md)

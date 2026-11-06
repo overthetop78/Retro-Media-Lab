@@ -2,7 +2,7 @@ using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums;
 
 namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 
-public sealed partial class Cpu6502
+public partial class Cpu6502
 {
     // Champs directs : ces données immuables sont consultées à chaque phase de bus,
     // sans appels d'accesseurs supplémentaires lorsque le cœur est compilé en Debug.

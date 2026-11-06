@@ -11,11 +11,17 @@ internal sealed class MasterMemory
     internal byte RomSelect { get; private set; }
     internal byte AccessControl { get; private set; }
     internal bool Irq => (AccessControl & C.InterruptRequest) != 0;
+    internal Action<bool>? IrqChanged { get; set; }
     internal bool TestRom(ushort address) => address is >= C.IoStart and < C.IoEnd && (AccessControl & C.TestRom) != 0;
     internal void Select(ushort address, byte value)
     {
         if ((address & ~3) == C.RomSelect) RomSelect = (byte)(value & C.RomSelectMask);
-        else if ((address & ~3) == C.AccessControl) AccessControl = value;
+        else if ((address & ~3) == C.AccessControl)
+        {
+            var previous = Irq;
+            AccessControl = value;
+            if (previous != Irq) IrqChanged?.Invoke(Irq);
+        }
     }
     private bool Shadow(ushort address, ushort instruction) => address is >= C.ShadowStart and < C.RamEnd
         && ((instruction is >= C.HazelStart and < C.HazelEnd && (AccessControl & C.HazelSelected) == 0)
@@ -34,7 +40,9 @@ internal sealed class MasterMemory
     internal byte ReadVideo(int address, byte[] main) => address is >= C.ShadowStart and < C.RamEnd && (AccessControl & C.DisplayShadow) != 0 ? _shadow[address - C.ShadowStart] : main[address & (C.MainBytes - 1)];
     internal void Reset(bool cold)
     {
+        var previous = Irq;
         RomSelect = 0; AccessControl = 0;
+        if (previous) IrqChanged?.Invoke(false);
         if (cold) { Array.Clear(_shadow); Array.Clear(_andy); Array.Clear(_hazel); }
     }
 }

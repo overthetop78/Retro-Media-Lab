@@ -10,6 +10,8 @@ public interface ICpuBus
     /// <summary>Raccordement fixe des broches auxiliaires. All préserve les bus existants et les bancs de signaux.</summary>
     CpuBusControlSignals ControlSignals => CpuBusControlSignals.All;
     byte Read(ushort address);
+    /// <summary>Niveau des données lorsque les sorties d'adresse et R/W du CPU sont libérées par BE.</summary>
+    byte ReadFloatingData() => byte.MaxValue;
     void Write(ushort address, byte value);
     void Tick();
     bool Irq { get; }

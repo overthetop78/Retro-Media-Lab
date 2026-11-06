@@ -1,10 +1,4 @@
-using C = RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Constants.Cpu6502Constants;
-using RetroMediaLab.Chips.CPU.Common.Interfaces;
-using RetroMediaLab.Chips.CPU.Common.Enums;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums;
-using Phase = RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums.Cpu6502BusPhase;
-using Mode = RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums.Cpu6502AddressMode;
-using Op = RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Enums.Cpu6502Operation;
 
 namespace RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Interfaces;
 /// <summary>Contrat matériel du composant Cpu6502 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
@@ -25,9 +19,26 @@ public interface ICpu6502
     ushort InstructionAddress { get; }
 
     long Cycles { get; }
+    Cpu6502Variant Variant { get; }
+    long ClockFrequency { get; }
+    long InputClockFrequency { get; }
+    long InputClocks { get; }
+    int ClockDivider { get; }
 
     void CompleteHostCall(byte result);
     void Reset();
     void Step();
+    /// <summary>Raccorde le niveau IRQ conservé par le CPU, sans consultation ultérieure du bus.</summary>
+    void SetIrq(bool asserted);
+    /// <summary>Raccorde NMI ; les fronts reçus sont mémorisés puis échantillonnés à la phase CPU prévue.</summary>
+    void SetNmi(bool asserted);
+    void SetReset(bool asserted);
+    /// <summary>RDY est absent du G65SC12 ; cette variante refuse le raccordement.</summary>
+    void SetReady(bool high);
+    void SetOverflowInput(bool asserted);
+    /// <summary>Avance d'un cycle matériel, y compris quand RDY retient le séquenceur.</summary>
+    void Clock();
+    /// <summary>Avance l'oscillateur d'entrée ; son diviseur et sa phase restent dans la puce.</summary>
+    void AdvanceInputClocks(long clocks);
     bool AtInstructionBoundary { get; }
 }

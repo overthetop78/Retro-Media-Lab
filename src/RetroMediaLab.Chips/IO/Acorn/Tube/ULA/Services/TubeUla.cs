@@ -12,12 +12,17 @@ public sealed class TubeUla
     private byte _control;
     private byte _hostThreeStatus;
     private byte _parasiteThreeStatus;
+    private bool _hostIrq;
+    private bool _parasiteIrq;
+    private bool _parasiteNmi;
     public Action? ResetParasite { get; set; }
+    public Action<bool>? HostIrqChanged { get; set; }
+    public Action<bool>? ParasiteIrqChanged { get; set; }
+    public Action<bool>? ParasiteNmiChanged { get; set; }
     public bool ResetHeld => (_control & C.ParasiteReset) != 0;
-    public bool HostIrq => (_control & C.HostInterrupt) != 0 && _toHost[C.ChannelFour].Count != 0;
-    public bool ParasiteIrq => (_control & C.ParasiteInterruptOne) != 0 && _toParasite[0].Count != 0
-        || (_control & C.ParasiteInterruptFour) != 0 && _toParasite[C.ChannelFour].Count != 0;
-    public bool ParasiteNmi => (_control & C.ParasiteNmi) != 0 && (_parasiteThreeStatus & C.Available) != 0;
+    public bool HostIrq => _hostIrq;
+    public bool ParasiteIrq => _parasiteIrq;
+    public bool ParasiteNmi => _parasiteNmi;
     private int TransferBytes => (_control & C.TwoByteTransfers) != 0 ? 2 : 1;
     public TubeUla() => Reset();
     public void Reset(bool clearControl = true)
@@ -27,6 +32,7 @@ public sealed class TubeUla
         if (clearControl) _control = 0;
         _hostThreeStatus = C.Available | C.Space;
         _parasiteThreeStatus = 0;
+        UpdateInterrupts();
     }
     private int Capacity(bool host, int channel) => channel == C.ChannelThree ? TransferBytes : !host && channel == 0 ? C.ChannelOneCapacity : 1;
     public byte HostRead(int register) => Read(true, register);
@@ -53,6 +59,7 @@ public sealed class TubeUla
                 else { _parasiteThreeStatus &= unchecked((byte)~C.Available); _hostThreeStatus |= C.Space; }
             }
         }
+        UpdateInterrupts();
         return last[channel];
     }
     public void HostWrite(int register, byte value)
@@ -63,6 +70,7 @@ public sealed class TubeUla
             var previousReset = ResetHeld;
             _control = (value & C.SetFlags) != 0 ? (byte)(_control | (value & C.ControlMask)) : (byte)(_control & ~(value & C.ControlMask));
             if ((value & C.ResetRegisters) != 0) Reset(false);
+            UpdateInterrupts();
             if (!previousReset && ResetHeld) ResetParasite?.Invoke();
             return;
         }
@@ -84,5 +92,17 @@ public sealed class TubeUla
             }
         }
         else if (send.Count < Capacity(host, channel)) send.Enqueue(value);
+        UpdateInterrupts();
+    }
+
+    private void UpdateInterrupts()
+    {
+        var host = (_control & C.HostInterrupt) != 0 && _toHost[C.ChannelFour].Count != 0;
+        var parasite = (_control & C.ParasiteInterruptOne) != 0 && _toParasite[0].Count != 0
+            || (_control & C.ParasiteInterruptFour) != 0 && _toParasite[C.ChannelFour].Count != 0;
+        var nmi = (_control & C.ParasiteNmi) != 0 && (_parasiteThreeStatus & C.Available) != 0;
+        if (_hostIrq != host) { _hostIrq = host; HostIrqChanged?.Invoke(host); }
+        if (_parasiteIrq != parasite) { _parasiteIrq = parasite; ParasiteIrqChanged?.Invoke(parasite); }
+        if (_parasiteNmi != nmi) { _parasiteNmi = nmi; ParasiteNmiChanged?.Invoke(nmi); }
     }
 }
