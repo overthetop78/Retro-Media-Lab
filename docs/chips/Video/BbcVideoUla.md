@@ -231,3 +231,9 @@ En MODE 4, le bit 7 détermine la couleur binaire, mais les prises 5/3/1 du regi
 Les deux tests partagent désormais une programmation bitmap complète (y compris synchronisations), programment tous les alias de palette et attendent explicitement le troisième champ terminé, avec une borne de cycles calculée à partir des registres de cette fixture. La vérification des miroirs 16/32 Kio et de l'effacement RAM au reset est conservée. La vérification de doublement couvre six octets 00/01/80/55/AA/FF : les seize pixels, les trois canaux RGB et la cellule suivante noire. Ces cas comparent à l'expansion binaire attendue, indépendamment de la table du VIDPROC.
 
 Validation finale : 90 cas réussis en Debug et 90 en Release, sans exclusion dans les groupes AcornEmuTests, AcornEmuVideoTests, AcornEmuBbcVideoWiringTests et AcornEmuVideoRenderTests. Les trois avertissements de compilation déjà présents sont sans rapport avec ces fixtures. Le journal temporaire est supprimé et les messages diagnostiques ne restent pas dans les tests. Aucune hausse de performance ni nouveau rendu natif n'est revendiqué pour cette correction de tests ; le budget global 19,97 ms reste à atteindre sur tous les scénarios.
+
+## Capture et restauration des pixels en cours
+
+`BbcVideoUlaState` préserve les 21 champs mutables, la palette, les couleurs décodées et leur cache. La restauration conserve les phases maître, le caractère partiellement décalé, le curseur, les entrées RGB externes et la sortie courante, sans faire avancer l'horloge ni dépendre de l'identité du composant raccordé. Les tableaux sont copiés dans les deux sens.
+
+Trois tests Debug réussis (139 ms) : 126 reprises couvrant neuf contrôles, sept phases et les chemins maître unitaire/groupé. Les pixels, horloges divisées, curseurs, changements de palette et bascules de sélection correspondent après reprise. La mémoire vidéo et le framebuffer de la carte restent à sauvegarder par leur propriétaire.

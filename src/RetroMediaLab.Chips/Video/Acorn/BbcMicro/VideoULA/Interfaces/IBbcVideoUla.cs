@@ -1,8 +1,12 @@
+using RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Contracts;
+
 namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Interfaces;
 
 /// <summary>VIDPROC seul : les autres circuits et la mémoire appartiennent à la carte appelante.</summary>
 public interface IBbcVideoUla
 {
+    BbcVideoUlaState CaptureState();
+    void RestoreState(BbcVideoUlaState state);
     byte Data { get; set; }
     bool DisplayEnabled { get; set; }
     bool Cursor { get; set; }

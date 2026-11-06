@@ -3,6 +3,7 @@ namespace RetroMediaLab.Chips.Video.Acorn.BbcMicro.VideoULA.Constants;
 /// <summary>Valeurs numériques du VIDPROC BBC d'origine, sans extension VideoNuLA.</summary>
 public static class BbcVideoUlaConstants
 {
+    public const int StateFormatVersion = 1;
     public const int MasterClockHz = 16000000;
     public const int PackedMasterPeriods = 8;
     public const int ColourBits = 3;
