@@ -17,6 +17,26 @@ internal sealed class WinchesterController
     private uint deferredIdleTicks;
     private bool canDeferClock;
     private bool normalSpeedIdle;
+    internal long ClockTicks { get; private set; }
+    internal long? NextClockEvent => normalSpeedIdle ? null : checked(ClockTicks + 1);
+
+    internal void AdvanceTo(long ticks)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(ticks, ClockTicks);
+        while (ClockTicks < ticks)
+        {
+            if (!normalSpeedIdle)
+            {
+                Tick();
+                continue;
+            }
+            // Same deferred periods as Tick, without entering the relay at every source cycle.
+            var count = (uint)Math.Min(ticks - ClockTicks, C.MaximumDeferredTicks - deferredIdleTicks);
+            deferredIdleTicks += count;
+            ClockTicks += count;
+            if (deferredIdleTicks == C.MaximumDeferredTicks) FlushIdleClock();
+        }
+    }
 
     internal WinchesterController(Func<int, WinchesterStorage?> storage)
     {
@@ -68,6 +88,7 @@ internal sealed class WinchesterController
 
     internal void Tick()
     {
+        ClockTicks++;
         if (normalSpeedIdle)
         {
             // La cible ne peut changer de sélection sans accès externe, lequel

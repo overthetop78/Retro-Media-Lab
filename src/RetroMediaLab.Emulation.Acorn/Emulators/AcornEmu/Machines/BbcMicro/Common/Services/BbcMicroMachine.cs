@@ -46,6 +46,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly SidewaysRoms _roms;
     private readonly Disks _disks;
     private readonly Winchester _winchester;
+    private long _winchesterWakeTick = long.MaxValue;
     private readonly Econet _econet;
     private readonly Via6522 _via = new();
     private readonly Via6522? _userVia;
@@ -129,7 +130,10 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _mos = mos.ToArray();
         _roms = new SidewaysRoms(basic, optionRoms, sidewaysExpansion, modelBPlusMemory, master, compact ? Master.CompactBasicBank : Master.BasicBank);
         _disks = new Disks(diskInterface, wd1770);
-        _winchester = new Winchester(winchesterInterface);
+        _winchester = new Winchester(winchesterInterface, () => _ticks)
+        {
+            NextClockEventChanged = next => _winchesterWakeTick = next ?? long.MaxValue
+        };
         _econet = new Econet(econetInterface, econetStation, econetCyclesPerByte);
         if (videoStandard is not (EmulationVideoStandard.Pal or EmulationVideoStandard.Ntsc)) throw new ArgumentOutOfRangeException(nameof(videoStandard));
         _cyclesPerFrame = videoStandard == EmulationVideoStandard.Ntsc ? BbcMicroModelConstants.NtscCyclesPerFrame : BbcMicroModelConstants.CyclesPerFrame;
@@ -232,7 +236,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (_ticks >= _adcWakeTick) _adc!.AdvanceTo(_ticks);
         if (_ticks >= _masterClockWakeTick) _masterClock!.AdvanceTo(_ticks);
         _disks.Tick();
-        _winchester.Tick();
+        if (_ticks >= _winchesterWakeTick) _winchesterWakeTick = _winchester.AdvanceTo(_ticks);
         _econet.Tick();
         Video.Tick();
         ClockVia();

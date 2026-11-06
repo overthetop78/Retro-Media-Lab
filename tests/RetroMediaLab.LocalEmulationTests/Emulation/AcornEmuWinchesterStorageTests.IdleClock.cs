@@ -7,6 +7,87 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed partial class AcornEmuWinchesterStorageTests
 {
     [Theory]
+    [InlineData(1, 100)]
+    [InlineData(2_000_003, 100)]
+    [InlineData(100_001, 200)]
+    [InlineData(100_001, 0)]
+    public void ControllerAbsoluteClockMatchesUnitTicksAcrossIdleCommandsResetAndSpeed(long idleTicks, int speed)
+    {
+        var stepped = Run(false);
+        var advanced = Run(true);
+        Assert.Equal(stepped.Data, advanced.Data);
+        Assert.Equal(stepped.Time, advanced.Time);
+        Assert.Equal(stepped.Interrupts, advanced.Interrupts);
+
+        (byte[] Data, long Time, (long, bool)[] Interrupts) Run(bool grouped)
+        {
+            using var image = new Image(256, 33);
+            var storage = SignalStorage(image);
+            var controller = new WinchesterController(unit => unit == 0 ? storage : null);
+            var interrupts = new List<(long, bool)>();
+            long time = 0;
+            controller.IrqChanged = asserted => interrupts.Add((time, asserted));
+            try
+            {
+                Idle(idleTicks);
+                Assert.Null(controller.NextClockEvent);
+                var first = HostCommand(controller.Read, controller.Write, Clock, () => controller.Busy, [8, 0, 0, 1, 1, 0]);
+                Assert.Equal(0, first.Status);
+                Assert.Equal(image.Data.AsSpan(256, 256).ToArray(), first.Data);
+                controller.ConfigureSpeed(0, speed);
+                Idle(100_003);
+                controller.Reset();
+                Idle(31);
+                var second = HostCommand(controller.Read, controller.Write, Clock, () => controller.Busy, [8, 0, 0, 2, 1, 0]);
+                Assert.Equal(0, second.Status);
+                Assert.Equal(time, controller.ClockTicks);
+                Assert.Throws<ArgumentOutOfRangeException>(() => controller.AdvanceTo(time - 1));
+                return (first.Data.Concat(second.Data).ToArray(), time, interrupts.ToArray());
+            }
+            finally { controller.Reset(); }
+
+            void Clock()
+            {
+                time++;
+                if (grouped) controller.AdvanceTo(time);
+                else controller.Tick();
+            }
+            void Idle(long count)
+            {
+                if (grouped) { time += count; controller.AdvanceTo(time); }
+                else for (long index = 0; index < count; index++) Clock();
+            }
+        }
+    }
+
+    [Fact]
+    public void MachineRelaySleepsUntilABusAccessAndWakesAtTheNextPhysicalCycle()
+    {
+        long time = 0;
+        long wake = long.MaxValue;
+        var bus = new RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.Winchester(true, () => time)
+        {
+            NextClockEventChanged = next => wake = next ?? long.MaxValue
+        };
+        try
+        {
+            bus.Reset();
+            Assert.Equal(1, wake);
+            time = 1;
+            wake = bus.AdvanceTo(time);
+            Assert.Equal(long.MaxValue, wake);
+            time += 2_000_003;
+            Assert.Equal(long.MaxValue, wake);
+            bus.Read(0);
+            Assert.Equal(time + 1, wake);
+            time++;
+            wake = bus.AdvanceTo(time);
+            Assert.Equal(long.MaxValue, wake);
+        }
+        finally { bus.Reset(); }
+    }
+
+    [Theory]
     [InlineData(1, 2_000_000, 0)]
     [InlineData(23333, 2_000_000, 0)]
     [InlineData(100001, 2_000_003, 0)]
