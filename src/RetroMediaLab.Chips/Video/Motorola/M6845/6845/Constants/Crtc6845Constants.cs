@@ -2,6 +2,7 @@ namespace RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Constants;
 
 internal static class Crtc6845Constants
 {
+    public const int StateFormatVersion = 1;
     internal const int HorizontalTotal = 0;
     internal const int HorizontalDisplayed = 1;
     internal const int HorizontalSyncPosition = 2;

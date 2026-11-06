@@ -1,9 +1,12 @@
+using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Contracts;
 using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Enums;
 
 namespace RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Interfaces;
 /// <summary>Contrat matériel du composant Crtc6845 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface ICrtc6845
 {
+    Crtc6845State CaptureState();
+    void RestoreState(Crtc6845State state);
     Crtc6845Model Model { get; }
 
     bool TestMode { get; }
