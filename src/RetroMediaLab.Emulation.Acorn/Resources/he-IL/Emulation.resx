@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>הרחבה של Floating-point ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>שימוש ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>מערכת ההפעלה הדיסק ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} בבנק {1} לא תואם את כרטיס הרחבת הזיכרון {2}. בדוק את ROM משימות בהגדרות המכונה.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM בנק בנק {0} כבר תפוס על ידי אחר ROM. בדוק את ROM משימות לכרטיס הרחבת הזיכרון {1}.</value></data>
 </root>

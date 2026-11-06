@@ -20,6 +20,7 @@ internal sealed class Master512Board
     // Les attentes de cette carte proviennent donc des registres chip-select du 80186.
     private readonly Cpu80186 _cpu;
     private long _target;
+    private bool _resetHeld;
     internal Master512Board(TubeUla tube, ReadOnlySpan<byte> rom)
     {
         if (rom.Length != C.Master512RomBytes) throw new ArgumentException(nameof(rom));
@@ -28,6 +29,10 @@ internal sealed class Master512Board
         _cpu.HoldAcknowledgeChanged = HoldAcknowledgeChanged;
         _cpu.BusClocksAdvanced = _refresh.AdvanceClocks;
         _cpu.ChipSelectChanged = selected => _refresh.UpperMemorySelected((selected & Cpu80186ChipSelect.Upper) != 0);
+        _tube.ParasiteResetChanged = asserted => _resetHeld = asserted;
+        _tube.DmaRequestChanged = asserted => _cpu.SetDmaRequest(TubeDmaChannel, asserted);
+        _tube.ParasiteIrqChanged = asserted => _cpu.SetExternalInterrupt(TubeInterruptPin, asserted);
+        _resetHeld = _tube.ResetHeld;
         Reset();
     }
     private void TimerOutputChanged(int timer, bool level)
@@ -51,16 +56,16 @@ internal sealed class Master512Board
         _cpu.Reset();
         _cpu.SetTimerInput(HoldTimer, true);
         _cpu.SetTimerInput(NmiTimer, true);
+        _cpu.SetDmaRequest(TubeDmaChannel, _tube.DmaRequest);
+        _cpu.SetExternalInterrupt(TubeInterruptPin, _tube.ParasiteIrq);
         _target = _cpu.Cycles;
     }
     internal void RunHostCycle()
     {
-        if (_tube.ResetHeld) { _target = _cpu.Cycles; return; }
+        if (_resetHeld) { _target = _cpu.Cycles; return; }
         _target += C.Master512CyclesPerHostCycle;
         while (_cpu.Cycles < _target)
         {
-            _cpu.SetDmaRequest(TubeDmaChannel, _tube.ParasiteNmi);
-            _cpu.SetExternalInterrupt(TubeInterruptPin, _tube.ParasiteIrq);
             _cpu.Step();
         }
     }

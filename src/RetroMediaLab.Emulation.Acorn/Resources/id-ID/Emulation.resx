@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Ekstensi titik pecahan ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Utilitas ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Sistem operasi cakram ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} di bank {1} tidak kompatibel dengan kartu ekspansi memori {2}. Periksa ROM tugas di pengaturan mesin.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM bank {0} sudah ditempati oleh orang lain ROM. Periksa ROM tugas untuk kartu ekspansi memori {1}.</value></data>
 </root>

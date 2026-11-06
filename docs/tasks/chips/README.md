@@ -2,6 +2,8 @@
 
 Chaque puce possède un seul suivi, réutilisé par les machines qui la câblent.
 
+Procédure commune : [puces et machines](../../directives/Emulations/procedure-puces-machines.md). Terminer et vérifier chaque puce avant le câblage final et les mesures de la machine complète. Les sauvegardes d'état sont laissées de côté pour le moment.
+
 ## Accès direct
 
 - [Mos65C12 / Mos65C102](Mos65C12/suivi.md)

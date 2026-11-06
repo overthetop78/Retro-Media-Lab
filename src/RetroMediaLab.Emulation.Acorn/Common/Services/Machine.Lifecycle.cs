@@ -190,7 +190,20 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
 
 
 
-    public ValueTask SetOptionAsync(string key, string value, CancellationToken cancellationToken = default) => QueueCommand(() => _core.SetOption(key, value), cancellationToken);
+    public ValueTask SetOptionAsync(string key, string value, CancellationToken cancellationToken = default)
+    {
+        if (key == VideoAudioSettingsConstants.AudioVolumeOption)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            var percent = int.Parse(value, CultureInfo.InvariantCulture);
+            ArgumentOutOfRangeException.ThrowIfNegative(percent);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(percent, EmulationSettingConstants.DefaultAudioVolumePercent);
+            _audio.SetVolume((float)percent / EmulationSettingConstants.DefaultAudioVolumePercent);
+            return ValueTask.CompletedTask;
+        }
+        return QueueCommand(() => _core.SetOption(key, value), cancellationToken);
+    }
 
 
     /// <inheritdoc/>

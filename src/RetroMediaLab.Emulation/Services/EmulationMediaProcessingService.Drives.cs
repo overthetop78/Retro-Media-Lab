@@ -5,7 +5,7 @@ namespace RetroMediaLab.Emulation.Services;
 internal sealed partial class EmulationMediaProcessingService
 {
     /// <inheritdoc/>
-    public IEmulationDriveMechanics CreateDriveMechanics(string device) => new DriveMechanics(Preparation.CreateDriveMechanics(device));
+    public IEmulationDriveMechanics CreateDriveMechanics(string device, bool hostAudio = false) => new DriveMechanics(Preparation.CreateDriveMechanics(device, hostAudio));
 
     /// <summary>Relaye le mécanisme commun ; le module possède son état et son horloge.</summary>
     private sealed class DriveMechanics(IMediaDriveMechanics mechanics) : IEmulationDriveMechanics
@@ -13,6 +13,7 @@ internal sealed partial class EmulationMediaProcessingService
         internal IMediaDriveMechanics Source => mechanics;
         public bool HasPendingAudio => mechanics.HasPendingAudio;
         public void Configure(string? profile, double volumePercent, bool enabled) => mechanics.Configure(profile, volumePercent, enabled);
+        public void SetTapeOperation(string operation) => mechanics.SetTapeOperation(operation);
         public void Insert() => mechanics.Insert();
         public void Eject() => mechanics.Eject();
         public void SetMotor(bool running) => mechanics.SetMotor(running);

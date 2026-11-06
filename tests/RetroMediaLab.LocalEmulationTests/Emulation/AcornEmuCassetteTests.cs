@@ -14,6 +14,43 @@ namespace RetroMediaLab.Tests.Emulation;
 /// <summary>Vérifications cassette autonomes : niveaux FSK et ROM synthétiques, sans fichiers ni lecteur externe.</summary>
 public sealed class AcornEmuCassetteTests
 {
+    [Theory]
+    [InlineData(25)]
+    [InlineData(100)]
+    [InlineData(400)]
+    public void CachedTapeSamplesPreserveTheUnitInputTraceAtEveryCycle(int speed)
+    {
+        const int clock = 2_000_000;
+        const int rate = 48000;
+        var actualSerial = new Serial(new Acia6850(clock, 19200));
+        var unitSerial = new Serial(new Acia6850(clock, 19200));
+        var tape = new BbcCassette(actualSerial);
+        var samples = Enumerable.Range(0, rate).Select(index => index % 19 == 0 ? (short)0
+            : (short)((index / 10 & 1) == 0 ? 1000 : -1000)).ToArray();
+        tape.Configure(new(SpeedPercent: speed));
+        tape.Insert(new(samples, rate));
+        tape.WriteUla(0x85);
+        unitSerial.BaudRateOverride = 0;
+        unitSerial.Ula.Write(0x85);
+        var phase = 0;
+        var position = 0;
+        var level = false;
+        for (var tick = 0; tick < clock / 10; tick++)
+        {
+            var sample = samples[position];
+            if (sample != 0) level = sample > 0;
+            unitSerial.Tick(level);
+            phase += rate * speed / 100;
+            while (phase >= clock) { phase -= clock; position++; }
+            tape.Tick();
+            Assert.Equal(position, tape.Position);
+            Assert.Equal((unitSerial.Ula.SourceClockPhase, unitSerial.Ula.ReceiveData,
+                unitSerial.Ula.DataCarrierDetectHigh, unitSerial.Ula.TransmitClockEdge, unitSerial.Ula.ReceiveClockEdge),
+                (actualSerial.Ula.SourceClockPhase, actualSerial.Ula.ReceiveData,
+                actualSerial.Ula.DataCarrierDetectHigh, actualSerial.Ula.TransmitClockEdge, actualSerial.Ula.ReceiveClockEdge));
+        }
+    }
+
     [Fact]
     public void InactiveTapeBypassPreservesSerialClocksAndEveryTransportTransition()
     {

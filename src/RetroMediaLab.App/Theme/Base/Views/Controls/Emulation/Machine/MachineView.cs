@@ -1,5 +1,6 @@
 using RetroMediaLab.App.Constants.Controls.Visual;
 using RetroMediaLab.App.Constants.Localization;
+using RetroMediaLab.App.Constants.Machine;
 using RetroMediaLab.App.Contracts.Machine;
 using RetroMediaLab.App.Functions.Emulation.Machine;
 using RetroMediaLab.App.Localization.Extensions;
@@ -114,8 +115,62 @@ internal sealed class MachineView : EmulationMachinePresentation
     internal Border BottomBar { get; }
     internal override IReadOnlyDictionary<string, Ellipse> DeviceLeds => _deviceLeds;
 
-    // Base already displays the original functional toolbar.
-    internal override void AttachCommands(MachineCommandPresentation commands) { }
+    internal override void AttachCommands(MachineCommandPresentation commands)
+    {
+        var rows = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        AddStatusRow(IconGlyphs.Display, commands.SizeStatus, MachinePresentationConstants.SizeStatusColor);
+        AddStatusRow(IconGlyphs.Play, commands.FpsStatus, MachinePresentationConstants.FpsStatusColor);
+        AddStatusRow(IconGlyphs.Sync, commands.FrequencyStatus, MachinePresentationConstants.FrequencyStatusColor);
+        AddStatusRow(IconGlyphs.Processor, commands.ExecutionStatus, MachinePresentationConstants.ExecutionStatusColor);
+        var overlay = new Border
+        {
+            Width = MachinePresentationConstants.StatusMaximumWidth,
+            Height = MachinePresentationConstants.StatusOverlayHeight,
+            Margin = new Thickness(MachinePresentationConstants.StatusOverlayMargin),
+            Padding = new Thickness(MachinePresentationConstants.StatusOverlayPadding),
+            Background = new SolidColorBrush(Color.FromArgb(MachinePresentationConstants.StatusOverlayAlpha, 0, 0, 0)),
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            IsHitTestVisible = false,
+            Child = rows
+        };
+        var visibility = new Style(typeof(Border));
+        var empty = new DataTrigger { Binding = new Binding(nameof(TextBlock.Text)) { Source = commands.Status }, Value = string.Empty };
+        empty.Setters.Add(new Setter(VisibilityProperty, Visibility.Collapsed));
+        visibility.Triggers.Add(empty);
+        overlay.Style = visibility;
+        Panel.SetZIndex(overlay, 1);
+        DisplayHost.Children.Add(overlay);
+
+        void AddStatusRow(string glyph, TextBlock source, Color color)
+        {
+            var brush = new SolidColorBrush(color);
+            brush.Freeze();
+            var row = new DockPanel { Height = MachinePresentationConstants.StatusRowHeight, LastChildFill = true };
+            var icon = new TextBlock
+            {
+                Text = glyph,
+                FontFamily = ControlVisualConstants.IconFont,
+                Width = MachinePresentationConstants.StatusIconWidth,
+                FontSize = MachinePresentationConstants.StatusFontSize,
+                Foreground = brush,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            DockPanel.SetDock(icon, Dock.Left);
+            row.Children.Add(icon);
+            var value = new TextBlock
+            {
+                FontSize = MachinePresentationConstants.StatusFontSize,
+                Foreground = brush,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextWrapping = TextWrapping.NoWrap,
+                TextTrimming = TextTrimming.CharacterEllipsis
+            };
+            value.SetBinding(TextBlock.TextProperty, new Binding(nameof(TextBlock.Text)) { Source = source });
+            row.Children.Add(value);
+            rows.Children.Add(row);
+        }
+    }
 
     internal static Button CreateCommandButton(string glyph, string tooltip)
     {
@@ -134,6 +189,10 @@ internal sealed class MachineView : EmulationMachinePresentation
             Padding = new Thickness(2), Margin = new Thickness(0, 0, 2, 0)
         };
         button.SetResourceReference(StyleProperty, "StatusIconButton");
+        ToolTipService.SetIsEnabled(button, true);
+        ToolTipService.SetShowOnDisabled(button, true);
+        ToolTipService.SetInitialShowDelay(button, MachinePresentationConstants.TooltipDelayMilliseconds);
+        ToolTipService.SetShowDuration(button, MachinePresentationConstants.TooltipDurationMilliseconds);
         return button;
     }
 

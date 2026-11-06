@@ -28,4 +28,5 @@ internal sealed record MachineControllerOptions(
     Func<Task>? SwitchControllerPointer = null,
     Func<IReadOnlyDictionary<string, string>, Task>? PersistRuntimeOptions = null,
     Func<EmulationMachinePresentation>? CreatePresentation = null,
-    Func<IReadOnlyList<EmulationMedia>, Task>? PersistMountedMedia = null);
+    Func<IReadOnlyList<EmulationMedia>, Task>? PersistMountedMedia = null,
+    Func<Task>? OpenSettings = null);

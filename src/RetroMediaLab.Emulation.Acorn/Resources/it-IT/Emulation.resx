@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Estensione del punto di galleggiamento ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Utilità ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Sistema operativo disco ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} in banca {1} non è compatibile con la scheda di espansione della memoria {2}. Controllare il ROM assegnazioni nelle impostazioni della macchina.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM banca {0} è già occupato da un altro ROM. Controllare il ROM assegnazioni per la scheda di espansione della memoria {1}.</value></data>
 </root>

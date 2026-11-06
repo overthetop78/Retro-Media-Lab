@@ -54,8 +54,7 @@ internal static class ControlErrorPresenter
 
     private static string MessageText(EmulationMessage message)
     {
-        if (message.MessageCode == EmulationMessageCode.UntranslatedEmulatorMessage
-            && !string.IsNullOrWhiteSpace(message.OriginalText)) return message.OriginalText;
+        if (!string.IsNullOrWhiteSpace(message.OriginalText)) return message.OriginalText;
         return message.MessageCode switch
         {
             EmulationMessageCode.RequiredMediaMissing =>

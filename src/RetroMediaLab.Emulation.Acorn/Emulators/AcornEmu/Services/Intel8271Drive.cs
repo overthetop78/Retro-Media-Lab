@@ -6,7 +6,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.Intel8271Dr
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 
 /// <summary>Câblage des lecteurs du module sur les broches du 8271 ; le SDK reste propriétaire de l'image.</summary>
-internal sealed class Intel8271Drive
+internal sealed partial class Intel8271Drive
 {
     private static readonly IReadOnlyDictionary<string, int> TrackAttributes =
         new Dictionary<string, int> { [C.PhysicalLayoutAttribute] = C.PhysicalLayoutEnabled };

@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>A vízszint-pont kiterjesztése ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Közhasznú ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Lemezkezelő rendszer ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} bankbanName {1} nem kompatibilis a memóriakártyával {2}. Ellenőrizze a ROM a gép beállításai.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM bank {0} már foglalt egy másik ROM. Ellenőrizze a ROM a memóriakártya megbízása {1}.</value></data>
 </root>

@@ -47,7 +47,10 @@
             </StatusBarItem>
             <StatusBarItem Grid.Column="6" Padding="2,0" HorizontalAlignment="Right">
                 <Button Style="{StaticResource StatusIconButton}" ToolTip="{l:Loc Common.Console}" AutomationProperties.Name="{l:Loc Common.Console}" Click="ToggleConsoleButton_Click">
-                    <Path Width="17" Height="15" Data="M1,2 H17 V14 H1 Z M4,6 L7,8 L4,10 M9,10 H14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.4" StrokeLineJoin="Round" Stretch="Uniform"/>
+                    <Grid Width="24" Height="22">
+                        <Path Width="17" Height="15" Data="M1,2 H17 V14 H1 Z M4,6 L7,8 L4,10 M9,10 H14" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.4" StrokeLineJoin="Round" Stretch="Uniform"/>
+                        <Ellipse x:Name="ConsoleNotification" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="Collapsed" IsHitTestVisible="False"/>
+                    </Grid>
                 </Button>
             </StatusBarItem>
             <StatusBarItem x:Name="HardwareSelectorItem" Visibility="Collapsed"/>

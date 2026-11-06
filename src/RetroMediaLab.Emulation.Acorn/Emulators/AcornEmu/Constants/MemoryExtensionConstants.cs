@@ -65,6 +65,10 @@ internal static class MemoryExtensionConstants
     internal const string RequiresMos = "Emulation.Acorn.Memory.RequiresMos";
     /// <summary>Diagnostic de ROM de gestion absente, avec son emplacement dans RAM.</summary>
     internal const string MissingFirmware = "Emulation.Acorn.Memory.RomMissing";
+    /// <summary>ROM présente dans la banque réservée, incompatible avec la carte mémoire choisie.</summary>
+    internal const string FirmwareMismatch = "Emulation.Acorn.Memory.RomMismatch";
+    /// <summary>Collision avec une autre ROM dans la banque de la carte mémoire.</summary>
+    internal const string FirmwareBankOccupied = "Emulation.Acorn.Memory.RomBankOccupied";
     /// <summary>Version MOS requise par les ROM de gestion retenues.</summary>
     internal const string RequiredMosVersion = "1.20";
 }

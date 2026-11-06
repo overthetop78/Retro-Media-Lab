@@ -5,6 +5,34 @@ namespace RetroMediaLab.Chips.Tests.IO.Acorn.SerialUla.BbcSerialUla;
 public sealed class ClockGroupingTests
 {
     [Theory]
+    [InlineData(2_000_000)]
+    [InlineData(3_000_001)]
+    public void ActiveTapeCarrierAndSilenceKeepEveryUnitClockTransition(int frequency)
+    {
+        var grouped = new Ula(frequency);
+        var unit = new Ula(frequency);
+        grouped.Write(0x85);
+        unit.Write(0x85);
+        var carrierSeen = false;
+        for (var tick = 0; tick < frequency / 2; tick++)
+        {
+            bool? level = tick < frequency / 3 ? ((long)tick * 4800 / frequency & 1) != 0 : null;
+            grouped.SetCassetteInput(level);
+            unit.SetCassetteInput(level);
+            grouped.Tick();
+            unit.Tick(true, true);
+            Assert.Equal((unit.SourceClockPhase, unit.ReceiveData, unit.DataCarrierDetectHigh,
+                unit.TransmitClockEdge, unit.ReceiveClockEdge, unit.CassetteOutput),
+                (grouped.SourceClockPhase, grouped.ReceiveData, grouped.DataCarrierDetectHigh,
+                grouped.TransmitClockEdge, grouped.ReceiveClockEdge, grouped.CassetteOutput));
+            carrierSeen |= grouped.DataCarrierDetectHigh;
+        }
+        Assert.True(carrierSeen);
+        Assert.False(grouped.DataCarrierDetectHigh);
+        Assert.True(grouped.ReceiveData);
+    }
+
+    [Theory]
     [InlineData(1_230_770)]
     [InlineData(2_000_000)]
     [InlineData(3_000_001)]

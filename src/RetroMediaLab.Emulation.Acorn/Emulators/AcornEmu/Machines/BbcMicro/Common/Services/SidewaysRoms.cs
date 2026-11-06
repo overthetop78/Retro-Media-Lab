@@ -7,7 +7,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
 /// <summary>Banques ROM latérales et verrou ROMSEL : des données externes, aucune ROM intégrée au code.</summary>
-internal sealed class SidewaysRoms
+internal sealed partial class SidewaysRoms
 {
     private readonly byte[]?[] _banks = new byte[C.RomBankCount][];
     private readonly bool[] _writable = new bool[C.RomBankCount];

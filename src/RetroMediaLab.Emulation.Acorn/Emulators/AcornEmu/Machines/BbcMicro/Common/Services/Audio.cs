@@ -9,7 +9,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 /// la dernière valeur. La phase rationnelle reste conservée entre les images : aucun arrondi par frame ne modifie
 /// la fréquence ou la durée. Le couplage continu retire le piédestal du PSG, sans filtre de présentation ajouté.
 /// Cette classe ne crée aucune sortie, aucun thread et aucune ressource externe.</remarks>
-internal sealed class Audio
+internal sealed partial class Audio
 {
     private readonly Sn76489 _chip = new();
     private readonly List<short> _samples = [];

@@ -13,7 +13,9 @@ public interface IMediaRuntimePreparation
     Task<IMediaRuntimeDisk> OpenDiskAsync(string path, bool writable = false, string? formatId = null, CancellationToken cancellationToken = default, IMediaDriveMechanics? mechanics = null);
 
     /// <summary>Crée la mécanique possédée par un lecteur émulé, indépendamment de son image montée.</summary>
-    IMediaDriveMechanics CreateDriveMechanics(string device);
+    IMediaDriveMechanics CreateDriveMechanics(string device, bool hostAudio = false);
+    /// <summary>Signale les mécaniques confiées à la sortie hôte, indépendamment de l'horloge émulée.</summary>
+    event Action<IMediaDriveMechanics>? AudioAvailable;
     /// <summary>Lit le signal mono d'une cassette UEF, CSW, WAV ou RAW avec son profil explicite, sans modifier sa source.</summary>
     Task<RetroMediaLab.MediaEngine.Contracts.MediaCassetteSignal> ReadCassetteAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null);
     /// <summary>Formats de sortie qui conservent le signal complet d'un magnétophone.</summary>

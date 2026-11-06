@@ -6,6 +6,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 /// <summary>Dimensions du tampon du rendu BBC courant ; elles ne définissent pas toutes les machines Acorn.</summary>
 internal static class VideoConstants
 {
+    public const int StateFormatVersion = 1;
     public const int CpuMasterDots = 8;
     public const int ColourBits = BbcVideoUlaConstants.ColourBits;
     public const int ColourMask = BbcVideoUlaConstants.ColourMask;

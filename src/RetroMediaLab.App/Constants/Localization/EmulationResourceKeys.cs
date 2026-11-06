@@ -9,6 +9,7 @@ public static class EmulationResourceKeys
     public const string VideoCrtGroupScanlines = "Emulation.Video.Crt.Group.Scanlines";
     public const string VideoCrtGroupInterference = "Emulation.Video.Crt.Group.Interference";
     public const string Power = "Emulation.Shortcut.Power";
+    public const string MachineSettings = "Emulation.Machine.Settings";
     public const string PauseResume = "Emulation.Shortcut.PauseResume";
     public const string SoftReset = "Emulation.Shortcut.SoftReset";
     public const string HardReset = "Emulation.Shortcut.HardReset";

@@ -5,4 +5,5 @@
 
 
 - [Implémentation et résultats existants](implementation.md)
+- [Ralentissement Debug et nouveaux essais individuels](cadence-debug.md)
 - [Puces communes](../../chips/README.md)

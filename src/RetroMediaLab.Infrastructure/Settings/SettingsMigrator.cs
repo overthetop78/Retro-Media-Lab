@@ -8,7 +8,7 @@ namespace RetroMediaLab.Infrastructure.Settings;
 
 public static class SettingsMigrator
 {
-    public const int CurrentVersion = 8;
+    public const int CurrentVersion = 9;
 
     public static AppSettings Migrate(AppSettings settings)
     {
@@ -28,6 +28,7 @@ public static class SettingsMigrator
                 case 5: MigrateV5ToV6(settings); break;
                 case 6: MigrateV6ToV7(settings); break;
                 case 7: MigrateV7ToV8(settings); break;
+                case 8: MigrateV8ToV9(settings); break;
                 default: throw new NotSupportedException($"No migration exists for settings schema {settings.SchemaVersion}.");
             }
         }
@@ -97,6 +98,13 @@ public static class SettingsMigrator
             profile.EnabledOptions.Remove("internal-writer");
         }
         settings.SchemaVersion = 8;
+    }
+
+    private static void MigrateV8ToV9(AppSettings settings)
+    {
+        // This revision explicitly replaces the former emulator key assignments.
+        settings.EmulationShortcuts = EmulationShortcutDefaultFunctions.Create();
+        settings.SchemaVersion = CurrentVersion;
     }
 
     private static void Normalize(AppSettings settings)

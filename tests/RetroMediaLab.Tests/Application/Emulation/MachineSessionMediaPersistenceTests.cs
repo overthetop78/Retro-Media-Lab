@@ -8,6 +8,56 @@ namespace RetroMediaLab.Tests.Application.Emulation;
 
 public sealed class MachineSessionMediaPersistenceTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConfigurationChangesReplaceTheSessionMediaOnNextStart(bool powered)
+    {
+        var oldDisk = new EmulationMedia("previous-floppy", EmulationMediaSlot.Floppy0, EmulationMediaType.Floppy, false, true);
+        var newDisk = oldDisk with { Path = "replacement-floppy" };
+        var hardDisk = new EmulationMedia("new-hard-disk", EmulationMediaSlot.HardDisk0, EmulationMediaType.HardDisk, false, true);
+        var unsupported = new EmulationMedia("absent-cassette-reader", EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, false, true);
+        var ejected = newDisk with { IsInserted = false };
+        IReadOnlyList<EmulationMedia>? supplied = null;
+        var starts = 0;
+        var lifecycle = ControlledDependencies.Simulate<IEmulationLifecycle>((method, _) =>
+        {
+            if (method.Name == nameof(IEmulationLifecycle.StartAsync)) starts++;
+            else if (method.Name != nameof(IEmulationLifecycle.StopAsync)) throw new InvalidOperationException(method.Name);
+            return ValueTask.CompletedTask;
+        });
+        IEmulatedMachine CreateMachine() => ControlledDependencies.Simulate<IEmulatedMachine>((method, _) => method.Name switch
+        {
+            "get_Lifecycle" => lifecycle,
+            nameof(IAsyncDisposable.DisposeAsync) => ValueTask.CompletedTask,
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        await using var session = new MachineSession(CreateMachine(), _ => throw new InvalidOperationException(), [oldDisk]);
+        if (powered) await session.PowerOnAsync();
+        EmulationMediaDevice[] devices = [new(newDisk.Slot, newDisk.Type, []), new(hardDisk.Slot, hardDisk.Type, [])];
+        await session.UpdateMachineFactoryAsync(media =>
+        {
+            supplied = media.ToArray();
+            return CreateMachine();
+        }, devices, [newDisk, hardDisk, unsupported]);
+        Assert.Equal(new[] { newDisk, hardDisk }, session.MountedMedia);
+        Assert.Null(supplied);
+        Assert.Equal(powered ? 1 : 0, starts);
+        if (powered) await session.PowerOffAsync();
+        await session.PowerOnAsync();
+        Assert.Equal(new[] { newDisk, hardDisk }, supplied);
+
+        await session.PowerOffAsync();
+        await session.UpdateMachineFactoryAsync(media =>
+        {
+            supplied = media.ToArray();
+            return CreateMachine();
+        }, devices, [ejected, hardDisk]);
+        Assert.Equal(hardDisk, Assert.Single(session.MountedMedia));
+        await session.PowerOnAsync();
+        Assert.Equal(hardDisk, Assert.Single(supplied!));
+    }
+
     public static IEnumerable<object[]> MediaCases =>
         Enum.GetValues<EmulationMediaType>().SelectMany(type => new[] { false, true }.Select(powered => new object[] { type, powered }));
 

@@ -41,15 +41,15 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     private double _videoTimeSeconds;
     private long _audioSequence, _audioFrames;
     private readonly Queue<AudioChunk> _audio = new();
+    private int _bufferedAudioFrames;
     private string _videoOutput = EmulatorConstants.UhfOutput;
     private string? _cassettePath;
     private EmulationCassetteSettings _cassetteSettings = new();
     private EmulationCassettePcmSettings _cassettePcm = new();
     private IReadOnlyDictionary<string, string>? _mountedCassetteParameters;
     private Dictionary<string, string> _runtimeOptions = new(StringComparer.Ordinal);
-    private string _mechanicalOperation = S.None;
-    private string? _mechanicalEvent;
-    private long _mechanicalOffset;
+    private IEmulationDriveMechanics? _cassetteMechanics;
+    private string _cassetteSoundOperation = S.None;
     public Emulator Emulator => Emulator.AcornEmu;
     public string CoreName => EmulatorConstants.Name;
     public string CoreVersion => EmulatorConstants.Version;
@@ -57,13 +57,13 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public double FramesPerSecond => _machine?.VideoFramesPerSecond ?? _definition.FramesPerSecond;
     public long? ProcessorClockHz => _machine?.ProcessorClockHz;
     public int SampleRate => BbcAudioConstants.SampleRate;
-    public bool SupportsSaveStates => false;
+    public bool SupportsSaveStates => _machine?.StateType is not null;
     public bool SupportsPointerCapture => ArchimedesFunctions.IsModel(_definition.Model);
     public bool ShutdownRequested { get; private set; }
     public EmulationVideoStandard? Region => _definition.Region;
     public HostProcessState HostProcessState => HostProcessState.InProcess;
     public int? HostProcessId => null;
-    public int BufferedAudioFrames => _audio.Sum(chunk => chunk.FrameCount);
+    public int BufferedAudioFrames => Volatile.Read(ref _bufferedAudioFrames);
     public int MinimumAudioLatencyMilliseconds => 0;
     public void SetAudioBufferStatus(AudioOutputBufferStatus? status) { }
     public long AudioOverrunCount => 0;
@@ -72,7 +72,8 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public int CurrentDiskIndex => -1;
     public VideoFrame? LatestVideoFrame { get; private set; }
     public AudioChunk? LatestAudioChunk { get; private set; }
-    public IReadOnlyList<CoreOption> Options => SystemModelCatalog.IsSystem(_definition.Model) || _definition.Model is MachineModel.AcornAtom or MachineModel.AcornElectron ? [] :
+    public IReadOnlyList<CoreOption> Options => [.. VideoOptions, .. MechanicalSoundOptions()];
+    private IReadOnlyList<CoreOption> VideoOptions => SystemModelCatalog.IsSystem(_definition.Model) || _definition.Model is MachineModel.AcornAtom or MachineModel.AcornElectron ? [] :
     [
         new(EmulatorConstants.VideoOutput, "Emulation.Acorn.Video.Output", null, null, EmulatorConstants.UhfOutput, _videoOutput,
             [new(EmulatorConstants.UhfOutput, "UHF PAL", "Emulation.Acorn.Video.Output.Uhf"), new(EmulatorConstants.MonochromeOutput, "Composite", "Emulation.Acorn.Video.Output.Monochrome"), new(EmulatorConstants.ColourCompositeOutput, "Composite", "Emulation.Acorn.Video.Output.ColourComposite"), new(EmulatorConstants.RgbOutput, "RGB", "Emulation.Acorn.Video.Output.Rgb")], ResourceKey: "Emulation.Acorn.Video.Output", Tab: EmulationMachineTab.Video)
@@ -92,6 +93,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
     public EmulationCassetteState CassetteState => _machine?.CassetteTransport?.CassetteState ?? EmulationCassetteState.Empty;
     public bool CassetteActive => _machine?.CassetteTransport?.CassetteActive ?? false;
     public EmulationCassetteCommand? CassetteOperation => _machine?.CassetteTransport?.CassetteOperation;
+    public event Action? ActivityChanged;
     public IReadOnlySet<EmulationCassetteCommand> CassetteCommands => _machine?.CassetteTransport is not { } transport ? new HashSet<EmulationCassetteCommand>() : new HashSet<EmulationCassetteCommand>(transport.CassetteCommands.Concat(_cassetteSettings.WriteProtected ? [] : new[] { EmulationCassetteCommand.Record }));
     public void ExecuteCassette(EmulationCassetteCommand command)
     {
@@ -125,6 +127,9 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         _runtimeOptions = new(configuration.Options, StringComparer.Ordinal);
         _cassettePcm = EmulationCassettePcmSettings.Read(configuration.Options);
         _machine.ConfigureCassette(_cassetteSettings);
+        _cassetteMechanics = CommonCoreHostFunctions.MediaProcessing.CreateDriveMechanics(S.Cassette, hostAudio: true);
+        _cassetteMechanics.Configure(null, _cassetteSettings.MechanicalVolumePercent, false);
+        if (_machine.CassetteTransport is { } transport) transport.ActivityChanged += OnCassetteActivityChanged;
         ConfigureDisks(configuration);
         ConfigureHardDisks(configuration);
         ConfigureNetwork(configuration);
@@ -159,38 +164,29 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         var height = machine.VideoHeight ?? _definition.Height;
         LatestVideoFrame = new VideoFrame(image, width, height, width * _definition.BytesPerPixel, _definition.PixelFormat, _definition.AspectRatio, ++_sequence, TimeSpan.FromSeconds(_videoTimeSeconds));
         var samples = machine.DrainAudio();
-        var mixed = samples.Select(value => (double)value).ToArray();
         var layout = machine.AudioChannelLayout;
         var channels = System.Numerics.BitOperations.PopCount((uint)layout);
-        if (channels == 1) MixMediaSound(mixed);
-        else
-        {
-            var effects = new double[samples.Length / channels];
-            MixMediaSound(effects);
-            for (var index = 0; index < mixed.Length; index++) mixed[index] += effects[index / channels];
-        }
-        samples = CommonCoreHostFunctions.MediaProcessing.ProtectMechanicalAudioMix(mixed);
         if (samples.Length != 0)
         {
             LatestAudioChunk = new AudioChunk(samples, SampleRate, samples.Length / channels, ++_audioSequence, TimeSpan.FromSeconds((double)_audioFrames / SampleRate), layout);
             _audioFrames += samples.Length / channels;
             _audio.Enqueue(LatestAudioChunk);
+            Interlocked.Add(ref _bufferedAudioFrames, LatestAudioChunk.FrameCount);
         }
-    }
-    private void MixMediaSound(double[] samples)
-    {
-        MixCassetteSound(samples);
-        MixFloppySound(samples);
-        MixHardDiskSound(samples);
     }
     public void SetInput(EmulationInputSnapshot snapshot) => _machine?.SetInput(snapshot);
     public void SoftReset() { _network?.Reset(); _machine?.Reset(false); ClearAudio(); }
     public void HardReset() { _network?.Reset(); _machine?.Reset(true); ClearAudio(); }
-    public void Stop() { try { SaveNonvolatileMemory(); SaveMediaChanges(EmulationMediaSlot.Cassette0); SaveDisks(); SaveHardDisks(); } finally { try { DisposeNetwork(); } finally { ShutdownRequested = true; ClearAudio(); } } }
+    public void Stop() { try { SaveNonvolatileMemory(); SaveMediaChanges(EmulationMediaSlot.Cassette0); SaveDisks(); SaveHardDisks(); } finally { try { DisposeNetwork(); } finally { ResetMechanicalAudio(); ShutdownRequested = true; ClearAudio(); } } }
     /// <summary>Transfère un bloc audio possédé au parcours audio Common déjà utilisé par les autres cœurs.</summary>
-    public bool TryDequeueAudio(out AudioChunk? chunk) => _audio.TryDequeue(out chunk);
+    public bool TryDequeueAudio(out AudioChunk? chunk)
+    {
+        if (!_audio.TryDequeue(out chunk)) return false;
+        Interlocked.Add(ref _bufferedAudioFrames, -chunk.FrameCount);
+        return true;
+    }
     /// <summary>Détache les blocs non lus pour ne pas rejouer d'ancien son après arrêt ou reset.</summary>
-    private void ClearAudio() { _audio.Clear(); LatestAudioChunk = null; }
+    private void ClearAudio() { _audio.Clear(); Volatile.Write(ref _bufferedAudioFrames, 0); LatestAudioChunk = null; }
     public DiskStatus GetDiskStatus() => new(0, -1, true, []);
     public bool HasUnsavedMediaChanges(EmulationMediaSlot slot) => slot.Category switch
     {
@@ -233,8 +229,6 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         _machine?.EjectCassette(); _cassettePath = null; SetCassetteSoundEvent(S.Eject);
     }
     public void SelectDisk(int index) => throw new NotSupportedException();
-    public byte[] SaveState() => throw new NotSupportedException();
-    public void LoadState(ReadOnlySpan<byte> state) => throw new NotSupportedException();
     public void SetOption(string key, string value)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -254,6 +248,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
             if (settings.BaudRate is not (0 or 300 or 1200)) throw new ArgumentOutOfRangeException(nameof(value));
             SaveMediaChanges(EmulationMediaSlot.Cassette0);
             _runtimeOptions = options; _cassetteSettings = settings; _cassettePcm = pcm; machine.ConfigureCassette(settings);
+            ConfigureCassetteSound();
             return;
         }
         if (ApplyMechanicalSoundOption(key, value)) return;
@@ -268,6 +263,8 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorCassetteTra
         try { SaveNonvolatileMemory(); SaveMediaChanges(EmulationMediaSlot.Cassette0); SaveDisks(); SaveHardDisks(); ShutdownRequested = true; }
         finally
         {
+            if (_machine?.CassetteTransport is { } transport) transport.ActivityChanged -= OnCassetteActivityChanged;
+            ResetMechanicalAudio();
             try { DisposeDisks(); }
             finally { try { DisposeHardDisks(); } finally { try { DisposeNetwork(); } finally { _machine = null; LatestVideoFrame = null; ClearAudio(); _disposed = true; } } }
         }

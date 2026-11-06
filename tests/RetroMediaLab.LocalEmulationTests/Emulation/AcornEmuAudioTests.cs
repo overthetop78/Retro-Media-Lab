@@ -22,6 +22,95 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuAudioTests
 {
     [Fact]
+    public async Task BufferCounterCanBeReadWhileTheCoreProducesAndDrainsAudio()
+    {
+        using var core = CoreWithProgrammedTone();
+        using var stop = new CancellationTokenSource();
+        var reader = Task.Run(() =>
+        {
+            while (!stop.IsCancellationRequested)
+            {
+                Assert.True(core.BufferedAudioFrames >= 0);
+                Thread.Yield();
+            }
+        });
+        try
+        {
+            for (var frame = 0; frame < 12; frame++)
+            {
+                core.RunFrame();
+                var expected = core.BufferedAudioFrames;
+                while (core.TryDequeueAudio(out var chunk)) expected -= chunk!.FrameCount;
+                Assert.Equal(0, expected);
+                Assert.Equal(0, core.BufferedAudioFrames);
+            }
+            core.RunFrame();
+            Assert.True(core.BufferedAudioFrames > 0);
+            core.Stop();
+            Assert.Equal(0, core.BufferedAudioFrames);
+        }
+        finally { stop.Cancel(); await reader; }
+    }
+
+    [Fact]
+    public void DriveVolumeIsAHotOptionAndMechanicalPlaybackDoesNotAlterChipPcm()
+    {
+        using var reference = CoreWithProgrammedTone();
+        using var core = CoreWithProgrammedTone();
+        ConfigureSyntheticDrivesForExistingMachine(core);
+        var key = Storage.Key(0, Storage.SoundVolumeOption);
+        Assert.False(Assert.Single(core.Options, option => option.Key == key).RequiresRestart);
+        var mechanics = Field<IEmulationDriveMechanics?[]>(core, "_floppyMechanics")[0]!;
+        mechanics.SetMotor(true);
+        core.SetOption(key, "0");
+        Assert.All(mechanics.RenderAudio(44100, 882), sample => Assert.Equal(0, sample));
+        core.SetOption(key, "100");
+        Assert.Contains(mechanics.RenderAudio(44100, 882), sample => sample != 0);
+        reference.RunFrame();
+        core.RunFrame();
+        Assert.True(reference.TryDequeueAudio(out var expected));
+        Assert.True(core.TryDequeueAudio(out var actual));
+        Assert.Equal(expected!.InterleavedSamples.ToArray(), actual!.InterleavedSamples.ToArray());
+        core.Stop();
+        Assert.False(mechanics.HasPendingAudio);
+    }
+
+    private static void ConfigureSyntheticDrivesForExistingMachine(EmulatorCore core)
+    {
+        var configuration = new MachineConfiguration(MachineModel.BbcMicroModelA,
+            options: new Dictionary<string, string> { [Storage.Key(0, Storage.MechanicalSoundOption)] = bool.TrueString });
+        typeof(EmulatorCore).GetMethod("ConfigureDisks", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(core, [configuration]);
+        Field<bool[]>(core, "_floppyConnected")[0] = true;
+        Field<FloppyDriveSettings?[]>(core, "_floppySettings")[0] = new("ds80", Storage.DefaultSpeed, false, false);
+    }
+
+    [Fact]
+    public async Task RuntimeVolumeChangesReachTheExistingOutputWithoutRestartingTheCore()
+    {
+        const string volumeKey = RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Constants.VideoAudioSettingsConstants.AudioVolumeOption;
+        var output = new Output();
+        var configuration = new MachineConfiguration(MachineModel.BbcMicroModelA, core: Emulator.AcornEmu);
+        var context = new EmulatorCreationContext<MachineConfiguration>("synthetic-audio-sessions", "", "", () => output, null);
+        await using var machine = new AcornEmuMachineFactory().Create(configuration, context);
+        var option = Assert.Single(machine.Runtime.AvailableOptions, option => option.Key == volumeKey);
+        Assert.False(option.RequiresRestart);
+        Assert.False(option.IsVisible);
+        typeof(RetroMediaLab.Emulation.Acorn.Common.Services.Machine).GetMethod("StartAudio", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(machine, null);
+        var audio = (CommonAudioOutput)typeof(RetroMediaLab.Emulation.Acorn.Common.Services.Machine).GetField("_audio", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(machine)!;
+        var chunk = new AudioChunk(new short[] { -1000, 2000 }, 44100, 2, 1, TimeSpan.Zero, EmulationAudioChannelLayout.Mono);
+        await machine.Runtime.SetOptionAsync(volumeKey, "25");
+        audio.Write(chunk);
+        Assert.Equal(new short[] { -250, 500 }, output.Samples);
+        await machine.Runtime.SetOptionAsync(volumeKey, "0");
+        audio.Write(chunk);
+        Assert.All(output.Samples, sample => Assert.Equal(0, sample));
+        await machine.Runtime.SetOptionAsync(volumeKey, "100");
+        audio.Write(chunk);
+        Assert.Equal(new short[] { -1000, 2000 }, output.Samples);
+        Assert.Equal(1f, machine.Audio.Volume);
+    }
+
+    [Fact]
     public async Task FactoryConnectsTheProvidedAudioOutputAndSessionDisposesIt()
     {
         var output = new Output();
@@ -203,10 +292,10 @@ public sealed class AcornEmuAudioTests
         mechanics.Insert();
         mechanics.SetMotor(true);
         Assert.True(mechanics.HasPendingAudio);
-        typeof(EmulatorCore).GetField("_mechanicalEvent", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(core, S.Insert);
+        typeof(EmulatorCore).GetField("_cassetteSoundOperation", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(core, S.Play);
         ResetRestoredMediaAudio(core);
         Assert.False(mechanics.HasPendingAudio);
-        Assert.Null(Field<string?>(core, "_mechanicalEvent"));
+        Assert.Equal(S.None, Field<string>(core, "_cassetteSoundOperation"));
         mechanics.Eject();
         Assert.Equal(soundEnabled, mechanics.HasPendingAudio);
         mechanics.Reset();

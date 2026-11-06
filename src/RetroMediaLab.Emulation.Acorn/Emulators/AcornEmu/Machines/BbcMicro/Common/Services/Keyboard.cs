@@ -3,7 +3,7 @@ using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Dictionaries;
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
 /// <summary>Matrice des touches maintenues ; la carte l'interroge depuis le bus lent du VIA.</summary>
-internal sealed class Keyboard
+internal sealed partial class Keyboard
 {
     private const int ColumnCount = 16;
     private const int ColumnMask = ColumnCount - 1;

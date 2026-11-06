@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Rozšíření plovoucí-bodové ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Užitečnost ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Disk operační systém ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} v bance {1} není kompatibilní s paměťovou rozšiřující kartou {2}. Zkontrolujte ROM úkoly v nastavení stroje.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM banka {0} je již obsazen jiným ROM. Zkontrolujte ROM přiřazení karty pro rozšíření paměti {1}.</value></data>
 </root>

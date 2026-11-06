@@ -25,9 +25,10 @@ internal sealed partial class EmulatorCore
         _diskExtensions = NativeStorage.Extensions(configuration);
         for (var drive = 0; drive < _floppyImages.Length; drive++)
         {
-            _floppyMechanics[drive] ??= RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions.MediaProcessing.CreateDriveMechanics(S.Floppy);
+            _floppyMechanics[drive] ??= RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions.MediaProcessing.CreateDriveMechanics(S.Floppy, hostAudio: true);
             _floppyConnected[drive] = NativeStorage.Connected(configuration, drive);
             var settings = _floppySettings[drive] = NativeStorage.Settings(configuration, drive);
+            ConfigureFloppySound(drive, allowSound: false);
             _machine!.ConfigureFloppySpeed(drive, int.Parse(settings.Speed, System.Globalization.CultureInfo.InvariantCulture));
         }
     }

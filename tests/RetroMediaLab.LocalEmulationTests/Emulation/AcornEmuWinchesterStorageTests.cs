@@ -233,6 +233,7 @@ public sealed partial class AcornEmuWinchesterStorageTests
         internal bool MotorRunning { get; private set; }
         public bool HasPendingAudio => false;
         public void Configure(string? profile, double volumePercent, bool enabled) { }
+        public void SetTapeOperation(string operation) { }
         public void Insert() { }
         public void Eject() { }
         public void SetMotor(bool running) { MotorCalls++; MotorRunning = running; }

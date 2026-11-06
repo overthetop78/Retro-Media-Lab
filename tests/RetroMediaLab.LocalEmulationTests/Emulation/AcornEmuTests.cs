@@ -22,6 +22,25 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuTests
 {
     [Fact]
+    public void WarmRestartExecutesTheResetVectorAndPreservesRamWhileColdRestartClearsIt()
+    {
+        var mos = new byte[16384];
+        mos[0x3ffc] = 0;
+        mos[0x3ffd] = 0xc0;
+        mos[0] = 0xea;
+        var machine = new ModelAMachine(mos, new byte[16384]);
+        machine.Cpu.Step();
+        Assert.Equal(0xc001, machine.Cpu.PC);
+        machine.Write(0x1234, 0x5a);
+        machine.Reset(false);
+        Assert.Equal(0xc000, machine.Cpu.PC);
+        Assert.Equal(0x5a, machine.Read(0x1234));
+        machine.Cpu.Step();
+        machine.Reset(true);
+        Assert.Equal(0xc000, machine.Cpu.PC);
+        Assert.Equal(0, machine.Read(0x1234));
+    }
+    [Fact]
     public async Task RuntimeExposesOnlyAttachedReadersWhileStorageKeepsAvailableReaders()
     {
         var engine = new Engine();

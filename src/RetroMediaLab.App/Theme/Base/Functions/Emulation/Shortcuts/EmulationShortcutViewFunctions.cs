@@ -70,7 +70,7 @@ internal static class EmulationShortcutViewFunctions
         return panel;
     }
 
-    private static string ResolveShortcutText(IReadOnlyList<GlobalShortcutBinding> configuredShortcuts, string action)
+    internal static string ResolveShortcutText(IReadOnlyList<GlobalShortcutBinding> configuredShortcuts, string action)
     {
         var configured = configuredShortcuts.FirstOrDefault(item => item.Action == action);
         if (configured?.SourceBinding is { } sourceBinding) return sourceBinding;

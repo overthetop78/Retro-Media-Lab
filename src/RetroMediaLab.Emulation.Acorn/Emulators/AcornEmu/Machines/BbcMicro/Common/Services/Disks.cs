@@ -5,7 +5,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
 /// <summary>Câblage des cartes BBC 8271 ou Acorn WD1770 ; les images sont empruntées au propriétaire du cœur.</summary>
-internal sealed class Disks
+internal sealed partial class Disks
 {
     private readonly bool _enabled;
     private readonly bool _wd1770;

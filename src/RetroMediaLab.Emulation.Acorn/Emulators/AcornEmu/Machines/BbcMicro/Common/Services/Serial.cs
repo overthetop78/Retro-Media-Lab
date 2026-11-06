@@ -5,7 +5,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
 /// <summary>Câblage de carte entre SERPROC et MC6850 emprunté ; aucun fichier ni périphérique Windows.</summary>
-internal sealed class Serial
+internal sealed partial class Serial
 {
     private readonly IAcia6850 _acia;
     private readonly BbcSerialUla _ula = new(C.CpuClock);

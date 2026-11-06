@@ -6,4 +6,5 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Machine.Open"><value>Mở</value></data>
   <data name="Emulation.Machine.Model" xml:space="preserve"><value>Mẫu máy</value></data>
+  <data name="Emulation.Machine.Settings"><value>Thiết lập máy</value></data>
 </root>

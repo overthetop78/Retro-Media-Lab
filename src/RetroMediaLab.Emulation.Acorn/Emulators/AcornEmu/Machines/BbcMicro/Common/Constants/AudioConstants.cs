@@ -3,6 +3,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 /// <summary>Horloges et représentation PCM de l'adaptation sonore BBC Micro.</summary>
 internal static class AudioConstants
 {
+    internal const int StateFormatVersion = 1;
     /// <summary>Horloge du PSG fournie par l'ULA vidéo, en hertz.</summary>
     internal const int SoundClock = 4_000_000;
     /// <summary>Cadence du bus CPU auquel le composant audio est raccordé, en hertz.</summary>

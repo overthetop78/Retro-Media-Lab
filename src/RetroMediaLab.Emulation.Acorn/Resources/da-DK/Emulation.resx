@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Flydepunktsudvidelse ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Værktøj ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Disk styresystem ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} i bank {1} er ikke kompatibel med hukommelsesekort {2}. Tjek ROM Opgaver i maskinens indstillinger.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM bank {0} er allerede besat af en anden ROM. Tjek ROM Opgaver til hukommelseseksponering {1}.</value></data>
 </root>

@@ -30,7 +30,7 @@ internal static class MigrationAndRecoveryScenarios
         var settings=new AppSettings { SchemaVersion=version, Language=" fr-FR " };
         settings.Read.EnabledOptions.Add("internal-reader");
         var migrated=SettingsMigrator.Migrate(settings);
-        Assert.Equal(8,migrated.SchemaVersion);
+        Assert.Equal(SettingsMigrator.CurrentVersion,migrated.SchemaVersion);
         Assert.Equal("fr-FR",migrated.Language);
         if(version<8)
         {

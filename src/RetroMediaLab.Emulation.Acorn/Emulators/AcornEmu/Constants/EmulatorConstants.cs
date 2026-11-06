@@ -3,6 +3,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 /// <summary>Identité stable du cœur interne ; ses ROM sont toujours fournies séparément par l'utilisateur.</summary>
 internal static class EmulatorConstants
 {
+    internal const int StateFormatVersion = 1;
     /// <summary>Nom invariant de la ROM MOS dans les réglages BBC.</summary>
     internal const string SystemFirmwareLabel = "Emulation.Acorn.Firmware.Mos";
 

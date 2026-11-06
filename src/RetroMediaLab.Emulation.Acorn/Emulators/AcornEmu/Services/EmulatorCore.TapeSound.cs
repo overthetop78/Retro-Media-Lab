@@ -1,40 +1,37 @@
-using RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions;
 using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 
 internal sealed partial class EmulatorCore
 {
-    /// <summary>Recommence une action explicite, y compris deux commandes identiques successives.</summary>
-    private void SetCassetteSoundEvent(string operation)
+    private void ConfigureCassetteSound()
     {
-        _mechanicalEvent = operation;
-        _mechanicalOperation = operation;
-        _mechanicalOffset = 0;
+        _cassetteMechanics?.Configure(null, _cassetteSettings.MechanicalVolumePercent,
+            _cassetteSettings.MechanicalSound && _cassetteSettings.Mode == EmulationCassettePlaybackMode.RealTime);
+        _cassetteSoundOperation = S.None;
+        OnCassetteActivityChanged();
     }
 
-    /// <summary>Mélange les enregistrements du mécanisme ; le signal de données de la bande reste indépendant.</summary>
-    private void MixCassetteSound(double[] samples)
+    private void OnCassetteActivityChanged()
     {
-        if (!_cassetteSettings.MechanicalSound || _cassetteSettings.Mode != EmulationCassettePlaybackMode.RealTime)
+        var operation = (CassetteActive ? CassetteOperation?.ToString() : null) ?? S.None;
+        if (operation != _cassetteSoundOperation)
         {
-            _mechanicalEvent = null;
-            _mechanicalOperation = S.None;
-            _mechanicalOffset = 0;
-            return;
+            var previous = _cassetteSoundOperation;
+            _cassetteSoundOperation = operation;
+            _cassetteMechanics?.SetTapeOperation(operation == S.None && previous != S.None ? S.Stop : operation);
         }
-        var operation = _mechanicalEvent ?? (CassetteActive ? CassetteOperation?.ToString() : null) ?? S.None;
-        if (operation == S.None && _mechanicalOperation is S.Play or S.Record or S.FastForward or S.Rewind)
-            SetCassetteSoundEvent(operation = S.Stop);
-        if (operation != _mechanicalOperation)
-        {
-            _mechanicalOperation = operation;
-            _mechanicalOffset = 0;
-        }
-        var noise = BbcMicroCassetteFunctions.Sound(operation, SampleRate, samples.Length, _mechanicalOffset, _cassetteSettings.MechanicalVolumePercent);
-        for (var index = 0; index < samples.Length; index++) samples[index] += noise[index];
-        _mechanicalOffset += samples.Length;
-        if (_mechanicalEvent is not null && _mechanicalOffset >= Math.Ceiling(SampleRate * BbcMicroCassetteFunctions.SoundDuration(_mechanicalEvent)))
-            _mechanicalEvent = null;
+        ActivityChanged?.Invoke();
+    }
+
+    /// <summary>Transmet une commande utilisateur ; la lecture du bruitage appartient à la sortie hôte.</summary>
+    private void SetCassetteSoundEvent(string operation) => _cassetteMechanics?.SetTapeOperation(operation);
+
+    private void ResetMechanicalAudio()
+    {
+        _cassetteMechanics?.Reset();
+        _cassetteSoundOperation = S.None;
+        foreach (var mechanics in _floppyMechanics) mechanics?.Reset();
+        foreach (var mechanics in _hardDiskMechanics) mechanics?.Reset();
     }
 }

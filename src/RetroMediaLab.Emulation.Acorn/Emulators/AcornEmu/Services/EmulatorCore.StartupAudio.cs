@@ -8,9 +8,9 @@ internal sealed partial class EmulatorCore
     /// <summary>Restaure les supports déjà présents sans rejouer une action physique de l’utilisateur.</summary>
     private void ResetRestoredMediaAudio()
     {
-        _mechanicalEvent = null;
-        _mechanicalOperation = S.None;
-        _mechanicalOffset = 0;
+        _cassetteMechanics?.Reset();
+        _cassetteSoundOperation = S.None;
+        ConfigureCassetteSound();
         for (var drive = 0; drive < _floppyImages.Length; drive++)
         {
             if (_floppyMechanics[drive] is not { } mechanics) continue;

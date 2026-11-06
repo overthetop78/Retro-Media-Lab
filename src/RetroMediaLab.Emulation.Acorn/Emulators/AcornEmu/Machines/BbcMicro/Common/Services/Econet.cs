@@ -6,7 +6,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 
 /// <summary>Câblage BBC de l'ADLC : station, registres répétés et verrou de validation NMI.</summary>
 /// <remarks>Le transport est emprunté par ses callbacks ; le cœur conserve sa possession et sa fermeture.</remarks>
-internal sealed class Econet
+internal sealed partial class Econet
 {
     private readonly bool _enabled;
     private readonly byte _station;

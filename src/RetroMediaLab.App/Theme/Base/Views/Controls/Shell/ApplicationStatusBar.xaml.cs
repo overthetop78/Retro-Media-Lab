@@ -4,6 +4,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Shapes;
+using System.Diagnostics;
+using System.Windows.Media;
 
 
 namespace RetroMediaLab.App.Views.Controls.Shell;
@@ -30,6 +32,12 @@ public partial class ApplicationStatusBar : UserControl
     public TrackProgressStrip Face1Progress => Face1TrackProgress;
     public StatusBarItem HostToolsItem => HostToolsUpdateItem;
     public Button HostToolsButton => HostToolsUpdateButton;
+
+    public void SetConsoleNotification(TraceEventType? severity)
+    {
+        ConsoleNotification.Fill = severity == TraceEventType.Error ? Brushes.IndianRed : Brushes.DarkOrange;
+        ConsoleNotification.Visibility = severity is null ? Visibility.Collapsed : Visibility.Visible;
+    }
 
     private void HardwareSelector_Changed(object sender, SelectionChangedEventArgs e) => HardwareSelectionChanged?.Invoke(sender, e);
     private void HostToolsUpdateButton_Click(object sender, RoutedEventArgs e) => HostToolsUpdateRequested?.Invoke(sender, e);

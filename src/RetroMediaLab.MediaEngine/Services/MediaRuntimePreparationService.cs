@@ -13,7 +13,16 @@ namespace RetroMediaLab.MediaEngine.Services;
 /// <summary>Adapte les lecteurs CUE et convertisseurs SCP existants aux contrats de préparation.</summary>
 internal sealed class MediaRuntimePreparationService : IMediaRuntimePreparation
 {
-    public IMediaDriveMechanics CreateDriveMechanics(string device) => new MediaDriveMechanics(device);
+    public event Action<IMediaDriveMechanics>? AudioAvailable;
+
+    public IMediaDriveMechanics CreateDriveMechanics(string device, bool hostAudio = false)
+    {
+        var mechanics = new MediaDriveMechanics(device);
+        if (hostAudio) mechanics.AudioAvailable += PublishAudio;
+        return mechanics;
+    }
+
+    private void PublishAudio(IMediaDriveMechanics mechanics) => AudioAvailable?.Invoke(mechanics);
 
     public async Task<IMediaRuntimeDisk> OpenDiskAsync(string path, bool writable = false, string? formatId = null, CancellationToken cancellationToken = default, IMediaDriveMechanics? mechanics = null)
     {

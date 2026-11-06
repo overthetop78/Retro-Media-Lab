@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Contracts;
 using RetroMediaLab.Chips.IO.Acorn.SerialUla.BbcSerialUla.Services;
 using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Interfaces;
 using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Services;
@@ -187,6 +188,8 @@ public sealed class AcornEmuSerialWiringTests
         public Action<int>? ClockDividerChanged { get => _chip.ClockDividerChanged; set => _chip.ClockDividerChanged = value; }
         public bool Irq => _chip.Irq;
         public Action<bool>? IrqChanged { get => _chip.IrqChanged; set => _chip.IrqChanged = value; }
+        public Acia6850State CaptureState() => _chip.CaptureState();
+        public void RestoreState(Acia6850State state) => _chip.RestoreState(state);
         public void Reset() => _chip.Reset();
         public byte Read(bool data) => _chip.Read(data);
         public void Write(bool data, byte value) => _chip.Write(data, value);

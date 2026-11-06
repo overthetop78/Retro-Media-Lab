@@ -3,7 +3,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Mod
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Services;
 
 /// <summary>PAL de sélection mémoire du B+ ; la RAM principale est empruntée à la carte.</summary>
-internal sealed class ModelBPlusMemory
+internal sealed partial class ModelBPlusMemory
 {
     private readonly byte[] _shadow = new byte[C.ShadowBytes];
     private readonly byte[] _private = new byte[C.PrivateBytes];

@@ -18,7 +18,7 @@ internal sealed class MachineCommandBar
 {
     private readonly Dictionary<MachineCommandId, Button> _commandsById = [];
     private DockPanel _host;
-    private readonly SizeChangedEventHandler _resize;
+    private readonly IReadOnlyList<GlobalShortcutBinding> _shortcuts;
     private readonly List<Button> _requiresPower = [];
     private readonly Button _power;
     private readonly Button _pause;
@@ -34,6 +34,7 @@ internal sealed class MachineCommandBar
     internal MachineCommandBar(DockPanel host, MachineCommandActions actions, IReadOnlyList<GlobalShortcutBinding> shortcuts, Action<Exception> showError, Action restoreFocus)
     {
         _host = host;
+        _shortcuts = shortcuts;
         _restoreFocus = restoreFocus;
         _power = Command(MachineCommandId.Power, MachineCommandGlyphConstants.Power, EmulationResourceKeys.Power, actions.TogglePower, showError, false);
         _power.Foreground = Brushes.LimeGreen;
@@ -53,8 +54,6 @@ internal sealed class MachineCommandBar
         left.Children.Add(MachineView.CreateToolbarGroup(
             Command(MachineCommandId.CaptureScreen, MachineCommandGlyphConstants.CaptureScreen, EmulationResourceKeys.CaptureScreen, actions.CaptureScreen, showError),
             Command(MachineCommandId.Fullscreen, MachineCommandGlyphConstants.Fullscreen, EmulationResourceKeys.Fullscreen, actions.ToggleFullscreen, showError, false)));
-        var stateShortcuts = EmulationShortcutViewFunctions.CreateGroup(shortcuts, (EmulationShortcutDefaults.QuickSave, EmulationResourceKeys.QuickSave), (EmulationShortcutDefaults.QuickLoad, EmulationResourceKeys.QuickLoad));
-        left.Children.Add(stateShortcuts);
         DockPanel.SetDock(left, Dock.Left);
         host.Children.Add(left);
 
@@ -63,10 +62,8 @@ internal sealed class MachineCommandBar
             Orientation = Orientation.Horizontal,
             VerticalAlignment = VerticalAlignment.Center
         };
-        var displayShortcuts = EmulationShortcutViewFunctions.CreateGroup(shortcuts, (EmulationShortcutDefaults.ToggleFullscreen, EmulationResourceKeys.Fullscreen), (EmulationShortcutDefaults.ReleaseMouse, EmulationResourceKeys.ReleaseMouse));
-        right.Children.Add(displayShortcuts);
-        if (actions.OpenCoreOptions is not null)
-            right.Children.Add(MachineView.CreateToolbarGroup(Command(MachineCommandId.CoreOptions, MachineCommandGlyphConstants.CoreOptions, "Emulation.Core.NameOptions", actions.OpenCoreOptions, showError)));
+        if (actions.OpenSettings is not null)
+            right.Children.Add(MachineView.CreateToolbarGroup(Command(MachineCommandId.CoreOptions, MachineCommandGlyphConstants.CoreOptions, EmulationResourceKeys.MachineSettings, actions.OpenSettings, showError, false)));
         _audio = Command(MachineCommandId.Audio, MachineCommandGlyphConstants.Audio, EmulationResourceKeys.Audio, actions.ToggleAudio, showError);
         var statusItems = new List<UIElement> { _audio };
         if (actions.SwitchControllerPointer is not null)
@@ -77,12 +74,11 @@ internal sealed class MachineCommandBar
         }
         ControllerStatus = StatusIcon(MachineCommandGlyphConstants.Controller);
         PointerStatus = StatusIcon(MachineCommandGlyphConstants.Pointer);
+        PointerStatus.ToolTip = Tooltip(EmulationResourceKeys.ReleaseMouse, EmulationShortcutDefaults.ReleaseMouse);
         statusItems.Add(ControllerStatus);
         statusItems.Add(PointerStatus);
         right.Children.Add(MachineView.CreateToolbarGroup(statusItems.ToArray()));
-        Status = new TextBlock { VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap,
-            MaxWidth = MachinePresentationConstants.StatusMaximumWidth };
-        right.Children.Add(MachineView.CreateToolbarGroup(Status));
+        Status = new TextBlock { VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
         DockPanel.SetDock(right, Dock.Right);
         host.Children.Add(right);
 
@@ -99,18 +95,14 @@ internal sealed class MachineCommandBar
             Margin = new Thickness(4, 0, 6, 0),
             VerticalAlignment = VerticalAlignment.Center
         }, RendererStatus);
-        rendererGroup.Padding = new Thickness(16, 1, 16, 1);
+        rendererGroup.Padding = new Thickness(MachinePresentationConstants.RendererPadding, 1, MachinePresentationConstants.RendererPadding, 1);
         rendererGroup.Margin = new Thickness(8, 1, 8, 1);
-        host.Children.Add(rendererGroup);
+        rendererGroup.HorizontalAlignment = HorizontalAlignment.Center;
+        var rendererHost = new Grid();
+        rendererHost.Children.Add(rendererGroup);
+        host.Children.Add(rendererHost);
         Presentation = new(new System.Collections.ObjectModel.ReadOnlyDictionary<MachineCommandId, Button>(_commandsById),
             Status, RendererStatus, ControllerStatus, PointerStatus);
-        _resize = (_, args) =>
-        {
-            var visibility = args.NewSize.Width >= MachinePresentationConstants.WideToolbarMinimumWidth ? Visibility.Visible : Visibility.Collapsed;
-            stateShortcuts.Visibility = visibility;
-            displayShortcuts.Visibility = visibility;
-        };
-        host.SizeChanged += _resize;
     }
 
     internal void Rehost(DockPanel host)
@@ -119,7 +111,6 @@ internal sealed class MachineCommandBar
         if (host.Children.Count != 0) throw new InvalidOperationException(nameof(host));
         var previous = _host;
         var children = previous.Children.Cast<UIElement>().ToArray();
-        previous.SizeChanged -= _resize;
         previous.Children.Clear();
         try
         {
@@ -132,7 +123,6 @@ internal sealed class MachineCommandBar
             foreach (var child in children) previous.Children.Add(child);
             throw;
         }
-        finally { _host.SizeChanged += _resize; }
     }
 
     internal TextBlock Status { get; }
@@ -200,12 +190,33 @@ internal sealed class MachineCommandBar
 
     private Button Command(MachineCommandId id, string glyph, string tooltipResource, Func<Task> action, Action<Exception> showError, bool requiresPower = true)
     {
-        var button = MachineView.CreateCommandButton(glyph, LocExtension.Get(tooltipResource));
+        var shortcut = id switch
+        {
+            MachineCommandId.Power => EmulationShortcutDefaults.Power,
+            MachineCommandId.PauseResume => EmulationShortcutDefaults.PauseResume,
+            MachineCommandId.SoftReset => EmulationShortcutDefaults.SoftReset,
+            MachineCommandId.HardReset => EmulationShortcutDefaults.HardReset,
+            MachineCommandId.QuickSave => EmulationShortcutDefaults.QuickSave,
+            MachineCommandId.QuickLoad => EmulationShortcutDefaults.QuickLoad,
+            MachineCommandId.CaptureScreen => EmulationShortcutDefaults.Screenshot,
+            MachineCommandId.Fullscreen => EmulationShortcutDefaults.ToggleFullscreen,
+            MachineCommandId.Audio => EmulationShortcutDefaults.ToggleMute,
+            MachineCommandId.CoreOptions => EmulationShortcutDefaults.OpenSettings,
+            _ => null
+        };
+        var button = MachineView.CreateCommandButton(glyph, Tooltip(tooltipResource, shortcut));
         button.Tag = false;
         _commandsById.Add(id, button);
         button.Click += async (_, _) => await RunAsync(action, showError);
         if (requiresPower) _requiresPower.Add(button);
         return button;
+    }
+
+    private string Tooltip(string resource, string? shortcut)
+    {
+        var label = LocExtension.Get(resource);
+        var binding = shortcut is null ? string.Empty : EmulationShortcutViewFunctions.ResolveShortcutText(_shortcuts, shortcut);
+        return string.IsNullOrEmpty(binding) ? label : string.Concat(label, Environment.NewLine, binding);
     }
 
     private static TextBlock StatusIcon(string glyph) => new()

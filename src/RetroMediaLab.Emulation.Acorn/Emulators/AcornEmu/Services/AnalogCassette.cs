@@ -24,6 +24,7 @@ internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = 
     private long _latency;
     private EmulationCassetteCommand? _operation;
     private EmulationCassetteState _state = EmulationCassetteState.Empty;
+    public event Action? ActivityChanged;
 
     internal bool InputBit { get; private set; } = true;
     internal bool InputPresent => _latency == 0 && _state == EmulationCassetteState.Playing && _hasLevel;
@@ -102,6 +103,7 @@ internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = 
         _outputBit = false;
         _outputLevel = false;
         InputBit = true;
+        ActivityChanged?.Invoke();
     }
 
     internal void SetOutputBit(bool value)
@@ -148,6 +150,7 @@ internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = 
                 Seek((_signal!.BlockPositions ?? []).Where(value => value > _position).DefaultIfEmpty(Length).Min(), command);
                 break;
         }
+        ActivityChanged?.Invoke();
     }
 
     internal void Tick(bool motorEnabled = true)
@@ -242,6 +245,7 @@ internal sealed class AnalogCassette(int clock, CassetteSignalMode signalMode = 
         _edgeTicks = 0;
         _hasLevel = false;
         InputBit = true;
+        ActivityChanged?.Invoke();
     }
     bool RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronCassettePins.InputPresent =>
         _latency == 0 && _state == EmulationCassetteState.Playing;

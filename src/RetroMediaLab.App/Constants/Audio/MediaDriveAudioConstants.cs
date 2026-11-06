@@ -12,6 +12,12 @@ internal static class MediaDriveAudioConstants
     /// <summary>Nombre de trames mono produites pour un fragment.</summary>
     internal const int FramesPerChunk = SampleRate * ChunkMilliseconds / (int)System.TimeSpan.MillisecondsPerSecond;
 
+    /// <summary>Réserve de PCM couvrant les prélèvements de la sortie et les réveils du producteur.</summary>
+    internal const int TargetBufferedFrames = FramesPerChunk * 4;
+
+    /// <summary>Attente maximale avant de réapprovisionner une sortie dont le tampon est rempli.</summary>
+    internal const int RefillMilliseconds = ChunkMilliseconds / 2;
+
     /// <summary>Attente maximale de la fin du tampon après la dernière activité, en millisecondes.</summary>
     internal const int MaximumDrainMilliseconds = 1000;
 }

@@ -15,6 +15,7 @@ internal sealed class TurboBoard : ICpuBus
     private readonly byte[] _rom;
     private readonly Cpu65C102 _cpu;
     private bool _romMapped;
+    private bool _resetHeld;
     private long _target;
     public bool Irq => _tube.ParasiteIrq;
     public bool Nmi => _tube.ParasiteNmi;
@@ -24,14 +25,16 @@ internal sealed class TurboBoard : ICpuBus
         _tube = tube; _rom = rom.ToArray(); _cpu = new Cpu65C102(this, Model.CpuFrequency * C.TurboCyclesPerHostCycle);
         _tube.ParasiteIrqChanged = _cpu.SetIrq;
         _tube.ParasiteNmiChanged = _cpu.SetNmi;
+        _tube.ParasiteResetChanged = asserted => _resetHeld = asserted;
         _cpu.SetIrq(_tube.ParasiteIrq);
         _cpu.SetNmi(_tube.ParasiteNmi);
+        _resetHeld = _tube.ResetHeld;
         Reset();
     }
     internal void Reset() { _romMapped = true; _cpu.Reset(); _target = _cpu.Cycles; }
     internal void RunHostCycle()
     {
-        if (_tube.ResetHeld) { _target = _cpu.Cycles; return; }
+        if (_resetHeld) { _target = _cpu.Cycles; return; }
         _target += C.TurboCyclesPerHostCycle;
         while (_cpu.Cycles < _target) _cpu.Clock();
     }

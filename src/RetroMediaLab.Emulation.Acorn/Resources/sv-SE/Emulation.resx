@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Flytande-punkt förlängning ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Utility ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Disk operativsystem ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} i bank {1} är inte kompatibelt med minnesexpansionskortet {2}. Kontrollera ROM Uppdrag i maskininställningarna.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM Bankbank Bank Bank {0} är redan ockuperat av en annan ROM. Kontrollera ROM Uppdrag för minnesexpansionskortet {1}.</value></data>
 </root>

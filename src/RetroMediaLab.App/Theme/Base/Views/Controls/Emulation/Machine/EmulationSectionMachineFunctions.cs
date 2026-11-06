@@ -6,6 +6,8 @@ using RetroMediaLab.App.Functions.Emulation.Shortcuts;
 using RetroMediaLab.App.Functions.Emulation.Machine;
 using RetroMediaLab.App.Presenters.Common;
 using RetroMediaLab.App.Services.Audio;
+using RetroMediaLab.App.Services.Windows;
+using RetroMediaLab.App.Views.Windows.EmulationModuleOptions;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -39,7 +41,17 @@ public sealed partial class EmulationSection
             runtime.PrepareMediaAsync,
             null,
             PersistRuntimeOptionsAsync,
-            PersistMountedMedia: PersistMountedMediaAsync));
+            PersistMountedMedia: PersistMountedMediaAsync,
+            OpenSettings: OpenSettingsAsync));
+        async Task OpenSettingsAsync()
+        {
+            var configuration = (await selected.Module.LoadConfigurationsAsync()).FirstOrDefault(item => item.Id == selected.Configuration.Id) ?? selected.Configuration;
+            var dialog = new EmulationModuleOptionsWindow(selected.Module, initialConfiguration: configuration,
+                reservedBindings: _settings.EmulationShortcuts.Values);
+            try { WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), dialog); }
+            finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
+        }
+
         async Task PersistMountedMediaAsync(IReadOnlyList<EmulationMedia> media)
         {
             if (selected.Module is not IEmulationStorageSettingsManager storage) return;

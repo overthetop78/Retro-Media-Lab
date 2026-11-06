@@ -12,6 +12,29 @@ public sealed partial class MediaDriveMechanics
         ArgumentOutOfRangeException.ThrowIfNegative(sampleCount);
         lock (_sync)
         {
+            if (_device == C.Cassette)
+            {
+                var tape = new short[sampleCount];
+                if (!_soundEnabled) return tape;
+                var position = 0;
+                while (_events.TryPeek(out var action) && position < sampleCount)
+                {
+                    var frames = (long)Math.Ceiling(sampleRate * MechanicalSoundFunctions.Duration(_device, _profile, action.Operation));
+                    var count = (int)Math.Min(sampleCount - position, Math.Max(0, frames - _eventOffset));
+                    MechanicalSoundFunctions.Render(_device, action.Operation, sampleRate, count, _eventOffset, _profile, _volumePercent)
+                        .CopyTo(tape, position);
+                    position += count;
+                    _eventOffset += count;
+                    if (_eventOffset >= frames) { _events.Dequeue(); _eventOffset = 0; }
+                }
+                if (_tapeOperation != C.None && position < sampleCount)
+                {
+                    MechanicalSoundFunctions.Render(_device, _tapeOperation, sampleRate, sampleCount - position, _tapeOffset, _profile, _volumePercent)
+                        .CopyTo(tape, position);
+                    _tapeOffset += sampleCount - position;
+                }
+                return tape;
+            }
             var mixed = new double[sampleCount];
             if (!_soundEnabled) return new short[sampleCount];
             var destination = 0;

@@ -8,4 +8,10 @@ internal sealed record MachineCommandPresentation(
     TextBlock Status,
     TextBlock RendererStatus,
     TextBlock ControllerStatus,
-    TextBlock PointerStatus);
+    TextBlock PointerStatus)
+{
+    internal TextBlock SizeStatus { get; } = new();
+    internal TextBlock FpsStatus { get; } = new();
+    internal TextBlock FrequencyStatus { get; } = new();
+    internal TextBlock ExecutionStatus { get; } = new();
+}

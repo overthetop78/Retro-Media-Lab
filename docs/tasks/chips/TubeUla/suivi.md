@@ -1,0 +1,13 @@
+# Tube ULA — réalisation complète du composant et de ses raccordements
+
+- [ ] Terminer la Tube ULA utilisée par les cartes Master Turbo et Master 512.
+  - [ ] Corriger le composant à partir de la spécification électrique et des registres Acorn.
+    - [x] Créer `docs/chips/IO/TubeUla.md` avec les écarts constatés dans `TubeUla.cs`, les références AN004, les entrées d'horloge/strobes réellement présentes et les vérifications attendues ; distinguer le fonctionnement asynchrone du Tube des oscillateurs des CPU.
+    - [x] Modifier `src/RetroMediaLab.Chips/IO/Acorn/Tube/ULA/Constants/TubeConstants.cs`, `Interfaces/ITubeUla.cs` et `Services/TubeUla.cs` : conserver T jusqu'à son effacement, traiter HRST/PRST, les indicateurs et requêtes R3 persistants, les notifications IRQ/NMI/DRQ/RESET au changement ; conserver les capacités de stockage et les valeurs sans accès périodique.
+    - [x] Créer `Services/TubeUla.Bus.cs` avec les entrées mémorisées HPHI2, CS, R/W et strobes parasites, la validation des transferts au front requis et l'accès DMA R3 indépendant de l'adresse normale ; conserver les méthodes de transaction utilisées par les cartes.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMaster/Tube/Services/TurboBoard.cs` et `Master512Board.cs` : raccorder directement les changements RESET/IRQ/DRQ au récepteur, retirer leurs lectures répétées du Tube dans `RunHostCycle`, sans changer le rapport des fréquences ni le traitement interne des CPU.
+  - [ ] Vérifier le bloc entier et le livrer.
+    - [x] Créer `tests/RetroMediaLab.Chips.Tests/IO/Acorn/Tube/ULA/TubeRegisterTests.cs` et `TubeBusTests.cs` : capacités, ordre, masques S/T/P/V/M/J/I/Q, RESET maintenu, transferts R3 simples/doubles et interruptions combinées, notifications, fronts de bus et DMA ; conserver les régressions Tube et Master existantes.
+    - [x] Modifier `docs/chips/IO/TubeUla.md` avec les résultats des tests de registres/bus, les comparaisons complètes déjà obtenues et leurs limites ; privilégier désormais Debug et réserver Release à la validation finale, conformément à la demande utilisateur.
+    - [ ] Créer puis supprimer un banc externe temporaire sous `artifacts/.tmp-tube/` pour les ROM et logiciels Master Turbo/512, les cycles et performances Debug ; conserver uniquement les captures réelles sous `artifacts/TestsChips/TubeUla/<Machine>/`, libérer dans `finally` toutes les ressources possédées et restaurer les paramètres temporaires.
+    - [ ] Modifier `docs/chips/IO/TubeUla.md` et ce suivi avec les résultats réels, les limites et la livraison Debug All ; committer la Tube ULA séparément après sa validation.

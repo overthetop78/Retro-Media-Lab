@@ -86,6 +86,8 @@ public partial class MainWindow : Window
         RegisterName(nameof(HardwareSelector), HardwareSelector);
     }
 
+    private void ConnectConsoleNotifications() => _terminalPanel.UnreadSeverityChanged += StatusBarBlock.SetConsoleNotification;
+
     private void ConnectReadComponents()
     {
         RawScpRadio.Checked += (_, _) => _readTab.ModeChanged();

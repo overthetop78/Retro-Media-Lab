@@ -78,5 +78,7 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>ROM de calcul en virgule flottante</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>ROM utilitaire</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>ROM DOS</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>La ROM « {0} » de la banque {1} est incompatible avec la carte d’extension mémoire {2}. Vérifiez l’affectation des ROM dans les paramètres de la machine.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>La banque ROM {0} est déjà occupée par une autre ROM. Vérifiez l’affectation des ROM de la carte d’extension mémoire {1}.</value></data>
 </root>
 

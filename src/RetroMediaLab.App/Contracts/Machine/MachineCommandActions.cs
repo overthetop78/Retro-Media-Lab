@@ -11,4 +11,4 @@ internal sealed record MachineCommandActions(
     Func<Task> ToggleFullscreen,
     Func<Task> ToggleAudio,
     Func<Task>? SwitchControllerPointer = null,
-    Func<Task>? OpenCoreOptions = null);
+    Func<Task>? OpenSettings = null);

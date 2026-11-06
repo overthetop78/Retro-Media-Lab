@@ -19,10 +19,16 @@ public sealed partial class BbcSerialUla
         }
         FlushPendingClock();
         ClockInputs(_transmitInput, _requestToSendInput);
-        // Un séparateur actif exige encore chaque mesure de demi-onde. Le
-        // diviseur unitaire produit des fronts trop denses pour un intervalle.
-        _clockCountdown = !_separatorActive && _transmitDivider > 1
+        // Une entrée mémorisée reste constante jusqu'à sa notification. Les
+        // compteurs du séparateur peuvent avancer jusqu'à leur première échéance.
+        _clockCountdown = _transmitDivider > 1
             && (!_rs423Selected || _receiveDivider > 1) ? NextClockDistance() : 0;
+        if (_separatorActive && _clockCountdown > 1)
+        {
+            var separator = _edgeTicks <= _silenceTicks ? _silenceTicks - _edgeTicks + 1 : int.MaxValue;
+            if (_carrierPulse > 0 && _carrierPulse < separator) separator = _carrierPulse;
+            if (separator < _clockCountdown) _clockCountdown = separator;
+        }
     }
 
     /// <summary>Chemin unitaire, avec présentation des entrées pour ce front seulement.</summary>
@@ -55,6 +61,12 @@ public sealed partial class BbcSerialUla
         _dividerCounter = (int)((_dividerCounter + phase / _clockDenominator) & C.DividerCounterMask);
         _sourcePhase = phase % _clockDenominator;
         _synthesisPhase += (long)_pendingClockTicks * C.MasterClock * C.SynthesisSteps;
+        if (_separatorActive)
+        {
+            if (_edgeTicks <= _silenceTicks)
+                _edgeTicks = Math.Min(_silenceTicks + 1, _edgeTicks + _pendingClockTicks);
+            if (_carrierPulse > 0) _carrierPulse -= _pendingClockTicks;
+        }
         _pendingClockTicks = 0;
     }
 }

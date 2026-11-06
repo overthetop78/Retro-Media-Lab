@@ -88,7 +88,7 @@ internal static class SessionLifecycleScenarios
             factoryCalls++;
             Assert.Equal(Disk, Assert.Single(media));
             return updated.Value;
-        }, [new EmulationMediaDevice(Disk.Slot, Disk.Type, [])]);
+        }, [new EmulationMediaDevice(Disk.Slot, Disk.Type, [])], [Disk]);
 
         if (powered)
         {
@@ -123,7 +123,7 @@ internal static class SessionLifecycleScenarios
         {
             supplied = media.ToArray();
             return updated.Value;
-        }, devices);
+        }, devices, [Disk, retained]);
 
         Assert.Equal(retained, Assert.Single(session.MountedMedia));
         Assert.Same(original.Value, session.Machine);

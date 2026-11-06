@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Επέκταση κινητής υποδιαστολής ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Βοηθητικότητα ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Λειτουργικό σύστημα δίσκου ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} σε τράπεζα {1} δεν είναι συμβατό με την κάρτα επέκτασης μνήμης {2}. Ελέγξτε το ROM εργασίες στις ρυθμίσεις του μηχανήματος.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM τράπεζα {0} είναι ήδη κατειλημμένο από άλλο ROM. Ελέγξτε το ROM εκχωρήσεις για την κάρτα επέκτασης μνήμης {1}.</value></data>
 </root>

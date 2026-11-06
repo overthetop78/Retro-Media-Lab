@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums;
 using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 using ChipConstants = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Constants.Wd1770Constants;
@@ -7,7 +7,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.Wd1770Drive
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
 
 /// <summary>Câblage des lecteurs aux broches WD1770/1772. Les médias restent empruntés à la machine.</summary>
-internal sealed class Wd1770Drive
+internal sealed partial class Wd1770Drive
 {
     private static readonly IReadOnlyDictionary<string, int> FmAttributes = new Dictionary<string, int>
         { [C.FmPhysicalLayout] = C.PhysicalLayoutEnabled };

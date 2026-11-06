@@ -5,6 +5,7 @@ namespace RetroMediaLab.Emulation.Acorn.Common.Interfaces;
 /// le cœur possède le lecteur et son signal, tandis que la session possède le thread d'exécution.</remarks>
 internal interface IEmulatorCassetteTransport
 {
+    event Action? ActivityChanged;
     EmulationCassetteState CassetteState { get; }
     bool CassetteActive { get; }
     EmulationCassetteCommand? CassetteOperation { get; }

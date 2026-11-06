@@ -22,6 +22,8 @@ public sealed partial class MediaDriveMechanics : IMediaDriveMechanics
     private int _activeOperations;
     private int _activeAccesses;
     private bool _stopAfterAccess;
+    private string _tapeOperation = C.None;
+    private long _tapeOffset;
 
     /// <summary>Notifie le propriétaire audio après une nouvelle activité mécanique.</summary>
     public event Action<IMediaDriveMechanics>? AudioAvailable;
@@ -38,7 +40,32 @@ public sealed partial class MediaDriveMechanics : IMediaDriveMechanics
     public MediaDriveState State { get { lock (_sync) return _state; } }
 
     /// <inheritdoc/>
-    public bool HasPendingAudio { get { lock (_sync) return _soundEnabled && (_events.Count > 0 || _seekVoices.Count > 0 || _audibleMotor || _state.MotorRunning); } }
+    public bool HasPendingAudio { get { lock (_sync) return _soundEnabled && (_tapeOperation != C.None || _events.Count > 0 || _seekVoices.Count > 0 || _audibleMotor || _state.MotorRunning); } }
+
+    /// <inheritdoc/>
+    public void SetTapeOperation(string operation)
+    {
+        if (_device != C.Cassette) throw new InvalidOperationException();
+        if (operation is not (C.None or C.Insert or C.Eject or C.Stop or C.Pause or C.Play or C.Record or C.FastForward or C.Rewind))
+            throw new ArgumentOutOfRangeException(nameof(operation));
+        lock (_sync)
+        {
+            if (operation is C.Play or C.Record or C.FastForward or C.Rewind)
+            {
+                if (_tapeOperation == operation) return;
+                _tapeOperation = operation;
+                _tapeOffset = 0;
+            }
+            else
+            {
+                if (operation is not (C.Insert or C.Pause)) { _tapeOperation = C.None; _tapeOffset = 0; }
+                _events.Clear();
+                _eventOffset = 0;
+                if (operation != C.None) Enqueue(new(operation));
+            }
+        }
+        NotifyAudio();
+    }
 
     /// <inheritdoc/>
     public bool IsInUse { get { lock (_sync) return _activeOperations > 0 || _activeAccesses > 0 || _state.Reading || _state.Writing; } }
@@ -234,6 +261,8 @@ public sealed partial class MediaDriveMechanics : IMediaDriveMechanics
 
     private void ClearAudio()
     {
+        _tapeOperation = C.None;
+        _tapeOffset = 0;
         _events.Clear();
         _seekVoices.Clear();
         _audibleMotor = false;

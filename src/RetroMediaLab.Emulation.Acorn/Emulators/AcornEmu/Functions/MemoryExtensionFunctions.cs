@@ -81,8 +81,11 @@ internal static class MemoryExtensionFunctions
         var known = AcornFirmware.BySha1.GetValueOrDefault(Convert.ToHexString(SHA1.HashData(rom.AsSpan(0, rom.Length / 2))))
             ?? AcornFirmware.BySha1.GetValueOrDefault(Convert.ToHexString(SHA1.HashData(rom)));
         if (known is not null && (known.Category != FirmwareCategory.MemoryExtension || known.Name != settings.FirmwareName))
-            throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
+            throw new EmulationException(ErrorCategory.Firmware, ErrorCode.FirmwareInvalid,
+                ExceptionText.Get(C.FirmwareMismatch, known.Name, FirmwareBank(configuration), settings.FirmwareName), isLocalized: true);
         if (SidewaysExpansionFunctions.ProvidesBank(configuration, FirmwareBank(configuration))) { banks[FirmwareBank(configuration)] = rom; return; }
-        if (!banks.TryAdd(FirmwareBank(configuration), rom)) throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(banks));
+        if (!banks.TryAdd(FirmwareBank(configuration), rom))
+            throw new EmulationException(ErrorCategory.Firmware, ErrorCode.FirmwareInvalid,
+                ExceptionText.Get(C.FirmwareBankOccupied, FirmwareBank(configuration), settings.FirmwareName), isLocalized: true);
     }
 }

@@ -90,7 +90,11 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public EmulationMachineState State { get; private set; } = EmulationMachineState.Created;
     public VideoFrame? LatestVideoFrame => _core.LatestVideoFrame;
     public AudioChunk? LatestAudioChunk => _core.LatestAudioChunk;
-    public IReadOnlyList<CoreOption> AvailableOptions => _core.Options;
+    public IReadOnlyList<CoreOption> AvailableOptions => [.. _core.Options,
+        new(VideoAudioSettingsConstants.AudioVolumeOption, SettingsConstants.ResourceAudioVolume, null, null,
+            EmulationSettingConstants.DefaultAudioVolumePercent.ToString(CultureInfo.InvariantCulture),
+            Math.Round(_audio.Volume * EmulationSettingConstants.DefaultAudioVolumePercent).ToString(CultureInfo.InvariantCulture),
+            [], IsVisible: false, ResourceKey: SettingsConstants.ResourceAudioVolume, Tab: EmulationMachineTab.Audio)];
     public IReadOnlyDictionary<int, bool> LedStates => _core.LedStates;
     public string CoreName => _core.CoreName;
     public string CoreVersion => _core.CoreVersion;

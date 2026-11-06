@@ -6,4 +6,5 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Machine.Open"><value>Άνοιγμα</value></data>
   <data name="Emulation.Machine.Model" xml:space="preserve"><value>Μοντέλο</value></data>
+  <data name="Emulation.Machine.Settings"><value>⁇  μηχανής</value></data>
 </root>

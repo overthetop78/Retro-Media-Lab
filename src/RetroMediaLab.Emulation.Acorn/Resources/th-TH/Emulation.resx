@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>ส่วนขยายการไล่ระดับสี ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>ความจุ ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>ระบบปฏิบัติการของดิสก์ ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} ในธนาคาร {1} ไม่สามารถเข้ากันได้กับการ์ดขยายหน่วยความจํา {2}. เช็ค ROM ได้รับมอบหมายให้ติดตั้งเครื่อง</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM ธนาคาร {0} มีคนอื่นอยู่เรียบร้อยแล้ว ROM. เช็ค ROM การบ้านสําหรับขยายหน่วยความจํา {1}.</value></data>
 </root>

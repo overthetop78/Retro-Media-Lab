@@ -2,6 +2,7 @@ using RetroMediaLab.Infrastructure.Settings;
 using RetroMediaLab.Infrastructure.Settings.Window;
 using RetroMediaLab.App.Views.Controls.Shell;
 using System.IO;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -18,6 +19,8 @@ public sealed class TerminalPanelController
     private readonly GridSplitter splitter;
     private readonly Func<AppSettings> settings;
     private int selectedTab;
+    public TraceEventType? UnreadSeverity { get; private set; }
+    public event Action<TraceEventType?>? UnreadSeverityChanged;
 
     public TerminalPanelController(TerminalSection terminal, RowDefinition terminalRow, GridSplitter splitter, Func<AppSettings> settings)
     {
@@ -39,11 +42,11 @@ public sealed class TerminalPanelController
 
     public Task ExportAsync(string path) => File.WriteAllTextAsync(path, GetCompleteText());
 
-    public void AppendError(string entry) => AppendEntry(entry, Brushes.IndianRed);
+    public void AppendError(string entry) => AppendEntry(entry, Brushes.IndianRed, TraceEventType.Error);
 
-    public void AppendWarning(string entry) => AppendEntry(entry, Brushes.DarkOrange);
+    public void AppendWarning(string entry) => AppendEntry(entry, Brushes.DarkOrange, TraceEventType.Warning);
 
-    private void AppendEntry(string entry, Brush foreground)
+    private void AppendEntry(string entry, Brush foreground, TraceEventType severity)
     {
         if (!string.IsNullOrEmpty(terminal.OutputText)
             && !terminal.OutputText.EndsWith(Environment.NewLine, StringComparison.Ordinal))
@@ -55,7 +58,11 @@ public sealed class TerminalPanelController
         }
         paragraph.Inlines.Add(new Run(entry) { Foreground = foreground });
         terminal.OutputTextBox.ScrollToEnd();
-        SetVisibility(true);
+        if (!IsVisible && UnreadSeverity != TraceEventType.Error && UnreadSeverity != severity)
+        {
+            UnreadSeverity = severity;
+            UnreadSeverityChanged?.Invoke(severity);
+        }
     }
 
     public void Toggle() => SetVisibility(!IsVisible);
@@ -71,6 +78,7 @@ public sealed class TerminalPanelController
         terminal.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         splitter.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         terminalRow.Height = visible ? new GridLength(Math.Max(100, state.Height)) : new GridLength(0);
+        if (visible) Acknowledge();
     }
 
     public void SelectTab(int tabIndex)
@@ -82,6 +90,14 @@ public sealed class TerminalPanelController
         terminal.Visibility = state.Expanded ? Visibility.Visible : Visibility.Collapsed;
         splitter.Visibility = state.Expanded ? Visibility.Visible : Visibility.Collapsed;
         terminalRow.Height = state.Expanded ? new GridLength(Math.Max(100, state.Height)) : new GridLength(0);
+        if (state.Expanded) Acknowledge();
+    }
+
+    private void Acknowledge()
+    {
+        if (UnreadSeverity is null) return;
+        UnreadSeverity = null;
+        UnreadSeverityChanged?.Invoke(null);
     }
 
     public void CaptureCurrent()

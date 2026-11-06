@@ -1,5 +1,6 @@
 using CommonCoreHostFunctions = RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions;
 using System.Diagnostics;
+using PublicMessageException = RetroMediaLab.Emulation.Exceptions.EmulationMessageException;
 
 namespace RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Functions;
 
@@ -37,6 +38,10 @@ internal static class MessageFunctions
         var context = new EmulationMachineMessageContext(configuration.MachineId);
         if (error is not EmulationException coreError)
             return CommonCoreHostFunctions.Messages.Translate(error, EmulationMessageCategory.Machine, EmulationMessageCode.MachineStartFailed, context);
+        if (coreError.Category == ErrorCategory.Firmware || coreError.Code is ErrorCode.OptionInvalid or ErrorCode.ContentNotFound or ErrorCode.ContentUnsupported)
+            return new PublicMessageException(new EmulationMessage(Category(coreError.Category), MessageCode(coreError.Code),
+                EmulationMessageSeverity.Warning, EmulationMessageTarget.Dialog, context,
+                coreError.IsLocalized ? coreError.Message : null), error);
         if (coreError.IsLocalized)
             return CommonCoreHostFunctions.Messages.TranslateLocalized(error, Category(coreError.Category), context);
         if (coreError.Code == ErrorCode.ContentRequired)

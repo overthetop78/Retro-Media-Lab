@@ -1,4 +1,7 @@
 using RetroMediaLab.App.Constants.Localization;
+using RetroMediaLab.App.Constants.Machine;
+using RetroMediaLab.App.Functions.Emulation.Shortcuts;
+using RetroMediaLab.Infrastructure.Settings.Emulation;
 using RetroMediaLab.App.Contracts.Machine;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Logging;
@@ -7,6 +10,7 @@ using RetroMediaLab.App.Views.Controls.Emulation.Machine;
 using RetroMediaLab.App.Views.Controls.Shell;
 using RetroMediaLab.Infrastructure.Settings;
 using System.IO;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -19,6 +23,10 @@ internal static class EmulationInteractionScenarios
         var terminal = new TerminalSection();
         var settings = new AppSettings();
         var controller = new TerminalPanelController(terminal, new RowDefinition(), new GridSplitter(), () => settings);
+        controller.SetVisibility(false);
+        controller.AppendWarning("synthetic warning");
+        Assert.False(controller.IsVisible);
+        Assert.Equal(TraceEventType.Warning, controller.UnreadSeverity);
         Action<string> append = controller.AppendError;
         ErrorLog.EntryWritten += append;
         try
@@ -30,7 +38,15 @@ internal static class EmulationInteractionScenarios
             Assert.Contains("Atari ST - starting emulation", output, StringComparison.Ordinal);
             Assert.Contains(error.ToString(), output, StringComparison.Ordinal);
             Assert.Equal(1, output.Split("synthetic emulation failure", StringSplitOptions.None).Length - 1);
+            Assert.False(controller.IsVisible);
+            Assert.Equal(TraceEventType.Error, controller.UnreadSeverity);
+            controller.AppendWarning("another warning");
+            Assert.Equal(TraceEventType.Error, controller.UnreadSeverity);
+            controller.Toggle();
             Assert.True(controller.IsVisible);
+            Assert.Null(controller.UnreadSeverity);
+            controller.AppendError("already visible");
+            Assert.Null(controller.UnreadSeverity);
 
             ErrorLog.EntryWritten -= append;
             Assert.NotNull(ErrorLog.Write(new InvalidOperationException("after detach"), "detached", directory));
@@ -78,7 +94,12 @@ internal static class EmulationInteractionScenarios
     {
         var host = new DockPanel(); var calls = new List<int>(); var errors = new List<Exception>(); var restored = 0;
         Func<Task> Command(int index) => () => { calls.Add(index); return failure ? Task.FromException(new IOException("synthetic command")) : Task.CompletedTask; };
-        var bar = new MachineCommandBar(host,new(Command(0),Command(1),Command(2),Command(3),Command(4),Command(5),Command(6),Command(7),Command(8),Command(9)),[],errors.Add,() => restored++);
+        var shortcuts = EmulationShortcutMap.GlobalShortcuts(new Dictionary<string, string>
+        {
+            [EmulationShortcutDefaults.QuickSave] = "Ctrl+F6",
+            [EmulationShortcutDefaults.OpenSettings] = "F8"
+        });
+        var bar = new MachineCommandBar(host,new(Command(0),Command(1),Command(2),Command(3),Command(4),Command(5),Command(6),Command(7),Command(8),Command(9),Command(10)),shortcuts,errors.Add,() => restored++);
         var keys = new[] {EmulationResourceKeys.Power,
             EmulationResourceKeys.PauseResume,
             EmulationResourceKeys.SoftReset,
@@ -88,15 +109,20 @@ internal static class EmulationInteractionScenarios
             EmulationResourceKeys.CaptureScreen,
             EmulationResourceKeys.Fullscreen,
             EmulationResourceKeys.Audio,
-            EmulationResourceKeys.SwitchControllerPointer};
-        Button Find(string key) => MachineConfigurationScenarios.Controls<Button>(host).Single(x => Equals(x.ToolTip,LocExtension.Get(key)));
+            EmulationResourceKeys.SwitchControllerPointer,
+            EmulationResourceKeys.MachineSettings};
+        Button Find(string key) => MachineConfigurationScenarios.Controls<Button>(host).Single(x => x.ToolTip is string tip && tip.Split(Environment.NewLine)[0] == LocExtension.Get(key));
+        Assert.EndsWith("Ctrl+F6", (string)Find(EmulationResourceKeys.QuickSave).ToolTip, StringComparison.Ordinal);
+        Assert.EndsWith("F8", (string)Find(EmulationResourceKeys.MachineSettings).ToolTip, StringComparison.Ordinal);
+        Assert.True(ToolTipService.GetShowOnDisabled(Find(EmulationResourceKeys.QuickLoad)));
+        Assert.DoesNotContain(MachineConfigurationScenarios.Controls<TextBlock>(host), block => block.Text == LocExtension.Get(EmulationResourceKeys.QuickSave));
         bar.SetPowered(false);
-        foreach(var key in keys) Assert.Equal(key == EmulationResourceKeys.Power || key == EmulationResourceKeys.Fullscreen,Find(key).IsEnabled);
+        foreach(var key in keys) Assert.Equal(key == EmulationResourceKeys.Power || key == EmulationResourceKeys.Fullscreen || key == EmulationResourceKeys.MachineSettings,Find(key).IsEnabled);
         bar.SetPowered(true); bar.SetSavedStateAvailability(true,false);
         Assert.True(Find(EmulationResourceKeys.QuickSave).IsEnabled); Assert.False(Find(EmulationResourceKeys.QuickLoad).IsEnabled);
         bar.SetSavedStateAvailability(true,true); Assert.True(Find(EmulationResourceKeys.QuickLoad).IsEnabled);
         foreach(var key in keys) Find(key).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-        Assert.Equal(Enumerable.Range(0,10),calls); Assert.Equal(10,restored); Assert.Equal(failure?10:0,errors.Count);
+        Assert.Equal(Enumerable.Range(0,11),calls); Assert.Equal(11,restored); Assert.Equal(failure?11:0,errors.Count);
         var pause = Assert.IsType<TextBlock>(Find(EmulationResourceKeys.PauseResume).Content); var previous = pause.Text;
         bar.SetPaused(true); Assert.NotEqual(previous,pause.Text); bar.SetPaused(false); Assert.Equal(previous,pause.Text);
         bar.SetInputStatus(true,false);
@@ -106,5 +132,28 @@ internal static class EmulationInteractionScenarios
         Assert.Equal(LocExtension.Get("Emulation.Value.Disabled"),AutomationProperties.GetItemStatus(bar.PointerStatus));
         Assert.Equal(LocExtension.Get("Emulation.Value.Enabled"),AutomationProperties.GetItemStatus(bar.ControllerStatus));
         bar.SetPowered(false); Assert.False(Find(EmulationResourceKeys.QuickSave).IsEnabled); Assert.False(Find(EmulationResourceKeys.QuickLoad).IsEnabled);
+        using var view = new MachineView();
+        view.AttachCommands(bar.Presentation);
+        var overlay = Assert.IsType<Border>(view.DisplayHost.Children[1]);
+        Assert.Equal(MachinePresentationConstants.StatusMaximumWidth, overlay.Width);
+        Assert.Equal(MachinePresentationConstants.StatusOverlayHeight, overlay.Height);
+        Assert.False(overlay.IsHitTestVisible);
+        Assert.Equal(HorizontalAlignment.Right, overlay.HorizontalAlignment);
+        Assert.Equal(VerticalAlignment.Top, overlay.VerticalAlignment);
+        Assert.Equal(overlay.Width, overlay.Height);
+        var rows = Assert.IsType<StackPanel>(overlay.Child);
+        Assert.Equal(4, rows.Children.Count);
+        var sources = new[] { bar.Presentation.SizeStatus, bar.Presentation.FpsStatus, bar.Presentation.FrequencyStatus, bar.Presentation.ExecutionStatus };
+        for (var index = 0; index < sources.Length; index++)
+        {
+            var row = Assert.IsType<DockPanel>(rows.Children[index]);
+            Assert.Equal(MachinePresentationConstants.StatusRowHeight, row.Height);
+            var icon = Assert.IsType<TextBlock>(row.Children[0]);
+            var value = Assert.IsType<TextBlock>(row.Children[1]);
+            sources[index].Text = index.ToString();
+            Assert.Equal(sources[index].Text, value.Text);
+            Assert.Same(icon.Foreground, value.Foreground);
+            Assert.Equal(TextWrapping.NoWrap, value.TextWrapping);
+        }
     }
 }

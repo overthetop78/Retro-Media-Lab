@@ -39,6 +39,7 @@ public sealed partial class EmulationPreferencesSection
 
     private static IReadOnlyList<InputBindingDefinition> GlobalShortcutDefinitions() =>
     [
+        Shortcut(EmulationShortcutDefaults.OpenSettings, RetroMediaLab.App.Constants.Localization.EmulationResourceKeys.MachineSettings),
         Shortcut(EmulationShortcutDefaults.ReleaseMouse, "Emulation.Shortcut.ReleaseMouse"),
         Shortcut(EmulationShortcutDefaults.PauseResume, "Emulation.Shortcut.PauseResume"),
         Shortcut(EmulationShortcutDefaults.ToggleFullscreen, "Emulation.Shortcut.Fullscreen"),
@@ -48,10 +49,7 @@ public sealed partial class EmulationPreferencesSection
         Shortcut(EmulationShortcutDefaults.QuickSave, "Emulation.Shortcut.QuickSave"),
         Shortcut(EmulationShortcutDefaults.QuickLoad, "Emulation.Shortcut.QuickLoad"),
         Shortcut(EmulationShortcutDefaults.Screenshot, "Emulation.Shortcut.Screenshot"),
-        Shortcut(EmulationShortcutDefaults.ToggleMute, "Emulation.Shortcut.Mute"),
-        Shortcut(EmulationShortcutDefaults.FastForward, "Emulation.Shortcut.FastForward"),
-        Shortcut(EmulationShortcutDefaults.InsertMedia, "Emulation.Media.Insert"),
-        Shortcut(EmulationShortcutDefaults.EjectMedia, "Emulation.Media.Eject")
+        Shortcut(EmulationShortcutDefaults.ToggleMute, "Emulation.Shortcut.Mute")
     ];
 
     private static InputBindingDefinition Shortcut(string id, string resourceKey) => new(id, resourceKey, EmulationShortcutDefaults.Values[id]);

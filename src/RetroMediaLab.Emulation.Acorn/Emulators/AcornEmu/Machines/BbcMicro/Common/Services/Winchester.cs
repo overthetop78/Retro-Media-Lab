@@ -7,6 +7,7 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 /// <summary>Décode l'interface hôte Acorn ; le cœur conserve la possession des images attachées.</summary>
 internal sealed class Winchester(bool enabled, Func<long>? clock = null)
 {
+    internal bool Enabled => enabled;
     private readonly IEmulationDiskImage?[] _images = new IEmulationDiskImage?[C.DriveCount];
     private readonly WinchesterStorage?[] _storage = new WinchesterStorage?[C.DriveCount];
     private WinchesterController? _controller;

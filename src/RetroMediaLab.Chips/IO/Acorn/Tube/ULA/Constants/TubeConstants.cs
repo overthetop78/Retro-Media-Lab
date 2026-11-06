@@ -5,6 +5,10 @@ public static class TubeConstants
     public const int Channels = 4;
     public const int RegisterMask = 7;
     public const int ChannelOneCapacity = 24;
+    public const int LatchCapacity = 1;
+    public const int SingleByteTransfer = 1;
+    public const int TwoByteTransfer = 2;
+    public const int DataRegisterMask = 1;
     public const int ChannelThree = 2;
     public const int ChannelThreeCapacity = 2;
     public const int ChannelFour = 3;
@@ -19,6 +23,8 @@ public static class TubeConstants
     public const byte ResetRegisters = 0x40;
     public const byte SetFlags = 0x80;
     public const byte ControlMask = 0x3f;
+    public const byte WritableControlMask = ControlMask | ResetRegisters;
+    public const int DmaDataRegister = 5;
     public const int TurboRamBytes = 65536;
     public const int TurboRomBytes = 2048;
     public const int TurboRomStart = 0xf000;

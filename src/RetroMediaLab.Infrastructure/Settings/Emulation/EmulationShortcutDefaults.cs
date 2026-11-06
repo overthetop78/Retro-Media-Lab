@@ -16,22 +16,20 @@ public static class EmulationShortcutDefaults
     public const string InsertMedia = "insert-media";
     public const string EjectMedia = "eject-media";
     public const string NextMedia = "next-media";
+    public const string OpenSettings = "open-machine-settings";
 
     public static IReadOnlyDictionary<string, string> Values { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        [ReleaseMouse] = "F12",
-        [PauseResume] = "Pause",
-        [ToggleFullscreen] = "Alt+Enter",
-        [Power] = "Ctrl+Alt+End",
-        [SoftReset] = "Ctrl+Alt+R",
-        [HardReset] = "Ctrl+Shift+Alt+R",
-        [QuickSave] = "Ctrl+F5",
-        [QuickLoad] = "Ctrl+F9",
-        [Screenshot] = "F11",
+        [ReleaseMouse] = "Ctrl+Shift+F12",
+        [PauseResume] = "Ctrl+Shift+F2",
+        [ToggleFullscreen] = "Ctrl+Shift+F11",
+        [Power] = "Ctrl+Shift+F1",
+        [SoftReset] = "Ctrl+Shift+F3",
+        [HardReset] = "Ctrl+Shift+F4",
+        [QuickSave] = "Ctrl+Shift+F6",
+        [QuickLoad] = "Ctrl+Shift+F7",
+        [Screenshot] = "Ctrl+Shift+F9",
         [ToggleMute] = "Ctrl+Shift+M",
-        [FastForward] = "Ctrl+F11",
-        [InsertMedia] = "Ctrl+I",
-        [EjectMedia] = "Ctrl+E",
-        [NextMedia] = "Ctrl+PageDown"
+        [OpenSettings] = "Ctrl+Shift+F5"
     };
 }

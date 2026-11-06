@@ -8,12 +8,14 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 /// <remarks>Possède le signal en mémoire, sans conserver de fichier ouvert. Le lecteur avance seulement lorsque
 /// Play et le moteur MOS sont actifs. L'ACIA reste un composant distinct, emprunté à la carte.
 /// La cadence du fichier est suivie par un accumulateur entier ; elle ne dépend pas du nombre d'images vidéo.</remarks>
-internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
+internal sealed partial class Cassette(Serial serial) : IEmulatorCassetteTransport
 {
     private EmulationCassetteSignal? _signal;
     private int _position, _samplePhase;
     private bool _inputLevel;
     private bool _inputPresented;
+    private int _presentedPosition = -1;
+    private int _sampleIncrement = C.RecordingSampleRate;
     private List<short>? _recorded;
     private bool _writable;
     private EmulationCassetteSettings _settings = new();
@@ -22,9 +24,17 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     private long _latencyTicks;
     private bool _clockRequired;
     internal Action<bool>? ClockRequiredChanged { get; set; }
+    public event Action? ActivityChanged;
+    private (bool Active, EmulationCassetteCommand? Operation, EmulationCassetteState State) _publishedActivity;
 
     private void UpdateClockRequest()
     {
+        var activity = (CassetteActive, CassetteOperation, CassetteState);
+        if (_publishedActivity != activity)
+        {
+            _publishedActivity = activity;
+            ActivityChanged?.Invoke();
+        }
         var required = _inputPresented || _signal is not null && CassetteActive;
         if (_clockRequired == required) return;
         _clockRequired = required;
@@ -36,12 +46,14 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     internal void Configure(EmulationCassetteSettings settings)
     {
         _settings = settings; serial.BaudRateOverride = settings.BaudRate;
+        UpdateSampleIncrement();
         if (settings.WriteProtected && _state == EmulationCassetteState.Recording) _state = EmulationCassetteState.Stopped;
         if (settings.Mode != EmulationCassettePlaybackMode.RealTime && _seekTarget is { } target) { _position = target; CompleteSeek(); }
         UpdateClockRequest();
     }
     /// <summary>Remplace l'index après sauvegarde tout en gardant la tête et l'opération du magnétophone.</summary>
-    internal void RefreshIndex(EmulationCassetteSignal signal) { _signal = signal; _recorded = null; _position = Math.Min(_position, signal.Samples.Length); UpdateClockRequest(); }
+    internal void RefreshIndex(EmulationCassetteSignal signal) { _signal = signal; _recorded = null; _position = Math.Min(_position, signal.Samples.Length); _presentedPosition = -1; UpdateSampleIncrement(); UpdateClockRequest(); }
+    private void UpdateSampleIncrement() => _sampleIncrement = (_signal?.SampleRate ?? C.RecordingSampleRate) * _settings.SpeedPercent / C.NormalSpeedPercent;
     /// <summary>Reste vrai jusqu'à confirmation de l'écriture atomique ; une pause ou un moteur arrêté ne perd aucune donnée.</summary>
     internal bool HasChanges { get; private set; }
     internal EmulationCassetteSignal RecordedSignal => new(_recorded is null ? _signal?.Samples ?? ReadOnlyMemory<short>.Empty : _recorded.ToArray(), _signal?.SampleRate ?? C.RecordingSampleRate);
@@ -58,6 +70,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     {
         if (signal.SampleRate <= 0) throw new ArgumentOutOfRangeException(nameof(signal));
         _signal = signal; _recorded = null; _writable = writable; HasChanges = false; _seekTarget = null;
+        UpdateSampleIncrement();
         _position = _samplePhase = 0; _state = signal.Samples.Length == 0 ? EmulationCassetteState.Stopped : EmulationCassetteState.Playing; ResetDecoder();
         UpdateClockRequest();
     }
@@ -78,6 +91,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     {
         serial.Ula.SetCassetteInput(null);
         _inputPresented = false;
+        _presentedPosition = -1;
     }
 
     public void ExecuteCassette(EmulationCassetteCommand command)
@@ -103,11 +117,15 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     {
         if (_signal is not null && CassetteActive && _latencyTicks == 0 && _state == EmulationCassetteState.Playing && _position < Length)
         {
-            var sample = _recorded is null ? _signal.Samples.Span[_position] : _recorded[_position];
-            var level = sample == 0 ? _inputLevel : sample > 0;
-            if (!_inputPresented || level != _inputLevel) serial.Ula.SetCassetteInput(level);
-            _inputLevel = level;
-            _inputPresented = true;
+            if (_presentedPosition != _position)
+            {
+                var sample = _recorded is null ? _signal.Samples.Span[_position] : _recorded[_position];
+                var level = sample == 0 ? _inputLevel : sample > 0;
+                if (!_inputPresented || level != _inputLevel) serial.Ula.SetCassetteInput(level);
+                _inputLevel = level;
+                _inputPresented = true;
+                _presentedPosition = _position;
+            }
         }
         else if (_inputPresented) { ResetDecoder(); UpdateClockRequest(); }
         serial.Tick();
@@ -123,7 +141,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
         if (_latencyTicks > 0) { _latencyTicks--; return; }
         if (_state == EmulationCassetteState.Recording) { RecordTick(); return; }
         if (_position >= Length) { _state = EmulationCassetteState.EndOfTape; ResetDecoder(); UpdateClockRequest(); return; }
-        _samplePhase += _signal.SampleRate * _settings.SpeedPercent / 100;
+        _samplePhase += _sampleIncrement;
         while (_samplePhase >= C.CpuClock) { _samplePhase -= C.CpuClock; _position++; }
     }
 

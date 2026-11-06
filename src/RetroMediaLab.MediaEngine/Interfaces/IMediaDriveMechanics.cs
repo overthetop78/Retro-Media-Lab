@@ -23,6 +23,9 @@ public interface IMediaDriveMechanics
     /// <summary>Applique le profil, le volume en pourcentage et l’activation des bruitages.</summary>
     void Configure(string? profile, double volumePercent, bool soundEnabled);
 
+    /// <summary>Commande le bruitage d'un magnétophone ; les opérations continues durent jusqu'à la prochaine commande.</summary>
+    void SetTapeOperation(string operation);
+
     /// <summary>Signale l’insertion du support sans déplacer les têtes.</summary>
     void Insert();
 

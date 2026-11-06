@@ -2,6 +2,7 @@ using System.Diagnostics;
 using RetroMediaLab.Emulation;
 using RetroMediaLab.Emulation.Enums;
 using RetroMediaLab.Emulation.Interfaces;
+using RetroMediaLab.MediaEngine;
 using RetroMediaLab.MediaEngine.Interfaces;
 using RetroMediaLab.MediaEngine.Services;
 using C = RetroMediaLab.App.Constants.Audio.MediaDriveAudioConstants;
@@ -15,7 +16,7 @@ internal sealed class MediaDriveAudioController : IDisposable
     private readonly MediaDriveService _source;
     private readonly Action<Exception, string> _writeError;
     private readonly Func<IMultichannelAudioOutput> _createOutput;
-    private readonly HashSet<IMediaDriveMechanics> _active = [];
+    private readonly Dictionary<IMediaDriveMechanics, bool> _active = [];
     private readonly CancellationTokenSource _shutdown = new();
     private readonly SemaphoreSlim _wake = new(0, 1);
     private Task? _worker;
@@ -31,14 +32,18 @@ internal sealed class MediaDriveAudioController : IDisposable
         _writeError = writeError;
         _createOutput = createOutput ?? (() => new WasapiAudioOutput());
         source.AudioAvailable += OnAudioAvailable;
+        MediaEngineComposition.RuntimePreparation.AudioAvailable += OnRuntimeAudioAvailable;
     }
 
-    private void OnAudioAvailable(IMediaDriveMechanics drive)
+    private void OnAudioAvailable(IMediaDriveMechanics drive) => Activate(drive, false);
+    private void OnRuntimeAudioAvailable(IMediaDriveMechanics drive) => Activate(drive, true);
+
+    private void Activate(IMediaDriveMechanics drive, bool externallyDriven)
     {
         lock (_gate)
         {
             if (_disposed) return;
-            _active.Add(drive);
+            _active[drive] = externallyDriven;
             _worker ??= Task.Run(PumpAsync);
             if (_wake.CurrentCount == 0) _wake.Release();
         }
@@ -72,18 +77,26 @@ internal sealed class MediaDriveAudioController : IDisposable
         {
             output = _createOutput();
             output.Start(C.SampleRate, EmulationAudioChannelLayout.Mono);
+            var nextWrite = Stopwatch.GetTimestamp();
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                IMediaDriveMechanics[] drives;
+                KeyValuePair<IMediaDriveMechanics, bool>[] drives;
                 lock (_gate) drives = _active.ToArray();
                 if (drives.Length == 0) break;
+                var bufferStatus = output.BufferStatus;
+                var measuredBuffer = bufferStatus is { IsActive: true };
+                if (bufferStatus is { IsActive: true, BufferedFrames: >= C.TargetBufferedFrames })
+                {
+                    await Task.Delay(C.RefillMilliseconds, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
                 var mixed = new double[C.FramesPerChunk];
-                foreach (var drive in drives)
+                foreach (var (drive, externallyDriven) in drives)
                 {
                     try
                     {
-                        if (!drive.IsInUse && drive.State.MotorRunning) drive.SetMotor(false);
+                        if (!externallyDriven && !drive.IsInUse && drive.State.MotorRunning) drive.SetMotor(false);
                         var samples = drive.RenderAudio(C.SampleRate, C.FramesPerChunk);
                         for (var index = 0; index < samples.Length; index++) mixed[index] += samples[index];
                     }
@@ -94,8 +107,15 @@ internal sealed class MediaDriveAudioController : IDisposable
                     }
                 }
                 output.Write(EmulationSdk.MediaProcessing.ProtectMechanicalAudioMix(mixed));
-                await Task.Delay(C.ChunkMilliseconds, cancellationToken).ConfigureAwait(false);
-                lock (_gate) _active.RemoveWhere(drive => !drive.HasPendingAudio);
+                if (!measuredBuffer)
+                {
+                    nextWrite += Stopwatch.Frequency * C.ChunkMilliseconds / (long)TimeSpan.MillisecondsPerSecond;
+                    var remaining = (nextWrite - Stopwatch.GetTimestamp()) * TimeSpan.MillisecondsPerSecond / Stopwatch.Frequency;
+                    if (remaining > 0) await Task.Delay(TimeSpan.FromMilliseconds(remaining), cancellationToken).ConfigureAwait(false);
+                    else nextWrite = Stopwatch.GetTimestamp();
+                }
+                lock (_gate)
+                    foreach (var drive in _active.Keys.Where(drive => !drive.HasPendingAudio).ToArray()) _active.Remove(drive);
             }
             var draining = Stopwatch.GetTimestamp();
             while (output.BufferStatus is { IsActive: true, BufferedFrames: > 0 }
@@ -114,6 +134,7 @@ internal sealed class MediaDriveAudioController : IDisposable
             if (_disposed) return;
             _disposed = true;
             _source.AudioAvailable -= OnAudioAvailable;
+            MediaEngineComposition.RuntimePreparation.AudioAvailable -= OnRuntimeAudioAvailable;
             worker = _worker;
         }
         try

@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Floating-Point-Erweiterung ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Versorgungsunternehmen ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Disk-Betriebssystem ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} in der Bank {1} ist nicht kompatibel mit der Speichererweiterungskarte {2}. Kontrolle ROM Zuordnungen in den Maschineneinstellungen.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM Bank {0} bereits von einem anderen besetzt ist ROM. Kontrolle ROM Zuordnungen für die Speichererweiterungskarte {1}.</value></data>
 </root>

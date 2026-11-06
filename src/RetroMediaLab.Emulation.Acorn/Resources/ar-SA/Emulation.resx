@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>تمديد نقطة التقلب ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>القدرة على العمل ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>نظام التشغيل ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} في المصرف {1} لا يتوافق مع بطاقة توسيع الذاكرة {2}. تحقق من ROM مهام في أماكن الآلات</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM مصرف {0} مشغولة بالفعل بآخر ROM. تحقق من ROM مهام لبطاقة توسيع الذاكرة {1}.</value></data>
 </root>

@@ -8,6 +8,7 @@ internal static class CassetteConstants
     /// <summary>Présence enregistrée du magnétophone externe ; la prise de la carte reste présente indépendamment.</summary>
     internal const string ConnectedOption = "acornemu.cassette-connected";
     internal const int RecordingSampleRate = 48000;
+    internal const int NormalSpeedPercent = 100;
     /// <summary>Formats de signal réellement pris en charge, partagés par la fabrique et le cœur.</summary>
     internal static readonly IReadOnlyList<string> Extensions = Array.AsReadOnly<string>([".uef", ".csw", ".wav", ".raw"]);
     internal static readonly IReadOnlySet<EmulationCassetteCommand> Commands = new HashSet<EmulationCassetteCommand> { EmulationCassetteCommand.Play, EmulationCassetteCommand.Stop, EmulationCassetteCommand.Pause, EmulationCassetteCommand.Rewind, EmulationCassetteCommand.FastForward };

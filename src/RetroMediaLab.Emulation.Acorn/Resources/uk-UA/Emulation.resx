@@ -78,4 +78,6 @@
   <data name="Emulation.Acorn.Atom.FloatingPointRom"><value>Розширення Floating-point ROM</value></data>
   <data name="Emulation.Acorn.Atom.UtilityRom"><value>Зручності ROM</value></data>
   <data name="Emulation.Acorn.Atom.DosRom"><value>Система управління дисками ROM</value></data>
+  <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} в банку {1} не сумісний з картою розширення пам'яті {2}. Перевірити ROM завдання в налаштуваннях машини.</value></data>
+  <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM Банкомати {0} вже зайнятий іншим ROM. Перевірити ROM призначення карти розширення пам'яті {1}.</value></data>
 </root>

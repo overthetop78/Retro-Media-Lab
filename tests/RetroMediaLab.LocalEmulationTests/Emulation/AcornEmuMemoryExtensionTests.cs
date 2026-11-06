@@ -11,12 +11,31 @@ using ModelAMachine = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.MemoryExtensionConstants;
+using RetroMediaLab.Emulation.Acorn.Common.Exceptions;
+using RetroMediaLab.Emulation.Acorn.Common.Enums;
+using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Functions;
 
 namespace RetroMediaLab.Tests.Emulation;
 
 /// <summary>Bus des cartes mémoire et configuration sans fichier ni ROM propriétaire.</summary>
 public sealed class AcornEmuMemoryExtensionTests
 {
+    [Fact]
+    public void MemoryRomMismatchRetainsItsActualCauseAsAConfigurationWarning()
+    {
+        var configuration = Configuration(C.Watford32);
+        var detail = ExceptionText.Get(C.FirmwareMismatch, "Acorn ADFS", C.FirmwareBank, C.WatfordName);
+        var cause = new EmulationException(ErrorCategory.Firmware, ErrorCode.FirmwareInvalid, detail, isLocalized: true);
+        var translated = Assert.IsType<RetroMediaLab.Emulation.Exceptions.EmulationMessageException>(MessageFunctions.Translate(cause, configuration));
+        Assert.Equal(EmulationMessageCode.FirmwareIncompatible, translated.MessageData.MessageCode);
+        Assert.Equal(EmulationMessageSeverity.Warning, translated.MessageData.Severity);
+        Assert.Equal(detail, translated.MessageData.OriginalText);
+        Assert.Contains("Acorn ADFS", detail);
+        Assert.Contains(C.FirmwareBank.ToString(System.Globalization.CultureInfo.InvariantCulture), detail);
+        Assert.Contains(C.WatfordName, detail);
+        Assert.Same(cause, translated.InnerException);
+    }
+
     [Theory]
     [InlineData(C.AriesB20)]
     [InlineData(C.Watford32)]

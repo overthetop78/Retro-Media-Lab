@@ -6,4 +6,5 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Machine.Open"><value>เปิด</value></data>
   <data name="Emulation.Machine.Model" xml:space="preserve"><value>รุ่น</value></data>
+  <data name="Emulation.Machine.Settings"><value>ตั้งค่าเครื่องจักร</value></data>
 </root>

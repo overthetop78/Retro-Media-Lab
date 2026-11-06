@@ -262,7 +262,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         var runtime = await _options.CreateRuntimeAsync(configuration, CancellationToken.None);
         _mediaDevices = runtime.MediaDevices;
         _prepareMediaAsync = runtime.PrepareMediaAsync;
-        await _session.UpdateMachineFactoryAsync(runtime.CreateMachine, runtime.MediaDevices);
+        await _session.UpdateMachineFactoryAsync(runtime.CreateMachine, runtime.MediaDevices, runtime.MountedMedia);
         RebuildMediaDevices();
     }
 
@@ -285,28 +285,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         ToggleFullscreenAsync,
         ToggleAudioAsync,
         _options.SwitchControllerPointer ?? (_session.Machine.Input.SupportsControllerPointerSwitch ? SwitchControllerPointerAsync : null),
-        _session.Machine.Runtime.AvailableOptions.Count > 0 ? OpenCoreOptionsAsync : null);
-
-    private async Task OpenCoreOptionsAsync()
-    {
-        var runtime = _session.Machine.Runtime;
-        if (runtime.AvailableOptions.Count == 0) return;
-        var dialog = new CoreOptionsDialog(runtime.EmulatorName, runtime.EmulatorVersion, runtime.AvailableOptions, _options.ModuleId);
-        try
-        {
-            if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), dialog) != true) return;
-            var values = dialog.Values;
-            foreach (var option in runtime.AvailableOptions)
-            {
-                if (!values.TryGetValue(option.Key, out var value)
-                    || value == option.CurrentValue || option.RequiresRestart) continue;
-                await runtime.SetOptionAsync(option.Key, value);
-            }
-            if (_options.PersistRuntimeOptions is not null)
-                await _options.PersistRuntimeOptions(values);
-        }
-        finally { WpfWindowNavigationService.CloseOwnedDialog(dialog); }
-    }
+        _options.OpenSettings);
 
     private async Task SwitchControllerPointerAsync()
     {
@@ -336,7 +315,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         await _session.TogglePauseAsync();
         _video.ResetFrameRate();
         if (_session.Machine.Video.LatestFrame is { } frame)
-            _commands.Status.Text = MachinePresentationFunctions.Status(frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond);
+            MachinePresentationFunctions.UpdateStatus(_commands.Presentation, frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond);
         _commands.SetPaused(_session.Machine.State == EmulationMachineState.Paused);
     }
 
@@ -617,6 +596,9 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         {
             switch (action)
             {
+                case EmulationShortcutDefaults.OpenSettings:
+                    if (_options.OpenSettings is not null) await _options.OpenSettings();
+                    break;
                 case EmulationShortcutDefaults.Power: await TogglePowerAsync(); break;
                 case EmulationShortcutDefaults.PauseResume: await TogglePauseAsync(); break;
                 case EmulationShortcutDefaults.SoftReset:
@@ -639,7 +621,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
 
     private void FramePresented(object? sender, VideoFrame frame)
     {
-        _commands.Status.Text = MachinePresentationFunctions.Status(frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond, _video.ExecutionRate);
+        MachinePresentationFunctions.UpdateStatus(_commands.Presentation, frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond, _video.ExecutionRate);
         var now = DateTime.UtcNow;
         var activityStates = _session.Machine.Runtime.MediaActivity;
         if (_session.Machine.CassetteTransport is { } cassette) UpdateCassetteTransport(cassette);
