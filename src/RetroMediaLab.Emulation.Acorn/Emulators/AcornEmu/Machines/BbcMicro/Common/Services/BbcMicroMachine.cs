@@ -56,7 +56,9 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly Keyboard _keyboard = new();
     private readonly Audio _audio = new();
     private readonly Acia6850 _acia = new(CassetteConstants.CpuClock, CassetteConstants.ExternalAciaClock);
+    private readonly Serial _serial;
     private readonly Cassette _cassette;
+    private bool _cassetteClockRequired;
     private byte _latch = 255;
     private byte _soundDataBus = byte.MaxValue;
     private int _keyboardColumn;
@@ -142,7 +144,11 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         Video.VSyncChanged = _via.SetCa1;
         if (_masterMemory is not null) Video.ReadMemory = address => _masterMemory.ReadVideo(address, _ram);
         else if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
-        _cassette = new Cassette(new Serial(_acia));
+        _serial = new Serial(_acia);
+        _cassette = new Cassette(_serial)
+        {
+            ClockRequiredChanged = required => _cassetteClockRequired = required
+        };
         _via.ReadPortA = () => (_latch & 8) == 0 ? (byte)(_keyboard.Read(_via.OutputA) & (_masterClock?.ReadBus() ?? byte.MaxValue)) : _masterClock?.ReadBus() ?? byte.MaxValue;
         _userVia = expandedIo ? new Via6522() : null;
         if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;
@@ -232,7 +238,8 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _master512?.RunHostCycle();
         if ((_ticks & 127) == 0) NetworkPoll?.Invoke(128);
         _audio.Tick();
-        _cassette.Tick();
+        if (_cassetteClockRequired) _cassette.Tick();
+        else _serial.Tick();
         if (_ticks >= _adcWakeTick) _adc!.AdvanceTo(_ticks);
         if (_ticks >= _masterClockWakeTick) _masterClock!.AdvanceTo(_ticks);
         _disks.Tick();

@@ -20,6 +20,16 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     private int? _seekTarget;
     private EmulationCassetteCommand? _operation;
     private long _latencyTicks;
+    private bool _clockRequired;
+    internal Action<bool>? ClockRequiredChanged { get; set; }
+
+    private void UpdateClockRequest()
+    {
+        var required = _inputPresented || _signal is not null && CassetteActive;
+        if (_clockRequired == required) return;
+        _clockRequired = required;
+        ClockRequiredChanged?.Invoke(required);
+    }
     internal EmulationCassetteSettings Settings => _settings;
     internal bool Seeking => _seekTarget is not null;
     public EmulationCassetteCommand? CassetteOperation => _state == EmulationCassetteState.Paused ? _operation : _seekTarget is not null ? _operation : _state == EmulationCassetteState.Recording ? EmulationCassetteCommand.Record : _state == EmulationCassetteState.Playing ? EmulationCassetteCommand.Play : null;
@@ -28,9 +38,10 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
         _settings = settings; serial.BaudRateOverride = settings.BaudRate;
         if (settings.WriteProtected && _state == EmulationCassetteState.Recording) _state = EmulationCassetteState.Stopped;
         if (settings.Mode != EmulationCassettePlaybackMode.RealTime && _seekTarget is { } target) { _position = target; CompleteSeek(); }
+        UpdateClockRequest();
     }
     /// <summary>Remplace l'index après sauvegarde tout en gardant la tête et l'opération du magnétophone.</summary>
-    internal void RefreshIndex(EmulationCassetteSignal signal) { _signal = signal; _recorded = null; _position = Math.Min(_position, signal.Samples.Length); }
+    internal void RefreshIndex(EmulationCassetteSignal signal) { _signal = signal; _recorded = null; _position = Math.Min(_position, signal.Samples.Length); UpdateClockRequest(); }
     /// <summary>Reste vrai jusqu'à confirmation de l'écriture atomique ; une pause ou un moteur arrêté ne perd aucune donnée.</summary>
     internal bool HasChanges { get; private set; }
     internal EmulationCassetteSignal RecordedSignal => new(_recorded is null ? _signal?.Samples ?? ReadOnlyMemory<short>.Empty : _recorded.ToArray(), _signal?.SampleRate ?? C.RecordingSampleRate);
@@ -48,10 +59,11 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
         if (signal.SampleRate <= 0) throw new ArgumentOutOfRangeException(nameof(signal));
         _signal = signal; _recorded = null; _writable = writable; HasChanges = false; _seekTarget = null;
         _position = _samplePhase = 0; _state = signal.Samples.Length == 0 ? EmulationCassetteState.Stopped : EmulationCassetteState.Playing; ResetDecoder();
+        UpdateClockRequest();
     }
-    internal void Eject() { _signal = null; _recorded = null; _writable = HasChanges = false; _position = _samplePhase = 0; _state = EmulationCassetteState.Empty; ResetDecoder(); }
+    internal void Eject() { _signal = null; _recorded = null; _writable = HasChanges = false; _position = _samplePhase = 0; _state = EmulationCassetteState.Empty; ResetDecoder(); UpdateClockRequest(); }
     /// <summary>Reset électrique : ne rembobine pas une bande déjà insérée.</summary>
-    internal void ResetHardware() { serial.PowerOn(); ResetDecoder(); }
+    internal void ResetHardware() { serial.PowerOn(); ResetDecoder(); UpdateClockRequest(); }
     internal void WriteUla(byte value)
     {
         var starting = !Motor;
@@ -59,6 +71,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
         starting &= Motor;
         if (starting) _latencyTicks = (long)C.CpuClock * (_state == EmulationCassetteState.Recording ? _settings.WriteLatencyMilliseconds : _settings.ReadLatencyMilliseconds) / 1000;
         if (!CassetteActive) ResetDecoder();
+        UpdateClockRequest();
     }
     internal byte ReadUla() { WriteUla(UlaConstants.ReadControlValue); return UlaConstants.ReadBusValue; }
     private void ResetDecoder()
@@ -82,6 +95,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
             case EmulationCassetteCommand.Rewind: Seek((_signal.BlockPositions ?? []).Where(position => position < _position - 1).DefaultIfEmpty(0).Max(), command); break;
             case EmulationCassetteCommand.FastForward: Seek((_signal.BlockPositions ?? []).Where(position => position > _position + 1).DefaultIfEmpty(Length).Min(), command); break;
         }
+        UpdateClockRequest();
     }
 
     /// <summary>Avance le support d'un cycle de carte et présente son niveau à l'électronique série.</summary>
@@ -95,7 +109,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
             _inputLevel = level;
             _inputPresented = true;
         }
-        else if (_inputPresented) ResetDecoder();
+        else if (_inputPresented) { ResetDecoder(); UpdateClockRequest(); }
         serial.Tick();
         if (_seekTarget is { } target)
         {
@@ -108,7 +122,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
         if (_signal is null || !CassetteActive) return;
         if (_latencyTicks > 0) { _latencyTicks--; return; }
         if (_state == EmulationCassetteState.Recording) { RecordTick(); return; }
-        if (_position >= Length) { _state = EmulationCassetteState.EndOfTape; ResetDecoder(); return; }
+        if (_position >= Length) { _state = EmulationCassetteState.EndOfTape; ResetDecoder(); UpdateClockRequest(); return; }
         _samplePhase += _signal.SampleRate * _settings.SpeedPercent / 100;
         while (_samplePhase >= C.CpuClock) { _samplePhase -= C.CpuClock; _position++; }
     }
@@ -118,8 +132,9 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
     {
         _seekTarget = target; _operation = operation; _state = EmulationCassetteState.Stopped; _samplePhase = 0; ResetDecoder();
         if (_settings.Mode != EmulationCassettePlaybackMode.RealTime || target == _position) { _position = target; CompleteSeek(); }
+        UpdateClockRequest();
     }
-    private void CompleteSeek() { _seekTarget = null; _operation = null; _state = _position >= Length ? EmulationCassetteState.EndOfTape : EmulationCassetteState.Stopped; _samplePhase = 0; }
+    private void CompleteSeek() { _seekTarget = null; _operation = null; _state = _position >= Length ? EmulationCassetteState.EndOfTape : EmulationCassetteState.Stopped; _samplePhase = 0; UpdateClockRequest(); }
 
     /// <summary>Réunit un fichier BBC standard validé ; le chemin direct ne devine ni les adresses ni les blocs manquants.</summary>
     internal bool TryReadFile(string requestedName, out byte[] data, out uint load, out uint execution, out int nextPosition)
@@ -145,7 +160,7 @@ internal sealed class Cassette(Serial serial) : IEmulatorCassetteTransport
         }
         return false;
     }
-    internal void CompleteDirectRead(int position) { _position = Math.Clamp(position, 0, Length); _state = EmulationCassetteState.Stopped; ResetDecoder(); }
+    internal void CompleteDirectRead(int position) { _position = Math.Clamp(position, 0, Length); _state = EmulationCassetteState.Stopped; ResetDecoder(); UpdateClockRequest(); }
     /// <summary>Module TXD à 1 200/2 400 Hz et enregistre à la cadence de la bande ; le débit série vient de l'ACIA.</summary>
     /// <remarks>L'écriture remplace uniquement les échantillons sous la tête et prolonge la bande à son extrémité.
     /// Les silences, fichiers précédents et fichiers suivants restent présents. L'appelant possède la sauvegarde.</remarks>

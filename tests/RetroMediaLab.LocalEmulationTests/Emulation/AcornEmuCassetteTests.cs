@@ -14,6 +14,93 @@ namespace RetroMediaLab.Tests.Emulation;
 /// <summary>Vérifications cassette autonomes : niveaux FSK et ROM synthétiques, sans fichiers ni lecteur externe.</summary>
 public sealed class AcornEmuCassetteTests
 {
+    [Fact]
+    public void InactiveTapeBypassPreservesSerialClocksAndEveryTransportTransition()
+    {
+        var actualAcia = new Acia6850(2_000_000, 19200);
+        var expectedAcia = new Acia6850(2_000_000, 19200);
+        var actualSerial = new Serial(actualAcia);
+        var expectedSerial = new Serial(expectedAcia);
+        var actual = new BbcCassette(actualSerial);
+        var expected = new BbcCassette(expectedSerial);
+        var required = false;
+        actual.ClockRequiredChanged = value => required = value;
+        var samples = Enumerable.Range(0, 20_000).Select(index => (short)((index / 10 & 1) == 0 ? 1000 : -1000)).ToArray();
+        var signal = new EmulationCassetteSignal(samples, 48000, [0, 200, 4000]);
+        var changes = new Dictionary<int, Action<BbcCassette, Serial, Acia6850>>
+        {
+            [0] = (tape, _, _) => tape.ResetHardware(),
+            [1000] = (tape, _, _) => tape.Insert(signal, writable: true),
+            [4000] = (tape, _, _) => tape.WriteUla(0x85),
+            [15000] = (tape, _, _) => tape.ExecuteCassette(EmulationCassetteCommand.Pause),
+            [17000] = (tape, _, _) => tape.ExecuteCassette(EmulationCassetteCommand.Pause),
+            [19000] = (tape, _, _) => tape.WriteUla(0),
+            [23000] = (tape, _, _) => tape.WriteUla(0x85),
+            [27000] = (tape, _, _) => tape.ExecuteCassette(EmulationCassetteCommand.Stop),
+            [32000] = (tape, _, _) => tape.ExecuteCassette(EmulationCassetteCommand.Play),
+            [36000] = (tape, _, _) => tape.WriteUla(0xc5),
+            [37000] = (_, serial, _) => { serial.Ula.Rs423ReceiveData = false; serial.Ula.Rs423ClearToSendHigh = false; },
+            [40000] = (_, serial, _) => serial.Ula.Rs423ReceiveData = true,
+            [42000] = (tape, _, _) => tape.WriteUla(0x85),
+            [46000] = (tape, _, _) => tape.ExecuteCassette(EmulationCassetteCommand.Rewind),
+            [49000] = (_, _, acia) => { acia.Write(false, 0x15); acia.Write(true, 0x55); },
+            [50000] = (tape, _, _) => tape.ExecuteCassette(EmulationCassetteCommand.Record),
+            [60000] = (tape, _, _) => tape.WriteUla(0),
+            [64000] = (tape, _, _) => tape.RefreshIndex(signal),
+            [70000] = (tape, _, _) => tape.Eject(),
+            [75000] = (tape, _, _) => tape.ResetHardware(),
+            [78000] = (tape, _, _) => { tape.Insert(new(samples.AsMemory(0, 400), 48000)); tape.WriteUla(0x85); }
+        };
+        for (var tick = 0; tick < 105_000; tick++)
+        {
+            if (changes.TryGetValue(tick, out var change))
+            {
+                Assert.Equal(expected.RecordedSignal.Samples.ToArray(), actual.RecordedSignal.Samples.ToArray());
+                change(expected, expectedSerial, expectedAcia);
+                change(actual, actualSerial, actualAcia);
+            }
+            expected.Tick();
+            if (required) actual.Tick();
+            else actualSerial.Tick();
+            Assert.Equal(expected.Position, actual.Position);
+            Assert.Equal(expected.CassetteState, actual.CassetteState);
+            Assert.Equal(expectedSerial.Ula.SourceClockPhase, actualSerial.Ula.SourceClockPhase);
+            Assert.Equal(expectedSerial.Ula.TransmitClockEdge, actualSerial.Ula.TransmitClockEdge);
+            Assert.Equal(expectedSerial.Ula.ReceiveClockEdge, actualSerial.Ula.ReceiveClockEdge);
+            Assert.Equal(expectedSerial.Ula.CassetteOutput, actualSerial.Ula.CassetteOutput);
+            Assert.Equal(expectedAcia.Irq, actualAcia.Irq);
+            if (tick % 997 == 0)
+            {
+                Assert.Equal(expectedAcia.Read(false), actualAcia.Read(false));
+                Assert.Equal(expectedAcia.Read(true), actualAcia.Read(true));
+            }
+        }
+        Assert.Equal(EmulationCassetteState.EndOfTape, actual.CassetteState);
+        Assert.False(required);
+    }
+
+    [Fact]
+    public void TapeClockNotificationChangesOnlyOnActivityAndClearsInputAtTheOriginalCycle()
+    {
+        var tape = new BbcCassette(new Serial(new Acia6850(2_000_000, 19200)));
+        var changes = new List<bool>();
+        tape.ClockRequiredChanged = changes.Add;
+        tape.Insert(new(new short[48000], 48000));
+        Assert.Empty(changes);
+        tape.WriteUla(0x85);
+        tape.WriteUla(0x85);
+        Assert.Equal(new[] { true }, changes);
+        tape.Tick();
+        tape.ExecuteCassette(EmulationCassetteCommand.Pause);
+        Assert.Equal(new[] { true }, changes);
+        tape.Tick();
+        Assert.Equal(new[] { true, false }, changes);
+        tape.Tick();
+        tape.WriteUla(0);
+        tape.Eject();
+        Assert.Equal(new[] { true, false }, changes);
+    }
+
     [Theory]
     [InlineData(1200, 0x95)]
     [InlineData(300, 0x96)]
