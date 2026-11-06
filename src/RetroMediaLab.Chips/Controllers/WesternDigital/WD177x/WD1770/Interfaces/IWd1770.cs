@@ -1,8 +1,12 @@
+using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Contracts;
+
 namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Interfaces;
 
 /// <summary>Broches et registres du WD1770/1772 ; le composant ne possède aucun lecteur ni média.</summary>
 public interface IWd1770
 {
+    Wd1770State CaptureState();
+    void RestoreState(Wd1770State state);
     int ClockFrequency { get; }
     ulong ClockCount { get; }
     void AdvanceTo(ulong clockCount);

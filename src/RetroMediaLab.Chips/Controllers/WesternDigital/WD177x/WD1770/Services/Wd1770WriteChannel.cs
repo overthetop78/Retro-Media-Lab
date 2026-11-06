@@ -1,4 +1,4 @@
-﻿using C = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Constants.Wd1770Constants;
+using C = RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Constants.Wd1770Constants;
 
 namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 
@@ -7,7 +7,7 @@ namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 /// Les temps des fronts sont exprimés en demi-clocks de CLK pour conserver
 /// les largeurs nominales fractionnaires. Le propriétaire choisit quand charger DR.
 /// </summary>
-internal sealed class Wd1770WriteChannel
+internal sealed partial class Wd1770WriteChannel
 {
     private uint _word;
     private bool _gate;

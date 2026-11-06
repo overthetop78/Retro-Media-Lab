@@ -8,7 +8,7 @@ namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 /// Les transitions recalent la fenêtre de cellule ; le registre glissant détecte les
 /// horloges manquantes et établit les frontières d'octet. Aucune piste n'est reconstruite.
 /// </summary>
-internal sealed class Wd1770ReadChannel
+internal sealed partial class Wd1770ReadChannel
 {
     private bool _doubleDensity = true;
     private bool _previousReadData;

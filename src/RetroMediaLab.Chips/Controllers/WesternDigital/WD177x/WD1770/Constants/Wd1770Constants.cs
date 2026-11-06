@@ -3,6 +3,7 @@ namespace RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Constants
 /// <summary>Registres, états et cadences du contrôleur double densité WD1770.</summary>
 public static class Wd1770Constants
 {
+    public const int StateFormatVersion = 1;
     public const int IdBytes = 4;
     public const int IdCylinder = 0;
     public const int IdSector = 2;
