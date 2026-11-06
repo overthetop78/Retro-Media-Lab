@@ -1,7 +1,11 @@
+using RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Contracts;
+
 namespace RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Interfaces;
 /// <summary>Contrat matériel du composant TeletextSaa5050 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
 public interface ITeletextSaa5050
 {
+    TeletextSaa5050State CaptureState();
+    void RestoreState(TeletextSaa5050State state);
     bool PictureOn { get; set; }
     bool DisplayEnabled { get; set; }
     bool SuperimposeInputHigh { get; set; }

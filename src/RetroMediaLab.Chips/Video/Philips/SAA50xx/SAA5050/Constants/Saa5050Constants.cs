@@ -2,6 +2,7 @@ namespace RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Constants;
 
 public static class Saa5050Constants
 {
+    public const int StateFormatVersion = 1;
     public const int CharacterRomSize = 960;
     public const int FirstCharacter = 32;
     public const int CharacterCount = 96;
