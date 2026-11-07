@@ -70,7 +70,7 @@ public sealed partial class Acb4000
             _formatPrecedingDefects = 0;
             _formatChannel.Reset();
             _formatTrackPending = true;
-            _stage = Acb4000Stage.Format;
+            SetStage(Acb4000Stage.Format);
         }
         catch (Exception error) when (StorageFailure(error)) { Complete(C.WriteFault); }
     }
@@ -103,7 +103,7 @@ public sealed partial class Acb4000
         _formatTrackPending = false;
         // Firmware 14A9-14AC waits for INDEX without the bounded search loop at 15BF.
         // Keep FORMAT waiting while the drive is ready; RESET/faults can still abort it.
-        _stage = Acb4000Stage.Format;
+        SetStage(Acb4000Stage.Format);
     }
 
     public bool ClockWriteCell(bool index)

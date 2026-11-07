@@ -92,6 +92,6 @@ public sealed partial class Acb4000
             Complete();
             return;
         }
-        if (AdvanceAddress()) _stage = Acb4000Stage.SearchData;
+        if (AdvanceAddress()) SetStage(Acb4000Stage.SearchData);
     }
 }

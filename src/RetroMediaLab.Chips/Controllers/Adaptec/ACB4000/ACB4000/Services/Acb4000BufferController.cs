@@ -23,6 +23,9 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
     private byte peripheralReadLatch;
     private byte peripheralWriteLatch;
 
+    /// <summary>Niveau de requête RAM A et identité, publiés après mutation des latches.</summary>
+    internal event Action<bool, uint>? PeripheralCycleChanged;
+
     public ushort ReadPointer { get; private set; }
     public ushort WritePointer { get; private set; }
     public ushort StopPointer { get; private set; }
@@ -130,8 +133,10 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
     public void RequestBufferRead()
     {
         if (!clockedPeripheral || ResetAsserted) return;
+        var wasPending = PeripheralCyclePending;
         peripheralReadPending = true;
         peripheralReadReady = false;
+        if (!wasPending) PeripheralCycleChanged?.Invoke(true, PeripheralCycleEpoch);
     }
 
     public bool TryCompleteBufferRead(out byte value)
@@ -147,9 +152,11 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
     {
         if (!clockedPeripheral) { WriteBuffer(value); return; }
         if (ResetAsserted) return;
+        var wasPending = PeripheralCyclePending;
         peripheralWriteLatch = value;
         peripheralWritePending = true;
         peripheralWriteReady = false;
+        if (!wasPending) PeripheralCycleChanged?.Invoke(true, PeripheralCycleEpoch);
     }
 
     public bool TryCompleteBufferWrite()
@@ -172,12 +179,14 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
             peripheralReadLatch = ReadBuffer();
             peripheralReadPending = false;
             peripheralReadReady = true;
+            if (!PeripheralCyclePending) PeripheralCycleChanged?.Invoke(false, PeripheralCycleEpoch);
             return true;
         }
         if (!peripheralWritePending) return false;
         WriteBuffer(peripheralWriteLatch);
         peripheralWritePending = false;
         peripheralWriteReady = true;
+        if (!PeripheralCyclePending) PeripheralCycleChanged?.Invoke(false, PeripheralCycleEpoch);
         return true;
     }
 
@@ -186,6 +195,7 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
         PeripheralCycleEpoch = unchecked(PeripheralCycleEpoch + 1);
         peripheralReadPending = peripheralWritePending = false;
         peripheralReadReady = peripheralWriteReady = false;
+        PeripheralCycleChanged?.Invoke(false, PeripheralCycleEpoch);
     }
 
     /// <summary>Cycle périphérique achevé ; son sens vient de ROP/WOP, sans limite STOP.</summary>

@@ -23,6 +23,13 @@ internal sealed partial class WinchesterTrackSignals
     private ulong writeStart;
     private bool reading;
     private int readUnit;
+    private int selectedUnit;
+    private int selectedHead;
+    private int selectedCylinder;
+    private int selectedWriteHead;
+    private bool readGate;
+    private bool writeGate;
+    private bool activityChanged = true;
 
     internal bool CanAdvanceIdleClock => chip.IsIdle && writingImage is null
         && drives[0].Settle == 0 && drives[1].Settle == 0;
@@ -53,11 +60,16 @@ internal sealed partial class WinchesterTrackSignals
         this.chip = chip;
         this.storage = storage;
         ownerClock = (uint)ticksPerSecond;
+        chip.DriveStepped += ReceiveDriveStep;
+        chip.DriveSelectionChanged += ReceiveDriveSelection;
+        chip.DriveGatesChanged += ReceiveDriveGates;
+        ReceiveDriveSelection(chip.Unit, chip.SelectedHead, chip.FormatCylinder, chip.FormatHead);
+        ReceiveDriveGates(chip.ReadGate, chip.WriteGate);
     }
 
     internal void Tick()
     {
-        UpdateDriveSignals();
+        AdvanceMechanics();
         chip.Tick();
         ApplyDriveSteps();
         ownerFraction += C.ReadClock;
@@ -82,14 +94,14 @@ internal sealed partial class WinchesterTrackSignals
 
     private void ClockCell()
     {
-        var unit = chip.Unit;
+        var unit = selectedUnit;
         var selected = unit < C.DriveCount ? drives[unit].Storage : null;
         var phase = selected is null ? 0 : Phase(unit);
-        var cylinder = chip.FormatCylinder;
-        var head = chip.FormatHead;
+        var cylinder = selectedCylinder;
+        var head = selectedWriteHead;
         chip.SetIndex(selected is not null && phase < C.IndexPulseNanoseconds);
         var pulse = chip.ClockWriteCell(selected is not null && phase < C.IndexPulseNanoseconds);
-        if (chip.WriteGate && selected is not null)
+        if (writeGate && selected is not null)
         {
             if (writingImage is not null && (writingUnit != unit || writingCylinder != cylinder
                 || writingHead != head || !ReferenceEquals(writingImage, selected.Image))) PublishWindow();
@@ -107,10 +119,10 @@ internal sealed partial class WinchesterTrackSignals
         }
         else PublishWindow();
 
-        if (chip.ReadGate && selected is not null)
+        if (readGate && selected is not null)
         {
             var cursor = cache[unit];
-            cursor.Select(selected.Image, selected.Cylinder, chip.SelectedHead);
+            cursor.Select(selected.Image, selected.Cylinder, selectedHead);
             if (!reading || readUnit != unit) cursor.Restart();
             chip.ClockReadCell(cursor.Sample(phase));
             reading = true;

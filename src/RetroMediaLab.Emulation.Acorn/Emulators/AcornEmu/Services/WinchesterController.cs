@@ -17,6 +17,7 @@ internal sealed class WinchesterController
     private uint deferredIdleTicks;
     private bool canDeferClock;
     private bool normalSpeedIdle;
+    private bool targetOutputsChanged;
     internal long ClockTicks { get; private set; }
     internal long? NextClockEvent => normalSpeedIdle ? null : checked(ClockTicks + 1);
 
@@ -42,6 +43,7 @@ internal sealed class WinchesterController
     {
         ArgumentNullException.ThrowIfNull(storage);
         target = new Acb4000(unit => storage(unit), C.OwnerClock, C.SequencerClock);
+        target.Bus.OutputsChanged += () => targetOutputsChanged = true;
         signals = new WinchesterTrackSignals(target, storage, C.OwnerClock);
         Synchronize();
     }
@@ -122,11 +124,10 @@ internal sealed class WinchesterController
             if (++deferredIdleTicks == C.MaximumDeferredTicks) FlushIdleClock();
             return;
         }
-        // Host outputs were resolved by the last register access or preceding tick.
-        // With a free bus and no selection, mechanics cannot change the SCSI wires.
-        var busCanChange = target.Bus.Busy || host.Select;
         signals.Tick();
-        if (busCanChange || target.Bus.Busy) Synchronize();
+        // Les mutations du port réveillent ce raccordement dans la même phase de fin
+        // de tick ; aucune interrogation des autres puces n'est nécessaire entre elles.
+        if (targetOutputsChanged) Synchronize();
         canDeferClock = !host.Select && signals.CanAdvanceIdleClock;
         normalSpeedIdle = canDeferClock
             && speeds[target.Unit < C.DriveCount ? target.Unit : 0] == C.NormalSpeedPercent;
@@ -176,6 +177,7 @@ internal sealed class WinchesterController
 
     private void PublishTarget()
     {
+        targetOutputsChanged = false;
         var bus = target.Bus;
         var state = ScsiBusSignals.None;
         if (bus.Busy) state |= ScsiBusSignals.Busy;

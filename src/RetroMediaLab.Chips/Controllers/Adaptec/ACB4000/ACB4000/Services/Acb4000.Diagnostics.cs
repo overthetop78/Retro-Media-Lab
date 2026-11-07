@@ -88,7 +88,7 @@ public sealed partial class Acb4000
         { Complete(C.InvalidCommand); return; }
         if (_length == 0) { Complete(); return; }
         _diagnosticReading = true;
-        _stage = Acb4000Stage.DataIn;
+        SetStage(Acb4000Stage.DataIn);
         Request(Acb4000BusPhase.DataIn, DiagnosticReadByte(0));
     }
 

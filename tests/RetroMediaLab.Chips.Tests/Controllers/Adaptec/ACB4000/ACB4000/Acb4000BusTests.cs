@@ -8,6 +8,68 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Adaptec.ACB4000.ACB4000;
 public sealed class Acb4000BusTests
 {
     [Theory]
+    [InlineData(2_000_000)]
+    [InlineData(10_000_000)]
+    public void OutputNotificationsFollowMutationsAndLeaveStableClocksSilent(int clock)
+    {
+        var bus = new Acb4000Bus(clock);
+        var previous = Outputs();
+        var notifications = 0;
+        bus.OutputsChanged += () =>
+        {
+            var current = Outputs();
+            Assert.NotEqual(previous, current);
+            previous = current;
+            notifications++;
+        };
+        Step(() => Tick(bus, 100));
+        Assert.Equal(0, notifications);
+        Step(() => bus.SetInitiator(1, true, false, false));
+        Step(() => Tick(bus, 5));
+        Assert.True(bus.Busy);
+        Step(() => bus.SetInitiator(0, false, false, false));
+        foreach (var phase in new[] { Acb4000BusPhase.Command, Acb4000BusPhase.DataOut,
+            Acb4000BusPhase.DataIn, Acb4000BusPhase.Status, Acb4000BusPhase.MessageIn })
+        {
+            Step(() => Assert.True(bus.TryBeginTransfer(phase, 0xa5)));
+            Step(() => Tick(bus, 5));
+            Assert.True(bus.Request);
+            var count = notifications;
+            Step(() => Tick(bus, 100));
+            Assert.Equal(count, notifications);
+            Step(() => bus.SetInitiator(0x5a, false, true, false));
+            Assert.False(bus.Request);
+            Step(() => bus.SetInitiator(0x5a, false, false, false));
+            Step(() => Assert.True(bus.TryTakeTransferredByte(out _)));
+        }
+        Step(() => Assert.True(bus.TryReleaseBus()));
+        Step(() => bus.SetManualOutputs(true, true, true, 0x55));
+        var manual = notifications;
+        Step(() => bus.SetManualOutputs(true, true, true, 0x55));
+        Assert.Equal(manual, notifications);
+        Step(() => bus.SetManualOutputs(false, false, false, 0x55));
+        Step(() => bus.SetInitiator(1, true, false, false));
+        Step(() => Tick(bus, 5));
+        Step(() => bus.SetInitiator(0, false, false, false));
+        Step(() => Assert.True(bus.TryBeginTransfer(Acb4000BusPhase.Command)));
+        Step(() => Tick(bus, 5));
+        Step(() => Tick(bus, clock / 4));
+        Assert.True(bus.TimedOut);
+        Step(() => bus.SetManualOutputs(true, true, true, 0xa5));
+        Step(() => bus.SetInitiator(0, false, false, true));
+        Assert.False(bus.Busy);
+        Assert.False(bus.Select);
+
+        (bool, bool, bool, bool, bool, bool, byte) Outputs() =>
+            (bus.Busy, bus.Select, bus.Request, bus.InputOutput, bus.ControlData, bus.Message, bus.OutputData);
+        void Step(Action action)
+        {
+            action();
+            Assert.Equal(Outputs(), previous);
+        }
+    }
+
+    [Theory]
     [InlineData(Acb4000BusPhase.Command)]
     [InlineData(Acb4000BusPhase.DataOut)]
     public void IncomingTransferSamplesBothAssertedDataDriversAtAcknowledge(Acb4000BusPhase phase)

@@ -7,6 +7,68 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Adaptec.ACB4000.ACB4000;
 public sealed class Acb4000ClockedBufferTests(ITestOutputHelper output)
 {
     [Fact]
+    public void RamRequestsPublishTheirChangedLevelsAndCancellationIdentities()
+    {
+        var ram = new byte[1024];
+        var buffer = CreateBuffer(ram);
+        buffer.TryWrite(0x53, 0xc4);
+        buffer.ConfigureClockedTransfers(true);
+        var peripheral = new List<(bool Pending, uint Epoch)>();
+        var host = new List<(bool Pending, uint Epoch)>();
+        buffer.PeripheralCycleChanged += (pending, epoch) =>
+        {
+            Assert.Equal(buffer.PeripheralCyclePending, pending);
+            Assert.Equal(buffer.PeripheralCycleEpoch, epoch);
+            peripheral.Add((pending, epoch));
+        };
+        buffer.HostCycleChanged += (pending, epoch) =>
+        {
+            Assert.Equal(buffer.HostCyclePending, pending);
+            Assert.Equal(buffer.HostCycleEpoch, epoch);
+            host.Add((pending, epoch));
+        };
+        var a = buffer.PeripheralCycleEpoch;
+        buffer.RequestBufferWrite(0xa5);
+        buffer.RequestBufferWrite(0x3c);
+        Assert.Single(peripheral);
+        Assert.Equal(0, buffer.WritePointer);
+        Assert.True(buffer.CompletePeripheralCycle());
+        Assert.True(buffer.TryCompleteBufferWrite());
+        Assert.Equal(0x3c, ram[0]);
+        buffer.CancelBufferTransfers();
+        buffer.CancelBufferTransfers();
+        Assert.Equal(new[] { (true, a), (false, a), (false, a + 1), (false, a + 2) }, peripheral);
+
+        var b = buffer.HostCycleEpoch;
+        Assert.True(buffer.RequestHostWrite(0x5a));
+        Assert.False(buffer.RequestHostWrite(0x6b));
+        Assert.Single(host);
+        Assert.True(buffer.CompleteHostCycle());
+        Assert.True(buffer.TryTakeHostCycle(out _));
+        Assert.Equal(0x5a, ram[1]);
+        buffer.CancelHostTransfer();
+        Assert.False(buffer.RequestHostWrite(0x6b));
+        Assert.Equal(new[] { (true, b), (false, b), (false, b + 1) }, host);
+    }
+
+    [Fact]
+    public void WiringReceivesAHostRequestAlreadyPresentBeforeTheAicIsConnected()
+    {
+        var ram = new byte[1024];
+        var buffer = CreateBuffer(ram);
+        buffer.TryWrite(0x53, 0xc4);
+        Assert.True(buffer.RequestHostWrite(0xa5));
+        var aic = new Acb4000AicRegisters(Acb4000EccRegisters.CreateFirmwareConfiguration(), buffer);
+        aic.ConfigureClockedBufferTransfers(true);
+        aic.AdvanceSystemHalfCycles(4);
+        Assert.Equal(0, buffer.WritePointer);
+        aic.AdvanceSystemHalfCycles(8);
+        Assert.Equal(1, buffer.WritePointer);
+        Assert.Equal(0xa5, ram[0]);
+        Assert.True(buffer.TryTakeHostCycle(out _));
+    }
+
+    [Fact]
     public void ClockedRamLoopHasNoAllocationAndPreservesWrap()
     {
         const int iterations = 1_000_000;

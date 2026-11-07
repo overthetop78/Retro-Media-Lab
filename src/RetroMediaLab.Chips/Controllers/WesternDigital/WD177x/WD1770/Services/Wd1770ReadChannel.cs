@@ -82,6 +82,17 @@ internal sealed partial class Wd1770ReadChannel
         _sampleCountdown = CellClocks;
     }
 
+    /// <summary>Prochain front CLK utile avec RD maintenu ; les fronts RD restent fournis par le raccordement.</summary>
+    internal int ClocksUntilWork(bool readData) => readData && !_previousReadData
+        ? 1 : _sampling ? _sampleCountdown : int.MaxValue;
+
+    /// <summary>Intervalle strictement antérieur au prochain échantillon et sans front montant RD.</summary>
+    internal void AdvanceQuiet(bool readData, int clocks)
+    {
+        _previousReadData = readData;
+        if (_sampling) _sampleCountdown -= clocks;
+    }
+
     private void ShiftCell(bool transition)
     {
         _history = _history << 1 | (transition ? 1U : 0U);

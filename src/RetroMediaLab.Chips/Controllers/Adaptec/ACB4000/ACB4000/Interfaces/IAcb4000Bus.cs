@@ -17,6 +17,8 @@ public interface IAcb4000Bus
     bool TimedOut { get; }
     byte OutputData { get; }
     bool TransferCompleted { get; }
+    /// <summary>Changement des niveaux pilotés par le port ; le récepteur initialise ses entrées au raccordement.</summary>
+    event Action? OutputsChanged;
     void SetInitiator(byte data, bool select, bool acknowledge, bool reset, bool attention = false);
     bool TryBeginTransfer(Acb4000BusPhase phase, byte data = 0);
     bool TryTakeTransferredByte(out byte data);

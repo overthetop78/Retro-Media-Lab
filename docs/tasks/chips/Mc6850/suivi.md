@@ -13,8 +13,10 @@
   - [x] Supprimer `artifacts/.tmp-mc6850/`, ses fichiers de référence, journaux, exécutables et diagnostics temporaires après usage ; conserver les captures demandées et les tests autonomes utiles.
   - [x] Modifier l'index Git et créer le commit propre au MC6850 terminé avant toute autre puce.
 
-- [ ] MC6850 : émettre les changements depuis les opérations qui modifient les sorties.
+- [x] MC6850 : émettre les changements depuis les opérations qui modifient les sorties.
   - [x] Modifier `src/RetroMediaLab.Chips/IO/Motorola/M6800/6850/Services/Acia6850.Outputs.cs`, `Acia6850.cs` et `Acia6850.Transmit.cs` : retirer la surveillance globale des sorties dans ClockTransmit et les écritures de données ; notifier TXD depuis sa mutation et comparer RTS/diviseur uniquement lors de la programmation du contrôle ou du reset.
   - [x] Modifier `docs/chips/IO/Mc6850.md` avec la correction écrite, sans annoncer de tests ni de mesures non exécutés.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+Clôture du 7 novembre : code de publication directe vérifié et résultats série Debug existants réutilisés (193 contrôles SERPROC/MC6850, 3 s ; 53 contrôles intégrés cassette/série/audio, 11 s). Aucun changement du MC6850 depuis ces passages ; pas de relance inutile. Détails et portée dans `docs/chips/IO/Mc6850.md` et `BbcSerialUla.md`.

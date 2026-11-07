@@ -126,7 +126,7 @@ public sealed partial class Acb4000
                 break;
             case Acb4000CommandCode.Verify:
                 if (!ValidBlockCommand()) { Complete(C.BadArgument); return; }
-                _stage = Acb4000Stage.Verify;
+                SetStage(Acb4000Stage.Verify);
                 break;
             case Acb4000CommandCode.ReadCapacity:
                 CapacityReply();

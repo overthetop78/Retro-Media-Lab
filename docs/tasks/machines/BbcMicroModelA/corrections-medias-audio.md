@@ -1,6 +1,46 @@
 # BBC Micro Model A — corrections après essais des lecteurs
 
+Écoute du 7 novembre : l'utilisateur confirme le fonctionnement des clics cassette corrigés et des volumes machine/lecteur. La vérification native audio supplémentaire préparée n'est pas exécutée : aucun source de ce banc n'a été créé ni périphérique ouvert. Les 16 tests audio, le build Debug All et le retour utilisateur sont les preuves acquises ; la machine n'est pas déclarée globalement close par cette seule confirmation.
+
+## Validation des montages mémoire — 7 novembre 2026
+
+- [x] Vérifier les montages déjà proposés sans ajouter de matériel.
+  - [x] Créer temporairement `artifacts/.tmp-tube/ModelAMemoryValidation.cs` : démarrer les ROM externes MOS 1.20/BASIC II sur RAM 16/32 Kio, Aries B20, Watford 32K, BooBip RAM/ROM ×1–4 et B12 0/8/16 Kio ; exécuter une commande BASIC contrôlée, mesurer 80 images avec rendu/drainage audio et conserver les trames réelles dans les dossiers de preuves. Libérer les raccordements dans finally ; ne modifier aucune configuration utilisateur.
+  - [x] Vérifier les tests autonomes existants `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuMemoryExtensionTests.cs` et `AcornEmuSidewaysExpansionTests.cs` : banques, protections, alias, reset et capacités. Ne modifier ces fichiers que si un défaut est établi.
+  - [x] Supprimer `artifacts/.tmp-tube/ModelAMemoryValidation.cs` et ses sorties jetables après consignation ; reconstruire le banc préexistant avec `Program.cs` pour retirer le diagnostic des assemblies. Conserver les captures ignorées.
+
+Résultats : onze montages démarrés avec exécution BASIC contrôlée, 16,77–18,01 ms/image Debug au repos ; 45 tests autonomes mémoire réussis (766 ms). Conditions, mesures de chaque montage et captures : [référence mémoire du Model A](../../../project/emulations/Acorn/BBC%20Micro/Model%20A/memory-extensions.md). Diagnostic supprimé puis banc préexistant reconstruit avec succès ; seules les trames de preuve sont conservées, hors Git. Aucun correctif matériel nécessaire sur ce passage. Les configurations à lecteurs, les ROM de gestion, les limites de performance WD/HDD et l'écoute Windows ne sont pas clôturées par ce résultat.
+
+- [x] Livrer les blocs validés pour le prochain essai du Model A.
+  - [x] Modifier `build/Debug/Retro Media Lab/` par `scripts/local-building.cmd --building=debug --modules=A`, uniquement sans session RML ouverte ; vérifier le lanceur, `lib/RetroMediaLab.Chips.dll`, le module Acorn et les 24 modules. Cette livraison intermédiaire ne clôt pas les essais en direct ni les budgets reportés.
+
+Livraison du 7 novembre après validation mémoire : script terminé avec code 0 ; lanceur `F:\GW GUI\build\Debug\Retro Media Lab\retromedialab.exe`, 24 manifestes et leurs 24 assemblies d'entrée présents. Les SHA256 de `lib/retromedialab.chips.dll` et `lib/retromedialab.mediaengine.dll` correspondent aux fichiers compilés Debug. Aucun processus RML n'était ouvert avant lancement ; aucune session utilisateur n'a été interrompue. Pas de nouvelle écoute Windows ni de mesure native RML dans ce passage : la case de vérification réelle reste ouverte.
+
+- [x] Compléter la preuve des commandes de volume cassette/HDD sans sortie Windows.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuAudioTests.cs` en classe partielle et créer `AcornEmuAudioTests.MechanicalOptions.cs` : vérifier sur récepteurs mémoire les options à chaud cassette et HDD, volume 0/50/100, activation, absence de reconfiguration par image et conservation du PCM matériel. Ne modifier la production que si un défaut est établi ; aucune dépendance à un firmware, fichier audio ou périphérique externe.
+  - [x] Exécuter le groupe Debug `AcornEmuAudioTests` après ce bloc ; corriger ensemble les défauts éventuels dans les fichiers concernés, puis vérifier le bloc corrigé.
+
+Résultat du 7 novembre : 16 tests audio Debug réussis, zéro échec/ignoré, 1 s. Les deux nouveaux cas utilisent des récepteurs en mémoire sans banque audio ni firmware : cinq commandes de configuration (0/50/100, couper, rétablir), aucune sixième commande pendant RunFrame, PCM du PSG identique à la référence et reset des mécaniques à l'arrêt. Aucun changement de production. Il s'agit de la preuve des commandes, pas du gain acoustique ou d'une écoute Windows.
+
+Essai de contrôle Windows du même passage : `list_windows` échoue avec `native pipe unavailable` ; même résultat après le nouvel essai et la réinitialisation de la session JavaScript. Aucune fenêtre n'est lancée, fermée ou manipulée. L'écoute des clics et du volume du build livré reste demandée à l'utilisateur.
+
+- [x] Prouver l'enregistrement puis la lecture cassette par les ROM sur deux cartes Model A.
+  - [x] Créer temporairement `artifacts/.tmp-tube/ModelATapeRoundTrip.cs` : enregistrer un programme BASIC via SAVE et le chemin ACIA/SERPROC réel dans une cassette PCM en mémoire, puis transmettre uniquement ce signal enregistré à une seconde carte et exécuter CHAIN ; contrôler le texte et le calcul produits, relever les cycles/durées et conserver les trames réelles sous TestsMachines et TestsChips. Utiliser les ROM externes existantes, aucun média ni réglage utilisateur modifié, détacher les supports dans finally.
+  - [x] Supprimer `artifacts/.tmp-tube/ModelATapeRoundTrip.cs` après consignation et reconstruire le banc avec son `Program.cs` préexistant ; conserver uniquement les captures de preuve ignorées par Git.
+
+SAVE/CHAIN réussis : signal enregistré de 530 315 échantillons à 48 kHz, programme exécuté sur la seconde carte avec texte attendu et résultat 46. Deux passages donnent les mêmes cycles (21 844 991 / 11 461 633) ; captures finales stabilisées et inspectées. Dernier passage Debug : 17,10 / 18,22 ms/image, limites du chronométrage et protocole dans [la fiche SERPROC](../../../chips/IO/BbcSerialUla.md). Diagnostic supprimé et banc reconstruit avec succès ; aucune sortie temporaire autre que les trames de preuve. Pas de nouveau build complet : seules des sources de tests et la consignation ont changé depuis la livraison précédente.
+
+- [x] Vérifier l'aller-retour des formats cassette proposés par le SDK sur le Model A.
+  - [x] Créer temporairement `artifacts/.tmp-tube/ModelATapeFormats.cs` et `artifacts/.tmp-model-a-tape-formats/` : générer une seule cassette par SAVE avec MOS/BASIC externes, enregistrer ce signal via `EmulationSdk.MediaProcessing.WriteCassetteAsync` pour chaque extension proposée, relire via le même relais SDK et exécuter CHAIN sur une carte neuve par format. Contrôler le programme et le calcul, mesurer seulement les images de carte avec rendu/drainage, conserver les captures stabilisées ; détacher les cartes dans finally, sans écrire de média utilisateur.
+  - [x] Supprimer `artifacts/.tmp-tube/ModelATapeFormats.cs` et `artifacts/.tmp-model-a-tape-formats/` après consignation ; reconstruire Native avec `Program.cs` pour retirer le diagnostic, conserver uniquement les trames de preuve ignorées.
+
+Quatre formats réussis : WAV 18,55 ms/image, UEF 17,95, CSW 19,24, RAW 18,59, tous avec 11 381 762 cycles sur 285 images. Les quatre captures stabilisées sont inspectées ; fichiers temporaires supprimés après vérification de leur répertoire et banc préexistant reconstruit. [Protocole, données et portée](../../../project/emulations/Acorn/BBC%20Micro/Model%20A/tape-formats-validation.md). Aucune modification de production ni nouveau build d'application nécessaire. Le contrôle Windows rétablit l'inventaire, mais `launch_app` échoue par accès refusé sur `GetCursorPos` et la sélection de l'Explorateur expire à l'approbation ; aucune fenêtre RML n'est créée ni manipulée.
+
 ## Résultats du 7 novembre 2026
+
+Retour au menu IJK en 16 Kio expliqué : DFS charge le programme original avec PAGE 6400, TOP 15027, HIMEM 15360 (333 octets libres). Son `ON ERROR RUN` masque l'échec des DIM. Après remplacement de ce seul gestionnaire dans la copie du programme en RAM, BASIC affiche `DIM space` à la ligne 100. Le second diagnostic réussit avec ce message et cette ligne contrôlés ; aucun média, réglage, ROM ou composant n'est modifié pour contourner le manque de RAM. Voir `docs/project/emulations/acorn/BBC Micro/Model A/model-a-reference.md` pour les valeurs, le protocole et les captures.
+
+Bloc disquette 8271 : 158 tests de puce Debug réussis (566 ms), puis 136 tests de pistes/raccordements réussis (5 s). Essai du SSD IJK `Model A Invaders` en lecture seule : catalogue `INV/A` et menu chargés réellement en 16/32 Kio, 512 puis 9 728 octets lus. En 32 Kio, option 4 puis Espace atteignent l'écran de partie, 19,395–19,723 ms/image, 51,56–50,70 FPS calculés, 2,059–2,025 MHz (103,0–101,2 %) sans limite. En 16 Kio, le programme reste au menu même avec D4 physique ; ne pas cocher le jeu actif de cette variante. Captures hors interface rangées dans les deux dossiers demandés, détails et conditions dans `docs/chips/Controllers/Intel8271.md`. Aucun défaut du contrôleur n'est établi par ce passage et aucune nouvelle optimisation ni gain comparatif ne sont revendiqués.
 
 193 contrôles SERPROC/MC6850 Debug réussis (3 s). Sur le Model A 16 Kio sans RML : lecture effective `INDEX 00`, pause stable, mais 23,050 ms/image au repos et 27,920 ms/image en lecture sur 80 trames (43,38/35,82 FPS calculés, 1,733/1,430 MHz). ROM MOS 1.20 et BASIC II ; média Arcade Action v2.5 du corpus UEF. Détails et captures dans `docs/chips/IO/BbcSerialUla.md`.
 
@@ -61,6 +101,10 @@ Chargement Invaders après correction de la détection du menu prêt : programme
   - [ ] Livraison et vérification réelle groupée.
     - [ ] Modifier `docs/tasks/machines/BbcMicroModelA/validation-rml.md` avec les résultats du build Debug tous modules, de la nouvelle session, des transferts et des réglages audio ; conserver les preuves réelles sous `artifacts/TestsChips/<Chip>/BBC Micro Model A/`.
 
+
+- [x] Identifier le retour au menu d'Invaders sur disquette en 16 Kio.
+  - [x] Créer temporairement `artifacts/.tmp-tube/ModelAProgram.cs` : charger `INV/A` par DFS en lecture seule, relever PAGE/TOP/HIMEM, remplacer uniquement en RAM du programme son `ON ERROR RUN` par l'affichage de l'erreur et de sa ligne, puis sélectionner une partie ; conserver l'écran réel et ne modifier ni le SSD ni les puces.
+  - [x] Supprimer `artifacts/.tmp-tube/ModelAProgram.cs` après consignation et reconstruire le banc avec `Program.cs` pour retirer le diagnostic des assemblies.
 
 ## Résultats du bloc de reprise des médias
 

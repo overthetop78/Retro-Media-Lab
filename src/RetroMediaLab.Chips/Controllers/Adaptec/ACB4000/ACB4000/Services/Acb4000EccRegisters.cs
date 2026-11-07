@@ -12,15 +12,19 @@ public sealed class Acb4000EccRegisters
     private uint _syndrome;
     private byte _control = C.Reset;
     private bool _shiftPending;
+    private uint _polynomial = 1;
+    private uint _visibleMask = C.Mask16;
+    private uint _feedbackPolynomial = 1U << C.LowBit16;
+    private bool _dataClockEnabled;
 
     internal bool ShiftPending => _shiftPending;
     public byte Control => _control;
     public bool ResetAsserted => (_control & C.Reset) != 0;
     public bool SectorBranchEnabled => (_control & C.SectorBranch) != 0;
     public bool IsLengthDocumented => (_control & C.LengthMask) != C.UndocumentedLength;
-    public uint Polynomial => (_taps << 1) | 1U;
+    public uint Polynomial => _polynomial;
 
-    public bool CheckPassed => !ResetAsserted && IsLengthDocumented && (_syndrome & VisibleMask) == 0;
+    public bool CheckPassed => _dataClockEnabled && (_syndrome & _visibleMask) == 0;
     internal bool SerialOutput => (_syndrome & C.HighBit) != 0;
 
     internal void BeginField() => _syndrome = 0;
@@ -42,20 +46,32 @@ public sealed class Acb4000EccRegisters
         WriteControl(C.Length32);
     }
 
-    private uint VisibleMask => (_control & C.LengthMask) switch
+    private void UpdateControlInputs()
     {
-        C.Length16 => C.Mask16,
-        C.Length24 => C.Mask24,
-        C.Length32 => C.Mask32,
-        _ => 0
-    };
+        var length = _control & C.LengthMask;
+        _visibleMask = length switch
+        {
+            C.Length16 => C.Mask16,
+            C.Length24 => C.Mask24,
+            C.Length32 => C.Mask32,
+            _ => 0
+        };
+        _dataClockEnabled = (_control & C.Reset) == 0 && length != C.UndocumentedLength;
+        UpdateFeedbackPolynomial();
+    }
 
-    private int LowBit => (_control & C.LengthMask) switch
+    private void UpdateFeedbackPolynomial()
     {
-        C.Length16 => C.LowBit16,
-        C.Length24 => C.LowBit24,
-        _ => C.LowBit32
-    };
+        var lowBit = (_control & C.LengthMask) switch
+        {
+            C.Length16 => C.LowBit16,
+            C.Length24 => C.LowBit24,
+            _ => C.LowBit32
+        };
+        // The register inputs remain stable between writes. The syndrome itself
+        // still advances at each individual data/reference clock edge.
+        _feedbackPolynomial = (_polynomial & _visibleMask) | (1U << lowBit);
+    }
 
     public void WritePolynomial(int register, byte value)
     {
@@ -63,29 +79,34 @@ public sealed class Acb4000EccRegisters
         ArgumentOutOfRangeException.ThrowIfGreaterThan(register, C.LastPolynomialRegister);
         var shift = (register - C.FirstPolynomialRegister) * C.BitsPerByte;
         _taps = ((_taps & ~((uint)byte.MaxValue << shift)) | ((uint)value << shift)) & C.PolynomialTapMask;
+        _polynomial = (_taps << 1) | 1U;
+        UpdateFeedbackPolynomial();
     }
 
     public void WriteControl(byte value)
     {
+        var wasReset = ResetAsserted;
         _control = (byte)(value & ~C.Shift);
         _shiftPending = (value & C.Shift) != 0;
         if ((value & (C.Reset | C.Clear)) != 0) _syndrome = 0;
+        UpdateControlInputs();
+        if (wasReset != ResetAsserted) ResetChanged?.Invoke(ResetAsserted);
     }
 
     public byte ReadMiddleSyndrome()
     {
-        var value = _syndrome & VisibleMask;
+        var value = _syndrome & _visibleMask;
         return (byte)(((value >> C.MiddleByteShift) & ~1U) | ((value & C.LowSyndromeMask) != 0 ? 1U : 0U));
     }
 
-    public byte ReadHighSyndrome() => (byte)((_syndrome & VisibleMask) >> C.HighByteShift);
+    public byte ReadHighSyndrome() => (byte)((_syndrome & _visibleMask) >> C.HighByteShift);
 
     /// <summary>Front RD/REF pour l'impulsion demandée par 71h ; aucune impulsion sans horloge.</summary>
     public bool TryClockReference(bool readGate, bool writeGate)
     {
         if (!_shiftPending) return false;
         _shiftPending = false;
-        if (ResetAsserted || readGate || writeGate || !IsLengthDocumented) return false;
+        if (!_dataClockEnabled || readGate || writeGate) return false;
         if ((_control & C.Clear) != 0) { _syndrome = 0; return true; }
         if ((_control & C.DisableFeedback) != 0)
             _syndrome = (_syndrome << 1) | ((_control & C.SerialInput) != 0 ? 1U : 0U);
@@ -96,7 +117,7 @@ public sealed class Acb4000EccRegisters
     /// <summary>Un bit NRZ appartenant au champ couvert par l'ECC ; hors champ le propriétaire n'appelle pas cette méthode.</summary>
     public bool TryClockDataBit(bool bit)
     {
-        if (ResetAsserted || !IsLengthDocumented) return false;
+        if (!_dataClockEnabled) return false;
         if ((_control & C.Clear) != 0) { _syndrome = 0; return true; }
         if ((_control & C.DisableFeedback) != 0)
             _syndrome = (_syndrome << 1) | (bit ? 1U : 0U);
@@ -106,7 +127,7 @@ public sealed class Acb4000EccRegisters
 
     public bool TryClockDataByte(byte value)
     {
-        if (ResetAsserted || !IsLengthDocumented) return false;
+        if (!_dataClockEnabled) return false;
         if ((_control & (C.LengthMask | C.DisableFeedback | C.Clear)) == C.Length32)
         {
             _syndrome = Acb4000ErrorCheck.AdvanceByte(_syndrome, value, Polynomial);
@@ -120,14 +141,19 @@ public sealed class Acb4000EccRegisters
     private void Advance(bool bit)
     {
         var feedback = ((_syndrome & C.HighBit) != 0) != bit;
-        var polynomial = (Polynomial & VisibleMask) | (1U << LowBit);
-        _syndrome = ((_syndrome << 1) ^ (feedback ? polynomial : 0U)) & VisibleMask;
+        _syndrome = ((_syndrome << 1) ^ (feedback ? _feedbackPolynomial : 0U)) & _visibleMask;
     }
 
     public void Reset()
     {
+        var wasReset = ResetAsserted;
         _control = C.Reset;
         _syndrome = 0;
         _shiftPending = false;
+        UpdateControlInputs();
+        if (!wasReset) ResetChanged?.Invoke(true);
     }
+
+    /// <summary>Changement du niveau RESET après mise à jour des registres associés.</summary>
+    public event Action<bool>? ResetChanged;
 }

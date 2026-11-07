@@ -6,6 +6,28 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Adaptec.ACB4000.ACB4000;
 public sealed class Acb4000FormatChannelTests
 {
     [Fact]
+    public void FormatGatePublishesIndexOpeningTailClosingAndResetWithoutStableNotifications()
+    {
+        var channel = new Acb4000FormatChannel();
+        var levels = new List<bool>();
+        channel.WriteGateChanged += gate => { Assert.Equal(channel.WriteGate, gate); levels.Add(gate); };
+        channel.BeginTrack([0, 0x41], 0, 256, false, 0x6c);
+        for (var i = 0; i < 100; i++) channel.ClockCell(false);
+        Assert.Empty(levels);
+        channel.ClockCell(true);
+        for (var i = 0; i < 20000; i++) channel.ClockCell(false);
+        Assert.Equal(new[] { true }, levels);
+        channel.ClockCell(true);
+        Assert.True(channel.Complete);
+        Assert.Equal(new[] { true, false }, levels);
+        channel.Reset(); channel.ClockCell(false);
+        Assert.Equal(2, levels.Count);
+        channel.BeginTrack([0, 0x41], 0, 256, false, 0x6c);
+        channel.ClockCell(true); channel.Reset();
+        Assert.Equal(new[] { true, false }, levels.Skip(2));
+    }
+
+    [Fact]
     public void FirstNinePhysicalIdsCarryParametersThenResumeTheDefectCounter()
     {
         byte[] flags = [0, 2, 0x31, 0x22, 0x16, 1, 0x16, 1, 0];

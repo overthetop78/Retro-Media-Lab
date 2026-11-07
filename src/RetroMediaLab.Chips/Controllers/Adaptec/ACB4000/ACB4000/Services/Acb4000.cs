@@ -68,18 +68,18 @@ public sealed partial class Acb4000 : IAcb4000
         && !_aic.Clocks.TransferPending
         && !_sequencerBuffer.HostArbitrationPending
         && !_driveMoving[0] && !_driveMoving[1] && !_positioners[0].Busy && !_positioners[1].Busy;
-    public int Unit { get; private set; }
     public int RemainingBlocks { get; private set; }
-    public int SelectedHead { get; private set; }
     internal bool ReadingParameterFields => _stage == Acb4000Stage.Parameters;
     internal bool LoadingParameters => ReadingParameterFields || _stage == Acb4000Stage.Positioning
         && _positioningPurpose == Acb4000PositioningPurpose.Parameters;
-    public bool ReadGate => (_stage is Acb4000Stage.Read or Acb4000Stage.WriteSearch or Acb4000Stage.Parameters) && _driveReady[Unit] && !_eccRegisters.ResetAsserted;
-    public bool WriteGate => !_eccRegisters.ResetAsserted && Unit < C.DriveCount && _driveReady[Unit] && !_driveWriteFault && (_stage == Acb4000Stage.Format && _formatChannel.WriteGate
-        || _stage == Acb4000Stage.Write && _writeChannel.WriteGate);
-    public int FormatCylinder { get; private set; }
-    public int FormatHead { get; private set; }
-    public void SetWriteFault(bool active) => _driveWriteFault = active;
+    public bool ReadGate => _readGate;
+    public bool WriteGate => _writeGate;
+    public void SetWriteFault(bool active)
+    {
+        if (_driveWriteFault == active) return;
+        _driveWriteFault = active;
+        UpdateDriveGates();
+    }
     private int BlockSize => _blockSizes[Unit];
     private IScsiStorage? Drive => Unit < C.DriveCount ? _drives(Unit) : null;
 
@@ -106,6 +106,10 @@ public sealed partial class Acb4000 : IAcb4000
         _bus = new Acb4000Bus(ticksPerSecond);
         _searchDeadline = new(ticksPerSecond, sequencerTStatesPerSecond);
         _positioners = [new(ticksPerSecond), new(ticksPerSecond)];
+        _aic.Ecc.ResetChanged += _ => UpdateDriveGates();
+        _writeChannel.WriteGateChanged += _ => UpdateDriveGates();
+        _formatChannel.WriteGateChanged += _ => UpdateDriveGates();
+        UpdateDriveGates();
     }
 
     public void SetInitiator(byte data, bool select, bool acknowledge, bool reset, bool attention = false)
@@ -157,7 +161,7 @@ public sealed partial class Acb4000 : IAcb4000
         if (!_bus.ProtocolBusy)
         {
             AbortHostBufferDma();
-            _stage = Acb4000Stage.Idle;
+            SetStage(Acb4000Stage.Idle);
             return;
         }
         if (_stage == Acb4000Stage.Idle)
@@ -165,7 +169,7 @@ public sealed partial class Acb4000 : IAcb4000
             if (!_bus.TryBeginTransfer(Acb4000BusPhase.Command)) return;
             _commandCount = 0;
             _commandLength = C.ShortCdbLength;
-            _stage = Acb4000Stage.Command;
+            SetStage(Acb4000Stage.Command);
             return;
         }
         if ((_stage is Acb4000Stage.Read or Acb4000Stage.Verify or Acb4000Stage.Format
@@ -241,12 +245,12 @@ public sealed partial class Acb4000 : IAcb4000
                 else Request(Acb4000BusPhase.DataOut);
                 break;
             case Acb4000Stage.Status:
-                _stage = Acb4000Stage.Message;
+                SetStage(Acb4000Stage.Message);
                 Request(Acb4000BusPhase.MessageIn, C.CommandCompleteMessage);
                 break;
             case Acb4000Stage.Message:
                 if (!_bus.TryReleaseBus()) throw new InvalidOperationException();
-                _stage = Acb4000Stage.Idle;
+                SetStage(Acb4000Stage.Idle);
                 break;
         }
         SynchronizeHostInterface();
@@ -285,7 +289,7 @@ public sealed partial class Acb4000 : IAcb4000
         _diagnosticReading = _diagnosticPatching = false;
         SaveDiagnosticFlags();
         _status = status;
-        _stage = Acb4000Stage.Status;
+        SetStage(Acb4000Stage.Status);
         Request(Acb4000BusPhase.Status, _status);
     }
 
@@ -297,7 +301,7 @@ public sealed partial class Acb4000 : IAcb4000
         _length = length;
         if (length == 0) { Complete(); return; }
         BeginHostBufferDma(length, outgoing: true);
-        _stage = Acb4000Stage.DataIn;
+        SetStage(Acb4000Stage.DataIn);
         Request(Acb4000BusPhase.DataIn, _hostBufferDma ? (byte)0 : _buffer[0]);
     }
 
@@ -308,7 +312,7 @@ public sealed partial class Acb4000 : IAcb4000
         _offset = 0;
         _length = length;
         BeginHostBufferDma(length, outgoing: false);
-        _stage = Acb4000Stage.DataOut;
+        SetStage(Acb4000Stage.DataOut);
         Request(Acb4000BusPhase.DataOut);
     }
 
@@ -322,7 +326,7 @@ public sealed partial class Acb4000 : IAcb4000
         _diagnosticAddress = _diagnosticReadAddress = 0;
         _diagnosticPatchRemaining = 0;
         _searchDeadline.Reset();
-        _stage = Acb4000Stage.Idle;
+        SetStage(Acb4000Stage.Idle);
         _commandCount = _offset = _length = Unit = RemainingBlocks = 0;
         _address = _firstAddress = 0;
         _commandBlocks = 0;

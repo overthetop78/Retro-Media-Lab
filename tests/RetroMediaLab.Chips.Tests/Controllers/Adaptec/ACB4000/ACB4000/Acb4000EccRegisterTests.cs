@@ -5,6 +5,80 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Adaptec.ACB4000.ACB4000;
 public sealed class Acb4000EccRegisterTests
 {
     [Theory]
+    [InlineData(0x41044185u)]
+    [InlineData(0x04c11db7u)]
+    public void RegisterChangesDuringAFieldPreserveEverySerialEdge(uint polynomial)
+    {
+        var ecc = Create(polynomial);
+        var taps = polynomial >> 1;
+        uint syndrome = 0;
+        // Sweep all control encodings, including reset/clear and the undocumented
+        // length. Unlike a byte-only check, observe the syndrome after every bit.
+        for (var control = 0; control <= byte.MaxValue; control++)
+        {
+            ecc.WriteControl((byte)control);
+            if ((control & 0x28) != 0) syndrome = 0;
+            var length = control & 0xc0;
+            var mask = length switch { 0 => 0xffff0000u, 0x40 => 0xffffff00u, 0xc0 => uint.MaxValue, _ => 0u };
+            var lowBit = length switch { 0 => 16, 0x40 => 8, _ => 0 };
+            var enabled = (control & 0x20) == 0 && length != 0x80;
+            for (var bit = 0; bit < 19; bit++)
+            {
+                if (bit == 7)
+                {
+                    var register = control & 3;
+                    var value = (byte)(control * 73 + 19);
+                    ecc.WritePolynomial(0x74 + register, value);
+                    var shift = register * 8;
+                    taps = ((taps & ~(0xffu << shift)) | ((uint)value << shift)) & 0x7fffffffu;
+                }
+                var input = ((control * 17 + bit * 29) & 4) != 0;
+                Assert.Equal(enabled, ecc.TryClockDataBit(input));
+                if (enabled)
+                {
+                    if ((control & 8) != 0) syndrome = 0;
+                    else if ((control & 4) != 0) syndrome = (syndrome << 1) | (input ? 1u : 0u);
+                    else
+                    {
+                        var feedback = ((syndrome >> 31) != 0) ^ input;
+                        var effective = ((((taps << 1) | 1u) & mask) | (1u << lowBit));
+                        syndrome = ((syndrome << 1) ^ (feedback ? effective : 0u)) & mask;
+                    }
+                }
+                var visible = syndrome & mask;
+                Assert.Equal((taps << 1) | 1u, ecc.Polynomial);
+                Assert.Equal((byte)(visible >> 24), ecc.ReadHighSyndrome());
+                Assert.Equal((byte)(((visible >> 16) & ~1u) | ((visible & 0x1ffff) != 0 ? 1u : 0u)), ecc.ReadMiddleSyndrome());
+                Assert.Equal((syndrome & 0x80000000) != 0, ecc.SerialOutput);
+                Assert.Equal(enabled && visible == 0, ecc.CheckPassed);
+            }
+            if (control % 19 == 0)
+            {
+                ecc.Reset();
+                syndrome = 0;
+                Assert.False(ecc.TryClockDataBit(true));
+                Assert.False(ecc.CheckPassed);
+                Assert.Equal((taps << 1) | 1u, ecc.Polynomial);
+            }
+        }
+    }
+
+    [Fact]
+    public void ResetPublishesOnlyChangedLevelsAfterUpdatingItsRegisters()
+    {
+        var ecc = new Acb4000EccRegisters();
+        var levels = new List<bool>();
+        ecc.ResetChanged += active => { Assert.Equal(ecc.ResetAsserted, active); levels.Add(active); };
+        ecc.Reset();
+        Assert.Empty(levels);
+        ecc.WriteControl(0xc0);
+        ecc.WriteControl(0xc0);
+        ecc.Reset();
+        ecc.Reset();
+        Assert.Equal(new[] { false, true }, levels);
+    }
+
+    [Theory]
     [InlineData("A1FE00000000", 0x99b7f53eu)]
     [InlineData("A1FE00123480", 0xcfffce8fu)]
     [InlineData("313233343536373839", 0xffe64cebu)]

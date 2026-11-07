@@ -8,6 +8,40 @@ public sealed partial class Acb4000AicRegisters
     private bool hostAddressSampled;
     private uint peripheralAddressEpoch;
     private uint hostAddressEpoch;
+    private bool peripheralCyclePending;
+    private bool hostCyclePending;
+
+    private void ConnectBufferClockInputs()
+    {
+        if (clockedBuffer is not null)
+        {
+            clockedBuffer.PeripheralCycleChanged += ReceivePeripheralCycle;
+            clockedBuffer.HostCycleChanged += ReceiveHostCycle;
+            ReceivePeripheralCycle(clockedBuffer.PeripheralCyclePending, clockedBuffer.PeripheralCycleEpoch);
+            ReceiveHostCycle(clockedBuffer.HostCyclePending, clockedBuffer.HostCycleEpoch);
+        }
+        Clocks.BufferClockFell += BufferClockFell;
+    }
+
+    private void ReceivePeripheralCycle(bool pending, uint epoch)
+    {
+        if (!pending || peripheralAddressEpoch != epoch) peripheralAddressSampled = false;
+        peripheralAddressEpoch = epoch;
+        peripheralCyclePending = pending;
+        UpdateBufferClockRequest();
+    }
+
+    private void ReceiveHostCycle(bool pending, uint epoch)
+    {
+        if (!pending || hostAddressEpoch != epoch) hostAddressSampled = false;
+        hostAddressEpoch = epoch;
+        hostCyclePending = pending;
+        UpdateBufferClockRequest();
+    }
+
+    private void UpdateBufferClockRequest() => Clocks.SetBufferClockRequired(
+        clockedTransfers && (peripheralAddressSampled || hostAddressSampled || peripheralCyclePending || hostCyclePending),
+        clockedTransfers && peripheralCyclePending && !peripheralAddressSampled);
 
     /// <summary>Active le câblage CLKA/CLKB du tampon emprunté, sans créer une autre RAM.</summary>
     public void ConfigureClockedBufferTransfers(bool enabled)
@@ -18,11 +52,12 @@ public sealed partial class Acb4000AicRegisters
         peripheralAddressSampled = false;
         hostAddressSampled = false;
         Clocks.ResetPhase();
+        UpdateBufferClockRequest();
     }
 
-    public void AdvanceSystemHalfCycles(int count) => AdvanceBufferClock(count, reference: false);
+    public void AdvanceSystemHalfCycles(int count) => Clocks.AdvanceSystemHalfCycles(count);
 
-    public void AdvanceReferenceHalfCycles(int count) => AdvanceBufferClock(count, reference: true);
+    public void AdvanceReferenceHalfCycles(int count) => Clocks.AdvanceReferenceHalfCycles(count);
 
     /// <summary>Une cellule MFM représente un demi-cycle RD/REF ; RG/WG choisissent cette source.</summary>
     internal void ClockReferenceCell()
@@ -32,61 +67,24 @@ public sealed partial class Acb4000AicRegisters
         AdvanceReferenceHalfCycles(1);
     }
 
-    private void AdvanceBufferClock(int count, bool reference)
+    private void BufferClockFell()
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(count);
-        // Only a selected, driven source can produce an input edge on the RAM controller.
-        if (!clockedTransfers || reference != Clocks.ReferenceSelected
-            || !Clocks.OutputsEnabled || !Clocks.SourceIsDefined)
+        // The generator calls only at an actual selected, driven CLKA falling edge.
+        if (peripheralAddressSampled)
         {
-            AdvanceSource(count, reference);
-            return;
+            clockedBuffer!.CompletePeripheralCycle();
+            Sequencer.PollBufferTransfers();
+            peripheralAddressSampled = false;
         }
-        while (count > 0 && (peripheralAddressSampled || hostAddressSampled
-            || clockedBuffer!.PeripheralCyclePending || clockedBuffer.HostCyclePending || Clocks.TransferPending))
+        else if (hostAddressSampled)
         {
-            if (!clockedBuffer!.PeripheralCyclePending || peripheralAddressEpoch != clockedBuffer.PeripheralCycleEpoch)
-                peripheralAddressSampled = false;
-            if (!clockedBuffer.HostCyclePending || hostAddressEpoch != clockedBuffer.HostCycleEpoch)
-                hostAddressSampled = false;
-            if (clockedBuffer.PeripheralCyclePending && !peripheralAddressSampled && !Clocks.TransferPending)
-                Clocks.TryRequestTransfer();
-            var distance = Clocks.HalfCyclesToNextBufferEvent(out var fallingEdge);
-            if (distance > count) break;
-            AdvanceSource(distance, reference);
-            count -= distance;
-            if (!fallingEdge) continue;
-            // The first CLK edge accepts REQA/address. The following cycle returns RAM data.
-            if (peripheralAddressSampled)
-            {
-                clockedBuffer.CompletePeripheralCycle();
-                Sequencer.PollBufferTransfers();
-                peripheralAddressSampled = false;
-            }
-            else if (hostAddressSampled)
-            {
-                clockedBuffer.CompleteHostCycle();
-                hostAddressSampled = false;
-            }
-            // Address selection for the next RAM cycle: synchronous A has priority over B.
-            if (Clocks.ClockB == false && clockedBuffer.PeripheralCyclePending)
-            {
-                peripheralAddressSampled = true;
-                peripheralAddressEpoch = clockedBuffer.PeripheralCycleEpoch;
-            }
-            else if (clockedBuffer.HostCyclePending)
-            {
-                hostAddressSampled = true;
-                hostAddressEpoch = clockedBuffer.HostCycleEpoch;
-            }
+            clockedBuffer!.CompleteHostCycle();
+            hostAddressSampled = false;
         }
-        // No pending access: skip the idle span without a half-cycle loop.
-        AdvanceSource(count, reference);
-    }
-
-    private void AdvanceSource(int count, bool reference)
-    {
-        if (reference) Clocks.AdvanceReferenceHalfCycles(count);
-        else Clocks.AdvanceSystemHalfCycles(count);
+        // The first edge samples the address, the next granted edge completes RAM.
+        // Synchronous A retains priority over host B at this same edge.
+        if (Clocks.ClockB == false && peripheralCyclePending) peripheralAddressSampled = true;
+        else if (hostCyclePending) hostAddressSampled = true;
+        UpdateBufferClockRequest();
     }
 }

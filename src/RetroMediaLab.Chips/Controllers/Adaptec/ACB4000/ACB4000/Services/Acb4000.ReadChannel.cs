@@ -60,7 +60,7 @@ public sealed partial class Acb4000
                 {
                     _readChannel.StopRead();
                     BeginNativeWrite();
-                    _stage = Acb4000Stage.Write;
+                    SetStage(Acb4000Stage.Write);
                 }
                 else if (_stage == Acb4000Stage.WriteSearch) _readChannel.BeginIdRead();
                 return;
@@ -93,7 +93,7 @@ public sealed partial class Acb4000
             // OEM 6.3.2.4: VERIFY checks ECC, without retrying/correcting the data.
             if (!valid) { Complete(C.VerifyDataCheck, true); return; }
             if (--RemainingBlocks == 0) { Complete(); return; }
-            if (AdvanceAddress()) _stage = Acb4000Stage.Verify;
+            if (AdvanceAddress()) SetStage(Acb4000Stage.Verify);
             return;
         }
 

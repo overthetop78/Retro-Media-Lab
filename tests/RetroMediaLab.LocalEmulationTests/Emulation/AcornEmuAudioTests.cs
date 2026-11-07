@@ -19,7 +19,7 @@ using CommonAudioOutput = RetroMediaLab.Emulation.Acorn.Common.Services.AudioOut
 namespace RetroMediaLab.Tests.Emulation;
 
 /// <summary>Contrôles autonomes du son BBC : bus et ROM synthétiques, aucune sortie physique ni fichier externe.</summary>
-public sealed class AcornEmuAudioTests
+public sealed partial class AcornEmuAudioTests
 {
     [Fact]
     public async Task BufferCounterCanBeReadWhileTheCoreProducesAndDrainsAudio()

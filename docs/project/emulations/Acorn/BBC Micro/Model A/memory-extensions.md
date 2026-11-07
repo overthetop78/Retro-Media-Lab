@@ -79,3 +79,29 @@ B12 et les modules BooBip sont des montages alternatifs sur les mêmes supports.
 Le [manuel B32](https://chrisacorns.computinghistory.org.uk/docs/Aries/Aries_B32Manual.pdf) distingue clairement B32 seul et B32+B12. Les sockets natifs du B32 seul sont renumérotés 12/9/10/11 ; la ROM de la carte est 15. La ROM de gestion utilise aussi des commandes indexées dans FE30–FE3F. Le décodage B32 doit être complet avant de proposer ses configurations 16/20 Kio Shadow ; ne pas recopier une simulation ne traitant que FE3E/FE3F et déclarer les autres modes réalisés.
 
 Références : [B12 et ses emplacements SRAM](https://chrisacorns.computinghistory.org.uk/8bit_Upgrades/Aries_B12.html), [notice B32, organisation des supports](https://chrisacorns.computinghistory.org.uk/docs/Aries/Aries_B32Manual.pdf), et description du bus Aries dans MAME déjà citée.
+
+## Validation des montages présents — 7 novembre 2026
+
+Sans fenêtre RML, sans modification des configurations utilisateur : MOS `os12.rom`, BASIC `basic2.rom` et générateur `saa5050` externes. Onze cartes Model A distinctes, `expandedIo:false`, aucun lecteur/réseau/HDD. Pour chaque montage : 120 images de démarrage, saisie par le clavier émulé de `PRINT"<montage> PASS":PRINT 12+34`, contrôle du résultat 46 dans la mémoire télétexte, 10 images de stabilisation puis 80 images chronométrées. Chaque image comprend `RunFrame()` et `DrainAudio()`. Aucun test ni build concurrent, compilation Debug ordinaire. Les captures sont les trames effectivement rendues par la carte, pas une fenêtre RML.
+
+| Montage | ms/image | FPS calculés libres | MHz émulés | % des 2 MHz | Capture du 7 novembre |
+| --- | ---: | ---: | ---: | ---: | --- |
+| RAM principale 16 Kio | 17,2822 | 57,86 | 2,3108 | 115,54 | `20261107-052955-memory-base16.bmp` |
+| RAM principale 32 Kio | 17,1087 | 58,45 | 2,3343 | 116,71 | `20261107-053001-memory-base32.bmp` |
+| Aries B20 + principale 32 Kio | 16,9729 | 58,92 | 2,3529 | 117,65 | `20261107-053007-memory-b20.bmp` |
+| Watford 32K + principale 32 Kio | 17,1134 | 58,43 | 2,3336 | 116,68 | `20261107-053013-memory-watford32.bmp` |
+| BooBip RAM/ROM ×1, RAM sideways 32 Kio | 16,7902 | 59,56 | 2,3785 | 118,93 | `20261107-053019-memory-boobip1.bmp` |
+| BooBip RAM/ROM ×2, RAM sideways 64 Kio | 17,3656 | 57,59 | 2,2997 | 114,99 | `20261107-053025-memory-boobip2.bmp` |
+| BooBip RAM/ROM ×3, RAM sideways 96 Kio | 18,0068 | 55,53 | 2,2178 | 110,89 | `20261107-053031-memory-boobip3.bmp` |
+| BooBip RAM/ROM ×4, RAM sideways 128 Kio | 17,4232 | 57,39 | 2,2921 | 114,61 | `20261107-053037-memory-boobip4.bmp` |
+| Aries B12 sans SRAM | 17,7604 | 56,31 | 2,2486 | 112,43 | `20261107-053042-memory-b12-0.bmp` |
+| Aries B12 SRAM 8 Kio | 16,7695 | 59,63 | 2,3815 | 119,07 | `20261107-053048-memory-b12-8.bmp` |
+| Aries B12 SRAM 16 Kio | 17,2300 | 58,04 | 2,3178 | 115,89 | `20261107-053054-memory-b12-16.bmp` |
+
+Chaque fenêtre chronométrée représente 3 194 878 à 3 194 883 cycles CPU ; le très faible écart vient de la fin d'instruction. Cadence PAL matérielle inchangée : environ 50,1 Hz. Le dépassement des 2 MHz est la marge de calcul du banc non limité, pas une reprogrammation du CPU. Un seul passage par montage : ces chiffres ne constituent pas une comparaison de gain entre les cartes.
+
+Captures conservées sous `artifacts/TestsMachines/Acorn/BBC Micro Model A/` et `artifacts/TestsChips/MemoryExtensions/BBC Micro Model A/`, hors Git. Les rendus B20, BooBip ×4 et B12 16 Kio ont également été inspectés visuellement.
+
+Portée : démarrage et fonctionnement de BASIC avec les montages installés, notamment la relocalisation de BASIC sur B12. La commande ne sollicite pas les banques supplémentaires : leurs protections, alias et sélections sont vérifiés séparément par les tests de bus existants. Aucun gestionnaire ROM B20/Watford n'est chargé dans ce banc ; son absence n'est pas présentée comme la validation de ses commandes. Aucun nouveau matériel, oscillateur ou service n'est ajouté. Les budgets de lecture WD/HDD et l'écoute Windows restent distincts et ouverts.
+
+Tests complémentaires après les onze mesures : filtre `AcornEmuMemoryExtensionTests|AcornEmuSidewaysExpansionTests` du projet local, Debug, **45 réussites, zéro échec/ignoré, 766 ms**. Les cas couvrent aussi le programme CPU de commutation B20/Watford, les commandes FE30 et leur protection, les quatre nombres de modules BooBip, les moitiés absentes de B12, les conflits et les descriptions/capacités proposées. Aucun changement des sources de production ni des tests n'a été nécessaire. Les avertissements de compilation d'autres modules ne sont pas des échecs du groupe.

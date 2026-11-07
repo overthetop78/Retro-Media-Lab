@@ -30,6 +30,16 @@ public sealed partial class Acb4000FormatChannel
     private uint firstAddress;
     private byte defectCount;
     private uint polynomial;
+    private bool publishedGate;
+    public event Action<bool>? WriteGateChanged;
+
+    private void PublishWriteGate()
+    {
+        var gate = WriteGate;
+        if (publishedGate == gate) return;
+        publishedGate = gate;
+        WriteGateChanged?.Invoke(gate);
+    }
 
     public bool WriteGate => aic is not null ? nativeGate
         : phase is >= Acb4000FormatChannelPhase.Gap and <= Acb4000FormatChannelPhase.Tail;
@@ -71,6 +81,7 @@ public sealed partial class Acb4000FormatChannel
         previousData = false;
         phase = Acb4000FormatChannelPhase.WaitForIndex;
         if (aic is not null) BeginNativeTrack(fill);
+        PublishWriteGate();
     }
 
     /// <summary>Le bit retourné est valable seulement lorsque WriteGate est actif après cet appel.</summary>
@@ -82,6 +93,7 @@ public sealed partial class Acb4000FormatChannel
         {
             if (!index) return false;
             phase = Acb4000FormatChannelPhase.Gap;
+            PublishWriteGate();
         }
         if (!WriteGate) return false;
         if (cellsLeft == 0) AdvancePhase();
@@ -89,6 +101,7 @@ public sealed partial class Acb4000FormatChannel
         {
             phase = Acb4000FormatChannelPhase.Complete;
             cellsLeft = 0;
+            PublishWriteGate();
             return false;
         }
         if (cellsLeft == 0)
@@ -108,6 +121,7 @@ public sealed partial class Acb4000FormatChannel
         firstAddress = defectCount = 0;
         previousData = sequential = false;
         ResetNativeOutput();
+        PublishWriteGate();
     }
 
     private int PhaseLength => phase switch

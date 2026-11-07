@@ -7,6 +7,58 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed partial class AcornEmuWinchesterStorageTests
 {
     [Theory]
+    [InlineData(1u, 2_000_000, 0, 636_953L)]
+    [InlineData(23_333u, 2_000_000, 1, 646_956L)]
+    [InlineData(100_001u, 2_000_003, 0, 636_954L)]
+    [InlineData(333_334u, 2_000_003, 1, 636_956L)]
+    public void PhysicalRotationRetainsTheEstablishedReadCompletionEdge(uint idleTicks, int clock, int unit, long expected)
+    {
+        var result = ReadAfterIdle(true, idleTicks, clock, unit);
+        Assert.Equal(expected, result.Ticks);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void RetainedTrackSelectionSurvivesHeadCylinderChangesResetAndDeferredClocks(int unit)
+    {
+        var stepped = Run(false);
+        var grouped = Run(true);
+        Assert.Equal(stepped.Bytes, grouped.Bytes);
+        Assert.Equal(stepped.Ticks, grouped.Ticks);
+
+        (byte[] Bytes, long Ticks) Run(bool deferred)
+        {
+            using var image = new Image(256, 33);
+            for (var block = 0; block < image.SectorCount; block++)
+                image.Data.AsSpan((int)block * 256, 256).Fill((byte)block);
+            var storage = SignalStorage(image);
+            var controller = new WinchesterController(index => index == unit ? storage : null);
+            var bytes = new List<byte>();
+            try
+            {
+                for (var pass = 0; pass < 2; pass++)
+                {
+                    foreach (var address in new[] { 1, 34, 67, 100, 1 })
+                    {
+                        if (deferred) controller.AdvanceTo(controller.ClockTicks + 23333);
+                        else for (var tick = 0; tick < 23333; tick++) controller.Tick();
+                        var result = HostCommand(controller, [8, (byte)(unit << 5), 0, (byte)address, 1, 0]);
+                        Assert.Equal(0, result.Status);
+                        Assert.Equal(Enumerable.Repeat((byte)address, 256), result.Data);
+                        bytes.AddRange(result.Data);
+                    }
+                    // The following first read selects the same head/cylinder as the last one,
+                    // but RESET cleared the cursor and therefore must invalidate its selection.
+                    controller.Reset();
+                }
+                return (bytes.ToArray(), controller.ClockTicks);
+            }
+            finally { controller.Reset(); }
+        }
+    }
+
+    [Theory]
     [InlineData(1, 100)]
     [InlineData(2_000_003, 100)]
     [InlineData(100_001, 200)]
@@ -108,6 +160,13 @@ public sealed partial class AcornEmuWinchesterStorageTests
         var storage = SignalStorage(image);
         var target = new Acb4000(unit => unit == 0 ? storage : null, 2_000_000);
         var relay = new WinchesterTrackSignals(target, unit => unit == 0 ? storage : null);
+        var edges = new List<(int Unit, bool DirectionIn)>();
+        target.DriveStepped += (unit, directionIn) =>
+        {
+            Assert.True(target.DriveStepIssued(unit));
+            Assert.Equal(target.DriveDirectionIn(unit), directionIn);
+            edges.Add((unit, directionIn));
+        };
         try
         {
             relay.Tick();
@@ -115,6 +174,12 @@ public sealed partial class AcornEmuWinchesterStorageTests
             Assert.False(relay.CanAdvanceIdleClock);
             Assert.Throws<InvalidOperationException>(() => relay.AdvanceIdleTicks(1));
             Assert.Equal(0, ReceiveSignalStatus(target, relay));
+            Assert.Equal(target.SeekCount(0), edges.Count);
+            Assert.NotEmpty(edges);
+            Assert.All(edges, edge => Assert.Equal(0, edge.Unit));
+            // Calibration leaves track zero and searches back before the requested seek.
+            Assert.Contains((0, false), edges);
+            Assert.Contains((0, true), edges);
             Assert.False(relay.CanAdvanceIdleClock);
             Assert.Throws<InvalidOperationException>(() => relay.AdvanceIdleTicks(1));
             for (var tick = 0; tick < 100_000 && !relay.CanAdvanceIdleClock; tick++) relay.Tick();
@@ -122,6 +187,41 @@ public sealed partial class AcornEmuWinchesterStorageTests
             var steps = target.SeekCount(0);
             relay.AdvanceIdleTicks(2_000_000);
             Assert.Equal(steps, target.SeekCount(0));
+            Assert.Equal(steps, edges.Count);
+        }
+        finally { try { relay.Reset(); } finally { target.Reset(); } }
+    }
+
+    [Fact]
+    public void RelayRetainsMountedDrivesWithoutPollingUntilExplicitReplacement()
+    {
+        using var first = new Image(256, 33);
+        using var second = new Image(256, 33);
+        var selected = SignalStorage(first);
+        var queries = 0;
+        var target = new Acb4000(unit => unit == 0 ? selected : null, 2_000_000);
+        var relay = new WinchesterTrackSignals(target, unit => { queries++; return unit == 0 ? selected : null; });
+        try
+        {
+            relay.Tick();
+            Assert.Equal(2, queries);
+            for (var tick = 0; tick < 100; tick++) relay.Tick();
+            Assert.Equal(2, queries);
+            SendSignalCommand(target, relay, [0x0b, 0, 0, 66, 0, 0]);
+            Assert.Equal(0, ReceiveSignalStatus(target, relay));
+            for (var tick = 0; tick < 100_000 && !relay.CanAdvanceIdleClock; tick++) relay.Tick();
+            Assert.True(relay.CanAdvanceIdleClock);
+            Assert.Equal(2, queries);
+            relay.Reset(); target.Reset();
+            for (var tick = 0; tick < 100; tick++) relay.Tick();
+            Assert.Equal(2, queries);
+            selected = SignalStorage(second);
+            relay.RefreshDrives();
+            Assert.Equal(4, queries);
+            for (var tick = 0; tick < 100; tick++) relay.Tick();
+            Assert.Equal(4, queries);
+            Assert.Equal(0, RunSignalCommand(target, relay, [0, 0, 0, 0, 0, 0]));
+            Assert.Equal(4, queries);
         }
         finally { try { relay.Reset(); } finally { target.Reset(); } }
     }

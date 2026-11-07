@@ -22,9 +22,11 @@ public sealed partial class Acb4000FormatChannel
 
     private void ResetNativeOutput()
     {
+        var wasWriting = nativeGate;
         nativeGate = nativeStarted = nativeData = false;
         nativePair = 0;
         encoder.Reset();
+        if (wasWriting) PublishWriteGate();
     }
 
     private void BeginNativeTrack(byte fill)
@@ -75,12 +77,21 @@ public sealed partial class Acb4000FormatChannel
         {
             cellsLeft = 0;
             // An immediate INDEX branch can close WG between the two MFM cells.
-            nativeGate &= sequencer.WriteGate;
+            if (nativeGate && !sequencer.WriteGate)
+            {
+                nativeGate = false;
+                PublishWriteGate();
+            }
             return (nativePair & 1) != 0;
         }
         sequencer.ClockBit(false);
         nativePair = encoder.ClockBit(sequencer.NrzOutput, aic.WriteAddressMarkOutput);
-        nativeGate = sequencer.WriteGate;
+        var gate = sequencer.WriteGate;
+        if (nativeGate != gate)
+        {
+            nativeGate = gate;
+            PublishWriteGate();
+        }
         nativeStarted |= nativeGate;
         if (nativeData && sequencer.State != C.DataState)
         {

@@ -26,6 +26,16 @@ public sealed class Acb4000WriteChannel
     private bool nativeGate;
     private bool nativeStarted;
     private byte nativePair;
+    private bool publishedGate;
+    public event Action<bool>? WriteGateChanged;
+
+    private void PublishWriteGate()
+    {
+        var gate = WriteGate;
+        if (publishedGate == gate) return;
+        publishedGate = gate;
+        WriteGateChanged?.Invoke(gate);
+    }
 
     public Acb4000WriteChannel() { }
 
@@ -47,6 +57,7 @@ public sealed class Acb4000WriteChannel
         word = 0;
         previousData = false;
         phase = Acb4000WriteChannelPhase.Preamble;
+        PublishWriteGate();
     }
 
     /// <summary>La cellule retournée est valable si WriteGate reste actif après cet appel.</summary>
@@ -65,7 +76,7 @@ public sealed class Acb4000WriteChannel
                     Acb4000WriteChannelPhase.Data => Acb4000WriteChannelPhase.Postamble,
                     _ => Acb4000WriteChannelPhase.Complete
                 };
-                if (!WriteGate) return false;
+                if (!WriteGate) { PublishWriteGate(); return false; }
             }
             if (phase == Acb4000WriteChannelPhase.Data && position == 0)
             {
@@ -89,6 +100,7 @@ public sealed class Acb4000WriteChannel
         nativeGate = nativeStarted = false;
         nativePair = 0;
         encoder.Reset();
+        PublishWriteGate();
     }
 
     internal void BeginSequenced()
@@ -111,7 +123,12 @@ public sealed class Acb4000WriteChannel
         var sequencer = aic!.Sequencer;
         sequencer.ClockBit(false);
         nativePair = encoder.ClockBit(sequencer.NrzOutput, aic.WriteAddressMarkOutput);
-        nativeGate = sequencer.WriteGate;
+        var gate = sequencer.WriteGate;
+        if (nativeGate != gate)
+        {
+            nativeGate = gate;
+            PublishWriteGate();
+        }
         nativeStarted |= nativeGate;
         if (nativeStarted && !nativeGate)
         {

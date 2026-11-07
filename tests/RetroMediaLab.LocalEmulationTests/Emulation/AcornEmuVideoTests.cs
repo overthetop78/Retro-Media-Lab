@@ -4,6 +4,7 @@ using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts;
 using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Common.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
+using AcornEmulatorConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.EmulatorConstants;
 using BbcVideo = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.Video;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
@@ -172,7 +173,7 @@ public sealed class AcornEmuVideoTests
         Assert.Equal(0x56, machine.Read(0x1234)); Assert.Equal(pc, machine.Cpu.PC); Assert.Equal(cycles, machine.Cpu.Cycles);
         Assert.Throws<ArgumentOutOfRangeException>(() => runtime.SetOption("acornemu.video-output", "invalid"));
         using var core = new EmulatorCore(MachineModel.BbcMicroModelA);
-        var available = Assert.Single(core.Options);
+        var available = Assert.Single(core.Options, option => option.Key == AcornEmulatorConstants.VideoOutput);
         Assert.False(available.RequiresRestart);
         var hot = RetroMediaLab.App.Functions.Emulation.Machine.EmulationRuntimeOptionFunctions.HotChanges(new Dictionary<string, string> { [available.Key] = "rgb" }, core.Options);
         Assert.Equal("rgb", hot[available.Key]);

@@ -31,6 +31,8 @@ public sealed class Acb4000Bus : IAcb4000Bus
     private byte _protocolData;
     private byte _initiatorData;
     private bool _dmaControlsData;
+    private (bool Busy, bool Select, bool Request, bool InputOutput, bool ControlData, bool Message, byte Data) _publishedOutputs;
+    public event Action? OutputsChanged;
 
     public Acb4000BusPhase Phase { get; private set; } = Acb4000BusPhase.BusFree;
     public bool Busy => _protocolBusy || _manualBusy;
@@ -87,9 +89,14 @@ public sealed class Acb4000Bus : IAcb4000Bus
                 _delay = _settleTicks;
                 TimedOut = false;
             }
+            PublishOutputs();
             return;
         }
-        if (!_transferPending) return;
+        if (!_transferPending)
+        {
+            PublishOutputs();
+            return;
+        }
         if (Request && acknowledge)
         {
             // The initiator holds its data until REQ drops; sample it at ACK assertion.
@@ -104,6 +111,7 @@ public sealed class Acb4000Bus : IAcb4000Bus
             _transferPending = false;
             TransferCompleted = true;
         }
+        PublishOutputs();
     }
 
     /// <summary>Drivers externes de la carte ; ils ne créent pas une connexion de commande.</summary>
@@ -119,6 +127,7 @@ public sealed class Acb4000Bus : IAcb4000Bus
             _selectPending = false;
             _delay = 0;
         }
+        PublishOutputs();
     }
 
     /// <summary>Octets logiques assertés sur les lignes collecteur ouvert du bus huit bits.</summary>
@@ -138,6 +147,7 @@ public sealed class Acb4000Bus : IAcb4000Bus
         Phase = phase;
         _protocolData = data;
         _transferPending = true;
+        PublishOutputs();
         return true;
     }
 
@@ -164,6 +174,7 @@ public sealed class Acb4000Bus : IAcb4000Bus
             _selectPending = false;
             _protocolBusy = true;
             Phase = Acb4000BusPhase.Selected;
+            PublishOutputs();
             return;
         }
         if (!_transferPending || _waitingAckLow) return;
@@ -179,6 +190,7 @@ public sealed class Acb4000Bus : IAcb4000Bus
         if (_delay != 0 || _acknowledge) return;
         Request = true;
         _timeout = _timeoutTicks;
+        PublishOutputs();
     }
 
     private void Release()
@@ -186,6 +198,15 @@ public sealed class Acb4000Bus : IAcb4000Bus
         _protocolBusy = Request = _selectPending = _transferPending = _waitingAckLow = TransferCompleted = false;
         Phase = Acb4000BusPhase.BusFree;
         _delay = _timeout = 0;
+        PublishOutputs();
+    }
+
+    private void PublishOutputs()
+    {
+        var outputs = (Busy, Select, Request, InputOutput, ControlData, Message, OutputData);
+        if (_publishedOutputs == outputs) return;
+        _publishedOutputs = outputs;
+        OutputsChanged?.Invoke();
     }
 
     private static int ToTicks(int nanoseconds, int ticksPerSecond) => checked((int)

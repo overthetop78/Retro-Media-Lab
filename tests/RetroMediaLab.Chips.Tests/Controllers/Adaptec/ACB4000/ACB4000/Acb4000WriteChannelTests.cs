@@ -6,6 +6,23 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Adaptec.ACB4000.ACB4000;
 public sealed class Acb4000WriteChannelTests
 {
     [Fact]
+    public void WriteGatePublishesOnlyItsOpeningClosingAndResetEdges()
+    {
+        var channel = new Acb4000WriteChannel();
+        var edges = new List<(int Cell, bool Gate)>();
+        var cell = 0;
+        channel.WriteGateChanged += gate => { Assert.Equal(channel.WriteGate, gate); edges.Add((cell, gate)); };
+        channel.Begin(new byte[256]);
+        while (channel.WriteGate && cell < 5000) { cell++; channel.ClockCell(); }
+        Assert.Equal(new[] { (0, true), (4465, false) }, edges);
+        channel.ClockCell(); channel.Reset();
+        Assert.Equal(2, edges.Count);
+        channel.Begin(new byte[256]);
+        channel.Reset();
+        Assert.Equal(new[] { (4465, true), (4465, false) }, edges.Skip(2));
+    }
+
+    [Fact]
     public void SegmentMatchesTheIndependentDataEccVectorAndExactGateLength()
     {
         var channel = new Acb4000WriteChannel();

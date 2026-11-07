@@ -5,6 +5,65 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Adaptec.ACB4000.ACB4000;
 public sealed class Acb4000ClocksTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BufferReceivesOnlyDrivenUsefulFallingEdgesWhileIdlePhasesStillAdvance(bool reference)
+    {
+        var clocks = new Acb4000Clocks();
+        clocks.SelectReference(reference);
+        var falls = 0;
+        clocks.BufferClockFell += () =>
+        {
+            Assert.False(clocks.ClockA);
+            falls++;
+            if (falls == 2) clocks.SetBufferClockRequired(false, false);
+        };
+        Advance(clocks, reference, 32);
+        Assert.Equal(0, falls);
+        clocks.SetBufferClockRequired(true, false);
+        Advance(clocks, !reference, 256);
+        Assert.Equal(0, falls);
+        clocks.WriteControl(0x08);
+        Advance(clocks, reference, 32);
+        Assert.Equal(0, falls);
+        clocks.WriteControl(0);
+        Advance(clocks, reference, 32);
+        Assert.Equal(2, falls);
+        Assert.True(clocks.ClockA);
+        Advance(clocks, reference, 256);
+        Assert.Equal(2, falls);
+        Assert.True(clocks.ClockA);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TransferNotificationsFollowRequestsPulseReleaseResetAndSourceSwitch(bool reference)
+    {
+        var clocks = new Acb4000Clocks();
+        clocks.SelectReference(reference);
+        var levels = new List<bool>();
+        clocks.TransferPendingChanged += pending => { Assert.Equal(clocks.TransferPending, pending); levels.Add(pending); };
+        Assert.True(clocks.TryRequestTransfer());
+        Assert.False(clocks.TryRequestTransfer());
+        Advance(clocks, !reference, 256);
+        Assert.Equal(new[] { true }, levels);
+        Advance(clocks, reference, 32);
+        Assert.Equal(new[] { true, false }, levels);
+        Advance(clocks, reference, 256);
+        Assert.Equal(2, levels.Count);
+        Assert.True(clocks.TryRequestTransfer());
+        clocks.ResetPhase(); clocks.ResetPhase();
+        Assert.Equal(new[] { true, false, true, false }, levels);
+        Assert.True(clocks.TryRequestTransfer());
+        Advance(clocks, reference, 3);
+        Assert.False(clocks.ClockB);
+        clocks.SelectReference(!reference);
+        Assert.False(clocks.TransferPending);
+        Assert.Equal(new[] { true, false }, levels.Skip(4));
+    }
+
+    [Theory]
     [InlineData(0x00, 2)]
     [InlineData(0x40, 4)]
     [InlineData(0x80, 8)]

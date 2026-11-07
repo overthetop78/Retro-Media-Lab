@@ -1,5 +1,24 @@
 # ULA série BBC — SERPROC (Acorn 201602 / 2C199)
 
+## Aller-retour cassette par les ROM — 7 novembre 2026
+
+Complément : la même méthode passe ensuite par les quatre conteneurs proposés (WAV, UEF, CSW, RAW). Les quatre programmes sont rechargés par le MOS et exécutés, avec 11 381 762 cycles identiques sur la portion mesurée ; 17,95–19,24 ms/image Debug. [Protocole, tailles, limites et captures par format](../../project/emulations/Acorn/BBC%20Micro/Model%20A/tape-formats-validation.md). Aucune modification du SERPROC n'est nécessaire pour ce passage.
+
+Deux Model A 16 Kio distincts avec MOS 1.20, BASIC II et caractères SAA5050 externes ; aucun lecteur disque, réseau, gestionnaire direct ni sortie Windows. La première carte saisit `10 PRINT"CASSETTE ROUNDTRIP PASS"`, `20 PRINT 12+34`, puis `SAVE"RML"`, transport REC activé et réponse Return à l'invite MOS. Le signal obtenu (530 315 échantillons mono à 48 kHz) est transmis en mémoire comme seul contenu cassette à la seconde carte. Celle-ci exécute `CHAIN"RML"` et produit effectivement le texte attendu et 46. Le programme n'est ni injecté ni recopié dans la RAM du récepteur.
+
+Cette preuve sollicite la sérialisation MC6850, la modulation SERPROC, le transport enregistré puis sa lecture/démodulation sous contrôle du MOS. Elle complète les 193 tests de fronts/états existants ; elle ne les remplace pas par un simple aller-retour dont les deux côtés pourraient partager une erreur. Aucune puce ni cadence modifiée dans ce passage.
+
+| Passage Debug | SAVE ms/image | CHAIN ms/image | Cycles SAVE / CHAIN |
+| --- | ---: | ---: | --- |
+| Premier | 17,3291 | 18,6517 | 21 844 991 / 11 461 633 |
+| Captures après stabilisation | 17,1037 | 18,2199 | 21 844 991 / 11 461 633 |
+
+547 images SAVE et 287 images CHAIN dans chaque fenêtre mesurée, rendu et drainage audio inclus. La saisie et le début de la commande précèdent la fenêtre : il ne s'agit pas de durées totales de bande. CHAIN inclut aussi la recherche du verdict dans la mémoire télétexte après chaque image, ce qui est une surcharge de diagnostic ; aucun gain avant/après n'est revendiqué. Second passage : 58,47 / 54,89 FPS calculés libres, 2,335 / 2,192 MHz, 116,75 / 109,59 % de 2 MHz ; PAL matériel inchangé, environ 50,1 Hz.
+
+Preuves inspectées : `20261107-054903-tape-roundtrip-save-stable.bmp` et `20261107-054909-tape-roundtrip-chain-stable.bmp`, sous `artifacts/TestsChips/BbcSerialUla/BBC Micro Model A/` et `artifacts/TestsMachines/Acorn/BBC Micro Model A/`. Les premières trames `054732` et `054738`, prises pendant la mise à jour entrelacée, restent conservées comme étapes intermédiaires. Six images hors mesure suffisent ici à stabiliser les captures finales ; aucun désentrelacement ni retouche de pixels n'a été effectué.
+
+Pas de fichier média créé ni modifié, pas de configuration utilisateur écrite. Les supports et notifications sont détachés dans finally. Ce passage ne valide ni les conteneurs UEF/CSW/WAV, ni l'écoute des bruitages Windows, ni la vitesse des autres périphériques.
+
 ## Vérification Model A — 7 novembre 2026
 
 Le groupe SERPROC/MC6850 passe **193 tests Debug en 3 s**, sans échec ni test ignoré. Les tests `ClockGroupingTests` comparent les fronts, niveaux, notifications et phase à l'avancement unitaire, y compris séparateur actif, silence, changements de registre et d'entrées, à 1 230 770, 2 000 000 et 3 000 001 Hz. Le MC6850 publie déjà TXD depuis ses changements et RTS/diviseur depuis les écritures de contrôle : l'ancien sondage généralisé des sorties n'est plus présent dans son émission.
@@ -326,3 +345,7 @@ Les durées Release sont dispersées et ne démontrent pas un gain global consta
 `CaptureState` conserve les 32 champs mutables et le registre Control, avec la configuration temporelle. Les intervalles différés restent différés : la capture ne les vide pas et ne crée aucun front. La restauration ne remplace pas les observateurs et ne notifie aucune sortie ; elle rétablit également les niveaux déjà publiés, le séparateur cassette et la phase de synthèse.
 
 Trois tests Debug réussis : 112 reprises (8 diviseurs, cassette/RS423, 7 instants) suivies chacune de 4 000 cycles, avec comparaison intégrale des états, du PCM cassette, des phases et des notifications. Une horloge ou une version incompatible est refusée avant toute mutation. Ces preuves concernent le SERPROC seul ; le support des états de la machine complète reste à intégrer.
+
+### Clôture des niveaux et fronts — 7 novembre 2026
+
+Les groupes de raccordement restés ouverts dans le suivi sont rapprochés des résultats déjà obtenus : 193 tests SERPROC/MC6850 Debug (3 s) et 53 tests intégrés cassette/série/audio (11 s), sans changement de la puce depuis ces passages. `PublishSerialPins` est appelé depuis les mutations de sélection, entrées RS423 et sorties du séparateur ; `SerialClocksRaised` transmet séparément les fronts réellement produits par les compteurs internes. Pas de republication d'un ancien front lors d'un changement de niveau modem, ni de consultation des sorties MC6850 à chaque tick du raccordement. Les états initiaux sont présentés lors du branchement/reset. Les preuves et mesures précédentes restent applicables avec leurs limites ; aucune nouvelle exécution de test ni mesure n'est revendiquée pour la clôture documentaire.

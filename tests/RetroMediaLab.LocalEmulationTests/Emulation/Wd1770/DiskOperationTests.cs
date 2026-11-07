@@ -1,4 +1,4 @@
-﻿using Controller = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services.Wd1770Drive;
+using Controller = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services.Wd1770Drive;
 using Disk = RetroMediaLab.Tests.Emulation.Wd1770.MemoryTrackDisk;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 using RetroMediaLab.Emulation.Contracts;
@@ -349,6 +349,50 @@ public sealed class AcornEmuWd1770Tests
         for (var tick = 0; tick < 400_000; tick++) controller.Tick();
         Assert.True(controller.Active); Assert.False(controller.Drq);
         Assert.Equal(256, Transfer(controller).Data.Length);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RepeatedReadsAndPhysicalChangesUseTheCorrectMediaData(bool wd1772)
+    {
+        using var first = new Disk(10);
+        using var replacement = new Disk(40);
+        Disk mounted = first;
+        var model = wd1772 ? RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1772
+            : RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Enums.Wd1770Model.Wd1770;
+        var controller = new Controller(_ => mounted, model: model);
+        byte[] ReadSector()
+        {
+            controller.Write(2, 0);
+            controller.Write(0, 0x88);
+            var result = Transfer(controller);
+            Assert.Equal(0, result.Status & 0x7c);
+            return result.Data;
+        }
+        try
+        {
+            Assert.Equal(first.Bytes(0, 0, 0), ReadSector());
+            Assert.Equal(first.Bytes(0, 0, 0), ReadSector());
+            controller.Side = 1;
+            Assert.Equal(first.Bytes(0, 1, 0), ReadSector());
+            Seek(controller, 1);
+            Assert.Equal(first.Bytes(1, 1, 0), ReadSector());
+            mounted = replacement;
+            controller.MediaChanged(0);
+            Assert.Equal(replacement.Bytes(1, 1, 0), ReadSector());
+            var written = Enumerable.Repeat((byte)0x5a, 256).ToArray();
+            controller.Write(2, 0);
+            controller.Write(0, 0xa8);
+            Assert.Equal(0, Transfer(controller, written).Status & 0x7c);
+            Assert.Equal(written, ReadSector());
+            Assert.False(first.Disposed);
+            Assert.False(replacement.Disposed);
+        }
+        finally
+        {
+            controller.Reset();
+        }
     }
 
     private static void Seek(Controller controller, byte track) { controller.Write(3, track); controller.Write(0, 0x18); Transfer(controller); }

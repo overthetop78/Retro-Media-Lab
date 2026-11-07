@@ -29,7 +29,7 @@ public sealed partial class Acb4000
         _matchingReadId = false;
         _verifying = verify;
         _readError = C.NoSense;
-        _stage = Acb4000Stage.Read;
+        SetStage(Acb4000Stage.Read);
         if (_translating) BeginTranslationRead();
         else _searchDeadline.BeginFollowingFieldWait();
     }
@@ -66,7 +66,7 @@ public sealed partial class Acb4000
         var physicalBlock = (long)_address * BlockSize / drive.SectorSize;
         FormatCylinder = checked((int)(physicalBlock / drive.SectorsPerTrack / drive.Heads));
         FormatHead = (int)(physicalBlock / drive.SectorsPerTrack % drive.Heads);
-        _stage = Acb4000Stage.WriteSearch;
+        SetStage(Acb4000Stage.WriteSearch);
         _matchingReadId = false;
         _searchDeadline.BeginFollowingFieldWait();
     }
@@ -93,7 +93,7 @@ public sealed partial class Acb4000
             {
                 _address = _firstAddress;
                 RemainingBlocks = _commandBlocks;
-                _stage = Acb4000Stage.Verify;
+                SetStage(Acb4000Stage.Verify);
                 return false;
             }
             Complete();

@@ -25,7 +25,7 @@
     - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/Saa5050/Saa5050GuestProof.cs` et `artifacts/.tmp-saa5050/` après arrêt des bancs, reconstruire les assemblies locales Debug/Release pour retirer le diagnostic, exécuter les suites Chips et les contrôles natifs utiles puis modifier la fiche avec les résultats finaux ; conserver les seules captures ignorées par Git.
     - [x] Modifier `docs/chips/Video/Saa5050.md` avec la livraison issue de `scripts/local-building.cmd --building=debug --modules=A`, vérifier l’exécutable, Chips dans lib et les 24 modules ; créer le commit séparé SAA5050 sans les captures ni les fichiers temporaires.
 
-- [ ] SAA5050 : conserver la représentation RGB du registre série entre ses mutations.
+- [x] SAA5050 : évaluer puis retirer la représentation RGB conservée, faute de gain global établi dans les configurations comparées.
   - [x] Modifier `src/RetroMediaLab.Chips/Video/Philips/SAA50xx/SAA5050/Services/TeletextSaa5050.Pipeline.cs` : préparer le fond RGB répété et les différences de pixels lors de UpdateSerialOutputs, recalculer celles-ci seulement si masque ou couleurs changent, extraire les paquets sans refaire le mélange des douze points ; garder toutes les échéances, broches et étapes du registre.
   - [x] Modifier `docs/chips/Video/Saa5050.md` avec la représentation exacte et les résultats des contrôles existants couvrant chaque masque/longueur de paquet, les portes, la fermeture/réouverture, le débordement des files et le reset, puis les intégrations vidéo BBC, en Debug et Release.
   - [x] Créer temporairement `artifacts/bbc-saa-pixels/` pour comparer les mêmes scénarios du BBC complet avant/après en Debug et Release, modifier `docs/chips/CPU/Mos6502.md` avec les résultats et conserver le changement uniquement si le gain global est démontré.
@@ -54,3 +54,6 @@
   - [x] Supprimer `artifacts/bbc-pipeline-deadline/` et ses sources/DLL/résultats temporaires après consignation ; ne conserver une capture en émulation que pour une modification retenue, dans `artifacts/TestsChips/SAA5050/BbcMicroModelB/`.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+- [x] Vérifier le SAA5050 conservé après les essais d'optimisation retirés.
+  - [x] Créer `artifacts/TestsChips/SAA5050/BBC Micro Model A/` avec les trames télétexte réelles déjà obtenues au catalogue et en jeu ; exécuter les tests SAA5050 Debug existants hors sauvegardes d'état, en conservant l'intégration vidéo BBC déjà vérifiée sans la relancer sur un code inchangé. Résultat : 95 réussites, zéro échec ni ignoré, 378 ms.

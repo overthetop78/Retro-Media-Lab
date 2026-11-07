@@ -1,5 +1,11 @@
 # BBC Micro Model A — essais progressifs dans RML Debug
 
+## Retour utilisateur — 7 novembre 2026
+
+L'utilisateur confirme « ça fonctionne » en réponse explicite à la vérification des clics cassette et de l'effet des deux volumes, machine et lecteur. Ces deux points d'écoute sont donc validés par son essai du build livré, sans prétendre avoir enregistré sa sortie Windows ou obtenu une nouvelle capture. Ne pas lui redemander le même essai ni lancer le banc audio Windows envisagé uniquement pour obtenir cette confirmation.
+
+Cette validation audio ne remplace pas les autres preuves matérielles et ne clôt pas les budgets Debug WD/HDD documentés dans le README. Les anciennes mesures, captures et cases ci-dessous restent leur historique ; aucun nouveau FPS utilisateur n'a été fourni dans ce retour.
+
 ## Ordre de réalisation
 
 - [ ] Valider le Model A dans RML avant de passer à l'icône suivante.

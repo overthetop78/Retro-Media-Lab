@@ -162,19 +162,22 @@ internal sealed partial class Wd1770Drive
         var clocks = _clocksPerOwnerTick;
         if (_ownerFraction >= _ownerClock) { clocks++; _ownerFraction -= _ownerClock; }
         if (_changed) Synchronize();
-        if (!Active && !_previousMotor)
+        if (!Active)
         {
-            if (_indexPin) { _indexPin = false; Chip.SetIndex(false); }
-            if (_readDataPin) { _readDataPin = false; Chip.SetReadData(false); }
-            Chip.Advance(clocks);
-            _time += (ulong)clocks * _nanosecondsPerClock;
-            if (_nanosecondRemainder != 0)
+            if (!_previousMotor)
             {
-                _nanosecondFraction += (ulong)clocks * _nanosecondRemainder;
-                _time += _nanosecondFraction / _siliconClock;
-                _nanosecondFraction %= _siliconClock;
+                if (_indexPin) { _indexPin = false; Chip.SetIndex(false); }
+                if (_readDataPin) { _readDataPin = false; Chip.SetReadData(false); }
+                Chip.Advance(clocks);
+                _time += (ulong)clocks * _nanosecondsPerClock;
+                if (_nanosecondRemainder != 0)
+                {
+                    _nanosecondFraction += (ulong)clocks * _nanosecondRemainder;
+                    _time += _nanosecondFraction / _siliconClock;
+                    _nanosecondFraction %= _siliconClock;
+                }
+                return;
             }
-            return;
         }
         // La facilité de vitesse reste dans le câblage. Les cycles internes de la puce ne sont pas supprimés.
         var accelerated = MechanicalSpeedPercent != C.NormalSpeedPercent && Active && !Drq && !Irq;
@@ -182,11 +185,40 @@ internal sealed partial class Wd1770Drive
             clocks = MechanicalSpeedPercent == 0 ? clocks * C.MaximumClockMultiplier
                 : Math.Max(1, clocks * MechanicalSpeedPercent / C.NormalSpeedPercent);
         _tickBaseHalfClock = Chip.HalfClocks;
-        for (var clock = 0; clock < clocks; clock++)
+        var advanced = accelerated ? 0 : TryAdvanceStableInputs(clocks);
+        for (var clock = advanced; clock < clocks; clock++)
         {
             TickSilicon();
             if (accelerated && (Drq || Irq)) break;
         }
+    }
+
+    /// <summary>
+    /// Présente un intervalle sans front physique au silicium. Celui-ci borne
+    /// l'avancement avant ses propres échéances, exécutées par le chemin unitaire.
+    /// Les index, impulsions RD et écritures conservent le chemin unitaire.
+    /// </summary>
+    private int TryAdvanceStableInputs(int clocks)
+    {
+        if (clocks <= 1 || !_previousMotor || _nanosecondRemainder != 0 || _carryPulse
+            || _cachedTrack < 0 || _writingImage is not null) return 0;
+        var elapsed = (ulong)clocks * _nanosecondsPerClock;
+        var lastOffset = elapsed - _nanosecondsPerClock;
+        var rotation = _rotation[_drive];
+        if ((ulong)rotation + elapsed >= C.RevolutionNanoseconds) return 0;
+        var lastRotation = rotation + lastOffset;
+        var index = _cachedImage is not null && rotation < C.IndexNanoseconds;
+        if (index != _indexPin || index && lastRotation >= C.IndexNanoseconds) return 0;
+        if (_nextPulse < _pulses.Length && _pulses[_nextPulse] <= lastRotation) return 0;
+        if ((_time < _readUntil) != _readDataPin
+            || _readDataPin && _readUntil <= _time + lastOffset) return 0;
+        var advanced = Chip.AdvanceWithStableInputs(clocks);
+        if (advanced == 0) return 0;
+        elapsed = (ulong)advanced * _nanosecondsPerClock;
+        _tickBaseHalfClock = Chip.HalfClocks;
+        _time += elapsed;
+        _rotation[_drive] += (uint)elapsed;
+        return advanced;
     }
 
     private void TickSilicon()

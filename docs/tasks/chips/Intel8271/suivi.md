@@ -91,7 +91,7 @@
   - [x] Supprimer `artifacts/.tmp-i8271/` et ses outils, références et journaux temporaires ; conserver les tests autonomes et captures locales hors Git.
   - [x] Modifier l’index Git et créer le commit séparé Intel 8271 après sa clôture, sans artifact ni image de test.
 
-- [ ] Intel 8271 : préserver la sélection au front d'écriture et avancer son horloge depuis ses échéances.
+- [x] Intel 8271 : préserver la sélection au front d'écriture et avancer son horloge depuis ses échéances.
   - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Intel/FDC/8271/Services/Intel8271.Bus.cs` : retenir CS avec l'adresse et DACK pendant WR ; valider le cycle engagé lors du relâchement simultané WR/CS, sans ressusciter un cycle désélectionné avant WR.
   - [x] Modifier `tests/RetroMediaLab.Chips.Tests/Controllers/Intel/FDC/8271/BusTests.cs` : couvrir la désélection simultanée et antérieure, l'adresse retenue et l'absence de double écriture ; adapter l'attente du parcours des broches au cycle désormais validé.
   - [x] Créer `src/RetroMediaLab.Chips/Controllers/Intel/FDC/8271/Services/Intel8271.Clock.cs` ; modifier `Intel8271.cs`, `Intel8271.Bus.cs`, `Intel8271.Registers.cs`, `Intel8271.DriveSignals.cs` et `Interfaces/IIntel8271.cs` : conserver temps et échéance dans le contrôleur, publier les réveils à partir des mutations, avancer les périodes sans traitement utile sans supprimer de cycle actif.
@@ -99,5 +99,12 @@
   - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMicro/Common/Services/Disks.cs`, `Machines/AcornAtom/Common/Services/AtomMachine.Bus.cs` et `Machines/AcornSystem/Common/Services/AcornSystemMachine.Bus.cs` sous le même dossier AcornEmu : synchroniser l'horloge du 8271 avant les accès de bus de toutes les cartes utilisatrices.
   - [x] Créer `tests/RetroMediaLab.Chips.Tests/Controllers/Intel/FDC/8271/ClockTests.cs` : comparer l'avancement groupé et unitaire des buffers et délais, ainsi que l'absence d'échéance au repos ; conserver ces tests autonomes pour la validation finale.
   - [x] Modifier `docs/chips/Controllers/Intel8271.md` avec la référence Intel du cycle WR/CS, les changements écrits et les validations différées ; supprimer les fichiers temporaires `rml-intel8271-reference.pdf` et `rml-8271-p*.png` créés dans le dossier temporaire pour cette lecture.
+
+- [x] Valider le bloc 8271 sur le Model A après les corrections d'horloge et de signaux.
+  - [x] Créer temporairement `artifacts/.tmp-tube/ModelADisk.cs` : monter un SSD existant en lecture seule via le SDK, exécuter MOS/BASIC/DFS en 16 Kio, vérifier le catalogue puis charger le logiciel par son clavier émulé ; mesurer la carte complète Debug et conserver ses trames réelles dans `TestsChips/Intel8271/BBC Micro Model A/` et `TestsMachines/Acorn/BBC Micro Model A/`, sans modifier la configuration utilisateur.
+  - [x] Modifier `tests/RetroMediaLab.Chips.Tests/Controllers/Intel/FDC/8271/ClockTests.cs` seulement si le passage établit une lacune de couverture ; exécuter les tests Debug du 8271 et de ses raccordements BBC/Atom/System pour vérifier bus, transitions, échéances et transferts existants. Aucun test supplémentaire nécessaire : 158 cas de puce et 136 cas d'intégration réussis ; couverture existante conservée.
+  - [x] Supprimer `artifacts/.tmp-tube/ModelADisk.cs` après consignation et reconstruire le banc avec sa source préexistante `Program.cs` ; conserver les captures, exclure les diagnostics et artefacts du commit.
+
+Le bloc de bus/horloge du 8271 est vérifié. La différence de comportement du jeu entre 16 et 32 Kio reste un point du Model A, pas une validation générale de cette machine. Références, mesures et limites dans `docs/chips/Controllers/Intel8271.md`.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)

@@ -16,6 +16,13 @@ public sealed class Acb4000Clocks
     private int systemDivider = C.SystemQuarterDivider;
     private int referenceDivider = M.BitsPerByte / R.TwoCyclesPerByte;
     private int selectedDivider = C.SystemQuarterDivider;
+    private bool outputsDriven = true;
+    private bool bufferClockRequired;
+    private bool peripheralStrobeRequired;
+    /// <summary>Front descendant CLKA utile au tampon demandeur ; les phases avancent aussi sans demande.</summary>
+    internal event Action? BufferClockFell;
+    /// <summary>La demande CLKB est engagée ou complètement relâchée.</summary>
+    internal event Action<bool>? TransferPendingChanged;
     public byte Control { get; private set; }
     public bool ReferenceSelected { get; private set; }
     public bool OutputsEnabled => (Control & R.ClocksHighImpedance) == 0;
@@ -27,24 +34,10 @@ public sealed class Acb4000Clocks
     private int SystemSelection => (Control >> R.NonTransferClockShift) & R.NonTransferClockMask;
     private int Divider => selectedDivider;
     private int Phase => ReferenceSelected ? referencePhase : systemPhase;
-    internal int HalfCyclesToNextBufferEvent(out bool fallingEdge)
+    internal void SetBufferClockRequired(bool required, bool peripheralStrobe)
     {
-        var divider = selectedDivider;
-        var phase = Phase;
-        var period = divider * C.EdgesPerCycle;
-        var falling = phase < divider ? divider - phase : period + divider - phase;
-        if (requestActive)
-        {
-            var release = (divider + C.HoldHalfCycles - phase) & (period - 1);
-            if (release == 0) release = period;
-            if (release < falling)
-            {
-                fallingEdge = false;
-                return release;
-            }
-        }
-        fallingEdge = true;
-        return falling;
+        bufferClockRequired = required;
+        peripheralStrobeRequired = peripheralStrobe;
     }
 
     public void WriteControl(byte value)
@@ -61,43 +54,77 @@ public sealed class Acb4000Clocks
         selectedDivider = ReferenceSelected ? referenceDivider : systemDivider;
         systemPhase &= systemDivider * C.EdgesPerCycle - 1;
         referencePhase &= referenceDivider * C.EdgesPerCycle - 1;
+        outputsDriven = OutputsEnabled && SourceIsDefined;
     }
 
     /// <summary>Le mux de source est indépendant des horloges fournies aux deux entrées.</summary>
     public void SelectReference(bool selected)
     {
         if (ReferenceSelected == selected) return;
+        var wasPending = TransferPending;
         ReferenceSelected = selected;
         selectedDivider = selected ? referenceDivider : systemDivider;
+        outputsDriven = OutputsEnabled && SourceIsDefined;
         requestActive = false;
+        if (wasPending && !TransferPending) TransferPendingChanged?.Invoke(false);
     }
 
     public bool TryRequestTransfer()
     {
         if (TransferPending) return false;
         pending = true;
+        TransferPendingChanged?.Invoke(true);
         return true;
     }
 
-    public void AdvanceSystemHalfCycles(long count) => Advance(ref systemPhase, systemDivider, !ReferenceSelected, count);
-    public void AdvanceReferenceHalfCycles(long count) => Advance(ref referencePhase, referenceDivider, ReferenceSelected, count);
+    public void AdvanceSystemHalfCycles(long count) => Advance(ref systemPhase, systemDivider, reference: false, count);
+    public void AdvanceReferenceHalfCycles(long count) => Advance(ref referencePhase, referenceDivider, reference: true, count);
 
-    private void Advance(ref int phase, int divider, bool selected, long count)
+    private void Advance(ref int phase, int divider, bool reference, long count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         var period = divider * C.EdgesPerCycle;
         var mask = period - 1;
-        // At most a pulse start and a pulse end need inspection; idle spans advance arithmetically.
-        while (selected && count > 0 && TransferPending)
+        // Only useful edges are visited. RAM completion callbacks may change the requests
+        // before the next edge in the same span; idle phases still advance arithmetically.
+        while (reference == ReferenceSelected && count > 0)
         {
-            var target = requestActive ? (divider + C.HoldHalfCycles) & mask : divider - C.SetupHalfCycles;
-            var distance = (target - phase) & mask;
-            if (requestActive && distance == 0) distance = period;
+            if (outputsDriven && peripheralStrobeRequired && !TransferPending) TryRequestTransfer();
+            var falling = bufferClockRequired && outputsDriven;
+            if (!TransferPending && !falling) break;
+            var distance = int.MaxValue;
+            var pulseEdge = false;
+            var fallingEdge = false;
+            if (TransferPending)
+            {
+                var target = requestActive ? (divider + C.HoldHalfCycles) & mask : divider - C.SetupHalfCycles;
+                distance = (target - phase) & mask;
+                if (requestActive && distance == 0) distance = period;
+                pulseEdge = true;
+            }
+            if (falling)
+            {
+                var nextFall = phase < divider ? divider - phase : period + divider - phase;
+                if (nextFall <= distance)
+                {
+                    if (nextFall < distance) pulseEdge = false;
+                    distance = nextFall;
+                    fallingEdge = true;
+                }
+            }
             if (distance > count) break;
-            phase = target;
+            phase = (phase + distance) & mask;
             count -= distance;
-            if (requestActive) requestActive = false;
-            else { pending = false; requestActive = true; }
+            if (pulseEdge && requestActive)
+            {
+                requestActive = false;
+                TransferPendingChanged?.Invoke(false);
+            }
+            else if (pulseEdge) { pending = false; requestActive = true; }
+            if (fallingEdge && bufferClockRequired && outputsDriven) BufferClockFell?.Invoke();
+            divider = reference ? referenceDivider : systemDivider;
+            period = divider * C.EdgesPerCycle;
+            mask = period - 1;
         }
         phase = (int)(((long)phase + count) & mask);
     }
@@ -105,7 +132,9 @@ public sealed class Acb4000Clocks
     /// <summary>Réalignement du bit ring ; le contrôle 7Fh est conservé.</summary>
     public void ResetPhase()
     {
+        var wasPending = TransferPending;
         systemPhase = referencePhase = 0;
         pending = requestActive = false;
+        if (wasPending) TransferPendingChanged?.Invoke(false);
     }
 }

@@ -35,7 +35,7 @@ public sealed partial class Acb4000
         _positioningExpired = false;
         _positioners[Unit].BeginRezero(_modeParameters[Unit].StepRate);
         _driveMoving[Unit] = true;
-        _stage = Acb4000Stage.Positioning;
+        SetStage(Acb4000Stage.Positioning);
         return false;
     }
 
@@ -66,7 +66,7 @@ public sealed partial class Acb4000
         _driveMoving[Unit] = false;
         SelectedHead = 0;
         _parameterChannel.Begin(Acb4000DriveParameters.Default);
-        _stage = Acb4000Stage.Parameters;
+        SetStage(Acb4000Stage.Parameters);
         _searchBudget.Begin(F.SmallBlockSequentialSectors);
         BeginIndexSearch();
     }

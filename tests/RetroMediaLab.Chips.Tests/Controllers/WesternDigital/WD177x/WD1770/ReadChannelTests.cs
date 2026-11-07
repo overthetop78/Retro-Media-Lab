@@ -3,7 +3,7 @@ using RetroMediaLab.Chips.Controllers.WesternDigital.WD177x.WD1770.Services;
 
 namespace RetroMediaLab.Chips.Tests.Controllers.WesternDigital.WD177x.WD1770;
 
-public sealed class ReadChannelTests
+public sealed partial class ReadChannelTests
 {
     [Theory]
     [InlineData(0xf57e, 0xfe, (int)Wd1770ReadWordKind.AddressMark)]

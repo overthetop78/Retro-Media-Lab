@@ -2,6 +2,34 @@
 
 ## Périmètre et architecture
 
+Passage du 7 novembre 2026 : les 158 tests propres au 8271 réussissent en Debug, zéro échec ni ignoré, 566 ms. Ils couvrent notamment le relâchement simultané WR/CS, les phases de registre, l'avancement groupé comparé aux clocks unitaires, les fronts de positionnement et les transferts FM. Aucun résultat de machine complète n'est déduit de ce seul groupe. Avertissement préexistant xUnit2031 dans `Shared/ArchitectureTests.cs`, hors du composant testé.
+
+Le passage intégré suivant donne 136 réussites Debug, zéro échec ni ignoré, 5 s : groupe `Emulation.Intel8271` et `AcornEmuDiskControllerTests`. Il réexerce les pistes physiques, interruptions d'écriture, formatages, deux lecteurs/faces, cycles fractionnaires et raccordements existants. Les avertissements de compilation CA1416 d'autres modules, CS8604 Sony et CS0649 des infrastructures de test sont conservés ; aucune erreur de compilation.
+
+### Lecture réelle sur le Model A — 7 novembre 2026
+
+Diagnostic sans RML, carte complète Debug non optimisée, sans transport réseau ni sortie audio Windows. MOS `os12.rom`, BASIC `basic2.rom`, caractères `saa5050`, DFS `dfs0.9h.rom` en banque 14, contrôleur 8271, entrées/sorties du Model A conservées (`expandedIo: false`). Deux montages : RAM 16 Kio native puis 32 Kio avec extension. Aucun réglage utilisateur modifié. Le SSD `Model A Invaders (1982)(IJK)[INVA].ssd` du corpus TOSEC 2024 est ouvert en lecture seule par le SDK, détaché dans `finally` puis libéré. Saisie par le clavier émulé, sans injection du logiciel en RAM ni modification du PC.
+
+`*DISC`, `*CAT` lisent 512 octets et affichent `model a`, Drive 0, `INV/A`, puis rendent l'invite. `CHAIN "INV/A"` lit 9 728 octets au total et atteint le menu des quatre options en 16 comme en 32 Kio. En 32 Kio, l'option 4 et Espace atteignent l'écran de partie avec les rangées d'envahisseurs, le score et trois bases ; capture inspectée `20261107-012447-32k-jeu-carte-sans-interface.bmp`. Cela prouve le chargement et l'entrée dans ce programme ; aucune écoute du son ni validation exhaustive de son rendu n'est déduite de cette image.
+
+Mesures sans limite de vitesse : 120 trames de chauffe au démarrage, puis 10 de chauffe et 100 mesurées par scénario, `RunFrame` et `DrainAudio` inclus. Les passages répétés ci-dessous servent à distinguer la variabilité de mesure et la correction de saisie du banc ; aucune optimisation du contrôleur n'a été ajoutée pendant ce passage et aucun gain avant/après n'est revendiqué.
+
+| RAM / scénario | ms/image observées | FPS calculés | MHz effectifs / vitesse réelle |
+| --- | --- | --- | --- |
+| 16 Kio / repos, deux premiers passages | 18,733 / 18,594 | 53,38 / 53,78 | 2,132 / 106,6 % ; 2,148 / 107,4 % |
+| 16 Kio / menu chargé, deux premiers passages | 18,603 / 19,096 | 53,76 / 52,37 | 2,147 / 107,3 % ; 2,091 / 104,6 % |
+| 32 Kio / repos, trois passages | 18,974 / 19,210 / 19,204 | 52,70 / 52,06 / 52,07 | 2,105 / 105,2 % ; 2,079 / 103,9 % ; 2,080 / 104,0 % |
+| 32 Kio / menu chargé, trois passages | 18,631 / 18,955 / 18,663 | 53,68 / 52,76 / 53,58 | 2,144 / 107,2 % ; 2,107 / 105,3 % ; 2,140 / 107,0 % |
+| 32 Kio / après démarrage option 4, deux passages | 19,395 / 19,723 | 51,56 / 50,70 | 2,059 / 103,0 % ; 2,025 / 101,2 % |
+
+Le budget matériel reste environ 19,968 ms/image à 50,0801 Hz, 3 993 599 à 3 993 603 cycles par lot de 100 images selon la frontière d'instruction. Ces nombres décrivent le calcul hors interface ; ils ne sont pas des FPS présentés dans RML. Les scénarios ci-dessus restent sous ce budget sur ces passages. La mesure après sélection en 16 Kio ne prouve pas une partie : le menu est resté visible lors du premier essai, ce point demeure distinct de la lecture disque réussie.
+
+Captures brutes du cœur, sans retouche, copiées dans `artifacts/TestsChips/Intel8271/BBC Micro Model A/` et `artifacts/TestsMachines/Acorn/BBC Micro Model A/` : `20261107-012314-16k-catalogue-carte-sans-interface.bmp`, `20261107-012319-16k-programme-carte-sans-interface.bmp`, `20261107-012329-32k-catalogue-carte-sans-interface.bmp`, `20261107-012334-32k-programme-carte-sans-interface.bmp`, puis les étapes `012421/012424` en 16 Kio et `012443/012447` en 32 Kio, et le contrôle de saisie `012519/012525/012529/012532` en 32 Kio. Ce sont des trames hors interface, pas des captures de fenêtre RML.
+
+Le premier montage du diagnostic passait directement la ROM DFS de 8 Kio à une banque de 16 Kio et a été refusé par `SidewaysRoms`. Le banc utilise désormais `BbcMicroFirmwareFunctions.GetRomBytes`, comme le chargement normal ; aucune modification de production n'était nécessaire. Le premier générateur de saisie utilisait la touche A pour les chiffres avec le caractère hôte : la confirmation suivante emploie D4 avec son caractère, sans changer le clavier émulé. Les assemblies de ce banc sont reconstruites avec leur source préexistante après suppression du diagnostic ; les captures restent hors Git.
+
+Confirmation 16 Kio avec D4 physique : le menu reste affiché après l'option 4 et Espace, y compris après les 100 images suivantes. Les captures `20261107-012615-16k-programme-carte-sans-interface.bmp`, `012619-16k-option4`, `012622-16k-jeu` et `012624-16k-jeu-apres-mesure` conservent cette limite ; la cadence mesurée de 18,436 ms/image concerne donc toujours le menu, pas une partie active. Repos : 18,964 ms/image, 52,73 FPS, 2,106 MHz (105,3 %) ; menu avant sélection : 19,184 ms/image, 52,13 FPS, 2,082 MHz (104,1 %). Aucune cause matérielle n'est établie par cette différence avec la RAM 32 Kio. Le nom du fichier ne suffit pas à valider sa compatibilité en 16 Kio.
+
 Le composant numérique est dans `RetroMediaLab.Chips/Controllers/Intel/FDC/8271`. Il reçoit l’horloge du propriétaire, les cycles de bus et les niveaux des broches. Il ne connaît ni `IDiskImage`, ni format de fichier, ni piste sectorielle synthétique, ni rotation de lecteur. Les anciens fichiers Transfers/SectorAdapter/SectorWrites/SectorFormatting sont supprimés.
 
 `IIntel8271` expose les registres, CS/RD/WR/DACK, données de bus à haute impédance, DRQ/NMI, Reset, Ready, protection, Fault, Track Zero, Index, Count, Unseparated Data, Data Window, PLO/SS, InSync et les fronts Write Data. `DriveControl` expose les sorties du lecteur ; leur utilisation physique appartient à la carte. Le bit Optional Output ne sélectionne aucune face intrinsèquement.

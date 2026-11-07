@@ -29,12 +29,18 @@ public interface IAcb4000
     bool WriteGate { get; }
     int FormatCylinder { get; }
     int FormatHead { get; }
+    /// <summary>Changement des portes physiques résolues, sans sondage du destinataire.</summary>
+    event Action<bool, bool>? DriveGatesChanged;
+    /// <summary>Sélection physique : unité, tête de lecture, cylindre et tête du formatage/écriture.</summary>
+    event Action<int, int, int, int>? DriveSelectionChanged;
     /// <summary>Une horloge du canal d'écriture, avec le niveau INDEX du lecteur sélectionné.</summary>
     bool ClockWriteCell(bool index);
     /// <summary>Niveau emprunté de WRITE FAULT du lecteur sélectionné, indépendant de RESET du contrôleur.</summary>
     void SetWriteFault(bool active);
     /// <summary>Niveaux empruntés du lecteur ; leur état n'est pas réinitialisé par RESET SCSI.</summary>
     void SetDriveSignals(int unit, bool ready, bool seekComplete, bool trackZero);
+    /// <summary>Front STEP réellement émis, avec l'unité et la direction vers le centre.</summary>
+    event Action<int, bool>? DriveStepped;
     bool DriveStepIssued(int unit);
     bool DriveDirectionIn(int unit);
     /// <summary>Expiration de l'attente mécanique, fournie par son propriétaire.</summary>

@@ -17,12 +17,16 @@ public sealed partial class Acb4000
     private Acb4000PositioningPurpose _positioningPurpose;
     private bool _positioningExpired;
 
+    public event Action<int, bool>? DriveStepped;
+
     public void SetDriveSignals(int unit, bool ready, bool seekComplete, bool trackZero)
     {
         ValidateDriveUnit(unit);
+        var changed = _driveReady[unit] != ready;
         _driveReady[unit] = ready;
         _driveSeekComplete[unit] = seekComplete;
         _driveTrackZero[unit] = trackZero;
+        if (changed && unit == Unit) UpdateDriveGates();
     }
 
     public bool DriveStepIssued(int unit) { ValidateDriveUnit(unit); return _positioners[unit].StepIssued; }
@@ -47,6 +51,7 @@ public sealed partial class Acb4000
             {
                 _driveCylinder[unit] += positioning.DirectionIn ? 1 : -1;
                 _stepCount[unit]++;
+                DriveStepped?.Invoke(unit, positioning.DirectionIn);
             }
             // The owner must have an opportunity to react to the final STEP before sampling completion.
             if (!wasBusy && _driveMoving[unit] && _driveSeekComplete[unit]) _driveMoving[unit] = false;
@@ -62,7 +67,7 @@ public sealed partial class Acb4000
         _positioningExpired = false;
         _positioners[Unit].BeginRezero(_modeParameters[Unit].StepRate);
         _driveMoving[Unit] = true;
-        _stage = Acb4000Stage.Positioning;
+        SetStage(Acb4000Stage.Positioning);
     }
 
     private void BeginSeekCommand()
@@ -87,7 +92,7 @@ public sealed partial class Acb4000
         _positioners[Unit].BeginSeek(_modeParameters[Unit].LandingCylinder - _driveCylinder[Unit],
             _modeParameters[Unit].StepRate);
         _driveMoving[Unit] = true;
-        _stage = Acb4000Stage.Positioning;
+        SetStage(Acb4000Stage.Positioning);
     }
 
     private void BeginPositioning(long byteOffset, Acb4000PositioningPurpose purpose)
@@ -106,7 +111,7 @@ public sealed partial class Acb4000
             : (int)(byteOffset / drive.SectorSize / drive.SectorsPerTrack % drive.Heads);
         _positioners[Unit].BeginSeek(cylinder - _driveCylinder[Unit], _modeParameters[Unit].StepRate);
         _driveMoving[Unit] = true;
-        _stage = Acb4000Stage.Positioning;
+        SetStage(Acb4000Stage.Positioning);
     }
 
     private void TickPositioningCommand()

@@ -10,13 +10,13 @@
   - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuBbcSerialDiagnostic.cs` : programme invité et banc natif A/B/B+, captures dans `artifacts/TestsChips/BbcSerialUla/<Machine>/`, mesures et libération finally ; modifier `docs/chips/IO/BbcSerialUla.md` et `docs/machines/AcornBBCMicro.md` avec les résultats réels après tests regroupés et corrections.
   - [x] Supprimer les sources/bancs/références temporaires de `artifacts/.tmp-bbc-serial-ula/` et tout diagnostic temporaire ajouté aux tests, reconstruire les assemblies concernées ; modifier cette fiche avec les résultats du build Debug All et les preuves conservées hors Git, puis committer uniquement la puce série complète et son raccordement.
 
-- [ ] Raccordement SERPROC/MC6850 par niveaux retenus et horloges appartenant aux composants.
+- [x] Raccordement SERPROC/MC6850 par niveaux retenus et horloges appartenant aux composants.
   - [x] Créer `src/RetroMediaLab.Chips/IO/Motorola/M6800/6850/Services/Acia6850.Outputs.cs` ; modifier `Acia6850.cs`, `Acia6850.Transmit.cs`, `Acia6850.Receive.cs`, `Interfaces/IAcia6850.cs` : publier TXD/RTS/diviseur uniquement aux changements et conserver dans le MC6850 les compteurs de ses fronts TxC/RxC, sans changer les séquences internes.
   - [x] Créer `src/RetroMediaLab.Chips/IO/Acorn/SerialUla/BbcSerialUla/Services/BbcSerialUla.Outputs.cs` ; modifier `BbcSerialUla.cs` et `Interfaces/IBbcSerialUla.cs` : mémoriser les entrées TXD/RTS, publier les niveaux modem et les fronts série utiles après les traitements existants, garder phase/diviseurs/synthèse dans SERPROC et ses compteurs propres.
   - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMicro/Common/Services/Serial.cs` : câbler les rappels aux entrées réelles, retirer les lectures répétées de TXD/RTS/CTS/DCD/TxC/RxC et du diviseur, conserver l'option de débit cassette et son ordre actuel.
   - [x] Modifier `docs/chips/IO/Mc6850.md` et `docs/chips/IO/BbcSerialUla.md` avec les changements effectivement écrits et les validations différées.
 
-- [ ] SERPROC : distinguer niveaux multiplexés et fronts d'horloge.
+- [x] SERPROC : distinguer niveaux multiplexés et fronts d'horloge.
   - [x] Modifier `src/RetroMediaLab.Chips/IO/Acorn/SerialUla/BbcSerialUla/Services/BbcSerialUla.cs` et `BbcSerialUla.Outputs.cs` : notifier RXD/CTS RS423 et la sélection depuis leurs mutations sans attendre Tick, séparer la publication des niveaux des événements d'horloge pour ne jamais rejouer un ancien front.
   - [x] Modifier `src/RetroMediaLab.Chips/IO/Acorn/SerialUla/BbcSerialUla/Services/BbcSerialUla.Cassette.cs` : publier les niveaux du séparateur seulement après une mutation de données ou porteuse, supprimer la vérification globale des sorties à chaque Tick, conserver les compteurs, phases et priorités du traitement cassette.
   - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMicro/Common/Services/Serial.cs` : présenter les niveaux initiaux une fois au raccordement et après initialisation sans attendre un événement ultérieur.
@@ -66,3 +66,5 @@
   - [x] Supprimer `artifacts/bbc-serial-advance/` et ses fichiers temporaires après consignation ; pour un bloc retenu, créer `artifacts/TestsChips/BbcSerialUla/BbcMicroModelB/serial-events.png` à partir de l'émulation et construire Debug avec tous les modules via `scripts/local-building.cmd --building=debug --modules=A`.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+Clôture des deux groupes de raccordement le 7 novembre : publications modem limitées aux changements de registre/sélection, entrées RS423 et mutations du séparateur ; les événements de clocks restent distincts. Les 193 tests de puce et 53 contrôles intégrés déjà consignés dans `BbcSerialUla.md` couvrent cet état de production inchangé. Les trames de lecture UEF et de chargement logiciel Model A sont conservées dans le dossier de preuves de cette puce. Aucun test répété ni nouveau gain annoncé pour cette clôture.

@@ -51,6 +51,7 @@ public sealed partial class Acb4000AicRegisters
         Ecc = ecc;
         clockedBuffer = buffer as Acb4000BufferController;
         Sequencer = new(ecc, buffer);
+        ConnectBufferClockInputs();
     }
 
     public void SetGpioInputs(byte levels) => gpioInputs = (byte)(levels & C.GpioMask);

@@ -7,6 +7,9 @@ public sealed partial class Acb4000BufferController
     private bool hostCycleWriting;
     private byte hostCycleValue;
 
+    /// <summary>Niveau de requête RAM B et identité ; aucune complétion n'est exécutée par la notification.</summary>
+    internal event Action<bool, uint>? HostCycleChanged;
+
     internal bool HostCyclePending => hostCycleRequested;
     internal uint HostCycleEpoch { get; private set; }
 
@@ -21,6 +24,7 @@ public sealed partial class Acb4000BufferController
         hostCycleWriting = writing;
         hostCycleValue = incoming;
         hostCycleRequested = true;
+        HostCycleChanged?.Invoke(true, HostCycleEpoch);
         return true;
     }
 
@@ -31,6 +35,7 @@ public sealed partial class Acb4000BufferController
             return false;
         hostCycleRequested = false;
         hostCycleReady = true;
+        HostCycleChanged?.Invoke(false, HostCycleEpoch);
         return true;
     }
 
@@ -46,5 +51,6 @@ public sealed partial class Acb4000BufferController
     {
         HostCycleEpoch = unchecked(HostCycleEpoch + 1);
         hostCycleRequested = hostCycleReady = false;
+        HostCycleChanged?.Invoke(false, HostCycleEpoch);
     }
 }

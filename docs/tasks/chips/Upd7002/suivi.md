@@ -25,10 +25,12 @@
   - [x] Modifier `docs/chips/IO/Upd7002.md` avec les résultats finaux Debug/Release, intégration, preuves et limites ; conserver le build Debug avec les 24 modules déjà reconstruit et vérifié après les derniers changements de production, sans le relancer pour des seules modifications documentaires (1112 tests Chips dans chaque configuration, 48 spécifiques ADC, 10 tests BBC Model B, quatre preuves à 19 PASS).
   - [x] Modifier l'index Git et créer le commit propre au µPD7002 terminé avant une autre puce.
 
-- [ ] µPD7002 : vérifier la quantification temporelle et raccorder les échéances des accès de broches.
+- [x] µPD7002 : vérifier la quantification temporelle et raccorder les échéances des accès de broches.
   - [x] Modifier `src/RetroMediaLab.Chips/IO/NEC/UPD700x/UPD7002/Services/Adc7002.cs` : documenter l'arrondi supérieur vers la frontière d'observation, sans changer les durées nominales existantes.
   - [x] Modifier `src/RetroMediaLab.Chips/IO/NEC/UPD700x/UPD7002/Services/Adc7002.Conversion.cs` et `Adc7002.Bus.cs` : publier l'échéance depuis StartConversion et l'annulation d'une conversion interrompue pendant WR, y compris par SetBus, sans nouveau cycle de retard.
   - [x] Créer `tests/RetroMediaLab.Chips.Tests/IO/NEC/UPD700x/UPD7002/Adc7002ClockTests.cs` : couvrir les fréquences intégrales et non divisibles, les instants EOC, le total du mode long et la notification au relâchement de WR ; conserver ces contrôles pour la validation finale.
   - [x] Modifier `docs/chips/IO/Upd7002.md` avec le calcul, ses limites d'observation, la correction du chemin de broches et l'état non exécuté de ces nouveaux contrôles.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+Vérification du 7 novembre : 57 tests UPD7002 Debug réussis, zéro échec ni ignoré, 106 ms, états exclus du passage. Les rapports de fréquences, les fronts EOC et les échéances WR sont couverts. Le Model A sans extension E/S n'instancie pas cet ADC ; les preuves d'intégration existantes restent rattachées au Model B/Master et ne sont pas réétiquetées. Voir `docs/chips/IO/Upd7002.md`.

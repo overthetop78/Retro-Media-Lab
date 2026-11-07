@@ -25,10 +25,16 @@
   - [x] Supprimer `artifacts/.tmp-mc6854/`, les références, journaux et outils temporaires ; conserver les preuves locales et tests autonomes utiles.
   - [x] Modifier l’index Git et créer le commit séparé du MC6854 terminé, sans capture ni artifact.
 
-- [ ] MC6854 : supprimer le sondage des sorties de transmission dans Econet.
+- [x] MC6854 : supprimer le sondage des sorties de transmission dans Econet.
   - [x] Créer `src/RetroMediaLab.Chips/Network/Motorola/M6800/6854/Services/Mc6854.Outputs.cs` ; modifier `Mc6854.cs`, `Mc6854.Status.cs`, `Mc6854.Transmit.cs` et `Interfaces/IMc6854.cs` : marquer les mutations RTS/FIFO/activité et publier leur état final seulement si les niveaux exposés changent, sans état transitoire de transmission au milieu d'une opération.
   - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMicro/Common/Services/Econet.cs` : retenir RTS/activité reçus et actualiser le retour CTS sur événement, retirer leur consultation périodique après Tick et les propagations post-écriture redondantes.
   - [x] Modifier `tests/RetroMediaLab.Chips.Tests/Network/Motorola/M6800/6854/AdlcSignalTests.cs` : ajouter un contrôle des niveaux notifiés et du relâchement RTS après transmission, sans notifications à l'état stable.
   - [x] Modifier `docs/chips/Network/Mc6854.md` avec le câblage effectué et la validation différée.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+- [x] Clore la validation du raccordement événementiel MC6854/Econet du Model A.
+  - [x] Créer temporairement `artifacts/.tmp-econet-validation/chips.trx` et `econet.trx` par les groupes MC6854 Debug et AcornEmuEconet Debug existants : vérifier registres, fronts, CRC, FIFO, RTS/CTS et IRQ/NMI sans reprendre les sauvegardes d'état.
+  - [x] Créer temporairement `artifacts/.tmp-tube/EconetValidation.cs` : carte Model A 32 Kio complète, MOS/BASIC et police externes existants, horloge réseau 125 kbit/s, contrôle invité 6502 des registres et des échanges avec transport de banc en mémoire, mesures repos/horloge active/trafic avec rendu et drainage audio, captures réelles dans `artifacts/TestsChips/Mc6854/BBC Micro Model A/` et `artifacts/TestsMachines/Acorn/BBC Micro Model A/` ; libérer et détacher les rappels possédés dans finally, sans socket ni écriture de configuration.
+  - [x] Supprimer `artifacts/.tmp-tube/EconetValidation.cs` et `artifacts/.tmp-econet-validation/` après consignation ; reconstruire Native avec son `Program.cs` préexistant, conserver uniquement les captures utiles ignorées par Git.
+  - [x] Modifier `.git/index` avec les seuls fichiers de ce bloc réellement nécessaires et ses documents de validation/suivi, puis créer un commit local de validation sans artefacts ni push ; ne pas déclarer la machine entière terminée.

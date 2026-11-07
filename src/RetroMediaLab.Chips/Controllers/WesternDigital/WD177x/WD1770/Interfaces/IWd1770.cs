@@ -42,4 +42,6 @@ public interface IWd1770
     void Write(int register, byte value);
     void Tick();
     void Advance(int clocks);
+    /// <summary>Consomme les clocks à entrées stables précédant une échéance interne ; zéro si le prochain Tick doit la traiter.</summary>
+    int AdvanceWithStableInputs(int clocks);
 }
