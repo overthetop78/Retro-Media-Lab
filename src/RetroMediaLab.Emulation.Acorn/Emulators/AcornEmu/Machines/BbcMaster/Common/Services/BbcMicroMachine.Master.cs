@@ -16,7 +16,12 @@ internal sealed partial class BbcMicroMachine
     {
         value = byte.MaxValue;
         if (address is >= Master.TubeStart and < Master.TubeEnd) { value = _tube?.HostRead(address) ?? byte.MaxValue; return true; }
-        if (address is >= Master.AdcStart and < Master.AdcStart + Master.RegisterBlockBytes * 2) { value = _adc?.Read(address & (Master.RegisterBlockBytes - 1)) ?? byte.MaxValue; return true; }
+        if (address is >= Master.AdcStart and < Master.AdcStart + Master.RegisterBlockBytes * 2) {
+            // Preserve the converter's elapsed time before this bus transaction.
+            _adc?.AdvanceTo(_ticks);
+            value = _adc?.Read(address & (Master.RegisterBlockBytes - 1)) ?? byte.MaxValue;
+            return true;
+        }
         if (address is >= Master.DiskControl and < Master.DiskControl + Master.RegisterBlockBytes) return true;
         if (address is >= Master.DiskRegisters and < Master.DiskRegisters + Master.RegisterBlockBytes) { value = _disks.Read((ushort)(Master.BbcDriveRegisters | (address & (Master.RegisterBlockBytes - 1)))); return true; }
         if (address is >= Master.RomSelect and < Master.RomSelect + Master.RegisterBlockBytes) { value = _masterMemory!.RomSelect; return true; }
@@ -29,7 +34,11 @@ internal sealed partial class BbcMicroMachine
     private bool TryWriteMasterBus(ushort address, byte value)
     {
         if (address is >= Master.TubeStart and < Master.TubeEnd) { _tube?.HostWrite(address, value); return true; }
-        if (address is >= Master.AdcStart and < Master.AdcStart + Master.RegisterBlockBytes * 2) { _adc?.Write(address & (Master.RegisterBlockBytes - 1), value); return true; }
+        if (address is >= Master.AdcStart and < Master.AdcStart + Master.RegisterBlockBytes * 2) {
+            _adc?.AdvanceTo(_ticks);
+            _adc?.Write(address & (Master.RegisterBlockBytes - 1), value);
+            return true;
+        }
         if (address is >= Master.DiskControl and < Master.DiskControl + Master.RegisterBlockBytes)
         {
             var control = (byte)((value & Master.MasterDriveMask) | ((value & Master.MasterDriveReset) != 0 ? Master.BbcDriveReset : 0) | ((value & Master.MasterDriveSide) != 0 ? Master.BbcDriveSide : 0) | ((value & Master.MasterDriveDensity) != 0 ? Master.BbcDriveDensity : 0));

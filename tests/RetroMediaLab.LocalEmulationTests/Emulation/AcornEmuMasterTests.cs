@@ -194,6 +194,46 @@ public sealed class AcornEmuMasterTests
         Assert.Equal(0x22, memory.Read(0x3000, 0x2000, main));
     }
 
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(8, false)]
+    [InlineData(64, false)]
+    [InlineData(72, false)]
+    [InlineData(0, true)]
+    [InlineData(8, true)]
+    [InlineData(64, true)]
+    [InlineData(72, true)]
+    public void MasterRomDecodePreservesPrivateRamAndIoWindow(int accessControl, bool andy)
+    {
+        var mos = Enumerable.Range(0, 16384).Select(i => (byte)(i * 13 ^ 0x51)).ToArray();
+        var basic = Enumerable.Range(0, 16384).Select(i => (byte)(i * 7 ^ 0xa3)).ToArray();
+        var machine = new BbcMicroMachine(mos, basic, 32768, master: true);
+        try
+        {
+            machine.Write(0xfe30, 0x8c);
+            machine.Write(0x8000, 0x19); machine.Write(0x8fff, 0x29);
+            machine.Write(0xfe34, 8);
+            machine.Write(0xc000, 0x39); machine.Write(0xdfff, 0x49);
+            var romSelect = (byte)(andy ? 0x8c : 12);
+            machine.Write(0xfe30, romSelect);
+            machine.Write(0xfe34, (byte)accessControl);
+            foreach (ushort address in new ushort[] { 0x8000, 0x8fff, 0x9000, 0xbfff, 0xc000, 0xdfff, 0xe000, 0xfbff, 0xff00, 0xfffc, 0xffff })
+            {
+                byte expected = andy && address < 0x9000 ? (byte)(address == 0x8000 ? 0x19 : 0x29)
+                    : (accessControl & 8) != 0 && address is >= 0xc000 and < 0xe000 ? (byte)(address == 0xc000 ? 0x39 : 0x49)
+                    : address < 0xc000 ? basic[address & 0x3fff] : mos[address & 0x3fff];
+                Assert.Equal(expected, machine.Read(address));
+            }
+            Assert.Equal((accessControl & 64) != 0 ? mos[0x3e30] : romSelect, machine.Read(0xfe30));
+            Assert.Equal((accessControl & 64) != 0 ? mos[0x3e34] : (byte)accessControl, machine.Read(0xfe34));
+        }
+        finally
+        {
+            machine.SetInput(EmulationInputSnapshot.Empty);
+            machine.NetworkFrameTransmitted = null; machine.NetworkPoll = null;
+            machine.EjectCassette();
+        }
+    }
     [Fact]
     public void AccessControlPublishesOnlyItsActualInterruptTransitions()
     {
