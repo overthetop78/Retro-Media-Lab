@@ -29,3 +29,13 @@ Le passage suivant lève la réserve sur le jeu dans RML : l'utilisateur a confi
 Validation utilisateur reçue ensuite : « vu tes tests c'est bon, tu peux passer à la machine suivante ». La reprise spécifique B+ est acceptée ; le prochain modèle est le BBC Master 128, puis ses variantes. Les puces communes déjà traitées ne sont pas réauditées.
 
 Livraison du 6 novembre : `scripts/local-building.cmd --building=debug --modules=A` terminé avec le code 0. Exécutable `build/Debug/Retro Media Lab/retromedialab.exe`, `lib/retromedialab.chips.dll` et les 24 manifestes accompagnés de leur DLL dans `Modules` vérifiés. Aucun fichier image ni diagnostic temporaire ne fait partie du commit de clôture B+.
+
+## Contrôle de reprise — 7 novembre 2026
+
+La validation utilisateur du B+ et les jeux sur 64/128 Kio sont déjà acquis ci-dessus ; ne pas les rejouer sans défaut nouveau. Les limites communes WD/HDD actives restent reportées dans leurs fiches après recherches prolongées sans nouvelle solution viable. Elles ne deviennent pas conformes lors du passage au Master. Le contrôle ci-dessous concerne uniquement la mémoire et les choix spécifiques B+ après la reprise commune du BBC.
+
+- [x] Vérifier la réutilisation des composants du B+ avant de reprendre le Master déjà prévu.
+  - [x] Créer temporairement `artifacts/.tmp-tube/model-b-plus-tests.log` avec les résultats Debug de `AcornEmuModelBPlusTests` : capacités, sélection shadow/privée, banques paginées, miroirs ROM, WD permanent et choix de configuration ; ne modifier les fichiers de production concernés qu'après défaut établi et action ajoutée au suivi.
+  - [x] Supprimer `artifacts/.tmp-tube/model-b-plus-tests.log` après consignation des résultats, en conservant les captures et références existantes hors Git.
+
+Résultat : 36 contrôles Debug réussis, zéro échec ni ignoré, 908 ms ; aucune source de production modifiée, aucun nouveau gain revendiqué. Le journal temporaire est supprimé. Les preuves antérieures de logiciels et de RML restent applicables ; les budgets actifs partagés restent ouverts. Reprendre le Master 128 déjà prévu, sans présenter ces reports comme une clôture complète.
