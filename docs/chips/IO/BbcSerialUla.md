@@ -1,5 +1,36 @@
 # ULA série BBC — SERPROC (Acorn 201602 / 2C199)
 
+## Vérification Model A — 7 novembre 2026
+
+Le groupe SERPROC/MC6850 passe **193 tests Debug en 3 s**, sans échec ni test ignoré. Les tests `ClockGroupingTests` comparent les fronts, niveaux, notifications et phase à l'avancement unitaire, y compris séparateur actif, silence, changements de registre et d'entrées, à 1 230 770, 2 000 000 et 3 000 001 Hz. Le MC6850 publie déjà TXD depuis ses changements et RTS/diviseur depuis les écritures de contrôle : l'ancien sondage généralisé des sorties n'est plus présent dans son émission.
+
+Carte complète Model A, 16 Kio, MOS `os12.rom`, BASIC `basic2.rom`, caractères `saa5050`, aucun disque ni réseau, horloge 2 MHz. Exécution sans RML ni sortie audio Windows, drainage du PCM inclus, aucune option Release activée en Debug. Après 120 trames de chauffe et `PRINT "MODEL A PASS":PRINT 12+34`, 80 trames mesurées : **23,050 ms/image, 43,38 FPS calculés, 1,733 MHz, 86,6 %**, 3 194 879 cycles. Lecture matérielle de l'UEF Arcade Action v2.5 par `*TAPE` puis `*CAT` : **27,920 ms/image, 35,82 FPS calculés, 1,430 MHz, 71,5 %**, 3 194 882 cycles sur 80 trames. Ce sont des coûts de carte complète, pas du SERPROC isolé ; aucun gain avant/après n'est revendiqué pour ce passage.
+
+Le catalogue affiche réellement `INDEX 00`. La pause maintient la position 80 470 échantillons pendant 20 trames. Les trames calculées, inspectées visuellement, sont conservées sous `artifacts/TestsChips/BbcSerialUla/BBC Micro Model A/20261107-005054-basic-carte-sans-interface.bmp` et `20261107-005057-catalogue-index-carte-sans-interface.bmp`, et également dans `artifacts/TestsMachines/Acorn/BBC Micro Model A/`. Il ne s'agit pas de captures de RML ; elles prouvent le catalogue, pas l'exécution du jeu ni toutes les fonctionnalités de la machine. Le média et les paramètres utilisateur ne sont pas modifiés ; entrées et cassette sont détachées dans `finally`.
+
+Le budget de vitesse réelle n'est pas atteint dans ce passage. Le surcoût sous lecture nécessite encore une attribution avant correction ; ne pas en déduire que l'ACIA ou le séparateur matériel peut être simplifié.
+
+### Transport : autorisation conservée aux changements — 7 novembre 2026
+
+Défaut logiciel identifié : `Cassette.Tick` repassait par `CassetteActive`, qui relisait moteur et sélection du SERPROC, deux fois par cycle. Ces entrées ne peuvent changer que lors des écritures du registre ULA déjà acheminées par `Cassette.WriteUla`/`ReadUla`, des commandes du lecteur, du reset ou des changements de support. Toutes ces opérations appellent déjà `UpdateClockRequest`. Le transport réutilise désormais l'activité qu'il y conserve et publie ; il ne consulte plus ces sorties série dans son tick. L'écriture du registre résout le nouvel état avant le retrait éventuel du niveau d'entrée. Aucun nouveau cache d'état sauvegardé, thread ou ordonnanceur n'est ajouté. `RecordTick` réutilise également l'incrément d'échantillon recalculé lors des changements de fréquence de support ou de vitesse.
+
+Après ce bloc : **53 tests Debug cassette/série/audio réussis, 11 s**. Le scénario de transitions compare maintenant à chaque cycle l'activité conservée à la formule matérielle indépendante du moteur, de la sélection, du transport et de la recherche ; il couvre aussi l'éjection et la fin de bande. Les autres contrôles comprennent écriture puis relecture FSK, formats ACIA, latences et PCM. Ces résultats ne constituent pas une nouvelle écoute de la sortie Windows.
+
+Comparaison complète sur le même Model A 16 Kio, mêmes ROM/UEF, 120 trames de chauffe puis 120 trames par scénario ; drainage audio inclus, calcul SHA-256 des séquences vidéo et PCM hors chronométrage. Assemblies antérieures conservées séparément, séquence de processus référence/candidat/référence/candidat, uniquement Debug sans changement d'optimisation de compilation.
+
+| Scénario | Référence, ms/image | Candidat, ms/image | Moyenne avant → après |
+| --- | --- | --- | --- |
+| Repos | 16,3537 / 16,2199 | 16,0603 / 15,9710 | 16,2868 → 16,0157 |
+| Lecture UEF | 19,1682 / 19,5619 | 17,4388 / 17,2451 | 19,3651 → 17,3420 |
+
+Gain de temps de lecture : **10,45 %** dans ce scénario, environ **57,66 FPS calculés, 2,30 MHz et 115 %** de la vitesse réelle en exécution sans limite. Les quatre passages gardent exactement 4 792 317 cycles, PC FAD6 et la position 137 154 après la lecture. Empreinte de la séquence vidéo : `86E0510A8158A8669B27D10C3EF0A41C22639C9320EE2AD624A1565F80AB0123` ; PCM : `EAD7887929FACA48BF0D1F614870E41D3C3E706B4505B13FA91198B89A6A2478`. Au repos : 4 792 320 cycles, PC E57A, mêmes empreintes vidéo/PCM dans les quatre passages. Le changement est conservé pour son gain global et l'équivalence des sorties couvertes. Les mesures du premier diagnostic avec saisie PRINT ne sont pas utilisées comme référence avant/après de cette comparaison.
+
+### Chargement du logiciel réel après modification
+
+Même Model A 16 Kio, même UEF, `*TAPE` puis `CHAIN ""`, sans mode direct. Le programme INDEX est entièrement chargé et affiche le menu Arcade Action à la position 910 430. Le banc attend la question `Which program do you want ?` avant d'envoyer `1` et Entrée ; la cassette reprend alors. Invaders atteint sa question `1 OR 2 PLAYERS ?`, avec scores, bases et crédits affichés, position de bande 4 802 830 stable. Les captures de progression sont conservées dans les deux dossiers de preuves. Points inspectés : `20261107-010959-index-result-carte-sans-interface.bmp`, `20261107-011037-invaders-loading-carte-sans-interface.bmp` (bloc `0E`), `20261107-011137-invaders-loading-carte-sans-interface.bmp` (programme chargé).
+
+Limites du banc : le premier essai a cherché le titre avec une casse incorrecte ; le suivant l'a reconnu avant que le menu soit prêt à recevoir une touche. L'essai final charge bien le logiciel, mais sa condition automatique attend à tort la désélection télétexte. Invaders utilise encore ce mode à son écran de choix ; le banc termine donc avec code 1 malgré le chargement visible. Cette erreur de critère n'est pas attribuée à l'émulateur. Aucune partie active, aucun tir et aucune écoute audio Windows ne sont revendiqués par ce passage ; ils restent à valider lors des essais de machine. Les boucles physiques et le contenu du logiciel n'ont pas été modifiés pour accélérer le chargement.
+
 ## Accès internes et réutilisation — 5 novembre 2026
 
 Les sélections moteur/RS423 sont décodées aux écritures du registre, et les accès internes aux sorties de la puce utilisent leurs champs, sans modifier l'interface publique ni les horloges. Le module conserve la référence du composant série et l'override de débit dont il possède les écritures ; il évite de redemander ces valeurs à chaque accès. Une cassette absente est vérifiée avant de consulter son moteur, mais l'électronique série continue de recevoir tous ses cycles.

@@ -9,6 +9,8 @@ Ces règles doivent toujours être respectées pendant le développement, les co
 
 ## Règles pour chaque puce
 
+- Ne pas passer à une autre puce tant que celle en cours n'est pas terminée. Faire exception seulement lorsqu'aucune solution viable n'est actuellement disponible et que la recherche s'enlise en petites modifications sans résultat utile. Une heure sur ce bloc est déjà trop longue : arrêter ces essais improductifs avant de prolonger encore le travail.
+- Avant ce report exceptionnel, consigner le problème précis, les solutions tentées, leurs résultats et l'absence de solution viable dans la fiche de la puce et son suivi. La laisser explicitement incomplète, conserver un état de code cohérent et ne pas présenter son report comme une validation.
 - Tenir les documents à jour directement en appliquant ces directives. Ne pas ajouter aux listes de tâches une entrée dédiée à chaque modification de fichier Markdown : la consignation des informations, décisions, corrections et résultats fait partie intégrante du travail concerné.
 - Définir le travail concret dans `docs/tasks/chips/<Chip>/`, avec les fichiers concernés, avant de modifier le code.
 - Reprendre dès le départ les directives d'amélioration consignées ci-dessous. Ajouter à la liste de travail les actions applicables à cette puce avant de coder, pour ne pas devoir les ajouter après coup.
@@ -35,6 +37,7 @@ Ces règles doivent toujours être respectées pendant le développement, les co
 
 ## Règles pour chaque machine
 
+- Ne pas passer à la machine suivante tant que la machine en cours n'est pas terminée, sauf report explicite selon la même règle : aucune solution viable actuellement et enlisement prolongé sans gain utile. Consigner alors les points non résolus et les puces concernées ; ne pas déclarer la machine terminée.
 - Reprendre son suivi `docs/tasks/machines/<Machine>/` et identifier ses composants réels, variantes et périphériques. Ne pas ajouter de matériel inventé ni reprendre une puce déjà validée sans défaut établi.
 - Terminer les puces manquantes en respectant les directives ci-dessus, successivement.
 - Réaliser dans `Emulation.xxx` le câblage direct des puces : horloges, phases, lignes, bus, RAM partagée et arbitrage. Les communications entre puces ne transitent pas par le SDK `Emulation` ni par App.
@@ -78,6 +81,7 @@ Complément confirmé le 7 novembre 2026 : ces directives concernent les exigenc
 | Le récepteur consulte continuellement un autre composant pour chercher un changement. | Raccorder les sorties aux entrées par notifications et conserver localement les niveaux reçus. | Fronts, phases d'échantillonnage et effets asynchrones réels. |
 | Une méthode de publication relit toutes les sorties à chaque tick, même sans modification. | Publier depuis les opérations qui changent effectivement les sorties ; limiter la propagation aux signaux concernés. | Tous les changements observables, y compris les impulsions et leur ordre. |
 | Des états, conversions ou résultats sont recalculés sans changement de leurs causes. | Conserver le résultat et l'invalider aux événements qui le modifient réellement. | Toutes les causes d'invalidation et les traitements temporels nécessaires. |
+| Une autorisation dépend d'entrées déjà reçues lors de commandes ou changements de registre. | Résoudre cette autorisation lors de ces changements et utiliser le niveau conservé dans le tick, plutôt que relire les sorties des autres composants. Réutiliser un état dérivé déjà présent lorsqu'il couvre ce besoin. | Actualisation à chaque cause réelle, y compris reset, remplacement de support et échéance de fin ; résoudre le nouvel état avant de publier sa notification. |
 | Un composant reste sans activité observable jusqu'à une échéance déterminée. | Conserver ses compteurs et phases ; avancer jusqu'à cette échéance lorsque l'équivalence est établie. | Horloge matérielle, événements intermédiaires observables et ordre des accès. Aucun agenda par tick ajouté pour remplacer un appel direct. |
 | Une puce déjà validée contient une consultation répétée inutile établie. | Corriger le code concerné ; son ancienne validation n'est pas une raison de conserver ce coût. | Fonctionnalités, signaux, fréquences et timings de la puce. Pas de réécriture systématique sans nécessité. |
 | Une correction sur une puce révèle une redondance également présente dans d'autres puces. | Consigner immédiatement la directive, identifier les autres composants concernés, ajouter les actions aux suivis puis corriger et tester ces composants successivement, y compris ceux déjà traités. Réutiliser ensuite directement la directive sur les puces suivantes. | Confirmer la présence du même problème et les conditions d'application ; conserver les particularités matérielles de chaque puce et documenter ses propres résultats. |

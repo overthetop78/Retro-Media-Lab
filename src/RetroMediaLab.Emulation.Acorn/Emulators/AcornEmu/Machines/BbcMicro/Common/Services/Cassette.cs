@@ -29,13 +29,15 @@ internal sealed partial class Cassette(Serial serial) : IEmulatorCassetteTranspo
 
     private void UpdateClockRequest()
     {
-        var activity = (CassetteActive, CassetteOperation, CassetteState);
+        // Seuls les changements de commandes, de support ou du registre ULA
+        // modifient cette autorisation. Les ticks consomment son niveau retenu.
+        var activity = (Active: ResolveActivity(), Operation: CassetteOperation, State: CassetteState);
         if (_publishedActivity != activity)
         {
             _publishedActivity = activity;
             ActivityChanged?.Invoke();
         }
-        var required = _inputPresented || _signal is not null && CassetteActive;
+        var required = _inputPresented || _signal is not null && activity.Active;
         if (_clockRequired == required) return;
         _clockRequired = required;
         ClockRequiredChanged?.Invoke(required);
@@ -62,7 +64,8 @@ internal sealed partial class Cassette(Serial serial) : IEmulatorCassetteTranspo
     internal int Position => _position;
     internal bool Motor => serial.Ula.Motor;
     public EmulationCassetteState CassetteState => _state;
-    public bool CassetteActive => _seekTarget is not null && _state != EmulationCassetteState.Paused || Motor && !serial.Ula.Rs423Selected && _state is EmulationCassetteState.Playing or EmulationCassetteState.Recording;
+    public bool CassetteActive => _publishedActivity.Active;
+    private bool ResolveActivity() => _seekTarget is not null && _state != EmulationCassetteState.Paused || Motor && !serial.Ula.Rs423Selected && _state is EmulationCassetteState.Playing or EmulationCassetteState.Recording;
     public IReadOnlySet<EmulationCassetteCommand> CassetteCommands => _signal is null ? new HashSet<EmulationCassetteCommand>() : _writable && !_settings.WriteProtected ? C.RecordingCommands : C.Commands;
 
     /// <summary>Insère le signal au début ; Play est prêt, comme sur un lecteur laissé en lecture sous contrôle moteur.</summary>
@@ -83,7 +86,7 @@ internal sealed partial class Cassette(Serial serial) : IEmulatorCassetteTranspo
         serial.Ula.Write(value);
         starting &= Motor;
         if (starting) _latencyTicks = (long)C.CpuClock * (_state == EmulationCassetteState.Recording ? _settings.WriteLatencyMilliseconds : _settings.ReadLatencyMilliseconds) / 1000;
-        if (!CassetteActive) ResetDecoder();
+        if (!ResolveActivity()) ResetDecoder();
         UpdateClockRequest();
     }
     internal byte ReadUla() { WriteUla(UlaConstants.ReadControlValue); return UlaConstants.ReadBusValue; }
@@ -184,11 +187,11 @@ internal sealed partial class Cassette(Serial serial) : IEmulatorCassetteTranspo
     /// Les silences, fichiers précédents et fichiers suivants restent présents. L'appelant possède la sauvegarde.</remarks>
     private void RecordTick()
     {
-        _samplePhase += _signal!.SampleRate * _settings.SpeedPercent / 100;
+        _samplePhase += _sampleIncrement;
         while (_samplePhase >= C.CpuClock)
         {
             _samplePhase -= C.CpuClock;
-            _recorded ??= _signal.Samples.ToArray().ToList();
+            _recorded ??= _signal!.Samples.ToArray().ToList();
             var value = serial.Ula.CassetteOutput;
             if (_position < _recorded.Count) _recorded[_position] = value; else _recorded.Add(value);
             _position++; HasChanges = true;

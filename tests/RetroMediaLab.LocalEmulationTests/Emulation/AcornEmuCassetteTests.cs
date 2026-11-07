@@ -99,6 +99,11 @@ public sealed class AcornEmuCassetteTests
             expected.Tick();
             if (required) actual.Tick();
             else actualSerial.Tick();
+            var state = actual.CassetteState;
+            var expectedActivity = actual.Seeking && state != EmulationCassetteState.Paused
+                || actualSerial.Ula.Motor && !actualSerial.Ula.Rs423Selected
+                    && state is EmulationCassetteState.Playing or EmulationCassetteState.Recording;
+            Assert.Equal(expectedActivity, actual.CassetteActive);
             Assert.Equal(expected.Position, actual.Position);
             Assert.Equal(expected.CassetteState, actual.CassetteState);
             Assert.Equal(expectedSerial.Ula.SourceClockPhase, actualSerial.Ula.SourceClockPhase);
