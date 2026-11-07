@@ -21,7 +21,7 @@ public sealed class AcornEmuSidewaysExpansionTests
     [InlineData(C.AriesWithoutRam, 0, 12)]
     [InlineData(C.Aries8, 8, 12)]
     [InlineData(C.Aries16, 16, 12)]
-    public void HardwareChoiceRamCapacityAndRomSocketsBelongToTheirOwnTabs(string card, int ramKib, int sockets)
+    public void ExtensionRomSocketsStayWithTheirCardAndRamCapacityStaysInRam(string card, int ramKib, int sockets)
     {
         var configuration = new MachineConfiguration(MachineModel.BbcMicroModelA, core: Emulator.AcornEmu,
             options: new Dictionary<string, string> { [SettingsConstants.MainMemory] = "32", [C.Option] = card });
@@ -33,9 +33,11 @@ public sealed class AcornEmuSidewaysExpansionTests
         Assert.Equal(RetroMediaLab.Emulation.Enums.EmulationSettingsEditor.Information, ram.Editor);
         Assert.Equal(ramKib * 1024L, ram.NumericValue);
         Assert.Equal(card != C.None, Assert.Single(blocks, block => block.Id == C.Group).IsVisible);
-        var roms = Assert.Single(blocks, block => block.Id == C.RomGroup);
-        Assert.Equal(RetroMediaLab.Emulation.Enums.EmulationMachineTab.Rom, roms.Tab);
-        Assert.Equal(sockets, roms.Fields.Count);
+        Assert.DoesNotContain(blocks, block => block.Id == C.RomGroup);
+        var extension = Assert.Single(blocks, block => block.Id == C.ExtensionGroup);
+        var roms = extension.Fields.Where(field => field.Editor == RetroMediaLab.Emulation.Enums.EmulationSettingsEditor.Path).ToArray();
+        Assert.Equal(sockets, roms.Length);
+        Assert.All(roms, field => Assert.Equal(RetroMediaLab.Emulation.Enums.EmulationMachineTab.Extensions, field.Tab));
         Assert.Equal((32 + ramKib) * 1024L, MemoryExtensionFunctions.TotalBytes(configuration));
         Assert.Equal(card, configuration.Options[C.Option]);
     }
@@ -131,7 +133,7 @@ public sealed class AcornEmuSidewaysExpansionTests
         var configuration = new MachineConfiguration(MachineModel.BbcMicroModelA, core: Emulator.AcornEmu, options: new Dictionary<string,string> { [C.Option] = card });
         Assert.Equal(totalKib * 1024L, MemoryExtensionFunctions.TotalBytes(configuration));
         Assert.Equal("16", configuration.Options.GetValueOrDefault(SettingsConstants.MainMemory, "16"));
-        var field = Assert.Single(SidewaysExpansionFunctions.Describe(configuration).Fields);
+        var field = Assert.Single(SidewaysExpansionFunctions.Describe(configuration).Fields, field => field.Id == C.Option);
         var selected = Assert.Single(field.Choices!, choice => choice.Id == card);
         Assert.Equal(SidewaysExpansionFunctions.Read(configuration).RamBytes, selected.NumericValue);
     }

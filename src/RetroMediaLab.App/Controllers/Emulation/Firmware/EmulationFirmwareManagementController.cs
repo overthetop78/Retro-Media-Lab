@@ -18,7 +18,7 @@ internal sealed class EmulationFirmwareManagementController : IAsyncDisposable
     private readonly IEmulationModule _module;
     private readonly IEmulationFirmwareManager _manager;
     private readonly Func<IEmulationConfiguration> _getConfiguration;
-    private readonly Dictionary<string, (EmulationSettingsField Field, TextBlock Name)> _views = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (EmulationSettingsField Field, TextBox Path)> _views = new(StringComparer.Ordinal);
     private IReadOnlyList<EmulationFirmwareCandidate> _entries = [];
     private int _generation;
     private readonly CancellationTokenSource _lifetime = new();
@@ -39,24 +39,25 @@ internal sealed class EmulationFirmwareManagementController : IAsyncDisposable
         _views.Clear();
     }
 
-    /// <summary>Le chemin reste dans la configuration ; seul le nom est présenté dans la page.</summary>
-    internal Grid CreateField(EmulationSettingsField field, Func<Task> browse)
+    /// <summary>Édite le chemin de la ROM et ouvre le sélecteur existant ; son identité est conservée en infobulle.</summary>
+    internal Grid CreateField(EmulationSettingsField field, Func<Task> browse, Func<Task>? changed = null)
     {
-        var name = new TextBlock
+        var path = new TextBox
         {
-            Text = DisplayName(field), ToolTip = field.Value, TextWrapping = TextWrapping.Wrap,
-            VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 6, 12, 6)
+            Text = field.Value ?? string.Empty, ToolTip = DisplayName(field), MinWidth = 0,
+            VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0)
         };
+        path.LostKeyboardFocus += async (_, _) => { if (changed is not null) await changed(); };
         var button = new Button { Content = LocExtension.Get(ControlVisualConstants.BrowseResource), MinWidth = 100 };
         button.Click += async (_, _) => await browse();
         AutomationProperties.SetAutomationId(button, "BrowseFirmware:" + field.Id);
-        var row = new Grid { Tag = (Func<string>)(() => field.Value ?? string.Empty) };
+        var row = new Grid { Tag = (Func<string>)(() => path.Text) };
         row.ColumnDefinitions.Add(new ColumnDefinition());
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        row.Children.Add(name);
+        row.Children.Add(path);
         Grid.SetColumn(button, 1);
         row.Children.Add(button);
-        _views[field.Id] = (field, name);
+        _views[field.Id] = (field, path);
         return row;
     }
 
@@ -117,7 +118,7 @@ internal sealed class EmulationFirmwareManagementController : IAsyncDisposable
         }
     }
 
-    /// <summary>Un fichier apparaît une seule fois ; une ROM reconnue pour un autre rôle reste visible, mais inutilisable.</summary>
+    /// <summary>Un fichier apparaît une seule fois ; résoudre son rôle avant de masquer les incompatibles.</summary>
     internal static IReadOnlyList<EmulationFirmwareCandidate> CandidatesForField(IReadOnlyList<EmulationFirmwareCandidate> entries, string fieldId) => entries
         .GroupBy(candidate => candidate.Path, StringComparer.OrdinalIgnoreCase)
         .Select(group => group.OrderBy(candidate => candidate.DestinationFieldId == fieldId ? 0
@@ -127,6 +128,7 @@ internal sealed class EmulationFirmwareManagementController : IAsyncDisposable
             : candidate.DestinationFieldId is null && candidate.Compatibility == EmulationFirmwareCompatibility.Unknown
                 ? candidate with { DestinationFieldId = fieldId }
                 : candidate with { Compatibility = EmulationFirmwareCompatibility.Incompatible })
+        .Where(candidate => candidate.Compatibility != EmulationFirmwareCompatibility.Incompatible)
         .OrderBy(candidate => EmulationSettingsLayout.FirmwareCompatibilityOrder(candidate.Compatibility))
         .ThenBy(candidate => candidate.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToArray();
 
@@ -162,7 +164,7 @@ internal sealed class EmulationFirmwareManagementController : IAsyncDisposable
 
     private void UpdateNames()
     {
-        foreach (var (field, name) in _views.Values) name.Text = DisplayName(field);
+        foreach (var (field, path) in _views.Values) path.ToolTip = DisplayName(field);
     }
 
     private Task OpenFolderAsync()

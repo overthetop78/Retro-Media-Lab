@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Дисковая операционная система ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} в банке {1} Не совместим с картой расширения памяти {2}. Проверь. ROM Задания в настройках машины.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM банк {0} уже занята другим ROM. Проверь. ROM Задания для карты расширения памяти {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Входные интерфейсы</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Разъемы для мыши и принтера</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Аналоговый интерфейс Joystick</value></data>
 </root>

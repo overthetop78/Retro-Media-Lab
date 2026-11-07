@@ -32,6 +32,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     private readonly IEmulatorCore _core;
     /// <summary>Projecteur Common emprunté à la fabrique ; aucune ressource de cœur ne lui est transférée.</summary>
     private readonly IEmulatorInputMapper? _inputMapper;
+    private readonly IEmulatorPointerCapabilities? _pointerCapabilities;
     /// <summary>Facette média empruntée à l'adaptateur déjà fourni, sans recréer ses fabriques lors des lectures de statut.</summary>
     /// <remarks>La facette partage la durée de vie de l'adaptateur d'entrées ; la machine ne la détruit pas.
     /// Son absence conserve la projection de repli du module, notamment pour une machine construite sans adaptateur.</remarks>
@@ -60,6 +61,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         _mountedMedia = configuration.Media.Where(item => item.IsInserted).ToList();
         _core = core;
         _inputMapper = inputMapper;
+        _pointerCapabilities = inputMapper as IEmulatorPointerCapabilities;
         _mediaCapabilities = _inputMapper as IEmulatorMediaCapabilities;
         _sessionDirectory = sessionDirectory;
         _audio = new AudioOutputController(audioOutput, audioOutputFactory);
@@ -82,8 +84,9 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public IEmulationAudio Audio => this;
     public IEmulationSavedStates SavedStates => this;
     public IEmulationRuntime Runtime => this;
-    bool IEmulationInput.SupportsPointerCapture => false;
-    bool IEmulationInput.CapturePointerOnClick => false;
+    bool IEmulationInput.SupportsPointerCapture => _pointerCapabilities?.SupportsPointerCapture(_inputConfiguration) == true;
+    bool IEmulationInput.CapturePointerOnClick => _pointerCapabilities?.SupportsPointerCapture(_inputConfiguration) == true
+        && _inputConfiguration.Input.CaptureMouse;
     IReadOnlyDictionary<string, string> IEmulationInput.KeyboardBindings => Configuration.Input?.KeyboardBindings ?? Configuration.Input?.KeyboardMappings?.ToDictionary(item => item.Key, item => item.Value.ToString(), StringComparer.Ordinal) ?? new Dictionary<string, string>();
     bool IEmulationInput.SupportsControllerPointerSwitch => false;
     bool IEmulationInput.ControllerPointerMode => false;

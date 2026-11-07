@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Disk operating system ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} in bank {1} is not compatible with the memory expansion card {2}. Check the ROM assignments in the machine settings.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM bank {0} is already occupied by another ROM. Check the ROM assignments for the memory expansion card {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Input interfaces</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Mouse and printer connectors</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Analogue joystick interface</value></data>
 </root>

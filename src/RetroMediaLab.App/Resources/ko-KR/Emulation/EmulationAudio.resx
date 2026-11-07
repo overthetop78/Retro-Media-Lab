@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>높음</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>의 특징</value></data>
   <data name="Emulation.Audio.Tone"><value>시험 톤</value></data>
+  <data name="Emulation.Audio.Mixer"><value>볼륨 믹서</value></data>
+  <data name="Emulation.Audio.Mute"><value>소리를 끄다</value></data>
 </root>

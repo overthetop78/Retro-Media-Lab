@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Schijfbesturingssysteem ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} in de bank {1} is niet compatibel met de geheugenuitbreidingskaart {2}. Controleer de ROM opdrachten in de machineinstellingen.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM bank {0} is al bezet door een ander ROM. Controleer de ROM opdrachten voor de geheugenuitbreidingskaart {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Invoerinterfaces</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Muis- en printerconnectoren</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Analoge joystick interface</value></data>
 </root>

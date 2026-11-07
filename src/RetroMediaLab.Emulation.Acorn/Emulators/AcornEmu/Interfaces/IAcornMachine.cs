@@ -12,6 +12,7 @@ internal interface IAcornMachine
     object CaptureState() => throw new NotSupportedException();
     void RestoreState(object state) => throw new NotSupportedException();
     long? ProcessorClockHz => null;
+    bool SupportsPointerCapture => false;
     byte[] RunFrame();
     /// <summary>Dimensions programmables ; null conserve les dimensions fixes du modèle.</summary>
     int? VideoWidth => null;

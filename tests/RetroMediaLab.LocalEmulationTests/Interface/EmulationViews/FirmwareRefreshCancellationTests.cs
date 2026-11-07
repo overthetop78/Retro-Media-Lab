@@ -10,6 +10,46 @@ namespace RetroMediaLab.Tests.Interface.EmulationViews;
 [Collection("WPF")]
 public sealed class FirmwareRefreshCancellationTests(StaExecutionScenarios sta)
 {
+    [Theory]
+    [InlineData(EmulationFirmwareCompatibility.Official)]
+    [InlineData(EmulationFirmwareCompatibility.Compatible)]
+    [InlineData(EmulationFirmwareCompatibility.PartiallyCompatible)]
+    [InlineData(EmulationFirmwareCompatibility.Unknown)]
+    public void SelectorHidesIncompatibleRomsAfterResolvingAllRoles(EmulationFirmwareCompatibility allowed)
+    {
+        const string destination = "selected-field";
+        EmulationFirmwareCandidate[] entries =
+        [
+            new("wrong-role", "shared.rom", "Other role", null, EmulationFirmwareCompatibility.Official, "other-field"),
+            new("right-role", "shared.rom", "Requested role", null, allowed, destination),
+            new("incompatible", "incompatible.rom", "Incompatible", null, EmulationFirmwareCompatibility.Incompatible, destination),
+            new("other", "other.rom", "Other role only", null, EmulationFirmwareCompatibility.Compatible, "other-field"),
+            new("unknown", "unknown.rom", "Unidentified", null, EmulationFirmwareCompatibility.Unknown)
+        ];
+        var visible = EmulationFirmwareManagementController.CandidatesForField(entries, destination);
+        Assert.Equal(2, visible.Count);
+        Assert.Contains(visible, candidate => candidate.Id == "right-role" && candidate.Compatibility == allowed);
+        Assert.Contains(visible, candidate => candidate.Id == "unknown" && candidate.DestinationFieldId == destination
+            && candidate.Compatibility == EmulationFirmwareCompatibility.Unknown);
+        Assert.DoesNotContain(visible, candidate => candidate.Compatibility == EmulationFirmwareCompatibility.Incompatible);
+    }
+
+    [Fact]
+    public Task FirmwarePathEditorReturnsTheEditedPath() => sta.RunAsync(async () =>
+    {
+        var controller = new EmulationFirmwareManagementController(ControlledDependencies.Reject<IEmulationModule>(),
+            ControlledDependencies.Reject<IEmulationFirmwareManager>(), () => throw new InvalidOperationException());
+        try
+        {
+            var row = controller.CreateField(new("firmware", EmulationMachineTab.Rom, "firmware", "firmware",
+                EmulationSettingsEditor.Path, "original.rom"), () => Task.CompletedTask);
+            var editor = Assert.IsType<System.Windows.Controls.TextBox>(row.Children[0]);
+            editor.Text = "replacement.rom";
+            Assert.Equal("replacement.rom", Assert.IsType<Func<string>>(row.Tag)());
+        }
+        finally { await controller.DisposeAsync(); }
+    });
+
     [Fact]
     public Task ClosingControllerDuringScanCompletesRefreshWithoutDispatcherFailure() => sta.RunAsync(async () =>
     {

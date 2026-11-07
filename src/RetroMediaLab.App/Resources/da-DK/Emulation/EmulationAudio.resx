@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Høj</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>Lyd</value></data>
   <data name="Emulation.Audio.Tone"><value>Testtone</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Volumenblander</value></data>
+  <data name="Emulation.Audio.Mute"><value>Sluk lyden</value></data>
 </root>

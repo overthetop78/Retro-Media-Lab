@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Cao</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>Âm thanh</value></data>
   <data name="Emulation.Audio.Tone"><value>Âm thử nghiệm</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Bộ trộn âm lượng</value></data>
+  <data name="Emulation.Audio.Mute"><value>Tắt âm thanh đi.</value></data>
 </root>

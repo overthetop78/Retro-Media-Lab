@@ -3,6 +3,7 @@ using RetroMediaLab.App.Constants.Localization;
 using RetroMediaLab.App.Constants.Machine;
 using RetroMediaLab.App.Contracts.Machine;
 using RetroMediaLab.App.Functions.Emulation.Machine;
+using RetroMediaLab.App.Functions.Emulation.Storage;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.Emulation;
 using System.Windows;
@@ -302,7 +303,9 @@ internal sealed class MachineView : EmulationMachinePresentation
                 Orientation = Orientation.Horizontal,
                 Children =
                 {
-                    new TextBlock
+                    device.MediaIconId is { } mediaIconId
+                    ? EmulationMediaIconFunctions.Create(mediaIconId, 18)
+                    : (FrameworkElement)new TextBlock
                     {
                         Text = device.Glyph,
                         FontFamily = ControlVisualConstants.IconFont,

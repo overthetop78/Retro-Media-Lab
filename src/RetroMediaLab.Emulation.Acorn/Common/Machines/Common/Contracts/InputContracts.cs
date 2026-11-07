@@ -8,5 +8,6 @@ public sealed record InputConfiguration(
     string? MouseDeviceId = null,
     bool CaptureMouse = false,
     EmulationKey ReleaseMouseKey = EmulationKey.Escape,
-    IReadOnlyDictionary<string, string>? KeyboardBindings = null);
+    IReadOnlyDictionary<string, string>? KeyboardBindings = null,
+    IReadOnlyDictionary<string, string>? MouseBindings = null);
 

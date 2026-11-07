@@ -10,12 +10,15 @@ using NativeModelCatalog = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Dict
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants;
 using TapeConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.TapeConstants;
 using NativeStorage = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions.StorageFunctions;
 using NativeStorageConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.StorageConstants;
 using SystemSettings = RetroMediaLab.Emulation.Acorn.Common.Machines.AcornSystem.Constants.SystemModelConstants;
 using AtomSettings = RetroMediaLab.Emulation.Acorn.Common.Machines.AcornAtom.Constants.AtomModelConstants;
 using ArchSettings = RetroMediaLab.Emulation.Acorn.Common.Machines.Archimedes.Constants.ArchimedesModelConstants;
+using ModelAIo = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelA.Constants.ModelAIoConstants;
+using CommonControllerFunctions = RetroMediaLab.Emulation.Acorn.Common.Functions.ControllerFunctions;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Factories;
 
@@ -23,6 +26,12 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Factories;
 /// <remarks>Le cœur est livré dans l'assembly du module. La sélection et l'inspection des ROM réutilisent les facettes existantes.</remarks>
 internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
 {
+    public int GetControllerPortCount(MachineConfiguration configuration) => ModelAIoFunctions.IsModel(configuration)
+        ? ModelAIoFunctions.AnalogPort(configuration) ? ModelAIo.ControllerCount : 0
+        : CommonControllerFunctions.ModelPortCount(configuration);
+    public IReadOnlyList<PeripheralCategory> GetPeripherals(MachineConfiguration configuration) => ModelAIoFunctions.AnalogPort(configuration)
+        ? [PeripheralCategory.None, PeripheralCategory.Automatic, PeripheralCategory.AnalogJoystick]
+        : CommonControllerFunctions.Peripherals(configuration.Model).ToArray();
     public string EmulatorId => EmulatorConstants.Id;
     public string EmulatorKey => Emulator.AcornEmu.ToString();
     public EmulationEmulatorDefinition Definition { get; } = new(EmulatorConstants.Id, EmulatorConstants.Name, "Emulation.Emulator.acornemu.Description", NativeModelCatalog.All.Select(model => model.Model.ToString()).ToHashSet(StringComparer.Ordinal));
@@ -59,23 +68,40 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     }
     public IReadOnlyList<EmulationMedia> ResolveConfiguredMedia(MachineConfiguration configuration) => configuration.Media.Select(EmulationMediaConversionFunctions.ToCommon).ToArray();
     /// <summary>Annonce les seuls lecteurs explicitement raccordés, tape et carte disque optionnelles comprises.</summary>
-    public IReadOnlyList<EmulationMediaDevice> DescribeMediaDevices(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.Devices(configuration) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.Devices(configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.Devices(configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.Devices(configuration) : (TapeConnected(configuration) ? TapeDevices(configuration) : []).Concat(NativeStorage.Devices(configuration).Where(device => NativeStorage.Connected(configuration, device.Slot.Index))).Concat(NativeStorage.HardDiskDevices(configuration).Where(device => NativeStorage.HardDiskConnected(configuration, device.Slot.Index))).ToArray();
+    public IReadOnlyList<EmulationMediaDevice> DescribeMediaDevices(MachineConfiguration configuration) =>
+        DescribeHardwareMediaDevices(configuration).Select(AudioMixerFunctions.WithoutSoundConfiguration).ToArray();
+    private static IReadOnlyList<EmulationMediaDevice> DescribeHardwareMediaDevices(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.Devices(configuration) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.Devices(configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.Devices(configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.Devices(configuration) : (TapeConnected(configuration) ? TapeDevices(configuration) : []).Concat(NativeStorage.Devices(configuration).Where(device => NativeStorage.Connected(configuration, device.Slot.Index))).Concat(NativeStorage.HardDiskDevices(configuration).Where(device => NativeStorage.HardDiskConnected(configuration, device.Slot.Index))).ToArray();
     private static IReadOnlyList<EmulationMediaDevice> TapeDevices(MachineConfiguration configuration) => MasterFunctions.IsEt(configuration) || MasterFunctions.IsCompact(configuration) ? [] : [new(EmulationMediaSlot.Tape0, EmulationMediaType.Tape, TapeConstants.Extensions, ConfigurationKind: EmulationStorageConfigurationKind.TapeDrive, ConfigurationBlocks: EmulationTapeSettings.DescribeBlocks(configuration.Options, [300, 1200]))];
     /// <summary>Un média déjà choisi exprime un branchement explicite ; une configuration vide n'ajoute aucun lecteur.</summary>
     private static bool TapeConnected(MachineConfiguration configuration) => !MasterFunctions.IsEt(configuration) && !MasterFunctions.IsCompact(configuration) && ( configuration.Options.TryGetValue(TapeConstants.ConnectedOption, out var value) ? bool.Parse(value) : configuration.Media.Any(media => media.Slot == EmulationMediaSlot.Tape0));
     public IReadOnlyDictionary<string, string> GetRuntimeOptions(MachineConfiguration configuration) => configuration.Options;
-    public bool SupportsPointerCapture(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration);
+    public bool SupportsPointer(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) || PointerInputFunctions.Connected(configuration);
+    public bool SupportsPointerCapture(MachineConfiguration configuration) => SupportsPointer(configuration);
     public IReadOnlySet<string>? GetCartridgeExtensions(MachineConfiguration configuration) => null;
     public EmulationConfigurationSummary Summarize(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.Summary(configuration) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.Summary(configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.Summary(configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.Summary(configuration) : ConfigurationSummaryFunctions.Create(configuration);
     /// <summary>Propose le lecteur à Ajouter, indépendamment des seuls périphériques effectivement raccordés au runtime.</summary>
-    public EmulationStorageSettings DescribeStorage(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.DescribeStorage(configuration) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.DescribeStorage(configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.DescribeStorage(configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.DescribeStorage(configuration) : StorageSettingsFunctions.Describe(configuration) with { AvailableDevices = MasterFunctions.IsEt(configuration) ? [] : TapeDevices(configuration).Concat(NativeStorage.Devices(configuration)).Concat(NativeStorage.HardDiskDevices(configuration)).ToArray() };
-    public IReadOnlyList<EmulationStorageDeviceSettings> DescribeDeviceSettings(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.DeviceSettings(configuration) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.DeviceSettings(configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.DeviceSettings(configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.DeviceSettings(configuration) : NativeStorage.DescribeSettings(configuration).Concat(NativeStorage.DescribeHardDiskSettings(configuration)).Concat(TapeConnected(configuration) ? [new EmulationStorageDeviceSettings(EmulationMediaSlot.Tape0, Options: configuration.Options.Where(pair => pair.Key.StartsWith(EmulationTapeSettings.Prefix, StringComparison.Ordinal)).ToDictionary())] : []).ToArray();
-    public MachineConfiguration ApplyDeviceSettings(MachineConfiguration configuration, IReadOnlyList<EmulationStorageDeviceSettings> settings) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.ApplyDeviceSettings(configuration, settings) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.ApplyDeviceSettings(configuration, settings) : AtomFunctions.IsModel(configuration) ? AtomFunctions.ApplyDeviceSettings(configuration, settings) : SystemFunctions.IsModel(configuration) ? SystemFunctions.ApplyDeviceSettings(configuration, settings) : NativeStorage.ApplySettings(configuration, settings);
+    public EmulationStorageSettings DescribeStorage(MachineConfiguration configuration)
+    {
+        var settings = DescribeHardwareStorage(configuration);
+        return settings with
+        {
+            AvailableDevices = settings.AvailableDevices.Select(AudioMixerFunctions.WithoutSoundConfiguration).ToArray(),
+            DeviceSettings = settings.DeviceSettings?.Select(AudioMixerFunctions.WithoutSoundSettings).ToArray()
+        };
+    }
+    private EmulationStorageSettings DescribeHardwareStorage(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.DescribeStorage(configuration) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.DescribeStorage(configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.DescribeStorage(configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.DescribeStorage(configuration) : StorageSettingsFunctions.Describe(configuration) with { AvailableDevices = MasterFunctions.IsEt(configuration) ? [] : TapeDevices(configuration).Concat(NativeStorage.Devices(configuration)).Concat(NativeStorage.HardDiskDevices(configuration)).ToArray() };
+    public IReadOnlyList<EmulationStorageDeviceSettings> DescribeDeviceSettings(MachineConfiguration configuration) =>
+        DescribeHardwareDeviceSettings(configuration).Select(AudioMixerFunctions.WithoutSoundSettings).ToArray();
+    private IReadOnlyList<EmulationStorageDeviceSettings> DescribeHardwareDeviceSettings(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.DeviceSettings(configuration) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.DeviceSettings(configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.DeviceSettings(configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.DeviceSettings(configuration) : NativeStorage.DescribeSettings(configuration).Concat(NativeStorage.DescribeHardDiskSettings(configuration)).Concat(TapeConnected(configuration) ? [new EmulationStorageDeviceSettings(EmulationMediaSlot.Tape0, Options: configuration.Options.Where(pair => pair.Key.StartsWith(EmulationTapeSettings.Prefix, StringComparison.Ordinal)).ToDictionary())] : []).ToArray();
+    public MachineConfiguration ApplyDeviceSettings(MachineConfiguration configuration, IReadOnlyList<EmulationStorageDeviceSettings> settings) =>
+        ApplyHardwareDeviceSettings(configuration, settings.Select(AudioMixerFunctions.WithoutSoundSettings).ToArray());
+    private MachineConfiguration ApplyHardwareDeviceSettings(MachineConfiguration configuration, IReadOnlyList<EmulationStorageDeviceSettings> settings) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.ApplyDeviceSettings(configuration, settings) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.ApplyDeviceSettings(configuration, settings) : AtomFunctions.IsModel(configuration) ? AtomFunctions.ApplyDeviceSettings(configuration, settings) : SystemFunctions.IsModel(configuration) ? SystemFunctions.ApplyDeviceSettings(configuration, settings) : NativeStorage.ApplySettings(configuration, settings);
     public IReadOnlyDictionary<string, string> NormalizeOptions(MachineConfiguration configuration) => (ArchimedesFunctions.IsModel(configuration) || ElectronFunctions.IsModel(configuration) || AtomFunctions.IsModel(configuration) || SystemFunctions.IsModel(configuration)) ? configuration.Options : VideoStandardFunctions.Normalize(configuration);
-    public bool RequiresOptionRestart(MachineConfiguration configuration, string key) => !NativeStorage.IsMechanicalSoundOption(key) && (key.StartsWith(ArchSettings.OptionPrefix, StringComparison.Ordinal) || key.StartsWith(NativeStorageConstants.FloppyPrefix, StringComparison.Ordinal) || key.StartsWith(NativeStorageConstants.HardDiskPrefix, StringComparison.Ordinal) || key.StartsWith(NetworkConstants.Prefix, StringComparison.Ordinal) || key == NetworkConstants.Firmware || key == SidewaysExpansionConstants.Option || key.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) || key.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal) || key is MemoryExtensionConstants.CardOption or MemoryExtensionConstants.Firmware || key == NativeStorageConstants.DfsFirmware || key == VideoStandardConstants.Option || key == SettingsConstants.MainMemory || key == SystemSettings.CpuOption || key.StartsWith(AtomSettings.OptionPrefix, StringComparison.Ordinal) || key.StartsWith(Plus.ChipPrefix, StringComparison.Ordinal));
+    public bool RequiresOptionRestart(MachineConfiguration configuration, string key) => !NativeStorage.IsMechanicalSoundOption(key) && (key.StartsWith(ArchSettings.OptionPrefix, StringComparison.Ordinal) || key.StartsWith(NativeStorageConstants.FloppyPrefix, StringComparison.Ordinal) || key.StartsWith(NativeStorageConstants.HardDiskPrefix, StringComparison.Ordinal) || key.StartsWith(NetworkConstants.Prefix, StringComparison.Ordinal) || key == NetworkConstants.Firmware || key == UserPortPointerConstants.ConnectedOption || key is ModelAIo.UserPort or ModelAIo.AnalogPort || key == SidewaysExpansionConstants.Option || key.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) || key.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal) || key is MemoryExtensionConstants.CardOption or MemoryExtensionConstants.Firmware || key == NativeStorageConstants.DfsFirmware || key == VideoStandardConstants.Option || key == SettingsConstants.MainMemory || key == SystemSettings.CpuOption || key.StartsWith(AtomSettings.OptionPrefix, StringComparison.Ordinal) || key.StartsWith(Plus.ChipPrefix, StringComparison.Ordinal));
     /// <summary>Conserve le branchement même sans tape et retire le lecteur lorsque l'utilisateur le supprime.</summary>
     public MachineConfiguration ApplyStorage(MachineConfiguration configuration, EmulationStorageSettings settings)
     {
+        settings = settings with { DeviceSettings = settings.DeviceSettings?.Select(AudioMixerFunctions.WithoutSoundSettings).ToArray() };
         if (ArchimedesFunctions.IsModel(configuration)) return ArchimedesFunctions.ApplyStorage(configuration, settings);
         if (ElectronFunctions.IsModel(configuration)) return ElectronFunctions.ApplyStorage(configuration, settings);
         if (AtomFunctions.IsModel(configuration)) return AtomFunctions.ApplyStorage(configuration, settings);
@@ -105,12 +131,34 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     public IReadOnlyList<InputBindingDefinition> GetKeyboardDefinitions(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.KeyboardDefinitions() : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.KeyboardDefinitions() : AtomFunctions.IsModel(configuration) ? AtomFunctions.KeyboardDefinitions() : SystemFunctions.IsModel(configuration) ? SystemFunctions.KeyboardDefinitions() : InputSettingsFunctions.KeyboardDefinitions(configuration);
     EmulationInputSnapshot IEmulatorInputMapper.MapInput(EmulationInputSnapshot snapshot, MachineConfiguration configuration) =>
         ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.MapInput(snapshot, configuration) : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.MapInput(snapshot, configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.MapInput(snapshot, configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.MapInput(snapshot, configuration) : InputSnapshotFunctions.Apply(snapshot, configuration.Input);
-    public MachineConfiguration ApplyInputConfiguration(MachineConfiguration configuration) => configuration;
+    public MachineConfiguration ApplyInputConfiguration(MachineConfiguration configuration) => PointerInputFunctions.HasConnector(configuration)
+        ? configuration with { Input = configuration.Input with { CaptureMouse = PointerInputFunctions.Connected(configuration) } } : configuration;
+    public MachineConfiguration ApplySettings(MachineConfiguration configuration, IReadOnlyDictionary<string, string?> values)
+    {
+        if (ModelAIoFunctions.IsModel(configuration))
+        {
+            if (values.ContainsKey(ModelAIo.UserPort) && !ModelAIoFunctions.UserPort(configuration))
+                configuration = configuration with
+                {
+                    Options = new Dictionary<string, string>(configuration.Options)
+                    { [UserPortPointerConstants.ConnectedOption] = bool.FalseString },
+                    Input = configuration.Input with { CaptureMouse = false }
+                };
+            if (values.ContainsKey(ModelAIo.AnalogPort) && !ModelAIoFunctions.AnalogPort(configuration))
+                configuration = configuration with { Input = configuration.Input with { Controllers = [] } };
+        }
+        return values.ContainsKey(UserPortPointerConstants.ConnectedOption) ? ApplyInputConfiguration(configuration) : configuration;
+    }
+    public IReadOnlyList<InputBindingDefinition> GetMouseDefinitions(MachineConfiguration configuration) =>
+        PointerInputFunctions.HasConnector(configuration) || ArchimedesFunctions.IsModel(configuration)
+            ? InputSettingsFunctions.MouseDefinitions() : [];
 
     /// <summary>Annonce et valide la RAM réellement allouée par l'implémentation du modèle.</summary>
     public decimal? GetMemoryKib(MachineConfiguration configuration) => ArchimedesFunctions.IsModel(configuration) ? ArchimedesFunctions.MemoryBytes(configuration) / (decimal)SettingsConstants.Kibibyte : ElectronFunctions.IsModel(configuration) ? ElectronFunctions.MemoryKib(configuration) : AtomFunctions.IsModel(configuration) ? AtomFunctions.MemoryKib(configuration) : SystemFunctions.IsModel(configuration) ? SystemFunctions.MemoryKib(configuration) : MasterFunctions.IsModel(configuration) ? MasterFunctions.MemoryKib(configuration) : (ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.MemoryBytes(configuration) : MemoryExtensionFunctions.TotalBytes(configuration)) / (decimal)SettingsConstants.Kibibyte;
     public void ValidateOptions(MachineConfiguration configuration)
     {
+        ModelAIoFunctions.Validate(configuration);
+        PointerInputFunctions.Validate(configuration);
         if (ArchimedesFunctions.IsModel(configuration)) { ArchimedesFunctions.Validate(configuration); return; }
         if (ElectronFunctions.IsModel(configuration)) { ElectronFunctions.Validate(configuration); return; }
         if (AtomFunctions.IsModel(configuration)) { AtomFunctions.Validate(configuration); return; }
@@ -225,16 +273,19 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
     }
 
     public IReadOnlyList<EmulationSettingsBlock> DescribeSettings(MachineConfiguration configuration, EmulatorManagementContext? context = null)
+        => [.. DescribeHardwareSettings(configuration), .. ModelAIoFunctions.Describe(configuration), .. AudioMixerFunctions.Describe(configuration, DescribeHardwareMediaDevices(configuration)), .. PointerInputFunctions.Describe(configuration)];
+
+    private IReadOnlyList<EmulationSettingsBlock> DescribeHardwareSettings(MachineConfiguration configuration)
     {
         if (ArchimedesFunctions.IsModel(configuration)) return ArchimedesFunctions.Describe(configuration);
         if (ElectronFunctions.IsModel(configuration)) return ElectronFunctions.Describe(configuration);
         if (AtomFunctions.IsModel(configuration)) return AtomFunctions.Describe(configuration);
         if (SystemFunctions.IsModel(configuration)) return SystemFunctions.Describe(configuration);
         if (MasterFunctions.IsModel(configuration)) return MasterFunctions.Describe(configuration);
-        var fields = GetFirmwareSlots(configuration).Where(slot => slot.FieldId is not (FloppyExtensionConstants.IntelRom or FloppyExtensionConstants.WdRom or MemoryExtensionConstants.Firmware) && !slot.FieldId.StartsWith(Plus.ChipPrefix, StringComparison.Ordinal) && !slot.FieldId.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) && !slot.FieldId.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal)).Select(slot => new EmulationSettingsField(slot.FieldId, EmulationMachineTab.Rom, "Rom", slot.LabelResourceKey, EmulationSettingsEditor.Path, configuration.Options.GetValueOrDefault(slot.FieldId), IsEnabled: !(SidewaysExpansionFunctions.RoleBank(configuration, slot.FieldId) is { } bank && SidewaysExpansionFunctions.ProvidesBank(configuration, bank)), DefaultFolderCategory: EmulationDefaultFolderCategory.Firmware, RequiresRestart: true)).ToArray();
+        var fields = GetFirmwareSlots(configuration).Where(slot => slot.FieldId is not (FloppyExtensionConstants.IntelRom or FloppyExtensionConstants.WdRom or MemoryExtensionConstants.Firmware or NetworkConstants.Firmware) && !slot.FieldId.StartsWith(Plus.ChipPrefix, StringComparison.Ordinal) && !slot.FieldId.StartsWith(SidewaysExpansionConstants.ChipPrefix, StringComparison.Ordinal) && !slot.FieldId.StartsWith(SidewaysExpansionConstants.AriesChipPrefix, StringComparison.Ordinal)).Select(slot => new EmulationSettingsField(slot.FieldId, EmulationMachineTab.Rom, "Rom", slot.LabelResourceKey, EmulationSettingsEditor.Path, configuration.Options.GetValueOrDefault(slot.FieldId), IsEnabled: !(SidewaysExpansionFunctions.RoleBank(configuration, slot.FieldId) is { } bank && SidewaysExpansionFunctions.ProvidesBank(configuration, bank)), DefaultFolderCategory: EmulationDefaultFolderCategory.Firmware, RequiresRestart: true)).ToArray();
         return
         [
-            NetworkFunctions.Describe(configuration),
+            .. NetworkFunctions.Describe(configuration),
             FloppyExtensionFunctions.Describe(configuration),
             new(SettingsConstants.MainMemory, EmulationMachineTab.Ram, SettingsConstants.ResourceMemory,
                 [new(SettingsConstants.MainMemory, EmulationMachineTab.Ram, SettingsConstants.MainMemory, SettingsConstants.ResourceMemory, EmulationSettingsEditor.Selection,
@@ -247,7 +298,7 @@ internal sealed class AcornEmuMachineFactory : IEmulatorAdapter
             ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.DescribeMemory(configuration) : MemoryExtensionFunctions.Describe(configuration),
             SidewaysExpansionFunctions.Describe(configuration) with { IsVisible = !ModelBPlusFunctions.IsModel(configuration) },
             SidewaysExpansionFunctions.DescribeRam(configuration),
-            SidewaysExpansionFunctions.DescribeRoms(configuration),
+            .. (ModelBPlusFunctions.IsModel(configuration) ? new[] { SidewaysExpansionFunctions.DescribeRoms(configuration) } : []),
             new("Rom", EmulationMachineTab.Rom, "Emulation.Firmware", fields),
             new(VideoStandardConstants.Option, EmulationMachineTab.Video, VideoStandardConstants.Label,
                 [new(VideoStandardConstants.Option, EmulationMachineTab.Video, VideoStandardConstants.Option, VideoStandardConstants.Label, EmulationSettingsEditor.Selection,

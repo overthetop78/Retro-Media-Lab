@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>גבוהה</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>אודיו Audio</value></data>
   <data name="Emulation.Audio.Tone"><value>צליל בדיקה</value></data>
+  <data name="Emulation.Audio.Mixer"><value>מיקסER</value></data>
+  <data name="Emulation.Audio.Mute"><value>לכבות את הצליל</value></data>
 </root>

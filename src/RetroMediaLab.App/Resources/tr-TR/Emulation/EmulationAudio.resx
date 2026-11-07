@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Yüksek</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>Ses Ses</value></data>
   <data name="Emulation.Audio.Tone"><value>Test sesi</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Cilt karıştırıcı</value></data>
+  <data name="Emulation.Audio.Mute"><value>Sesi kapat</value></data>
 </root>

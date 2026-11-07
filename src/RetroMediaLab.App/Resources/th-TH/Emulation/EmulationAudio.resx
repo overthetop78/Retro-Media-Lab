@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>สูง</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>เสียง</value></data>
   <data name="Emulation.Audio.Tone"><value>เสียงทดสอบ</value></data>
+  <data name="Emulation.Audio.Mixer"><value>ตัวผสมเสียง</value></data>
+  <data name="Emulation.Audio.Mute"><value>ปิดเสียง</value></data>
 </root>

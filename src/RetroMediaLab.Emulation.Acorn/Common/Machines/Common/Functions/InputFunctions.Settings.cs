@@ -8,10 +8,15 @@ internal static class InputSettingsFunctions
     internal static EmulationInputSettings Describe(MachineConfiguration configuration)
     {
         var input = configuration.Input;
-        var definitions = (new Engine().SelectedAdapter(configuration)?.GetKeyboardDefinitions(configuration) ?? BbcMicroInputSettingsFunctions.KeyboardDefinitions(configuration));
+        var adapter = new Engine().SelectedAdapter(configuration);
+        var definitions = adapter?.GetKeyboardDefinitions(configuration) ?? BbcMicroInputSettingsFunctions.KeyboardDefinitions(configuration);
         var keyboard = new EmulationInputBindingSet(definitions, input.KeyboardBindings ?? EmulationSdk.InputProcessing.ToStrings(input.KeyboardMappings, StringComparer.Ordinal), EmulationInputSource.Keyboard | EmulationInputSource.Mouse | EmulationInputSource.Controller);
+        var mouseDefinitions = adapter?.GetMouseDefinitions(configuration) ?? [];
+        var mouse = mouseDefinitions.Count == 0 ? null : new EmulationInputBindingSet(mouseDefinitions,
+            EmulationSdk.InputProcessing.ResolveBindings(mouseDefinitions, input.MouseBindings),
+            EmulationInputSource.Mouse | EmulationInputSource.Keyboard | EmulationInputSource.Controller, true);
         var configured = input.Controllers ?? [];
-        var choices = CommonControllerFunctions.Peripherals(configuration.Model).Where(category => category != PeripheralCategory.Automatic).OrderBy(category => category).Select(Choice).ToArray();
+        var choices = (adapter?.GetPeripherals(configuration) ?? CommonControllerFunctions.Peripherals(configuration.Model).ToArray()).Where(category => category != PeripheralCategory.Automatic).OrderBy(category => category).Select(Choice).ToArray();
         var ports = Enumerable.Range(ControllerPortConstants.MinimumControllerPort, CommonControllerFunctions.PortCount(configuration)).Select(index =>
         {
             var current = configured.FirstOrDefault(binding => binding.Port == index);
@@ -27,7 +32,7 @@ internal static class InputSettingsFunctions
                 current?.VisualId
             ) { OutputBindings = current?.OutputBindings ?? new Dictionary<string, EmulationControllerOutputBinding>() };
         }).ToArray();
-        return new EmulationInputSettings(keyboard, null, ports);
+        return new EmulationInputSettings(keyboard, mouse, ports);
     }
 
     internal static MachineConfiguration Apply(MachineConfiguration configuration, EmulationInputSettings settings)
@@ -39,6 +44,14 @@ internal static class InputSettingsFunctions
                 item => string.IsNullOrWhiteSpace(item.Value) ? string.Empty : item.Value,
                 StringComparer.Ordinal);
         var keyboard = EmulationSdk.InputProcessing.ToKeys(keyboardBindings);
+        var mouseBindings = configuration.Input.MouseBindings;
+        if (settings.Mouse is not null)
+        {
+            var mouseDefinitions = new Engine().SelectedAdapter(configuration)?.GetMouseDefinitions(configuration) ?? [];
+            mouseBindings = EmulationSdk.InputProcessing.ResolveBindings(mouseDefinitions, settings.Mouse.Values);
+            if (mouseBindings.Values.Any(value => !CommonControllerFunctions.IsValidBinding(value)))
+                throw new ArgumentException(ErrorMessages.UnsupportedControllerDevice, nameof(settings));
+        }
         var controllers = settings.ControllerPorts.Select(port =>
         {
             if (!Enum.TryParse<PeripheralCategory>(port.SelectedControllerId, true, out var peripheral) || !Enum.IsDefined(peripheral))
@@ -51,6 +64,7 @@ internal static class InputSettingsFunctions
             {
                 KeyboardMappings = keyboard,
                 KeyboardBindings = keyboardBindings,
+                MouseBindings = mouseBindings,
                 Controllers = controllers
             }
         };
@@ -84,6 +98,12 @@ internal static class InputSettingsFunctions
             [EmulationControllerVisualIds.CompetitionPro5000] = ControllerDefinitions(category)
         } : null
     ) { Category = category == PeripheralCategory.None ? EmulationControllerCategory.None : EmulationControllerCategory.Joystick };
+    internal static IReadOnlyList<InputBindingDefinition> MouseDefinitions() =>
+    [
+        new(MouseInputConstants.LeftAction, MouseInputConstants.LeftResource, MouseInputConstants.LeftSource),
+        new(MouseInputConstants.RightAction, MouseInputConstants.RightResource, MouseInputConstants.RightSource),
+        new(MouseInputConstants.MiddleAction, MouseInputConstants.MiddleResource, MouseInputConstants.MiddleSource)
+    ];
     private static IReadOnlyList<InputBindingDefinition> ControllerDefinitions(PeripheralCategory category) => category == PeripheralCategory.None 
         ? [] 
         : InputSettingsFunctionsConstants.ControllerActions.Select(action => new InputBindingDefinition(action, InputSettingsFunctionsConstants.ResourceActionPrefix + action, string.Empty)

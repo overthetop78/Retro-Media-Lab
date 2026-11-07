@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>عالية</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>أوديو</value></data>
   <data name="Emulation.Audio.Tone"><value>نغمة اختبار</value></data>
+  <data name="Emulation.Audio.Mixer"><value>مزيج من المجلدات</value></data>
+  <data name="Emulation.Audio.Mute"><value>أطفئ الصوت</value></data>
 </root>

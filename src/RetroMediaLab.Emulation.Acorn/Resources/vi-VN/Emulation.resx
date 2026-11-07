@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Hệ điều hành đĩa ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} trong ngân hàng {1} không tương thích với thẻ mở rộng bộ nhớ {2}. Kiểm tra ROM Nhiệm vụ trong thiết lập máy móc.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM ngân hàng {0} bị chiếm bởi một người khác ROM. Kiểm tra ROM Name {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Giao diện nhập</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Name</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Giao diện cần điều khiển phần mở rộng</value></data>
 </root>

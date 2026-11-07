@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Levyn käyttöjärjestelmä ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} pankissa {1} ei ole yhteensopiva muistin laajennuskortin kanssa {2}. Tarkista ROM koneen asetukset.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM pankki {0} on jo käytössä toinen ROM. Tarkista ROM Muistin laajennuskortin tehtävät {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Syöttöliitännät</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Hiiren ja tulostimen liittimet</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Analoginen joystickin käyttöliittymä</value></data>
 </root>

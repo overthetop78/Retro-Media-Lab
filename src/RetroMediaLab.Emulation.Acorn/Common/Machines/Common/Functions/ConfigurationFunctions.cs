@@ -42,14 +42,15 @@ internal static class ConfigurationFunctions
         foreach (var controller in configuration.Input.Controllers ?? [])
         {
             if (controller.Port < ControllerPortConstants.MinimumControllerPort
-                || controller.Port >= ControllerPortCount(configuration.Model))
+                || controller.Port >= CommonControllerFunctions.PortCount(configuration))
                 throw new ArgumentOutOfRangeException(nameof(configuration), ErrorMessages.InvalidControllerPort);
             if (!ports.Add(controller.Port))
                 throw new ArgumentException(ErrorMessages.DuplicateControllerPort, nameof(configuration));
             if (controller.DeadZonePercent is < ControllerConstants.MinimumDeadZonePercent
                 or > ControllerConstants.MaximumDeadZonePercent)
                 throw new ArgumentOutOfRangeException(nameof(configuration), ErrorMessages.InvalidControllerDeadZone);
-            if (!CommonControllerFunctions.Peripherals(configuration.Model).Contains(controller.Peripheral))
+            if (!(new Engine().SelectedAdapter(configuration)?.GetPeripherals(configuration)
+                ?? CommonControllerFunctions.Peripherals(configuration.Model).ToArray()).Contains(controller.Peripheral))
                 throw new ArgumentException(ErrorMessages.UnsupportedControllerDevice, nameof(configuration));
         }
     }

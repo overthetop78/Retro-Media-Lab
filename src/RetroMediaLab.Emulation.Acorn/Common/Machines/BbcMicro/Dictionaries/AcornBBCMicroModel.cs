@@ -29,7 +29,7 @@ internal static partial class AcornBBCMicroModel
             FirmwareCategory.CharacterGenerator => CharacterRom(sha1),
             FirmwareCategory.DiscFilingSystem => DiscRom(model, sha1),
             FirmwareCategory.Network => NetworkRom(sha1),
-            FirmwareCategory.Application => ApplicationRom(sha1),
+            FirmwareCategory.Application => ApplicationRom(model, sha1),
             FirmwareCategory.Speech or FirmwareCategory.MasterMos => AcornFirmware.ByCategory[category].Contains(sha1) ? EmulationFirmwareCompatibility.Incompatible : (EmulationFirmwareCompatibility?)null,
             _ => null
         };

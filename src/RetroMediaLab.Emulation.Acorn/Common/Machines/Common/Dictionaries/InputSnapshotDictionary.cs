@@ -2,6 +2,13 @@ namespace RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Dictionaries;
 
 internal static class InputSnapshotDictionary
 {
+    internal static readonly IReadOnlyDictionary<string, string> DefaultMouseBindings = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        [MouseInputConstants.LeftAction] = MouseInputConstants.LeftSource,
+        [MouseInputConstants.RightAction] = MouseInputConstants.RightSource,
+        [MouseInputConstants.MiddleAction] = MouseInputConstants.MiddleSource
+    };
+
     internal static readonly IReadOnlyDictionary<string, int> CommonButtons =
         new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
         {

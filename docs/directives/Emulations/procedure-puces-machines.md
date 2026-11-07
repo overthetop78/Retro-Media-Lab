@@ -7,10 +7,15 @@ Directives confirmées par l'utilisateur les 6 et 7 novembre 2026. Elles s'appli
 
 Ces règles doivent toujours être respectées pendant le développement, les corrections, les optimisations et les validations. Ce document ne constitue pas une liste de tâches : il ne se coche pas, ne se clôture pas et reste applicable aux travaux suivants. Les actions concrètes et leur avancement restent dans les suivis sous `docs/tasks/`.
 
+- Pour les appels natifs COM recevant une interface, transmettre le pointeur de cette interface et conserver/libérer sa référence selon son propriétaire ; ne pas substituer son identité IUnknown. Comparer le code de retour avant/après sur le périphérique réel avant d’ajouter un autre chemin d’entrée. Correction GameInput du 7 novembre : IUnknown faisait échouer GetCurrentReading sur Xbox 360 et Rematch (0x838A0003) ; IGameInputDevice rétablit S_OK. Une commande de vibration réussie ne valide pas la réception des boutons et axes.
+
+- Formuler toutes les directives de ce fichier pour l'ensemble des machines et des marques. Ne citer une machine, une marque ou une puce précise que pour expliquer une modification effectivement réalisée, ses résultats et ses conditions de réutilisation sur d'autres composants ; cet exemple ne doit pas restreindre la portée de la directive générale.
+
 ## Règles pour chaque puce
 
-- Ne pas passer à une autre puce tant que celle en cours n'est pas terminée. Faire exception seulement lorsqu'aucune solution viable n'est actuellement disponible et que la recherche s'enlise en petites modifications sans résultat utile. Une heure sur ce bloc est déjà trop longue : arrêter ces essais improductifs avant de prolonger encore le travail.
-- Avant ce report exceptionnel, consigner le problème précis, les solutions tentées, leurs résultats et l'absence de solution viable dans la fiche de la puce et son suivi. La laisser explicitement incomplète, conserver un état de code cohérent et ne pas présenter son report comme une validation.
+- Terminer entièrement la puce en cours avant de passer à une autre. Une fonction, un mode, un signal ou un raccordement manquant doit être réalisé ; le consigner comme non terminé ne permet pas de passer à la suite.
+- Faire exception uniquement pour la recherche d'améliorations de performance minimes qui s'enlise sans avancée utile, notamment lorsque la machine en Debug est déjà proche de sa vitesse matérielle réelle. Ne pas rester une heure sur ces essais improductifs. Cette exception ne permet pas d'abandonner une fonctionnalité, une puce ou un raccordement à terminer.
+- Avant d'arrêter ces seules recherches d'optimisation, consigner les mesures, les tentatives et leurs résultats dans la fiche de la puce et son suivi ; conserver le fonctionnement matériel complet et le code cohérent, sans présenter un gain non obtenu comme validé.
 - Tenir les documents à jour directement en appliquant ces directives. Ne pas ajouter aux listes de tâches une entrée dédiée à chaque modification de fichier Markdown : la consignation des informations, décisions, corrections et résultats fait partie intégrante du travail concerné.
 - Définir le travail concret dans `docs/tasks/chips/<Chip>/`, avec les fichiers concernés, avant de modifier le code.
 - Reprendre dès le départ les directives d'amélioration consignées ci-dessous. Ajouter à la liste de travail les actions applicables à cette puce avant de coder, pour ne pas devoir les ajouter après coup.
@@ -37,7 +42,13 @@ Ces règles doivent toujours être respectées pendant le développement, les co
 
 ## Règles pour chaque machine
 
-- Ne pas passer à la machine suivante tant que la machine en cours n'est pas terminée, sauf report explicite selon la même règle : aucune solution viable actuellement et enlisement prolongé sans gain utile. Consigner alors les points non résolus et les puces concernées ; ne pas déclarer la machine terminée.
+- Implémenter entièrement les cartes contrôleurs, puces, ports et interfaces d'entrée réellement présents ou raccordables à chaque machine concernée, quelle que soit sa marque. Y raccorder les entrées des joysticks déjà implémentés et de la souris hôte déjà gérée par les contrats existants. Ne pas créer de nouveaux types de souris, de nouveaux types de joysticks ni de pilotes hôtes pour ce travail. Ne jamais réduire les contrôleurs à un support minimal, à quelques commandes ou aux seuls usages courants : couvrir leurs modes, registres, lignes, fronts, interruptions, acquittements, erreurs, horloges et timings matériels applicables. Respecter toutes les règles de complétude des puces ci-dessus et vérifier le raccordement effectif des entrées jusqu'aux logiciels invités. Consigner séparément les autres extensions manquantes et les différer jusqu'au besoin confirmé par l'utilisateur ; ne pas annoncer leur prise en charge ni les ajouter toutes automatiquement.
+- Terminer entièrement les contrôleurs et interfaces d'entrée de la machine, leur raccordement aux entrées existantes et leur vérification avant de passer à la suite. Ne pas remplacer leur réalisation par une note de travail restant ; une validation des seuls CPU ou médias ne termine pas la machine.
+- Transmettre la vidéo entrelacée sous forme de champs entrelacés, avec leur parité, leur ordre et leur cadence matériels. Transmettre la vidéo non entrelacée en non entrelacé. Ne pas assembler artificiellement les deux champs dans le module pour envoyer une image complète à chaque champ.
+- Respecter le format, les proportions et les dimensions natifs de l'image émulée lors de sa transmission. Ne pas adapter l'image à la résolution de l'écran hôte dans le cœur ou le module d'émulation.
+- Réserver à l'application et à la visualisation les choix de présentation : affichage des champs, désentrelacement éventuel, agrandissement, adaptation à la fenêtre ou au plein écran, shaders et autres traitements visuels. Conserver les informations du signal émulé nécessaires à ces choix ; ne pas modifier les timings ni le balayage matériels pour réaliser un effet de présentation.
+
+- Terminer la machine en cours, toutes ses puces et tous ses raccordements demandés avant de passer à la machine suivante. L'exception ci-dessus porte seulement sur les optimisations minimes et improductives ; elle ne permet pas de laisser une fonction manquante et de poursuivre ailleurs.
 - Reprendre son suivi `docs/tasks/machines/<Machine>/` et identifier ses composants réels, variantes et périphériques. Ne pas ajouter de matériel inventé ni reprendre une puce déjà validée sans défaut établi.
 - Terminer les puces manquantes en respectant les directives ci-dessus, successivement.
 - Réaliser dans `Emulation.xxx` le câblage direct des puces : horloges, phases, lignes, bus, RAM partagée et arbitrage. Les communications entre puces ne transitent pas par le SDK `Emulation` ni par App.
@@ -57,9 +68,13 @@ Ces règles doivent toujours être respectées pendant le développement, les co
 
 Une notification transporte un changement de signal ; ce n'est pas une instruction imposée au récepteur en dehors de sa phase matérielle. Le CPU continue ses cycles et prend en compte IRQ/NMI selon ses règles. Les circuits peuvent partager une source d'horloge tout en conservant leurs propres diviseurs et phases. Une entrée asynchrone agit selon sa spécification ; elle ne doit pas être artificiellement différée au prochain tick.
 
+- Pour adapter un déplacement relatif hôte à un encodeur physique, distinguer la quantité de mouvement de sa durée. Ne pas transformer chaque unité reçue en travail à débiter à une fréquence logicielle fixe si le matériel ne possède ni cette horloge ni cette file. Rééchantillonner dans le domaine temporel émulé, conserver les directions, phases, transitions et l'absence d'activité au repos ; vérifier les déplacements rapides suivis d'un arrêt net, pas seulement les petits déplacements. Cette règle ne supprime pas les tampons et délais réellement présents dans les périphériques qui en possèdent.
+
 ## Directives d'amélioration à réutiliser dès l'implémentation
 
 ### Sources, archives et informations acquises
+
+- Lorsqu'un banc ajoute une ROM ou une extension, réutiliser le chargement et les banques déclarées par la machine ; ne pas remplacer arbitrairement une banque occupée pour obtenir une priorité élevée. Conserver les dépendances du bundle, y compris les tables ou services utilisés par une autre ROM. Avant d'attribuer un échec à une puce, comparer le montage ajouté au chargeur fonctionnel et aux données réellement transférées. Consigner la dépendance précise dans la fiche machine, sans imposer son placement aux autres modèles.
 
 - Centraliser les documents techniques récupérés, les informations sources téléchargées et les images extraites des PDF dans `artifacts/.tmp-archives/`. Ne pas les disperser dans des dossiers temporaires successifs.
 - Classer les sources de puces sous `artifacts/.tmp-archives/chips/<Type>/<Fabricant>/<Famille>/<Puce>/`, avec la même hiérarchie que les composants de `RetroMediaLab.Chips`.
@@ -112,3 +127,20 @@ Pour chaque nouvelle directive, écrire le problème évité, l'action à appliq
 - Pour interpréter un profil échantillonné, distinguer les coûts inclusifs des coûts propres et ne jamais additionner des parents et leurs descendants. Lorsque la conversion ajoute des pseudo-feuilles CPU_TIME ou UNMANAGED_CODE_TIME, attribuer leur intervalle au dernier appelant réel pour établir les coûts propres ; vérifier la pile et les unités. Ne pas confondre une méthode CPU qui fait avancer la carte avec le seul travail d'exécution des instructions, ni une méthode nommée Publish avec une vérification inutile : conserver les historiques et décalages matériels qu'elle réalise.
 
 - Pour un composant avancé à ses échéances, synchroniser son temps interne à l'instant du bus avant chaque transaction qui le lit, le reprogramme ou acquitte un état, dans tous les décodages et miroirs réellement câblés. Une notification de prochaine échéance ne remplace pas cette synchronisation : après repos ou réarmement, le nouveau délai doit partir de la commande courante. Conserver l'horloge et les compteurs dans la puce, sans réintroduire un Tick au repos ; vérifier départ après repos, réarmement, dernier cycle BUSY et instant EOC/IRQ dans chaque chemin de machine concerné.
+
+### Entrées auxiliaires constantes d'un bus CPU
+
+- Déclarer dans le contrat de bus existant les seules entrées auxiliaires réellement variables ou sorties réellement raccordées. Éviter les appels répétés à des accesseurs constants ou sorties sans destinataire lorsque le contrat permet déjà de les désactiver.
+- Conserver les niveaux initiaux, les notifications raccordées, les phases et tous les transferts ; ne pas désactiver une broche variable pour gagner du temps. Ne pas déduire un brochage physique d'une valeur par défaut logicielle.
+- Confirmer le gain sur la carte complète et comparer cycles/sorties avec le même jeu de dépendances ; une DLL de livraison et une DLL de banc peuvent porter des versions différentes et ne doivent pas être substituées aveuglément.
+
+- Isoler les dossiers de compilation intermédiaires et de sortie de deux projets de diagnostic différents, même lorsqu'ils utilisent le même nom d'assembly pour accéder aux éléments internes. Après un changement de projet ou de références dans un banc existant, régénérer son manifeste de dépendances et vérifier les références requises avant lancement ; la présence de la DLL seule ne prouve pas qu'elle sera résolue. Ne pas laisser un ancien deps.json provoquer une erreur de chargement avant le gestionnaire d'erreurs du programme.
+
+- Pour une machine à processeurs et mémoires séparés, identifier le processeur exécutant le logiciel et l'espace cible de ses chargements/accès avant d'attribuer un défaut à une puce. Vérifier la compatibilité du logiciel avec le coprocesseur à partir du manuel et du programme effectif ; ne pas fusionner les RAM ou détourner les adresses pour masquer une incompatibilité. Distinguer les observations utilisateur, les preuves dans le programme et les confirmations explicites de l'éditeur.
+
+### Équipements d’entrée optionnels
+
+- Résoudre les équipements réellement montés depuis la configuration, par les contrats d’adaptateur existants. Mettre en accord l’assemblage des circuits, les capacités annoncées, les choix de périphériques, la visibilité des onglets et la validation des ports ; ne pas utiliser le seul nom du modèle pour écarter un équipement documenté.
+- Décrire séparément les équipements physiquement indépendants. Ne pas installer implicitement un autre circuit en activant un port. Conserver le montage standard par défaut et les comportements antérieurs des autres modèles ; vérifier les combinaisons de présence/absence.
+- Éviter la récursion entre description et résolution des capacités : le comportement matériel par défaut doit provenir de son catalogue, et la description peut ensuite demander les capacités au contrat. Ne pas faire reconstruire la description par un accesseur appelé par cette même description.
+- Distinguer une entrée injectée dans le cœur, une association hôte projetée et un périphérique physique reçu dans l’application. Conserver la preuve de chaque parcours effectivement testé ; un résultat BASIC hors interface prouve la consommation par le logiciel invité, pas à lui seul le parcours physique dans la fenêtre.

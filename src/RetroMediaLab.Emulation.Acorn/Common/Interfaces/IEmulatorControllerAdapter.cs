@@ -61,6 +61,10 @@ internal interface IEmulatorControllerAdapter : IEmulatorInputMapper
     /// capture aucun périphérique physique et ne démarre aucun cœur.</remarks>
     IReadOnlyList<InputBindingDefinition> GetKeyboardDefinitions(MachineConfiguration configuration);
 
+    /// <summary>Décrit les boutons du connecteur de pointage avec leurs associations physiques par défaut.</summary>
+    /// <remarks>La présence du connecteur est indépendante de l'activation de la capture ; aucun périphérique n'est capturé ici.</remarks>
+    IReadOnlyList<InputBindingDefinition> GetMouseDefinitions(MachineConfiguration configuration) => [];
+
     /// <summary>Adapte les associations préparées par Common aux contraintes du backend.</summary>
     /// <param name="configuration">Configuration empruntée après préparation de ses associations.</param>
     /// <returns>Configuration adaptée ; la même instance lorsque le backend n'a aucune règle supplémentaire.</returns>

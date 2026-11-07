@@ -27,4 +27,8 @@ public sealed record EmulationMediaDevice(
     bool UsesDirectory = false,
     string? DefaultImageSubdirectory = null,
     string? TypeResourceKey = null,
-    IReadOnlyList<EmulationSettingsBlock>? ConfigurationBlocks = null);
+    IReadOnlyList<EmulationSettingsBlock>? ConfigurationBlocks = null)
+{
+    /// <summary>Modèle de lecteur configuré, pour présenter son support physique sans déduire son format du nom de la machine.</summary>
+    public FloppyDriveModelChoice? FloppyModel { get; init; }
+}

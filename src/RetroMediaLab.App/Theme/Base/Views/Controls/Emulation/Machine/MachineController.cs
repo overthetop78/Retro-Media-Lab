@@ -429,7 +429,8 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
                 canOpenMedia ? () => InsertMediaAsync(device) : null,
                 canOpenMedia && mounted is not null ? () => EjectMediaAsync(device) : null,
                 device.MediaType == EmulationMediaType.Tape ? TapeStateText(state) : null,
-                device.MediaType == EmulationMediaType.Tape ? TapeCommandOrder.Select(command => TapeCommand(command, tape, state, activeOperation)).ToArray() : null, device.MediaType);
+                device.MediaType == EmulationMediaType.Tape ? TapeCommandOrder.Select(command => TapeCommand(command, tape, state, activeOperation)).ToArray() : null, device.MediaType,
+                EmulationMediaIconFunctions.Select(device));
         }), _options.ShowError, _input.RestoreFocus);
     }
 

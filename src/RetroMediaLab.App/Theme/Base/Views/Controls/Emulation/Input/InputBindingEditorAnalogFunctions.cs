@@ -104,7 +104,10 @@ public partial class InputBindingEditor
             for (var i = 0; i < devices.Count; i++)
             {
                 var device = devices[i];
-                var name = device.GameInputDisplayName + " #" + (i + 1) + " · ";
+                var productName = ControllerVisualProfileStore.TryGet(device.Id, out var profile)
+                    ? ControllerVisualProfileStore.DisplayName(profile.Model, profile.DisplayName)
+                    : device.ProductName;
+                var name = productName + " #" + (i + 1) + " · ";
                 if (device.StandardCapabilities.HasGamepad)
                     foreach (var stick in new[] { "Left", "Right" })
                     {

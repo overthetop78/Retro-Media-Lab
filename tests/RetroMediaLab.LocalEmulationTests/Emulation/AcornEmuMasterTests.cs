@@ -19,6 +19,23 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuMasterTests
 {
+    [Fact]
+    public void ExtensionFirmwareIsEditableBesideItsHardwareWithoutRomTabDuplicates()
+    {
+        var configuration = new RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.MachineConfiguration(MachineModel.BbcMaster128, core: Emulator.AcornEmu);
+        var blocks = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions.MasterFunctions.Describe(configuration);
+        var firmware = blocks.SelectMany(block => block.Fields).Where(field => field.Id ==
+            RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants.MasterSettingsConstants.CoprocessorRom).ToArray();
+        Assert.Equal(EmulationMachineTab.Extensions, Assert.Single(firmware).Tab);
+        Assert.Equal(EmulationSettingsEditor.Path, firmware[0].Editor);
+        var network = blocks.Where(block => block.Tab == EmulationMachineTab.Ethernet).ToArray();
+        Assert.Equal(2, network.Length);
+        var networkRom = Assert.Single(blocks.SelectMany(block => block.Fields), field => field.Id ==
+            RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.NetworkConstants.Firmware);
+        Assert.Equal(network[0].Id, networkRom.BlockId);
+        Assert.Equal(EmulationSettingsEditor.Path, networkRom.Editor);
+    }
+
     [Theory]
     [InlineData(512, 9, 40)]
     [InlineData(512, 9, 80)]

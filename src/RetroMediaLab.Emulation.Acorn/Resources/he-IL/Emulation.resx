@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>מערכת ההפעלה הדיסק ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} בבנק {1} לא תואם את כרטיס הרחבת הזיכרון {2}. בדוק את ROM משימות בהגדרות המכונה.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM בנק בנק {0} כבר תפוס על ידי אחר ROM. בדוק את ROM משימות לכרטיס הרחבת הזיכרון {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>ממשקים Input</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>מאוס ומחברות המדפסת</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>ממשק שמחה</value></data>
 </root>

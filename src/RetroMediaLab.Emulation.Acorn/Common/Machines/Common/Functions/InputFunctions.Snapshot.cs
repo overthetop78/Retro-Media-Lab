@@ -15,7 +15,27 @@ internal static class InputSnapshotFunctions
     internal static EmulationInputSnapshot Apply(EmulationInputSnapshot snapshot, MachineConfiguration configuration, IEmulatorInputMapper? mapper = null, bool controllerPointerSwitchPressed = false)
     {
         var mapped = mapper?.MapInput(snapshot, configuration) ?? InputSnapshotFunctions.Apply(snapshot, configuration.Input);
+        if (configuration.Input.MouseBindings is { } mouseBindings)
+            mapped = mapped with { Pointer = MapMouseButtons(mapped.Pointer, snapshot, mouseBindings) };
         return controllerPointerSwitchPressed ? mapped with { Keys = new HashSet<EmulationKey>(mapped.Keys) { EmulationKey.RightControl } } : mapped;
+    }
+
+    private static EmulationPointerState MapMouseButtons(EmulationPointerState pointer, EmulationInputSnapshot physical,
+        IReadOnlyDictionary<string, string> bindings)
+    {
+        var fallback = physical.Controllers.FirstOrDefault() ?? EmulationControllerState.Empty;
+        bool Pressed(string action)
+        {
+            var source = bindings.GetValueOrDefault(action, InputSnapshotDictionary.DefaultMouseBindings[action]);
+            return !string.IsNullOrWhiteSpace(source) && IsPressed(source,
+                EmulationSdk.InputProcessing.ResolveSourceController(source, physical.Controllers, fallback), physical);
+        }
+        return pointer with
+        {
+            Left = Pressed(MouseInputConstants.LeftAction),
+            Right = Pressed(MouseInputConstants.RightAction),
+            Middle = Pressed(MouseInputConstants.MiddleAction)
+        };
     }
 
 

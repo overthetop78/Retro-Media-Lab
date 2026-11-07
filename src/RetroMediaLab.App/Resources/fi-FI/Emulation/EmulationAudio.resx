@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Korkea</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>Ääni</value></data>
   <data name="Emulation.Audio.Tone"><value>Testiääni</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Tilavuussekoittimen käyttö</value></data>
+  <data name="Emulation.Audio.Mute"><value>Sammuta ääni</value></data>
 </root>

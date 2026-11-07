@@ -61,7 +61,9 @@ internal static class SidewaysExpansionFunctions
             foreach (var model in C.AriesModels)
                 choices.Add(new(model.Key, string.Empty, string.Format(CultureInfo.InvariantCulture, C.AriesDisplayFormat, model.Value / SettingsConstants.Kibibyte), model.Value));
         return new(C.ExtensionGroup, EmulationMachineTab.Extensions, C.ExtensionGroup,
-            [new(C.Option, EmulationMachineTab.Extensions, C.ExtensionGroup, C.CardLabel, EmulationSettingsEditor.Selection, configuration.Options.GetValueOrDefault(C.Option, C.None), choices, ExplanationResourceKey: C.Help, RequiresRestart: true, RefreshSettingsOnChange: true)]);
+            [new(C.Option, EmulationMachineTab.Extensions, C.ExtensionGroup, C.CardLabel, EmulationSettingsEditor.Selection, configuration.Options.GetValueOrDefault(C.Option, C.None), choices, ExplanationResourceKey: C.Help, RequiresRestart: true, RefreshSettingsOnChange: true),
+             .. DescribeRoms(configuration).Fields.Where(_ => !ModelBPlusFunctions.IsModel(configuration))
+                 .Select(field => field with { Tab = EmulationMachineTab.Extensions, BlockId = C.ExtensionGroup })]);
     }
 
     /// <summary>La RAM physique ajoutée est comptée une seule fois, dans l'onglet RAM.</summary>

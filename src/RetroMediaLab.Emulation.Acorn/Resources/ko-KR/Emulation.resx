@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Disk 운영 시스템 ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} 은행에서 {1} 메모리 확장 카드와 호환되지 않습니다 {2}. 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ROM 기계 설정에 할당.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM 은행 계좌 {0} 이미 다른 점유 ROM. 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ROM 메모리 확장 카드의 할당 {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>입력 인터페이스</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>쥐와 인쇄 기계 연결관</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Analogue joystick 공용영역</value></data>
 </root>

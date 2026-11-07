@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Hoch</value></data>
   <data name="Emulation.Audio"><value>Audio</value></data>
   <data name="Emulation.Audio.Tone"><value>Prüfton</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Volumenmischer</value></data>
+  <data name="Emulation.Audio.Mute"><value>Schalten Sie den Sound aus</value></data>
 </root>
