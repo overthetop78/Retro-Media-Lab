@@ -57,3 +57,9 @@ La cadence matérielle reste environ 50,08 Hz. Cette phase du jeu est silencieus
 Captures sous `artifacts/TestsMachines/Acorn/BBC Micro Model B/` et `artifacts/TestsChips/Intel8271/BBC Micro Model B/` : `20261107-092828-model-b-boulder-title.bmp`, `20261107-092836-model-b-boulder-start.bmp`, `20261107-092841-model-b-boulder-after-240-frames.bmp`. Les deux dernières ont été inspectées et montrent la partie et son évolution. Toutes restent hors Git.
 
 Le média n'a aucune modification en attente ; SHA-256 source identique avant/après : `C62420CA3D101854685658AD72EF0E84D98B88FE5F728AFC5F5CB553547BF7C5`. L'image est détachée puis libérée dans finally, avec nettoyage des entrées et rappels de la carte. Aucun lecteur utilisateur, configuration, volume Windows ou processus RML manipulé.
+
+## Essai physique AMX dans RML — 7 novembre 2026
+
+L’utilisateur a repris le Model B dans la livraison Debug, avec BooBip ×3 et ROM AMX 2.1 en IC58, sans extension Shadow. Le premier allumage était bloqué avant exécution par une ancienne disquette Barbarian II pointant vers un fichier absent ; le journal identifie précisément FileNotFoundException, pas un défaut du CPU. Après remplacement par `F:/Retro/AMX Art 2.1.ssd`, sélection `*DISC` puis `*EXEC !BOOT`, l’utilisateur confirme le fonctionnement du logiciel et les mêmes saccades souris à vitesse rapide que sur le Model A.
+
+Ce résultat est antérieur à la correction du pointeur d’interface natif GameInput et au retrait du repli Windows dans `4ab7f04ba`. Il prouve la reproduction du défaut sur B, pas sa résolution dans le nouveau build. Les axes/boutons du joystick physique ne sont pas encore validés ici. Aucune nouvelle durée de carte complète n’a été mesurée pendant cet essai utilisateur.

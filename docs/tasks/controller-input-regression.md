@@ -73,3 +73,51 @@ Le paramètre ChordKeys et son bloc temporaire sont retirés du helper préexist
 
 - [x] Enregistrer le bloc commun terminé.
   - [x] Modifier `.git/index` pour indexer le contrat, ses 24 consommateurs, les deux contrôleurs App, les tests et les preuves documentées de ce bloc ; créer l’objet commit et mettre à jour `.git/refs/heads/main` avec le message `fix: apply host input bindings to running emulator sessions`, sans artefacts ni autres travaux en cours.
+
+## Assignation après sélection du stick — défaut signalé le 7 novembre
+- [ ] Rétablir l'assignation immédiatement après le choix du joystick, sans annuler le dialogue.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Interface/EmulationViews/ControllerNoneSelectionTests.cs` : ajouter un contrôle temporaire sélection/capture directe et remplacer son assembly Debug ; résultat 1/1, sans reproduction du défaut physique.
+  - [x] Créer `artifacts/stick-selection-live.nettrace` et `artifacts/stick-selection-live.speedscope.json` par une collecte bornée, puis supprimer ces fichiers et `artifacts/stick-selection-live-collect.log` après consignation.
+  - [x] Modifier temporairement `src/RetroMediaLab.App/Theme/Base/Views/Controls/Emulation/Input/InputBindingEditorCaptureFunctions.cs` et `InputBindingEditor.xaml.cs` : journaliser uniquement les transitions de capture, son premier tick et sa première source reçue.
+  - [x] Remplacer `build/Debug/Retro Media Lab/retromedialab.exe`, ses bibliothèques et les 24 modules par `scripts/local-building.cmd --building=debug --modules=A` ; vérifier la sortie 0, les manifestes et leurs DLL, ainsi que l'empreinte App.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Interface/EmulationViews/ControllerNoneSelectionTests.cs` : retirer les neuf lignes temporaires de capture directe utilisant les lecteurs natifs ; conserver le test préexistant et le résultat documenté.
+  - [x] Créer `artifacts/TestsMachines/Acorn/BBC Micro Model A/20261107-stick-selection-capture-*.jpg` lors de l'essai réel du dialogue ; relever les transitions enregistrées et le résultat persistant, sans retoucher la capture.
+  - [ ] Modifier temporairement `C:/Users/overt/AppData/Roaming/Retro Media Lab/Emulation/Machines/acorn/Configurations/997e0d119f684356beaa266efeadc0e6/machine.json` via le dialogue RML : après Rematch gauche puis droit sur le port 2, capturer Espace pour comparer le parcours clavier commun, conserver la preuve sous `artifacts/TestsMachines/Acorn/BBC Micro Model A/20261107-stick-selection-keyboard-*.jpg`, puis rétablir le tir manette B dans le même dialogue. Préserver le port 1.
+  - [ ] Modifier les fichiers du chemin de capture réellement mis en cause par le diagnostic ; inscrire leurs chemins précis et la correction établie ici avant modification. Conserver les associations non concernées et le fonctionnement du cœur.
+  - [ ] Modifier les deux fichiers temporaires de capture pour supprimer tous les ajouts de journalisation après établissement du défaut ; conserver un test autonome de la correction si nécessaire dans le fichier de tests existant.
+  - [ ] Remplacer l'assembly Debug des tests pour retirer le diagnostic temporaire ; exécuter la régression utile du correctif.
+  - [ ] Remplacer la livraison Debug avec tous les modules après fermeture coordonnée de RML et vérifier l'assignation physique dans le dialogue corrigé.
+
+
+
+Contrôle ciblé Debug : `GroupedStickSelectionRetainsKeyboardRowsAndRoundTripsPhysicalDevice` passe (1/1, 426 ms). Le cas ajouté sélectionne le stick puis démarre une capture et lui transmet directement appui/relâchement ButtonB ; la ligne est conservée et l'association renouvelée. Ce contrôle ne reproduit pas le défaut physique signalé et ne valide ni les événements du popup WPF ni la lecture GameInput pendant l'attente. Aucun correctif de production n'est appliqué sur cette seule base. Observation utilisateur demandée : sélectionner Rematch droit, Assigner, appuyer puis relâcher B, conserver le résultat affiché. RML n'a pas été fermé ni remplacé.
+
+Observation réelle : l'utilisateur a choisi Rematch droit puis tenté X à la place de B. Le dialogue montre encore B et le bouton en attente, sans compteur visible. Aucun succès annoncé. Ajouter avant la correction :
+
+La trace bornée (5,02 s) ne montre pas de blocage persistant : thread UI dans ShowDialog/GetMessageW, worker GameInput en attente de sa file entre lectures physiques. Aucune pile CaptureControllerInput échantillonnée ; cela ne prouve pas que l'attente était active pendant la collecte. Le compteur absent reste un indice, pas une cause établie.
+
+
+
+Après fermeture de RML, lecture directe de la configuration 997e0d11 : port 0 Rematch gauche / ButtonA conservé ; port 1 Rematch droit / ButtonX enregistré. L'appui X demandé par l'utilisateur a donc fini par être enregistré malgré l'affichage B observé pendant l'attente. Ne plus traiter ce cas comme une preuve d'absence totale de réception ; le délai de complétion et l'actualisation visuelle restent à établir. L'utilisateur autorise la fermeture et reconstruction ; aucun processus RML présent avant le script Debug tous modules.
+
+
+Livraison diagnostic : script `scripts/local-building.cmd --building=debug --modules=A` terminé avec code 0. Exécutable et 24 manifestes/DLL d'entrée présents ; empreinte de la DLL App livrée identique à la compilation win-x64 contenant les traces. Nouvelle fenêtre RML ouverte sur Model A / Manettes / Port 2 ; machine éteinte, capture de souris non activée. Essai demandé : Rematch gauche puis droit, assignation du tir à B, appui et relâchement, sans fermer le dialogue.
+
+
+
+Essai réel du diagnostic à 23:42 : BeginCapture / timer actif / premier tick sont présents avec loaded=True, enabled=True, window=True. Tentative A à 23:42:03, annulation à 23:42:17 (échéance de 15 s depuis BeginCapture) ; attente de confirmation utilisateur concernant le relâchement. Trois tentatives B reçues puis terminées : 23:42:22.268→22.486, 29.565→29.750, 45.047→45.297. Ces intervalles correspondent à réception du premier appui → complétion, et incluent le maintien physique : ne pas les appeler latence de réception. Une tentative Mouse:Left est également terminée. Le timer fonctionne donc pendant ces essais ; l'indice du compteur visuel ne prouvait pas son arrêt.
+
+Capture réelle `artifacts/TestsMachines/Acorn/BBC Micro Model A/20261107-stick-selection-capture-1794091433665.jpg` : Rematch droit et B affichés dans le dialogue. La configuration enregistrée confirme port 0 Rematch gauche/A et port 1 Rematch droit/B. Le passage B réussit ; il ne suffit pas à conclure sur l'expiration A ou sur le défaut intermittent initial. Aucun correctif de production retenu sur hypothèse.
+
+
+
+Décision utilisateur après l'essai clavier : laisser ce défaut de côté, poursuivre et committer le travail en cours. Le défaut général d'assignation après choix du joystick reste ouvert ; aucune correction n'est déclarée. Espace a bien été capturé après un aller-retour Rematch gauche/droit sans fermeture du dialogue ; preuve `20261107-stick-selection-keyboard-1794091722913.jpg`. Le retour B a été effectué par l'utilisateur dans une nouvelle écoute : source B à 23:49:00.844, finish à 23:49:01.062. L'écoute initialement armée avait expiré avant sa réponse : ne pas confondre ce délai de coordination avec son anomalie initiale.
+
+- [ ] Clôturer ce diagnostic différé à la demande de l'utilisateur.
+  - [x] Modifier `src/RetroMediaLab.App/Theme/Base/Views/Controls/Emulation/Input/InputBindingEditor.xaml.cs` et `InputBindingEditorCaptureFunctions.cs` : retirer les deux indicateurs et toutes les écritures temporaires de capture, conserver le fonctionnement de production préexistant.
+  - [ ] Remplacer les assemblies Debug de l'application et des tests pour retirer le diagnostic compilé ; conserver les 24 modules déjà construits sans relancer leurs tests inchangés.
+  - [x] Modifier `.git/index` pour indexer les travaux non ignorés restants et créer un commit `in-progress` ; exclure tous les artefacts et ne pas présenter le défaut d'assignation comme corrigé.
+
+
+Nettoyage à la demande utilisateur : les deux fichiers de production et le test temporaire retrouvent leur contenu avant diagnostic. Compilations Debug propres terminées avec code 0 : App win-x64 0 avertissement/0 erreur, assembly des tests 4 avertissements/0 erreur ; aucun nouveau test fonctionnel relancé. Le contrôle ordinateur a été arrêté par Échap pendant la tentative de fermeture : aucune nouvelle commande UI ni fermeture forcée. La DLL propre est compilée mais n'a pas encore remplacé celle de la livraison, chargée par RML ; le prochain arrêt permettra de retirer ce diagnostic de la livraison. Aucun correctif du défaut d'assignation n'est annoncé. La poursuite des machines est explicitement autorisée par l'utilisateur, qui demande de différer ce problème d'interface.
+
