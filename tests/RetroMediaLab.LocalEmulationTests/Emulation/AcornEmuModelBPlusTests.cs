@@ -196,8 +196,7 @@ public sealed class AcornEmuModelBPlusTests
     public void RecognizedWrongRoleIsRejectedByTheSharedSelector()
     {
         var candidate = new EmulationFirmwareCandidate(F.SystemRomSha1, "system.rom", "MOS / BASIC II", "2.00", EmulationFirmwareCompatibility.Official, E.SystemFirmware);
-        var wrongRole = Assert.Single(RetroMediaLab.App.Controllers.Emulation.Firmware.EmulationFirmwareManagementController.CandidatesForField([candidate], E.BasicFirmware));
-        Assert.Equal(EmulationFirmwareCompatibility.Incompatible, wrongRole.Compatibility);
+        Assert.Empty(RetroMediaLab.App.Controllers.Emulation.Firmware.EmulationFirmwareManagementController.CandidatesForField([candidate], E.BasicFirmware));
     }
 
     [Fact]

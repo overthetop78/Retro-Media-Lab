@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Magas</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>Hang</value></data>
   <data name="Emulation.Audio.Tone"><value>Teszthang</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Hangerő-keverő</value></data>
+  <data name="Emulation.Audio.Mute"><value>Kapcsold ki a hangot.</value></data>
 </root>

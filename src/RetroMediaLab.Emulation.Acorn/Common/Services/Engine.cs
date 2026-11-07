@@ -3,6 +3,7 @@ using RetroMediaLab.Emulation;
 
 using RetroMediaLab.Emulation.Interfaces;
 using CommonCoreHostFunctions = RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions;
+using CommonControllerFunctions = RetroMediaLab.Emulation.Acorn.Common.Functions.ControllerFunctions;
 using System.Globalization;
 using System.IO;
 using RetroMediaLab.Emulation.Acorn.Modules;
@@ -80,14 +81,17 @@ internal sealed class Engine
         var model = ModelCatalog.Parse(machineId);
         var current = configuration is null ? new MachineConfiguration(model) : Require(configuration);
         if (current.Model != model) throw new ArgumentException(nameof(configuration));
+        var blocks = SettingsDescriptionFunctions.Create(current);
         var tabs = DefaultVisibility.Tabs.ToDictionary(item => item.Key, item => item.Key switch
         {
-            EmulationMachineTab.Controllers => ConfigurationFunctions.ControllerPortCount(model)
+            EmulationMachineTab.Mouse => SelectedAdapter(current)?.SupportsPointer(current) == true
+                || blocks.Any(block => block.Tab == EmulationMachineTab.Mouse && block.IsVisible),
+            EmulationMachineTab.Controllers => CommonControllerFunctions.PortCount(current)
                 > BufferConstants.EmptyCollectionCount,
             EmulationMachineTab.Storage => ConfigurationFunctions.SupportsRuntime(model),
             _ => item.Value
         });
-        EmulationMachineSettings result = new EmulationMachineSettings(machineId, new EmulationSettingsVisibility(tabs), SettingsDescriptionFunctions.Create(current));
+        EmulationMachineSettings result = new EmulationMachineSettings(machineId, new EmulationSettingsVisibility(tabs), blocks);
         if (SelectedAdapter(current)?.SupportsVideoSettings == false && !result.Blocks.Any(block => block.Tab == EmulationMachineTab.Video))
         {
             var adjustedTabs = result.Visibility.Tabs.ToDictionary(pair => pair.Key, pair => pair.Value);

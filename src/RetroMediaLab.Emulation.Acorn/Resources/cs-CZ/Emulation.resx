@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Disk operační systém ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} v bance {1} není kompatibilní s paměťovou rozšiřující kartou {2}. Zkontrolujte ROM úkoly v nastavení stroje.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM banka {0} je již obsazen jiným ROM. Zkontrolujte ROM přiřazení karty pro rozšíření paměti {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Vstupní rozhraní</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Konektory pro myši a tiskárny</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Analogové rozhraní joystick</value></data>
 </root>

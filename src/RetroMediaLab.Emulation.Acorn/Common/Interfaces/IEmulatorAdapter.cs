@@ -120,7 +120,7 @@ internal interface IEmulatorAdapter : IEmulatorControllerFeedbackAdapter, IEmula
     int? IEmulatorControllerAdapter.GetControllerPortDisplayNumber(MachineConfiguration configuration, int port) => CommonControllerFunctions.InputProcessing.GetControllerPort(InputSettingsFunctions.Describe(configuration), port)?.DisplayNumber;
 
     /// <summary>Consulte les choix matériels existants lorsque le cœur ne fournit aucune liste propre.</summary>
-    IReadOnlyList<PeripheralCategory> IEmulatorControllerAdapter.GetPeripherals(MachineConfiguration configuration) => CommonControllerFunctions.InputProcessing.GetPeripherals<PeripheralCategory>(InputSettingsFunctions.Describe(configuration));
+    IReadOnlyList<PeripheralCategory> IEmulatorControllerAdapter.GetPeripherals(MachineConfiguration configuration) => CommonControllerFunctions.Peripherals(configuration.Model).ToArray();
 
     /// <summary>Consulte les choix existants du port demandé sans les mélanger avec ceux des autres ports.</summary>
     IReadOnlyList<PeripheralCategory> IEmulatorControllerAdapter.GetPeripherals(MachineConfiguration configuration, int port) => CommonControllerFunctions.InputProcessing.GetPeripherals<PeripheralCategory>(InputSettingsFunctions.Describe(configuration), port);

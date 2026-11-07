@@ -16,6 +16,7 @@ internal static class NetworkConstants
     internal const string RawUdp = "udp";
     internal const string Aun = "aun";
     internal const string Block = "Econet";
+    internal const string ConnectionBlock = "Econet.Connection";
     internal const string ResourcePrefix = "Emulation.Acorn.Network.";
     internal const string StationAddressFormat = "{0}.{1}";
     internal const char StationAddressSeparator = '.';

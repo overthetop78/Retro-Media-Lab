@@ -7,6 +7,60 @@ namespace RetroMediaLab.Chips.Tests.CPU.MOS.MCS6500.Chip65C12;
 
 public sealed class ClockPhaseTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GroupedOscillatorPeriodsPreserveCycleTransfersAndInputChangesForEveryOpcode(bool observeClock)
+    {
+        for (var opcode = 0; opcode <= byte.MaxValue; opcode++)
+        {
+            var (individual, expected) = Start((byte)opcode, 0xff, 0x10);
+            var (grouped, actual) = Start((byte)opcode, 0xff, 0x10);
+            var expectedOutputs = new List<(long, bool, bool)>();
+            var actualOutputs = new List<(long, bool, bool)>();
+            if (observeClock)
+            {
+                individual.ClockOutputsChanged = (p2, p4) => expectedOutputs.Add((individual.InputClocks, p2, p4));
+                grouped.ClockOutputsChanged = (p2, p4) => actualOutputs.Add((grouped.InputClocks, p2, p4));
+            }
+            foreach (var (cpu, bus) in new[] { (individual, expected), (grouped, actual) })
+            {
+                var ticks = 0;
+                cpu.SetIrq(false);
+                cpu.SetNmi(false);
+                bus.OnTick = () =>
+                {
+                    switch (++ticks)
+                    {
+                        case 1: cpu.SetReady(false); break;
+                        case 2: cpu.SetReady(true); break;
+                        case 4: cpu.SetNmi(true); break;
+                        case 5: cpu.SetNmi(false); break;
+                        case 6: cpu.SetBusEnable(false); break;
+                        case 7: cpu.SetBusEnable(true); break;
+                        case 8: cpu.SetIrq(true); break;
+                        case 9: cpu.SetIrq(false); break;
+                        case 10: cpu.SetReset(true); break;
+                        case 12: cpu.SetReset(false); break;
+                    }
+                };
+            }
+            for (var hostCycle = 0; hostCycle < 16; hostCycle++)
+            {
+                individual.Clock(); individual.Clock();
+                grouped.AdvanceInputClocks(8);
+                Assert.Equal((individual.PC, individual.A, individual.X, individual.Y, individual.S,
+                    individual.P, individual.Cycles, individual.InputClocks, individual.MemoryLocked, individual.BusEnabled),
+                    (grouped.PC, grouped.A, grouped.X, grouped.Y, grouped.S,
+                    grouped.P, grouped.Cycles, grouped.InputClocks, grouped.MemoryLocked, grouped.BusEnabled));
+            }
+            Assert.Equal(expected.Transfers, actual.Transfers);
+            Assert.Equal(expected.Memory, actual.Memory);
+            Assert.Equal(expected.Preparations, actual.Preparations);
+            Assert.Equal(expectedOutputs, actualOutputs);
+        }
+    }
+
     [Fact]
     public void DirectPhi2InputCanBeStretchedWithoutInventingAReadyPinOrRepeatingTransfers()
     {

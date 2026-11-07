@@ -58,7 +58,7 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorTapeTranspo
     public long? ProcessorClockHz => _machine?.ProcessorClockHz;
     public int SampleRate => BbcAudioConstants.SampleRate;
     public bool SupportsSaveStates => _machine?.StateType is not null;
-    public bool SupportsPointerCapture => ArchimedesFunctions.IsModel(_definition.Model);
+    public bool SupportsPointerCapture => ArchimedesFunctions.IsModel(_definition.Model) || _machine?.SupportsPointerCapture == true;
     public bool ShutdownRequested { get; private set; }
     public EmulationVideoStandard? Region => _definition.Region;
     public HostProcessState HostProcessState => HostProcessState.InProcess;

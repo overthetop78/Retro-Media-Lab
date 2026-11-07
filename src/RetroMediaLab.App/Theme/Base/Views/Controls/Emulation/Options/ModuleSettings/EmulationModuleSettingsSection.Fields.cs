@@ -116,7 +116,7 @@ internal sealed partial class EmulationModuleSettingsSection
     private FrameworkElement CreatePath(EmulationSettingsField field)
     {
         if ((field.Tab == EmulationMachineTab.Rom || field.DefaultFolderCategory == EmulationDefaultFolderCategory.Firmware) && _firmwareManagement is not null)
-            return _firmwareManagement.CreateField(field, () => ExecuteAsync(() => SelectFirmwareAsync(field)));
+            return _firmwareManagement.CreateField(field, () => ExecuteAsync(() => SelectFirmwareAsync(field)), ExecuteUserChangeAsync);
         var path = new TextBox { Text = field.Value ?? string.Empty };
         path.LostKeyboardFocus += async (_, _) => await ExecuteUserChangeAsync();
         var browse = new Button { Content = LocExtension.Get(ControlVisualConstants.BrowseResource), MinWidth = 90 };

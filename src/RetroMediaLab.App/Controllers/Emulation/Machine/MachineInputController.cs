@@ -31,6 +31,7 @@ internal sealed class MachineInputController : IDisposable
     private readonly IReadOnlyList<KeyboardShortcutBinding> _keyboardShortcuts;
     private readonly IRelativeMouseCapture _pointerCapture;
     private readonly Func<GameInputPhysicalState> _readPhysicalInput;
+    private readonly Func<EmulationPointerState> _readPointerButtons;
     private readonly Action<FrameworkElement, IntPtr> _focus;
     private readonly bool _automaticPolling;
     private readonly HashSet<EmulationKey> _keys = [];
@@ -59,12 +60,13 @@ internal sealed class MachineInputController : IDisposable
         Func<string, Task> executeShortcut, Func<bool> isActive,
         IRelativeMouseCapture? pointerCapture = null, Func<GameInputPhysicalState>? readPhysicalInput = null,
         Action<FrameworkElement, IntPtr>? focus = null, bool automaticPolling = true, IGameInputControllerSource? feedbackSource = null,
-        Func<IntPtr>? inputHandleProvider = null)
+        Func<IntPtr>? inputHandleProvider = null, Func<EmulationPointerState>? readPointerButtons = null)
     {
         _view = view;
         _feedback = new MachineControllerFeedbackController(feedbackSource ?? GameInputControllerSource.Instance);
         _pointerCapture = pointerCapture ?? new RelativeMouseCapture();
         _readPhysicalInput = readPhysicalInput ?? GameInputControllerReader.ReadPhysicalInput;
+        _readPointerButtons = readPointerButtons ?? ReadWindowsPointerButtons;
         _focus = focus ?? RelativeMouseCapture.Focus;
         _automaticPolling = automaticPolling;
         _inputView = inputView;
@@ -387,9 +389,14 @@ internal sealed class MachineInputController : IDisposable
         keys.Remove(EmulationKey.RightWindows);
         if (_modifierState.HasSyntheticLeftControl) keys.Remove(EmulationKey.LeftControl);
         foreach (var shortcutKey in _pressedShortcutKeys.Values) keys.Add(shortcutKey);
+        // Select one source. Windows capture already supplies relative events when GameInput has no mouse.
+        var physicalPointer = physical.HasPointerReading ? physical.Pointer : _readPointerButtons() with
+        {
+            DeltaX = deltaX, DeltaY = deltaY, Wheel = wheel, HorizontalWheel = horizontalWheel
+        };
         var pointer = _pointerCapture.IsCaptured
-            ? physical.Pointer
-            : physical.Pointer with
+            ? physicalPointer
+            : physicalPointer with
             {
                 DeltaX = 0, DeltaY = 0, Wheel = 0, HorizontalWheel = 0,
                 Left = false, Right = false, Middle = false,
@@ -397,7 +404,7 @@ internal sealed class MachineInputController : IDisposable
             };
         var machine = _machine();
         if (!CanAcceptInput(machine)) return;
-        var physicalSnapshot = new EmulationInputSnapshot(keys, physical.Pointer, physical.Controllers);
+        var physicalSnapshot = new EmulationInputSnapshot(keys, physicalPointer, physical.Controllers);
         foreach (var shortcut in _globalShortcuts.Where(binding => binding.SourceBinding is not null))
         {
             if (EmulationSdk.InputProcessing.InputSourcePressure(shortcut.SourceBinding!, EmulationControllerState.Empty, physicalSnapshot) > .5f)
@@ -425,6 +432,13 @@ internal sealed class MachineInputController : IDisposable
             if (Enum.TryParse<EmulationKey>(binding.Key, out var target)) characters.Remove(target);
         machine.Input.SetInput(new EmulationInputSnapshot(keys, pointer, physical.Controllers) { HostCharacters = characters });
     }
+
+    private static EmulationPointerState ReadWindowsPointerButtons() => new(0, 0, 0,
+        RelativeMouseCapture.IsButtonPressed(WindowsInputMessages.LeftMouseVirtualKey),
+        RelativeMouseCapture.IsButtonPressed(WindowsInputMessages.RightMouseVirtualKey),
+        RelativeMouseCapture.IsButtonPressed(WindowsInputMessages.MiddleMouseVirtualKey),
+        RelativeMouseCapture.IsButtonPressed(WindowsInputMessages.FirstExtendedMouseVirtualKey),
+        RelativeMouseCapture.IsButtonPressed(WindowsInputMessages.SecondExtendedMouseVirtualKey));
 
     private static bool CanAcceptInput(IEmulatedMachine machine) => machine.State is EmulationMachineState.Running or EmulationMachineState.Paused;
 

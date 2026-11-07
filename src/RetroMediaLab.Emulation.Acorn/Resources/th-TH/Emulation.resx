@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>ระบบปฏิบัติการของดิสก์ ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} ในธนาคาร {1} ไม่สามารถเข้ากันได้กับการ์ดขยายหน่วยความจํา {2}. เช็ค ROM ได้รับมอบหมายให้ติดตั้งเครื่อง</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM ธนาคาร {0} มีคนอื่นอยู่เรียบร้อยแล้ว ROM. เช็ค ROM การบ้านสําหรับขยายหน่วยความจํา {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>ส่วนติดต่อแบบนําเข้า</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>ตัวเชื่อมต่อเมาส์และเครื่องพิมพ์</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>ส่วนเชื่อมต่อแท่งควบคุม Analogue</value></data>
 </root>

@@ -60,7 +60,7 @@
    </WrapPanel>
   </Grid>
 
-  <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="7" ClipToBounds="True" Background="White" VerticalAlignment="Stretch">
+  <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="7" ClipToBounds="True" Background="{DynamicResource WindowBrush}" VerticalAlignment="Stretch">
    <Grid>
     <Grid.RowDefinitions><RowDefinition Height="38"/><RowDefinition Height="*"/></Grid.RowDefinitions>
     <Grid Background="{DynamicResource CardBrush}">

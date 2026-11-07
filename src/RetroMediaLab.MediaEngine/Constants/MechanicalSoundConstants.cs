@@ -155,7 +155,7 @@ public static class MechanicalSoundConstants
     /// <summary>Amplitude de la composante tonale transitoire synthétique du lecteur optique, en unités PCM.</summary>
     internal const double OpticalTransientTone = 350;
     /// <summary>Volume mécanique initial, en pourcentage.</summary>
-    public const int DefaultVolumePercent = 50;
+    public const int DefaultVolumePercent = 10;
 
     /// <summary>Valeur maximale du réglage de volume mécanique, en pourcentage.</summary>
     public const int MaximumVolumePercent = 100;

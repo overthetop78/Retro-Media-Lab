@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>نظام التشغيل ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} في المصرف {1} لا يتوافق مع بطاقة توسيع الذاكرة {2}. تحقق من ROM مهام في أماكن الآلات</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM مصرف {0} مشغولة بالفعل بآخر ROM. تحقق من ROM مهام لبطاقة توسيع الذاكرة {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>الوصلات البينية للمدخلات</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>أجهزة اتصال بالأجهزة اللاسلكية والطابعة</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>واجهة مقياس فروة الأنالو</value></data>
 </root>

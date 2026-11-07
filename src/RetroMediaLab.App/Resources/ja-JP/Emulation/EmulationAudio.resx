@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>高</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>オーディオ</value></data>
   <data name="Emulation.Audio.Tone"><value>試験音</value></data>
+  <data name="Emulation.Audio.Mixer"><value>ボリュームミキサー</value></data>
+  <data name="Emulation.Audio.Mute"><value>音を消す</value></data>
 </root>

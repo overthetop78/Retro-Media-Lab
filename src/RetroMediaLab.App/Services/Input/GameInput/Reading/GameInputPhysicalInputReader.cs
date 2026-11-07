@@ -23,12 +23,13 @@ internal static class GameInputPhysicalInputReader
         var wheelX = 0L;
         var wheelY = 0L;
         var mouseButtons = (GameInputMouseButtons)0;
+        var hasPointerReading = false;
         foreach (var entry in devices)
         {
             if ((entry.InputKinds & GameInputKind.Keyboard) != 0)
                 ReadKeyboard(gameInput, entry, keys, isInteropFailure, release);
             if ((entry.InputKinds & GameInputKind.Mouse) != 0)
-                ReadMouse(gameInput, entry, previousMouse, ref deltaX, ref deltaY, ref wheelX, ref wheelY, ref mouseButtons, isInteropFailure, release);
+                hasPointerReading |= ReadMouse(gameInput, entry, previousMouse, ref deltaX, ref deltaY, ref wheelX, ref wheelY, ref mouseButtons, isInteropFailure, release);
         }
 
         var pointer = new EmulationPointerState(Clamp(deltaX), Clamp(deltaY), Clamp(wheelY),
@@ -40,7 +41,7 @@ internal static class GameInputPhysicalInputReader
         var controllers = devices.Where(entry => entry.IsController).OrderBy(entry => entry.Id, StringComparer.Ordinal).ToArray();
         var descriptors = controllers.Select(entry => entry.Descriptor).ToArray();
         var controllerStates = controllers.Select(readController).Concat(RawGameControllerFallback.ReadAll(descriptors)).Select(ControllerAnalogDeadZoneFunctions.ApplyConfigured).ToArray();
-        return new GameInputPhysicalState(keys, pointer, controllerStates);
+        return new GameInputPhysicalState(keys, pointer, controllerStates) { HasPointerReading = hasPointerReading };
     }
 
     private static unsafe void ReadKeyboard(IGameInput? gameInput, GameInputDeviceEntry entry, HashSet<EmulationKey> keys, Func<Exception, bool> isInteropFailure, Action<object?> release)
@@ -63,7 +64,7 @@ internal static class GameInputPhysicalInputReader
         finally { release(reading); }
     }
 
-    private static void ReadMouse(
+    private static bool ReadMouse(
         IGameInput? gameInput,
         GameInputDeviceEntry entry,
         IDictionary<string, GameInputMouseState> previousMouse,
@@ -75,12 +76,14 @@ internal static class GameInputPhysicalInputReader
         Func<Exception, bool> isInteropFailure,
         Action<object?> release)
     {
-        if (gameInput is null) return;
+        if (gameInput is null) { previousMouse.Remove(entry.Id); return false; }
         IGameInputReading? reading = null;
+        var valid = false;
         try
         {
             if (gameInput.GetCurrentReading(GameInputKind.Mouse, entry.DevicePointer, out reading) < 0 ||
-                reading is null || !reading.GetMouseState(out var state)) return;
+                reading is null || !reading.GetMouseState(out var state)) return false;
+            valid = true;
             buttons |= state.Buttons;
             if (previousMouse.TryGetValue(entry.Id, out var previous))
             {
@@ -90,9 +93,15 @@ internal static class GameInputPhysicalInputReader
                 wheelY += state.WheelY - previous.WheelY;
             }
             previousMouse[entry.Id] = state;
+            return true;
         }
-        catch (Exception exception) when (isInteropFailure(exception)) { }
-        finally { release(reading); }
+        catch (Exception exception) when (isInteropFailure(exception)) { return false; }
+        finally
+        {
+            // A recovered source starts a new baseline; do not replay movements handled by Windows.
+            if (!valid) previousMouse.Remove(entry.Id);
+            release(reading);
+        }
     }
 
     private static int Clamp(long value) => (int)Math.Clamp(value, int.MinValue, int.MaxValue);

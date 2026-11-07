@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Sistem operasi cakram ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} di bank {1} tidak kompatibel dengan kartu ekspansi memori {2}. Periksa ROM tugas di pengaturan mesin.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM bank {0} sudah ditempati oleh orang lain ROM. Periksa ROM tugas untuk kartu ekspansi memori {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Antar muka masukan</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Konektor tetikus dan pencetak</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Antarmuka joystick Analog</value></data>
 </root>

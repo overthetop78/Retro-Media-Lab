@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Tinggi</value></data>
   <data name="Emulation.Audio"><value>Audio</value></data>
   <data name="Emulation.Audio.Tone"><value>Nada uji</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Pencampur suara</value></data>
+  <data name="Emulation.Audio.Mute"><value>Matikan suaranya.</value></data>
 </root>

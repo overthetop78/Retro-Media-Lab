@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Λειτουργικό σύστημα δίσκου ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} σε τράπεζα {1} δεν είναι συμβατό με την κάρτα επέκτασης μνήμης {2}. Ελέγξτε το ROM εργασίες στις ρυθμίσεις του μηχανήματος.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM τράπεζα {0} είναι ήδη κατειλημμένο από άλλο ROM. Ελέγξτε το ROM εκχωρήσεις για την κάρτα επέκτασης μνήμης {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Διεπαφές εισόδου</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Συνδέσεις ποντικιού και εκτυπωτή</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Διεπαφή αναλογικού joystick</value></data>
 </root>

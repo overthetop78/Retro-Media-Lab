@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Diskoperativsystem ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} i bank {1} er ikke kompatibel med minneutvidelseskort {2}. Sjekk ROM Oppdrag i maskininnstillingene.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM bank {0} allerede er okkupert av en annen ROM. Sjekk ROM oppgaver for minneutvidelseskort {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Inngangsgrensesnitt</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Mus- og skriverkontakter</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Analoge joystick grensesnitt</value></data>
 </root>

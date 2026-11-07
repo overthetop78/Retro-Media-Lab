@@ -223,7 +223,9 @@ internal static partial class GameInputDeviceMonitor
                 GameInputDiagnostics.RecordEnumeration(descriptor, info, mapper);
             }
 
-            entry = new GameInputDeviceEntry(descriptor.Id, descriptor.ProductName, descriptor.SupportedInput, device, Marshal.GetIUnknownForObject(device), mapper, isController, descriptor, hidDecoder);
+            // GetCurrentReading expects IGameInputDevice, whose address need not match
+            // the object's IUnknown identity. The entry owns this reference until removal.
+            entry = new GameInputDeviceEntry(descriptor.Id, descriptor.ProductName, descriptor.SupportedInput, device, Marshal.GetComInterfaceForObject(device, typeof(IGameInputDevice)), mapper, isController, descriptor, hidDecoder);
             return true;
         }
         catch (Exception exception) when (IsInteropFailure(exception))

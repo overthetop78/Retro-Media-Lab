@@ -21,6 +21,23 @@ namespace RetroMediaLab.Tests.Emulation;
 /// <summary>Vérifications autonomes : aucun firmware, fichier, processus ou périphérique externe.</summary>
 public sealed class AcornEmuTests
 {
+    [Theory]
+    [InlineData(MachineModel.BbcMicroModelA, EmulationFirmwareCompatibility.Unknown)]
+    [InlineData(MachineModel.BbcMicroModelB, EmulationFirmwareCompatibility.Compatible)]
+    [InlineData(MachineModel.BbcMicroModelBPlus, EmulationFirmwareCompatibility.Compatible)]
+    [InlineData(MachineModel.BbcMicroModelBPlus128, EmulationFirmwareCompatibility.Compatible)]
+    [InlineData(MachineModel.BbcMaster128, EmulationFirmwareCompatibility.PartiallyCompatible)]
+    [InlineData(MachineModel.BbcMasterET, EmulationFirmwareCompatibility.Unknown)]
+    [InlineData(MachineModel.BbcMasterCompact, EmulationFirmwareCompatibility.Unknown)]
+    public void VerifiedAmxCompatibilityKeepsTheTestedModelAndRole(MachineModel model, EmulationFirmwareCompatibility expected)
+    {
+        const string verified = "50eae23d4686f5f9547c741517af23dc27b75a2c";
+        Assert.Equal(expected, AcornBBCMicroModel.Get(model, verified, FirmwareCategory.Application));
+        Assert.Equal(EmulationFirmwareCompatibility.Incompatible, AcornBBCMicroModel.Get(model, verified, FirmwareCategory.Basic));
+        Assert.Equal(EmulationFirmwareCompatibility.Unknown,
+            AcornBBCMicroModel.Get(model, "92550acb4d20ad05d27a9e5a3115d8b6fd3c9963", FirmwareCategory.Application));
+    }
+
     [Fact]
     public void WarmRestartExecutesTheResetVectorAndPreservesRamWhileColdRestartClearsIt()
     {
@@ -195,6 +212,9 @@ public sealed class AcornEmuTests
     }
     [Theory]
     [InlineData(EmulationKey.D3, '"', false, 0x31, true)]
+    [InlineData(EmulationKey.Oem8, '!', false, 0x30, true)]
+    [InlineData(EmulationKey.Slash, ':', false, 0x48, false)]
+    [InlineData(EmulationKey.Semicolon, '.', true, 0x67, false)]
     [InlineData(EmulationKey.D3, '3', true, 0x11, false)]
     [InlineData(EmulationKey.D2, '@', true, 0x47, false)]
     [InlineData(EmulationKey.Equals, '=', false, 0x17, true)]

@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>ディスクオペレーティング システム ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} 銀行 {1} メモリ拡張カードと互換性がない {2}. チェック ROM マシンの設定の割り当て。</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM 銀行口座 {0} 既に別の人が占領されている ROM. チェック ROM メモリ拡張カードの代入 {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>入力インターフェイス</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>マウスおよびプリンター コネクター</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>アナログジョイスティックインターフェイス</value></data>
 </root>

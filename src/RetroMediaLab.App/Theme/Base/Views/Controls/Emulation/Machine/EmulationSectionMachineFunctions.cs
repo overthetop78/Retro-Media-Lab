@@ -4,6 +4,7 @@ using RetroMediaLab.App.Contracts.Emulation.Configurations;
 using RetroMediaLab.App.Contracts.Machine;
 using RetroMediaLab.App.Functions.Emulation.Shortcuts;
 using RetroMediaLab.App.Functions.Emulation.Machine;
+using RetroMediaLab.App.Functions.Emulation.Storage;
 using RetroMediaLab.App.Presenters.Common;
 using RetroMediaLab.App.Services.Audio;
 using RetroMediaLab.App.Services.Windows;
@@ -70,13 +71,15 @@ public sealed partial class EmulationSection
         await AddMachineAsync(selected, runtime, view, view.StopAsync);
     }
 
-    private ValueTask<EmulationMachineRuntime> CreateRuntimeAsync(IEmulationModule module, IEmulationConfiguration configuration, CancellationToken cancellationToken = default)
+    private async ValueTask<EmulationMachineRuntime> CreateRuntimeAsync(IEmulationModule module, IEmulationConfiguration configuration, CancellationToken cancellationToken = default)
     {
         configuration = EmulationVideoConfigurationFunctions.Apply(module, configuration,
             RetroMediaLab.App.Services.Emulation.EmulationVideoPresentationProfiles.Store.Get(module.Id, configuration.Id).Renderer);
         var moduleRoot = Path.Combine(_settings.EmulationStorageFolder, module.Id);
-        return module.CreateRuntimeAsync(configuration,
+        var runtime = await module.CreateRuntimeAsync(configuration,
             new EmulationRuntimeServices(Path.Combine(moduleRoot, "Sessions"), Path.Combine(moduleRoot, "States"), Path.Combine(moduleRoot, "Converted"), Environment.ProcessPath!, (device, latency) => new WasapiAudioOutput(device, latency)), cancellationToken);
+        var devices = (module as IEmulationStorageSettingsManager)?.DescribeStorageSettings(runtime.Configuration).DeviceSettings;
+        return runtime with { MediaDevices = runtime.MediaDevices.Select(device => EmulationMediaIconFunctions.WithConfiguredModel(device, devices)).ToArray() };
     }
 
     internal Task AddMachineAsync(EmulationConfigurationListItem selected, EmulationMachineRuntime runtime, FrameworkElement view, Func<Task> stop)

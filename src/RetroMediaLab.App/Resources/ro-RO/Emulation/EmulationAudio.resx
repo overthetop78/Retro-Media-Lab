@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Ridicată</value></data>
   <data name="Emulation.Audio"><value>Audio</value></data>
   <data name="Emulation.Audio.Tone"><value>Ton de încercare</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Mixer volum</value></data>
+  <data name="Emulation.Audio.Mute"><value>Opreşte sunetul.</value></data>
 </root>

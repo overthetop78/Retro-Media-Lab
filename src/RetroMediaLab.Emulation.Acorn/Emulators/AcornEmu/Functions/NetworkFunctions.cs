@@ -66,24 +66,31 @@ internal static class NetworkFunctions
         return new(enabled, (byte)station, clock, mode, new(address, port), peers.AsReadOnly());
     }
 
-    internal static EmulationSettingsBlock Describe(MachineConfiguration configuration)
+    internal static IReadOnlyList<EmulationSettingsBlock> Describe(MachineConfiguration configuration)
     {
         var settings = Read(configuration);
         EmulationSettingsField Field(string key, string label, EmulationSettingsEditor editor, string value, IReadOnlyList<EmulationSettingsChoice>? choices = null, EmulationSettingsNumericRange? range = null, string? explanation = null) =>
-            new(key, EmulationMachineTab.Ethernet, C.Block, C.ResourcePrefix + label, editor, value, choices, IsEnabled: key == C.Enabled || settings.Enabled,
+            new(key, EmulationMachineTab.Ethernet, key is C.Mode or C.BindAddress or C.Port or C.Peers ? C.ConnectionBlock : C.Block, C.ResourcePrefix + label, editor, value, choices, IsEnabled: key == C.Enabled || settings.Enabled,
                 ExplanationResourceKey: explanation, DetailedExplanationResourceKey: explanation is null ? null : explanation + ".Detailed",
                 EnabledValue: bool.TrueString, DisabledValue: bool.FalseString, RefreshSettingsOnChange: key == C.Enabled, RequiresRestart: true, NumericRange: range)
             { IsMultiline = key == C.Peers };
-        return new(C.Block, EmulationMachineTab.Ethernet, C.ResourcePrefix + "Title",
+        return [new(C.Block, EmulationMachineTab.Ethernet, C.ResourcePrefix + "Title",
         [
             Field(C.Enabled, "Enabled", EmulationSettingsEditor.Toggle, settings.Enabled.ToString()),
             Field(C.Station, "Station", EmulationSettingsEditor.Number, settings.Station.ToString(CultureInfo.InvariantCulture), range: new(C.MinimumStation, C.MaximumStation, 1), explanation: C.ResourcePrefix + "Station.Help"),
             Field(C.ClockRate, "Clock", EmulationSettingsEditor.Selection, settings.ClockRate.ToString(CultureInfo.InvariantCulture), C.ClockRates.Select(rate => new EmulationSettingsChoice(rate.ToString(CultureInfo.InvariantCulture), "", (rate / 1000).ToString(CultureInfo.InvariantCulture) + " kHz")).ToArray(), explanation: C.ResourcePrefix + "Clock.Help"),
+            new(C.Firmware, EmulationMachineTab.Ethernet, C.Block, C.ResourcePrefix + "Rom", EmulationSettingsEditor.Path,
+                configuration.Options.GetValueOrDefault(C.Firmware), IsEnabled: settings.Enabled && !SidewaysExpansionFunctions.ProvidesBank(configuration,
+                    SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.NetworkBank)),
+                DefaultFolderCategory: EmulationDefaultFolderCategory.Firmware, RequiresRestart: true)
+        ], IsCompact: true),
+        new(C.ConnectionBlock, EmulationMachineTab.Ethernet, C.ResourcePrefix + "Mode",
+        [
             Field(C.Mode, "Mode", EmulationSettingsEditor.Selection, settings.Mode, [new(C.Disconnected, C.ResourcePrefix + "Disconnected"), new(C.RawUdp, C.ResourcePrefix + "Udp"), new(C.Aun, C.ResourcePrefix + "Aun")], explanation: C.ResourcePrefix + "Mode.Help"),
             Field(C.BindAddress, "BindAddress", EmulationSettingsEditor.IPv4, settings.LocalEndPoint.Address.ToString(), explanation: C.ResourcePrefix + "BindAddress.Help"),
             Field(C.Port, "Port", EmulationSettingsEditor.Number, settings.LocalEndPoint.Port.ToString(CultureInfo.InvariantCulture), range: new(C.MinimumPort, C.MaximumPort, 1), explanation: C.ResourcePrefix + "Port.Help"),
             Field(C.Peers, "Peers", EmulationSettingsEditor.Text, configuration.Options.GetValueOrDefault(C.Peers, ""), explanation: C.ResourcePrefix + "Peers.Help")
-        ]);
+        ], IsCompact: true)];
     }
 
     private static bool IsIpv4(string value) => value.Split('.') is { Length: 4 } octets

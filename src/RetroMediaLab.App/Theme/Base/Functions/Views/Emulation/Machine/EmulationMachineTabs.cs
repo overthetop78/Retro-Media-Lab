@@ -4,6 +4,7 @@ using RetroMediaLab.App.Views.Controls.Common;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Media;
 using RetroMediaLab.Emulation;
 
 
@@ -28,7 +29,7 @@ internal static class EmulationMachineTabs
             var tab = new TabItem
             {
                 Tag = definition.Tab,
-                Header = new MainTabHeader { Icon = definition.Icon, Text = title },
+                Header = CreateHeader(definition.Tab, definition.Icon, title),
                 Content = content,
                 Padding = new Thickness(EmulationMachineTabConstants.HorizontalPadding, EmulationMachineTabConstants.VerticalPadding, EmulationMachineTabConstants.HorizontalPadding, EmulationMachineTabConstants.VerticalPadding),
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
@@ -50,5 +51,24 @@ internal static class EmulationMachineTabs
             if (selected is not null) tabs.SelectedItem = selected;
         }
         return tabs;
+    }
+
+    private static FrameworkElement CreateHeader(EmulationMachineTab tab, string icon, string title)
+    {
+        if (tab is not (EmulationMachineTab.Ram or EmulationMachineTab.Rom))
+            return new MainTabHeader { Icon = icon, Text = title };
+        var shape = new System.Windows.Shapes.Path
+        {
+            Data = Geometry.Parse(tab == EmulationMachineTab.Ram
+                ? EmulationMachineTabConstants.RamGeometry : EmulationMachineTabConstants.RomGeometry),
+            Width = 22, Height = 22, Stretch = Stretch.Uniform, StrokeThickness = 1.3,
+            Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center
+        };
+        shape.SetResourceReference(System.Windows.Shapes.Shape.StrokeProperty, "TextBrush");
+        return new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Children = { shape, new TextBlock { Text = title, VerticalAlignment = VerticalAlignment.Center } }
+        };
     }
 }

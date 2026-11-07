@@ -36,7 +36,7 @@ internal static class ModelCatalog
         .. AcornEmuArchimedesModelCatalog.All
     ];
 
-    private static BbcMicroMachine CreateModelA(MachineConfiguration configuration) => CreateBoard(configuration, expandedIo: false);
+    private static BbcMicroMachine CreateModelA(MachineConfiguration configuration) => CreateBoard(configuration, expandedIo: ModelAIoFunctions.UserPort(configuration));
     private static BbcMicroMachine CreateModelB(MachineConfiguration configuration) => CreateBoard(configuration, expandedIo: true);
 
     private static BbcMicroMachine CreateBoard(MachineConfiguration configuration, bool expandedIo)
@@ -46,7 +46,7 @@ internal static class ModelCatalog
         var basic = !ModelBPlusFunctions.IsModel(configuration) && chips.TryGetValue(SidewaysExpansionFunctions.NativeBank(configuration, Machines.BbcMicro.Common.Constants.DiskConstants.BasicBank), out var programmedBasic) ? programmedBasic : FirmwareFunctions.Read(configuration, EmulatorConstants.BasicFirmware);
         var mos = FirmwareFunctions.Read(configuration, EmulatorConstants.SystemFirmware);
         MemoryExtensionFunctions.ValidateMos(configuration, mos);
-        return new BbcMicroMachine(mos, basic, BbcMicroMemoryFunctions.MainBytes(configuration), FirmwareFunctions.Read(configuration, EmulatorConstants.CharacterFirmware), StorageFunctions.HasInterface(configuration), FirmwareFunctions.OptionRoms(configuration, chips), StorageFunctions.UsesWd1770(configuration), StorageFunctions.HasWinchester(configuration), network.Enabled, network.Station, network.CyclesPerByte, MemoryExtensionFunctions.Read(configuration), SidewaysExpansionFunctions.Read(configuration), expandedIo: expandedIo, videoStandard: VideoStandardFunctions.Resolve(configuration), modelBPlusMemory: ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.MemoryBytes(configuration) : 0)
+        return new BbcMicroMachine(mos, basic, BbcMicroMemoryFunctions.MainBytes(configuration), FirmwareFunctions.Read(configuration, EmulatorConstants.CharacterFirmware), StorageFunctions.HasInterface(configuration), FirmwareFunctions.OptionRoms(configuration, chips), StorageFunctions.UsesWd1770(configuration), StorageFunctions.HasWinchester(configuration), network.Enabled, network.Station, network.CyclesPerByte, MemoryExtensionFunctions.Read(configuration), SidewaysExpansionFunctions.Read(configuration), expandedIo: expandedIo, videoStandard: VideoStandardFunctions.Resolve(configuration), modelBPlusMemory: ModelBPlusFunctions.IsModel(configuration) ? ModelBPlusFunctions.MemoryBytes(configuration) : 0, userPortPointer: PointerInputFunctions.Connected(configuration), analogInterface: ModelAIoFunctions.IsModel(configuration) ? ModelAIoFunctions.AnalogPort(configuration) : null)
         {
             Video = { Monochrome = configuration.Options.GetValueOrDefault(EmulatorConstants.VideoOutput, EmulatorConstants.UhfOutput) == EmulatorConstants.MonochromeOutput }
         };

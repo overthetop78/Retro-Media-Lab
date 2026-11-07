@@ -135,6 +135,9 @@ public sealed class AcornEmuMemoryExtensionTests
         configured = (MachineConfiguration)engine.ApplySettings(configured, new Dictionary<string,string?> { [C.Firmware] = "memory.rom" });
         Assert.False(Assert.Single(factory.DescribeSettings(configured).SelectMany(b => b.Fields), f => f.Id == SettingsConstants.MainMemory).IsEnabled);
         Assert.True(Assert.Single(factory.GetFirmwareSlots(configured), slot => slot.FieldId == C.Firmware).IsRequired);
+        var extension = Assert.Single(factory.DescribeSettings(configured), block => block.Id == C.Group);
+        Assert.Equal(EmulationMachineTab.Extensions, extension.Tab);
+        Assert.Equal(EmulationSettingsEditor.Path, Assert.Single(extension.Fields, field => field.Id == C.Firmware).Editor);
         configured = (MachineConfiguration)engine.ApplySettings(configured, new Dictionary<string,string?> { [C.CardOption] = C.None });
         Assert.Equal("memory.rom", configured.Options[C.Firmware]);
         Assert.True(Assert.Single(factory.DescribeSettings(configured).SelectMany(b => b.Fields), f => f.Id == SettingsConstants.MainMemory).IsEnabled);

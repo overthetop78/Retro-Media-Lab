@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Υψηλή</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>Ήχος</value></data>
   <data name="Emulation.Audio.Tone"><value>Δοκιμαστικός τόνος</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Μείκτης έντασης</value></data>
+  <data name="Emulation.Audio.Mute"><value>Σβήσε τον ήχο.</value></data>
 </root>

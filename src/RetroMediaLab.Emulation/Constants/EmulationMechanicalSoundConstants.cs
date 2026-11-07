@@ -5,6 +5,12 @@ namespace RetroMediaLab.Emulation.Constants;
 /// <summary>Identifiants du service média relayés au SDK ; les définitions et profils appartiennent à MediaEngine.</summary>
 public static class EmulationMechanicalSoundConstants
 {
+    /// <summary>Groupe de présentation des volumes des lecteurs présents.</summary>
+    public const string MixerResource = "Emulation.Audio.Mixer";
+    /// <summary>Case muet ; son activation désactive la clé sonore existante du lecteur.</summary>
+    public const string MuteResource = "Emulation.Audio.Mute";
+    /// <summary>Préfixe des groupes du mélangeur, indépendant des clés persistées.</summary>
+    public const string MixerBlockPrefix = "audio.mixer.";
     /// <summary>Identifiant de la catégorie des lecteurs de bande.</summary>
     public const string Tape = M.Tape;
     /// <summary>Identifiant de la catégorie des lecteurs de disquettes.</summary>

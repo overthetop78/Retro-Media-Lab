@@ -5,6 +5,8 @@ internal static class AcornMasterModel
     internal static bool IsMaster(MachineModel model) => model is MachineModel.BbcMaster128 or MachineModel.BbcMasterET or MachineModel.BbcMasterCompact;
     private static IReadOnlySet<string> Roms(params string[] hashes) => hashes.ToHashSet(StringComparer.OrdinalIgnoreCase);
     private static readonly IReadOnlySet<string> CompatibleCoprocessorRoms = Roms("eb2a043d139ae0f3d512b4f1afa32286510c886c", "8acaf42a4a6b5f62f6be5e62df5fcffbf48890dd");
+    // AMX 2.1 variant 4 : OSWORD 64 fonctionne ; le pointeur de l'ancien menu échoue.
+    private static readonly IReadOnlySet<string> PartialPointerRoms = Roms("50eae23d4686f5f9547c741517af23dc27b75a2c");
     private static readonly IReadOnlyDictionary<MachineModel, IReadOnlyDictionary<FirmwareCategory, IReadOnlySet<string>>> Profiles =
         new Dictionary<MachineModel, IReadOnlyDictionary<FirmwareCategory, IReadOnlySet<string>>>
         {
@@ -31,6 +33,7 @@ internal static class AcornMasterModel
     internal static EmulationFirmwareCompatibility? Get(MachineModel model, string hash, FirmwareCategory category)
     {
         if (model == MachineModel.BbcMaster128 && category == FirmwareCategory.Coprocessor && CompatibleCoprocessorRoms.Contains(hash)) return EmulationFirmwareCompatibility.Compatible;
+        if (model == MachineModel.BbcMaster128 && category == FirmwareCategory.Application && PartialPointerRoms.Contains(hash)) return EmulationFirmwareCompatibility.PartiallyCompatible;
         if (Profiles[model].TryGetValue(category, out var entries) && entries.Contains(hash)) return EmulationFirmwareCompatibility.Official;
         if (category == FirmwareCategory.OperatingSystem || Profiles.Values.Any(profile => profile.TryGetValue(category, out var hashes) && hashes.Contains(hash))) return EmulationFirmwareCompatibility.Incompatible;
         if (category == FirmwareCategory.DiscFilingSystem && AcornFirmware.BySha1[hash].DiskController == FirmwareDiskController.Intel8271) return EmulationFirmwareCompatibility.Incompatible;

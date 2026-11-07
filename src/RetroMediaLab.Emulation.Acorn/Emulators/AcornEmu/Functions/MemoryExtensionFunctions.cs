@@ -21,17 +21,17 @@ internal static class MemoryExtensionFunctions
         return result;
     }
 
-    /// <summary>Bloc RAM : une seule carte, ou Aucune ; la ROM est conservée quand la carte est retirée.</summary>
+    /// <summary>Une carte et sa ROM dans le même cadre ; le chemin est conservé quand la carte est retirée.</summary>
     internal static EmulationSettingsBlock Describe(MachineConfiguration configuration)
     {
         var settings = Read(configuration);
-        return new(C.Group, EmulationMachineTab.Ram, C.Group,
+        return new(C.Group, EmulationMachineTab.Extensions, C.Group,
         [
-            new(C.CardOption, EmulationMachineTab.Ram, C.Group, C.CardLabel, EmulationSettingsEditor.Selection, settings.Card,
+            new(C.CardOption, EmulationMachineTab.Extensions, C.Group, C.CardLabel, EmulationSettingsEditor.Selection, settings.Card,
                 Choices(),
                 IsEnabled: BbcMicroMemoryFunctions.MainBytes(configuration) == BbcMicroModelConstants.ThirtyTwoKibibytes,
                 ExplanationResourceKey: C.Help, RequiresRestart: true, RefreshSettingsOnChange: true),
-            new(C.Firmware, EmulationMachineTab.Ram, C.Group, C.FirmwareLabel, EmulationSettingsEditor.Path,
+            new(C.Firmware, EmulationMachineTab.Extensions, C.Group, C.FirmwareLabel, EmulationSettingsEditor.Path,
                 configuration.Options.GetValueOrDefault(C.Firmware), IsEnabled: settings.Enabled && !SidewaysExpansionFunctions.ProvidesBank(configuration, FirmwareBank(configuration)), IsVisible: settings.Enabled,
                 ExplanationResourceKey: C.FirmwareHelp, DefaultFolderCategory: EmulationDefaultFolderCategory.Firmware, RequiresRestart: true)
         ]);
@@ -50,7 +50,7 @@ internal static class MemoryExtensionFunctions
     /// <summary>Banque physique occupée par le logiciel de gestion dans le montage courant.</summary>
     internal static int FirmwareBank(MachineConfiguration configuration) => SidewaysExpansionFunctions.NativeBank(configuration, C.FirmwareBank);
 
-    /// <summary>Annonce la destination au sélecteur ROM existant dans l'onglet RAM.</summary>
+    /// <summary>Annonce la destination au sélecteur ROM existant, dans le cadre de la carte d'extension.</summary>
     internal static FirmwareSlot Slot(MachineConfiguration configuration) => new(C.Firmware, string.Empty, C.FirmwareLabel,
         IsRequired: Read(configuration).Enabled, MachineIds: new HashSet<string> { configuration.Model.ToString() });
 

@@ -51,6 +51,8 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private readonly Econet _econet;
     private readonly Via6522 _via = new();
     private readonly Via6522? _userVia;
+    private readonly UserPortPointer? _pointer;
+    private long _pointerWakeTick = long.MaxValue;
     private readonly Adc7002? _adc;
     private long _adcWakeTick = long.MaxValue;
     private byte _fireInputs = Io.OpenInputs;
@@ -75,6 +77,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     internal Video Video { get; }
     public int? VideoHeight => Video.OutputHeight;
     public EmulationVideoScanMode VideoScanMode => Video.ScanMode;
+    public bool SupportsPointerCapture => _pointer is not null;
     public bool Irq => _interruptSources != BbcInterruptSources.None;
     public bool Nmi => _nmiSources != BbcNmiSources.None;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get => _econet.FrameTransmitted; set => _econet.FrameTransmitted = value; }
@@ -109,7 +112,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     public void ConfigureTape(EmulationTapeSettings settings) => _tape.Configure(settings);
     public void EjectTape() => _tape.Eject();
 
-    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false, EmulationVideoStandard videoStandard = EmulationVideoStandard.Pal, int modelBPlusMemory = 0, bool master = false, bool compact = false, MasterCoprocessor coprocessor = MasterCoprocessor.None, ReadOnlySpan<byte> coprocessorRom = default)
+    internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false, EmulationVideoStandard videoStandard = EmulationVideoStandard.Pal, int modelBPlusMemory = 0, bool master = false, bool compact = false, MasterCoprocessor coprocessor = MasterCoprocessor.None, ReadOnlySpan<byte> coprocessorRom = default, bool userPortPointer = false, bool? analogInterface = null)
     {
         if (mos.Length != BbcMicroFirmwareConstants.BankSize || basic.Length != BbcMicroFirmwareConstants.BankSize) throw new ArgumentException("MOS et BASIC doivent chacun contenir 16 384 octets.");
         if (memoryBytes != BbcMicroModelConstants.SixteenKibibytes && memoryBytes != BbcMicroModelConstants.ThirtyTwoKibibytes) throw new ArgumentOutOfRangeException(nameof(memoryBytes));
@@ -153,8 +156,17 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         };
         _via.ReadPortA = () => (_latch & 8) == 0 ? (byte)(_keyboard.Read(_via.OutputA) & (_masterClock?.ReadBus() ?? byte.MaxValue)) : _masterClock?.ReadBus() ?? byte.MaxValue;
         _userVia = expandedIo ? new Via6522() : null;
-        if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;
-        _adc = expandedIo && !compact ? new Adc7002(_via.SetCb1) : null;
+        if (userPortPointer)
+        {
+            if (_userVia is null) throw new ArgumentException(nameof(userPortPointer));
+            _pointer = new UserPortPointer(compact, _userVia.SetCb1, _userVia.SetCb2)
+            {
+                NextSignalChanged = next => _pointerWakeTick = next ?? long.MaxValue
+            };
+            _userVia.ReadPortB = () => _pointer.PortB;
+        }
+        else if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;
+        _adc = (analogInterface ?? expandedIo) && !compact ? new Adc7002(_via.SetCb1) : null;
         if (_adc is not null) _adc.NextClockEventChanged = next => _adcWakeTick = next ?? long.MaxValue;
         if (_masterClock is not null)
         {
@@ -183,6 +195,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
             Array.Clear(_ram);
             _via.Reset();
             _userVia?.Reset();
+            _pointer?.SynchronizePins();
             _adc?.AdvanceTo(_ticks);
             _adc?.Reset();
             Video.Reset();
@@ -208,6 +221,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _keyboard.SetInput(snapshot.Keys, snapshot.HostCharacters);
         UpdateAnalogInputs(snapshot.Controllers);
         _compactJoystick?.SetInput(snapshot.Controllers);
+        _pointer?.SetInput(snapshot.Pointer, _ticks);
         if (_keyboard.BreakPressed && !_break) Reset(false);
         _break = _keyboard.BreakPressed;
     }
@@ -244,6 +258,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         else _serial.Tick();
         if (_ticks >= _adcWakeTick) _adc!.AdvanceTo(_ticks);
         if (_ticks >= _masterClockWakeTick) _masterClock!.AdvanceTo(_ticks);
+        if (_ticks >= _pointerWakeTick) _pointer!.AdvanceTo(_ticks);
         _disks.Tick();
         if (_ticks >= _winchesterWakeTick) _winchesterWakeTick = _winchester.AdvanceTo(_ticks);
         _econet.Tick();

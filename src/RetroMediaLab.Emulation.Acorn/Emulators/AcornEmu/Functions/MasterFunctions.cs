@@ -94,7 +94,7 @@ internal static class MasterFunctions
             FirmwareFunctions.Read(configuration, EmulatorConstants.CharacterFirmware), !IsEt(configuration), banks,
             wd1770: true, winchesterInterface: !IsEt(configuration) && !IsCompact(configuration) && StorageFunctions.HasWinchester(configuration),
             econetInterface: network.Enabled, econetStation: network.Station, econetCyclesPerByte: network.CyclesPerByte,
-            expandedIo: !IsEt(configuration), videoStandard: VideoStandardFunctions.Resolve(configuration), master: true, compact: IsCompact(configuration), coprocessor: Coprocessor(configuration), coprocessorRom: CoprocessorRom(configuration));
+            expandedIo: !IsEt(configuration), videoStandard: VideoStandardFunctions.Resolve(configuration), master: true, compact: IsCompact(configuration), coprocessor: Coprocessor(configuration), coprocessorRom: CoprocessorRom(configuration), userPortPointer: PointerInputFunctions.Connected(configuration));
     }
     private static string BankLabel(MachineConfiguration configuration, int bank) => (IsCompact(configuration) && S.InternalBanks.Contains(bank) ? S.CompactBankPrefix : S.RomGroup) + bank.ToString(CultureInfo.InvariantCulture);
     private static IEnumerable<int> RequiredInternalBanks(MachineConfiguration configuration) => IsEt(configuration) ? [S.TerminalBank]
@@ -116,7 +116,7 @@ internal static class MasterFunctions
             [new(VideoStandardConstants.Automatic, VideoStandardConstants.AutomaticLabel), new(VideoStandardConstants.Pal, VideoStandardConstants.PalLabel), new(VideoStandardConstants.Ntsc, VideoStandardConstants.NtscLabel)], RequiresRestart: true)]);
     internal static IReadOnlyList<EmulationSettingsBlock> Describe(MachineConfiguration configuration)
     {
-        var main = Slots(configuration).Where(slot => !S.ExtensionBanks.Any(bank => slot.FieldId == ChipField(bank))).Select(slot =>
+        var main = Slots(configuration).Where(slot => slot.FieldId != S.CoprocessorRom && slot.FieldId != NetworkConstants.Firmware && !S.ExtensionBanks.Any(bank => slot.FieldId == ChipField(bank))).Select(slot =>
             new EmulationSettingsField(slot.FieldId, EmulationMachineTab.Rom, S.FirmwareBlock, slot.LabelResourceKey, EmulationSettingsEditor.Path,
                 configuration.Options.GetValueOrDefault(slot.FieldId), DefaultFolderCategory: EmulationDefaultFolderCategory.Firmware, RequiresRestart: true, RefreshSettingsOnChange: slot.FieldId == EmulatorConstants.SystemFirmware)).ToArray();
         var chips = S.ExtensionBanks.Select(bank => new EmulationSettingsField(ChipField(bank), EmulationMachineTab.Rom, S.RomGroup,
@@ -126,11 +126,16 @@ internal static class MasterFunctions
                 Coprocessor(configuration).ToString(),
                 [new(nameof(MasterCoprocessor.None), MemoryExtensionConstants.NoneLabel),
                  new(nameof(MasterCoprocessor.Turbo), S.TurboLabel), new(nameof(MasterCoprocessor.Master512), S.Master512Label)],
-                RequiresRestart: true, RefreshSettingsOnChange: true)], IsVisible: configuration.Model == MachineModel.BbcMaster128);
+                RequiresRestart: true, RefreshSettingsOnChange: true),
+             new(S.CoprocessorRom, EmulationMachineTab.Extensions, S.CoprocessorGroup, S.CoprocessorRomLabel,
+                 EmulationSettingsEditor.Path, configuration.Options.GetValueOrDefault(S.CoprocessorRom),
+                 IsVisible: Coprocessor(configuration) != MasterCoprocessor.None,
+                 DefaultFolderCategory: EmulationDefaultFolderCategory.Firmware, RequiresRestart: true)],
+            IsVisible: configuration.Model == MachineModel.BbcMaster128);
         return [coprocessor, new(S.FirmwareBlock, EmulationMachineTab.Rom, S.FirmwareLabel, main),
             new(S.RomGroup, EmulationMachineTab.Rom, S.RomGroup, chips),
             new(S.MemoryGroup, EmulationMachineTab.Ram, S.MemoryGroup,
                 [new(S.MemoryDescription, EmulationMachineTab.Ram, S.MemoryGroup, S.MemoryDescription, EmulationSettingsEditor.Information, S.Memory128Display)]),
-            NetworkFunctions.Describe(configuration), Video(configuration)];
+            .. NetworkFunctions.Describe(configuration), Video(configuration)];
     }
 }

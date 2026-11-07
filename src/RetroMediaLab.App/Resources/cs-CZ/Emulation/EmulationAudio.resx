@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Vysoká</value></data>
   <data name="Emulation.Audio"><value>Audio</value></data>
   <data name="Emulation.Audio.Tone"><value>Zkušební tón</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Míchačka hlasitosti</value></data>
+  <data name="Emulation.Audio.Mute"><value>Vypni ten zvuk.</value></data>
 </root>

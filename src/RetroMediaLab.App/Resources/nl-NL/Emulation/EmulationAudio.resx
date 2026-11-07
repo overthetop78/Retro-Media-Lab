@@ -31,4 +31,6 @@
   <data name="Emulation.Audio.Quality.High" xml:space="preserve"><value>Hoog</value></data>
   <data name="Emulation.Audio" xml:space="preserve"><value>Geluid</value></data>
   <data name="Emulation.Audio.Tone"><value>Testtoon</value></data>
+  <data name="Emulation.Audio.Mixer"><value>Volumemixer</value></data>
+  <data name="Emulation.Audio.Mute"><value>Zet het geluid uit.</value></data>
 </root>

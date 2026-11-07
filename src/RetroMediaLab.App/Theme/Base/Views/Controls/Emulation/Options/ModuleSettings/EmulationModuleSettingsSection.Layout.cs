@@ -211,43 +211,40 @@ internal sealed partial class EmulationModuleSettingsSection
         {
             var blocks = settings.Blocks.Where(block => block.Tab == tab && block.IsVisible && block.Fields.Any(IsDisplayed))
                 .OrderBy(block => block.TitleResourceKey == "Emulation.Firmware" ? 0 : 1).ToArray();
-            var cards = blocks.Select(block => (FrameworkElement)EmulationSettingsLayout.IconCard(
-                    EmulationSettingsLayout.VideoSettingsFields(1, block.Fields.Where(IsDisplayed).Select(CreateVideoSettingsField).ToArray()),
-                    LocExtension.GetForModule(_module, block.TitleResourceKey), block.Icon ?? IconGlyphs.Settings)).ToArray();
-            if (cards.Length == 1)
-                panel.Children.Add(cards[0]);
-            else if (cards.Length > 1)
-            {
-                var firmwareCards = blocks.Select((block, index) => (block, card: cards[index]))
-                    .Where(item => item.block.TitleResourceKey == "Emulation.Firmware").Select(item => item.card).ToHashSet();
-                var layout = EmulationSettingsLayout.CompactCards(cards,
-                    firmwareCards.Count == 0 ? null : card => firmwareCards.Contains(card) ? 0 : 1);
-                layout.Margin = new Thickness(0);
-                panel.Children.Add(layout);
-            }
+            var cards = blocks.SelectMany(block => block.Fields.Where(IsDisplayed).Select(field =>
+                (FrameworkElement)EmulationSettingsLayout.IconCard(
+                    new Border { Child = CreateField(field), Padding = new Thickness(10) },
+                    LocExtension.GetForModule(_module, field.LabelResourceKey), block.Icon ?? IconGlyphs.Settings))).ToArray();
+            var layout = EmulationSettingsLayout.CompactCards(cards);
+            layout.Margin = new Thickness(0);
+            panel.Children.Add(layout);
             return;
         }
         if (tab == EmulationMachineTab.Audio)
         {
-            var blocks = settings.Blocks.Where(block => block.Tab == tab && block.IsVisible && block.Fields.Any(IsDisplayed))
+            var mixer = settings.Blocks.Where(block => block.Tab == tab && block.AudioMixerSlot is not null
+                && block.IsVisible && block.Fields.Any(IsDisplayed)).ToArray();
+            var blocks = settings.Blocks.Where(block => block.Tab == tab && block.AudioMixerSlot is null && block.IsVisible && block.Fields.Any(IsDisplayed))
                 .OrderBy(block => block.Fields.Any(field => field.ChoiceSource == EmulationSettingsChoiceSource.AudioOutputDevices) ? 1 : 0).ToArray();
             var cards = blocks.Select(block => (FrameworkElement)EmulationSettingsLayout.IconCard(
                 EmulationSettingsLayout.BoundedForm(1, block.Fields.Where(IsDisplayed).Select(CreateControlField).ToArray()),
                 LocExtension.GetForModule(_module, block.TitleResourceKey), block.Icon ?? IconGlyphs.Audio)).ToList();
-            var common = blocks.Select((block, index) => (block, card: cards[index]))
-                .Where(item => item.block.Fields.Any(field => field.ChoiceSource == EmulationSettingsChoiceSource.AudioOutputDevices))
-                .Select(item => item.card).ToHashSet();
-            panel.Children.Add(EmulationSettingsLayout.CompactCards(cards, card => common.Contains(card) ? 1 : 0));
+            if (mixer.Length != 0) cards.Add(BuildAudioMixer(mixer));
+            var layout = EmulationSettingsLayout.CompactCards(cards);
+            layout.Margin = new Thickness(0);
+            panel.Children.Add(layout);
             return;
         }
-        if (settings.Blocks.Any(block => block.Tab == tab && block.IsCompact))
+        if (tab == EmulationMachineTab.Extensions || settings.Blocks.Any(block => block.Tab == tab && block.IsCompact))
         {
-            panel.Children.Add(EmulationSettingsLayout.CompactCards(settings.Blocks.Where(block => block.Tab == tab && block.IsVisible && block.Fields.Any(IsDisplayed))
+            var cards = EmulationSettingsLayout.CompactCards(settings.Blocks.Where(block => block.Tab == tab && block.IsVisible && block.Fields.Any(IsDisplayed))
                 .OrderBy(block => tab == EmulationMachineTab.Audio && !block.IsCompact ? 1 : 0)
                 .Select(block => EmulationSettingsLayout.IconCard(
                     tab == EmulationMachineTab.Audio && !block.IsCompact ? EmulationSettingsLayout.CompactForm(1, block.Fields.Where(IsDisplayed).Select(CreateControlField).ToArray()) : EmulationSettingsLayout.BoundedForm(1, block.Fields.Where(IsDisplayed).Select(CreateControlField).ToArray()),
                     LocExtension.GetForModule(_module, block.TitleResourceKey),
-                    block.Icon ?? (tab == EmulationMachineTab.Audio ? IconGlyphs.Audio : IconGlyphs.Settings)))));
+                    block.Icon ?? (tab == EmulationMachineTab.Audio ? IconGlyphs.Audio : IconGlyphs.Settings))));
+            if (tab == EmulationMachineTab.Extensions) cards.Margin = new Thickness(0);
+            panel.Children.Add(cards);
             return;
         }
         foreach (var block in settings.Blocks.Where(block => block.Tab == tab && block.IsVisible))
@@ -256,7 +253,9 @@ internal sealed partial class EmulationModuleSettingsSection
             if (fields.Length == 0) continue;
             var columns = tab == EmulationMachineTab.Rom ? 1 : Math.Max(1, block.Columns);
             var form = EmulationSettingsLayout.CompactForm(columns, fields);
-            panel.Children.Add(EmulationSettingsLayout.IconCard(form, LocExtension.GetForModule(_module, block.TitleResourceKey), block.Icon ?? (tab == EmulationMachineTab.Audio ? IconGlyphs.Audio : IconGlyphs.Settings)));
+            var card = EmulationSettingsLayout.IconCard(form, LocExtension.GetForModule(_module, block.TitleResourceKey), block.Icon ?? (tab == EmulationMachineTab.Audio ? IconGlyphs.Audio : IconGlyphs.Settings));
+            card.Margin = new Thickness(0, 0, 0, 12);
+            panel.Children.Add(card);
         }
     }
 }

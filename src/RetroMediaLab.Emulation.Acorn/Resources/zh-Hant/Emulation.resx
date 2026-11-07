@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>磁盘操作系统 ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} 银行 {1} 与内存扩展卡不兼容 {2}. 检查一下 ROM 任务在机器设置中。</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM 银行 {0} 已经被另一个人占用 ROM. 检查一下 ROM 内存扩展卡的任务 {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>输入接口</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>鼠标和打印机连接器</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>模拟游戏游戏机界面</value></data>
 </root>

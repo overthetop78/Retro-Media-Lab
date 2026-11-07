@@ -80,4 +80,7 @@
   <data name="Emulation.Acorn.Atom.DosRom"><value>Sistem de operare disc ROM</value></data>
   <data name="Emulation.Acorn.Memory.RomMismatch"><value>ROM {0} în bancă {1} nu este compatibil cu cardul de extindere a memoriei {2}. Verificaţi ROM sarcini în setările mașinii.</value></data>
   <data name="Emulation.Acorn.Memory.RomBankOccupied"><value>ROM banca {0} este deja ocupat de un alt ROM. Verificaţi ROM misiuni pentru cardul de extindere a memoriei {1}.</value></data>
+  <data name="Emulation.Acorn.ModelA.IoExtensions"><value>Interfețe de intrare</value></data>
+  <data name="Emulation.Acorn.ModelA.UserPort"><value>Conectori pentru șoarece și imprimantă</value></data>
+  <data name="Emulation.Acorn.ModelA.AnalogPort"><value>Interfață Joystick analogă</value></data>
 </root>

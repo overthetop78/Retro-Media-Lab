@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.CPU.Common.Enums;
 using RetroMediaLab.Chips.CPU.Common.Interfaces;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip65C102.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
@@ -17,6 +18,9 @@ internal sealed class TurboBoard : ICpuBus
     private bool _romMapped;
     private bool _resetHeld;
     private long _target;
+    // Les entrées auxiliaires de ce bus gardent les niveaux constants d'ICpuBus.
+    // IRQ/NMI et le reset Tube restent raccordés par leurs notifications ci-dessous.
+    public CpuBusControlSignals ControlSignals => CpuBusControlSignals.None;
     public bool Irq => _tube.ParasiteIrq;
     public bool Nmi => _tube.ParasiteNmi;
     internal TurboBoard(TubeUla tube, ReadOnlySpan<byte> rom)
