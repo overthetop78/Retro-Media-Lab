@@ -259,6 +259,11 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     internal async Task ApplyConfigurationAsync(IEmulationConfiguration configuration)
     {
         if (_disposed) return;
+        if (_session.IsPowered)
+        {
+            _session.Machine.Input.UpdateBindings(configuration);
+            _input.RefreshBindings();
+        }
         var runtime = await _options.CreateRuntimeAsync(configuration, CancellationToken.None);
         _mediaDevices = runtime.MediaDevices;
         _prepareMediaAsync = runtime.PrepareMediaAsync;
@@ -407,6 +412,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
 
     private void MachineChanged(object? sender, IEmulatedMachine machine)
     {
+        _input.RefreshBindings();
         _video.SetMachine(machine);
         machine.Audio.SetMuted(_audioMuted);
         _commands.SetMuted(_audioMuted);

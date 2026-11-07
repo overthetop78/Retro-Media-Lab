@@ -80,6 +80,19 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public Guid Id { get; }
     public MachineConfiguration Configuration { get; }
     public IEmulationLifecycle Lifecycle => this;
+    /// <summary>Actualise uniquement les associations hôtes ; le cœur et son matériel restent en place.</summary>
+    void IEmulationInput.UpdateBindings(IEmulationConfiguration configuration)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (configuration is not MachineConfiguration next || next.Id != Configuration.Id
+            || ((IEmulationConfiguration)next).MachineId != ((IEmulationConfiguration)Configuration).MachineId)
+            throw new ArgumentException(nameof(configuration));
+        lock (_gate)
+        {
+            _inputConfiguration = _inputConfiguration with { Input = next.Input };
+        }
+    }
+
     public IEmulationInput Input => this;
     public IEmulationMedia Media => this;
     public IEmulationVideo Video => this;

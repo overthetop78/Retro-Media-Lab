@@ -75,6 +75,19 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public Guid Id { get; }
     public MachineConfiguration Configuration { get; }
     public IEmulationLifecycle Lifecycle => this;
+    /// <summary>Actualise uniquement les associations hôtes ; le cœur et son matériel restent en place.</summary>
+    void IEmulationInput.UpdateBindings(IEmulationConfiguration configuration)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (configuration is not MachineConfiguration next || next.Id != Configuration.Id
+            || ((IEmulationConfiguration)next).MachineId != ((IEmulationConfiguration)Configuration).MachineId)
+            throw new ArgumentException(nameof(configuration));
+        lock (_gate)
+        {
+            _inputConfiguration = _inputConfiguration with { Input = next.Input };
+        }
+    }
+
     public IEmulationInput Input => this;
     public IEmulationMedia Media => this;
     public IEmulationVideo Video => this;
@@ -84,7 +97,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public IEmulationTapeTransport? TapeTransport => _tapeInput.AvailableCommands.Count > 0 ? this : null;
     bool IEmulationInput.SupportsPointerCapture => CompatibilityCatalog.Get(Configuration.Model).VisibleTabs.Contains(SettingsTab.Mouse);
     bool IEmulationInput.CapturePointerOnClick => Configuration.Input?.CaptureMouse ?? true;
-    IReadOnlyDictionary<string, string> IEmulationInput.KeyboardBindings => Configuration.Input?.KeyboardBindings ?? Configuration.Input?.KeyboardMappings?.ToDictionary(item => item.Key, item => item.Value.ToString(), StringComparer.Ordinal) ?? new Dictionary<string, string>();
+    IReadOnlyDictionary<string, string> IEmulationInput.KeyboardBindings => _inputConfiguration.Input?.KeyboardBindings ?? _inputConfiguration.Input?.KeyboardMappings?.ToDictionary(item => item.Key, item => item.Value.ToString(), StringComparer.Ordinal) ?? new Dictionary<string, string>();
     bool IEmulationInput.SupportsControllerPointerSwitch => false;
     bool IEmulationInput.ControllerPointerMode => false;
     public EmulationMachineState State { get; private set; } = EmulationMachineState.Created;

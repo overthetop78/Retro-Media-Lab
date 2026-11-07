@@ -28,7 +28,7 @@ internal sealed class MachineInputController : IDisposable
     private readonly IReadOnlyList<GlobalShortcutBinding> _globalShortcuts;
     private readonly Func<string, Task> _executeShortcut;
     private readonly Func<bool> _isActive;
-    private readonly IReadOnlyList<KeyboardShortcutBinding> _keyboardShortcuts;
+    private IReadOnlyList<KeyboardShortcutBinding> _keyboardShortcuts;
     private readonly IRelativeMouseCapture _pointerCapture;
     private readonly Func<GameInputPhysicalState> _readPhysicalInput;
     private readonly Action<FrameworkElement, IntPtr> _focus;
@@ -83,6 +83,22 @@ internal sealed class MachineInputController : IDisposable
     }
 
     internal bool IsPointerCaptured => _pointerCapture.IsCaptured;
+
+    internal void RefreshBindings()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        // Relâcher les anciennes commandes avant d'interpréter les touches avec la nouvelle association.
+        _keys.Clear();
+        _physicalKeys.Clear();
+        _modifierState.Reset();
+        _pressedShortcutKeys.Clear();
+        _activeShortcuts.Clear();
+        _keyboardShortcuts = EmulationShortcutMap.KeyboardShortcuts(_machine().Input.KeyboardBindings);
+        if (_powered && CanAcceptInput(_machine()))
+            _machine().Input.SetInput(EmulationInputSnapshot.Empty);
+        if (!_machine().Input.SupportsPointerCapture || !_machine().Input.CapturePointerOnClick)
+            ReleasePointer();
+    }
 
     internal void SetPowered(bool powered)
     {

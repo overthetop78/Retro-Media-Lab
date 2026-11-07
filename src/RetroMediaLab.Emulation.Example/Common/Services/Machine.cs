@@ -165,6 +165,19 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     /// <summary>Facette de démarrage, pause, reprise, réinitialisation et arrêt.</summary>
     public IEmulationLifecycle Lifecycle => this;
     /// <summary>Facette de réception et de configuration des entrées.</summary>
+    /// <summary>Actualise uniquement les associations hôtes ; le cœur et son matériel restent en place.</summary>
+    void IEmulationInput.UpdateBindings(IEmulationConfiguration configuration)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (configuration is not MachineConfiguration next || next.Id != Configuration.Id
+            || ((IEmulationConfiguration)next).MachineId != ((IEmulationConfiguration)Configuration).MachineId)
+            throw new ArgumentException(nameof(configuration));
+        lock (_gate)
+        {
+            _inputConfiguration = next.Input;
+        }
+    }
+
     public IEmulationInput Input => this;
     /// <summary>Facette de montage, d’éjection et de sélection des disques.</summary>
     public IEmulationMedia Media => this;
