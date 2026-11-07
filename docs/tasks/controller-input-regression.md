@@ -1,5 +1,14 @@
 # Réception des manettes et souris — corrections du 7 novembre
 
+## Fusion autorisée de la branche distante
+
+- [x] Terminer la fusion sans réintroduire les comportements supprimés à la demande utilisateur.
+  - [x] Créer `artifacts/.tmp-archives/git-merge-20261108/` avec les fichiers locaux concernés et un manifeste SHA256 vérifié avant remplacement ; conserver cette sauvegarde ignorée hors du commit.
+  - [x] Modifier `src/RetroMediaLab.App/Contracts/Input/GameInput/GameInputPhysicalState.cs`, `Controllers/Emulation/Machine/MachineInputController.cs` et `Services/Input/GameInput/Reading/GameInputPhysicalInputReader.cs` sous `src/RetroMediaLab.App/` : conserver les versions HEAD utilisant directement GameInput, sans rétablir le repli Windows de la branche antérieure.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Common/Services/Machine.cs` et `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornSessionInputRouteTests.cs` : conserver la capture matérielle proposée par les capacités, les associations à chaud et leurs tests, sans réintroduire les tests du repli supprimé ; retirer les marqueurs de fusion.
+  - [x] Modifier `docs/directives/Emulations/procedure-puces-machines.md` et `docs/tasks/machines/BbcMicro/model-a-input-extensions.md` : conserver les directives et résultats locaux incluant les acquis distants ; enlever les doublons et marqueurs introduits par la fusion.
+  - [x] Modifier `.git/index` pour marquer les conflits résolus, vérifier les différences finales et créer le commit de fusion autorisé ; conserver les deux modifications de documentation Turbo hors de ce commit.
+
 - [ ] Réparer les entrées physiques observées dans RML.
   - [x] Identifier la lecture native des deux manettes avant de modifier son fonctionnement.
     - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/ControllerReadingDiagnostic.cs` : relever les lectures détaillées, les codes de résultat et le runtime GameInput sélectionné ; arrêter le moniteur dans finally.
