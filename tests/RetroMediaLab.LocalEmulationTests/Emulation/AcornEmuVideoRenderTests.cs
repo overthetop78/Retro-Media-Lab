@@ -16,7 +16,7 @@ public sealed class AcornEmuVideoRenderTests
     [InlineData(256, false, 0, false)]
     [InlineData(256, true, 0, true)]
     [InlineData(256, true, 1, false)]
-    public void RenderKeepsScalarPixelsFieldHistoryAndOwnedSnapshots(int height, bool interlaced, int parity, bool history)
+    public void RenderKeepsScalarFieldPixelsAndOwnedSnapshots(int height, bool interlaced, int parity, bool history)
     {
         var video = new BbcVideo(new byte[32768], ReadOnlySpan<byte>.Empty, height);
         var completed = ArrayField(video, "_completed");
@@ -52,14 +52,14 @@ public sealed class AcornEmuVideoRenderTests
             Field("_completedInterlaced").SetValue(video, interlaced);
             Field("_completedParity").SetValue(video, parity);
             Field("_previousFieldValid").SetValue(video, history);
-            var outputHeight = interlaced ? height * C.FieldsPerInterlacedImage : height;
+            var outputHeight = height;
             var expected = new byte[C.Width * outputHeight * C.PackedPixelBytes];
             for (var row = 0; row < outputHeight; row++)
             {
                 var field = row & C.FieldParityMask;
-                if (interlaced && field != parity && !history) continue;
-                var source = !interlaced || field == parity ? completed : previous;
-                var sourceRow = interlaced ? row / C.FieldsPerInterlacedImage : row;
+
+                var source = completed;
+                var sourceRow = row;
                 for (var pixel = 0; pixel < C.Width; pixel++)
                 {
                     var word = source[sourceRow * C.ScanoutWordsPerLine + pixel / C.CpuMasterDots];

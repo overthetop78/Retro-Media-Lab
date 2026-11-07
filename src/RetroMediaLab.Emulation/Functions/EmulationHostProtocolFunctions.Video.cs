@@ -10,6 +10,13 @@ namespace RetroMediaLab.Emulation.Functions;
 
 internal static partial class EmulationHostProtocolFunctions
 {
+    private static EmulationVideoScanMode ReadVideoScanMode(BinaryReader reader)
+    {
+        var mode = (EmulationVideoScanMode)reader.ReadInt32();
+        if (!Enum.IsDefined(mode)) throw new InvalidDataException(EmulationHostProtocolConstants.InvalidSharedVideoMetadata);
+        return mode;
+    }
+
     /// <summary>Ouvre et libère la mémoire vidéo et sa vue autour du callback qui les emprunte.</summary>
     [SupportedOSPlatform("windows")]
     internal static void WithSharedVideoMap(string videoMapName, long viewOffset, Action<MemoryMappedViewAccessor> run)
@@ -49,6 +56,7 @@ internal static partial class EmulationHostProtocolFunctions
         writer.Write(frame.AspectRatio);
         writer.Write(frame.Sequence);
         writer.Write(frame.Timestamp.Ticks);
+        writer.Write((int)frame.ScanMode);
         writer.Write(slot);
         writer.Write(length);
     }
@@ -79,6 +87,7 @@ internal static partial class EmulationHostProtocolFunctions
         var aspect = reader.ReadSingle();
         var sequence = reader.ReadInt64();
         var timestamp = TimeSpan.FromTicks(reader.ReadInt64());
+        var scanMode = ReadVideoScanMode(reader);
         var slot = reader.ReadInt32();
         var length = reader.ReadInt32();
         if (width <= 0 || height <= 0 || pitch <= 0 || length != checked(pitch * height)
@@ -88,6 +97,6 @@ internal static partial class EmulationHostProtocolFunctions
         var pixels = GC.AllocateUninitializedArray<byte>(length);
         var read = view!.ReadArray((long)slot * slotCapacity, pixels, 0, length);
         if (read != length) throw new EndOfStreamException(EmulationHostProtocolConstants.SharedVideoEndedEarly);
-        return new VideoFrame(pixels, width, height, pitch, format, aspect, sequence, timestamp);
+        return new VideoFrame(pixels, width, height, pitch, format, aspect, sequence, timestamp) { ScanMode = scanMode };
     }
 }

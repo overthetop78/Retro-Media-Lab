@@ -32,6 +32,49 @@ internal static class VideoProcessingScenarios
         public void Present(VideoFrame frame) { if(Fail) throw new IOException("synthetic renderer failure"); Frames.Add(frame); }
         public void Dispose() => Disposed=true;
     }
+    public static async Task FieldPresentation()
+    {
+        var source = new VideoSource();
+        var replacement = new VideoSource();
+        var view = new RetroMediaLab.App.Views.Controls.Emulation.Machine.MachineView();
+        var surface = new Surface(EmulationVideoRenderer.Wpf);
+        using var presenter = new RetroMediaLab.App.Presenters.Emulation.Machine.MachineVideoPresenter(
+            view, source.Machine, EmulationVideoRenderer.Wpf, createSurface: _ => surface);
+        var host = new System.Windows.Window
+        {
+            Content = view, Width = 320, Height = 240, ShowActivated = false, ShowInTaskbar = false, Opacity = 0
+        };
+        try
+        {
+            host.Show();
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            var even = new VideoFrame(new byte[] { 11, 12, 13, 255 }, 1, 1, 4,
+                EmulationPixelFormat.Xrgb8888, 1, 1, TimeSpan.FromMilliseconds(20))
+                { ScanMode = EmulationVideoScanMode.InterlacedEvenField };
+            var odd = even with
+            {
+                Pixels = new byte[] { 21, 22, 23, 255 }, Sequence = 2,
+                Timestamp = TimeSpan.FromMilliseconds(40), ScanMode = EmulationVideoScanMode.InterlacedOddField
+            };
+            source.Send(even);
+            source.Send(odd);
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ContextIdle);
+            var composed = Assert.Single(surface.Frames);
+            Assert.Equal(2, composed.Height);
+            Assert.Equal(even.Pixels.ToArray().Concat(odd.Pixels.ToArray()), composed.Pixels.ToArray());
+            presenter.SetMachine(replacement.Machine);
+            replacement.Send(odd with { Sequence = 1, Timestamp = TimeSpan.FromMilliseconds(20) });
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ContextIdle);
+            Assert.Equal(new byte[4].Concat(odd.Pixels.ToArray()), surface.Frames[^1].Pixels.ToArray());
+        }
+        finally
+        {
+            try { presenter.Dispose(); }
+            finally { host.Close(); host.Content = null; }
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+    }
+
     public static async Task Presentation(int failure)
     {
         var source=new VideoSource(); var replacement=new VideoSource(); var created=new List<Surface>();

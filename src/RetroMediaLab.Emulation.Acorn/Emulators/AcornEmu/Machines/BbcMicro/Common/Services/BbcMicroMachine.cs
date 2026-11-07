@@ -74,6 +74,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     public long? ProcessorClockHz => BbcMicroModelConstants.CpuFrequencyHz;
     internal Video Video { get; }
     public int? VideoHeight => Video.OutputHeight;
+    public EmulationVideoScanMode VideoScanMode => Video.ScanMode;
     public bool Irq => _interruptSources != BbcInterruptSources.None;
     public bool Nmi => _nmiSources != BbcNmiSources.None;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get => _econet.FrameTransmitted; set => _econet.FrameTransmitted = value; }

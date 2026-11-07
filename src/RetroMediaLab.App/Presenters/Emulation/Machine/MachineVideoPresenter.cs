@@ -30,6 +30,8 @@ internal sealed class MachineVideoPresenter : IDisposable
     private long _previousFrameSequence;
     private EmulationExecutionRate? _executionRate;
     private readonly object _surfaceGate = new();
+    private readonly object _fieldGate = new();
+    private readonly EmulationVideoFieldComposer _fields = new();
     private readonly object _gpuFrameGate = new();
     private readonly AutoResetEvent _gpuFrameAvailable = new(false);
     private readonly CancellationTokenSource _gpuWorkerCancellation = new();
@@ -84,7 +86,7 @@ internal sealed class MachineVideoPresenter : IDisposable
     internal EmulationVideoProcessingConfiguration VideoProcessing => _videoProcessing;
     internal System.Windows.Media.Imaging.BitmapSource? Snapshot => _surface.Snapshot;
     internal Task<System.Windows.Media.Imaging.BitmapSource?> CaptureSnapshotAsync() =>
-        _presentationEnabled ? _surface.CaptureSnapshotAsync() : EmulationVideoSnapshotFunctions.CreateAsync(_machine.Video.LatestFrame, _videoProcessing, new EmulationVideoProcessingSize(Math.Max(1, (int)_view.Screen.ActualWidth), Math.Max(1, (int)_view.Screen.ActualHeight)));
+        _presentationEnabled ? _surface.CaptureSnapshotAsync() : EmulationVideoSnapshotFunctions.CreateAsync(PresentationFrame(), _videoProcessing, new EmulationVideoProcessingSize(Math.Max(1, (int)_view.Screen.ActualWidth), Math.Max(1, (int)_view.Screen.ActualHeight)));
     internal double MeasuredFramesPerSecond => _measuredFramesPerSecond;
     internal EmulationExecutionRate? ExecutionRate { get { lock (_frameRateGate) return _executionRate; } }
     internal bool IsShaderLoading => _shaderLoading;
@@ -141,6 +143,7 @@ internal sealed class MachineVideoPresenter : IDisposable
     {
         if (ReferenceEquals(_machine, machine)) return;
         _machine.Video.FrameReady -= VideoFrameReady;
+        lock (_fieldGate) _fields.Reset();
         _machine = machine;
         _machine.Video.FrameReady += VideoFrameReady;
         ResetFrameRate();
@@ -239,6 +242,7 @@ internal sealed class MachineVideoPresenter : IDisposable
         finally
         {
             _hostWindow = null;
+            lock (_fieldGate) _fields.Reset();
             lock (_gpuFrameGate)
             {
                 _pendingGpuFrame = null;
@@ -305,12 +309,30 @@ internal sealed class MachineVideoPresenter : IDisposable
     private void VideoFrameReady(object? sender, VideoFrame frame)
     {
         UpdateFrameRate(frame);
+        lock (_fieldGate)
+        {
+            if (_disposed) return;
+            _fields.Receive(frame);
+        }
         if (!_presentationEnabled)
         {
             if (!_disposed) NotifyFrameCompleted(frame);
             return;
         }
-        QueueFrame(_machine.Video.LatestFrame ?? frame);
+        QueueFrame(frame);
+    }
+
+    private VideoFrame? PresentationFrame()
+    {
+        lock (_fieldGate)
+        {
+            if (_disposed) return null;
+            var prepared = _fields.Compose();
+            if (prepared is not null) return prepared;
+            if (_machine.Video.LatestFrame is not { } frame) return null;
+            _fields.Receive(frame);
+            return _fields.Compose();
+        }
     }
     private void QueueFrame(VideoFrame frame)
     {
@@ -321,7 +343,7 @@ internal sealed class MachineVideoPresenter : IDisposable
                 != MachinePresentationConstants.InactiveFramePending) return;
             _view.Dispatcher.BeginInvoke(() =>
             {
-                try { PresentOnUi(_machine.Video.LatestFrame ?? frame); }
+                try { PresentOnUi(PresentationFrame() ?? frame); }
                 finally { Interlocked.Exchange(ref _framePending, MachinePresentationConstants.InactiveFramePending); }
             });
             return;
@@ -353,6 +375,7 @@ internal sealed class MachineVideoPresenter : IDisposable
                     _pendingGpuFrame = null;
                 }
                 if (frame is null) break;
+                frame = PresentationFrame() ?? frame;
                 Exception? error = null;
                 long generation = 0;
                 try
@@ -435,7 +458,7 @@ internal sealed class MachineVideoPresenter : IDisposable
         FramePresented?.Invoke(this, frame);
     }
 
-    internal static double FrameAspectRatio(VideoFrame frame) => frame.AspectRatio > 0 && float.IsFinite(frame.AspectRatio) ? frame.AspectRatio : frame.Width / (double)frame.Height;
+    internal static double FrameAspectRatio(VideoFrame frame) => frame.AspectRatio > 0 && float.IsFinite(frame.AspectRatio) ? frame.AspectRatio : frame.Width / (double)frame.ImageHeight;
     private void NotifyFrameCompleted(VideoFrame frame)
     {
         Interlocked.Exchange(ref _latestCompletedFrame, frame);

@@ -5,7 +5,6 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Com
 
 internal sealed partial class Video
 {
-    private static readonly uint[] EmptyRenderLine = new uint[C.ScanoutWordsPerLine];
     private uint[] _renderedWords = [];
     private byte[] _renderedPixels = [];
 
@@ -21,18 +20,7 @@ internal sealed partial class Video
         for (var line = 0; line < Height; line++)
         {
             var sourceStart = line * C.ScanoutWordsPerLine;
-            if (!_completedInterlaced)
-            {
-                UpdateRenderLine(_completed.AsSpan(sourceStart, C.ScanoutWordsPerLine), line, pixels);
-                continue;
-            }
-            for (var parity = 0; parity < C.FieldsPerInterlacedImage; parity++)
-            {
-                var source = parity == _completedParity ? _completed : _previousField;
-                var row = parity != _completedParity && !_previousFieldValid
-                    ? EmptyRenderLine.AsSpan() : source.AsSpan(sourceStart, C.ScanoutWordsPerLine);
-                UpdateRenderLine(row, line * C.FieldsPerInterlacedImage + parity, pixels);
-            }
+            UpdateRenderLine(_completed.AsSpan(sourceStart, C.ScanoutWordsPerLine), line, pixels);
         }
         // Le cache reste privé. Chaque destinataire possède un instantané indépendant.
         return _renderedPixels.ToArray();

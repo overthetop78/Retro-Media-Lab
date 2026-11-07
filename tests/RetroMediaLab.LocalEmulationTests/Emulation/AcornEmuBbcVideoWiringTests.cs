@@ -2,6 +2,9 @@ using BbcVideo = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMi
 using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services;
 using System.Reflection;
 using Xunit;
+using RetroMediaLab.App.Functions.Rendering.Emulation;
+using RetroMediaLab.Emulation.Contracts;
+using RetroMediaLab.Emulation.Enums;
 
 namespace RetroMediaLab.Tests.Emulation;
 
@@ -15,6 +18,9 @@ public sealed class AcornEmuBbcVideoWiringTests
         var video = new BbcVideo(Enumerable.Repeat(byte.MaxValue, 32768).ToArray(), ReadOnlySpan<byte>.Empty, height);
         const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
         var crtc = (Crtc6845)typeof(BbcVideo).GetField("_crtc", flags)!.GetValue(video)!;
+        var display = new EmulationVideoFieldComposer();
+        VideoFrame Field(byte[] pixels, long sequence) => new(pixels, 640, height, 640 * 4,
+            EmulationPixelFormat.Xrgb8888, 4f / 3f, sequence, TimeSpan.FromMilliseconds(sequence * 20)) { ScanMode = video.ScanMode };
         try
         {
             Set(video, 0, 7); Set(video, 1, 6); Set(video, 2, 6); Set(video, 3, 0x11);
@@ -25,20 +31,27 @@ public sealed class AcornEmuBbcVideoWiringTests
             var redParity = crtc.RasterAddress & 1;
             video.WriteUla(1, 0xf6);
             FinishFrame(video, 2);
-            Assert.Equal(height * 2, video.OutputHeight);
+            Assert.Equal(height, video.OutputHeight);
             var red = video.Render();
-            Assert.Equal(640 * height * 2 * 4, red.Length);
-            Assert.Equal(255, red[redParity * 640 * 4 + 2]);
-            Assert.Equal(0, red[(redParity ^ 1) * 640 * 4 + 2]);
+            Assert.Equal(640 * height * 4, red.Length);
+            Assert.Equal(redParity == 0 ? EmulationVideoScanMode.InterlacedEvenField : EmulationVideoScanMode.InterlacedOddField, video.ScanMode);
+            Assert.Equal(255, red[2]);
+            display.Receive(Field(red, 2));
+            Assert.Equal(0, display.Compose()!.Pixels.Span[(redParity ^ 1) * 640 * 4 + 2]);
 
             video.WriteUla(1, 0xf3);
             FinishFrame(video, 3);
-            var woven = video.Render();
+            var native = video.Render();
+            Assert.Equal(redParity == 0 ? EmulationVideoScanMode.InterlacedOddField : EmulationVideoScanMode.InterlacedEvenField, video.ScanMode);
+            Assert.Equal(255, native[0]);
+            Assert.Equal(0, native[2]);
+            display.Receive(Field(native, 3));
+            var woven = display.Compose()!.Pixels.ToArray();
             Assert.Equal(255, woven[redParity * 640 * 4 + 2]);
             Assert.Equal(0, woven[redParity * 640 * 4]);
             Assert.Equal(255, woven[(redParity ^ 1) * 640 * 4]);
             Assert.Equal(0, woven[(redParity ^ 1) * 640 * 4 + 2]);
-            Assert.Equal(255, red[redParity * 640 * 4 + 2]);
+            Assert.Equal(255, red[2]);
 
             FinishFrame(video, 4);
             var blue = video.Render();
@@ -49,11 +62,14 @@ public sealed class AcornEmuBbcVideoWiringTests
             FinishFrame(video, 6);
             Assert.Equal(height, video.OutputHeight);
             Assert.Equal(640 * height * 4, video.Render().Length);
+            Assert.Equal(EmulationVideoScanMode.Progressive, video.ScanMode);
+            display.Receive(Field(video.Render(), 6));
             Set(video, 8, 3);
             FinishFrame(video, 7);
             FinishFrame(video, 8);
             var freshParity = crtc.RasterAddress & 1 ^ 1;
-            var fresh = video.Render();
+            display.Receive(Field(video.Render(), 8));
+            var fresh = display.Compose()!.Pixels.ToArray();
             Assert.Equal(0, fresh[(freshParity ^ 1) * 640 * 4]);
             video.Reset();
             Assert.Equal(height, video.OutputHeight);

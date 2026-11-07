@@ -60,6 +60,7 @@ internal sealed class MachineCommandBar
         var right = new StackPanel
         {
             Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Center
         };
         if (actions.OpenSettings is not null)
@@ -87,20 +88,6 @@ internal sealed class MachineCommandBar
             VerticalAlignment = VerticalAlignment.Center,
             FontWeight = FontWeights.SemiBold
         };
-        var rendererGroup = MachineView.CreateToolbarGroup(new TextBlock
-        {
-            Text = MachineCommandGlyphConstants.Renderer,
-            FontFamily = ControlVisualConstants.IconFont,
-            FontSize = 15,
-            Margin = new Thickness(4, 0, 6, 0),
-            VerticalAlignment = VerticalAlignment.Center
-        }, RendererStatus);
-        rendererGroup.Padding = new Thickness(MachinePresentationConstants.RendererPadding, 1, MachinePresentationConstants.RendererPadding, 1);
-        rendererGroup.Margin = new Thickness(8, 1, 8, 1);
-        rendererGroup.HorizontalAlignment = HorizontalAlignment.Center;
-        var rendererHost = new Grid();
-        rendererHost.Children.Add(rendererGroup);
-        host.Children.Add(rendererHost);
         Presentation = new(new System.Collections.ObjectModel.ReadOnlyDictionary<MachineCommandId, Button>(_commandsById),
             Status, RendererStatus, ControllerStatus, PointerStatus);
     }

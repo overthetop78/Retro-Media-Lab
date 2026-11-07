@@ -162,7 +162,10 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorTapeTranspo
         FlushStoppedHardDisks();
         var width = machine.VideoWidth ?? _definition.Width;
         var height = machine.VideoHeight ?? _definition.Height;
-        LatestVideoFrame = new VideoFrame(image, width, height, width * _definition.BytesPerPixel, _definition.PixelFormat, _definition.AspectRatio, ++_sequence, TimeSpan.FromSeconds(_videoTimeSeconds));
+        LatestVideoFrame = new VideoFrame(image, width, height, width * _definition.BytesPerPixel, _definition.PixelFormat, _definition.AspectRatio, ++_sequence, TimeSpan.FromSeconds(_videoTimeSeconds))
+        {
+            ScanMode = machine.VideoScanMode
+        };
         var samples = machine.DrainAudio();
         var layout = machine.AudioChannelLayout;
         var channels = System.Numerics.BitOperations.PopCount((uint)layout);

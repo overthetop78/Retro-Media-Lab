@@ -118,6 +118,7 @@ internal sealed class MachineView : EmulationMachinePresentation
     internal override void AttachCommands(MachineCommandPresentation commands)
     {
         var rows = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        AddStatusRow(MachineCommandGlyphConstants.Renderer, commands.RendererStatus, MachinePresentationConstants.RendererStatusColor);
         AddStatusRow(IconGlyphs.Display, commands.SizeStatus, MachinePresentationConstants.SizeStatusColor);
         AddStatusRow(IconGlyphs.Play, commands.FpsStatus, MachinePresentationConstants.FpsStatusColor);
         AddStatusRow(IconGlyphs.Sync, commands.FrequencyStatus, MachinePresentationConstants.FrequencyStatusColor);

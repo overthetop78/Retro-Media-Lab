@@ -13,7 +13,7 @@ internal static class MachinePresentationFunctions
         double expectedFramesPerSecond, double measuredFramesPerSecond, EmulationExecutionRate? executionRate = null)
     {
         presentation.Status.Text = Status(frame, expectedFramesPerSecond, measuredFramesPerSecond, executionRate);
-        presentation.SizeStatus.Text = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.SizeStatusFormat, frame.Width, frame.Height);
+        presentation.SizeStatus.Text = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.SizeStatusFormat, frame.Width, frame.ImageHeight);
         presentation.FpsStatus.Text = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.FpsStatusFormat, measuredFramesPerSecond);
         presentation.FrequencyStatus.Text = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.FrequencyStatusFormat,
             expectedFramesPerSecond > MachinePresentationConstants.EmptyMeasurement ? expectedFramesPerSecond : measuredFramesPerSecond);
@@ -32,7 +32,7 @@ internal static class MachinePresentationFunctions
     internal static string Status(VideoFrame frame, double expectedFramesPerSecond, double measuredFramesPerSecond, EmulationExecutionRate? executionRate = null)
     {
         var frequency = expectedFramesPerSecond > MachinePresentationConstants.EmptyMeasurement ? expectedFramesPerSecond : measuredFramesPerSecond;
-        var status = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.StatusFormat, frame.Width, frame.Height, frequency, measuredFramesPerSecond);
+        var status = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.StatusFormat, frame.Width, frame.ImageHeight, frequency, measuredFramesPerSecond);
         return executionRate?.EffectiveMegahertz is { } megahertz
             ? status + LocExtension.Get(MachinePresentationConstants.ExecutionRateResourceKey, megahertz,
                 executionRate.Value.SpeedRatio * MachinePresentationConstants.PercentScale)

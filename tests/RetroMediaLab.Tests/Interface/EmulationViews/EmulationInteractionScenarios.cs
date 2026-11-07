@@ -142,8 +142,9 @@ internal static class EmulationInteractionScenarios
         Assert.Equal(VerticalAlignment.Top, overlay.VerticalAlignment);
         Assert.Equal(overlay.Width, overlay.Height);
         var rows = Assert.IsType<StackPanel>(overlay.Child);
-        Assert.Equal(4, rows.Children.Count);
-        var sources = new[] { bar.Presentation.SizeStatus, bar.Presentation.FpsStatus, bar.Presentation.FrequencyStatus, bar.Presentation.ExecutionStatus };
+        Assert.Equal(5, rows.Children.Count);
+        Assert.DoesNotContain(MachineConfigurationScenarios.Controls<TextBlock>(host), block => ReferenceEquals(block, bar.RendererStatus));
+        var sources = new[] { bar.Presentation.RendererStatus, bar.Presentation.SizeStatus, bar.Presentation.FpsStatus, bar.Presentation.FrequencyStatus, bar.Presentation.ExecutionStatus };
         for (var index = 0; index < sources.Length; index++)
         {
             var row = Assert.IsType<DockPanel>(rows.Children[index]);
@@ -155,5 +156,7 @@ internal static class EmulationInteractionScenarios
             Assert.Same(icon.Foreground, value.Foreground);
             Assert.Equal(TextWrapping.NoWrap, value.TextWrapping);
         }
+        bar.RendererStatus.Text = "OpenGL";
+        Assert.Equal("OpenGL", Assert.IsType<TextBlock>(Assert.IsType<DockPanel>(rows.Children[0]).Children[1]).Text);
     }
 }

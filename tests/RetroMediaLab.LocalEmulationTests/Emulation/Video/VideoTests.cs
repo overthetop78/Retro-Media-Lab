@@ -3,6 +3,10 @@ namespace RetroMediaLab.Tests.Emulation.Video;
 public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaExecutionScenarios sta)
 {
     [Fact]
+    public Task PresentationComposesFieldsBeforeDroppedFramesAndClearsHistoryOnMachineChange() =>
+        sta.RunAsync(VideoProcessingScenarios.FieldPresentation);
+
+    [Fact]
     public void EveryVideoParameterLabelResolvesInFrench()
     {
         var localization = RetroMediaLab.App.Localization.Sources.LocalizationSource.Instance;

@@ -230,8 +230,8 @@ public sealed class AcornEmuVideoTests
             Set(video, 8, interlaced ? (byte)0x93 : (byte)0x90);
             AdvanceCompletedFields(video);
             var image = video.Render();
-            Assert.Equal(interlaced ? 512 : 256, video.OutputHeight);
-            for (var parity = 0; parity < (interlaced ? 2 : 1); parity++)
+            Assert.Equal(256, video.OutputHeight);
+            for (var parity = 0; parity < 1; parity++)
             {
                 var row = parity * 640;
                 for (var x = 16; x < 32; x++)
@@ -263,8 +263,8 @@ public sealed class AcornEmuVideoTests
             Set(video, 9, 1); // Deux rasters progressifs ou un raster par champ ; dix lignes internes SAA5050.
             AdvanceCompletedFields(video);
             var image = video.Render();
-            Assert.Equal(interlaced ? 512 : 256, video.OutputHeight);
-            var scale = interlaced ? 2 : 1;
+            Assert.Equal(256, video.OutputHeight);
+            const int scale = 1;
             for (var parity = 0; parity < scale; parity++)
             {
                 foreach (var y in new[] { 3, 13, 23 })

@@ -11,7 +11,9 @@ internal sealed partial class Video
     private int _drawingParity;
     private int _completedParity;
 
-    public int OutputHeight => _completedInterlaced ? Height * C.FieldsPerInterlacedImage : Height;
+    public int OutputHeight => Height;
+    public EmulationVideoScanMode ScanMode => !_completedInterlaced ? EmulationVideoScanMode.Progressive
+        : _completedParity == 0 ? EmulationVideoScanMode.InterlacedEvenField : EmulationVideoScanMode.InterlacedOddField;
 
     private void ResetFields()
     {

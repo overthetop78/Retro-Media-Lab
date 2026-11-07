@@ -16,6 +16,7 @@ internal interface IAcornMachine
     /// <summary>Dimensions programmables ; null conserve les dimensions fixes du modèle.</summary>
     int? VideoWidth => null;
     int? VideoHeight => null;
+    EmulationVideoScanMode VideoScanMode => EmulationVideoScanMode.Progressive;
     /// <summary>Cadence programmable ; null conserve celle du catalogue.</summary>
     double? VideoFramesPerSecond => null;
     /// <summary>Durée réellement exécutée par le dernier RunFrame, pour les cartes à balayage programmable.</summary>

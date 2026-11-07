@@ -199,6 +199,7 @@ internal static partial class EmulationHostProtocolFunctions
         if (frame is null) return;
         writer.Write(frame.Width); writer.Write(frame.Height); writer.Write(frame.Pitch); writer.Write((int)frame.PixelFormat);
         writer.Write(frame.AspectRatio); writer.Write(frame.Sequence); writer.Write(frame.Timestamp.Ticks);
+        writer.Write((int)frame.ScanMode);
         WriteBytes(writer, frame.Pixels.Span);
     }
 
@@ -209,10 +210,11 @@ internal static partial class EmulationHostProtocolFunctions
         var width = reader.ReadInt32(); var height = reader.ReadInt32(); var pitch = reader.ReadInt32();
         var format = (EmulationPixelFormat)reader.ReadInt32(); var aspect = reader.ReadSingle();
         var sequence = reader.ReadInt64(); var timestamp = TimeSpan.FromTicks(reader.ReadInt64());
+        var scanMode = ReadVideoScanMode(reader);
         var pixels = ReadBytes(reader, hostName);
         if (width <= 0 || height <= 0 || pitch <= 0 || pixels.Length != checked(pitch * height))
             throw new InvalidDataException(string.Format(EmulationHostProtocolConstants.InvalidVideoFrameFormat, hostName));
-        return new VideoFrame(pixels, width, height, pitch, format, aspect, sequence, timestamp);
+        return new VideoFrame(pixels, width, height, pitch, format, aspect, sequence, timestamp) { ScanMode = scanMode };
     }
 
     /// <summary>Copie une image dans la vue vidéo empruntée puis écrit les métadonnées du slot.</summary>
@@ -228,6 +230,7 @@ internal static partial class EmulationHostProtocolFunctions
         videoMap.WriteArray((long)slot * EmulationHostProtocolConstants.VideoSlotCapacity, pixels, 0, pixels.Length);
         writer.Write(frame.Width); writer.Write(frame.Height); writer.Write(frame.Pitch); writer.Write((int)frame.PixelFormat);
         writer.Write(frame.AspectRatio); writer.Write(frame.Sequence); writer.Write(frame.Timestamp.Ticks);
+        writer.Write((int)frame.ScanMode);
         writer.Write(slot); writer.Write(length);
     }
 
@@ -238,6 +241,7 @@ internal static partial class EmulationHostProtocolFunctions
         var width = reader.ReadInt32(); var height = reader.ReadInt32(); var pitch = reader.ReadInt32();
         var format = (EmulationPixelFormat)reader.ReadInt32(); var aspect = reader.ReadSingle();
         var sequence = reader.ReadInt64(); var timestamp = TimeSpan.FromTicks(reader.ReadInt64());
+        var scanMode = ReadVideoScanMode(reader);
         var slot = reader.ReadInt32(); var length = reader.ReadInt32();
         if (width <= 0 || height <= 0 || pitch <= 0 || length != checked(pitch * height)
             || slot is < 0 or >= EmulationHostProtocolConstants.VideoSlotCount
@@ -246,7 +250,7 @@ internal static partial class EmulationHostProtocolFunctions
         var pixels = GC.AllocateUninitializedArray<byte>(length);
         var read = videoMap.ReadArray((long)slot * EmulationHostProtocolConstants.VideoSlotCapacity, pixels, 0, length);
         if (read != length) throw new EndOfStreamException(string.Format(EmulationHostProtocolConstants.SharedVideoEndedEarlyFormat, hostName));
-        return new VideoFrame(pixels, width, height, pitch, format, aspect, sequence, timestamp);
+        return new VideoFrame(pixels, width, height, pitch, format, aspect, sequence, timestamp) { ScanMode = scanMode };
     }
 
     /// <summary>Écrit les blocs audio après validation de leurs échantillons et de leur disposition de canaux.</summary>
