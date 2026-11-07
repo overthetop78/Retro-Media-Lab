@@ -120,14 +120,14 @@ public sealed class AcornEmuStateTests
             return [_ram[0], (byte)++_counter, 0, 255];
         }
         public short[] DrainAudio() => [(short)_counter, (short)_ram[0]];
-        public IEmulatorCassetteTransport? CassetteTransport => null;
-        public bool CassetteHasChanges => false;
-        public EmulationCassetteSignal RecordedCassette => throw new NotSupportedException();
-        public void InsertCassette(EmulationCassetteSignal signal, bool writable = false) => throw new NotSupportedException();
-        public void MarkCassetteSaved() { }
-        public void RefreshCassetteIndex(EmulationCassetteSignal signal) => throw new NotSupportedException();
-        public void ConfigureCassette(EmulationCassetteSettings settings) { }
-        public void EjectCassette() { }
+        public IEmulatorTapeTransport? TapeTransport => null;
+        public bool TapeHasChanges => false;
+        public EmulationTapeSignal RecordedTape => throw new NotSupportedException();
+        public void InsertTape(EmulationTapeSignal signal, bool writable = false) => throw new NotSupportedException();
+        public void MarkTapeSaved() { }
+        public void RefreshTapeIndex(EmulationTapeSignal signal) => throw new NotSupportedException();
+        public void ConfigureTape(EmulationTapeSettings settings) { }
+        public void EjectTape() { }
         public void AttachFloppy(int index, IEmulationDiskImage? image) => throw new NotSupportedException();
         public bool FloppyActive(int index) => false;
         public bool FloppyMotor(int index) => false;

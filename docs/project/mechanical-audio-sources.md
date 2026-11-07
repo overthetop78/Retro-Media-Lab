@@ -4,7 +4,7 @@
 
 Le build Debug Acorn est prêt dans `build/Debug/Retro Media Lab/retromedialab.exe`. Les moteurs, déplacements de têtes, accès, arrêts et manipulations de supports utilisent les FLAC externes communs, avec réglage du volume des lecteurs. Les résonances des seeks rapides se chevauchent sans retard cumulatif. Le mécanisme du magnétophone utilise désormais dix clips réels ; lecture et enregistrement partagent le défilement, sans prise distincte du bouton REC.
 
-Validation finale : build réussi sans avertissement XML après documentation du volume ; 104 tests réussis contre les DLL livrées (contrôleurs 8271/WD1770/SCSI, audio, cassette et contrôles supplémentaires des volumes et événements dans le cœur). Les 1 759 FLAC livrés ont les mêmes empreintes que les sources. Les 1 759 WAV d’écoute sont dans `artifacts/audio-preview`, rangés par type/marque/modèle. Les sorties et scripts de validation temporaires ont été supprimés. La sortie native WASAPI a également été contrôlée avec le SDK et les clips livrés, sans ouvrir de fenêtre Retro Media Lab.
+Validation finale : build réussi sans avertissement XML après documentation du volume ; 104 tests réussis contre les DLL livrées (contrôleurs 8271/WD1770/SCSI, audio, tape et contrôles supplémentaires des volumes et événements dans le cœur). Les 1 759 FLAC livrés ont les mêmes empreintes que les sources. Les 1 759 WAV d’écoute sont dans `artifacts/audio-preview`, rangés par type/marque/modèle. Les sorties et scripts de validation temporaires ont été supprimés. La sortie native WASAPI a également été contrôlée avec le SDK et les clips livrés, sans ouvrir de fenêtre Retro Media Lab.
 
 La couverture fonctionnelle BBC Model A et la réutilisation commune sont vérifiées. L’association exhaustive des références commerciales aux machines des 24 modules n’est pas démontrée par ces tests. Les mécanismes dont la référence est inconnue restent explicitement sous `Unidentified`. Les sections suivantes conservent les sources et les étapes de recherche ; les mentions de travail restant dans les étapes anciennes sont à lire avec cet état livré.
 
@@ -16,7 +16,7 @@ Demande du 26 octobre 2026 : remplacer la synthèse approximative, couvrir toute
 - https://86box.net/2025/10/26/86box-v5-2.html : annonce de sons de disquettes enregistrés sur des lecteurs réels, déclenchés par le moteur et les déplacements des têtes.
 - https://github.com/86Box/assets : dépôt officiel des ressources, avec un répertoire `sounds`. Les fichiers et références exactes sont conservés dans le manifeste de recherche et les définitions explicites des ensembles sources.
 - https://github.com/86Box/docs/blob/master/usage/roms.rst : documentation officielle des ressources audio de disquette et de disque dur.
-- https://github.com/mattgodbolt/jsbeeb/blob/main/CHANGELOG.md : évolution du déclenchement du bruit de lecteur suivant les déplacements des têtes et clic de relais cassette. Le clic du relais de l’ordinateur ne remplace pas l’enregistrement du mécanisme du magnétophone externe.
+- https://github.com/mattgodbolt/jsbeeb/blob/main/CHANGELOG.md : évolution du déclenchement du bruit de lecteur suivant les déplacements des têtes et clic de relais tape. Le clic du relais de l’ordinateur ne remplace pas l’enregistrement du mécanisme du magnétophone externe.
 
 ## Couverture à vérifier pour chaque référence choisie
 
@@ -35,7 +35,7 @@ L’utilisateur demande tous les lecteurs associés aux machines des 24 modules,
 
 ## Catalogue public 86Box relevé
 
-L’arbre et les configurations officiels sont conservés dans `artifacts/mechanical-audio-research`. Les enregistrements originaux sont également conservés dans le sous-dossier `recordings`. Le catalogue relevé comporte quatre lecteurs de disquettes et quatre disques durs ; aucun jeu cassette ni optique n’y figure.
+L’arbre et les configurations officiels sont conservés dans `artifacts/mechanical-audio-research`. Les enregistrements originaux sont également conservés dans le sous-dossier `recordings`. Le catalogue relevé comporte quatre lecteurs de disquettes et quatre disques durs ; aucun jeu tape ni optique n’y figure.
 
 | Référence du dossier source | WAV disponibles | Volume total (Mio) |
 | --- | ---: | ---: |
@@ -65,7 +65,7 @@ Les seuils −50 dB minimum et 0 à −10 dB maximum décrivent les sons sources
 
 1 749 WAV ont été importés sans erreur depuis 86Box/assets, RetroDriveSounds, jsbeeb et WinUAE (environ 98,5 Mio). Le manifeste `artifacts/mechanical-audio-research/recordings-manifest.json` conserve le commit source, le chemin original, les empreintes Git/SHA-256, la fréquence, les canaux, la précision et la crête de chaque fichier. Tous ont pu être lus comme PCM ; aucun n’a une crête inférieure à −50 dBFS. Les originaux ne sont pas normalisés.
 
-Outre les huit références 86Box, les sources comprennent sept variantes de lecteurs 3,5 pouces Flopster (NEC, TEAC, Mitsumi, Samsung), des enregistrements d’insertion/éjection Panasonic et Alps, des jeux BBC/Amiga et des jeux de mécanismes IBMulator/MAME. Les jeux génériques dont le modèle exact n’est pas identifié doivent rester explicitement identifiés par leur provenance, sans leur attribuer un modèle commercial arbitraire. Aucun enregistrement de mécanisme cassette n’est présent dans ces quatre dépôts importés.
+Outre les huit références 86Box, les sources comprennent sept variantes de lecteurs 3,5 pouces Flopster (NEC, TEAC, Mitsumi, Samsung), des enregistrements d’insertion/éjection Panasonic et Alps, des jeux BBC/Amiga et des jeux de mécanismes IBMulator/MAME. Les jeux génériques dont le modèle exact n’est pas identifié doivent rester explicitement identifiés par leur provenance, sans leur attribuer un modèle commercial arbitraire. Aucun enregistrement de mécanisme tape n’est présent dans ces quatre dépôts importés.
 
 La règle des niveaux porte exclusivement sur les crêtes : ne pas relever les silences ni les passages faibles, ne pas compresser la dynamique pour atteindre le seuil. Le rendu final du mélange doit être protégé de l’écrêtage.
 
@@ -146,9 +146,9 @@ Contrôles réalisés sur les sources actuelles : compilation isolée de MediaEn
 
 Restent à terminer : sortie audio commune des usages App hors émulation, couverture réelle du magnétophone, exploitation correcte des séquences de mouvements rapides produisant les bourdonnements, nouveaux WAV d’écoute, vérification du build Debug Acorn.
 
-## Sources cassette complémentaires repérées
+## Sources tape complémentaires repérées
 
-- [BigSoundBank — Cassette Player: Rewind and End](https://bigsoundbank.com/cassette-player-rewind-and-end-s0567.html) : capture de Joseph Sardin, mono 48 kHz, 16 bits, deux retours rapides jusqu’à l’arrêt. Téléchargement annoncé sans compte ; référence commerciale non précisée, à conserver comme inconnue.
+- [BigSoundBank — Tape Player: Rewind and End](https://bigsoundbank.com/cassette-player-rewind-and-end-s0567.html) : capture de Joseph Sardin, mono 48 kHz, 16 bits, deux retours rapides jusqu’à l’arrêt. Téléchargement annoncé sans compte ; référence commerciale non précisée, à conserver comme inconnue.
 - [Freesound — TEAC W-860R](https://freesound.org/people/charonfaustinus/sounds/751057/) : capture stéréo 48 kHz, 24 bits, avec repères décrivant lecture, retour, avance rapide et manipulation du compartiment. Le téléchargement de l’original demande une connexion au site ; aucun original n’a encore été importé.
 - [Freesound — Casio AS-51R](https://freesound.org/people/OneKellyOrdered/sounds/624636/) : capture mono 44,1 kHz, 16 bits, lecture puis arrêt ; original non importé.
 
@@ -162,11 +162,11 @@ Les scopes d’exploration et de visualisation encadrent les accès aux représe
 
 Validation isolée des sources MediaEngine, SDK et du contrôleur App avec la classe WASAPI existante compilée et une sortie de contrôle injectée : lecteurs simultanés dans un même mélange, reprise après inactivité, format mono 44,1 kHz, conservation du lecteur emprunté, libération après erreur du périphérique, erreur d’un lecteur, annulation et exception d’un rappel d’annulation. Un véritable fichier DFS a été créé, lu et exploré ; les accès de secteurs actualisent la position du lecteur et produisent des fragments non silencieux. La copie immuable et l’absence d’accès anticipé pendant le raccordement ont été contrôlées.
 
-Les fichiers de validation, DLL et image temporaire ont été supprimés. Ce contrôle n’ouvre pas de périphérique audio Windows et ne constitue pas encore une validation du build WPF complet ou de l’écoute native ; ces contrôles restent prévus avec le build de livraison après les sons cassette et séquences rapides.
+Les fichiers de validation, DLL et image temporaire ont été supprimés. Ce contrôle n’ouvre pas de périphérique audio Windows et ne constitue pas encore une validation du build WPF complet ou de l’écoute native ; ces contrôles restent prévus avec le build de livraison après les sons tape et séquences rapides.
 
 ### Magnétophone : originaux disponibles
 
-Les sept WAV de la série BigSoundBank 0565–0571 sont présents sous `artifacts/mechanical-audio-research/recordings/Tape/Unidentified/Cassette-player/`. Les en-têtes confirment du PCM signé 16 bits, mono, 48 000 Hz. Cette série provient du même magnétophone sans référence commerciale identifiée : aucune marque ni modèle précis ne lui est attribué.
+Les sept WAV de la série BigSoundBank 0565–0571 sont présents sous `artifacts/mechanical-audio-research/recordings/Tape/Unidentified/Tape-player/`. Les en-têtes confirment du PCM signé 16 bits, mono, 48 000 Hz. Cette série provient du même magnétophone sans référence commerciale identifiée : aucune marque ni modèle précis ne lui est attribué.
 
 Sources originales : [lecture et arrêt](https://bigsoundbank.com/cassette-player-play-s0565.html), [retour et arrêt](https://bigsoundbank.com/cassette-player-rewind-and-stop-s0566.html), [retour et fin](https://bigsoundbank.com/cassette-player-rewind-and-end-s0567.html), [avance et arrêt](https://bigsoundbank.com/cassette-player-forward-and-stop-s0568.html), [avance et fin](https://bigsoundbank.com/cassette-player-forward-and-end-s0569.html), [lecture et pause](https://bigsoundbank.com/cassette-player-play-and-pause-s0570.html), [ouverture, insertion et fermeture](https://bigsoundbank.com/cassette-player-cassette-s0571.html).
 
@@ -174,7 +174,7 @@ Les originaux sont téléchargés via les formulaires WAV du site. Le découpage
 
 ### Clips réels du magnétophone et contrôles isolés
 
-Dix FLAC externes sont définis sous `Tape/Unidentified/Cassette-player/`. Les démarrages sont propres à chaque commande (lecture, avance rapide et retour) ; les boucles proviennent des parties continues de ces mêmes prises. La jonction de chaque boucle comporte un fondu croisé de 5 ms, sans normalisation ni égalisation. Lecture et enregistrement utilisent le même défilement mécanique ; aucune prise distincte du bouton REC ne figure dans cette source.
+Dix FLAC externes sont définis sous `Tape/Unidentified/Tape-player/`. Les démarrages sont propres à chaque commande (lecture, avance rapide et retour) ; les boucles proviennent des parties continues de ces mêmes prises. La jonction de chaque boucle comporte un fondu croisé de 5 ms, sans normalisation ni égalisation. Lecture et enregistrement utilisent le même défilement mécanique ; aucune prise distincte du bouton REC ne figure dans cette source.
 
 Découpes en secondes dans les originaux : lecture, démarrage 0–0,5 et rotation 1–10 ; arrêt 11,4–12,05. Avance : démarrage 0–0,45 et rotation 0,6–2,4. Retour : démarrage 0–0,5 et rotation 0,7–2,3. Pause : 2,85–3,45. Ouverture/éjection : 0–0,55. Insertion : manipulation 3,25–4,9 puis fermeture 6–6,85, en retirant uniquement l’attente entre ces gestes.
 
@@ -188,7 +188,7 @@ Acorn utilise désormais les durées réelles des commandes, et produit aussi le
 
 Un exécutable temporaire a référencé les DLL livrées, décodé les FLAC via `EmulationSdk.MediaProcessing`, puis alimenté la vraie classe `WasapiAudioOutput` en mono à 44 100 Hz. La sortie était active, son tampon a été vidé et `Dispose` exécuté dans un `finally` a supprimé son tampon. Aucune fenêtre Retro Media Lab n’a été lancée par ce contrôle. Les fichiers et artefacts des deux validations temporaires ont été supprimés. La fidélité subjective au magnétophone précis de l’utilisateur n’est pas démontrée : la référence commerciale du magnétophone enregistré reste inconnue.
 
-Un avertissement XML CS1573 signale la documentation absente du paramètre `MechanicalVolumePercent` du contrat cassette ; aucune erreur de compilation. Les déplacements rapides et les WAV d’écoute définitifs restent à terminer avant de déclarer l’objectif complet.
+Un avertissement XML CS1573 signale la documentation absente du paramètre `MechanicalVolumePercent` du contrat tape ; aucune erreur de compilation. Les déplacements rapides et les WAV d’écoute définitifs restent à terminer avant de déclarer l’objectif complet.
 
 ### Déplacements rapides et résonances des têtes
 

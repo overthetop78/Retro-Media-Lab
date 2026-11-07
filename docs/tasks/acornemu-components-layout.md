@@ -6,7 +6,7 @@
 
   - [ ] Déplacer les composants communs.
 
-    - [x] Déplacer les fichiers `Cpu6502*`, `Cpu6809*`, `Cpu80186*`, `CpuArm26*`, `Via6522*`, `Acia6850*`, `Mc6854*`, `Mos6551*`, `Ns16450*`, `Intel8271*`, `Wd1770*`, `Upd765*`, `Upc82C711*`, `Hd63463*`, `AtaPio*`, `AcornScsi*`, `Crtc6845*`, `Sn76489*` et `TeletextSaa5050*` de `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services` vers `Components/<composant>/Services`. Déplacer leurs constantes/enums/interfaces associés des dossiers racine vers `Components/<composant>/{Constants,Enums,Interfaces}`. Conserver `IAcornMachine`, les transports cassette/réseau et `EmulatorCore` dans leurs dossiers actuels.
+    - [x] Déplacer les fichiers `Cpu6502*`, `Cpu6809*`, `Cpu80186*`, `CpuArm26*`, `Via6522*`, `Acia6850*`, `Mc6854*`, `Mos6551*`, `Ns16450*`, `Intel8271*`, `Wd1770*`, `Upd765*`, `Upc82C711*`, `Hd63463*`, `AtaPio*`, `AcornScsi*`, `Crtc6845*`, `Sn76489*` et `TeletextSaa5050*` de `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services` vers `Components/<composant>/Services`. Déplacer leurs constantes/enums/interfaces associés des dossiers racine vers `Components/<composant>/{Constants,Enums,Interfaces}`. Conserver `IAcornMachine`, les transports tape/réseau et `EmulatorCore` dans leurs dossiers actuels.
 
     - [x] Déplacer les composants MEMC/IOC/VIDC/PCF8583 et leurs constantes/enums depuis `Machines/Archimedes/Common` vers `Components/{Memc,Ioc,Vidc,Pcf8583}` ; conserver les machines, leur clavier et le câblage sous `Machines`.
 
@@ -20,7 +20,7 @@
 
   - [ ] Réduire les fichiers en attente par des commits séparés.
 
-    - [x] Modifier l'index Git et créer un commit des corrections cassette Atom TAP/UEF et du libellé BREAK, avec leurs tests autonomes et les seuls raccordements nécessaires.
+    - [x] Modifier l'index Git et créer un commit des corrections tape Atom TAP/UEF et du libellé BREAK, avec leurs tests autonomes et les seuls raccordements nécessaires.
 
     - [ ] Modifier l'index Git et créer un commit des machines Archimedes/A3000 et de leur infrastructure actuelle, portant explicitement la mention `in-progress`, comme demandé par l'utilisateur ; conserver les limites du suivi et ne pas les déclarer terminées.
 
@@ -28,8 +28,8 @@
 
 
 
-Rangement réalisé : 118 fichiers déplacés, références ajustées dans les sources et tests. Compilation corrigée pour la référence MEMC aux constantes de carte. Contrôle groupé : 972 tests AcornEmu réussis en 16 s. Commit cassette/BREAK : 910a25983.
+Rangement réalisé : 118 fichiers déplacés, références ajustées dans les sources et tests. Compilation corrigée pour la référence MEMC aux constantes de carte. Contrôle groupé : 972 tests AcornEmu réussis en 16 s. Commit tape/BREAK : 910a25983.
 
 
 
-Commits créés : 910a25983 (cassette/BREAK), cbaa7056a (Archimedes/A3000 et rangement, explicitement in-progress), 7ff372e6f (démarrage et contrôleurs installés). Le correctif VIA est préparé séparément après les 972 tests réussis. Les points matériels encore ouverts restent dans le suivi Archimedes et l'audit des composants.
+Commits créés : 910a25983 (tape/BREAK), cbaa7056a (Archimedes/A3000 et rangement, explicitement in-progress), 7ff372e6f (démarrage et contrôleurs installés). Le correctif VIA est préparé séparément après les 972 tests réussis. Les points matériels encore ouverts restent dans le suivi Archimedes et l'audit des composants.

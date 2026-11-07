@@ -6,7 +6,7 @@ namespace RetroMediaLab.Chips.Tests.Custom.Acorn.Electron.ULA;
 
 public sealed class RegisterTests
 {
-    private sealed class CassettePins : IElectronCassettePins
+    private sealed class TapePins : IElectronTapePins
     {
         public bool InputPresent { get; set; }
         public bool InputLevel { get; set; } = true;
@@ -26,10 +26,10 @@ public sealed class RegisterTests
         }
     }
 
-    private static ElectronUla Create(out CassettePins cassette)
+    private static ElectronUla Create(out TapePins tape)
     {
-        cassette = new();
-        return new(new ElectronVideo(_ => 0), cassette);
+        tape = new();
+        return new(new ElectronVideo(_ => 0), tape);
     }
 
     private static void Advance(ElectronUla ula, int clocks)
@@ -37,16 +37,16 @@ public sealed class RegisterTests
         for (var clock = 0; clock < clocks; clock++) ula.Tick();
     }
 
-    private static void RaiseAllCauses(ElectronUla ula, CassettePins cassette)
+    private static void RaiseAllCauses(ElectronUla ula, TapePins tape)
     {
         ula.Read(0);
         ula.Write(7, 4);
         ula.Tick();
-        cassette.InputPresent = true;
+        tape.InputPresent = true;
         ula.Write(7, 0x40);
         Advance(ula, 33000);
         // Follow the carrier with space data; obtain RX Full from actual receive clocks.
-        cassette.HalfPeriod = 832;
+        tape.HalfPeriod = 832;
         var remaining = 20000;
         while ((ula.Read(0) & 0x10) == 0 && --remaining > 0) ula.Tick();
         Assert.True(remaining > 0);
@@ -72,8 +72,8 @@ public sealed class RegisterTests
     [Fact]
     public void AllInterruptMasksGateSummaryWithoutDestroyingAnyCause()
     {
-        var ula = Create(out var cassette);
-        RaiseAllCauses(ula, cassette);
+        var ula = Create(out var tape);
+        RaiseAllCauses(ula, tape);
         for (var mask = 0; mask < 256; mask++)
         {
             ula.Write(0xfe80, (byte)mask);
@@ -91,8 +91,8 @@ public sealed class RegisterTests
     [InlineData(0x80, 0x7c)]
     public void PageRegisterClearsOnlyItsThreeSpecifiedCauses(int clear, int remaining)
     {
-        var ula = Create(out var cassette);
-        RaiseAllCauses(ula, cassette);
+        var ula = Create(out var tape);
+        RaiseAllCauses(ula, tape);
         ula.Write(0, 0x7c);
         ula.Write(5, 10);
         ula.Write(0xfef5, (byte)clear);
@@ -123,9 +123,9 @@ public sealed class RegisterTests
     [Fact]
     public void EveryControlValueUpdatesIndependentMotorCapsAndDisplayFields()
     {
-        var cassette = new CassettePins();
+        var tape = new TapePins();
         var video = new ElectronVideo(_ => 0);
-        var ula = new ElectronUla(video, cassette);
+        var ula = new ElectronUla(video, tape);
         for (var value = 0; value < 256; value++)
         {
             ula.Write(0xfe77, (byte)value);
@@ -133,7 +133,7 @@ public sealed class RegisterTests
             Assert.Equal((value & 128) != 0, ula.CapsLock);
             Assert.Equal((value >> 3) & 7, video.Mode);
             ula.Tick();
-            Assert.Equal(ula.Motor, cassette.Motor);
+            Assert.Equal(ula.Motor, tape.Motor);
             if ((value & 6) != 2) Assert.Equal(0, ula.SoundSample);
         }
     }

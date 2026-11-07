@@ -108,7 +108,7 @@ internal static class ControlErrorPresenter
         EmulationMediaCategory.HardDisk => "Emulation.Storage.HardDisk.Device",
         EmulationMediaCategory.CompactDiscDrive => "Emulation.Storage.CompactDiscs",
         EmulationMediaCategory.CartridgeSlot => "Emulation.Storage.Cartridges",
-        EmulationMediaCategory.CassetteDrive => "Emulation.Storage.Cassettes",
+        EmulationMediaCategory.TapeDrive => "Emulation.Storage.Tapes",
         _ => "Emulation.Storage.Media.Associated"
     });
 
@@ -118,7 +118,7 @@ internal static class ControlErrorPresenter
         EmulationMediaCategory.HardDisk => CommonErrorDialogMediaIcon.HardDisk,
         EmulationMediaCategory.CompactDiscDrive => CommonErrorDialogMediaIcon.CompactDisc,
         EmulationMediaCategory.CartridgeSlot => CommonErrorDialogMediaIcon.Cartridge,
-        EmulationMediaCategory.CassetteDrive => CommonErrorDialogMediaIcon.Cassette,
+        EmulationMediaCategory.TapeDrive => CommonErrorDialogMediaIcon.Tape,
         _ => CommonErrorDialogMediaIcon.Floppy
     };
 

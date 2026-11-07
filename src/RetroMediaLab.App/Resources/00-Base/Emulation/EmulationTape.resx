@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Play</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Pause</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Rewind</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Fast forward</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Record</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Stop</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>No cassette</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Stopped</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Playing</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Paused</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Recording</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>End of tape</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Serial data rate (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Automatic</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Loading mode</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Real-time reading</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Accelerated reading</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Direct loading</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Tape speed</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Fast-forward and rewind speed</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Motor start delay before playback</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Motor start delay before recording</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Enable drive sounds</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Protect against writing</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Sampling frequency (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Audio channels</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Bits per sample</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Signed samples</value></data>
+  <data name="Emulation.Tape.Pcm.LittleEndian"><value>little-endian</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW cassette input profile</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW cassette recording profile</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Loading</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Tape mechanics</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Automatic follows the serial data rate set by the emulated computer software. It does not detect the data rate from the image file.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Mono</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Stereo</value></data>
+</root>

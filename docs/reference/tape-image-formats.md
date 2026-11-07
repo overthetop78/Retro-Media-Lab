@@ -1,7 +1,7 @@
-# Formats d’images de cassettes et bandes
+# Formats d’images de tapes et bandes
 
 Ce document fixe le périmètre des Readers, Writers, décodeurs et encodeurs séquentiels de
-MediaEngine. Une cassette audio numérisée, une image structurée de micro-ordinateur et une image de
+MediaEngine. Une tape audio numérisée, une image structurée de micro-ordinateur et une image de
 bande magnétique à enregistrements sont trois représentations différentes d’un média séquentiel.
 Elles partagent une chronologie et des positions, mais pas les mêmes données ni les mêmes garanties.
 
@@ -11,7 +11,7 @@ Elles partagent une chronologie et des positions, mais pas les mêmes données n
 - Chaque segment conserve sa position, sa durée ou sa longueur, son type connu et ses données
   originales. Un segment inconnu reste conservé et signalé.
 - Une face, une piste, un canal ou un sens de lecture n’est déclaré que si le fichier, le choix de
-  l’utilisateur ou le matériel le fournit. Un fichier mono ne prouve pas qu’une cassette n’avait
+  l’utilisateur ou le matériel le fournit. Un fichier mono ne prouve pas qu’une tape n’avait
   qu’une face ; un fichier stéréo ne prouve pas qu’elle possédait deux pistes logiques.
 - Les canaux audio restent distincts jusqu’au choix explicite d’un décodeur. Aucun mixage n’est
   appliqué silencieusement.
@@ -40,7 +40,7 @@ Elles partagent une chronologie et des positions, mais pas les mêmes données n
 | TZX / CDT / TSX | En-tête `ZXTape!` suivi de `0x1A` et version | Suite de blocs typés : données, impulsions, tonalités, pauses, contrôles et métadonnées | Marqueurs et regroupements possibles ; faces et pistes seulement si des blocs ou un contexte les décrivent | Oui pour TZX 1.20 et blocs inventoriés ; CDT/TSX classés par contexte de machine | Oui en conservant l’ordre et les blocs compris ; inconnus conservés verbatim |
 | Spectrum TAP | Aucun en-tête global ; blocs précédés d’une longueur little-endian 16 bits | Octets de blocs Spectrum avec flag et checksum ; chronologie détaillée absente | Une suite de blocs ; aucune face, piste ou canal | Oui après choix explicite Spectrum et validation de toute la chaîne de longueurs | Oui pour des blocs Spectrum complets ; pas depuis un signal non décodé |
 | Commodore TAP | `C64-TAPE-RAW` ou `C16-TAPE-RAW`, version et plateforme | Durées d’impulsions brutes ; les versions changent l’encodage des longues impulsions | Une suite d’impulsions ; standard vidéo explicite, faces et pistes absentes | Oui pour versions 0, 1 et 2 avec plateforme compatible | Oui à partir d’impulsions représentables par la version choisie |
-| UEF | `UEF File!\0` ou conteneur entier gzip, puis version et chunks | Porteuses, flux asynchrones, bits, pauses, tonalités de sécurité, marqueurs et métadonnées | Des marqueurs peuvent distinguer bandes, faces et positions ; phase et débit peuvent varier | Oui pour UEF 0.10 et chunks cassette inventoriés | Oui en conservant les chunks compris et les chunks inconnus verbatim |
+| UEF | `UEF File!\0` ou conteneur entier gzip, puis version et chunks | Porteuses, flux asynchrones, bits, pauses, tonalités de sécurité, marqueurs et métadonnées | Des marqueurs peuvent distinguer bandes, faces et positions ; phase et débit peuvent varier | Oui pour UEF 0.10 et chunks tape inventoriés | Oui en conservant les chunks compris et les chunks inconnus verbatim |
 | MSX CAS | Séquence d’en-tête `1F A6 DE BA CC 13 7D 74` alignée sur 8 octets ; pas de signature de conteneur globale sûre | Octets déjà décodés et séparateurs d’en-tête ; débits, espaces et longueurs de porteuse absents | Une suite logique ; aucune face, piste, durée ou canal | Oui seulement après contexte MSX explicite ou validation complète des séparateurs | Oui comme suite d’octets MSX ; conversion depuis audio seulement après décodage sans erreur |
 | SIMH TAP | Pas de signature globale ; enregistrements encadrés par deux longueurs 32 bits little-endian et marqueurs réservés | Enregistrements, drapeau d’erreur, marques de bande, espaces d’effacement et fin de média | Ordre avant/arrière permis par les deux longueurs ; pistes physiques et densité absentes | Oui après validation structurelle complète ou sélection explicite | Oui avec enregistrements pairs, marques et indicateurs d’erreur conservés |
 
@@ -89,9 +89,9 @@ les impulsions en blocs et conserve les zones non reconnues.
 ### UEF
 
 UEF commence directement par son en-tête ou est entièrement compressé avec gzip. Les chunks sont
-lus dans l’ordre ; leur version détermine parfois les unités. Les chunks cassette peuvent représenter
+lus dans l’ordre ; leur version détermine parfois les unités. Les chunks tape peuvent représenter
 porteuse, données, bits, silences, fréquence, phase et marqueurs de bandes ou faces. Les autres usages
-de UEF ne classent pas automatiquement le document comme cassette. Le Writer conserve les chunks
+de UEF ne classent pas automatiquement le document comme tape. Le Writer conserve les chunks
 inconnus à l’identique lorsqu’ils ont été lus sans corruption.
 
 ### MSX CAS
@@ -111,7 +111,7 @@ nombre de pistes magnétiques ni les signaux physiques de la bande d’origine.
 
 ## Faces, pistes, canaux et lignes du Visualiseur
 
-- Une cassette audio est affichée sur une chronologie par canal. Une seconde face est une seconde
+- Une tape audio est affichée sur une chronologie par canal. Une seconde face est une seconde
   chronologie seulement si l’utilisateur ou un marqueur de format l’associe explicitement.
 - Une image structurée peut répartir ses segments sur plusieurs lignes pour garder une échelle
   lisible. Ce retour à la ligne est une disposition graphique, pas une nouvelle piste physique.

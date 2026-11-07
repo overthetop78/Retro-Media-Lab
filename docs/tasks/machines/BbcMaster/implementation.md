@@ -19,7 +19,7 @@
   - [x] Coprocesseurs
     - [x] Créer les services Tube et cartes sous `Emulators/AcornEmu/Machines/BbcMaster/` : coprocesseur Turbo 65C102 avec RAM 64 Kio et Master 512 avec 80186 et RAM 512 Kio ; exécuter leurs ROM utilisateur et les échanges Tube.
   - [x] Périphériques des variantes
-    - [x] Modifier `Emulators/AcornEmu/Dictionaries/FloppyDriveModels.cs`, `Constants/StorageConstants.cs`, `Functions/StorageFunctions*.cs` et la fabrique : profil 3½ pouces Compact, premier lecteur permanent, contrôleur Master fixe ; retirer cassette et Winchester des profils qui ne les possèdent pas.
+    - [x] Modifier `Emulators/AcornEmu/Dictionaries/FloppyDriveModels.cs`, `Constants/StorageConstants.cs`, `Functions/StorageFunctions*.cs` et la fabrique : profil 3½ pouces Compact, premier lecteur permanent, contrôleur Master fixe ; retirer tape et Winchester des profils qui ne les possèdent pas.
   - [x] Joystick Compact
     - [x] Créer `Emulators/AcornEmu/Machines/BbcMaster/Common/Services/CompactJoystick.cs` ; modifier les ports et associations Common pour le joystick numérique unique du Compact et raccorder PB0–PB4 du VIA utilisateur.
   - [x] Broches VIA Compact

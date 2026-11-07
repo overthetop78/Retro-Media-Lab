@@ -50,7 +50,7 @@ internal static class ConfigurationValidationFunctions
     internal static bool Supports(Model model, MediaCategory category, IReadOnlyList<EmulationMediaDevice>? devices = null) => category switch
     {
         MediaCategory.Floppy => model.MaximumFloppyDriveCount > 0,
-        MediaCategory.Cassette => model.SupportsCassetteDrive,
+        MediaCategory.Tape => model.SupportsTapeDrive,
         MediaCategory.Cartridge => model.SupportsCartridgeSlot,
         MediaCategory.CompactDisc => model.SupportsCompactDiscDrive,
         MediaCategory.Snapshot => true,

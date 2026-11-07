@@ -72,7 +72,7 @@ internal static class ControllerArtworkFileNames
     internal const string PhilipsCdiGamepad = "philips-cdi-gamepad.png";
     internal const string PhilipsCdiMouse = "philips-cdi-mouse.png";
     internal const string FairchildChannelFController = "fairchild-channel-f-controller.png";
-    internal const string EpochSuperCassetteVisionController = "epoch-super-cassette-vision-controller.png";
+    internal const string EpochSuperTapeVisionController = "epoch-super-tape-vision-controller.png";
     internal const string ColecoController = "colecovision-controller.png";
     internal const string ColecoDrivingController = "coleco-driving-controller.png";
     internal const string ColecoSuperActionController = "coleco-super-action-controller.png";

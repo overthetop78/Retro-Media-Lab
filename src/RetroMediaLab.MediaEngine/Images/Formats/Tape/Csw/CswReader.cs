@@ -55,6 +55,6 @@ public sealed class CswReader : IMediaImageReader
             high = !high; pulseCount++;
         }
         if (version2 && pulseCount != BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(29))) throw new InvalidDataException("The CSW pulse count does not match its header.");
-        return CassettePcmFunctions.Document(context.Source, TapeImageFormatIds.Csw, new(samples.ToArray(), rate));
+        return TapePcmFunctions.Document(context.Source, TapeImageFormatIds.Csw, new(samples.ToArray(), rate));
     }
 }

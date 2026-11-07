@@ -14,7 +14,7 @@ internal static partial class StorageSettingsFunctions
             FloppyOptions: new([new(StorageSettingsFunctionsConstants.FloppyModel, "Emulation.Storage.Floppy.Drive")], string.Empty,
                 string.Join(';', MediaConstants.FloppyExtensions.Select(extension => "*" + extension)), MediaConstants.FloppyExtensions[0], CanCreateBlankMedia: false),
             ConfigurationKind: EmulationStorageConfigurationKind.FloppyDrive),
-        MediaCategory.Cassette => new EmulationMediaDevice(EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, MediaConstants.CassetteExtensions),
+        MediaCategory.Tape => new EmulationMediaDevice(EmulationMediaSlot.Tape0, EmulationMediaType.Tape, MediaConstants.TapeExtensions),
         MediaCategory.HardDisk => new EmulationMediaDevice(EmulationMediaSlot.HardDisk0, EmulationMediaType.HardDisk, MediaConstants.HardDiskExtensions, IsRemovable: false,
             InterfaceChoices: [new(StorageSettingsFunctionsConstants.InterfaceName, string.Empty, StorageSettingsFunctionsConstants.InterfaceName)],
             HardDiskFormats: HardDiskFormats.For(model), ConfigurationKind: EmulationStorageConfigurationKind.HardDiskDrive),

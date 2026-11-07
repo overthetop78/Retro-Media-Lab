@@ -28,14 +28,14 @@ namespace RetroMediaLab.App.Views.Controls.Emulation.Machine;
 
 internal sealed class MachineController : UserControl, IAsyncDisposable
 {
-    internal static readonly EmulationCassetteCommand[] CassetteCommandOrder =
+    internal static readonly EmulationTapeCommand[] TapeCommandOrder =
     [
-        EmulationCassetteCommand.Record,
-        EmulationCassetteCommand.Play,
-        EmulationCassetteCommand.Rewind,
-        EmulationCassetteCommand.FastForward,
-        EmulationCassetteCommand.Stop,
-        EmulationCassetteCommand.Pause
+        EmulationTapeCommand.Record,
+        EmulationTapeCommand.Play,
+        EmulationTapeCommand.Rewind,
+        EmulationTapeCommand.FastForward,
+        EmulationTapeCommand.Stop,
+        EmulationTapeCommand.Pause
     ];
 
     private readonly MachineControllerOptions _options;
@@ -421,27 +421,27 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
             var canOpenMedia = device.IsRemovable && (device.MediaType != EmulationMediaType.MemoryCard
                 || device.ConfigurationKind == EmulationStorageConfigurationKind.MemoryCard);
             var mounted = _session.MountedMedia.FirstOrDefault(media => media.Slot == device.Slot);
-            var cassette = device.MediaType == EmulationMediaType.Cassette ? _session.Machine.CassetteTransport : null;
-            var state = cassette?.State ?? EmulationCassetteState.Empty;
-            var activeOperation = cassette?.ActiveOperation;
+            var tape = device.MediaType == EmulationMediaType.Tape ? _session.Machine.TapeTransport : null;
+            var state = tape?.State ?? EmulationTapeState.Empty;
+            var activeOperation = tape?.ActiveOperation;
             return new MachineViewDevice(device.Slot.ToString(), device.DisplayLabel ?? device.Slot.ToString(),
                 DeviceGlyph(device.MediaType), canOpenMedia, mounted is not null,
                 canOpenMedia ? () => InsertMediaAsync(device) : null,
                 canOpenMedia && mounted is not null ? () => EjectMediaAsync(device) : null,
-                device.MediaType == EmulationMediaType.Cassette ? CassetteStateText(state) : null,
-                device.MediaType == EmulationMediaType.Cassette ? CassetteCommandOrder.Select(command => CassetteCommand(command, cassette, state, activeOperation)).ToArray() : null, device.MediaType);
+                device.MediaType == EmulationMediaType.Tape ? TapeStateText(state) : null,
+                device.MediaType == EmulationMediaType.Tape ? TapeCommandOrder.Select(command => TapeCommand(command, tape, state, activeOperation)).ToArray() : null, device.MediaType);
         }), _options.ShowError, _input.RestoreFocus);
     }
 
-    private MachineViewDeviceCommand CassetteCommand(EmulationCassetteCommand command, IEmulationCassetteTransport? transport, EmulationCassetteState state, EmulationCassetteCommand? activeOperation)
+    private MachineViewDeviceCommand TapeCommand(EmulationTapeCommand command, IEmulationTapeTransport? transport, EmulationTapeState state, EmulationTapeCommand? activeOperation)
     {
         var supported = transport?.AvailableCommands.Contains(command) == true;
-        return new MachineViewDeviceCommand(command, CassetteCommandText(command),
-            CassetteCommandGlyph(command), supported,
-            CassetteTransportPresentationFunctions.IsEnabled(_session.IsPowered, supported, state, activeOperation, command),
-            CassetteTransportPresentationFunctions.IsActive(state, activeOperation, command),
-            CassetteTransportPresentationFunctions.IsBlinking(state, activeOperation, command),
-            () => ExecuteCassetteCommandAsync(command));
+        return new MachineViewDeviceCommand(command, TapeCommandText(command),
+            TapeCommandGlyph(command), supported,
+            TapeTransportPresentationFunctions.IsEnabled(_session.IsPowered, supported, state, activeOperation, command),
+            TapeTransportPresentationFunctions.IsActive(state, activeOperation, command),
+            TapeTransportPresentationFunctions.IsBlinking(state, activeOperation, command),
+            () => ExecuteTapeCommandAsync(command));
     }
 
     private async Task InsertMediaAsync(EmulationMediaDevice device)
@@ -456,7 +456,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         {
             Filter = $"{LocExtension.Get("Emulation.Storage.Media.Associated")} ({string.Join(";", extensions)})|{string.Join(";", extensions)}",
             InitialDirectory = _options.InitialMediaDirectory(device),
-            ShowReadOnly = device.MediaType is EmulationMediaType.Floppy or EmulationMediaType.Cassette,
+            ShowReadOnly = device.MediaType is EmulationMediaType.Floppy or EmulationMediaType.Tape,
             ClientGuid = EmulationMediaDialogFunctions.ClientGuid(_options.ModuleId, _options.MachineId, device.Slot)
         };
         if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) != true) return;
@@ -505,19 +505,19 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         RebuildMediaDevices();
     }
 
-    private async Task ExecuteCassetteCommandAsync(EmulationCassetteCommand command)
+    private async Task ExecuteTapeCommandAsync(EmulationTapeCommand command)
     {
-        var cassette = _session.Machine.CassetteTransport;
-        if (cassette is null) return;
-        if (command == EmulationCassetteCommand.Record)
+        var tape = _session.Machine.TapeTransport;
+        if (tape is null) return;
+        if (command == EmulationTapeCommand.Record)
         {
-            var device = _mediaDevices.FirstOrDefault(device => device.MediaType == EmulationMediaType.Cassette);
+            var device = _mediaDevices.FirstOrDefault(device => device.MediaType == EmulationMediaType.Tape);
             if (device is null) return;
-            var extensions = EmulationSdk.MediaProcessing.CassetteRecordingExtensions.Where(extension => device.AcceptedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase)).ToArray();
+            var extensions = EmulationSdk.MediaProcessing.TapeRecordingExtensions.Where(extension => device.AcceptedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase)).ToArray();
             if (extensions.Length == 0) return;
             var dialog = new SaveFileDialog
             {
-                Title = CassetteCommandText(command),
+                Title = TapeCommandText(command),
                 Filter = string.Join("|", extensions.Select(extension => $"{extension[1..].ToUpperInvariant()} (*{extension})|*{extension}")),
                 AddExtension = true, DefaultExt = extensions[0], OverwritePrompt = true,
                 InitialDirectory = _options.InitialMediaDirectory(device),
@@ -525,55 +525,55 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
             };
             if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) != true) return;
             IReadOnlyDictionary<string, string>? pcm = null;
-            var recordingRate = new EmulationCassettePcmSettings().SampleRate;
+            var recordingRate = new EmulationTapePcmSettings().SampleRate;
             if (Path.GetExtension(dialog.FileName).Equals(EmulationSdk.MediaProcessing.FileExtensions["Raw"], StringComparison.OrdinalIgnoreCase))
             {
-                var defaults = (device.ConfigurationFields ?? []).Concat((device.ConfigurationBlocks ?? []).SelectMany(block => block.Fields)).Where(field => field.Id.StartsWith(EmulationCassettePcmSettings.Prefix, StringComparison.Ordinal) && field.Value is not null).ToDictionary(field => field.Id, field => field.Value!);
-                var profileDialog = new ManagedStorageConfigurationDialog(CassetteCommandText(command), "RAW", _options.ModuleId, EmulationCassettePcmSettings.Describe(defaults), null);
+                var defaults = (device.ConfigurationFields ?? []).Concat((device.ConfigurationBlocks ?? []).SelectMany(block => block.Fields)).Where(field => field.Id.StartsWith(EmulationTapePcmSettings.Prefix, StringComparison.Ordinal) && field.Value is not null).ToDictionary(field => field.Id, field => field.Value!);
+                var profileDialog = new ManagedStorageConfigurationDialog(TapeCommandText(command), "RAW", _options.ModuleId, EmulationTapePcmSettings.Describe(defaults), null);
                 try
                 {
                     if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), profileDialog) != true) return;
-                    var profile = EmulationCassettePcmSettings.Read(profileDialog.Options);
+                    var profile = EmulationTapePcmSettings.Read(profileDialog.Options);
                     pcm = profile.ToParameters(); recordingRate = profile.SampleRate;
                 }
                 finally { WpfWindowNavigationService.CloseOwnedDialog(profileDialog); }
             }
-            var creation = new MediaCreationDialog(Window.GetWindow(this)!, CassetteCommandText(command), dialog.FileName,
-                () => EmulationSdk.MediaProcessing.WriteCassetteAsync(dialog.FileName, new EmulationCassetteSignal(ReadOnlyMemory<short>.Empty, recordingRate), parameters: pcm));
+            var creation = new MediaCreationDialog(Window.GetWindow(this)!, TapeCommandText(command), dialog.FileName,
+                () => EmulationSdk.MediaProcessing.WriteTapeAsync(dialog.FileName, new EmulationTapeSignal(ReadOnlyMemory<short>.Empty, recordingRate), parameters: pcm));
             try { if (WpfWindowNavigationService.ShowOwnedDialog(Window.GetWindow(this), creation) != true) return; }
             finally { WpfWindowNavigationService.CloseOwnedDialog(creation); }
-            if (cassette.AvailableCommands.Contains(EmulationCassetteCommand.Stop)) await cassette.ExecuteAsync(EmulationCassetteCommand.Stop);
+            if (tape.AvailableCommands.Contains(EmulationTapeCommand.Stop)) await tape.ExecuteAsync(EmulationTapeCommand.Stop);
             var current = _session.MountedMedia.FirstOrDefault(media => media.Slot == device.Slot);
             var profileChanged = pcm is not null && (current?.Parameters is null || pcm.Any(pair => !current.Parameters.TryGetValue(pair.Key, out var value) || value != pair.Value));
             if (current is null || profileChanged || !Path.GetFullPath(current.Path).Equals(Path.GetFullPath(dialog.FileName), StringComparison.OrdinalIgnoreCase))
-                await _session.InsertAsync(new EmulationMedia(dialog.FileName, device.Slot, EmulationMediaType.Cassette, new FileInfo(dialog.FileName).IsReadOnly, true) { Parameters = pcm }, device.RequiresMachineRecreation);
-            cassette = _session.Machine.CassetteTransport;
-            if (cassette is null) return;
+                await _session.InsertAsync(new EmulationMedia(dialog.FileName, device.Slot, EmulationMediaType.Tape, new FileInfo(dialog.FileName).IsReadOnly, true) { Parameters = pcm }, device.RequiresMachineRecreation);
+            tape = _session.Machine.TapeTransport;
+            if (tape is null) return;
             RebuildMediaDevices();
         }
-        await cassette.ExecuteAsync(command);
-        UpdateCassetteTransport(cassette);
+        await tape.ExecuteAsync(command);
+        UpdateTapeTransport(tape);
     }
 
-    private void UpdateCassetteTransport(IEmulationCassetteTransport cassette)
+    private void UpdateTapeTransport(IEmulationTapeTransport tape)
     {
-        var key = EmulationMediaSlot.Cassette0.ToString();
-        _view.SetDeviceStatus(key, CassetteStateText(cassette.State));
-        _view.SetCassetteTransport(key, cassette.State, cassette.ActiveOperation, cassette.AvailableCommands, _session.IsPowered);
+        var key = EmulationMediaSlot.Tape0.ToString();
+        _view.SetDeviceStatus(key, TapeStateText(tape.State));
+        _view.SetTapeTransport(key, tape.State, tape.ActiveOperation, tape.AvailableCommands, _session.IsPowered);
     }
 
-    private static string CassetteStateText(EmulationCassetteState state) => LocExtension.Get($"Emulation.Cassette.State.{state}");
+    private static string TapeStateText(EmulationTapeState state) => LocExtension.Get($"Emulation.Tape.State.{state}");
 
-    private static string CassetteCommandText(EmulationCassetteCommand command) => LocExtension.Get($"Emulation.Cassette.Command.{command}");
+    private static string TapeCommandText(EmulationTapeCommand command) => LocExtension.Get($"Emulation.Tape.Command.{command}");
 
-    private static string CassetteCommandGlyph(EmulationCassetteCommand command) => command switch
+    private static string TapeCommandGlyph(EmulationTapeCommand command) => command switch
     {
-        EmulationCassetteCommand.Play => "▶",
-        EmulationCassetteCommand.Stop => "■",
-        EmulationCassetteCommand.Pause => "Ⅱ",
-        EmulationCassetteCommand.Rewind => "⏪",
-        EmulationCassetteCommand.FastForward => "⏩",
-        EmulationCassetteCommand.Record => "●",
+        EmulationTapeCommand.Play => "▶",
+        EmulationTapeCommand.Stop => "■",
+        EmulationTapeCommand.Pause => "Ⅱ",
+        EmulationTapeCommand.Rewind => "⏪",
+        EmulationTapeCommand.FastForward => "⏩",
+        EmulationTapeCommand.Record => "●",
         _ => "?"
     };
 
@@ -583,7 +583,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         EmulationMediaType.HardDisk => MachinePresentationConstants.HardDiskGlyph,
         EmulationMediaType.CompactDisc => MachinePresentationConstants.CompactDiscGlyph,
         EmulationMediaType.Cartridge => MachinePresentationConstants.CartridgeGlyph,
-        EmulationMediaType.Cassette => MachinePresentationConstants.CassetteGlyph,
+        EmulationMediaType.Tape => MachinePresentationConstants.TapeGlyph,
         EmulationMediaType.MemoryCard => MachinePresentationConstants.MemoryCardGlyph,
         _ => MachinePresentationConstants.FloppyGlyph
     };
@@ -624,7 +624,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         MachinePresentationFunctions.UpdateStatus(_commands.Presentation, frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond, _video.ExecutionRate);
         var now = DateTime.UtcNow;
         var activityStates = _session.Machine.Runtime.MediaActivity;
-        if (_session.Machine.CassetteTransport is { } cassette) UpdateCassetteTransport(cassette);
+        if (_session.Machine.TapeTransport is { } tape) UpdateTapeTransport(tape);
         foreach (var device in _mediaDevices)
         {
             if (!_view.DeviceLeds.TryGetValue(device.Slot.ToString(), out var led)) continue;

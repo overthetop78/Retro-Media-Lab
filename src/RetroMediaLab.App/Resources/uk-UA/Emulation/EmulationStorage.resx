@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Розмір або геометрія диска неправильні.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Одразу резервує фізичне місце; інакше образ зростає під час запису.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Сектори</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Касета</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Касета</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Картридж</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Компакт-диски</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Показувати активність дисководів на екрані емулятора</value></data>

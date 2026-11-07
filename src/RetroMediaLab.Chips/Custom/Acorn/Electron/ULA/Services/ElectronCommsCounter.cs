@@ -2,7 +2,7 @@ using C = RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Constants.ElectronUlaCon
 
 namespace RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Services;
 
-/// <summary>Compteur numérique partagé son/cassette, avancé entre ses frontières.</summary>
+/// <summary>Compteur numérique partagé son/tape, avancé entre ses frontières.</summary>
 /// <remarks>FE06 change PD sans effacer CNT ; FE07 choisit sa source sans réinitialisation.
 /// Le modèle TX reprend les sauts du compteur ElectronFpga ; le son conserve PD+1.</remarks>
 internal sealed class ElectronCommsCounter

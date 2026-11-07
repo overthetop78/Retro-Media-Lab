@@ -77,14 +77,14 @@ Réutilisation des lecteurs Amiga, Apple, Commodore et DEC : comparaison Roslyn 
 COM3 ouvert avec le client natif ; firmware 1.6 ; fréquence 72000000 Hz. Transport fermé après DisposeAsync, sans sélection de lecteur, moteur ou accès aux secteurs.
 Fixtures temporaires : aucun dossier retromedialab-read-fixes-* restant ; fichier TemporaryPhysicalReadFixTests.cs supprimé après les vérifications 117 puis 24 tests. Reconstruire le projet de tests sans cette fixture avant de cocher le nettoyage.
 Validation finale : 192 couples de lecture proposés dans ImageFormatWorkspace sans capacités gw, tous raccordés au registre natif. 94 profils sectoriels supplémentaires écrits et relus intégralement dans les essais temporaires ; captures synthétiques Amiga, FM/MFM mixte, Apple II, HP, Data General, Micropolis et Northstar vérifiées. Sortie HFE réelle avec jitter et trois révolutions vérifiée : une révolution est quantifiée en cellules uniformes, conformément aux limites du conteneur ; SCP conserve les révolutions de flux.
-Résultats : 117 tests combinés puis 24 tests HFE/flux réussis avant suppression des essais temporaires ; reconstruction sans ces essais et 102 tests ciblés réussis ensuite. Quatre régressions de codecs et quatre sélections de cassette autonomes en mémoire conservées. COM3 et firmware validés avec le client natif, fermeture confirmée ; lecture complète de disquette à retester par utilisateur.
+Résultats : 117 tests combinés puis 24 tests HFE/flux réussis avant suppression des essais temporaires ; reconstruction sans ces essais et 102 tests ciblés réussis ensuite. Quatre régressions de codecs et quatre sélections de tape autonomes en mémoire conservées. COM3 et firmware validés avec le client natif, fermeture confirmée ; lecture complète de disquette à retester par utilisateur.
 - [x] Préserver les deux formats bruts du catalogue intégré
   - [x] Corriger le filtrage de capacité signalé par le comptage final
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Images/Formats/CapabilityAwareImageFormatCatalog.cs` : conserver les conteneurs raw.scp et raw.hfe, qui ne nécessitent aucun identifiant --format Greaseweazle.
     - [x] Modifier `tests/RetroMediaLab.Tests/Media/ImageFormatCatalogReuseTests.cs` : vérifier en mémoire que les deux conteneurs bruts restent disponibles lorsque les capacités sont connues.
     - [x] Modifier `docs/tasks/physical-disk-reading-fixes.md` : enregistrer le nouveau comptage et les tests de régression, sans supprimer de choix.
 Contrôle du comptage : le filtre historique excluait raw.scp/raw.hfe dès que les capacités étaient connues, car ces conteneurs ne passent aucun --format à gw. Filtre corrigé : 194 couples natifs, y compris les deux conteneurs bruts intégrés, tous présents dans les destinations internes. Aucun format retiré.
-Régression finale des deux conteneurs bruts : 29 tests catalogue/codecs/cassette réussis, App/SDK/23 modules référencés compilés ; aucun test temporaire restant.
+Régression finale des deux conteneurs bruts : 29 tests catalogue/codecs/tape réussis, App/SDK/23 modules référencés compilés ; aucun test temporaire restant.
 
 - [x] Nettoyer les espaces des définitions importées
   - [x] Préparer le commit du bloc complet

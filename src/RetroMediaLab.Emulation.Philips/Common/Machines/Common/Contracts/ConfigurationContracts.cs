@@ -4,7 +4,7 @@ namespace RetroMediaLab.Emulation.Philips.Common.Machines.Common.Contracts;
 
 
 
-public sealed record FolderConfiguration(string? Shared = null, string? Cartridges = null, string? Saves = null, string? States = null, string? Captures = null, string? Cassettes = null, string? CompactDiscs = null);
+public sealed record FolderConfiguration(string? Shared = null, string? Cartridges = null, string? Saves = null, string? States = null, string? Captures = null, string? Tapes = null, string? CompactDiscs = null);
 
 public sealed record MachineConfiguration : IEmulationConfiguration
 {

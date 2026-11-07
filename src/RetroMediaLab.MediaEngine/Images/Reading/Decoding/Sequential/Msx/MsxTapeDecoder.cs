@@ -36,7 +36,7 @@ public sealed class MsxTapeDecoder : ISequentialMediaDecoder
     public async Task<SequentialDecodeResult> DecodeAsync(MediaImageDocument document, string? machineId = null, CancellationToken cancellationToken = default)
     {
         if (!CanDecode(document, machineId))
-            throw new InvalidDataException("The media document has no explicit MSX cassette context.");
+            throw new InvalidDataException("The media document has no explicit MSX tape context.");
         var representation = (SequentialMediaImageRepresentation)document.Representation;
         if (document.FormatId.Equals(TapeImageFormatIds.MsxCas, StringComparison.OrdinalIgnoreCase))
             return await DecodeCasAsync(representation, cancellationToken).ConfigureAwait(false);

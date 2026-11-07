@@ -12,7 +12,7 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuElectronTests
 {
     [Fact]
-    public void CassetteOnlyBoardDoesNotRequestUnsupportedDiskConfiguration()
+    public void TapeOnlyBoardDoesNotRequestUnsupportedDiskConfiguration()
     {
         RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces.IAcornMachine machine =
             new ElectronMachine(new byte[16384], new byte[16384]);
@@ -23,7 +23,7 @@ public sealed class AcornEmuElectronTests
             machine.RunFrame();
             Assert.NotEmpty(machine.DrainAudio());
         }
-        finally { machine.EjectCassette(); }
+        finally { machine.EjectTape(); }
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public sealed class AcornEmuElectronTests
     [Fact]
     public void PowerOnStatusIsReadOnceAndClockIrqRequiresItsMask()
     {
-        var ula = new ElectronUla(new ElectronVideo(_ => 0), new AnalogCassette(2000000));
+        var ula = new ElectronUla(new ElectronVideo(_ => 0), new AnalogTape(2000000));
         Assert.Equal(0x82, ula.Read(0));
         Assert.Equal(0x80, ula.Read(0));
         for (var tick = 0; tick < 12800; tick++) ula.Tick();
@@ -56,7 +56,7 @@ public sealed class AcornEmuElectronTests
     [Fact]
     public void TransmitterBecomesReadyAtStopRatherThanOnDataRegisterWrite()
     {
-        var ula = new ElectronUla(new ElectronVideo(_ => 0), new AnalogCassette(2000000));
+        var ula = new ElectronUla(new ElectronVideo(_ => 0), new AnalogTape(2000000));
         ula.Write(7, 4);
         ula.Tick();
         Assert.NotEqual(0, ula.Read(0) & 0x20);
@@ -73,7 +73,7 @@ public sealed class AcornEmuElectronTests
     [Fact]
     public void InternalRomPagesMustBeEscapedViaAnExternalHighPage()
     {
-        var ula = new ElectronUla(new ElectronVideo(_ => 0), new AnalogCassette(2000000));
+        var ula = new ElectronUla(new ElectronVideo(_ => 0), new AnalogTape(2000000));
         ula.Write(5, 10);
         ula.Write(5, 1);
         Assert.Equal(10, ula.RomPage);
@@ -100,16 +100,16 @@ public sealed class AcornEmuElectronTests
     [Fact]
     public void MotorStopsTapePositionWithoutBlockingManualRewind()
     {
-        var tape = new AnalogCassette(2000000);
+        var tape = new AnalogTape(2000000);
         tape.Insert(new(new short[4800], 48000), false);
         try
         {
-            tape.ExecuteCassette(EmulationCassetteCommand.Play);
+            tape.ExecuteTape(EmulationTapeCommand.Play);
             for (var tick = 0; tick < 20000; tick++) tape.Tick(false);
             Assert.Equal(0, tape.Position);
             for (var tick = 0; tick < 20000; tick++) tape.Tick();
             Assert.Equal(480, tape.Position);
-            tape.ExecuteCassette(EmulationCassetteCommand.Rewind);
+            tape.ExecuteTape(EmulationTapeCommand.Rewind);
             for (var tick = 0; tick < 20000; tick++) tape.Tick(false);
             Assert.Equal(0, tape.Position);
         }
@@ -123,7 +123,7 @@ public sealed class AcornEmuElectronTests
         Assert.Equal(Emulator.AcornEmu, configuration.Core);
         Assert.Equal(MachineFamily.AcornElectron, configuration.Family);
         Assert.Equal(32, ElectronFunctions.MemoryKib(configuration));
-        Assert.Equal(EmulationMediaSlot.Cassette0, Assert.Single(ElectronFunctions.Devices(configuration)).Slot);
+        Assert.Equal(EmulationMediaSlot.Tape0, Assert.Single(ElectronFunctions.Devices(configuration)).Slot);
         Assert.Equal(2, ElectronFunctions.Slots(configuration).Count);
         Assert.Equal(3, ElectronFunctions.Describe(configuration).Count);
     }
@@ -178,7 +178,7 @@ public sealed class AcornEmuElectronTests
         finally
         {
             ula.CpuClockChanged = null;
-            machine.EjectCassette();
+            machine.EjectTape();
             machine.Reset(true);
         }
     }
@@ -201,7 +201,7 @@ public sealed class AcornEmuElectronTests
         }
         finally
         {
-            machine.EjectCassette();
+            machine.EjectTape();
             machine.Reset(true);
         }
     }
@@ -239,7 +239,7 @@ public sealed class AcornEmuElectronTests
                 }
             }
         }
-        finally { machine.EjectCassette(); machine.Reset(true); }
+        finally { machine.EjectTape(); machine.Reset(true); }
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public sealed class AcornEmuElectronTests
             Assert.Equal(42, machine.Read(0x0203));
             Assert.Equal(43, machine.Read(0x0204));
         }
-        finally { machine.EjectCassette(); machine.Reset(true); }
+        finally { machine.EjectTape(); machine.Reset(true); }
     }
 
     [Fact]
@@ -288,7 +288,7 @@ public sealed class AcornEmuElectronTests
             Assert.Equal(Clocks(machine) % 128, (long)video.Clock);
             Assert.False(video.DisplayFetching);
         }
-        finally { machine.EjectCassette(); machine.Reset(true); }
+        finally { machine.EjectTape(); machine.Reset(true); }
     }
 
     [Fact]
@@ -315,12 +315,12 @@ public sealed class AcornEmuElectronTests
             Assert.Equal(0, video.Line);
             Assert.Equal(0, video.Clock);
         }
-        finally { machine.EjectCassette(); machine.Reset(true); }
+        finally { machine.EjectTape(); machine.Reset(true); }
     }
 
 
     [Fact]
-    public void NativeBreakHoldsCpuUntilReleaseWithoutStoppingVideoOrCassette()
+    public void NativeBreakHoldsCpuUntilReleaseWithoutStoppingVideoOrTape()
     {
         var rom = new byte[16384];
         // INC $0200 / JMP $C000. No MOS register writes during reset or restart.
@@ -330,13 +330,13 @@ public sealed class AcornEmuElectronTests
         var machine = new ElectronMachine(rom, rom);
         try
         {
-            machine.InsertCassette(new EmulationCassetteSignal(new short[48000], 48000));
-            machine.CassetteTransport.ExecuteCassette(EmulationCassetteCommand.Play);
+            machine.InsertTape(new EmulationTapeSignal(new short[48000], 48000));
+            machine.TapeTransport.ExecuteTape(EmulationTapeCommand.Play);
             machine.Write(0xfe07, 0x62);
             machine.RunFrame();
             var cpu = Chip<RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services.Cpu6502>(machine, "_cpu");
             var video = Chip<ElectronVideo>(machine, "_video");
-            var tape = Chip<AnalogCassette>(machine, "_cassette");
+            var tape = Chip<AnalogTape>(machine, "_tape");
             var program = cpu.PC;
             var stack = cpu.S;
             var data = machine.Read(0x0200);
@@ -363,7 +363,7 @@ public sealed class AcornEmuElectronTests
             cpu.Step();
             Assert.Equal((byte)(data + 1), machine.Read(0x0200));
         }
-        finally { machine.EjectCassette(); machine.Reset(true); }
+        finally { machine.EjectTape(); machine.Reset(true); }
     }
 
     [Fact]
@@ -377,8 +377,8 @@ public sealed class AcornEmuElectronTests
         {
             foreach (var board in new[] { machine, reference })
             {
-                board.InsertCassette(new EmulationCassetteSignal(ReadOnlyMemory<short>.Empty, 48000), true);
-                board.CassetteTransport.ExecuteCassette(EmulationCassetteCommand.Record);
+                board.InsertTape(new EmulationTapeSignal(ReadOnlyMemory<short>.Empty, 48000), true);
+                board.TapeTransport.ExecuteTape(EmulationTapeCommand.Record);
                 board.Write(0xfe00, 0x7c);
                 board.Read(0xfe00);
                 board.Write(0xfe05, 12);
@@ -400,14 +400,14 @@ public sealed class AcornEmuElectronTests
                 reference.Tick();
                 Assert.Equal(referenceUla.Read(0), actualUla.Read(0));
             }
-            Assert.Equal(reference.RecordedCassette.Samples.ToArray(), machine.RecordedCassette.Samples.ToArray());
+            Assert.Equal(reference.RecordedTape.Samples.ToArray(), machine.RecordedTape.Samples.ToArray());
             Assert.Equal(reference.DrainAudio(), machine.DrainAudio());
         }
         finally
         {
-            machine.EjectCassette();
+            machine.EjectTape();
             machine.Reset(true);
-            reference.EjectCassette();
+            reference.EjectTape();
             reference.Reset(true);
         }
     }
@@ -415,20 +415,20 @@ public sealed class AcornEmuElectronTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void NativeCassetteRecordsUlaWaveformAndReceivesItsPcmAgain(bool zeroCrossings)
+    public void NativeTapeRecordsUlaWaveformAndReceivesItsPcmAgain(bool zeroCrossings)
     {
         var machine = new ElectronMachine(new byte[16384], new byte[16384]);
         try
         {
-            machine.InsertCassette(new EmulationCassetteSignal(ReadOnlyMemory<short>.Empty, 48000), true);
-            machine.CassetteTransport.ExecuteCassette(EmulationCassetteCommand.Record);
+            machine.InsertTape(new EmulationTapeSignal(ReadOnlyMemory<short>.Empty, 48000), true);
+            machine.TapeTransport.ExecuteTape(EmulationTapeCommand.Record);
             machine.Write(0xfe07, 0x44);
             for (var clock = 0; clock < 20 * 1664; clock++) machine.Tick();
             machine.Write(0xfe04, 0xa5);
             for (var clock = 0; clock < 22 * 1664; clock++) machine.Tick();
-            machine.CassetteTransport.ExecuteCassette(EmulationCassetteCommand.Stop);
-            Assert.True(machine.CassetteHasChanges);
-            var signal = machine.RecordedCassette;
+            machine.TapeTransport.ExecuteTape(EmulationTapeCommand.Stop);
+            Assert.True(machine.TapeHasChanges);
+            var signal = machine.RecordedTape;
             Assert.True(signal.Samples.Length > 1000);
             Assert.Contains((short)16000, signal.Samples.ToArray());
             Assert.Contains((short)-16000, signal.Samples.ToArray());
@@ -437,12 +437,12 @@ public sealed class AcornEmuElectronTests
                 var samples = signal.Samples.ToArray();
                 for (var sample = samples.Length - 1; sample > 0; sample--)
                     if (samples[sample] != samples[sample - 1]) samples[sample] = 0;
-                signal = new EmulationCassetteSignal(samples, signal.SampleRate);
+                signal = new EmulationTapeSignal(samples, signal.SampleRate);
             }
-            machine.InsertCassette(signal);
+            machine.InsertTape(signal);
             machine.Write(0xfe07, 0x40);
             machine.Read(0xfe04);
-            machine.CassetteTransport.ExecuteCassette(EmulationCassetteCommand.Play);
+            machine.TapeTransport.ExecuteTape(EmulationTapeCommand.Play);
             var remaining = signal.Samples.Length * 2000000L / signal.SampleRate + 100;
             // RX can already be partway through a frame after output mode. Synchronize
             // on the recorded carrier before treating RX Full as the recorded byte.
@@ -453,7 +453,7 @@ public sealed class AcornEmuElectronTests
             Assert.True(remaining > 0);
             Assert.Equal(0xa5, machine.Read(0xfe04));
         }
-        finally { machine.EjectCassette(); machine.Reset(true); }
+        finally { machine.EjectTape(); machine.Reset(true); }
     }
 
 }

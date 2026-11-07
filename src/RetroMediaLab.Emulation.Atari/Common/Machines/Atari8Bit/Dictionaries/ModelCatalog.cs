@@ -7,7 +7,7 @@ public static class Atari8BitModelCatalog
     private static readonly IReadOnlyList<HardwareRegion> TelevisionRegions = HardwareModelFunctions.Values(HardwareRegion.Ntsc, HardwareRegion.Pal);
     private static readonly IReadOnlyList<HardwareVideoCapability> Video = HardwareModelFunctions.Values(HardwareVideoCapability.Antic, HardwareVideoCapability.Ctia, HardwareVideoCapability.Gtia);
     private static readonly IReadOnlyList<HardwareAudioCapability> Audio = HardwareModelFunctions.Values(HardwareAudioCapability.Pokey);
-    private static readonly IReadOnlyList<HardwareStorageCapability> Storage = HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge);
+    private static readonly IReadOnlyList<HardwareStorageCapability> Storage = HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape, HardwareStorageCapability.Cartridge);
     private static readonly IReadOnlyList<HardwarePortDefinition> FourPortComputerPorts =
         HardwareModelFunctions.Values(
             new HardwarePortDefinition(HardwarePortCapability.Keyboard, Atari8BitModelConstants.OnePort),
@@ -21,7 +21,7 @@ public static class Atari8BitModelCatalog
     private static readonly IReadOnlyList<FirmwareCategory> Atari400And800Firmware = HardwareModelFunctions.Values(FirmwareCategory.AtariOsA, FirmwareCategory.AtariOsB, FirmwareCategory.AtariBasic);
     private static readonly IReadOnlyList<FirmwareCategory> Atari400Firmware = HardwareModelFunctions.Values(FirmwareCategory.AtariSystemOs);
     private static readonly IReadOnlyList<FirmwareCategory> XlXeFirmware = HardwareModelFunctions.Values(FirmwareCategory.AtariXlOs, FirmwareCategory.AtariBasic);
-    private static readonly IReadOnlyList<MediaCategory> Media = HardwareModelFunctions.Values(MediaCategory.Floppy, MediaCategory.Cassette, MediaCategory.Cartridge);
+    private static readonly IReadOnlyList<MediaCategory> Media = HardwareModelFunctions.Values(MediaCategory.Floppy, MediaCategory.Tape, MediaCategory.Cartridge);
 
     public static IReadOnlyList<HardwareModelDefinition> All { get; } =
         HardwareModelFunctions.Values(

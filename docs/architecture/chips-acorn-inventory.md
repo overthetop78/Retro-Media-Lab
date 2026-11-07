@@ -51,7 +51,7 @@ Les chemins concernent les implémentations existantes ; leur déplacement ne si
 
 ## Frontières conservées
 
-- Les services de transport cassette et réseau hôte, les conteneurs de médias, les cartes mémoire, la carte mère et le décodage des adresses restent dans le module.
+- Les services de transport tape et réseau hôte, les conteneurs de médias, les cartes mémoire, la carte mère et le décodage des adresses restent dans le module.
 - Le rendu sept segments du panneau System et les tables de correspondance du clavier sont des présentations/câblages de machine, pas des puces supplémentaires.
 - Le contrôleur de protocole du clavier Archimedes sera séparé de sa traduction des touches hôtes et extrait également.
 - Les éléments ULA BBC encore combinés avec le balayage constituent un circuit vidéo personnalisé ; ils sont rangés sous Video, sans prétendre émuler une nouvelle puce distincte.
@@ -64,7 +64,7 @@ Les chemins concernent les implémentations existantes ; leur déplacement ne si
 - Bus CPU et signaux électriques : contrats propres à Chips ; les classes de machine les implémentent.
 - Disques : broches/secteurs/mécanique consommés par les contrôleurs dans Chips ; propriété, ouverture, conversion et persistance restent dans Emulation.
 - ADC : valeurs électriques des canaux dans Chips ; conversion des manettes hôtes et boutons de tir dans Acorn.
-- ULA Electron : broches cassette dans Chips ; magnétophone et réglages utilisateur dans Acorn/Emulation.
+- ULA Electron : broches tape dans Chips ; magnétophone et réglages utilisateur dans Acorn/Emulation.
 - Constantes matérielles utilisées par les puces : déplacer leur définition propriétaire ; conserver les configurations des machines et leurs références côté module.
 
 ## Validation

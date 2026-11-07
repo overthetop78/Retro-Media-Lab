@@ -28,7 +28,7 @@
 - 6512 NMOS : même moteur d’instructions que le 6502 ; décodage B+ de FE30–FE37, 20 Kio Shadow, 12 Kio privés et quatre banques RAM optionnelles.
 - WD1770 fixe, lecteur 0 permanent, second lecteur optionnel. Images MOS/BASIC combinées de 32 Kio et DFS externes choisies par l’utilisateur. Aucune ROM intégrée ou installée.
 - Cinq supports 8/16/32 Kio ; découpage des puces et miroirs testés. Libellés traduits avec Argos ; français relu et noms invariants dans 00-Base.
-- Le constat initial d'absence de démarrage ROM réel est dépassé : les démarrages MOS/BASIC, catalogues et chargements SSD, cassettes UEF/enregistrements, formatages DFS et écritures sur deux lecteurs/deux faces des B+ 64/128 sont consignés dans [l'état BBC Micro](../../../machines/AcornBBCMicro.md). Ce document précise la portée de chaque preuve et les essais ADFS du B+ 64. Les essais de carte ne remplacent pas la validation finale dans l'application ; voir [la finalisation](finalisation.md).
+- Le constat initial d'absence de démarrage ROM réel est dépassé : les démarrages MOS/BASIC, catalogues et chargements SSD, tapes UEF/enregistrements, formatages DFS et écritures sur deux lecteurs/deux faces des B+ 64/128 sont consignés dans [l'état BBC Micro](../../../machines/AcornBBCMicro.md). Ce document précise la portée de chaque preuve et les essais ADFS du B+ 64. Les essais de carte ne remplacent pas la validation finale dans l'application ; voir [la finalisation](finalisation.md).
 
 ## Références croisées
 

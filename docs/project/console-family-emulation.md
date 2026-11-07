@@ -286,11 +286,11 @@ jamais une feuille terminale.
     - [ ] Créer/modifier `src/RetroMediaLab.Emulation.Nec/Emulators/<cœur>/` directement sans `Core`.
   - [ ] Modifier `tests/RetroMediaLab.Tests/Architecture/ConsoleFamilyModuleTests.cs` pour les machines et leurs médias.
 
-## 10. Cassette, flux et progressions communes
+## 10. Tape, flux et progressions communes
 
-- [ ] Ajouter les flux audio/cassette dans MediaEngine.
+- [ ] Ajouter les flux audio/tape dans MediaEngine.
   - [ ] Décoder seulement les formats disponibles.
-    - [ ] Modifier `src/RetroMediaLab.MediaEngine/Images/Formats/Cassette/` pour CDT, TAP, TZX, TSX, VOC, WAV, FLAC, MP3, AAC, M4A et RAW audio réellement décodables.
+    - [ ] Modifier `src/RetroMediaLab.MediaEngine/Images/Formats/Tape/` pour CDT, TAP, TZX, TSX, VOC, WAV, FLAC, MP3, AAC, M4A et RAW audio réellement décodables.
     - [ ] Modifier `src/RetroMediaLab.MediaEngine/Images/Formats/Flux/` pour SCP, HxCSTREAM et KryoFlux en conservant leurs révolutions/pistes réelles.
   - [ ] Afficher les blocs.
     - [ ] Modifier les représentations existantes dans `src/RetroMediaLab.MediaEngine/Images/` pour découper la bande et publier le nombre réel de blocs.
@@ -599,7 +599,7 @@ les tests et le comportement complet correspondant.
   - [x] Remplacer les constantes Sega résiduelles dans `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Constants/ModelConstants.cs` par les identifiants et caractéristiques CPU, fréquence, vidéo et audio des PlayStation, PSP, Vita, PS3, PS4 et PS5.
   - [x] Modifier `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs` et `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs` pour publier ces modèles avec leur RAM réelle, leurs périphériques intégrés et leurs composants invariants.
 - [x] Exposer uniquement les supports Sony déjà décodables par MediaEngine.
-  - [x] Modifier `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Constants/StorageConstants.cs` pour déclarer les extensions optiques PS1/PS2 et les images UMD PSP à partir des constantes MediaEngine, sans DSK, cassette, cartouche CPR, GDI ou CDI Sega.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Constants/StorageConstants.cs` pour déclarer les extensions optiques PS1/PS2 et les images UMD PSP à partir des constantes MediaEngine, sans DSK, tape, cartouche CPR, GDI ou CDI Sega.
   - [x] Modifier `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Functions/StorageFunctions.cs` pour publier uniquement le lecteur optique permanent des machines prises en charge et refuser les lecteurs absents du modèle.
 - [x] Afficher les composants Sony sans réglages inventés.
   - [x] Modifier `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Constants/SettingsConstants.cs`, `SettingsDescriptionTextConstants.cs`, `SettingsHelpDictionary.cs` et `SettingsFunctions.cs` pour rendre CPU, fréquence, vidéo, audio, RAM et ROM système informatifs, conserver seulement les réglages audio communs et supprimer vidéo personnalisée, son de disquette et extensions RAM génériques.
@@ -623,7 +623,7 @@ les tests et le comportement complet correspondant.
   - [x] Modifier `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Constants/ModelConstants.cs`, `ModelContracts.cs` et `ModelCatalog.cs` pour décrire Xbox et Xbox 360 avec leurs CPU, fréquence, GPU, audio, RAM, ROM système et ports réels.
   - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/ConsoleFamilyModuleTests.cs` pour vérifier les modèles, leurs composants invariants et l'absence de constantes Sega, Amstrad ou Nintendo.
 - [x] Exposer seulement les médias Microsoft effectivement pris en charge par MediaEngine et MediaFileSystems.
-  - [x] Modifier `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Constants/StorageConstants.cs`, `StorageFunctions.cs`, `MediaFunctions.cs`, `ConfigurationFunctions.cs` et `MediaEnums.cs` pour publier le lecteur optique XDVDFS Xbox avec les extensions MediaEngine existantes et aucun lecteur disquette, cassette ou cartouche.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Constants/StorageConstants.cs`, `StorageFunctions.cs`, `MediaFunctions.cs`, `ConfigurationFunctions.cs` et `MediaEnums.cs` pour publier le lecteur optique XDVDFS Xbox avec les extensions MediaEngine existantes et aucun lecteur disquette, tape ou cartouche.
   - [x] Modifier `tests/RetroMediaLab.Tests/Architecture/ConsoleFamilyModuleTests.cs` et `tests/RetroMediaLab.Tests/Media/XdvdfsMediaFormatTests.cs` pour vérifier le lecteur, la conversion, la visualisation et l'exploration XDVDFS avec nettoyage dans `finally`.
 - [x] Retirer les réglages copiés qui ne correspondent pas au matériel Xbox.
   - [x] Modifier `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Constants/SettingsConstants.cs`, `SettingsDescriptionTextConstants.cs`, `SettingsDescriptionChoicesConstants.cs`, `SettingsHelpDictionary.cs` et `SettingsFunctions.cs` pour rendre CPU, GPU, audio, RAM et ROM informatifs et supprimer les choix de RAM, moniteur, intensité, recadrage et son de disquette inventés.
@@ -700,7 +700,7 @@ les tests et le comportement complet correspondant.
       - [x] Créer `src/RetroMediaLab.Emulation.Commodore/Assets/Machines/CDTV.png` à partir des vues fournies, en ne conservant que l’unité CDTV et en supprimant l’écran, le clavier, la télécommande, le disque et le décor.
       - [x] Redimensionner `src/RetroMediaLab.Emulation.Commodore/Assets/Machines/CDTV.png` à 960 px maximum sur son plus grand côté, sans déformer son ratio.
     - [x] Ajouter l’image du premier modèle Amstrad dans `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/`.
-      - [x] Créer `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC464.png` à partir de la vue fournie, en conservant le boîtier CPC 464 et son lecteur de cassette, avec fond transparent.
+      - [x] Créer `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC464.png` à partir de la vue fournie, en conservant le boîtier CPC 464 et son lecteur de tape, avec fond transparent.
       - [x] Redimensionner `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC464.png` à 960 px maximum sur son plus grand côté, sans déformer son ratio.
     - [x] Ajouter l’image du CPC664 dans `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/`.
       - [x] Créer `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC664.png` à partir de la vue nette fournie, en conservant le boîtier, le clavier et le lecteur de disquette intégrés, avec fond transparent.
@@ -709,7 +709,7 @@ les tests et le comportement complet correspondant.
       - [x] Créer `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC6128.png` à partir de la vue nette fournie, en conservant le clavier AZERTY et les inscriptions lisibles du lecteur de disquette, avec fond transparent.
       - [x] Redimensionner `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC6128.png` à 960 px maximum sur son plus grand côté, sans déformer son ratio.
     - [x] Ajouter l’image du CPC464 Plus dans `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/`.
-      - [x] Créer `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC464PLUS.png` à partir de la vue fournie, en conservant le clavier, le lecteur de cassette et les marquages 464 Plus, avec fond transparent.
+      - [x] Créer `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC464PLUS.png` à partir de la vue fournie, en conservant le clavier, le lecteur de tape et les marquages 464 Plus, avec fond transparent.
       - [x] Redimensionner `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC464PLUS.png` à 960 px maximum sur son plus grand côté, sans déformer son ratio.
     - [x] Ajouter l’image du CPC6128 Plus dans `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/`.
       - [x] Créer `src/RetroMediaLab.Emulation.Amstrad/Assets/Machines/CPC6128PLUS.png` en tournant la vue fournie de 90 degrés vers la gauche, en supprimant le décor et le filigrane, et en conservant le clavier et les marquages 6128 Plus sur fond transparent.

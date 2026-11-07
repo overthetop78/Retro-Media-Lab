@@ -92,7 +92,7 @@ internal sealed class Engine
             EmulationMachineTab.Mouse => hasAdapter && (model.MouseButtonCount > 0 || InputSettingsFunctions.HasUsbMouse(current)),
             EmulationMachineTab.Controllers => hasAdapter,
             EmulationMachineTab.Storage => model.MaximumFloppyDriveCount > 0
-                || model.SupportsCassetteDrive || model.SupportsCartridgeSlot
+                || model.SupportsTapeDrive || model.SupportsCartridgeSlot
                 || model.SupportsCompactDiscDrive,
             _ => item.Value
         });

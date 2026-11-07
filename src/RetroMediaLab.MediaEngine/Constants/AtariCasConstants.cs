@@ -18,8 +18,8 @@ internal static class AtariCasConstants
     public const int MinimumSamplesPerBit = 8;
     public const int InitialMarkDurationMilliseconds = 19200;
     public const int SubsequentMarkDurationMilliseconds = 260;
-    public const string DecoderId = "atari-cassette";
-    public const string EncoderId = "atari-cassette";
+    public const string DecoderId = "atari-tape";
+    public const string EncoderId = "atari-tape";
     public const string ChunkIdMetadataKey = "chunkId";
     public const string AuxiliaryMetadataKey = "auxiliary";
     public const string BaudRateMetadataKey = "baudRate";

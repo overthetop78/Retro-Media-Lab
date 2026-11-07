@@ -6,4 +6,4 @@ public enum CartridgeRegion { Automatic, Ntsc, Pal, Secam }
 
 public enum MediaAvailability { Available, Unavailable }
 
-public enum MediaCategory { Floppy, HardDisk, Directory, Cassette, Cartridge, CompactDisc }
+public enum MediaCategory { Floppy, HardDisk, Directory, Tape, Cartridge, CompactDisc }

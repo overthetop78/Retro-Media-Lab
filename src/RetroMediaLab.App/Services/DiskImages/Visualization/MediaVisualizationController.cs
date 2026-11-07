@@ -210,14 +210,14 @@ internal sealed class MediaVisualizationController
         var rowSize = (model.Segments.Count + rowCount - 1) / rowCount;
         var firstCount = Math.Min(rowSize, model.Segments.Count);
         var secondCount = Math.Max(0, model.Segments.Count - firstCount);
-        _face0Progress.Configure( MediaVisualizationProgressUnit.Segment, MediaVisualizationLayoutConstants.SegmentProgressPageOne, Enumerable.Range(0, firstCount).Select(index => (long)index).ToArray(), _localize(DiskImageResourceKeys.ExplorerCassette, []));
+        _face0Progress.Configure( MediaVisualizationProgressUnit.Segment, MediaVisualizationLayoutConstants.SegmentProgressPageOne, Enumerable.Range(0, firstCount).Select(index => (long)index).ToArray(), _localize(DiskImageResourceKeys.ExplorerTape, []));
         if (secondCount > 0)
         {
             _face1Progress.Configure(
                 MediaVisualizationProgressUnit.Segment,
                 MediaVisualizationLayoutConstants.SegmentProgressPageTwo,
                 Enumerable.Range(0, secondCount).Select(index => (long)index).ToArray(),
-                _localize(DiskImageResourceKeys.ExplorerCassette, []));
+                _localize(DiskImageResourceKeys.ExplorerTape, []));
         }
 
         _viewModel.ProgressVisibility = Visibility.Visible;

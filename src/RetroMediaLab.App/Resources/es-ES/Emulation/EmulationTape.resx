@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Reproducir</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Pausa</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Rebobinar</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Avance rápido</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Grabar</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Detener</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Sin casete</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Detenido</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Reproduciendo</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>En pausa</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Grabando</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Fin de cinta</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Tasa de datos en serie (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Automático</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Modo de carga</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Lectura en tiempo real</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Lecturas aceleradas</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Carga directa</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Velocidad de cinta</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Velocidad de avance rápido y rebobinado</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Retraso de inicio del motor antes de la reproducción</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Retraso de inicio del motor antes de grabar</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Asegurar sonidos de dispositivo de almacenamiento</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Proteger contra la escritura</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Frecuencia de muestreo (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Canales de audio</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Bits por muestra</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Muestras firmadas</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW perfil de entrada de casetes</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW perfil de grabación de casetes</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Cargando</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Mecánica de cinta</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Automático sigue la velocidad de datos serie establecida por el software de computadora emulado. No detecta la tasa de datos del archivo de imagen.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Mono</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Stereo</value></data>
+</root>

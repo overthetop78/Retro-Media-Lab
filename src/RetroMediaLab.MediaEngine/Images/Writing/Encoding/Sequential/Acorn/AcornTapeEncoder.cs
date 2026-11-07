@@ -14,7 +14,7 @@ using RetroMediaLab.MediaEngine.Images.Models.Sequential;
 
 namespace RetroMediaLab.MediaEngine.Images.Writing.Encoding.Sequential.Acorn;
 
-/// <summary>Rebuilds validated Acorn cassette blocks as UEF implicit data chunks or standard PCM FSK.</summary>
+/// <summary>Rebuilds validated Acorn tape blocks as UEF implicit data chunks or standard PCM FSK.</summary>
 public sealed class AcornTapeEncoder : ISequentialMediaEncoder
 {
     private static readonly IReadOnlySet<string> SupportedFormats = new[] { TapeImageFormatIds.Uef, TapeImageFormatIds.Wav, TapeImageFormatIds.Csw, TapeImageFormatIds.Raw }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
@@ -39,7 +39,7 @@ public sealed class AcornTapeEncoder : ISequentialMediaEncoder
     public Task<SequentialMediaImageRepresentation> EncodeAsync(SequentialEncodeRequest request, CancellationToken cancellationToken = default)
     {
         if (!CanEncode(request))
-            throw new InvalidDataException("Acorn tape encoding requires validated CFS blocks with complete cassette metadata.");
+            throw new InvalidDataException("Acorn tape encoding requires validated CFS blocks with complete tape metadata.");
         cancellationToken.ThrowIfCancellationRequested();
         var encodedBlocks = request.Blocks.Select(block =>
         {

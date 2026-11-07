@@ -15,7 +15,7 @@ public static class StorageConfigurationFunctions
             _ => (MediaCategory.Floppy, EmulationMediaSlot.Floppy0)
         };
 
-    public static bool IsRemovable(MediaCategory category) => category is MediaCategory.Floppy or MediaCategory.Cassette or MediaCategory.Cartridge or MediaCategory.CompactDisc;
+    public static bool IsRemovable(MediaCategory category) => category is MediaCategory.Floppy or MediaCategory.Tape or MediaCategory.Cartridge or MediaCategory.CompactDisc;
 
     public static bool IsPrimaryDevice(MachineModel model, EmulationMediaSlot slot) => PrimaryDevice(model)?.Slot == slot;
 }

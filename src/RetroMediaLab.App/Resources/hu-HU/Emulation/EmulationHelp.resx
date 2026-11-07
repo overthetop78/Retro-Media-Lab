@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>A másodlagos firmware kiválasztása ROM néhány gépmodell igényli. Ezt a mezőt üresen hagyjuk, ha a kiválasztott modell nem használ kiterjesztett ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Gyorsulás engedélyezése SIO átcsoportosítások</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Felgyorsítja a kompatibilis transzfereket a soros bemeneti / kimeneti buszon keresztül. Ha a szoftver az eredeti átvitel időzítésétől függ, akkor kapcsolja ki ezt az opciót.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>A kazetta indításának engedélyezése</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Az emulált gép megpróbálja elindítani a csatolt kazetta képet. Távolítsa el ezt az opciót, ha egy másik eszközről indul.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>A kazetta indításának engedélyezése</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Az emulált gép megpróbálja elindítani a csatolt kazetta képet. Távolítsa el ezt az opciót, ha egy másik eszközről indul.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>A R-Time 8 óra</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Emulál R-Time 8 real-time óra így kompatibilis szoftver tudja olvasni az aktuális dátum és idő.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>A P: nyomtatóeszköz</value></data>

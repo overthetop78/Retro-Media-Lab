@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>ディスクサイズまたはジオメトリが無効です。</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>物理ディスク領域を直ちに予約します。無効の場合、書き込みに応じてイメージが拡張されます。</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>セクター</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>カセットテープ</value></data>
+  <data name="Emulation.Storage.Tapes"><value>カセットテープ</value></data>
   <data name="Emulation.Storage.Cartridges"><value>カートリッジ</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>コンパクトディスク</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>エミュレーター画面にドライブの動作状況を表示</value></data>

@@ -6,7 +6,7 @@ namespace RetroMediaLab.Emulation.Constants;
 public static class EmulationMechanicalSoundConstants
 {
     /// <summary>Identifiant de la catégorie des lecteurs de bande.</summary>
-    public const string Cassette = M.Cassette;
+    public const string Tape = M.Tape;
     /// <summary>Identifiant de la catégorie des lecteurs de disquettes.</summary>
     public const string Floppy = M.Floppy;
     /// <summary>Identifiant de la catégorie des disques durs.</summary>

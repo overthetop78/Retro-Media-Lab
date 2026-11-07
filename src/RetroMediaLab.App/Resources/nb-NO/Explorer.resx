@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>Lyd</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>Heksaxer</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>Eksternt program</value></data>
-  <data name="Explorer.Cassette"><value>Kassett</value></data>
+  <data name="Explorer.Tape"><value>Kassett</value></data>
   <data name="Explorer.InternalName"><value>Intern beskrivelse</value></data>
   <data name="Explorer.BaudRates"><value>Hastigheter</value></data>
   <data name="Explorer.Chunks"><value>Blokker</value></data>

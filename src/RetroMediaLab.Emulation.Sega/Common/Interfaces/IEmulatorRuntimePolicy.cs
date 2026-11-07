@@ -58,17 +58,17 @@ internal interface IEmulatorRuntimePolicy
     /// être conservé ; la politique ne prend possession ni du cœur ni de sa file d'exécution.</remarks>
     void PrepareReset(MachineConfiguration configuration, bool hardReset, Action<string, string> setOption) { }
 
-    /// <summary>Décrit les commandes de cassette réalisées par des impulsions de touches émulées.</summary>
+    /// <summary>Décrit les commandes de tape réalisées par des impulsions de touches émulées.</summary>
     /// <param name="configuration">Configuration empruntée déterminant le protocole du profil.</param>
     /// <returns>Une séquence de touches par commande, à raison d'une touche par frame ; dictionnaire vide sans transport clavier.</returns>
     /// <remarks>Cette description est distincte d'un transport commandé directement par l'API native.
     /// Common emprunte les collections et sérialise les impulsions avec les frames, sans capturer de clavier physique.</remarks>
-    IReadOnlyDictionary<EmulationCassetteCommand, IReadOnlyList<EmulationKey>> GetCassetteKeyCommands(MachineConfiguration configuration) => new Dictionary<EmulationCassetteCommand, IReadOnlyList<EmulationKey>>();
+    IReadOnlyDictionary<EmulationTapeCommand, IReadOnlyList<EmulationKey>> GetTapeKeyCommands(MachineConfiguration configuration) => new Dictionary<EmulationTapeCommand, IReadOnlyList<EmulationKey>>();
 
     /// <summary>Indique le délai de déclenchement automatique de la commande Play du transport clavier.</summary>
     /// <param name="configuration">Configuration empruntée contenant le modèle, les médias et le choix d'amorçage.</param>
     /// <returns>Nombre de frames à attendre, ou null sans commande automatique ; zéro déclenche à la prochaine frame.</returns>
     /// <remarks>Le compteur appartient à la session Common. Le profil fournit seulement son délai ; il ne crée
     /// ni thread ni entrée physique et ne déclenche pas la commande pendant cette consultation.</remarks>
-    int? GetCassetteBootReturnDelayFrames(MachineConfiguration configuration) => null;
+    int? GetTapeBootReturnDelayFrames(MachineConfiguration configuration) => null;
 }

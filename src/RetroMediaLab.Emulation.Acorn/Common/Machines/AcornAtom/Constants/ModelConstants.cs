@@ -4,7 +4,7 @@ internal static class AtomModelConstants
 {
     internal const string ResourcePrefix = "Emulation.Acorn.Model.";
     internal const string OptionPrefix = "acornemu.atom.";
-    internal const string CassetteMachineId = "acorn-atom";
+    internal const string TapeMachineId = "acorn-atom";
     internal const string TapExtension = ".tap";
     internal const string TextRamOption = OptionPrefix + "textRam";
     internal const string VideoRamOption = OptionPrefix + "videoRam";
@@ -38,7 +38,7 @@ internal static class AtomModelConstants
     internal const int DefaultMemoryBytes = CpuRamBytes + (MaximumTextRamBlocks + MaximumVideoRamBlocks) * RamBlockBytes;
     internal const int DiscPackRamBytes = 3072;
     internal const int KeyboardPorts = 1;
-    internal const int CassetteBaud = 300;
+    internal const int TapeBaud = 300;
     internal const int SystemRomBytes = 8192;
     internal const int OptionRomBytes = 4096;
     internal const int CharacterRomBytes = 280;

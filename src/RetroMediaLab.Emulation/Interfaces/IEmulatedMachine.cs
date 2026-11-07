@@ -11,5 +11,5 @@ public interface IEmulatedMachine : IAsyncDisposable
     IEmulationAudio Audio { get; }
     IEmulationSavedStates SavedStates { get; }
     IEmulationRuntime Runtime { get; }
-    IEmulationCassetteTransport? CassetteTransport => null;
+    IEmulationTapeTransport? TapeTransport => null;
 }

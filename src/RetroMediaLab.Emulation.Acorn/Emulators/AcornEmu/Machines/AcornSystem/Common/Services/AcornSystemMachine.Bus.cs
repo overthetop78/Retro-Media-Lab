@@ -40,7 +40,7 @@ internal sealed partial class AcornSystemMachine
         {
             var register = address & C.ViaRegisterMask;
             _via.Write(register, value);
-            if (register == C.ViaPeripheralControl) _cassette.SetOutputBit((value & C.ViaCb2ControlMask) == C.ViaCb2High);
+            if (register == C.ViaPeripheralControl) _tape.SetOutputBit((value & C.ViaCb2ControlMask) == C.ViaCb2High);
             return;
         }
         if (RamIoAddress(address))

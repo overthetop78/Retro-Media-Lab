@@ -27,7 +27,7 @@ internal static class ContentConstants
     internal static char[] InvalidLabelCharacters { get; } = ['|', '\r', '\n'];
     internal static IReadOnlyList<string> DiskExtensions { get; } =
         [".d64", ".d71", ".d80", ".d81", ".d82", ".g64", ".g41", ".x64", ".nib", ".nbz", ".d2m", ".d4m"];
-    internal static IReadOnlyList<string> CassetteExtensions { get; } = [".t64", ".tap", ".tcrt"];
+    internal static IReadOnlyList<string> TapeExtensions { get; } = [".t64", ".tap", ".tcrt"];
     internal static IReadOnlyList<string> CartridgeExtensions { get; } = [".crt", ".bin"];
     internal static IReadOnlyList<string> VicCartridgeExtensions { get; } = [".20", ".40", ".60", ".a0", ".b0", ".rom", ".crt"];
     internal const string KernalField = "configuration.rom.Kernal";

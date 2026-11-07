@@ -154,7 +154,7 @@ public sealed class OtherMediaVisualizationTests
     }
 
     [Fact]
-    public void AtariCasInspectorShowsCassetteAndChunkMetadata()
+    public void AtariCasInspectorShowsTapeAndChunkMetadata()
     {
         var sourceSegment = new RetroMediaLab.MediaEngine.Contracts.SequentialMediaSegment(
             0,
@@ -190,7 +190,7 @@ public sealed class OtherMediaVisualizationTests
         var inspector = presenter.BuildInspectorModel(model, Assert.Single(model.Segments));
         var entries = inspector.Sections.SelectMany(section => section.Entries).ToArray();
 
-        Assert.Equal("Visual.CassetteInspectorTitle", inspector.Title);
+        Assert.Equal("Visual.TapeInspectorTitle", inspector.Title);
         Assert.Contains(entries, entry => entry.Label == "Explorer.BaudRates" && entry.Value == "600");
         Assert.Contains(entries, entry => entry.Label == "Explorer.ChunkType" && entry.Value == "data");
         Assert.Contains(entries, entry => entry.Label == "Explorer.BaudRate" && entry.Value == "600");

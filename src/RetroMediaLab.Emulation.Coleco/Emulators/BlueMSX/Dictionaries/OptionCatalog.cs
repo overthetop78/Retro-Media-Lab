@@ -27,7 +27,7 @@ internal static class BlueMSXOptionCatalog
                 new("Coleco (Spectravideo SVI-603)", "Coleco (Spectravideo SVI-603)")
             ]
         ),
-        new(OptionConstants.OptionAutoRewindCas, "Auto Rewind Cassette", "", "system", "ON", "ON", [new("ON", "ON"), new("OFF", "OFF")]),
+        new(OptionConstants.OptionAutoRewindCas, "Auto Rewind Tape", "", "system", "ON", "ON", [new("ON", "ON"), new("OFF", "OFF")]),
         new(
             OptionConstants.OptionRtcSource,
             "Real-Time Clock Source (Restart)",

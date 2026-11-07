@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>Lealacsonyított ágazat</value></data>
   <data name="Visual.SectorDead"><value>Holt szektor</value></data>
   <data name="Visual.SectorWithoutData"><value>Adatszolgáltatás nélküli ágazat</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>Kazetta adatai</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>Kazetta adatai</value></data>
   <data name="Visual.Representation"><value>Kijelző üzemmód</value></data>
 </root>

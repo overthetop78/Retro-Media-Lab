@@ -50,7 +50,7 @@ internal static class SettingsHelpDictionary
             [EightBitSettingsConstants.PaddleMovementSpeedOptionKey] = "Emulation.Help.Controller.PaddleSpeed",
             [MachineOptionConstants.DriveActivity] = "Emulation.Help.Storage.Activity",
             [SettingsConstants.HardDiskFolder] = "Emulation.Help.Storage.HardDiskFolder",
-            [EightBitSettingsConstants.CassetteBootOptionKey] = "Emulation.Help.Storage.CassetteBoot",
+            [EightBitSettingsConstants.TapeBootOptionKey] = "Emulation.Help.Storage.TapeBoot",
             [EightBitSettingsConstants.RealTimeClockOptionKey] = "Emulation.Help.Storage.RealTimeClock",
             [EightBitSettingsConstants.PrinterDeviceOptionKey] = "Emulation.Help.Storage.PrinterDevice",
             [EightBitSettingsConstants.SerialDeviceOptionKey] = "Emulation.Help.Storage.SerialDevice",

@@ -78,7 +78,7 @@ public static class ExplorerDetailsPresenter
             var metadata = document.Document.Metadata;
             var tapeRows = new List<ExplorerDetailRow>
             {
-                new("Explorer.Type", LocExtension.Get("Explorer.Cassette")),
+                new("Explorer.Type", LocExtension.Get("Explorer.Tape")),
                 new("Explorer.Format", document.Document.FormatId.Equals(TapeImageFormatIds.AtariCas, StringComparison.OrdinalIgnoreCase) ? "Atari CAS" : document.Document.FormatId),
                 new("Explorer.System", currentSystem ?? SystemName(ReadMetadata(metadata, "systemId")) ?? document.Document.MediaKind.ToString()),
                 new("Explorer.Size", StorageSizeFormatter.FormatBytes(capacity))

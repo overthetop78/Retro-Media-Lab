@@ -27,7 +27,7 @@ Précision reçue : le blocage survient à l’allumage du BBC Model A. Les cont
 
 Le premier cycle Power du contrôle WPF réel avec Direct3D 11 a réussi : allumage, rendu, arrêt, libération du contrôle et fermeture de la fenêtre hors écran. Le parcours ne passait pas encore par le chargement de module et CreateRuntimeAsync de App.
 
-Le second test WPF utilise EmulationModuleLoadContext, la fabrique du module, LoadConfigurationsAsync, CreateRuntimeAsync et le profil vidéo enregistrés, puis le vrai MachineController. Le runtime annonce un seul périphérique attaché (cassette), sans réactiver les disques désactivés. Power ON, rendu Direct3D 11, UI répondante, Power OFF et destruction complète ont tous réussi. Le comportement précis signalé (UI figée, dialogue, fermeture ou écran noir) a été demandé pour poursuivre la reproduction. Aucune correction logicielle n’est revendiquée.
+Le second test WPF utilise EmulationModuleLoadContext, la fabrique du module, LoadConfigurationsAsync, CreateRuntimeAsync et le profil vidéo enregistrés, puis le vrai MachineController. Le runtime annonce un seul périphérique attaché (tape), sans réactiver les disques désactivés. Power ON, rendu Direct3D 11, UI répondante, Power OFF et destruction complète ont tous réussi. Le comportement précis signalé (UI figée, dialogue, fermeture ou écran noir) a été demandé pour poursuivre la reproduction. Aucune correction logicielle n’est revendiquée.
 
 
 - [x] Corriger le gel de l’interface pendant la préparation graphique et préciser le firmware manquant.

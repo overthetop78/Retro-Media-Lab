@@ -73,14 +73,14 @@ public sealed class OtherMediaExplorerScenarios(StaExecutionScenarios sta)
     });
 
     [Fact]
-    public Task AtariCasUsesCassetteSummaryAndLogicalFiles() => sta.Run(() =>
+    public Task AtariCasUsesTapeSummaryAndLogicalFiles() => sta.Run(() =>
     {
         var segment = new SequentialMediaSegment(0, SequentialSegmentKind.DataBlock, 132, duration: TimeSpan.FromSeconds(2));
         var representation = new SequentialMediaImageRepresentation(132, TimeSpan.FromSeconds(2), [segment]);
         var volume = Volume(0, 132, "TEST TAPE", fileName: "TEST TAPE.bin");
         var section = Display(Document(MediaKind.Tape, representation, [volume], "tape.atari-cas", new Dictionary<string, string> { ["systemId"] = "atari-8bit" }));
 
-        Assert.Equal($"{LocExtension.Get("Explorer.Cassette")} {LocExtension.Get("System.atari-8bit")}", Find<TextBlock>(section, "FileSystemText").Text);
+        Assert.Equal($"{LocExtension.Get("Explorer.Tape")} {LocExtension.Get("System.atari-8bit")}", Find<TextBlock>(section, "FileSystemText").Text);
         Assert.Equal("Atari 8-bit", Find<TextBlock>(section, "SystemText").Text);
         Assert.Equal("1", Find<TextBlock>(section, "EntryCountText").Text);
     });

@@ -110,7 +110,7 @@ Le script a terminé avec succès et la présence de
   D81, DSK, IMG, IMD, TD0, HFE ou 86F, affiche la vue Sectors sans fabriquer de faux flux ;
 - les vues Blocks, OpticalTracks et Sequential sont enregistrées et couvertes par les tests
   synthétiques ; elles deviendront accessibles depuis l'onglet **Visualisation** dès que les
-  Readers HDD, CD/DVD/optiques et cassette/bande des feuilles suivantes fourniront ces
+  Readers HDD, CD/DVD/optiques et tape/bande des feuilles suivantes fourniront ces
   représentations.
 
 ## Validation automatisée des autres familles de médias
@@ -133,7 +133,7 @@ Résultats obtenus :
   géométrie connue ;
 - CD/DVD et optique : **4 réussites**, couvrant les déclarations BIN/CUE, les fichiers associés,
   les secteurs bruts, les sessions, les pistes et un volume ISO 9660 minimal ;
-- cassette et bande : **3 réussites**, couvrant une chronologie WAV stéréo, les pistes et faces
+- tape et bande : **3 réussites**, couvrant une chronologie WAV stéréo, les pistes et faces
   déclarées ainsi que les segments non décodés ;
 - Explorateur : **3 réussites**, couvrant le changement de partition HDD, le filtrage des pistes
   par session optique et l'affichage d'un contenu séquentiel.

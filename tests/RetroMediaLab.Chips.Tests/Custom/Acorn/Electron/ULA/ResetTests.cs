@@ -6,7 +6,7 @@ namespace RetroMediaLab.Chips.Tests.Custom.Acorn.Electron.ULA;
 
 public sealed class ResetTests
 {
-    private sealed class Pins : IElectronCassettePins
+    private sealed class Pins : IElectronTapePins
     {
         private int _clock;
         public bool InputPresent => true;

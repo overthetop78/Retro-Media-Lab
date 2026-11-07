@@ -25,8 +25,8 @@ public sealed class RawTapeReader : IMediaImageReader
     }
     public async Task<MediaImageDocument> ReadAsync(MediaRecognitionContext context, CancellationToken token)
     {
-        var profile = CassettePcmProfile.Read(context.Source.Parameters);
+        var profile = TapePcmProfile.Read(context.Source.Parameters);
         var bytes = await File.ReadAllBytesAsync(context.Source.PrimaryPath, token).ConfigureAwait(false);
-        return CassettePcmFunctions.RawDocument(context.Source, bytes, profile);
+        return TapePcmFunctions.RawDocument(context.Source, bytes, profile);
     }
 }

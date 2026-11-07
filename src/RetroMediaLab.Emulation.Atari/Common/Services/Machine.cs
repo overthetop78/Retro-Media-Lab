@@ -8,7 +8,7 @@ namespace RetroMediaLab.Emulation.Atari.Common.Services;
 
 internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, IEmulationInput,
     IEmulationMedia, IEmulationVideo, IEmulationAudio, IEmulationSavedStates, IEmulationRuntime,
-    IEmulationCassetteTransport, IEmulationControllerFeedbackSource
+    IEmulationTapeTransport, IEmulationControllerFeedbackSource
 {
     /// <summary>Standard vidéo annoncé par le cœur courant, ou null si inconnu.</summary>
     public EmulationVideoStandard? Region => _core.Region;
@@ -38,7 +38,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     private readonly string? _saveDirectory;
     private readonly ConcurrentQueue<MachineCommand> _commands = new();
     private readonly AudioOutputController _audio;
-    private readonly CassetteInputController _cassetteInput;
+    private readonly TapeInputController _tapeInput;
     private readonly List<MediaConfiguration> _mountedMedia;
     /// <summary>Configuration des entrées de session actualisée après acceptation des changements par le cœur.</summary>
     private MachineConfiguration _inputConfiguration;
@@ -61,7 +61,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         _mediaCapabilities = _inputMapper as IEmulatorMediaCapabilities;
         _sessionDirectory = sessionDirectory;
         _audio = new AudioOutputController(audioOutput, audioOutputFactory);
-        _cassetteInput = new CassetteInputController(configuration, runtimePolicy);
+        _tapeInput = new TapeInputController(configuration, runtimePolicy);
         _audio.SetMuted(!configuration.AudioEnabled);
         if (configuration.Options.TryGetValue(VideoAudioSettingsConstants.AudioVolumeOption, out var volume)
             && int.TryParse(volume, NumberStyles.Integer, CultureInfo.InvariantCulture, out var volumePercent))
@@ -81,7 +81,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public IEmulationAudio Audio => this;
     public IEmulationSavedStates SavedStates => this;
     public IEmulationRuntime Runtime => this;
-    public IEmulationCassetteTransport? CassetteTransport => _cassetteInput.AvailableCommands.Count > 0 ? this : null;
+    public IEmulationTapeTransport? TapeTransport => _tapeInput.AvailableCommands.Count > 0 ? this : null;
     bool IEmulationInput.SupportsPointerCapture => CompatibilityCatalog.Get(Configuration.Model).VisibleTabs.Contains(SettingsTab.Mouse);
     bool IEmulationInput.CapturePointerOnClick => Configuration.Input?.CaptureMouse ?? true;
     IReadOnlyDictionary<string, string> IEmulationInput.KeyboardBindings => Configuration.Input?.KeyboardBindings ?? Configuration.Input?.KeyboardMappings?.ToDictionary(item => item.Key, item => item.Value.ToString(), StringComparer.Ordinal) ?? new Dictionary<string, string>();
@@ -101,9 +101,9 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public RuntimeStatus RuntimeStatus => RuntimeFunctions.Status(Configuration, _core, _mediaCapabilities);
     public event EventHandler<VideoFrame>? VideoFrameReady;
     public event EventHandler<AudioChunk>? AudioChunkReady;
-    EmulationCassetteState IEmulationCassetteTransport.State => CassetteStateFunctions.From(_mountedMedia.Any(media => media.Category == MediaCategory.Cassette && media.IsInserted), ((IEmulationRuntime)this).MediaActivity.GetValueOrDefault(EmulationMediaSlot.Cassette0));
-    EmulationCassetteCommand? IEmulationCassetteTransport.ActiveOperation => ((IEmulationCassetteTransport)this).State == EmulationCassetteState.Playing ? EmulationCassetteCommand.Play : null;
-    IReadOnlySet<EmulationCassetteCommand> IEmulationCassetteTransport.AvailableCommands => _cassetteInput.AvailableCommands;
+    EmulationTapeState IEmulationTapeTransport.State => TapeStateFunctions.From(_mountedMedia.Any(media => media.Category == MediaCategory.Tape && media.IsInserted), ((IEmulationRuntime)this).MediaActivity.GetValueOrDefault(EmulationMediaSlot.Tape0));
+    EmulationTapeCommand? IEmulationTapeTransport.ActiveOperation => ((IEmulationTapeTransport)this).State == EmulationTapeState.Playing ? EmulationTapeCommand.Play : null;
+    IReadOnlySet<EmulationTapeCommand> IEmulationTapeTransport.AvailableCommands => _tapeInput.AvailableCommands;
     IReadOnlyList<EmulationMedia> IEmulationMedia.MountedMedia => _mountedMedia.Select(EmulationMediaConversionFunctions.ToCommon).OfType<EmulationMedia>().ToArray();
     ValueTask IEmulationMedia.InsertAsync(EmulationMedia media, CancellationToken cancellationToken) => InsertMediaAsync(EmulationMediaConversionFunctions.ToModule(media, _mountedMedia), cancellationToken);
     ValueTask IEmulationMedia.EjectAsync(EmulationMediaSlot slot, CancellationToken cancellationToken) => EjectMediaAsync(slot, cancellationToken);

@@ -5,7 +5,7 @@ namespace RetroMediaLab.Chips.Tests.Custom.Acorn.Electron.ULA;
 
 public sealed class CpuClockTests
 {
-    private sealed class Cassette : IElectronCassettePins
+    private sealed class Tape : IElectronTapePins
     {
         public bool InputPresent => false;
         public bool InputLevel => false;
@@ -23,7 +23,7 @@ public sealed class CpuClockTests
         internal Probe()
         {
             Video = new(_ => 0);
-            Ula = new(Video, new Cassette());
+            Ula = new(Video, new Tape());
             Ula.CpuClockChanged = (high, point) => Edges.Add((high, Cycles * 8 + (point & 7)));
         }
 
@@ -157,7 +157,7 @@ public sealed class CpuClockTests
             }
             return 0;
         });
-        ula = new(video, new Cassette());
+        ula = new(video, new Tape());
         ula.Write(7, 0x20);
         ula.BeginCpuCycle(0x0200, false, 0);
         while (ula.CpuWaiting) ula.Tick();

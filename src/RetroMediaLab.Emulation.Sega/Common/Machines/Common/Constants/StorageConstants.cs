@@ -35,7 +35,7 @@ internal static class StorageSettingsFunctionsConstants
     internal const string Mds = ".mds";
     internal const string Cas = ".cas";
     internal static IReadOnlySet<string> FloppyExtensions { get; } = new HashSet<string>([Dsk], StringComparer.OrdinalIgnoreCase);
-    internal static IReadOnlySet<string> CassetteExtensions { get; } = new HashSet<string>([Cas, Tap, Cdt, Voc], StringComparer.OrdinalIgnoreCase);
+    internal static IReadOnlySet<string> TapeExtensions { get; } = new HashSet<string>([Cas, Tap, Cdt, Voc], StringComparer.OrdinalIgnoreCase);
     internal static IReadOnlySet<string> OpticalExtensions { get; } = new HashSet<string>([Cue, Ccd, Chd, Iso, Mds, Zip, Gdi, Cdi, M3u], StringComparer.OrdinalIgnoreCase);
     internal static IReadOnlySet<string> MegaDriveCartridgeExtensions { get; } = new HashSet<string>([Md, Mdx, Sgd, Smd, Bms, SixtyEightK, Gen, Bin, ThirtyTwoX], StringComparer.OrdinalIgnoreCase);
     internal static IReadOnlySet<string> EightBitCartridgeExtensions { get; } = new HashSet<string>([Sms, Sg, Sc, Gg, Rom, Bin, Zip], StringComparer.OrdinalIgnoreCase);
@@ -43,13 +43,13 @@ internal static class StorageSettingsFunctionsConstants
     internal const string Dat = ".dat";
     internal const string Lst = ".lst";
     internal const string FloppyDriveCountOption = "storage.floppyDriveCount";
-    internal const string CassetteDriveEnabledOption = "storage.cassetteDriveEnabled";
+    internal const string TapeDriveEnabledOption = "storage.tapeDriveEnabled";
     internal const string CartridgeSlotEnabledOption = "storage.cartridgeSlotEnabled";
     internal const string SegaCardSlotEnabledOption = "storage.segaCardSlotEnabled";
     internal const string CompactDiscDriveEnabledOption = "storage.compactDiscDriveEnabled";
     internal const string FloppyDriveLabel = "A:";
     internal const string SecondFloppyDriveLabel = "B:";
-    internal const string CassetteDriveLabel = "Cassette";
+    internal const string TapeDriveLabel = "Tape";
     internal const string CartridgeSlotLabel = "Cartridge";
     internal const string SegaCardSlotLabel = "Sega Card";
     internal const string CompactDiscDriveLabel = "Optical disc";

@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Chọn phần mềm phụ ROM yêu cầu bởi một số mô hình máy móc. Để ô này trống khi mô hình đã chọn không sử dụng mở rộng ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Bật tăng tốc SIO Truyền:</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Tốc độ chuyển đổi tương thích qua xe buýt đầu vào/ra hàng loạt. Tắt tùy chọn này khi phần mềm phụ thuộc vào thời gian truyền.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Bật khởi chạy băng</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Làm cho máy mô phỏng cố gắng bắt đầu từ hình ảnh được gắn vào. Tắt tùy chọn này khi chạy từ thiết bị khác.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Bật khởi chạy băng</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Làm cho máy mô phỏng cố gắng bắt đầu từ hình ảnh được gắn vào. Tắt tùy chọn này khi chạy từ thiết bị khác.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Bật R-Time 8 đồng hồ</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Tính toán một R-Time 8 Đồng hồ thời gian thực để phần mềm tương thích có thể đọc ngày giờ hiện tại.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Bật P: Thiết bị máy in</value></data>

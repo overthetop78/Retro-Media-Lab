@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Selecteer de secundaire firmware ROM vereist door sommige machinemodellen. Dit veld leeg laten wanneer het geselecteerde model geen extender gebruikt ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Versneld inschakelen SIO overdrachten</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Versnelt compatibele transfers via de seriële input/output bus. Schakel deze optie uit wanneer software afhankelijk is van de oorspronkelijke overdracht timing.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Opstarten van cassette inschakelen</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Maakt de emuleerde machine proberen te starten vanaf de bijgevoegde cassette afbeelding. Schakel deze optie uit bij het starten vanaf een ander apparaat.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Opstarten van cassette inschakelen</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Maakt de emuleerde machine proberen te starten vanaf de bijgevoegde cassette afbeelding. Schakel deze optie uit bij het starten vanaf een ander apparaat.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Inschakelen van de R-Time 8 klok</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Emuleert een R-Time 8 real-time klok zodat compatibele software de huidige datum en tijd kan lezen.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Inschakelen van de P: printerapparaat</value></data>

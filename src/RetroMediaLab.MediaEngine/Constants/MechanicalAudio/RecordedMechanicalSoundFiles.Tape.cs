@@ -8,6 +8,6 @@ internal static partial class RecordedMechanicalSoundFiles
     internal static partial class Tape
     {
         /// <summary>Regroupe les magnétophones enregistrés.</summary>
-        internal static IReadOnlyList<RecordedMechanicalSoundProfile> Catalogs => [UnidentifiedCassettePlayer];
+        internal static IReadOnlyList<RecordedMechanicalSoundProfile> Catalogs => [UnidentifiedTapePlayer];
     }
 }

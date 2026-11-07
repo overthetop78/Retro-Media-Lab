@@ -45,11 +45,11 @@ internal static class InputSettingsFunctions
         return new(null, null, ports);
     }
 
-    private static IReadOnlyList<string> Visuals(MachineModel model, int port) => model is MachineModel.SuperCassetteVision or MachineModel.SuperCassetteVisionYeno or MachineModel.SuperCassetteVisionLady ? [EmulationControllerVisualIds.EpochSuperCassetteVisionController] : [];
+    private static IReadOnlyList<string> Visuals(MachineModel model, int port) => model is MachineModel.SuperTapeVision or MachineModel.SuperTapeVisionYeno or MachineModel.SuperTapeVisionLady ? [EmulationControllerVisualIds.EpochSuperTapeVisionController] : [];
     private static IReadOnlyDictionary<EmulationControllerVisualControl, string> VisualCommands(MachineModel model, int port, IReadOnlyList<InputBindingDefinition> definitions)
     {
         var commands = new Dictionary<EmulationControllerVisualControl, string>();
-        if (model is MachineModel.SuperCassetteVision or MachineModel.SuperCassetteVisionYeno or MachineModel.SuperCassetteVisionLady)
+        if (model is MachineModel.SuperTapeVision or MachineModel.SuperTapeVisionYeno or MachineModel.SuperTapeVisionLady)
         {
             commands[EmulationControllerVisualControl.DirectionUp] = "Up";
             commands[EmulationControllerVisualControl.DirectionDown] = "Down";
@@ -79,7 +79,7 @@ internal static class InputSettingsFunctions
             commands[EmulationControllerVisualControl.PrimaryAction] = "Push1";
             commands[EmulationControllerVisualControl.SecondaryAction] = "Push2";
             commands[EmulationControllerVisualControl.Start] = "Start";
-            if (model == MachineModel.CassetteVisionJr)
+            if (model == MachineModel.TapeVisionJr)
             {
                 commands[EmulationControllerVisualControl.TertiaryAction] = "Push3";
                 commands[EmulationControllerVisualControl.QuaternaryAction] = "Push4";

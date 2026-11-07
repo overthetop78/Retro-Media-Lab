@@ -1,4 +1,4 @@
-# Extension aux disques durs, supports optiques, cassettes et bandes
+# Extension aux disques durs, supports optiques, tapes et bandes
 
 Cette feuille commence seulement lorsque toutes les cases de
 [`media-visualization.md`](media-visualization.md) sont cochées et que le deuxième commit demandé a
@@ -13,9 +13,9 @@ dans l’ordre.
   - [x] 1.2 Inventorier les images optiques
     - [x] Créer `docs/reference/optical-image-formats.md` avec ISO, BIN/CUE, CCD/IMG/SUB, MDF/MDS et CHD, leurs signatures, fichiers associés, secteurs, sous-canaux, pistes audio ou données, sessions, couches, faces, capacités de lecture et capacités d’écriture réellement envisageables.
     - [x] Modifier `docs/tasks/media-exploration.md` après cet inventaire pour ajouter une action distincte avec chemin exact pour chaque Reader, Writer et convertisseur optique retenu au-delà d’ISO et BIN/CUE.
-  - [x] 1.3 Inventorier les images de cassettes et bandes
+  - [x] 1.3 Inventorier les images de tapes et bandes
     - [x] Créer `docs/reference/tape-image-formats.md` avec WAV et les formats structurés retenus, leurs signatures, échantillons, impulsions, blocs, fichiers, silences, faces, pistes, canaux, sens de lecture, capacités de lecture et capacités d’écriture réellement envisageables.
-    - [x] Modifier `docs/tasks/media-exploration.md` après cet inventaire pour ajouter une action distincte avec chemin exact pour chaque Reader, Writer, décodeur et encodeur de cassette ou bande retenu au-delà de WAV.
+    - [x] Modifier `docs/tasks/media-exploration.md` après cet inventaire pour ajouter une action distincte avec chemin exact pour chaque Reader, Writer, décodeur et encodeur de tape ou bande retenu au-delà de WAV.
 
 - [x] 2. Ajouter les images de disques durs
   - [x] 2.1 Compléter la fondation Blocks avant les Readers HDD
@@ -227,13 +227,13 @@ dans l’ordre.
   - [x] 3.9 Réconcilier la hiérarchie optique terminée
     - [x] Modifier `docs/tasks/media-exploration.md` pour supprimer les doublons de groupes 3.1, 3.2 et 3.3 et conserver une seule case cochée avant les sous-tâches de chaque groupe.
 
-- [x] 4. Ajouter les images de cassettes et bandes
+- [x] 4. Ajouter les images de tapes et bandes
   - [x] 4.1 Enrichir la représentation séquentielle avant d’ajouter ses formats
     - [x] Créer `src/RetroMediaLab.MediaEngine/Enums/SequentialSegmentKind.cs` avec les valeurs anglaises nécessaires aux échantillons, impulsions, porteuses, silences, blocs de données, enregistrements, marques de bande et segments inconnus.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Enums/SequentialTravelDirection.cs` avec les sens anglais inconnu, avant et arrière utilisés par les bandes sans les confondre avec l’ordre de rendu.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Contracts/SequentialMediaSegment.cs` avec position, durée ou longueur, face, piste, canal, sens, type, données accessibles et métadonnées réellement connues.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Representations/Sequential/SequentialMediaImageRepresentation.cs` pour remplacer les tuples d’affichage par les segments communs sans charger obligatoirement tout le média en mémoire.
-    - [x] Modifier `src/RetroMediaLab.MediaEngine/Visualization/Providers/SequentialMediaVisualizationProvider.cs` pour consommer `SequentialMediaSegment` sans interpréter les protocoles de cassette.
+    - [x] Modifier `src/RetroMediaLab.MediaEngine/Visualization/Providers/SequentialMediaVisualizationProvider.cs` pour consommer `SequentialMediaSegment` sans interpréter les protocoles de tape.
   - [x] 4.2 Lire et écrire une source audio WAV
     - [x] Créer `src/RetroMediaLab.MediaEngine/Constants/TapeImageFormatIds.cs` avec les identifiants invariants WAV, Atari CAS, TZX, Spectrum TAP, Commodore TAP, UEF, MSX CAS et SIMH TAP.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/DiskImageFileExtensions.cs` avec les extensions WAV, CAS, TZX, CDT, TSX, TAP et UEF communes aux formats séquentiels.
@@ -250,18 +250,18 @@ dans l’ordre.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/AtariCas/AtariCasFormat.cs` avec la signature `FUJI` et les chunks `baud`, `data` et `fsk ` compris.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/AtariCas/AtariCasReader.cs` pour produire dans l’ordre les débits, octets, marques et impulsions FSK sans perdre les chunks inconnus.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/AtariCas/AtariCasWriter.cs` pour réécrire les chunks compris et recopier à l’identique les chunks inconnus conservés.
-    - [x] Créer `src/RetroMediaLab.MediaEngine/Contracts/SequentialDecodedBlock.cs` avec les octets décodés, leur provenance, leur validité et leurs métadonnées sans dépendance à un protocole de cassette.
+    - [x] Créer `src/RetroMediaLab.MediaEngine/Contracts/SequentialDecodedBlock.cs` avec les octets décodés, leur provenance, leur validité et leurs métadonnées sans dépendance à un protocole de tape.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Contracts/SequentialDecodeResult.cs` avec les blocs validés, les segments non décodés, les diagnostics et le score du décodeur.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Interfaces/Decoding/ISequentialMediaDecoder.cs` avec l’identifiant, les formats et machines compatibles ainsi que le décodage asynchrone commun.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/AtariCasConstants.cs` avec les fréquences FSK, la trame série et les clés de métadonnées invariantes nécessaires au décodeur et à l’encodeur Atari.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Formats/Tape/AtariCas/AtariCasReader.cs` pour employer les clés communes Atari CAS au lieu de les dupliquer.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Formats/Tape/AtariCas/AtariCasWriter.cs` pour employer les clés communes Atari CAS au lieu de les dupliquer.
-    - [x] Créer `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariCassetteDecoder.cs` pour transformer les segments Atari CAS ou WAV compatibles en blocs validés avec leurs zones non décodées.
+    - [x] Créer `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariTapeDecoder.cs` pour transformer les segments Atari CAS ou WAV compatibles en blocs validés avec leurs zones non décodées.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Contracts/SequentialEncodeRequest.cs` avec les blocs validés, le format cible et les paramètres explicites nécessaires à un encodeur séquentiel.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Interfaces/Encoding/ISequentialMediaEncoder.cs` avec l’identifiant, les formats et machines compatibles ainsi que la production asynchrone d’une représentation séquentielle.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Reading/Sources/MemoryRandomAccessData.cs` pour exposer les octets produits par un encodeur sans créer de fichier temporaire.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/AtariCasConstants.cs` avec les durées standards de la première marque et des marques suivantes employées par l’encodeur.
-    - [x] Créer `src/RetroMediaLab.MediaEngine/Encoding/Sequential/Atari/AtariCassetteEncoder.cs` pour produire les segments standards Atari à partir de blocs validés sans remplacer les segments source inconnus.
+    - [x] Créer `src/RetroMediaLab.MediaEngine/Encoding/Sequential/Atari/AtariTapeEncoder.cs` pour produire les segments standards Atari à partir de blocs validés sans remplacer les segments source inconnus.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Composition/MediaRecognitionComposition.cs` pour enregistrer `AtariCasReader` par signature.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Composition/MediaWritingComposition.cs` pour enregistrer `AtariCasWriter` avec ses chunks inscriptibles.
   - [x] 4.4 Lire et écrire TZX, CDT et TSX avec un parser commun
@@ -284,8 +284,8 @@ dans l’ordre.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/SpectrumTap/SpectrumTapReader.cs` pour lire les blocs length-prefixed, flags et checksums en signalant la chronologie absente.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/SpectrumTap/SpectrumTapWriter.cs` pour écrire uniquement des blocs Spectrum complets déjà décodés.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/SpectrumTapConstants.cs` avec les seuils invariants nécessaires à la détection du signal Spectrum dans un WAV PCM.
-    - [x] Créer `src/RetroMediaLab.MediaEngine/Functions/PcmSampleFunctions.cs` avec la validation du profil PCM et l’extraction d’un canal entier partagées par les décodeurs de cassette WAV.
-    - [x] Modifier `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariCassetteDecoder.cs` pour employer les fonctions PCM communes sans conserver un second décodage des mêmes échantillons.
+    - [x] Créer `src/RetroMediaLab.MediaEngine/Functions/PcmSampleFunctions.cs` avec la validation du profil PCM et l’extraction d’un canal entier partagées par les décodeurs de tape WAV.
+    - [x] Modifier `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariTapeDecoder.cs` pour employer les fonctions PCM communes sans conserver un second décodage des mêmes échantillons.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Spectrum/SpectrumTapeDecoder.cs` pour valider les blocs Spectrum issus de TAP, TZX ou WAV et conserver les zones inconnues.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/SpectrumTapConstants.cs` avec les paramètres PCM explicites acceptés pour produire un signal WAV Spectrum.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Encoding/Sequential/Spectrum/SpectrumTapeEncoder.cs` pour produire le signal ou les blocs standards Spectrum demandés par le Writer cible.
@@ -296,7 +296,7 @@ dans l’ordre.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/CommodoreTap/CommodoreTapReader.cs` pour convertir les durées encodées en segments d’impulsions sans créer de fichiers Commodore.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/CommodoreTapConstants.cs` et `src/RetroMediaLab.MediaEngine/Formats/Tape/CommodoreTap/CommodoreTapReader.cs` pour centraliser les positions et tailles des champs de l’en-tête Commodore TAP.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/CommodoreTap/CommodoreTapWriter.cs` pour encoder les impulsions représentables par la version et la plateforme choisies.
-    - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/CommodoreTapConstants.cs` avec les durées, tolérances, marqueurs et paramètres PCM du protocole cassette Commodore standard.
+    - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/CommodoreTapConstants.cs` avec les durées, tolérances, marqueurs et paramètres PCM du protocole tape Commodore standard.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Commodore/CommodoreTapeDecoder.cs` pour reconnaître les blocs dans les impulsions TAP ou WAV et retourner aussi les zones non décodées.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Encoding/Sequential/Commodore/CommodoreTapeEncoder.cs` pour produire les impulsions Commodore depuis les blocs validés.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Constants/MsxCasConstants.cs` avec l’en-tête, l’alignement et les identifiants communs du format MSX CAS.
@@ -311,22 +311,22 @@ dans l’ordre.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Composition/MediaRecognitionComposition.cs` pour enregistrer les trois Readers dans l’ordre signature certaine, validation structurelle et contexte explicite, sans choisir par la seule extension.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Composition/MediaWritingComposition.cs` pour enregistrer les trois Writers avec leurs capacités exactes.
   - [x] 4.6 Lire et écrire UEF
-    - [x] Créer `src/RetroMediaLab.MediaEngine/Constants/UefConstants.cs` avec la signature, la version 0.10, l’en-tête des chunks, les identifiants cassette compris, les limites de décompression et les clés de métadonnées communes.
+    - [x] Créer `src/RetroMediaLab.MediaEngine/Constants/UefConstants.cs` avec la signature, la version 0.10, l’en-tête des chunks, les identifiants tape compris, les limites de décompression et les clés de métadonnées communes.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/MediaImageWriterIds.cs` avec l’identifiant invariant du Writer UEF.
-    - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/Uef/UefFormat.cs` avec la signature `UEF File!`, le conteneur gzip facultatif, la version 0.10 et les chunks cassette retenus.
+    - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/Uef/UefFormat.cs` avec la signature `UEF File!`, le conteneur gzip facultatif, la version 0.10 et les chunks tape retenus.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/Uef/UefReader.cs` pour produire porteuses, données, bits, silences, phase, débit et marqueurs de bandes ou faces tout en conservant les chunks inconnus.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Formats/Tape/Uef/UefWriter.cs` pour écrire les chunks compris et préserver les chunks inconnus sans les interpréter.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Contracts/FskSerialDecodeResult.cs` avec les octets et le nombre de trames FSK série testées et valides.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Functions/FskSerialFunctions.cs` avec la recherche de phase, la classification des deux fréquences et le décodage UART paramétrable communs.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/AtariCasConstants.cs` avec le nombre minimal d’échantillons par bit partagé par le décodage FSK Atari.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Functions/FskSerialFunctions.cs` pour exposer le décodage de bits UART déjà reconstruits aux formats qui conservent directement leur signal FSK.
-    - [x] Modifier `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariCassetteDecoder.cs` pour employer le décodage FSK série commun et supprimer sa copie locale.
+    - [x] Modifier `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariTapeDecoder.cs` pour employer le décodage FSK série commun et supprimer sa copie locale.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Msx/MsxTapeDecoder.cs` pour employer le décodage FSK série commun et supprimer sa copie locale.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/UefConstants.cs` avec les fréquences, la trame série et les champs invariants des blocs Acorn nécessaires au décodeur et à l’encodeur.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Decoding/Sequential/Acorn/AcornTapeDecoder.cs` pour valider les flux asynchrones Acorn ou KCS et extraire leurs blocs sans logique d’interface.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Functions/FskSerialFunctions.cs` avec la génération PCM commune des bits, porteuses et trames UART FSK paramétrables.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Encoding/Sequential/Msx/MsxTapeEncoder.cs` pour employer la génération PCM FSK commune et supprimer sa copie locale.
-    - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/UefConstants.cs` avec la taille maximale d’un bloc de données du cassette filing system Acorn.
+    - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/UefConstants.cs` avec la taille maximale d’un bloc de données du tape filing system Acorn.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Functions/PcmSampleFunctions.cs` avec l’ajout de silence PCM partagé par les encodeurs séquentiels.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Encoding/Sequential/Msx/MsxTapeEncoder.cs` pour employer l’ajout de silence PCM commun et supprimer sa copie locale.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Encoding/Sequential/Acorn/AcornTapeEncoder.cs` pour produire les chunks ou échantillons standards demandés par le Writer cible.
@@ -364,7 +364,7 @@ dans l’ordre.
   - [x] 4.10 Alimenter le visualiseur séquentiel déjà créé
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Visualization/MediaVisualizationElement.cs` pour conserver séparément la ligne de rendu, la face, la piste et le canal séquentiels réellement fournis, y compris leur index zéro.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Visualization/Providers/SequentialMediaVisualizationProvider.cs` pour produire lignes, faces, pistes, canaux, segments et positions temporelles réellement fournies par les nouveaux Readers.
-  - [x] 4.11 Réconcilier la hiérarchie achevée du point cassette et bande
+  - [x] 4.11 Réconcilier la hiérarchie achevée du point tape et bande
     - [x] Modifier `docs/tasks/media-exploration.md` pour cocher les groupes 4.6 à 4.8 à leur emplacement hiérarchique et supprimer leurs trois titres cochés dupliqués.
 
 - [x] 5. Préparer les futurs appareils physiques sans déplacer leur code dans MediaEngine

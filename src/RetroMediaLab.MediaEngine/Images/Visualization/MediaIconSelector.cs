@@ -20,7 +20,7 @@ public static class MediaIconSelector
             MediaKind.Floppy => MediaIconIds.Floppy,
             MediaKind.HardDisk => MediaIconIds.HardDisk,
             MediaKind.Optical => MediaIconIds.Optical,
-            MediaKind.Tape when extension is MediaIconExtensions.Cas or MediaIconExtensions.Cdt or MediaIconExtensions.Tzx or MediaIconExtensions.Wav => MediaIconIds.Cassette,
+            MediaKind.Tape when extension is MediaIconExtensions.Cas or MediaIconExtensions.Cdt or MediaIconExtensions.Tzx or MediaIconExtensions.Wav => MediaIconIds.TapeData,
             MediaKind.Tape => MediaIconIds.Tape,
             MediaKind.Cartridge => MediaIconIds.Cartridge,
             _ when extension is MediaIconExtensions.Crt or MediaIconExtensions.Car or MediaIconExtensions.Rom or MediaIconExtensions.A26

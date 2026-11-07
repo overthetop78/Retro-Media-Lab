@@ -231,7 +231,7 @@ public sealed class AcornEmuMasterTests
         {
             machine.SetInput(EmulationInputSnapshot.Empty);
             machine.NetworkFrameTransmitted = null; machine.NetworkPoll = null;
-            machine.EjectCassette();
+            machine.EjectTape();
         }
     }
     [Fact]

@@ -26,7 +26,7 @@ Les répertoires sans extension entre crochets contiennent principalement des `.
 - Les flux HxC Stream, KryoFlux et SCP utilisent la même représentation de flux du moteur. Ils alimentent le même visualisateur, les mêmes décodeurs de secteurs et les mêmes conversions compatibles.
 - Les fichiers audio sont décodés en PCM puis exposés comme bande séquentielle. Le visualisateur affiche leur signal ; le décodeur CPC retrouve les blocs et vrais noms enregistrés sur la bande pour l’explorateur et les conversions CDT/TZX/WAV compatibles.
 - L’extension `.tap` déjà prise en charge par le moteur désigne le conteneur de blocs Spectrum. Aucun fichier `.tap` CPC ni aucune structure CPC distincte n’est démontré par ce corpus : elle ne doit donc pas être attribuée au CPC par simple égalité d’extension. Les sorties CPC documentées restent CDT/TZX, WAV et VOC.
-- Une ROM brute n’est pas transformée arbitrairement en disquette ou cassette. Elle est reconnue comme mémoire/cartouche selon sa structure et sa capacité.
+- Une ROM brute n’est pas transformée arbitrairement en disquette ou tape. Elle est reconnue comme mémoire/cartouche selon sa structure et sa capacité.
 - Une CPR conserve ses chunks RIFF et ses banques réelles. Une conversion CPR vers ROM brute peut concaténer les banques dans leur ordre d’adresse ; l’opération inverse exige des banques de taille valide.
 - Les banques CPR/ROM sont des plages distinctes de la représentation bloc commune. Le visualisateur bloc existant conserve donc chaque frontière de banque sans traitement graphique propre à l’Amstrad.
 - Un instantané `.sna` CPCEMU/Caprice32 est un contenu de démarrage propre à l’émulateur. Il n’est ni lu, ni exploré, ni visualisé par MediaEngine.

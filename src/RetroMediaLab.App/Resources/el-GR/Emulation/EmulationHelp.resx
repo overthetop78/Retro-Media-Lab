@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Επιλογή του δευτερεύοντος firmware ROM απαιτείται από ορισμένα μοντέλα μηχανών. Αφήστε αυτό το πεδίο κενό όταν το επιλεγμένο μοντέλο δεν χρησιμοποιεί ένα εκτεταμένο ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Ενεργοποίηση επιτάχυνσης SIO μεταφορές</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Επιταχύνει συμβατές μεταφορές μέσω του σειριακού λεωφορείου εισόδου/εξόδου. Απενεργοποίηση αυτής της επιλογής όταν το λογισμικό εξαρτάται από τον αρχικό χρόνο μεταφοράς.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Ενεργοποίηση εκκίνησης κασέτας</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Κάνει τη μηχανή που μιμείται να προσπαθήσει να ξεκινήσει από τη συνημμένη εικόνα κασέτας. Απενεργοποίηση αυτής της επιλογής κατά την εκκίνηση από άλλη συσκευή.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Ενεργοποίηση εκκίνησης κασέτας</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Κάνει τη μηχανή που μιμείται να προσπαθήσει να ξεκινήσει από τη συνημμένη εικόνα κασέτας. Απενεργοποίηση αυτής της επιλογής κατά την εκκίνηση από άλλη συσκευή.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Ενεργοποίηση του R-Time 8 ρολόι</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Προσομοίωση R-Time 8 ρολόι σε πραγματικό χρόνο ώστε συμβατό λογισμικό μπορεί να διαβάσει την τρέχουσα ημερομηνία και ώρα.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Ενεργοποίηση του P: συσκευή εκτυπωτή</value></data>

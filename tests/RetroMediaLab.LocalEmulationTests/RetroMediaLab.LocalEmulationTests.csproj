@@ -64,7 +64,7 @@
     <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\MachineConfigurationScenarios.cs" Link="Shared\Interface\EmulationViews\MachineConfigurationScenarios.cs" />
     <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\MachineTabsScenarios.cs" Link="Shared\Interface\EmulationViews\MachineTabsScenarios.cs" />
     <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\EmulationInteractionScenarios.cs" Link="Shared\Interface\EmulationViews\EmulationInteractionScenarios.cs" />
-    <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\CassetteTransportPresentationScenarios.cs" Link="Shared\Interface\EmulationViews\CassetteTransportPresentationScenarios.cs" />
+    <Compile Include="..\RetroMediaLab.Tests\Interface\EmulationViews\TapeTransportPresentationScenarios.cs" Link="Shared\Interface\EmulationViews\TapeTransportPresentationScenarios.cs" />
   </ItemGroup>
 
   <ItemGroup>

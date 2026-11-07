@@ -4,11 +4,11 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
-  <data name="Emulation.Epoch.Controller.CassetteVision" xml:space="preserve"><value>Cassette Vision</value></data>
-  <data name="Emulation.Epoch.Controller.CassetteVisionJr" xml:space="preserve"><value>Cassette Vision Jr.</value></data>
-  <data name="Emulation.Epoch.Controller.SuperCassetteVision" xml:space="preserve"><value>Super Cassette Vision</value></data>
-  <data name="Emulation.Epoch.Controller.SuperCassetteVisionYeno" xml:space="preserve"><value>Yeno Super Cassette Vision</value></data>
-  <data name="Emulation.Epoch.Controller.SuperCassetteVisionLady" xml:space="preserve"><value>Super Cassette Vision Lady</value></data>
+  <data name="Emulation.Epoch.Controller.TapeVision" xml:space="preserve"><value>Cassette Vision</value></data>
+  <data name="Emulation.Epoch.Controller.TapeVisionJr" xml:space="preserve"><value>Cassette Vision Jr.</value></data>
+  <data name="Emulation.Epoch.Controller.SuperTapeVision" xml:space="preserve"><value>Super Cassette Vision</value></data>
+  <data name="Emulation.Epoch.Controller.SuperTapeVisionYeno" xml:space="preserve"><value>Yeno Super Cassette Vision</value></data>
+  <data name="Emulation.Epoch.Controller.SuperTapeVisionLady" xml:space="preserve"><value>Super Cassette Vision Lady</value></data>
   <data name="Emulation.Epoch.Input.FireLeft" xml:space="preserve"><value>Left side button</value></data>
   <data name="Emulation.Epoch.Input.FireRight" xml:space="preserve"><value>Right side button</value></data>
   <data name="Emulation.Epoch.Input.Enter" xml:space="preserve"><value>EN</value></data>

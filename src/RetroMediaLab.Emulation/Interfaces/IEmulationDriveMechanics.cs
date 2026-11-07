@@ -7,7 +7,7 @@ public interface IEmulationDriveMechanics : RetroMediaLab.Chips.Controllers.Comm
     bool HasPendingAudio { get; }
     /// <summary>Applique le profil de lecteur, le volume en pourcentage et l’activation.</summary>
     void Configure(string? profile, double volumePercent, bool enabled);
-    /// <summary>Commande le bruitage du transport cassette indépendamment de ses données.</summary>
+    /// <summary>Commande le bruitage du transport tape indépendamment de ses données.</summary>
     void SetTapeOperation(string operation);
     /// <summary>Signale une insertion dans le lecteur possédé par la machine.</summary>
     void Insert();

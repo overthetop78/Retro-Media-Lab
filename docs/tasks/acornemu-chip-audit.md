@@ -327,7 +327,7 @@ MOS 6502 : JAM, SO et SYNC corrigés et 46 cas ciblés réussis, dont le program
 - [x] Remplacer le séquencement NMOS indivisible par des phases de bus mémorisées, sans allocation par instruction.
   - [x] Créer `Components/Mos6502/Enums/Cpu6502Operation.cs`, `Cpu6502AddressMode.cs`, `Cpu6502BusPhase.cs` et `Services/Cpu6502.Decode.cs` : opérations, modes et phases nommés, table immuable des 256 décodages NMOS.
   - [x] Créer `Components/Mos6502/Services/Cpu6502.Nmos.cs` et `Cpu6502.NmosOperations.cs` : sélection et accomplissement d’un cycle, conservation des phases lors d’une lecture RDY inactive, poursuite des écritures NMOS, pile/branches/vecteurs/JAM et application des opérations sans allocations ni répétition d’écritures.
-  - [x] Modifier `Components/Common/Interfaces/ICpuBus.cs`, `Components/Mos6502/Services/Cpu6502.cs` et `Machines/BbcMicro/Common/Functions/CassetteFunctions.cs` : entrée Ready par défaut active, Step NMOS utilisant le séquenceur, RESET annulant une instruction suspendue, interception cassette seulement à la frontière d’instruction ; conserver le chemin CMOS existant jusqu’à sa propre reprise.
+  - [x] Modifier `Components/Common/Interfaces/ICpuBus.cs`, `Components/Mos6502/Services/Cpu6502.cs` et `Machines/BbcMicro/Common/Functions/TapeFunctions.cs` : entrée Ready par défaut active, Step NMOS utilisant le séquenceur, RESET annulant une instruction suspendue, interception tape seulement à la frontière d’instruction ; conserver le chemin CMOS existant jusqu’à sa propre reprise.
   - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmu6502BusTests.cs` : attentes à l’opcode, aux opérandes, aux données, dans les accès RMW et la pile ; écritures non répétées, SYNC maintenu, interruptions et RESET pendant RDY.
   - [x] Modifier `docs/chips/CPU/Mos6502.md` après le contrôle groupé avec les fonctions effectivement vérifiées et leurs limites ; détailler les preuves de machine et mesures avant de les ajouter.
 
@@ -383,7 +383,7 @@ Instruction utilisateur : après achèvement et commit du MOS 6502, s’arrêter
   - [x] Supprimer `AcornEmu6502ResetScreenDiagnostic.cs` et les deux fichiers `%TEMP%/RetroMediaLab-6502-signals.pdf` et `.png` après inspection ; modifier la fiche avec le résultat, puis reconstruire les tests pour retirer le diagnostic.
 - [x] Livrer le bloc MOS 6502 terminé, puis s’arrêter avant toute autre puce.
   - [x] Modifier `docs/chips/CPU/Mos6502.md` : clôturer chaque domaine seulement après ses contrôles et préciser les variantes et comportements indéfinis, les preuves et les mesures finales.
-  - [x] Modifier `docs/tasks/acornemu-chip-audit.md` avec les résultats finaux du contrôle Acorn, du script Debug modules A et des fichiers de sortie ; indexer uniquement les fichiers MOS 6502, contrat de bus, raccordement cassette, tests et fiche/captures concernés, puis créer leur commit indépendant.
+  - [x] Modifier `docs/tasks/acornemu-chip-audit.md` avec les résultats finaux du contrôle Acorn, du script Debug modules A et des fichiers de sortie ; indexer uniquement les fichiers MOS 6502, contrat de bus, raccordement tape, tests et fiche/captures concernés, puis créer leur commit indépendant.
 
 Validation finale du séquenceur MOS 6502 : 1 260 tests permanents AcornEmu réussis, zéro échec, 22 s ; diagnostic externe 80186 exclu. Capture RESET/DBE inspectée, diagnostic supprimé et assembly reconstruit. Script Debug modules A terminé avec code 0 ; exécutable build/Debug/Retro Media Lab/retromedialab.exe présent et 24 DLL de modules vérifiées.
 

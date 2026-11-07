@@ -1,3 +1,3 @@
 namespace RetroMediaLab.Emulation.Nec.Common.Machines.Common.Enums;
 
-public enum MediaCategory { Floppy, Cassette, Cartridge, Snapshot, CompactDisc, HardDisk }
+public enum MediaCategory { Floppy, Tape, Cartridge, Snapshot, CompactDisc, HardDisk }

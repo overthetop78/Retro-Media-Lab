@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>ขนาดหรือเรขาคณิตของดิสก์ไม่ถูกต้อง</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>จองพื้นที่จริงทันที มิฉะนั้นอิมเมจจะขยายเมื่อเขียนข้อมูล</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>เซกเตอร์</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>เทปคาสเซ็ต</value></data>
+  <data name="Emulation.Storage.Tapes"><value>เทปคาสเซ็ต</value></data>
   <data name="Emulation.Storage.Cartridges"><value>ตลับเกม</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>คอมแพกต์ดิสก์</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>แสดงการทำงานของไดรฟ์บนหน้าจออีมูเลเตอร์</value></data>

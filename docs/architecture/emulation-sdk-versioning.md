@@ -14,7 +14,7 @@ présentation du SDK avec son rôle, son installation et le point de départ d'u
 | `1.3.0` | `1.3` | `2` |
 
 L’API 1.3 fixe la nouvelle base binaire : chemins d’images externes, signatures des réglages et
-périphériques, services cassette/disque, mécanique des lecteurs et caractères du clavier hôte.
+périphériques, services tape/disque, mécanique des lecteurs et caractères du clavier hôte.
 Les 24 modules du dépôt déclarent la plage `1.3` à `1.3`. Les paquets publiés pour l’API 1.2 sont
 refusés avant chargement ; leurs manifestes ne doivent pas être réétiquetés sans recompilation.
 Les 24 modules et le SDK portent tous la version `1.3.0`. Toute version de module inférieure à

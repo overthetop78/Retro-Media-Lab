@@ -14,7 +14,7 @@ using RetroMediaLab.MediaEngine.Interfaces.Decoding;
 
 namespace RetroMediaLab.MediaEngine.Images.Reading.Decoding.Sequential.Amstrad;
 
-/// <summary>Decodes CPC firmware cassette records retained in CDT/TZX or captured as PCM audio.</summary>
+/// <summary>Decodes CPC firmware tape records retained in CDT/TZX or captured as PCM audio.</summary>
 public sealed class AmstradCpcTapeDecoder : ISequentialMediaDecoder
 {
     private static readonly IReadOnlySet<string> SupportedFormats = new[] { TapeImageFormatIds.Tzx, TapeImageFormatIds.Wav, TapeImageFormatIds.Csw, TapeImageFormatIds.Raw, TapeImageFormatIds.Audio, TapeImageFormatIds.Voc }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
@@ -29,7 +29,7 @@ public sealed class AmstradCpcTapeDecoder : ISequentialMediaDecoder
     public async Task<SequentialDecodeResult> DecodeAsync(MediaImageDocument document, string? machineId = null, CancellationToken cancellationToken = default)
     {
         if (!CanDecode(document, machineId))
-            throw new InvalidDataException("The media document is not compatible with the Amstrad CPC cassette decoder.");
+            throw new InvalidDataException("The media document is not compatible with the Amstrad CPC tape decoder.");
 
         var representation = (SequentialMediaImageRepresentation)document.Representation;
         var records = document.FormatId.Equals(TapeImageFormatIds.Tzx, StringComparison.OrdinalIgnoreCase) ? await DecodeStructuredRecordsAsync(representation, cancellationToken).ConfigureAwait(false) : await DecodePcmRecordsAsync(document, representation, cancellationToken).ConfigureAwait(false);
@@ -84,7 +84,7 @@ public sealed class AmstradCpcTapeDecoder : ISequentialMediaDecoder
             {
                 if (record.Data.Length < AmstradCpcTapeConstants.HeaderLength)
                 {
-                    diagnostics.Add("A CPC cassette header record is shorter than 64 bytes.");
+                    diagnostics.Add("A CPC tape header record is shorter than 64 bytes.");
                     pending = null;
                     continue;
                 }
@@ -94,14 +94,14 @@ public sealed class AmstradCpcTapeDecoder : ISequentialMediaDecoder
 
             if (record.Sync != AmstradCpcTapeConstants.DataSync || pending is null)
             {
-                diagnostics.Add("A CPC cassette data record has no preceding header record.");
+                diagnostics.Add("A CPC tape data record has no preceding header record.");
                 continue;
             }
 
             var dataLength = Math.Min(pending.DataLength, record.Data.Length);
             var metadata = new Dictionary<string, string>(pending.Metadata, StringComparer.Ordinal)
             {
-                ["sourceKind"] = "amstrad-cpc-cassette-records",
+                ["sourceKind"] = "amstrad-cpc-tape-records",
                 ["headerIntegrityValid"] = pending.IntegrityValid.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 ["dataIntegrityValid"] = record.IntegrityValid.ToString(System.Globalization.CultureInfo.InvariantCulture)
             };
@@ -112,18 +112,18 @@ public sealed class AmstradCpcTapeDecoder : ISequentialMediaDecoder
                 pending.IntegrityValid && record.IntegrityValid && dataLength == pending.DataLength,
                 metadata));
             if (dataLength != pending.DataLength)
-                diagnostics.Add($"CPC cassette block {pending.BlockNumber} contains {dataLength} of {pending.DataLength} declared bytes.");
+                diagnostics.Add($"CPC tape block {pending.BlockNumber} contains {dataLength} of {pending.DataLength} declared bytes.");
             pending = null;
         }
 
-        if (pending is not null) diagnostics.Add("A CPC cassette header record has no following data record.");
+        if (pending is not null) diagnostics.Add("A CPC tape header record has no following data record.");
         var validCount = blocks.Count(block => block.IntegrityValid == true);
         return new SequentialDecodeResult(
             AmstradCpcTapeConstants.DecoderId,
             blocks.Count == 0 ? 0 : validCount / (double)blocks.Count,
             blocks,
             (representation.Segments ?? []).Where(segment => !consumed.Contains(segment.Position)).ToArray(),
-            blocks.Count == 0 ? diagnostics.Append("No complete CPC cassette file block was found.").ToArray() : diagnostics);
+            blocks.Count == 0 ? diagnostics.Append("No complete CPC tape file block was found.").ToArray() : diagnostics);
     }
 
     private static HeaderRecord ParseHeader(DecodedRecord record)

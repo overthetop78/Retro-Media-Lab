@@ -38,7 +38,7 @@ public sealed class MediaConversionComposition
         sectorFormatIds.UnionWith(RetroMediaLab.MediaEngine.Images.Formats.DiskDefsFormatReader.RawDefinitions.Keys);
         var sectorToFlux = new SectorToFluxRepresentationConverter(new SectorImageScpConversionService(new SectorImageTrackEncoder(), new ScpEncodedTrackFluxService(), new ScpWriter()));
         Converters = [new ScpFluxToSectorRepresentationConverter(scpDecoding.Reader, sectorFormatIds), sectorToFlux,
-            new RetroMediaLab.MediaEngine.Images.Conversion.Flux.FluxToHfeRepresentationConverter(), new CassetteSignalRepresentationConverter()];
+            new RetroMediaLab.MediaEngine.Images.Conversion.Flux.FluxToHfeRepresentationConverter(), new TapeSignalRepresentationConverter()];
         Registry = new MediaRepresentationConverterRegistry(Converters);
         SequentialDecoders = sequentialMedia.Decoders;
         SequentialEncoders = sequentialMedia.Encoders;

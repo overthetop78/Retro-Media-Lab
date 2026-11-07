@@ -13,12 +13,12 @@ internal static class StorageSettingsFunctionsConstants
     internal static readonly string Wud = CommonCoreHostFunctions.MediaProcessing.FileExtensions["Wud"];
     internal static readonly string Wux = CommonCoreHostFunctions.MediaProcessing.FileExtensions["Wux"];
     internal const string FloppyDriveCountOption = "storage.floppyDriveCount";
-    internal const string CassetteDriveEnabledOption = "storage.cassetteDriveEnabled";
+    internal const string TapeDriveEnabledOption = "storage.tapeDriveEnabled";
     internal const string CartridgeSlotEnabledOption = "storage.cartridgeSlotEnabled";
     internal const string CompactDiscDriveEnabledOption = "storage.compactDiscDriveEnabled";
     internal const string FloppyDriveLabel = "A:";
     internal const string SecondFloppyDriveLabel = "B:";
-    internal const string CassetteDriveLabel = "Cassette";
+    internal const string TapeDriveLabel = "Tape";
     internal const string CartridgeSlotLabel = "Cartridge";
     internal const string CompactDiscDriveLabel = "Optical disc";
 

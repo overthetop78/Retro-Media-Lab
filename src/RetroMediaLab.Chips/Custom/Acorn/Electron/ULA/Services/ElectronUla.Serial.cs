@@ -48,14 +48,14 @@ public sealed partial class ElectronUla
             TickTransmitCounter(_commsCounter.TickSound(), shiftData: false);
             if (_commsCounter.ReceiveClockEdge) TickReceiveCounter(_receiveMark);
         }
-        _cassette.SetOutputLevel(false);
+        _tape.SetOutputLevel(false);
         // Selecting another source does not assert the receiver reset pins.
         // In unused mode there are no counter clocks: preserve the entire receive phase.
         if (_comms != C.TapeInputMode) return;
         // Media presence belongs to the transport, not the receiver reset circuit.
         // An absent signal presents a stable low comparator level.
         var quietPhase = _commsCounter.TickInput();
-        var level = _cassette.InputPresent && _cassette.InputLevel;
+        var level = _tape.InputPresent && _tape.InputLevel;
         if (level != _lastInputLevel)
         {
             var period = _commsCounter.TakeInputPeriod();
@@ -74,7 +74,7 @@ public sealed partial class ElectronUla
         if (_commsCounter.ReceiveClockEdge) TickReceiveCounter(_receiveMark);
         var mark = _transmitBits == 0 || !_transmitSynchronized || (_transmitFrame & 1) != 0;
         _outputLevel = mark ? _commsCounter.MarkLevel : _commsCounter.SpaceLevel;
-        _cassette.SetOutputLevel(_outputLevel);
+        _tape.SetOutputLevel(_outputLevel);
     }
 
     private void TickTransmitCounter(bool frameClock, bool shiftData)

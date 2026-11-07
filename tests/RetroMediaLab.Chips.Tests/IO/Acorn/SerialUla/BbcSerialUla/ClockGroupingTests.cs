@@ -17,14 +17,14 @@ public sealed class ClockGroupingTests
         for (var tick = 0; tick < frequency / 2; tick++)
         {
             bool? level = tick < frequency / 3 ? ((long)tick * 4800 / frequency & 1) != 0 : null;
-            grouped.SetCassetteInput(level);
-            unit.SetCassetteInput(level);
+            grouped.SetTapeInput(level);
+            unit.SetTapeInput(level);
             grouped.Tick();
             unit.Tick(true, true);
             Assert.Equal((unit.SourceClockPhase, unit.ReceiveData, unit.DataCarrierDetectHigh,
-                unit.TransmitClockEdge, unit.ReceiveClockEdge, unit.CassetteOutput),
+                unit.TransmitClockEdge, unit.ReceiveClockEdge, unit.TapeOutput),
                 (grouped.SourceClockPhase, grouped.ReceiveData, grouped.DataCarrierDetectHigh,
-                grouped.TransmitClockEdge, grouped.ReceiveClockEdge, grouped.CassetteOutput));
+                grouped.TransmitClockEdge, grouped.ReceiveClockEdge, grouped.TapeOutput));
             carrierSeen |= grouped.DataCarrierDetectHigh;
         }
         Assert.True(carrierSeen);
@@ -55,10 +55,10 @@ public sealed class ClockGroupingTests
             grouped.Tick();
             unit.Tick(data, rts);
             Assert.Equal(unit.SourceClockPhase, grouped.SourceClockPhase);
-            Assert.Equal((unit.TransmitClockEdge, unit.ReceiveClockEdge, unit.CassetteOutput,
+            Assert.Equal((unit.TransmitClockEdge, unit.ReceiveClockEdge, unit.TapeOutput,
                 unit.Rs423TransmitData, unit.Rs423RequestToSendHigh, unit.ReceiveData,
                 unit.ClearToSendHigh, unit.DataCarrierDetectHigh, (unit.Control, unit.Motor, unit.Rs423Selected)),
-                (grouped.TransmitClockEdge, grouped.ReceiveClockEdge, grouped.CassetteOutput,
+                (grouped.TransmitClockEdge, grouped.ReceiveClockEdge, grouped.TapeOutput,
                 grouped.Rs423TransmitData, grouped.Rs423RequestToSendHigh, grouped.ReceiveData,
                 grouped.ClearToSendHigh, grouped.DataCarrierDetectHigh, (grouped.Control, grouped.Motor, grouped.Rs423Selected)));
             Assert.Equal(unitPins, groupedPins);
@@ -87,12 +87,12 @@ public sealed class ClockGroupingTests
                 Step();
             }
         }
-        // Une entrée cassette réveille le séparateur, puis son silence autorise
+        // Une entrée tape réveille le séparateur, puis son silence autorise
         // à nouveau les intervalles groupés. L'expiration reste au même front.
         for (var tick = 0; tick < frequency / 20; ++tick)
         {
             bool? level = tick < frequency / 40 ? ((long)tick * 4800 / frequency & 1) != 0 : null;
-            grouped.SetCassetteInput(level); unit.SetCassetteInput(level);
+            grouped.SetTapeInput(level); unit.SetTapeInput(level);
             Step();
         }
         grouped.PowerOn(); unit.PowerOn();

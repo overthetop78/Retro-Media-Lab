@@ -41,7 +41,7 @@ public sealed record MachineConfiguration : IEmulationConfiguration
     public Guid Id { get; init; }
     public MachineModel Model { get; }
     public string MachineId => Model.ToString();
-    public MachineFamily Family => Model is MachineModel.CassetteVision or MachineModel.CassetteVisionJr ? MachineFamily.CassetteVision : MachineFamily.SuperCassetteVision;
+    public MachineFamily Family => Model is MachineModel.TapeVision or MachineModel.TapeVisionJr ? MachineFamily.TapeVision : MachineFamily.SuperTapeVision;
     public Emulator Core { get; init; }
     public IReadOnlyList<FirmwareConfiguration> Firmwares { get; init; }
     public IReadOnlyList<MediaConfiguration> Media { get; init; }

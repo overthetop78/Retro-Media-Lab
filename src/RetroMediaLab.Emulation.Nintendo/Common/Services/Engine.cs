@@ -83,7 +83,7 @@ internal sealed class Engine
             EmulationMachineTab.Controllers => adapter is not null,
             EmulationMachineTab.Rom => adapter?.GetFirmwareSlots(current).Count > 0,
             EmulationMachineTab.Storage => model.MaximumFloppyDriveCount > 0
-                || model.SupportsCassetteDrive || model.SupportsCartridgeSlot
+                || model.SupportsTapeDrive || model.SupportsCartridgeSlot
                 || model.SupportsCompactDiscDrive,
             _ => item.Value
         });
@@ -338,7 +338,7 @@ internal sealed class Engine
             item.Type switch
             {
                 EmulationMediaType.Floppy => MediaCategory.Floppy,
-                EmulationMediaType.Cassette => MediaCategory.Cassette,
+                EmulationMediaType.Tape => MediaCategory.Tape,
                 EmulationMediaType.Cartridge => MediaCategory.Cartridge,
                 EmulationMediaType.CompactDisc => MediaCategory.CompactDisc,
                 _ => throw new ArgumentOutOfRangeException(nameof(media), item.Type, null)

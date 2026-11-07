@@ -13,7 +13,7 @@ internal static class MachineConstants
         (int)RamCapacity._64KB, HasKeyboard: true,
         BuiltInFloppyDriveCount: (int)DriveCount.None,
         MaximumFloppyDriveCount: (int)DriveCount.Two,
-        HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,
+        HasBuiltInTapeDrive: false, SupportsTapeDrive: false,
         HasBuiltInCartridgeSlot: false, SupportsCartridgeSlot: false,
         ControllerPortCount: (int)ControllerPortCount.Two,
         MouseButtonCount: (int)MouseButtonCount.None,

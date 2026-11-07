@@ -590,7 +590,7 @@ Retro Media Lab uses one Atari configuration editor for computer, console, and h
 2. Click **New**. A new configuration starts with the Atari ST model.
 3. Select the intended model before changing CPU, memory, firmware, or storage.
 4. In **Core**, install the core selected for that model if no active version is available.
-5. Set the shared, floppy, cassette, cartridge, compact-disc, hard-disk, state, and capture folders that apply to your library.
+5. Set the shared, floppy, tape, cartridge, compact-disc, hard-disk, state, and capture folders that apply to your library.
 6. Refresh the firmware scan and select only compatible firmware files.
 7. Review the CPU, RAM, ROM, video, audio, storage, keyboard, mouse, and controller tabs. Controls that do not apply to the model remain disabled or fixed.
 8. Add boot media in **Storage**, then click **Save**.
@@ -605,7 +605,7 @@ The model determines the core. Retro Media Lab manages one active installation f
 | Core | Models exposed by Retro Media Lab | Main media |
 |---|---|---|
 | Hatari | ST, STF, STFM, Mega ST, STE, Mega STE, TT, Falcon | Floppy, hard-disk image, GEMDOS directory |
-| Atari800 | Atari 400, Atari 800, Atari 800XL, Atari 130XE, modern XL/XE 320K, 576K and 1088K, XEGS, Atari 5200 | Floppy, cassette, cartridge |
+| Atari800 | Atari 400, Atari 800, Atari 800XL, Atari 130XE, modern XL/XE 320K, 576K and 1088K, XEGS, Atari 5200 | Floppy, tape, cartridge |
 | Stella | Atari 2600 | Cartridge |
 | ProSystem | Atari 7800 | Cartridge |
 | Beetle Lynx | Atari Lynx | Cartridge |
@@ -637,7 +637,7 @@ Firmware is not supplied by Retro Media Lab. Use files that you are legally perm
 
 ### General folders and core options
 
-The **General** tab displays the selected model and core, manages the active core version, scans firmware, and stores default Atari folders. Separate folders are available for shared data, floppy disks, cassettes, cartridges, compact discs, hard disks, states, and captures. Empty or irrelevant folders do not add a device to the machine; devices are created in **Storage**.
+The **General** tab displays the selected model and core, manages the active core version, scans firmware, and stores default Atari folders. Separate folders are available for shared data, floppy disks, tapes, cartridges, compact discs, hard disks, states, and captures. Empty or irrelevant folders do not add a device to the machine; devices are created in **Storage**.
 
 Core options are read from the installed core. Their available values therefore depend on both the selected model and installed core version. Preserve the default value unless you understand the corresponding core option. After replacing a core, reopen the configuration and confirm that every stored option still appears in the new version.
 
@@ -668,7 +668,7 @@ The **Audio** tab enables output and selects the Windows output target, latency,
 The **Storage** tab lists configured devices and provides **Type**, **Identifier**, **Interface**, and **Path** fields. Available device types and slots come from the selected model:
 
 - Hatari machines accept up to four floppy slots plus one hard-disk image or GEMDOS directory.
-- Atari 8-bit computers accept floppy, cassette, and cartridge media in their compatible slots.
+- Atari 8-bit computers accept floppy, tape, and cartridge media in their compatible slots.
 - Atari 5200, 2600, 7800, and Lynx configurations use cartridges.
 - Jaguar uses a cartridge; Jaguar CD additionally accepts one complete compact-disc image in `CD0`.
 

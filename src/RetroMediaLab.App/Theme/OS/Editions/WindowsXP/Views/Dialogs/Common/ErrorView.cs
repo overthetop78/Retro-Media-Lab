@@ -64,7 +64,7 @@ internal sealed class ErrorView : BusinessDialogView
         CommonErrorDialogMediaIcon.HardDisk => "Common.MediaKind.HardDisk",
         CommonErrorDialogMediaIcon.CompactDisc => "Common.MediaKind.Optical",
         CommonErrorDialogMediaIcon.Cartridge => "Emulation.Storage.Cartridges",
-        CommonErrorDialogMediaIcon.Cassette => "Common.MediaKind.Tape",
+        CommonErrorDialogMediaIcon.Tape => "Common.MediaKind.Tape",
         _ => throw new ArgumentOutOfRangeException(nameof(media))
     };
 

@@ -8,7 +8,7 @@ namespace RetroMediaLab.Emulation.Atari.Common.Machines.Common.Contracts;
 public sealed record FolderConfiguration(
     string? Shared = null,
     string? Floppies = null,
-    string? Cassettes = null,
+    string? Tapes = null,
     string? Cartridges = null,
     string? CompactDiscs = null,
     string? HardDisks = null,

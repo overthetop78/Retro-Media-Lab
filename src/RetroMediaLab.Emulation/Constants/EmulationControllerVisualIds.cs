@@ -19,7 +19,7 @@ public static class EmulationControllerVisualIds
     public const string PhilipsCdiGamepad = "philips-cdi-gamepad";
     public const string PhilipsCdiMouse = "philips-cdi-mouse";
     public const string FairchildChannelFController = "fairchild-channel-f-controller";
-    public const string EpochSuperCassetteVisionController = "epoch-super-cassette-vision-controller";
+    public const string EpochSuperTapeVisionController = "epoch-super-tape-vision-controller";
     public const string ColecoController = "coleco-controller";
     public const string ColecoDrivingController = "coleco-driving-controller";
     public const string ColecoSuperActionController = "coleco-super-action-controller";

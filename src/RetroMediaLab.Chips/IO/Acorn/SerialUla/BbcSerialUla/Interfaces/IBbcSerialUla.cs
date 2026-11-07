@@ -19,7 +19,7 @@ public interface IBbcSerialUla
     bool DataCarrierDetectHigh { get; }
     bool TransmitClockEdge { get; }
     bool ReceiveClockEdge { get; }
-    short CassetteOutput { get; }
+    short TapeOutput { get; }
     Action<bool, bool, bool, bool>? SerialPinsChanged { get; set; }
     Action<bool, bool, bool>? SerialClocksRaised { get; set; }
     long SourceClockPhase { get; }
@@ -27,7 +27,7 @@ public interface IBbcSerialUla
     void Tick();
     void Write(byte value);
     byte Read();
-    void SetCassetteInput(bool? level);
+    void SetTapeInput(bool? level);
     void Tick(bool transmitData, bool requestToSendHigh);
     void PowerOn();
 }

@@ -15,7 +15,7 @@ public sealed class MechanicalAudioPlaybackTests
     {
         var output = new MemoryOutput(buffered: true);
         var errors = new List<Exception>();
-        var mechanics = MediaEngineComposition.RuntimePreparation.CreateDriveMechanics(C.Cassette, hostAudio: true);
+        var mechanics = MediaEngineComposition.RuntimePreparation.CreateDriveMechanics(C.Tape, hostAudio: true);
         try
         {
             using var player = new MediaDriveAudioController(new MediaDriveService(), (error, _) => errors.Add(error), () => output);
@@ -59,14 +59,14 @@ public sealed class MechanicalAudioPlaybackTests
     [Fact]
     public void TapeOperationAdvancesOnlyWithHostAudioRequestsAndHonorsVolumeAndStop()
     {
-        var mechanics = new MediaDriveMechanics(C.Cassette);
+        var mechanics = new MediaDriveMechanics(C.Tape);
         try
         {
             mechanics.SetTapeOperation(C.Play);
             var first = mechanics.RenderAudio(48000, 4800);
             mechanics.SetTapeOperation(C.Play); // An identical activity report must not restart the recording.
             var second = mechanics.RenderAudio(48000, 4800);
-            var expected = MediaEngineComposition.RuntimePreparation.RenderMechanicalSound(C.Cassette, C.Play, 48000, 9600, 0);
+            var expected = MediaEngineComposition.RuntimePreparation.RenderMechanicalSound(C.Tape, C.Play, 48000, 9600, 0);
             Assert.Equal(expected, first.Concat(second));
             mechanics.Configure(null, 0, true);
             Assert.All(mechanics.RenderAudio(48000, 480), sample => Assert.Equal(0, sample));

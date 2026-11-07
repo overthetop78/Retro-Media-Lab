@@ -14,7 +14,7 @@ internal static class Atari800MediaFunctions
         .OrderBy(item => item.Category switch
         {
             MediaCategory.Cartridge => 0,
-            MediaCategory.Cassette => 1,
+            MediaCategory.Tape => 1,
             MediaCategory.Floppy => 2,
             _ => 3
         })
@@ -45,7 +45,7 @@ internal static class Atari800MediaFunctions
         return media.Category switch
         {
             MediaCategory.Floppy => RequireComputer(model, Atari800ContentType.Floppy),
-            MediaCategory.Cassette => RequireComputer(model, Atari800ContentType.Cassette),
+            MediaCategory.Tape => RequireComputer(model, Atari800ContentType.Tape),
             MediaCategory.Cartridge => ClassifyCartridge(model, media),
             _ => throw new ArgumentException(Atari800MediaErrors.UnsupportedMediaCategory, nameof(media))
         };
@@ -56,8 +56,8 @@ internal static class Atari800MediaFunctions
         var options = new Dictionary<string, string>(EightBitSettingsFunctions.Normalize(machine), StringComparer.Ordinal);
         options[EightBitSettingsConstants.SystemOptionKey] = SystemValue(machine, options);
         options.Remove(SettingsConstants.MainMemory);
-        var configuredCassetteBoot = options.TryGetValue(EightBitSettingsConstants.CassetteBootOptionKey, out var cassetteBoot) && string.Equals(cassetteBoot, EightBitSettingsConstants.Enabled, StringComparison.OrdinalIgnoreCase);
-        options[EightBitSettingsConstants.CassetteBootOptionKey] = media?.ContentType == Atari800ContentType.Cassette && (configuredCassetteBoot || media.Configuration.CassetteAutoBoot) ? EightBitSettingsConstants.Enabled : EightBitSettingsConstants.Disabled;
+        var configuredTapeBoot = options.TryGetValue(EightBitSettingsConstants.TapeBootOptionKey, out var tapeBoot) && string.Equals(tapeBoot, EightBitSettingsConstants.Enabled, StringComparison.OrdinalIgnoreCase);
+        options[EightBitSettingsConstants.TapeBootOptionKey] = media?.ContentType == Atari800ContentType.Tape && (configuredTapeBoot || media.Configuration.TapeAutoBoot) ? EightBitSettingsConstants.Enabled : EightBitSettingsConstants.Disabled;
         options[EightBitSettingsConstants.SioAccelerationOptionKey] = EightBitSettingsConstants.Enabled;
         if (options.TryGetValue(VideoAudioSettingsConstants.StandardOption, out var standard))
             options[EightBitSettingsConstants.VideoStandardOptionKey] = string.Equals(standard, HardwareRegion.Pal.ToString(), StringComparison.OrdinalIgnoreCase) ? EightBitSettingsConstants.Pal : EightBitSettingsConstants.Ntsc;
@@ -127,7 +127,7 @@ internal static class Atari800MediaFunctions
         var extensions = contentType switch
         {
             Atari800ContentType.Floppy => Atari800MediaConstants.FloppyExtensions,
-            Atari800ContentType.Cassette => Atari800MediaConstants.CassetteExtensions,
+            Atari800ContentType.Tape => Atari800MediaConstants.TapeExtensions,
             _ => Atari800MediaConstants.CartridgeExtensions
         };
         if (!extensions.Contains(Extension(media.Path)))

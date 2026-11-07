@@ -1,6 +1,6 @@
 namespace RetroMediaLab.MediaEngine.Constants;
 
-/// <summary>Stable identifiers for cassette and sequential tape image formats.</summary>
+/// <summary>Stable identifiers for tape and sequential tape image formats.</summary>
 public static class TapeImageFormatIds
 {
     public const string Wav = "tape.wav";

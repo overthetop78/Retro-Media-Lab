@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>يبيع البرمجيات الثانوية ROM مطلوبة من بعض نماذج الآلات إترك هذا المجال فارغاً عندما لا يستخدم النموذج المختار ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>التعجيل SIO التحويلات</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>تسرع في عمليات نقل متوافقة من خلال حافلة المدخلات/النواتج المتسلسلة، وتختلف هذه الخيارات عندما تعتمد البرامجيات على توقيت التحويل الأصلي.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>بدء تشغيل الكاسيت</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>يجعل الآلة المحاكاة تحاول أن تبدأ من صورة كاسيت المرفقة. فك هذا الخيار عندما يبدأ من جهاز آخر</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>بدء تشغيل الكاسيت</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>يجعل الآلة المحاكاة تحاول أن تبدأ من صورة كاسيت المرفقة. فك هذا الخيار عندما يبدأ من جهاز آخر</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>تمكين R-Time 8 الساعة</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>يُحاكي R-Time 8 ساعـة الزمن الحقيقي بحيث يمكن للبرمجيات المتوافقة أن تقرأ التاريخ والزمان الحاليين</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>تمكين P: جهاز طابعة</value></data>

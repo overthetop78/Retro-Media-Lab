@@ -44,7 +44,7 @@ internal static class RuntimeOptionFunctions
         EightBitSettingsConstants.RealTimeClockOptionKey,
         EightBitSettingsConstants.PrinterDeviceOptionKey,
         EightBitSettingsConstants.SerialDeviceOptionKey,
-        EightBitSettingsConstants.CassetteBootOptionKey,
+        EightBitSettingsConstants.TapeBootOptionKey,
         EightBitSettingsConstants.PokeyStereoOptionKey
     };
 
@@ -68,7 +68,7 @@ internal static class MessageFunctions
                 MediaCategory.HardDisk => EmulationMediaCategory.HardDisk,
                 MediaCategory.CompactDisc => EmulationMediaCategory.CompactDiscDrive,
                 MediaCategory.Cartridge => EmulationMediaCategory.CartridgeSlot,
-                MediaCategory.Cassette => EmulationMediaCategory.CassetteDrive,
+                MediaCategory.Tape => EmulationMediaCategory.TapeDrive,
                 _ => throw new ArgumentOutOfRangeException(nameof(rule))
             })
             .Distinct()

@@ -18,7 +18,7 @@ namespace RetroMediaLab.Tests.Media;
 public sealed class SequentialDecodingCompatibilityTests
 {
     private static ISequentialMediaDecoder[] Decoders() =>
-        [new AtariCassetteDecoder(), new AcornTapeDecoder(), new SpectrumTapeDecoder(),
+        [new AtariTapeDecoder(), new AcornTapeDecoder(), new SpectrumTapeDecoder(),
          new CommodoreTapeDecoder(), new AmstradCpcTapeDecoder(), new MsxTapeDecoder()];
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class SequentialDecodingCompatibilityTests
     {
         foreach (var decoder in Decoders())
         {
-            if (decoder is AtariCassetteDecoder or AcornTapeDecoder)
+            if (decoder is AtariTapeDecoder or AcornTapeDecoder)
                 Assert.Throws<ArgumentNullException>(() => decoder.CanDecode(null!));
             else
                 Assert.Throws<NullReferenceException>(() => decoder.CanDecode(null!));

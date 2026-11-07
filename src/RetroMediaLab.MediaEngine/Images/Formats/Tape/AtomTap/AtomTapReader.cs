@@ -13,7 +13,7 @@ using C = RetroMediaLab.MediaEngine.Constants.AtomTapeConstants;
 
 namespace RetroMediaLab.MediaEngine.Images.Formats.Tape.AtomTap;
 
-/// <summary>Lit les fichiers TAP/ATM successifs et reconstruit leurs blocs cassette Atom, sans injection en RAM.</summary>
+/// <summary>Lit les fichiers TAP/ATM successifs et reconstruit leurs blocs tape Atom, sans injection en RAM.</summary>
 public sealed class AtomTapReader : IMediaImageReader
 {
     public IReadOnlySet<string> FormatIds { get; } = new[] { TapeImageFormatIds.AtomTap }.ToFrozenSet();

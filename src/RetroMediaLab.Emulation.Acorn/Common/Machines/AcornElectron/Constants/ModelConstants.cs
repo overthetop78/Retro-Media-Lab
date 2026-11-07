@@ -18,6 +18,6 @@ internal static class ElectronModelConstants
     internal const int MemoryKib = 32;
     internal const int RomBytes = 16384;
     internal const int CombinedRomBytes = RomBytes * 2;
-    internal const int CassetteBaud = 1200;
+    internal const int TapeBaud = 1200;
     internal const int KeyboardPorts = 1;
 }

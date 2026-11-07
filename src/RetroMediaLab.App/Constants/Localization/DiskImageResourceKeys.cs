@@ -6,7 +6,7 @@ internal static class DiskImageResourceKeys
     internal const string CommonDiskImageFilter = "Common.DiskImageFilter";
     internal const string DetectionAmbiguous = "Detection.Ambiguous";
     internal const string ErrorUnexpected = "Error.Unexpected";
-    internal const string ExplorerCassette = "Explorer.Cassette";
+    internal const string ExplorerTape = "Explorer.Tape";
     internal const string ExplorerExternalEngineFailed = "Explorer.ExternalEngineFailed";
     internal const string ExplorerExternalEngineUnavailable = "Explorer.ExternalEngineUnavailable";
     internal const string ExplorerLoadingContents = "Explorer.LoadingContents";

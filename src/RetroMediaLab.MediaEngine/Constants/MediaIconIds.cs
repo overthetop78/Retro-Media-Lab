@@ -11,7 +11,7 @@ public static class MediaIconIds
     public const string Floppy = "floppy";
     public const string HardDisk = "hard-disk";
     public const string Optical = "optical";
-    public const string Cassette = "cassette";
+    public const string TapeData = "tape-data";
     public const string Tape = "tape";
     public const string Cartridge = "cartridge";
     public const string File = "file";

@@ -76,8 +76,8 @@ public partial class ExplorerSection
     private string CurrentSystem(ExploredMediaImage document)
     {
         if (document.Document.FormatId.Equals(TapeImageFormatIds.AtariCas, StringComparison.OrdinalIgnoreCase)
-            && document.Document.Metadata.TryGetValue(ExplorerMediaMetadataConstants.SystemId, out var cassetteSystemId)
-            && cassetteSystemId == DiskSystemIds.Atari8Bit)
+            && document.Document.Metadata.TryGetValue(ExplorerMediaMetadataConstants.SystemId, out var tapeSystemId)
+            && tapeSystemId == DiskSystemIds.Atari8Bit)
             return LocExtension.Get("System.atari-8bit");
         if (Classification.SelectedMachine is { } selectedMachine) return selectedMachine;
         var format = new DiskClassificationCatalog(_formats).ResolveFormat(document.Document.FormatId);
@@ -88,13 +88,13 @@ public partial class ExplorerSection
 
     private string TapeDescription(ExploredMediaImage document)
     {
-        var cassette = LocExtension.Get("Explorer.Cassette");
+        var tape = LocExtension.Get("Explorer.Tape");
         var system = CurrentSystem(document);
         if (!string.IsNullOrWhiteSpace(system)
             && !system.Equals(document.Document.MediaKind.ToString(), StringComparison.OrdinalIgnoreCase))
-            return $"{cassette} {system}";
+            return $"{tape} {system}";
         var format = FormatForIdentity(document.Document.FormatId);
-        return format is null ? cassette : $"{cassette} {format.DisplayName}";
+        return format is null ? tape : $"{tape} {format.DisplayName}";
     }
 
     private void ResetSummaryLabels()

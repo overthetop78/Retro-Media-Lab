@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>O tamanho ou a geometria do disco é inválido.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Reserva imediatamente o espaço físico; caso contrário, a imagem cresce durante a escrita.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Setores</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Cassete</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Cassete</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Cartucho</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Discos compactos</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Mostrar atividade das unidades no ecrã do emulador</value></data>

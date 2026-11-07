@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>המגזר Degraded</value></data>
   <data name="Visual.SectorDead"><value>Deadמגזר</value></data>
   <data name="Visual.SectorWithoutData"><value>מגזר ללא נתונים</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>פרטי הקלטת</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>פרטי הקלטת</value></data>
   <data name="Visual.Representation"><value>מצב תצוגה</value></data>
 </root>

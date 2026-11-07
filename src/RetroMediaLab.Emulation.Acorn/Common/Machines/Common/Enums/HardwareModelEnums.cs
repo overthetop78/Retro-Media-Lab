@@ -11,4 +11,4 @@ public enum HardwareRegion { Pal, Ntsc }
 
 public enum HardwarePortCapability { Keyboard, AnalogJoystick, DigitalJoystick, Mouse }
 
-public enum HardwareStorageCapability { Floppy, Cassette, Cartridge, HardDisk }
+public enum HardwareStorageCapability { Floppy, Tape, Cartridge, HardDisk }

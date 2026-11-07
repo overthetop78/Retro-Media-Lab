@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>เลือกเครื่องแม่ข่ายตัวที่สอง ROM ต้องสร้างเครื่องจักรจําลอง ทิ้งช่องข้อมูลนี้ให้ว่างไว้ เมื่อรุ่นที่เลือกไว้ไม่ได้ใช้ขยาย ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>เปิดใช้การเร่งความเร็ว SIO การถ่ายโอน</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>เร่งการโอนข้อมูลที่เข้ากันได้ ผ่านรถบัส ปิดการใช้งานตัวเลือกนี้ เมื่อโปรแกรมขึ้นอยู่กับเวลาทําการย้ายดั้งเดิม</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>เปิดใช้การเริ่มเทป</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>ทําให้เครื่องจักรจําลองพยายามเริ่มต้นจากภาพจากเทปที่แนบมา ปิดการใช้งานตัวเลือกนี้ เมื่อมีการเริ่มใช้งานอุปกรณ์อื่น</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>เปิดใช้การเริ่มเทป</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>ทําให้เครื่องจักรจําลองพยายามเริ่มต้นจากภาพจากเทปที่แนบมา ปิดการใช้งานตัวเลือกนี้ เมื่อมีการเริ่มใช้งานอุปกรณ์อื่น</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>เปิดใช้งาน R-Time 8 นาฬิกา</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>จําลอง R-Time 8 เวลาจริงเพื่อให้ซอฟต์แวร์ที่เข้ากันได้ สามารถอ่านวันที่และเวลาปัจจุบันได้</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>เปิดใช้งาน P: อุปกรณ์เครื่องพิมพ์</value></data>

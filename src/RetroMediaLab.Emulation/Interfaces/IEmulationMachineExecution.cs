@@ -36,7 +36,7 @@ public interface IEmulationMachineExecution
     /// <returns>Échéance calculée, ou date courante si elle était déjà dépassée.</returns>
     long WaitForNextFrame(long nextFrame, double framesPerSecond, TimeProvider clock, Action<TimeSpan> sleep);
 
-    /// <summary>Projette les voyants de disquette, cassette et cartouche vers leurs emplacements communs.</summary>
+    /// <summary>Projette les voyants de disquette, tape et cartouche vers leurs emplacements communs.</summary>
     Dictionary<EmulationMediaSlot, bool> FromLedStates(IReadOnlyDictionary<int, bool> leds);
     /// <summary>Projette les mêmes voyants avec l’activité du lecteur de disque compact.</summary>
     IReadOnlyDictionary<EmulationMediaSlot, bool> FromLedStatesWithCd(IReadOnlyDictionary<int, bool> leds);

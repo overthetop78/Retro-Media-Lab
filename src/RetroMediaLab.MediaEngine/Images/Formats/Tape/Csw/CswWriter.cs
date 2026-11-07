@@ -24,8 +24,8 @@ public sealed class CswWriter(IAtomicImageFileWriter? files = null) : IMediaImag
     public bool CanWrite(MediaImageDocument document, string format, string extension) => document.MediaKind == MediaKind.Tape && document.Representation.RepresentationKind == MediaRepresentationKind.Sequential && FormatIds.Contains(format) && ProducedFileExtensions.Contains(extension.ToLowerInvariant()) && PcmSampleFunctions.TryGetProfile(document.Metadata, out _, out _, out _, out _);
     public async Task<IReadOnlyList<string>> WriteAsync(MediaImageDocument document, string path, string format, CancellationToken token = default)
     {
-        if (!CanWrite(document, format, Path.GetExtension(path))) throw new InvalidDataException("A PCM cassette document is required.");
-        var native = await CassettePcmFunctions.ChannelsAsync(document, token).ConfigureAwait(false);
+        if (!CanWrite(document, format, Path.GetExtension(path))) throw new InvalidDataException("A PCM tape document is required.");
+        var native = await TapePcmFunctions.ChannelsAsync(document, token).ConfigureAwait(false);
         var samples = native.Channels[0];
         using var pulses = new MemoryStream();
         var high = samples.Length > 0 && samples[0] >= 0;

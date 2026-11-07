@@ -1,0 +1,17 @@
+using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
+using CommonHost = RetroMediaLab.Emulation.Acorn.Common.Functions.CoreHostFunctions;
+
+namespace RetroMediaLab.Emulation.Acorn.Common.Machines.BbcMicro.Functions;
+
+/// <summary>Relais BBC pour les images tape : le décodage des conteneurs appartient à MediaEngine via Emulation.</summary>
+internal static class BbcMicroTapeFunctions
+{
+    /// <summary>Charge une image sur le thread du cœur ; le service ferme ses flux avant de rendre le signal possédé.</summary>
+    internal static EmulationTapeSignal Read(string path, IReadOnlyDictionary<string, string>? parameters = null) => CommonHost.MediaProcessing.ReadTapeAsync(path, machineId: "acorn-bbc", parameters: parameters).GetAwaiter().GetResult();
+    /// <summary>Conserve le signal complet par l'écrivain du service commun ; aucun fichier n'est ouvert dans le module.</summary>
+    internal static void Write(string path, EmulationTapeSignal signal, IReadOnlyDictionary<string, string>? parameters = null) => CommonHost.MediaProcessing.WriteTapeAsync(path, signal, parameters: parameters).GetAwaiter().GetResult();
+    internal static IReadOnlyList<string> RecordingExtensions => CommonHost.MediaProcessing.TapeRecordingExtensions;
+    internal static short[] Sound(string operation, int sampleRate, int count, long offset, int volumePercent) => CommonHost.MediaProcessing.RenderMechanicalSound(S.Tape, operation, sampleRate, count, offset, volumePercent: volumePercent);
+    /// <summary>Durée du fichier réel pour terminer une action sans tronquer son bruitage.</summary>
+    internal static double SoundDuration(string operation) => CommonHost.MediaProcessing.MechanicalSoundDurationSeconds(S.Tape, S.Standard, operation);
+}

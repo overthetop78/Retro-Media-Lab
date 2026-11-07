@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>Audio</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>Szesnastościan</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>Zewnętrzne zastosowanie</value></data>
-  <data name="Explorer.Cassette"><value>Kaseta</value></data>
+  <data name="Explorer.Tape"><value>Kaseta</value></data>
   <data name="Explorer.InternalName"><value>Opis wewnętrzny</value></data>
   <data name="Explorer.BaudRates"><value>Prędkości</value></data>
   <data name="Explorer.Chunks"><value>Bloki</value></data>

@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>A lemez mérete vagy geometriája érvénytelen.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Azonnal lefoglalja a fizikai lemezterületet; különben a képfájl írás közben növekszik.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Szektorok</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Kazetta</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Kazetta</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Játékkazetta</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Kompaktlemezek</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Meghajtóaktivitás megjelenítése az emulátor képernyőjén</value></data>

@@ -60,7 +60,7 @@ internal static class CompatibilityFunctions
     private static MediaCompatibilityRule CreateMediaRule(MediaCategory category) => category switch
     {
         MediaCategory.Floppy => Media(category, EmulationMediaSlot.Floppy0, EmulationMediaSlot.Floppy1, EmulationMediaSlot.Floppy2, EmulationMediaSlot.Floppy3),
-        MediaCategory.Cassette => Media(category, EmulationMediaSlot.Cassette0),
+        MediaCategory.Tape => Media(category, EmulationMediaSlot.Tape0),
         MediaCategory.Cartridge => Media(category, EmulationMediaSlot.Cartridge0),
         MediaCategory.CompactDisc => Media(category, EmulationMediaSlot.Cd0),
         _ => throw new ArgumentOutOfRangeException(nameof(category), category, ErrorMessages.IncompatibleMedia)

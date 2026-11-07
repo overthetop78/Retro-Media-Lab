@@ -6,11 +6,11 @@ public sealed record BbcSerialUlaState
     public required int FormatVersion { get; init; }
     public required long ClockDenominator { get; init; }
     public required byte Control { get; init; }
-    public required bool? CassetteInput { get; init; }
+    public required bool? TapeInput { get; init; }
     public required bool SeparatorActive { get; init; }
     public required bool PreviousLevel { get; init; }
     public required bool HasLevel { get; init; }
-    public required bool CassetteData { get; init; }
+    public required bool TapeData { get; init; }
     public required int EdgeTicks { get; init; }
     public required int CarrierEdges { get; init; }
     public required int CarrierPulse { get; init; }
@@ -28,7 +28,7 @@ public sealed record BbcSerialUlaState
     public required bool ReceiveClockEdge { get; init; }
     public required bool Rs423TransmitData { get; init; }
     public required bool Rs423RequestToSendHigh { get; init; }
-    public required short CassetteOutput { get; init; }
+    public required short TapeOutput { get; init; }
     public required bool Rs423ReceiveData { get; init; }
     public required bool Rs423ClearToSendHigh { get; init; }
     public required bool TransmitInput { get; init; }

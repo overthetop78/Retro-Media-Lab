@@ -13,16 +13,16 @@ internal static partial class ConfigurationFunctions
     internal static int ControllerPortCount(MachineModel model) => Family(model) == MachineFamily.Spectrum ? ControllerConstants.SpectrumPortCount : ControllerConstants.Zx81PortCount;
     internal static IReadOnlyList<EmulationMediaSlot> DefaultSlots(MachineModel model) => model switch
     {
-        MachineModel.SpectrumPlus3 or MachineModel.SpectrumPlus3E or MachineModel.Pentagon128K or MachineModel.Pentagon512K or MachineModel.Pentagon1024K or MachineModel.Scorpion256K => [EmulationMediaSlot.Cassette0, EmulationMediaSlot.Floppy0],
-        _ when Enum.IsDefined(model) => [EmulationMediaSlot.Cassette0],
+        MachineModel.SpectrumPlus3 or MachineModel.SpectrumPlus3E or MachineModel.Pentagon128K or MachineModel.Pentagon512K or MachineModel.Pentagon1024K or MachineModel.Scorpion256K => [EmulationMediaSlot.Tape0, EmulationMediaSlot.Floppy0],
+        _ when Enum.IsDefined(model) => [EmulationMediaSlot.Tape0],
         _ => throw new ArgumentOutOfRangeException(nameof(model))
     };
     internal static IReadOnlyList<EmulationMediaSlot> AvailableSlots(MachineModel model) => model switch
     {
-        MachineModel.SpectrumPlus3 or MachineModel.SpectrumPlus3E => [EmulationMediaSlot.Cassette0, EmulationMediaSlot.Floppy0, EmulationMediaSlot.Floppy1],
-        MachineModel.Pentagon128K or MachineModel.Pentagon512K or MachineModel.Pentagon1024K or MachineModel.Scorpion256K => [EmulationMediaSlot.Cassette0, EmulationMediaSlot.Floppy0, EmulationMediaSlot.Floppy1, EmulationMediaSlot.Floppy2, EmulationMediaSlot.Floppy3],
-        MachineModel.TimexTc2068 or MachineModel.TimexTs2068 => [EmulationMediaSlot.Cassette0, EmulationMediaSlot.Cartridge0],
-        _ when Enum.IsDefined(model) => [EmulationMediaSlot.Cassette0],
+        MachineModel.SpectrumPlus3 or MachineModel.SpectrumPlus3E => [EmulationMediaSlot.Tape0, EmulationMediaSlot.Floppy0, EmulationMediaSlot.Floppy1],
+        MachineModel.Pentagon128K or MachineModel.Pentagon512K or MachineModel.Pentagon1024K or MachineModel.Scorpion256K => [EmulationMediaSlot.Tape0, EmulationMediaSlot.Floppy0, EmulationMediaSlot.Floppy1, EmulationMediaSlot.Floppy2, EmulationMediaSlot.Floppy3],
+        MachineModel.TimexTc2068 or MachineModel.TimexTs2068 => [EmulationMediaSlot.Tape0, EmulationMediaSlot.Cartridge0],
+        _ when Enum.IsDefined(model) => [EmulationMediaSlot.Tape0],
         _ => throw new ArgumentOutOfRangeException(nameof(model))
     };
     internal static void Validate(MachineConfiguration configuration)
@@ -43,7 +43,7 @@ internal static partial class ConfigurationFunctions
                 throw new ArgumentException(nameof(configuration.Media));
             var expected = media.Slot.Category switch
             {
-                EmulationMediaCategory.CassetteDrive => MediaCategory.Tape,
+                EmulationMediaCategory.TapeDrive => MediaCategory.Tape,
                 EmulationMediaCategory.FloppyDrive => MediaCategory.Floppy,
                 EmulationMediaCategory.CartridgeSlot => MediaCategory.Cartridge,
                 _ => throw new ArgumentException(nameof(configuration.Media))

@@ -63,7 +63,7 @@ internal static class ConfigurationValidationFunctions
     internal static bool Supports(Model model, MediaCategory category, EmulationMediaSlot slot, IReadOnlyDictionary<string, string>? options = null) => category switch
     {
         MediaCategory.Floppy => model.MaximumFloppyDriveCount > 0,
-        MediaCategory.Cassette => model.SupportsCassetteDrive,
+        MediaCategory.Tape => model.SupportsTapeDrive,
         MediaCategory.Cartridge => slot.Category != EmulationMediaCategory.CartridgeSlot || slot.Index == 0 ? model.SupportsCartridgeSlot : slot.Index == 1 && model.SupportsSegaCardSlot,
         MediaCategory.CompactDisc => model.SupportsCompactDiscDrive || IsMegaCdEnabled(model, options),
         MediaCategory.Snapshot => true,

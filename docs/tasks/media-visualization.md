@@ -97,7 +97,7 @@ demandé. Les tâches sont exécutées et cochées une par une, dans l’ordre.
     - [x] Créer `src/RetroMediaLab.App/Presenters/Visualization/OpticalMediaInspectorPresenter.cs` pour construire le modèle depuis la représentation optique et présenter face, couche, session, piste, index, mode, durée et volume associé sans déduire une structure absente.
     - [x] Modifier `src/RetroMediaLab.App/Services/DiskImages/DiskImageWorkspaceController.cs` pour enregistrer `OpticalMediaView`, lui transmettre les documents `OpticalTracks` et afficher leur modèle d’inspection commun.
 
-  - [x] 1.6 Finaliser la vue d’une image de cassette ou de bande
+  - [x] 1.6 Finaliser la vue d’une image de tape ou de bande
     - [x] Créer `src/RetroMediaLab.MediaEngine/Visualization/Providers/SequentialMediaVisualizationProvider.cs` pour décrire les segments temporels et leurs voies réellement annoncés par une représentation `Sequential`.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Composition/MediaVisualizationComposition.cs` pour enregistrer le provider `Sequential` dans l’orchestration commune.
     - [x] Créer `src/RetroMediaLab.App/Enums/Rendering/Sequential/SequentialSegmentKind.cs` avec les valeurs `Unknown`, `Signal`, `Silence` et `DecodedBlock` sans déduire un contenu absent de la source.

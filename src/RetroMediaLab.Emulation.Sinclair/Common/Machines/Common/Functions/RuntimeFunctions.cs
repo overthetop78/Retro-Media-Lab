@@ -46,7 +46,7 @@ internal static class MessageFunctions
         if (coreError.IsLocalized)
             return CommonCoreHostFunctions.Messages.TranslateLocalized(error, Category(coreError.Category), context);
         if (coreError.Code == ErrorCode.ContentRequired)
-            return CommonCoreHostFunctions.Messages.RequiredMediaMissing(configuration.MachineId, [EmulationMediaCategory.CassetteDrive], error);
+            return CommonCoreHostFunctions.Messages.RequiredMediaMissing(configuration.MachineId, [EmulationMediaCategory.TapeDrive], error);
         return CommonCoreHostFunctions.Messages.Translate(error, Category(coreError.Category), MessageCode(coreError.Code), context);
     }
 

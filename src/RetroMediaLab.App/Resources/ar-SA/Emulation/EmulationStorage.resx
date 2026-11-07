@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>حجم القرص أو هندسته غير صالحين.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>يحجز مساحة القرص الفعلية فورًا؛ وإلا فستزداد الصورة مع كتابة البيانات.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>القطاعات</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>شريط كاسيت</value></data>
+  <data name="Emulation.Storage.Tapes"><value>شريط كاسيت</value></data>
   <data name="Emulation.Storage.Cartridges"><value>خرطوشة</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>أقراص مضغوطة</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>إظهار نشاط محركات الأقراص على شاشة المحاكي</value></data>

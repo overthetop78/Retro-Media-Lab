@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>播放</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>暫停</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>倒帶</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>快轉</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>錄製</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>停止</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>無磁帶</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>已停止</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>正在播放</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>已暫停</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>正在錄製</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>磁帶末端</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>序列数据率(baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>自动</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>装入模式</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>实时阅读</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>加速阅读</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>直接装入</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>磁带速度</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>快速前进并倒转速度</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>重播前的汽车启动延迟</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>记录前的汽车启动延迟</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>启用存储设备声音</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>防止书面行为</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>取样频率(Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>音频频道</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>每个样本的位数</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>已签名的样本</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW 磁带输入配置</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW 录音带记录简介</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>正在装入</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>磁带机械</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>自动跟随被模拟的计算机软件的序列数据率集,它不会从图像文件中检测出数据率.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>单声道</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>立体声</value></data>
+</root>

@@ -24,7 +24,7 @@ internal sealed class EmulationMediaRules : IEmulationMediaRules
         new Dictionary<EmulationMediaSlot, bool>
     {
         [EmulationMediaSlot.Floppy0] = leds.GetValueOrDefault(0),
-        [EmulationMediaSlot.Cassette0] = leds.GetValueOrDefault(1),
+        [EmulationMediaSlot.Tape0] = leds.GetValueOrDefault(1),
         [EmulationMediaSlot.Cartridge0] = leds.GetValueOrDefault(2)
     };
 
@@ -41,11 +41,11 @@ internal sealed class EmulationMediaRules : IEmulationMediaRules
         EmulationMediaCategory.HardDisk => type == EmulationMediaType.HardDisk,
         EmulationMediaCategory.CompactDiscDrive => type == EmulationMediaType.CompactDisc,
         EmulationMediaCategory.CartridgeSlot => type == EmulationMediaType.Cartridge,
-        EmulationMediaCategory.CassetteDrive => type == EmulationMediaType.Cassette,
+        EmulationMediaCategory.TapeDrive => type == EmulationMediaType.Tape,
         _ => false
     };
 
-    public bool SupportsEjection(EmulationMediaType type) => type is EmulationMediaType.Floppy or EmulationMediaType.CompactDisc or EmulationMediaType.Cartridge or EmulationMediaType.Cassette;
+    public bool SupportsEjection(EmulationMediaType type) => type is EmulationMediaType.Floppy or EmulationMediaType.CompactDisc or EmulationMediaType.Cartridge or EmulationMediaType.Tape;
 
     public bool RequiresReadOnly(EmulationMediaType type) => type is EmulationMediaType.CompactDisc or EmulationMediaType.Cartridge;
 

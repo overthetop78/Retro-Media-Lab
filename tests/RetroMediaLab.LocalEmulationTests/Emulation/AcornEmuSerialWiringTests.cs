@@ -50,7 +50,7 @@ public sealed class AcornEmuSerialWiringTests
             {
                 Assert.Equal(reference.Read(false), actual.Read(false));
                 Assert.Equal(reference.Read(true), actual.Read(true));
-                Assert.Equal(ula.CassetteOutput, serial.Ula.CassetteOutput);
+                Assert.Equal(ula.TapeOutput, serial.Ula.TapeOutput);
                 Assert.Equal(ula.TransmitClockEdge, serial.Ula.TransmitClockEdge);
                 Assert.Equal(ula.ReceiveClockEdge, serial.Ula.ReceiveClockEdge);
             }
@@ -131,7 +131,7 @@ public sealed class AcornEmuSerialWiringTests
     }
 
     [Fact]
-    public void CassetteCarrierTransitionsMatchUnfilteredWiring()
+    public void TapeCarrierTransitionsMatchUnfilteredWiring()
     {
         var actual = new ObservedAcia();
         var serial = new BbcSerial(actual);
@@ -155,7 +155,7 @@ public sealed class AcornEmuSerialWiringTests
 
     private static void TickReference(Acia6850 acia, BbcSerialUla ula, bool? input, int baud, ref long phase)
     {
-        ula.SetCassetteInput(input);
+        ula.SetTapeInput(input);
         ula.Tick(acia.TransmitBit, acia.RtsHigh);
         acia.SetCts(ula.ClearToSendHigh);
         acia.SetDcd(ula.DataCarrierDetectHigh);

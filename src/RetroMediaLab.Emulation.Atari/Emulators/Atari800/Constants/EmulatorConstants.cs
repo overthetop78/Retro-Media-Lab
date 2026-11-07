@@ -12,10 +12,10 @@ internal static class EmulatorConstants
         MachineModel.Atari130Xe, MachineModel.Xegs, MachineModel.XlXe, MachineModel.Atari5200);
 
     /// <summary>Délai conservé de l'impulsion Return après amorçage des modèles originaux, en frames.</summary>
-    internal const int CassetteAutoReturnDelayFrames = 75;
-    internal static IReadOnlyDictionary<EmulationCassetteCommand, IReadOnlyList<EmulationKey>> CassetteKeyCommands { get; } =
-        new ReadOnlyDictionary<EmulationCassetteCommand, IReadOnlyList<EmulationKey>>(new Dictionary<EmulationCassetteCommand, IReadOnlyList<EmulationKey>>
+    internal const int TapeAutoReturnDelayFrames = 75;
+    internal static IReadOnlyDictionary<EmulationTapeCommand, IReadOnlyList<EmulationKey>> TapeKeyCommands { get; } =
+        new ReadOnlyDictionary<EmulationTapeCommand, IReadOnlyList<EmulationKey>>(new Dictionary<EmulationTapeCommand, IReadOnlyList<EmulationKey>>
         {
-            [EmulationCassetteCommand.Play] = Array.AsReadOnly<EmulationKey>([EmulationKey.Return])
+            [EmulationTapeCommand.Play] = Array.AsReadOnly<EmulationKey>([EmulationKey.Return])
         });
 }

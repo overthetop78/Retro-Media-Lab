@@ -16,7 +16,7 @@ public sealed class MachineSessionMediaPersistenceTests
         var oldDisk = new EmulationMedia("previous-floppy", EmulationMediaSlot.Floppy0, EmulationMediaType.Floppy, false, true);
         var newDisk = oldDisk with { Path = "replacement-floppy" };
         var hardDisk = new EmulationMedia("new-hard-disk", EmulationMediaSlot.HardDisk0, EmulationMediaType.HardDisk, false, true);
-        var unsupported = new EmulationMedia("absent-cassette-reader", EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, false, true);
+        var unsupported = new EmulationMedia("absent-tape-reader", EmulationMediaSlot.Tape0, EmulationMediaType.Tape, false, true);
         var ejected = newDisk with { IsInserted = false };
         IReadOnlyList<EmulationMedia>? supplied = null;
         var starts = 0;
@@ -71,7 +71,7 @@ public sealed class MachineSessionMediaPersistenceTests
             EmulationMediaType.HardDisk => EmulationMediaSlot.HardDisk0,
             EmulationMediaType.CompactDisc => EmulationMediaSlot.Cd0,
             EmulationMediaType.Cartridge => EmulationMediaSlot.Cartridge0,
-            EmulationMediaType.Cassette => EmulationMediaSlot.Cassette0,
+            EmulationMediaType.Tape => EmulationMediaSlot.Tape0,
             EmulationMediaType.MemoryCard => EmulationMediaSlot.MemoryCard0,
             _ => throw new ArgumentOutOfRangeException(nameof(type))
         };

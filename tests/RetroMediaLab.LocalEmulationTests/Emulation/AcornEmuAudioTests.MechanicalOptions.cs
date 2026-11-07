@@ -45,8 +45,8 @@ public sealed partial class AcornEmuAudioTests
         }
         else
         {
-            Set("_cassetteMechanics", receiver);
-            volumeKey = EmulationCassetteSettings.Prefix + S.VolumeOption;
+            Set("_tapeMechanics", receiver);
+            volumeKey = EmulationTapeSettings.Prefix + S.VolumeOption;
             soundKey = EmulationTapeSettingsConstants.Sound;
         }
         Assert.False(Assert.Single(core.Options, option => option.Key == volumeKey).RequiresRestart);

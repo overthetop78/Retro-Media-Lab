@@ -22,8 +22,8 @@ internal abstract class EmulationMachinePresentation : UserControl, IDisposable
     internal abstract void SetShaderLoading(bool isLoading);
     internal abstract void SetDevices(IEnumerable<MachineViewDevice> devices, Action<Exception> showError, Action restoreFocus);
     internal abstract void SetDeviceStatus(string key, string status);
-    internal abstract void SetCassetteTransport(string key, EmulationCassetteState state,
-        EmulationCassetteCommand? activeOperation, IReadOnlySet<EmulationCassetteCommand> supportedCommands, bool powered);
+    internal abstract void SetTapeTransport(string key, EmulationTapeState state,
+        EmulationTapeCommand? activeOperation, IReadOnlySet<EmulationTapeCommand> supportedCommands, bool powered);
 
     public abstract void Dispose();
 }

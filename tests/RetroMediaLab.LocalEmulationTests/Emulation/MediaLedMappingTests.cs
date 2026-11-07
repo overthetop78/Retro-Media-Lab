@@ -9,7 +9,7 @@ public sealed class MediaLedMappingTests
 {
     [Theory]
     [InlineData(0, EmulationMediaCategory.FloppyDrive)]
-    [InlineData(1, EmulationMediaCategory.CassetteDrive)]
+    [InlineData(1, EmulationMediaCategory.TapeDrive)]
     [InlineData(2, EmulationMediaCategory.CartridgeSlot)]
     [InlineData(3, EmulationMediaCategory.CompactDiscDrive)]
     public void CdSnapshotKeepsTheOriginalSlotForEachLed(int led, EmulationMediaCategory category)
@@ -23,7 +23,7 @@ public sealed class MediaLedMappingTests
     public void OriginalSnapshotKeepsThreeKeysAndIgnoresCd()
     {
         var result = EmulationSdk.MachineExecution.FromLedStates(new Dictionary<int, bool> { [0] = true, [3] = true });
-        Assert.Equal(new[] { EmulationMediaSlot.Floppy0, EmulationMediaSlot.Cassette0, EmulationMediaSlot.Cartridge0 }, result.Keys);
+        Assert.Equal(new[] { EmulationMediaSlot.Floppy0, EmulationMediaSlot.Tape0, EmulationMediaSlot.Cartridge0 }, result.Keys);
         Assert.True(result[EmulationMediaSlot.Floppy0]);
         Assert.False(result.ContainsKey(EmulationMediaSlot.Cd0));
     }

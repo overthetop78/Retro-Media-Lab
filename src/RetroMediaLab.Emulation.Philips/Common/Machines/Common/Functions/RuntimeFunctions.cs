@@ -37,7 +37,7 @@ internal static class MessageFunctions
             return CommonCoreHostFunctions.Messages.RequiredMediaMissing(configuration.MachineId, [configuration.Family switch
                     {
                         MachineFamily.Cdi => EmulationMediaCategory.CompactDiscDrive,
-                        MachineFamily.P2000 => EmulationMediaCategory.CassetteDrive,
+                        MachineFamily.P2000 => EmulationMediaCategory.TapeDrive,
                         _ => EmulationMediaCategory.CartridgeSlot
                     }], error);
         return CommonCoreHostFunctions.Messages.Translate(error, Category(coreError.Category), MessageCode(coreError.Code), context);

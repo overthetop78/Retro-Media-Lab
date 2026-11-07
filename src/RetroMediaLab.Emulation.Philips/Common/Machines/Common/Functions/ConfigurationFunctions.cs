@@ -17,7 +17,7 @@ internal static partial class ConfigurationFunctions
     internal static IReadOnlyList<EmulationMediaSlot> DefaultSlots(MachineModel model) => Family(model) switch
     {
         MachineFamily.Cdi => [EmulationMediaSlot.Cd0],
-        MachineFamily.P2000 => [EmulationMediaSlot.Cassette0],
+        MachineFamily.P2000 => [EmulationMediaSlot.Tape0],
         MachineFamily.Videopac => [EmulationMediaSlot.Cartridge0],
         _ => throw new ArgumentOutOfRangeException(nameof(model))
     };
@@ -48,7 +48,7 @@ internal static partial class ConfigurationFunctions
         var category = configuration.Family switch
         {
             MachineFamily.Cdi => MediaCategory.CompactDisc,
-            MachineFamily.P2000 => MediaCategory.Cassette,
+            MachineFamily.P2000 => MediaCategory.Tape,
             MachineFamily.Videopac => MediaCategory.Cartridge,
             _ => throw new ArgumentOutOfRangeException(nameof(configuration))
         };

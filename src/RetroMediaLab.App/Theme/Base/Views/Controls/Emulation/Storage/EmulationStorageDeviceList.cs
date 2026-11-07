@@ -204,7 +204,7 @@ public sealed class EmulationStorageDeviceList : UserControl
         EmulationMediaType.HardDisk => LocExtension.Get(EmulationResourceKeys.HardDiskDevice),
         EmulationMediaType.CompactDisc => LocExtension.Get(EmulationResourceKeys.CompactDiscDevice),
         EmulationMediaType.MemoryCard => LocExtension.Get(EmulationResourceKeys.MemoryCardDevice),
-        EmulationMediaType.Cassette => LocExtension.Get(EmulationResourceKeys.CassetteDevice),
+        EmulationMediaType.Tape => LocExtension.Get(EmulationResourceKeys.TapeDevice),
         EmulationMediaType.Cartridge => LocExtension.Get(EmulationResourceKeys.CartridgeDevice),
         _ => type.ToString()
     };

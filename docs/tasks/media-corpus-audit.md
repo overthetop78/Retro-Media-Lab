@@ -836,15 +836,15 @@ Sous ce titre, créer une tâche pour l'image fautive, puis des sous-tâches con
     - Index 1073 : `Text Wizard v1.3 (Side B)[OS-B]`, 612 blocs manquants sur 720.
   - [x] Modifier `artifacts/media-audit/checkpoint.json` et supprimer `artifacts/media-audit/failure.json` après chaque occurrence limitée à l'une de ces deux erreurs.
   - [x] Modifier `artifacts/media-audit/items` et `artifacts/media-audit/checkpoint.json` en poursuivant jusqu'au prochain défaut d'une autre nature ou à la fin du corpus.
-    - La campagne s'est arrêtée à l'index 1074 sur une cassette reconnue sans fichier nommé extractible.
+    - La campagne s'est arrêtée à l'index 1074 sur une tape reconnue sans fichier nommé extractible.
 
-- [x] Reporter la cassette `Adaxbaud [b]` sans fichier nommé et poursuivre la campagne.
+- [x] Reporter la tape `Adaxbaud [b]` sans fichier nommé et poursuivre la campagne.
   - [x] Modifier `docs/tasks/media-corpus-audit.md` avec le résultat exact du lecteur séquentiel.
     - Index 1074 : le volume `Adax` est reconnu comme `sequential-content`, avec une capacité de 62 040 octets et un bloc décodé dépourvu de nom stocké.
     - Le lecteur signale `No named file is available for exploration`; aucun fichier nommé ne peut donc être présenté par l'explorateur. Ce cas est reporté sans créer de nom synthétique.
   - [x] Modifier `artifacts/media-audit/checkpoint.json` pour reprendre à l'index 1075 et supprimer `artifacts/media-audit/failure.json`.
 
-- [ ] Recenser et passer les autres cassettes reconnues sans fichier nommé extractible.
+- [ ] Recenser et passer les autres tapes reconnues sans fichier nommé extractible.
   - [ ] Modifier `docs/tasks/media-corpus-audit.md` pour ajouter chaque index, média, volume, capacité et avertissement du lecteur.
   - [ ] Modifier `artifacts/media-audit/checkpoint.json` et supprimer `artifacts/media-audit/failure.json` après chaque erreur strictement limitée à l'absence de fichier extrait.
   - [ ] Modifier `artifacts/media-audit/items` et `artifacts/media-audit/checkpoint.json` en poursuivant jusqu'au prochain défaut d'une autre nature ou à la fin du corpus.

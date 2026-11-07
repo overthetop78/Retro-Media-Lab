@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Vybere sekundární firmware ROM požadované některými modely strojů. Zanechte toto pole prázdné, pokud zvolený model nepoužívá rozšířené ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Povolit zrychlené SIO převody</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Zrychluje kompatibilní převody přes sériovou vstupní / výstupní sběrnici. Zakázat tuto volbu, když software závisí na původním načasování přenosu.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Povolit spuštění kazety</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Díky tomu se emulovaný stroj snaží spustit z připojeného kazetového obrazu. Vypnout tuto volbu při spuštění z jiného zařízení.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Povolit spuštění kazety</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Díky tomu se emulovaný stroj snaží spustit z připojeného kazetového obrazu. Vypnout tuto volbu při spuštění z jiného zařízení.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Povolit R-Time 8 hodiny</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Emuláty a emuláty R-Time 8 Real-time hodiny tak kompatibilní software může číst aktuální datum a čas.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Povolit P: tiskárna</value></data>

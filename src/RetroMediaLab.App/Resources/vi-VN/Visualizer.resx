@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>Phân khu bị hạ cấp</value></data>
   <data name="Visual.SectorDead"><value>Khu vực chết</value></data>
   <data name="Visual.SectorWithoutData"><value>Khu vực không có dữ liệu</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>Thông tin băng cassette</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>Thông tin băng cassette</value></data>
   <data name="Visual.Representation"><value>Chế độ Hiển thị</value></data>
 </root>

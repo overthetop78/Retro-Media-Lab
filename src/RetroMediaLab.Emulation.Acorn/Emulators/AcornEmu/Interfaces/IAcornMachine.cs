@@ -26,14 +26,14 @@ internal interface IAcornMachine
     string? NonvolatileMemoryFile => null;
     /// <summary>Transfère les échantillons entrelacés produits depuis le dernier prélèvement.</summary>
     short[] DrainAudio();
-    IEmulatorCassetteTransport? CassetteTransport { get; }
-    void InsertCassette(EmulationCassetteSignal signal, bool writable = false);
-    bool CassetteHasChanges { get; }
-    EmulationCassetteSignal RecordedCassette { get; }
-    void MarkCassetteSaved();
-    void RefreshCassetteIndex(EmulationCassetteSignal signal);
-    void ConfigureCassette(EmulationCassetteSettings settings);
-    void EjectCassette();
+    IEmulatorTapeTransport? TapeTransport { get; }
+    void InsertTape(EmulationTapeSignal signal, bool writable = false);
+    bool TapeHasChanges { get; }
+    EmulationTapeSignal RecordedTape { get; }
+    void MarkTapeSaved();
+    void RefreshTapeIndex(EmulationTapeSignal signal);
+    void ConfigureTape(EmulationTapeSettings settings);
+    void EjectTape();
     void AttachFloppy(int index, IEmulationDiskImage? image);
     bool FloppyActive(int index);
     bool FloppyMotor(int index);

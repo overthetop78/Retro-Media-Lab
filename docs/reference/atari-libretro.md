@@ -42,7 +42,7 @@ The firmware catalogue in Retro Media Lab must distinguish “optional original 
 | Core | Standard Disk Control | Extended Disk Control | Multi-disc/list behavior | Other removable media |
 |---|---:|---:|---|---|
 | Hatari | yes | yes when frontend interface version permits | `M3U`; disk insertion/ejection/index through the registered callbacks | VHD, IDE and GEMDOS marker content are loaded as primary content, not through a Libretro subsystem |
-| Atari800 | yes | yes when frontend interface version permits | `M3U`; disk insertion/ejection/index through the registered callbacks | cassette and cartridge are content types, not Libretro Disk Control drives |
+| Atari800 | yes | yes when frontend interface version permits | `M3U`; disk insertion/ejection/index through the registered callbacks | tape and cartridge are content types, not Libretro Disk Control drives |
 | Stella 2023 | no | no | none | cartridge content only |
 | ProSystem | no | no | none | cartridge content only |
 | Beetle Lynx | no | no | none | cartridge content only |
@@ -236,7 +236,7 @@ Generated from the English option definitions in the six source revisions locked
 | `atari800_rdevice` | R: Device / Serial (Restart) | `disabled`, `enabled` | `disabled` |
 | `atari800_slowxex` | Slow DOS Binary Loading | `disabled`, `enabled` | `disabled` |
 | `atari800_sioaccel` | SIO Acceleration | `disabled`, `enabled` | `enabled` |
-| `atari800_cassboot` | Boot from Cassette (Reboot) | `disabled`, `enabled` | `disabled` |
+| `atari800_cassboot` | Boot from Tape (Reboot) | `disabled`, `enabled` | `disabled` |
 | `atari800_pokey_stereo` | Stereo POKEY (Restart) | `disabled`, `enabled` | `disabled` |
 | `atari800_cfg` | Uses the Atari800 legacy configuration file | `disabled`, `enabled` | `disabled` |
 
@@ -428,7 +428,7 @@ The following are deliberately excluded from `Common`:
 - machine and model catalogues;
 - firmware names, requirements and validation;
 - content extensions and media-slot rules;
-- disk, cartridge, cassette and CD behavior;
+- disk, cartridge, tape and CD behavior;
 - option keys, defaults, accepted values and dynamic visibility;
 - keyboard, mouse, light-gun, keypad and controller mappings;
 - video modes, cadence, audio rates and renderer restrictions;

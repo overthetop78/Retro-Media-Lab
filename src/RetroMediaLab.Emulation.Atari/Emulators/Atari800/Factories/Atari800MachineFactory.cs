@@ -20,7 +20,7 @@ internal sealed class Atari800MachineFactory() : MachineFactory(EmulatorConstant
         var prepared = Atari800MediaFunctions.Prepare(configuration, media, sessionDirectory, coreInfo.Extensions);
         return new EmulatorPreparedContent(media, prepared.RuntimePath, coreInfo.NeedsFullPath,
             Atari800MediaFunctions.ApplyOptions(configuration, prepared), prepared.SessionMedia,
-            RequiresDiskControl: prepared.ContentType is Atari800ContentType.Floppy or Atari800ContentType.Cassette,
+            RequiresDiskControl: prepared.ContentType is Atari800ContentType.Floppy or Atari800ContentType.Tape,
             State: prepared);
     }
 
@@ -37,14 +37,14 @@ internal sealed class Atari800MachineFactory() : MachineFactory(EmulatorConstant
             throw new EmulationException(ErrorCategory.Content, ErrorCode.ContentUnsupported, Atari800MediaErrors.MediaControlRequired);
     }
 
-    public override bool SupportsDiskControl(MediaConfiguration media) => media.Category is MediaCategory.Floppy or MediaCategory.Cassette;
+    public override bool SupportsDiskControl(MediaConfiguration media) => media.Category is MediaCategory.Floppy or MediaCategory.Tape;
 
     public override bool SupportsDiskControlOperations => true;
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<EmulationCassetteCommand, IReadOnlyList<EmulationKey>> GetCassetteKeyCommands(MachineConfiguration configuration) => EmulatorConstants.CassetteKeyCommands;
+    public IReadOnlyDictionary<EmulationTapeCommand, IReadOnlyList<EmulationKey>> GetTapeKeyCommands(MachineConfiguration configuration) => EmulatorConstants.TapeKeyCommands;
 
     /// <inheritdoc/>
-    public int? GetCassetteBootReturnDelayFrames(MachineConfiguration configuration) => configuration.Model is MachineModel.Atari400 or MachineModel.Atari800
-        && configuration.Media.Any(media => media.Category == MediaCategory.Cassette && media.IsInserted) && CassetteBootFunctions.IsRequested(configuration) ? EmulatorConstants.CassetteAutoReturnDelayFrames : null;
+    public int? GetTapeBootReturnDelayFrames(MachineConfiguration configuration) => configuration.Model is MachineModel.Atari400 or MachineModel.Atari800
+        && configuration.Media.Any(media => media.Category == MediaCategory.Tape && media.IsInserted) && TapeBootFunctions.IsRequested(configuration) ? EmulatorConstants.TapeAutoReturnDelayFrames : null;
 }

@@ -13,7 +13,7 @@ internal sealed class MachineFactory : RetroMediaLab.Emulation.Commodore.Emulato
     public override IReadOnlyList<EmulationMediaDevice> DescribeMediaDevices(MachineConfiguration configuration) =>
     [
         new(EmulationMediaSlot.Floppy0, EmulationMediaType.Floppy, EmulatorConstants.DiskExtensions, RequiresMachineRecreation: true),
-        new(new(EmulationMediaCategory.CassetteDrive, EmulatorConstants.PrimaryMediaIndex), EmulationMediaType.Cassette, EmulatorConstants.CassetteExtensions, RequiresMachineRecreation: true)
+        new(new(EmulationMediaCategory.TapeDrive, EmulatorConstants.PrimaryMediaIndex), EmulationMediaType.Tape, EmulatorConstants.TapeExtensions, RequiresMachineRecreation: true)
     ];
     public override void PrepareFirmware(MachineConfiguration configuration, string systemDirectory)
     {

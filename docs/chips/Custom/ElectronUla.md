@@ -18,7 +18,7 @@ Les fichiers de tests cités ci-dessous sont sous `tests/RetroMediaLab.Chips.Tes
 | Adressage et pixels | Huit sélections de mode, plans de bits et répétitions pour tous les octets, chaque fil de palette, changements au point suivant, lignes de texte cachées, prélecture, start latched et wrap ; alias bas documentés du mode 0. `MemoryTests`, `PixelTests`, `LowStartTests`, `FrameStorageTests`. |
 | Périodes alignées | Les huit actions RAM/vidéo sont ordonnées explicitement ; le chemin par points conserve les mêmes actions. Comparaison des champs dans les huit modes alignés/désalignés ; 48 cas comparent aussi les broches, PHI, couleur et effets secondaires de changements de mode/annulations en cours de strobe. `ClockSequenceTests` et `PixelTests`. |
 | Son numérique | Compteur partagé, tous les diviseurs, période nominale PD+1, maintien de phase et du latch selon les changements de mode. `SoundTests`, `CommsCounterTests`. Aucune fidélité analogique du haut-parleur n’est déduite de ces tests. |
-| Cassette numérique | Émission start/données LSB/stop et porteuses, rechargement FE04 sans file d’attente, octet reçu visible pendant son décalage, prise au milieu du dernier bit, demi-stop/stop bas, causes IRQ et maintien des états selon les modes ; transferts des 256 valeurs entre broches et retours PCM natifs. `CassetteTests` et ses fichiers partiels, `CommsCounterTests`, contrôles natifs. |
+| Tape numérique | Émission start/données LSB/stop et porteuses, rechargement FE04 sans file d’attente, octet reçu visible pendant son décalage, prise au milieu du dernier bit, demi-stop/stop bas, causes IRQ et maintien des états selon les modes ; transferts des 256 valeurs entre broches et retours PCM natifs. `TapeTests` et ses fichiers partiels, `CommsCounterTests`, contrôles natifs. |
 | Entrée stable et horloges croisées | Continuation nominale sans média/front, durée longue saturée, inhibition du mode inutilisé, trames TX et RX cadencées par les modes son/sortie sans inventer une réception immédiate à FE07. Tests `QuietInput`, `ModeClocks` et compteur. Les équations physiques restant incertaines sont distinguées ci-dessous. |
 
 Dernier passage du code retenu : **2 364 tests de la bibliothèque Chips et 25 contrôles natifs Electron réussis dans chacune des configurations Debug et Release**, aucun ignoré. La suite Chips comprend les **291 contrôles propres à l’ULA**, ainsi que les contrôles du 6502 et de son contrat de présentation précoce du bus. Ce total ne remplace pas la portée précise de chaque famille de tests.
@@ -29,9 +29,9 @@ Les captures sont dans `artifacts/TestsChips/ElectronUla/AcornElectron/` et ne s
 
 - Les captures `final-selector-0.png` à `final-selector-7.png` proviennent d’une ROM de banc 6502 qui exécute ses contrôles puis dessine dans la RAM vidéo ; leur portée et leurs empreintes sont consignées dans l’historique.
 - `comms-counter.png` et `comms-counter-fail.png` montrent deux chemins réellement exécutés par une ROM de banc : A5/étapes 1–4 après les contrôles ou E0/aucune étape quand l’attente POR est volontairement fausse. SOUND PASS y désigne l’horloge de réception en mode sonore.
-- `mos-tape-boot.png`, `mos-tape-save.png`, `mos-tape-load.png` montrent le MOS/BASIC Electron existant, *SAVE puis *LOAD via les signaux cassette PCM. Les 256 octets sont comparés par l’hôte et BASIC recalcule leur somme avant d’afficher CASSETTE PASS. Le firmware et les données sont identifiés par empreinte dans l’historique ; aucun média/configuration utilisateur n’a été modifié.
+- `mos-tape-boot.png`, `mos-tape-save.png`, `mos-tape-load.png` montrent le MOS/BASIC Electron existant, *SAVE puis *LOAD via les signaux tape PCM. Les 256 octets sont comparés par l’hôte et BASIC recalcule leur somme avant d’afficher TAPE PASS. Le firmware et les données sont identifiés par empreinte dans l’historique ; aucun média/configuration utilisateur n’a été modifié.
 
-Les captures historiques ci-dessus précèdent le dernier ordonnancement direct des phases. Les trois captures `final-mos-boot.png`, `final-mos-save.png` et `final-mos-load.png` sont renouvelées après les dernières modifications du compteur et du calcul temporel : le MOS effectue SAVE/LOAD via PCM, les 256 octets sont vérifiés et BASIC affiche CASSETTE PASS après calcul de leur somme. Le passage et ses empreintes sont détaillés en fin de document. Ce test natif ne lance aucune fenêtre WPF ni sortie audio Windows.
+Les captures historiques ci-dessus précèdent le dernier ordonnancement direct des phases. Les trois captures `final-mos-boot.png`, `final-mos-save.png` et `final-mos-load.png` sont renouvelées après les dernières modifications du compteur et du calcul temporel : le MOS effectue SAVE/LOAD via PCM, les 256 octets sont vérifiés et BASIC affiche TAPE PASS après calcul de leur somme. Le passage et ses empreintes sont détaillés en fin de document. Ce test natif ne lance aucune fenêtre WPF ni sortie audio Windows.
 
 ### Performances retenues et points ouverts
 
@@ -53,21 +53,21 @@ La reproduction électrique porte par porte de CASSCK/S15 et des portes barrées
 
 ## Périmètre et références examinées
 
-Le composant est `Custom/Acorn/Electron/ULA` dans Chips ; son propriétaire est `ElectronMachine` dans Emulation.Acorn. L’examen inclut le circuit entier : bus et arbitrage RAM, registres, ROM/clavier, interruptions, vidéo, audio et cassette. Il ne concerne pas uniquement `ElectronVideo`.
+Le composant est `Custom/Acorn/Electron/ULA` dans Chips ; son propriétaire est `ElectronMachine` dans Emulation.Acorn. L’examen inclut le circuit entier : bus et arbitrage RAM, registres, ROM/clavier, interruptions, vidéo, audio et tape. Il ne concerne pas uniquement `ElectronVideo`.
 
 Références :
 
 - [Acorn Electron Service Manual, issue 2](https://www.retro-kit.co.uk/user/custom/Acorn/8bit/Electron/manuals/Acorn_ElectronSM.pdf), sections 5 et 6, schéma et diagramme fonctionnel : description constructeur des broches, horloges et mémoire.
 - [Acorn Application Note 015, issue 2, 7 juillet 1992](https://8bs.com/submit/acornappspdf/015.pdf), sections 2 et 4 : signaux du bus d’extension, transition 2/1 MHz, allongement de PHI, rôle de NMI et IRQ.
-- [MAME electron_ula.cpp](https://github.com/mamedev/mame/blob/master/src/mame/acorn/electron_ula.cpp) : comparaison des registres et du décodeur ; cette source indique elle-même des limites sur cassette en sortie, entrelacement, timing des interruptions et neige vidéo. Elle ne constitue pas une preuve de ces fonctions.
-- [Elkulator ula.c](https://github.com/dmcoles/elkulator/blob/master/src/ula.c) et [6502.c](https://github.com/dmcoles/elkulator/blob/master/src/6502.c) : pagination, vidéo et accès mémoire ; champs alternés de 312/313 lignes. Les approximations audio et cassette doivent être distinguées des mesures du circuit.
+- [MAME electron_ula.cpp](https://github.com/mamedev/mame/blob/master/src/mame/acorn/electron_ula.cpp) : comparaison des registres et du décodeur ; cette source indique elle-même des limites sur tape en sortie, entrelacement, timing des interruptions et neige vidéo. Elle ne constitue pas une preuve de ces fonctions.
+- [Elkulator ula.c](https://github.com/dmcoles/elkulator/blob/master/src/ula.c) et [6502.c](https://github.com/dmcoles/elkulator/blob/master/src/6502.c) : pagination, vidéo et accès mémoire ; champs alternés de 312/313 lignes. Les approximations audio et tape doivent être distinguées des mesures du circuit.
 - [ElectronFpga, ElectronULA.vhd](https://github.com/hoglet67/ElectronFpga/blob/master/src/common/ElectronULA.vhd) et ses traces `timings/ferranti_ula`/`synertek_ula` : reconstruction matérielle et mesures disponibles. Ce circuit ajoute aussi des modes VGA, turbo et extensions ; ces ajouts ne doivent pas être attribués à l’ULA d’origine. Le commentaire sur le compteur RTC indique des pertes de cycles propres à ce modèle FPGA : sa constante ne sera pas recopiée comme fréquence constructeur.
 
 Le miroir Stardot du guide avancé est protégé par un défi web. Une copie a ensuite été récupérée sur [le miroir PA3BYB](https://www.pa3byb.nl/wp-content/uploads/2017/12/Advance_user_guide_Acorn_electron.pdf), sections 14.1 et 15, et son texte extrait. Les [schémas Ferranti originaux de 1982, rescannés par Harry Barman](https://www.dropbox.com/s/xmr9h7srqpucj8l/elk_ula_scan_2017_10_17.pdf?dl=0) ont aussi été récupérés ; feuilles 9, 12 et 13 rendues et examinées. Les interprétations du forum ne remplacent pas ces feuilles.
 
 ## Broches et fonctions documentées
 
-Le manuel décrit les entrées 16 MHz et division par 13, les adresses/données CPU, R/W, NMI, POR et BREAK ; sorties PHI OUT, RST, IRQ, sélection ROM, CAPS LOCK ; signaux RAM RA0–RA7, données RAM, RAS/CAS/WE ; quatre lignes clavier ; sorties RGB, HS et CSYNC ; cassette CAS IN/CAS OUT/CAS RC/CAS MO ; sortie son.
+Le manuel décrit les entrées 16 MHz et division par 13, les adresses/données CPU, R/W, NMI, POR et BREAK ; sorties PHI OUT, RST, IRQ, sélection ROM, CAPS LOCK ; signaux RAM RA0–RA7, données RAM, RAS/CAS/WE ; quatre lignes clavier ; sorties RGB, HS et CSYNC ; tape CAS IN/CAS OUT/CAS RC/CAS MO ; sortie son.
 
 La note Acorn précise un temps bas PHI nominal de 250 ns. Le temps haut vaut 250 ns en accès 2 MHz, 750 ou 1 250 ns lors d’une transition vers le domaine 1 MHz, selon sa phase, et peut être prolongé pendant la lecture vidéo. La fréquence hôte ne doit pas supprimer ces attentes. NMI permet l’accès RAM à 1 MHz quelle que soit la sélection vidéo ; il ne doit donc pas être traité uniquement comme une interruption CPU.
 
@@ -77,7 +77,7 @@ Les registres palette sont actifs bas. Les bits de couleur sont répartis entre 
 
 ## État du code initial
 
-`ElectronUla` expose les registres, cinq sources IRQ masquées, le drapeau de mise sous tension acquitté à la première lecture de FE00, la pagination, moteur/LED, un oscillateur sonore et un sérialiseur cassette 1 200 bauds. `ElectronVideo` charge les octets RAM et produit huit pixels par appel 2 MHz, avec palette et adresse de début. Le propriétaire ralentit certains accès mémoire dans `SynchronizeBus`.
+`ElectronUla` expose les registres, cinq sources IRQ masquées, le drapeau de mise sous tension acquitté à la première lecture de FE00, la pagination, moteur/LED, un oscillateur sonore et un sérialiseur tape 1 200 bauds. `ElectronVideo` charge les octets RAM et produit huit pixels par appel 2 MHz, avec palette et adresse de début. Le propriétaire ralentit certains accès mémoire dans `SynchronizeBus`.
 
 Les tests actuellement présents sont dans LocalEmulationTests. Ils couvrent notamment FE00, le transmetteur, la pagination, une trame par mode et le moteur du magnétophone. Il n’existe pas encore de suite autonome de l’ULA dans Chips.Tests ; leurs résultats ne prouvent pas toutes les fonctions du circuit.
 
@@ -85,7 +85,7 @@ Les tests actuellement présents sont dans LocalEmulationTests. Ils couvrent not
 
 - PHI/RAS/CAS/WE, HS/CSYNC et les sorties par point ne sont pas exposés. La contention est calculée dans la machine ; NMI est fixé à false et ne participe pas à l’arbitrage.
 - La vidéo utilise systématiquement 312 lignes, tandis que la référence Elkulator distingue 312/313. Il faut déterminer les phases exactes depuis les diagrammes/mesures avant modification, sans copier les modes ajoutés par le FPGA.
-- `IElectronCassettePins.InputBit` fournit déjà un résultat de démodulation FSK ; la détection des périodes analogiques n’appartient donc pas actuellement à cette ULA. Le débit est arrondi à 1 200 au lieu d’être dérivé de l’entrée division par 13 du manuel. Le rôle du diviseur FE06 dans tous les modes reste à établir.
+- `IElectronTapePins.InputBit` fournit déjà un résultat de démodulation FSK ; la détection des périodes analogiques n’appartient donc pas actuellement à cette ULA. Le débit est arrondi à 1 200 au lieu d’être dérivé de l’entrée division par 13 du manuel. Le rôle du diviseur FE06 dans tous les modes reste à établir.
 - Le reset logiciel `Reset(false)` remet actuellement à zéro les sélections, masques, communication et oscillateur. Le constructeur distingue POR et RST ; les références logicielles/FPGA ne suffisent pas seules à déclarer ces effets de BREAK corrects ou incorrects. À vérifier avant changement.
 - Les changements de mode sont appliqués à des groupes de huit points, et le mode texte ne remet pas immédiatement à zéro le bit VA3 lors du retour graphique décrit dans les commentaires de reconstruction des schémas. La phase du registre de pixels reste à établir.
 
@@ -95,19 +95,19 @@ Registres : toutes les adresses miroirs, bits réservés, masques indépendants 
 
 Vidéo/mémoire : huit sélections de mode, tous les octets et entrées palette, start bas/haut, wrap, lignes espacées, changements de mode et palette en cours d’octet, registres de chargement, périodes/fenêtres des champs et interruptions, sélection CPU 2/1 MHz, accès bloqués et libérés, NMI, lignes RAM et refresh selon la documentation disponible.
 
-Audio/cassette : tous les diviseurs, écriture et changement de mode, phase/fréquence et silence ; démarrage/arrêt moteur, trames et bits série, disponibilité émission, réception/acquittement, détection de porteuse, erreurs de signal, comportement au reset. Vérifier les connexions au magnétophone existant en lecture et écriture plutôt que contourner le matériel par chargement direct.
+Audio/tape : tous les diviseurs, écriture et changement de mode, phase/fréquence et silence ; démarrage/arrêt moteur, trames et bits série, disponibilité émission, réception/acquittement, détection de porteuse, erreurs de signal, comportement au reset. Vérifier les connexions au magnétophone existant en lecture et écriture plutôt que contourner le matériel par chargement direct.
 
 Preuves : programmes exécutés dans l’Electron, captures effectives sous `artifacts/TestsChips/ElectronUla/AcornElectron/`, résultats précis et empreintes. Les bancs externes et copies de référence seront supprimés après usage. Mesures Debug/Release du circuit complet et de son raccordement, sans changement des optimisations de compilation du produit.
 
 ## État de validation
 
-Les registres, la priorité NMI, le premier arbitrage CPU et le compteur vidéo/IRQ ont été repris et vérifiés ci-dessous. La puce entière reste en cours : les phases PHI/RAS/CAS/WE, le sérialiseur, le son, le modem cassette et les preuves invitées ne sont pas clôturés. Les points indéterminés restent séparés des écarts prouvés ; un démarrage ne constitue pas une validation complète.
+Les registres, la priorité NMI, le premier arbitrage CPU et le compteur vidéo/IRQ ont été repris et vérifiés ci-dessous. La puce entière reste en cours : les phases PHI/RAS/CAS/WE, le sérialiseur, le son, le modem tape et les preuves invitées ne sont pas clôturés. Les points indéterminés restent séparés des écarts prouvés ; un démarrage ne constitue pas une validation complète.
 
 ## Banc autonome des registres
 
 Premier passage : **10/10 tests Debug réussis, 87 ms**. Les attentes contrôlent les miroirs FE00 et registres réservés, l’acquittement POR uniquement par FE00, les 256 masques IRQ avec les cinq causes actives, les acquittements FE05 y compris quand la pagination est ignorée, les 4 096 combinaisons page courante/octet écrit, les 256 valeurs de contrôle et leurs champs indépendants, ainsi que l’indépendance receive-full/transmit-empty lors de l’entrée en émission.
 
-Les causes sont produites par le circuit et des broches cassette synthétiques, sans réflexion sur ses champs privés ni ROM externe. Ces contrôles ne prouvent pas les timings vidéo/audio/série : ils établissent le comportement du banc de registres avant sa reprise. Aucun écart de registre n’est ressorti de ce passage.
+Les causes sont produites par le circuit et des broches tape synthétiques, sans réflexion sur ses champs privés ni ROM externe. Ces contrôles ne prouvent pas les timings vidéo/audio/série : ils établissent le comportement du banc de registres avant sa reprise. Aucun écart de registre n’est ressorti de ce passage.
 
 Le même banc passe en Release : **10/10 contrôles, 83 ms**. La remise en forme de la déclaration ElectronUla et le retrait d’imports inutilisés dans ses interfaces ne modifient pas le comportement.
 
@@ -115,9 +115,9 @@ Le même banc passe en Release : **10/10 contrôles, 83 ms**. La remise en forme
 
 La feuille 9 « Master timing and control » comporte la bascule croisée NMI/NMIB et NMICLEAR ; les feuilles 12/13 relient le décodage de FE05 et le bit DIX7 à son acquittement. Le guide avancé, p. 212–213, décrit le maintien de la priorité CPU en accès RAM après NMI et sa restitution à l’affichage par FE05 bit 7. La note Acorn 015 confirme l’accès RAM à 1 MHz malgré le mode affiché. Le code actuel ne possède ni cet état de priorité ni cet acquittement : il s’agit d’un manque établi, distinct de la seule entrée NMI du CPU.
 
-Le séquencement exact de cette bascule doit conserver la distinction entre le niveau électrique NMI, sa mémorisation et le signal présenté au 6502. Ne pas remplacer ce circuit par une désactivation permanente de la contention lorsqu’un gestionnaire NMI a été appelé. L’arbitrage doit continuer à avancer vidéo/audio/cassette pendant les attentes.
+Le séquencement exact de cette bascule doit conserver la distinction entre le niveau électrique NMI, sa mémorisation et le signal présenté au 6502. Ne pas remplacer ce circuit par une désactivation permanente de la contention lorsqu’un gestionnaire NMI a été appelé. L’arbitrage doit continuer à avancer vidéo/audio/tape pendant les attentes.
 
-Le guide contient aussi des descriptions à confronter aux schémas : son texte de sortie cassette indique « bit 7 first », contrairement aux conventions série des fichiers BBC et aux décodeurs comparés ; sa formule sonore doit être comparée au diviseur réel plutôt que copiée. Ces points ne sont donc pas encore employés comme attentes de tests. La réalisation vidéo/son/cassette et les preuves invitées restent ouvertes.
+Le guide contient aussi des descriptions à confronter aux schémas : son texte de sortie tape indique « bit 7 first », contrairement aux conventions série des fichiers BBC et aux décodeurs comparés ; sa formule sonore doit être comparée au diviseur réel plutôt que copiée. Ces points ne sont donc pas encore employés comme attentes de tests. La réalisation vidéo/son/tape et les preuves invitées restent ouvertes.
 
 ## Décodage retenu pour la priorité et le domaine CPU
 
@@ -125,7 +125,7 @@ La feuille 9 distingue le niveau NMI externe et l’état mémorisé par les deu
 
 La note 015 donne 1 ou 1,5 µs au premier accès lent, soit deux ou trois périodes de référence 2 MHz, puis une période 1 MHz synchronisée. Le bus 6502 existant avance déjà une période par Tick avant Read/Write. Le modèle courant ne fait qu’aligner le compteur : une arrivée déjà alignée peut donc terminer en une seule période au lieu de trois. Le séquenceur d’accès doit ajouter au moins une période, attendre l’alignement du domaine 1 MHz et, en RAM haute bande passante sans priorité NMI, la fin des prélèvements vidéo. Les autres circuits continuent d’avancer pendant ces attentes.
 
-Le décodage repris conserve RAM, clavier paginé 8/9 et bus externes FC/FD comme domaines ralentis ; les ROM restent à 2 MHz. Le domaine de FE est conservé tel qu’existant tant que ses portes de sélection d’horloge ne sont pas résolues : la source MAME elle-même désactive son ralentissement FE/FC/FD à cause d’une régression cassette. Cette approximation de MAME ne doit pas servir d’attente matérielle.
+Le décodage repris conserve RAM, clavier paginé 8/9 et bus externes FC/FD comme domaines ralentis ; les ROM restent à 2 MHz. Le domaine de FE est conservé tel qu’existant tant que ses portes de sélection d’horloge ne sont pas résolues : la source MAME elle-même désactive son ralentissement FE/FC/FD à cause d’une régression tape. Cette approximation de MAME ne doit pas servir d’attente matérielle.
 
 Le contrôle POR couvre aussi explicitement une lecture FE04 avant la première lecture FE00 ; son résultat sera inclus au passage regroupé suivant.
 
@@ -135,9 +135,9 @@ Le contrôle POR couvre aussi explicitement une lecture FE04 avant la première 
 
 `ElectronMachine.SynchronizeBus` ne contient plus de règle RAM/mode/phase dupliquée. Il présente l’adresse à l’ULA et avance la carte entière tant que l’attente est demandée. Le niveau NMI transmis au CPU provient de l’ULA ; son moteur n’a pas été modifié. La broche est disponible pour les périphériques d’extension futurs ; ceci n’ajoute pas une extension disque inexistante à la machine.
 
-Premier passage regroupé Debug : **29 tests ULA réussis (81 ms)** et **17 tests Electron natifs réussis (419 ms)**. Le bus autonome vérifie RAM, clavier 8/9 versus BASIC 10/11, FC/FD, ROM pendant balayage, les huit sélections vidéo, lignes espacées, arrivée NMI pendant l’attente, acquittement et indépendance de l’IRQ. Les tests natifs mesurent 2/3 périodes de référence pour les accès lents et une pour la ROM ; ils retrouvent l’arrêt jusqu’à la fin du prélèvement vidéo après acquittement NMI. Le temps vidéo et le nombre d’appels cassette avancent pendant ces attentes. FE04 est aussi lu avant FE00 dans le contrôle POR, qui reste valide.
+Premier passage regroupé Debug : **29 tests ULA réussis (81 ms)** et **17 tests Electron natifs réussis (419 ms)**. Le bus autonome vérifie RAM, clavier 8/9 versus BASIC 10/11, FC/FD, ROM pendant balayage, les huit sélections vidéo, lignes espacées, arrivée NMI pendant l’attente, acquittement et indépendance de l’IRQ. Les tests natifs mesurent 2/3 périodes de référence pour les accès lents et une pour la ROM ; ils retrouvent l’arrêt jusqu’à la fin du prélèvement vidéo après acquittement NMI. Le temps vidéo et le nombre d’appels tape avancent pendant ces attentes. FE04 est aussi lu avant FE00 dans le contrôle POR, qui reste valide.
 
-Ces résultats ne clôturent pas le séquenceur complet PHI/RAS/CAS/WE, le domaine FE, la neige lors des collisions, la vidéo, l’audio ou le modem cassette. Aucun résultat du banc de bus n’est présenté comme une preuve invitée de ces fonctions encore ouvertes.
+Ces résultats ne clôturent pas le séquenceur complet PHI/RAS/CAS/WE, le domaine FE, la neige lors des collisions, la vidéo, l’audio ou le modem tape. Aucun résultat du banc de bus n’est présenté comme une preuve invitée de ces fonctions encore ouvertes.
 
 ### Passage Release et traces disponibles
 
@@ -197,7 +197,7 @@ Premier passage : **71/71 tests ULA Debug, 884 ms**. Après extension de la comp
 
 ### Références restantes et divergence du sélecteur vidéo 7
 
-Les feuilles 2 à 5 ont été rendues et examinées : la feuille 2 décrit la génération d’adresse, la 3 le registre et la modulation de sortie cassette, la 4 les modes et compteurs généraux, la 5 les multiplexeurs couleur. Les registres de chargement du compteur sont distincts des étages qui avancent : leur séparation devra être conservée lors de la reprise audio/série. Le facteur sonore actuel 32 périodes CPU par demi-onde concorde avec le code MAME et la reconstruction FPGA (31250/(S+1) Hz) ; la formule imprimée du guide est différente. Les phases des rechargements, le décodage du modem et les effets du reset ne sont pas encore déclarés résolus par ces seules feuilles.
+Les feuilles 2 à 5 ont été rendues et examinées : la feuille 2 décrit la génération d’adresse, la 3 le registre et la modulation de sortie tape, la 4 les modes et compteurs généraux, la 5 les multiplexeurs couleur. Les registres de chargement du compteur sont distincts des étages qui avancent : leur séparation devra être conservée lors de la reprise audio/série. Le facteur sonore actuel 32 périodes CPU par demi-onde concorde avec le code MAME et la reconstruction FPGA (31250/(S+1) Hz) ; la formule imprimée du guide est différente. Les phases des rechargements, le décodage du modem et les effets du reset ne sont pas encore déclarés résolus par ces seules feuilles.
 
 Un autre écart a été établi : le sélecteur matériel FE07=7 est traité comme le mode texte 6 dans le code initial et MAME. Les [mesures directes de Pastraiser sur Electron issue 6](https://pastraiser.com/computers/acornelectron/acornelectron.html) décrivent au contraire un affichage graphique de type mode 4 avec rebouclage à 0x3000. ElectronFpga choisit lui aussi un affichage graphique pour ce sélecteur, mais sa base de rebouclage ne suit pas cette mesure. La commande BASIC MODE 7, que le MOS peut transformer en MODE 6, ne doit pas être confondue avec cette écriture matérielle. La correction du sélecteur doit être testée séparément. Les comportements irréguliers rapportés pour les bases vidéo inférieures à 0x1800 ne sont pas encore reproduits ni déclarés caractérisés pour toutes les variantes d’ULA.
 
@@ -205,7 +205,7 @@ Le sélecteur matériel 7 utilise désormais le raster graphique, la fin d’aff
 
 ### Première preuve invitée de la vidéo
 
-Une ROM de diagnostic synthétique s’exécute sur le 6502 et le bus de la carte Electron native. Elle programme FE02/FE03, les huit registres palette et FE07, puis remplit la mémoire écran via des instructions STA indirectes et écrit un témoin de fin hors écran. Le banc attend ce témoin et deux champs supplémentaires, vérifie chaque composante des **163 840 pixels de chacun des huit sélecteurs** contre un calcul indépendant des adresses/plans/palette, puis encode le tampon natif en PNG. Il ne dessine pas les motifs à la place de l’émulateur. La carte est réinitialisée et sa cassette détachée dans finally ; les objets Skia et flux sont fermés par using.
+Une ROM de diagnostic synthétique s’exécute sur le 6502 et le bus de la carte Electron native. Elle programme FE02/FE03, les huit registres palette et FE07, puis remplit la mémoire écran via des instructions STA indirectes et écrit un témoin de fin hors écran. Le banc attend ce témoin et deux champs supplémentaires, vérifie chaque composante des **163 840 pixels de chacun des huit sélecteurs** contre un calcul indépendant des adresses/plans/palette, puis encode le tampon natif en PNG. Il ne dessine pas les motifs à la place de l’émulateur. La carte est réinitialisée et sa tape détachée dans finally ; les objets Skia et flux sont fermés par using.
 
 **8/8 diagnostics Debug (6,855 s) et Release (2,827 s)**. Le remplissage invité termine après 23 champs pour les sélecteurs 0/1/2, 15 pour 3, six pour 4/5, cinq pour 6 et douze pour 7. Ce sont des durées d’exécution invitées observées, pas un banc de performances hôte. Les huit captures ont été ouvertes et inspectées ; le résultat numérique complet comporte **1 310 720 pixels par passage**. Elles se trouvent sous `artifacts/TestsChips/ElectronUla/AcornElectron/hardware-selector-<0–7>.png`, hors Git.
 
@@ -226,9 +226,9 @@ Ces motifs prouvent le chemin CPU→RAM/ULA→tampon vidéo dans les modes stati
 
 Le diagnostic invité temporaire a été supprimé après ces deux passages. Les assemblies locales ont été reconstruites en Debug et Release avec zéro erreur ; la découverte filtrée ne retrouve plus `ElectronVideoGuestProof` dans aucune des deux. Les PNG restent ignorés par Git. Les références temporaires de l’audit ULA restent nécessaires aux travaux encore ouverts et seront retirées à sa clôture.
 
-### Passage du transport cassette aux niveaux électriques
+### Passage du transport tape aux niveaux électriques
 
-Le contrat initial livrait `InputBit` déjà démodulé et recevait `SetOutputBit` pour remodulation par le magnétophone. Ce partage retire une fonction réelle de l’ULA. Le nouveau contrat doit transporter uniquement la présence et le niveau CAS IN/CAS OUT ; le chemin PCM, les commandes du magnétophone et le moteur restent dans la machine. En particulier, un échantillon PCM nul au passage par zéro ne doit pas simuler une déconnexion de cassette.
+Le contrat initial livrait `InputBit` déjà démodulé et recevait `SetOutputBit` pour remodulation par le magnétophone. Ce partage retire une fonction réelle de l’ULA. Le nouveau contrat doit transporter uniquement la présence et le niveau CAS IN/CAS OUT ; le chemin PCM, les commandes du magnétophone et le moteur restent dans la machine. En particulier, un échantillon PCM nul au passage par zéro ne doit pas simuler une déconnexion de tape.
 
 Le générateur de sortie nominal est dérivé de l’entrée 16 MHz divisée par 13 : 13×1024 horloges maître par bit, soit **1664 périodes CPU**, demi-ondes de 832 (zéro) ou 416 (un). Le générateur entier évite l’arrondi précédent à 1200 bauds. Les trames sont départ zéro, huit données LSB, arrêt un ; TDEmpty s’active au début de l’arrêt. La logique d’entrée sera déplacée vers les demi-périodes mesurées entre fronts successifs, avec assemblage 2 demi-ondes longues/4 courtes par bit. Ce modèle numérique doit rester distingué des étages analogiques et de la réponse complète du compteur programmable d’entrée FE06, non résolus par ce seul déplacement.
 
@@ -236,7 +236,7 @@ Le générateur de sortie nominal est dérivé de l’entrée 16 MHz divisée pa
 
 Le contrat Electron utilise maintenant `InputLevel`/`SetOutputLevel`. La génération de demi-ondes est dans `ElectronUla.Serial.cs` ; le magnétophone natif Electron est configuré en forme d’onde directe, sans seconde modulation FSK. Le magnétophone conserve sa voie antérieure pour les autres machines. La présence de signal du contrat Electron suit la lecture et sa latence, indépendamment de la valeur PCM instantanée.
 
-Le récepteur mesure les demi-ondes entre transitions, distingue les durées nominales par le seuil médian de 624 périodes CPU et assemble deux longues ou quatre courtes par bit. Mesurer les demi-ondes évite de confondre les périodes mixtes aux changements de fréquence. Une porteuse nécessite dix bits un ; une entrée constante ne la déclenche plus. Les données sont assemblées LSB, présentées après un arrêt valide et acquittées par FE04. Une perte de présence ou un moteur arrêté abandonne la trame partielle ; les causes déjà mémorisées restent acquittées par leurs registres. Le diviseur sonore FE06 n’altère pas la fréquence de sortie cassette.
+Le récepteur mesure les demi-ondes entre transitions, distingue les durées nominales par le seuil médian de 624 périodes CPU et assemble deux longues ou quatre courtes par bit. Mesurer les demi-ondes évite de confondre les périodes mixtes aux changements de fréquence. Une porteuse nécessite dix bits un ; une entrée constante ne la déclenche plus. Les données sont assemblées LSB, présentées après un arrêt valide et acquittées par FE04. Une perte de présence ou un moteur arrêté abandonne la trame partielle ; les causes déjà mémorisées restent acquittées par leurs registres. Le diviseur sonore FE06 n’altère pas la fréquence de sortie tape.
 
 Résultats : **89/89 tests ULA Debug (6 s), Release (833 ms)**. Le banc transmet les **256 octets entre deux ULA** par leurs seules broches électriques, contrôle la forme d’onde de cinq octets représentatifs, TDEmpty, porteuse/acquittement, absence de transitions, moteur, déconnexion et arrêt invalide. Le raccordement natif enregistre une émission dans le PCM 48 kHz et relit l’octet A5 depuis ce PCM ; un second cas insère des échantillons nuls aux transitions. **20/20 tests natifs Debug (922 ms), Release (667 ms)**, après un premier passage sans insertion de zéros **19/19 Debug (863 ms)**.
 
@@ -248,9 +248,9 @@ Le banc contrôle les **256 valeurs FE06**, chacune sur une période complète d
 
 Résultats regroupés : **92/92 tests ULA Debug (6 s), Release (884 ms)**. Les résultats natifs de 20/20 restent ceux du passage précédent, aucun code de production n’ayant changé depuis. Les correspondances de niveau analogique du haut-parleur, le filtrage et les séquences fines du compteur partagé restent distincts de cette vérification des périodes numériques.
 
-### Feuilles restantes : données RAM, cassette et réinitialisation
+### Feuilles restantes : données RAM, tape et réinitialisation
 
-Les rendus `ferranti-sheet-10.png` et `ferranti-sheet-11.png` montrent respectivement l’entrée cassette et les données RAM ; ce ne sont pas deux feuilles supplémentaires de chronométrage. La feuille 11 distingue les chargements LD0 et LD1 : les quatre entrées RAM alimentent successivement les bits pairs puis impairs de l’octet. DSEL choisit les groupes correspondants à l’écriture. Le prélèvement actuel d’un octet complet ne représente donc pas encore ces deux prises. La feuille 9 porte le séquencement ; les acquisitions disponibles n’exposent ni PHI ni RAS/CAS/WE et ne permettent pas d’en mesurer les phases. Aucun chronogramme issu d’un FPGA de remplacement n’est considéré comme une mesure de l’ULA Ferranti.
+Les rendus `ferranti-sheet-10.png` et `ferranti-sheet-11.png` montrent respectivement l’entrée tape et les données RAM ; ce ne sont pas deux feuilles supplémentaires de chronométrage. La feuille 11 distingue les chargements LD0 et LD1 : les quatre entrées RAM alimentent successivement les bits pairs puis impairs de l’octet. DSEL choisit les groupes correspondants à l’écriture. Le prélèvement actuel d’un octet complet ne représente donc pas encore ces deux prises. La feuille 9 porte le séquencement ; les acquisitions disponibles n’exposent ni PHI ni RAS/CAS/WE et ne permettent pas d’en mesurer les phases. Aucun chronogramme issu d’un FPGA de remplacement n’est considéré comme une mesure de l’ULA Ferranti.
 
 La feuille 10 doit être rapprochée du compteur partagé de la feuille 4 : le récepteur nominal à demi-périodes ne reproduit pas encore le circuit complet de comptage et de chargement FE06. Les essais de transport des 256 octets restent valables pour ce modèle nominal, sans prouver les écritures en cours de réception ni les tolérances analogiques.
 
@@ -258,21 +258,21 @@ Pour la réinitialisation, le manuel de maintenance distingue POR, entrée qui r
 
 ### Conservation des états pendant BREAK
 
-`ElectronUla.Reset(false)` conserve maintenant l’état du circuit ; le reset du transport cassette est réservé au chemin de mise sous tension dans la carte native. Six nouveaux cas autonomes comparent un circuit recevant BREAK à un témoin continu : quatre modes de communication, masques et causes IRQ, pagination, priorité NMI, moteur/LED, phases sonore et cassette, adresses/pixels vidéo et tampon après deux champs. Les deux autres distinguent le drapeau POR et la remise à zéro à froid. Le banc natif utilise une ROM NOP synthétique sans écriture de registres ; après les cycles de reset CPU, la carte témoin reçoit le même nombre de cycles. Les échantillons enregistrés et les sorties audio doivent rester identiques, ainsi que les causes IRQ.
+`ElectronUla.Reset(false)` conserve maintenant l’état du circuit ; le reset du transport tape est réservé au chemin de mise sous tension dans la carte native. Six nouveaux cas autonomes comparent un circuit recevant BREAK à un témoin continu : quatre modes de communication, masques et causes IRQ, pagination, priorité NMI, moteur/LED, phases sonore et tape, adresses/pixels vidéo et tampon après deux champs. Les deux autres distinguent le drapeau POR et la remise à zéro à froid. Le banc natif utilise une ROM NOP synthétique sans écriture de registres ; après les cycles de reset CPU, la carte témoin reçoit le même nombre de cycles. Les échantillons enregistrés et les sorties audio doivent rester identiques, ainsi que les causes IRQ.
 
 Résultats : **98/98 tests ULA Debug (7 s), Release (1 s)** ; **21/21 tests natifs Electron Debug (1 s), Release (700 ms)**. Ce passage corrige la destruction d’état au déclenchement de BREAK. Il ne valide pas encore le maintien électrique de RST pendant toute la durée d’appui : l’entrée clavier native déclenche actuellement un reset au front d’appui. Les autres limites du compteur partagé et des strobes RAM restent ouvertes. Aucune nouvelle capture ni mesure de performance n’a été produite pour ce passage.
 
-Le raccordement clavier expose désormais le niveau de BREAK par `ICpuBus.ResetRequested`, en utilisant la prise RESET déjà implémentée du 6502. Il n’appelle plus un reset ponctuel à chaque front d’appui. Pendant deux champs sous BREAK, une ROM synthétique INC/JMP ne modifie ni son compteur en RAM, ni PC, ni la pile, tandis que la vidéo et la position cassette progressent. Répéter le même état clavier maintenu ne redéclenche pas une séquence de reset. À la libération, le CPU lit son vecteur, effectue les trois lectures de pile et reprend l’instruction invitée. Résultats : **22/22 tests natifs Debug (1 s), Release (764 ms)**. Le cœur CPU n’a pas été modifié. Ce cas vérifie le maintien logique et sa libération dans la carte, sans acquisition des temps de propagation électriques de la touche.
+Le raccordement clavier expose désormais le niveau de BREAK par `ICpuBus.ResetRequested`, en utilisant la prise RESET déjà implémentée du 6502. Il n’appelle plus un reset ponctuel à chaque front d’appui. Pendant deux champs sous BREAK, une ROM synthétique INC/JMP ne modifie ni son compteur en RAM, ni PC, ni la pile, tandis que la vidéo et la position tape progressent. Répéter le même état clavier maintenu ne redéclenche pas une séquence de reset. À la libération, le CPU lit son vecteur, effectue les trois lectures de pile et reprend l’instruction invitée. Résultats : **22/22 tests natifs Debug (1 s), Release (764 ms)**. Le cœur CPU n’a pas été modifié. Ce cas vérifie le maintien logique et sa libération dans la carte, sans acquisition des temps de propagation électriques de la touche.
 
 ### Compteur de réception et signal moteur
 
-La feuille Ferranti 10 relie RDRF au compteur de données BITIN et à son acquittement, pas à une validation d’arrêt de type UART. La porteuse et la lecture cassette effacent cette indication. CAS MO, issu de la feuille 4, commande le moteur externe ; il ne constitue pas une porte d’activation de l’entrée électrique de la feuille 10. Un signal fourni aux broches peut donc être reçu avec le moteur désactivé, même si le magnétophone de la machine cesse alors normalement d’avancer sa bande.
+La feuille Ferranti 10 relie RDRF au compteur de données BITIN et à son acquittement, pas à une validation d’arrêt de type UART. La porteuse et la lecture tape effacent cette indication. CAS MO, issu de la feuille 4, commande le moteur externe ; il ne constitue pas une porte d’activation de l’entrée électrique de la feuille 10. Un signal fourni aux broches peut donc être reçu avec le moteur désactivé, même si le magnétophone de la machine cesse alors normalement d’avancer sa bande.
 
 Le récepteur nominal présente désormais les données après leur huitième bit, conserve ce résultat si l’arrêt suivant est bas, et retire RD Full lors d’une nouvelle porteuse. Le test moteur arrêté injecte réellement des niveaux malgré CAS MO inactif. Deux cas supplémentaires vérifient la frontière des huit données, lecture/acquittement, porteuse ultérieure et perte de présence avant la huitième donnée. Le test de toutes les causes IRQ a dû produire RD Full après la porteuse : son ancien ordre reposait sur l’absence erronée d’effacement.
 
 Premier passage Debug : **94 réussites et six échecs**, tous dans cette préparation des causes IRQ. Après correction du banc : **100/100 tests ULA Debug (7 s), Release (1 s)** ; **22/22 tests natifs Electron Debug (1 s), Release (756 ms)**. L’enregistrement PCM et sa relecture restent couverts. Le modèle ne reproduit toujours pas les strobes internes FRAMECK, le chargement partiel du compteur ni les interactions du compteur entre émission et réception : la correction des causes IRQ ne vaut pas clôture de ce circuit.
 
-Comparaison supplémentaire : [Clock Signal, Tape.cpp](https://github.com/TomHarte/CLK/blob/main/Machines/Acorn/Electron/Tape.cpp) et `SoundGenerator.cpp` séparent également les traitements et laissent le diviseur cassette non appliqué. Ils ne résolvent donc pas la transcription du compteur Ferranti. Le lien source du [cœur Replay](https://www.fpgaarcade.com/kb/acorn-electron/) vise `Sector14/acorn-electron-core`, indisponible lors de cet examen ; le code n’a pas été obtenu ni utilisé comme preuve. Les schémas originaux restent la référence de ce travail.
+Comparaison supplémentaire : [Clock Signal, Tape.cpp](https://github.com/TomHarte/CLK/blob/main/Machines/Acorn/Electron/Tape.cpp) et `SoundGenerator.cpp` séparent également les traitements et laissent le diviseur tape non appliqué. Ils ne résolvent donc pas la transcription du compteur Ferranti. Le lien source du [cœur Replay](https://www.fpgaarcade.com/kb/acorn-electron/) vise `Sector14/acorn-electron-core`, indisponible lors de cet examen ; le code n’a pas été obtenu ni utilisé comme preuve. Les schémas originaux restent la référence de ce travail.
 
 
 ### Registre de réception lu pendant le décalage
@@ -334,7 +334,7 @@ La prélecture vidéo partage le séquenceur avec les demandes CPU. Ses phases a
 
 Quatre nouveaux tests autonomes contrôlent une entrée changée entre les deux colonnes (lecture composite 0xFF depuis 0x55 puis 0xAA), l’écriture séparée 0x55 puis 0xFF, l’attente CPU pendant la vidéo et sa priorité NMI. Les tests de pixels ont été adaptés à la prélecture effective ; ceux d’adresses observent le compteur affiché séparément des deux lectures de broches. L’inverse de permutation est vérifié sur tous les groupes physiques.
 
-Résultats : **128/128 tests ULA Debug (10 s), Release (1 s)**. Le test natif parcourt les 32 768 octets en écriture puis lecture, compare aussi le stockage de carte, et vérifie les 256 valeurs sur quatre adresses avec conservation des voisines. La suite native obtient **23/23 Debug (1 s), Release (1 s)**, avec les tests BREAK, IRQ et cassette PCM existants. Ces suites ne mesurent pas encore le coût individuel du nouveau chemin RAM et ne remplacent pas les captures invitées après ce raccordement.
+Résultats : **128/128 tests ULA Debug (10 s), Release (1 s)**. Le test natif parcourt les 32 768 octets en écriture puis lecture, compare aussi le stockage de carte, et vérifie les 256 valeurs sur quatre adresses avec conservation des voisines. La suite native obtient **23/23 Debug (1 s), Release (1 s)**, avec les tests BREAK, IRQ et tape PCM existants. Ces suites ne mesurent pas encore le coût individuel du nouveau chemin RAM et ne remplacent pas les captures invitées après ce raccordement.
 
 ### Preuves invitées après raccordement des broches RAM
 
@@ -369,7 +369,7 @@ Le changement de mode peut modifier le créneau de prélecture ; le registre dé
 
 Les onze cas ajoutés contrôlent 160 cycles ROM, les deux phases de passage 1 MHz pour RAM/E/S/clavier, le maintien haut durant l’accès vidéo bloqué, sa libération NMI, la conservation sous BREAK, l’annulation de la demande sous POR et PHI haut pendant les deux strobes d’une lecture CPU. Le niveau bas dure quatre points (250 ns) ; les transitions lentes ont 12 ou 20 points hauts (750/1 250 ns). Pour la convention d’origine du champ utilisée ici, l’accès RAM demandé après le premier cycle en mode 0 tient PHI haut du point 4 au point 640. Cette position est une sortie du modèle nominal, pas une acquisition de phase absolue sur une ULA de série.
 
-Résultats : **139/139 tests ULA Debug (11 s), Release (2 s)** ; **23/23 tests natifs Electron Debug (1 s), Release (1 s)**. L’événement n’ajoute aucun cycle CPU et les tests d’arbitrage, pixels, IRQ, BREAK et cassette restent réussis.
+Résultats : **139/139 tests ULA Debug (11 s), Release (2 s)** ; **23/23 tests natifs Electron Debug (1 s), Release (1 s)**. L’événement n’ajoute aucun cycle CPU et les tests d’arbitrage, pixels, IRQ, BREAK et tape restent réussis.
 
 ### Commandes RAM hors pixels visibles
 
@@ -442,7 +442,7 @@ Ces tests établissent le modèle numérique et son raccordement. Ils ne mesuren
 
 La feuille Ferranti 4 distingue le registre PD chargé par WC0B et le compteur de travail CNT. Pour chacun des huit bits bas, le chargement par la remise à zéro sélective conserve le bit de travail si PD vaut un et le force à zéro sinon : `CNT_bas_après = CNT_bas_avant & PD`. Ce n'est donc ni une affectation générale à PD ni un effacement de toutes les phases à chaque écriture FE06. Les deux étages supérieurs possèdent leur commande de chargement distincte. Le compteur bas est décrémenté en cascade ; l'horloge de CNT8 vient du NOR de CNT6/CNT7, et non directement du dernier bit de la cascade. Les polarités/fronts et le rechargement asynchrone doivent être transcrits ensemble avant de remplacer les compteurs logiciels actuels.
 
-Le décodeur de mode sélectionne CK3 pour le son, S8M13 pour la sortie cassette et CASSCK pour l'entrée. S8M13 dérive du 16 MHz divisé par 26. Les sorties CNT8/CNT9 servent aussi aux séquenceurs cassette : conserver des oscillateurs indépendants qui repartent à chaque changement de mode ne reproduit pas cette structure. Le moteur est une sortie distincte et n'arrête pas ces horloges.
+Le décodeur de mode sélectionne CK3 pour le son, S8M13 pour la sortie tape et CASSCK pour l'entrée. S8M13 dérive du 16 MHz divisé par 26. Les sorties CNT8/CNT9 servent aussi aux séquenceurs tape : conserver des oscillateurs indépendants qui repartent à chaque changement de mode ne reproduit pas cette structure. Le moteur est une sortie distincte et n'arrête pas ces horloges.
 
 La [discussion technique accompagnant les schémas](https://stardot.org.uk/forums/viewtopic.php?t=13818) fournit des hypothèses de décodage S1/S2/S11/S15 et signale des tracés barrés ambigus ; elles restent à confronter aux portes, pas à adopter comme spécification. Sur la [seconde page, analyse de 2018](https://stardot.org.uk/forums/viewtopic.php?start=30&t=13818), l'auteur décrit la division FRAMECK par quatre, la prise au milieu du bit et un arrêt d'une demi-période. Il distingue lui-même une observation restant inexpliquée après l'arrêt du moteur. Ce texte n'est pas une preuve que l'actuel récepteur nominal, ni sa réinitialisation sur absence de signal, correspondent au circuit complet.
 
@@ -567,7 +567,7 @@ Banc temporaire autonome : 8 champs de chauffe, puis 40 champs, sans limite de c
 | ULA mode communication inutilisé |49,212|4,227|
 | ULA réception sans signal |48,824|5,137|
 | ULA son PD=0 |49,983|4,196|
-| ULA sortie cassette |51,085|4,871|
+| ULA sortie tape |51,085|4,871|
 | Carte native + drainage audio |57,852|6,740|
 
 La séquence Release n'est pas une comparaison isolée parfaite : son premier chemin est plus lent que le même séquenceur avec ULA, ce qui indique une phase de chauffe/tier JIT ou de charge hôte encore variable. Le banc est étendu à trois séries par chemin avec médiane et intervalle avant de conclure sur un gain Release. Les empreintes des chemins vidéo mode 0, mode 4 et carte native sont respectivement `066ABDF9C2C604085E2C0FD6DD9DF6783C06D9A233F8574DD47926C936E47CF6`, `C4A8A35FAC5759A123416023174A1272D1495DB297A3866C70304E76FADE28C7` et `FF6335069B6E140EB47149D847AEA80BF7E2B06BD80AE9708AA382EFB3AE21EE`.
@@ -591,7 +591,7 @@ Après cette modification : **194/194 ULA Debug (7 s), Release (2 s), 25/25 nati
 | ULA inutilisée |25,731|2,837|
 | ULA réception |25,801|2,856|
 | ULA son PD=0 |26,126|2,796|
-| ULA sortie cassette |27,101|2,955|
+| ULA sortie tape |27,101|2,955|
 | Carte native + drainage audio |34,104|3,973|
 
 Carte native : intervalle Debug 33,908–34,289 ms, Release 3,875–4,396 ms ; équivalents de référence **1,173 MHz** et **10,068 MHz**. Les trois empreintes pixels sont toujours identiques. Le premier changement de décodage apporte l'essentiel du gain observé : l'écart Release entre 4,018 et 3,973 ms après la seconde modification est trop faible face aux intervalles pour établir un gain isolé de ce dernier changement. En Debug, l'intervalle 33,908–34,289 est distinct de 37,405–38,040 mesuré avant cette représentation. Le début du premier banc Debug antérieur pouvait coïncider avec les tests natifs, ce qui limite la comparaison fine de son premier chemin vidéo.
@@ -641,13 +641,13 @@ La correction des horloges inter-modes passe **211/211 tests ULA en Debug (6 s) 
 
 Le nouvel oracle avance le compteur maître un front à la fois pour tous les diviseurs ; les cas de changement de mode vérifient la fin de trame et son interruption masquée en mode sonore, la conservation du bit de donnée pendant cette progression, puis la reprise en émission. Le mode inutilisé est comparé à un témoin qui ne reçoit aucune horloge : ses données, niveaux et interruptions doivent rester identiques à la reprise. Ces résultats portent sur le modèle numérique et la carte native, pas sur une mesure électrique de l'ULA originale.
 
-Les huit captures invitées précédentes sont antérieures à cette correction. Elles ne sont pas présentées comme une nouvelle preuve des horloges inter-modes. L'entrée cassette sans front, les horloges RX hors réception et le déclenchement RD Full actuellement forcé à l'entrée du mode émission restent ouverts.
+Les huit captures invitées précédentes sont antérieures à cette correction. Elles ne sont pas présentées comme une nouvelle preuve des horloges inter-modes. L'entrée tape sans front, les horloges RX hors réception et le déclenchement RD Full actuellement forcé à l'entrée du mode émission restent ouverts.
 
 ### Conservation RX pendant l'inhibition des horloges
 
 `TickSerial` ne réinitialise plus les bascules de réception à chaque cycle passé hors du mode entrée. Cette remise à zéro logicielle effaçait la phase, le comptage de porteuse et le suivi des fronts alors que le mode inutilisé n'apporte aucune horloge de communication. Le changement de sélection FE07 est maintenant distingué du reset à froid. L'absence déclarée de support en mode réception conserve pour l'instant son ancien traitement séparé ; elle n'est pas assimilée à une preuve du comportement électrique sans front.
 
-Huit points d'interruption sont injectés avant/pendant la porteuse, au start et dans les données d'une trame A5. Le récepteur testé reçoit 1 000 cycles en mode inutilisé, puis reprend exactement la même suite de niveaux ; le témoin reste suspendu pendant cette durée. Les causes cassette sont comparées à chaque cycle et les deux octets reçus doivent être A5. La première rédaction du banc comparait aussi RTC et fin d'affichage : sept cas échouaient parce que la vidéo continue à tourner pendant cette inhibition. Le masque du banc a été corrigé en 0x70, sans supprimer d'horloge vidéo dans le circuit.
+Huit points d'interruption sont injectés avant/pendant la porteuse, au start et dans les données d'une trame A5. Le récepteur testé reçoit 1 000 cycles en mode inutilisé, puis reprend exactement la même suite de niveaux ; le témoin reste suspendu pendant cette durée. Les causes tape sont comparées à chaque cycle et les deux octets reçus doivent être A5. La première rédaction du banc comparait aussi RTC et fin d'affichage : sept cas échouaient parce que la vidéo continue à tourner pendant cette inhibition. Le masque du banc a été corrigé en 0x70, sans supprimer d'horloge vidéo dans le circuit.
 
 Résultats après correction du banc : **219/219 ULA Debug (7 s), Release (2 s), 25/25 carte native Debug et Release (1 s chacune)**. Aucun cas ignoré. Les avertissements préexistants sont inchangés. Ces tests démontrent la conservation pendant l'inhibition ; ils ne démontrent pas encore le cadencement RX lorsque le mode sonore ou l'émission sélectionne une autre source. Celui-ci et la réception sans front restent à raccorder, ainsi que le retrait du RD Full forcé à FE07 une fois sa cause matérielle reproduite. Aucun nouveau PNG invité n'est associé à ce passage.
 
@@ -808,19 +808,19 @@ Toutes les empreintes sont inchangées. Aucun gain global n’est établi : méd
 
 Après retrait du candidat, les 243 contrôles ULA et 25 contrôles natifs passent de nouveau Debug/Release (268 au total par configuration). Le banc temporaire et son dossier vide sont supprimés ; les assemblies locales sont reconstruites et leur découverte filtrée est vide dans les deux configurations. Aucun nouveau fichier de capture ou de trace n’est ajouté.
 
-### Aller-retour cassette avec le MOS/BASIC Electron existant
+### Aller-retour tape avec le MOS/BASIC Electron existant
 
-Le banc temporaire démarre la carte native avec les deux moitiés du fichier existant Acorn Electron BASIC MOS.bin, emprunté sans modification dans le dossier Firmware utilisateur. SHA256 du fichier combiné de 32 Kio : 0BA611B03137E35BCD87F84F2ACFA4426511AD7EDB0B830691BAE3CFF28DD20B. Le banc ne réimplémente pas les routines cassette du MOS et ne charge pas directement leur résultat.
+Le banc temporaire démarre la carte native avec les deux moitiés du fichier existant Acorn Electron BASIC MOS.bin, emprunté sans modification dans le dossier Firmware utilisateur. SHA256 du fichier combiné de 32 Kio : 0BA611B03137E35BCD87F84F2ACFA4426511AD7EDB0B830691BAE3CFF28DD20B. Le banc ne réimplémente pas les routines tape du MOS et ne charge pas directement leur résultat.
 
-Préparation : le banc place une permutation des 256 valeurs d’octet à 2000–20FF, au moyen des accès physiques de la carte. Il présente une cassette PCM vide inscriptible, active Record puis saisit au clavier *SAVE TEST 2000 2100 et la confirmation Entrée demandée par le MOS. Après émission, il conserve le signal PCM produit par les broches ULA, efface les 256 octets, réinsère ce signal en lecture et saisit *LOAD TEST 2000. Il compare alors chacun des octets rechargés. Le flux compte 494 694 échantillons à 48 kHz dans les deux configurations ; empreinte SHA256 des octets rechargés : 4039FD7B788657FF51DAA6E50A9110E5C7F87181F931F501D55C3AB17BF5C19B.
+Préparation : le banc place une permutation des 256 valeurs d’octet à 2000–20FF, au moyen des accès physiques de la carte. Il présente une tape PCM vide inscriptible, active Record puis saisit au clavier *SAVE TEST 2000 2100 et la confirmation Entrée demandée par le MOS. Après émission, il conserve le signal PCM produit par les broches ULA, efface les 256 octets, réinsère ce signal en lecture et saisit *LOAD TEST 2000. Il compare alors chacun des octets rechargés. Le flux compte 494 694 échantillons à 48 kHz dans les deux configurations ; empreinte SHA256 des octets rechargés : 4039FD7B788657FF51DAA6E50A9110E5C7F87181F931F501D55C3AB17BF5C19B.
 
-BASIC exécute ensuite S=0:FOR I=8192 TO 8447:S=S+?I:NEXT et la condition sur S=32640 pour afficher CASSETTE PASS ou CASSETTE FAIL. Les pixels sont ceux de l’écran natif, non un texte dessiné par l’hôte. La vérification de la somme dans BASIC complète la comparaison hôte exhaustive ; la somme seule ne prouverait pas l’ordre des octets.
+BASIC exécute ensuite S=0:FOR I=8192 TO 8447:S=S+?I:NEXT et la condition sur S=32640 pour afficher TAPE PASS ou TAPE FAIL. Les pixels sont ceux de l’écran natif, non un texte dessiné par l’hôte. La vérification de la somme dans BASIC complète la comparaison hôte exhaustive ; la somme seule ne prouverait pas l’ordre des octets.
 
 Résultat final : Release réussi en 10 s de test (11,6793 s au total), Debug réussi en 1 min 12 s de test (1,2270 min au total), mêmes données et même longueur de signal. La première rédaction du banc avait omis la seconde Entrée après RECORD then RETURN ; les commandes suivantes étaient alors consommées par cette attente. Les premières captures ont permis d’identifier et corriger ce défaut du banc, sans changer l’ULA.
 
-Captures inspectées sous artifacts/TestsChips/ElectronUla/AcornElectron/ : mos-tape-boot.png, mos-tape-save.png et mos-tape-load.png ; la dernière montre la sauvegarde, Searching/Loading, le nom TEST, le calcul BASIC et CASSETTE PASS. Elles sont ignorées et aucune n’est indexée.
+Captures inspectées sous artifacts/TestsChips/ElectronUla/AcornElectron/ : mos-tape-boot.png, mos-tape-save.png et mos-tape-load.png ; la dernière montre la sauvegarde, Searching/Loading, le nom TEST, le calcul BASIC et TAPE PASS. Elles sont ignorées et aucune n’est indexée.
 
-Portée : démarrage du firmware, entrée clavier, affichage natif, sortie puis entrée cassette nominale, interruptions et routines de bloc/CRC utilisées par cette version du MOS. Ce n’est pas une validation de tous les firmwares, des variations de vitesse de bande, des conteneurs UEF/TAP/WAV, d’un périphérique audio Windows ou des ambiguïtés analogiques restantes. Aucun fichier de configuration ou média utilisateur n’est modifié ; la cassette de preuve n’existe qu’en mémoire, la carte est éjectée et réinitialisée en finally, les fichiers PNG et flux compressés sont fermés par using.
+Portée : démarrage du firmware, entrée clavier, affichage natif, sortie puis entrée tape nominale, interruptions et routines de bloc/CRC utilisées par cette version du MOS. Ce n’est pas une validation de tous les firmwares, des variations de vitesse de bande, des conteneurs UEF/TAP/WAV, d’un périphérique audio Windows ou des ambiguïtés analogiques restantes. Aucun fichier de configuration ou média utilisateur n’est modifié ; la tape de preuve n’existe qu’en mémoire, la carte est éjectée et réinitialisée en finally, les fichiers PNG et flux compressés sont fermés par using.
 
 Le banc MOS et son dossier vide sont supprimés après ces preuves. Reconstructions locales Debug/Release réussies en 10,90/7,07 s, zéro erreur et trois avertissements préexistants ; découverte filtrée vide dans les deux assemblies. Les captures seules restent hors Git.
 
@@ -868,7 +868,7 @@ Résultats : 291 contrôles ULA et 25 contrôles natifs réussis Debug/Release, 
 
 Empreintes inchangées : vidéo 1D5398FC2E747683757923EE7D549B9A97E76989D716A38F4433A630BEFE2CDF ; carte FF6335069B6E140EB47149D847AEA80BF7E2B06BD80AE9708AA382EFB3AE21EE. Les médianes natives passent de 28,657 à 26,414 ms Debug et de 4,018 à 3,388 ms Release ; le gain est aussi présent sur les deux chemins vidéo et le changement est conservé. Ces mesures sont des bancs isolés, pas le FPS affiché dans l’application ni une garantie de gain identique pour chaque logiciel invité.
 
-La carte complète reste au-dessus des 20 ms nominaux en Debug. La vidéo isolée est maintenant en dessous de cette durée, ce qui ne suffit pas à déclarer la cadence native Debug corrigée. Les captures MOS/cassette précédentes ne sont pas présentées comme nouvellement produites après cet ordonnancement ; les contrôles de non-régression et empreintes ci-dessus portent bien sur le code actuel.
+La carte complète reste au-dessus des 20 ms nominaux en Debug. La vidéo isolée est maintenant en dessous de cette durée, ce qui ne suffit pas à déclarer la cadence native Debug corrigée. Les captures MOS/tape précédentes ne sont pas présentées comme nouvellement produites après cet ordonnancement ; les contrôles de non-régression et empreintes ci-dessus portent bien sur le code actuel.
 
 Le banc ElectronClockCostDiagnostic et son dossier vide sont supprimés. Reconstructions locales Debug/Release réussies en 5,86/6,63 s, zéro erreur et trois avertissements préexistants ; les deux découvertes filtrées sont vides. Aucun fichier de référence ou capture n’est indexé par ce passage.
 
@@ -950,7 +950,7 @@ Les trois états finaux/sommes comparées sont identiques à chaque série : ent
 
 Carte native seule, boucle JMP C000, trois secondes de chauffe puis trois séries de quarante champs avec DrainAudio, aucune sortie audio Windows : Debug **25,614 / 25,386 / 24,984 ms/champ**, Release **2,733 / 2,775 / 2,682 ms/champ**. Empreinte des pixels dans chaque série : `FF6335069B6E140EB47149D847AEA80BF7E2B06BD80AE9708AA382EFB3AE21EE`. La première mesure Debug lancée avec les tests fonctionnels (26,012 / 26,875 / 29,352) est écartée de la comparaison de coût ; la série citée est exécutée séparément. Les écarts avec les passages antérieurs ne constituent pas une mesure appariée de la carte entière.
 
-Les **291 contrôles ULA et 25 contrôles natifs passent dans chacune des configurations Debug et Release**, sans contrôle ignoré. Aucun nouveau screenshot ni build livré de l’application n’est annoncé pour cette modification. L’ULA reste en cours ; les horloges cassette continuent même sans média.
+Les **291 contrôles ULA et 25 contrôles natifs passent dans chacune des configurations Debug et Release**, sans contrôle ignoré. Aucun nouveau screenshot ni build livré de l’application n’est annoncé pour cette modification. L’ULA reste en cours ; les horloges tape continuent même sans média.
 
 ## Calcul des frontières temporelles — 4 novembre 2026
 
@@ -974,7 +974,7 @@ Passage Release sur la carte Electron native, firmware emprunté sans modificati
 
 - Signal produit : **489 895 échantillons à 48 kHz**. La longueur diffère du précédent banc, dont l’ordonnancement de saisie/attente n’était pas identique ; aucun comparatif bit à bit des deux signaux n’est annoncé.
 - Les 256 octets `(index * 73) XOR A5`, tronqués à huit bits, sont tous égaux après rechargement ; SHA256 `4039FD7B788657FF51DAA6E50A9110E5C7F87181F931F501D55C3AB17BF5C19B`.
-- BASIC calcule ensuite `S=0:FOR I=8192 TO 8447:S=S+?I:NEXT`, puis teste `S=32640` et affiche **CASSETTE PASS**. La capture de relecture a été ouverte et vérifiée, ainsi que celles de boot et de sauvegarde.
+- BASIC calcule ensuite `S=0:FOR I=8192 TO 8447:S=S+?I:NEXT`, puis teste `S=32640` et affiche **TAPE PASS**. La capture de relecture a été ouverte et vérifiée, ainsi que celles de boot et de sauvegarde.
 - Pixels de la dernière capture, tampon natif BGRA : SHA256 `E46BC5698789C7DD37F5BFF4D704022DE557CD022167C7E20C042869C1B58910`.
 - Captures PNG natives 640×256 : `artifacts/TestsChips/ElectronUla/AcornElectron/final-mos-boot.png`, `final-mos-save.png`, `final-mos-load.png`. Elles ne sont pas indexées ; elles montrent le MOS/BASIC exécuté, sans légende PASS ajoutée par l’hôte.
 

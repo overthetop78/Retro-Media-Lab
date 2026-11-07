@@ -86,7 +86,7 @@ internal sealed class Engine
             EmulationMachineTab.Keyboard => model.HasKeyboard,
             EmulationMachineTab.Mouse => capabilities.SupportsPointer(current) && model.MouseButtonCount > BufferConstants.EmptyCollectionCount,
             EmulationMachineTab.Storage => model.MaximumFloppyDriveCount > BufferConstants.EmptyCollectionCount
-                || model.SupportsCassetteDrive || model.SupportsCartridgeSlot,
+                || model.SupportsTapeDrive || model.SupportsCartridgeSlot,
             _ => item.Value
         });
         EmulationMachineSettings result = new EmulationMachineSettings(model.Id, new EmulationSettingsVisibility(tabs), blocks);
@@ -343,7 +343,7 @@ internal sealed class Engine
             item.Type switch
             {
                 EmulationMediaType.Floppy => MediaCategory.Floppy,
-                EmulationMediaType.Cassette => MediaCategory.Cassette,
+                EmulationMediaType.Tape => MediaCategory.Tape,
                 EmulationMediaType.Cartridge => MediaCategory.Cartridge,
                 _ => throw new ArgumentOutOfRangeException(nameof(media), item.Type, null)
             }, IsReadOnly: item.IsReadOnly, IsInserted: item.IsInserted,

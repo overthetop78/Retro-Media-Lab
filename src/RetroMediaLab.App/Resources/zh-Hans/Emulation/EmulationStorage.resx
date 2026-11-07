@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>磁盘大小或几何参数无效。</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>立即预留物理磁盘空间；否则映像会随写入数据而增大。</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>扇区</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>磁带</value></data>
+  <data name="Emulation.Storage.Tapes"><value>磁带</value></data>
   <data name="Emulation.Storage.Cartridges"><value>卡带</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>光盘</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>在模拟器屏幕上显示驱动器活动</value></data>

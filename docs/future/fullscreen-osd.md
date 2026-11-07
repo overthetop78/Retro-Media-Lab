@@ -10,7 +10,7 @@ Proposer un affichage superposé à l’écran d’émulation en plein écran, a
 
 - FPS de l’émulation.
 - MHz effectifs, lorsque cette mesure est disponible.
-- Activité de lecture et d’écriture des lecteurs : disquettes, cassettes, disques durs, disques optiques et autres médias pris en charge par la machine.
+- Activité de lecture et d’écriture des lecteurs : disquettes, tapes, disques durs, disques optiques et autres médias pris en charge par la machine.
 - Pour les lecteurs, choix entre le nom accompagné d’une LED et de l’icône du média, ou une présentation réduite avec seulement la LED et l’icône du média.
 
 Réutiliser les mesures et les états d’activité déjà disponibles dans l’émulation, sans créer de compteurs concurrents ni inventer les informations absentes d’un module.

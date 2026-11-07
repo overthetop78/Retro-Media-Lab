@@ -228,7 +228,7 @@ public sealed class AmstradEmulatorAdapterTests
     }
 
     [Theory]
-    [InlineData(".cdt", MediaCategory.Cassette)]
+    [InlineData(".cdt", MediaCategory.Tape)]
     [InlineData(".cpr", MediaCategory.Cartridge)]
     [InlineData(".m3u", MediaCategory.Floppy)]
     public void CrocoDSRejectsUnsupportedContent(string extension, MediaCategory category)
@@ -244,7 +244,7 @@ public sealed class AmstradEmulatorAdapterTests
     [InlineData("cpc-464-plus", 0, true, true)]
     [InlineData("cpc-6128-plus", 1, false, true)]
     [InlineData("gx4000", 0, false, true)]
-    public void BuiltInStorageCannotBeRemoved(string machineId, int floppyCount, bool cassette, bool cartridge)
+    public void BuiltInStorageCannotBeRemoved(string machineId, int floppyCount, bool tape, bool cartridge)
     {
         using var httpClient = new HttpClient();
         var module = new AmstradEmulationModule(Path.GetTempPath(), Path.GetTempPath(), httpClient, Path.GetTempPath());
@@ -252,7 +252,7 @@ public sealed class AmstradEmulatorAdapterTests
         var initial = module.DescribeStorageSettings(configuration);
 
         Assert.Equal(floppyCount, initial.AvailableDevices.Count(device => device.Slot.Category == EmulationMediaCategory.FloppyDrive && device.IsPermanent));
-        Assert.Equal(cassette, initial.AvailableDevices.Any(device => device.Slot == EmulationMediaSlot.Cassette0 && device.IsPermanent));
+        Assert.Equal(tape, initial.AvailableDevices.Any(device => device.Slot == EmulationMediaSlot.Tape0 && device.IsPermanent));
         Assert.Equal(cartridge, initial.AvailableDevices.Any(device => device.Slot == EmulationMediaSlot.Cartridge0 && device.IsPermanent));
 
         var removed = module.ApplyStorageSettings(configuration, initial with { ConfiguredSlots = [] });
@@ -267,14 +267,14 @@ public sealed class AmstradEmulatorAdapterTests
     [InlineData("cpc-464-plus", 2, true)]
     [InlineData("cpc-6128-plus", 2, true)]
     [InlineData("gx4000", 0, false)]
-    public void OptionalStorageMatchesMachineCapabilities(string machineId, int maximumFloppyCount, bool cassetteAvailable)
+    public void OptionalStorageMatchesMachineCapabilities(string machineId, int maximumFloppyCount, bool tapeAvailable)
     {
         using var httpClient = new HttpClient();
         var module = new AmstradEmulationModule(Path.GetTempPath(), Path.GetTempPath(), httpClient, Path.GetTempPath());
         var settings = module.DescribeStorageSettings(module.CreateConfiguration(machineId));
 
         Assert.Equal(maximumFloppyCount, settings.AvailableDevices.Count(device => device.Slot.Category == EmulationMediaCategory.FloppyDrive));
-        Assert.Equal(cassetteAvailable, settings.AvailableDevices.Any(device => device.Slot == EmulationMediaSlot.Cassette0));
+        Assert.Equal(tapeAvailable, settings.AvailableDevices.Any(device => device.Slot == EmulationMediaSlot.Tape0));
         Assert.DoesNotContain(settings.AvailableDevices, device => device.Slot.Category == EmulationMediaCategory.HardDisk);
         Assert.All(settings.AvailableDevices, device => Assert.Equal(EmulationStorageConfigurationKind.None, device.ConfigurationKind));
     }

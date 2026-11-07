@@ -166,11 +166,11 @@ public sealed class ExampleStorageSettingsTests
         originalSlots.Clear();
         Assert.Equal(EmulationMediaSlot.Floppy0, Assert.Single(configuration.ConfiguredSlots));
 
-        var selected = new List<EmulationMediaSlot> { EmulationMediaSlot.Cassette0 };
+        var selected = new List<EmulationMediaSlot> { EmulationMediaSlot.Tape0 };
         var adapter = Adapters()[0];
         var updated = (MachineConfiguration)Storage.GetMethod("ApplyStorageConfiguration")!.Invoke(adapter, [configuration, selected])!;
         selected.Clear();
-        Assert.Equal(EmulationMediaSlot.Cassette0, Assert.Single(updated.ConfiguredSlots));
+        Assert.Equal(EmulationMediaSlot.Tape0, Assert.Single(updated.ConfiguredSlots));
         Assert.Equal(EmulationMediaSlot.Floppy0, Assert.Single(configuration.ConfiguredSlots));
     }
 
@@ -215,8 +215,8 @@ public sealed class ExampleStorageSettingsTests
                 {
                     new MediaConfiguration(Path.Combine(AppContext.BaseDirectory, "disk.img"), MediaCategory.HardDisk, EmulationMediaSlot.HardDisk0,
                         Label: "Volume", StorageBus: StorageBus.Ide, MountPoint: "C", MountOrder: 2),
-                    new MediaConfiguration(Path.Combine(AppContext.BaseDirectory, "tape.cas"), MediaCategory.Cassette, EmulationMediaSlot.Cassette0,
-                        CassetteAutoBoot: true, MountOrder: 1)
+                    new MediaConfiguration(Path.Combine(AppContext.BaseDirectory, "tape.cas"), MediaCategory.Tape, EmulationMediaSlot.Tape0,
+                        TapeAutoBoot: true, MountOrder: 1)
                 }
                 : new[]
                 {
@@ -270,7 +270,7 @@ public sealed class ExampleStorageSettingsTests
             EmulationStorageDeviceSettings[] requested = profile.Model == MachineModel.ExampleMachineA
                 ? [new(EmulationMediaSlot.Floppy0, Floppy: new("Floppy", "400", true, true, extra)),
                     new(EmulationMediaSlot.HardDisk0, InterfaceId: "IDE", Options: new Dictionary<string, string> { ["unit"] = "0" }),
-                    new(EmulationMediaSlot.Cassette0, Options: new Dictionary<string, string> { ["transport"] = "mock" })]
+                    new(EmulationMediaSlot.Tape0, Options: new Dictionary<string, string> { ["transport"] = "mock" })]
                 : [new(EmulationMediaSlot.Cartridge0, Cartridge: new(true, extra)),
                     new(EmulationMediaSlot.MemoryCard0, MemoryCardPath: Path.Combine(AppContext.BaseDirectory, "cards", "card.mem"), Options: new Dictionary<string, string> { ["bank"] = "0" })];
             var updated = Assert.IsType<MachineConfiguration>(manager.ApplyStorageSettings(original, initial with { DeviceSettings = requested }));

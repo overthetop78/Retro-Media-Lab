@@ -24,7 +24,7 @@ internal static class EmulationMediaConversionFunctions
     {
         MediaCategory.Floppy => EmulationMediaType.Floppy,
         MediaCategory.HardDisk => EmulationMediaType.HardDisk,
-        MediaCategory.Cassette => EmulationMediaType.Cassette,
+        MediaCategory.Tape => EmulationMediaType.Tape,
         MediaCategory.Cartridge => EmulationMediaType.Cartridge,
         MediaCategory.CompactDisc => EmulationMediaType.CompactDisc,
         _ => throw new ArgumentOutOfRangeException(nameof(media), media, null)
@@ -34,7 +34,7 @@ internal static class EmulationMediaConversionFunctions
     {
         EmulationMediaType.Floppy => MediaCategory.Floppy,
         EmulationMediaType.HardDisk => MediaCategory.HardDisk,
-        EmulationMediaType.Cassette => MediaCategory.Cassette,
+        EmulationMediaType.Tape => MediaCategory.Tape,
         EmulationMediaType.Cartridge => MediaCategory.Cartridge,
         EmulationMediaType.CompactDisc => MediaCategory.CompactDisc,
         _ => throw new ArgumentOutOfRangeException(nameof(media), media, null)

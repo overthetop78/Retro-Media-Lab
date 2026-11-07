@@ -5,7 +5,7 @@ public static class BbcSerialUlaConstants
     public const int StateFormatVersion = 1;
     public const int MasterClock = 16_000_000;
     public const int ExternalClockDivider = 13;
-    public const int CassetteClockDivider = 64;
+    public const int TapeClockDivider = 64;
     public const int LowToneDivider = 1024;
     public const int HighToneDivider = LowToneDivider / 2;
     public const int RateMask = 7;

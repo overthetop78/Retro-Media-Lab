@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>تشغيل</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>إيقاف مؤقت</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>إرجاع</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>تقديم سريع</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>تسجيل</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>إيقاف</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>لا يوجد شريط</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>متوقف</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>قيد التشغيل</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>متوقف مؤقتًا</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>تسجيل</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>نهاية الشريط</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>معدل البيانات المسلسلة (بمعنى)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>الآلية</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>طريقة تحديد الموقع</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>القراءة في الوقت الحقيقي</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>القراءة المعجلة</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>التحميل المباشر</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>سرعة التأليب</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>السرعة السريعة والانتعاش</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>بدء المعلم بالتأخير قبل العزف</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>بدء المعلم بالتأخير قبل التسجيل</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>جهاز تخزين مُمكن</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>الحماية من الكتابة</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>تردد أخذ العينات</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>قنوات الصوت</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>العينة</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>عينات موقعة</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW موجز بيانات مدخلات نظامية</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW ملف تسجيلات نظامية</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>اللحاق</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>ميكانيكي التايب</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>ويتبع نظام التشغيل الآلي معدل البيانات المتسلسلة الذي تحدده البرامج الحاسوبية المحتوية على حواسيب، ولا يكشف عن معدل البيانات من ملف الصور.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>مينو</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>ستيريو</value></data>
+</root>

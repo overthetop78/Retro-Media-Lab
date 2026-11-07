@@ -5,7 +5,7 @@ namespace RetroMediaLab.Chips.Tests.Custom.Acorn.Electron.ULA;
 
 public sealed class SoundTests
 {
-    private sealed class Pins : IElectronCassettePins
+    private sealed class Pins : IElectronTapePins
     {
         public bool InputPresent => false;
         public bool InputLevel => false;

@@ -224,7 +224,7 @@ Chaque action renomme le namespace déclaré, les imports et les références qu
   - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Exploration/ExplorerPresentationController.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums, RetroMediaLab.Domain.Formats → RetroMediaLab.MediaEngine.Formats.
   - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/ImageFormatWorkspace.cs : RetroMediaLab.Domain.Formats → RetroMediaLab.MediaEngine.Formats, RetroMediaLab.Domain.Formats.Detection → RetroMediaLab.MediaEngine.Formats.Detection.
   - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Selection/DiskImageFileSelectionService.cs : RetroMediaLab.Domain.Settings → RetroMediaLab.Infrastructure.Settings.
-  - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/CassetteLoadingPresenter.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
+  - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/TapeLoadingPresenter.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
   - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/MediaVisualizationController.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
   - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/ScpVisualizationController.cs : RetroMediaLab.Domain.Contracts → aliases des types employés, RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
   - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/VisualizerLoadingController.cs : RetroMediaLab.Domain.Commands.Building → RetroMediaLab.Infrastructure.Commands.Building, RetroMediaLab.Domain.Commands.Execution → RetroMediaLab.Infrastructure.Commands.Execution, RetroMediaLab.Domain.Conversion → aliases des types employés, RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums, RetroMediaLab.Domain.Formats → RetroMediaLab.MediaEngine.Formats, RetroMediaLab.Domain.Formats.Detection → RetroMediaLab.MediaEngine.Formats.Detection, RetroMediaLab.Domain.Settings → RetroMediaLab.Infrastructure.Settings.
@@ -385,7 +385,7 @@ Chaque action renomme le namespace déclaré, les imports et les références qu
   - [x] Modifier src/RetroMediaLab.MediaEngine/Conversion/Scp/SectorToFluxRepresentationConverter.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
   - [x] Modifier src/RetroMediaLab.MediaEngine/Conversion/Sequential/SequentialMediaConversionService.cs : RetroMediaLab.Domain.Contracts → aliases des types employés, RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
   - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Acorn/AcornTapeDecoder.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
-  - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariCassetteDecoder.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
+  - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariTapeDecoder.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
   - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Commodore/CommodoreTapeDecoder.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
   - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Msx/MsxTapeDecoder.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
   - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Spectrum/SpectrumTapeDecoder.cs : RetroMediaLab.Domain.Enums → RetroMediaLab.MediaFileSystems.Enums.
@@ -762,7 +762,7 @@ Les raccordements des consommateurs de ces types seront ajoutés après les acti
     - [x] Modifier src/RetroMediaLab.App/Presenters/Explorer/ExplorerDetailsPresenter.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/DiskImageWorkspaceController.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Exploration/ExplorerPresentationController.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
-    - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/CassetteLoadingPresenter.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
+    - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/TapeLoadingPresenter.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/MediaVisualizationController.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/ScpVisualizationController.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.App/Services/DiskImages/Visualization/VisualizerLoadingController.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
@@ -787,7 +787,7 @@ Les raccordements des consommateurs de ces types seront ajoutés après les acti
     - [x] Modifier src/RetroMediaLab.MediaEngine/Conversion/Scp/SectorToFluxRepresentationConverter.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.MediaEngine/Conversion/Sequential/SequentialMediaConversionService.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Acorn/AcornTapeDecoder.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
-    - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariCassetteDecoder.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
+    - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Atari/AtariTapeDecoder.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Commodore/CommodoreTapeDecoder.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Msx/MsxTapeDecoder.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.
     - [x] Modifier src/RetroMediaLab.MediaEngine/Decoding/Sequential/Spectrum/SpectrumTapeDecoder.cs pour importer les catégories média depuis RetroMediaLab.MediaEngine.Enums.

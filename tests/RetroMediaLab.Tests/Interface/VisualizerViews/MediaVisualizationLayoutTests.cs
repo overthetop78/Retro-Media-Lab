@@ -129,7 +129,7 @@ public sealed class MediaVisualizationLayoutTests(StaExecutionScenarios sta)
             header.DisplayDocument(Document("disc.iso", MediaKind.Optical), descriptor);
             Assert.Equal("optical", header.MediaIconKind);
             header.DisplayDocument(Document("program.cas", MediaKind.Tape), descriptor);
-            Assert.Equal("cassette", header.MediaIconKind);
+            Assert.Equal("tape", header.MediaIconKind);
             header.DisplayDocument(Document("archive.tap", MediaKind.Tape), descriptor);
             Assert.Equal("tape", header.MediaIconKind);
             header.DisplayDocument(Document("game.crt", MediaKind.Unknown), descriptor);

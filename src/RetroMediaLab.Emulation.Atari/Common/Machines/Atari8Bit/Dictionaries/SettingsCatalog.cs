@@ -47,7 +47,7 @@ public static class EightBitSettingsCatalog
         Visible(EightBitSettingsConstants.SerialDeviceOptionKey),
         Hidden(EightBitSettingsConstants.SlowExecutableLoadingOptionKey),
         Managed(EightBitSettingsConstants.SioAccelerationOptionKey),
-        Visible(EightBitSettingsConstants.CassetteBootOptionKey),
+        Visible(EightBitSettingsConstants.TapeBootOptionKey),
         Visible(EightBitSettingsConstants.PokeyStereoOptionKey),
         Hidden(EightBitSettingsConstants.LegacyConfigurationOptionKey)
     ];

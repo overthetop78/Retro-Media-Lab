@@ -45,4 +45,4 @@ Procédure commune : [puces et machines](../../directives/Emulations/procedure-p
 - Mémoire et horloges : MEMC, EEPROM I2C Compact, HD146818, PCF8583.
 - Circuits multifonctions et logique spécifique : ULA Electron complète, rafraîchissement Master512 ; compléter cet inventaire si un circuit réellement émulé est encore découvert dans les machines.
 - Machines : vérifier les machines Acorn existantes, achever les machines autorisées dans les consignes ; ABC, Communicator, Unix et Pocket Book restent hors du travail demandé pour le moment.
-- Médias : parcourir les formats et images de `F:\Retro` ; vérifier lecture/écriture, visualisation des secteurs et explorateur, création de médias vierges formatés/non formatés, cassette/HDD/autres médias concernés. Les traitements de conteneurs restent dans les bibliothèques médias propriétaires.
+- Médias : parcourir les formats et images de `F:\Retro` ; vérifier lecture/écriture, visualisation des secteurs et explorateur, création de médias vierges formatés/non formatés, tape/HDD/autres médias concernés. Les traitements de conteneurs restent dans les bibliothèques médias propriétaires.

@@ -18,8 +18,8 @@ public static class MediaConstants
     /// <summary>Extensions des images de disquettes proposées par les profils concernés.</summary>
     /// <remarks>Cette liste regroupe les formats existants de cette catégorie ; la description du lecteur ou de l'adaptateur filtre les formats selon le profil sélectionné.</remarks>
     internal static IReadOnlyList<string> FloppyExtensions { get; } = Array.AsReadOnly<string>([".dsk"]);
-    /// <summary>Images de cassette proposées par les lecteurs de démonstration.</summary>
-    internal static IReadOnlyList<string> CassetteExtensions { get; } = Array.AsReadOnly<string>([".wav", ".tap", ".cas", ".cdt", ".tzx", ".uef", ".ddp"]);
+    /// <summary>Images de tape proposées par les lecteurs de démonstration.</summary>
+    internal static IReadOnlyList<string> TapeExtensions { get; } = Array.AsReadOnly<string>([".wav", ".tap", ".cas", ".cdt", ".tzx", ".uef", ".ddp"]);
     /// <summary>Images de disque dur pouvant être montées par les profils fictifs.</summary>
     internal static IReadOnlyList<string> HardDiskExtensions { get; } = Array.AsReadOnly<string>([".img", ".ima", ".hdf", VhdExtension, VhdxExtension]);
     /// <summary>Extension retenue par le module pour créer une image dans le conteneur VHD.</summary>

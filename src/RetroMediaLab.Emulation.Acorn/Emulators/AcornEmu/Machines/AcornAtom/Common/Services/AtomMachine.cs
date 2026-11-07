@@ -27,7 +27,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
     private readonly Ppi8255 _ppi = new();
     private readonly AtomKeyboard _keyboard = new();
     private readonly AtomVideo _video;
-    private readonly AnalogCassette _cassette = new(C.CpuClock, CassetteSignalMode.DirectWaveform);
+    private readonly AnalogTape _tape = new(C.CpuClock, TapeSignalMode.DirectWaveform);
     private readonly Intel8271? _fdc;
     private readonly Intel8271Drive? _fdcDrive;
     private readonly IEmulationDiskImage?[] _disks = new IEmulationDiskImage?[C.FloppyDrives];
@@ -35,8 +35,8 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
     private readonly List<short> _samples = [];
     private int _videoPhase;
     private int _audioPhase;
-    private int _cassettePhase;
-    private bool _cassetteClock;
+    private int _tapePhase;
+    private bool _tapeClock;
     private byte _outputs;
     private bool _break;
     private double _speakerPrevious;
@@ -64,7 +64,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
         _ppi.PortAPinsChanged = value => { _keyboard.Select(value); _video.SetMode(value); };
         _ppi.ReadPortB = _keyboard.Read;
         _ppi.ReadPortC = ReadInputs;
-        _ppi.PortCPinsChanged = value => { _outputs = value; _video.SetColorSet((value & V.ColorSetSelect) != 0); UpdateCassetteOutput(); };
+        _ppi.PortCPinsChanged = value => { _outputs = value; _video.SetColorSet((value & V.ColorSetSelect) != 0); UpdateTapeOutput(); };
         if (_dos.Length != 0)
         {
             _fdc = new Intel8271(C.CpuClock);
@@ -97,13 +97,13 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
     {
         _via.Tick();
         _fdcDrive?.Tick();
-        if (++_cassettePhase >= C.CassetteHalfPeriod)
+        if (++_tapePhase >= C.TapeHalfPeriod)
         {
-            _cassettePhase = 0;
-            _cassetteClock = !_cassetteClock;
-            UpdateCassetteOutput();
+            _tapePhase = 0;
+            _tapeClock = !_tapeClock;
+            UpdateTapeOutput();
         }
-        _cassette.Tick();
+        _tape.Tick();
         _videoPhase += V.CharacterClock;
         while (_videoPhase >= C.CpuClock) { _videoPhase -= C.CpuClock; _video.Tick(); }
         // In strobed modes, C pins are asynchronous handshake inputs as well as readable levels.
@@ -116,19 +116,19 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
         var speaker = (_outputs & C.SpeakerOutput) != 0 ? C.SpeakerAmplitude : 0;
         _speakerFiltered = speaker - _speakerPrevious + C.SpeakerDcRetention * _speakerFiltered;
         _speakerPrevious = speaker;
-        _samples.Add((short)Math.Clamp(_speakerFiltered + _cassette.MonitorSample, short.MinValue, short.MaxValue));
+        _samples.Add((short)Math.Clamp(_speakerFiltered + _tape.MonitorSample, short.MinValue, short.MaxValue));
     }
 
-    private byte ReadInputs() => (byte)((_cassetteClock ? C.CassetteClockInput : 0)
-        | (_cassette.InputHigh ? C.CassetteInput : 0)
+    private byte ReadInputs() => (byte)((_tapeClock ? C.TapeClockInput : 0)
+        | (_tape.InputHigh ? C.TapeInput : 0)
         | (_keyboard.Repeat ? 0 : C.KeyboardRepeat)
         | (_video.FrameSync ? C.VideoFrameSync : 0));
 
-    private void UpdateCassetteOutput()
+    private void UpdateTapeOutput()
     {
-        var negative = (_outputs & C.CassetteOutputZero) != 0
-            && !((_outputs & C.CassetteOutputOne) != 0 && !_cassetteClock);
-        _cassette.SetOutputLevel(!negative);
+        var negative = (_outputs & C.TapeOutputZero) != 0
+            && !((_outputs & C.TapeOutputOne) != 0 && !_tapeClock);
+        _tape.SetOutputLevel(!negative);
     }
 
     public void SetInput(EmulationInputSnapshot snapshot)
@@ -148,11 +148,11 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
             _video.Reset();
             _samples.Clear();
             _speakerPrevious = _speakerFiltered = 0;
-            _videoPhase = _audioPhase = _cassettePhase = 0;
-            _cassetteClock = false;
+            _videoPhase = _audioPhase = _tapePhase = 0;
+            _tapeClock = false;
         }
         _via.Reset();
-        _cassette.ResetHardware();
+        _tape.ResetHardware();
         _ppi.Reset();
         _ppi.SetPortCInput(ReadInputs());
         _fdc?.Reset();

@@ -43,7 +43,7 @@ public sealed class RamIntegrationTests
         }
     }
 
-    private sealed class Cassette : IElectronCassettePins
+    private sealed class Tape : IElectronTapePins
     {
         public bool InputPresent => false;
         public bool InputLevel => false;
@@ -65,7 +65,7 @@ public sealed class RamIntegrationTests
     {
         var ram = new Ram();
         var video = new ElectronVideo(ram);
-        var ula = new ElectronUla(video, new Cassette());
+        var ula = new ElectronUla(video, new Tape());
         ula.Write(7, 0x20);
         ram.Memory[0x0200] = 0x55;
         ram.Accessed = (address, odd) => { if (address == 0x0200 && !odd) ram.Memory[address] = 0xaa; };
@@ -80,7 +80,7 @@ public sealed class RamIntegrationTests
     public void CpuWriteChangesOnlyTheSelectedGroupAtEachStrobe()
     {
         var ram = new Ram();
-        var ula = new ElectronUla(new ElectronVideo(ram), new Cassette());
+        var ula = new ElectronUla(new ElectronVideo(ram), new Tape());
         ula.Write(7, 0x20);
         ula.BeginCpuCycle(0x1234, true, 0xff);
         Finish(ula);
@@ -95,7 +95,7 @@ public sealed class RamIntegrationTests
     {
         var ram = new Ram();
         var video = new ElectronVideo(ram);
-        var ula = new ElectronUla(video, new Cassette());
+        var ula = new ElectronUla(video, new Tape());
         ram.Memory[0x0200] = 0xa5;
         ula.BeginCpuCycle(0xc000, false, 0);
         ula.Tick();
@@ -119,7 +119,7 @@ public sealed class RamIntegrationTests
     {
         var ram = new Ram();
         var video = new ElectronVideo(ram);
-        var ula = new ElectronUla(video, new Cassette());
+        var ula = new ElectronUla(video, new Tape());
         ram.Memory[0x0200] = 0xff;
         ula.Nmi = true;
         ula.BeginCpuCycle(0x0200, false, 0);

@@ -30,7 +30,7 @@ public sealed class VisualizerViewsTests(StaExecutionScenarios sta)
     [Theory] [InlineData(false)] [InlineData(true)]
     public Task ReplacedAnalysisCannotRestartVisualization(bool combined) => sta.RunAsync(() => VisualizerDocumentScenarios.ReplacedAnalysis(combined));
     [Fact] public Task SharedLoadsAreSerializedAndIntermediateRequestsAreDiscarded() => sta.RunAsync(VisualizerDocumentScenarios.SharedLoadsAreSerializedAndCoalesced);
-    [Fact] public Task CassettePresentationUsesRecognizedMediaKindRatherThanExtension() => sta.RunAsync(VisualizerDocumentScenarios.CassettePresentationUsesRecognizedMediaKindRatherThanExtension);
+    [Fact] public Task TapePresentationUsesRecognizedMediaKindRatherThanExtension() => sta.RunAsync(VisualizerDocumentScenarios.TapePresentationUsesRecognizedMediaKindRatherThanExtension);
     [Fact] public Task InspectorDocumentClears() => sta.Run(InspectorSelectionScenarios.Clear);
     [Theory] [InlineData(0)] [InlineData(1)]
     public Task InspectorTrackRevolutionsAndSectors(int head) => sta.RunAsync(() => InspectorSelectionScenarios.Selection(head));

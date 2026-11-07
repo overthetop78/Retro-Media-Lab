@@ -97,7 +97,7 @@ internal static class StorageSettingsFunctions
             item.Path, item.Type switch
             {
                 EmulationMediaType.Floppy => MediaCategory.Floppy,
-                EmulationMediaType.Cassette => MediaCategory.Cassette,
+                EmulationMediaType.Tape => MediaCategory.Tape,
                 EmulationMediaType.Cartridge => MediaCategory.Cartridge,
                 EmulationMediaType.CompactDisc => MediaCategory.CompactDisc,
                 EmulationMediaType.MemoryCard => MediaCategory.MemoryCard,

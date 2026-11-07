@@ -49,7 +49,7 @@ Les Readers enregistrés couvrent désormais quatre familles :
 - médias optiques : ISO, BIN/CUE, CloneCD, Alcohol MDS et CHD optique produisent
   `OpticalTracks`, avec leurs fichiers associés, sessions, pistes, modes et fenêtres de données
   disponibles ;
-- cassettes et bandes : WAV, UEF, CAS Atari, TZX, TAP Commodore, CAS MSX, TAP Spectrum et TAP
+- tapes et bandes : WAV, UEF, CAS Atari, TZX, TAP Commodore, CAS MSX, TAP Spectrum et TAP
   SIMH produisent `Sequential`, avec durée, faces, pistes, canaux et segments disponibles.
 
 Une extension ambiguë ne décide donc pas seule du format. La signature, la sonde et, si elle est
@@ -161,7 +161,7 @@ ImageDisk, restent attachées au document commun.
 
 `ConversionBatchExecutor` orchestre ce parcours depuis l’application sans instancier ni choisir
 les convertisseurs spécialisés. `OpticalImageConversionService` gère les destinations optiques et
-`SequentialMediaConversionService` les destinations cassette/bande, avec déclaration préalable
+`SequentialMediaConversionService` les destinations tape/bande, avec déclaration préalable
 des pertes éventuelles. La conversion automatique utilisée par les modules Amiga et Atari
 réutilise les reconstructeurs partagés de la composition, tandis que chaque module conserve le
 choix du format accepté par son émulateur et la gestion de son média temporaire.

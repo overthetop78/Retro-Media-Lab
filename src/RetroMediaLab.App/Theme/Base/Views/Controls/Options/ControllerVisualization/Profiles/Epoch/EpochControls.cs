@@ -4,8 +4,8 @@ namespace RetroMediaLab.App.Views.Controls.Options.ControllerVisualization;
 
 internal static partial class ControllerArtworkCatalog
 {
-    private static ProfileDefinition CreateEpochSuperCassetteVisionController() => new(
-        ControllerArtworkFileNames.EpochSuperCassetteVisionController,
+    private static ProfileDefinition CreateEpochSuperTapeVisionController() => new(
+        ControllerArtworkFileNames.EpochSuperTapeVisionController,
     [
         new(EmulationControllerVisualControl.DirectionUp, ControllerVisualZoneShape.Ellipse, 40, 35, 12, 8),
         new(EmulationControllerVisualControl.DirectionDown, ControllerVisualZoneShape.Ellipse, 36, 59, 12, 8),

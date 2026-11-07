@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>Hi-res artifacting</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>SIO-versnelling</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>Opstarten van cassette</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>Opstarten van cassette</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>Herziening van het besturingssysteem</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>Tint</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>Verzadiging</value></data>

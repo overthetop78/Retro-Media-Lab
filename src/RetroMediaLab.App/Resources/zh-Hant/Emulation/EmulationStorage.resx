@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>磁碟大小或幾何參數無效。</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>立即保留實體磁碟空間；否則映像會隨寫入資料而增大。</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>磁區</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>卡式錄音帶</value></data>
+  <data name="Emulation.Storage.Tapes"><value>卡式錄音帶</value></data>
   <data name="Emulation.Storage.Cartridges"><value>卡匣</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>光碟</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>在模擬器畫面上顯示磁碟機活動</value></data>

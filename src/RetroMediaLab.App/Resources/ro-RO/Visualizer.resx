@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>Sectorul degradat</value></data>
   <data name="Visual.SectorDead"><value>Sectorul mort</value></data>
   <data name="Visual.SectorWithoutData"><value>Sectorul fără date</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>Informații despre casetă</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>Informații despre casetă</value></data>
   <data name="Visual.Representation"><value>Modul de afișare</value></data>
 </root>

@@ -11,8 +11,8 @@ internal static class PcFxMachineConstants
     internal const bool HasKeyboard = false;
     internal const int BuiltInFloppyDriveCount = 0;
     internal const int MaximumFloppyDriveCount = 0;
-    internal const bool HasBuiltInCassetteDrive = false;
-    internal const bool SupportsCassetteDrive = false;
+    internal const bool HasBuiltInTapeDrive = false;
+    internal const bool SupportsTapeDrive = false;
     internal const bool HasBuiltInCartridgeSlot = false;
     internal const bool SupportsCartridgeSlot = false;
     internal const int ControllerPortCount = 2;
@@ -24,7 +24,7 @@ internal static class PcFxMachineConstants
 
     internal static readonly Model Definition = new(Id, DisplayName, BackendModel, RamKib,
         HasKeyboard, BuiltInFloppyDriveCount, MaximumFloppyDriveCount,
-        HasBuiltInCassetteDrive, SupportsCassetteDrive, HasBuiltInCartridgeSlot,
+        HasBuiltInTapeDrive, SupportsTapeDrive, HasBuiltInCartridgeSlot,
         SupportsCartridgeSlot, ControllerPortCount, MouseButtonCount, CpuName, CpuClock,
         HasBuiltInCdDrive, SupportsCdDrive);
 }

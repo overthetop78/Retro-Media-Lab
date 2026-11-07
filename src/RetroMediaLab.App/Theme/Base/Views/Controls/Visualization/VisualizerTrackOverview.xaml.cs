@@ -146,7 +146,7 @@ public partial class VisualizerTrackOverview : UserControl
             var rowSegments = segments.Skip(row * rowSize).Take(rowSize).ToArray();
             if (rowSegments.Length == 0) continue;
             var positions = Enumerable.Range(0, rowSegments.Length).Select(index => (long)index).ToArray();
-            AddStrip(MediaVisualizationProgressUnit.Segment, row, positions, rowCount == 1 ? LocExtension.Get("Explorer.Cassette") : $"{LocExtension.Get("Explorer.Cassette")} {row + 1}/{rowCount}");
+            AddStrip(MediaVisualizationProgressUnit.Segment, row, positions, rowCount == 1 ? LocExtension.Get("Explorer.Tape") : $"{LocExtension.Get("Explorer.Tape")} {row + 1}/{rowCount}");
 
             var strip = _strips[row];
             for (var index = 0; index < rowSegments.Length; index++)
@@ -206,7 +206,7 @@ public partial class VisualizerTrackOverview : UserControl
     {
         MediaRepresentationKind.Blocks => LocExtension.Get("Visual.Surface", surface),
         MediaRepresentationKind.OpticalTracks => LocExtension.Get("Visual.DiscFace", surface),
-        MediaRepresentationKind.Sequential => LocExtension.Get("Explorer.Cassette"),
+        MediaRepresentationKind.Sequential => LocExtension.Get("Explorer.Tape"),
         _ => LocExtension.Get("Visual.Side", surface)
     };
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Afspelen</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Pauze</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Terugspoelen</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Vooruitspoelen</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Opnemen</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Stoppen</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Geen cassette</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Gestopt</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Afspelen</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Gepauzeerd</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Opnemen</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Einde band</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Seriegegevenssnelheid (Baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Automatisch</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Laden</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Realtime-lezen</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Versnelde lezing</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Directe lading</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Tapesnelheid</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Snelheid doorspoelen en terugspoelen</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Motorstartvertraging voor afspelen</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Motorstartvertraging voor opname</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Opbergapparaatgeluiden inschakelen</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Beschermen tegen schrijven</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Monsterfrequentie (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Audiokanalen</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Bits per monster</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Getekende monsters</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW cassette-invoerprofiel</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW cassetteopnameprofiel</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Laden</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Tapemechanica</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Automatisch volgt de seriële datasnelheid die door de emuleerde computersoftware is ingesteld. Het detecteert de datasnelheid niet uit het imagebestand.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Mono</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Stereo</value></data>
+</root>

@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>בחר את הקושחה המשנית ROM נדרש על ידי כמה דגמי מכונה. השאירו את השדה ריק כאשר המודל שנבחר אינו משתמש מורחב ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>להאיץ SIO העברות</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>מהירות מעלה העברות תואמות באמצעות אוטובוס קלט / ספארי. אפשרות זו כאשר התוכנה תלויה בתזמון ההעברה המקורי.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>תגית: casette Startup</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>הופך את המכונה המוטבעת מנסה להתחיל מהתמונה המצורפת. ניתן להבחין באפשרות זו בעת החל ממכשיר אחר.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>תגית: casette Startup</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>הופך את המכונה המוטבעת מנסה להתחיל מהתמונה המצורפת. ניתן להבחין באפשרות זו בעת החל ממכשיר אחר.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>לאפשר R-Time 8 שעון השעון</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>משערים R-Time 8 השעון בזמן אמת, כך תוכנה תואמת יכולה לקרוא את התאריך והשעה הנוכחיים.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>לאפשר P: מדפסת</value></data>

@@ -3653,7 +3653,7 @@ public sealed class ArchitectureValidationTests
                     [
                         new("second.dsk", RetroMediaLab.Emulation.Example.Common.Machines.Common.Enums.MediaCategory.Floppy, EmulationMediaSlot.Floppy1),
                         new("first.dsk", RetroMediaLab.Emulation.Example.Common.Machines.Common.Enums.MediaCategory.Floppy, EmulationMediaSlot.Floppy0),
-                        new("ejected.cas", RetroMediaLab.Emulation.Example.Common.Machines.Common.Enums.MediaCategory.Cassette, EmulationMediaSlot.Cassette0, IsInserted: false)
+                        new("ejected.cas", RetroMediaLab.Emulation.Example.Common.Machines.Common.Enums.MediaCategory.Tape, EmulationMediaSlot.Tape0, IsInserted: false)
                     ]);
                     Assert.Equal(new[] { "first.dsk", "second.dsk" }, Assert.IsAssignableFrom<IReadOnlyList<string>>(resolve.Invoke(adapter, [example])));
                 }
@@ -3989,8 +3989,8 @@ public sealed class ArchitectureValidationTests
             Assert.Equal(9, methods.Length);
             Assert.Equal(typeof(bool), contract.GetMethod("ReplacesMountedMediaOnInsert")!.ReturnType);
             Assert.Equal(typeof(void), contract.GetMethod("PrepareReset")!.ReturnType);
-            Assert.Equal(typeof(int?), contract.GetMethod("GetCassetteBootReturnDelayFrames")!.ReturnType);
-            Assert.Equal(typeof(IReadOnlyDictionary<EmulationCassetteCommand, IReadOnlyList<EmulationKey>>), contract.GetMethod("GetCassetteKeyCommands")!.ReturnType);
+            Assert.Equal(typeof(int?), contract.GetMethod("GetTapeBootReturnDelayFrames")!.ReturnType);
+            Assert.Equal(typeof(IReadOnlyDictionary<EmulationTapeCommand, IReadOnlyList<EmulationKey>>), contract.GetMethod("GetTapeKeyCommands")!.ReturnType);
             var media = Assert.Single(methods, method => method.Name == "RequiresMediaRestart");
             var option = Assert.Single(methods, method => method.Name == "RequiresOptionRestart");
             var configuration = assembly.GetType(root + ".Common.Machines.Common.Contracts.MachineConfiguration", throwOnError: true)!;
@@ -3998,8 +3998,8 @@ public sealed class ArchitectureValidationTests
             Assert.Equal(new[] { "configuration", "slot", "path" }, media.GetParameters().Select(parameter => parameter.Name));
             Assert.Equal(new[] { configuration, typeof(string) }, option.GetParameters().Select(parameter => parameter.ParameterType));
             Assert.Equal(new[] { "configuration", "key" }, option.GetParameters().Select(parameter => parameter.Name));
-            Assert.All(methods.Where(method => method.Name is not ("NormalizeRuntimeOptions" or "GetHostCommandTimeout" or "ReplacesMountedMediaOnInsert" or "PrepareReset" or "GetCassetteKeyCommands" or "GetCassetteBootReturnDelayFrames")), method => Assert.True(method.IsAbstract));
-            Assert.All(methods.Where(method => method.Name is "NormalizeRuntimeOptions" or "GetHostCommandTimeout" or "ReplacesMountedMediaOnInsert" or "PrepareReset" or "GetCassetteKeyCommands" or "GetCassetteBootReturnDelayFrames"), method => Assert.False(method.IsAbstract));
+            Assert.All(methods.Where(method => method.Name is not ("NormalizeRuntimeOptions" or "GetHostCommandTimeout" or "ReplacesMountedMediaOnInsert" or "PrepareReset" or "GetTapeKeyCommands" or "GetTapeBootReturnDelayFrames")), method => Assert.True(method.IsAbstract));
+            Assert.All(methods.Where(method => method.Name is "NormalizeRuntimeOptions" or "GetHostCommandTimeout" or "ReplacesMountedMediaOnInsert" or "PrepareReset" or "GetTapeKeyCommands" or "GetTapeBootReturnDelayFrames"), method => Assert.False(method.IsAbstract));
             Assert.All(new[] { media, option }, method => Assert.Equal(typeof(bool), method.ReturnType));
             var machine = assembly.GetType(root + ".Common.Services.Machine", throwOnError: true)!;
             if (root is "RetroMediaLab.Emulation.Atari" or "RetroMediaLab.Emulation.Example")

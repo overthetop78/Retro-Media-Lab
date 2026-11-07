@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>Audio</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>Hexadecimální</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>Vnější aplikace</value></data>
-  <data name="Explorer.Cassette"><value>Kazeta</value></data>
+  <data name="Explorer.Tape"><value>Kazeta</value></data>
   <data name="Explorer.InternalName"><value>Interní popis</value></data>
   <data name="Explorer.BaudRates"><value>Rychlosti</value></data>
   <data name="Explorer.Chunks"><value>Bloky</value></data>

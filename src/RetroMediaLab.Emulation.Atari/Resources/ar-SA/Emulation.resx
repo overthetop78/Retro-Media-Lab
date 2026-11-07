@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>(هيو ري)</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>SIO</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>حذاء من الكاسيت</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>حذاء من الكاسيت</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>تنقيح نظام التشغيل</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>هوي</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>الاضطرابات</value></data>

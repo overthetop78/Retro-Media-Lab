@@ -29,7 +29,7 @@ Fenêtres XAML identifiées :
 - `src/RetroMediaLab.App/Theme/Base/Views/Windows/Tools/GwToolWindow.xaml`
 - `src/RetroMediaLab.App/Theme/Base/Views/Windows/Updates/UpdatesWindow.xaml`
 
-Les fenêtres créées en code comprennent notamment la sélection des firmwares, les options du cœur, la création et l’association des supports, les lecteurs cassette/disquette/disque dur/optique/cartouche/carte mémoire, ainsi que les commandes et réglages des machines. Elles devront être parcourues explicitement ; repeindre leur cadre ne les valide pas.
+Les fenêtres créées en code comprennent notamment la sélection des firmwares, les options du cœur, la création et l’association des supports, les lecteurs tape/disquette/disque dur/optique/cartouche/carte mémoire, ainsi que les commandes et réglages des machines. Elles devront être parcourues explicitement ; repeindre leur cadre ne les valide pas.
 
 ## Raccordement au métier
 

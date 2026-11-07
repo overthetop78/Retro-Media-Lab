@@ -140,7 +140,7 @@ Chaque fiche indique le matériel minimal à reproduire, les différences entre 
 
 ### 2.1 Acorn
 
-**Matériel commun BBC/Electron :** famille 6502, Video ULA, mémoire partagée, clavier, son SN76489 sur BBC, cassette et extension disquette. **Sources :** [BeebEm](https://github.com/stardot/beebem-windows), [B-em](https://github.com/stardot/b-em), [MAME Acorn](https://github.com/mamedev/mame/tree/master/src/mame/acorn), [CLK](https://github.com/TomHarte/CLK).
+**Matériel commun BBC/Electron :** famille 6502, Video ULA, mémoire partagée, clavier, son SN76489 sur BBC, tape et extension disquette. **Sources :** [BeebEm](https://github.com/stardot/beebem-windows), [B-em](https://github.com/stardot/b-em), [MAME Acorn](https://github.com/mamedev/mame/tree/master/src/mame/acorn), [CLK](https://github.com/TomHarte/CLK).
 
 - **BBC Model A** : 6502A 2 MHz, 16 Kio, Video ULA, 6845, moins d’E/S et de sockets ROM que le B.
 - **BBC Model B** : 32 Kio, VIA système et utilisateur, SN76489, ADC, Tube, Econet/1 MHz bus optionnels ; Intel 8271 ou WD177x selon interface disquette.
@@ -155,10 +155,10 @@ Chaque fiche indique le matériel minimal à reproduire, les différences entre 
 
 **Sources CPC :** [Caprice32](https://github.com/ColinPitrat/caprice32), [Sugarbox](https://github.com/TFE-Developers/sugarbox), [MAME Amstrad](https://github.com/mamedev/mame/tree/master/src/mame/amstrad). **Sources PCW :** [MAME PCW](https://github.com/mamedev/mame/tree/master/src/mame/amstrad), [JOYCE](https://www.seasip.info/Unix/Joyce/). **PC compatibles :** [86Box](https://github.com/86Box/86Box), [DOSBox-X](https://github.com/joncampbell123/dosbox-x).
 
-- **CPC 464** : Z80A 4 MHz, 64 Kio, 6845 + Gate Array, AY-3-8912, cassette ; DDI-1 ajoute µPD765 et lecteur 3 pouces.
+- **CPC 464** : Z80A 4 MHz, 64 Kio, 6845 + Gate Array, AY-3-8912, tape ; DDI-1 ajoute µPD765 et lecteur 3 pouces.
 - **CPC 664** : même base, lecteur 3 pouces intégré, ROM BASIC/AMSDOS différente.
 - **CPC 6128** : 128 Kio avec bancs mémoire, lecteur intégré.
-- **464 Plus / 6128 Plus** : ASIC Plus, sprites, palette 4096 couleurs, DMA audio, cartouches ; 64/128 Kio et cassette/lecteur selon modèle.
+- **464 Plus / 6128 Plus** : ASIC Plus, sprites, palette 4096 couleurs, DMA audio, cartouches ; 64/128 Kio et tape/lecteur selon modèle.
 - **PCW 8256** : Z80A, 256 Kio, vidéo monochrome pilotée en logiciel, µPD765, lecteur CF2 ; imprimante et clavier font partie de la plateforme.
 - **PCW 8512** : 512 Kio et second lecteur CF2DD.
 - **PCW 9512** : 512 Kio, lecteur CF2DD et imprimante marguerite, boîtier/ROM révisés.
@@ -311,7 +311,7 @@ Chaque fiche indique le matériel minimal à reproduire, les différences entre 
 
 **Sources :** [Oricutron](https://github.com/pete-gordon/oricutron), [CLK](https://github.com/TomHarte/CLK), [MAME Oric](https://github.com/mamedev/mame/tree/master/src/mame/tangerine).
 
-- **Oric-1** : 6502A, 48 Kio typique, ULA vidéo, AY-3-8912, cassette ; Microdisc externe ajoute WD1793 et ROM.
+- **Oric-1** : 6502A, 48 Kio typique, ULA vidéo, AY-3-8912, tape ; Microdisc externe ajoute WD1793 et ROM.
 - **Atmos** : clavier et ROM BASIC corrigés, matériel central proche.
 - **Telestrat** : deux VIA, banques/cartouches, contrôleur Microdisc et ports télécom intégrés.
 
@@ -331,7 +331,7 @@ Chaque fiche indique le matériel minimal à reproduire, les différences entre 
 
 - **Spectrum 48K** : Z80A, ULA, 48 Kio, beeper 1 bit ; Beta Disk ajoute WD1793 et TR-DOS.
 - **Spectrum 128K** : 128 Kio bank-switchée, AY-3-8912, ULA/ROM révisées.
-- **+2** : cassette intégrée ; modèles gris proches 128K, +2A/+2B proches +3 avec ASIC.
+- **+2** : tape intégrée ; modèles gris proches 128K, +2A/+2B proches +3 avec ASIC.
 - **+3** : ASIC Amstrad, µPD765 et lecteur 3 pouces, ROM +3DOS ; temporisations différentes.
 - **Sinclair QL** : 68008, ZX8301/ZX8302, 128 Kio, vidéo, son et microdrives ; interfaces floppy sont tierces et doivent être configurées par modèle de contrôleur.
 
@@ -343,7 +343,7 @@ Chaque fiche indique le matériel minimal à reproduire, les différences entre 
 - **Model II** : Z80, bus/vidéo 80 colonnes, lecteurs 8 pouces, architecture incompatible Model I.
 - **Model III** : intégration du Model I, WD179x, vidéo/ROM révisées.
 - **Model 4** : Z80A 4 MHz, 64/128 Kio, mode 80×24 et compatibilité Model III.
-- **CoCo 1/2** : 6809E, SAM + 6847, PIA, cassette ; contrôleur disquette WD17xx externe.
+- **CoCo 1/2** : 6809E, SAM + 6847, PIA, tape ; contrôleur disquette WD17xx externe.
 - **CoCo 3** : 6809E, GIME remplaçant SAM/VDG, jusqu’à 512 Kio et nouveaux modes vidéo.
 - **Dragon 32/64** : 6809E, SAM + 6847, PIA ; ROM/clavier/E/S différents du CoCo, Dragon 64 ajoute RAM et port série.
 - **Tandy 1000** : compatible PCjr, 8088 puis 286 selon modèle, vidéo Tandy, SN76489, DMA/IRQ et contrôleurs disquette variant entre EX/HX/SX/TL/RL.

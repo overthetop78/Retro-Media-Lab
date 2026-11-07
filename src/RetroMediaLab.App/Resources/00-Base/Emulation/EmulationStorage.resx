@@ -71,7 +71,7 @@
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sectors</value></data>
   <data name="Emulation.Storage.Unit.MiB"><value>MiB</value></data>
   <data name="Emulation.Storage.Unit.GiB"><value>GiB</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Cassette</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Cassette</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Cartridge</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Compact discs</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Show drive activity on the emulator screen</value></data>

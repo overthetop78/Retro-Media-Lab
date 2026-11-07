@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>채용 정보</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>SIO 가속</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>cassette에서 부팅</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>cassette에서 부팅</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>운영 체계 개정</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>Hue 조명</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>(주)태원</value></data>

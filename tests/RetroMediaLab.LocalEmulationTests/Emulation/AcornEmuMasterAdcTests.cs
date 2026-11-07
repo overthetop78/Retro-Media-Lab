@@ -57,7 +57,7 @@ public sealed class AcornEmuMasterAdcTests
             board.SetInput(EmulationInputSnapshot.Empty);
             board.NetworkFrameTransmitted = null;
             board.NetworkPoll = null;
-            board.EjectCassette();
+            board.EjectTape();
         }
     }
 }

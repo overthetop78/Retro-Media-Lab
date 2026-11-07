@@ -28,5 +28,5 @@ internal static class EmulatorConstants
     internal const uint NoControllerDevice = 0;
     internal const uint JoypadDevice = 1;
     internal static IReadOnlyList<string> DiskExtensions { get; } = [".d64", ".x64", ".lnx", ".lyx", ".zip"];
-    internal static IReadOnlyList<string> CassetteExtensions { get; } = [".t64"];
+    internal static IReadOnlyList<string> TapeExtensions { get; } = [".t64"];
 }

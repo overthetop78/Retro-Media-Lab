@@ -33,8 +33,8 @@ public sealed class ColecoModuleTests
     [InlineData(false, false, true)]
     public void GearColecoKeepsTheWriteProtectionConstraintForInsertedMedia(bool secondInserted, bool secondReadOnly, bool accepted)
     {
-        MachineConfiguration Create() => new(MachineModel.Adam, core: Emulator.GearColeco, configuredSlots: [EmulationMediaSlot.Cartridge0, EmulationMediaSlot.Cassette0, EmulationMediaSlot.Floppy0], media:
-            [new("first.dsk", MediaCategory.Floppy, EmulationMediaSlot.Floppy0), new("second.ddp", MediaCategory.DataPack, EmulationMediaSlot.Cassette0, IsReadOnly: secondReadOnly, IsInserted: secondInserted)]);
+        MachineConfiguration Create() => new(MachineModel.Adam, core: Emulator.GearColeco, configuredSlots: [EmulationMediaSlot.Cartridge0, EmulationMediaSlot.Tape0, EmulationMediaSlot.Floppy0], media:
+            [new("first.dsk", MediaCategory.Floppy, EmulationMediaSlot.Floppy0), new("second.ddp", MediaCategory.DataPack, EmulationMediaSlot.Tape0, IsReadOnly: secondReadOnly, IsInserted: secondInserted)]);
         if (accepted) Assert.Equal(2, Create().Media.Count);
         else Assert.Equal("configuration", Assert.Throws<ArgumentException>(Create).Message);
     }

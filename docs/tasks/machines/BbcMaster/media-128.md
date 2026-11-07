@@ -12,14 +12,14 @@
   - [x] Créer `artifacts/.tmp-tube/MasterSoftwareValidation.cs` : ouvrir la SSD Boulder Dash déjà identifiée en lecture seule via le SDK, démarrer par DFS/!BOOT, actionner les entrées du jeu, capturer plusieurs étapes et mesurer la carte Debug avec rendu/drainage audio. Comparer l'empreinte du média avant/après, détacher et libérer en finally ; ne pas ouvrir RML.
   - [x] Supprimer `artifacts/.tmp-tube/MasterSoftwareValidation.cs` après consignation puis reconstruire le banc avec sa source antérieure.
 
-- [x] Vérifier l'enregistrement et le chargement cassette du Master 128.
+- [x] Vérifier l'enregistrement et le chargement tape du Master 128.
   - [x] Créer `artifacts/.tmp-tube/MasterTapeValidation.cs` : enregistrer un programme BASIC par SAVE et les circuits série réels, transmettre uniquement le signal obtenu à une nouvelle carte Master, exécuter CHAIN et vérifier le texte/calcul invités. Mesurer les images Debug avec rendu/drainage, capturer les deux étapes et libérer les cartes dans finally sans fichier média utilisateur.
   - [x] Supprimer `artifacts/.tmp-tube/MasterTapeValidation.cs` après consignation puis reconstruire le banc avec sa source antérieure.
 
 - [x] Livrer le bloc Master 128 pour l'essai en direct.
   - [x] Reconstruire `build/Debug/Retro Media Lab/retromedialab.exe`, `lib/retromedialab.chips.dll` et les 24 modules par `scripts/local-building.cmd --building=debug --modules=A` ; vérifier sortie 0, manifestes et DLL livrées, sans interrompre de session utilisateur.
 
-Résultats des médias : [DFS persistant](../../../project/emulations/Acorn/BBC%20Master/Master%20128/dfs-persistence.md), [ADFS et les deux ports Winchester](../../../project/emulations/Acorn/BBC%20Master/Master%20128/adfs-persistence.md), [Boulder Dash](../../../project/emulations/Acorn/BBC%20Master/Master%20128/boulderdash.md), [SAVE/CHAIN cassette](../../../project/emulations/Acorn/BBC%20Master/Master%20128/cassette.md). Ces parcours passent hors RML ; les budgets Debug restant dépassés et l'essai en direct empêchent de déclarer la machine entièrement close.
+Résultats des médias : [DFS persistant](../../../project/emulations/Acorn/BBC%20Master/Master%20128/dfs-persistence.md), [ADFS et les deux ports Winchester](../../../project/emulations/Acorn/BBC%20Master/Master%20128/adfs-persistence.md), [Boulder Dash](../../../project/emulations/Acorn/BBC%20Master/Master%20128/boulderdash.md), [SAVE/CHAIN tape](../../../project/emulations/Acorn/BBC%20Master/Master%20128/tape.md). Ces parcours passent hors RML ; les budgets Debug restant dépassés et l'essai en direct empêchent de déclarer la machine entièrement close.
 
 
 

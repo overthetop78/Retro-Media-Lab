@@ -22,7 +22,7 @@ internal abstract class ViceMachineFactory : RetroMediaLab.Emulation.Commodore.E
     public override IReadOnlyDictionary<EmulationMediaSlot, bool> MediaActivity(MachineConfiguration configuration, IReadOnlyDictionary<int, bool> ledStates) => new Dictionary<EmulationMediaSlot, bool>
     {
         [EmulationMediaSlot.Floppy0] = ledStates.GetValueOrDefault(ContentConstants.DriveLed),
-        [new(EmulationMediaCategory.CassetteDrive, ContentConstants.PrimaryMediaIndex)] = ledStates.GetValueOrDefault(ContentConstants.TapeLed)
+        [new(EmulationMediaCategory.TapeDrive, ContentConstants.PrimaryMediaIndex)] = ledStates.GetValueOrDefault(ContentConstants.TapeLed)
     };
     internal abstract string ModelOption { get; }
     internal abstract string ResourceSection { get; }
@@ -33,7 +33,7 @@ internal abstract class ViceMachineFactory : RetroMediaLab.Emulation.Commodore.E
 
     public override IReadOnlyList<FirmwareSlot> GetFirmwareSlots(MachineConfiguration configuration) => RomDefinitions(configuration).Select(rom => rom.Slot).ToArray();
     public override IReadOnlyList<EmulationMediaDevice> DescribeMediaDevices(MachineConfiguration configuration) => Enumerable.Range(ControllerPortConstants.MinimumControllerPort,
-        ContentConstants.DriveCount).Select(index => new EmulationMediaDevice(new(EmulationMediaCategory.FloppyDrive, index), EmulationMediaType.Floppy, ContentConstants.DiskExtensions, IsPermanent: index == ContentConstants.PrimaryMediaIndex)).Concat([new EmulationMediaDevice(new(EmulationMediaCategory.CassetteDrive, ContentConstants.PrimaryMediaIndex), EmulationMediaType.Cassette, ContentConstants.CassetteExtensions)]).Concat(CartridgeExtensions.Count != BufferConstants.EmptyCollectionCount
+        ContentConstants.DriveCount).Select(index => new EmulationMediaDevice(new(EmulationMediaCategory.FloppyDrive, index), EmulationMediaType.Floppy, ContentConstants.DiskExtensions, IsPermanent: index == ContentConstants.PrimaryMediaIndex)).Concat([new EmulationMediaDevice(new(EmulationMediaCategory.TapeDrive, ContentConstants.PrimaryMediaIndex), EmulationMediaType.Tape, ContentConstants.TapeExtensions)]).Concat(CartridgeExtensions.Count != BufferConstants.EmptyCollectionCount
             ? [new EmulationMediaDevice(new(EmulationMediaCategory.CartridgeSlot, ContentConstants.PrimaryMediaIndex), EmulationMediaType.Cartridge, CartridgeExtensions, RequiresMachineRecreation: true)]
             : []).ToArray();
     internal override uint ControllerDevice(IReadOnlyList<IReadOnlyList<ControllerDevice>> ports, int port, PeripheralCategory type) => type == PeripheralCategory.None ? ContentConstants.NoControllerDevice : ContentConstants.JoypadDevice;
@@ -103,7 +103,7 @@ internal abstract class ViceMachineFactory : RetroMediaLab.Emulation.Commodore.E
                         throw new ArgumentOutOfRangeException(nameof(media));
                     arguments.Add(ContentConstants.DriveArguments[slot]);
                     break;
-                case MediaCategory.Cassette:
+                case MediaCategory.Tape:
                     arguments.Add(ContentConstants.TapeArgument);
                     break;
                 case MediaCategory.Cartridge:

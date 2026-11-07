@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>의 특징</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>육종</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>외부 신청</value></data>
-  <data name="Explorer.Cassette"><value>카세트테이프</value></data>
+  <data name="Explorer.Tape"><value>카세트테이프</value></data>
   <data name="Explorer.InternalName"><value>내부 설명</value></data>
   <data name="Explorer.BaudRates"><value>속도</value></data>
   <data name="Explorer.Chunks"><value>블록</value></data>

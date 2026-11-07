@@ -22,12 +22,12 @@ public static class AppleIIModelCatalog
             Array.AsReadOnly(new[] { model is MachineModel.AppleIIe or MachineModel.AppleIIeEnhanced ? HardwareVideoCapability.AppleIIe : HardwareVideoCapability.AppleII }),
             Array.AsReadOnly(new[] { HardwareAudioCapability.Speaker }),
             Array.AsReadOnly(new[] { HardwareStorageCapability.Floppy, HardwareStorageCapability.HardDisk,
-                HardwareStorageCapability.Cassette }),
+                HardwareStorageCapability.Tape }),
             Array.AsReadOnly(new[]
             {
                 new HardwarePortDefinition(HardwarePortCapability.Keyboard, AppleIIModelConstants.OnePort),
                 new HardwarePortDefinition(HardwarePortCapability.AnalogJoystick, AppleIIModelConstants.TwoPorts)
             }),
             Array.AsReadOnly(new[] { FirmwareCategory.SystemRom }),
-            Array.AsReadOnly(new[] { MediaCategory.Floppy, MediaCategory.HardDisk, MediaCategory.Cassette }));
+            Array.AsReadOnly(new[] { MediaCategory.Floppy, MediaCategory.HardDisk, MediaCategory.Tape }));
 }

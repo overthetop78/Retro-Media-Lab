@@ -42,7 +42,7 @@ Le code [MAME bbc_m.cpp, set_cpu_clock](https://github.com/mamedev/mame/blob/849
 | `FE00–FEFF` | SHEILA, E/S internes. |
 | `FF00–FFFF` | Fin de ROM système, points d'entrée et vecteurs. |
 
-`PAGE` vaut normalement `0E00` dans une configuration cassette ; les extensions peuvent réserver davantage de mémoire. La mémoire écran est prise dans la RAM : `HIMEM` et la place disponible pour BASIC dépendent donc du mode choisi. [BBC User Guide, p.500–502](https://www.bbcmicrobot.com/docs/BBC_User_Guide.pdf).
+`PAGE` vaut normalement `0E00` dans une configuration tape ; les extensions peuvent réserver davantage de mémoire. La mémoire écran est prise dans la RAM : `HIMEM` et la place disponible pour BASIC dépendent donc du mode choisi. [BBC User Guide, p.500–502](https://www.bbcmicrobot.com/docs/BBC_User_Guide.pdf).
 
 ### Décodage des E/S
 
@@ -51,7 +51,7 @@ Cette table donne les blocs de décodage. Une plage ne signifie pas que tous ses
 | Bloc | Fonction | Model A standard |
 | --- | --- | --- |
 | `FE00–FE07` | CRTC : sélection/valeur, répétées. | Présent. |
-| `FE08–FE0F` | ACIA : état/contrôle et données. | Présente pour la cassette. |
+| `FE08–FE0F` | ACIA : état/contrôle et données. | Présente pour la tape. |
 | `FE10–FE17` | ULA série. | Présente. |
 | `FE18–FE1F` | Commandes associées à Econet selon équipement. | Extension. |
 | `FE20–FE2F` | ULA vidéo ; contrôle et palette. | Présente. |
@@ -125,13 +125,13 @@ Les commandes BBC BASIC `SOUND` et `ENVELOPE` passent par le logiciel système :
 
 **Points à caractériser :** variante exacte du PSG, état initial, période zéro, rétroaction du bruit et courbe de sortie. Les différences entre variantes SN76489 doivent être vérifiées avant de réutiliser un composant sonore existant.
 
-## Série et cassette
+## Série et tape
 
 Le MC6850 expose deux adresses : état en lecture/contrôle en écriture, puis réception en lecture/émission en écriture. Il gère registre de données, sérialisation, sélection de longueur/parité/bits d'arrêt, diviseur d'horloge et interruptions. Le statut distingue donnée reçue, émission disponible, DCD, CTS, erreur de cadrage, dépassement de réception, parité et IRQ. Son reset logiciel est commandé dans le registre de contrôle. [Fiche Motorola MC6850](https://agelectronica.lat/pdfs/textos/M/MC68B50CP.PDF).
 
-L'ULA série BBC fournit les horloges, la sélection cassette/série et la commande moteur. Sa présence pour la cassette n'implique pas que le connecteur et les circuits RS423 soient montés. [A Hardware Guide, interface série](https://ftp.nvg.ntnu.no/pub/bbc/doc/A%20Hardware%20Guide%20for%20the%20BBC%20Microcomputer/bbc_hw_03.htm).
+L'ULA série BBC fournit les horloges, la sélection tape/série et la commande moteur. Sa présence pour la tape n'implique pas que le connecteur et les circuits RS423 soient montés. [A Hardware Guide, interface série](https://ftp.nvg.ntnu.no/pub/bbc/doc/A%20Hardware%20Guide%20for%20the%20BBC%20Microcomputer/bbc_hw_03.htm).
 
-**Conséquence :** la position du média, la porteuse, les transitions et le moteur font partie de l'état de la machine. Injecter directement un programme dans la RAM ne valide pas la lecture cassette matérielle.
+**Conséquence :** la position du média, la porteuse, les transitions et le moteur font partie de l'état de la machine. Injecter directement un programme dans la RAM ne valide pas la lecture tape matérielle.
 
 ## Clavier
 
@@ -151,7 +151,7 @@ Les [téléchargements vérifiés et leurs empreintes](../acornemu-references.md
 
 | Fichier ou famille | Rôle | Liaison matérielle et logicielle |
 | --- | --- | --- |
-| `os01.rom`, `os12.rom` | Système MOS BBC A/B : démarrage, clavier, affichage, son, cassette, commandes et services. | Image de 16 Kio dans la fenêtre système `C000–FFFF` ; les accès `FC00–FEFF` sont dirigés vers les E/S plutôt que vers les octets ROM correspondants. |
+| `os01.rom`, `os12.rom` | Système MOS BBC A/B : démarrage, clavier, affichage, son, tape, commandes et services. | Image de 16 Kio dans la fenêtre système `C000–FFFF` ; les accès `FC00–FEFF` sont dirigés vers les E/S plutôt que vers les octets ROM correspondants. |
 | `basic1.rom`, `basic2.rom` | Langage BBC BASIC et assembleur 6502. | Code du langage dans `8000–BFFF`, selon les circuits de sélection réellement présents. Le CPU exécute ce code ; BASIC appelle les services du MOS. |
 | ROM DFS | Système de fichiers disque. | ROM latérale liée aux services MOS et au contrôleur disque correspondant. L'image contient du logiciel, pas le contrôleur ni le contenu d'une disquette. |
 | ROM NFS/DNFS | Services réseau, ou services disque/réseau réunis suivant la version. | Exigent l'équipement et la configuration associés ; ce ne sont pas des remplacements universels de MOS. |
@@ -167,7 +167,7 @@ Les rôles et associations sont à recouper avec les [profils B-Em](https://gith
 2. Le chargement identifie leurs tailles, variantes et empreintes, puis place leurs octets dans les banques correspondant au matériel.
 3. Le CPU reçoit RESET et lit le vecteur dans la ROM système. La ROM est exécutée comme du code 6502 ; le cœur ne doit pas reproduire seulement son texte d'accueil.
 4. Les instructions du MOS et du langage passent par le bus : RAM, ROM ou registres des composants suivant l'adresse et le sens de l'accès.
-5. Les composants produisent ensuite interruptions, images, sons et échanges cassette/disque. Les services du module les transmettent à l'application par les interfaces existantes.
+5. Les composants produisent ensuite interruptions, images, sons et échanges tape/disque. Les services du module les transmettent à l'application par les interfaces existantes.
 
 Il s'agit du fonctionnement à représenter dans le cœur ; les liaisons Retro Media Lab déjà présentes sont détaillées dans la [fiche Model A](Model%20A/model-a-reference.md#raccordement-aux-fichiers-déjà-présents-dans-retro-media-lab).
 
@@ -204,7 +204,7 @@ Références : [BBCMicro.h](https://github.com/zoltanvb/b2-libretro/blob/9793f6a
 | Fonction | Constat sur le port consulté |
 | --- | --- |
 | Médias annoncés | `retro_get_system_info` déclare `ssd\|dsd`. |
-| Cassette | Les commentaires de travail indiquent encore son ajout à faire ; ne pas déduire son fonctionnement de la présence d'une variable nommée `sound_tape`. |
+| Tape | Les commentaires de travail indiquent encore son ajout à faire ; ne pas déduire son fonctionnement de la présence d'une variable nommée `sound_tape`. |
 | Sauvegardes d'état | `retro_serialize` et `retro_unserialize` renvoient `false` ; une taille de snapshot déclarée ne prouve pas un support fonctionnel. |
 | Sortie temporelle | Le frontal reçoit 50 images/s et un échantillonnage de 250 000 Hz. |
 
@@ -212,7 +212,7 @@ Sources : [core.cpp](https://github.com/zoltanvb/b2-libretro/blob/9793f6a8040c41
 
 La documentation décrit aussi le changement de disque, l'amorçage automatique et l'association des commandes RetroPad au clavier. Ses dimensions vidéo annoncées sont 768 × 288, jusqu'à 768 × 576 en entrelacé. Ce sont les caractéristiques du rendu de ce port, pas de nouveaux modes matériels du BBC. [Documentation officielle Libretro](https://docs.libretro.com/library/b2/).
 
-**Conclusion de recherche :** b2 est pertinent pour comprendre le matériel partagé A/B. Les limites de son adaptation libretro, notamment cassette et états, ne définissent pas les capacités à conserver dans AcornEmu.
+**Conclusion de recherche :** b2 est pertinent pour comprendre le matériel partagé A/B. Les limites de son adaptation libretro, notamment tape et états, ne définissent pas les capacités à conserver dans AcornEmu.
 
 ## Questions encore ouvertes au niveau BBC Micro
 
@@ -220,7 +220,7 @@ La documentation décrit aussi le changement de disque, l'amorçage automatique 
 - Effets des lectures de zones non équipées et état du bus, à distinguer des valeurs conventionnelles des émulateurs.
 - Fréquences et timings des modes reprogrammés, des demi-lignes et de l'entrelacement.
 - État au démarrage des compteurs, verrous et RAM, et différences entre mise sous tension, BREAK et CTRL-BREAK.
-- Chronologie complète du protocole cassette et de ses blocs de fichiers ; la spécification UEF décrit un conteneur, pas à elle seule le système de fichiers du MOS.
+- Chronologie complète du protocole tape et de ses blocs de fichiers ; la spécification UEF décrit un conteneur, pas à elle seule le système de fichiers du MOS.
 
 Ces points sont identifiés comme recherches complémentaires, pas présentés comme des caractéristiques déjà vérifiées sur une machine physique.
 
@@ -240,7 +240,7 @@ Les comptages viennent du BBC Model B complet au prompt BASIC, 200 tranches apr�
 | CRTC → carte vidéo/SAA/VIA | Environ 19 968 RefreshCrtcSignals lisant huit sorties, 39 936 PrepareTeletext et comparaisons VSYNC sur la carte | VSYNC : 2 changements ; RA : 312 ; DE : 499 ; curseur : 1,03. MA et colonne changent à cadence caractère | Notifications ciblées pour les sorties rares et état de câblage local ; voie directe pour les données à cadence caractère ; appliquer DEW/CRS/LOSE à leurs phases actuelles, pas au hasard du callback |
 | SAA5050/VIDPROC | 39 936 paquets de six demi-points SAA et huit périodes maître VIDPROC | Ces paquets transportent des transitions utiles, même si le logiciel hôte montre une image immobile | Conserver le traitement dense et les délais du pipeline ; ne grouper davantage qu'entre deux événements d'entrée démontrés sans effet intermédiaire |
 | VIA | Deux fronts Phi2 distincts ; front descendant en attente jusqu'à la fin de l'accès bus ; callbacks de ports et contrôle déjà présents | 79 873 appels de fin de cycle pour 19 968 fronts descendants, mais la simple garde déplacée n'a pas amélioré le BBC | Intégrer le traitement à la phase bus due plutôt que créer des sondages de fin de cycle partout ; échéances de timers seulement avec prise en compte des lectures, reloads, PB6 et décalages |
-| Cassette/SERPROC/ACIA | La chaîne cassette/série est appelée 39 936 fois ; aucun échantillon cassette lu/avancé/enregistré au repos ; CTS/DCD sont déjà filtrés | Environ 12 288 fronts TxC et autant de RxC subsistent : ils ne peuvent être supprimés avec le moteur arrêté | Entrée cassette sur changement, échéances de silence/carrier et synthèse, fronts série aux diviseurs exacts ; pas de suspension globale de la série |
+| Tape/SERPROC/ACIA | La chaîne tape/série est appelée 39 936 fois ; aucun échantillon tape lu/avancé/enregistré au repos ; CTS/DCD sont déjà filtrés | Environ 12 288 fronts TxC et autant de RxC subsistent : ils ne peuvent être supprimés avec le moteur arrêté | Entrée tape sur changement, échéances de silence/carrier et synthèse, fronts série aux diviseurs exacts ; pas de suspension globale de la série |
 | Contrôleurs et entrées | Chaînes disque, Winchester, réseau, ADC appelées à chaque cycle ; notifications de sorties 8271 déjà présentes ; avance idle exacte déjà partielle côté Winchester | Les circuits actifs ont encore des délais et fronts nécessaires ; l'appel de l'enveloppe ne prouve pas le travail du circuit | Étendre les échéances au propriétaire seulement quand le circuit fournit une borne sûre ; réveiller avant accès, changement de broche, index, IRQ ou fin d'opération |
 
 Les changements IRQ comptés sont ceux observés lors des lectures CPU : ce nombre ne prouve pas l'absence de toute impulsion intermédiaire.
@@ -259,7 +259,7 @@ MA et le flux de pixels ne deviennent pas des objets événements alloués par c
 
 Les essais de copie groupée des sorties et de vue ref readonly n'ont pas donné de gain global confirmé : ils sont retirés. Leur échec ne valide pas des callbacks indiscriminés ; il oriente vers des notifications sélectives des changements, avec mesure de la carte complète.
 
-### Cassette et série proposées
+### Tape et série proposées
 
 Le transport signale une nouvelle transition d'entrée ou l'absence de signal au changement de son état. La logique SERPROC conserve le temps écoulé, le timeout de silence et le pulse carrier ; la synthèse conserve sa phase même lorsque sa sortie n'est pas sélectionnée. Les changements de TXD/RTS, du diviseur ou du contrôle imposent une frontière de traitement.
 
@@ -270,7 +270,7 @@ L'ACIA reçoit TxC/RxC dans leur ordre actuel. DCD reste prélevé par RxC et le
 1. Fixer les traces de référence des phases CPU/bus, VIA, VSYNC/DEW/LOSE, TxC/RxC et IRQ/NMI sur la machine complète, avec les événements simultanés et les accès sur front.
 2. Terminer la propagation des lignes IRQ/NMI et leur agrégation locale, sans remplacer les règles d'échantillonnage du CPU. Confirmer le coût global du bloc IRQ candidat avant de le considérer acquis.
 3. Remplacer les consultations de sorties vidéo rares par des notifications ciblées, tout en conservant le chemin direct des données à cadence élevée.
-4. Migrer les délais cassette/série et les opérations de contrôleurs vers des échéances exactes, une chaîne cohérente à la fois ; conserver les horloges nécessaires entre ces échéances.
+4. Migrer les délais tape/série et les opérations de contrôleurs vers des échéances exactes, une chaîne cohérente à la fois ; conserver les horloges nécessaires entre ces échéances.
 5. Étendre l'avancement jusqu'au prochain événement seulement aux intervalles dont toutes les observations et transitions sont couvertes par l'équivalence. Réutiliser l'architecture pour les autres machines sans intégrer de connaissance BBC dans une puce réutilisable.
 
 Pour chaque migration : mêmes configurations, scénarios, cycles et sorties ; traces de phases et interruptions, puis coût du BBC complet Debug et Release. Aucun gain n'est acquis par le seul passage d'un test isolé ou par la suppression d'appels visibles dans un compteur.

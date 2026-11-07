@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>Hi-res 工艺品</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>SIO 加速</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>录音带里的靴子</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>录音带里的靴子</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>操作系统修订</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>色调</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>饱和度</value></data>

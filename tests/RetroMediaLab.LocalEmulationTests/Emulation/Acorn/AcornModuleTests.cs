@@ -146,10 +146,10 @@ public sealed class AcornModuleTests
     }
 
     [Fact]
-    public void NativeDiskLimitRejectsUnsupportedSlotsAndCassette()
+    public void NativeDiskLimitRejectsUnsupportedSlotsAndTape()
     {
         Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2, media: [new("disk.ssd", MediaCategory.Floppy, EmulationMediaSlot.Floppy1)]));
-        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2, media: [new("tape.uef", MediaCategory.Cassette, EmulationMediaSlot.Floppy0)]));
+        Assert.Throws<ArgumentException>(() => new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2, media: [new("tape.uef", MediaCategory.Tape, EmulationMediaSlot.Floppy0)]));
         var accepted = new MachineConfiguration(MachineModel.BbcMicroModelB, core: Emulator.B2, media: [new("disk.ssd", MediaCategory.Floppy, EmulationMediaSlot.Floppy0)]);
         Assert.Single(accepted.Media);
     }

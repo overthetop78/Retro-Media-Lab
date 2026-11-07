@@ -23,7 +23,7 @@ Options natives des lecteurs GearColeco : choix du lecteur ciblé par Disk Contr
 - [x] Consigner le contrôle des périphériques de pointage.
   - [x] Modifier `docs/tasks/emulation/commun.md` : préciser le raccordement réel du crayon optique, du clic gauche et des deux joysticks, ainsi que les limites constatées et les vérifications statiques sans build.
 
-Les huit noms invariants manquants sont ajoutés dans la seule base App. Audit statique : tous les profils enregistrés possèdent désormais un nom dans cette base. Stockage Thomson : le brouillon Core=None ne déclarait aucun périphérique, ce qui masquait aussi le bouton d'ajout. La description utilise maintenant les capacités du moteur disponible pour la machine, sans sélectionner ni installer ce moteur ; les trois possibilités natives existantes (cassette, disquette, cartouche) redeviennent ajoutables.
+Les huit noms invariants manquants sont ajoutés dans la seule base App. Audit statique : tous les profils enregistrés possèdent désormais un nom dans cette base. Stockage Thomson : le brouillon Core=None ne déclarait aucun périphérique, ce qui masquait aussi le bouton d'ajout. La description utilise maintenant les capacités du moteur disponible pour la machine, sans sélectionner ni installer ce moteur ; les trois possibilités natives existantes (tape, disquette, cartouche) redeviennent ajoutables.
 
 Pointage : le code natif Theodore src/libretro.c lit deux joysticks et un RETRO_DEVICE_POINTER sur le port 2 pour le crayon optique, sans entrée RETRO_DEVICE_MOUSE. L'adaptateur transmettait déjà les coordonnées et le clic gauche à ce crayon. Le bloc de l'onglet Souris le nomme maintenant explicitement et permet de désactiver ses déplacements et son contact ; il reste activé par défaut. L'association du contact accepte toujours clavier, souris et manette. Le clic droit sans effet n'est plus proposé comme action de sortie ; il reste utilisable comme source pour le contact du crayon. Aucun port joystick supplémentaire ni fausse souris Thomson ajouté. Les vraies souris et le lecteur de code-barres documentés pour le matériel ne sont pas exposés par cette interface native.
 
@@ -345,9 +345,9 @@ Lot Apple : Kraft Premium II ajouté aux cinq visuels Apple II, avec quatre dire
     - [ ] Modifier `docs/reference/emulation-machines.md` après les essais CDTV, CD32 et CD32FR avec leurs ROM principales et étendues pour consigner les firmwares employés et les résultats.
   - [ ] 1.4 Effectuer les essais longs
     - [ ] Modifier `docs/reference/emulation-machines.md` après trente minutes PAL puis NTSC avec vidéo, audio et entrées pour consigner la stabilité et les compteurs audio.
-- [ ] 2. Terminer la validation cassette Atari800
+- [ ] 2. Terminer la validation tape Atari800
   - [ ] 2.1 Tester les parcours encore non vérifiés
-    - [ ] Modifier `docs/reference/atari-libretro.md` après une lecture manuelle sans amorçage automatique, la modification des options moteur arrêté puis actif, l’amorçage automatique sur Atari 400 et les essais d’une cassette connue sur Atari 800XL et Atari 130XE.
+    - [ ] Modifier `docs/reference/atari-libretro.md` après une lecture manuelle sans amorçage automatique, la modification des options moteur arrêté puis actif, l’amorçage automatique sur Atari 400 et les essais d’une tape connue sur Atari 800XL et Atari 130XE.
 - [ ] 3. Terminer la validation GameInput
   - [ ] 3.1 Vérifier la compatibilité des anciennes associations
     - [ ] Modifier `docs/reference/gameinput.md` après des essais avec une configuration `xinput:*`, une manette absente, une reconnexion et un changement d’ordre pour consigner les identités conservées et toute correction appliquée.
@@ -580,7 +580,7 @@ Cause : le descripteur Cartridge0 omettait IsPermanent, dont le défaut est fals
 ## Périphériques Thomson intégrés et disposition des visuels
 
 - [x] Rétablir le matériel intégré selon le modèle Thomson.
-  - [x] Modifier `src/RetroMediaLab.Emulation.Thomson/Common/Machines/Common/Functions/ConfigurationFunctions.cs` : définir les emplacements intégrés (cartouche sur tous les modèles, cassette MO6, disquette TO8D/TO9/TO9+) et refuser leur suppression lors de la validation.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Thomson/Common/Machines/Common/Functions/ConfigurationFunctions.cs` : définir les emplacements intégrés (cartouche sur tous les modèles, tape MO6, disquette TO8D/TO9/TO9+) et refuser leur suppression lors de la validation.
   - [x] Modifier `src/RetroMediaLab.Emulation.Thomson/Common/Machines/Common/Contracts/ConfigurationContracts.cs` : inclure ces emplacements même sans support inséré, en conservant les périphériques externes configurés et les associations existantes.
   - [x] Modifier `src/RetroMediaLab.Emulation.Thomson/Emulators/Theodore/Functions/MediaRuntimeFunctions.cs` : déclarer permanents uniquement les périphériques intégrés du modèle.
 - [x] Placer le choix du visuel au-dessus de son image.
@@ -588,7 +588,7 @@ Cause : le descripteur Cartridge0 omettait IsPermanent, dont le défaut est fals
 - [x] Vérifier et documenter les corrections.
   - [x] Modifier `docs/tasks/emulation/commun.md` : consigner les modèles concernés, les protections existantes et les contrôles du diff, sans annoncer de nouvelle livraison compilée.
 
-Corrections dans les sources : les emplacements intégrés sont ajoutés au constructeur, y compris au chargement des configurations existantes ; les lecteurs externes et supports associés sont conservés. La validation refuse de retirer un emplacement intégré et IsPermanent désactive sa suppression dans la liste existante. Cartouche sur les huit modèles ; cassette intégrée au MO6 ; disquette intégrée aux TO8D, TO9 et TO9+. Le MO5, TO7, TO7/70 et TO8 conservent leurs lecteurs externes facultatifs. Références : documentation Theodore (https://raw.githubusercontent.com/Zlika/theodore/master/README.md), guide Thomson MO6 (https://www.retronik.fr/DOCUMENTS/Info/Thomson_MOTO/Thomson%20MO6%20Guide%20%28Thomson%201986%29.pdf), pilote de son auteur MESS TO9 (https://mine.perso.lip6.fr/mess/to9.html.fr).
+Corrections dans les sources : les emplacements intégrés sont ajoutés au constructeur, y compris au chargement des configurations existantes ; les lecteurs externes et supports associés sont conservés. La validation refuse de retirer un emplacement intégré et IsPermanent désactive sa suppression dans la liste existante. Cartouche sur les huit modèles ; tape intégrée au MO6 ; disquette intégrée aux TO8D, TO9 et TO9+. Le MO5, TO7, TO7/70 et TO8 conservent leurs lecteurs externes facultatifs. Références : documentation Theodore (https://raw.githubusercontent.com/Zlika/theodore/master/README.md), guide Thomson MO6 (https://www.retronik.fr/DOCUMENTS/Info/Thomson_MOTO/Thomson%20MO6%20Guide%20%28Thomson%201986%29.pdf), pilote de son auteur MESS TO9 (https://mine.perso.lip6.fr/mess/to9.html.fr).
 
 Disposition des manettes : sélecteur du visuel dans sa propre colonne, au-dessus de la photo, légende au-dessus du sélecteur ; type de manette conservé avec les associations à gauche. Les deux parcours de construction emploient cette disposition. Diff vérifié sans erreur ; pas de build ni de lancement graphique supplémentaire.
 

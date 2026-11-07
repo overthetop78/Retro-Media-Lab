@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Odtwórz</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Pauza</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Przewiń wstecz</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Przewiń do przodu</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Nagrywaj</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Zatrzymaj</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Brak kasety</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Zatrzymana</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Odtwarzanie</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Wstrzymana</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Nagrywanie</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Koniec taśmy</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Częstotliwość szeregowych danych (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Automatyczne</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Tryb wczytywania</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Czytanie w czasie rzeczywistym</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Przyspieszone odczytywanie</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Załadowanie bezpośrednie</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Prędkość taśmy</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Prędkość do przodu i przewijania</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Opóźnienie rozpoczęcia silnika przed rozpoczęciem odtwarzania</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Opóźnienie rozruchu silnika przed zarejestrowaniem</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Włącz dźwięki urządzenia pamięci masowej</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Chronić przed pisaniem</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Częstotliwość pobierania próbek (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Kanały audio</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Odpady na próbkę</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Podpisane próbki</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW profil wejściowy kasety</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW profil zapisu kasetowego</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Wczytywanie</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Mechanika taśm</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Automatyczne śledzi wskaźnik danych seryjnych ustawiony przez emulowane oprogramowanie komputerowe. Nie wykrywa szybkości danych z pliku obrazu.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Mono</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>StereoCity in New Jersey USA</value></data>
+</root>

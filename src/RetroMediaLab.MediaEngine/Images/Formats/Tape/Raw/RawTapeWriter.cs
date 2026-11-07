@@ -20,8 +20,8 @@ public sealed class RawTapeWriter(IAtomicImageFileWriter? files = null) : IMedia
     public bool CanWrite(MediaImageDocument document, string format, string extension) => document.MediaKind == MediaKind.Tape && document.Representation.RepresentationKind == MediaRepresentationKind.Sequential && FormatIds.Contains(format) && ProducedFileExtensions.Contains(extension.ToLowerInvariant()) && PcmSampleFunctions.TryGetProfile(document.Metadata, out _, out _, out _, out _);
     public async Task<IReadOnlyList<string>> WriteAsync(MediaImageDocument document, string path, string format, CancellationToken token = default)
     {
-        if (!CanWrite(document, format, Path.GetExtension(path))) throw new InvalidDataException("A PCM cassette document is required.");
-        var bytes = await CassettePcmFunctions.EncodeDocumentAsync(document, CassettePcmProfile.Read(document.Source.Parameters ?? document.Metadata), token).ConfigureAwait(false);
+        if (!CanWrite(document, format, Path.GetExtension(path))) throw new InvalidDataException("A PCM tape document is required.");
+        var bytes = await TapePcmFunctions.EncodeDocumentAsync(document, TapePcmProfile.Read(document.Source.Parameters ?? document.Metadata), token).ConfigureAwait(false);
         await _files.WriteAsync(path, (stream, cancellation) => stream.WriteAsync(bytes, cancellation).AsTask(), token).ConfigureAwait(false);
         return [path];
     }

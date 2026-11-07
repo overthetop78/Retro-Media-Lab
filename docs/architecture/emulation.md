@@ -312,7 +312,7 @@ public interface IEmulationMedia
 
 Les extensions acceptées ne sont pas stockées dans le périphérique commun et ne sont pas fournies globalement par l'instance. App demande à la bibliothèque `Emulation.xxx` associée quelles extensions sont acceptées pour l'émulateur sélectionné et le lecteur ciblé. La bibliothèque renvoie cette liste à partir des capacités réelles de ce couple émulateur/lecteur. App l'utilise pour filtrer la boîte de sélection et pour empêcher une association manifestement invalide. Deux lecteurs de même catégorie peuvent ainsi recevoir des listes différentes si leur émulateur ou leur modèle le nécessite.
 
-La catégorie du périphérique reste définie par un enum commun listant les périphériques possibles, par exemple `FloppyDrive`, `CompactDiscDrive`, `HardDisk`, `CartridgeSlot` ou `CassetteDrive`. `Directory` n'est pas un périphérique et ne doit pas être proposé comme support montable. Un disque dur reçoit une image disque, pas un dossier. En revanche, l'emplacement ne doit pas être un enum fermé contenant des valeurs comme `Floppy0`, `Floppy1` ou `Cd0`. Il associe la catégorie à un index :
+La catégorie du périphérique reste définie par un enum commun listant les périphériques possibles, par exemple `FloppyDrive`, `CompactDiscDrive`, `HardDisk`, `CartridgeSlot` ou `TapeDrive`. `Directory` n'est pas un périphérique et ne doit pas être proposé comme support montable. Un disque dur reçoit une image disque, pas un dossier. En revanche, l'emplacement ne doit pas être un enum fermé contenant des valeurs comme `Floppy0`, `Floppy1` ou `Cd0`. Il associe la catégorie à un index :
 
 ```csharp
 public sealed record EmulationMediaSlot(

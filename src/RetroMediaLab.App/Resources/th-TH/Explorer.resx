@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>เสียง</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>ฐานสิบหก</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>โปรแกรมภายนอก</value></data>
-  <data name="Explorer.Cassette"><value>เทปคาสเซ็ต</value></data>
+  <data name="Explorer.Tape"><value>เทปคาสเซ็ต</value></data>
   <data name="Explorer.InternalName"><value>คำอธิบายภายใน</value></data>
   <data name="Explorer.BaudRates"><value>อัตรา</value></data>
   <data name="Explorer.Chunks"><value>บล็อก</value></data>

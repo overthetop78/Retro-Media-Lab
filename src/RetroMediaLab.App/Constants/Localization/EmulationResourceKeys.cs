@@ -42,7 +42,7 @@ public static class EmulationResourceKeys
     public const string MemoryCardDevice = "Emulation.Storage.MemoryCard.Device";
     public const string CompactDiscSpeed = "Emulation.Storage.Cd.Speed";
     public const string CommonSave = "Common.Save";
-    public const string CassetteDevice = "Emulation.Storage.Tape.Device";
+    public const string TapeDevice = "Emulation.Storage.Tape.Device";
     public const string CartridgeDevice = "Emulation.Storage.Cartridge.Device";
     public const string VideoSampling = "Emulation.Video.Sampling";
     public const string VideoTechnology = "Emulation.Video.Technology";

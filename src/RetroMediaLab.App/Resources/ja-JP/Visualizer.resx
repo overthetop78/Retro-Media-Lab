@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>分解されたセクター</value></data>
   <data name="Visual.SectorDead"><value>デッドセクター</value></data>
   <data name="Visual.SectorWithoutData"><value>データを使わないセクター</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>カセット情報</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>カセット情報</value></data>
   <data name="Visual.Representation"><value>ディスプレイモード</value></data>
 </root>

@@ -4,7 +4,7 @@ namespace RetroMediaLab.MediaEngine.Constants;
 public static class MechanicalSoundConstants
 {
     /// <summary>Identifiant de la catégorie des lecteurs de bande.</summary>
-    public const string Cassette = "Cassette";
+    public const string Tape = "Tape";
 
     /// <summary>Identifiant de la catégorie des lecteurs de disquettes.</summary>
     public const string Floppy = "Floppy";
@@ -94,21 +94,21 @@ public static class MechanicalSoundConstants
     /// <summary>Diviseur appliqué aux bits extraits pour mettre à l’échelle le bruit de synthèse.</summary>
     internal const double NoiseDivisor = 32768.0;
     /// <summary>Fréquence de la composante tonale synthétique d’avance rapide, en hertz.</summary>
-    internal const double CassetteForwardFrequency = 190;
+    internal const double TapeForwardFrequency = 190;
 
     /// <summary>Fréquence de la composante tonale synthétique de rembobinage, en hertz.</summary>
-    internal const double CassetteRewindFrequency = 165;
+    internal const double TapeRewindFrequency = 165;
     /// <summary>Durée du transitoire synthétique d’arrêt de bande, en secondes.</summary>
-    internal const double CassetteStopSeconds = 0.05;
+    internal const double TapeStopSeconds = 0.05;
 
     /// <summary>Durée du transitoire synthétique d’éjection de bande, en secondes.</summary>
-    internal const double CassetteEjectSeconds = 0.12;
+    internal const double TapeEjectSeconds = 0.12;
 
     /// <summary>Amplitude de référence du transitoire synthétique de bande, en unités PCM.</summary>
-    internal const double CassetteTransientLevel = 2200;
+    internal const double TapeTransientLevel = 2200;
 
     /// <summary>Coefficient de bruit du transitoire synthétique de bande.</summary>
-    internal const double CassetteTransientNoise = 0.3;
+    internal const double TapeTransientNoise = 0.3;
     /// <summary>Durée de référence d’un déplacement synthétique des têtes de disquette, en secondes.</summary>
     internal const double FloppySeekSeconds = 0.025;
 

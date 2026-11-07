@@ -11,11 +11,11 @@ public sealed partial class BbcSerialUla
         FormatVersion = C.StateFormatVersion,
         ClockDenominator = _clockDenominator,
         Control = Control,
-        CassetteInput = _cassetteInput,
+        TapeInput = _tapeInput,
         SeparatorActive = _separatorActive,
         PreviousLevel = _previousLevel,
         HasLevel = _hasLevel,
-        CassetteData = _cassetteData,
+        TapeData = _tapeData,
         EdgeTicks = _edgeTicks,
         CarrierEdges = _carrierEdges,
         CarrierPulse = _carrierPulse,
@@ -33,7 +33,7 @@ public sealed partial class BbcSerialUla
         ReceiveClockEdge = _receiveClockEdge,
         Rs423TransmitData = _rs423TransmitData,
         Rs423RequestToSendHigh = _rs423RequestToSendHigh,
-        CassetteOutput = _cassetteOutput,
+        TapeOutput = _tapeOutput,
         Rs423ReceiveData = _rs423ReceiveData,
         Rs423ClearToSendHigh = _rs423ClearToSendHigh,
         TransmitInput = _transmitInput,
@@ -52,11 +52,11 @@ public sealed partial class BbcSerialUla
         if (state.FormatVersion != C.StateFormatVersion || state.ClockDenominator != _clockDenominator)
             throw new ArgumentException(nameof(state));
         Control = state.Control;
-        _cassetteInput = state.CassetteInput;
+        _tapeInput = state.TapeInput;
         _separatorActive = state.SeparatorActive;
         _previousLevel = state.PreviousLevel;
         _hasLevel = state.HasLevel;
-        _cassetteData = state.CassetteData;
+        _tapeData = state.TapeData;
         _edgeTicks = state.EdgeTicks;
         _carrierEdges = state.CarrierEdges;
         _carrierPulse = state.CarrierPulse;
@@ -74,7 +74,7 @@ public sealed partial class BbcSerialUla
         _receiveClockEdge = state.ReceiveClockEdge;
         _rs423TransmitData = state.Rs423TransmitData;
         _rs423RequestToSendHigh = state.Rs423RequestToSendHigh;
-        _cassetteOutput = state.CassetteOutput;
+        _tapeOutput = state.TapeOutput;
         _rs423ReceiveData = state.Rs423ReceiveData;
         _rs423ClearToSendHigh = state.Rs423ClearToSendHigh;
         _transmitInput = state.TransmitInput;

@@ -19,7 +19,7 @@ namespace RetroMediaLab.Emulation.Example.Common.Services;
 /// <summary>Machine exposant les facettes de l’API publique et conservant les ressources de sa session.</summary>
 /// <remarks>Le constructeur prépare l’état sans démarrer le cœur. StartAsync lance son thread ; DisposeAsync doit être
 /// attendu pour fermer la machine. Les parties Commands et Lifecycle portent les opérations exécutées par cette façade.</remarks>
-internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, IEmulationInput, IEmulationMedia, IEmulationVideo, IEmulationAudio, IEmulationSavedStates, IEmulationRuntime, IEmulationCassetteTransport, IEmulationControllerFeedbackSource
+internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, IEmulationInput, IEmulationMedia, IEmulationVideo, IEmulationAudio, IEmulationSavedStates, IEmulationRuntime, IEmulationTapeTransport, IEmulationControllerFeedbackSource
 {
     /// <summary>Standard vidéo annoncé par le cœur courant, ou null si inconnu.</summary>
     public EmulationVideoStandard? Region => _core.Region;
@@ -75,8 +75,8 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     /// <remarks>La facette partage la durée de vie de l'adaptateur d'entrées ; la machine ne la détruit pas.
     /// Son absence conserve la projection de repli du module, notamment pour une machine construite sans adaptateur.</remarks>
     private readonly IEmulatorMediaCapabilities? _mediaCapabilities;
-    /// <summary>Contrôleur facultatif des impulsions de cassette, sans ressource physique possédée.</summary>
-    private readonly CassetteInputController? _cassetteInput;
+    /// <summary>Contrôleur facultatif des impulsions de tape, sans ressource physique possédée.</summary>
+    private readonly TapeInputController? _tapeInput;
     /// <summary>Associations courantes des entrées ; les modifications sont appliquées sur le thread du cœur.</summary>
     private InputConfiguration _inputConfiguration;
     /// <summary>État de la commande de bascule, transmis à la projection d’entrée du backend.</summary>
@@ -117,7 +117,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     /// <param name="supportsPointerCapture">Capacité supplémentaire de capture du pointeur, combinée aux périphériques déclarés.</param>
     /// <param name="supportsSavedStates">Capacité autorisée par le backend, combinée à SupportsSaveStates du cœur.</param>
     /// <param name="inputMapper">Mapper explicite ; sans mapper fourni, le contrat de l’adaptateur sélectionné est utilisé.</param>
-    /// <param name="cassetteInput">Contrôleur facultatif de commandes de cassette préparé par Common.</param>
+    /// <param name="tapeInput">Contrôleur facultatif de commandes de tape préparé par Common.</param>
     /// <param name="resolvedMedia">Montages déjà préparés pour la session, ou null pour ceux de la configuration.</param>
     /// <param name="deleteSession">Nettoyage facultatif du dossier possédé après destruction effective du cœur.</param>
     /// <param name="startErrorTranslator">Traduction facultative d’une erreur de démarrage.</param>
@@ -129,7 +129,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     internal Machine(Guid id, MachineConfiguration configuration, IEmulatorCore core, string sessionDirectory, IAudioOutput? audioOutput = null, string? saveDirectory = null,
         Func<IAudioOutput?>? audioOutputFactory = null, Func<IEmulatorCore>? coreFactory = null, Func<EmulationMediaSlot, string?, bool>? requiresMediaRestart = null,
         bool requiresResetRestart = false, bool supportsNoContent = false, bool supportsPointerCapture = false, bool supportsSavedStates = true, IEmulatorInputMapper? inputMapper = null,
-        CassetteInputController? cassetteInput = null, IReadOnlyList<MediaConfiguration>? resolvedMedia = null, Action<string>? deleteSession = null, Func<Exception, Exception>? startErrorTranslator = null, IEmulatorRuntimePolicy? runtimePolicy = null)
+        TapeInputController? tapeInput = null, IReadOnlyList<MediaConfiguration>? resolvedMedia = null, Action<string>? deleteSession = null, Func<Exception, Exception>? startErrorTranslator = null, IEmulatorRuntimePolicy? runtimePolicy = null)
     {
         Id = id;
         _configuration = configuration;
@@ -143,7 +143,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         _supportsPointerCapture = supportsPointerCapture || InputSettingsFunctions.SupportsMouse(configuration) || InputSettingsFunctions.SupportsPointerCapture(configuration.Input);
         _inputMapper = inputMapper ?? adapter;
         _mediaCapabilities = _inputMapper as IEmulatorMediaCapabilities;
-        _cassetteInput = cassetteInput;
+        _tapeInput = tapeInput;
         _inputConfiguration = configuration.Input;
         _mountedMedia = (resolvedMedia ?? configuration.Media).ToList();
         _core = core;
@@ -176,8 +176,8 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public IEmulationSavedStates SavedStates => this;
     /// <summary>Facette d’informations et d’options du cœur en cours d’exécution.</summary>
     public IEmulationRuntime Runtime => this;
-    /// <summary>Facette cassette lorsque Common a fourni le contrôleur correspondant, sinon null.</summary>
-    public IEmulationCassetteTransport? CassetteTransport => _cassetteInput is null ? null : this;
+    /// <summary>Facette tape lorsque Common a fourni le contrôleur correspondant, sinon null.</summary>
+    public IEmulationTapeTransport? TapeTransport => _tapeInput is null ? null : this;
     /// <summary>Capacité de capture annoncée pour les entrées de la session.</summary>
     bool IEmulationInput.SupportsPointerCapture => _supportsPointerCapture;
     /// <summary>Demande de capture au clic lorsque cette capacité existe et que l’utilisateur l’a activée.</summary>
@@ -216,15 +216,15 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public event EventHandler<VideoFrame>? VideoFrameReady;
     /// <summary>Notification d’un bloc audio après son envoi à la sortie, depuis le thread du cœur.</summary>
     public event EventHandler<AudioChunk>? AudioChunkReady;
-    /// <summary>État du transport cassette, déduit du média inséré et de l’activité du lecteur.</summary>
+    /// <summary>État du transport tape, déduit du média inséré et de l’activité du lecteur.</summary>
     /// <remarks>La présence d’un média ne signifie pas qu’une lecture est en cours ; l’activité reste une information distincte.</remarks>
-    EmulationCassetteState IEmulationCassetteTransport.State => CassetteStateFunctions.From(
-        _mountedMedia.Any(media => media.Category == MediaCategory.Cassette && media.IsInserted),
-        ((IEmulationRuntime)this).MediaActivity.GetValueOrDefault(EmulationMediaSlot.Cassette0));
-    /// <summary>Commande active lorsque le lecteur cassette annonce une lecture.</summary>
-    EmulationCassetteCommand? IEmulationCassetteTransport.ActiveOperation => ((IEmulationCassetteTransport)this).State == EmulationCassetteState.Playing ? EmulationCassetteCommand.Play : null;
-    /// <summary>Commandes déclarées par le contrôleur de cassette fourni à cette session.</summary>
-    IReadOnlySet<EmulationCassetteCommand> IEmulationCassetteTransport.AvailableCommands => CassetteInputController.AvailableCommands;
+    EmulationTapeState IEmulationTapeTransport.State => TapeStateFunctions.From(
+        _mountedMedia.Any(media => media.Category == MediaCategory.Tape && media.IsInserted),
+        ((IEmulationRuntime)this).MediaActivity.GetValueOrDefault(EmulationMediaSlot.Tape0));
+    /// <summary>Commande active lorsque le lecteur tape annonce une lecture.</summary>
+    EmulationTapeCommand? IEmulationTapeTransport.ActiveOperation => ((IEmulationTapeTransport)this).State == EmulationTapeState.Playing ? EmulationTapeCommand.Play : null;
+    /// <summary>Commandes déclarées par le contrôleur de tape fourni à cette session.</summary>
+    IReadOnlySet<EmulationTapeCommand> IEmulationTapeTransport.AvailableCommands => TapeInputController.AvailableCommands;
     /// <summary>Nouvelle liste des médias montés, convertie vers les descriptions publiques.</summary>
     IReadOnlyList<EmulationMedia> IEmulationMedia.MountedMedia => _mountedMedia.Select(EmulationMediaConversionFunctions.ToCommon).OfType<EmulationMedia>().ToArray();
     /// <summary>Insère un média du contrat public par la commande Common de la session.</summary>

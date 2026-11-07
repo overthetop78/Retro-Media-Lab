@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Rozmiar lub geometria dysku są nieprawidłowe.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Natychmiast rezerwuje fizyczne miejsce; w przeciwnym razie obraz rośnie podczas zapisu.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sektory</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Kaseta</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Kaseta</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Kartridż</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Płyty kompaktowe</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Pokazuj aktywność napędów na ekranie emulatora</value></data>

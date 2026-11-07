@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Disk boyutu veya geometrisi geçersiz.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Fiziksel disk alanını hemen ayırır; aksi halde görüntü veri yazıldıkça büyür.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sektörler</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Kaset</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Kaset</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Kartuş</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Kompakt diskler</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Sürücü etkinliğini emülatör ekranında göster</value></data>

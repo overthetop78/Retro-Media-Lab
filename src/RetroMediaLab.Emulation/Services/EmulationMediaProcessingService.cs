@@ -8,7 +8,7 @@ namespace RetroMediaLab.Emulation.Services;
 internal sealed partial class EmulationMediaProcessingService : IEmulationMediaProcessing
 {
     /// <inheritdoc/>
-    public IReadOnlyList<string> CassetteRecordingExtensions => Preparation.CassetteRecordingExtensions;
+    public IReadOnlyList<string> TapeRecordingExtensions => Preparation.TapeRecordingExtensions;
     /// <inheritdoc/>
     public IReadOnlyList<string> MechanicalSoundProfiles(string device) => Preparation.MechanicalSoundProfiles(device);
     public string MechanicalSoundProfileDisplayName(string profile) => Preparation.MechanicalSoundProfileDisplayName(profile);
@@ -16,12 +16,12 @@ internal sealed partial class EmulationMediaProcessingService : IEmulationMediaP
     public double MechanicalSoundDurationSeconds(string device, string profile, string operation) => Preparation.MechanicalSoundDurationSeconds(device, profile, operation);
     public short[] ProtectMechanicalAudioMix(IReadOnlyList<double> samples) => Preparation.ProtectMechanicalAudioMix(samples);
     /// <inheritdoc/>
-    public Task WriteCassetteAsync(string path, EmulationCassetteSignal signal, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? parameters = null) => Preparation.WriteCassetteAsync(path, new RetroMediaLab.MediaEngine.Contracts.MediaCassetteSignal(signal.Samples, signal.SampleRate), cancellationToken, parameters);
+    public Task WriteTapeAsync(string path, EmulationTapeSignal signal, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? parameters = null) => Preparation.WriteTapeAsync(path, new RetroMediaLab.MediaEngine.Contracts.MediaTapeSignal(signal.Samples, signal.SampleRate), cancellationToken, parameters);
     /// <inheritdoc/>
-    public async Task<EmulationCassetteSignal> ReadCassetteAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null)
+    public async Task<EmulationTapeSignal> ReadTapeAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null)
     {
-        var signal = await Preparation.ReadCassetteAsync(path, cancellationToken, machineId, parameters).ConfigureAwait(false);
-        return new EmulationCassetteSignal(signal.Samples, signal.SampleRate, signal.BlockPositions, signal.Blocks?.Select(block => new EmulationCassetteBlock(block.SamplePosition, block.Data, block.IntegrityValid, block.Metadata)).ToArray());
+        var signal = await Preparation.ReadTapeAsync(path, cancellationToken, machineId, parameters).ConfigureAwait(false);
+        return new EmulationTapeSignal(signal.Samples, signal.SampleRate, signal.BlockPositions, signal.Blocks?.Select(block => new EmulationTapeBlock(block.SamplePosition, block.Data, block.IntegrityValid, block.Metadata)).ToArray());
     }
     private static IMediaRuntimePreparation Preparation => MediaEngineComposition.RuntimePreparation;
     /// <inheritdoc/>

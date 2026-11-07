@@ -41,7 +41,7 @@ internal static class SystemConstants
     internal const int VideoCharacterClock = 2000000;
     internal const int ViaClock = 1000000;
     internal const int AudioSampleRate = 48000;
-    internal const int CassetteMonitorDivisor = 4;
+    internal const int TapeMonitorDivisor = 4;
     internal const int DisplayHeight = 160;
     internal const int DisplayWidth = 480;
     internal const int DisplayPixelBytes = 4;

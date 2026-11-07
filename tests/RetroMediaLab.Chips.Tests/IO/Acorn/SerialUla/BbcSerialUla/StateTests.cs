@@ -9,7 +9,7 @@ public sealed class StateTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void RestoredSerialAndCassetteSignalsContinueAtTheSameClock(bool externalSerial)
+    public void RestoredSerialAndTapeSignalsContinueAtTheSameClock(bool externalSerial)
     {
         for (var rate = 0; rate < 8; rate++)
         foreach (var instant in new[] { 0, 1, 7, 16, 127, 511, 1333 })
@@ -29,7 +29,7 @@ public sealed class StateTests
                 Advance(chip, clock);
                 Advance(restored, clock);
                 Assert.Equal(chip.CaptureState(), restored.CaptureState());
-                Assert.Equal(chip.CassetteOutput, restored.CassetteOutput);
+                Assert.Equal(chip.TapeOutput, restored.TapeOutput);
                 Assert.Equal(chip.SourceClockPhase, restored.SourceClockPhase);
             }
             Assert.Equal(trace, restoredTrace);
@@ -57,10 +57,10 @@ public sealed class StateTests
     private static void Advance(SerialChip chip, int clock)
     {
         if (clock % 47 == 0) chip.SetTransmitPins((clock / 47 & 1) == 0, false);
-        if (clock % 417 == 0) chip.SetCassetteInput((clock / 417 & 1) == 0);
+        if (clock % 417 == 0) chip.SetTapeInput((clock / 417 & 1) == 0);
         if (clock % 257 == 0) chip.Rs423ReceiveData = (clock / 257 & 1) == 0;
         if (clock % 809 == 0) chip.Rs423ClearToSendHigh = (clock / 809 & 1) == 0;
-        if (clock == 2900) chip.SetCassetteInput(null);
+        if (clock == 2900) chip.SetTapeInput(null);
         chip.Tick();
     }
 }

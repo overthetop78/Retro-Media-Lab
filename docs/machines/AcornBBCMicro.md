@@ -56,7 +56,7 @@ La carte est construite par `BbcMicroMachine` et ses propriétaires de périphé
 | VIA système / VIA utilisateur lorsqu’installé | Via6522 | `docs/chips/IO/Mos6522.md`, clôturé |
 | Son | Sn76489 dans Audio | `docs/chips/Audio/Sn76489.md`, clôturé |
 | ACIA | Acia6850 | `docs/chips/IO/Mc6850.md`, clôturé ; raccordement aux horloges de l’ULA série validé avec les quatre cartes, voir ci-dessous |
-| ULA série | BbcSerialUla et raccordement Serial | Reprise, horloges et broches dans Chips ; 99 contrôles propres et preuves invitées RX/TX cassette A/B/B+ ; voir `docs/chips/IO/BbcSerialUla.md` pour les résultats et les limites analogiques nominales |
+| ULA série | BbcSerialUla et raccordement Serial | Reprise, horloges et broches dans Chips ; 99 contrôles propres et preuves invitées RX/TX tape A/B/B+ ; voir `docs/chips/IO/BbcSerialUla.md` pour les résultats et les limites analogiques nominales |
 | CRTC, ULA vidéo, télétexte | Crtc6845, BbcVideoUla, TeletextSaa5050 | Fiches `docs/chips/Video/Crtc6845.md`, `BbcVideoUla.md`, `Saa5050.md`, clôturées |
 | Disquettes 8271 / WD1770 / WD1772 | Contrôleurs séparés et propriétaires de lecteurs | `docs/chips/Controllers/Intel8271.md`, `Wd1770.md`, clôturés ; vérifier les configurations proposées par chaque machine lors du passage natif final |
 | ADC lorsque présent | Adc7002 | `docs/chips/IO/Upd7002.md`, clôturé |
@@ -95,15 +95,15 @@ Captures réellement produites et inspectées, conservées hors Git :
 - `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus64/real-ssd-catalogue-load.png`
 - `artifacts/TestsChips/Wd1770/BbcMicroModelBPlus128/real-ssd-catalogue-load.png`
 
-Chaque essai détache son image avant de la libérer et réinitialise sa carte dans `finally`. Aucun fichier média ni réglage existant n’a été écrit. Ce passage prouve le démarrage et la lecture effective de ce SSD sur les quatre configurations ; il ne prouve pas encore l’exécution de l’application, les écritures, les deux lecteurs, les autres géométries et conteneurs, les cassettes réelles, les extensions mémoire ni le réseau. Ces vérifications restent ouvertes dans le suivi.
+Chaque essai détache son image avant de la libérer et réinitialise sa carte dans `finally`. Aucun fichier média ni réglage existant n’a été écrit. Ce passage prouve le démarrage et la lecture effective de ce SSD sur les quatre configurations ; il ne prouve pas encore l’exécution de l’application, les écritures, les deux lecteurs, les autres géométries et conteneurs, les tapes réelles, les extensions mémoire ni le réseau. Ces vérifications restent ouvertes dans le suivi.
 
-## Cassette UEF réelle : démodulation et chargement par le MOS
+## Tape UEF réelle : démodulation et chargement par le MOS
 
 Le passage Release du 5 novembre 2026 comporte quatre essais réussis en 34,43 secondes. Le média, uniquement lu, est :
 
 `F:\Retro\Image Disquette\Acorn BBC - Games - [UEF] (TOSEC-v2023-08-29)\Draughts v2.1 (19xx)(Acornsoft)\Draughts v2.1 (19xx)(Acornsoft).uef`.
 
-Le relais SDK utilise l’identifiant de décodeur cassette `acorn-bbc`, comme le propriétaire BBC existant. Le premier fichier `DRAUGHTS` comprend sept blocs valides et 1 774 octets ; le signal complet dure 95,275 secondes. Le banc configure explicitement la lecture RealTime, insère le signal et saisit `*TAPE` puis `*LOAD "DRAUGHTS" 2000` par les entrées clavier. Les 1 774 octets lus dans la RAM à `&2000` correspondent intégralement aux données décodées indépendamment par MediaEngine. Le mode direct n’est pas utilisé.
+Le relais SDK utilise l’identifiant de décodeur tape `acorn-bbc`, comme le propriétaire BBC existant. Le premier fichier `DRAUGHTS` comprend sept blocs valides et 1 774 octets ; le signal complet dure 95,275 secondes. Le banc configure explicitement la lecture RealTime, insère le signal et saisit `*TAPE` puis `*LOAD "DRAUGHTS" 2000` par les entrées clavier. Les 1 774 octets lus dans la RAM à `&2000` correspondent intégralement aux données décodées indépendamment par MediaEngine. Le mode direct n’est pas utilisé.
 
 | Carte | Images jusqu’à la comparaison intégrale | Calcul hôte, démarrage et saisie compris | Capture inspectée |
 |---|---:|---:|---|
@@ -131,14 +131,14 @@ Le passage final Release réussit les quatre cartes en 2,1229 minutes : chaque c
 | B+ 64 Kio | Index + LOAD exacts | Index + LOAD exacts | Index + LOAD exacts | Index + LOAD exacts |
 | B+ 128 Kio | Index + LOAD exacts | Index + LOAD exacts | Index + LOAD exacts | Index + LOAD exacts |
 
-MediaEngine se recale désormais sur chaque début de caractère UART et estime la période depuis une porteuse stable, au lieu d’appliquer une grille fixe sur toute la bande. Les 72 tests FSK/Acorn/séquentiels et les 28 tests d’intégration cassette passent en Release. Les cas synthétiques couvrent les débits d’échantillonnage 22 050/44 100/48 000 Hz, une dérive de vitesse de ±2 %, la phase continue et les pauses entre caractères ; ils ne remplacent pas une validation de tous les enregistrements analogiques existants.
+MediaEngine se recale désormais sur chaque début de caractère UART et estime la période depuis une porteuse stable, au lieu d’appliquer une grille fixe sur toute la bande. Les 72 tests FSK/Acorn/séquentiels et les 28 tests d’intégration tape passent en Release. Les cas synthétiques couvrent les débits d’échantillonnage 22 050/44 100/48 000 Hz, une dérive de vitesse de ±2 %, la phase continue et les pauses entre caractères ; ils ne remplacent pas une validation de tous les enregistrements analogiques existants.
 
 Les captures `artifacts/TestsChips/BbcSerialUla/<Machine>/record-replay-<format>.png` montrent le retour de LOAD et le message BASIC après comparaison. La capture B+ 128/RAW a également été inspectée dans ce passage. Les médias de travail sont supprimés en `finally`, sans écriture de configuration ni de média utilisateur. La validation reste limitée à ce scénario d’enregistrement de 512 octets pour ces quatre formats.
 
 - A d’origine et avec ses équipements autorisés ; B avec ses équipements de base et extensions proposées ; B+ 64 et 128 avec leurs mémoires distinctes.
 - MOS/BASIC/DFS et choix de ROM réellement compatibles ; démarrage, commandes clavier, vidéo, son et interruptions.
 - RAM principale, shadow/private/sideways suivant modèle et extensions choisies, changement de banque et vidéo préservée.
-- Cassette : moteur, 300/1200 bauds, lecture/enregistrement réels, positions et éjection ; RS423 avec débits RX/TX indépendants.
+- Tape : moteur, 300/1200 bauds, lecture/enregistrement réels, positions et éjection ; RS423 avec débits RX/TX indépendants.
 - Deux lecteurs de disquettes : géométries autorisées, boot, lecture/écriture/formatage, supports protégés et éjection ; HDD selon interface installée.
 - Econet entre machines compatibles et fonctionnement sans interface installée.
 - Formats des conteneurs, création formatée/non formatée, secteurs graphiques et explorateur dans MediaEngine/MediaFileSystems/MediaAnalysis ; ne pas déplacer ces responsabilités dans Chips.
@@ -153,7 +153,7 @@ Les captures du BBC B sous `artifacts/TestsChips/Acb4000/BbcMicroModelB/Release/
 
 La validation du composant courant réussit 861 cas puces/hôte en Debug et Release, 58 cas d’intégration Acorn et 124 cas des formats médias en Release. Elle ne remplace pas les vérifications complètes ci-dessus sur chacun des A, B, B+ 64 et B+ 128 ni les essais ultérieurs sur des médias existants dans `F:\Retro`.
 
-## Build après les corrections cassette du 5 novembre
+## Build après les corrections tape du 5 novembre
 
 `scripts/local-building.cmd --building=debug --modules=A` termine avec le code zéro. L’exécutable est `build/Debug/Retro Media Lab/retromedialab.exe`, Chips est présent dans `lib/retromedialab.chips.dll` et chacun des 24 manifestes de module possède sa DLL d’entrée. Le banc natif temporaire d’enregistrement a été supprimé puis l’assembly LocalEmulationTests reconstruit en Release sans ce banc. Les deux régressions autonomes utiles sont conservées.
 

@@ -146,21 +146,21 @@ public sealed class AcornEmuSystemTests
     }
 
     [Fact]
-    public void CassetteStaysStoppedUntilPlayAndPreservesRecordingsAcrossPause()
+    public void TapeStaysStoppedUntilPlayAndPreservesRecordingsAcrossPause()
     {
-        var cassette = new AnalogCassette(1000000);
-        cassette.Insert(new EmulationCassetteSignal(new short[480], 48000), true);
-        Assert.Equal(EmulationCassetteState.Stopped, cassette.CassetteState);
-        cassette.ExecuteCassette(EmulationCassetteCommand.Record);
-        cassette.SetOutputBit(true);
-        for (var cycle = 0; cycle < 10000; cycle++) cassette.Tick();
-        Assert.True(cassette.HasChanges);
-        var position = cassette.Position;
-        cassette.ExecuteCassette(EmulationCassetteCommand.Pause);
-        for (var cycle = 0; cycle < 1000; cycle++) cassette.Tick();
-        Assert.Equal(position, cassette.Position);
-        Assert.Contains(cassette.RecordedSignal.Samples.ToArray(), sample => sample != 0);
-        cassette.Eject();
-        Assert.Empty(cassette.CassetteCommands);
+        var tape = new AnalogTape(1000000);
+        tape.Insert(new EmulationTapeSignal(new short[480], 48000), true);
+        Assert.Equal(EmulationTapeState.Stopped, tape.TapeState);
+        tape.ExecuteTape(EmulationTapeCommand.Record);
+        tape.SetOutputBit(true);
+        for (var cycle = 0; cycle < 10000; cycle++) tape.Tick();
+        Assert.True(tape.HasChanges);
+        var position = tape.Position;
+        tape.ExecuteTape(EmulationTapeCommand.Pause);
+        for (var cycle = 0; cycle < 1000; cycle++) tape.Tick();
+        Assert.Equal(position, tape.Position);
+        Assert.Contains(tape.RecordedSignal.Samples.ToArray(), sample => sample != 0);
+        tape.Eject();
+        Assert.Empty(tape.TapeCommands);
     }
 }

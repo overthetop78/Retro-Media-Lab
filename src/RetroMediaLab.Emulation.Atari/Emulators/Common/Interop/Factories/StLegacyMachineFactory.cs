@@ -14,7 +14,7 @@ internal abstract class StLegacyMachineFactory(EmulatorCatalogEntry entry) : Mac
 
     public override SessionMedia? PrepareInsertedMedia(MachineConfiguration configuration, MediaConfiguration media, string sessionDirectory, ExternalCoreInfo coreInfo) => ScpMediaFunctions.Prepare(configuration, media, sessionDirectory, coreInfo.Extensions);
 
-    public override bool SupportsDiskControl(MediaConfiguration media) => media.Category is MediaCategory.Floppy or MediaCategory.Cassette;
+    public override bool SupportsDiskControl(MediaConfiguration media) => media.Category is MediaCategory.Floppy or MediaCategory.Tape;
 
     public override bool SupportsDiskControlOperations => true;
 

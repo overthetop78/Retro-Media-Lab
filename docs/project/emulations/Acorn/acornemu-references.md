@@ -80,7 +80,7 @@ Le rôle et la mise en mémoire des images BBC sont décrits [dans la fiche de g
 
 ## Médias : ce qui peut être commun
 
-Le format UEF décrit des médias associés aux BBC Micro, Electron et Atom. C'est un conteneur de blocs, éventuellement gzip ; son extension ne dit donc pas à elle seule quelle machine, quel signal ou quelle forme de données il contient. La spécification indique un en-tête avec signature, version mineure puis majeure, et des données little-endian sauf indication contraire. Pour les cassettes, les paramètres initiaux sont une fréquence de base de 1 200 Hz, un débit de 1 200 bauds et une phase de 180 degrés. [Spécification originale de Thomas Harte](https://electrem.emuunlim.com/UEFSpecs.htm), sections « General Structure » et « Tape ».
+Le format UEF décrit des médias associés aux BBC Micro, Electron et Atom. C'est un conteneur de blocs, éventuellement gzip ; son extension ne dit donc pas à elle seule quelle machine, quel signal ou quelle forme de données il contient. La spécification indique un en-tête avec signature, version mineure puis majeure, et des données little-endian sauf indication contraire. Pour les tapes, les paramètres initiaux sont une fréquence de base de 1 200 Hz, un débit de 1 200 bauds et une phase de 180 degrés. [Spécification originale de Thomas Harte](https://electrem.emuunlim.com/UEFSpecs.htm), sections « General Structure » et « Tape ».
 
 | Élément UEF | Sens utile à l'émulation |
 | --- | --- |
@@ -91,7 +91,7 @@ Le format UEF décrit des médias associés aux BBC Micro, Electron et Atom. C'e
 
 Cette liste n'est pas toute la spécification. La lecture de quelques blocs courants ne constitue pas une prise en charge complète des protections, des débits variables ou de tous les médias UEF. [Spécification UEF](https://electrem.emuunlim.com/UEFSpecs.htm).
 
-**Déduction pour AcornEmu :** la représentation des durées et transitions d'un média pourrait être partagée, tandis que le câblage, le décodage cassette et les registres restent propres à chaque machine. La lecture d'une image ne doit pas être confondue avec son acceptation par le matériel émulé. Dans Retro Media Lab, les échanges de médias suivent les interfaces existantes d'Emulation et de MediaEngine.
+**Déduction pour AcornEmu :** la représentation des durées et transitions d'un média pourrait être partagée, tandis que le câblage, le décodage tape et les registres restent propres à chaque machine. La lecture d'une image ne doit pas être confondue avec son acceptation par le matériel émulé. Dans Retro Media Lab, les échanges de médias suivent les interfaces existantes d'Emulation et de MediaEngine.
 
 ## Éléments susceptibles d'être partagés
 

@@ -18,7 +18,7 @@ public sealed class Windows31ModuleStorageTests(StaExecutionScenarios sta)
     public Task CommandsKeepTheirCapabilitiesAndSelectionFollowsTheUpdatedSlots() => sta.Run(() =>
     {
         var source = new EmulationStorageDeviceList();
-        var permanent = new EmulationStorageDeviceItem(EmulationMediaSlot.Cassette0, "Cassette", EmulationMediaType.Cassette,
+        var permanent = new EmulationStorageDeviceItem(EmulationMediaSlot.Tape0, "Tape", EmulationMediaType.Tape,
             "Model", null, CanRemove: false, CanConfigure: true, SupportDisplayName: "Memory");
         var optional = new EmulationStorageDeviceItem(EmulationMediaSlot.Floppy0, "Floppy", EmulationMediaType.Floppy,
             "Model", null, CanConfigure: false, SupportDisplayName: "Memory");
@@ -65,11 +65,11 @@ public sealed class Windows31ModuleStorageTests(StaExecutionScenarios sta)
     public Task RealControllerKeepsPermanentDevicesAndAppliesTheRemainingMedia() => sta.Run(() =>
     {
         var configuration = new Windows31EmulationViewTests.Configuration("storage-view", Guid.NewGuid(), "machine");
-        var cassette = new EmulationMediaDevice(EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, [],
+        var tape = new EmulationMediaDevice(EmulationMediaSlot.Tape0, EmulationMediaType.Tape, [],
             IsPermanent: true, ConfigurationKind: EmulationStorageConfigurationKind.ManagedStorage);
         var floppy = new EmulationMediaDevice(EmulationMediaSlot.Floppy0, EmulationMediaType.Floppy, []);
-        var media = new EmulationMedia("memory-cassette", EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, false, true);
-        var settings = new EmulationStorageSettings([cassette, floppy], [cassette.Slot, floppy.Slot], [media]);
+        var media = new EmulationMedia("memory-tape", EmulationMediaSlot.Tape0, EmulationMediaType.Tape, false, true);
+        var settings = new EmulationStorageSettings([tape, floppy], [tape.Slot, floppy.Slot], [media]);
         EmulationStorageSettings? applied = null;
         var manager = ControlledDependencies.Simulate<IEmulationStorageSettingsManager>((method, args) => method.Name switch
         {
@@ -89,7 +89,7 @@ public sealed class Windows31ModuleStorageTests(StaExecutionScenarios sta)
         ((Button)view.FindName("Remove")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Assert.Single(devices.Items);
         controller.Apply(configuration);
-        Assert.Equal(cassette.Slot, Assert.Single(applied!.ConfiguredSlots));
+        Assert.Equal(tape.Slot, Assert.Single(applied!.ConfiguredSlots));
         Assert.Same(media, Assert.Single(applied.MountedMedia));
         Assert.Equal(Visibility.Visible, ((Button)view.FindName("Add")).Visibility);
     });

@@ -102,8 +102,8 @@ Les Macintosh 128K, 512K, Plus et Classic restent demandés. Le port Libretro à
 
 | DLL                   | Machines émulées      |
 | --------------------- | --------------------- |
-| `emuscv_libretro.dll` | Super Cassette Vision |
-| `pd777_libretro.dll`  | Cassette Vision       |
+| `emuscv_libretro.dll` | Super Tape Vision |
+| `pd777_libretro.dll`  | Tape Vision       |
 
 ### Fairchild
 

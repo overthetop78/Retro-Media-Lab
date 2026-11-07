@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>Аудио</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>шестидесятичный</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>Внешнее применение</value></data>
-  <data name="Explorer.Cassette"><value>Кассета</value></data>
+  <data name="Explorer.Tape"><value>Кассета</value></data>
   <data name="Explorer.InternalName"><value>Внутреннее описание</value></data>
   <data name="Explorer.BaudRates"><value>Скорости</value></data>
   <data name="Explorer.Chunks"><value>Блоки</value></data>

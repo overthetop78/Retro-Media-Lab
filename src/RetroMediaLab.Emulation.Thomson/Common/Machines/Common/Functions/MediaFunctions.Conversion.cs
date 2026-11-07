@@ -6,7 +6,7 @@ internal static class EmulationMediaConversionFunctions
         media.Slot,
         media.Category switch
         {
-            MediaCategory.Tape => EmulationMediaType.Cassette,
+            MediaCategory.Tape => EmulationMediaType.Tape,
             MediaCategory.Floppy => EmulationMediaType.Floppy,
             MediaCategory.Cartridge => EmulationMediaType.Cartridge,
             _ => throw new ArgumentOutOfRangeException(nameof(media))
@@ -18,7 +18,7 @@ internal static class EmulationMediaConversionFunctions
     {
         var category = (media.Type, media.Slot.Category) switch
         {
-            (EmulationMediaType.Cassette, EmulationMediaCategory.CassetteDrive) => MediaCategory.Tape,
+            (EmulationMediaType.Tape, EmulationMediaCategory.TapeDrive) => MediaCategory.Tape,
             (EmulationMediaType.Floppy, EmulationMediaCategory.FloppyDrive) => MediaCategory.Floppy,
             (EmulationMediaType.Cartridge, EmulationMediaCategory.CartridgeSlot) => MediaCategory.Cartridge,
             _ => throw new ArgumentOutOfRangeException(nameof(media))

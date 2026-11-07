@@ -35,7 +35,7 @@ internal static class Atari800OptionFunctions
         (EightBitSettingsConstants.SerialDeviceOptionKey, Atari800OptionConstants.SerialDevice),
         (EightBitSettingsConstants.SlowExecutableLoadingOptionKey, Atari800OptionConstants.SlowExecutableLoading),
         (EightBitSettingsConstants.SioAccelerationOptionKey, Atari800OptionConstants.SioAcceleration),
-        (EightBitSettingsConstants.CassetteBootOptionKey, Atari800OptionConstants.CassetteBoot),
+        (EightBitSettingsConstants.TapeBootOptionKey, Atari800OptionConstants.TapeBoot),
         (EightBitSettingsConstants.MosaicMemoryOptionKey, Atari800OptionConstants.MosaicMemory),
         (EightBitSettingsConstants.AxlonMemoryOptionKey, Atari800OptionConstants.AxlonMemory),
         (EightBitSettingsConstants.AxlonShadowOptionKey, Atari800OptionConstants.AxlonShadow),

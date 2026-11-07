@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Lejátszás</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Szünet</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Visszatekerés</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Előretekerés</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Felvétel</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Leállítás</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Nincs kazetta</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Leállítva</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Lejátszás</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Szüneteltetve</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Felvétel</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Szalag vége</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Sorozatadatok (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Automatikus</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Berakodási mód</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Real- time reading</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Gyorsított leolvasás</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Közvetlen berakodás</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>A szalag sebessége</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>A jármű legnagyobb sebessége</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>A motor indításának késleltetése a lejátszás előtt</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>A motor indításának késleltetése a rögzítés előtt</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>A tárolóeszköz hangjainak engedélyezése</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Az írás elleni védelem</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Mintavételi gyakoriság (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Hangcsatornák</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Részecskék / minta</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Aláírt minták</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW kazetta bemenő profilja</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW kazetta-felvevő profil</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Berakodás</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Videokamera-mechanika</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Automatikus követi a sorozatadatok által meghatározott a modulált számítógépes szoftver. Nem észleli az adatsebesség a képfájlban.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Mono</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Stereo</value></data>
+</root>

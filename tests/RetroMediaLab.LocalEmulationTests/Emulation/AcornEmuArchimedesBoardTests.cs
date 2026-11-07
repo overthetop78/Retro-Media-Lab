@@ -34,16 +34,16 @@ public sealed class AcornEmuArchimedesBoardTests
     }
 
     [Fact]
-    public void CommonMachineContractExposesTheRealVideoStereoAndNoCassette()
+    public void CommonMachineContractExposesTheRealVideoStereoAndNoTape()
     {
         IAcornMachine machine = Board();
-        Assert.Null(machine.CassetteTransport);
-        Assert.False(machine.CassetteHasChanges);
-        machine.ConfigureCassette(new EmulationCassetteSettings());
-        machine.MarkCassetteSaved();
-        machine.EjectCassette();
-        Assert.Throws<NotSupportedException>(() => machine.InsertCassette(new EmulationCassetteSignal(new short[1], 44100)));
-        Assert.Throws<NotSupportedException>(() => machine.RecordedCassette);
+        Assert.Null(machine.TapeTransport);
+        Assert.False(machine.TapeHasChanges);
+        machine.ConfigureTape(new EmulationTapeSettings());
+        machine.MarkTapeSaved();
+        machine.EjectTape();
+        Assert.Throws<NotSupportedException>(() => machine.InsertTape(new EmulationTapeSignal(new short[1], 44100)));
+        Assert.Throws<NotSupportedException>(() => machine.RecordedTape);
         Assert.Equal(EmulationAudioChannelLayout.Stereo, machine.AudioChannelLayout);
         var frame = machine.RunFrame();
         Assert.Equal(machine.VideoWidth * machine.VideoHeight * 4, frame.Length);

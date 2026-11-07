@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>สัดส่วนที่ลดแล้ว</value></data>
   <data name="Visual.SectorDead"><value>ขอบเขตตาย</value></data>
   <data name="Visual.SectorWithoutData"><value>ขอบเขตข้อมูลไม่มี</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>ข้อมูลเทปคาสเซ็ต</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>ข้อมูลเทปคาสเซ็ต</value></data>
   <data name="Visual.Representation"><value>โหมดการแสดงผล</value></data>
 </root>

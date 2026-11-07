@@ -74,9 +74,9 @@ public class EmulationViewsTests(RetroMediaLab.Tests.Application.TestInfrastruct
     [Theory] [InlineData(false)] [InlineData(true)] public Task CommandsRespectPowerStateAndReportErrors(bool failure) => sta.Run(() => EmulationInteractionScenarios.Commands(failure));
     [Fact] public Task EmulationErrorsAppearOnceInConsoleAndDetachCleanly() => sta.Run(EmulationInteractionScenarios.ErrorLogAppearsOnceInConsoleAndDetaches);
     [Fact] public Task ConsoleLayoutIsIndependentForEachMainTab() => sta.Run(EmulationInteractionScenarios.ConsoleLayoutIsIndependentForEachMainTab);
-    [Fact] public void CassetteCommandsReflectCapabilitiesAndTransportState() => CassetteTransportPresentationScenarios.CommandsReflectCapabilitiesAndTransportState();
-    [Fact] public Task CassettePanelShowsEveryCommandBelowTheDevice() => sta.Run(CassetteTransportPresentationScenarios.PanelContainsASeparateRowWithEveryCommand);
-    [Fact] public Task EmptyDeviceKeepsItsSizeAndCentersItsLed() => sta.Run(CassetteTransportPresentationScenarios.DeviceHeaderKeepsEjectSpaceAndCentersLedWhenEmpty);
+    [Fact] public void TapeCommandsReflectCapabilitiesAndTransportState() => TapeTransportPresentationScenarios.CommandsReflectCapabilitiesAndTransportState();
+    [Fact] public Task TapePanelShowsEveryCommandBelowTheDevice() => sta.Run(TapeTransportPresentationScenarios.PanelContainsASeparateRowWithEveryCommand);
+    [Fact] public Task EmptyDeviceKeepsItsSizeAndCentersItsLed() => sta.Run(TapeTransportPresentationScenarios.DeviceHeaderKeepsEjectSpaceAndCentersLedWhenEmpty);
 
     [Fact]
     public Task AcornJoystickVisualAndDisconnectedPortRemainEditable() => sta.Run(() =>

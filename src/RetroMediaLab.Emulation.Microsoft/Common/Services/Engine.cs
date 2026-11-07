@@ -90,7 +90,7 @@ internal sealed class Engine
             EmulationMachineTab.Keyboard => model.HasKeyboard,
             EmulationMachineTab.Mouse => model.MouseButtonCount > 0,
             EmulationMachineTab.Storage => model.MaximumFloppyDriveCount > 0
-                || model.SupportsCassetteDrive || model.SupportsCartridgeSlot
+                || model.SupportsTapeDrive || model.SupportsCartridgeSlot
                 || model.SupportsCompactDiscDrive,
             _ => item.Value
         });

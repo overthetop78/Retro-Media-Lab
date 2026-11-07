@@ -30,7 +30,7 @@ internal sealed class RecordedMechanicalSoundFunctions
     internal bool Contains(string id) => _profiles.ContainsKey(id);
     internal static string? BaseProfile(string device) => device switch
     {
-        Constants.MechanicalSoundConstants.Cassette => C.DefaultTapeProfile,
+        Constants.MechanicalSoundConstants.Tape => C.DefaultTapeProfile,
         Constants.MechanicalSoundConstants.Floppy => C.DefaultFloppyProfile,
         Constants.MechanicalSoundConstants.HardDisk => C.DefaultHardDiskProfile,
         Constants.MechanicalSoundConstants.Optical => C.DefaultOpticalProfile,

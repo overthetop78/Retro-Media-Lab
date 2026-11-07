@@ -271,8 +271,8 @@ pas seulement sur la ressemblance du nom.
 |  | `Functions/AtariAudioFunctions.cs` |  | Atari : fournit les transformations/validations `AtariAudioFunctions`, `MaximumBufferedFrames`, `SingleFrame`, `CopyBatch`, `RetainNewestFrames` dans `AtariAudioFunctions`. |
 |  | `Functions/AtariAudioOutputFunctions.cs` |  | Atari : fournit les transformations/validations `AtariAudioOutputFunctions`, `NormalizeVolume`, `ApplyVolume` dans `AtariAudioOutputFunctions`. |
 |  | `Functions/AtariCartridgeFunctions.cs` |  | Atari : fournit les transformations/validations `AtariCartridgeFunctions`, `Supports`, `Prepare`, `ValidateNoUnsupportedMetadata`, `ApplyOptions`, `GetMediaOptions` dans `AtariCartridgeFunctions`. |
-|  | `Functions/AtariCassetteBootFunctions.cs` |  | Atari : fournit les transformations/validations `AtariCassetteBootFunctions`, `IsRequested`, `RequiresDelayedReturn` dans `AtariCassetteBootFunctions`. |
-|  | `Functions/AtariCassetteStateFunctions.cs` |  | Atari : fournit les transformations/validations `AtariCassetteStateFunctions`, `From` dans `AtariCassetteStateFunctions`. |
+|  | `Functions/AtariTapeBootFunctions.cs` |  | Atari : fournit les transformations/validations `AtariTapeBootFunctions`, `IsRequested`, `RequiresDelayedReturn` dans `AtariTapeBootFunctions`. |
+|  | `Functions/AtariTapeStateFunctions.cs` |  | Atari : fournit les transformations/validations `AtariTapeStateFunctions`, `From` dans `AtariTapeStateFunctions`. |
 |  | `Common/Machines/Common/Functions/HardwareModelFunctions.cs` |  | Atari : construit, indexe et valide les `HardwareModelDefinition` sans constante propre à une famille. |
 |  | `Functions/AtariCompatibilityFunctions.cs` |  | Atari : fournit les transformations/validations `AtariCompatibilityFunctions`, `Index`, `Editable`, `Forced`, `Unavailable`, `Hidden`, … dans `AtariCompatibilityFunctions`. |
 |  | `Functions/AtariConfigurationFunctions.cs` |  | Atari : fournit les transformations/validations `AtariConfigurationFunctions`, `GetCore`, `GetFamily`, `Validate` dans `AtariConfigurationFunctions`. |
@@ -359,7 +359,7 @@ pas seulement sur la ressemblance du nom.
 | `Services/AmigaStateStore.cs` |  |  | Amiga : implémente `AmigaStateStore` ; opérations principales : `AmigaStateStore`, `Write`, `HashFile`, `HashPath`, `HashBytes`. |
 |  | `Services/AtariAudioBuffer.cs` |  | Atari : implémente `AtariAudioBuffer` ; opérations principales : `AtariAudioBuffer`, `BufferedFrames`, `OverrunCount`, `UnderrunCount`, `Enqueue`, `TryDequeue`. |
 |  | `Services/AtariAudioOutputController.cs` |  | Atari : implémente `AtariAudioOutputController` ; opérations principales : `AtariAudioOutputController`, `IsMuted`, `Volume`, `Start`, `Write`, `SetMuted`, …. |
-|  | `Services/AtariCassetteInputController.cs` |  | Atari : implémente `AtariCassetteInputController` ; opérations principales : `AtariCassetteInputController`, `AvailableCommands`, `SetPhysicalInput`, `Play`, `NextFrame`. |
+|  | `Services/AtariTapeInputController.cs` |  | Atari : implémente `AtariTapeInputController` ; opérations principales : `AtariTapeInputController`, `AvailableCommands`, `SetPhysicalInput`, `Play`, `NextFrame`. |
 |  | `Services/AtariContentPath.cs` |  | Atari : implémente `AtariContentPath` ; opérations principales : `AtariContentPath`, `Pointer`, `Dispose`. |
 |  | `Services/AtariCoreOptionHost.cs` |  | Atari : implémente `AtariCoreOptionHost` ; opérations principales : `AtariCoreOptionHost`, `Catalog`, `Categories`, `RegisterLegacyVariables`, `RegisterVersionOne`, `RegisterVersionOneInternational`, …. |
 |  | `Services/AtariDiskControl.cs` |  | Atari : implémente `AtariDiskControl` ; opérations principales : `AtariDiskControl`, `CurrentIndex`, `Capture`, `CaptureExtended`, `Select`, `Insert`, …. |
@@ -426,7 +426,7 @@ de tâches terminées ne sont pas des raccordements exécutables et ne sont pas 
 | `tests/RetroMediaLab.Tests/Emulation/Audio/AudioBufferScenarios.cs` | Atari | Teste directement le contrôleur de sortie audio Atari et son remplacement de périphérique. |
 | `tests/RetroMediaLab.Tests/Emulation/EmulationContracts/RuntimeOptionScenarios.cs` | Atari | Vérifie les options runtime et leurs règles de redémarrage avec les catalogues Atari. |
 | `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/AtariCartridgeScenarios.cs` | Atari | Teste la préparation et les règles des cartouches Atari. |
-| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/AtariCassetteScenarios.cs` | Atari | Teste le démarrage et l’état du transport cassette Atari. |
+| `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/AtariTapeScenarios.cs` | Atari | Teste le démarrage et l’état du transport tape Atari. |
 | `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/AtariMediaActivityScenarios.cs` | Atari | Teste la conversion des états d’activité média Atari vers le contrat commun. |
 | `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/MachineAdapterFailureScenarios.cs` | Amiga et Atari | Provoque les échecs contrôlés des adaptateurs et cœurs des deux modules. |
 | `tests/RetroMediaLab.Tests/Emulation/MachineAdapters/MachineAdaptersTests.cs` | Amiga et Atari | Expose à xUnit les scénarios communs et fournit les modèles Atari issus du catalogue. |

@@ -20,10 +20,10 @@ internal sealed class MachineView : EmulationMachinePresentation
 {
     private readonly Dictionary<string, Ellipse> _deviceLeds = new(StringComparer.Ordinal);
     private readonly Dictionary<string, TextBlock> _deviceStatuses = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, Dictionary<EmulationCassetteCommand, Button>> _cassetteButtons = new(StringComparer.Ordinal);
-    private readonly HashSet<Button> _blinkingCassetteButtons = [];
-    private readonly DispatcherTimer _cassetteBlinkTimer;
-    private bool _cassetteBlinkVisible = true;
+    private readonly Dictionary<string, Dictionary<EmulationTapeCommand, Button>> _tapeButtons = new(StringComparer.Ordinal);
+    private readonly HashSet<Button> _blinkingTapeButtons = [];
+    private readonly DispatcherTimer _tapeBlinkTimer;
+    private bool _tapeBlinkVisible = true;
     private readonly Border _shaderLoadingOverlay;
     private readonly TextBlock _shaderLoadingText;
     private FrameworkElement? _videoView;
@@ -31,8 +31,8 @@ internal sealed class MachineView : EmulationMachinePresentation
 
     internal MachineView()
     {
-        _cassetteBlinkTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(400), DispatcherPriority.Render, CassetteBlinkTick, Dispatcher);
-        _cassetteBlinkTimer.Stop();
+        _tapeBlinkTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(400), DispatcherPriority.Render, TapeBlinkTick, Dispatcher);
+        _tapeBlinkTimer.Stop();
         Root = new Grid { Background = Brushes.Transparent };
         Root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         Root.RowDefinitions.Add(new RowDefinition());
@@ -246,13 +246,13 @@ internal sealed class MachineView : EmulationMachinePresentation
         DeviceStrip.Children.Clear();
         _deviceLeds.Clear();
         _deviceStatuses.Clear();
-        _cassetteButtons.Clear();
-        _blinkingCassetteButtons.Clear();
-        _cassetteBlinkTimer.Stop();
-        _cassetteBlinkVisible = true;
+        _tapeButtons.Clear();
+        _blinkingTapeButtons.Clear();
+        _tapeBlinkTimer.Stop();
+        _tapeBlinkVisible = true;
         foreach (var device in devices)
             DeviceStrip.Children.Add(DeviceItem(device, showError, restoreFocus));
-        UpdateCassetteBlinkTimer();
+        UpdateTapeBlinkTimer();
     }
 
     private FrameworkElement DeviceItem(MachineViewDevice device, Action<Exception> showError, Action restoreFocus)
@@ -349,7 +349,7 @@ internal sealed class MachineView : EmulationMachinePresentation
             };
             commands.SetResourceReference(BackgroundProperty, "ControlBrush");
             commands.SetResourceReference(BorderBrushProperty, "BorderBrush");
-            var buttons = new Dictionary<EmulationCassetteCommand, Button>();
+            var buttons = new Dictionary<EmulationTapeCommand, Button>();
             foreach (var command in device.Commands)
             {
                 var icon = new TextBlock
@@ -382,12 +382,12 @@ internal sealed class MachineView : EmulationMachinePresentation
                     Margin = new Thickness(1, 0, 1, 0)
                 };
                 button.SetResourceReference(StyleProperty, "StatusIconButton");
-                SetCassetteButtonVisual(button, command.Command, command.IsSupported, command.IsActive, command.IsBlinking);
+                SetTapeButtonVisual(button, command.Command, command.IsSupported, command.IsActive, command.IsBlinking);
                 button.Click += async (_, _) => await RunAsync(command.Execute, showError, restoreFocus);
                 buttons[command.Command] = button;
                 commandRow.Children.Add(button);
             }
-            _cassetteButtons[device.Key] = buttons;
+            _tapeButtons[device.Key] = buttons;
             root.Children.Add(panel);
             root.Children.Add(commands);
         }
@@ -434,38 +434,38 @@ internal sealed class MachineView : EmulationMachinePresentation
         if (_deviceStatuses.TryGetValue(key, out var text)) text.Text = status;
     }
 
-    internal override void SetCassetteTransport(string key, EmulationCassetteState state, EmulationCassetteCommand? activeOperation, IReadOnlySet<EmulationCassetteCommand> supportedCommands, bool powered)
+    internal override void SetTapeTransport(string key, EmulationTapeState state, EmulationTapeCommand? activeOperation, IReadOnlySet<EmulationTapeCommand> supportedCommands, bool powered)
     {
-        if (!_cassetteButtons.TryGetValue(key, out var buttons)) return;
+        if (!_tapeButtons.TryGetValue(key, out var buttons)) return;
         foreach (var (command, button) in buttons)
         {
             var supported = supportedCommands.Contains(command);
-            var active = CassetteTransportPresentationFunctions.IsActive(state, activeOperation, command);
-            var blinking = CassetteTransportPresentationFunctions.IsBlinking(state, activeOperation, command);
-            button.IsEnabled = CassetteTransportPresentationFunctions.IsEnabled(powered, supported, state, activeOperation, command);
-            SetCassetteButtonVisual(button, command, supported, active, blinking);
+            var active = TapeTransportPresentationFunctions.IsActive(state, activeOperation, command);
+            var blinking = TapeTransportPresentationFunctions.IsBlinking(state, activeOperation, command);
+            button.IsEnabled = TapeTransportPresentationFunctions.IsEnabled(powered, supported, state, activeOperation, command);
+            SetTapeButtonVisual(button, command, supported, active, blinking);
         }
-        UpdateCassetteBlinkTimer();
+        UpdateTapeBlinkTimer();
     }
 
-    private void SetCassetteButtonVisual(Button button, EmulationCassetteCommand command, bool supported, bool active, bool blinking)
+    private void SetTapeButtonVisual(Button button, EmulationTapeCommand command, bool supported, bool active, bool blinking)
     {
-        _blinkingCassetteButtons.Remove(button);
+        _blinkingTapeButtons.Remove(button);
         var foreground = command switch
         {
-            EmulationCassetteCommand.Play when active => new SolidColorBrush(Color.FromRgb(0, 200, 83)),
-            EmulationCassetteCommand.Play when supported => new SolidColorBrush(Color.FromRgb(22, 130, 59)),
-            EmulationCassetteCommand.Play => new SolidColorBrush(Color.FromRgb(111, 156, 124)),
-            EmulationCassetteCommand.Record when active => new SolidColorBrush(Color.FromRgb(235, 24, 54)),
-            EmulationCassetteCommand.Record when supported => new SolidColorBrush(Color.FromRgb(180, 35, 24)),
-            EmulationCassetteCommand.Record => new SolidColorBrush(Color.FromRgb(185, 120, 120)),
+            EmulationTapeCommand.Play when active => new SolidColorBrush(Color.FromRgb(0, 200, 83)),
+            EmulationTapeCommand.Play when supported => new SolidColorBrush(Color.FromRgb(22, 130, 59)),
+            EmulationTapeCommand.Play => new SolidColorBrush(Color.FromRgb(111, 156, 124)),
+            EmulationTapeCommand.Record when active => new SolidColorBrush(Color.FromRgb(235, 24, 54)),
+            EmulationTapeCommand.Record when supported => new SolidColorBrush(Color.FromRgb(180, 35, 24)),
+            EmulationTapeCommand.Record => new SolidColorBrush(Color.FromRgb(185, 120, 120)),
             _ when !supported => Brushes.Gray,
             _ when active => Brushes.DodgerBlue,
             _ => Brushes.DimGray
         };
         button.Foreground = foreground;
         button.Background = Brushes.Transparent;
-        button.Opacity = supported ? 1 : command is EmulationCassetteCommand.Play or EmulationCassetteCommand.Record ? 0.72 : 0.42;
+        button.Opacity = supported ? 1 : command is EmulationTapeCommand.Play or EmulationTapeCommand.Record ? 0.72 : 0.42;
         if (button.Content is Border face && face.Child is TextBlock icon)
         {
             icon.Foreground = foreground;
@@ -474,41 +474,41 @@ internal sealed class MachineView : EmulationMachinePresentation
             face.Background = active
                 ? command switch
                 {
-                    EmulationCassetteCommand.Play => new SolidColorBrush(Color.FromArgb(55, 0, 200, 83)),
-                    EmulationCassetteCommand.Record => new SolidColorBrush(Color.FromArgb(55, 235, 24, 54)),
+                    EmulationTapeCommand.Play => new SolidColorBrush(Color.FromArgb(55, 0, 200, 83)),
+                    EmulationTapeCommand.Record => new SolidColorBrush(Color.FromArgb(55, 235, 24, 54)),
                     _ => new SolidColorBrush(Color.FromArgb(45, 30, 144, 255))
                 }
                 : Brushes.Transparent;
         }
-        if (blinking) _blinkingCassetteButtons.Add(button);
+        if (blinking) _blinkingTapeButtons.Add(button);
     }
 
-    private void UpdateCassetteBlinkTimer()
+    private void UpdateTapeBlinkTimer()
     {
-        if (_blinkingCassetteButtons.Count > 0)
+        if (_blinkingTapeButtons.Count > 0)
         {
-            if (!_cassetteBlinkTimer.IsEnabled) _cassetteBlinkTimer.Start();
+            if (!_tapeBlinkTimer.IsEnabled) _tapeBlinkTimer.Start();
             return;
         }
-        _cassetteBlinkTimer.Stop();
-        _cassetteBlinkVisible = true;
+        _tapeBlinkTimer.Stop();
+        _tapeBlinkVisible = true;
     }
 
-    private void CassetteBlinkTick(object? sender, EventArgs args)
+    private void TapeBlinkTick(object? sender, EventArgs args)
     {
-        _cassetteBlinkVisible = !_cassetteBlinkVisible;
-        foreach (var button in _blinkingCassetteButtons)
-            button.Opacity = _cassetteBlinkVisible ? 1 : 0.25;
+        _tapeBlinkVisible = !_tapeBlinkVisible;
+        foreach (var button in _blinkingTapeButtons)
+            button.Opacity = _tapeBlinkVisible ? 1 : 0.25;
     }
 
     public override void Dispose()
     {
-        try { _cassetteBlinkTimer.Stop(); }
+        try { _tapeBlinkTimer.Stop(); }
         finally
         {
-            _cassetteBlinkTimer.Tick -= CassetteBlinkTick;
-            _blinkingCassetteButtons.Clear();
-            _cassetteButtons.Clear();
+            _tapeBlinkTimer.Tick -= TapeBlinkTick;
+            _blinkingTapeButtons.Clear();
+            _tapeButtons.Clear();
             _deviceStatuses.Clear();
             _deviceLeds.Clear();
             DeviceStrip.Children.Clear();

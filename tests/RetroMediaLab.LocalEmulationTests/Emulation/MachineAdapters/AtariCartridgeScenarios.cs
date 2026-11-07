@@ -21,11 +21,11 @@ internal static class AtariCartridgeScenarios
     internal static void CartridgeIsTheInitialAtari800Content()
     {
         var floppy = new MediaConfiguration("third.atr", MediaCategory.Floppy, EmulationMediaSlot.Floppy0, MountOrder: 0);
-        var cassette = new MediaConfiguration("first.cas", MediaCategory.Cassette, EmulationMediaSlot.Cassette0, MountOrder: 2);
+        var tape = new MediaConfiguration("first.cas", MediaCategory.Tape, EmulationMediaSlot.Tape0, MountOrder: 2);
         var cartridge = new MediaConfiguration("second.car", MediaCategory.Cartridge, EmulationMediaSlot.Cartridge0, MountOrder: 3);
 
-        Assert.Equal(cartridge, Atari800MediaFunctions.Primary([floppy, cassette, cartridge]));
-        Assert.Equal(cassette, Atari800MediaFunctions.Primary([floppy, cassette]));
+        Assert.Equal(cartridge, Atari800MediaFunctions.Primary([floppy, tape, cartridge]));
+        Assert.Equal(tape, Atari800MediaFunctions.Primary([floppy, tape]));
         Assert.Equal(floppy, Atari800MediaFunctions.Primary([floppy]));
     }
 

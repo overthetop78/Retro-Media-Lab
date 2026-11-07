@@ -20,7 +20,7 @@ internal sealed class SystemKeyboard(int clock)
     internal bool Break => _keys.Contains(EmulationKey.Break);
     internal Action<bool>? StrobeChanged { get; set; }
     internal ReadOnlySpan<byte> DisplaySegments => _segments;
-    internal bool CassetteOutput => (_selection & C.CassetteOutputBit) != 0;
+    internal bool TapeOutput => (_selection & C.TapeOutputBit) != 0;
     internal byte Data => (byte)(_data & C.DataMask);
     internal byte DataWithStrobe => (byte)(Data | (Strobe ? C.StrobeMask : 0));
 
@@ -58,13 +58,13 @@ internal sealed class SystemKeyboard(int clock)
 
     internal void WriteSegments(byte pins) => _segments[_selection & C.DigitMask] |= pins;
 
-    internal byte ReadMatrix(bool cassetteInput)
+    internal byte ReadMatrix(bool tapeInput)
     {
         var row = SystemKeyboardMap.HexRows[_selection & C.DigitMask];
         var value = C.MatrixMask;
         for (var column = 0; column < C.MatrixColumns; column++)
             if (_keys.Contains(row[column])) value &= ~(1 << (column + C.MatrixFirstBit));
-        return (byte)(value | _selection | (cassetteInput ? C.CassetteInputBit : 0));
+        return (byte)(value | _selection | (tapeInput ? C.TapeInputBit : 0));
     }
 
     internal void Reset()

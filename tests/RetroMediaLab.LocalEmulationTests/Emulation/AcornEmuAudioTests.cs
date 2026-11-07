@@ -292,10 +292,10 @@ public sealed partial class AcornEmuAudioTests
         mechanics.Insert();
         mechanics.SetMotor(true);
         Assert.True(mechanics.HasPendingAudio);
-        typeof(EmulatorCore).GetField("_cassetteSoundOperation", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(core, S.Play);
+        typeof(EmulatorCore).GetField("_tapeSoundOperation", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(core, S.Play);
         ResetRestoredMediaAudio(core);
         Assert.False(mechanics.HasPendingAudio);
-        Assert.Equal(S.None, Field<string>(core, "_cassetteSoundOperation"));
+        Assert.Equal(S.None, Field<string>(core, "_tapeSoundOperation"));
         mechanics.Eject();
         Assert.Equal(soundEnabled, mechanics.HasPendingAudio);
         mechanics.Reset();

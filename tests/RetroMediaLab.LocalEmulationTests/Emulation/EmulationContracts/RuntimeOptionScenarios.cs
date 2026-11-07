@@ -19,13 +19,13 @@ internal static class RuntimeOptionScenarios
         Assert.False(RuntimeOptionFunctions.RequiresRestart(Emulator.Atari800, EightBitSettingsConstants.ShowSectorOptionKey));
         Assert.False(RuntimeOptionFunctions.RequiresRestart(Emulator.Atari800, EightBitSettingsConstants.ShowSpeedOptionKey));
         Assert.True(RuntimeOptionFunctions.RequiresRestart(Emulator.Atari800, EightBitSettingsConstants.RealTimeClockOptionKey));
-        Assert.True(RuntimeOptionFunctions.RequiresRestart(Emulator.Atari800, EightBitSettingsConstants.CassetteBootOptionKey));
+        Assert.True(RuntimeOptionFunctions.RequiresRestart(Emulator.Atari800, EightBitSettingsConstants.TapeBootOptionKey));
         Assert.True(RuntimeOptionFunctions.RequiresRestart(Emulator.Atari800, EightBitSettingsConstants.PrinterDeviceOptionKey));
         Assert.True(RuntimeOptionFunctions.RequiresRestart(Emulator.Atari800, EightBitSettingsConstants.SerialDeviceOptionKey));
 
         var settings = SettingsDescriptionFunctions.Create(new MachineConfiguration(MachineModel.Atari800));
         var fields = settings.SelectMany(block => block.Fields).ToDictionary(field => field.Id, StringComparer.Ordinal);
-        Assert.True(fields[EightBitSettingsConstants.CassetteBootOptionKey].RequiresRestart);
+        Assert.True(fields[EightBitSettingsConstants.TapeBootOptionKey].RequiresRestart);
         Assert.True(fields[EightBitSettingsConstants.RealTimeClockOptionKey].RequiresRestart);
         Assert.True(fields[EightBitSettingsConstants.PrinterDeviceOptionKey].RequiresRestart);
         Assert.True(fields[EightBitSettingsConstants.SerialDeviceOptionKey].RequiresRestart);

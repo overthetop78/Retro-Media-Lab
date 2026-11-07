@@ -22,7 +22,7 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
     private bool _receiveClockEdge;
     private bool _rs423TransmitData = true;
     private bool _rs423RequestToSendHigh = true;
-    private short _cassetteOutput;
+    private short _tapeOutput;
     private bool _rs423ReceiveData = true;
     private bool _rs423ClearToSendHigh = true;
     public byte Control { get; private set; }
@@ -50,12 +50,12 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
     }
     public bool Rs423TransmitData => _rs423TransmitData;
     public bool Rs423RequestToSendHigh => _rs423RequestToSendHigh;
-    public bool ReceiveData => _rs423Selected ? Rs423ReceiveData : _cassetteData;
+    public bool ReceiveData => _rs423Selected ? Rs423ReceiveData : _tapeData;
     public bool ClearToSendHigh => _rs423Selected && Rs423ClearToSendHigh;
     public bool DataCarrierDetectHigh => !_rs423Selected && _carrierPulse > 0;
     public bool TransmitClockEdge => _transmitClockEdge;
     public bool ReceiveClockEdge => _receiveClockEdge;
-    public short CassetteOutput => _cassetteOutput;
+    public short TapeOutput => _tapeOutput;
 
     public BbcSerialUla(int ticksPerSecond)
     {
@@ -80,7 +80,7 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
         _synthesisStep = 0;
         _transmitClockEdge = _receiveClockEdge = false;
         _rs423TransmitData = _rs423RequestToSendHigh = true;
-        _cassetteOutput = 0;
+        _tapeOutput = 0;
         ResetSeparator();
         Write(0);
     }
@@ -116,9 +116,9 @@ public sealed partial class BbcSerialUla : IBbcSerialUla
         }
         _transmitClockEdge = sourceEdge && (_dividerCounter & (_transmitDivider - 1)) == 0;
         var serialReceiveEdge = sourceEdge && (_dividerCounter & (_receiveDivider - 1)) == 0;
-        var cassetteReceiveEdge = sourceEdge && (_dividerCounter & (C.CassetteClockDivider - 1)) == 0;
+        var tapeReceiveEdge = sourceEdge && (_dividerCounter & (C.TapeClockDivider - 1)) == 0;
         if (_separatorActive) TickSeparator();
-        _receiveClockEdge = _rs423Selected ? serialReceiveEdge : cassetteReceiveEdge;
+        _receiveClockEdge = _rs423Selected ? serialReceiveEdge : tapeReceiveEdge;
         _rs423TransmitData = !_rs423Selected || transmitData;
         _rs423RequestToSendHigh = !_rs423Selected || requestToSendHigh;
         TickSynthesis(transmitData, requestToSendHigh || _rs423Selected);

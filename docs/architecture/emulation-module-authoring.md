@@ -312,7 +312,7 @@ est recalculée par `Describe` après un changement marqué `RefreshSettingsOnCh
 `EmulationMediaDevice` fournit : emplacement, type, extensions, caractère amovible, nécessité de
 recréer la machine, options de lecteur de disquette, interfaces et formats de disque dur.
 
-Les catégories sont disquette, disque dur, CD, cartouche et cassette. Un emplacement est un couple
+Les catégories sont disquette, disque dur, CD, cartouche et tape. Un emplacement est un couple
 `EmulationMediaSlot(Category, Index)` ; les index commencent à zéro (`D0`, `HD0`, `CD0`, `CART0`,
 `TAPE0`). Plusieurs emplacements utilisent les index suivants.
 
@@ -359,7 +359,7 @@ L'`IEmulatedMachine` retournée expose :
 | `IEmulationAudio` | Dernier bloc, volume, mute, sortie et événement `ChunkReady` |
 | `IEmulationSavedStates` | Support, sauvegarde et chargement d'états |
 | `IEmulationRuntime` | Identité/version du cœur, extensions, options à chaud et activité des lecteurs |
-| `IEmulationCassetteTransport` | Facultatif : état et commandes du magnétophone |
+| `IEmulationTapeTransport` | Facultatif : état et commandes du magnétophone |
 
 La machine commence dans l'état `Created`, publie des transitions cohérentes, rend toutes les
 opérations annulables et libère processus, DLL natives, flux et tâches dans `DisposeAsync`.
@@ -384,13 +384,13 @@ Le module traduit cet instantané vers le cœur. Les associations configurables 
 `EmulationInputSettings`, `EmulationInputBindingSet`, `EmulationControllerPort` et
 `EmulationControllerChoice`. Une touche ou un contrôle inconnu est ignoré sans erreur.
 
-## 10. Activité, options, cassette et états
+## 10. Activité, options, tape et états
 
 - `IEmulationRuntime.MediaActivity` associe chaque emplacement à son activité instantanée ; Retro Media Lab
   s'en sert pour les LED.
 - `AvailableOptions` décrit les options natives réellement modifiables ; `SetOptionAsync` applique
   une valeur et signale proprement les refus.
-- `IEmulationCassetteTransport.AvailableCommands` annonce uniquement les commandes gérées et `State`
+- `IEmulationTapeTransport.AvailableCommands` annonce uniquement les commandes gérées et `State`
   reflète `Empty`, `Stopped`, `Playing`, `Paused`, `Recording` ou `EndOfTape`.
 - `IEmulationSavedStates.IsSupported` masque les commandes lorsque le cœur ne sait pas sauvegarder.
   Les erreurs de version ou de format sont remontées comme messages d'émulation contrôlés.
@@ -441,7 +441,7 @@ Chaque méthode valide que la configuration reçue appartient au bon `ModuleId` 
 - lancement/arrêt répétés sans processus, fichier ou DLL native restant verrouillé ;
 - changement de résolution, son, clavier, souris et manettes ;
 - insertion, remplacement et éjection de chaque média à froid et à chaud ;
-- LED d'activité et transport cassette lorsqu'ils existent ;
+- LED d'activité et transport tape lorsqu'ils existent ;
 - sauvegarde d'état ou masquage correct si non supportée ;
 - cœur absent, firmware absent, média invalide et configuration endommagée ;
 - annulation et fermeture pendant une opération asynchrone.

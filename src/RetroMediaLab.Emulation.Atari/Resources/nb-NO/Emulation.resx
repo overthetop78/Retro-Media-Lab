@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>Hi-res artefacting</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>SIO akselerasjon</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>Støvle fra kassett</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>Støvle fra kassett</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>Revidering av operativsystemet</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>Hue</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>Metning</value></data>

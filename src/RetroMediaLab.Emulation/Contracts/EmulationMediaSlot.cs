@@ -10,7 +10,7 @@ public readonly record struct EmulationMediaSlot(EmulationMediaCategory Category
     public static EmulationMediaSlot Cd0 { get; } = new(EmulationMediaCategory.CompactDiscDrive, EmulationMediaSlotConstants.FirstIndex);
     public static EmulationMediaSlot Cartridge0 { get; } = new(EmulationMediaCategory.CartridgeSlot, EmulationMediaSlotConstants.FirstIndex);
     public static EmulationMediaSlot Cartridge1 { get; } = new(EmulationMediaCategory.CartridgeSlot, EmulationMediaSlotConstants.SecondIndex);
-    public static EmulationMediaSlot Cassette0 { get; } = new(EmulationMediaCategory.CassetteDrive, EmulationMediaSlotConstants.FirstIndex);
+    public static EmulationMediaSlot Tape0 { get; } = new(EmulationMediaCategory.TapeDrive, EmulationMediaSlotConstants.FirstIndex);
     public static EmulationMediaSlot MemoryCard0 { get; } = new(EmulationMediaCategory.MemoryCard, EmulationMediaSlotConstants.FirstIndex);
 
     [System.Text.Json.Serialization.JsonIgnore]
@@ -21,7 +21,7 @@ public readonly record struct EmulationMediaSlot(EmulationMediaCategory Category
         EmulationMediaCategory.CompactDiscDrive when Index == EmulationMediaSlotConstants.FirstIndex => EmulationMediaSlotConstants.CompactDiscProtocolValue,
         EmulationMediaCategory.CartridgeSlot when Index == EmulationMediaSlotConstants.FirstIndex => EmulationMediaSlotConstants.CartridgeProtocolValue,
         EmulationMediaCategory.CartridgeSlot when Index == EmulationMediaSlotConstants.SecondIndex => EmulationMediaSlotConstants.SecondCartridgeProtocolValue,
-        EmulationMediaCategory.CassetteDrive when Index == EmulationMediaSlotConstants.FirstIndex => EmulationMediaSlotConstants.CassetteProtocolValue,
+        EmulationMediaCategory.TapeDrive when Index == EmulationMediaSlotConstants.FirstIndex => EmulationMediaSlotConstants.TapeProtocolValue,
         EmulationMediaCategory.MemoryCard when Index == EmulationMediaSlotConstants.FirstIndex => EmulationMediaSlotConstants.MemoryCardProtocolValue,
         _ => throw new InvalidOperationException()
     };
@@ -36,7 +36,7 @@ public readonly record struct EmulationMediaSlot(EmulationMediaCategory Category
         EmulationMediaSlotConstants.CompactDiscProtocolValue => Cd0,
         EmulationMediaSlotConstants.CartridgeProtocolValue => Cartridge0,
         EmulationMediaSlotConstants.SecondCartridgeProtocolValue => Cartridge1,
-        EmulationMediaSlotConstants.CassetteProtocolValue => Cassette0,
+        EmulationMediaSlotConstants.TapeProtocolValue => Tape0,
         EmulationMediaSlotConstants.MemoryCardProtocolValue => MemoryCard0,
         _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
     };
@@ -67,7 +67,7 @@ public readonly record struct EmulationMediaSlot(EmulationMediaCategory Category
         EmulationMediaCategory.HardDisk => $"{EmulationMediaSlotConstants.HardDiskPrefix}{Index}",
         EmulationMediaCategory.CompactDiscDrive => $"{EmulationMediaSlotConstants.CompactDiscPrefix}{Index}",
         EmulationMediaCategory.CartridgeSlot => $"{EmulationMediaSlotConstants.CartridgePrefix}{Index}",
-        EmulationMediaCategory.CassetteDrive => $"{EmulationMediaSlotConstants.CassettePrefix}{Index}",
+        EmulationMediaCategory.TapeDrive => $"{EmulationMediaSlotConstants.TapePrefix}{Index}",
         EmulationMediaCategory.MemoryCard => $"{EmulationMediaSlotConstants.MemoryCardPrefix}{Index}",
         _ => $"{Category}{Index}"
     };

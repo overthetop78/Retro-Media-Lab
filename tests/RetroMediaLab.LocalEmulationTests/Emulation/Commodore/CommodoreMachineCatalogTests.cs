@@ -55,7 +55,7 @@ public sealed class CommodoreMachineCatalogTests
     {
         EmulationMedia[] media =
         [new("disk", new(EmulationMediaCategory.FloppyDrive, 3), EmulationMediaType.Floppy, true, true),
-         new("tape", new(EmulationMediaCategory.CassetteDrive, 0), EmulationMediaType.Cassette, false, true),
+         new("tape", new(EmulationMediaCategory.TapeDrive, 0), EmulationMediaType.Tape, false, true),
          new("game", new(EmulationMediaCategory.CartridgeSlot, 0), EmulationMediaType.Cartridge, true, true)];
         var restored = EmulationMediaConversionFunctions.ToCommon(EmulationMediaConversionFunctions.FromCommon(media));
         Assert.Equal(media.Select(item => item.Slot), restored.Select(item => item.Slot));

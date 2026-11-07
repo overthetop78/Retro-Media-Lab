@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>Hang</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>Hexadecimális</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>Külső alkalmazás</value></data>
-  <data name="Explorer.Cassette"><value>Kazetta</value></data>
+  <data name="Explorer.Tape"><value>Kazetta</value></data>
   <data name="Explorer.InternalName"><value>Belső leírás</value></data>
   <data name="Explorer.BaudRates"><value>Sebességek</value></data>
   <data name="Explorer.Chunks"><value>Blokkok</value></data>

@@ -234,6 +234,6 @@ public partial class SequentialMediaView : UserControl, IMediaVisualizationView
         }
 
         var duration = _model.Duration is { } value ? $"  ·  {LocExtension.Get("Visual.DurationLabel")} {value:g}" : string.Empty;
-        SelectionLabel.Text = $"{LocExtension.Get("Explorer.Cassette")}{duration}  ·  {LocExtension.Get("Visual.SegmentCountLabel")} {_model.Segments.Count}";
+        SelectionLabel.Text = $"{LocExtension.Get("Explorer.Tape")}{duration}  ·  {LocExtension.Get("Visual.SegmentCountLabel")} {_model.Segments.Count}";
     }
 }

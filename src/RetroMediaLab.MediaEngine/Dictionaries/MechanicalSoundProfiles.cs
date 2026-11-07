@@ -9,7 +9,7 @@ internal static class MechanicalSoundProfiles
 {
     private static readonly IReadOnlyDictionary<string, MechanicalSoundProfile> All = new System.Collections.ObjectModel.ReadOnlyDictionary<string, MechanicalSoundProfile>(new Dictionary<string, MechanicalSoundProfile>
     {
-        [C.Standard] = new(C.Cassette, 55, 300, 3, 60, 90, 90, 90, 1, 0.02),
+        [C.Standard] = new(C.Tape, 55, 300, 3, 60, 90, 90, 90, 1, 0.02),
         [C.Floppy525] = new(C.Floppy, 90, 180, 2, 45, 35, 75, 120, 1, 0.025),
         [C.Floppy35] = new(C.Floppy, 120, 180, 2, 45, 35, 75, 120, 0.65, 0.025),
         [C.Winchester] = new(C.HardDisk, 60, 170, 9, 60, 20, 70, 100, 1, 0.1),

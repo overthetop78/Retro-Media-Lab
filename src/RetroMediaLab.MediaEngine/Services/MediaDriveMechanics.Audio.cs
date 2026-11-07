@@ -12,7 +12,7 @@ public sealed partial class MediaDriveMechanics
         ArgumentOutOfRangeException.ThrowIfNegative(sampleCount);
         lock (_sync)
         {
-            if (_device == C.Cassette)
+            if (_device == C.Tape)
             {
                 var tape = new short[sampleCount];
                 if (!_soundEnabled) return tape;

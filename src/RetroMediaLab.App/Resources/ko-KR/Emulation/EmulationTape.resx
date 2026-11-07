@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>재생</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>일시 정지</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>되감기</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>빨리 감기</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>녹음</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>정지</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>카세트 없음</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>정지됨</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>재생 중</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>일시 정지</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>녹음 중</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>테이프 끝</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>직렬 데이터 속도 (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>적재 모드</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>실시간 독서</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>읽기</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>직접적인 선적</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Tape 속도</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>빠른 속도 및 재풍 속도</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>playback의 앞에 모터 시작 지연</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>기록의 앞에 모터 시작 지연</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Enable 저장 장치 소리</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>관련 기사</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>표본 추출 빈도 (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>오디오 채널</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>샘플 당 비트</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>표시된 표본</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW cassette 입력 프로파일</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW cassette 기록 단면도</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>테이프 기계</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>자동은 에뮬레이션 컴퓨터 소프트웨어에 의해 설정된 직렬 데이터 레이트를 따릅니다. 그것은 이미지 파일에서 데이터 레이트를 감지하지 않습니다.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>의 특징</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>팟캐스트</value></data>
+</root>

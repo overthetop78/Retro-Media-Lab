@@ -27,7 +27,7 @@ internal static partial class MechanicalSoundFunctions
         if (!double.IsFinite(volumePercent) || volumePercent is < 0 or > C.MaximumVolumePercent) throw new ArgumentOutOfRangeException(nameof(volumePercent));
         var result = device switch
         {
-            C.Cassette => Cassette(operation, sampleRate, sampleCount, offset, definition),
+            C.Tape => Tape(operation, sampleRate, sampleCount, offset, definition),
             C.Floppy => Floppy(operation, sampleRate, sampleCount, offset, definition),
             C.HardDisk => HardDisk(operation, sampleRate, sampleCount, offset, definition),
             C.Optical => Optical(operation, sampleRate, sampleCount, offset, definition, profile),
@@ -45,7 +45,7 @@ internal static partial class MechanicalSoundFunctions
         if (profile is not null && recordings.Contains(profile)) return recordings.Duration(profile, operation, distance, direction, cylinder);
         return device switch
         {
-            C.Cassette => operation == C.Eject ? C.CassetteEjectSeconds : C.CassetteStopSeconds,
+            C.Tape => operation == C.Eject ? C.TapeEjectSeconds : C.TapeStopSeconds,
             C.Floppy => operation == C.Seek ? C.FloppySeekSeconds : C.FloppyActionSeconds,
             C.HardDisk => operation == C.Seek ? C.HardDiskSeekSeconds : C.HardDiskStopSeconds,
             C.Optical => operation == C.Seek ? C.OpticalSeekSeconds : C.OpticalActionSeconds,
@@ -72,17 +72,17 @@ internal static partial class MechanicalSoundFunctions
         return Math.Sin(2 * Math.PI * profile.Frequency * seconds) * profile.MotorLevel + Math.Sin(2 * Math.PI * profile.Frequency * profile.Harmonic * seconds) * profile.HarmonicLevel + Noise((long)(seconds * C.NoiseDivisor)) * noise;
     }
     private static short Sample(double level) => (short)Math.Clamp(Math.Round(level), short.MinValue, short.MaxValue);
-    private static short[] Cassette(string operation, int sampleRate, int count, long offset, MechanicalSoundProfile profile)
+    private static short[] Tape(string operation, int sampleRate, int count, long offset, MechanicalSoundProfile profile)
     {
         var samples = new short[count];
         if (operation is not (C.Play or C.Record or C.FastForward or C.Rewind or C.Stop or C.Eject)) return samples;
         var transient = operation is C.Stop or C.Eject;
-        var frequency = operation switch { C.FastForward => C.CassetteForwardFrequency, C.Rewind => C.CassetteRewindFrequency, _ => profile.Frequency };
+        var frequency = operation switch { C.FastForward => C.TapeForwardFrequency, C.Rewind => C.TapeRewindFrequency, _ => profile.Frequency };
         for (var index = 0; index < count; index++)
         {
             var position = offset + index; var seconds = (double)position / sampleRate;
-            var envelope = transient ? Math.Max(0, 1 - seconds / (operation == C.Eject ? C.CassetteEjectSeconds : C.CassetteStopSeconds)) : Math.Min(1, seconds / profile.StartSeconds);
-            var level = transient ? Noise(position) * C.CassetteTransientNoise * C.CassetteTransientLevel : Math.Sin(2 * Math.PI * frequency * seconds) * profile.MotorLevel + Math.Sin(2 * Math.PI * frequency * profile.Harmonic * seconds) * profile.HarmonicLevel + Noise(position) * profile.MotorNoise;
+            var envelope = transient ? Math.Max(0, 1 - seconds / (operation == C.Eject ? C.TapeEjectSeconds : C.TapeStopSeconds)) : Math.Min(1, seconds / profile.StartSeconds);
+            var level = transient ? Noise(position) * C.TapeTransientNoise * C.TapeTransientLevel : Math.Sin(2 * Math.PI * frequency * seconds) * profile.MotorLevel + Math.Sin(2 * Math.PI * frequency * profile.Harmonic * seconds) * profile.HarmonicLevel + Noise(position) * profile.MotorNoise;
             samples[index] = Sample(level * envelope * profile.Gain);
         }
         return samples;

@@ -5,4 +5,4 @@ public enum HardwareRegion { Ntsc, Pal, Worldwide }
 public enum HardwareVideoCapability { AppleII, AppleIIe, MacintoshMonochrome, MacintoshIIColor, Taos }
 public enum HardwareAudioCapability { Speaker, MacintoshSound, AppleSoundChip, Awacs }
 public enum HardwarePortCapability { Keyboard, Mouse, AnalogJoystick, Gamepad }
-public enum HardwareStorageCapability { Floppy, HardDisk, Cassette, CompactDisc }
+public enum HardwareStorageCapability { Floppy, HardDisk, Tape, CompactDisc }

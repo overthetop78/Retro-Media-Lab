@@ -9,7 +9,7 @@ internal static class EmulationMediaSlotDictionaries
         [EmulationMediaSlotConstants.HardDiskPrefix] = EmulationMediaCategory.HardDisk,
         [EmulationMediaSlotConstants.CompactDiscPrefix] = EmulationMediaCategory.CompactDiscDrive,
         [EmulationMediaSlotConstants.CartridgePrefix] = EmulationMediaCategory.CartridgeSlot,
-        [EmulationMediaSlotConstants.CassettePrefix] = EmulationMediaCategory.CassetteDrive,
+        [EmulationMediaSlotConstants.TapePrefix] = EmulationMediaCategory.TapeDrive,
         [EmulationMediaSlotConstants.MemoryCardPrefix] = EmulationMediaCategory.MemoryCard
         };
 }

@@ -16,7 +16,7 @@ using RetroMediaLab.MediaEngine.Images.Models.Sequential;
 
 namespace RetroMediaLab.MediaEngine.Images.Reading.Decoding.Sequential.Acorn;
 
-/// <summary>Decodes Acorn cassette filing system blocks from UEF byte streams or compatible PCM FSK signals.</summary>
+/// <summary>Decodes Acorn tape filing system blocks from UEF byte streams or compatible PCM FSK signals.</summary>
 public sealed class AcornTapeDecoder : ISequentialMediaDecoder
 {
     private static readonly IReadOnlySet<string> SupportedFormats = new[] { TapeImageFormatIds.Uef, TapeImageFormatIds.Wav, TapeImageFormatIds.Csw, TapeImageFormatIds.Raw }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
@@ -35,7 +35,7 @@ public sealed class AcornTapeDecoder : ISequentialMediaDecoder
     public async Task<SequentialDecodeResult> DecodeAsync(MediaImageDocument document, string? machineId = null, CancellationToken cancellationToken = default)
     {
         if (!CanDecode(document, machineId))
-            throw new InvalidDataException("The media document is not compatible with the Acorn cassette decoder.");
+            throw new InvalidDataException("The media document is not compatible with the Acorn tape decoder.");
         var representation = (SequentialMediaImageRepresentation)document.Representation;
         return document.FormatId.Equals(TapeImageFormatIds.Uef, StringComparison.OrdinalIgnoreCase) && !document.Metadata.ContainsKey("sampleRate") ? await DecodeUefAsync(document, representation, cancellationToken).ConfigureAwait(false) : await DecodeWaveAsync(document, representation, cancellationToken).ConfigureAwait(false);
     }
@@ -58,11 +58,11 @@ public sealed class AcornTapeDecoder : ISequentialMediaDecoder
         }
         if ((representation.Segments ?? []).Any(segment => segment.Metadata.GetValueOrDefault(UefConstants.ChunkIdMetadataKey) is "0102" or "0104" or "0105" or "0114"))
         {
-            var signal = await CassetteSignalFunctions.UefAsync(representation, new Dictionary<long, int>(), cancellationToken).ConfigureAwait(false);
-            var wave = CassettePcmFunctions.Document(document.Source, TapeImageFormatIds.Wav, signal);
+            var signal = await TapeSignalFunctions.UefAsync(representation, new Dictionary<long, int>(), cancellationToken).ConfigureAwait(false);
+            var wave = TapePcmFunctions.Document(document.Source, TapeImageFormatIds.Wav, signal);
             return await DecodeWaveAsync(wave, (SequentialMediaImageRepresentation)wave.Representation, cancellationToken).ConfigureAwait(false);
         }
-        return CreateResult(representation, blocks, consumed, "No valid Acorn cassette block was found in the UEF byte streams.");
+        return CreateResult(representation, blocks, consumed, "No valid Acorn tape block was found in the UEF byte streams.");
     }
 
     private static async Task<SequentialDecodeResult> DecodeWaveAsync(MediaImageDocument document, SequentialMediaImageRepresentation representation, CancellationToken cancellationToken)
@@ -105,7 +105,7 @@ public sealed class AcornTapeDecoder : ISequentialMediaDecoder
         var valid = fastBlocks.Concat(slowBlocks).Where(block => block.IntegrityValid == true).OrderBy(block => int.Parse(block.Metadata["samplePosition"], CultureInfo.InvariantCulture)).DistinctBy(block => (block.Metadata["samplePosition"], block.Metadata["fileName"], block.Metadata["blockNumber"])).ToArray();
         IReadOnlyList<SequentialDecodedBlock> blocks = valid.Length == 0 ? fastBlocks.Count >= slowBlocks.Count ? fastBlocks : slowBlocks : valid.Select((block, index) => new SequentialDecodedBlock(index, block.Data, block.SourceSegmentPositions, block.IntegrityValid, block.Metadata)).ToArray();
         var consumed = blocks.Count == 0 ? [] : sourcePositions.ToHashSet();
-        var result = CreateResult(representation, blocks, consumed, "No valid Acorn cassette block was found in the decoded WAV serial stream.");
+        var result = CreateResult(representation, blocks, consumed, "No valid Acorn tape block was found in the decoded WAV serial stream.");
         return result;
     }
 

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Afspil</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Pause</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Spol tilbage</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Spol frem</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Optag</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Stop</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Ingen kassette</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Stoppet</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Afspiller</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Sat på pause</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Optager</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Slut på bånd</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Seriel datahastighed (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Automatisk</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Indlæser tilstand</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Real- time læsning</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Accelereret læsning</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Direkte lastning</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Båndhastighed</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Fast- fremad og spole tilbage hastighed</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Motor start forsinkelse før afspilning</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Motorens startforsinkelse før registrering</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Aktivér lagerenhedslyde</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Beskytte mod skrift</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Prøveudtagningsfrekvens (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Lydkanaler</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Bits pr. prøve</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Underskrevne prøver</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW kassetteindgangsprofil</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW kassetteoptageprofil</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Indlæsning</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Båndmekanik</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Automatisk følger seriens datahastighed indstillet af den emulerede computersoftware. Det ikke registrerer datahastigheden fra billedfilen.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>MonoCity in Italy</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Stereo</value></data>
+</root>

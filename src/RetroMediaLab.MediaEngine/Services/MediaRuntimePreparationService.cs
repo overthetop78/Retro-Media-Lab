@@ -45,14 +45,14 @@ internal sealed class MediaRuntimePreparationService : IMediaRuntimePreparation
             if (!transferred && mechanics is null) document.Source.Drive?.Reset();
         }
     }
-    public Task<RetroMediaLab.MediaEngine.Contracts.MediaCassetteSignal> ReadCassetteAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null) => RetroMediaLab.MediaEngine.Functions.CassetteSignalFunctions.ReadAsync(path, cancellationToken, machineId, parameters);
-    public IReadOnlyList<string> CassetteRecordingExtensions => RetroMediaLab.MediaEngine.Functions.CassetteSignalFunctions.WritableExtensions;
+    public Task<RetroMediaLab.MediaEngine.Contracts.MediaTapeSignal> ReadTapeAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null) => RetroMediaLab.MediaEngine.Functions.TapeSignalFunctions.ReadAsync(path, cancellationToken, machineId, parameters);
+    public IReadOnlyList<string> TapeRecordingExtensions => RetroMediaLab.MediaEngine.Functions.TapeSignalFunctions.WritableExtensions;
     public IReadOnlyList<string> MechanicalSoundProfiles(string device) => RetroMediaLab.MediaEngine.Functions.MechanicalSoundFunctions.Profiles(device);
     public string MechanicalSoundProfileDisplayName(string profile) => RetroMediaLab.MediaEngine.Dictionaries.MechanicalSoundProfiles.DisplayName(profile);
     public short[] RenderMechanicalSound(string device, string operation, int sampleRate, int sampleCount, long offset, string? profile = null, double volumePercent = RetroMediaLab.MediaEngine.Constants.MechanicalSoundConstants.DefaultVolumePercent) => RetroMediaLab.MediaEngine.Functions.MechanicalSoundFunctions.Render(device, operation, sampleRate, sampleCount, offset, profile, volumePercent);
     public double MechanicalSoundDurationSeconds(string device, string profile, string operation) => RetroMediaLab.MediaEngine.Functions.MechanicalSoundFunctions.Duration(device, profile, operation);
     public short[] ProtectMechanicalAudioMix(IReadOnlyList<double> samples) => RetroMediaLab.MediaEngine.Functions.MechanicalSoundFunctions.ProtectMix(samples);
-    public Task WriteCassetteAsync(string path, MediaCassetteSignal signal, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? parameters = null) => RetroMediaLab.MediaEngine.Functions.CassetteSignalFunctions.WriteAsync(path, signal, cancellationToken, parameters);
+    public Task WriteTapeAsync(string path, MediaTapeSignal signal, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? parameters = null) => RetroMediaLab.MediaEngine.Functions.TapeSignalFunctions.WriteAsync(path, signal, cancellationToken, parameters);
     private static readonly Lazy<MediaEngineComposition> Conversion = new(MediaEngineComposition.CreateDefault);
 
     /// <inheritdoc/>

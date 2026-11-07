@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam" xml:space="preserve"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting" xml:space="preserve"><value>Hi-res artifacting</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration" xml:space="preserve"><value>SIO acceleration</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot" xml:space="preserve"><value>Boot from cassette</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot" xml:space="preserve"><value>Boot from cassette</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision" xml:space="preserve"><value>Operating system revision</value></data>
   <data name="Emulation.Atari.Video.Hue" xml:space="preserve"><value>Hue</value></data>
   <data name="Emulation.Atari.Video.Saturation" xml:space="preserve"><value>Saturation</value></data>

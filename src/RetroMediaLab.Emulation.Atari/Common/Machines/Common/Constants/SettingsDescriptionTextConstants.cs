@@ -69,7 +69,7 @@ internal static partial class SettingsDescriptionFunctionsConstants
     internal const string ResourceAtariStorageSpeedOsd = "Emulation.Atari.Storage.SpeedOsd";
     internal const string ResourceAtariStorageSectorOsd = "Emulation.Atari.Storage.SectorOsd";
     internal const string ResourceAtariStorageSioAcceleration = "Emulation.Atari.Storage.SioAcceleration";
-    internal const string ResourceAtariStorageCassetteBoot = "Emulation.Atari.Storage.CassetteBoot";
+    internal const string ResourceAtariStorageTapeBoot = "Emulation.Atari.Storage.TapeBoot";
     internal const string ResourceAtariStorageRealTimeClock = "Emulation.Atari.Storage.RealTimeClock";
     internal const string ResourceAtariStoragePrinterDevice = "Emulation.Atari.Storage.PrinterDevice";
     internal const string ResourceAtariStorageSerialDevice = "Emulation.Atari.Storage.SerialDevice";

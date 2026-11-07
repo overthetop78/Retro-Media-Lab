@@ -19,7 +19,7 @@ Les mesures se concentrent désormais sur Debug. Les passages Release déjà acq
 
 ## Observations dans RML
 
-Build Debug All du 6 novembre livré avec code 0, exécutable et 24 manifestes de modules présents. Pendant les manipulations de l'utilisateur sur le Master 128 : MOS 3.50, sans coprocesseur, cassette/disquette/HDD configurés ; écran BASIC 640 × 512 affichant 50,0–50,2 FPS, 2,00–2,01 MHz, 100 %. Les commandes `*HELP` puis `*DISC` sont visibles. Après passage en 640 × 256, l'écran est noir et les compteurs affichent 30,0 FPS, 1,20 MHz, 60 %. Aucune compilation ni aucun banc parallèle n'est alors lancé. L'utilisateur confirme le même symptôme sur les autres machines ; elles n'ont pas encore été reproduites individuellement dans ce passage.
+Build Debug All du 6 novembre livré avec code 0, exécutable et 24 manifestes de modules présents. Pendant les manipulations de l'utilisateur sur le Master 128 : MOS 3.50, sans coprocesseur, tape/disquette/HDD configurés ; écran BASIC 640 × 512 affichant 50,0–50,2 FPS, 2,00–2,01 MHz, 100 %. Les commandes `*HELP` puis `*DISC` sont visibles. Après passage en 640 × 256, l'écran est noir et les compteurs affichent 30,0 FPS, 1,20 MHz, 60 %. Aucune compilation ni aucun banc parallèle n'est alors lancé. L'utilisateur confirme le même symptôme sur les autres machines ; elles n'ont pas encore été reproduites individuellement dans ce passage.
 
 Les anciennes mesures « redessin » du banc Tube exécutent PRINT en mode télétexte : elles ne couvrent pas ce changement vers un mode graphique. Il faut donc ajouter cette comparaison au lieu d'utiliser le résultat télétexte pour valider tous les modes.
 

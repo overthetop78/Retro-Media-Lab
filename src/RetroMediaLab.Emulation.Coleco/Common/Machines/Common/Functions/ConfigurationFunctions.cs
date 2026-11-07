@@ -8,7 +8,7 @@ internal static class ConfigurationFunctions
     internal static IReadOnlyList<EmulationMediaSlot> DefaultSlots(MachineModel model) => model switch
     {
         MachineModel.ColecoVision => [EmulationMediaSlot.Cartridge0],
-        MachineModel.Adam => [EmulationMediaSlot.Cartridge0, EmulationMediaSlot.Cassette0],
+        MachineModel.Adam => [EmulationMediaSlot.Cartridge0, EmulationMediaSlot.Tape0],
         _ => throw new ArgumentOutOfRangeException(nameof(model))
     };
 
@@ -32,7 +32,7 @@ internal static class ConfigurationFunctions
             {
                 EmulationMediaCategory.CartridgeSlot => MediaCategory.Cartridge,
                 EmulationMediaCategory.FloppyDrive => MediaCategory.Floppy,
-                EmulationMediaCategory.CassetteDrive => MediaCategory.DataPack,
+                EmulationMediaCategory.TapeDrive => MediaCategory.DataPack,
                 _ => throw new ArgumentException(nameof(configuration.Media))
             };
             if (!configured.Contains(media.Slot) || !mounted.Add(media.Slot)
@@ -67,5 +67,5 @@ internal static class ConfigurationFunctions
     internal static bool SupportsSlot(MachineModel model, EmulationMediaSlot slot) =>
         slot == EmulationMediaSlot.Cartridge0
         || model == MachineModel.Adam && slot.Index is >= StorageConstants.FirstDriveIndex and < StorageConstants.DriveCount
-            && slot.Category is EmulationMediaCategory.FloppyDrive or EmulationMediaCategory.CassetteDrive;
+            && slot.Category is EmulationMediaCategory.FloppyDrive or EmulationMediaCategory.TapeDrive;
 }

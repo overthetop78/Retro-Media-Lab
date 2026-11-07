@@ -9,7 +9,7 @@
     - [x] Modifier `src/RetroMediaLab.App/RetroMediaLab.App.csproj` pour référencer `src/RetroMediaLab.MediaAnalysis/RetroMediaLab.MediaAnalysis.csproj`.
     - [x] Modifier `src/RetroMediaLab.App/Services/DiskImages/DiskImageWorkspaceController.cs` pour construire et utiliser `RetroMediaLab.MediaAnalysis.Services.MediaImageExplorationService`, puis traduire ses étapes uniquement lors de leur présentation.
     - [x] Modifier `src/RetroMediaLab.App/Services/DiskImages/Visualization/VisualizerLoadingController.cs` pour utiliser le service déplacé depuis `RetroMediaLab.MediaAnalysis`.
-    - [x] Modifier `src/RetroMediaLab.App/Services/DiskImages/Visualization/CassetteLoadingPresenter.cs` pour construire localement les descriptions visuelles des fichiers déjà analysés, sans rappeler le service déplacé.
+    - [x] Modifier `src/RetroMediaLab.App/Services/DiskImages/Visualization/TapeLoadingPresenter.cs` pour construire localement les descriptions visuelles des fichiers déjà analysés, sans rappeler le service déplacé.
     - [x] Supprimer `src/RetroMediaLab.App/Services/DiskImages/Exploration/MediaImageExplorationService.cs` après raccordement de tous ses consommateurs.
 
 - [x] 2. Déplacer la décision d’exploration SCP et non-SCP hors de `RetroMediaLab.App`

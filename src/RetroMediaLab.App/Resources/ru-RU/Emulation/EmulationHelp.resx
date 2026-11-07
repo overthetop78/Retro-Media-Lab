@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Выберите вторичную прошивку ROM Этого требуют некоторые модели машин. Оставьте это поле пустым, если выбранная модель не использует расширенное поле. ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Возможность ускоренного SIO переводы</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Ускоряет совместимые передачи через последовательную шину ввода/вывода. Отключите эту опцию, когда программное обеспечение зависит от первоначального времени передачи.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Включить кассетный стартап</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Заставляет эмулированную машину попытаться начать с прикрепленного кассетного изображения. Отключите эту опцию при запуске с другого устройства.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Включить кассетный стартап</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Заставляет эмулированную машину попытаться начать с прикрепленного кассетного изображения. Отключите эту опцию при запуске с другого устройства.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Позволить R-Time 8 часы</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>эмулировать a R-Time 8 Часы в реальном времени, поэтому совместимое программное обеспечение может считывать текущую дату и время.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Позволить P: устройство печати</value></data>

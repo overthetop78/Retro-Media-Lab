@@ -6,7 +6,7 @@ namespace RetroMediaLab.Chips.Tests.Custom.Acorn.Electron.ULA;
 
 public sealed class BusTests
 {
-    private sealed class Pins : IElectronCassettePins
+    private sealed class Pins : IElectronTapePins
     {
         public bool InputPresent => false;
         public bool InputLevel => true;
@@ -15,11 +15,11 @@ public sealed class BusTests
         public void Tick(bool motor) => Ticks++;
     }
 
-    private static ElectronUla Create(out ElectronVideo video, out Pins cassette)
+    private static ElectronUla Create(out ElectronVideo video, out Pins tape)
     {
         video = new(_ => 0);
-        cassette = new();
-        return new(video, cassette);
+        tape = new();
+        return new(video, tape);
     }
 
     private static int Access(ElectronUla ula, ushort address)
@@ -78,11 +78,11 @@ public sealed class BusTests
     [InlineData(7, 2)]
     public void ActiveRamContentionMatchesModeAndAdvancesEveryOtherCircuit(int mode, int expected)
     {
-        var ula = Create(out var video, out var cassette);
+        var ula = Create(out var video, out var tape);
         ula.Write(7, (byte)(mode << 3));
         Assert.Equal(expected, Access(ula, 0x4000));
         Assert.Equal(expected, video.Clock);
-        Assert.Equal(expected, cassette.Ticks);
+        Assert.Equal(expected, tape.Ticks);
     }
 
     [Fact]

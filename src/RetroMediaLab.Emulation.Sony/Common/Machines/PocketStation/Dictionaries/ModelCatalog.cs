@@ -9,7 +9,7 @@ internal static class ModelCatalog
         HasKeyboard: false,
         BuiltInFloppyDriveCount: Hardware.NoFloppyDrive,
         MaximumFloppyDriveCount: Hardware.NoFloppyDrive,
-        HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,
+        HasBuiltInTapeDrive: false, SupportsTapeDrive: false,
         HasBuiltInCartridgeSlot: false, SupportsCartridgeSlot: false,
         ControllerPortCount: Hardware.IntegratedControllerCount,
         CpuModels: [Hardware.Cpu], VideoChip: Hardware.Display, AudioChip: Hardware.Audio,

@@ -118,7 +118,7 @@ internal sealed class EmulationStorageSettingsController
         if (!TryFind(args.Device, out var device)) return;
         switch (device.ConfigurationKind)
         {
-            case EmulationStorageConfigurationKind.CassetteDrive:
+            case EmulationStorageConfigurationKind.TapeDrive:
                 ConfigureManagedStorage(device);
                 break;
             case EmulationStorageConfigurationKind.FloppyDrive:

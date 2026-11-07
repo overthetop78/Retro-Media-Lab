@@ -19,8 +19,8 @@ using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 using Io = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.BbcMicroIoConstants;
-using CassetteConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.CassetteConstants;
-using BbcCassetteFunctions = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Functions.CassetteFunctions;
+using TapeConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.TapeConstants;
+using BbcTapeFunctions = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Functions.TapeFunctions;
 using DiskConstants = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.DiskConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
@@ -56,10 +56,10 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     private byte _fireInputs = Io.OpenInputs;
     private readonly Keyboard _keyboard = new();
     private readonly Audio _audio = new();
-    private readonly Acia6850 _acia = new(CassetteConstants.CpuClock, CassetteConstants.ExternalAciaClock);
+    private readonly Acia6850 _acia = new(TapeConstants.CpuClock, TapeConstants.ExternalAciaClock);
     private readonly Serial _serial;
-    private readonly Cassette _cassette;
-    private bool _cassetteClockRequired;
+    private readonly Tape _tape;
+    private bool _tapeClockRequired;
     private byte _latch = 255;
     private byte _soundDataBus = byte.MaxValue;
     private int _keyboardColumn;
@@ -99,14 +99,14 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     public long HardDiskReadBlocks(int unit) => _winchester.ReadBlocks(unit);
     public long HardDiskWrittenBlocks(int unit) => _winchester.WrittenBlocks(unit);
     public void ConfigureHardDisk(int unit, int latencyMilliseconds, int speedPercent, int? writeLatencyMilliseconds = null) => _winchester.Configure(unit, latencyMilliseconds, speedPercent, writeLatencyMilliseconds);
-    public IEmulatorCassetteTransport CassetteTransport => _cassette;
-    public void InsertCassette(EmulationCassetteSignal signal, bool writable = false) => _cassette.Insert(signal, writable);
-    public bool CassetteHasChanges => _cassette.HasChanges;
-    public EmulationCassetteSignal RecordedCassette => _cassette.RecordedSignal;
-    public void MarkCassetteSaved() => _cassette.MarkSaved();
-    public void RefreshCassetteIndex(EmulationCassetteSignal signal) => _cassette.RefreshIndex(signal);
-    public void ConfigureCassette(EmulationCassetteSettings settings) => _cassette.Configure(settings);
-    public void EjectCassette() => _cassette.Eject();
+    public IEmulatorTapeTransport TapeTransport => _tape;
+    public void InsertTape(EmulationTapeSignal signal, bool writable = false) => _tape.Insert(signal, writable);
+    public bool TapeHasChanges => _tape.HasChanges;
+    public EmulationTapeSignal RecordedTape => _tape.RecordedSignal;
+    public void MarkTapeSaved() => _tape.MarkSaved();
+    public void RefreshTapeIndex(EmulationTapeSignal signal) => _tape.RefreshIndex(signal);
+    public void ConfigureTape(EmulationTapeSettings settings) => _tape.Configure(settings);
+    public void EjectTape() => _tape.Eject();
 
     internal BbcMicroMachine(ReadOnlySpan<byte> mos, ReadOnlySpan<byte> basic, int memoryBytes = (int)BbcMicroModelConstants.SixteenKibibytes, ReadOnlySpan<byte> characters = default, bool diskInterface = false, IReadOnlyDictionary<int, byte[]>? optionRoms = null, bool wd1770 = false, bool winchesterInterface = false, bool econetInterface = false, int econetStation = 1, int econetCyclesPerByte = Mc6854Constants.DefaultCyclesPerByte, MemoryExtensionSettings? memoryExtension = null, SidewaysExpansionSettings? sidewaysExpansion = null, bool expandedIo = false, EmulationVideoStandard videoStandard = EmulationVideoStandard.Pal, int modelBPlusMemory = 0, bool master = false, bool compact = false, MasterCoprocessor coprocessor = MasterCoprocessor.None, ReadOnlySpan<byte> coprocessorRom = default)
     {
@@ -146,9 +146,9 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (_masterMemory is not null) Video.ReadMemory = address => _masterMemory.ReadVideo(address, _ram);
         else if (_plusMemory is not null) Video.ReadMemory = address => _plusMemory.ReadVideo(address, _ram);
         _serial = new Serial(_acia);
-        _cassette = new Cassette(_serial)
+        _tape = new Tape(_serial)
         {
-            ClockRequiredChanged = required => _cassetteClockRequired = required
+            ClockRequiredChanged = required => _tapeClockRequired = required
         };
         _via.ReadPortA = () => (_latch & 8) == 0 ? (byte)(_keyboard.Read(_via.OutputA) & (_masterClock?.ReadBus() ?? byte.MaxValue)) : _masterClock?.ReadBus() ?? byte.MaxValue;
         _userVia = expandedIo ? new Via6522() : null;
@@ -187,7 +187,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
             Video.Reset();
             _via.SetCa1(Video.VSync);
             _audio.Reset();
-            _cassette.ResetHardware();
+            _tape.ResetHardware();
             _roms.Reset();
             _latch = byte.MaxValue;
             _soundDataBus = byte.MaxValue;
@@ -220,9 +220,9 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
     {
         // Les commandes hôtes sont sérialisées entre les frames : le mode de chargement
         // ne change pas dans cette boucle. La lecture matérielle n'a aucun appel MOS à intercepter.
-        if (_cassette.Settings.Mode == EmulationCassettePlaybackMode.Direct)
+        if (_tape.Settings.Mode == EmulationTapePlaybackMode.Direct)
         {
-            while (_ticks < _nextFrame) { if (!BbcCassetteFunctions.TryDirectLoad(Cpu, this, _cassette)) Cpu.Step(); }
+            while (_ticks < _nextFrame) { if (!BbcTapeFunctions.TryDirectLoad(Cpu, this, _tape)) Cpu.Step(); }
         }
         else while (_ticks < _nextFrame) Cpu.Step();
         CompleteViaBusCycle();
@@ -239,7 +239,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _master512?.RunHostCycle();
         if ((_ticks & 127) == 0) NetworkPoll?.Invoke(128);
         _audio.Tick();
-        if (_cassetteClockRequired) _cassette.Tick();
+        if (_tapeClockRequired) _tape.Tick();
         else _serial.Tick();
         if (_ticks >= _adcWakeTick) _adc!.AdvanceTo(_ticks);
         if (_ticks >= _masterClockWakeTick) _masterClock!.AdvanceTo(_ticks);
@@ -271,7 +271,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (address < 0xfe00) return 255;
         if (address < 0xfe08) return (address & 1) != 0 ? Video.ReadRegister() : (byte)0;
         if (address < 0xfe10) return _acia.Read((address & 1) != 0);
-        if (address < 0xfe18) return _cassette.ReadUla();
+        if (address < 0xfe18) return _tape.ReadUla();
         if (address < 0xfe20) return _econet.ReadStation();
         if (address < 0xfe28) { _econet.EnableNmi(); return 0xfe; }
         if (address is >= 0xfe40 and < 0xfe60) return _via.Read(address & 15);
@@ -307,7 +307,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
             if ((address & 1) == 0) Video.Select(value); else Video.WriteRegister(value);
         }
         else if (address is >= 0xfe08 and < 0xfe10) _acia.Write((address & 1) != 0, value);
-        else if (address is >= 0xfe10 and < 0xfe18) _cassette.WriteUla(value);
+        else if (address is >= 0xfe10 and < 0xfe18) _tape.WriteUla(value);
         else if (address is >= 0xfe18 and < 0xfe20) _econet.DisableNmi();
         else if (address is >= 0xfe20 and < 0xfe30) Video.WriteUla(address, value);
         else if (address is >= DiskConstants.RomSelectStart and < DiskConstants.RomSelectEnd)

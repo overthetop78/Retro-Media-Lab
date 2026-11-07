@@ -22,14 +22,14 @@ internal sealed record BbcMicroState
     public required AudioState Audio { get; init; }
     public required VideoState Video { get; init; }
     public required SerialState Serial { get; init; }
-    public required CassetteState Cassette { get; init; }
+    public required TapeState Tape { get; init; }
     public required DisksState Disks { get; init; }
     public required EconetState Econet { get; init; }
     public required long MasterClockWakeTick { get; init; }
     public required long WinchesterWakeTick { get; init; }
     public required long AdcWakeTick { get; init; }
     public required byte FireInputs { get; init; }
-    public required bool CassetteClockRequired { get; init; }
+    public required bool TapeClockRequired { get; init; }
     public required byte Latch { get; init; }
     public required byte SoundDataBus { get; init; }
     public required int KeyboardColumn { get; init; }

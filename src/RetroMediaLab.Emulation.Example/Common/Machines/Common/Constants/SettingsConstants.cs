@@ -5,8 +5,8 @@ internal static class SettingsConstants
 {
     /// <summary>Choix persistant de l’extension de deux ports de contrôleurs, conservé dans Input plutôt que dans les options natives.</summary>
     internal const string ParallelJoystickAdapter = "configuration.parallelJoystickAdapter";
-    /// <summary>Choix explicite de l’impulsion de démarrage automatique d’une cassette insérée.</summary>
-    internal const string CassetteAutoBoot = "example_cassette_auto_boot";
+    /// <summary>Choix explicite de l’impulsion de démarrage automatique d’une tape insérée.</summary>
+    internal const string TapeAutoBoot = "example_tape_auto_boot";
     /// <summary>Identité du champ de processeur fictif.</summary>
     internal const string Cpu = "example_cpu";
     /// <summary>Identité du champ de fréquence du processeur, en hertz.</summary>

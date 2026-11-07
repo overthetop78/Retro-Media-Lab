@@ -72,13 +72,13 @@ internal static class ConfigurationStoreFunctions
 
     private static FolderConfiguration StoreFolders(FolderConfiguration folders, string pathBase) =>
         new(StorePath(folders.Shared, pathBase), StorePath(folders.Floppies, pathBase),
-            StorePath(folders.Cassettes, pathBase), StorePath(folders.Cartridges, pathBase),
+            StorePath(folders.Tapes, pathBase), StorePath(folders.Cartridges, pathBase),
             StorePath(folders.CompactDiscs, pathBase), StorePath(folders.HardDisks, pathBase),
             StorePath(folders.States, pathBase), StorePath(folders.Captures, pathBase));
 
     private static FolderConfiguration ResolveFolders(FolderConfiguration folders, string pathBase) =>
         new(ResolvePath(folders.Shared, pathBase), ResolvePath(folders.Floppies, pathBase),
-            ResolvePath(folders.Cassettes, pathBase), ResolvePath(folders.Cartridges, pathBase),
+            ResolvePath(folders.Tapes, pathBase), ResolvePath(folders.Cartridges, pathBase),
             ResolvePath(folders.CompactDiscs, pathBase), ResolvePath(folders.HardDisks, pathBase),
             ResolvePath(folders.States, pathBase), ResolvePath(folders.Captures, pathBase));
 }

@@ -8,7 +8,7 @@ namespace RetroMediaLab.Emulation.Atari.Common.Services;
 
 internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, IEmulationInput,
     IEmulationMedia, IEmulationVideo, IEmulationAudio, IEmulationSavedStates, IEmulationRuntime,
-    IEmulationCassetteTransport
+    IEmulationTapeTransport
 {
     private MachineConfiguration CurrentConfiguration() => Configuration with { Media = _mountedMedia.ToArray(), Input = _inputConfiguration.Input };
 
@@ -37,7 +37,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
                 long videoSequence = default;
                 CommonCoreHostFunctions.MachineExecution.RunLoop(nextFrame, _gate, _commands, () => _pauseRequested,
                     () => {
-                        _core.SetInput(_cassetteInput.NextFrame());
+                        _core.SetInput(_tapeInput.NextFrame());
                         _core.SetAudioBufferStatus(_audio.BufferStatus);
                         _core.RunFrame();
                         if (_core.ShutdownRequested) return;

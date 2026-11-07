@@ -22,7 +22,7 @@ internal static class EmulationMediaConversionFunctions
     private static EmulationMediaType ToType(MediaCategory category) => category switch
     {
         MediaCategory.Floppy => EmulationMediaType.Floppy,
-        MediaCategory.Cassette => EmulationMediaType.Cassette,
+        MediaCategory.Tape => EmulationMediaType.Tape,
         MediaCategory.HardDisk => EmulationMediaType.HardDisk,
         _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
     };
@@ -30,7 +30,7 @@ internal static class EmulationMediaConversionFunctions
     private static MediaCategory ToCategory(EmulationMediaType type) => type switch
     {
         EmulationMediaType.Floppy => MediaCategory.Floppy,
-        EmulationMediaType.Cassette => MediaCategory.Cassette,
+        EmulationMediaType.Tape => MediaCategory.Tape,
         EmulationMediaType.HardDisk => MediaCategory.HardDisk,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };

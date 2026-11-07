@@ -133,7 +133,7 @@
   <data name="Emulation.Nintendo.Controller.Nintendo64Microphone"><value>Nintendo 64 Microphone (NUS-021)</value></data>
   <data name="Emulation.Nintendo.Controller.Nintendo64Mouse"><value>Nintendo 64 Mouse (NUS-017)</value></data>
   <data name="Emulation.Nintendo.Controller.Nintendo64DiskDrive"><value>Nintendo 64DD (NUS-010)</value></data>
-  <data name="Emulation.Nintendo.Controller.Nintendo64CaptureCassette"><value>Nintendo 64 Capture Cassette (NUS-028)</value></data>
+  <data name="Emulation.Nintendo.Controller.Nintendo64CaptureTape"><value>Nintendo 64 Capture Cassette (NUS-028)</value></data>
   <data name="Emulation.Nintendo.Controller.Nintendo64Modem"><value>Nintendo 64 Modem (NUS-029)</value></data>
   <!-- Game Boy and Game Boy Color: handheld units include their own controls. -->
   <data name="Emulation.Nintendo.Controller.GameBoy"><value>Nintendo Game Boy (DMG-01)</value></data>

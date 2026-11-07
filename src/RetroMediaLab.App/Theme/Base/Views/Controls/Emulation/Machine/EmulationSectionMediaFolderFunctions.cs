@@ -42,7 +42,7 @@ public sealed partial class EmulationSection
         EmulationMediaType.CompactDisc => EmulationMediaFolderCategory.CompactDisc,
         EmulationMediaType.HardDisk => EmulationMediaFolderCategory.HardDisk,
         EmulationMediaType.Cartridge => EmulationMediaFolderCategory.Cartridge,
-        EmulationMediaType.Cassette => EmulationMediaFolderCategory.Cassette,
+        EmulationMediaType.Tape => EmulationMediaFolderCategory.Tape,
         _ => throw new ArgumentOutOfRangeException(nameof(mediaType), mediaType, null)
     };
 }

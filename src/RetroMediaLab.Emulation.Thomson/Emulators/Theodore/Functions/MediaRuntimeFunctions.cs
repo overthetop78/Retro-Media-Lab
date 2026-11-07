@@ -23,7 +23,7 @@ internal static class MediaRuntimeFunctions
         var cartridge = configuration.Family == MachineFamily.Mo ? MediaRuntimeConstants.MoCartridge : MediaRuntimeConstants.ToCartridge;
         var integrated = ConfigurationFunctions.IntegratedStorageSlots(configuration.Model);
         return[
-            new(EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, [MediaRuntimeConstants.Tape], RequiresMachineRecreation: true, IsPermanent: integrated.Contains(EmulationMediaSlot.Cassette0)),
+            new(EmulationMediaSlot.Tape0, EmulationMediaType.Tape, [MediaRuntimeConstants.Tape], RequiresMachineRecreation: true, IsPermanent: integrated.Contains(EmulationMediaSlot.Tape0)),
             new(EmulationMediaSlot.Floppy0, EmulationMediaType.Floppy, [MediaRuntimeConstants.Floppy, MediaRuntimeConstants.SapFloppy], RequiresMachineRecreation: true, IsPermanent: integrated.Contains(EmulationMediaSlot.Floppy0)),
             new(EmulationMediaSlot.Cartridge0, EmulationMediaType.Cartridge, [cartridge, MediaRuntimeConstants.RomCartridge], RequiresMachineRecreation: true, IsPermanent: integrated.Contains(EmulationMediaSlot.Cartridge0))
         ];

@@ -39,7 +39,7 @@ public sealed class MachineErrorFactoryTests
         Assert.Equal(EmulationMessageTarget.Dialog, first.MessageData.Target);
         Assert.Equal(new[] { EmulationMediaCategory.CartridgeSlot, EmulationMediaCategory.CompactDiscDrive,
             EmulationMediaCategory.CartridgeSlot }, context.RequiredMedia);
-        media.Add(EmulationMediaCategory.CassetteDrive);
+        media.Add(EmulationMediaCategory.TapeDrive);
         Assert.Equal(4, context.RequiredMedia.Count);
     }
 

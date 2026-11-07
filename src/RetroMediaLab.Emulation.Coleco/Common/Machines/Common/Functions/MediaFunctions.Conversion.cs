@@ -23,7 +23,7 @@ internal static class EmulationMediaConversionFunctions
     {
         MediaCategory.Cartridge => EmulationMediaType.Cartridge,
         MediaCategory.Floppy => EmulationMediaType.Floppy,
-        MediaCategory.DataPack => EmulationMediaType.Cassette,
+        MediaCategory.DataPack => EmulationMediaType.Tape,
         _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
     };
 
@@ -31,7 +31,7 @@ internal static class EmulationMediaConversionFunctions
     {
         EmulationMediaType.Cartridge => MediaCategory.Cartridge,
         EmulationMediaType.Floppy => MediaCategory.Floppy,
-        EmulationMediaType.Cassette => MediaCategory.DataPack,
+        EmulationMediaType.Tape => MediaCategory.DataPack,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
     };
 }

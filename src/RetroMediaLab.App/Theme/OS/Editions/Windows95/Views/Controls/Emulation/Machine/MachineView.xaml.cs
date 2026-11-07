@@ -26,7 +26,7 @@ internal partial class MachineView : EmulationMachinePresentation
 
     private readonly Dictionary<string, Ellipse> leds = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (TextBlock Text, MenuItem Menu)> statuses = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, Dictionary<EmulationCassetteCommand, (Button Button, MenuItem Menu)>> cassette = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Dictionary<EmulationTapeCommand, (Button Button, MenuItem Menu)>> tape = new(StringComparer.Ordinal);
     private readonly HashSet<Button> blinking = [];
     private readonly DispatcherTimer blinkTimer;
     private FrameworkElement? video;
@@ -185,7 +185,7 @@ internal partial class MachineView : EmulationMachinePresentation
             if (device.Commands is { Count: > 0 })
             {
                 menu.Items.Add(new Separator());
-                var commands = new Dictionary<EmulationCassetteCommand, (Button, MenuItem)>();
+                var commands = new Dictionary<EmulationTapeCommand, (Button, MenuItem)>();
                 foreach (var command in device.Commands)
                 {
                     var item = new MenuItem { Header = command.Label, IsEnabled = command.IsEnabled, IsChecked = command.IsActive };
@@ -193,10 +193,10 @@ internal partial class MachineView : EmulationMachinePresentation
                     menu.Items.Add(item);
                     row.Children.Add(button);
                     commands.Add(command.Command, (button, item));
-                    CassetteAppearance(button, command.IsActive, command.IsBlinking);
+                    TapeAppearance(button, command.IsActive, command.IsBlinking);
                     Action(item, button, command.Execute);
                 }
-                cassette.Add(device.Key, commands);
+                tape.Add(device.Key, commands);
             }
             devicePanels.Add(device.Key, row);
             deviceLabels.Add(device.Key, device.Label);
@@ -227,22 +227,22 @@ internal partial class MachineView : EmulationMachinePresentation
         target.Menu.Header = status;
     }
 
-    internal override void SetCassetteTransport(string key, EmulationCassetteState state, EmulationCassetteCommand? activeOperation,
-        IReadOnlySet<EmulationCassetteCommand> supportedCommands, bool powered)
+    internal override void SetTapeTransport(string key, EmulationTapeState state, EmulationTapeCommand? activeOperation,
+        IReadOnlySet<EmulationTapeCommand> supportedCommands, bool powered)
     {
-        if (!cassette.TryGetValue(key, out var commands)) return;
+        if (!tape.TryGetValue(key, out var commands)) return;
         foreach (var (command, targets) in commands)
         {
-            var active = CassetteTransportPresentationFunctions.IsActive(state, activeOperation, command);
-            var enabled = CassetteTransportPresentationFunctions.IsEnabled(powered, supportedCommands.Contains(command), state, activeOperation, command);
+            var active = TapeTransportPresentationFunctions.IsActive(state, activeOperation, command);
+            var enabled = TapeTransportPresentationFunctions.IsEnabled(powered, supportedCommands.Contains(command), state, activeOperation, command);
             targets.Button.IsEnabled = targets.Menu.IsEnabled = enabled;
             targets.Menu.IsChecked = active;
-            CassetteAppearance(targets.Button, active, CassetteTransportPresentationFunctions.IsBlinking(state, activeOperation, command));
+            TapeAppearance(targets.Button, active, TapeTransportPresentationFunctions.IsBlinking(state, activeOperation, command));
         }
         UpdateBlinkTimer();
     }
 
-    private void CassetteAppearance(Button button, bool active, bool isBlinking)
+    private void TapeAppearance(Button button, bool active, bool isBlinking)
     {
         button.FontWeight = active ? FontWeights.Bold : FontWeights.Normal;
         button.Opacity = FullOpacity;
@@ -274,7 +274,7 @@ internal partial class MachineView : EmulationMachinePresentation
         foreach (var detach in detachDevices) detach();
         detachDevices.Clear();
         blinking.Clear();
-        cassette.Clear();
+        tape.Clear();
         statuses.Clear();
         leds.Clear();
         devicePanels.Clear();
@@ -309,7 +309,7 @@ internal partial class MachineView : EmulationMachinePresentation
         EmulationMediaType.Floppy => EmulationResourceKeys.FloppyDevice,
         EmulationMediaType.HardDisk => EmulationResourceKeys.HardDiskDevice,
         EmulationMediaType.CompactDisc => EmulationResourceKeys.CompactDiscDevice,
-        EmulationMediaType.Cassette => EmulationResourceKeys.CassetteDevice,
+        EmulationMediaType.Tape => EmulationResourceKeys.TapeDevice,
         EmulationMediaType.Cartridge => EmulationResourceKeys.CartridgeDevice,
         EmulationMediaType.MemoryCard => EmulationResourceKeys.MemoryCardDevice,
         _ => throw new ArgumentOutOfRangeException(nameof(type))

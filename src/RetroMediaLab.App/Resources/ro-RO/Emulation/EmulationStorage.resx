@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Dimensiunea sau geometria discului nu este validă.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Rezervă imediat spațiul fizic; altfel imaginea crește pe măsură ce se scriu date.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sectoare</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Casetă</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Casetă</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Cartuș</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Discuri compacte</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Afișează activitatea unităților pe ecranul emulatorului</value></data>

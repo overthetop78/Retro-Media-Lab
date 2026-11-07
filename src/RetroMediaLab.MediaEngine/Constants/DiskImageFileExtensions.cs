@@ -177,19 +177,19 @@ public static class DiskImageFileExtensions
 
     /// <summary>Extension des fichiers audio Waveform Audio.</summary>
     public const string Wav = ".wav";
-    /// <summary>Extension CAS partagée par plusieurs formats d’images de cassette.</summary>
+    /// <summary>Extension CAS partagée par plusieurs formats d’images de tape.</summary>
     public const string Cas = ".cas";
-    /// <summary>Extension des images de cassette TZX.</summary>
+    /// <summary>Extension des images de tape TZX.</summary>
     public const string Tzx = ".tzx";
-    /// <summary>Extension des images de cassette Amstrad CPC au format CDT.</summary>
+    /// <summary>Extension des images de tape Amstrad CPC au format CDT.</summary>
     public const string Cdt = ".cdt";
-    /// <summary>Extension des images de cassette TSX.</summary>
+    /// <summary>Extension des images de tape TSX.</summary>
     public const string Tsx = ".tsx";
-    /// <summary>Extension TAP partagée par plusieurs formats d’images de cassette.</summary>
+    /// <summary>Extension TAP partagée par plusieurs formats d’images de tape.</summary>
     public const string Tap = ".tap";
-    /// <summary>Extension des conteneurs Unified Emulator Format, notamment utilisés pour les cassettes Acorn.</summary>
+    /// <summary>Extension des conteneurs Unified Emulator Format, notamment utilisés pour les tapes Acorn.</summary>
     public const string Uef = ".uef";
-    /// <summary>Extension des enregistrements de signal cassette Compressed Square Wave.</summary>
+    /// <summary>Extension des enregistrements de signal tape Compressed Square Wave.</summary>
     public const string Csw = ".csw";
 
     /// <summary>Extension des cartouches Amstrad Plus/GX4000.</summary>

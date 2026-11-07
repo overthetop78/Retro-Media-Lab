@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Відтворити</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Пауза</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Перемотування назад</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Перемотування вперед</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Запис</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Зупинити</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Немає касети</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Зупинено</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Відтворення</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Пауза</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Запис</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Кінець стрічки</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Курс валют предоставлен сайтом zamki.com.ua</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Автоматична</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Режим завантаження</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Реальне читання</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Прискорене читання</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Пряма завантаження</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Швидкість стрічки</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Швидка і перемотування швидкості</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Затримка запуску двигуна перед відтворенням</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Затримка запуску двигуна перед записом</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Увімкнути пристрій для зберігання</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Захист від написання</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Частота затискання (Хз)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Аудіоканали</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Біти за зразок</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Вивіски</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW касетний профіль введення</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW касетний профіль запису</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Завантаження</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>механіки стрічки</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Автоматична дана послідовна швидкість даних, встановлена емуляцією комп'ютерного програмного забезпечення. Вона не виявляє швидкість даних з файлу зображення.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Моноблок</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Стерео</value></data>
+</root>

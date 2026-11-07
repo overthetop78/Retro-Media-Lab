@@ -9,7 +9,7 @@ internal static partial class ConfigurationFunctions
 {
     internal static IReadOnlyList<EmulationMediaSlot> IntegratedStorageSlots(MachineModel model) => model switch
     {
-        MachineModel.Mo6 => [EmulationMediaSlot.Cartridge0, EmulationMediaSlot.Cassette0],
+        MachineModel.Mo6 => [EmulationMediaSlot.Cartridge0, EmulationMediaSlot.Tape0],
         MachineModel.To8D or MachineModel.To9 or MachineModel.To9Plus => [EmulationMediaSlot.Cartridge0, EmulationMediaSlot.Floppy0],
         MachineModel.Mo5 or MachineModel.To7 or MachineModel.To770 or MachineModel.To8 => [EmulationMediaSlot.Cartridge0],
         _ => throw new ArgumentOutOfRangeException(nameof(model))
@@ -32,7 +32,7 @@ internal static partial class ConfigurationFunctions
         if (IntegratedStorageSlots(configuration.Model).Any(slot => !configuration.ConfiguredSlots.Contains(slot)))
             throw new ArgumentException(nameof(configuration.ConfiguredSlots));
         foreach (var slot in configuration.ConfiguredSlots)
-            if (slot.Index < 0 || slot.Category is not (EmulationMediaCategory.CassetteDrive or EmulationMediaCategory.FloppyDrive or EmulationMediaCategory.CartridgeSlot))
+            if (slot.Index < 0 || slot.Category is not (EmulationMediaCategory.TapeDrive or EmulationMediaCategory.FloppyDrive or EmulationMediaCategory.CartridgeSlot))
                 throw new ArgumentException(nameof(configuration.ConfiguredSlots));
         if (configuration.Media.Select(item => item.Slot).Distinct().Count() != configuration.Media.Count)
             throw new ArgumentException(nameof(configuration.Media));
@@ -42,7 +42,7 @@ internal static partial class ConfigurationFunctions
                 throw new ArgumentException(nameof(configuration.Media));
             var expected = media.Slot.Category switch
             {
-                EmulationMediaCategory.CassetteDrive => MediaCategory.Tape,
+                EmulationMediaCategory.TapeDrive => MediaCategory.Tape,
                 EmulationMediaCategory.FloppyDrive => MediaCategory.Floppy,
                 EmulationMediaCategory.CartridgeSlot => MediaCategory.Cartridge,
                 _ => throw new ArgumentException(nameof(configuration.Media))

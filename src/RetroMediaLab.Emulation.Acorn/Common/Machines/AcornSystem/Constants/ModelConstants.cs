@@ -38,7 +38,7 @@ internal static class SystemModelConstants
     internal const int CharacterRomBytes = 960;
     internal const int MonochromeCharacterRomBytes = 2048;
     internal const int KeypadMonitorBytes = 512;
-    internal const int CassetteBaud = 300;
+    internal const int TapeBaud = 300;
     internal const string MemorySuffix = " KiB";
     internal const string CpuSummaryFormat = "CPU {0}";
     internal const string MemorySummaryFormat = "RAM {0} KiB";

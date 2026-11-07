@@ -46,8 +46,8 @@ public enum HardwareStorageCapability
 {
     /// <summary>Lecteur de disquette.</summary>
     Floppy,
-    /// <summary>Lecteur de cassette.</summary>
-    Cassette,
+    /// <summary>Lecteur de tape.</summary>
+    Tape,
     /// <summary>Interface de disque dur.</summary>
     HardDisk,
     /// <summary>Emplacement de cartouche.</summary>

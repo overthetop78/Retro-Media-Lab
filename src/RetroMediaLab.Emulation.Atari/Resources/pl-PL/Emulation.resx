@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>Artefakting hi- res</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>Przyspieszenie SIO</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>Boot z kasety</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>Boot z kasety</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>Przegląd systemu operacyjnego</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>Odcień</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>Nasycenie</value></data>

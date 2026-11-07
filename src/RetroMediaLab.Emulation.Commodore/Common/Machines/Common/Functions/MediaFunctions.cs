@@ -11,7 +11,7 @@ internal static class EmulationMediaConversionFunctions
             EmulationMediaType.Floppy => MediaCategory.Floppy,
             EmulationMediaType.HardDisk => MediaCategory.HardDrive,
             EmulationMediaType.CompactDisc => MediaCategory.CompactDisc,
-            EmulationMediaType.Cassette => MediaCategory.Cassette,
+            EmulationMediaType.Tape => MediaCategory.Tape,
             EmulationMediaType.Cartridge => MediaCategory.Cartridge,
             _ => throw new ArgumentOutOfRangeException(nameof(media), media.Type, null)
         }, IsReadOnly: media.IsReadOnly, SlotIndex: media.Slot.Index);
@@ -41,11 +41,11 @@ internal static class EmulationMediaConversionFunctions
             MediaCategory.Floppy => EmulationMediaCategory.FloppyDrive,
             MediaCategory.HardDrive => EmulationMediaCategory.HardDisk,
             MediaCategory.CompactDisc => EmulationMediaCategory.CompactDiscDrive,
-            MediaCategory.Cassette => EmulationMediaCategory.CassetteDrive,
+            MediaCategory.Tape => EmulationMediaCategory.TapeDrive,
             MediaCategory.Cartridge => EmulationMediaCategory.CartridgeSlot,
             _ => default
         };
-        return media is MediaCategory.Floppy or MediaCategory.HardDrive or MediaCategory.CompactDisc or MediaCategory.Cassette or MediaCategory.Cartridge;
+        return media is MediaCategory.Floppy or MediaCategory.HardDrive or MediaCategory.CompactDisc or MediaCategory.Tape or MediaCategory.Cartridge;
     }
 
     private static EmulationMediaType ToType(MediaCategory media) => media switch
@@ -53,7 +53,7 @@ internal static class EmulationMediaConversionFunctions
         MediaCategory.Floppy => EmulationMediaType.Floppy,
         MediaCategory.HardDrive => EmulationMediaType.HardDisk,
         MediaCategory.CompactDisc => EmulationMediaType.CompactDisc,
-        MediaCategory.Cassette => EmulationMediaType.Cassette,
+        MediaCategory.Tape => EmulationMediaType.Tape,
         MediaCategory.Cartridge => EmulationMediaType.Cartridge,
         _ => throw new ArgumentOutOfRangeException(nameof(media), media, null)
     };

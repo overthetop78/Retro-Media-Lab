@@ -35,7 +35,7 @@ public sealed class BbcSerialUlaTests
                 step = (step + 1) % 16;
             }
             var expected = rts || (control & 0x40) != 0 ? (short)0 : sine[step];
-            Assert.Equal(expected, ula.CassetteOutput);
+            Assert.Equal(expected, ula.TapeOutput);
         }
     }
 
@@ -48,8 +48,8 @@ public sealed class BbcSerialUlaTests
         for (var tick = 0; tick < Clock / 4; tick++)
         {
             var level = ((long)tick * 4800 / Clock & 1) != 0;
-            idle.SetCassetteInput(level);
-            fresh.SetCassetteInput(level);
+            idle.SetTapeInput(level);
+            fresh.SetTapeInput(level);
             idle.Tick(true, true);
             fresh.Tick(true, true);
             Assert.Equal(fresh.ReceiveData, idle.ReceiveData);
@@ -137,7 +137,7 @@ public sealed class BbcSerialUlaTests
         Assert.False(ula.DataCarrierDetectHigh);
         Assert.False(ula.Rs423TransmitData);
         Assert.False(ula.Rs423RequestToSendHigh);
-        Assert.Equal(0, ula.CassetteOutput);
+        Assert.Equal(0, ula.TapeOutput);
     }
 
     [Theory]
@@ -151,16 +151,16 @@ public sealed class BbcSerialUlaTests
         for (var tick = 0; tick < Window; tick++)
         {
             ula.Tick(data, false);
-            if (previous <= 0 && ula.CassetteOutput > 0) crossings++;
-            previous = ula.CassetteOutput;
+            if (previous <= 0 && ula.TapeOutput > 0) crossings++;
+            previous = ula.TapeOutput;
         }
         Assert.InRange(crossings, (int)((long)Window * 16_000_000 / (Clock * 13L * divider)), (int)((long)Window * 16_000_000 / (Clock * 13L * divider)) + 1);
         ula.Tick(data, true);
-        Assert.Equal(0, ula.CassetteOutput);
+        Assert.Equal(0, ula.TapeOutput);
     }
 
     [Fact]
-    public void CassetteReceiveClockIsIndependentOfTheRs423ReceiveSelection()
+    public void TapeReceiveClockIsIndependentOfTheRs423ReceiveSelection()
     {
         var ula = new Ula(Clock);
         var edges = 0;
@@ -221,7 +221,7 @@ public sealed class BbcSerialUlaTests
             reference.Tick(true, false);
             Assert.Equal(reference.TransmitClockEdge, ula.TransmitClockEdge);
             Assert.Equal(reference.ReceiveClockEdge, ula.ReceiveClockEdge);
-            Assert.Equal(reference.CassetteOutput, ula.CassetteOutput);
+            Assert.Equal(reference.TapeOutput, ula.TapeOutput);
         }
     }
 
@@ -259,13 +259,13 @@ public sealed class BbcSerialUlaTests
         // 2400 Hz nominal, with fractional half periods; observe well beyond the initial RC charge.
         for (var tick = 0; tick < Clock / 2; tick++)
         {
-            ula.SetCassetteInput(((long)tick * 4800 / Clock & 1) != 0);
+            ula.SetTapeInput(((long)tick * 4800 / Clock & 1) != 0);
             ula.Tick(true, false);
             if (tick > Clock / 4) Assert.True(ula.DataCarrierDetectHigh);
         }
         for (var tick = 0; tick < Clock / 100; tick++)
         {
-            ula.SetCassetteInput(((long)tick * 2400 / Clock & 1) != 0);
+            ula.SetTapeInput(((long)tick * 2400 / Clock & 1) != 0);
             ula.Tick(true, false);
         }
         Assert.False(ula.DataCarrierDetectHigh);
@@ -278,18 +278,18 @@ public sealed class BbcSerialUlaTests
         var carrier = false;
         for (var tick = 0; tick < Clock / 4; tick++)
         {
-            ula.SetCassetteInput((tick / 833 & 1) != 0); // low tone cannot qualify carrier
+            ula.SetTapeInput((tick / 833 & 1) != 0); // low tone cannot qualify carrier
             ula.Tick(true, false);
             Assert.False(ula.DataCarrierDetectHigh);
         }
         for (var tick = 0; tick < Clock / 4; tick++)
         {
-            ula.SetCassetteInput((tick / 417 & 1) != 0);
+            ula.SetTapeInput((tick / 417 & 1) != 0);
             ula.Tick(true, false);
             carrier |= ula.DataCarrierDetectHigh;
         }
         Assert.True(carrier);
-        ula.SetCassetteInput(null);
+        ula.SetTapeInput(null);
         for (var tick = 0; tick < Clock / 500; tick++) ula.Tick(true, false);
         Assert.False(ula.DataCarrierDetectHigh);
         Assert.True(ula.ReceiveData);

@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Memilih firmware sekunder ROM dibutuhkan oleh beberapa model mesin. Biarkan bidang ini kosong ketika model yang dipilih tidak menggunakan ekstensi ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Aktifkan dipercepat SIO transfer</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Menyebarkan transfer yang kompatibel melalui bus masukan / keluaran seri. Nonaktifkan opsi ini ketika perangkat lunak tergantung pada waktu transfer asli.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Aktifkan startup kaset</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Membuat mesin beremulasi mencoba untuk memulai dari gambar kaset yang terpasang. Nonaktifkan opsi ini ketika dimulai dari perangkat lain.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Aktifkan startup kaset</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Membuat mesin beremulasi mencoba untuk memulai dari gambar kaset yang terpasang. Nonaktifkan opsi ini ketika dimulai dari perangkat lain.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Aktifkan R-Time 8 jam</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Emulasi R-Time 8 real-time clock sehingga kompatibel perangkat lunak dapat membaca tanggal dan waktu saat ini.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Aktifkan P: Perangkat pencetak</value></data>

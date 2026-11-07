@@ -16,11 +16,11 @@ public interface IMediaRuntimePreparation
     IMediaDriveMechanics CreateDriveMechanics(string device, bool hostAudio = false);
     /// <summary>Signale les mécaniques confiées à la sortie hôte, indépendamment de l'horloge émulée.</summary>
     event Action<IMediaDriveMechanics>? AudioAvailable;
-    /// <summary>Lit le signal mono d'une cassette UEF, CSW, WAV ou RAW avec son profil explicite, sans modifier sa source.</summary>
-    Task<RetroMediaLab.MediaEngine.Contracts.MediaCassetteSignal> ReadCassetteAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null);
+    /// <summary>Lit le signal mono d'une tape UEF, CSW, WAV ou RAW avec son profil explicite, sans modifier sa source.</summary>
+    Task<RetroMediaLab.MediaEngine.Contracts.MediaTapeSignal> ReadTapeAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null);
     /// <summary>Formats de sortie qui conservent le signal complet d'un magnétophone.</summary>
-    IReadOnlyList<string> CassetteRecordingExtensions { get; }
-    /// <summary>Identifiants des profils de mécanisme disponibles pour Cassette, Floppy, HardDisk ou Optical.</summary>
+    IReadOnlyList<string> TapeRecordingExtensions { get; }
+    /// <summary>Identifiants des profils de mécanisme disponibles pour Tape, Floppy, HardDisk ou Optical.</summary>
     IReadOnlyList<string> MechanicalSoundProfiles(string device);
     /// <summary>Nom technique invariant d'un profil connu.</summary>
     string MechanicalSoundProfileDisplayName(string profile);
@@ -29,7 +29,7 @@ public interface IMediaRuntimePreparation
     double MechanicalSoundDurationSeconds(string device, string profile, string operation);
     short[] ProtectMechanicalAudioMix(IReadOnlyList<double> samples);
     /// <summary>Écrit atomiquement le signal complet sans décoder les fichiers qu'il contient.</summary>
-    Task WriteCassetteAsync(string path, RetroMediaLab.MediaEngine.Contracts.MediaCassetteSignal signal, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? parameters = null);
+    Task WriteTapeAsync(string path, RetroMediaLab.MediaEngine.Contracts.MediaTapeSignal signal, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? parameters = null);
     /// <summary>Extensions du catalogue MediaEngine, indexées par leur nom technique invariant.</summary>
     IReadOnlyDictionary<string, string> FileExtensions { get; }
     /// <summary>Taille en octets d'un secteur optique brut.</summary>

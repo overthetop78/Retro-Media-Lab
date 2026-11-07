@@ -15,11 +15,11 @@ public interface IEmulationMediaProcessing
     Task<IEmulationDiskImage> OpenDiskAsync(string path, bool writable = false, string? formatId = null, CancellationToken cancellationToken = default, IEmulationDriveMechanics? mechanics = null);
     /// <summary>Crée la mécanique commune d’un lecteur, indépendante de l’image qui y sera montée.</summary>
     IEmulationDriveMechanics CreateDriveMechanics(string device, bool hostAudio = false);
-    /// <summary>Prépare le signal d'une cassette UEF, CSW, WAV ou RAW sans exposer les types de MediaEngine au module.</summary>
-    Task<EmulationCassetteSignal> ReadCassetteAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null);
+    /// <summary>Prépare le signal d'une tape UEF, CSW, WAV ou RAW sans exposer les types de MediaEngine au module.</summary>
+    Task<EmulationTapeSignal> ReadTapeAsync(string path, CancellationToken cancellationToken = default, string? machineId = null, IReadOnlyDictionary<string, string>? parameters = null);
     /// <summary>Extensions d'images dans lesquelles le signal d'un enregistreur peut être conservé intégralement.</summary>
-    IReadOnlyList<string> CassetteRecordingExtensions { get; }
-    /// <summary>Profils de mécanismes cassette, disquette, disque dur et optique, possédés par MediaEngine.</summary>
+    IReadOnlyList<string> TapeRecordingExtensions { get; }
+    /// <summary>Profils de mécanismes tape, disquette, disque dur et optique, possédés par MediaEngine.</summary>
     IReadOnlyList<string> MechanicalSoundProfiles(string device);
     /// <summary>Libellé technique invariant du profil sonore choisi.</summary>
     string MechanicalSoundProfileDisplayName(string profile);
@@ -28,7 +28,7 @@ public interface IEmulationMediaProcessing
     double MechanicalSoundDurationSeconds(string device, string profile, string operation);
     short[] ProtectMechanicalAudioMix(IReadOnlyList<double> samples);
     /// <summary>Enregistre la bande complète via MediaEngine ; les échantillons restent empruntés pendant l'appel.</summary>
-    Task WriteCassetteAsync(string path, EmulationCassetteSignal signal, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? parameters = null);
+    Task WriteTapeAsync(string path, EmulationTapeSignal signal, CancellationToken cancellationToken = default, IReadOnlyDictionary<string, string>? parameters = null);
     /// <summary>Extensions du catalogue, indexées par leur nom invariant, par exemple Iso ou Scp.</summary>
     IReadOnlyDictionary<string, string> FileExtensions { get; }
     /// <summary>Taille en octets d'un secteur optique brut.</summary>

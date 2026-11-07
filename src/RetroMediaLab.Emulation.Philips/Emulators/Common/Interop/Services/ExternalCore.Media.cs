@@ -62,7 +62,7 @@ internal sealed partial class ExternalCore
     {
         if (!ConfigurationFunctions.DefaultSlots(RequireConfiguration().Model).Contains(slot))
             throw new ArgumentOutOfRangeException(nameof(slot));
-        // Loaded media is read-only. Native cassette/NVRAM writes remain in the persistent save directory.
+        // Loaded media is read-only. Native tape/NVRAM writes remain in the persistent save directory.
     }
     public bool HasUnsavedMediaChanges(EmulationMediaSlot slot) => false;
     private MachineConfiguration RequireConfiguration() => _configuration ?? throw new InvalidOperationException(ErrorMessages.CoreNotInitialized);

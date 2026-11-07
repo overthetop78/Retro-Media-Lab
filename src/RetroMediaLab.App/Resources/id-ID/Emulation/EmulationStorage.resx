@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Ukuran atau geometri disk tidak valid.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Mencadangkan ruang fisik segera; jika tidak, citra membesar saat data ditulis.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sektor</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Kaset</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Kaset</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Kartrid</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Cakram padat</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Tampilkan aktivitas drive pada layar emulator</value></data>

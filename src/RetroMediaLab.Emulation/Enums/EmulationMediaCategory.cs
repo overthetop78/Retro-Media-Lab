@@ -6,6 +6,6 @@ public enum EmulationMediaCategory
     HardDisk,
     CompactDiscDrive,
     CartridgeSlot,
-    CassetteDrive,
+    TapeDrive,
     MemoryCard
 }

@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Valitsee toissijaisen firmwaren ROM Tarvitaan joitakin konemalleja. Jätä tämä kenttä tyhjäksi, kun valittu malli ei käytä laajennettua ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Käytä nopeutettua SIO siirrot</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Nopeuttaa yhteensopivia siirtoja sarjasyöte-/tuotosbussin kautta. Poista tämä asetus käytöstä, kun ohjelmisto riippuu alkuperäisestä siirtoajankohdasta.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Ota käyttöön kasettikäynnistys</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Saa emuloitu kone yrittää aloittaa liitteenä kasetin kuva. Poista tämä asetus käytöstä, kun aloitat toisesta laitteesta.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Ota käyttöön kasettikäynnistys</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Saa emuloitu kone yrittää aloittaa liitteenä kasetin kuva. Poista tämä asetus käytöstä, kun aloitat toisesta laitteesta.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Käytä R-Time 8 kello</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Emuloi R-Time 8 reaaliaikainen kello niin yhteensopiva ohjelmisto voi lukea nykyisen päivämäärän ja ajan.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Käytä P: tulostinlaite</value></data>

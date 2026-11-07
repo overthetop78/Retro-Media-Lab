@@ -8,7 +8,7 @@ namespace RetroMediaLab.Emulation.Atari.Common.Services;
 
 internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, IEmulationInput,
     IEmulationMedia, IEmulationVideo, IEmulationAudio, IEmulationSavedStates, IEmulationRuntime,
-    IEmulationCassetteTransport
+    IEmulationTapeTransport
 {
     /// <summary>Consulte le jeu de disques courant par la file de commandes du cœur.</summary>
     /// <param name="cancellationToken">Annulation de la commande en attente.</param>
@@ -110,7 +110,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         }
     }
 
-    public void SetInput(EmulationInputSnapshot snapshot) => _cassetteInput.SetPhysicalInput(MapInput(snapshot));
+    public void SetInput(EmulationInputSnapshot snapshot) => _tapeInput.SetPhysicalInput(MapInput(snapshot));
 
     public void SetControllerPortDevice(int port, PeripheralCategory peripheral) => QueueCommand(() =>
     {
@@ -170,9 +170,9 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
 
     public ValueTask SetOptionAsync(string key, string value, CancellationToken cancellationToken = default) => QueueCommand(() => _core.SetOption(key, value), cancellationToken);
 
-    ValueTask IEmulationCassetteTransport.ExecuteAsync(EmulationCassetteCommand command, CancellationToken cancellationToken) => QueueCommand(() =>
+    ValueTask IEmulationTapeTransport.ExecuteAsync(EmulationTapeCommand command, CancellationToken cancellationToken) => QueueCommand(() =>
         {
-            _cassetteInput.Execute(command);
+            _tapeInput.Execute(command);
         }, cancellationToken);
     /// <inheritdoc/>
     /// <remarks>La commande rejoint la file du cœur ; les politiques de copie, de protection et de

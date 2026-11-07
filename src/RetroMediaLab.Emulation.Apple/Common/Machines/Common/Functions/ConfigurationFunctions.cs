@@ -43,7 +43,7 @@ internal static class ConfigurationFunctions
         {
             if (!SupportsRuntime(configuration.Model) || string.IsNullOrWhiteSpace(media.Path)
                 || !slots.Add(media.Slot) || !HardwareModelFunctions.IsMediaCompatible(hardware, media.Category, media.Slot)
-                || media.Category == MediaCategory.Cassette)
+                || media.Category == MediaCategory.Tape)
                 throw new ArgumentException(nameof(configuration.Media));
         }
         var ports = new HashSet<int>();

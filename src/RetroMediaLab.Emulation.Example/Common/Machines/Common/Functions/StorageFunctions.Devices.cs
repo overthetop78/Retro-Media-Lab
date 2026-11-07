@@ -33,7 +33,7 @@ internal static partial class StorageSettingsFunctions
                 result.Add(new(slot, Cartridge: new(bool.TryParse(cartridge, out var enabled) && enabled, options)));
             else if (device.MediaType == EmulationMediaType.MemoryCard && (memoryCardPath is not null || options.Count > 0))
                 result.Add(new(slot, MemoryCardPath: memoryCardPath, Options: options));
-            else if (device.MediaType == EmulationMediaType.Cassette && options.Count > 0)
+            else if (device.MediaType == EmulationMediaType.Tape && options.Count > 0)
                 result.Add(new(slot, Options: options));
         }
         return result;

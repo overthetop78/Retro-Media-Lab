@@ -42,7 +42,7 @@ internal sealed class DiskImageWorkspaceController : IDisposable
     private readonly ExplorerPresentationController _explorerLoading;
     private readonly MediaImageExplorationService? _mediaExploration;
     private readonly MediaOpeningAnalysisService? _mediaOpeningAnalysis;
-    private readonly CassetteLoadingPresenter _cassetteLoading;
+    private readonly TapeLoadingPresenter _tapeLoading;
     private readonly DiskImageFileSelectionService _fileSelection;
     private readonly VisualizerLoadingController _visualizerLoading;
     private readonly Action<Exception, string, string, string> _showError;
@@ -94,7 +94,7 @@ internal sealed class DiskImageWorkspaceController : IDisposable
         _mediaVisualization = new MediaVisualizationController(visualizer, viewModel, face0Progress, face1Progress, visualizationProviders, localize);
         _scpVisualization = new ScpVisualizationController(visualizer, viewModel, face0Progress, face1Progress, inspector, scpLoader, cancellation, visualizationProviders, operationIsRunning, showError, localize);
         _explorerLoading = new ExplorerPresentationController( explorer, visualizer, AnalyzeOpeningAsync, cancellation, ApplyClassification, document => LastReadImage = document, mediaImage => _exploredMediaImage = mediaImage, showError, localize);
-        _cassetteLoading = new CassetteLoadingPresenter(explorer, visualizer, face0Progress, face1Progress, _mediaVisualization, ReportSharedProgress, localize);
+        _tapeLoading = new TapeLoadingPresenter(explorer, visualizer, face0Progress, face1Progress, _mediaVisualization, ReportSharedProgress, localize);
         _visualizerLoading = new VisualizerLoadingController(
             visualizer,
             getSettings,
@@ -276,7 +276,7 @@ internal sealed class DiskImageWorkspaceController : IDisposable
                 if (!cancellationToken.IsCancellationRequested
                     && _explorerLoading.CurrentOpeningResult?.Document.MediaKind == MediaKind.Tape)
                 {
-                    await _cassetteLoading.CompleteAsync(cancellationToken, shownName, _exploredMediaImage);
+                    await _tapeLoading.CompleteAsync(cancellationToken, shownName, _exploredMediaImage);
                 }
             }
             finally

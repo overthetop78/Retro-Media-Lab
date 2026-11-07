@@ -1,6 +1,6 @@
 namespace RetroMediaLab.MediaEngine.Images.Formats.Tape.Amstrad;
 
-/// <summary>Documented CPC firmware cassette record layout and standard timing values.</summary>
+/// <summary>Documented CPC firmware tape record layout and standard timing values.</summary>
 internal static class AmstradCpcTapeConstants
 {
     internal const string DecoderId = "amstrad-cpc-tape";

@@ -31,7 +31,7 @@
     - [x] Créer `src/RetroMediaLab.MediaEngine/Images/Formats/Tape/Audio/AudioTapeReader.cs` pour décoder WAV, MP3, FLAC, AAC et les autres formats fournis par Media Foundation vers la représentation séquentielle PCM existante.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Images/Reading/MediaRecognitionComposition.cs` pour enregistrer le lecteur audio commun à côté du lecteur WAV conservant sa structure RIFF.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Images/Formats/Tape/Audio/AudioTapeReader.cs` pour exposer son PCM en mémoire comme une source stockée compatible avec le writer WAV existant, sans modifier le writer.
-    - [x] Créer `src/RetroMediaLab.MediaEngine/Images/Formats/Tape/Amstrad/AmstradCpcTapeConstants.cs` avec les marqueurs, positions de champs, temporisations et paramètres CRC documentés du format cassette CPC.
+    - [x] Créer `src/RetroMediaLab.MediaEngine/Images/Formats/Tape/Amstrad/AmstradCpcTapeConstants.cs` avec les marqueurs, positions de champs, temporisations et paramètres CRC documentés du format tape CPC.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Images/Reading/Decoding/Sequential/Amstrad/AmstradCpcTapeDecoder.cs` pour décoder les blocs CPC depuis CDT/TZX ou PCM et conserver leurs vrais noms et métadonnées.
     - [x] Créer `src/RetroMediaLab.MediaEngine/Images/Writing/Encoding/Sequential/Amstrad/AmstradCpcTapeEncoder.cs` pour produire les signaux et blocs CPC destinés à CDT/TZX, WAV et VOC.
     - [x] Modifier `src/RetroMediaLab.MediaEngine/Images/Writing/Encoding/Sequential/Tzx/TzxSignalEncoder.cs` pour laisser l’encodage CPC au codec CPC qui écrit les temporisations et contrôles propres à cette machine.

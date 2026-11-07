@@ -11,7 +11,7 @@ internal static class MediaRuntimeFunctions
     {
         var result = new List<EmulationMediaDevice>
         {
-            new(EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette, MediaRuntimeConstants.TapeExtensions, RequiresMachineRecreation: true)
+            new(EmulationMediaSlot.Tape0, EmulationMediaType.Tape, MediaRuntimeConstants.TapeExtensions, RequiresMachineRecreation: true)
         };
         var floppyExtensions = configuration.Model switch
         {

@@ -11,7 +11,7 @@ using RetroMediaLab.MediaEngine.Interfaces.Reading;
 
 namespace RetroMediaLab.MediaEngine.Images.Formats.Tape.Voc;
 
-/// <summary>Reads the legacy 8-bit Creative Voice profile accepted by Caprice32 as CPC cassette audio.</summary>
+/// <summary>Reads the legacy 8-bit Creative Voice profile accepted by Caprice32 as CPC tape audio.</summary>
 public sealed class VocReader : IMediaImageReader
 {
     private const int HeaderLength = 26;

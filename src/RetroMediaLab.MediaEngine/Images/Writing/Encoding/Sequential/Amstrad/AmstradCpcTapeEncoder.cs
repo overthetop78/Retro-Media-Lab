@@ -31,7 +31,7 @@ public sealed class AmstradCpcTapeEncoder : ISequentialMediaEncoder
     public Task<SequentialMediaImageRepresentation> EncodeAsync(SequentialEncodeRequest request, CancellationToken cancellationToken = default)
     {
         if (!CanEncode(request))
-            throw new InvalidDataException("CPC cassette encoding requires one or more decoded file blocks of at most 2048 bytes.");
+            throw new InvalidDataException("CPC tape encoding requires one or more decoded file blocks of at most 2048 bytes.");
         cancellationToken.ThrowIfCancellationRequested();
 
         var records = BuildRecords(request.Blocks);

@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>Молода</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>Хоксадекмо</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>Зовнішнє застосування</value></data>
-  <data name="Explorer.Cassette"><value>Касета</value></data>
+  <data name="Explorer.Tape"><value>Касета</value></data>
   <data name="Explorer.InternalName"><value>Внутрішній опис</value></data>
   <data name="Explorer.BaudRates"><value>Швидкості</value></data>
   <data name="Explorer.Chunks"><value>Блоки</value></data>

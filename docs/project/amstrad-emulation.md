@@ -24,11 +24,11 @@ Le module expose un seul émulateur et ne persiste donc aucun choix artificiel d
 
 | Machine | Modèle Caprice32 | RAM | Clavier | Média principal |
 |---|---:|---:|---|---|
-| CPC 464 | `464` | 64 Kio | oui | cassette, disquette facultative |
+| CPC 464 | `464` | 64 Kio | oui | tape, disquette facultative |
 | CPC 664 | `664` | 64 Kio | oui | disquette |
 | CPC 6128 | `6128` | 128 Kio | oui | disquette |
-| CPC 464 Plus | `6128+ (experimental)` | 64 Kio | oui | disquette, cassette, cartouche |
-| CPC 6128 Plus | `6128+ (experimental)` | 128 Kio | oui | disquette, cassette, cartouche |
+| CPC 464 Plus | `6128+ (experimental)` | 64 Kio | oui | disquette, tape, cartouche |
+| CPC 6128 Plus | `6128+ (experimental)` | 128 Kio | oui | disquette, tape, cartouche |
 | GX4000 | `6128+ (experimental)` | 64 Kio | non | cartouche CPR |
 
 Le couple `cap32_model`/`cap32_ram` provient du catalogue matériel. Il n’est ni demandé à
@@ -37,7 +37,7 @@ la machine choisie reste la source de vérité.
 
 Caprice32 accepte les contenus DSK, M3U, CDT, TAP, VOC, CPR et SNA annoncés par son interface
 Libretro. Les périphériques exposés dépendent de la machine : la GX4000 n’affiche ni clavier,
-ni cassette, ni lecteur de disquette ; les CPC classiques et Plus ne reçoivent que leurs
+ni tape, ni lecteur de disquette ; les CPC classiques et Plus ne reçoivent que leurs
 périphériques matériels.
 
 ## Chaîne d’intégration
@@ -69,7 +69,7 @@ Data/Emulation/Machines/amstrad/Configurations/<configuration-id>/machine.json
 Les formats sont associés aux prises communes :
 
 - disquette : DSK et listes M3U ;
-- cassette : CDT, TAP et VOC ;
+- tape : CDT, TAP et VOC ;
 - cartouche : CPR ;
 - SNA : contenu de démarrage Caprice32, sans être présenté comme un périphérique matériel.
 

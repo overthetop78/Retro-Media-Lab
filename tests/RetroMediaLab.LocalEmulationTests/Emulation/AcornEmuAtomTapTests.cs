@@ -43,7 +43,7 @@ public sealed class AcornEmuAtomTapTests
         var document = AtomTapReader.ReadBytes(new MediaSourceDescriptor("memory.tap", []), File("A", 0x2900, 0x2900, [0xa5]));
         var representation = (SequentialMediaImageRepresentation)document.Representation;
         var positions = new Dictionary<long, int>();
-        var signal = await CassetteSignalFunctions.UefAsync(representation, positions, default);
+        var signal = await TapeSignalFunctions.UefAsync(representation, positions, default);
         Assert.Equal(48000, signal.SampleRate);
         var dataSegments = representation.Segments!.Where(segment => segment.Kind == SequentialSegmentKind.DataBlock).ToArray();
         Assert.Equal(2, positions.Count);

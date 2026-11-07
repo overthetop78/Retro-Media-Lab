@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>音频</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>十六进制</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>外部应用程序</value></data>
-  <data name="Explorer.Cassette"><value>盒式磁带</value></data>
+  <data name="Explorer.Tape"><value>盒式磁带</value></data>
   <data name="Explorer.InternalName"><value>内部说明</value></data>
   <data name="Explorer.BaudRates"><value>速率</value></data>
   <data name="Explorer.Chunks"><value>块</value></data>

@@ -7,16 +7,16 @@ namespace RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Services;
 public sealed partial class ElectronUla : IElectronUla
 {
     private readonly ElectronVideo _video;
-    private readonly IElectronCassettePins _cassette;
+    private readonly IElectronTapePins _tape;
     private byte _status;
     private byte _interrupts;
     private int _comms;
     private readonly ElectronCommsCounter _commsCounter = new();
 
-    public ElectronUla(ElectronVideo video, IElectronCassettePins cassette)
+    public ElectronUla(ElectronVideo video, IElectronTapePins tape)
     {
         _video = video;
-        _cassette = cassette;
+        _tape = tape;
         Reset(true);
     }
 
@@ -98,7 +98,7 @@ public sealed partial class ElectronUla : IElectronUla
     {
         TickBus();
         TickSerial();
-        _cassette.Tick(Motor);
+        _tape.Tick(Motor);
         _video.Tick();
         if (_video.ClockInterruptEdge) _status |= C.ClockInterrupt;
         if (_video.DisplayEndInterruptEdge) _status |= C.DisplayEndInterrupt;

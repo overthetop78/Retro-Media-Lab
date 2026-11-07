@@ -27,14 +27,14 @@ internal sealed partial class BbcMicroMachine
             Audio = _audio.CaptureState(),
             Video = Video.CaptureState(),
             Serial = _serial.CaptureState(),
-            Cassette = _cassette.CaptureState(),
+            Tape = _tape.CaptureState(),
             Disks = _disks.CaptureState(),
             Econet = _econet.CaptureState(),
             MasterClockWakeTick = _masterClockWakeTick,
             WinchesterWakeTick = _winchesterWakeTick,
             AdcWakeTick = _adcWakeTick,
             FireInputs = _fireInputs,
-            CassetteClockRequired = _cassetteClockRequired,
+            TapeClockRequired = _tapeClockRequired,
             Latch = _latch,
             SoundDataBus = _soundDataBus,
             KeyboardColumn = _keyboardColumn,
@@ -65,14 +65,14 @@ internal sealed partial class BbcMicroMachine
         _audio.RestoreState(saved.Audio);
         Video.RestoreState(saved.Video);
         _serial.RestoreState(saved.Serial);
-        _cassette.RestoreState(saved.Cassette);
+        _tape.RestoreState(saved.Tape);
         _disks.RestoreState(saved.Disks);
         _econet.RestoreState(saved.Econet);
         _masterClockWakeTick = saved.MasterClockWakeTick;
         _winchesterWakeTick = saved.WinchesterWakeTick;
         _adcWakeTick = saved.AdcWakeTick;
         _fireInputs = saved.FireInputs;
-        _cassetteClockRequired = saved.CassetteClockRequired;
+        _tapeClockRequired = saved.TapeClockRequired;
         _latch = saved.Latch;
         _soundDataBus = saved.SoundDataBus;
         _keyboardColumn = saved.KeyboardColumn;

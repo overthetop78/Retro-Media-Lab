@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>ハイレスアーティファクター</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>SIOアクセラレーション</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>カセットからブーツ</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>カセットからブーツ</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>オペレーティングシステムのリビジョン</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>フエ</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>飽和</value></data>

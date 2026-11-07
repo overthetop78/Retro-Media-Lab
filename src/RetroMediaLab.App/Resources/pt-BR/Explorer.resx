@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>Áudio</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>Hexadecimal</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>Aplicação externa</value></data>
-  <data name="Explorer.Cassette"><value>Fita cassete</value></data>
+  <data name="Explorer.Tape"><value>Fita cassete</value></data>
   <data name="Explorer.InternalName"><value>Descrição interna</value></data>
   <data name="Explorer.BaudRates"><value>Velocidades</value></data>
   <data name="Explorer.Chunks"><value>Blocos</value></data>

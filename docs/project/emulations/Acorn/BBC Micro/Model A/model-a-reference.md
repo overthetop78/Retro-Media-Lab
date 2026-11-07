@@ -33,7 +33,7 @@ Correction du raccordement physique : la fabrique AcornEmu transmettait encore n
 
 Les 85 contrôles Acorn passent, dont les nouveaux contrôles audio autonomes : mesure des passages par zéro pour 500 Hz, 440,140845 Hz et 122,0703125 Hz à ±0,06 Hz, exactement 44 100 échantillons en une seconde malgré des prélèvements non alignés, silence des voies coupées, indépendance des trois tons, atténuation de 2 dB, reproductibilité et distinction des deux bruits, période du bruit périodique, raccordement par le VIA, disposition mono, horodatages et purge des blocs. Les ROM, données et sorties des tests sont synthétiques ; aucun firmware utilisateur ni périphérique externe n'est requis.
 
-L'intégration PCM est une moyenne temporelle à la cadence CPU, pas une reproduction complète de l'amplificateur et du haut-parleur analogiques. Le délai exact de capture du bus, la ligne READY du PSG et les limites électriques des écritures trop rapides ne sont pas encore simulés. La synthèse vocale optionnelle, les entrées audio externes et la cassette ne sont pas ajoutées par ce travail. Aucun sélecteur « original/transcodé » n'est nécessaire pour ce générateur analogique.
+L'intégration PCM est une moyenne temporelle à la cadence CPU, pas une reproduction complète de l'amplificateur et du haut-parleur analogiques. Le délai exact de capture du bus, la ligne READY du PSG et les limites électriques des écritures trop rapides ne sont pas encore simulés. La synthèse vocale optionnelle, les entrées audio externes et la tape ne sont pas ajoutées par ce travail. Aucun sélecteur « original/transcodé » n'est nécessaire pour ce générateur analogique.
 
 Sources consultées : [Acorn Hardware Guide, §3.17](https://acorn.huininga.nl/pub/mirrors/ftp.nvg.org/pub/bbc/doc/A%20Hardware%20Guide%20for%20the%20BBC%20Microcomputer/bbc_hw_03.htm), [fiche TI SN76489AN](https://map.grauw.nl/resources/sound/texas_instruments_sn76489an.pdf), [MAME, SN76496 et variantes](https://github.com/mamedev/mame/blob/master/src/devices/sound/sn76496.cpp), [MAME, configuration BBC](https://github.com/mamedev/mame/blob/master/src/mame/acorn/bbcb.cpp), [jsbeeb, soundchip.js](https://github.com/mattgodbolt/jsbeeb/blob/master/src/soundchip.js) et [via.js](https://github.com/mattgodbolt/jsbeeb/blob/master/src/via.js), notamment couplage continu et bus lent. jsbeeb emploie une représentation du bruit sur quinze bits ; les paramètres ci-dessus suivent la représentation avec étages de sortie de MAME.
 
@@ -123,7 +123,7 @@ La fiche de collection du [Centre for Computing History](https://www.computinghi
 | Clavier | QWERTY à 73 touches, dont dix fonctions f0–f9. |
 | Son | Trois voix tonales et une voie de bruit, haut-parleur interne. |
 | Stockage de base | Magnétophone externe, 300 ou 1 200 bauds, commande du moteur. |
-| Sorties installées | Téléviseur UHF canal 36, vidéo composite BNC ; cassette DIN 7 broches. |
+| Sorties installées | Téléviseur UHF canal 36, vidéo composite BNC ; tape DIN 7 broches. |
 | Modes MOS accessibles avec 16 Kio | 4, 5, 6 et 7. |
 | Alimentation | Intégrée dans le boîtier. |
 
@@ -134,7 +134,7 @@ Source : [Acorn, Service Manual, §1.2.1](https://acorn.huininga.nl/pub/unsorted
 | Fonction | État de base | Conséquence pour la description du modèle |
 | --- | --- | --- |
 | Sortie RGB | Connecteur non monté. | Le traitement interne RGB ne signifie pas qu'une prise RGB est disponible. |
-| RS423 | Connectique et adaptation électrique absentes. | L'ACIA reste utilisée pour la cassette. |
+| RS423 | Connectique et adaptation électrique absentes. | L'ACIA reste utilisée pour la tape. |
 | Interface analogique/joysticks | Absente. | Pas de joysticks analogiques natifs sans extension. |
 | VIA utilisateur, imprimante parallèle et user port | Absents. | Ne pas exposer leurs registres comme un périphérique équipé. |
 | Connecteurs inférieurs 1 MHz et Tube | Absents. | Les coprocesseurs et périphériques correspondants supposent une mise à niveau. |
@@ -231,7 +231,7 @@ Les rôles reposent sur les [déclarations de ROM MAME](https://github.com/mamed
 
 ### Ce qui ne constitue pas une ROM de base du Model A
 
-Une ROM DFS apporte le logiciel de fichiers disque, pas un lecteur ni son contrôleur. Une ROM réseau exige la configuration réseau correspondante. Un fichier cassette contient le média, pas le système. Les autres modèles disposent d'images système propres : les [ROM B+, Master et Compact trouvées](../../acornemu-references.md#dépôt-b-em) sont documentées séparément des deux ROM du Model A.
+Une ROM DFS apporte le logiciel de fichiers disque, pas un lecteur ni son contrôleur. Une ROM réseau exige la configuration réseau correspondante. Un fichier tape contient le média, pas le système. Les autres modèles disposent d'images système propres : les [ROM B+, Master et Compact trouvées](../../acornemu-references.md#dépôt-b-em) sont documentées séparément des deux ROM du Model A.
 
 ## Du fichier ROM à la machine en fonctionnement
 
@@ -258,8 +258,8 @@ Pour suivre les routines instruction par instruction, le [réassemblage MOS comm
 | Caractère affiché | Programme → service MOS → mémoire écran et registres → CRTC/ULA/SAA5050 → image produite. |
 | Effet graphique direct | Programme → RAM écran ou registres vidéo ; le passage par les fonctions MOS n'est pas obligatoire. |
 | Note sonore | Programme/MOS → bus lent du VIA et validation du PSG → compteurs et mélange sonore → sortie audio. |
-| Réception cassette | Média et moteur → signal cassette → ULA série/ACIA → statut et interruption → lecture des données par le CPU. |
-| Enregistrement cassette | CPU/MOS → données et commandes ACIA/ULA → signal et moteur → média de destination. |
+| Réception tape | Média et moteur → signal tape → ULA série/ACIA → statut et interruption → lecture des données par le CPU. |
+| Enregistrement tape | CPU/MOS → données et commandes ACIA/ULA → signal et moteur → média de destination. |
 | Changement de banque | Écriture CPU → sélection ROM lorsque le montage le permet → lectures suivantes dans la banque sélectionnée. |
 | Synchronisation | Horloges → compteurs vidéo, timers, son et série → événements matériels → CPU ou production de sorties. |
 
@@ -275,7 +275,7 @@ Les chemins suivants sont relatifs à `src/RetroMediaLab.Emulation.Acorn/`. Leur
 | `Common/Services/Engine.cs` | Moteur commun du module : configuration, sélection d'adaptateur et création du runtime selon les services fournis par l'hôte. |
 | `Common/Dictionaries/EmulatorCatalog.cs` | Obtient les adaptateurs par le service Common de découverte, les identifie et filtre leurs modèles compatibles. |
 | `Common/Machines/BbcMicro/Constants/ModelConstants.cs` | Identifiants et valeurs descriptives des modèles BBC Micro, utilisés par leur catalogue. |
-| `Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs` | Décrit déjà `BbcMicroModelA`, avec 16 Kio, 6502A, clavier, cassette et catégories de firmware système/BASIC. Cela décrit le matériel, pas un cœur Model A exécutable. |
+| `Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs` | Décrit déjà `BbcMicroModelA`, avec 16 Kio, 6502A, clavier, tape et catégories de firmware système/BASIC. Cela décrit le matériel, pas un cœur Model A exécutable. |
 | `Common/Machines/BbcMicro/Dictionaries/KeyboardDictionary.cs` | Données de clavier BBC Micro utilisées par les réglages d'entrée de la famille. |
 | `Common/Machines/BbcMicro/Functions/BbcMicroInputSettingsFunctions.cs` | Construction des réglages d'entrée spécifiques aux machines BBC Micro à partir des données existantes. |
 | `Common/Interfaces/IEmulatorAdapter.cs` | Contrat local réunissant les facettes de configuration, création, capacités, firmware, médias et entrées de l'adaptateur. |
@@ -313,7 +313,7 @@ La découpe distingue les composants réutilisables, leurs connexions sur la car
 | SAA5050 | Caractères, mosaïques et attributs télétexte. | Flux de caractères, synchronisations et sortie vidéo. |
 | PSG | Périodes, atténuation, bruit et évolution des compteurs. | Validation par le bus lent, horloge et tampon audio produit. |
 | Clavier | Matrice et touches pressées/relâchées. | Entrées communes traduites, balayage VIA et reset BREAK séparé. |
-| ACIA et ULA série | Registres, cadences, statut, porteuse, moteur et interruptions. | CPU, horloges, cassette et IRQ. |
+| ACIA et ULA série | Registres, cadences, statut, porteuse, moteur et interruptions. | CPU, horloges, tape et IRQ. |
 | Modèle A | Présence des composants, configuration ROM/RAM et câblage. | Assemblage des éléments communs ; différences avec le futur Model B. |
 | Adaptation du cœur | Exécution, entrées, médias, sorties et sérialisation. | `IEmulatorCore` et services Common déjà présents. |
 
@@ -376,7 +376,7 @@ Le fichier existant `Common/Machines/Common/Enums/CoreEnums.cs` ajoute `AcornEmu
 | Télétexte | Premier rendu lisible à partir des glyphes bitmap contenus dans la ROM MOS externe. Les arrondis, la double hauteur, les effets de maintien et tous les timings SAA5050 restent à implémenter. |
 | Horloges | Cadence nominale de 39 936 cycles CPU par frame. Les accès lents 1 MHz et les lectures transitoires exactes ne sont pas encore reproduits. |
 | VIA | Ports, principaux timers et interruptions utiles au démarrage ; registre à décalage, modes avancés et détails des fronts à compléter. |
-| Son et cassette | PSG mono émulé et transmis par Common (voir section audio). Cassette UEF/CSW/WAV/RAW lue et enregistrée par ACIA/ULA (voir section stockage). |
+| Son et tape | PSG mono émulé et transmis par Common (voir section audio). Tape UEF/CSW/WAV/RAW lue et enregistrée par ACIA/ULA (voir section stockage). |
 | États sauvegardés | Désactivés tant que la sérialisation de tous les composants n'est pas implémentée. |
 
 ### Vérifications effectuées
@@ -393,7 +393,7 @@ Référence CPU utilisée : [6502_65C02_functional_tests de Klaus Dormann](https
 | --- | --- |
 | MAME `84981cc15cfc1429e48f098d80c6dd97bc82a0bc` | `src/mame/acorn/bbcb.cpp` : carte `bbca_mem`, matériel `bbca`, vecteurs de ROM et raccordement VIA. `bbc_kbd.cpp` : coordonnées des lignes/colonnes et liaison BREAK séparée. |
 | B-Em `a76c3655140a9fc3c70ecef25660932e0890b1e5` | `src/6502.c` : alias de la RAM Model A. `src/sysvia.c` : bus lent sur port A, verrou IC32 sur port B, et inversion spéciale de CA2 pour OS 0.10 ; cette dernière appartient au futur support de cette variante. `b-em.cfg` : associations de ROM ; certains profils du dépôt activent des extensions, donc leur nom seul ne définit pas un Model A standard. |
-| b2-libretro `9793f6a8040c416d147003cada29363b955b54e7` | `src/beeb/src/type.cpp` : Model B à 32 768 octets et séparation des types. `BBCMicro.h` : cœur, mémoire, entrée et fonctions de machine. `src/libretro/core.cpp` : adaptation au frontal, médias disques et limites cassette/états déjà consignées. |
+| b2-libretro `9793f6a8040c416d147003cada29363b955b54e7` | `src/beeb/src/type.cpp` : Model B à 32 768 octets et séparation des types. `BBCMicro.h` : cœur, mémoire, entrée et fonctions de machine. `src/libretro/core.cpp` : adaptation au frontal, médias disques et limites tape/états déjà consignées. |
 | jsbeeb `801dc90317514cb6a35500abda5abaf2f9fbc8aa` | `src/models.js` : distinction des composants et paramètres de modèle. `src/video.js` : ULA et palette ; le stock décode A0 pour distinguer contrôle/palette. Les extensions VideoNuLA présentes dans cette source ne sont pas des composants du Model A d'origine. |
 
 Ces références complètent les tableaux de registres et de branchements déjà conservés ici et dans le document BBC Micro. Elles indiquent les comportements retenus, sans prétendre que tous les détails de ces émulateurs sont déjà portés dans le premier jalon.
@@ -405,13 +405,13 @@ Le build ciblé a réussi avec `scripts/local-building.cmd --building=debug --mo
 - Créer une machine **BBC Micro Model A** et sélectionner **AcornEmu**.
 - Dans les réglages ROM, choisir les fichiers **MOS 1.20** et **BASIC II** externes dont les téléchargements figurent plus haut.
 - Enregistrer la configuration et lancer la machine ; attendre l'invite BASIC, puis essayer une commande comme `PRINT 42`.
-- Le premier jalon ne demande pas de cassette pour démarrer. Les retours de test guideront les étapes suivantes.
+- Le premier jalon ne demande pas de tape pour démarrer. Les retours de test guideront les étapes suivantes.
 
-## Cassette et logiciels
+## Tape et logiciels
 
-Le lecteur est externe ; le matériel interne effectue les échanges série et la commande moteur. Une configuration cassette doit conserver le média inséré, sa position, le moteur, le signal entrant, la porteuse et l'état ACIA/ULA. Le [fonctionnement commun série/cassette](../bbc-micro-architecture.md#série-et-cassette) précise les composants concernés.
+Le lecteur est externe ; le matériel interne effectue les échanges série et la commande moteur. Une configuration tape doit conserver le média inséré, sa position, le moteur, le signal entrant, la porteuse et l'état ACIA/ULA. Le [fonctionnement commun série/tape](../bbc-micro-architecture.md#série-et-tape) précise les composants concernés.
 
-Le manuel BBC décrit notamment `*TAPE`, `CHAIN`, `LOAD`, `SAVE` et `*CAT`. Ces commandes permettent de définir des observations attendues depuis le système réel ; elles ne prouvent pas qu'un fichier est compatible 16 Kio. [BBC User Guide, cassette et systèmes de fichiers](https://www.bbcmicrobot.com/docs/BBC_User_Guide.pdf).
+Le manuel BBC décrit notamment `*TAPE`, `CHAIN`, `LOAD`, `SAVE` et `*CAT`. Ces commandes permettent de définir des observations attendues depuis le système réel ; elles ne prouvent pas qu'un fichier est compatible 16 Kio. [BBC User Guide, tape et systèmes de fichiers](https://www.bbcmicrobot.com/docs/BBC_User_Guide.pdf).
 
 Un média destiné à un BBC Micro peut exiger 32 Kio, un MOS particulier, un disque ou une extension. La mention « BBC Micro » ne garantit donc pas son fonctionnement sur Model A. Le conteneur UEF et ses durées sont décrits [au niveau Acorn](../../acornemu-references.md#médias--ce-qui-peut-être-commun).
 
@@ -427,7 +427,7 @@ Cette table traduit les caractéristiques recherchées en informations à pouvoi
 | ROM | Version MOS, version BASIC, disposition et circuit de sélection présents. |
 | Vidéo | Circuit CRTC/ULA/télétexte et type de sortie correspondant au montage. |
 | Son | PSG et haut-parleur ; parole uniquement avec l'extension correspondante. |
-| Stockage | Cassette ; autres supports seulement avec leur matériel. |
+| Stockage | Tape ; autres supports seulement avec leur matériel. |
 | Clavier | Matrice BBC, relâchement des touches, BREAK et combinaisons de reset. |
 | Contrôleurs | Clavier de base ; ports additionnels liés à une extension réellement décrite. |
 | Souris | Aucun périphérique standard identifié pour le Model A d'origine dans les sources consultées. |
@@ -443,9 +443,9 @@ Ces observations découlent de la documentation et restent à exécuter sur Acor
 | Clavier | Matrice, touches maintenues, verrouillages, interruption clavier et reset. |
 | Vidéo | Modes 4–7, couleurs, curseur, défilement et attributs télétexte. |
 | Son | Trois tonalités indépendantes, bruit, niveaux, commandes successives et enveloppes MOS. |
-| Cassette | Lecture et écriture à chaque débit, arrêt moteur, reprise et erreurs de réception. |
+| Tape | Lecture et écriture à chaque débit, arrêt moteur, reprise et erreurs de réception. |
 | Temps | Timers VIA, synchronisation vidéo et accès lents comparés à une référence. |
-| État | Reprise cohérente au milieu d'une image, d'un son ou d'un transfert cassette. |
+| État | Reprise cohérente au milieu d'une image, d'un son ou d'un transfert tape. |
 
 ## Partir du Model B de b2-libretro
 
@@ -458,7 +458,7 @@ Le type B du port utilise explicitement 32 768 octets de RAM dans [type.cpp](htt
 | RAM de 32 Kio et pagination | Représenter les 16 Kio physiques, leurs alias et l'adressage vidéo correspondant. |
 | Périphériques supplémentaires | Reproduire les réponses du modèle non équipé : VIA utilisateur, ADC, disque et autres extensions selon la configuration réelle. |
 | ROM et sélection latérale | Choisir les images et le montage du Model A, avec traitement distinct de MOS 0.10. |
-| Chargement de disquettes | Prévoir le chemin cassette du Model A ; le port b2 consulté ne fournit pas cette prise en charge. |
+| Chargement de disquettes | Prévoir le chemin tape du Model A ; le port b2 consulté ne fournit pas cette prise en charge. |
 | Réglages vidéo | Conserver le matériel programmable commun, avec les modes et réservations mémoire accessibles sur 16 Kio. |
 
 Cette table est une **déduction d'adaptation** à partir des différences matérielles déjà sourcées dans cette fiche et du port étudié. Elle ne signifie pas que tous ces changements se limitent à des paramètres existants dans b2. Elle ne choisit pas non plus de transformer b2 en AcornEmu : b2 sert ici à comprendre et comparer les traitements communs.
@@ -472,7 +472,7 @@ Cette table est une **déduction d'adaptation** à partir des différences maté
 | Pagination ROM de base | Le montage physique et MOS 0.10 diffèrent du profil paginé. Vérifier S12/S13, IC76 et la disposition exacte des ROM. |
 | Reset | Distinguer état électrique à froid, BREAK et actions supplémentaires du MOS avec CTRL-BREAK. |
 | Variantes des circuits | Identifier les marquages CRTC, VIA et PSG sur la carte de référence. |
-| Cassette bas niveau | Documenter complètement blocs, CRC, leader, erreurs et tolérances depuis les routines MOS et la documentation cassette. |
+| Tape bas niveau | Documenter complètement blocs, CRC, leader, erreurs et tolérances depuis les routines MOS et la documentation tape. |
 | Connecteurs | Relever les brochages depuis le schéma ; ne pas appliquer celui du Model B à un connecteur absent. |
 | Mesures physiques et chronologie commerciale | Dimensions, poids, prix par date et consommation ne sont pas consolidés ici : les fiches génériques consultées divergent et ces chiffres ne définissent pas le cœur matériel. |
 
@@ -568,25 +568,25 @@ Le chargement n'exige plus une empreinte répertoriée. Il extrait uniquement en
 Les 31 cas ciblés passent, dont le contrôle temporaire de visibilité et d'identification de tous les fichiers locaux. Les tests utilisant les ROM externes ont été supprimés après utilisation. Les vérifications permanentes sont autonomes et portent sur les en-têtes synthétiques, les choix inconnus et le découpage des formats matériels.
 
 
-## Inventaire cassette local — 25 octobre 2026
+## Inventaire tape local — 25 octobre 2026
 
 Dossier consulté en lecture seule : F:\Retro\ef_tosec_backup_2024. Les répertoires Acorn BBC contiennent 95 fichiers UEF et 2 WAV : Ascend (2022-05-30)(Inufuto)(JP).wav et Ruptus (2022-06-02)(Inufuto)(JP).wav. Le total est 97 images, et non 97 UEF. Les UEF contiennent 9 770 chunks 0100 (données implicites), 10 274 chunks 0110 (porteuse), 494 chunks 0112 (silence), 93 chunks 0000 (origine) et 2 chunks 0005 (machine cible). Les sources UEF sont brutes ou gzip ; les lecteurs existants traitent ces deux emballages. Aucun fichier utilisateur n'est modifié.
 
-La collection contient aussi des UEF et WAV Electron et Atom, ainsi que 14 CSW et des TAP Atom. Ces formats ou emballages ne prouvent pas la compatibilité avec le BBC Model A : le protocole, la machine et la RAM requise restent distincts du type de fichier. Les images SSD, DSD, ADL et les programmes BIN ne sont pas des images cassette à monter dans ce lecteur.
+La collection contient aussi des UEF et WAV Electron et Atom, ainsi que 14 CSW et des TAP Atom. Ces formats ou emballages ne prouvent pas la compatibilité avec le BBC Model A : le protocole, la machine et la RAM requise restent distincts du type de fichier. Les images SSD, DSD, ADL et les programmes BIN ne sont pas des images tape à monter dans ce lecteur.
 
-## Lecteur cassette AcornEmu — 26 octobre 2026
+## Lecteur tape AcornEmu — 26 octobre 2026
 
-La prise cassette appartient au Model A ; le magnétophone externe se branche explicitement par Ajouter dans Stockage. Aucun lecteur externe n'est configuré par défaut. Le branchement `acornemu.cassette-connected` persiste même à vide. Retirer le lecteur supprime ce branchement et ses médias. Les images acceptées en lecture et enregistrement sont UEF, CSW, WAV et RAW ; leur conteneur ne garantit ni le protocole BBC, ni la compatibilité du programme avec les 16/32 Kio installés.
+La prise tape appartient au Model A ; le magnétophone externe se branche explicitement par Ajouter dans Stockage. Aucun lecteur externe n'est configuré par défaut. Le branchement `acornemu.tape-connected` persiste même à vide. Retirer le lecteur supprime ce branchement et ses médias. Les images acceptées en lecture et enregistrement sont UEF, CSW, WAV et RAW ; leur conteneur ne garantit ni le protocole BBC, ni la compatibilité du programme avec les 16/32 Kio installés.
 
 ### Réglages et utilisation
 
-Les réglages du périphérique Cassette sont décrits par `EmulationCassetteSettings` et présentés dans le dialogue de configuration du stockage existant.
+Les réglages du périphérique Tape sont décrits par `EmulationTapeSettings` et présentés dans le dialogue de configuration du stockage existant.
 
 | Réglage | Fonction |
 | --- | --- |
 | Débit automatique, 300 ou 1 200 bauds | Automatique suit le registre ACIA programmé par le MOS. Une valeur explicite impose le débit série ; elle reste indépendante de la cadence PCM. |
 | Lecture réelle | Le CPU et la bande avancent à leur cadence matérielle, avec les délais configurés et les bruits mécaniques activables. |
-| Lecture accélérée | Le matériel continue de décoder les bits ; le cœur peut exécuter jusqu'à 32 images matérielles par présentation pendant l'activité cassette. |
+| Lecture accélérée | Le matériel continue de décoder les bits ; le cœur peut exécuter jusqu'à 32 images matérielles par présentation pendant l'activité tape. |
 | Chargement direct | Les LOAD/CHAIN standard passant par OSFILE utilisent les blocs validés pour charger la RAM. Un chargeur personnalisé poursuit le parcours matériel accéléré. |
 | Vitesse de bande | 25 à 400 %, 100 % par défaut ; distincte du choix de débit et du mode de chargement. |
 | Multiplicateur d'avance/retour | 1 à 100, 20 par défaut ; déplacement temporisé en mode réel et immédiat dans les deux autres modes. |
@@ -594,7 +594,7 @@ Les réglages du périphérique Cassette sont décrits par `EmulationCassetteSet
 | Bruits mécaniques | Moteur, avance, retour, arrêt et éjection synthétisés seulement en mode réel. |
 | Protection en écriture | Bloque l'enregistrement indépendamment de l'attribut de lecture seule du fichier. |
 
-Après insertion, Play est prêt mais le MOS doit aussi commander le moteur. `*TAPE` choisit le système cassette ; `*CAT` lit le catalogue ; `CHAIN ""` charge et exécute le BASIC ; `*RUN` convient aux programmes machine prévus pour cette commande. Après Stop ou un déplacement, réactiver Play. FastForward et Rewind rejoignent les repères de blocs ; le repère précède la porteuse afin de laisser le récepteur se synchroniser. Les extrémités de bande restent accessibles lorsqu'aucun bloc suivant/précédent n'existe.
+Après insertion, Play est prêt mais le MOS doit aussi commander le moteur. `*TAPE` choisit le système tape ; `*CAT` lit le catalogue ; `CHAIN ""` charge et exécute le BASIC ; `*RUN` convient aux programmes machine prévus pour cette commande. Après Stop ou un déplacement, réactiver Play. FastForward et Rewind rejoignent les repères de blocs ; le repère précède la porteuse afin de laisser le récepteur se synchroniser. Les extrémités de bande restent accessibles lorsqu'aucun bloc suivant/précédent n'existe.
 
 REC ouvre le choix du chemin et du format. Une image absente est créée vide puis montée ; sélectionner une image existante conserve son contenu. Si le chemin et le profil RAW sont inchangés, la position courante est conservée. Changer le profil d'un RAW déjà monté le recharge depuis le début avec sa nouvelle interprétation. Après REC, `SAVE "NOM"` commande le moteur et transmet les données par l'ACIA. Le signal écrit remplace la zone parcourue et conserve les zones avant/après ; il prolonge la bande si nécessaire. La coupure moteur après SAVE, Stop, éjection et extinction déclenchent la sauvegarde des changements. Les écrivains utilisent la publication atomique commune ; une erreur de sauvegarde n'est pas traitée comme un succès.
 
@@ -602,9 +602,9 @@ Le voyant réutilise `FromLedStates`, `MediaActivity` et `FramePresented` exista
 
 ### RAW : emplacement des paramètres
 
-Le défaut est **48 000 Hz, mono, PCM signé 16 bits little-endian**. Un fichier RAW n'a pas d'en-tête ; ces valeurs décrivent son interprétation numérique, et non une fréquence native de la cassette analogique.
+Le défaut est **48 000 Hz, mono, PCM signé 16 bits little-endian**. Un fichier RAW n'a pas d'en-tête ; ces valeurs décrivent son interprétation numérique, et non une fréquence native de la tape analogique.
 
-- Lecture : configuration du lecteur Cassette, appliquée au prochain montage lorsque l'image ne porte pas déjà son propre profil.
+- Lecture : configuration du lecteur Tape, appliquée au prochain montage lorsque l'image ne porte pas déjà son propre profil.
 - Enregistrement : après le choix RAW dans REC, dialogue du profil de l'image. Le profil est conservé avec le média monté et réutilisé lors des sauvegardes.
 - Conversion : dialogues RAW d'entrée et de sortie dans le parcours de conversion existant ; les paramètres d'entrée restent distincts de ceux de sortie.
 
@@ -616,29 +616,29 @@ Les chemins suivants sont relatifs à `src/`. Dans les lignes Acorn, le préfixe
 
 | Fichier ou groupe | Rôle et liaisons |
 | --- | --- |
-| `RetroMediaLab.MediaEngine/Contracts/MediaCassetteSignal.cs` | Signal mono, cadence, repères et blocs validés avec métadonnées. Aucune adresse CPU exécutée dans MediaEngine. |
-| `RetroMediaLab.MediaEngine/Functions/CassetteSignalFunctions.cs` | Lecture des quatre conteneurs, rendu du signal UEF, écriture atomique par les écrivains existants/enregistrés. Les données avant/après enregistrement sont fournies par le magnétophone. |
-| `RetroMediaLab.MediaEngine/Contracts/CassettePcmProfile.cs`, `Functions/CassettePcmFunctions.cs` | Validation du profil RAW, normalisation du codage, conservation des canaux/précision, conversion demandée de cadence et d'encodage. |
+| `RetroMediaLab.MediaEngine/Contracts/MediaTapeSignal.cs` | Signal mono, cadence, repères et blocs validés avec métadonnées. Aucune adresse CPU exécutée dans MediaEngine. |
+| `RetroMediaLab.MediaEngine/Functions/TapeSignalFunctions.cs` | Lecture des quatre conteneurs, rendu du signal UEF, écriture atomique par les écrivains existants/enregistrés. Les données avant/après enregistrement sont fournies par le magnétophone. |
+| `RetroMediaLab.MediaEngine/Contracts/TapePcmProfile.cs`, `Functions/TapePcmFunctions.cs` | Validation du profil RAW, normalisation du codage, conservation des canaux/précision, conversion demandée de cadence et d'encodage. |
 | `RetroMediaLab.MediaEngine/Images/Formats/Tape/Csw/CswReader.cs`, `CswWriter.cs` | CSW 1/2 en lecture, RLE/Z-RLE ; écriture CSW 2 Z-RLE des durées de passages par zéro. |
 | `RetroMediaLab.MediaEngine/Images/Formats/Tape/Raw/RawTapeReader.cs`, `RawTapeWriter.cs` | Signal sans en-tête avec profil explicite. La reconnaissance automatique ne remplace pas un disque RAW déjà reconnu. |
 | `RetroMediaLab.MediaEngine/Images/Formats/Tape/Uef/UefReader.cs`, `UefWriter.cs`, `Tape/Wav/WavTapeReader.cs`, `WavTapeWriter.cs` | Lecteurs/écrivains de conteneurs existants réutilisés ; images vides valides pour REC. |
 | `RetroMediaLab.MediaEngine/Functions/FskSerialFunctions.cs` et `Images/Reading/Decoding/Sequential/Acorn/AcornTapeDecoder.cs` | Trames et positions avec cadences fractionnaires ; reconnaissance des blocs BBC à 300/1 200 bauds, y compris mélangés sur une bande. CRC conservés dans le résultat. |
-| `RetroMediaLab.MediaEngine/Functions/CassetteBlockFunctions.cs` | Réutilise les décodeurs existants pour la présentation des blocs et leurs repères. Le système de fichiers cassette existant fournit les entrées de l'explorateur. |
-| `RetroMediaLab.MediaEngine/Images/Conversion/Sequential/CassetteSignalRepresentationConverter.cs` | Conversion du signal entre UEF et PCM sans exiger des fichiers reconnus ; WAV/CSW/RAW utilisent ensuite les écrivains PCM. |
+| `RetroMediaLab.MediaEngine/Functions/TapeBlockFunctions.cs` | Réutilise les décodeurs existants pour la présentation des blocs et leurs repères. Le système de fichiers tape existant fournit les entrées de l'explorateur. |
+| `RetroMediaLab.MediaEngine/Images/Conversion/Sequential/TapeSignalRepresentationConverter.cs` | Conversion du signal entre UEF et PCM sans exiger des fichiers reconnus ; WAV/CSW/RAW utilisent ensuite les écrivains PCM. |
 | `RetroMediaLab.MediaEngine/Images/Conversion/Sequential/SequentialMediaConversionService.cs` et `Images/Writing/Encoding/Sequential/Acorn/AcornTapeEncoder.cs` | Conversion des blocs/fichiers reconnus par les protocoles existants, avec porteuses et silences nécessaires au chargement matériel. |
 | `RetroMediaLab.MediaEngine/Functions/MechanicalSoundFunctions.cs` | Synthèse des bruits de transport ; aucune fenêtre, aucun thread audio ni fichier sonore externe détenu. |
-| `RetroMediaLab.MediaEngine/Interfaces/IMediaRuntimePreparation.cs`, `Services/MediaRuntimePreparationService.cs` | Accès commun à la lecture/écriture cassette, aux formats et aux sons. |
-| `RetroMediaLab.Emulation/Contracts/EmulationCassetteSignal.cs`, `EmulationCassetteSettings.cs`, `EmulationCassettePcmSettings.cs` | Contrats et descriptions de réglages génériques pour les émulateurs internes. |
+| `RetroMediaLab.MediaEngine/Interfaces/IMediaRuntimePreparation.cs`, `Services/MediaRuntimePreparationService.cs` | Accès commun à la lecture/écriture tape, aux formats et aux sons. |
+| `RetroMediaLab.Emulation/Contracts/EmulationTapeSignal.cs`, `EmulationTapeSettings.cs`, `EmulationTapePcmSettings.cs` | Contrats et descriptions de réglages génériques pour les émulateurs internes. |
 | `RetroMediaLab.Emulation/Interfaces/IEmulationMediaProcessing.cs`, `Services/EmulationMediaProcessingService.cs` | Relais vers MediaEngine ; aucun type MediaEngine exposé au module. |
-| `Common/Machines/BbcMicro/Functions/CassetteFunctions.cs` | Passage du BBC Common par le service Emulation, avec protocole `acorn-bbc`. |
-| `Common/Interfaces/IEmulatorCassetteTransport.cs`, `Common/Services/Machine.Cassette.cs` | Commandes transport par la file du cœur, état et activité vers les interfaces déjà utilisées par App. |
+| `Common/Machines/BbcMicro/Functions/TapeFunctions.cs` | Passage du BBC Common par le service Emulation, avec protocole `acorn-bbc`. |
+| `Common/Interfaces/IEmulatorTapeTransport.cs`, `Common/Services/Machine.Tape.cs` | Commandes transport par la file du cœur, état et activité vers les interfaces déjà utilisées par App. |
 | `Emulators/AcornEmu/Services/Acia6850.cs` | Réception et émission série temporisées, registre de contrôle, parité, bits d'arrêt, dépassement et IRQ. |
-| `Emulators/AcornEmu/Machines/BbcMicro/Common/Constants/CassetteConstants.cs`, `Services/Cassette.cs` | Horloges BBC, moteur, modulation/démodulation, position, latences, transport, zone enregistrée et protection. État en mémoire, aucun fichier ouvert conservé. |
-| `Emulators/AcornEmu/Machines/BbcMicro/Common/Functions/CassetteFunctions.cs` | Chargement direct MOS partagé BBC : validation des blocs et de la destination RAM avant copie et consommation de bande. |
+| `Emulators/AcornEmu/Machines/BbcMicro/Common/Constants/TapeConstants.cs`, `Services/Tape.cs` | Horloges BBC, moteur, modulation/démodulation, position, latences, transport, zone enregistrée et protection. État en mémoire, aucun fichier ouvert conservé. |
+| `Emulators/AcornEmu/Machines/BbcMicro/Common/Functions/TapeFunctions.cs` | Chargement direct MOS partagé BBC : validation des blocs et de la destination RAM avant copie et consommation de bande. |
 | `Emulators/AcornEmu/Machines/BbcMicro/ModelA/Services/ModelAMachine.cs` | Câblage ACIA FE08–FE0F, ULA FE10–FE17, IRQ, horloge CPU et appel du chargement direct partagé. |
 | `Emulators/AcornEmu/Services/EmulatorCore.cs` | Montage, paramètres par image, modes de lecture, mélange des bruits, sauvegarde et actualisation des repères après écriture. |
 | `Emulators/AcornEmu/Factories/AcornEmuMachineFactory.cs` | Lecteur optionnel, formats et champs de réglage, stockage de configuration et relais des voyants communs. |
-| `RetroMediaLab.App/Controllers/Emulation/Storage/EmulationStorageSettingsController.cs` | Ouvre le dialogue existant pour les paramètres d'un lecteur cassette. |
+| `RetroMediaLab.App/Controllers/Emulation/Storage/EmulationStorageSettingsController.cs` | Ouvre le dialogue existant pour les paramètres d'un lecteur tape. |
 | `RetroMediaLab.App/Views/Controls/Emulation/Machine/MachineController.cs` | Choix REC du format et profil RAW, création/montage, commandes de transport existantes. Annulation avant modification du média. |
 | `RetroMediaLab.App/Controllers/MainWindow/ConversionTabController.cs`, `Services/Conversion/ConversionBatchExecutor.cs` | Sélection et transmission des paramètres RAW d'entrée/sortie pour les conversions. |
 
@@ -646,7 +646,7 @@ Le module accède uniquement à Emulation. MediaEngine prépare et écrit les co
 
 ### Signal, formats et limites précises
 
-Les tons cassette BBC sont 1 200/2 400 Hz. L'horloge ACIA 19 200 Hz et ses diviseurs donnent notamment 300/1 200 bauds ; ce débit est distinct des 48 000 échantillons/seconde du signal UEF et des 44 100 échantillons/seconde de la sortie audio du PSG. Les fractions de cadence sont conservées à 22,05 et 44,1 kHz. Le bit 7 de l'ULA commande le moteur et le bit 6 choisit RS423. Le démodulateur produit les données et la détection de porteuse ; en lecture matérielle, le MOS interprète ensuite les blocs et leurs CRC.
+Les tons tape BBC sont 1 200/2 400 Hz. L'horloge ACIA 19 200 Hz et ses diviseurs donnent notamment 300/1 200 bauds ; ce débit est distinct des 48 000 échantillons/seconde du signal UEF et des 44 100 échantillons/seconde de la sortie audio du PSG. Les fractions de cadence sont conservées à 22,05 et 44,1 kHz. Le bit 7 de l'ULA commande le moteur et le bit 6 choisit RS423. Le démodulateur produit les données et la détection de porteuse ; en lecture matérielle, le MOS interprète ensuite les blocs et leurs CRC.
 
 UEF lit les données implicites 0100, explicites 0102, définies 0104, Atom 0105, porteuses 0110/0111, silences 0112/0116, fréquence 0113, cycles de sécurité 0114, phase 0115 et débit 0117. Le chunk Atom n'affirme pas la compatibilité d'un programme Atom avec le BBC. Les autres chunks de signal non interprétés restent explicitement refusés ; les données multiplexées 0101 et toutes les protections propriétaires ne sont pas annoncées comme prises en charge. La formule historique du gap entier est `1/(2 × n × fréquence de base)`.
 
@@ -656,20 +656,20 @@ Le chargement direct exige des blocs complets, CRC valides, nom/numéros cohére
 
 ### Validation du 26 octobre 2026
 
-Les 35 contrôles ciblés cassette ont réussi : lecture/écriture des quatre conteneurs, images vides, profils RAW, conservation des bits PCM 24 bits, exploration des fichiers BBC, conversions de blocs et de signaux sans fichiers reconnus, bandes mêlant 300/1 200 bauds, trames UEF explicites/définies, enregistrement matériel, protection, latences et chargement direct synthétique. Les tests temporaires et leurs fichiers ont ensuite été supprimés ; les 77 contrôles AcornEmu conservés et les 13 contrôles existants de compatibilité séquentielle passent après recompilation.
+Les 35 contrôles ciblés tape ont réussi : lecture/écriture des quatre conteneurs, images vides, profils RAW, conservation des bits PCM 24 bits, exploration des fichiers BBC, conversions de blocs et de signaux sans fichiers reconnus, bandes mêlant 300/1 200 bauds, trames UEF explicites/définies, enregistrement matériel, protection, latences et chargement direct synthétique. Les tests temporaires et leurs fichiers ont ensuite été supprimés ; les 77 contrôles AcornEmu conservés et les 13 contrôles existants de compatibilité séquentielle passent après recompilation.
 
-`scripts/local-building.cmd --building=debug --modules=acorn` a terminé avec succès. L'exécutable est `F:\Retro Media Lab\build\Debug\Retro Media Lab\retromedialab.exe`, avec Acorn demandé et Example fourni automatiquement par le script. Cette validation synthétique ne remplace pas l'essai utilisateur d'un programme réel. Aucun commit cassette n'a été créé.
+`scripts/local-building.cmd --building=debug --modules=acorn` a terminé avec succès. L'exécutable est `F:\Retro Media Lab\build\Debug\Retro Media Lab\retromedialab.exe`, avec Acorn demandé et Example fourni automatiquement par le script. Cette validation synthétique ne remplace pas l'essai utilisateur d'un programme réel. Aucun commit tape n'a été créé.
 
 ### Références des formats et du matériel
 
 - [Spécification UEF, copie conservée par PlayUEF](https://github.com/8bitkick/PlayUEF/blob/master/docs/UEFspecification.html) : chunks, trames, phases et cadences.
 - [Spécification CSW](https://k1.spdns.de/Develop/Projects/zxsp/Info/File%20Formats/CSW%20technical%20specifications.html) et [copie Acorn](https://acorn.huininga.nl/pub/unsorted/software/pc/CSW/csw.html) : versions, durées d'impulsions, RLE/Z-RLE.
-- [BBC Micro Service Manual](https://acorn.huininga.nl/pub/unsorted/manuals/BBC%20Microcomputer%20Service%20Manual-HTML/BBCServiceManual.html) et [BBC User Guide](https://www.bbcmicrobot.com/docs/BBC_User_Guide.pdf) : circuit cassette, contrôle moteur, commandes et débits.
+- [BBC Micro Service Manual](https://acorn.huininga.nl/pub/unsorted/manuals/BBC%20Microcomputer%20Service%20Manual-HTML/BBCServiceManual.html) et [BBC User Guide](https://www.bbcmicrobot.com/docs/BBC_User_Guide.pdf) : circuit tape, contrôle moteur, commandes et débits.
 - [jsbeeb acia.js](https://github.com/mattgodbolt/jsbeeb/blob/master/src/acia.js), [serial.js](https://github.com/mattgodbolt/jsbeeb/blob/master/src/serial.js), [tapes.js](https://github.com/mattgodbolt/jsbeeb/blob/master/src/tapes.js) : comparaison du matériel et du parcours UEF.
 
 ## Disquettes, Winchester et réseau — travail ouvert le 26 octobre 2026
 
-Le Model A de base ne possède ni contrôleur disque, ni lecteur externe, ni Econet. Ces équipements sont des extensions matérielles à configurer explicitement, distinctes du simple montage d'une image. La RAM, les connecteurs et les ROM latérales nécessaires doivent rester des choix visibles de la configuration équipée ; le Model A standard doit conserver son démarrage cassette.
+Le Model A de base ne possède ni contrôleur disque, ni lecteur externe, ni Econet. Ces équipements sont des extensions matérielles à configurer explicitement, distinctes du simple montage d'une image. La RAM, les connecteurs et les ROM latérales nécessaires doivent rester des choix visibles de la configuration équipée ; le Model A standard doit conserver son démarrage tape.
 
 | Équipement | Matériel et logiciel associés | État constaté avant ce travail |
 | --- | --- | --- |
@@ -726,7 +726,7 @@ La reconnaissance des ROM de service suit les octets de type et de copyright de 
 
 Validation : les 93 contrôles AcornEmu autonomes passent. Trois essais temporaires avec MOS 1.20 et BASIC II ont exécuté `*DISC`, `SAVE`, `NEW`, `LOAD`, `LIST`, `RUN` et `*CAT` : DFS 0.9H en 16 et 32 Kio, puis DNFS 1.20 en 32 Kio. Le programme relu s'exécute et les secteurs modifiés sont publiés dans l'image SSD temporaire. Les ROM du dossier utilisateur ont seulement été lues ; les essais et leurs images ont été supprimés, puis les 93 contrôles conservés reconstruits et exécutés. WD1770/ADFS, Winchester et Econet restent à raccorder ; ce résultat ne valide pas encore ces extensions.
 
-Build intermédiaire du 26 octobre : `scripts/local-building.cmd --building=debug --modules=acorn` réussi. `build/Debug/Retro Media Lab/retromedialab.exe`, le module Acorn et les bibliothèques SDK/MediaEngine dans `lib` sont présents. Ce build permet les essais utilisateur cassette/DFS ; Example est inclus automatiquement par le script. Aucun commit créé.
+Build intermédiaire du 26 octobre : `scripts/local-building.cmd --building=debug --modules=acorn` réussi. `build/Debug/Retro Media Lab/retromedialab.exe`, le module Acorn et les bibliothèques SDK/MediaEngine dans `lib` sont présents. Ce build permet les essais utilisateur tape/DFS ; Example est inclus automatiquement par le script. Aucun commit créé.
 
 ### Carte Acorn WD1770 et disquettes ADFS
 
@@ -816,10 +816,10 @@ Pour utiliser un serveur existant : installer l'extension dans Réseau, choisir 
 | Demande | Réalisation et preuve |
 |---|---|
 | Configurer les lecteurs | Magnétophone, deux lecteurs disquette optionnels, quatre unités Winchester optionnelles ; dialogues existants et configurations persistantes. Les tests des fabriques vérifient ajout/retrait, protections, redirection, vitesses, latences, ROM requises et conservation des options. |
-| Lire et écrire les images | UEF/CSW/WAV/RAW pour cassette ; SSD/DSD et ADFS S/M/L pour disquette ; DAT/DSC pour Winchester. Les scénarios avec ROM ont sauvegardé, rechargé et exécuté les programmes ; les écrivains conservent les secteurs non modifiés et publient les fichiers atomiquement. |
+| Lire et écrire les images | UEF/CSW/WAV/RAW pour tape ; SSD/DSD et ADFS S/M/L pour disquette ; DAT/DSC pour Winchester. Les scénarios avec ROM ont sauvegardé, rechargé et exécuté les programmes ; les écrivains conservent les secteurs non modifiés et publient les fichiers atomiquement. |
 | Visualiser le HDD | Chaque surface/tête de la géométrie connue possède son disque visible et sa sélection ; la sélection est reliée au LBA. Un nombre de plateaux physiques n'est pas inventé à partir d'une géométrie logique. |
 | Scanner les pistes | Le descripteur HDD parcourt tous les couples cylindre/tête. Chaque plage est effectivement lue avec un tampon borné ; les données absentes restent indisponibles et l'annulation est propagée. Le test Winchester contrôle huit pistes sur quatre surfaces et leur sélection. |
-| Explorer les fichiers | Les lecteurs DFS et ADFS existants parcourent fichiers et sous-répertoires, y compris les deux faces DFS et les secteurs BBC de 256 octets sur HDD. Les tests vérifient les contenus et les adresses ADFS L franchissant pistes et faces. Les parcours cassette restent ceux des services médias communs. |
+| Explorer les fichiers | Les lecteurs DFS et ADFS existants parcourent fichiers et sous-répertoires, y compris les deux faces DFS et les secteurs BBC de 256 octets sur HDD. Les tests vérifient les contenus et les adresses ADFS L franchissant pistes et faces. Les parcours tape restent ceux des services médias communs. |
 | Voyants | Les activités des contrôleurs pendant lecture et écriture sont transmises aux emplacements des deux disquettes et des quatre HDD par les états communs ; le magnétophone réutilise également le relais commun. |
 | Réseau | Extension Econet configurée dans l'onglet Réseau existant, ROM NFS externe, station et horloge, UDP/BeebEm et AUN. Les essais avec NFS 3.34 valident une transmission réelle et la réception d'une réponse distante par les registres et la NMI. |
 | Réutilisation et architecture | Les dialogues et parcours de conversion, visualisation et exploration sont étendus. Acorn accède aux images via Common et le SDK ; MediaEngine porte les conteneurs et MediaFileSystems les fichiers. Le transport réseau est interne à AcornEmu et n'ajoute aucune dépendance de paquet. |
@@ -846,11 +846,11 @@ Le contrôleur 8271/WD1770 est réglé dans la configuration du lecteur de disqu
 
 `RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Dictionaries/FloppyDriveModels.cs` possède les profils physiques BBC, les formats autorisés et la validation matérielle. Les constantes matérielles résident dans `Constants/FloppyDriveConstants.cs`. Le contrôleur actif détermine les modèles et les formats proposés : le 8271 exclut la double densité. Le module transmet un identifiant de format à `CreateBlankDiskAsync` ; MediaEngine réutilise `BlankSectorImageFactory` et ses écrivains existants, sans choisir le lecteur ou la machine. La fenêtre affiche le nom du format, son extension et sa géométrie ; un choix unique est automatique, plusieurs choix restent disponibles dans la liste.
 
-La configuration cassette regroupe chargement, mécanique et profil RAW. Débit automatique/300/1200 et mode de chargement utilisent des boutons radio. Automatique suit le débit du circuit série réglé par le logiciel BBC ; il ne détecte pas le débit dans le fichier. Les curseurs mécaniques sont courts, à crans, avec présélections et visibles seulement en temps réel. Les délais concernent le démarrage du moteur avant lecture/enregistrement. Le groupe RAW distingue fréquence d'échantillonnage, mono/stéréo, profondeur, signe et little-endian. La hauteur est bornée et le contenu peut défiler, avec les boutons de validation séparés.
+La configuration tape regroupe chargement, mécanique et profil RAW. Débit automatique/300/1200 et mode de chargement utilisent des boutons radio. Automatique suit le débit du circuit série réglé par le logiciel BBC ; il ne détecte pas le débit dans le fichier. Les curseurs mécaniques sont courts, à crans, avec présélections et visibles seulement en temps réel. Les délais concernent le démarrage du moteur avant lecture/enregistrement. Le groupe RAW distingue fréquence d'échantillonnage, mono/stéréo, profondeur, signe et little-endian. La hauteur est bornée et le contenu peut défiler, avec les boutons de validation séparés.
 
-`MechanicalSoundFunctions` et ses traitements cassette ainsi que ses fichiers Floppy/HardDisk/Optical rendent les bruits mécaniques en mono, sans posséder de sortie audio ni modifier les médias. Les paramètres fixes et identifiants sont dans `MechanicalSoundConstants`, les profils synthétiques dans `MechanicalSoundProfiles`, et les identifiants sont relayés au SDK par `EmulationMechanicalSoundConstants`. Ces profils représentent des familles de mécanismes, pas l'enregistrement exact d'un lecteur commercial. Les consommateurs de MediaEngine peuvent appeler le même rendu ; les modules y accèdent exclusivement par Emulation.
+`MechanicalSoundFunctions` et ses traitements tape ainsi que ses fichiers Floppy/HardDisk/Optical rendent les bruits mécaniques en mono, sans posséder de sortie audio ni modifier les médias. Les paramètres fixes et identifiants sont dans `MechanicalSoundConstants`, les profils synthétiques dans `MechanicalSoundProfiles`, et les identifiants sont relayés au SDK par `EmulationMechanicalSoundConstants`. Ces profils représentent des familles de mécanismes, pas l'enregistrement exact d'un lecteur commercial. Les consommateurs de MediaEngine peuvent appeler le même rendu ; les modules y accèdent exclusivement par Emulation.
 
-Les opérations comprennent moteur, lecture, écriture, recherche et arrêt selon le mécanisme, ainsi qu'insertion/éjection pour disquettes et lecteurs optiques, et éjection cassette. Les profils distinguent disquettes 5,25/3,5 pouces, Winchester et HDD 3,5/2,5 pouces, mécanismes optiques à tiroir ou à fente. Cela fournit le service optique commun sans ajouter de lecteur CD au Model A.
+Les opérations comprennent moteur, lecture, écriture, recherche et arrêt selon le mécanisme, ainsi qu'insertion/éjection pour disquettes et lecteurs optiques, et éjection tape. Les profils distinguent disquettes 5,25/3,5 pouces, Winchester et HDD 3,5/2,5 pouces, mécanismes optiques à tiroir ou à fente. Cela fournit le service optique commun sans ajouter de lecteur CD au Model A.
 
 `EmulatorCore.FloppySound.cs` et `EmulatorCore.HardDiskSound.cs` mélangent le rendu au son de la machine. Les compteurs des contrôleurs conservent les lectures, écritures et mouvements terminés entre deux images vidéo. Chaque lecteur peut activer ses bruits et choisir son profil ; les opérations accélérées restent silencieuses. Les files d'événements sont bornées. Les sons ne sont ni enregistrés sur les images ni utilisés pour simuler leurs données.
 
@@ -865,7 +865,7 @@ AcornEmu ouvre et modifie l’image montée, en respectant sa protection en écr
 
 `FloppyDriveConfigurationDialog.cs` utilise ce dialogue pour les formats vierges du modèle sélectionné. « Créer et monter » valide les réglages du lecteur et transmet le chemin à `EmulationStorageSettingsController`, qui remplace le média de cet emplacement par les contrats existants. « Créer » seul conserve le montage précédent.
 
-Depuis REC, `MachineController.cs` conserve le choix du format cassette et du profil RAW, puis ouvre la même validation. « Créer » seul ne modifie pas la bande en cours ; « Créer et monter » monte la nouvelle image via `MachineSession.InsertAsync` puis arme l’enregistrement. Les paramètres RAW proviennent aussi des blocs de configuration déclarés par le module, pas seulement de la liste plate de champs.
+Depuis REC, `MachineController.cs` conserve le choix du format tape et du profil RAW, puis ouvre la même validation. « Créer » seul ne modifie pas la bande en cours ; « Créer et monter » monte la nouvelle image via `MachineSession.InsertAsync` puis arme l’enregistrement. Les paramètres RAW proviennent aussi des blocs de configuration déclarés par le module, pas seulement de la liste plate de champs.
 
 Les trois nouveaux messages sont traduits dans les 29 langues avec Argos ; le français a été relu. Vérification XML des ressources et vérification statique des références et des espaces Git effectuées. Aucune compilation, aucun essai GUI, aucune modification du build : validation compilée restant à faire à la reprise autorisée.
 
@@ -905,7 +905,7 @@ Sources : [manuel de maintenance Winchester Acorn](https://www.theoddys.com/acor
 
 Le SSD `Model A Invaders (1982)(IJK)[INVA].ssd` contient un programme BASIC dont la ligne 71 est `ON ERROR RUN` : une erreur relance le programme et masque son message. Après `LOAD "INV/A"` par DFS 0.9H, le programme original donne réellement `PAGE=6400`, `TOP=15027`, `HIMEM=15360` ; il reste seulement 333 octets pour les variables et réservations. Les lignes 90 à 150 réservent sept blocs de 200/200/400/100/400/100/200 octets avec DIM, soit plus de 1 600 octets, sans compter les autres variables.
 
-Le diagnostic a remplacé uniquement la ligne 71 de la copie BASIC en RAM par `ON ERROR REPORT:PRINT ERL:END`. Après le choix 4 et Espace, la machine affiche **`DIM space` à la ligne 100**. Ce résultat explique le retour au menu du programme original avec cet environnement DFS 16 Kio ; aucune panne du contrôleur, du CPU ou de son horloge n'est établie. Ne pas modifier le silicium, les limites RAM ou les ROM pour forcer ce programme à tenir. Le chargement cassette et le montage 32 Kio sont des environnements distincts.
+Le diagnostic a remplacé uniquement la ligne 71 de la copie BASIC en RAM par `ON ERROR REPORT:PRINT ERL:END`. Après le choix 4 et Espace, la machine affiche **`DIM space` à la ligne 100**. Ce résultat explique le retour au menu du programme original avec cet environnement DFS 16 Kio ; aucune panne du contrôleur, du CPU ou de son horloge n'est établie. Ne pas modifier le silicium, les limites RAM ou les ROM pour forcer ce programme à tenir. Le chargement tape et le montage 32 Kio sont des environnements distincts.
 
 Preuves réelles hors interface : `artifacts/TestsMachines/Acorn/BBC Micro Model A/20261107-013231-16k-memoire-programme-original-carte-sans-interface.bmp` et `20261107-013236-16k-erreur-programme-diagnostic-carte-sans-interface.bmp`, également conservées sous `TestsChips/Mos6502/BBC Micro Model A/`. MOS 1.20, BASIC II, SAA5050, DFS 0.9H ; SSD ouvert en lecture seule, clavier émulé, aucune modification de configuration ou média utilisateur. Le message affiché concerne le programme diagnostiqué en mémoire, pas une exécution inchangée de son gestionnaire d'erreur original.
 

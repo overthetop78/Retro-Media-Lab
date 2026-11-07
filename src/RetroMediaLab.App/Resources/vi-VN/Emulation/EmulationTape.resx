@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Phát</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Tạm dừng</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Tua lại</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Tua nhanh</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Ghi</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Dừng</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Không có băng</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Đã dừng</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Đang phát</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Tạm dừng</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Đang ghi</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Hết băng</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Tốc độ dữ liệu nối tiếp (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Tự động</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Đang nạp chế độ</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Đọc thời gian thực</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Đọc tăng tốc</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Tải trực tiếp</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Tốc độ băng</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Tốc độ tua nhanh và tua lại</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Máy khởi động trễ trước khi phát lại</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Khởi động chậm trước khi ghi</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Bật âm thanh thiết bị lưu trữ</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Bảo vệ chống lại chữ viết</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Tần số Sampling (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Kênh âm thanh</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Bit trên mỗi mẫu</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Các mẫu đã ký</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW Hồ sơ nhập băng</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW Hồ sơ thu âm</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Đang nạp</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Cơ học băng</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Tự động theo tỷ lệ dữ liệu nối tiếp được đặt bởi phần mềm máy tính mô phỏng. Nó không phát hiện được tốc độ dữ liệu từ tập tin ảnh.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Đơn kênh</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Lập thể</value></data>
+</root>

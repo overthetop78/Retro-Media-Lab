@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Diskstorleken eller geometrin är ogiltig.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Reserverar det fysiska diskutrymmet direkt; annars växer avbildningen när data skrivs.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sektorer</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Kassett</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Kassett</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Spelkassett</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Compact discs</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Visa enhetsaktivitet på emulatorns skärm</value></data>

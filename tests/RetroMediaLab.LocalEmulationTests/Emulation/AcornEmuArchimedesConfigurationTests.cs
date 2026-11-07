@@ -109,7 +109,7 @@ public sealed class AcornEmuArchimedesConfigurationTests
         Assert.True(adapter.SupportsPointerCapture(configuration));
         Assert.Equal(C.DefaultMemoryKib, adapter.GetMemoryKib(configuration));
         Assert.Single(adapter.GetFirmwareSlots(configuration));
-        Assert.DoesNotContain(adapter.DescribeMediaDevices(configuration), device => device.MediaType == EmulationMediaType.Cassette);
+        Assert.DoesNotContain(adapter.DescribeMediaDevices(configuration), device => device.MediaType == EmulationMediaType.Tape);
         Assert.Contains(adapter.DescribeSettings(configuration), block => block.Tab == EmulationMachineTab.Cpu);
         Assert.Contains(adapter.DescribeSettings(configuration), block => block.Tab == EmulationMachineTab.Ram);
         adapter.ValidateOptions(configuration);

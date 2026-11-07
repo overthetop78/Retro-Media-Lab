@@ -780,7 +780,7 @@ se trouver dans le `Common` familial.
 | `Common/Machines/Common/Functions/MediaFunctions.cs` | — | Conversion et activité des médias Amiga regroupées dans un fichier de famille. |
 | — | `Common/Machines/Common/Functions/MediaFunctions.Activity.cs` | Activité des médias Atari. |
 | — | `Common/Machines/Common/Functions/MediaFunctions.Cartridge.cs` | Préparation des cartouches Atari. |
-| — | `Common/Machines/Common/Functions/MediaFunctions.Cassette.cs` | Commandes cassette Atari. |
+| — | `Common/Machines/Common/Functions/MediaFunctions.Tape.cs` | Commandes tape Atari. |
 | — | `Common/Machines/Common/Functions/MediaFunctions.Compatibility.cs` | Compatibilité des médias Atari. |
 | — | `Common/Machines/Common/Functions/MediaFunctions.Conversion.cs` | Conversion des médias Atari vers le contrat public. |
 | — | `Common/Machines/Common/Functions/MediaFunctions.Runtime.cs` | État d’exécution des médias Atari. |
@@ -805,7 +805,7 @@ se trouver dans le `Common` familial.
 |---|---|---|
 | — | `Common/Services/AudioBuffer.cs` | Spécifique à la famille Atari ; aucun fichier générique correspondant côté Amiga. |
 | — | `Common/Services/AudioOutputController.cs` | Spécifique à la famille Atari ; aucun fichier générique correspondant côté Amiga. |
-| — | `Common/Services/CassetteInputController.cs` | Spécifique à la famille Atari ; aucun fichier générique correspondant côté Amiga. |
+| — | `Common/Services/TapeInputController.cs` | Spécifique à la famille Atari ; aucun fichier générique correspondant côté Amiga. |
 | `Common/Services/ConfigurationStore.cs` | `Common/Services/ConfigurationStore.cs` | Même chemin dans les deux modules ; l’implémentation reste adaptée à la famille. |
 | — | `Common/Services/ContentPath.cs` | Spécifique à la famille Atari ; aucun fichier générique correspondant côté Amiga. |
 | — | `Common/Services/CoreHost.cs` | Spécifique à la famille Atari ; aucun fichier générique correspondant côté Amiga. |

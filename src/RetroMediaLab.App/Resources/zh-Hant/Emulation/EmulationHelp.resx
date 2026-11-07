@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>选择次要固件 ROM 一些机器模型需要。 当选中的模型没有使用扩展时, 请将此字段留空 。 ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>启用加速 SIO 转让</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>通过串行输入/输出总线加快相容性传输. 当软件取决于原始传输时间时, 禁用此选项 。</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>启用磁带启动</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>让被模拟的机器尝试从所附的磁带图像开始. 从另一个设备开始时禁用此选项 。</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>启用磁带启动</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>让被模拟的机器尝试从所附的磁带图像开始. 从另一个设备开始时禁用此选项 。</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>启用 R-Time 8 时钟</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>模拟一个 R-Time 8 实时时钟,所以相容的软件可以读取当前的日期和时间.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>启用 P: 打印机设备</value></data>

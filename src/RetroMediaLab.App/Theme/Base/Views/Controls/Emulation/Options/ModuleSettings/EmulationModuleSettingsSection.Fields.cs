@@ -220,7 +220,7 @@ internal sealed partial class EmulationModuleSettingsSection
             EmulationDefaultFolderCategory.CompactDisc => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.CompactDiscsDirectory, moduleFolder),
             EmulationDefaultFolderCategory.HardDisk => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.HardDisksDirectory, moduleFolder),
             EmulationDefaultFolderCategory.Cartridge => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.CartridgesDirectory, moduleFolder),
-            EmulationDefaultFolderCategory.Cassette => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.CassettesDirectory, moduleFolder),
+            EmulationDefaultFolderCategory.Tape => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.TapesDirectory, moduleFolder),
             EmulationDefaultFolderCategory.State => Path.Combine(StoragePaths.EmulationStateDirectory, moduleFolder),
             EmulationDefaultFolderCategory.Capture => Path.Combine(StoragePaths.EmulationCaptureDirectory, moduleFolder),
             EmulationDefaultFolderCategory.Cheats => Path.Combine(StoragePaths.EmulationStorageDirectory, "Cheats", moduleFolder, _configuration.MachineId),

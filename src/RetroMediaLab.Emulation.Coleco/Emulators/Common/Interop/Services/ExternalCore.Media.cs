@@ -91,7 +91,7 @@ internal sealed partial class ExternalCore
         if (configuration.Model != MachineModel.Adam || !ConfigurationFunctions.SupportsSlot(configuration.Model, slot)
             || slot.Category == EmulationMediaCategory.CartridgeSlot)
             throw new ArgumentOutOfRangeException(nameof(slot));
-        var index = slot.Index + (slot.Category == EmulationMediaCategory.CassetteDrive ? StorageConstants.DriveCount : 0);
+        var index = slot.Index + (slot.Category == EmulationMediaCategory.TapeDrive ? StorageConstants.DriveCount : 0);
         RequireCallbacks().SetOption(GearOptions.OptionAdamDiskDrive, MediaRuntimeConstants.DriveNames[index]);
         // Gearcoleco consumes this option in retro_run before selecting the disk-control target.
         RequireExports().Run();

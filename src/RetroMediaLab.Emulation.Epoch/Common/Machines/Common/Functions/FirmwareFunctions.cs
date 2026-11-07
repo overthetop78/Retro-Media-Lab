@@ -8,7 +8,7 @@ internal static class FirmwareFunctions
 {
     internal static string Field(FirmwareCategory role) => FirmwareConstants.ConsoleFirmwareFieldPrefix + role;
     internal static bool IsField(string field) => field == Field(FirmwareCategory.Console);
-    internal static IReadOnlyList<FirmwareCategory> Roles(MachineModel model) => model is MachineModel.SuperCassetteVision or MachineModel.SuperCassetteVisionYeno or MachineModel.SuperCassetteVisionLady ? [FirmwareCategory.Console] : [];
+    internal static IReadOnlyList<FirmwareCategory> Roles(MachineModel model) => model is MachineModel.SuperTapeVision or MachineModel.SuperTapeVisionYeno or MachineModel.SuperTapeVisionLady ? [FirmwareCategory.Console] : [];
 
     internal static IReadOnlyList<FirmwareConfiguration> Apply(MachineConfiguration configuration, IReadOnlyDictionary<string, string?> values)
     {

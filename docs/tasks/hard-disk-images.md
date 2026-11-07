@@ -2,7 +2,7 @@
 
 Cette feuille commence seulement après l’achèvement de toutes les cases de
 [`media-exploration.md`](media-exploration.md). Le deuxième commit a déjà été créé après la feuille
-d’affichage. Les fonctions communes aux HDD, CD/DVD/optiques et cassettes/bandes sont réalisées à
+d’affichage. Les fonctions communes aux HDD, CD/DVD/optiques et tapes/bandes sont réalisées à
 ce stade par `media-exploration.md`; elles ne sont pas dupliquées ici. Cette feuille conserve les
 compléments propres à la création, aux variantes et au cycle de vie des images HDD déjà recensés
 dans [`../project/hard-disk-format-catalog.md`](../project/hard-disk-format-catalog.md).

@@ -50,7 +50,7 @@ internal abstract class MachineFactory : IEmulatorAdapter, IEmulatorRuntimePolic
             EmulationMediaType.HardDisk => MediaCategory.HardDrive,
             EmulationMediaType.CompactDisc => MediaCategory.CompactDisc,
             EmulationMediaType.Cartridge => MediaCategory.Cartridge,
-            EmulationMediaType.Cassette => MediaCategory.Cassette,
+            EmulationMediaType.Tape => MediaCategory.Tape,
             _ => throw new InvalidDataException(ErrorMessages.UnsupportedContentExtension(extension))
         };
     }

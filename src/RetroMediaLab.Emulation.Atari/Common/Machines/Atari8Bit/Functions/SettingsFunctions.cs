@@ -49,7 +49,7 @@ public static class EightBitSettingsFunctions
                      EightBitSettingsConstants.RealTimeClockOptionKey,
                      EightBitSettingsConstants.PrinterDeviceOptionKey,
                      EightBitSettingsConstants.SerialDeviceOptionKey,
-                     EightBitSettingsConstants.CassetteBootOptionKey,
+                     EightBitSettingsConstants.TapeBootOptionKey,
                      EightBitSettingsConstants.PokeyStereoOptionKey
                  })
             Validate(options, key, EightBitSettingsCatalog.ToggleModes, EightBitSettingsConstants.Disabled);
@@ -75,7 +75,7 @@ public static class EightBitSettingsFunctions
         SetDefault(options, EightBitSettingsConstants.PrinterDeviceOptionKey, EightBitSettingsConstants.Disabled);
         SetDefault(options, EightBitSettingsConstants.SerialDeviceOptionKey, EightBitSettingsConstants.Disabled);
         options[EightBitSettingsConstants.SioAccelerationOptionKey] = EightBitSettingsConstants.Enabled;
-        SetDefault(options, EightBitSettingsConstants.CassetteBootOptionKey, EightBitSettingsConstants.Disabled);
+        SetDefault(options, EightBitSettingsConstants.TapeBootOptionKey, EightBitSettingsConstants.Disabled);
         SetDefault(options, EightBitSettingsConstants.PokeyStereoOptionKey, EightBitSettingsConstants.Disabled);
 
         var mosaicEnabled = options[EightBitSettingsConstants.MosaicMemoryOptionKey] != EightBitSettingsConstants.Disabled;

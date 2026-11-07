@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>Хірургічне позначення</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>SIO прискорення</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>Черевики з касету</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>Черевики з касету</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>Редакція операційної системи</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>Хати</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>Заробіток</value></data>

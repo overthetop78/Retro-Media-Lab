@@ -17,9 +17,9 @@ internal static class EmulationMediaActivityFunctions
     private const int Atari800IndicatorY = 233;
     private const int Atari800DiskX = 350;
     private const int Atari800DriveX = 355;
-    private const int Atari800CassetteWithDiskX = 345;
+    private const int Atari800TapeWithDiskX = 345;
     private static readonly byte[] Atari800DiskGlyph = [0x00, 0x0c, 0x0a, 0x0a, 0x0a, 0x0c, 0x00];
-    private static readonly byte[] Atari800CassetteGlyph = [0x00, 0x04, 0x0a, 0x08, 0x0a, 0x04, 0x00];
+    private static readonly byte[] Atari800TapeGlyph = [0x00, 0x04, 0x0a, 0x08, 0x0a, 0x04, 0x00];
     private static readonly byte[][] Atari800DriveGlyphs =
     [
         [0x00, 0x04, 0x0c, 0x04, 0x04, 0x04, 0x00],
@@ -44,7 +44,7 @@ internal static class EmulationMediaActivityFunctions
             [EmulationMediaSlot.Floppy1] = ledStates.GetValueOrDefault(1),
             [new EmulationMediaSlot(EmulationMediaCategory.FloppyDrive, 2)] = ledStates.GetValueOrDefault(2),
             [new EmulationMediaSlot(EmulationMediaCategory.FloppyDrive, 3)] = ledStates.GetValueOrDefault(3),
-            [EmulationMediaSlot.Cassette0] = ledStates.GetValueOrDefault(4)
+            [EmulationMediaSlot.Tape0] = ledStates.GetValueOrDefault(4)
         },
         Emulator.VirtualJaguar => new Dictionary<EmulationMediaSlot, bool>
         {
@@ -82,8 +82,8 @@ internal static class EmulationMediaActivityFunctions
         var y = Atari800IndicatorY - sourceY + destinationY;
         var diskX = Atari800DiskX - sourceX + destinationX;
         var driveX = Atari800DriveX - sourceX + destinationX;
-        var cassetteWithoutDiskX = Atari800DriveX - sourceX + destinationX;
-        var cassetteWithDiskX = Atari800CassetteWithDiskX - sourceX + destinationX;
+        var tapeWithoutDiskX = Atari800DriveX - sourceX + destinationX;
+        var tapeWithDiskX = Atari800TapeWithDiskX - sourceX + destinationX;
 
         var diskVisible = MatchesGlyph(pixels, diskX, y, pitch, pixelFormat, Atari800DiskGlyph);
         if (diskVisible)
@@ -93,7 +93,7 @@ internal static class EmulationMediaActivityFunctions
                     ledStates[drive] = true;
                     break;
                 }
-        ledStates[4] = MatchesGlyph(pixels, diskVisible ? cassetteWithDiskX : cassetteWithoutDiskX, y, pitch, pixelFormat, Atari800CassetteGlyph);
+        ledStates[4] = MatchesGlyph(pixels, diskVisible ? tapeWithDiskX : tapeWithoutDiskX, y, pitch, pixelFormat, Atari800TapeGlyph);
         return true;
     }
 

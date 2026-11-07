@@ -65,7 +65,7 @@ internal static class ControllerProtocolDictionary
             actions.Add(new("GunFire", CarrierMask: InputConstants.GunTriggerMask));
             actions.Add(new("GunReload", CarrierMask: InputConstants.GunReloadMask));
         }
-        if (model != MachineModel.CassetteVisionJr)
+        if (model != MachineModel.TapeVisionJr)
         {
             AddAxis(actions, port == ControllerConstants.FirstPort ? "Paddle2" : "Paddle3", InputMappingConstants.LeftX);
             AddAxis(actions, port == ControllerConstants.FirstPort ? "Paddle1" : "Paddle4", InputMappingConstants.LeftY);

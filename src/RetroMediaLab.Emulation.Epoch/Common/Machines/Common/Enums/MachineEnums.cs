@@ -2,15 +2,15 @@ namespace RetroMediaLab.Emulation.Epoch.Common.Machines.Common.Enums;
 
 public enum MachineModel
 {
-    CassetteVision,
-    CassetteVisionJr,
-    SuperCassetteVision,
-    SuperCassetteVisionYeno,
-    SuperCassetteVisionLady
+    TapeVision,
+    TapeVisionJr,
+    SuperTapeVision,
+    SuperTapeVisionYeno,
+    SuperTapeVisionLady
 }
 
 public enum MachineFamily
 {
-    CassetteVision,
-    SuperCassetteVision
+    TapeVision,
+    SuperTapeVision
 }

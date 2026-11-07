@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>גודל הדיסק או הגאומטריה אינם חוקיים.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>מקצה מיד את שטח הדיסק הפיזי; אחרת התמונה גדלה בעת כתיבת נתונים.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>מקטעים</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>קלטת</value></data>
+  <data name="Emulation.Storage.Tapes"><value>קלטת</value></data>
   <data name="Emulation.Storage.Cartridges"><value>מחסנית</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>תקליטורים</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>הצג פעילות כוננים במסך האמולטור</value></data>

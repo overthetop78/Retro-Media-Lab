@@ -41,7 +41,7 @@ public sealed class MediaOpeningAnalysisService(MediaImageReadingService reader,
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        document = await RetroMediaLab.MediaEngine.Functions.CassetteBlockFunctions.IndexAsync(document, cancellationToken).ConfigureAwait(false);
+        document = await RetroMediaLab.MediaEngine.Functions.TapeBlockFunctions.IndexAsync(document, cancellationToken).ConfigureAwait(false);
         if (!includeFileSystems)
             return new(document, null, null);
 

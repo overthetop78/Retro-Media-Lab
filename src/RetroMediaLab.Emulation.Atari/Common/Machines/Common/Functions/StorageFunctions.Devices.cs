@@ -19,7 +19,7 @@ internal static partial class StorageSettingsFunctions
             StorageSettingsFunctionsConstants.Atx
         ],
         MediaCategory.HardDisk => [StorageSettingsFunctionsConstants.Img, StorageSettingsFunctionsConstants.Hdf, StorageSettingsFunctionsConstants.Vhd],
-        MediaCategory.Cassette => [StorageSettingsFunctionsConstants.Cas],
+        MediaCategory.Tape => [StorageSettingsFunctionsConstants.Cas],
         MediaCategory.CompactDisc => [StorageSettingsFunctionsConstants.Cue, StorageSettingsFunctionsConstants.Chd, StorageSettingsFunctionsConstants.Iso],
         _ => []
     };
@@ -105,7 +105,7 @@ internal static partial class StorageSettingsFunctions
         EmulationMediaCategory.HardDisk => $"HD{slot.Index}:",
         EmulationMediaCategory.CompactDiscDrive => $"CD{slot.Index}:",
         EmulationMediaCategory.CartridgeSlot => $"CART{slot.Index}:",
-        EmulationMediaCategory.CassetteDrive => $"TAPE{slot.Index}:",
+        EmulationMediaCategory.TapeDrive => $"TAPE{slot.Index}:",
         _ => slot.ToString()
     };
 }

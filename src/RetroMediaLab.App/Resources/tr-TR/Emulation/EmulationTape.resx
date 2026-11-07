@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Oynat</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Duraklat</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Geri sar</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>İleri sar</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Kaydet</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Durdur</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Kaset yok</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Durduruldu</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Oynatılıyor</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Duraklatıldı</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Kaydediliyor</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Bant sonu</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Seri veri oranı (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik Otomatik</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Yükleniyor mod</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Gerçek zamanlı okuma</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Acelerated reading</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Doğrudan yükleme</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Bant hızı</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Hızlı ileri ve geri dönüşümlü hız</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Motor oyun geri dönmeden önce gecikmeye başlar</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Motor kayıt gecikmeden önce gecikmeye başlar</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Enable depolama cihazı sesleri</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Yazmaya karşı koruma</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Örnekleme frekansı (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Ses kanalları</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Örnek olarak Bits per example</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Kayıt örnekleri</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW casssette input Profil</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW casssette kayıt profili</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Yükleniyor Yükleniyor Yükleniyor</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Bantlı Mekanik</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Otomatik, emated bilgisayar yazılımı tarafından belirlenen seri verileri oranını takip eder. Görüntü dosyasından veri oranını tespit etmez.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Mono Mono</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Stereo Stereo</value></data>
+</root>

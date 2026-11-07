@@ -12,8 +12,8 @@ internal static class ExampleMachineAModelCatalog
         new(MachineModel.ExampleMachineA, ModelConstants.Id, ModelConstants.DisplayNameResourceKey, Emulator.Internal,
             [HardwareCpu.ExampleCpu], ModelConstants.DefaultCpuFrequencyHz, ModelConstants.MainMemoryBytes,
             [HardwareRegion.Pal, HardwareRegion.Ntsc], [HardwareVideoCapability.Raster], [HardwareAudioCapability.Pcm],
-            [HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.HardDisk],
+            [HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape, HardwareStorageCapability.HardDisk],
             [new(HardwarePortCapability.Keyboard, 1), new(HardwarePortCapability.Mouse, 1), new(HardwarePortCapability.AnalogJoystick, 2)],
-            [FirmwareCategory.OperatingSystem, FirmwareCategory.VoiceSamples], [MediaCategory.Floppy, MediaCategory.Cassette, MediaCategory.HardDisk])
+            [FirmwareCategory.OperatingSystem, FirmwareCategory.VoiceSamples], [MediaCategory.Floppy, MediaCategory.Tape, MediaCategory.HardDisk])
     ]);
 }

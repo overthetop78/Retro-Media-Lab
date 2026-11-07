@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Vælger den sekundære firmware ROM kræves af nogle maskinmodeller. Lad dette felt være tomt når den valgte model ikke bruger en udvidet ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Aktivér accelereret SIO overførsler</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Fremskynder kompatible overførsler gennem den serielle input / output bus. Deaktivér denne indstilling når software afhænger af den oprindelige overførsel timing.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Aktivér opstart af kassette</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Får den emulerede maskine til at prøve at starte fra det vedhæftede kassettebillede. Deaktivér denne indstilling når du starter fra en anden enhed.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Aktivér opstart af kassette</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Får den emulerede maskine til at prøve at starte fra det vedhæftede kassettebillede. Deaktivér denne indstilling når du starter fra en anden enhed.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Aktivér R-Time 8 ur</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Emulerer R-Time 8 real- time ur så kompatibel software kan læse den aktuelle dato og tid.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Aktivér P: printerenhed</value></data>

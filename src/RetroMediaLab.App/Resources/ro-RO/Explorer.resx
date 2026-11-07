@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>Audio</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>Hexazecimal</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>Aplicare externă</value></data>
-  <data name="Explorer.Cassette"><value>Casetă</value></data>
+  <data name="Explorer.Tape"><value>Casetă</value></data>
   <data name="Explorer.InternalName"><value>Descriere internă</value></data>
   <data name="Explorer.BaudRates"><value>Viteze</value></data>
   <data name="Explorer.Chunks"><value>Blocuri</value></data>

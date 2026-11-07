@@ -6,7 +6,7 @@ using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Comm
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 using C = RetroMediaLab.Emulation.Acorn.Common.Machines.AcornSystem.Constants.SystemModelConstants;
 using Bus = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants.SystemConstants;
-using Tape = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.CassetteConstants;
+using Tape = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.TapeConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 
@@ -118,6 +118,6 @@ internal static partial class SystemFunctions
             throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
         if (StorageFunctions.UsesWd1770(configuration)) throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
         StorageFunctions.Validate(configuration);
-        if (EmulationCassetteSettings.Read(configuration.Options).BaudRate is not (0 or C.CassetteBaud)) throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(configuration));
+        if (EmulationTapeSettings.Read(configuration.Options).BaudRate is not (0 or C.TapeBaud)) throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(configuration));
     }
 }

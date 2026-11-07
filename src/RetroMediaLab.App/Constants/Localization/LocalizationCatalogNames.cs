@@ -8,7 +8,7 @@ public static class LocalizationCatalogNames
         "Visualizer", "Explorer", "ExplorerWarnings", "Formats", "Classification", "Detection",
         "Extension", "System", "Advanced", "Tools", "Hardware",
         "HostTools", "Options", "Controllers", "Updates",
-        "EmulationAudio", "EmulationCassette", "EmulationConfiguration", "EmulationController",
+        "EmulationAudio", "EmulationTape", "EmulationConfiguration", "EmulationController",
         "EmulationCore", "EmulationCpu", "EmulationDevice", "EmulationError", "EmulationFirmware",
         "EmulationFolder", "EmulationFpu", "EmulationHdd", "EmulationHelp", "EmulationInput",
         "EmulationKey", "EmulationKeyboard", "EmulationMachine", "EmulationMedia", "EmulationMemory",

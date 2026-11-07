@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Levyn koko tai geometria ei kelpaa.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Varaa fyysisen levytilan heti; muuten levykuva kasvaa tietoja kirjoitettaessa.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sektorit</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Kasetti</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Kasetti</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Pelikasetti</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>CD-levyt</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Näytä asemien toiminta emulaattorin näytössä</value></data>

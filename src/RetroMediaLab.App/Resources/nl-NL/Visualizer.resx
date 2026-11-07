@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>Gedegradeerde sector</value></data>
   <data name="Visual.SectorDead"><value>Doodse sector</value></data>
   <data name="Visual.SectorWithoutData"><value>Sector zonder gegevens</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>Cassette-informatie</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>Cassette-informatie</value></data>
   <data name="Visual.Representation"><value>Weergavemodus</value></data>
 </root>

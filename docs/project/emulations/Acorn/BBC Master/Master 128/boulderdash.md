@@ -1,6 +1,6 @@
 # Master 128 — Boulder Dash, 7 novembre 2026
 
-Carte Master 128 MOS 3.50/BASIC IV/DFS intégré, sans coprocesseur, WD1770 et interface Winchester activés mais sans HDD ni cassette montés. SSD source ouverte en lecture seule via le SDK : `F:\Retro\ef_tosec_backup_2024\Acorn BBC - Games - [SSD] (TOSEC-v2024-01-15)\Boulder Dash (1988)(Tynesoft)\Boulder Dash (1988)(Tynesoft).ssd`.
+Carte Master 128 MOS 3.50/BASIC IV/DFS intégré, sans coprocesseur, WD1770 et interface Winchester activés mais sans HDD ni tape montés. SSD source ouverte en lecture seule via le SDK : `F:\Retro\ef_tosec_backup_2024\Acorn BBC - Games - [SSD] (TOSEC-v2024-01-15)\Boulder Dash (1988)(Tynesoft)\Boulder Dash (1988)(Tynesoft).ssd`.
 
 Le vrai CPU exécute `*DISC` puis `*EXEC !BOOT`. Après 800 images, le compteur indique 28 672 octets physiques lus. Deux appuis Space de 30 images, séparés de 180 images relâchées chacun, font passer au niveau du jeu. Captures réelles conservées et inspectées sous `artifacts/TestsMachines/Acorn/BBC Master 128/` et `artifacts/TestsChips/Mos65C12/BBC Master 128/` :
 

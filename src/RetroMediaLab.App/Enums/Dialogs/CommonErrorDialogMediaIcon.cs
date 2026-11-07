@@ -1,3 +1,3 @@
 namespace RetroMediaLab.App.Enums.Dialogs;
 
-internal enum CommonErrorDialogMediaIcon { Floppy, HardDisk, CompactDisc, Cartridge, Cassette }
+internal enum CommonErrorDialogMediaIcon { Floppy, HardDisk, CompactDisc, Cartridge, Tape }

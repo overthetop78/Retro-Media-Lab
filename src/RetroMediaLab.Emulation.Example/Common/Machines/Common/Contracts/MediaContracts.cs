@@ -7,7 +7,7 @@ namespace RetroMediaLab.Emulation.Example.Common.Machines.Common.Contracts;
 /// <param name="Label">Libellé facultatif de présentation, indépendant du chemin.</param>
 /// <param name="IsReadOnly">Protection du contenu demandée au backend ; les copies de session restent sous sa responsabilité.</param>
 /// <param name="IsInserted">False conserve les réglages d’un contenu éjecté sans demander son ouverture.</param>
-/// <param name="CassetteAutoBoot">Demande l’impulsion de démarrage déjà prévue par le transport de cassette.</param>
+/// <param name="TapeAutoBoot">Demande l’impulsion de démarrage déjà prévue par le transport de tape.</param>
 /// <param name="StorageBus">Interface de stockage sélectionnée, ou null pour la décision du profil ou du backend.</param>
 /// <param name="MountPoint">Point de montage logique facultatif, par exemple une lettre de volume ; ce texte n’est pas un chemin hôte.</param>
 /// <param name="MountOrder">Ordre d’affectation des contenus, distinct de l’identité Slot ; zéro est la valeur initiale.</param>
@@ -18,14 +18,14 @@ namespace RetroMediaLab.Emulation.Example.Common.Machines.Common.Contracts;
 /// et les remplacements effectués avec with sans créer de dictionnaire de montages parallèle. Le backend décide
 /// comment employer les paramètres applicables au contenu qu’il reçoit. La région réutilise EmulationVideoStandard,
 /// dont les valeurs NTSC, PAL et SECAM existent déjà ; aucune seconde énumération de région n’est nécessaire.
-/// Les sept premiers paramètres conservent leur ordre, notamment CassetteAutoBoot, pour les appels de l’exemple.</remarks>
+/// Les sept premiers paramètres conservent leur ordre, notamment TapeAutoBoot, pour les appels de l’exemple.</remarks>
 /// <example><code>
 /// var disk = new MediaConfiguration("disque.img", MediaCategory.HardDisk, EmulationMediaSlot.HardDisk0,
 ///     StorageBus: StorageBus.Ide, MountPoint: "C", MountOrder: 0);
 /// var cartridge = new MediaConfiguration("cartouche.rom", MediaCategory.Cartridge, EmulationMediaSlot.Cartridge0,
 ///     CartridgePlatform: CartridgePlatform.Standard, CartridgeType: 1, CartridgeRegion: EmulationVideoStandard.Pal);
 /// </code></example>
-public sealed record MediaConfiguration(string Path, MediaCategory Category, EmulationMediaSlot Slot, string? Label = null, bool IsReadOnly = false, bool IsInserted = true, bool CassetteAutoBoot = false,
+public sealed record MediaConfiguration(string Path, MediaCategory Category, EmulationMediaSlot Slot, string? Label = null, bool IsReadOnly = false, bool IsInserted = true, bool TapeAutoBoot = false,
     StorageBus? StorageBus = null, string? MountPoint = null, int MountOrder = 0, CartridgePlatform? CartridgePlatform = null, int? CartridgeType = null, EmulationVideoStandard? CartridgeRegion = null);
 
 /// <summary>Compatibilité d’un profil avec un backend, projetée depuis ses descriptions matérielles et ses réglages.</summary>

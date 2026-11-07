@@ -31,7 +31,7 @@ internal static class Atari800OptionConstants
     internal const string SerialDevice = "atari800_rdevice";
     internal const string SlowExecutableLoading = "atari800_slowxex";
     internal const string SioAcceleration = "atari800_sioaccel";
-    internal const string CassetteBoot = "atari800_cassboot";
+    internal const string TapeBoot = "atari800_cassboot";
     internal const string MosaicMemory = "atari800_mosaic";
     internal const string AxlonMemory = "atari800_axlon";
     internal const string AxlonShadow = "atari800_axlon_shadow";

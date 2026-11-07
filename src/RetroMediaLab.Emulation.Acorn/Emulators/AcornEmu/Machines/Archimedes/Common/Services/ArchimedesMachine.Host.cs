@@ -14,14 +14,14 @@ internal sealed partial class ArchimedesMachine
     public int HardDiskDriveCount => _hardDisk is null ? 0 : C.HardDiskDrives;
     public EmulationAudioChannelLayout AudioChannelLayout => EmulationAudioChannelLayout.Stereo;
     public string? NonvolatileMemoryFile => C.CmosFile;
-    public IEmulatorCassetteTransport? CassetteTransport => null;
-    public bool CassetteHasChanges => false;
-    public EmulationCassetteSignal RecordedCassette => throw new NotSupportedException();
-    public void InsertCassette(EmulationCassetteSignal signal, bool writable = false) => throw new NotSupportedException();
-    public void MarkCassetteSaved() { }
-    public void RefreshCassetteIndex(EmulationCassetteSignal signal) => throw new NotSupportedException();
-    public void ConfigureCassette(EmulationCassetteSettings settings) { }
-    public void EjectCassette() { }
+    public IEmulatorTapeTransport? TapeTransport => null;
+    public bool TapeHasChanges => false;
+    public EmulationTapeSignal RecordedTape => throw new NotSupportedException();
+    public void InsertTape(EmulationTapeSignal signal, bool writable = false) => throw new NotSupportedException();
+    public void MarkTapeSaved() { }
+    public void RefreshTapeIndex(EmulationTapeSignal signal) => throw new NotSupportedException();
+    public void ConfigureTape(EmulationTapeSettings settings) { }
+    public void EjectTape() { }
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get; set; }
     public Action<int>? NetworkPoll { get; set; }
     public bool ReceiveNetworkFrame(ReadOnlySpan<byte> frame, bool validFcs = true) => false;

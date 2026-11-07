@@ -6,5 +6,5 @@ public enum EmulationMediaFolderCategory
     CompactDisc,
     HardDisk,
     Cartridge,
-    Cassette
+    Tape
 }

@@ -20,6 +20,6 @@ internal static class SystemKeyboardConstants
     internal const int OutputMask = 0x47;
     internal const int MatrixMask = 0x38;
     internal const int MatrixFirstBit = 3;
-    internal const int CassetteOutputBit = 0x40;
-    internal const int CassetteInputBit = 0x80;
+    internal const int TapeOutputBit = 0x40;
+    internal const int TapeInputBit = 0x80;
 }

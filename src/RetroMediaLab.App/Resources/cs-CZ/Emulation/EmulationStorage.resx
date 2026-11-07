@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Velikost nebo geometrie disku není platná.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Okamžitě rezervuje fyzické místo; jinak se obraz zvětšuje při zápisu dat.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sektory</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Kazeta</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Kazeta</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Nátěr</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Kompaktní disky</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Zobrazit aktivitu jednotek na obrazovce emulátoru</value></data>

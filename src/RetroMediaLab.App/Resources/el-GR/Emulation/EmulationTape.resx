@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Αναπαραγωγή</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Παύση</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Επαναφορά</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Γρήγορη προώθηση</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Εγγραφή</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Διακοπή</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Χωρίς κασέτα</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Διακόπηκε</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Αναπαραγωγή</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Παύση</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Εγγραφή</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Τέλος ταινίας</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Ποσοστό σειριακών δεδομένων (σωλήνας)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Αυτόματο</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Λειτουργία φόρτωσης</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Ανάγνωση σε πραγματικό χρόνο</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Επιταχυνόμενη ανάγνωση</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Άμεση φόρτωση</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Ταχύτητα ταινίας</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Ταχύτητα γρήγορης και αναστροφής</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Καθυστέρηση εκκίνησης κινητήρα πριν την αναπαραγωγή</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Καθυστέρηση εκκίνησης κινητήρα πριν την εγγραφή</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Ενεργοποίηση ήχων συσκευής αποθήκευσης</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Προστασία από τη γραφή</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Συχνότητα δειγματοληψίας (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Καναλιών ήχου</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Bits ανά δείγμα</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Υπογεγραμμένα δείγματα</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW προφίλ εισαγωγής κασέτας</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW προφίλ εγγραφής κασέτας</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Φόρτωση</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Μηχανικές ταινιών</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Αυτόματο ακολουθεί το σειριακό ρυθμό δεδομένων που καθορίζεται από το λογισμικό του υπολογιστή που προσομοιάζει.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Μονό</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Στερεό</value></data>
+</root>

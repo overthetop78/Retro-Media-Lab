@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>디스크 크기 또는 지오메트리가 잘못되었습니다.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>실제 디스크 공간을 즉시 예약합니다. 그렇지 않으면 데이터를 쓸 때 이미지가 커집니다.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>섹터</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>카세트</value></data>
+  <data name="Emulation.Storage.Tapes"><value>카세트</value></data>
   <data name="Emulation.Storage.Cartridges"><value>카트리지</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>컴팩트 디스크</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>에뮬레이터 화면에 드라이브 활동 표시</value></data>

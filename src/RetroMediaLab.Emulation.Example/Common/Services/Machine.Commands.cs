@@ -57,7 +57,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     /// <summary>Initialise le cœur, exécute les frames à sa cadence et ferme la session à la sortie de boucle.</summary>
     /// <param name="cancellationToken">Signal d’arrêt de la boucle et des attentes entre frames.</param>
     /// <remarks>Le démarrage est signalé après Initialize et le démarrage audio. Avant chaque frame,
-    /// les entrées physiques sont projetées par le mapper Common ; le contrôleur de cassette peut ensuite
+    /// les entrées physiques sont projetées par le mapper Common ; le contrôleur de tape peut ensuite
     /// ajouter ses impulsions de commande. Le cœur reçoit aussi l’état du tampon physique de sortie.
     /// Une demande de fermeture du cœur arrête la boucle par son signal d’arrêt, sans devenir une erreur.
     /// Le finally commun libère le cœur, arrête l’audio et termine les commandes restantes avant de publier Stopped.</remarks>
@@ -81,10 +81,10 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
                     {
                         _input.Poll();
                         var input = InputSnapshotFunctions.Apply(_input.Polled, CurrentConfiguration(), _inputMapper, _controllerPointerSwitchPressed);
-                        if (_cassetteInput is not null)
+                        if (_tapeInput is not null)
                         {
-                            _cassetteInput.SetPhysicalInput(input);
-                            input = _cassetteInput.NextFrame();
+                            _tapeInput.SetPhysicalInput(input);
+                            input = _tapeInput.NextFrame();
                         }
                         _core.SetInput(input);
                         _core.SetAudioBufferStatus(_audio.BufferStatus);
@@ -207,7 +207,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     {
         _controllerPointerSwitchPressed = false;
         _controllerPointerMode = false;
-        _cassetteInput?.SetPhysicalInput(EmulationInputSnapshot.Empty);
+        _tapeInput?.SetPhysicalInput(EmulationInputSnapshot.Empty);
         if (!_mediaSuspended) MachineFunctions.TryReleaseInput(_core);
     }
 

@@ -34,7 +34,7 @@ internal static class IconGlyphs
     internal static string Connection { get; } = LocExtension.GetInvariant("Icon.Connection");
     internal static string File { get; } = LocExtension.GetInvariant("Icon.File");
     internal static string Close { get; } = LocExtension.GetInvariant("Icon.Close");
-    internal static string Cassette { get; } = LocExtension.GetInvariant("Icon.Cassette");
+    internal static string Tape { get; } = LocExtension.GetInvariant("Icon.Tape");
     internal static string Load { get; } = LocExtension.GetInvariant("Icon.Load");
     internal static string Tools { get; } = LocExtension.GetInvariant("Icon.Tools");
     internal static string Engine { get; } = LocExtension.GetInvariant("Icon.Engine");

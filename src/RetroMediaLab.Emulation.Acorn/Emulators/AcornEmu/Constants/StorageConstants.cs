@@ -30,7 +30,7 @@ internal static class StorageConstants
     /// <summary>Valeur persistante désignant le transfert à vitesse maximale.</summary>
     internal const string MaximumSpeed = "0";
     /// <summary>Clé de traduction de l’activation des bruitages mécaniques.</summary>
-    internal const string SoundResource = "Emulation.Cassette.Settings.Sound";
+    internal const string SoundResource = "Emulation.Tape.Settings.Sound";
     /// <summary>Clé de traduction du choix du profil de bruitages.</summary>
     internal const string SoundProfileResource = "Emulation.Storage.Sound.Profile";
     /// <summary>Clé de traduction de l’interface de stockage.</summary>

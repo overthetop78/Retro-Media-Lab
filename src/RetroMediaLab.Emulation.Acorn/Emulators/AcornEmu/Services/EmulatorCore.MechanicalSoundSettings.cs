@@ -10,8 +10,8 @@ internal sealed partial class EmulatorCore
 {
     private IEnumerable<CoreOption> MechanicalSoundOptions()
     {
-        foreach (var option in SoundOptions(EmulationTapeSettingsConstants.Sound, EmulationCassetteSettings.Prefix + S.VolumeOption,
-            _cassetteSettings.MechanicalSound.ToString(), _cassetteSettings.MechanicalVolumePercent)) yield return option;
+        foreach (var option in SoundOptions(EmulationTapeSettingsConstants.Sound, EmulationTapeSettings.Prefix + S.VolumeOption,
+            _tapeSettings.MechanicalSound.ToString(), _tapeSettings.MechanicalVolumePercent)) yield return option;
         for (var index = 0; index < _floppySettings.Length; index++)
         {
             if (!_floppyConnected[index]) continue;

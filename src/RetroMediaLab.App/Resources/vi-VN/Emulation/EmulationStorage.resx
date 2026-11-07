@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Kích thước hoặc hình học đĩa không hợp lệ.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Dành ngay dung lượng vật lý; nếu không, ảnh sẽ tăng khi ghi dữ liệu.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Cung</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Băng cassette</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Băng cassette</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Hộp băng</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Đĩa compact</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Hiển thị hoạt động ổ đĩa trên màn hình trình giả lập</value></data>

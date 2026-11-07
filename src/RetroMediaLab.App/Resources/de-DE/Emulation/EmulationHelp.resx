@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Wählen Sie die sekundäre Firmware ROM von einigen Maschinenmodellen verlangt. Lassen Sie dieses Feld leer, wenn das ausgewählte Modell keine erweiterte ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Beschleunigt ermöglichen SIO Übertragungen</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Beschleunigt kompatible Übertragungen über den seriellen Ein-/Ausgabebus. Deaktivieren Sie diese Option, wenn die Software vom ursprünglichen Übertragungszeitpunkt abhängt.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Kassettenstart aktivieren</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Lässt die emulierte Maschine versuchen, mit dem angehängten Kassettenbild zu beginnen. Deaktivieren Sie diese Option beim Starten von einem anderen Gerät.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Kassettenstart aktivieren</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Lässt die emulierte Maschine versuchen, mit dem angehängten Kassettenbild zu beginnen. Deaktivieren Sie diese Option beim Starten von einem anderen Gerät.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Ermöglicht die R-Time 8 Uhrzeit</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Emuliert eine R-Time 8 Echtzeituhr, so dass kompatible Software das aktuelle Datum und die aktuelle Uhrzeit lesen kann.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Ermöglicht die P: Druckvorrichtung</value></data>

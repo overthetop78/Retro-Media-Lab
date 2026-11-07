@@ -10,7 +10,7 @@ internal static class HardwareModelFunctions
         {
             MediaCategory.Floppy => slot == EmulationMediaSlot.Floppy0 || slot == EmulationMediaSlot.Floppy1,
             MediaCategory.HardDisk => slot == EmulationMediaSlot.HardDisk0,
-            MediaCategory.Cassette => slot == EmulationMediaSlot.Cassette0,
+            MediaCategory.Tape => slot == EmulationMediaSlot.Tape0,
             _ => false
         };
 }

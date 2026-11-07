@@ -10,7 +10,7 @@ internal static class EmulationMediaConversionFunctions
     internal static MediaConfiguration ToModule(EmulationMedia media) => new(media.Path, media.Type switch
     {
         EmulationMediaType.Floppy => MediaCategory.Floppy,
-        EmulationMediaType.Cassette => MediaCategory.Cassette,
+        EmulationMediaType.Tape => MediaCategory.Tape,
         EmulationMediaType.Cartridge => MediaCategory.Cartridge,
         _ => throw new ArgumentOutOfRangeException(nameof(media))
     }, IsReadOnly: media.IsReadOnly, IsInserted: media.IsInserted, MountOrder: media.Slot.Index);
@@ -23,7 +23,7 @@ internal static class EmulationMediaConversionFunctions
             var category = item.Category switch
             {
                 MediaCategory.Floppy or MediaCategory.Snapshot => EmulationMediaCategory.FloppyDrive,
-                MediaCategory.Cassette => EmulationMediaCategory.CassetteDrive,
+                MediaCategory.Tape => EmulationMediaCategory.TapeDrive,
                 MediaCategory.Cartridge => EmulationMediaCategory.CartridgeSlot,
                 _ => throw new ArgumentOutOfRangeException(nameof(media), item.Category, null)
             };
@@ -32,7 +32,7 @@ internal static class EmulationMediaConversionFunctions
             var type = item.Category switch
             {
                 MediaCategory.Floppy or MediaCategory.Snapshot => EmulationMediaType.Floppy,
-                MediaCategory.Cassette => EmulationMediaType.Cassette,
+                MediaCategory.Tape => EmulationMediaType.Tape,
                 MediaCategory.Cartridge => EmulationMediaType.Cartridge,
                 _ => throw new ArgumentOutOfRangeException(nameof(media), item.Category, null)
             };

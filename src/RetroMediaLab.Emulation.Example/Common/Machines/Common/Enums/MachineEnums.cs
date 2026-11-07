@@ -10,7 +10,7 @@ public enum MachineFamily
 /// <summary>Identités des deux machines gérées par chacun des trois émulateurs.</summary>
 public enum MachineModel
 {
-    /// <summary>Machine équipée d’une disquette, d’une cassette et d’un disque dur.</summary>
+    /// <summary>Machine équipée d’une disquette, d’une tape et d’un disque dur.</summary>
     ExampleMachineA,
     /// <summary>Machine équipée d’une cartouche et d’une carte mémoire.</summary>
     ExampleMachineB,

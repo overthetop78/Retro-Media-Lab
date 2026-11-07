@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Το μέγεθος ή η γεωμετρία του δίσκου δεν είναι έγκυρα.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Δεσμεύει αμέσως τον φυσικό χώρο· διαφορετικά το είδωλο μεγαλώνει κατά την εγγραφή.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Τομείς</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Κασέτα</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Κασέτα</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Φυσίγγιο</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Συμπαγείς δίσκοι</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Εμφάνιση δραστηριότητας μονάδων στην οθόνη του εξομοιωτή</value></data>

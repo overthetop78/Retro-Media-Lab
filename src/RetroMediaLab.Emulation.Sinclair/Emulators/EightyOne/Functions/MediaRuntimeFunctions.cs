@@ -7,7 +7,7 @@ internal static class MediaRuntimeFunctions
 {
     internal static LoadedContent Prepare(MachineConfiguration configuration, string sessionDirectory, IReadOnlySet<string> supportedExtensions)
     {
-        if (configuration.InitialContent is not null || configuration.ConfiguredSlots.Any(slot => slot != EmulationMediaSlot.Cassette0) || configuration.Media.Any(media => media.Category != MediaCategory.Tape || media.Slot != EmulationMediaSlot.Cassette0))
+        if (configuration.InitialContent is not null || configuration.ConfiguredSlots.Any(slot => slot != EmulationMediaSlot.Tape0) || configuration.Media.Any(media => media.Category != MediaCategory.Tape || media.Slot != EmulationMediaSlot.Tape0))
             throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
         var media = configuration.Media.SingleOrDefault(media => media.IsInserted);
         if (media is null)

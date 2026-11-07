@@ -75,7 +75,7 @@ by the host.
 ## Version compatibility
 
 API `2.0` establishes the Retro Media Lab binary baseline (renamed namespaces and assemblies): external image paths, revised settings and media constructors,
-cassette and disk processing, drive mechanics, and host keyboard characters. Modules must be rebuilt against
+tape and disk processing, drive mechanics, and host keyboard characters. Modules must be rebuilt against
 SDK `2.0.0`, use a module version of at least `2.0.0`, and declare API range `2.0` to `2.0`. Existing published packages targeting API `1.x` remain
 associated with their previous host versions; renaming their manifests does not make their binaries compatible.
 

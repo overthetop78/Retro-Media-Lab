@@ -16,7 +16,7 @@ internal sealed partial class ElectronMachine : ICpuBus, ICpuBusCyclePins, IAcor
     private readonly byte[] _mos;
     private readonly Cpu6502 _cpu;
     private readonly ElectronKeyboard _keyboard = new();
-    private readonly AnalogCassette _cassette = new(C.CpuClock, CassetteSignalMode.DirectWaveform);
+    private readonly AnalogTape _tape = new(C.CpuClock, TapeSignalMode.DirectWaveform);
     private readonly ElectronVideo _video;
     private readonly ElectronUla _ula;
     private readonly List<short> _audio = [];
@@ -31,7 +31,7 @@ internal sealed partial class ElectronMachine : ICpuBus, ICpuBusCyclePins, IAcor
         _mos = mos.ToArray();
         _basic = basic.ToArray();
         _video = new ElectronVideo(this);
-        _ula = new ElectronUla(_video, _cassette);
+        _ula = new ElectronUla(_video, _tape);
         _cpu = new Cpu6502(this);
         Reset(true);
     }
@@ -64,7 +64,7 @@ internal sealed partial class ElectronMachine : ICpuBus, ICpuBusCyclePins, IAcor
         _audioPhase += C.AudioSampleRate;
         if (_audioPhase < C.CpuClock) return;
         _audioPhase -= C.CpuClock;
-        _audio.Add((short)Math.Clamp(_ula.SoundSample + _cassette.MonitorSample, short.MinValue, short.MaxValue));
+        _audio.Add((short)Math.Clamp(_ula.SoundSample + _tape.MonitorSample, short.MinValue, short.MaxValue));
     }
 
     public void SetInput(EmulationInputSnapshot snapshot)
@@ -85,7 +85,7 @@ internal sealed partial class ElectronMachine : ICpuBus, ICpuBusCyclePins, IAcor
             _audio.Clear();
             _audioPhase = 0;
             _ticks = 0;
-            _cassette.ResetHardware();
+            _tape.ResetHardware();
         }
         _ula.Reset(cold);
         _cpu.Reset();

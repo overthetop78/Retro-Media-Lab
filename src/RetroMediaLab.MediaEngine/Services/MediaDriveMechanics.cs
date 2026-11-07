@@ -45,7 +45,7 @@ public sealed partial class MediaDriveMechanics : IMediaDriveMechanics
     /// <inheritdoc/>
     public void SetTapeOperation(string operation)
     {
-        if (_device != C.Cassette) throw new InvalidOperationException();
+        if (_device != C.Tape) throw new InvalidOperationException();
         if (operation is not (C.None or C.Insert or C.Eject or C.Stop or C.Pause or C.Play or C.Record or C.FastForward or C.Rewind))
             throw new ArgumentOutOfRangeException(nameof(operation));
         lock (_sync)

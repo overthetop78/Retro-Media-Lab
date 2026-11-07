@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>二次ファームウェアを選択 ROM いくつかの機械モデルによって要求される。 選択したモデルが拡張を使用しない場合、このフィールドを空にします ROM. .</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>加速を有効にする SIO 転送</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>シリアル入力/出力バスを介して互換性のある転送を高速化します。 ソフトウェアが元の転送タイミングに依存したときにこのオプションを無効にします。</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>カセット起動を有効にする</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>封入された機械が付けられたカセット イメージから始めることを試みさせます。 別のデバイスから始まるとき、このオプションを無効にします。</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>カセット起動を有効にする</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>封入された機械が付けられたカセット イメージから始めることを試みさせます。 別のデバイスから始まるとき、このオプションを無効にします。</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>有効にする R-Time 8 クロック</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>エミュレート R-Time 8 リアルタイムクロックなので、互換性のあるソフトウェアは、現在の日付と時刻を読むことができます。</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>有効にする P: プリンター装置</value></data>

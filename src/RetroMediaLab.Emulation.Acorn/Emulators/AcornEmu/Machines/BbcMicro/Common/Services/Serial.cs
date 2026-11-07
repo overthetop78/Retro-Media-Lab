@@ -1,6 +1,6 @@
 using RetroMediaLab.Chips.IO.Acorn.SerialUla.BbcSerialUla.Services;
 using RetroMediaLab.Chips.IO.Motorola.M6800.Chip6850.Interfaces;
-using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.CassetteConstants;
+using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.TapeConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
 
@@ -54,9 +54,9 @@ internal sealed partial class Serial
         ReceiveSerialPins(_ula.ClearToSendHigh, _ula.DataCarrierDetectHigh, _ula.ReceiveData, _ula.Rs423Selected);
     }
 
-    internal void Tick(bool? cassetteInput)
+    internal void Tick(bool? tapeInput)
     {
-        _ula.SetCassetteInput(cassetteInput);
+        _ula.SetTapeInput(tapeInput);
         Tick();
     }
 

@@ -16,7 +16,7 @@
   <data name="Emulation.Atari.Audio.PokeyStereo" xml:space="preserve"><value>Stereo POKEY</value></data>
   <data name="Emulation.Atari.Video.Artifacting" xml:space="preserve"><value>Hi-res artifacting</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration" xml:space="preserve"><value>SIO acceleration</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot" xml:space="preserve"><value>Boot from cassette</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot" xml:space="preserve"><value>Boot from cassette</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision" xml:space="preserve"><value>Operating system revision</value></data>
   <data name="Emulation.Atari.Firmware.BasicEnabled" xml:space="preserve"><value>Internal BASIC</value></data>
   <data name="Emulation.Atari.Firmware.BasicVersion" xml:space="preserve"><value>BASIC revision</value></data>

@@ -8,14 +8,14 @@ internal sealed partial class AcornSystemMachine
     public int FloppyDriveCount => _fdc is null
         ? Storage.NoDrives
         : C.FloppyDrives;
-    public IEmulatorCassetteTransport CassetteTransport => _cassette;
-    public bool CassetteHasChanges => _cassette.HasChanges;
-    public EmulationCassetteSignal RecordedCassette => _cassette.RecordedSignal;
-    public void InsertCassette(EmulationCassetteSignal signal, bool writable = false) => _cassette.Insert(signal, writable);
-    public void EjectCassette() => _cassette.Eject();
-    public void MarkCassetteSaved() => _cassette.MarkSaved();
-    public void RefreshCassetteIndex(EmulationCassetteSignal signal) => _cassette.RefreshIndex(signal);
-    public void ConfigureCassette(EmulationCassetteSettings settings) => _cassette.Configure(settings);
+    public IEmulatorTapeTransport TapeTransport => _tape;
+    public bool TapeHasChanges => _tape.HasChanges;
+    public EmulationTapeSignal RecordedTape => _tape.RecordedSignal;
+    public void InsertTape(EmulationTapeSignal signal, bool writable = false) => _tape.Insert(signal, writable);
+    public void EjectTape() => _tape.Eject();
+    public void MarkTapeSaved() => _tape.MarkSaved();
+    public void RefreshTapeIndex(EmulationTapeSignal signal) => _tape.RefreshIndex(signal);
+    public void ConfigureTape(EmulationTapeSettings settings) => _tape.Configure(settings);
 
     public void AttachFloppy(int index, IEmulationDiskImage? image)
     {

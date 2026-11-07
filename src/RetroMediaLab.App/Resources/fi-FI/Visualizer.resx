@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>Heikentynyt ala</value></data>
   <data name="Visual.SectorDead"><value>Kuollut sektori</value></data>
   <data name="Visual.SectorWithoutData"><value>Sektori ilman tietoja</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>Kasetin tiedot</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>Kasetin tiedot</value></data>
   <data name="Visual.Representation"><value>Näyttötila</value></data>
 </root>

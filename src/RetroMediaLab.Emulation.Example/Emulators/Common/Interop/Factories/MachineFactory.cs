@@ -128,7 +128,7 @@ internal abstract class MachineFactory(Emulator emulator, string id, string name
             core = CreateCore();
             var machine = new Machine(sessionId, configuration, core, sessionDirectory, saveDirectory: saves,
                 audioOutputFactory: context.AudioOutputFactory, coreFactory: CreateCore,                 supportsNoContent: ((IEmulatorCapabilities)this).SupportsNoContent, supportsPointerCapture: SupportsPointer(configuration), inputMapper: this,
-                cassetteInput: configuration.Model == MachineModel.ExampleMachineA ? new CassetteInputController(configuration) : null,
+                tapeInput: configuration.Model == MachineModel.ExampleMachineA ? new TapeInputController(configuration) : null,
                 resolvedMedia: ResolveConfiguredMedia(configuration).Select(media => EmulationMediaConversionFunctions.ToModule(media, configuration.Media)).ToArray(), runtimePolicy: this);
             transferred = true;
             return machine;

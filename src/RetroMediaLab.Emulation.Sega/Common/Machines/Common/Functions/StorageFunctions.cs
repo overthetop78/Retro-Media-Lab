@@ -19,12 +19,12 @@ internal static class StorageSettingsFunctions
                 contentExtensions.Where(StorageSettingsFunctionsConstants.FloppyExtensions.Contains).ToArray(),
                 DisplayLabel: index == 0 ? StorageSettingsFunctionsConstants.FloppyDriveLabel : StorageSettingsFunctionsConstants.SecondFloppyDriveLabel,
                 IsPermanent: index < model.BuiltInFloppyDriveCount));
-        if (model.SupportsCassetteDrive)
-            devices.Add(new EmulationMediaDevice(EmulationMediaSlot.Cassette0, EmulationMediaType.Cassette,
-                contentExtensions.Where(StorageSettingsFunctionsConstants.CassetteExtensions.Contains).ToArray(),
+        if (model.SupportsTapeDrive)
+            devices.Add(new EmulationMediaDevice(EmulationMediaSlot.Tape0, EmulationMediaType.Tape,
+                contentExtensions.Where(StorageSettingsFunctionsConstants.TapeExtensions.Contains).ToArray(),
                 RequiresMachineRecreation: true,
-                DisplayLabel: StorageSettingsFunctionsConstants.CassetteDriveLabel,
-                IsPermanent: model.HasBuiltInCassetteDrive));
+                DisplayLabel: StorageSettingsFunctionsConstants.TapeDriveLabel,
+                IsPermanent: model.HasBuiltInTapeDrive));
         if (model.SupportsCartridgeSlot)
             devices.Add(new EmulationMediaDevice(EmulationMediaSlot.Cartridge0, EmulationMediaType.Cartridge,
                 contentExtensions.Where(cartridgeFormats.Contains).ToArray(), RequiresMachineRecreation: true,
@@ -50,8 +50,8 @@ internal static class StorageSettingsFunctions
         var configured = devices.Where(device => device.Slot.Category switch
         {
             EmulationMediaCategory.FloppyDrive => device.Slot.Index < configuredFloppies,
-            EmulationMediaCategory.CassetteDrive => model.HasBuiltInCassetteDrive
-                || OptionBool(options, StorageSettingsFunctionsConstants.CassetteDriveEnabledOption),
+            EmulationMediaCategory.TapeDrive => model.HasBuiltInTapeDrive
+                || OptionBool(options, StorageSettingsFunctionsConstants.TapeDriveEnabledOption),
             EmulationMediaCategory.CartridgeSlot => device.Slot.Index == 0
                 ? model.HasBuiltInCartridgeSlot
                     || OptionBool(options, StorageSettingsFunctionsConstants.CartridgeSlotEnabledOption)
@@ -76,7 +76,7 @@ internal static class StorageSettingsFunctions
             item.Path, item.Type switch
             {
                 EmulationMediaType.Floppy => MediaCategory.Floppy,
-                EmulationMediaType.Cassette => MediaCategory.Cassette,
+                EmulationMediaType.Tape => MediaCategory.Tape,
                 EmulationMediaType.Cartridge => MediaCategory.Cartridge,
                 EmulationMediaType.CompactDisc => MediaCategory.CompactDisc,
                 _ => throw new ArgumentOutOfRangeException(nameof(settings), item.Type, null)
@@ -91,7 +91,7 @@ internal static class StorageSettingsFunctions
         options = new Dictionary<string, string>(options, StringComparer.Ordinal)
         {
             [StorageSettingsFunctionsConstants.FloppyDriveCountOption] = settings.ConfiguredSlots.Count(slot => slot.Category == EmulationMediaCategory.FloppyDrive).ToString(System.Globalization.CultureInfo.InvariantCulture),
-            [StorageSettingsFunctionsConstants.CassetteDriveEnabledOption] = settings.ConfiguredSlots.Contains(EmulationMediaSlot.Cassette0).ToString(),
+            [StorageSettingsFunctionsConstants.TapeDriveEnabledOption] = settings.ConfiguredSlots.Contains(EmulationMediaSlot.Tape0).ToString(),
             [StorageSettingsFunctionsConstants.CartridgeSlotEnabledOption] = settings.ConfiguredSlots.Contains(EmulationMediaSlot.Cartridge0).ToString(),
             [StorageSettingsFunctionsConstants.SegaCardSlotEnabledOption] = settings.ConfiguredSlots.Contains(EmulationMediaSlot.Cartridge1).ToString(),
             [SettingsConstants.MasterSystemThreeDGlasses] = threeDGlassesEnabled.ToString(),

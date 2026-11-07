@@ -15,11 +15,11 @@ Catalogues sources :
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:16` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cassette),`
-- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:22` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
-- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:28` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
-- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:34` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette),`
-- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:40` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:16` : `HardwareModelFunctions.Values(HardwareStorageCapability.Tape),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:22` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:28` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:34` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape),`
+- `src/RetroMediaLab.Emulation.Acorn/Common/Machines/BbcMicro/Dictionaries/ModelCatalog.cs:40` : `HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape, HardwareStorageCapability.Cartridge),`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -39,8 +39,8 @@ Déclarations matérielles de stockage à relier aux références de lecteurs :
 - `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Constants/StorageConstants.cs:24` : `internal const int MaximumFloppyDrives = 2;`
 - `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
 - `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInTapeDrive,`
+- `src/RetroMediaLab.Emulation.Amstrad/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsTapeDrive,`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 
@@ -60,7 +60,7 @@ Catalogues sources :
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
 - `src/RetroMediaLab.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs:24` : `Array.AsReadOnly(new[] { HardwareStorageCapability.Floppy, HardwareStorageCapability.HardDisk,`
-- `src/RetroMediaLab.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs:25` : `HardwareStorageCapability.Cassette }),`
+- `src/RetroMediaLab.Emulation.Apple/Common/Machines/AppleII/Dictionaries/ModelCatalog.cs:25` : `HardwareStorageCapability.Tape }),`
 - `src/RetroMediaLab.Emulation.Apple/Common/Machines/Macintosh/Dictionaries/ModelCatalog.cs:28` : `Array.AsReadOnly(hardDisk ? new[] { HardwareStorageCapability.Floppy, HardwareStorageCapability.HardDisk } : new[] { HardwareStorageCapability.Floppy }),`
 - `src/RetroMediaLab.Emulation.Apple/Common/Machines/Pippin/Dictionaries/ModelCatalog.cs:15` : `[HardwareVideoCapability.Taos], [HardwareAudioCapability.Awacs], [HardwareStorageCapability.CompactDisc],`
 
@@ -88,7 +88,7 @@ Déclarations matérielles de stockage à relier aux références de lecteurs :
 - `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari2600/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
 - `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari5200/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
 - `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari7800/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
-- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari8Bit/Dictionaries/ModelCatalog.cs:10` : `private static readonly IReadOnlyList<HardwareStorageCapability> Storage = HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge);`
+- `src/RetroMediaLab.Emulation.Atari/Common/Machines/Atari8Bit/Dictionaries/ModelCatalog.cs:10` : `private static readonly IReadOnlyList<HardwareStorageCapability> Storage = HardwareModelFunctions.Values(HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape, HardwareStorageCapability.Cartridge);`
 - `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs:16` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
 - `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariJaguar/Dictionaries/ModelCatalog.cs:21` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge, HardwareStorageCapability.CompactDisc),`
 - `src/RetroMediaLab.Emulation.Atari/Common/Machines/AtariLynx/Dictionaries/ModelCatalog.cs:14` : `HardwareModelFunctions.Values(HardwareStorageCapability.Cartridge),`
@@ -188,7 +188,7 @@ Références acoustiques commerciales : à établir à partir des lecteurs inté
 
 ## epoch
 
-Modèles énumérés/référencés : `CassetteVision`, `CassetteVisionJr`, `SuperCassetteVision`, `SuperCassetteVisionLady`, `SuperCassetteVisionYeno`.
+Modèles énumérés/référencés : `TapeVision`, `TapeVisionJr`, `SuperTapeVision`, `SuperTapeVisionLady`, `SuperTapeVisionYeno`.
 
 Catalogues sources :
 
@@ -216,7 +216,7 @@ Catalogues sources :
 
 Déclarations matérielles de stockage à relier aux références de lecteurs :
 
-- `src/RetroMediaLab.Emulation.Example/Common/Machines/ExampleMachineA/Dictionaries/ModelCatalog.cs:15` : `[HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.HardDisk],`
+- `src/RetroMediaLab.Emulation.Example/Common/Machines/ExampleMachineA/Dictionaries/ModelCatalog.cs:15` : `[HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape, HardwareStorageCapability.HardDisk],`
 - `src/RetroMediaLab.Emulation.Example/Common/Machines/ExampleMachineB/Dictionaries/ModelCatalog.cs:15` : `[HardwareStorageCapability.Cartridge, HardwareStorageCapability.MemoryCard],`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
@@ -265,8 +265,8 @@ Déclarations matérielles de stockage à relier aux références de lecteurs :
 
 - `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
 - `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInTapeDrive,`
+- `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsTapeDrive,`
 - `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
 - `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
 - `src/RetroMediaLab.Emulation.Microsoft/Common/Machines/Common/Dictionaries/ModelCatalog.cs:9` : `ControllerPortCount: 4, HasBuiltInCompactDiscDrive: true,`
@@ -287,65 +287,65 @@ Déclarations matérielles de stockage à relier aux références de lecteurs :
 
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInTapeDrive,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsTapeDrive,`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:19` : `bool HasBuiltInCdDrive,`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:20` : `bool SupportsCdDrive,`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Common/Contracts/ModelContracts.cs:21` : `bool SupportsHardDrives = false);`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:14` : `internal const bool HasBuiltInTapeDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:15` : `internal const bool SupportsTapeDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/CoreGrafx/Constants/CoreGrafxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:14` : `internal const bool HasBuiltInTapeDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:15` : `internal const bool SupportsTapeDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/LaserActive/Constants/LaserActiveMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8001/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8001/Constants/MachineConstants.cs:16` : `HasBuiltInTapeDrive: false, SupportsTapeDrive: false,`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8001/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false);`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8801/Constants/MachineConstants.cs:20` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8801/Constants/MachineConstants.cs:20` : `HasBuiltInTapeDrive: false, SupportsTapeDrive: false,`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc8801/Constants/MachineConstants.cs:25` : `HasBuiltInCdDrive: false, SupportsCdDrive: false);`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9801/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9801/Constants/MachineConstants.cs:16` : `HasBuiltInTapeDrive: false, SupportsTapeDrive: false,`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9801/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false, SupportsHardDrives: true);`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9821/Constants/MachineConstants.cs:16` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9821/Constants/MachineConstants.cs:16` : `HasBuiltInTapeDrive: false, SupportsTapeDrive: false,`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/Pc9821/Constants/MachineConstants.cs:21` : `HasBuiltInCdDrive: false, SupportsCdDrive: false, SupportsHardDrives: true);`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:14` : `internal const bool HasBuiltInTapeDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:15` : `internal const bool SupportsTapeDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngine/Constants/PcEngineMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:14` : `internal const bool HasBuiltInTapeDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:15` : `internal const bool SupportsTapeDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineDuo/Constants/PcEngineDuoMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:14` : `internal const bool HasBuiltInTapeDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:15` : `internal const bool SupportsTapeDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcEngineLt/Constants/PcEngineLtMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:14` : `internal const bool HasBuiltInTapeDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:15` : `internal const bool SupportsTapeDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/PcFx/Constants/PcFxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:14` : `internal const bool HasBuiltInTapeDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:15` : `internal const bool SupportsTapeDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/SuperGrafx/Constants/SuperGrafxMachineConstants.cs:23` : `internal const bool SupportsCdDrive = true;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:12` : `internal const int BuiltInFloppyDriveCount = 0;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:13` : `internal const int MaximumFloppyDriveCount = 0;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:14` : `internal const bool HasBuiltInCassetteDrive = false;`
-- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:15` : `internal const bool SupportsCassetteDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:14` : `internal const bool HasBuiltInTapeDrive = false;`
+- `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:15` : `internal const bool SupportsTapeDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:22` : `internal const bool HasBuiltInCdDrive = false;`
 - `src/RetroMediaLab.Emulation.Nec/Common/Machines/TurboExpress/Constants/TurboExpressMachineConstants.cs:23` : `internal const bool SupportsCdDrive = false;`
 
@@ -363,8 +363,8 @@ Déclarations matérielles de stockage à relier aux références de lecteurs :
 
 - `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
 - `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInTapeDrive,`
+- `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsTapeDrive,`
 - `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
 - `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
 - `src/RetroMediaLab.Emulation.Nintendo/Common/Machines/Common/Dictionaries/ModelCatalog.cs:45` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
@@ -418,8 +418,8 @@ Déclarations matérielles de stockage à relier aux références de lecteurs :
 
 - `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
 - `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInTapeDrive,`
+- `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsTapeDrive,`
 - `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
 - `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
 - `src/RetroMediaLab.Emulation.Sega/Common/Machines/Common/Dictionaries/ModelCatalog.cs:36` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
@@ -491,8 +491,8 @@ Déclarations matérielles de stockage à relier aux références de lecteurs :
 
 - `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:9` : `int BuiltInFloppyDriveCount,`
 - `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:10` : `int MaximumFloppyDriveCount,`
-- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInCassetteDrive,`
-- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsCassetteDrive,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:11` : `bool HasBuiltInTapeDrive,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:12` : `bool SupportsTapeDrive,`
 - `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:17` : `bool HasBuiltInCompactDiscDrive = false,`
 - `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Contracts/ModelContracts.cs:18` : `bool SupportsCompactDiscDrive = false,`
 - `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:9` : `(int)RamCapacity._2MB, false, 0, 0, false, false, false, false, HasBuiltInCompactDiscDrive: true,`
@@ -503,7 +503,7 @@ Déclarations matérielles de stockage à relier aux références de lecteurs :
 - `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:30` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
 - `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:35` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
 - `src/RetroMediaLab.Emulation.Sony/Common/Machines/Common/Dictionaries/ModelCatalog.cs:40` : `HasBuiltInCompactDiscDrive: true, SupportsCompactDiscDrive: true,`
-- `src/RetroMediaLab.Emulation.Sony/Common/Machines/PocketStation/Dictionaries/ModelCatalog.cs:12` : `HasBuiltInCassetteDrive: false, SupportsCassetteDrive: false,`
+- `src/RetroMediaLab.Emulation.Sony/Common/Machines/PocketStation/Dictionaries/ModelCatalog.cs:12` : `HasBuiltInTapeDrive: false, SupportsTapeDrive: false,`
 
 Références acoustiques commerciales : à établir à partir des lecteurs intégrés et extensions déclarés ; ne pas attribuer un son PC générique à une machine différente.
 

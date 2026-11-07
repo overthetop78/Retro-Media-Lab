@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>Degraded Sektör</value></data>
   <data name="Visual.SectorDead"><value>Dead Sector</value></data>
   <data name="Visual.SectorWithoutData"><value>Sektör verisiz</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>Kaset bilgileri</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>Kaset bilgileri</value></data>
   <data name="Visual.Representation"><value>Görüntüleme modu</value></data>
 </root>

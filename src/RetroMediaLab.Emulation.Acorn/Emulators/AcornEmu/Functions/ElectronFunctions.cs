@@ -3,7 +3,7 @@ using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornElectron.Common.Services;
 using C = RetroMediaLab.Emulation.Acorn.Common.Machines.AcornElectron.Constants.ElectronModelConstants;
-using Tape = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.CassetteConstants;
+using Tape = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.TapeConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 
@@ -61,7 +61,7 @@ internal static partial class ElectronFunctions
         if (NetworkFunctions.Read(configuration).Enabled || StorageFunctions.HasWinchester(configuration)
             || Enumerable.Range(0, StorageConstants.DriveCount).Any(drive => StorageFunctions.Connected(configuration, drive)))
             throw new ArgumentException(ErrorMessages.IncompatibleMedia, nameof(configuration));
-        if (EmulationCassetteSettings.Read(configuration.Options).BaudRate is not (0 or C.CassetteBaud))
+        if (EmulationTapeSettings.Read(configuration.Options).BaudRate is not (0 or C.TapeBaud))
             throw new ArgumentException(ErrorMessages.OptionValueInvalidFormat, nameof(configuration));
     }
 }

@@ -91,7 +91,7 @@ internal static partial class StorageSettingsFunctions
     {
         MediaCategory.Floppy => EmulationMediaType.Floppy,
         MediaCategory.HardDisk => EmulationMediaType.HardDisk,
-        MediaCategory.Cassette => EmulationMediaType.Cassette,
+        MediaCategory.Tape => EmulationMediaType.Tape,
         MediaCategory.Cartridge => EmulationMediaType.Cartridge,
         MediaCategory.CompactDisc => EmulationMediaType.CompactDisc,
         _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
@@ -101,7 +101,7 @@ internal static partial class StorageSettingsFunctions
     {
         EmulationMediaType.Floppy => MediaCategory.Floppy,
         EmulationMediaType.HardDisk => MediaCategory.HardDisk,
-        EmulationMediaType.Cassette => MediaCategory.Cassette,
+        EmulationMediaType.Tape => MediaCategory.Tape,
         EmulationMediaType.Cartridge => MediaCategory.Cartridge,
         EmulationMediaType.CompactDisc => MediaCategory.CompactDisc,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)

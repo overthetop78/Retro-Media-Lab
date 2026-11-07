@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Redare</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Pauză</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Derulare înapoi</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Derulare rapidă înainte</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Înregistrare</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Oprire</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Nicio casetă</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Oprită</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Redare</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>În pauză</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Înregistrare</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Sfârșitul benzii</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Rata datelor în serie (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>Automat</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Modul de încărcare</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Citire în timp real</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Citire accelerată</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Încărcare directă</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Viteză bandă</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Viteza de mers înainte și de mers înapoi</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Întârzierea pornirii motorului înainte de redare</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Întârzierea pornirii motorului înainte de înregistrare</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Activează sunetele dispozitivului de stocare</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Protejează împotriva scrierii</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Frecvența de eșantionare (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Canale audio</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Biți per eșantion</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Mostre semnate</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW profil de intrare casetă</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW profil de înregistrare casete</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>Încărcare</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Mecanica benzilor</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Automatul urmează rata de date seriale setat de software-ul de calculator emulat. Nu detectează rata de date din fișierul imagine.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Mono</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>StereoCity in California USA</value></data>
+</root>

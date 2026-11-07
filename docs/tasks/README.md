@@ -15,9 +15,9 @@ l'utilisateur est terminé.
 2. Premier commit demandé après l’orchestration.
 3. [Affichage graphique de tous les supports](media-visualization.md).
 4. Deuxième commit demandé après l’affichage.
-5. [Extension aux HDD, supports optiques, cassettes et bandes](media-exploration.md).
+5. [Extension aux HDD, supports optiques, tapes et bandes](media-exploration.md).
 6. [Création et cycle de vie des images HDD](hard-disk-images.md), avec les compléments qui restent
-   après l'orchestration, l'exploration et l'affichage des HDD, CD/DVD/optiques et cassettes/bandes.
+   après l'orchestration, l'exploration et l'affichage des HDD, CD/DVD/optiques et tapes/bandes.
 7. Troisième commit demandé dans `hard-disk-images.md`.
 8. [Nettoyage du cycle de vie WPF et graphique](wpf-lifecycle-cleanup.md), avant de reprendre les essais manuels.
 9. [Validation finale](validation.md), en commençant par les audits manuels en lecture seule de `F:\Rétro`, `F:\86Box\Isos`, `C:\Users\overt\Documents\Retro Media Lab\Emulation\HDD` et `C:\Users\overt\86Box VMs`.
@@ -36,7 +36,7 @@ action imprécise avant de l'exécuter et supprimer une action devenue fausse ou
 - [Traduction complète des écrans du BIOS PC-FX](emulation/pcfx-bios-french.md) — compléter la ROM française au-delà du menu principal ; reporté.
 - [Publications restantes](release.md) — prochaines publications de l’application, du module Atari et, si son contrat évolue, du SDK.
 - [Atari](emulation/atari.md) — validations, accessibilité, Jaguar CD, guide et étude Atari System 1; reporté.
-- [Validations d’émulation](emulation/remaining-validations.md) — Amiga, cassette Atari800, GameInput, CPU masqué et distribution indépendante; reporté.
+- [Validations d’émulation](emulation/remaining-validations.md) — Amiga, tape Atari800, GameInput, CPU masqué et distribution indépendante; reporté.
 - [Contrôleurs d’émulation](interface/emulation/controllers.md) — régressions visuelles, associations et validations matérielles; reporté.
 - [Validation finale](validation.md) — corpus locaux de médias en lecture seule, Greaseweazle et entrées/sorties internes;
   commence seulement après le troisième commit du chantier média.

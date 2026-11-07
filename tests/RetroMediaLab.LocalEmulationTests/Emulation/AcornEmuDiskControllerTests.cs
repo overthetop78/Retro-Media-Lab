@@ -59,7 +59,7 @@ public sealed class AcornEmuDiskControllerTests
     }
 
     [Theory]
-    [InlineData("Cassette", "Play")]
+    [InlineData("Tape", "Play")]
     [InlineData("Floppy", "Motor")]
     [InlineData("Floppy", "Read")]
     [InlineData("Floppy", "Write")]
@@ -128,7 +128,7 @@ public sealed class AcornEmuDiskControllerTests
         Assert.Empty(factory.DescribeMediaDevices(removed)); Assert.DoesNotContain(factory.GetFirmwareSlots(removed), slot => slot.FieldId == RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Constants.FloppyExtensionConstants.IntelRom && slot.IsRequired);
         Assert.Throws<ArgumentException>(() => factory.ApplyStorage(configuration, available with { ConfiguredSlots = [EmulationMediaSlot.Floppy0], DeviceSettings = [new(EmulationMediaSlot.Floppy0, new("invalid", "100", false, false))] }));
         var activity = factory.MediaActivity(restored, new Dictionary<int, bool> { [0] = true, [4] = true });
-        Assert.True(activity[EmulationMediaSlot.Floppy0]); Assert.True(activity[EmulationMediaSlot.Floppy1]); Assert.False(activity[EmulationMediaSlot.Cassette0]);
+        Assert.True(activity[EmulationMediaSlot.Floppy0]); Assert.True(activity[EmulationMediaSlot.Floppy1]); Assert.False(activity[EmulationMediaSlot.Tape0]);
     }
 
     [Fact]

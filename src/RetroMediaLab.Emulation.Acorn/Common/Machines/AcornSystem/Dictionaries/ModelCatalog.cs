@@ -7,9 +7,9 @@ public static class SystemModelCatalog
     public static IReadOnlyList<HardwareModelDefinition> All { get; } =
     [
         Create(MachineModel.AcornSystem1, C.SystemOneClock, C.CpuRamBytes,
-            [HardwareCpu.Mos6502], [HardwareVideoCapability.SevenSegmentDisplay], [HardwareStorageCapability.Cassette]),
+            [HardwareCpu.Mos6502], [HardwareVideoCapability.SevenSegmentDisplay], [HardwareStorageCapability.Tape]),
         Create(MachineModel.AcornSystem2, C.StandardClock, C.SystemTwoRamBytes,
-            [HardwareCpu.Mos6502], [HardwareVideoCapability.Mc6845, HardwareVideoCapability.Saa5050], [HardwareStorageCapability.Cassette]),
+            [HardwareCpu.Mos6502], [HardwareVideoCapability.Mc6845, HardwareVideoCapability.Saa5050], [HardwareStorageCapability.Tape]),
         Create(MachineModel.AcornSystem3, C.StandardClock, C.SystemThreeRamBytes,
             [HardwareCpu.Mos6502, HardwareCpu.Motorola6809], [HardwareVideoCapability.Mc6845, HardwareVideoCapability.Saa5050], [HardwareStorageCapability.Floppy]),
         Create(MachineModel.AcornSystem4, C.StandardClock, C.SystemThreeRamBytes,
@@ -27,5 +27,5 @@ public static class SystemModelCatalog
             cpus, [HardwareRegion.Pal], video, [], storage, [new(HardwarePortCapability.Keyboard, C.KeyboardPorts)],
             model == MachineModel.AcornSystem1 ? [FirmwareCategory.OperatingSystem]
                 : [FirmwareCategory.OperatingSystem, FirmwareCategory.CharacterGenerator, FirmwareCategory.Basic],
-            storage.Select(item => item == HardwareStorageCapability.Cassette ? MediaCategory.Cassette : MediaCategory.Floppy).ToArray());
+            storage.Select(item => item == HardwareStorageCapability.Tape ? MediaCategory.Tape : MediaCategory.Floppy).ToArray());
 }

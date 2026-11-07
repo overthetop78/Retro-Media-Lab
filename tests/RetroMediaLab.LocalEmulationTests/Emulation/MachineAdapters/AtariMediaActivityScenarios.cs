@@ -52,7 +52,7 @@ internal static class AtariMediaActivityScenarios
 
         var activity = EmulationMediaActivityFunctions.FromLedStates(Emulator.Atari800, ledStates);
         Assert.True(activity[EmulationMediaSlot.Floppy1]);
-        Assert.True(activity[EmulationMediaSlot.Cassette0]);
+        Assert.True(activity[EmulationMediaSlot.Tape0]);
 
         Assert.True(EmulationMediaActivityFunctions.CaptureAtari800Overlay(new byte[pitch * height], width, height, pitch, EmulationPixelFormat.Rgb565, ledStates));
         Assert.All(ledStates.Values, Assert.False);

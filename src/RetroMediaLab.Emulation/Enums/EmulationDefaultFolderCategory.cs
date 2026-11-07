@@ -6,7 +6,7 @@ public enum EmulationDefaultFolderCategory
     CompactDisc,
     HardDisk,
     Cartridge,
-    Cassette,
+    Tape,
     State,
     Capture,
     Firmware,

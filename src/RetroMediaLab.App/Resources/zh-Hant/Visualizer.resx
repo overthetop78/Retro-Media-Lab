@@ -166,6 +166,6 @@
   <data name="Visual.SectorDegraded"><value>退化部门</value></data>
   <data name="Visual.SectorDead"><value>死区</value></data>
   <data name="Visual.SectorWithoutData"><value>无数据部门</value></data>
-  <data name="Visual.CassetteInspectorTitle"><value>卡式錄音帶資訊</value></data>
+  <data name="Visual.TapeInspectorTitle"><value>卡式錄音帶資訊</value></data>
   <data name="Visual.Representation"><value>顯示模式</value></data>
 </root>

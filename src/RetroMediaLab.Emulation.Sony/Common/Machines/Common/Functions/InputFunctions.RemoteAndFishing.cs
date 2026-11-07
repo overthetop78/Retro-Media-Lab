@@ -13,11 +13,11 @@ internal static partial class InputSettingsFunctions
         .. PlayStationButtonDefinitions(),
         .. Enumerable.Range(0, 10).Select(key => new InputBindingDefinition("Dvd.Key" + key, string.Empty, string.Empty, key.ToString())),
         .. DvdRemoteFunctions.Select(command => new InputBindingDefinition("Dvd." + command, "Emulation.Sony.Input.Remote." + command, string.Empty)),
-        new("Dvd.Play", "Emulation.Cassette.Command.Play", string.Empty),
+        new("Dvd.Play", "Emulation.Tape.Command.Play", string.Empty),
         new("Dvd.Pause", "Common.Pause", string.Empty),
         new("Dvd.Stop", "Common.Stop", string.Empty),
-        new("Dvd.Rewind", "Emulation.Cassette.Command.Rewind", string.Empty),
-        new("Dvd.FastForward", "Emulation.Cassette.Command.FastForward", string.Empty)
+        new("Dvd.Rewind", "Emulation.Tape.Command.Rewind", string.Empty),
+        new("Dvd.FastForward", "Emulation.Tape.Command.FastForward", string.Empty)
     ];
 
     private static IReadOnlyList<InputBindingDefinition> FishingDefinitions() =>

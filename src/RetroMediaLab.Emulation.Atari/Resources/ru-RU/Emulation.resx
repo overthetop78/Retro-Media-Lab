@@ -15,7 +15,7 @@
   <data name="Emulation.Atari.Memory.MapRam"><value>MapRAM</value></data>
   <data name="Emulation.Atari.Video.Artifacting"><value>Артефакт Hi-res</value></data>
   <data name="Emulation.Atari.Storage.SioAcceleration"><value>Ускорение SIO</value></data>
-  <data name="Emulation.Atari.Storage.CassetteBoot"><value>Загрузка из кассеты</value></data>
+  <data name="Emulation.Atari.Storage.TapeBoot"><value>Загрузка из кассеты</value></data>
   <data name="Emulation.Atari.Firmware.OsRevision"><value>Пересмотр операционной системы</value></data>
   <data name="Emulation.Atari.Video.Hue"><value>Хуэй</value></data>
   <data name="Emulation.Atari.Video.Saturation"><value>насыщение</value></data>

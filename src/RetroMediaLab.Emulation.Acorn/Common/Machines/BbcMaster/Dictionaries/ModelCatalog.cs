@@ -7,8 +7,8 @@ public static class MasterModelCatalog
     public static IReadOnlyList<HardwareModelDefinition> All { get; } =
     [
         Create(MachineModel.BbcMaster128, C.Master128Label, Emulator.B2,
-            [HardwareStorageCapability.Floppy, HardwareStorageCapability.Cassette, HardwareStorageCapability.Cartridge],
-            [MediaCategory.Floppy, MediaCategory.Cassette, MediaCategory.Cartridge]),
+            [HardwareStorageCapability.Floppy, HardwareStorageCapability.Tape, HardwareStorageCapability.Cartridge],
+            [MediaCategory.Floppy, MediaCategory.Tape, MediaCategory.Cartridge]),
         Create(MachineModel.BbcMasterET, C.MasterEtLabel, Emulator.AcornEmu, [], []),
         Create(MachineModel.BbcMasterCompact, C.MasterCompactLabel, Emulator.AcornEmu, [HardwareStorageCapability.Floppy], [MediaCategory.Floppy])
     ];

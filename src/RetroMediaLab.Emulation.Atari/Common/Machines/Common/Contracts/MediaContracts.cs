@@ -18,5 +18,5 @@ public sealed record MediaConfiguration(
     int MountOrder = MediaConstants.DefaultMountOrder,
     CartridgePlatform? CartridgePlatform = null,
     int? CartridgeType = null,
-    bool CassetteAutoBoot = false,
+    bool TapeAutoBoot = false,
     CartridgeRegion? CartridgeRegion = null);

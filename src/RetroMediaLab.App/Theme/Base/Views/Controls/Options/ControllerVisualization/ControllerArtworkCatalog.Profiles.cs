@@ -30,7 +30,7 @@ internal static partial class ControllerArtworkCatalog
         profiles[EmulationControllerVisualIds.PhilipsCdiGamepad] = CreatePhilipsCdiGamepad();
         profiles[EmulationControllerVisualIds.PhilipsCdiMouse] = CreatePhilipsCdiMouse();
         profiles[EmulationControllerVisualIds.FairchildChannelFController] = CreateFairchildChannelFController();
-        profiles[EmulationControllerVisualIds.EpochSuperCassetteVisionController] = CreateEpochSuperCassetteVisionController();
+        profiles[EmulationControllerVisualIds.EpochSuperTapeVisionController] = CreateEpochSuperTapeVisionController();
         profiles[EmulationControllerVisualIds.ColecoController] = CreateColecoController();
         profiles[EmulationControllerVisualIds.ColecoDrivingController] = CreateColecoDrivingController();
         profiles[EmulationControllerVisualIds.ColecoSuperActionController] = CreateColecoSuperActionController();

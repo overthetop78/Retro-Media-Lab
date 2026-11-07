@@ -224,7 +224,7 @@ pour rendre les attributions vérifiables sans modifier le logiciel.
 | `Emulation.Atari.Model.Tt` | Emulation.resx | Atari | Atari TT |
 | `Emulation.Atari.Model.Xegs` | Emulation.resx | Atari | Atari XEGS |
 | `Emulation.Atari.Model.XlXe` | Emulation.resx | Atari | Atari XL/XE |
-| `Emulation.Atari.Storage.CassetteBoot` | Emulation.resx | Atari | Boot from cassette |
+| `Emulation.Atari.Storage.TapeBoot` | Emulation.resx | Atari | Boot from tape |
 | `Emulation.Atari.Storage.MediaFilter` | Emulation.resx | Préfixe de famille | Atari media&#124;*.st;*.msa;*.stx;*.dim;*.ipf;*.vhd;*.ide;*.gem;*.atr;*.xfd;*.atx;*.cas;*.car;*.rom;*.bin;*.a26;*.a78;*.lnx;*.j64;*.jag;*.cue;*.ccd;*.chd;*.iso;*.m3u;*.zip;*.7z&#124;All files&#124;*.* |
 | `Emulation.Atari.Storage.PrinterDevice` | Emulation.resx | Atari | P: printer device |
 | `Emulation.Atari.Storage.RealTimeClock` | Emulation.resx | Atari | R-Time 8 real-time clock |

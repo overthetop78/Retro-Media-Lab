@@ -8,7 +8,7 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuAtomPpiTests
 {
     [Fact]
-    public void TheNativeCassetteClockReachesPc4WhenItIsProgrammedAsStrobeA()
+    public void TheNativeTapeClockReachesPc4WhenItIsProgrammedAsStrobeA()
     {
         var board = new AtomMachine(new byte[C.CombinedBasicOsBytes], new byte[280], C.RamBlockBytes, C.RamBlockBytes);
         try
@@ -17,7 +17,7 @@ public sealed class AcornEmuAtomPpiTests
             board.Write(C.PpiStart + 3, 0xbb);
             board.Write(C.PpiStart + 3, 0x09);
             Assert.False(ppi.InterruptA);
-            for (var cycle = 0; cycle < C.CassetteHalfPeriod * 3; cycle++) board.Tick();
+            for (var cycle = 0; cycle < C.TapeHalfPeriod * 3; cycle++) board.Tick();
             Assert.True(ppi.InterruptA);
             Assert.Equal(0x28, board.Read(C.PpiStart + 2) & 0x28);
             Assert.False(board.Irq); // No INTR-to-CPU wire exists on the ordinary Atom board.

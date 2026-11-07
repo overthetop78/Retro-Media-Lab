@@ -128,7 +128,7 @@ internal sealed class ConversionTabController(
         sourcePcmParameters = null;
         if (UsesInternal && Path.GetExtension(path).Equals(".raw", StringComparison.OrdinalIgnoreCase) && formatDetector().Detect(path, new FileInfo(path).Length).Format is null)
         {
-            sourcePcmParameters = SelectPcmProfile("Emulation.Cassette.Pcm.Input");
+            sourcePcmParameters = SelectPcmProfile("Emulation.Tape.Pcm.Input");
             if (sourcePcmParameters is null) return;
         }
         viewModel.Conversion.SourcePath = path; viewModel.Conversion.OutputName = Path.GetFileNameWithoutExtension(path);
@@ -254,7 +254,7 @@ internal sealed class ConversionTabController(
         targetPcmParameters = null;
         if (UsesInternal && outputs.Any(output => output.FormatId == TapeImageFormatIds.Raw))
         {
-            targetPcmParameters = SelectPcmProfile("Emulation.Cassette.Pcm.Output");
+            targetPcmParameters = SelectPcmProfile("Emulation.Tape.Pcm.Output");
             if (targetPcmParameters is null) return;
         }
         if (UsesInternal)
@@ -310,8 +310,8 @@ internal sealed class ConversionTabController(
     /// <summary>Le profil RAW d'entrée décrit le fichier ; celui de sortie décrit le résultat demandé.</summary>
     private static IReadOnlyDictionary<string, string>? SelectPcmProfile(string titleKey)
     {
-        var dialog = new ManagedStorageConfigurationDialog(LocExtension.Get(titleKey), "RAW", string.Empty, EmulationCassettePcmSettings.Describe(new Dictionary<string, string>()), null);
-        try { return dialog.ShowDialog() == true ? EmulationCassettePcmSettings.Read(dialog.Options).ToParameters() : null; }
+        var dialog = new ManagedStorageConfigurationDialog(LocExtension.Get(titleKey), "RAW", string.Empty, EmulationTapePcmSettings.Describe(new Dictionary<string, string>()), null);
+        try { return dialog.ShowDialog() == true ? EmulationTapePcmSettings.Read(dialog.Options).ToParameters() : null; }
         finally { dialog.Close(); }
     }
 

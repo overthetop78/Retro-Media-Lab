@@ -68,7 +68,7 @@
   <data name="Emulation.Storage.Disk.InvalidSize"><value>Festplattengröße oder Geometrie ist ungültig.</value></data>
   <data name="Emulation.Storage.File.PreallocationHint"><value>Reserviert den physischen Speicherplatz sofort; andernfalls wächst das Abbild beim Schreiben.</value></data>
   <data name="Emulation.Storage.Geometry.Sectors"><value>Sektoren</value></data>
-  <data name="Emulation.Storage.Cassettes"><value>Kassette</value></data>
+  <data name="Emulation.Storage.Tapes"><value>Kassette</value></data>
   <data name="Emulation.Storage.Cartridges"><value>Steckmodul</value></data>
   <data name="Emulation.Storage.CompactDiscs"><value>Compact Discs</value></data>
   <data name="Emulation.Storage.ActivityOsd" xml:space="preserve"><value>Laufwerksaktivität auf dem Emulatorbildschirm anzeigen</value></data>

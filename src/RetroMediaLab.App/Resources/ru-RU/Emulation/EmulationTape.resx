@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>Воспроизвести</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>Пауза</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>Перемотка назад</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>Перемотка вперёд</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>Запись</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>Остановить</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>Нет кассеты</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>Остановлено</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>Воспроизведение</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>Пауза</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>Запись</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>Конец ленты</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>Серийная скорость передачи данных (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>автоматический</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>Режим загрузки</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>Чтение в реальном времени</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>Ускоренное чтение</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>Прямая загрузка</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>Скорость ленты</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>Скорость перемотки и перемотки</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>Задержка моторного старта перед воспроизведением</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>Задержка мотора перед записью</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>Включить звуки устройства хранения</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>Защита от написания</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>Частота выборки (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>Аудиоканалы</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>Биты на образец</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>Подписанные образцы</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW профиль входной кассеты</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW профиль записи кассет</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>загрузка</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>Механика ленты</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>Автоматически следует за последовательной скоростью передачи данных, заданной эмулируемым компьютерным программным обеспечением. Она не обнаруживает скорость передачи данных из файла изображения.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Моно</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Стереотип</value></data>
+</root>

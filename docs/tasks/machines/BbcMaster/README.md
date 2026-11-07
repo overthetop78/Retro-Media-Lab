@@ -12,7 +12,7 @@
 
 - [Synchronisation ADC sur le bus Master](adc-sync.md) : défaut reproduit puis corrigé ; délais et IRQ vérifiés par tests autonomes, quatre canaux contrôlés sous MOS réel.
 
-- [Médias natifs Master 128](media-128.md) : DFS persistant, ADFS sur les deux ports Winchester, SAVE/CHAIN cassette et Boulder Dash vérifiés hors RML ; livraison Debug All contrôlée.
+- [Médias natifs Master 128](media-128.md) : DFS persistant, ADFS sur les deux ports Winchester, SAVE/CHAIN tape et Boulder Dash vérifiés hors RML ; livraison Debug All contrôlée.
 
 - [Observation RML Debug](../../../project/emulations/Acorn/BBC%20Master/Master%20128/rml-validation.md) : cadence nominale constatée au repos, capture native conservée ; saisie automatisée et validation en charge non acquises dans l'interface.
 

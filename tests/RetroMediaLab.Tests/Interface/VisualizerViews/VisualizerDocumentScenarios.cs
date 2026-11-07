@@ -249,7 +249,7 @@ internal static class VisualizerDocumentScenarios
         }
     }
 
-    public static async Task CassettePresentationUsesRecognizedMediaKindRatherThanExtension()
+    public static async Task TapePresentationUsesRecognizedMediaKindRatherThanExtension()
     {
         var existingNonTapePath = typeof(VisualizerDocumentScenarios).Assembly.Location;
         using (var tapeWorkspace = new Workspace(withVisualizationProviders: true, withMediaServices: true, useDefaultExplorer: true, mediaImageReader: new SequentialDocumentReader()))
@@ -262,13 +262,13 @@ internal static class VisualizerDocumentScenarios
             Assert.Empty(tapeWorkspace.Errors);
         }
 
-        var falseCassettePath = Path.Combine(Path.GetTempPath(), $"retromedialab-false-cassette-{Guid.NewGuid():N}.cas");
+        var falseTapePath = Path.Combine(Path.GetTempPath(), $"retromedialab-false-tape-{Guid.NewGuid():N}.cas");
         try
         {
-            File.WriteAllBytes(falseCassettePath, [0]);
+            File.WriteAllBytes(falseTapePath, [0]);
             using var floppyWorkspace = new Workspace(withVisualizationProviders: true, withMediaServices: true, useDefaultExplorer: true, sectorCylinders: 1);
 
-            await floppyWorkspace.Controller.LoadAsync(falseCassettePath);
+            await floppyWorkspace.Controller.LoadAsync(falseTapePath);
 
             Assert.Equal(MediaKind.Floppy, floppyWorkspace.Visualizer.CurrentDocument?.MediaKind);
             Assert.NotEqual("Explorer.LoadingTapeReading", floppyWorkspace.Explorer.LoadingStage);
@@ -276,7 +276,7 @@ internal static class VisualizerDocumentScenarios
         }
         finally
         {
-            File.Delete(falseCassettePath);
+            File.Delete(falseTapePath);
         }
     }
 

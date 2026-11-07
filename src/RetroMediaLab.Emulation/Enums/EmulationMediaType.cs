@@ -6,6 +6,6 @@ public enum EmulationMediaType
     HardDisk = 1,
     CompactDisc = 2,
     Cartridge = 4,
-    Cassette = 5,
+    Tape = 5,
     MemoryCard = 6
 }

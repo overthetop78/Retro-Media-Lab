@@ -27,7 +27,7 @@ public sealed class MediaImageExplorationService(MediaImageReadingService reader
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        document = await RetroMediaLab.MediaEngine.Functions.CassetteBlockFunctions.IndexAsync(document, cancellationToken).ConfigureAwait(false);
+        document = await RetroMediaLab.MediaEngine.Functions.TapeBlockFunctions.IndexAsync(document, cancellationToken).ConfigureAwait(false);
         reportProgress?.Invoke(new(MediaExplorationProgressStage.ReadingFileSystem, document.FormatId, 78, document.MediaKind));
 
         var explored = await explorer.ExploreAsync(document, cancellationToken).ConfigureAwait(false);

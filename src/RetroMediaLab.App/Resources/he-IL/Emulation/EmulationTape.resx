@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Emulation.Tape.Command.Play"><value>הפעלה</value></data>
+  <data name="Emulation.Tape.Command.Pause"><value>השהיה</value></data>
+  <data name="Emulation.Tape.Command.Rewind"><value>הרצה לאחור</value></data>
+  <data name="Emulation.Tape.Command.FastForward"><value>הרצה קדימה</value></data>
+  <data name="Emulation.Tape.Command.Record"><value>הקלטה</value></data>
+  <data name="Emulation.Tape.Command.Stop"><value>עצירה</value></data>
+  <data name="Emulation.Tape.State.Empty"><value>אין קלטת</value></data>
+  <data name="Emulation.Tape.State.Stopped"><value>נעצרה</value></data>
+  <data name="Emulation.Tape.State.Playing"><value>מתנגנת</value></data>
+  <data name="Emulation.Tape.State.Paused"><value>מושהית</value></data>
+  <data name="Emulation.Tape.State.Recording"><value>הקלטה</value></data>
+  <data name="Emulation.Tape.State.EndOfTape"><value>סוף הקלטת</value></data>
+  <data name="Emulation.Tape.Settings.Baud"><value>שיעור נתונים Serial (baud)</value></data>
+  <data name="Emulation.Tape.Settings.Automatic"><value>אוטומטי אוטומטי</value></data>
+  <data name="Emulation.Tape.Settings.Mode"><value>המונחים: mode</value></data>
+  <data name="Emulation.Tape.Settings.Mode.RealTime"><value>קריאה בזמן אמת</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Accelerated"><value>קריאה</value></data>
+  <data name="Emulation.Tape.Settings.Mode.Direct"><value>טעינה ישירה</value></data>
+  <data name="Emulation.Tape.Settings.Speed"><value>מהירות Tape</value></data>
+  <data name="Emulation.Tape.Settings.Wind"><value>מהירות מהירה ומהירות החזרה</value></data>
+  <data name="Emulation.Tape.Settings.ReadLatency"><value>רכב מתחיל לדחות לפני משחק</value></data>
+  <data name="Emulation.Tape.Settings.WriteLatency"><value>להתחיל לדחות את המנוע לפני הקלטת</value></data>
+  <data name="Emulation.Tape.Settings.Sound"><value>מכשיר אחסון אמין נשמע</value></data>
+  <data name="Emulation.Tape.Settings.Protected"><value>הגנה מפני כתיבה</value></data>
+  <data name="Emulation.Tape.Pcm.SampleRate"><value>תדירות (Hz)</value></data>
+  <data name="Emulation.Tape.Pcm.Channels"><value>ערוצים אודיו</value></data>
+  <data name="Emulation.Tape.Pcm.Bits"><value>bits per Sample</value></data>
+  <data name="Emulation.Tape.Pcm.Signed"><value>דגימות</value></data>
+  <data name="Emulation.Tape.Pcm.Input"><value>RAW פרופיל קלט קלט</value></data>
+  <data name="Emulation.Tape.Pcm.Output"><value>RAW פרופיל הקלטת קלטת</value></data>
+  <data name="Emulation.Tape.Settings.Group.Playback"><value>טעינה</value></data>
+  <data name="Emulation.Tape.Settings.Group.Mechanics"><value>מכונאי Tape</value></data>
+  <data name="Emulation.Tape.Settings.Automatic.Help"><value>באופן אוטומטי עוקב אחר שיעור הנתונים הסידורי שנקבע על ידי תוכנת מחשב חיקוי.זה לא מזהה את שיעור הנתונים מקובץ התמונה.</value></data>
+  <data name="Emulation.Tape.Pcm.Mono"><value>Mono Mono Mono Mono Mono Mono Mono Mono Mono Mono Mono Mono Mono</value></data>
+  <data name="Emulation.Tape.Pcm.Stereo"><value>Stereo</value></data>
+</root>

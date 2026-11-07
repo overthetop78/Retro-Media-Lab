@@ -203,15 +203,15 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         return _controllerPointerMode;
     }
 
-    /// <summary>Transmet une commande au contrôleur cassette de la session sur le thread du cœur.</summary>
+    /// <summary>Transmet une commande au contrôleur tape de la session sur le thread du cœur.</summary>
     /// <param name="command">Commande déclarée disponible par la facette de transport.</param>
     /// <param name="cancellationToken">Annulation de la commande en file.</param>
-    /// <returns>Attente de l’enregistrement de l’impulsion cassette ; la frame suivante la consomme.</returns>
+    /// <returns>Attente de l’enregistrement de l’impulsion tape ; la frame suivante la consomme.</returns>
     /// <exception cref="NotSupportedException">Le contrôleur est absent ou ne propose pas cette commande.</exception>
-    ValueTask IEmulationCassetteTransport.ExecuteAsync(EmulationCassetteCommand command, CancellationToken cancellationToken) => QueueCommand(() =>
+    ValueTask IEmulationTapeTransport.ExecuteAsync(EmulationTapeCommand command, CancellationToken cancellationToken) => QueueCommand(() =>
     {
-        if (_cassetteInput is null || command != EmulationCassetteCommand.Play) throw new NotSupportedException(command.ToString());
-        _cassetteInput.Play();
+        if (_tapeInput is null || command != EmulationTapeCommand.Play) throw new NotSupportedException(command.ToString());
+        _tapeInput.Play();
     }, cancellationToken, EmulationMessageCategory.Media, EmulationMessageCode.MediaOperationFailed);
 
     /// <summary>Coupe ou réactive la sortie audio de la machine.</summary>

@@ -33,7 +33,7 @@ public static class EightBitSettingsConstants
     public const string SerialDeviceOptionKey = "retromedialab_atari_8bit_serial_device";
     public const string SlowExecutableLoadingOptionKey = "retromedialab_atari_8bit_slow_executable_loading";
     public const string SioAccelerationOptionKey = "retromedialab_atari_8bit_sio_acceleration";
-    public const string CassetteBootOptionKey = "retromedialab_atari_8bit_cassette_boot";
+    public const string TapeBootOptionKey = "retromedialab_atari_8bit_tape_boot";
     public const string MosaicMemoryOptionKey = "retromedialab_atari_8bit_mosaic_memory";
     public const string AxlonMemoryOptionKey = "retromedialab_atari_8bit_axlon_memory";
     public const string AxlonShadowOptionKey = "retromedialab_atari_8bit_axlon_shadow";

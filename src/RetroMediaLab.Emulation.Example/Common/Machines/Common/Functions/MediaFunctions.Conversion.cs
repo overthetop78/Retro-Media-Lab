@@ -31,7 +31,7 @@ internal static class EmulationMediaConversionFunctions
     /// <param name="mountedMedia">Montages courants dans lesquels rechercher le lecteur.</param>
     /// <returns>Description interne du contenu à monter dans le lecteur.</returns>
     /// <remarks>Le libellé, le bus, le point et l’ordre de montage ainsi que les paramètres de cartouche
-    /// et de cassette restent portés par la copie with. Une catégorie interne plus précise est conservée
+    /// et de tape restent portés par la copie with. Une catégorie interne plus précise est conservée
     /// lorsque sa projection correspond encore au même type public.</remarks>
     internal static MediaConfiguration ToModule(EmulationMedia media, IReadOnlyList<MediaConfiguration> mountedMedia)
     {
@@ -46,7 +46,7 @@ internal static class EmulationMediaConversionFunctions
     internal static EmulationMediaType ToType(MediaCategory category) => category switch
     {
         MediaCategory.Floppy or MediaCategory.Snapshot => EmulationMediaType.Floppy,
-        MediaCategory.Cassette => EmulationMediaType.Cassette,
+        MediaCategory.Tape => EmulationMediaType.Tape,
         MediaCategory.HardDisk or MediaCategory.Directory => EmulationMediaType.HardDisk,
         MediaCategory.Cartridge => EmulationMediaType.Cartridge,
         MediaCategory.MemoryCard => EmulationMediaType.MemoryCard,
@@ -60,7 +60,7 @@ internal static class EmulationMediaConversionFunctions
     internal static MediaCategory ToCategory(EmulationMediaType type) => type switch
     {
         EmulationMediaType.Floppy => MediaCategory.Floppy,
-        EmulationMediaType.Cassette => MediaCategory.Cassette,
+        EmulationMediaType.Tape => MediaCategory.Tape,
         EmulationMediaType.HardDisk => MediaCategory.HardDisk,
         EmulationMediaType.Cartridge => MediaCategory.Cartridge,
         EmulationMediaType.MemoryCard => MediaCategory.MemoryCard,

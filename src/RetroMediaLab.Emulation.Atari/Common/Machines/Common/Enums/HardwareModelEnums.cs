@@ -18,4 +18,4 @@ public enum HardwarePortCapability
     LightGun, ProLineController, EnhancedController
 }
 
-public enum HardwareStorageCapability { Floppy, Cassette, Cartridge, ExecutableFile, CompactDisc }
+public enum HardwareStorageCapability { Floppy, Tape, Cartridge, ExecutableFile, CompactDisc }

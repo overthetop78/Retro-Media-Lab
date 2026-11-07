@@ -72,8 +72,8 @@
   <data name="Emulation.Help.Firmware.ExtendedRom.Detailed" xml:space="preserve"><value>Selectează firmware-ul secundar ROM impuse de unele modele de mașini. Lăsați acest câmp gol atunci când modelul selectat nu utilizează o extensie ROM.</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Short" xml:space="preserve"><value>Activează accelerat SIO transferuri</value></data>
   <data name="Emulation.Help.Storage.SioAcceleration.Detailed" xml:space="preserve"><value>Accelerează transferurile compatibile prin intermediul autobuzului de intrare/ieșire serial. Dezactivează această opțiune atunci când software-ul depinde de calendarul de transfer original.</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Short" xml:space="preserve"><value>Activează pornirea casetei</value></data>
-  <data name="Emulation.Help.Storage.CassetteBoot.Detailed" xml:space="preserve"><value>Face mașina emulată să încerce să pornească de la imaginea casetei atașate. Dezactivează această opțiune la pornirea de la alt dispozitiv.</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Short" xml:space="preserve"><value>Activează pornirea casetei</value></data>
+  <data name="Emulation.Help.Storage.TapeBoot.Detailed" xml:space="preserve"><value>Face mașina emulată să încerce să pornească de la imaginea casetei atașate. Dezactivează această opțiune la pornirea de la alt dispozitiv.</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Short" xml:space="preserve"><value>Activează R-Time 8 ceas</value></data>
   <data name="Emulation.Help.Storage.RealTimeClock.Detailed" xml:space="preserve"><value>Emulează R-Time 8 ceas în timp real, astfel încât software-ul compatibil poate citi data și ora curentă.</value></data>
   <data name="Emulation.Help.Storage.PrinterDevice.Short" xml:space="preserve"><value>Activează P: dispozitiv imprimantă</value></data>

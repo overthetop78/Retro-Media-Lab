@@ -170,7 +170,7 @@ internal sealed class CommonErrorDialog : Window
         CommonErrorDialogMediaIcon.HardDisk => MachinePresentationConstants.HardDiskGlyph,
         CommonErrorDialogMediaIcon.CompactDisc => MachinePresentationConstants.CompactDiscGlyph,
         CommonErrorDialogMediaIcon.Cartridge => MachinePresentationConstants.CartridgeGlyph,
-        CommonErrorDialogMediaIcon.Cassette => MachinePresentationConstants.CassetteGlyph,
+        CommonErrorDialogMediaIcon.Tape => MachinePresentationConstants.TapeGlyph,
         _ => string.Empty
     };
 }

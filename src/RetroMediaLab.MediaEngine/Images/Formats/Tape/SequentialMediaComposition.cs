@@ -31,7 +31,7 @@ public sealed class SequentialMediaComposition
     public static SequentialMediaComposition CreateDefault() => new(
         new SequentialDecoderRegistry(
         [
-            new AtariCassetteDecoder(),
+            new AtariTapeDecoder(),
             new AmstradCpcTapeDecoder(),
             new SpectrumTapeDecoder(),
             new CommodoreTapeDecoder(),
@@ -40,7 +40,7 @@ public sealed class SequentialMediaComposition
         ]),
         new SequentialEncoderRegistry(
         [
-            new AtariCassetteEncoder(),
+            new AtariTapeEncoder(),
             new AmstradCpcTapeEncoder(),
             new SpectrumTapeEncoder(),
             new CommodoreTapeEncoder(),

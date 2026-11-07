@@ -42,7 +42,7 @@ public sealed partial class BbcSerialUla
     private int NextClockDistance()
     {
         var transmit = _transmitDivider - (_dividerCounter & (_transmitDivider - 1));
-        var divider = _rs423Selected ? _receiveDivider : C.CassetteClockDivider;
+        var divider = _rs423Selected ? _receiveDivider : C.TapeClockDivider;
         var receive = divider - (_dividerCounter & (divider - 1));
         var edges = transmit < receive ? transmit : receive;
         var clocks = (edges * _clockDenominator - _sourcePhase + C.MasterClock - 1) / C.MasterClock;

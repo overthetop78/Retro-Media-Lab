@@ -25,7 +25,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private readonly RamIo8154 _ramIo = new();
     private readonly Via6522 _via = new();
     private readonly SystemKeyboard _keyboard;
-    private readonly AnalogCassette _cassette;
+    private readonly AnalogTape _tape;
     private readonly SystemVideo? _video;
     private readonly SystemHexDisplay? _display;
     private readonly Cpu6502? _cpu6502;
@@ -61,23 +61,23 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             Array.Fill(_ramMapped, true, start, bytes);
         }
         _keyboard = new SystemKeyboard(_clock);
-        _cassette = new AnalogCassette(_clock);
+        _tape = new AnalogTape(_clock);
         if (card == SystemCpuCard.Keypad6502)
         {
             _display = new SystemHexDisplay();
-            _ramIo.ReadPortA = () => _keyboard.ReadMatrix(_cassette.InputBit);
-            _ramIo.PortAPinsChanged = value => { _keyboard.Select(value); _cassette.SetOutputBit(_keyboard.CassetteOutput); };
+            _ramIo.ReadPortA = () => _keyboard.ReadMatrix(_tape.InputBit);
+            _ramIo.PortAPinsChanged = value => { _keyboard.Select(value); _tape.SetOutputBit(_keyboard.TapeOutput); };
             _ramIo.PortBPinsChanged = _keyboard.WriteSegments;
         }
         else
         {
             _video = new SystemVideo(card == SystemCpuCard.Fast6502A, characters);
             _ramIo.ReadPortB = () => _keyboard.DataWithStrobe;
-            _ramIo.ReadPortA = () => _cassette.InputBit ? byte.MaxValue : (byte)(byte.MaxValue ^ KeyboardPins.CassetteInputBit);
-            _ramIo.PortAPinsChanged = value => _cassette.SetOutputBit((value & KeyboardPins.CassetteOutputBit) != 0);
+            _ramIo.ReadPortA = () => _tape.InputBit ? byte.MaxValue : (byte)(byte.MaxValue ^ KeyboardPins.TapeInputBit);
+            _ramIo.PortAPinsChanged = value => _tape.SetOutputBit((value & KeyboardPins.TapeOutputBit) != 0);
             if (card == SystemCpuCard.Motorola6809)
             {
-                _via.ReadPortB = () => (byte)(_keyboard.Data | (_cassette.InputBit ? KeyboardPins.CassetteInputBit : 0));
+                _via.ReadPortB = () => (byte)(_keyboard.Data | (_tape.InputBit ? KeyboardPins.TapeInputBit : 0));
                 _keyboard.StrobeChanged = _via.SetCb1;
             }
             else if (card == SystemCpuCard.Fast6502A) _via.ReadPortA = () => _keyboard.DataWithStrobe;
@@ -108,7 +108,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         }
         _via.Reset();
         _ramIo.Reset();
-        _cassette.ResetHardware();
+        _tape.ResetHardware();
         _fdc?.Reset();
         _fdcDrive?.Reset();
         if (_cpu6809 is not null) _cpu6809.Reset(); else _cpu6502!.Reset();
@@ -137,7 +137,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     {
         _ticks++;
         _keyboard.Tick();
-        _cassette.Tick();
+        _tape.Tick();
         _fdcDrive?.Tick();
         _viaPhase += C.ViaClock;
         while (_viaPhase >= _clock) { _viaPhase -= _clock; _via.Tick(); }
@@ -150,7 +150,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         if (_audioPhase >= _clock)
         {
             _audioPhase -= _clock;
-            _samples.Add((short)(_cassette.MonitorSample / C.CassetteMonitorDivisor));
+            _samples.Add((short)(_tape.MonitorSample / C.TapeMonitorDivisor));
         }
     }
 

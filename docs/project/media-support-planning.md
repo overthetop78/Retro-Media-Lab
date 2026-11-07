@@ -1,6 +1,6 @@
 # Visualisation et exploration des images de supports
 
-Le but premier est de permettre à Retro Media Lab de visualiser graphiquement la structure des images de disquettes, de disques durs, de CD et DVD, ainsi que de cassettes et de bandes, puis d’explorer les dossiers et les fichiers qu’elles contiennent.
+Le but premier est de permettre à Retro Media Lab de visualiser graphiquement la structure des images de disquettes, de disques durs, de CD et DVD, ainsi que de tapes et de bandes, puis d’explorer les dossiers et les fichiers qu’elles contiennent.
 
 ## Visualiseur
 
@@ -22,7 +22,7 @@ La reconnaissance du format et le choix du Reader sont réunis dans `MediaRecogn
 
 `MediaVisualizationDescriptor` indique la représentation à afficher et sa méthode de progression : piste de flux, piste sectorielle, plage de blocs, piste optique ou segment séquentiel. Il précise l’ordre, la direction et la répartition entre les surfaces ou lignes réellement connues.
 
-Ces informations dépendent du format. Une image de disquette fournit ses faces et ses pistes. Une image de disque dur fournit son espace logique LBA 64 bits et sa géométrie CHS seulement lorsqu'elle existe. Une image de CD ou DVD décrit ses pistes, sessions, couches et faces disponibles. Une image de cassette ou de bande décrit ses faces, pistes, canaux, segments et sens de lecture lorsque son format les conserve. Les formats constitués de plusieurs fichiers sont réunis dans une seule source cohérente.
+Ces informations dépendent du format. Une image de disquette fournit ses faces et ses pistes. Une image de disque dur fournit son espace logique LBA 64 bits et sa géométrie CHS seulement lorsqu'elle existe. Une image de CD ou DVD décrit ses pistes, sessions, couches et faces disponibles. Une image de tape ou de bande décrit ses faces, pistes, canaux, segments et sens de lecture lorsque son format les conserve. Les formats constitués de plusieurs fichiers sont réunis dans une seule source cohérente.
 
 ### Lecture interne et conversion
 
@@ -187,7 +187,7 @@ Le Visualiseur choisit le rendu à partir de la représentation réellement four
 - une vue sectorielle pour une image de données comme ADF, ST, MSA ou IMA, fondée sur les faces, les pistes, les secteurs et leur contenu logique ;
 - une vue par plages de blocs pour les disques durs ;
 - une vue par pistes et sessions pour les médias optiques ;
-- une vue temporelle par segments et lignes pour les cassettes et bandes.
+- une vue temporelle par segments et lignes pour les tapes et bandes.
 
 La vue sectorielle ne doit pas simuler un flux qui n’existe pas dans le fichier. Les deux vues peuvent partager le contrôleur de préparation progressive, la sélection, le zoom et les interactions communes, mais elles doivent conserver leurs données et leur moteur de rendu propres.
 
@@ -246,7 +246,7 @@ effet.
 
 #### Sequential
 
-Une cassette ou une bande utilise une chronologie horizontale répartie sur plusieurs lignes. Les
+Une tape ou une bande utilise une chronologie horizontale répartie sur plusieurs lignes. Les
 faces, pistes et canaux deviennent des voies séparées lorsqu’ils existent. Les segments conservent
 leur ordre et leur sens de lecture ; les silences, impulsions, blocs décodés, fichiers reconnus et
 erreurs de décodage restent distincts. Une forme d’onde est affichée seulement lorsque la source
@@ -271,7 +271,7 @@ Les décisions suivantes nécessitent les images réelles du corpus ou du matér
 - quels systèmes de fichiers de disques durs doivent être ajoutés après les premiers essais réels ;
 - quelles variantes de sessions, pistes, index, sous-canaux, couches et faces sont réellement présentes dans les images CD/DVD disponibles ;
 - quelles extensions optiques autres qu’ISO 9660, Joliet, Rock Ridge et UDF sont nécessaires ;
-- quels formats de cassettes ou bandes doivent exposer plusieurs faces, pistes ou canaux et comment leurs fichiers doivent être nommés dans l’Explorateur ;
+- quels formats de tapes ou bandes doivent exposer plusieurs faces, pistes ou canaux et comment leurs fichiers doivent être nommés dans l’Explorateur ;
 - quels seuils d’agrégation, couleurs et niveaux de détail restent lisibles avec de très grandes images ;
 - quels appareils physiques pourront être utilisés pour les disques durs, les supports optiques et les bandes, et quelles capacités réelles ils déclareront ;
 - quelles conversions entraînent une perte acceptable de métadonnées physiques, optiques ou temporelles ;

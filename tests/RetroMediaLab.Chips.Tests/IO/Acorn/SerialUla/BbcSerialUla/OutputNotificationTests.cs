@@ -15,7 +15,7 @@ public sealed class OutputNotificationTests
     {
         var ula = new Ula(Clock);
         var freeRunning = new Ula(Clock);
-        ula.SetCassetteInput(level);
+        ula.SetTapeInput(level);
         for (var tick = 0; tick < Clock / 100; ++tick)
         {
             ula.Tick(true, false);
@@ -27,28 +27,28 @@ public sealed class OutputNotificationTests
         ula.SerialClocksRaised = (_, _, _) => ++clocks;
         for (var tick = 0; tick < Clock / 100; ++tick)
         {
-            ula.SetCassetteInput(level); // Représenter le même niveau ne crée aucun front.
+            ula.SetTapeInput(level); // Représenter le même niveau ne crée aucun front.
             var data = (tick / 137 & 1) != 0;
             ula.Tick(data, false);
             freeRunning.Tick(data, false);
             Assert.Equal(freeRunning.SourceClockPhase, ula.SourceClockPhase);
             Assert.Equal(freeRunning.TransmitClockEdge, ula.TransmitClockEdge);
             Assert.Equal(freeRunning.ReceiveClockEdge, ula.ReceiveClockEdge);
-            Assert.Equal(freeRunning.CassetteOutput, ula.CassetteOutput);
+            Assert.Equal(freeRunning.TapeOutput, ula.TapeOutput);
         }
         Assert.Equal(0, pins);
         Assert.True(clocks > 0);
 
-        ula.SetCassetteInput(null);
+        ula.SetTapeInput(null);
         ula.Tick(true, false);
         for (var tick = 0; tick < Clock / 4; ++tick)
         {
-            ula.SetCassetteInput(((long)tick * 4800 / Clock & 1) != 0);
+            ula.SetTapeInput(((long)tick * 4800 / Clock & 1) != 0);
             ula.Tick(true, false);
             if (tick > Clock / 5) Assert.True(ula.DataCarrierDetectHigh);
         }
         Assert.True(pins > 0);
-        ula.SetCassetteInput(null);
+        ula.SetTapeInput(null);
         for (var tick = 0; tick < Clock / 500; ++tick) ula.Tick(true, false);
         Assert.False(ula.DataCarrierDetectHigh);
         Assert.True(ula.ReceiveData);
@@ -77,7 +77,7 @@ public sealed class OutputNotificationTests
     }
 
     [Fact]
-    public void CassetteSelectionMasksRs423InputsUntilTheMuxIsSwitched()
+    public void TapeSelectionMasksRs423InputsUntilTheMuxIsSwitched()
     {
         var ula = new Ula(Clock);
         var levels = new List<(bool Cts, bool Dcd, bool Data, bool Selected)>();

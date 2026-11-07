@@ -36,7 +36,7 @@ internal static class ConfigurationValidationFunctions
     internal static bool Supports(Model model, MediaCategory category) => category switch
     {
         MediaCategory.Floppy => model.MaximumFloppyDriveCount > BufferConstants.EmptyCollectionCount,
-        MediaCategory.Cassette => model.SupportsCassetteDrive,
+        MediaCategory.Tape => model.SupportsTapeDrive,
         MediaCategory.Cartridge => model.SupportsCartridgeSlot,
         MediaCategory.Snapshot => true,
         _ => false

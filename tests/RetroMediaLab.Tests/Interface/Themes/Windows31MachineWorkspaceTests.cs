@@ -177,7 +177,7 @@ public sealed class Windows31MachineWorkspaceTests(StaExecutionScenarios sta)
         {
             await source.AddMachineAsync(source.Configurations.Single(), Runtime(configuration), controller, controller.StopAsync);
             var view = Assert.IsType<Windows31MachineView>(controller.Presentation);
-            var device = new MachineViewDevice("cassette", "Tape drive", string.Empty, true, true, () => Task.CompletedTask, null);
+            var device = new MachineViewDevice("tape", "Tape drive", string.Empty, true, true, () => Task.CompletedTask, null);
             view.SetDevices([device], error => throw error, () => { });
             var footer = Assert.IsType<StackPanel>(view.FindName("Devices"));
             var launch = Assert.Single(Assert.IsType<StackPanel>(footer.Children[0]).Children.OfType<Button>());

@@ -195,7 +195,7 @@ public sealed class Windows31MachineViewTests(StaExecutionScenarios sta)
     });
 
     [Fact]
-    public Task DeviceActionsCassetteStatesAndVideoSurfaceUseExistingModels() => sta.Run(() =>
+    public Task DeviceActionsTapeStatesAndVideoSurfaceUseExistingModels() => sta.Run(() =>
     {
         using var view = new Windows31MachineView();
         var inserted = 0;
@@ -203,10 +203,10 @@ public sealed class Windows31MachineViewTests(StaExecutionScenarios sta)
         var played = 0;
         var commands = new[]
         {
-            new MachineViewDeviceCommand(EmulationCassetteCommand.Play, "Play", "", true, true, false, false,
+            new MachineViewDeviceCommand(EmulationTapeCommand.Play, "Play", "", true, true, false, false,
                 () => { played++; return Task.CompletedTask; })
         };
-        var device = new MachineViewDevice("cassette", "Cassette", "", true, true,
+        var device = new MachineViewDevice("tape", "Tape", "", true, true,
             () => { inserted++; return Task.CompletedTask; }, () => { ejected++; return Task.CompletedTask; }, "Stopped", commands);
         view.SetDevices([device], error => throw error, () => { });
         var supports = Field<MenuItem>(view, "SupportsMenu");
@@ -218,10 +218,10 @@ public sealed class Windows31MachineViewTests(StaExecutionScenarios sta)
         eject.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
         play.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
         Assert.Equal((1, 1, 1), (inserted, ejected, played));
-        view.SetDeviceStatus("cassette", "Playing");
+        view.SetDeviceStatus("tape", "Playing");
         Assert.Equal("Playing", Assert.IsType<MenuItem>(menu.Items[1]).Header);
-        view.SetCassetteTransport("cassette", EmulationCassetteState.Playing, EmulationCassetteCommand.Play,
-            new HashSet<EmulationCassetteCommand> { EmulationCassetteCommand.Play }, true);
+        view.SetTapeTransport("tape", EmulationTapeState.Playing, EmulationTapeCommand.Play,
+            new HashSet<EmulationTapeCommand> { EmulationTapeCommand.Play }, true);
         Assert.True(play.IsChecked);
         Assert.False(play.IsEnabled);
         play.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
@@ -253,7 +253,7 @@ public sealed class Windows31MachineViewTests(StaExecutionScenarios sta)
         var types = Enum.GetValues<EmulationMediaType>();
         var devices = Enumerable.Range(0, 30).Select(index => new MachineViewDevice(
             index.ToString(), $"Drive {index}", string.Empty, true, true, () => Task.CompletedTask, null,
-            Commands: [new(EmulationCassetteCommand.Play, "Play", string.Empty, true, false, false, false, () => Task.CompletedTask)],
+            Commands: [new(EmulationTapeCommand.Play, "Play", string.Empty, true, false, false, false, () => Task.CompletedTask)],
             MediaType: types[index % types.Length])).ToArray();
         view.SetDevices(devices, error => throw error, () => { });
         var footer = Field<StackPanel>(view, "Devices");
@@ -296,8 +296,8 @@ public sealed class Windows31MachineViewTests(StaExecutionScenarios sta)
         internal override void SetShaderLoading(bool loading) { }
         internal override void SetDevices(IEnumerable<MachineViewDevice> devices, Action<Exception> error, Action focus) { }
         internal override void SetDeviceStatus(string key, string status) { }
-        internal override void SetCassetteTransport(string key, EmulationCassetteState state, EmulationCassetteCommand? active,
-            IReadOnlySet<EmulationCassetteCommand> supported, bool powered) { }
+        internal override void SetTapeTransport(string key, EmulationTapeState state, EmulationTapeCommand? active,
+            IReadOnlySet<EmulationTapeCommand> supported, bool powered) { }
         public override void Dispose() => VideoHost.Children.Clear();
     }
 

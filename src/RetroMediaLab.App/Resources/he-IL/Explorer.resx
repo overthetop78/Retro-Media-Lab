@@ -142,7 +142,7 @@
   <data name="Explorer.Preview.Audio"><value>אודיו Audio</value></data>
   <data name="Explorer.Preview.Hexadecimal"><value>Hexadecimal</value></data>
   <data name="Explorer.Preview.ExternalApplication"><value>יישום חיצוני</value></data>
-  <data name="Explorer.Cassette"><value>קלטת</value></data>
+  <data name="Explorer.Tape"><value>קלטת</value></data>
   <data name="Explorer.InternalName"><value>תיאור פנימי</value></data>
   <data name="Explorer.BaudRates"><value>קצבים</value></data>
   <data name="Explorer.Chunks"><value>מקטעים</value></data>

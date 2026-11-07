@@ -9,8 +9,8 @@ public static class ElectronModelCatalog
         HardwareModelFunctions.Create(MachineModel.AcornElectron, nameof(MachineModel.AcornElectron),
             C.ResourcePrefix + nameof(MachineModel.AcornElectron), Emulator.AcornEmu, C.CpuClock, C.MemoryBytes,
             [HardwareCpu.Mos6502A], [HardwareRegion.Pal], [HardwareVideoCapability.VideoUla],
-            [HardwareAudioCapability.Buzzer], [HardwareStorageCapability.Cassette],
+            [HardwareAudioCapability.Buzzer], [HardwareStorageCapability.Tape],
             [new(HardwarePortCapability.Keyboard, C.KeyboardPorts)],
-            [FirmwareCategory.OperatingSystem, FirmwareCategory.Basic], [MediaCategory.Cassette])
+            [FirmwareCategory.OperatingSystem, FirmwareCategory.Basic], [MediaCategory.Tape])
     ];
 }

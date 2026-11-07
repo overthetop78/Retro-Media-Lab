@@ -16,11 +16,11 @@ namespace RetroMediaLab.Tests.Emulation.Epoch;
 public sealed class EpochModuleTests
 {
     [Theory]
-    [InlineData(MachineModel.CassetteVision, false)]
-    [InlineData(MachineModel.CassetteVisionJr, false)]
-    [InlineData(MachineModel.SuperCassetteVision, true)]
-    [InlineData(MachineModel.SuperCassetteVisionYeno, true)]
-    [InlineData(MachineModel.SuperCassetteVisionLady, true)]
+    [InlineData(MachineModel.TapeVision, false)]
+    [InlineData(MachineModel.TapeVisionJr, false)]
+    [InlineData(MachineModel.SuperTapeVision, true)]
+    [InlineData(MachineModel.SuperTapeVisionYeno, true)]
+    [InlineData(MachineModel.SuperTapeVisionLady, true)]
     public void FirmwareAcceptanceFollowsTheHardwareModel(MachineModel model, bool acceptsFirmware)
     {
         MachineConfiguration Create() => new(model, firmwares: [new(FirmwareCategory.Console, "console.rom", true)]);
@@ -29,11 +29,11 @@ public sealed class EpochModuleTests
     }
 
     [Theory]
-    [InlineData(MachineModel.CassetteVision, true)]
-    [InlineData(MachineModel.CassetteVisionJr, true)]
-    [InlineData(MachineModel.SuperCassetteVision, false)]
-    [InlineData(MachineModel.SuperCassetteVisionYeno, false)]
-    [InlineData(MachineModel.SuperCassetteVisionLady, false)]
+    [InlineData(MachineModel.TapeVision, true)]
+    [InlineData(MachineModel.TapeVisionJr, true)]
+    [InlineData(MachineModel.SuperTapeVision, false)]
+    [InlineData(MachineModel.SuperTapeVisionYeno, false)]
+    [InlineData(MachineModel.SuperTapeVisionLady, false)]
     public void AdapterAnnouncesTheExistingRuntimePointerCapture(MachineModel model, bool expected)
     {
         RetroMediaLab.Emulation.Epoch.Common.Interfaces.IEmulatorPointerCapabilities adapter = expected ? new PD777MachineFactory() : new EmuSCVMachineFactory();
@@ -41,11 +41,11 @@ public sealed class EpochModuleTests
     }
 
     [Theory]
-    [InlineData(MachineModel.CassetteVision)]
-    [InlineData(MachineModel.CassetteVisionJr)]
-    [InlineData(MachineModel.SuperCassetteVision)]
-    [InlineData(MachineModel.SuperCassetteVisionYeno)]
-    [InlineData(MachineModel.SuperCassetteVisionLady)]
+    [InlineData(MachineModel.TapeVision)]
+    [InlineData(MachineModel.TapeVisionJr)]
+    [InlineData(MachineModel.SuperTapeVision)]
+    [InlineData(MachineModel.SuperTapeVisionYeno)]
+    [InlineData(MachineModel.SuperTapeVisionLady)]
     public void EveryNativeDirectionPublishesItsOppositeInTheEditor(MachineModel model)
     {
         var settings = InputSettingsFunctions.Describe(new MachineConfiguration(model));
@@ -54,15 +54,15 @@ public sealed class EpochModuleTests
             var definitions = port.Bindings.Definitions.ToDictionary(action => action.Id, StringComparer.Ordinal);
             var analog = definitions.Values.Where(action => action.Id.StartsWith("Paddle", StringComparison.Ordinal)
                 || action.Id.StartsWith("GunX", StringComparison.Ordinal) || action.Id.StartsWith("GunY", StringComparison.Ordinal)).ToArray();
-            var cassette = model is MachineModel.CassetteVision or MachineModel.CassetteVisionJr;
-            Assert.Equal(cassette ? (model == MachineModel.CassetteVision ? 4 : 0) + (port.Number == 1 ? 4 : 0) : 0, analog.Length);
+            var tape = model is MachineModel.TapeVision or MachineModel.TapeVisionJr;
+            Assert.Equal(tape ? (model == MachineModel.TapeVision ? 4 : 0) + (port.Number == 1 ? 4 : 0) : 0, analog.Length);
             foreach (var action in analog)
             {
                 Assert.Empty(action.DefaultBinding);
                 Assert.NotNull(action.OppositeDirectionId);
                 Assert.Equal(action.Id, definitions[action.OppositeDirectionId].OppositeDirectionId);
             }
-            if (cassette)
+            if (tape)
             {
                 Assert.Equal("LeverRight", definitions["LeverLeft"].OppositeDirectionId);
                 Assert.Equal("LeverLeft", definitions["LeverRight"].OppositeDirectionId);
@@ -90,28 +90,28 @@ public sealed class EpochModuleTests
         var sources = Enumerable.Repeat(EmulationControllerState.Empty, 2).ToArray();
         sources[port] = sources[port] with { LeftX = 8192 };
         var snapshot = EmulationInputSnapshot.Empty with { Controllers = sources };
-        var unassigned = mapper.MapInput(snapshot, new MachineConfiguration(MachineModel.CassetteVision, input: new InputConfiguration()));
+        var unassigned = mapper.MapInput(snapshot, new MachineConfiguration(MachineModel.TapeVision, input: new InputConfiguration()));
         Assert.All(unassigned.Controllers, controller => Assert.Equal(0, controller.LeftX));
         var input = new InputConfiguration(Controllers: [new(port, PeripheralCategory.Standard, Mappings: new Dictionary<string, string>
         {
             [paddle + "Decrease"] = "Controller:LeftStickLeft", [paddle + "Increase"] = "Controller:LeftStickRight"
         }, DeadZonePercent: 0)]);
-        var mapped = mapper.MapInput(snapshot, new MachineConfiguration(MachineModel.CassetteVision, input: input));
+        var mapped = mapper.MapInput(snapshot, new MachineConfiguration(MachineModel.TapeVision, input: input));
         Assert.InRange(mapped.Controllers[port].LeftX, 8191, 8193);
         Assert.Equal(mapped.Controllers[port].LeftX, NativeInputFunctions.State(mapped, (uint)port, NativeInput.AnalogDevice, NativeInput.LeftAnalogIndex, NativeInput.AnalogXId));
         sources[port] = sources[port] with { LeftX = -16384 };
-        mapped = mapper.MapInput(snapshot with { Controllers = sources }, new MachineConfiguration(MachineModel.CassetteVision, input: input));
+        mapped = mapper.MapInput(snapshot with { Controllers = sources }, new MachineConfiguration(MachineModel.TapeVision, input: input));
         Assert.InRange(mapped.Controllers[port].LeftX, -16385, -16383);
         Assert.Equal(0, mapped.Controllers[1 - port].LeftX);
         input = new InputConfiguration(Controllers: [new(port, PeripheralCategory.Standard, Mappings: new Dictionary<string, string>
         {
             [paddle + "Decrease"] = "Keyboard:A", [paddle + "Increase"] = "Keyboard:D"
         })]);
-        mapped = mapper.MapInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.A } }, new MachineConfiguration(MachineModel.CassetteVision, input: input));
+        mapped = mapper.MapInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.A } }, new MachineConfiguration(MachineModel.TapeVision, input: input));
         Assert.Equal(-short.MaxValue, mapped.Controllers[port].LeftX);
-        mapped = mapper.MapInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.D } }, new MachineConfiguration(MachineModel.CassetteVision, input: input));
+        mapped = mapper.MapInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.D } }, new MachineConfiguration(MachineModel.TapeVision, input: input));
         Assert.Equal(short.MaxValue, mapped.Controllers[port].LeftX);
-        mapped = mapper.MapInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.A, EmulationKey.D } }, new MachineConfiguration(MachineModel.CassetteVision, input: input));
+        mapped = mapper.MapInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.A, EmulationKey.D } }, new MachineConfiguration(MachineModel.TapeVision, input: input));
         Assert.Equal(0, mapped.Controllers[port].LeftX);
     }
     [Fact]
@@ -135,11 +135,11 @@ public sealed class EpochModuleTests
         }
     }
     [Theory]
-    [InlineData(MachineModel.CassetteVision, Emulator.PD777)]
-    [InlineData(MachineModel.CassetteVisionJr, Emulator.PD777)]
-    [InlineData(MachineModel.SuperCassetteVision, Emulator.EmuSCV)]
-    [InlineData(MachineModel.SuperCassetteVisionYeno, Emulator.EmuSCV)]
-    [InlineData(MachineModel.SuperCassetteVisionLady, Emulator.EmuSCV)]
+    [InlineData(MachineModel.TapeVision, Emulator.PD777)]
+    [InlineData(MachineModel.TapeVisionJr, Emulator.PD777)]
+    [InlineData(MachineModel.SuperTapeVision, Emulator.EmuSCV)]
+    [InlineData(MachineModel.SuperTapeVisionYeno, Emulator.EmuSCV)]
+    [InlineData(MachineModel.SuperTapeVisionLady, Emulator.EmuSCV)]
     public void ModelUsesItsNativeCoreAndEditablePhysicalControls(MachineModel model, Emulator core)
     {
         var config = new MachineConfiguration(model);
@@ -164,7 +164,7 @@ public sealed class EpochModuleTests
     [Fact]
     public void ReassignedConsolePowerSurvivesPersistenceWithoutItsOldHostAlias()
     {
-        var config = new MachineConfiguration(MachineModel.SuperCassetteVision, input: new InputConfiguration(Controllers: [new(0, PeripheralCategory.Standard, Mappings: new Dictionary<string, string> { ["Power"] = "Keyboard:Z" })]));
+        var config = new MachineConfiguration(MachineModel.SuperTapeVision, input: new InputConfiguration(Controllers: [new(0, PeripheralCategory.Standard, Mappings: new Dictionary<string, string> { ["Power"] = "Keyboard:Z" })]));
         var restored = JsonSerializer.Deserialize<MachineConfiguration>(JsonSerializer.Serialize(config))!;
         var pressed = EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.Z } };
         var mapper = new EmuSCVMachineFactory();
@@ -176,7 +176,7 @@ public sealed class EpochModuleTests
     [Fact]
     public void UnassignedActionsAndSelectedVisualRemainValidAfterApplyingEditorValues()
     {
-        var config = new MachineConfiguration(MachineModel.SuperCassetteVision);
+        var config = new MachineConfiguration(MachineModel.SuperTapeVision);
         var settings = InputSettingsFunctions.Describe(config);
         var ports = settings.ControllerPorts.Select(port => port with
         {

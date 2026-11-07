@@ -117,7 +117,7 @@ internal static class SessionLifecycleScenarios
         await using var session = new MachineSession(original.Value, _ => throw new InvalidOperationException(), [Disk, retained]);
         if (powered) await session.PowerOnAsync();
         var devices = new List<EmulationMediaDevice> { new(retained.Slot, retained.Type, []) };
-        if (changedType) devices.Add(new(Disk.Slot, EmulationMediaType.Cassette, []));
+        if (changedType) devices.Add(new(Disk.Slot, EmulationMediaType.Tape, []));
 
         await session.UpdateMachineFactoryAsync(media =>
         {

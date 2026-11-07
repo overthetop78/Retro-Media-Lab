@@ -27,7 +27,7 @@ public sealed class AcornEmuAtomTests
             Assert.Equal(drives, machine.FloppyDriveCount);
             Assert.Equal(0, machine.HardDiskDriveCount);
         }
-        finally { machine.EjectCassette(); }
+        finally { machine.EjectTape(); }
     }
 
     [Fact]
@@ -112,17 +112,17 @@ public sealed class AcornEmuAtomTests
     }
 
     [Fact]
-    public void DirectCassettePinsRecordTheBoardWaveformWithoutAnotherFskModulator()
+    public void DirectTapePinsRecordTheBoardWaveformWithoutAnotherFskModulator()
     {
-        var tape = new AnalogCassette(1000000, CassetteSignalMode.DirectWaveform);
+        var tape = new AnalogTape(1000000, TapeSignalMode.DirectWaveform);
         tape.Insert(new(new short[480], 48000), true);
-        tape.ExecuteCassette(EmulationCassetteCommand.Record);
+        tape.ExecuteTape(EmulationTapeCommand.Record);
         tape.SetOutputLevel(true);
         for (var tick = 0; tick < 1000; tick++) tape.Tick();
         var transition = tape.Position;
         tape.SetOutputLevel(false);
         for (var tick = 0; tick < 1000; tick++) tape.Tick();
-        tape.ExecuteCassette(EmulationCassetteCommand.Stop);
+        tape.ExecuteTape(EmulationTapeCommand.Stop);
         var samples = tape.RecordedSignal.Samples.Span;
         Assert.True(samples[..transition].ToArray().All(sample => sample > 0));
         Assert.True(samples[transition..tape.Position].ToArray().All(sample => sample < 0));

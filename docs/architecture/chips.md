@@ -175,7 +175,7 @@ Une puce peut donc n'avoir aucun travail entre deux événements, mais elle ne d
 
 L'examen des raccordements existants confirme que le mécanisme commun ne doit pas imposer les phases BBC :
 
-- Atom cadence VIA, disquette et cassette depuis son cycle CPU, avec un accumulateur pour l'horloge vidéo. Il évite déjà le sondage des handshakes PPI en mode ordinaire. Ces exceptions existantes sont conservées ; une entrée de handshake changeante reste à présenter à son instant effectif.
+- Atom cadence VIA, disquette et tape depuis son cycle CPU, avec un accumulateur pour l'horloge vidéo. Il évite déjà le sondage des handshakes PPI en mode ordinaire. Ces exceptions existantes sont conservées ; une entrée de handshake changeante reste à présenter à son instant effectif.
 - Electron fait avancer son ULA depuis le cycle CPU et produit l'audio à une autre cadence. L'ULA multifonction reste propriétaire de ses états internes ; le module ne la découpe pas artificiellement en événements entre pseudo-puces.
 - Archimedes possède déjà AdvanceMasterTicks dans son raccordement bus. L'avance est bornée par les prochaines limites IOC, audio, mémoire et DMA, et le VIDC reçoit le nombre de clocks écoulées. Cette logique constitue un point de réutilisation réel. Elle doit préserver l'arbitrage bus/MEMC et ses limites ; le remplacement par un scheduler universel ne serait pas une amélioration acquise. Les lectures IRQ/FIQ de l'ARM ont leurs propres points d'observation, différents du chemin 6502.
 
