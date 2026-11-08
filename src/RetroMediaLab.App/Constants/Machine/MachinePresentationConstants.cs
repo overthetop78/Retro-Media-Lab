@@ -13,12 +13,11 @@ internal static class MachinePresentationConstants
     internal const string StatusFormat = "{0} × {1} · {2:0.0} Hz · {3:0.0} FPS";
     internal const string ExecutionRateResourceKey = "Emulation.Status.ExecutionRate";
     internal const double PercentScale = 100d;
-    internal const double StatusMaximumWidth = 164d;
-    internal const double StatusOverlayHeight = StatusMaximumWidth;
+    internal const double StatusFieldWidth = 140d;
     internal const double StatusOverlayMargin = 8d;
-    internal const double StatusOverlayPadding = 8d;
+    internal const double StatusOverlayPadding = 4d;
     internal const byte StatusOverlayAlpha = 72;
-    internal const double StatusRowHeight = 28d;
+    internal const double StatusRowHeight = 24d;
     internal const double StatusFontSize = 11d;
     internal const double StatusIconWidth = 22d;
     internal const string SizeStatusFormat = "{0} × {1}";

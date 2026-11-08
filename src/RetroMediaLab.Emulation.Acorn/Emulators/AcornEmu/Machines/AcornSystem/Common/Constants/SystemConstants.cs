@@ -45,6 +45,8 @@ internal static class SystemConstants
     internal const int DisplayHeight = 160;
     internal const int DisplayWidth = 480;
     internal const int DisplayPixelBytes = 4;
+    internal const int DisplayDigits = 8;
+    internal const int DisplaySegments = 8;
     internal const int DisplayStartX = 32;
     internal const int DisplayStartY = 42;
     internal const int DisplayDigitPitch = 52;

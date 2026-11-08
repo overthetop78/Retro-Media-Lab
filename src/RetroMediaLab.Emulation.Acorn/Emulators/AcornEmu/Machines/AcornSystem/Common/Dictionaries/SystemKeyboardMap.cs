@@ -4,6 +4,18 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.
 
 internal static class SystemKeyboardMap
 {
+    /// <summary>Sources hôtes supplémentaires des contacts existants : pavé numérique et commandes M/G du moniteur.</summary>
+    internal static IReadOnlyDictionary<EmulationKey, EmulationKey> HexAliases { get; } =
+        new System.Collections.ObjectModel.ReadOnlyDictionary<EmulationKey, EmulationKey>(new Dictionary<EmulationKey, EmulationKey>
+        {
+            [EmulationKey.D0] = EmulationKey.Numpad0, [EmulationKey.D1] = EmulationKey.Numpad1,
+            [EmulationKey.D2] = EmulationKey.Numpad2, [EmulationKey.D3] = EmulationKey.Numpad3,
+            [EmulationKey.D4] = EmulationKey.Numpad4, [EmulationKey.D5] = EmulationKey.Numpad5,
+            [EmulationKey.D6] = EmulationKey.Numpad6, [EmulationKey.D7] = EmulationKey.Numpad7,
+            [EmulationKey.D8] = EmulationKey.Numpad8, [EmulationKey.D9] = EmulationKey.Numpad9,
+            [EmulationKey.Minus] = EmulationKey.M, [EmulationKey.X] = EmulationKey.G
+        });
+
     internal static IReadOnlyDictionary<EmulationKey, (char Normal, char Shift)> Characters { get; } =
         new System.Collections.ObjectModel.ReadOnlyDictionary<EmulationKey, (char, char)>(new Dictionary<EmulationKey, (char, char)>
         {

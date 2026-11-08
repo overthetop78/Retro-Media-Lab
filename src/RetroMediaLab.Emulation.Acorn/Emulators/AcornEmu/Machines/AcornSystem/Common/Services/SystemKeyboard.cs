@@ -13,13 +13,12 @@ internal sealed class SystemKeyboard(int clock)
     private bool _shiftLock;
     private long _repeatTicks;
     private int _selection;
-    private readonly byte[] _segments = new byte[C.MatrixRows];
+    private readonly byte[] _matrix = Enumerable.Repeat((byte)C.MatrixMask, C.MatrixRows).ToArray();
 
     internal bool Strobe { get; private set; }
     internal bool Blank => _keys.Contains(EmulationKey.RightAlt);
     internal bool Break => _keys.Contains(EmulationKey.Break);
     internal Action<bool>? StrobeChanged { get; set; }
-    internal ReadOnlySpan<byte> DisplaySegments => _segments;
     internal bool TapeOutput => (_selection & C.TapeOutputBit) != 0;
     internal byte Data => (byte)(_data & C.DataMask);
     internal byte DataWithStrobe => (byte)(Data | (Strobe ? C.StrobeMask : 0));
@@ -30,6 +29,17 @@ internal sealed class SystemKeyboard(int clock)
         if (next.Contains(EmulationKey.CapsLock) && !_keys.Contains(EmulationKey.CapsLock)) _capsLock = !_capsLock;
         if (next.Contains(EmulationKey.LeftAlt) && !_keys.Contains(EmulationKey.LeftAlt)) _shiftLock = !_shiftLock;
         _keys = new HashSet<EmulationKey>(next);
+        for (var row = 0; row < C.MatrixRows; row++)
+        {
+            var value = C.MatrixMask;
+            for (var column = 0; column < C.MatrixColumns; column++)
+            {
+                var key = SystemKeyboardMap.HexRows[row][column];
+                if (_keys.Contains(key) || SystemKeyboardMap.HexAliases.TryGetValue(key, out var alias) && _keys.Contains(alias))
+                    value &= ~(1 << (column + C.MatrixFirstBit));
+            }
+            _matrix[row] = (byte)value;
+        }
         var retained = _active != EmulationKey.Unknown && _keys.Contains(_active);
         if (!retained) _active = SystemKeyboardMap.Characters.Keys.FirstOrDefault(_keys.Contains);
         if (_active == EmulationKey.Unknown) { SetStrobe(false); return; }
@@ -54,17 +64,9 @@ internal sealed class SystemKeyboard(int clock)
 
     internal void Select(byte pins) => _selection = pins & C.OutputMask;
 
-    internal void BeginDisplayFrame() => Array.Clear(_segments);
-
-    internal void WriteSegments(byte pins) => _segments[_selection & C.DigitMask] |= pins;
-
     internal byte ReadMatrix(bool tapeInput)
     {
-        var row = SystemKeyboardMap.HexRows[_selection & C.DigitMask];
-        var value = C.MatrixMask;
-        for (var column = 0; column < C.MatrixColumns; column++)
-            if (_keys.Contains(row[column])) value &= ~(1 << (column + C.MatrixFirstBit));
-        return (byte)(value | _selection | (tapeInput ? C.TapeInputBit : 0));
+        return (byte)(_matrix[_selection & C.DigitMask] | _selection | (tapeInput ? C.TapeInputBit : 0));
     }
 
     internal void Reset()
@@ -74,7 +76,7 @@ internal sealed class SystemKeyboard(int clock)
         _repeatTicks = 0;
         _selection = 0;
         _data = C.DataMask;
-        Array.Clear(_segments);
+        Array.Fill(_matrix, (byte)C.MatrixMask);
         SetStrobe(false);
     }
 

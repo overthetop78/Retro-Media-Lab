@@ -36,6 +36,7 @@ internal sealed class MachineView : EmulationMachinePresentation
         _tapeBlinkTimer.Stop();
         Root = new Grid { Background = Brushes.Transparent };
         Root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        Root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         Root.RowDefinitions.Add(new RowDefinition());
         Root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
@@ -86,7 +87,7 @@ internal sealed class MachineView : EmulationMachinePresentation
         };
         DisplayHost = new Grid { Background = new SolidColorBrush(Color.FromRgb(43, 46, 50)) };
         DisplayHost.Children.Add(Screen);
-        Grid.SetRow(DisplayHost, 1);
+        Grid.SetRow(DisplayHost, 2);
         Root.Children.Add(DisplayHost);
 
         DeviceStrip = new StackPanel
@@ -102,7 +103,7 @@ internal sealed class MachineView : EmulationMachinePresentation
             Padding = new Thickness(4, 1, 4, 1)
         };
         BottomBar.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
-        Grid.SetRow(BottomBar, 2);
+        Grid.SetRow(BottomBar, 3);
         Root.Children.Add(BottomBar);
         Content = Root;
     }
@@ -118,7 +119,7 @@ internal sealed class MachineView : EmulationMachinePresentation
 
     internal override void AttachCommands(MachineCommandPresentation commands)
     {
-        var rows = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        var rows = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
         AddStatusRow(MachineCommandGlyphConstants.Renderer, commands.RendererStatus, MachinePresentationConstants.RendererStatusColor);
         AddStatusRow(IconGlyphs.Display, commands.SizeStatus, MachinePresentationConstants.SizeStatusColor);
         AddStatusRow(IconGlyphs.Play, commands.FpsStatus, MachinePresentationConstants.FpsStatusColor);
@@ -126,12 +127,10 @@ internal sealed class MachineView : EmulationMachinePresentation
         AddStatusRow(IconGlyphs.Processor, commands.ExecutionStatus, MachinePresentationConstants.ExecutionStatusColor);
         var overlay = new Border
         {
-            Width = MachinePresentationConstants.StatusMaximumWidth,
-            Height = MachinePresentationConstants.StatusOverlayHeight,
-            Margin = new Thickness(MachinePresentationConstants.StatusOverlayMargin),
+            Margin = new Thickness(MachinePresentationConstants.StatusOverlayMargin, 0, MachinePresentationConstants.StatusOverlayMargin, 0),
             Padding = new Thickness(MachinePresentationConstants.StatusOverlayPadding),
             Background = new SolidColorBrush(Color.FromArgb(MachinePresentationConstants.StatusOverlayAlpha, 0, 0, 0)),
-            HorizontalAlignment = HorizontalAlignment.Right,
+            HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Top,
             IsHitTestVisible = false,
             Child = rows
@@ -141,14 +140,15 @@ internal sealed class MachineView : EmulationMachinePresentation
         empty.Setters.Add(new Setter(VisibilityProperty, Visibility.Collapsed));
         visibility.Triggers.Add(empty);
         overlay.Style = visibility;
-        Panel.SetZIndex(overlay, 1);
-        DisplayHost.Children.Add(overlay);
+        // Keep the native video's viewport unchanged: WPF cannot overlay an HWND's airspace.
+        Grid.SetRow(overlay, 1);
+        Root.Children.Add(overlay);
 
         void AddStatusRow(string glyph, TextBlock source, Color color)
         {
             var brush = new SolidColorBrush(color);
             brush.Freeze();
-            var row = new DockPanel { Height = MachinePresentationConstants.StatusRowHeight, LastChildFill = true };
+            var row = new DockPanel { Width = MachinePresentationConstants.StatusFieldWidth, Height = MachinePresentationConstants.StatusRowHeight, LastChildFill = true };
             var icon = new TextBlock
             {
                 Text = glyph,

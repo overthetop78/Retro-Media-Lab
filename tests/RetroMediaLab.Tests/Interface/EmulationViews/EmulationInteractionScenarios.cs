@@ -134,20 +134,23 @@ internal static class EmulationInteractionScenarios
         bar.SetPowered(false); Assert.False(Find(EmulationResourceKeys.QuickSave).IsEnabled); Assert.False(Find(EmulationResourceKeys.QuickLoad).IsEnabled);
         using var view = new MachineView();
         view.AttachCommands(bar.Presentation);
-        var overlay = Assert.IsType<Border>(view.DisplayHost.Children[1]);
-        Assert.Equal(MachinePresentationConstants.StatusMaximumWidth, overlay.Width);
-        Assert.Equal(MachinePresentationConstants.StatusOverlayHeight, overlay.Height);
+        var overlay = view.Root.Children.OfType<Border>().Single(border => Grid.GetRow(border) == 1);
+        Assert.Equal(1, Grid.GetRow(overlay));
+        Assert.Equal(2, Grid.GetRow(view.DisplayHost));
+        Assert.Equal(GridLength.Auto, view.Root.RowDefinitions[1].Height);
+        Assert.Single(view.DisplayHost.Children); // Its entire measured bounds remain the video viewport.
         Assert.False(overlay.IsHitTestVisible);
-        Assert.Equal(HorizontalAlignment.Right, overlay.HorizontalAlignment);
+        Assert.Equal(HorizontalAlignment.Center, overlay.HorizontalAlignment);
         Assert.Equal(VerticalAlignment.Top, overlay.VerticalAlignment);
-        Assert.Equal(overlay.Width, overlay.Height);
         var rows = Assert.IsType<StackPanel>(overlay.Child);
+        Assert.Equal(Orientation.Horizontal, rows.Orientation);
         Assert.Equal(5, rows.Children.Count);
         Assert.DoesNotContain(MachineConfigurationScenarios.Controls<TextBlock>(host), block => ReferenceEquals(block, bar.RendererStatus));
         var sources = new[] { bar.Presentation.RendererStatus, bar.Presentation.SizeStatus, bar.Presentation.FpsStatus, bar.Presentation.FrequencyStatus, bar.Presentation.ExecutionStatus };
         for (var index = 0; index < sources.Length; index++)
         {
             var row = Assert.IsType<DockPanel>(rows.Children[index]);
+            Assert.Equal(MachinePresentationConstants.StatusFieldWidth, row.Width);
             Assert.Equal(MachinePresentationConstants.StatusRowHeight, row.Height);
             var icon = Assert.IsType<TextBlock>(row.Children[0]);
             var value = Assert.IsType<TextBlock>(row.Children[1]);

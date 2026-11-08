@@ -17,16 +17,41 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuSystemTests
 {
     [Fact]
-    public void MultiplexedDisplayKeepsLitSegmentsUntilTheNextPresentationFrame()
+    public void DisplayRetainsDrivenPinsAcrossPresentationsAndExtinguishesAfterRelease()
     {
-        var keyboard = new SystemKeyboard(1008000);
-        keyboard.BeginDisplayFrame();
-        keyboard.Select(2);
-        keyboard.WriteSegments(0x3f);
-        keyboard.WriteSegments(0);
-        Assert.Equal(0x3f, keyboard.DisplaySegments[2]);
-        keyboard.BeginDisplayFrame();
-        Assert.Equal(0, keyboard.DisplaySegments[2]);
+        var display = new SystemHexDisplay();
+        display.SelectDigit(2, true, 0);
+        display.SetSegments(1, 0);
+        Assert.Equal(240, DisplayRed(display.Render(80), 2, false));
+        Assert.Equal(240, DisplayRed(display.Render(160), 2, false));
+        display.SelectDigit(2, false, 160);
+        display.Render(240); // Finish the previous illuminated interval's finite presentation exposure.
+        Assert.Equal(24, DisplayRed(display.Render(320), 2, false));
+        display.SelectDigit(2, true, 320);
+        display.Reset(320);
+        Assert.Equal(24, DisplayRed(display.Render(400), 2, false));
+    }
+
+    [Fact]
+    public void SegmentsWrittenBeforeDigitSelectionDoNotBecomeFullBrightnessOnThePreviousDigit()
+    {
+        var display = new SystemHexDisplay();
+        display.SelectDigit(0, true, 0);
+        display.SetSegments(1, 0);
+        display.SetSegments(2, 100); // Monitor STA PIB.
+        display.SelectDigit(1, true, 104); // Monitor STX PIA, four CPU clocks later.
+        var pixels = display.Render(800);
+        Assert.Equal(240, DisplayRed(pixels, 0, false));
+        Assert.InRange(DisplayRed(pixels, 0, true), 24, 35); // Short physical transition, not a full segment.
+        Assert.Equal(24, DisplayRed(pixels, 1, false));
+        Assert.Equal(240, DisplayRed(pixels, 1, true));
+    }
+
+    private static byte DisplayRed(byte[] pixels, int digit, bool right)
+    {
+        var x = 32 + digit * 52 + (right ? 32 : 4);
+        var y = 42 + (right ? 4 : 0);
+        return pixels[(y * 480 + x) * 4 + 2];
     }
 
     [Fact]
@@ -118,7 +143,7 @@ public sealed class AcornEmuSystemTests
         Assert.True(SystemModelCatalog.IsSystem(model));
         Assert.Single(SystemModelCatalog.All, item => item.Model == model);
         using var core = new EmulatorCore(model);
-        Assert.Empty(core.Options);
+        Assert.DoesNotContain(core.Options, option => option.IsVisible);
     }
 
     [Fact]

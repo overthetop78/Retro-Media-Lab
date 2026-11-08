@@ -15,7 +15,7 @@ internal sealed partial class AcornSystemMachine
             _fdcDrive!.SynchronizeClock();
             return _fdc.Read(disk);
         }
-        if (ViaAddress(address)) return _via.Read(address & C.ViaRegisterMask);
+        if (ViaAddress(address)) return _via!.Read(address & C.ViaRegisterMask);
         if (RamIoAddress(address)) return (address & C.RamIoRamSelect) == 0
             ? _ramIo.ReadIo(address & C.RamIoMask) : _ramIo.ReadRam(address & C.RamIoMask);
         if (address >= _romStart) return _rom[(address - _romStart) % _rom.Length];
@@ -39,7 +39,7 @@ internal sealed partial class AcornSystemMachine
         if (ViaAddress(address))
         {
             var register = address & C.ViaRegisterMask;
-            _via.Write(register, value);
+            _via!.Write(register, value);
             if (register == C.ViaPeripheralControl) _tape.SetOutputBit((value & C.ViaCb2ControlMask) == C.ViaCb2High);
             return;
         }

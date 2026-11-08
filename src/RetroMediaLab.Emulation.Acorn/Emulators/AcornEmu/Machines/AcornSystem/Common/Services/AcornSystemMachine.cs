@@ -1,4 +1,5 @@
 using RetroMediaLab.Chips.CPU.Common.Interfaces;
+using RetroMediaLab.Chips.CPU.Common.Enums;
 using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
 using RetroMediaLab.Chips.CPU.Motorola.M6800.Chip6809.Services;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
@@ -23,7 +24,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private readonly byte[] _basic;
     private readonly int _romStart;
     private readonly RamIo8154 _ramIo = new();
-    private readonly Via6522 _via = new();
+    private readonly Via6522? _via;
     private readonly SystemKeyboard _keyboard;
     private readonly AnalogTape _tape;
     private readonly SystemVideo? _video;
@@ -62,12 +63,18 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         }
         _keyboard = new SystemKeyboard(_clock);
         _tape = new AnalogTape(_clock);
+        if (card is SystemCpuCard.Fast6502A or SystemCpuCard.Motorola6809) _via = new Via6522();
         if (card == SystemCpuCard.Keypad6502)
         {
             _display = new SystemHexDisplay();
             _ramIo.ReadPortA = () => _keyboard.ReadMatrix(_tape.InputBit);
-            _ramIo.PortAPinsChanged = value => { _keyboard.Select(value); _tape.SetOutputBit(_keyboard.TapeOutput); };
-            _ramIo.PortBPinsChanged = _keyboard.WriteSegments;
+            _ramIo.PortADriveChanged = (value, mask) =>
+            {
+                _keyboard.Select(value);
+                _tape.SetOutputBit(_keyboard.TapeOutput);
+                _display.SelectDigit(value, (mask & KeyboardPins.DigitMask) == KeyboardPins.DigitMask, _ticks);
+            };
+            _ramIo.PortBDriveChanged = (value, mask) => _display.SetSegments((byte)(value & mask), _ticks);
         }
         else
         {
@@ -77,10 +84,10 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             _ramIo.PortAPinsChanged = value => _tape.SetOutputBit((value & KeyboardPins.TapeOutputBit) != 0);
             if (card == SystemCpuCard.Motorola6809)
             {
-                _via.ReadPortB = () => (byte)(_keyboard.Data | (_tape.InputBit ? KeyboardPins.TapeInputBit : 0));
+                _via!.ReadPortB = () => (byte)(_keyboard.Data | (_tape.InputBit ? KeyboardPins.TapeInputBit : 0));
                 _keyboard.StrobeChanged = _via.SetCb1;
             }
-            else if (card == SystemCpuCard.Fast6502A) _via.ReadPortA = () => _keyboard.DataWithStrobe;
+            else if (card == SystemCpuCard.Fast6502A) _via!.ReadPortA = () => _keyboard.DataWithStrobe;
         }
         if (diskInterface)
         {
@@ -88,11 +95,21 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             _fdcDrive = new(_fdc, index => _disks[index], _clock);
         }
         if (card == SystemCpuCard.Motorola6809) _cpu6809 = new Cpu6809(this);
-        else _cpu6502 = new Cpu6502(this);
+        else
+        {
+            _cpu6502 = new Cpu6502(this);
+            // The CPU samples these retained input levels at its own phases.
+            // Only mounted devices can publish a change; no board-wide polling is needed.
+            _cpu6502.SetIrq(_via?.Irq == true);
+            _cpu6502.SetNmi(_fdc?.Nmi == true);
+            if (_via is not null) _via.IrqChanged = _cpu6502.SetIrq;
+            if (_fdc is not null) _fdc.NmiChanged = _cpu6502.SetNmi;
+        }
         Reset(true);
     }
 
-    public bool Irq => _via.Irq;
+    public CpuBusControlSignals ControlSignals => CpuBusControlSignals.None;
+    public bool Irq => _via?.Irq == true;
     public bool Nmi => _fdc?.Nmi == true;
     public Action<ReadOnlyMemory<byte>>? NetworkFrameTransmitted { get; set; }
     public Action<int>? NetworkPoll { get; set; }
@@ -106,7 +123,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             _video?.Reset();
             _samples.Clear();
         }
-        _via.Reset();
+        _via?.Reset();
+        _display?.Reset(_ticks);
         _ramIo.Reset();
         _tape.ResetHardware();
         _fdc?.Reset();
@@ -117,13 +135,12 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
 
     public byte[] RunFrame()
     {
-        if (_display is not null) _keyboard.BeginDisplayFrame();
         while (_ticks < _nextFrame)
         {
             if (_cpu6809 is not null) _cpu6809.Step(); else _cpu6502!.Step();
         }
         _nextFrame += _clock / C.PresentationRate;
-        return _video?.CompletedFrame ?? _display!.Render(_keyboard.DisplaySegments);
+        return _video?.CompletedFrame ?? _display!.Render(_ticks);
     }
 
     public short[] DrainAudio()
@@ -136,11 +153,15 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     public void Tick()
     {
         _ticks++;
-        _keyboard.Tick();
+        // The System 1 has a passive scanned keypad, not the ASCII keyboard's repeater.
+        if (_display is null) _keyboard.Tick();
         _tape.Tick();
         _fdcDrive?.Tick();
-        _viaPhase += C.ViaClock;
-        while (_viaPhase >= _clock) { _viaPhase -= _clock; _via.Tick(); }
+        if (_via is not null)
+        {
+            _viaPhase += C.ViaClock;
+            while (_viaPhase >= _clock) { _viaPhase -= _clock; _via.Tick(); }
+        }
         if (_video is not null)
         {
             _videoPhase += C.VideoCharacterClock;
@@ -157,7 +178,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     public void SetInput(EmulationInputSnapshot snapshot)
     {
         _keyboard.SetInput(snapshot);
-        if (_card == SystemCpuCard.Fast6502A) _via.SetCa1(!_keyboard.Blank);
+        if (_card == SystemCpuCard.Fast6502A) _via!.SetCa1(!_keyboard.Blank);
         if (_keyboard.Break && !_break) Reset(false);
         _break = _keyboard.Break;
     }
