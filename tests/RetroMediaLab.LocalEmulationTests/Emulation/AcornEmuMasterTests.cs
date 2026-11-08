@@ -20,6 +20,22 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuMasterTests
 {
     [Fact]
+    public void Master512HoldsCpuOnTubeResetAndResumesItsBootstrapAfterRelease()
+    {
+        var rom = new byte[16384];
+        InitializeMaster512Rom(rom, [0xb0, 0x5a, 0xa2, 0, 0x20, 0xf4]);
+        var tube = new TubeUla();
+        var card = new Master512Board(tube, rom);
+        tube.ResetParasite = card.Reset;
+        tube.SetHostReset(true);
+        for (var host = 0; host < 100; host++) card.RunHostCycle();
+        Assert.Equal(0, card.ReadMemory(0x2000));
+        tube.SetHostReset(false);
+        for (var host = 0; host < 100; host++) card.RunHostCycle();
+        Assert.Equal(0x5a, card.ReadMemory(0x2000));
+    }
+
+    [Fact]
     public void WdClockContinuesWhileBoardResetIsHeldAndAfterRelease()
     {
         var disks = new Disks(enabled: true, wd1770: true);

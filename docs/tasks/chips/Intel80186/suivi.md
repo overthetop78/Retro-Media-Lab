@@ -54,3 +54,12 @@ Le démarrage fautif est déjà reproduit avec le code courant ; ne pas répéte
   - [x] Modifier `tests/RetroMediaLab.Chips.Tests/CPU/Intel/MCS80x86/80186/80186Tests.cs` : vérifier arrêt logiciel/reprise, NMI avant un transfert prêt, reprise par IRET, absence de suspension sur INT 2 logiciel et mode esclave ; exécuter le groupe autonome 80186.
   - [x] Modifier `artifacts/.tmp-tube/Master512Joystick.cs` après le passage courant : comparer le trajet DOS avec la correction matérielle seule, sans en présumer la cause ; conserver les verdicts et captures utiles avant suppression prévue dans le suivi machine.
   - [x] Créer `artifacts/.tmp-tube/master-dhlt-regression.trx` en exécutant les tests AcornEmuMasterTests en Debug après DHLT ; supprimer ce journal après consignation des résultats.
+
+## Revue Master 512 — 9 novembre 2026
+
+- [x] Raccorder et gérer le reset maintenu dans le CPU.
+  - [x] Modifier `Constants/Cpu80186Constants.cs`, `Interfaces/ICpu80186.cs`, `Services/Cpu80186.cs` et créer `Services/Cpu80186.Reset.cs` sous `src/RetroMediaLab.Chips/CPU/Intel/MCS80x86/80186/` : entrée RES retenue et échéance locale, 6,5 CLKOUT avant prélecture, compteur demi-cycle conservé et aucun transfert sous reset (Intel Hardware Reference, figure 50 et section 4.2).
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMaster/Tube/Services/Master512Board.cs` : transmettre RES au composant et supprimer le gel logiciel de la carte.
+  - [x] Créer `tests/RetroMediaLab.Chips.Tests/CPU/Intel/MCS80x86/80186/ResetPinsTests.cs` et modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuMasterTests.cs` : maintien, libération horodatée, nouvelle assertion et reprise sur carte ; exécuter le groupe CPU et les régressions Master.
+
+Résultats : 138 tests CPU Debug réussis en 143 ms, puis 34 tests Master en 855 ms ; zéro échec ni ignoré. Source, comportements et fichiers documentés dans la fiche Intel80186 et la validation Master 512. Aucun gain global ou démarrage DOS nouveau revendiqué.

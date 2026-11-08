@@ -2,6 +2,9 @@ namespace RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Constants;
 
 public static class Cpu80186Constants
 {
+    public const int HalfClocksPerCycle = 2;
+    public const int ResetReleaseHalfClocks = 13;
+    public const int ResetOutputReleaseHalfClocks = 4;
     public const int Ax = 0;
     public const int Cx = 1;
     public const int Dx = 2;

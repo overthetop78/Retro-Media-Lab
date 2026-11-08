@@ -20,3 +20,7 @@ Chaque fenêtre comprend 400 images après saisie de la commande, soit environ 7
 Les 19,97 ms/image ne sont pas atteintes. Ce passage valide l'écriture/relecture persistante par le système invité ; il ne clôture ni le budget WD actif déjà signalé, ni les HDD, ni les autres variantes Master.
 
 Après comparaison RAM réussie et enregistrement de l'image, le banc temporaire a tenté de copier le BMP avant fermeture de son BinaryWriter : IOException de partage, sans exception WPF ni défaut du contrôleur. Le finally a fermé le média et supprimé la SSD. La capture valide a été recopiée après fermeture du processus puis inspectée. La mesure finale prévue après capture n'a pas été exécutée et n'est pas revendiquée. Source de diagnostic supprimée après consignation, projet temporaire remis à sa source antérieure.
+
+## Revue du 9 novembre 2026 — raccordement WD sous reset
+
+La carte commune BBC/Master ne coupait plus seulement le séquenceur par /MR : `Disks.Tick` supprimait aussi la fourniture des clocks au raccordement. Cette condition est retirée. Le chemin existant moteur arrêté avance ses demi-clocks par addition arithmétique ; les optimisations de lecture et rotation du WD restent conservées. Dix cycles hôtes sous reset donnent 80 demi-clocks WD, sans moteur/IRQ/DRQ ; la libération conserve la reprise. Fichiers : `Disks.cs`, cas autonome dans `AcornEmuMasterTests.cs` et fiche `docs/chips/Controllers/Wd1770.md`. Groupe Master après cette correction : 32 réussites Debug, 878 ms. Cette revue ne répète pas la persistance DFS ni ses mesures historiques.

@@ -41,7 +41,7 @@ public sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> wri
         get => _nmiLevel;
         set
         {
-            if (value && !_nmiLevel)
+            if (value && !_nmiLevel && !ResetOutputHigh)
             {
                 _nmiPending = true;
                 // DHLT arrête le prochain DMA ; le transfert qui reçoit ce front se termine.
@@ -55,6 +55,8 @@ public sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> wri
     public ushort Flags => _flags;
     public void Reset()
     {
+        _resetReleaseHalfClocks = 0;
+        if (!_resetInput) SetResetOutput(false);
         Array.Clear(_registers); Array.Clear(_segments);
         _segments[Cs] = 0xffff; IP = 0; _flags = Reserved; _halted = false; _interruptDelay = 0;
         _repeatContinuation = _continuingRepeat = _waiting = false;
@@ -125,6 +127,7 @@ public sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> wri
     }
     public void Step()
     {
+        if (AdvanceReset()) return;
         var previousCycles = Cycles;
         ExecuteStep();
         Cycles += _prefetchStalls;

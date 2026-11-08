@@ -213,3 +213,13 @@ Cadence matérielle de référence : environ 50,0801 Hz, hôte nominal 2 MHz, co
 SHA256 vidéo identique dans les deux configurations : `5A8F49C9CF191F35971F3E3707DF0A832A29E1B107A30C00C9FC79B80451889C`. Capture Debug inspectée visuellement, invitant A> ; capture Release identique. Fichiers `20261108-master512-current-media-{debug,release}.bmp` sous `artifacts/TestsMachines/Acorn/BBC Master 512/`, copies sous `artifacts/TestsChips/Intel80186/BBC Master 512/`. Les bancs terminent avec le code 0, détachent le média et le ferment dans finally. Ce contrôle ne clôture pas l'essai final RML ni la décision de cadence propre au 512.
 
 L'utilisateur accepte ensuite ces résultats pour poursuivre : « ok c'est bon, passe a la suite alors les Acorn System ». Le bloc 512 est accepté avec les limites de cadence Debug et les observations RML existantes ; aucun nouvel essai direct n'est inventé. ET/Compact ne sont pas inclus dans cette acceptation.
+
+## Revue du 9 novembre 2026 — composants et reset
+
+Revue statique du 80186 (instructions et prélecture, DMA, timers, bus), de l’ULA Tube et de `Master512Refresh.cs`, puis de `Master512Board.cs`. Les demandes Tube sont reçues par le CPU, Timer0/HLDA pilotent la logique de rafraîchissement et Timer1 la NMI ; les sélections mémoire et l’octet bas du Tube restent décodés dans la carte. La revue détaillée des composants communs du Master 128 est consignée dans `docs/tasks/machines/BbcMaster/implementation.md`.
+
+Correction : la carte gelait le CPU pendant le reset Tube. La nouvelle entrée `Cpu80186.SetReset` reçoit désormais ce niveau et gère le maintien et la récupération dans la puce. Les constantes, contrat, nouveau `Cpu80186.Reset.cs` et branche de `Step` conservent le temps écoulé sans exécuter d’instruction pendant RESET, puis les 6,5 CLKOUT avant prélecture selon Intel figure 50 (voir `docs/chips/CPU/Intel80186.md`). `Master512Board` ne possède plus de booléen arrêtant l’horloge. Les notifications DMA/IRQ/timers et le décodage RAM/ROM n’ont pas été remplacés.
+
+Le test autonome ajouté à `AcornEmuMasterTests.cs` maintient le Tube en reset pendant 100 cycles hôtes, vérifie l’absence d’écriture du programme de démarrage puis contrôle l’écriture attendue après libération. Les tests CPU couvrent séparément les délais et la réassertion. Les mesures Debug/Release et démarrages DOS ci-dessus restent ceux du 8 novembre ; aucun nouveau résultat de vitesse ou d’essai utilisateur n’est inventé.
+
+Résultats finaux de ce bloc : **138 tests CPU 80186 Debug réussis, 143 ms ; 34 tests Master Debug réussis, 855 ms ; zéro échec/ignoré**. Les avertissements de compilation existants hors bloc restent présents ; aucune fenêtre, ressource native ou média externe ouvert pour ces tests.

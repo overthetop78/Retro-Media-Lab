@@ -46,6 +46,10 @@ public interface ICpu80186
     ushort Flags { get; }
 
     void Reset();
+    void SetReset(bool asserted);
+    bool ResetOutputHigh { get; }
+    Action<bool>? ResetOutputChanged { get; set; }
+    long ClockHalfCount { get; }
     void Step();
     void SetDmaRequest(int channel, bool asserted);
     Func<int, byte>? CascadeAcknowledge { get; set; }
