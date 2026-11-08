@@ -11,6 +11,8 @@ internal static class Fat12DosPlusLayout
     private const int RootSectors = 6;
 
     internal static bool IsFormat(string formatId) => formatId.Equals(MediaImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase);
+    internal static bool IsImage(RetroMediaLab.MediaFileSystems.Interfaces.IMediaSectorImage image) => IsFormat(image.FormatId)
+        || image.FormatId.Equals(MediaImageFormatIds.Jfd, StringComparison.OrdinalIgnoreCase) && image.BlockSize == SectorSize;
 
     /// <summary>Valide le profil déjà reconnu et son en-tête FAT, sans interpréter les allocations comme un BPB.</summary>
     internal static bool TryRead(ReadOnlySpan<byte> firstSector, int availableSectors, out Fat12Layout layout)

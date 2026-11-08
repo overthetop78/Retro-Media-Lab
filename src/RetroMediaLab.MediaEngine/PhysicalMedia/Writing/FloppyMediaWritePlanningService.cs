@@ -10,6 +10,9 @@ using RetroMediaLab.MediaEngine.Functions;
 using RetroMediaLab.MediaEngine.Images.Writing.Encoding;
 using RetroMediaLab.MediaEngine.Images.Reading;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Scp;
+using System.IO;
+using RetroMediaLab.MediaEngine.Images.Models.Flux;
+using RetroMediaLab.MediaEngine.Images.Models.Sectors;
 
 namespace RetroMediaLab.MediaEngine.PhysicalMedia.Writing;
 
@@ -19,13 +22,23 @@ public sealed class FloppyMediaWritePlanningService(DiskImageExplorer explorer)
     public async Task<MediaWritePlan> CreatePlanAsync(string sourcePath, string? formatId = null, int scpRevolution = 0, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
-        if (Path.GetExtension(sourcePath).Equals(".scp", StringComparison.OrdinalIgnoreCase))
-        {
-            var image = await new ScpReader().ReadAsync(sourcePath, cancellationToken).ConfigureAwait(false);
-            return CreatePlan(image, scpRevolution);
-        }
-        var explored = await explorer.ExploreAsync(sourcePath, formatId, cancellationToken).ConfigureAwait(false);
+        var document = await explorer.ReadDocumentAsync(sourcePath, formatId, cancellationToken).ConfigureAwait(false);
+        if (document.Representation is FluxMediaImageRepresentation flux) return CreatePlan(flux.Image, scpRevolution);
+        var explored = await explorer.ExploreAsync(document, formatId, cancellationToken: cancellationToken).ConfigureAwait(false);
         return CreatePlan(new SectorImageTrackEncoder().Encode(explored.Image, cancellationToken));
+    }
+
+    public MediaWritePlan CreatePlan(ProtectedTrackImage image, int revolution = 0)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ArgumentOutOfRangeException.ThrowIfNegative(revolution);
+        var units = image.Tracks.OrderBy(track => track.Cylinder).ThenBy(track => track.Head).Select((track, index) =>
+        {
+            if (revolution >= track.Revolutions.Count) throw new InvalidDataException($"Track {track.Cylinder}.{track.Head} does not contain revolution {revolution}.");
+            var captured = track.Revolutions[revolution];
+            return CreateUnit(track.Cylinder, track.Head, captured.Flux, checked((uint)captured.ResolutionNanoseconds), index);
+        }).ToArray();
+        return CreatePlan(units);
     }
 
     public MediaWritePlan CreatePlan(ScpImage image, int revolution)

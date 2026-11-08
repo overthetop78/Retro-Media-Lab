@@ -25,6 +25,7 @@ public sealed class HxcStreamWriter : IMediaImageWriter
         && ProducedFileExtensions.Contains(targetExtension) && document.MediaKind == MediaKind.Floppy
         && document.Representation is FluxMediaImageRepresentation { Tracks.Count: > 0 } flux
         && flux.Tracks.All(track => track.Cylinder <= HxcStreamFormat.MaximumTrack && track.Head <= HxcStreamFormat.MaximumHead
+            && !track.Features.Any(feature => feature.Kind == TrackFeatureKind.WeakRegion)
             && (Native(document, track, flux.Image.WriteProtected) || HxcStreamEncoding.CanEncode(track)));
     public async Task<IReadOnlyList<string>> WriteAsync(MediaImageDocument document, string outputPath, string targetFormatId, CancellationToken cancellationToken = default)
     {
@@ -32,13 +33,18 @@ public sealed class HxcStreamWriter : IMediaImageWriter
         var flux = (FluxMediaImageRepresentation)document.Representation;
         var directory = Path.GetDirectoryName(outputPath) ?? string.Empty;
         var stem = Path.GetFileNameWithoutExtension(outputPath);
-        var prefix = Regex.Replace(stem, @"\d{2}\.[01]$", string.Empty, RegexOptions.CultureInvariant);
+        var ordered = flux.Tracks.OrderBy(track => track.Cylinder).ThenBy(track => track.Head).ToArray();
+        var first = ordered[0];
+        var suffix = $"{first.Cylinder:00}.{first.Head}";
+        if (!Regex.IsMatch(stem, @"\d{2}\.[01]$", RegexOptions.CultureInvariant) || !stem.EndsWith(suffix, StringComparison.Ordinal))
+            throw new InvalidDataException($"HxC Stream output must name its first physical track: <prefix>{suffix}.hxcstream.");
+        var prefix = stem[..^suffix.Length];
         var files = new Dictionary<string, Func<Stream, CancellationToken, Task>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var track in flux.Tracks.OrderBy(track => track.Cylinder).ThenBy(track => track.Head))
+        foreach (var track in ordered)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var bytes = Native(document, track, flux.Image.WriteProtected)
-                ? Convert.FromBase64String(document.Metadata[$"hxcstream.native.{track.Cylinder}.{track.Head}"])
+                ? Convert.FromBase64String(document.Metadata[HxcStreamMetadataKeys.Native(track.Cylinder, track.Head)])
                 : HxcStreamEncoding.Encode(track, flux.Image.WriteProtected, document.Metadata);
             var path = Path.Combine(directory, $"{prefix}{track.Cylinder:00}.{track.Head}.hxcstream");
             files.Add(path, (stream, token) => stream.WriteAsync(bytes, token).AsTask());
@@ -47,6 +53,6 @@ public sealed class HxcStreamWriter : IMediaImageWriter
         return files.Keys.ToArray();
     }
     private static bool Native(MediaImageDocument document, ProtectedTrack track, bool writeProtected) =>
-        document.Metadata.ContainsKey($"hxcstream.native.{track.Cylinder}.{track.Head}")
-        && document.Metadata.GetValueOrDefault($"hxcstream.digest.{track.Cylinder}.{track.Head}") == HxcStreamEncoding.Digest(track, writeProtected);
+        document.Metadata.ContainsKey(HxcStreamMetadataKeys.Native(track.Cylinder, track.Head))
+        && document.Metadata.GetValueOrDefault(HxcStreamMetadataKeys.Digest(track.Cylinder, track.Head)) == HxcStreamEncoding.Digest(track, writeProtected);
 }

@@ -9,7 +9,9 @@ public static class Fat12LayoutReader
     public static bool TryRead(ReadOnlySpan<byte> boot, int availableSectors, string formatId, out Fat12Layout layout)
     {
         layout = null!;
-        if (Fat12DosPlusLayout.IsFormat(formatId))
+        if (Fat12DosPlusLayout.IsFormat(formatId)
+            || formatId.Equals(RetroMediaLab.MediaFileSystems.Constants.MediaImageFormatIds.Jfd, StringComparison.OrdinalIgnoreCase)
+                && boot.Length == Fat12DosPlusLayout.SectorSize)
             return Fat12DosPlusLayout.TryRead(boot, availableSectors, out layout);
         if (formatId.Equals(MediaImageFormatIds.ApricotPcXi315, StringComparison.OrdinalIgnoreCase))
             return Fat12LegacyLayoutCatalog.TryCreateLayout(formatId, availableSectors, boot, out layout);

@@ -21,12 +21,14 @@ public sealed class JfdWriter(IAtomicImageFileWriter? files = null) : IMediaImag
     public bool ProducesMultipleFiles => false;
     public bool CanWrite(MediaImageDocument document, string targetFormatId, string targetExtension) => FormatIds.Contains(targetFormatId)
         && ProducedFileExtensions.Contains(targetExtension) && document.MediaKind == MediaKind.Floppy
-        && document.Representation is SectorMediaImageRepresentation && document.Metadata.ContainsKey(JfdCodec.NativeKey);
+        && document.Representation is SectorMediaImageRepresentation sectors
+        && (document.Metadata.ContainsKey(JfdCodec.NativeKey) || JfdCodec.CanCreate(sectors.Image));
     public async Task<IReadOnlyList<string>> WriteAsync(MediaImageDocument document, string outputPath, string targetFormatId, CancellationToken cancellationToken = default)
     {
-        if (!CanWrite(document, targetFormatId, Path.GetExtension(outputPath))) throw new InvalidDataException("JFD export requires its native tables.");
-        var native = JfdCodec.Decode(Convert.FromBase64String(document.Metadata[JfdCodec.NativeKey]));
-        var bytes = JfdCodec.Rewrite(native, ((SectorMediaImageRepresentation)document.Representation).Image);
+        if (!CanWrite(document, targetFormatId, Path.GetExtension(outputPath))) throw new InvalidDataException("JFD export requires representable sectors or its native tables.");
+        var sectors = ((SectorMediaImageRepresentation)document.Representation).Image;
+        var bytes = document.Metadata.TryGetValue(JfdCodec.NativeKey, out var retained)
+            ? JfdCodec.Rewrite(JfdCodec.Decode(Convert.FromBase64String(retained)), sectors) : JfdCodec.Create(sectors);
         await files.WriteAsync(outputPath, async (output, token) =>
         {
             if (document.Metadata.GetValueOrDefault("jfd.gzip") == bool.FalseString)

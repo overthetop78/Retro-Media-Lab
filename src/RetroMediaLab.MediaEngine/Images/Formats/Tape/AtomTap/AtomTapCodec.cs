@@ -7,6 +7,7 @@ using RetroMediaLab.MediaEngine.Contracts;
 using RetroMediaLab.MediaEngine.Enums;
 using RetroMediaLab.MediaEngine.Images.Models.Sequential;
 using RetroMediaLab.MediaEngine.Images.Reading.Blocks;
+using RetroMediaLab.MediaEngine.Images.Reading.Sources;
 using C = RetroMediaLab.MediaEngine.Constants.AtomTapeConstants;
 
 namespace RetroMediaLab.MediaEngine.Images.Formats.Tape.AtomTap;
@@ -14,6 +15,38 @@ namespace RetroMediaLab.MediaEngine.Images.Formats.Tape.AtomTap;
 /// <summary>Validates Atom serial blocks and reassembles complete files without discarding errors.</summary>
 internal static class AtomTapCodec
 {
+    internal static async Task<SequentialDecodeResult> DecodeStreamAsync(byte[] serial, CancellationToken token)
+    {
+        var segments = new List<SequentialMediaSegment>();
+        var consumed = new bool[serial.Length];
+        for (var at = 0; at <= serial.Length - C.SyncBytes; at++)
+        {
+            token.ThrowIfCancellationRequested();
+            if (!serial.AsSpan(at, C.SyncBytes).SequenceEqual(new byte[] { C.Sync, C.Sync, C.Sync, C.Sync })) continue;
+            var end = Array.IndexOf(serial, C.NameTerminator, at + C.SyncBytes);
+            if (end < at + C.SyncBytes + 1 || end > at + C.SyncBytes + C.FileNameBytes || end + 9 > serial.Length) continue;
+            var count = (serial[end + 1] & C.ContainsData) == 0 ? 0 : serial[end + 4] + 1;
+            var payloadAt = end + 9;
+            if (payloadAt > serial.Length - count - 1) continue;
+            Add(serial.AsSpan(at, payloadAt - at));
+            Add(serial.AsSpan(payloadAt, count + 1));
+            Array.Fill(consumed, true, at, payloadAt + count + 1 - at);
+            at = payloadAt + count;
+        }
+        var decoded = await DecodeAsync(new SequentialMediaImageRepresentation(null, segments: segments), token).ConfigureAwait(false);
+        return consumed.All(value => value) ? decoded : new(decoded.DecoderId, decoded.Confidence, decoded.Blocks,
+            decoded.UndecodedSegments, decoded.Diagnostics.Concat(new[] { "Unrecognized bytes remain in the Atom serial stream." }).ToArray());
+
+        void Add(ReadOnlySpan<byte> data)
+        {
+            var bytes = new byte[data.Length + 3]; bytes[0] = C.DataBits; bytes[1] = C.NoParity; bytes[2] = C.StopBits;
+            data.CopyTo(bytes.AsSpan(3));
+            segments.Add(new(segments.Count, SequentialSegmentKind.DataBlock,
+                dataRange: new(0, bytes.Length, MediaDataRangeKind.Stored, new MemoryRandomAccessData(bytes)),
+                metadata: new Dictionary<string, string> { [UefConstants.ChunkIdMetadataKey] = "0104" }));
+        }
+    }
+
     internal static async Task<SequentialDecodeResult> DecodeAsync(SequentialMediaImageRepresentation representation, CancellationToken token)
     {
         var files = new List<SequentialDecodedBlock>();
@@ -33,6 +66,9 @@ internal static class AtomTapCodec
             token.ThrowIfCancellationRequested();
             if (segment.Kind is SequentialSegmentKind.Carrier or SequentialSegmentKind.Silence) continue;
             var bytes = await BlockMediaDataReader.ReadRangeAsync(segment.DataRange, token).ConfigureAwait(false);
+            if (segment.Kind == SequentialSegmentKind.TapeMark
+                && segment.Metadata.GetValueOrDefault(UefConstants.ChunkIdMetadataKey) == "0117"
+                && bytes is { Length: 2 } && BinaryPrimitives.ReadUInt16LittleEndian(bytes) == C.Baud) continue;
             if (segment.Kind != SequentialSegmentKind.DataBlock || bytes is null || bytes.Length < 3
                 || segment.Metadata.GetValueOrDefault(UefConstants.ChunkIdMetadataKey) != "0104"
                 || bytes[0] != C.DataBits || bytes[1] != C.NoParity || bytes[2] != C.StopBits)

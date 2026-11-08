@@ -129,6 +129,7 @@ internal sealed class ScpSectorDecodingComposition
         }.Concat(epson).Append(apple).ToArray();
         var selections = new[]
         {
+            new ScpFormatSelection(id => id.Equals(DiskImageFormatIds.Jfd, StringComparison.OrdinalIgnoreCase), isoAutomatic),
             new ScpFormatSelection(id => DiskDefsFormatReader.RawDefinitions.ContainsKey(id), defined),
             new ScpFormatSelection(id => id.Equals(DiskImageFormatIds.ApricotPcXi315, StringComparison.OrdinalIgnoreCase), isoSelected),
             new ScpFormatSelection(id => id.StartsWith(DiskImageFormatIds.AmigaPrefix, StringComparison.OrdinalIgnoreCase), amiga),

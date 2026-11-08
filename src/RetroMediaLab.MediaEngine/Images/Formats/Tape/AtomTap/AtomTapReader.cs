@@ -65,6 +65,9 @@ public sealed class AtomTapReader : IMediaImageReader
     {
         if (!Validate(bytes)) throw new InvalidDataException("Invalid or truncated Atom TAP header or payload.");
         var segments = new List<SequentialMediaSegment>();
+        var baud = new byte[sizeof(ushort)];
+        BinaryPrimitives.WriteUInt16LittleEndian(baud, C.Baud);
+        Add(UefConstants.BaudRate, baud, SequentialSegmentKind.TapeMark);
         var offset = 0;
         while (offset < bytes.Length)
         {

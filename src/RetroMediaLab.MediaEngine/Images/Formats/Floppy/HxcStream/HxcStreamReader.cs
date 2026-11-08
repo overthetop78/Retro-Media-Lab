@@ -51,10 +51,10 @@ public sealed partial class HxcStreamReader : IMediaImageReader
             var decoded = await ReadTrackAsync(file.Path, cancellationToken).ConfigureAwait(false);
             tracks.Add(new ProtectedTrack(file.Cylinder, file.Head, null, [], [], [], decoded.Revolutions));
             writeProtected |= decoded.WriteProtected;
-            foreach (var pair in decoded.Metadata) metadata.TryAdd(pair.Key, pair.Value);
-            metadata[$"hxcstream.native.{file.Cylinder}.{file.Head}"] = Convert.ToBase64String(decoded.NativeBytes);
+            foreach (var pair in decoded.Metadata) metadata[HxcStreamMetadataKeys.Fields(file.Cylinder, file.Head) + pair.Key] = pair.Value;
+            metadata[HxcStreamMetadataKeys.Native(file.Cylinder, file.Head)] = Convert.ToBase64String(decoded.NativeBytes);
         }
-        foreach (var track in tracks) metadata[$"hxcstream.digest.{track.Cylinder}.{track.Head}"] = HxcStreamEncoding.Digest(track, writeProtected);
+        foreach (var track in tracks) metadata[HxcStreamMetadataKeys.Digest(track.Cylinder, track.Head)] = HxcStreamEncoding.Digest(track, writeProtected);
 
         var associated = files.Select(file => file.Path).Where(path => !Path.GetFullPath(path).Equals(Path.GetFullPath(context.Source.PrimaryPath), StringComparison.OrdinalIgnoreCase)).ToArray();
         var source = new MediaSourceDescriptor(context.Source.PrimaryPath, associated, files.Sum(file => new FileInfo(file.Path).Length), context.Source.RequestedFormatId);

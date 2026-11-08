@@ -3,6 +3,9 @@ using System.IO.Compression;
 using System.Buffers.Binary;
 using RetroMediaLab.MediaEngine.Constants;
 using RetroMediaLab.MediaEngine.Images.Models.Sectors;
+using RetroMediaLab.MediaEngine.Images.Visualization;
+using RetroMediaLab.MediaEngine.Enums;
+using RetroMediaLab.MediaEngine.Functions;
 
 namespace RetroMediaLab.MediaEngine.Images.Formats.Floppy.Jfd;
 
@@ -11,7 +14,7 @@ internal static class JfdCodec
 {
     internal const int MaximumLength = 64 * 1024 * 1024;
     internal const string NativeKey = "jfd.native";
-    internal sealed record Record(int Track, int Order, uint Header, int? Offset, int Length)
+    internal sealed record Record(int Track, int Order, uint Header, int? Offset, int Length, int DescriptorOffset)
     {
         internal bool RawTrack => (Header & 0x00100000) != 0;
     }
@@ -56,18 +59,20 @@ internal static class JfdCodec
         var records = active.OrderBy(pair => pair.Key).SelectMany(pair => pair.Value).ToArray();
         var ordinary = records.Where(record => !record.RawTrack).ToArray();
         var cylinders = Math.Max(1, (active.Keys.DefaultIfEmpty(0).Max() / 2) + 1);
+        var heads = active.Keys.Any(track => track % 2 != 0) ? 2 : 1;
         var spt = Math.Max(1, ordinary.GroupBy(record => record.Track).Select(group => group.Select(record => (record.Header >> 8) & 255).Distinct().Count()).DefaultIfEmpty(1).Max());
         var size = ordinary.GroupBy(record => record.Length).OrderByDescending(group => group.Count()).Select(group => group.Key).FirstOrDefault(1024);
         var zeroBased = ordinary.Any(record => ((record.Header >> 8) & 255) == 0);
         var blocks = new List<SectorBlock>();
         var requiresNativeLayout = records.Any(record => record.RawTrack || record.Offset is null || (record.Header >> 24) != 255);
         var used = new HashSet<int>();
-        var extra = cylinders * 2 * spt;
+        var extra = cylinders * heads * spt;
         foreach (var record in ordinary)
         {
             var number = (int)(record.Header >> 8) & 255;
-            var logical = record.Track * spt + number - (zeroBased ? 0 : 1);
-            if (logical < record.Track * spt || logical >= (record.Track + 1) * spt || !used.Add(logical))
+            var logicalTrack = record.Track / 2 * heads + record.Track % 2;
+            var logical = logicalTrack * spt + number - (zeroBased ? 0 : 1);
+            if (logical < logicalTrack * spt || logical >= (logicalTrack + 1) * spt || !used.Add(logical))
             { logical = extra++; used.Add(logical); }
             if (record.Offset is not { } offset) continue; // A stub is not readable zero-filled sector data.
             var idValid = (record.Header & 0x10) == 0;
@@ -77,8 +82,8 @@ internal static class JfdCodec
                 FormatCode: (byte)((record.Header >> 16) & 15))
             { HeaderIntegrityValid = idValid, DataIntegrityValid = dataValid, RecordedSizeCode = (byte)(record.Header & 15), RecordedTrackOrder = record.Order });
         }
-        var image = new SectorImage(DiskImageFormatIds.Jfd, size, cylinders, 2, spt, blocks, allowVariableBlockSize: true,
-            logicalBlockCount: Math.Max(cylinders * 2 * spt, extra));
+        var image = new SectorImage(DiskImageFormatIds.Jfd, size, cylinders, heads, spt, blocks, allowVariableBlockSize: true,
+            logicalBlockCount: Math.Max(cylinders * heads * spt, extra));
         var diagnostics = new List<string>();
         if (records.Any(record => record.RawTrack)) diagnostics.Add("JFD contains native DiscOp 3 track records retained in the native structure.");
         if (ordinary.Any(record => (record.Header >> 24) != 255)) diagnostics.Add("JFD contains explicit rotational sector positions retained in the native structure.");
@@ -112,7 +117,7 @@ internal static class JfdCodec
                     Require(bytes, raw, 4, end); length = checked(4 + (int)U32(bytes, raw));
                 }
                 if (offset is { } present) Require(bytes, present, length, end);
-                records.Add(new(track, records.Count, header, offset, length));
+                records.Add(new(track, records.Count, header, offset, length, position));
                 if (records.Count > 256) throw new InvalidDataException("Too many JFD records on one track.");
                 position += 8;
             }
@@ -126,21 +131,88 @@ internal static class JfdCodec
         var bytes = native.Bytes.ToArray();
         var supplied = sectors.AvailableBlocks.ToDictionary(block => (block.Address.Cylinder * 2 + block.Address.Head, block.RecordedTrackOrder ?? -1));
         var writes = new Dictionary<int, byte[]>();
+        var headerWrites = new Dictionary<int, uint>();
         foreach (var record in native.Records.Where(record => !record.RawTrack && record.Offset is not null))
         {
             if (!supplied.Remove((record.Track, record.Order), out var block) || block.Data.Count != record.Length
                 || block.Address.Number != ((record.Header >> 8) & 255)
-                || block.HeaderIntegrityValid != ((record.Header & 0x10) == 0)
-                || block.DataIntegrityValid != ((record.Header & 0x20) == 0))
-                throw new InvalidDataException("JFD sector edits must retain native geometry and error states.");
+                || block.DeletedDataMark == true
+                || block.RecordedAddress is not null && block.RecordedAddress != block.Address
+                || block.RecordedSizeCode != (byte)(record.Header & 15))
+                throw new InvalidDataException("JFD sector edits must retain native geometry.");
+            var header = record.Header & ~0x30u;
+            if ((block.HeaderIntegrityValid ?? ((record.Header & 0x10) == 0)) == false) header |= 0x10;
+            if ((block.DataIntegrityValid ?? block.IntegrityValid ?? ((record.Header & 0x20) == 0)) == false) header |= 0x20;
+            if (headerWrites.TryGetValue(record.DescriptorOffset, out var previousHeader) && previousHeader != header)
+                throw new InvalidDataException("Conflicting edits of shared JFD descriptors.");
+            headerWrites[record.DescriptorOffset] = header;
             var data = block.Data.ToArray(); var offset = record.Offset!.Value;
             if (writes.TryGetValue(offset, out var previous) && !previous.AsSpan().SequenceEqual(data))
                 throw new InvalidDataException("Conflicting edits of shared JFD sector data.");
             writes[offset] = data;
         }
         if (supplied.Count != 0) throw new InvalidDataException("JFD contains sectors absent from its native tables.");
-        foreach (var pair in writes) pair.Value.CopyTo(bytes, pair.Key);
+        var coveredEnd = 0;
+        foreach (var pair in writes.OrderBy(pair => pair.Key))
+        {
+            var overlap = Math.Min(pair.Value.Length, Math.Max(0, coveredEnd - pair.Key));
+            if (overlap > 0 && !bytes.AsSpan(pair.Key, overlap).SequenceEqual(pair.Value.AsSpan(0, overlap)))
+                throw new InvalidDataException("Conflicting edits of overlapping JFD data.");
+            pair.Value.CopyTo(bytes, pair.Key); coveredEnd = Math.Max(coveredEnd, pair.Key + pair.Value.Length);
+        }
+        foreach (var pair in headerWrites) BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(pair.Key), pair.Value);
         return bytes;
+    }
+
+    internal static bool CanCreate(SectorImage image)
+    {
+        if (image.AddressingKind != SectorImageAddressingKind.Physical || image.Cylinders > 256 || image.Heads > 2
+            || image.AvailableBlocks.Count != image.Cylinders * image.Heads * image.SectorsPerTrack) return false;
+        var policy = new SectorImageVisualizationPolicyRegistry().Resolve(image);
+        if (policy is null || policy.EncoderId(image) is not (FluxCodecIds.IsoFm or FluxCodecIds.IsoMfm)) return false;
+        return image.AvailableBlocks.All(block => block.Address.Cylinder >= 0 && block.Address.Cylinder < image.Cylinders
+            && block.Address.Head >= 0 && block.Address.Head < image.Heads
+            && block.Address.Number is >= 0 and <= 255 && block.DeletedDataMark != true
+            && (block.RecordedAddress is null || block.RecordedAddress == block.Address)
+            && SectorSizeCode.TryFromByteCount(block.Data.Count, out var code) && code <= 3
+            && (block.RecordedSizeCode is null || block.RecordedSizeCode == code))
+            && image.AvailableBlocks.Select(block => block.Address).Distinct().Count() == image.AvailableBlocks.Count;
+    }
+
+    internal static byte[] Create(SectorImage image)
+    {
+        if (!CanCreate(image)) throw new InvalidDataException("These sectors cannot be represented by native JFD descriptors.");
+        var policy = new SectorImageVisualizationPolicyRegistry().Resolve(image)!;
+        var trackCount = Math.Max(160, image.Cylinders * 2);
+        var groups = image.AvailableBlocks.GroupBy(block => block.Address.Cylinder * 2 + block.Address.Head)
+            .ToDictionary(group => group.Key, group => group.OrderBy(block => block.RecordedTrackOrder ?? block.Address.Number).ToArray());
+        const int trackOffset = 320;
+        var sectorOffset = checked(trackOffset + trackCount * 4);
+        var dataOffset = checked(sectorOffset + groups.Values.Sum(group => group.Length * 8 + 4));
+        var bytes = new byte[checked(dataOffset + image.AvailableBlocks.Sum(block => block.Data.Count))];
+        "JFDI"u8.CopyTo(bytes); Put(4, 204); Put(8, (uint)bytes.Length); Put(12, 0x00010001);
+        Put(24, trackOffset); Put(28, (uint)sectorOffset); Put(32, (uint)dataOffset);
+        var recordAt = sectorOffset; var dataAt = dataOffset;
+        for (var track = 0; track < trackCount; track++)
+        {
+            if (!groups.TryGetValue(track, out var blocks)) { Put(trackOffset + track * 4, uint.MaxValue); continue; }
+            Put(trackOffset + track * 4, (uint)(recordAt - sectorOffset));
+            var ticks = policy.BitCellTicks(image, track / 2);
+            var density = ticks == 0 ? 0 : 160u / ticks;
+            if (density is not (1 or 2 or 4 or 8)) throw new InvalidDataException("JFD cannot represent this recording density.");
+            foreach (var block in blocks)
+            {
+                SectorSizeCode.TryFromByteCount(block.Data.Count, out var code);
+                var header = 0xff000000 | density << 16 | (uint)block.Address.Number << 8 | code;
+                if (block.HeaderIntegrityValid == false) header |= 0x10;
+                if ((block.DataIntegrityValid ?? block.IntegrityValid) == false) header |= 0x20;
+                Put(recordAt, header); Put(recordAt + 4, (uint)(dataAt - dataOffset));
+                block.Data.ToArray().CopyTo(bytes, dataAt); dataAt += block.Data.Count; recordAt += 8;
+            }
+            Put(recordAt, uint.MaxValue); recordAt += 4;
+        }
+        return bytes;
+        void Put(int at, uint value) => BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(at), value);
     }
 
     private static uint U32(byte[] bytes, int position) { Require(bytes, position, 4, bytes.Length); return BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(position)); }

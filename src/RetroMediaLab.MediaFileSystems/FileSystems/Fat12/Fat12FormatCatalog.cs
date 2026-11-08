@@ -9,6 +9,7 @@ public static class Fat12FormatCatalog
     public static IReadOnlyDictionary<string, string> FileSystemIdByFormat { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         [MediaImageFormatIds.AcornDosPlus800] = Definitions.FileSystemIds.Fat12,
+        [MediaImageFormatIds.Jfd] = Definitions.FileSystemIds.Fat12,
         [MediaImageFormatIds.AtariSt180] = Definitions.FileSystemIds.Fat12,
         [MediaImageFormatIds.AtariSt360] = Definitions.FileSystemIds.Fat12,
         [MediaImageFormatIds.AtariSt400] = Definitions.FileSystemIds.Fat12,

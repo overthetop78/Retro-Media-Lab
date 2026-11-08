@@ -16,7 +16,7 @@ public sealed class TapeSignalRepresentationConverter : IMediaRepresentationConv
     public IReadOnlySet<MediaRepresentationKind> SourceRepresentationKinds { get; } = new HashSet<MediaRepresentationKind> { MediaRepresentationKind.Sequential };
     public IReadOnlySet<MediaRepresentationKind> TargetRepresentationKinds { get; } = new HashSet<MediaRepresentationKind> { MediaRepresentationKind.Sequential };
     public bool CanConvert(MediaImageDocument source, string targetFormatId, MediaRepresentationKind targetRepresentationKind) => source.MediaKind == MediaKind.Tape && source.Representation is SequentialMediaImageRepresentation && targetRepresentationKind == MediaRepresentationKind.Sequential
-        && (source.FormatId == TapeImageFormatIds.Uef && targetFormatId is TapeImageFormatIds.Wav or TapeImageFormatIds.Csw or TapeImageFormatIds.Raw
+        && (source.FormatId is TapeImageFormatIds.Uef or TapeImageFormatIds.AtomTap && targetFormatId is TapeImageFormatIds.Wav or TapeImageFormatIds.Csw or TapeImageFormatIds.Raw
             || targetFormatId == TapeImageFormatIds.Uef && PcmSampleFunctions.TryGetProfile(source.Metadata, out _, out _, out _, out _));
 
     public async Task<MediaRepresentationConversionResult> ConvertAsync(MediaImageDocument source, string targetFormatId, MediaRepresentationKind targetRepresentationKind, IReadOnlyDictionary<string, string> options, Action<MediaExplorationProgress>? progress = null, CancellationToken cancellationToken = default)

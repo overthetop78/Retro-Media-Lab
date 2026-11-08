@@ -39,7 +39,7 @@ public sealed class BuiltInImageFormatCatalog : IImageFormatCatalog
                 SupportsPhysicalRead: true, SupportsPhysicalWrite: true),
             new(DiskImageFormatIds.Jfd, "Acorn", "JASPP Floppy Disk", [new(DiskImageFileExtensions.Jfd, "JFD", true)],
                 CompatibleSourceExtensions: Set(DiskImageFileExtensions.Jfd), Tag: "JFD", FormFactor: FloppyFormFactor.Unknown,
-                SupportsPhysicalRead: false, SupportsPhysicalWrite: false),
+                SupportsPhysicalRead: true, SupportsPhysicalWrite: true),
             new(
                 "raw.scp",
                 "Raw",

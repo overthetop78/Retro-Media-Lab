@@ -17,7 +17,7 @@ public sealed class Fat12FileSystemReader : IFileSystemReader
     /// <summary>Indique si le secteur d'amorçage, la disposition et l'en-tête de FAT sont plausibles.</summary>
     public bool CanRead(IMediaSectorImage image)
     {
-        var sectorSize = Fat12DosPlusLayout.IsFormat(image.FormatId) ? Fat12DosPlusLayout.SectorSize : FatBootSectorLayout.SectorSize;
+        var sectorSize = Fat12DosPlusLayout.IsImage(image) ? Fat12DosPlusLayout.SectorSize : FatBootSectorLayout.SectorSize;
         if (!CatalogFormatIds.Contains(image.FormatId) || image.BlockSize != sectorSize || !image.TryGetBlock(0, out var boot) || boot.Data.Count < FatBootSectorLayout.ExtendedBootMinimumLength) return false;
         return Fat12LayoutReader.TryRead(boot.Data.ToArray(), image.BlockCount, image.FormatId, out var layout) && TryReadMediaDescriptor(image, boot, layout, out var mediaDescriptor) && Fat12FatReader.HasReadableCopy(image, layout, mediaDescriptor);
     }
@@ -41,7 +41,7 @@ public sealed class Fat12FileSystemReader : IFileSystemReader
             }
         }
         var label = FatDirectoryEntryReader.ReadVolumeLabel(root.Bytes)
-            ?? (Fat12DosPlusLayout.IsFormat(image.FormatId) ? string.Empty : FatDirectoryEntryReader.ReadBootVolumeLabel(boot.Data));
+            ?? (Fat12DosPlusLayout.IsImage(image) ? string.Empty : FatDirectoryEntryReader.ReadBootVolumeLabel(boot.Data));
         var freeBytes = fat.IsValid ? (long)freeClusters * layout.SectorsPerCluster * image.BlockSize : 0;
         return new(label, Definitions.FileSystemIds.Fat12, image.Capacity, freeBytes, null, null, entries, warnings);
     }
@@ -49,7 +49,7 @@ public sealed class Fat12FileSystemReader : IFileSystemReader
     /// <summary>Lit le descripteur standard du BPB, ou celui de la première FAT pour le secteur d'amorçage Apricot.</summary>
     private static bool TryReadMediaDescriptor(IMediaSectorImage image, IMediaSectorBlock boot, Fat12Layout layout, out byte mediaDescriptor)
     {
-        mediaDescriptor = Fat12DosPlusLayout.IsFormat(image.FormatId) ? boot.Data[0] : boot.Data[FatBootSectorLayout.MediaDescriptorOffset];
+        mediaDescriptor = Fat12DosPlusLayout.IsImage(image) ? boot.Data[0] : boot.Data[FatBootSectorLayout.MediaDescriptorOffset];
         if (!image.FormatId.Equals(MediaImageFormatIds.ApricotPcXi315, StringComparison.OrdinalIgnoreCase)) return true;
         if (!image.TryGetBlock(layout.ReservedSectors, out var firstFat) || firstFat.Data.Count == 0) return false;
         mediaDescriptor = firstFat.Data[FatBootSectorLayout.FatMediaDescriptorDataOffset];

@@ -58,8 +58,12 @@ internal static class HxcStreamEncoding
         foreach (var index in indexes) io[checked((int)(index / 16) * 2)] |= 1;
         using var packedPulses = new MemoryStream();
         foreach (var pulse in pulses) WritePulse(packedPulses, pulse);
-        var text = metadata.Where(pair => !pair.Key.StartsWith("hxcstream.", StringComparison.Ordinal) && pair.Key != "sample_rate_hz"
-            && !pair.Key.Contains('\n') && !pair.Value.Contains('\n') && !pair.Value.Contains('\r'))
+        var prefix = HxcStreamMetadataKeys.Fields(track.Cylinder, track.Head);
+        var text = metadata.Where(pair => pair.Key.StartsWith(prefix, StringComparison.Ordinal))
+            .Select(pair => new KeyValuePair<string, string>(pair.Key[prefix.Length..], pair.Value))
+            .Where(pair => pair.Key != "sample_rate_hz" && pair.Key.Length > 0
+                && !pair.Key.Any(char.IsWhiteSpace) && !pair.Key.Contains('\0')
+                && !pair.Value.Contains('\n') && !pair.Value.Contains('\r') && !pair.Value.Contains('\0'))
             .Select(pair => pair.Key + " " + pair.Value);
         var info = Encoding.UTF8.GetBytes("sample_rate_hz " + (1_000_000_000 / resolution) + "\n" + string.Join('\n', text) + "\0");
         using var chunk = new MemoryStream();

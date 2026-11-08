@@ -85,6 +85,8 @@ public sealed class DiskImageExplorer
 
         if (document.Representation is FluxMediaImageRepresentation flux)
         {
+            // The loaded flux container identifies its encoding, not a sector geometry.
+            if (string.Equals(formatId, document.FormatId, StringComparison.OrdinalIgnoreCase)) formatId = null;
             if (document.FormatId.Equals(DiskImageFormatIds.RawScp, StringComparison.OrdinalIgnoreCase))
             {
                 var scpImage = ProtectedTrackScpImageAdapter.Create(flux.Image, document.Metadata);
@@ -122,7 +124,7 @@ public sealed class DiskImageExplorer
     }
 
     /// <summary>Reads through the common chain and retries without a downstream sector-format hint when necessary.</summary>
-    private async Task<MediaImageDocument> ReadDocumentAsync(string path, string? formatId, CancellationToken cancellationToken)
+    internal async Task<MediaImageDocument> ReadDocumentAsync(string path, string? formatId, CancellationToken cancellationToken)
     {
         var containerFormatId = Path.GetExtension(path).Equals(DiskImageFileExtensions.Scp, StringComparison.OrdinalIgnoreCase) ? null : formatId;
         var source = new MediaSourceDescriptor(path, [], RequestedFormatId: containerFormatId);

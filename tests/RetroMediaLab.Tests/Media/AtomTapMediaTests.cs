@@ -8,6 +8,8 @@ using RetroMediaLab.MediaEngine.Images.Formats.Tape.AtomTap;
 using RetroMediaLab.MediaEngine.Images.Models.Sequential;
 using RetroMediaLab.MediaEngine.Images.Reading.Sources;
 using RetroMediaLab.MediaEngine.Images.Reading;
+using RetroMediaLab.MediaEngine.Images.Conversion.Sequential;
+using RetroMediaLab.MediaEngine.Images.Formats.Tape.Uef;
 using MediaVolumeOrigins = RetroMediaLab.MediaFileSystems.Constants.MediaVolumeOrigins;
 using RetroMediaLab.MediaFileSystems.Definitions;
 using MediaVolumeDescriptor = RetroMediaLab.MediaFileSystems.Contracts.MediaVolumeDescriptor;
@@ -56,8 +58,9 @@ public sealed class AtomTapMediaTests
         var original = (SequentialMediaImageRepresentation)document.Representation;
         var segments = original.Segments!.ToArray();
         var damaged = new byte[] { 8, (byte)'N', 2, 1, 2, 3, 0 };
-        var segment = segments[3];
-        segments[3] = new(segment.Position, segment.Kind,
+        var payloadIndex = Array.FindLastIndex(segments, item => item.Kind == SequentialSegmentKind.DataBlock);
+        var segment = segments[payloadIndex];
+        segments[payloadIndex] = new(segment.Position, segment.Kind,
             dataRange: new(0, damaged.Length, MediaDataRangeKind.Stored, new MemoryRandomAccessData(damaged)), metadata: segment.Metadata);
         var bad = MediaImageDocument.CreateUnexplored(document.Source, document.FormatId, MediaKind.Tape,
             new SequentialMediaImageRepresentation(null, segments: segments), [], new Dictionary<string, string>());
@@ -73,6 +76,56 @@ public sealed class AtomTapMediaTests
         var bytes = File("TEST", [1, 2, 3]);
         Assert.False(AtomTapReader.Validate(bytes.AsSpan(0, bytes.Length - 1)));
         Assert.False(AtomTapReader.Validate([]));
+    }
+
+    [Theory]
+    [InlineData(44100)]
+    [InlineData(48000)]
+    public async Task RecordedSignalAndNativeTapConvertBothWays(int sampleRate)
+    {
+        var bytes = File("SIGNAL", Enumerable.Range(0, 32).Select(value => (byte)value).ToArray());
+        var source = AtomTapReader.ReadBytes(new("memory.tap", []), bytes);
+        var sequential = SequentialMediaComposition.CreateDefault();
+        var writing = MediaWritingComposition.CreateDefault();
+        var service = new SequentialMediaConversionService(MediaRecognitionComposition.CreateDefault().ReadingService,
+            sequential.Decoders, sequential.Encoders, writing.Registry, writing.WritingService);
+        var wave = await service.PlanAsync(source, TapeImageFormatIds.Wav, "acorn-atom", new Dictionary<string, string> { ["sampleRate"] = sampleRate.ToString() });
+        Assert.Equal(sampleRate.ToString(), wave.TargetDocument.Metadata["sampleRate"]);
+        var back = await service.PlanAsync(wave.TargetDocument, TapeImageFormatIds.AtomTap, "acorn-atom");
+        var output = new MemoryWriter();
+        await new AtomTapWriter(output).WriteAsync(back.TargetDocument, "copy.tap", TapeImageFormatIds.AtomTap);
+        Assert.Equal(bytes, output.Bytes);
+        var uef = await service.PlanAsync(source, TapeImageFormatIds.Uef, "acorn-atom");
+        await new UefWriter(output).WriteAsync(uef.TargetDocument, "copy.uef", TapeImageFormatIds.Uef);
+        Assert.Equal(UefConstants.BaudRate, BinaryPrimitives.ReadUInt16LittleEndian(output.Bytes.AsSpan(UefConstants.HeaderSize)));
+        Assert.Equal(300, BinaryPrimitives.ReadUInt16LittleEndian(output.Bytes.AsSpan(UefConstants.HeaderSize + UefConstants.ChunkHeaderSize)));
+        var fromUef = await service.PlanAsync(uef.TargetDocument, TapeImageFormatIds.AtomTap, "acorn-atom");
+        await new AtomTapWriter(output).WriteAsync(fromUef.TargetDocument, "copy.tap", TapeImageFormatIds.AtomTap);
+        Assert.Equal(bytes, output.Bytes);
+    }
+
+    [Fact]
+    public async Task UnknownSerialBytesProduceADiagnosticWithoutInventingTapeBlocks()
+    {
+        var decoded = await AtomTapCodec.DecodeStreamAsync([1, 2, 3, 4], CancellationToken.None);
+        Assert.Empty(decoded.Blocks);
+        Assert.Empty(decoded.UndecodedSegments);
+        Assert.Contains(decoded.Diagnostics, diagnostic => diagnostic.Contains("Unrecognized bytes"));
+    }
+
+    [Fact]
+    public async Task IncompatibleUefFramingIsRetainedInsteadOfSilentlyDropped()
+    {
+        byte[] bytes = [8, (byte)'N', 1, 42];
+        var segment = new SequentialMediaSegment(0, SequentialSegmentKind.DataBlock,
+            dataRange: new(0, bytes.Length, MediaDataRangeKind.Stored, new MemoryRandomAccessData(bytes)),
+            metadata: new Dictionary<string, string> { [UefConstants.ChunkIdMetadataKey] = "0104" });
+        var document = MediaImageDocument.CreateUnexplored(new("memory.uef", []), TapeImageFormatIds.Uef, MediaKind.Tape,
+            new SequentialMediaImageRepresentation(null, segments: [segment]), [], new Dictionary<string, string>());
+        var decoded = await SequentialMediaComposition.CreateDefault().Decoders.DecodeAsync(document, "acorn-atom");
+        Assert.Empty(decoded.Blocks);
+        Assert.Same(segment, Assert.Single(decoded.UndecodedSegments));
+        Assert.NotEmpty(decoded.Diagnostics);
     }
 
     private static byte[] File(string name, byte[] data)

@@ -10,6 +10,8 @@ using RetroMediaLab.MediaEngine.Images.Reading;
 using RetroMediaLab.MediaEngine.Images.Reading.Recognition;
 using RetroMediaLab.MediaEngine.Images.Writing;
 using RetroMediaLab.MediaEngine.Images.Writing.Encoding;
+using RetroMediaLab.MediaEngine;
+using RetroMediaLab.MediaFileSystems.Exploration;
 using RetroMediaLab.MediaEngine.Interfaces;
 
 namespace RetroMediaLab.Tests.Media;
@@ -92,6 +94,82 @@ public sealed class JfdMediaTests
         var encoder = new SectorImageTrackEncoder();
         Assert.True(encoder.CanEncode(decoded.Sectors));
         Assert.NotEmpty(encoder.Encode(decoded.Sectors));
+    }
+
+    [Theory]
+    [InlineData("acorn.dfs.ss", 1)]
+    [InlineData("ibm.360", 2)]
+    public async Task NewImagesCanBeCreatedFromDecodedSectorsWithoutAnExistingJfd(string format, byte density)
+    {
+        var blocks = Enumerable.Range(0, 2).Select(cylinder => new SectorBlock(cylinder, new(cylinder, 0, 1),
+            Enumerable.Repeat((byte)(10 + cylinder), 256).ToArray()) { HeaderIntegrityValid = true, DataIntegrityValid = true }).ToArray();
+        var image = new SectorImage(format, 256, 2, 1, 1, blocks);
+        var document = MediaImageDocument.CreateUnexplored(new("captured.scp", []), format, MediaKind.Floppy,
+            new SectorMediaImageRepresentation(image), [], new Dictionary<string, string>());
+        var output = new MemoryWriter();
+        await new JfdWriter(output).WriteAsync(document, "created.jfd", DiskImageFormatIds.Jfd);
+        var decoded = JfdCodec.Decode(output.Bytes);
+        Assert.Equal(1, decoded.Sectors.Heads); Assert.Equal(2, decoded.Sectors.Cylinders);
+        Assert.Equal(2, decoded.Sectors.BlockCount);
+        Assert.All(decoded.Sectors.AvailableBlocks, block => Assert.Equal(density, block.FormatCode));
+        foreach (var block in decoded.Sectors.AvailableBlocks) Assert.Equal(blocks[block.LogicalBlock].Data, block.Data);
+    }
+
+    [Fact]
+    public async Task CommonConversionsPrepareFluxForWritingAndRecoverJfdSectors()
+    {
+        var bytes = Enumerable.Range(0, 256).Select(value => (byte)value).ToArray();
+        var image = new SectorImage("ibm.360", 256, 1, 1, 1, [new(0, new(0, 0, 1), bytes)]);
+        var source = MediaImageDocument.CreateUnexplored(new("source.img", []), image.FormatId, MediaKind.Floppy,
+            new SectorMediaImageRepresentation(image), [], new Dictionary<string, string>());
+        var engine = MediaEngineComposition.CreateDefault();
+        var toFlux = engine.Conversion.Registry.Resolve(source, DiskImageFormatIds.RawHxcStream, MediaRepresentationKind.Flux);
+        Assert.NotNull(toFlux);
+        var flux = await toFlux.ConvertAsync(source, DiskImageFormatIds.RawHxcStream, MediaRepresentationKind.Flux, new Dictionary<string, string>());
+        Assert.NotNull(engine.Visualization.Registry.CreateDescriptor(flux.Document));
+        var toSectors = engine.Conversion.Registry.Resolve(flux.Document, DiskImageFormatIds.Jfd, MediaRepresentationKind.Sectors);
+        Assert.NotNull(toSectors);
+        var sectors = await toSectors.ConvertAsync(flux.Document, DiskImageFormatIds.Jfd, MediaRepresentationKind.Sectors, new Dictionary<string, string>());
+        var output = new MemoryWriter();
+        await new JfdWriter(output).WriteAsync(sectors.Document, "captured.jfd", DiskImageFormatIds.Jfd);
+        Assert.Equal(bytes, Assert.Single(JfdCodec.Decode(output.Bytes).Sectors.AvailableBlocks).Data);
+    }
+
+    [Fact]
+    public void DosPlusFilesRemainExplorableInsideANativeJfd()
+    {
+        var bytes = new byte[800 * 1024];
+        bytes[0] = 0xfd; bytes[1] = 0xff; bytes[2] = 0xff; bytes[3] = 0xff; bytes[4] = 0x0f;
+        var root = 2048; System.Text.Encoding.ASCII.GetBytes("HELLO   TXT", bytes.AsSpan(root));
+        bytes[root + 11] = 0x20; bytes[root + 26] = 2; bytes[root + 28] = 5;
+        "12345"u8.CopyTo(bytes.AsSpan(8192));
+        var blocks = Enumerable.Range(0, 800).Select(at => new SectorBlock(at, new(at / 10, at / 5 % 2, at % 5 + 1), bytes.AsSpan(at * 1024, 1024).ToArray()));
+        var image = new SectorImage(DiskImageFormatIds.AcornDosPlus800, 1024, 80, 2, 5, blocks);
+        var native = JfdCodec.Decode(JfdCodec.Create(image));
+        var report = new SectorFileSystemRegistry().ReadAll(native.Sectors);
+        var file = Assert.Single(Assert.Single(report.Matches).Volume.Entries);
+        Assert.Equal("HELLO.TXT", file.Name); Assert.Equal("12345"u8.ToArray(), file.Content);
+    }
+
+    [Fact]
+    public void NewJfdCannotSilentlyDiscardIncompatibleRecordedFields()
+    {
+        var block = new SectorBlock(0, new(0, 0, 1), new byte[256]);
+        foreach (var invalid in new[] { block with { DeletedDataMark = true }, block with { RecordedSizeCode = 3 }, block with { Address = new(0, 1, 1) } })
+            Assert.False(JfdCodec.CanCreate(new SectorImage("ibm.360", 256, 1, 1, 1, [invalid])));
+    }
+
+    [Fact]
+    public void SectorEditsUpdateTheNativeCrcFlagsWithoutRewritingOtherHeaderBits()
+    {
+        var native = JfdCodec.Decode(Native());
+        var block = Assert.Single(native.Sectors.AvailableBlocks) with { HeaderIntegrityValid = true, DataIntegrityValid = false };
+        var image = new SectorImage(DiskImageFormatIds.Jfd, 128, 1, 1, 1, [block]);
+        var rewritten = JfdCodec.Rewrite(native, image);
+        Assert.Equal(0xff020020u, BinaryPrimitives.ReadUInt32LittleEndian(rewritten.AsSpan(324)));
+        var decoded = Assert.Single(JfdCodec.Decode(rewritten).Sectors.AvailableBlocks);
+        Assert.True(decoded.HeaderIntegrityValid);
+        Assert.False(decoded.DataIntegrityValid);
     }
 
     private static byte[] Native()

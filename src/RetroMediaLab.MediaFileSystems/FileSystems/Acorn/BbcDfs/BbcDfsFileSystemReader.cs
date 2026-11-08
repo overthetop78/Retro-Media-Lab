@@ -12,6 +12,7 @@ public sealed partial class BbcDfsFileSystemReader : IFileSystemReader
     public IReadOnlySet<string> CatalogFormatIds { get; } = new[]
     {
         MediaImageFormatIds.AcornAtomDos,
+        MediaImageFormatIds.Jfd,
         MediaImageFormatIds.AcornDfsSingleSided,
         MediaImageFormatIds.AcornDfsSingleSided80,
         MediaImageFormatIds.AcornDfsDoubleSided,
