@@ -119,15 +119,15 @@ La validation souris native est complétée ci-dessous par Exit to DOS au bouton
     - [x] Créer les copies des captures natives HDD sous `artifacts/TestsChips/Acb4000/BBC Master 512/` et `artifacts/TestsChips/Intel80186/BBC Master 512/` : conserver les preuves réelles de copie/persistance et d'amorçage, sans retouche ni ajout Git.
     - [x] Supprimer `artifacts/.tmp-tube/Master512HddBoot.cs`, `master512-hdd-boot.dat`, `.dsc` et la disquette vierge après consignation ; détacher/fermer dans finally, conserver les captures puis reconstruire Native avec Program.cs.
 
-- [ ] Clôturer le Master 512 après décision de cadence et livraison.
+- [x] Clôturer le Master 512 après décision de cadence et livraison.
   - [x] Compléter les preuves finales de cadence avec les assemblages courants.
     - [x] Créer `artifacts/.tmp-tube/Master512Cadence.cs` : reprendre le montage DOS 2.1 consigné, relever une fois la cadence Release de la carte entière après RETF/DHLT, avec les mêmes scénarios, cycles et sorties ; ne pas réinterpréter la mesure antérieure comme un passage après ces corrections.
     - [x] Supprimer `artifacts/.tmp-tube/Master512Cadence.cs` et ses journaux jetables après consignation ; fermer les médias dans finally et reconstruire Native avec Program.cs.
   - [x] Livrer le bloc machine pour la vérification finale.
     - [x] Créer les sorties `build/Debug/Retro Media Lab/retromedialab.exe` et de tous les modules avec `scripts/local-building.cmd --building=debug --modules=A`, après coordination si RML est ouvert ; contrôler leur présence et la réussite du script.
     - [x] Créer les copies des captures `20261108-master512-cadence-*-release.bmp` dans `artifacts/TestsChips/Intel80186/BBC Master 512/` et `artifacts/TestsChips/Wd1770/BBC Master 512/` : conserver les résultats réels DOS, CHKDSK et GEM, sans retouche ni ajout Git.
-  - [ ] Vérifier la livraison en direct après retour de l'utilisateur et décision de cadence propre au 512.
-    - [ ] Créer `artifacts/TestsMachines/Acorn/BBC Master 512/20261108-master512-rml-debug.jpg` quand l'utilisateur reprend son essai : capturer la fenêtre réelle, contrôler les scénarios restant à confirmer et ne pas étendre l'acceptation du Turbo au 512 sans réponse explicite.
+
+Après les relevés actuels Debug et Release et leur explication (Debug 50,9 %, Release 355,6 % dans le repos DOS), l'utilisateur répond explicitement « ok c'est bon, passe a la suite alors les Acorn System ». Le passage à la gamme suivante est donc autorisé le 8 novembre. Aucun nouvel essai final RML n'a été réalisé : les observations précédentes restent dans rml-validation.md, sans les remplacer par les captures natives. Cette acceptation ne transforme pas les 39,25 ms/champ Debug en cadence nominale.
 
 - [x] Conserver la référence du démarrage DOS pour guider la configuration RML observée.
   - [x] Créer `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/m512tech03.htm` : archiver le chapitre Firmware du Technical Guide (hard/soft break, commande DOSBOOT et sélection ADFS) avant de guider la reprise ; ne pas modifier une puce sur la seule bannière BASIC.
@@ -148,3 +148,10 @@ La validation souris native est complétée ci-dessous par Exit to DOS au bouton
 
 - [x] Auditer les autres formats Acorn demandés par l'utilisateur avant toute extension de leur prise en charge.
   - [x] Créer `docs/project/emulations/Acorn/media-format-support.md` : relever les lecteurs, écrivains, décodeurs, exploration et filtres effectivement raccordés pour SSD, DSD, ADL, 640, 800, JFD, ADF, DSK, HXCStream, UEF, CSW, TAP et WAV ; distinguer les extensions ambiguës et les absences établies. SDL était une faute de frappe corrigée explicitement par l'utilisateur.
+
+- [x] Contrôler le Master 512 après le bloc média du 8 novembre.
+  - [x] Créer `artifacts/.tmp-tube/Master512Current.cs` : reprendre le montage MOS 3.20 / client 80186 1.01 / WD1770 consigné, monter `F:/Retro/Gem Disc 1 v21.adl` en lecture seule par le SDK existant, démarrer DOS et conserver une capture native ; relever une fenêtre Debug complète avec cycles, rendu et audio. Intercepter toute erreur au niveau du programme et détacher/libérer les ressources possédées dans finally.
+  - [x] Créer `artifacts/TestsMachines/Acorn/BBC Master 512/20261108-master512-current-media-debug.bmp` avec le résultat natif effectivement obtenu, et sa copie sous `artifacts/TestsChips/Intel80186/BBC Master 512/` ; ne pas confondre ce passage avec l'essai final RML. Premier passage à 1 280 champs : titre XIOS seulement, 109 574 octets lus ; ce n'est pas le repos DOS.
+  - [x] Renommer les deux captures `20261108-master512-current-media-debug.bmp` en `20261108-master512-current-media-xios-debug.bmp` ; modifier `Master512Current.cs` pour reprendre les 3 000 champs de démarrage déjà documentés et créer la capture finale distincte, avec journal de progression et configuration Debug/Release explicite.
+  - [x] Modifier `artifacts/.tmp-tube/Master512Current.cs` uniquement pour nommer la configuration de compilation et ses captures ; créer `artifacts/TestsMachines/Acorn/BBC Master 512/20261108-master512-current-media-release.bmp` par le même scénario en Release, avec mesure distincte demandée par l'utilisateur et sans autre compilation pendant l'exécution. DOS Plus 2.1 / A> dans les deux cas ; empreinte vidéo identique. Debug 39,24547 ms/champ, Release 5,6147925 ms/champ ; détail dans board-validation.md.
+  - [x] Supprimer `artifacts/.tmp-tube/Master512Current.cs` et son journal après consignation ; reconstruire le banc existant avec `Program.cs` pour exclure le diagnostic de son assemblage. `Program.cs` utilise déjà l'API `EjectTape` actuelle et ne nécessite aucune modification. Reconstructions Debug et Release terminées avec code 0 ; aucun nouveau scénario exécuté pendant ce nettoyage.

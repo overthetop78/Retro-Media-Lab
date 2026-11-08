@@ -168,3 +168,48 @@ La correction DHLT du 80186 ne change pas le constat sous DOS 2.1 : après déma
 Le contrôle par STAR FX16,4 puis ECHO MOSRETURN sous DOS 2.1 revient à A>. Le vecteur 4Bh reste F000:1E10. La définition des appels XIOS et la piste du sémaphore sont désormais réunies dans [Appels MOS depuis DOS](dos-mos-calls.md), avec les sources archivées et les captures ; y consigner la suite du diagnostic plutôt que répéter cette recherche.
 
 Le contexte MOS 2.1 est maintenant résolu : avec acquisition/libération documentée du sémaphore XIOS dans le seul programme COM de contrôle, les deux positions joystick, les deux tirs et le repos passent, avec retour à A>. [Cause, interface XIOS et preuves](dos-mos-calls.md). Aucune modification du Tube, de l'ADC ou du câblage pour corriger le banc. Le Master 512 entier n'est pas clôturé par cette seule validation des entrées.
+
+## Cadence Release actuelle — 8 novembre 2026
+
+Banc natif reconstruit depuis les sources courantes après RETF/DHLT, sans modification de production : MOS 3.20, client 80186 1.01, WD1770, deux médias en lecture seule (DOS Plus 2.1 ADFS 640 et GEM2.800 DOS Plus 800), souris Acorn. Aucune interface Winchester montée dans ce banc. Rendu RunFrame et DrainAudio inclus, sans autre émulation, compilation ou test pendant les mesures. Les fenêtres de 160 champs ne sont pas des FPS présentés par RML.
+
+| Scénario | ms/champ | Champs/s sans limite | Cycles CPU hôte | MHz hôte effectifs | Vitesse réelle |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| DOS repos 1 | 6,596672 | 151,591579 | 6 389 759 | 6,053960 | 302,698017 % |
+| DOS repos 2 | 6,236651 | 160,342475 | 6 389 759 | 6,403436 | 320,171805 % |
+| DOS repos 3 | 5,963293 | 167,692578 | 6 389 761 | 6,696972 | 334,848593 % |
+| CHKDSK, 1 200 champs | 7,476566 | 133,751251 | 47 923 198 | 5,341490 | 267,074487 % |
+| GEM repos 1 | 7,103306 | 140,779514 | 6 389 760 | 5,622171 | 281,108533 % |
+| GEM repos 2 | 6,562553 | 152,379719 | 6 389 758 | 6,085435 | 304,271727 % |
+| GEM repos 3 | 6,512878 | 153,541949 | 6 389 761 | 6,131852 | 306,592611 % |
+
+DOS atteint A> après 172 294 octets lus ; CHKDSK termine et affiche 647 168 octets totaux / 534 528 utilisés / 112 640 disponibles, puis A>. La fenêtre CHKDSK comprend 23 564 octets de disquette lus et la fin au repos, pas uniquement des cycles CPU actifs. GEM atteint son bureau après 293 894 octets lus sur B et deux fenêtres stables. Les repos n'ajoutent aucune lecture de disque.
+
+SHA256 vidéo DOS identique sur les trois fenêtres : `A963E48AED77D07DB5243D49DD42890DD34FDBE49958D1293F2E6CBF5A538ECC`. GEM identique sur ses trois fenêtres : `D67DDA2118D66032330F529E1231D6FC9E237AA3CCB6830E29362696F76A9F37`. CHKDSK : `EC70151B5194F5353998247D6E6EB9253FC51AE8D9738C570520C397A5B3CF5E`. Captures natives inspectées, préfixe `20261108-master512-cadence-`, suffixes dos-release, chkdsk-release et gem-release, sous TestsMachines/Acorn/BBC Master 512.
+
+La marge Release dépasse la cadence matérielle d'environ 50,0801 Hz dans ces scénarios. Ce constat ne constitue ni une amélioration avant/après ni une validation de 19,97 ms en Debug ; les mesures HDD Debug de 38,46–39,24 ms/champ portent sur un autre montage. Le banc se termine avec code 0, détache et libère ses deux images en finally ; source supprimée puis Native reconstruit avec Program.cs sans l'exécuter. Aucun nouveau test unitaire CPU n'a été ajouté ou relancé pour ce seul contrôle de carte.
+
+## Livraison Debug complète du 8 novembre 2026
+
+`scripts/local-building.cmd --building=debug --modules=A` exécuté avec accès restauration NuGet, RML fermé avant lancement. Script terminé avec **code 0**, exécutable présent : `F:\GW GUI\build\Debug\Retro Media Lab\retromedialab.exe`. Les **24 modules** des manifestes source, Example compris, sont présents dans Modules/<id> ; chaque DLL livrée a le même SHA256 que sa compilation Debug win-x64. `lib/retromedialab.chips.dll` correspond également à la sortie Debug courante : `311B89EEDA297D61CE80CA9EB9042498D84FC6DC67F9FFB2CA755204A7E8B734`. Le build n'est pas un essai en direct et RML n'a pas été relancé.
+
+Captures Release DOS/CHKDSK/GEM copiées aussi sous TestsChips/Intel80186 et Wd1770/BBC Master 512. Aucune capture ni diagnostic ajouté à Git. La décision utilisateur sur le critère de cadence propre au 512 et l'essai final dans RML restent attendus ; ne pas considérer l'acceptation conditionnelle du Turbo comme celle du 512.
+
+## Vérification Debug et Release après le bloc média — 8 novembre
+
+À la demande de l'utilisateur, les deux configurations sont vérifiées sur les sources courantes après le commit média `cc1fc4e44`. Montage inchangé : MOS 3.20, client 80186 1.01, 512 Kio, WD1770, `F:/Retro/Gem Disc 1 v21.adl` ouvert en lecture seule par le SDK, sans Winchester. Initialisation ADFS par CMOS[19] bas = 8, Shift pendant les 121 premiers champs, puis 3 000 champs de démarrage. Aucune fenêtre RML ouverte, aucune compilation ou autre banc pendant l'exécution chronométrée. La compilation de chaque configuration précède son lancement, l'autre processus est déjà terminé.
+
+Le premier passage limité à 1 280 champs atteint seulement le titre XIOS (109 574 octets lus). Sa mesure 46,83503125 ms/champ porte sur le chargement, pas sur le repos DOS : elle ne démontre aucune régression par rapport aux repos antérieurs. Capture intermédiaire conservée avec le suffixe `current-media-xios-debug.bmp`. Le délai du banc est ensuite aligné sur les 3 000 champs déjà documentés, sans changement matériel.
+
+Les deux configurations atteignent **DOS Plus Version 2.1 / A>**, après **172 294 octets lus**, stables dès le relevé à 2 000 champs. Fenêtre de repos finale de 80 champs, `RunFrame` et `DrainAudio` inclus :
+
+| Configuration | Total hôte ms | ms/champ | Champs/s sans limite | Cycles hôte | MHz hôte effectifs | Vitesse nominale |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 3 139,6376 | 39,245470 | 25,480648 | 3 194 882 | 1,017596 | 50,879789 % |
+| Release | 449,1834 | 5,6147925 | 178,100972 | 3 194 879 | 7,112638 | 355,631909 % |
+
+Cadence matérielle de référence : environ 50,0801 Hz, hôte nominal 2 MHz, coprocesseur configuré à 10 MHz. Les MHz ci-dessus sont les cycles hôte mesurés, pas une mesure séparée du coprocesseur. Les trois cycles d'écart entre fenêtres résultent des frontières de traitement ; aucune fréquence n'est changée. Aucun gain avant/après ni FPS de présentation RML revendiqué. La Release possède la marge ; le Debug ne tient toujours pas 19,97 ms/champ.
+
+SHA256 vidéo identique dans les deux configurations : `5A8F49C9CF191F35971F3E3707DF0A832A29E1B107A30C00C9FC79B80451889C`. Capture Debug inspectée visuellement, invitant A> ; capture Release identique. Fichiers `20261108-master512-current-media-{debug,release}.bmp` sous `artifacts/TestsMachines/Acorn/BBC Master 512/`, copies sous `artifacts/TestsChips/Intel80186/BBC Master 512/`. Les bancs terminent avec le code 0, détachent le média et le ferment dans finally. Ce contrôle ne clôture pas l'essai final RML ni la décision de cadence propre au 512.
+
+L'utilisateur accepte ensuite ces résultats pour poursuivre : « ok c'est bon, passe a la suite alors les Acorn System ». Le bloc 512 est accepté avec les limites de cadence Debug et les observations RML existantes ; aucun nouvel essai direct n'est inventé. ET/Compact ne sont pas inclus dans cette acceptation.
