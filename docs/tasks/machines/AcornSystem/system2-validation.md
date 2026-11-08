@@ -2,7 +2,7 @@
 
 System 1 clôturé et committé dans `f3aa3bbea`. Traiter System 2 avant System 3 ; réutiliser les puces déjà vérifiées, puis corriger seulement les défauts établis du montage.
 
-- [ ] Terminer le System 2.
+- [x] Terminer le System 2.
   - [x] Établir les références matérielles et la référence native de carte complète.
     - [x] Créer les sources utiles sous `artifacts/.tmp-archives/machines/Acorn/Acorn System 2/` : manuel Acorn 200.002 VDU 40, schéma PDF et pages rendues, `vdu40.cpp`, COS et BASIC System (source et binaire 4 Kio).
     - [x] Créer `artifacts/.tmp-system2/System2.csproj` et `Program.cs` : banc Debug sans fenêtre, sorties isolées, vraie ROM COS40 et SAA5050 externes, montage System 2 existant sans BASIC initialement, capture native de démarrage et commande TEST réellement exécutée ; libérer les entrées dans finally.
@@ -25,11 +25,11 @@ System 1 clôturé et committé dans `f3aa3bbea`. Traiter System 2 avant System 
     - [x] Modifier `SystemKeyboardConstants.cs` pour nommer PA5/NHITONE et `AcornSystemMachine.cs` pour conserver les compteurs cassette lors du RESET CPU chaud et l'échéancier cumulé de présentation des LED System 1 ; seul le cycle d'alimentation remet la carte cassette à zéro.
     - [x] Créer `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemTapeTests.cs` : vérifier division/fréquences, fronts Q3/Q7, échantillonnage avant reset, changements CASOUT et notifications sans doublons, équivalence avancement groupé/unitaire.
     - [x] Modifier `artifacts/.tmp-system2/Program.cs` : exécuter le vrai COS SAVE/LOAD, comparer les huit octets et mesurer la carte complète en Debug, avec captures et sorties conservées. Refaire le transfert System 1 après raccordement commun ; retirer ensuite les bancs externes.
-  - [ ] Vérifier puis livrer le bloc System 2.
+  - [x] Vérifier puis livrer le bloc System 2.
     - [x] Modifier `AcornSystemMachine.cs` pour conserver le dernier niveau CASOUT raccordé et supprimer ses retransmissions identiques lors du balayage des touches System 1 ; reconstruire cette entrée dérivée au cycle d'alimentation avant le RESET des ports.
     - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemTests.cs` pour contrôler les notifications du transport waveform, y compris arrêt et silence, puis vérifier le groupe System partagé après intégration de la carte cassette et du clavier.
     - [x] Modifier `artifacts/.tmp-system2/Program.cs` avec les contrôles finaux du logiciel, de la bande et des cadences après les corrections effectivement nécessaires ; produire les captures finales dans les dossiers machine et puces, distinguer les preuves natives de celles de RML.
-    - [ ] Créer puis vérifier les fichiers livrés sous `build/Debug/Retro Media Lab/` avec `scripts/local-building.cmd --building=debug --modules=A` : exécutable, Chips et les 24 modules. Livraison regroupée avec System 3/4/5 à la demande de l'utilisateur ; fournir le montage System 2 pour l'essai réel.
+    - [x] Créer puis vérifier les fichiers livrés sous `build/Debug/Retro Media Lab/` avec `scripts/local-building.cmd --building=debug --modules=A` : exécutable, Chips et les 24 modules. Livraison regroupée avec System 3/4/5 à la demande de l'utilisateur ; fournir le montage System 2 pour l'essai réel.
     - [x] Supprimer `artifacts/.tmp-system2/Program.cs`, `System2.csproj` et leurs seules sorties temporaires après consignation et vérification du chemin résolu ; conserver sources de référence et captures utiles ignorées par Git.
 
 Les fichiers des corrections établies, leurs tests autonomes et la livraison sont ajoutés dans l'ordre avant modification. Les informations acquises et résultats restent dans la fiche System 2, sans tâches documentaires séparées.

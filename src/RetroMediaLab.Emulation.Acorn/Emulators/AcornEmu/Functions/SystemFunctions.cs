@@ -50,7 +50,7 @@ internal static partial class SystemFunctions
             [(0, Bus.RamCardBytes), (Bus.RamCardStart, Bus.RamCardBytes), (Bus.UpperRamCardStart, Bus.RamCardBytes)],
         MachineModel.AcornSystem3 or MachineModel.AcornSystem4 =>
             [(Bus.RamCardStart, Bus.RamCardBytes), (Bus.UpperRamCardStart, Bus.RamCardBytes)],
-        MachineModel.AcornSystem5 => [(0, Bus.FastRamBytes)],
+        MachineModel.AcornSystem5 => [(Bus.RamCardStart, Bus.FastRamBytes)],
         _ => throw new ArgumentOutOfRangeException(nameof(configuration))
     };
 

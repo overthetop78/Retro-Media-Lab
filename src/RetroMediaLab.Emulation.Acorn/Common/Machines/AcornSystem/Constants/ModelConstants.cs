@@ -10,7 +10,7 @@ internal static class SystemModelConstants
     internal const int RamCardBytes = 8192;
     internal const int SystemTwoRamBytes = CpuRamBytes + RamCardBytes;
     internal const int SystemThreeRamBytes = CpuRamBytes + RamCardBytes * 2;
-    internal const int SystemFiveRamBytes = 49152;
+    internal const int SystemFiveRamBytes = 50176;
     internal const int KeyboardPorts = 1;
     internal const string CpuOption = "acornemu.system.cpu";
     internal const string RomGroup = "Rom";

@@ -1,4 +1,5 @@
 using System.Reflection;
+using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Enums;
@@ -8,6 +9,26 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuSystemRamIoTests
 {
+    [Fact]
+    public void SystemFiveDramLinksPreserveUpperBasicRamAndTheIoGap()
+    {
+        var configuration = new RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.MachineConfiguration(MachineModel.AcornSystem5);
+        var cards = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions.SystemFunctions.RamCards(configuration);
+        var board = new AcornSystemMachine(SystemCpuCard.Fast6502A, new byte[8192], new byte[2048], cards, false);
+        try
+        {
+            foreach (ushort address in new ushort[] { 0x2000, 0x7fff, 0x8000, 0xbfff, 0xc000, 0xdfff })
+            {
+                board.Write(address, 0x5a);
+                Assert.Equal(0x5a, board.Read(address));
+            }
+            board.Write(0x0400, 0x5a);
+            Assert.Equal(0, board.Read(0x0400));
+            Assert.Equal(49m, RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions.SystemFunctions.MemoryKib(configuration));
+        }
+        finally { board.SetInput(EmulationInputSnapshot.Empty); board.EjectTape(); }
+    }
+
     [Fact]
     public void MotorolaKeyboardFirstPressProducesItsPhysicalCb1Interrupt()
     {
