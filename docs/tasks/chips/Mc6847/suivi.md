@@ -23,3 +23,10 @@
     - [x] Modifier `docs/chips/Video/Mc6847.md` avec la livraison de `scripts/local-building.cmd --building=debug --modules=A`, vérifier l’exécutable, Chips dans lib et les 24 modules ; créer le commit séparé du MC6847 sans captures ni temporaires, uniquement après clôture de la puce.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+# Reprise du 8 novembre — sortie FS notifiée
+
+- [x] Fournir les transitions FS à la carte sans consultation périodique.
+  - [x] Modifier `src/RetroMediaLab.Chips/Video/Motorola/M6847/6847/Interfaces/IMc6847.cs` et `Services/Mc6847.cs`, `Services/Mc6847.Timing.cs` : publier FieldSyncChanged uniquement aux deux changements FS du champ et au reset s'il change le niveau ; préserver horloges, compteurs, accès mémoire et ordre des sorties.
+  - [x] Modifier `src/RetroMediaLab.Chips/Video/Motorola/M6847/6847/Interfaces/IAtomVideo.cs` et `Services/AtomVideo.cs` : exposer directement la même notification au raccordement existant, sans nouveau sondage dans Tick.
+  - [x] Créer `tests/RetroMediaLab.Chips.Tests/Video/Motorola/M6847/6847/SyncNotificationTests.cs` : comparer tous les fronts notifiés aux niveaux FS sur deux champs, vérifier reset et absence de doublons, ainsi que leur transmission par le récepteur vidéo existant.
+

@@ -54,6 +54,7 @@ public sealed partial class Mc6847 : IMc6847
     public bool Clock => _timing.Clock;
     public bool HorizontalSync => _timing.HorizontalSync;
     public bool FieldSync => _timing.FieldSync;
+    public Action<bool>? FieldSyncChanged { get; set; }
     public bool RowPreset => _timing.RowPreset;
     public bool Active => _timing.Active;
     public int HalfClock => _timing.HalfClock;
@@ -64,6 +65,7 @@ public sealed partial class Mc6847 : IMc6847
     /// <summary>Initialisation du modèle ; il ne s’agit pas d’une broche ajoutée au boîtier.</summary>
     public void Reset()
     {
+        var previousFieldSync = FieldSync;
         _generation++;
         _timing.Reset();
         _address.Reset();
@@ -73,5 +75,6 @@ public sealed partial class Mc6847 : IMc6847
         _displayValid = false;
         ResetMemoryLine();
         UpdateOutput();
+        if (FieldSync != previousFieldSync) FieldSyncChanged?.Invoke(FieldSync);
     }
 }

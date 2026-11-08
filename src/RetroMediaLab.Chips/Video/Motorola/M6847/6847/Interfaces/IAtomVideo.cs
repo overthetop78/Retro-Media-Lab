@@ -7,6 +7,7 @@ public interface IAtomVideo
     long Frame { get; }
 
     bool FrameSync { get; }
+    Action<bool>? FrameSyncChanged { get; set; }
 
     void SetMode(byte value);
     void SetColorSet(bool value);

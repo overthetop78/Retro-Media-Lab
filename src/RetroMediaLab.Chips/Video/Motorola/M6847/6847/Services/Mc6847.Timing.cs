@@ -1,3 +1,5 @@
+using C = RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Constants.Mc6847Constants;
+
 namespace RetroMediaLab.Chips.Video.Motorola.M6847.Chip6847.Services;
 
 public sealed partial class Mc6847
@@ -22,5 +24,10 @@ public sealed partial class Mc6847
         }
         ClockMemory();
         UpdateOutput();
+        // FS ne change qu'à ces frontières de ligne, après résolution des sorties
+        // du même front. Aucun destinataire ne recherche sa transition à chaque CLK.
+        if (_timing.Scanline != previousLine
+            && (_timing.Scanline == C.FieldSyncStart || _timing.Field != previousField))
+            FieldSyncChanged?.Invoke(_timing.FieldSync);
     }
 }

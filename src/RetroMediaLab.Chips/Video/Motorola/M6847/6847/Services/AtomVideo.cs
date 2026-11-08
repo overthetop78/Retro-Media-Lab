@@ -29,6 +29,12 @@ public sealed class AtomVideo : Interfaces.IAtomVideo
     public byte[] CompletedFrame => _completed;
     public long Frame => _chip.Field;
     public bool FrameSync => _chip.FieldSync;
+    /// <summary>Raccordement direct de FS ; Tick ne compare pas les niveaux de synchronisation.</summary>
+    public Action<bool>? FrameSyncChanged
+    {
+        get => _chip.FieldSyncChanged;
+        set => _chip.FieldSyncChanged = value;
+    }
 
     public void SetMode(byte value)
     {

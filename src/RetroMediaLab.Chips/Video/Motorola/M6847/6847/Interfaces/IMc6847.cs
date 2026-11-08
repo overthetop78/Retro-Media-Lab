@@ -13,6 +13,8 @@ public interface IMc6847
     bool Clock { get; }
     bool HorizontalSync { get; }
     bool FieldSync { get; }
+    /// <summary>Nouveau niveau de FS à son front matériel ; le destinataire initialise son entrée avec FieldSync.</summary>
+    Action<bool>? FieldSyncChanged { get; set; }
     bool RowPreset { get; }
     bool Active { get; }
     int HalfClock { get; }
