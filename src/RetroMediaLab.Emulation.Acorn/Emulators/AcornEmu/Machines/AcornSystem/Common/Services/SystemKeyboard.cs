@@ -1,31 +1,39 @@
+using RetroMediaLab.Chips.Controllers.Acorn.SystemKeyboard.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Dictionaries;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants.SystemKeyboardConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 
 /// <summary>Clavier ASCII System 2–5 après remise en forme des sorties du codeur, et matrice hexadécimale System 1.</summary>
-internal sealed class SystemKeyboard(int clock, bool asciiKeyboard = true)
+internal sealed class SystemKeyboard
 {
     private IReadOnlySet<EmulationKey> _keys = new HashSet<EmulationKey>();
     private EmulationKey _active = EmulationKey.Unknown;
     private byte _data = C.DataMask;
     private bool _capsLock;
     private bool _shiftLock;
-    private readonly long _repeatDelay = Math.Max(1, (long)clock * C.RepeatDelayMilliseconds / C.MillisecondsPerSecond);
-    private readonly long _repeatInterval = Math.Max(1, (long)clock * C.RepeatToggleMilliseconds / C.MillisecondsPerSecond);
-    private long _clockCount;
-    private long? _nextRepeat;
+    private readonly bool _asciiKeyboard;
+    private readonly SystemKeyboardRepeat? _repeatCircuit;
     private int _selection;
     private readonly byte[] _matrix = Enumerable.Repeat((byte)C.MatrixMask, C.MatrixRows).ToArray();
 
-    internal bool Strobe { get; private set; }
+    internal SystemKeyboard(int clock, bool asciiKeyboard = true)
+    {
+        _asciiKeyboard = asciiKeyboard;
+        if (!asciiKeyboard) return;
+        _repeatCircuit = new SystemKeyboardRepeat(clock);
+        _repeatCircuit.StrobeChanged = level => StrobeChanged?.Invoke(level);
+        _repeatCircuit.NextClockEventChanged = next => NextClockEventChanged?.Invoke(next);
+    }
+
+    internal bool Strobe => _repeatCircuit?.Strobe == true;
     internal bool Blank => _keys.Contains(EmulationKey.RightAlt);
     internal bool Break => _keys.Contains(EmulationKey.Break);
     internal Action<bool>? StrobeChanged { get; set; }
     internal Action<byte>? DataChanged { get; set; }
     internal Action<long?>? NextClockEventChanged { get; set; }
-    internal long InputClockCount => _clockCount;
-    internal long? NextClockEvent => _nextRepeat;
+    internal long InputClockCount => _repeatCircuit?.ClockCount ?? 0;
+    internal long? NextClockEvent => _repeatCircuit?.NextClockEvent;
     internal bool TapeOutput => (_selection & C.TapeOutputBit) != 0;
     internal byte Data => (byte)(_data & C.DataMask);
     internal byte DataWithStrobe => (byte)(Data | (Strobe ? 0 : C.StrobeMask));
@@ -33,10 +41,10 @@ internal sealed class SystemKeyboard(int clock, bool asciiKeyboard = true)
     internal void SetInput(EmulationInputSnapshot input)
     {
         var next = input.Keys;
-        if (asciiKeyboard && next.Contains(EmulationKey.CapsLock) && !_keys.Contains(EmulationKey.CapsLock)) _capsLock = !_capsLock;
-        if (asciiKeyboard && next.Contains(EmulationKey.LeftAlt) && !_keys.Contains(EmulationKey.LeftAlt)) _shiftLock = !_shiftLock;
+        if (_asciiKeyboard && next.Contains(EmulationKey.CapsLock) && !_keys.Contains(EmulationKey.CapsLock)) _capsLock = !_capsLock;
+        if (_asciiKeyboard && next.Contains(EmulationKey.LeftAlt) && !_keys.Contains(EmulationKey.LeftAlt)) _shiftLock = !_shiftLock;
         _keys = new HashSet<EmulationKey>(next);
-        if (!asciiKeyboard)
+        if (!_asciiKeyboard)
         {
             UpdateMatrix();
             return;
@@ -46,21 +54,11 @@ internal sealed class SystemKeyboard(int clock, bool asciiKeyboard = true)
         if (_active == EmulationKey.Unknown || !TryCharacter(input, _active, out var code))
         {
             _active = EmulationKey.Unknown;
-            ScheduleRepeat(null);
-            SetStrobe(false);
+            _repeatCircuit!.SetInputs(false, _keys.Contains(EmulationKey.RightControl));
             return;
         }
         SetData(code);
-        var repeatHeld = _keys.Contains(EmulationKey.RightControl);
-        if (retained)
-        {
-            if (repeatHeld && _nextRepeat is { } due && due - _clockCount > _repeatInterval)
-                ScheduleRepeat(checked(_clockCount + 1));
-            return;
-        }
-        var delay = repeatHeld && _repeatDelay > _repeatInterval ? 1 : _repeatDelay;
-        ScheduleRepeat(checked(_clockCount + delay));
-        SetStrobe(true);
+        _repeatCircuit!.SetInputs(true, _keys.Contains(EmulationKey.RightControl));
     }
 
     private void UpdateMatrix()
@@ -96,27 +94,9 @@ internal sealed class SystemKeyboard(int clock, bool asciiKeyboard = true)
         return true;
     }
 
-    internal void Tick() => AdvanceTo(checked(_clockCount + 1));
+    internal void Tick() => AdvanceTo(checked(InputClockCount + 1));
 
-    /// <summary>Référence absolue du codeur ; visite chaque front de répétition, sans appels entre échéances.</summary>
-    internal void AdvanceTo(long clockCount)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(clockCount, _clockCount);
-        while (_nextRepeat is { } due && due <= clockCount)
-        {
-            _clockCount = due;
-            ScheduleRepeat(checked(due + _repeatInterval));
-            SetStrobe(!Strobe);
-        }
-        _clockCount = clockCount;
-    }
-
-    private void ScheduleRepeat(long? clockCount)
-    {
-        if (_nextRepeat == clockCount) return;
-        _nextRepeat = clockCount;
-        NextClockEventChanged?.Invoke(clockCount);
-    }
+    internal void AdvanceTo(long clockCount) => _repeatCircuit?.AdvanceTo(clockCount);
 
     internal void Select(byte pins) => _selection = pins & C.OutputMask;
 
@@ -129,11 +109,10 @@ internal sealed class SystemKeyboard(int clock, bool asciiKeyboard = true)
     {
         _active = EmulationKey.Unknown;
         _keys = new HashSet<EmulationKey>();
-        ScheduleRepeat(null);
+        _repeatCircuit?.Reset();
         _selection = 0;
         SetData(C.DataMask);
         Array.Fill(_matrix, (byte)C.MatrixMask);
-        SetStrobe(false);
     }
 
     private void SetData(byte value)
@@ -143,10 +122,4 @@ internal sealed class SystemKeyboard(int clock, bool asciiKeyboard = true)
         DataChanged?.Invoke(Data);
     }
 
-    private void SetStrobe(bool value)
-    {
-        if (Strobe == value) return;
-        Strobe = value;
-        StrobeChanged?.Invoke(!value);
-    }
 }

@@ -18,6 +18,23 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuSystemTests
 {
     [Fact]
+    public void RepeatKeyRepeatsTheRetainedAsciiCodeAfterItsCharacterIsReleased()
+    {
+        var keyboard = new SystemKeyboard(1_000_000);
+        keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.A } });
+        keyboard.AdvanceTo(10_000);
+        keyboard.SetInput(EmulationInputSnapshot.Empty);
+        Assert.Equal((byte)'a', keyboard.Data);
+        keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.RightControl } });
+        keyboard.AdvanceTo(60_000);
+        Assert.True(keyboard.Strobe);
+        Assert.Equal((byte)'a', keyboard.DataWithStrobe);
+        keyboard.SetInput(EmulationInputSnapshot.Empty);
+        Assert.False(keyboard.Strobe);
+        Assert.Null(keyboard.NextClockEvent);
+    }
+
+    [Fact]
     public void TapeRecordingPreservesTheWaveformWithoutFeedingItIntoPlaybackMonitoring()
     {
         var tape = new AnalogTape(48000, TapeSignalMode.DirectWaveform);

@@ -4,9 +4,6 @@ internal static class SystemKeyboardConstants
 {
     internal const byte DataMask = 0x7f;
     internal const byte StrobeMask = 0x80;
-    internal const int RepeatDelayMilliseconds = 500;
-    internal const int RepeatToggleMilliseconds = 50;
-    internal const int MillisecondsPerSecond = 1000;
     internal const byte ControlMask = 0x1f;
     internal const byte Escape = 27;
     internal const byte Delete = 127;
