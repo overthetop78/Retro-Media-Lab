@@ -45,7 +45,7 @@ internal static class Fat12DirectoryReader
         var valid = directory.IsValid && chain.IsValid;
         if (isDirectory)
         {
-            var sectors = new FatSectorRange(chain.Content.ToArray(), Enumerable.Repeat(chain.IsValid, Math.Max(1, chain.Content.Count / FatBootSectorLayout.SectorSize)).ToArray());
+            var sectors = new FatSectorRange(chain.Content.ToArray(), Enumerable.Repeat(chain.IsValid, Math.Max(1, chain.Content.Count / image.BlockSize)).ToArray());
             children = Read(image, sectors, fat, layout, warnings, depth + 1, CombinePath(path, name));
         }
         else

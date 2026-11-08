@@ -67,7 +67,7 @@ Passage de commandes consigné dans la fiche machine : ECHO simple et création 
   - [x] Modifier `artifacts/.tmp-tube/Master512MosContext.cs` : entourer les appels MOS du programme COM par les sous-fonctions XIOS 81h/82h via INT E0h, CL=32h et un descripteur de cinq octets documenté ; vérifier les quatre voies et les tirs sous DOS 2.1 sur une copie temporaire nettoyée dans finally.
   - [x] Supprimer `artifacts/.tmp-tube/Master512MosContext.cs` et ses journaux après consignation ; détacher/fermer les médias dans finally et reconstruire Native avec Program.cs.
 
-- [ ] Vérifier la souris par le trajet natif Master 512 sous DOS Plus, sans ouvrir RML.
+- [x] Vérifier la souris par le trajet natif Master 512 sous DOS Plus, sans ouvrir RML.
   - [x] Créer `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/m512tech05.htm` : archiver le chapitre technique du système 6502 et identifier le protocole souris réellement fourni par DOS/GEM avant tout programme de contrôle.
   - [x] Créer `artifacts/.tmp-tube/Master512Mouse.cs` : reprendre le montage DOS 2.1 connu, activer l'interface de pointeur existante et exécuter le logiciel invité approprié ; injecter mouvements et boutons par le contrat normal, conserver des captures natives comparables et intercepter les erreurs ; détacher et libérer les médias dans finally.
   - [x] Modifier `artifacts/.tmp-tube/Master512Mouse.cs` : corriger le format du disque GEM en 800 Kio à secteurs de 1024 octets sous le profil ADFS à base zéro (piste intermédiaire testée puis rejetée pour DOS Plus), puis répéter le lancement ; le premier montage IBM 512 octets ne lance pas GEM et ne valide aucune entrée souris.
@@ -101,8 +101,50 @@ Passage de commandes consigné dans la fiche machine : ECHO simple et création 
   - [x] Créer `artifacts/TestsChips/Wd1770/BBC Master 512/20261108-master512-mouse-dos800-mfm-directory-debug.bmp` et les copies des preuves GEM sous `artifacts/TestsChips/Mos6522/BBC Master 512/` : conserver les images natives observées, sans les modifier.
   - [x] Supprimer `artifacts/.tmp-tube/Master512Mouse.cs` et ses journaux jetables après consignation ; conserver seulement les captures et références utiles, puis reconstruire Native avec Program.cs.
 
-La validation souris native reste ouverte pour une action applicative explicite ; aucun essai physique RML n'a été effectué pendant ce bloc.
+La validation souris native est complétée ci-dessous par Exit to DOS au bouton gauche ; aucun essai physique RML dans ce passage.
 
-  - [ ] Vérifier une action applicative avec la souris Acorn dans GEM.
-    - [ ] Créer `artifacts/.tmp-tube/Master512GemApplication.cs` : reprendre le montage et le contrôle console consignés dans dos-plus-800.md, lancer une application GEM et vérifier une sélection ou un tracé avec le bouton gauche, sans attribuer au matériel un clic qui manque sa cible.
-    - [ ] Supprimer `artifacts/.tmp-tube/Master512GemApplication.cs` et ses journaux après consignation, fermer les médias dans finally et conserver seulement les captures natives utiles.
+  - [x] Vérifier une action applicative avec la souris Acorn dans GEM.
+    - [x] Créer `artifacts/.tmp-tube/Master512GemApplication.cs` : reprendre le montage et le contrôle console consignés dans dos-plus-800.md, lancer une application GEM et vérifier une sélection ou un tracé avec le bouton gauche, sans attribuer au matériel un clic qui manque sa cible.
+    - [x] Supprimer `artifacts/.tmp-tube/Master512GemApplication.cs` et ses journaux après consignation, fermer les médias dans finally et conserver seulement les captures natives utiles.
+- [x] Vérifier le parcours Winchester du Master 512 depuis DOS Plus.
+  - [x] Préparer un essai isolé du parcours documenté ADFS / DRIVE_C.
+    - [x] Créer `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/m512techg.htm` : archiver le chapitre Hardware Projects du Technical Guide, section Formatting (ADFS, HDISK, DRIVE_C).
+    - [x] Créer `artifacts/.tmp-tube/Master512Hdd.cs` : reprendre le montage MOS 3.20 / DOS 2.1, activer le Winchester, créer un DAT/DSC dédié par le SDK en ADFS (306 × 2 × 33 × 256), exécuter HDISK et conserver les captures des menus ; utiliser uniquement les commandes invitées pour créer DRIVE_C.
+  - [x] Vérifier les transferts et la persistance après préparation réussie.
+    - [x] Créer `artifacts/TestsMachines/Acorn/BBC Master 512/20261108-master512-hdd-copy-readback-debug.bmp` et les captures de réouverture depuis le contrôle console de Master512Hdd.cs : copier un fichier disquette vers C:, le relire, fermer et rouvrir le média, confirmer le contenu et relever les compteurs/temps de la machine complète sans autre compilation concurrente.
+    - [x] Créer `artifacts/TestsMachines/Acorn/BBC Master 512/20261108-master512-hdd-bootable-debug.bmp` : exécuter l'option Make Hard Disk Partition Bootable de HDISK, observer les copies système et leur résultat, sans modifier les images sources.
+    - [x] Créer `artifacts/.tmp-tube/master512-hdd-boot.dat` et `.dsc` depuis le média publié après Flush/fermeture/réouverture, pour vérifier l'amorçage sans refaire HDISK ; quitter ensuite normalement le banc propriétaire du premier DAT/DSC.
+    - [x] Supprimer `artifacts/.tmp-tube/Master512Hdd.cs`, ses DAT/DSC et journaux jetables après consignation ; détacher et fermer tous les médias en finally, conserver captures et références utiles puis reconstruire Native avec Program.cs.
+    - [x] Créer `artifacts/.tmp-tube/Master512HddBoot.cs` : démarrer à froid le même Master 512 sur la copie HDD, avec une disquette ADFS vierge sans DOS ; vérifier l'invite DOS, TYPE C:CHECK.TXT et les compteurs physiques, puis relever cadence/cycles/sorties de la carte entière en Debug.
+    - [x] Créer les copies des captures natives HDD sous `artifacts/TestsChips/Acb4000/BBC Master 512/` et `artifacts/TestsChips/Intel80186/BBC Master 512/` : conserver les preuves réelles de copie/persistance et d'amorçage, sans retouche ni ajout Git.
+    - [x] Supprimer `artifacts/.tmp-tube/Master512HddBoot.cs`, `master512-hdd-boot.dat`, `.dsc` et la disquette vierge après consignation ; détacher/fermer dans finally, conserver les captures puis reconstruire Native avec Program.cs.
+
+- [ ] Clôturer le Master 512 après décision de cadence et livraison.
+  - [x] Compléter les preuves finales de cadence avec les assemblages courants.
+    - [x] Créer `artifacts/.tmp-tube/Master512Cadence.cs` : reprendre le montage DOS 2.1 consigné, relever une fois la cadence Release de la carte entière après RETF/DHLT, avec les mêmes scénarios, cycles et sorties ; ne pas réinterpréter la mesure antérieure comme un passage après ces corrections.
+    - [x] Supprimer `artifacts/.tmp-tube/Master512Cadence.cs` et ses journaux jetables après consignation ; fermer les médias dans finally et reconstruire Native avec Program.cs.
+  - [x] Livrer le bloc machine pour la vérification finale.
+    - [x] Créer les sorties `build/Debug/Retro Media Lab/retromedialab.exe` et de tous les modules avec `scripts/local-building.cmd --building=debug --modules=A`, après coordination si RML est ouvert ; contrôler leur présence et la réussite du script.
+    - [x] Créer les copies des captures `20261108-master512-cadence-*-release.bmp` dans `artifacts/TestsChips/Intel80186/BBC Master 512/` et `artifacts/TestsChips/Wd1770/BBC Master 512/` : conserver les résultats réels DOS, CHKDSK et GEM, sans retouche ni ajout Git.
+  - [ ] Vérifier la livraison en direct après retour de l'utilisateur et décision de cadence propre au 512.
+    - [ ] Créer `artifacts/TestsMachines/Acorn/BBC Master 512/20261108-master512-rml-debug.jpg` quand l'utilisateur reprend son essai : capturer la fenêtre réelle, contrôler les scénarios restant à confirmer et ne pas étendre l'acceptation du Turbo au 512 sans réponse explicite.
+
+- [x] Conserver la référence du démarrage DOS pour guider la configuration RML observée.
+  - [x] Créer `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/m512tech03.htm` : archiver le chapitre Firmware du Technical Guide (hard/soft break, commande DOSBOOT et sélection ADFS) avant de guider la reprise ; ne pas modifier une puce sur la seule bannière BASIC.
+
+- [x] Compléter la reconnaissance commune des disquettes Master 512 dans tous les parcours média.
+  - [x] Déclarer et raccorder l'extension historique ADFS 640.
+    - [x] Modifier `src/RetroMediaLab.MediaEngine/Constants/DiskImageFileExtensions.cs`, `Images/Formats/ImageFormatCatalog.cs`, `Images/Formats/Detection/AdfImageFormatDetectionRule.cs`, `Images/Formats/Floppy/Adf/AdfReader.cs` et `Images/Conversion/Acorn/AcornAdfConversionService.cs` : ajouter `.640` comme alias de l'ADFS L existant, avec contrôle de capacité et écriture inchangée.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Dictionaries/FloppyDriveModels.cs` : annoncer cet alias via le contrat MediaProcessing existant sur les lecteurs DD compatibles, sans contourner les limites des lecteurs SD.
+  - [x] Raccorder l'exploration du volume DOS Plus 800 au lecteur FAT12 existant.
+    - [x] Modifier `src/RetroMediaLab.MediaFileSystems/Constants/MediaImageFormatIds.cs` et `FileSystems/Fat12/Fat12FormatCatalog.cs` ; créer `FileSystems/Fat12/Fat12DosPlusLayout.cs` : déclarer le profil à FAT initiale, deux secteurs FAT, six secteurs racine et secteurs de 1024 octets.
+    - [x] Modifier `src/RetroMediaLab.MediaFileSystems/FileSystems/Fat12/Fat12Layout.cs`, `Fat12LayoutReader.cs`, `Fat12FileSystemReader.cs`, `FatSectorReader.cs` et `Fat12DirectoryReader.cs` : utiliser la taille des blocs décodés, autoriser la FAT à l'offset zéro pour ce profil et conserver les validations des autres formats.
+  - [x] Vérifier le bloc commun terminé.
+    - [x] Modifier `src/RetroMediaLab.MediaEngine/Images/Writing/MediaWritingComposition.cs` : enregistrer `.640` dans le writer commun pour que les modes Écriture et Conversion proposent effectivement cet alias.
+    - [x] Modifier `tests/RetroMediaLab.Tests/Media/AcornDosPlus800Tests.cs` et créer `tests/RetroMediaLab.Tests/Media/AcornDosPlusFileSystemTests.cs` : vérifier en mémoire catalogue/détection `.640`, aller-retour sectoriel, flux MFM, répertoire et fichiers FAT12 1024, sous-répertoires et secteurs manquants, ainsi que la conservation des formats précédents.
+    - [x] Créer `tests/RetroMediaLab.Tests/Media/AcornMediaActualImagesTests.cs` : lire en lecture seule les six images désormais dans `F:\Retro`, vérifier leur identification et l'exploration de leurs fichiers par les registres communs ; ne pas modifier les médias de l'utilisateur.
+    - [x] Supprimer `tests/RetroMediaLab.Tests/Media/AcornMediaActualImagesTests.cs` après consignation des résultats : ce diagnostic dépend des fichiers externes ; conserver les seuls tests autonomes en mémoire.
+    - [x] Créer les sorties Debug des projets concernés avec les tests ciblés, puis la livraison application et modules via `scripts/local-building.cmd --building=debug --modules=A` après vérification de l'absence de session utilisateur.
+
+- [x] Auditer les autres formats Acorn demandés par l'utilisateur avant toute extension de leur prise en charge.
+  - [x] Créer `docs/project/emulations/Acorn/media-format-support.md` : relever les lecteurs, écrivains, décodeurs, exploration et filtres effectivement raccordés pour SSD, DSD, ADL, 640, 800, JFD, ADF, DSK, HXCStream, UEF, CSW, TAP et WAV ; distinguer les extensions ambiguës et les absences établies. SDL était une faute de frappe corrigée explicitement par l'utilisateur.

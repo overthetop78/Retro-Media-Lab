@@ -13,7 +13,10 @@ public sealed class AcornAdfConversionService(IsoScpSectorImageReader scpReader,
     public static bool CanCreate(string formatId, string extension) => AcornAdfGeometry.All.Any(geometry => geometry.FormatId.Equals(formatId, StringComparison.OrdinalIgnoreCase))
         && (formatId.Equals(DiskImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase)
             ? extension.ToLowerInvariant() is ".img" or ".800"
-            : extension.Equals(DiskImageFileExtensions.Adf, StringComparison.OrdinalIgnoreCase) || (formatId, extension.ToLowerInvariant()) is (DiskImageFormatIds.AcornAdfs160, DiskImageFileExtensions.Ads) or (DiskImageFormatIds.AcornAdfs320, DiskImageFileExtensions.Adm) or (DiskImageFormatIds.AcornAdfs640, DiskImageFileExtensions.Adl));
+            : extension.Equals(DiskImageFileExtensions.Adf, StringComparison.OrdinalIgnoreCase)
+                || formatId.Equals(DiskImageFormatIds.AcornAdfs640, StringComparison.OrdinalIgnoreCase) && extension.ToLowerInvariant() is DiskImageFileExtensions.Adl or DiskImageFileExtensions.AcornAdfs640
+                || formatId.Equals(DiskImageFormatIds.AcornAdfs160, StringComparison.OrdinalIgnoreCase) && extension.Equals(DiskImageFileExtensions.Ads, StringComparison.OrdinalIgnoreCase)
+                || formatId.Equals(DiskImageFormatIds.AcornAdfs320, StringComparison.OrdinalIgnoreCase) && extension.Equals(DiskImageFileExtensions.Adm, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Reconstruit ou relit la source puis écrit l'ADF Acorn.</summary>
     public async Task ConvertAsync(string sourcePath, string outputPath, string formatId, CancellationToken cancellationToken = default)

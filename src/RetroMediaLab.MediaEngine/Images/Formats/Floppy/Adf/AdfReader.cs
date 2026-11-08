@@ -26,7 +26,8 @@ public sealed class AdfReader : IMediaImageReader
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     private static readonly IReadOnlySet<string> SupportedExtensions = new[]
     {
-        DiskImageFileExtensions.Adf, DiskImageFileExtensions.Ads, DiskImageFileExtensions.Adm, DiskImageFileExtensions.Adl, ".800"
+        DiskImageFileExtensions.Adf, DiskImageFileExtensions.Ads, DiskImageFileExtensions.Adm, DiskImageFileExtensions.Adl,
+        DiskImageFileExtensions.AcornAdfs640, DiskImageFileExtensions.AcornDosPlus800
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     private static readonly IReadOnlySet<MediaKind> SupportedMediaKinds = new[]
     {
@@ -73,6 +74,9 @@ public sealed class AdfReader : IMediaImageReader
         cancellationToken.ThrowIfCancellationRequested();
         var requestedFormatMatches = context.RequestedFormatId is null || SupportedFormatIds.Contains(context.RequestedFormatId);
         var lengthMatches = context.Length <= int.MaxValue && AcceptedSizes.Contains((int)context.Length);
+        if (context.Extension.Equals(DiskImageFileExtensions.AcornAdfs640, StringComparison.OrdinalIgnoreCase))
+            return ValueTask.FromResult(context.Length == 655360 && (context.RequestedFormatId is null
+                || context.RequestedFormatId.Equals(DiskImageFormatIds.AcornAdfs640, StringComparison.OrdinalIgnoreCase)));
         if (string.Equals(context.RequestedFormatId, DiskImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase))
             return ValueTask.FromResult(context.Length == AcornAdfGeometry.Capacity);
         if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.Capacity == context.Length) is { } bbc)

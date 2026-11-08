@@ -9,7 +9,7 @@ public sealed class Fat12Layout
     /// <summary>Crée et valide une disposition FAT12.</summary>
     public Fat12Layout(int reservedSectors, int sectorsPerFat, int rootStart, int rootSectors, int dataStart, int sectorsPerCluster, int clusterCount, int fatCount = 1)
     {
-        if (reservedSectors <= 0) throw new ArgumentOutOfRangeException(nameof(reservedSectors));
+        if (reservedSectors < 0) throw new ArgumentOutOfRangeException(nameof(reservedSectors));
         if (sectorsPerFat <= 0) throw new ArgumentOutOfRangeException(nameof(sectorsPerFat));
         if (rootStart < reservedSectors || rootSectors <= 0 || dataStart < rootStart + rootSectors) throw new ArgumentOutOfRangeException(nameof(rootStart));
         if (sectorsPerCluster <= 0) throw new ArgumentOutOfRangeException(nameof(sectorsPerCluster));

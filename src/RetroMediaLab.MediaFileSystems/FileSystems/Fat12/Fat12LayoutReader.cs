@@ -9,6 +9,8 @@ public static class Fat12LayoutReader
     public static bool TryRead(ReadOnlySpan<byte> boot, int availableSectors, string formatId, out Fat12Layout layout)
     {
         layout = null!;
+        if (Fat12DosPlusLayout.IsFormat(formatId))
+            return Fat12DosPlusLayout.TryRead(boot, availableSectors, out layout);
         if (formatId.Equals(MediaImageFormatIds.ApricotPcXi315, StringComparison.OrdinalIgnoreCase))
             return Fat12LegacyLayoutCatalog.TryCreateLayout(formatId, availableSectors, boot, out layout);
         var bytesPerSector = BinaryPrimitives.ReadUInt16LittleEndian(boot[FatBootSectorLayout.BytesPerSectorOffset..]);

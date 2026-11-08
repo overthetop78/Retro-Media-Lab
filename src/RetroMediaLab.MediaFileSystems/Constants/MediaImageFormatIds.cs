@@ -6,6 +6,7 @@ public static class MediaImageFormatIds
     public const string DecRx02 = "dec.rx02";
     public const string UcsdIbmMfm = "ucsd.ibm.mfm";
     public const string AcornAdfs800 = "acorn.adfs.800";
+    public const string AcornDosPlus800 = "acorn.dosplus.800";
     public const string AcornAtomDos = "acorn.dfs.atom";
     public const string AcornDfsSingleSided = "acorn.dfs.ss";
     public const string AcornDfsSingleSided80 = "acorn.dfs.ss80";

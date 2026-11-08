@@ -8,6 +8,7 @@ public static class Fat12FormatCatalog
     /// <summary>Association immuable des formats Atari ST, IBM PC et MSX vers l'identifiant FAT12.</summary>
     public static IReadOnlyDictionary<string, string> FileSystemIdByFormat { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
+        [MediaImageFormatIds.AcornDosPlus800] = Definitions.FileSystemIds.Fat12,
         [MediaImageFormatIds.AtariSt180] = Definitions.FileSystemIds.Fat12,
         [MediaImageFormatIds.AtariSt360] = Definitions.FileSystemIds.Fat12,
         [MediaImageFormatIds.AtariSt400] = Definitions.FileSystemIds.Fat12,

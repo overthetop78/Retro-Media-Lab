@@ -17,6 +17,33 @@ namespace RetroMediaLab.Tests.Media;
 public sealed class AcornDosPlus800Tests
 {
     [Theory]
+    [InlineData(".640")]
+    [InlineData(".640", "ACORN.ADFS.640")]
+    public async Task Historical640ExtensionUsesTheExistingAdfsGeometry(string extension, string format = "acorn.adfs.640")
+    {
+        const int capacity = 655360;
+        var catalog = new BuiltInImageFormatCatalog();
+        Assert.Contains(catalog.Formats.Single(item => item.Id == DiskImageFormatIds.AcornAdfs640).Extensions,
+            item => item.Extension == extension);
+        var detector = new ImageFormatDetector(catalog, _ => throw new InvalidOperationException("No header needed"));
+        Assert.Equal(DiskImageFormatIds.AcornAdfs640, detector.Detect("disk" + extension, capacity).Format!.Id);
+        Assert.Null(detector.Detect("disk" + extension, 819200).Format);
+        Assert.True(AcornAdfConversionService.CanCreate(format, extension));
+        Assert.NotEmpty(RetroMediaLab.MediaEngine.Images.Writing.MediaWritingComposition.CreateDefault().Registry.FindTargetCandidates(format, extension));
+        IMediaImageReader contract = new AdfReader();
+        Assert.True(await contract.CanReadAsync(new(new MediaSourceDescriptor("disk" + extension, [], capacity, format)), CancellationToken.None));
+        Assert.False(await contract.CanReadAsync(new(new MediaSourceDescriptor("disk" + extension, [], 163840, format)), CancellationToken.None));
+        var data = new byte[capacity];
+        new Random(640).NextBytes(data);
+        var image = await new AdfReader((_, _) => Task.FromResult(data)).ReadAsync("disk" + extension);
+        Assert.Equal(DiskImageFormatIds.AcornAdfs640, image.FormatId);
+        var writer = new MemoryWriter();
+        await new AcornAdfWriter(new LinearSectorImageWriter(writer)).WriteAsync(image, "disk" + extension);
+        Assert.Equal(data, writer.Bytes);
+        Assert.True(new SectorImageTrackEncoder().CanEncode(image));
+    }
+
+    [Theory]
     [InlineData("acorn.dosplus.800", ".img", true)]
     [InlineData("ACORN.DOSPLUS.800", ".IMG", true)]
     [InlineData("acorn.dosplus.800", ".800", true)]

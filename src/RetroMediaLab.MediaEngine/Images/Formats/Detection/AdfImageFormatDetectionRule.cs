@@ -8,6 +8,13 @@ internal sealed class AdfImageFormatDetectionRule : IImageFormatDetectionRule
 {
     public bool TryDetect(ImageFormatDetectionContext context, out DetectedImageFormat result)
     {
+        if (context.Extension == DiskImageFileExtensions.AcornAdfs640)
+        {
+            result = context.KnownLength == 655360
+                ? context.Result(DiskImageFormatIds.AcornAdfs640, FormatConfidence.Certain, "Detection.AcornSize")
+                : context.Ambiguous("Detection.Multiple");
+            return true;
+        }
         if (context.KnownLength == AcornAdfGeometry.Capacity && context.Extension is ".adf" or ".img" or ".800")
         {
             try
