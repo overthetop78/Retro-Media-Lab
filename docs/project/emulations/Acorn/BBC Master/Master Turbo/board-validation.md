@@ -64,6 +64,8 @@ SimCity : l'utilisateur confirme le même jeu incorrect avec coprocesseur et cor
 
 ## Présentation des champs vidéo : clarification pendant l'essai
 
+**Actualisation depuis le code courant, reprise Turbo du 7 novembre :** le paragraphe historique ci-dessous ne décrit plus le transfert actuel. `Machines/BbcMicro/Common/Services/Video.Fields.cs` expose désormais `OutputHeight => Height` et `ScanMode` progressif ou champ pair/impair selon `_completedParity`. `Video.Rendering.cs` convertit uniquement `_completed` sur `Height` lignes ; il ne compose pas le champ précédent avec le nouveau. `Services/EmulatorCore.cs` transmet `machine.VideoScanMode` dans la trame. L'instantané reste une copie BGRA indépendante, mais celui du champ natif et non une image entrelacée assemblée de deux champs. Cette inspection établit le chemin présent dans les sources ; elle ne constitue ni une nouvelle mesure de gain, ni une validation de l'affichage dans RML. Les mesures historiques ci-dessous restent datées et ne doivent pas être présentées comme une mesure du code courant.
+
 Pour le BBC/Master actuel, Video.Fields conserve les deux derniers champs et leurs parités ; le CRTC continue son balayage matériel. Video.Rendering réutilise les lignes inchangées après comparaison, mais renvoie encore un instantané BGRA complet par ToArray. EmulatorCore transmet les dimensions de la machine (640 × 256 PAL, 640 × 512 entrelacé), jamais la résolution de l'écran hôte. L'agrandissement appartient à la présentation RML.
 
 En 640 × 512 et 4 octets/pixel, un tampon fait 1 310 720 octets ; à 50 envois/s, le seul volume théorique d'une copie vaut 65 536 000 octets/s. Ce calcul n'est pas une mesure du coût CPU ni une attribution de la baisse de cadence Turbo. Transmettre seulement le champ nouveau réduirait ce volume ; un gain global reste à mesurer et une fidélité visuelle supérieure exige un traitement des champs/parités/instants par la présentation, pas seulement un tampon plus petit. Aucun contrat vidéo ni rendu modifié pendant cette discussion ; rester sur le Master/Turbo en cours.
@@ -127,3 +129,73 @@ Les compteurs RML dans ce scénario affichent environ 33–35,5 FPS, 1,31–1,42
 Le 7 novembre, un test Debug réussit (cas 57 s, série 1,0659 min). Configuration utilisateur copiée en mémoire, ROM existantes, aucun média ni son Windows. Deux associations clavier→joysticks par les contrats existants alimentent les quatre axes et les deux tirs ; la frappe conserve ces entrées. Après `*FX16,4`, BASIC parasite appelle ADVAL(1…4) et ADVAL(0) AND 3 via le Tube. Premier jeu : axes 0/haute/haute/0 et tir 1 ; second jeu inversé et tir 2 ; repos : quatre centres entre 32000 et 33500 et aucun tir. Chaque comparaison produit son verdict après CLS, donc la présence du texte dans la commande saisie ne peut pas valider le résultat à tort.
 
 Verdicts `TURBO JOY ONE PASS`, `TURBO JOY TWO PASS`, `TURBO JOY REST PASS`. Champs vidéo natifs conservés sous `artifacts/TestsMachines/Acorn/BBC Master Turbo/20261107-turbo-joystick-<one|two|rest>-field-<0|1>.png`, copies sous `artifacts/TestsChips/Upd7002/BBC Master Turbo/`. REST inspecté visuellement. Aucun changement de puce ou de configuration sur disque. Diagnostic supprimé et assembly de tests Debug reconstruit sans dépendances : zéro erreur, trois avertissements préexistants, 12,80 s. Aucune mesure de performance pendant cette exécution concurrente de RML ; la lecture d’une manette physique dans RML reste distincte de ces associations en mémoire.
+
+## Reprise hors RML — 8 novembre 2026, après fusion Git
+
+Fusion autorisée terminée : `3831b3ab7`. Le code de production résolu est identique au premier parent ; le repli souris Windows supprimé ne revient pas, la capture selon les capacités et les associations à chaud sont conservées. Aucun nouveau correctif de puce n'est revendiqué.
+
+Banc Native reconstruit depuis les projets courants en Debug, sans optimisation Release, sans RML ni compilation concurrente pendant l'exécution. MOS 3.50, SAA5050 et client Turbo externes existants ; hôte 2 MHz, parasite 4 MHz, WD1770 et interface Winchester présents sans média. Aucune configuration utilisateur modifiée. La construction réussit avec un avertissement NU1900 de consultation NuGet et zéro erreur ; le manifeste de dépendances Acorn/Chips est vérifié avant lancement. L'exécution se termine avec code 0.
+
+Après 120 champs de démarrage, `CLS:PRINT"TURBO CURRENT PASS":PRINT 12+34` affiche réellement le verdict puis 46. La capture BMP native inspectée et son champ suivant sont conservés sous `artifacts/TestsMachines/Acorn/BBC Master Turbo/20261108-current-basic.bmp` et `20261108-current-basic-next-field.bmp`, avec copies identiques dans `artifacts/TestsChips/TubeUla/BBC Master Turbo/`. Chaque fichier contient 640 × 256 pixels BGRA, soit 655 360 octets de pixels (655 414 avec en-tête BMP). Le balayage observé passe du progressif d'initialisation aux deux parités entrelacées. Les captures sont des champs natifs hors RML ; elles ne prouvent pas le désentrelacement dans l'application.
+
+80 champs chronométrés après dix de chauffe par scénario ; rendu RunFrame, drainage PCM et collecte des modes compris. Captures, lecture de l'écran et accès de diagnostic aux compteurs en dehors du chronométrage. Le programme de défilement est une boucle BASIC en mode courant, pas le redessin MODE 1 de l'ancienne comparaison : ne pas comparer directement leurs durées.
+
+| Scénario | ms/champ | champs/s sans limite | MHz hôte / parasite | vitesse nominale | cycles hôte / parasite |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Repos | 27,367514 | 36,5397 | 1,45925 / 2,91850 | 72,9624 % | 3 194 881 / 6 389 762 |
+| SOUND | 26,971506 | 37,0762 | 1,48067 / 2,96135 | 74,0337 % | 3 194 879 / 6 389 758 |
+| Défilement BASIC | 27,966514 | 35,7570 | 1,42799 / 2,85599 | 71,3997 % | 3 194 881 / 6 389 762 |
+
+Le rapport des cycles parasite/hôte vaut exactement 2 dans les trois fenêtres. Cadence matérielle déduite des cycles : environ 50,0801 champs/s ; ce chiffre ne représente pas les FPS présentés par RML. Le budget Debug de 19,97 ms/champ reste non atteint. Il n'y a pas de paire avant/après sur une modification, donc aucun gain nouveau établi. Ce passage réutilise les preuves antérieures pour les médias et entrées ; il ne prétend pas les retester.
+
+Empreintes SHA256 (dernier champ et dernier bloc PCM de chaque fenêtre, pas tout le flux) :
+
+| Scénario | Vidéo | PCM |
+| --- | --- | --- |
+| Repos | DE2DCE98D18A00985606B6C44BCF41F7F447ABA6FC3523189CB34E5B79822DED | 57CA25386B9097A240626500BA5CB92F80C6B486B0572282672BB43F60E7EEDC |
+| SOUND | 83E7F2512A27E288AFBF666186C743E6DF78081D5B50CCB42C1D041C18B3E5F1 | 242D75A8A13D21EAC21481F398C6D6DB6F7E822C6B7BC2EA5AD363121A977BEA |
+| Défilement | D83829A866985A061DC9D397112672BD7FA734DE7E179A385D2424588EB05828 | 40AA13E5829B26B29336E1D204B59A7FDC93526E8C2C32B97B197732C9861F96 |
+
+### Essai de conservation des points SAA5050 — 8 novembre
+
+Candidate fonctionnellement vérifiée (98 tests) mais retirée : référence/candidate/référence au repos 28,54/34,12/27,56 ms, SOUND 28,24/28,98/27,98 ms, défilement 28,60/30,17/27,80 ms par champ. Cycles, PC et empreintes finales vidéo/PCM concordent. Aucun gain retenu ni modification matérielle. Conditions et décision détaillées dans [SAA5050](../../../../../chips/Video/Saa5050.md).
+
+### Appels du CPU parasite vers le Tick vide du bus — 8 novembre
+
+Candidate fonctionnellement vérifiée : 142 tests CPU MOS passent. Référence/candidate/référence : repos 27,64/27,82/28,08 ms ; SOUND 28,44/27,46/27,73 ms ; défilement 28,04/27,81/29,66 ms par champ. Cycles, PC et empreintes finales concordent ; gain global non établi compte tenu de la dispersion. Contrat supplémentaire et code candidate retirés, aucune nouvelle optimisation conservée. Détails dans [65C12/65C102](../../../../../chips/CPU/Mos65C12.md).
+
+## Marge Release du code conservé — 8 novembre 2026
+
+Vérification unique utile à la décision utilisateur après les candidates Debug retirées. Native et ses dépendances sont reconstruits en Release depuis les sources conservées ; zéro erreur, avertissement NU1900 de consultation NuGet. Aucun RML, test ou compilation concurrente pendant la mesure. MOS 3.50, client 65C102 et SAA5050 externes, WD1770/Winchester sans média. 120 champs de démarrage, BASIC exécuté TUBE SOFTWARE PASS puis 46 ; trois scénarios de 160 champs après dix de chauffe, rendu et drainage PCM compris. Défilement dans le mode BASIC courant, pas MODE 1. Processus terminé avec code 0.
+
+| Scénario | ms/champ | champs/s sans limite | MHz hôte émulés | vitesse nominale |
+| --- | ---: | ---: | ---: | ---: |
+| Repos | 4,523105 | 221,0871 | 8,82934 | 441,4669 % |
+| SOUND | 4,737309 | 211,0903 | 8,43010 | 421,5051 % |
+| Défilement BASIC | 5,251061 | 190,4377 | 7,60532 | 380,2660 % |
+
+Cycles (6 389 763 / 6 389 760 / 6 389 760), PC (E9BC / E7A3 / C6F5) et empreintes finales vidéo/PCM identiques aux références Debug de la comparaison des appels de bus. La différence de cadence provient de la configuration de compilation normale ; aucune option Release n'est activée en Debug, aucune accélération matérielle fictive. Ces chiffres sont des champs calculés hors interface, pas une mesure des FPS présentés par RML. Ils confirment la marge Release, sans valider le budget Debug de 19,97 ms/champ. La décision de clôture du Turbo ou de priorité bloquante du budget Debug est demandée à l'utilisateur ; le Master 512 n'est pas commencé sur cette seule mesure.
+
+### Audit des captures joystick — 8 novembre
+
+Les six anciens champs ONE/TWO/REST sont inspectés. ONE et TWO montrent encore les lignes BASIC saisies ; la présence des mots PASS dans ce programme n'est pas une preuve de son exécution. REST montre clairement TURBO JOY REST PASS après effacement. Les anciens fichiers ONE/TWO restent des étapes et doivent être complétés par des verdicts effectivement affichés ; le résultat de test textuel historique n'est pas étendu à une preuve visuelle absente. Aucune puce défectueuse n'est déduite de ce défaut de preuve.
+
+Premier passage du nouveau banc : axes ONE corrects (0/65520/65520/0), mais tir nul et verdict FAIL. Le banc injectait le bit brut 1 au lieu du masque normalisé A obtenu par EmulationSdk.InputProcessing.ControllerButtonIndex. Le raccordement utilise ce dernier ; correction du banc avant toute attribution à la machine. Ce passage échoué ne valide pas le scénario et n'est pas une mesure de performance.
+
+### Verdicts joystick effectivement affichés — 8 novembre
+
+Après correction de l'injection du banc, les trois scénarios se terminent normalement (code 0), sans modification de production. Même Turbo et ROM externes ; deux contrôleurs normalisés injectés directement dans SetInput, conservés pendant la saisie. BASIC parasite lit les quatre canaux et les deux tirs par ADVAL via le Tube. L'écran est effacé avant l'affichage des valeurs/verdicts ; 40 champs sont laissés après RUN puis les deux parités capturées. Les trois captures field-1 sont inspectées visuellement.
+
+| Scénario | ADVAL 1 / 2 / 3 / 4 | Tirs ADVAL(0) AND 3 | Verdict exécuté |
+| --- | --- | ---: | --- |
+| Premier jeu | 0 / 65520 / 65520 / 0 | 1 | ONE PASS |
+| Second jeu | 65520 / 0 / 0 / 65520 | 2 | TWO PASS |
+| Repos | 32752 / 32752 / 32752 / 32752 | 0 | REST PASS |
+
+Preuves natives : `artifacts/TestsMachines/Acorn/BBC Master Turbo/20261108-joystick-<1|2|0>-field-<0|1>.bmp`, copies identiques sous `artifacts/TestsChips/Upd7002/BBC Master Turbo/`. Ces nouvelles images remplacent les anciennes ONE/TWO comme preuves de verdict ; les anciennes restent des étapes. Elles prouvent le parcours entrées normalisées→ADC/VIA→Tube→BASIC, sans prétendre tester une manette physique ou l'assignation dans RML. Aucun changement de configuration sur disque et aucune sortie audio Windows. Les appuis sont relâchés et les callbacks réseau détachés dans finally. Aucun relevé de cadence tiré de cette saisie instrumentée.
+
+## Acceptation utilisateur — 8 novembre 2026
+
+L'utilisateur accepte de valider le bloc si la Release tient la cadence. Les mesures du code conservé (4,52–5,25 ms/champ, 190–221 champs/s, 380–441 % nominal) satisfont ce critère. Poursuite autorisée vers le Master 512, en conservant les limites Debug et la portée exacte de toutes les preuves ci-dessus. Pas de nouvelle validation physique RML pendant cette reprise, conformément à sa demande ; pas de nouvelle fonctionnalité ni de gain fictif revendiqués.
+
+Livraison de clôture du 8 novembre : scripts/local-building.cmd --building=debug --modules=A terminé avec code 0. Exécutable, Chips dans lib, 24 manifestes et leurs DLL d'entrée vérifiés ; DLL Acorn livrée identique par SHA256 au build win-x64. Aucun RML lancé et aucune nouvelle mesure de performance pendant cette construction. Chemin : build/Debug/Retro Media Lab/retromedialab.exe.

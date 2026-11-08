@@ -122,11 +122,13 @@ Capture réelle `artifacts/TestsMachines/Acorn/BBC Micro Model A/20261107-stick-
 
 Décision utilisateur après l'essai clavier : laisser ce défaut de côté, poursuivre et committer le travail en cours. Le défaut général d'assignation après choix du joystick reste ouvert ; aucune correction n'est déclarée. Espace a bien été capturé après un aller-retour Rematch gauche/droit sans fermeture du dialogue ; preuve `20261107-stick-selection-keyboard-1794091722913.jpg`. Le retour B a été effectué par l'utilisateur dans une nouvelle écoute : source B à 23:49:00.844, finish à 23:49:01.062. L'écoute initialement armée avait expiré avant sa réponse : ne pas confondre ce délai de coordination avec son anomalie initiale.
 
-- [ ] Clôturer ce diagnostic différé à la demande de l'utilisateur.
+- [x] Clôturer ce diagnostic différé à la demande de l'utilisateur.
   - [x] Modifier `src/RetroMediaLab.App/Theme/Base/Views/Controls/Emulation/Input/InputBindingEditor.xaml.cs` et `InputBindingEditorCaptureFunctions.cs` : retirer les deux indicateurs et toutes les écritures temporaires de capture, conserver le fonctionnement de production préexistant.
-  - [ ] Remplacer les assemblies Debug de l'application et des tests pour retirer le diagnostic compilé ; conserver les 24 modules déjà construits sans relancer leurs tests inchangés.
+  - [x] Remplacer les assemblies Debug de l'application et des tests pour retirer le diagnostic compilé ; conserver les 24 modules déjà construits sans relancer leurs tests inchangés.
   - [x] Modifier `.git/index` pour indexer les travaux non ignorés restants et créer un commit `in-progress` ; exclure tous les artefacts et ne pas présenter le défaut d'assignation comme corrigé.
 
 
 Nettoyage à la demande utilisateur : les deux fichiers de production et le test temporaire retrouvent leur contenu avant diagnostic. Compilations Debug propres terminées avec code 0 : App win-x64 0 avertissement/0 erreur, assembly des tests 4 avertissements/0 erreur ; aucun nouveau test fonctionnel relancé. Le contrôle ordinateur a été arrêté par Échap pendant la tentative de fermeture : aucune nouvelle commande UI ni fermeture forcée. La DLL propre est compilée mais n'a pas encore remplacé celle de la livraison, chargée par RML ; le prochain arrêt permettra de retirer ce diagnostic de la livraison. Aucun correctif du défaut d'assignation n'est annoncé. La poursuite des machines est explicitement autorisée par l'utilisateur, qui demande de différer ce problème d'interface.
 
+
+8 novembre : RML absent des processus, DLL/PDB App propres copiés dans build/Debug/Retro Media Lab/lib, SHA256 DLL livré vérifié C286F7007D4D408E6755AADAA8ADFE805AB8E56B5F81B888ED47706DF363E263 identique à la compilation propre précédemment réussie. Le diagnostic d'assignation temporaire est donc aussi retiré de la livraison ; les 24 modules inchangés ne sont pas reconstruits inutilement. Le défaut d'assignation différé par l'utilisateur reste distinct de ce nettoyage.

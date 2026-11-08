@@ -57,3 +57,11 @@
 
 - [x] Vérifier le SAA5050 conservé après les essais d'optimisation retirés.
   - [x] Créer `artifacts/TestsChips/SAA5050/BBC Micro Model A/` avec les trames télétexte réelles déjà obtenues au catalogue et en jeu ; exécuter les tests SAA5050 Debug existants hors sauvegardes d'état, en conservant l'intégration vidéo BBC déjà vérifiée sans la relancer sur un code inchangé. Résultat : 95 réussites, zéro échec ni ignoré, 378 ms.
+
+## Conservation des points série entre événements — Turbo, 8 novembre
+
+- [x] Évaluer la conservation du caractère RGB entre événements internes, sans changer les fronts ni le pipeline ; retirer la candidate si elle ne gagne pas sur la carte complète.
+  - [x] Créer `artifacts/.tmp-tube/TurboPackedCompare.cs` depuis le banc Native existant, limité au Turbo ; conserver ROM, cycles, rendu, PCM et empreintes, exécuter repos/SOUND/défilement Debug puis conserver les sources de référence de Pipeline.cs et State.cs hors Git pour comparaison.
+  - [x] Modifier `src/RetroMediaLab.Chips/Video/Philips/SAA50xx/SAA5050/Services/TeletextSaa5050.Pipeline.cs` : préparer les points RGB dérivés lors des changements du caractère et des portes de sortie ; extraire les intervalles déjà préparés dans ClockHalfDots au lieu de répéter leur développement. Modifier `TeletextSaa5050.State.cs` dans le même dossier pour reconstruire ces seules données dérivées après restauration, sans ajouter d'état matériel.
+  - [x] Remplacer les assemblies Debug de `tests/RetroMediaLab.Chips.Tests/` et du banc Native par compilation ; vérifier le groupe SAA5050 existant (fronts, attributs, commandes, pipelines, restauration) puis comparer le Turbo complet en ordre référence/candidate/référence ; ne pas relancer une candidate sans gain établi. Conserver le changement seulement si les sorties et cycles concordent et le gain global est établi ; sinon restaurer les sources de référence.
+  - [x] Supprimer `artifacts/.tmp-tube/TurboPackedCompare.cs`, ses références et journaux jetables après consignation ; reconstruire Native avec Program.cs et les assemblies utilisées depuis la source retenue.

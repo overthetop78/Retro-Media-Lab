@@ -17,3 +17,5 @@
 - [Observation RML Debug](../../../project/emulations/Acorn/BBC%20Master/Master%20128/rml-validation.md) : cadence nominale constatée au repos, capture native conservée ; saisie automatisée et validation en charge non acquises dans l'interface.
 
 Point de passage validé le 7 novembre : l'utilisateur juge la baisse minime en Debug et autorise explicitement la poursuite. Le bloc Master 128 est accepté avec les mesures et limites consignées, sans revendiquer une amélioration non mesurée ni étendre cette acceptation aux autres modèles. La suite est le Master Turbo, en commençant par les preuves encore ouvertes du Tube et du 65C102. Turbo/512/ET/Compact ne sont pas clôturés par les résultats du Master 128. Les sauvegardes/chargements d'état restent reportés.
+
+Point de passage du 8 novembre : bloc Master Turbo accepté par l'utilisateur sous condition de cadence Release, satisfaite à 4,52–5,25 ms/champ (190–221 champs/s sans limite). Les limites Debug restent consignées. [Suivi et preuves Turbo](turbo-validation.md). La machine suivante est le Master 512 ; ses défauts de démarrage ne sont pas clôturés par cette acceptation.
