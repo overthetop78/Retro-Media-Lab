@@ -17,8 +17,8 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsDefault" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
-                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Background" Value="{DynamicResource ControlBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
                             <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">

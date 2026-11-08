@@ -34,9 +34,9 @@ internal sealed class AnalogTape(int clock, TapeSignalMode signalMode = TapeSign
     internal bool InputHigh => InputPresent && _inputLevel;
     internal bool HasChanges { get; private set; }
     internal int Position => _position;
-    internal short MonitorSample => _latency > 0 ? (short)0 : _state == EmulationTapeState.Recording
-        ? (_outputLevel ? C.RecordingAmplitude : (short)-C.RecordingAmplitude)
-        : _state == EmulationTapeState.Playing && _position < Length
+    // Playback monitoring is separate from the electrical signal written to tape.
+    // Recording must not feed CASOUT into the computer's audio output.
+    internal short MonitorSample => _latency == 0 && _state == EmulationTapeState.Playing && _position < Length
             ? _recorded is null ? _signal!.Samples.Span[_position] : _recorded[_position]
             : (short)0;
     internal EmulationTapeSignal RecordedSignal => new(

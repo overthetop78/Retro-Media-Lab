@@ -33,3 +33,39 @@ System 1 clôturé et committé dans `f3aa3bbea`. Traiter System 2 avant System 
     - [x] Supprimer `artifacts/.tmp-system2/Program.cs`, `System2.csproj` et leurs seules sorties temporaires après consignation et vérification du chemin résolu ; conserver sources de référence et captures utiles ignorées par Git.
 
 Les fichiers des corrections établies, leurs tests autonomes et la livraison sont ajoutés dans l'ordre avant modification. Les informations acquises et résultats restent dans la fiche System 2, sans tâches documentaires séparées.
+
+- [x] Vérifier System 2 dans RML avec les manipulations utilisateur.
+  - [x] Observer le montage livré avant de poursuivre les autres System.
+    - [x] Créer les captures réelles de RML sous `artifacts/TestsMachines/Acorn/Acorn System 2/20261108-rml-*` : démarrage COS40, BASIC et calcul, cadence affichée et essai Tape ; conserver les étapes et distinguer ces observations des preuves natives déjà acquises.
+
+Reprise : dépôt propre au début de l'essai, contrôle Windows rétabli après réinitialisation de sa session ; aucune fenêtre RML ouverte lors de l'inventaire. Les trois firmwares demandés sont présents (COS40 2048 octets, saa5050 960 octets, BASIC reconstruit 4096 octets). Demande envoyée à l'utilisateur pour ouvrir le Debug et afficher System 2. Aucun résultat RML de ce nouveau passage acquis à cet instant.
+
+- [x] Corriger la saisie ASCII System 2–5 signalée pendant l'essai.
+  - [x] Raccorder les caractères hôtes existants et le pavé numérique.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Dictionaries/SystemKeyboardMap.cs` : ajouter chiffres, opérateurs, séparateur et Entrée du pavé au tableau ASCII existant, sans changer la matrice System 1.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/SystemKeyboard.cs` : consommer HostCharacters pour les touches imprimables à chaque changement d'entrée ; conserver contrôles, fallback physique, répétition et strobe ; ignorer les caractères non représentables plutôt que les tronquer en ASCII.
+  - [x] Vérifier le bloc avant livraison.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemTests.cs` : cas AZERTY guillemets, chiffres avec Maj, ponctuation, lettres, relâchement et caractère non représentable ; pavé complet et Enter, fallback sans HostCharacters, régression matrice hexadécimale existante.
+    - [x] Créer le rapport `artifacts/TestsMachines/Acorn/AcornSystem/system-keyboard-debug.trx` avec les tests System utiles ; conserver les captures actuelles avant la reprise de l'essai.
+    - [x] Créer la livraison corrigée sous `build/Debug/Retro Media Lab/` par `scripts/local-building.cmd --building=debug --modules=A` hors bac à sable ; vérifier exécutable et les 24 DLL de modules avant les nouveaux essais RML.
+
+L'utilisateur autorise maintenant l'agent à effectuer lui-même toutes les manipulations de RML. L'essai reste à terminer, avec captures, avant de passer à une autre famille.
+
+  - [x] Achever les preuves dans la vraie fenêtre.
+    - [x] Modifier le helper préexistant `artifacts/.tmp-rml-input/SendKeys.ps1` : option de touche étendue pour envoyer l'Entrée E0 du pavé, avec relâchement garanti en finally ; tenir compte du verrouillage majuscules Windows dans la saisie de texte demandée, afin de ne pas inverser les lettres du test.
+    - [x] Créer les captures `artifacts/TestsMachines/Acorn/Acorn System 2/20261108-rml-keyboard-fixed-*` : calcul 46 par clavier principal et pavé, ponctuation AZERTY et Entrée étendue ; conserver les cadences affichées.
+    - [x] Créer via le parcours REC existant une bande de test sous `F:/Retro/Acorn System/`, enregistrer un programme BASIC, puis vérifier sa relecture après effacement du programme invité ; captures sous `artifacts/TestsMachines/Acorn/Acorn System 2/20261108-rml-tape-*`.
+    - [x] Modifier le helper préexistant `artifacts/.tmp-rml-input/SendKeys.ps1` : raccourci de touches virtuelles maintenues pour cibler les champs du dialogue Windows dont les index UIA ne sont pas utilisables ; vérifier le focus du propriétaire et libérer les touches en finally.
+
+- [x] Corriger les défauts de présentation signalés pendant l'essai.
+  - [x] Rétablir le contraste du bouton par défaut de création.
+    - [x] Modifier `src/RetroMediaLab.App/Theme/Base/Views/Styles/StorageCreationStyles.xaml` : IsDefault utilise ControlBrush et TextBrush déjà fournis par le thème, avec bordure AccentBrush ; supprimer le couple fond AccentBrush / texte blanc qui devient blanc sur blanc avec l'accent courant.
+    - [x] Créer la capture `artifacts/TestsMachines/Acorn/Acorn System 2/20261108-rml-create-button-fixed.png` après livraison corrigée et vérification dans le même dialogue.
+
+- [x] Corriger le signal d'enregistrement rendu audible comme bruit de lecteur.
+  - [x] Séparer la donnée enregistrée de l'écoute.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/AnalogTape.cs` : réserver MonitorSample à la lecture ; conserver intégralement le signal écrit par Record et les bruitages mécaniques du parcours existant.
+  - [x] Vérifier le signal et son écoute.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemTests.cs` : vérifier que REC conserve les deux polarités enregistrées sans les émettre dans MonitorSample, puis que PLAY restitue ces mêmes échantillons.
+
+Retour utilisateur : sifflement continu en REC, plus aigu pendant la sauvegarde. Cause établie dans AnalogTape.MonitorSample : la sortie électrique d'enregistrement était injectée dans le mélange audio invité. REC n'alimente plus cette écoute ; Record conserve ses échantillons et ses timings. Le groupe System passe en Debug : 47 tests, zéro échec, rapport system-keyboard-audio-debug.trx ; 33 tests du transport Tape passent également. Livraison Debug tous modules réussie, code 0 ; 24 manifestes et assemblages vérifiés. Bouton « Créer et monter » lisible sur fond sombre dans le dialogue livré, capture conservée ; dialogue annulé sans créer de nouveau fichier. La suppression du sifflement est vérifiée au niveau des échantillons, pas par une écoute humaine de ce build.

@@ -41,15 +41,35 @@ internal sealed class SystemKeyboard(int clock)
             _matrix[row] = (byte)value;
         }
         var retained = _active != EmulationKey.Unknown && _keys.Contains(_active);
-        if (!retained) _active = SystemKeyboardMap.Characters.Keys.FirstOrDefault(_keys.Contains);
-        if (_active == EmulationKey.Unknown) { SetStrobe(false); return; }
-        var pair = SystemKeyboardMap.Characters[_active];
-        var shifted = _shiftLock || _keys.Contains(EmulationKey.LeftShift) || _keys.Contains(EmulationKey.RightShift);
-        var code = shifted || _capsLock && char.IsAsciiLetter(pair.Normal) ? pair.Shift : pair.Normal;
-        _data = (byte)(_keys.Contains(EmulationKey.LeftControl) ? code & C.ControlMask : code);
+        if (!retained) _active = SystemKeyboardMap.Characters.Keys.FirstOrDefault(key => _keys.Contains(key) && TryCharacter(input, key, out _));
+        if (_active == EmulationKey.Unknown || !TryCharacter(input, _active, out var code))
+        {
+            _active = EmulationKey.Unknown;
+            SetStrobe(false);
+            return;
+        }
+        _data = code;
         if (retained) return;
         _repeatTicks = (long)clock * C.RepeatDelayMilliseconds / C.MillisecondsPerSecond;
         SetStrobe(true);
+    }
+
+    /// <summary>Use the existing host-layout translation; controls and direct hardware input keep their physical mapping.</summary>
+    private bool TryCharacter(EmulationInputSnapshot input, EmulationKey key, out byte data)
+    {
+        var pair = SystemKeyboardMap.Characters[key];
+        char code;
+        if (pair.Normal >= ' ' && pair.Normal != C.Delete && input.HostCharacters?.TryGetValue(key, out code) == true)
+        {
+            if (code is < ' ' or > '~') { data = 0; return false; }
+        }
+        else
+        {
+            var shifted = _shiftLock || _keys.Contains(EmulationKey.LeftShift) || _keys.Contains(EmulationKey.RightShift);
+            code = shifted || _capsLock && char.IsAsciiLetter(pair.Normal) ? pair.Shift : pair.Normal;
+        }
+        data = (byte)(_keys.Contains(EmulationKey.LeftControl) ? code & C.ControlMask : code);
+        return true;
     }
 
     internal void Tick()

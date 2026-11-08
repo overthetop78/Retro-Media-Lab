@@ -18,6 +18,102 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuSystemTests
 {
     [Fact]
+    public void TapeRecordingPreservesTheWaveformWithoutFeedingItIntoPlaybackMonitoring()
+    {
+        var tape = new AnalogTape(48000, TapeSignalMode.DirectWaveform);
+        try
+        {
+            tape.Insert(new EmulationTapeSignal(ReadOnlyMemory<short>.Empty, 48000), true);
+            tape.ExecuteTape(EmulationTapeCommand.Record);
+            foreach (var level in new[] { false, true, true, false })
+            {
+                tape.SetOutputLevel(level);
+                tape.Tick();
+                Assert.Equal((short)0, tape.MonitorSample);
+            }
+            tape.ExecuteTape(EmulationTapeCommand.Stop);
+            var samples = tape.RecordedSignal.Samples.ToArray();
+            Assert.Equal(4, samples.Length);
+            Assert.True(samples[0] < 0);
+            Assert.True(samples[1] > 0);
+            Assert.Equal(samples[1], samples[2]);
+            Assert.Equal(samples[0], samples[3]);
+            Assert.Equal((short)0, tape.MonitorSample);
+            tape.ExecuteTape(EmulationTapeCommand.Rewind);
+            while (tape.TapeActive) tape.Tick();
+            tape.ExecuteTape(EmulationTapeCommand.Play);
+            foreach (var sample in samples)
+            {
+                Assert.Equal(sample, tape.MonitorSample);
+                tape.Tick();
+            }
+        }
+        finally { tape.Eject(); }
+    }
+
+    [Theory]
+    [InlineData(EmulationKey.D3, '"', false)]
+    [InlineData(EmulationKey.D1, '1', true)]
+    [InlineData(EmulationKey.Comma, '?', true)]
+    [InlineData(EmulationKey.Comma, ',', false)]
+    [InlineData(EmulationKey.Equals, '+', false)]
+    [InlineData(EmulationKey.A, 'A', false)]
+    [InlineData(EmulationKey.A, 'a', false)]
+    public void SystemAsciiKeyboardUsesTheHostCharacterInsteadOfThePhysicalSymbol(EmulationKey key, char character, bool shift)
+    {
+        var keyboard = new SystemKeyboard(1000000);
+        var keys = new HashSet<EmulationKey> { key };
+        if (shift) keys.Add(EmulationKey.LeftShift);
+        keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = keys, HostCharacters = new Dictionary<EmulationKey, char> { [key] = character } });
+        Assert.Equal((byte)character, keyboard.Data);
+        Assert.True(keyboard.Strobe);
+        keyboard.SetInput(EmulationInputSnapshot.Empty);
+        Assert.False(keyboard.Strobe);
+    }
+
+    [Fact]
+    public void HostCharacterChangesDoNotRetriggerTheHeldKeyAndUnsupportedCharactersDoNotBecomeAscii()
+    {
+        var keyboard = new SystemKeyboard(1000000);
+        var edges = new List<bool>();
+        keyboard.StrobeChanged = edges.Add;
+        var input = EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.Comma } };
+        keyboard.SetInput(input with { HostCharacters = new Dictionary<EmulationKey, char> { [EmulationKey.Comma] = ',' } });
+        keyboard.SetInput(input with { HostCharacters = new Dictionary<EmulationKey, char> { [EmulationKey.Comma] = '?' } });
+        Assert.Equal((byte)'?', keyboard.Data);
+        Assert.Equal(new[] { false }, edges);
+        keyboard.SetInput(input with { HostCharacters = new Dictionary<EmulationKey, char> { [EmulationKey.Comma] = 'é' } });
+        Assert.False(keyboard.Strobe);
+        Assert.Equal(new[] { false, true }, edges);
+    }
+
+    [Theory]
+    [InlineData(EmulationKey.Numpad0, '0')]
+    [InlineData(EmulationKey.Numpad1, '1')]
+    [InlineData(EmulationKey.Numpad2, '2')]
+    [InlineData(EmulationKey.Numpad3, '3')]
+    [InlineData(EmulationKey.Numpad4, '4')]
+    [InlineData(EmulationKey.Numpad5, '5')]
+    [InlineData(EmulationKey.Numpad6, '6')]
+    [InlineData(EmulationKey.Numpad7, '7')]
+    [InlineData(EmulationKey.Numpad8, '8')]
+    [InlineData(EmulationKey.Numpad9, '9')]
+    [InlineData(EmulationKey.NumpadPeriod, '.')]
+    [InlineData(EmulationKey.NumpadSeparator, ',')]
+    [InlineData(EmulationKey.NumpadDivide, '/')]
+    [InlineData(EmulationKey.NumpadMultiply, '*')]
+    [InlineData(EmulationKey.NumpadMinus, '-')]
+    [InlineData(EmulationKey.NumpadPlus, '+')]
+    [InlineData(EmulationKey.NumpadEnter, '\r')]
+    public void SystemAsciiKeyboardSupportsTheKeypadWithoutHostTranslation(EmulationKey key, char character)
+    {
+        var keyboard = new SystemKeyboard(1000000);
+        keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { key, EmulationKey.LeftShift } });
+        Assert.Equal((byte)character, keyboard.Data);
+        Assert.True(keyboard.Strobe);
+    }
+
+    [Fact]
     public void WaveformTransportPublishesTransitionsAndReleasesTheComparatorOnStop()
     {
         var tape = new AnalogTape(48000, TapeSignalMode.DirectWaveform);

@@ -148,6 +148,8 @@ Pour chaque nouvelle directive, écrire le problème évité, l'action à appliq
 
 ### Équipements d’entrée optionnels
 
+- Pour un clavier ASCII raccordé au contrat d'entrée existant, consommer les caractères de la disposition hôte lorsqu'ils sont fournis, sans leur réappliquer les symboles ou le SHIFT d'un clavier différent. Conserver les commandes physiques, le parcours sans traduction et les signaux du codeur ; traiter chiffres, opérateurs et Entrée du pavé numérique. Rejeter les caractères non représentables plutôt que les tronquer. Exemple System 2–5 : HostCharacters était transmis par App mais ignoré par SystemKeyboard ; sa consommation corrige la ponctuation AZERTY sans modifier App ni la matrice du System 1.
+
 - Résoudre les équipements réellement montés depuis la configuration, par les contrats d’adaptateur existants. Mettre en accord l’assemblage des circuits, les capacités annoncées, les choix de périphériques, la visibilité des onglets et la validation des ports ; ne pas utiliser le seul nom du modèle pour écarter un équipement documenté.
 - Décrire séparément les équipements physiquement indépendants. Ne pas installer implicitement un autre circuit en activant un port. Conserver le montage standard par défaut et les comportements antérieurs des autres modèles ; vérifier les combinaisons de présence/absence.
 - Éviter la récursion entre description et résolution des capacités : le comportement matériel par défaut doit provenir de son catalogue, et la description peut ensuite demander les capacités au contrat. Ne pas faire reconstruire la description par un accesseur appelé par cette même description.
@@ -163,6 +165,8 @@ Pour chaque nouvelle directive, écrire le problème évité, l'action à appliq
 
 - Lorsqu'une interface existante possède plusieurs brochages matériels, choisir celui du périphérique réellement raccordé et vérifier les directions et boutons jusqu'au logiciel invité ; ne pas compenser un mauvais brochage dans une puce ou dans les entrées de l'application. Exemple Master 512 : réutilisation du brochage Acorn déjà géré pour Compact, distinct de l'AMX, sans changer les horloges ou le VIA.
 - Pour des essais invités coûteux à démarrer, conserver l'instance du banc pendant les observations et ajustements d'entrée, puis la fermer normalement dans finally. Ne pas recommencer tout le démarrage pour déplacer de quelques pixels une cible de test. Distinguer ouverture d'un menu au survol, réception d'un bouton et exécution de la commande effectivement surlignée.
+
+- Séparer le signal électrique écrit sur un support, son éventuelle écoute et le bruit mécanique du lecteur. Ne pas injecter automatiquement les données d'enregistrement dans la sortie sonore de l'ordinateur. Préserver les échantillons et les timings de l'écriture ; vérifier séparément la relecture et les bruitages existants. Exemple System 2 : CASOUT était mélangé au son pendant REC et produisait un sifflement ; la suppression de cette écoute conserve la bande enregistrée.
 
 - Pour vérifier la persistance d'une écriture invitée, distinguer la relecture dans le cache du système émulé d'un accès effectif au média. Fermer et rouvrir l'image par son propriétaire, puis contrôler ses octets publiés ou provoquer une lecture physique établie ; ne pas présenter TYPE/LOAD comme une preuve de nouvelle lecture lorsque les compteurs restent inchangés. Exemple Master 512 : TYPE après réouverture conserve le cache DOS ; comparaison indépendante des 512 octets copiés dans le DAT et du fichier source confirme la persistance sans modifier le matériel.
 
