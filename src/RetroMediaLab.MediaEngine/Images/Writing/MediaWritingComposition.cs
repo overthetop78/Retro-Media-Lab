@@ -136,6 +136,7 @@ public sealed class MediaWritingComposition
 
         IMediaImageWriter[] writers =
         [
+            new RetroMediaLab.MediaEngine.Images.Formats.Floppy.Jfd.JfdWriter(),
             new SectorMediaImageWriterAdapter("defined-img", DiskDefsFormatReader.RawDefinitions.Keys, [".img"],
                 (image, _, format, _) => image.FormatId.Equals(format, StringComparison.OrdinalIgnoreCase),
                 async (image, _, path, format, token) =>

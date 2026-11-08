@@ -18,6 +18,7 @@ internal sealed class SectorImageVisualizationPolicyRegistry
         new DecRx02VisualizationPolicy(),
         new RareEncodedVisualizationPolicy(),
         new AtariVisualizationPolicy(),
+        new JfdVisualizationPolicy(),
         new PrefixVisualizationPolicy(FluxCodecIds.AmigaMfm, DiskImageFormatIds.AmigaPrefix),
         new PrefixVisualizationPolicy(FluxCodecIds.IsoFm, DiskImageFormatIds.AcornDfsPrefix),
         new PrefixVisualizationPolicy(FluxCodecIds.IsoMfm, DiskImageFormatIds.AcornAdfsPrefix),

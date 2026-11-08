@@ -12,7 +12,8 @@ public sealed partial class AcornAdfsFileSystemReader : IFileSystemReader
     /// <inheritdoc/>
     public IReadOnlySet<string> CatalogFormatIds { get; } = new[]
     {
-        MediaImageFormatIds.AcornAdfs800
+        MediaImageFormatIds.AcornAdfs800,
+        MediaImageFormatIds.Jfd
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>

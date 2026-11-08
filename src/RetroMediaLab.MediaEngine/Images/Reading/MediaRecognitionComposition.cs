@@ -116,6 +116,7 @@ public sealed class MediaRecognitionComposition
                 new I86fReader(),
                 new Cp2Reader(),
                 new ImdReader(),
+                new RetroMediaLab.MediaEngine.Images.Formats.Floppy.Jfd.JfdReader(),
                 new EpsonQx10RawImageReader(),
                 new UcsdRawImageReader(),
                 new RetroMediaLab.MediaEngine.Images.Formats.Floppy.Hfe.HfeReader(),

@@ -51,6 +51,7 @@ internal static class FloppyDriveModels
         var extensions = formats.Select(format => format.Extension).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         extensions.Add(CommonHost.MediaProcessing.FileExtensions["Scp"]);
         extensions.Add(CommonHost.MediaProcessing.FileExtensions["Hfe"]);
+        extensions.Add(CommonHost.MediaProcessing.FileExtensions["Jfd"]);
         if (formats.Any(format => format.FormatId == C.Adfs640)) extensions.Add(CommonHost.MediaProcessing.FileExtensions["AcornAdfs640"]);
         if (profile.DoubleDensity) { extensions.Add(CommonHost.MediaProcessing.FileExtensions["Adf"]); extensions.Add(CommonHost.MediaProcessing.FileExtensions["Img"]); extensions.Add(CommonHost.MediaProcessing.FileExtensions["AcornDosPlus800"]); }
         return new(profile.Id, string.Empty, BlankImageSize: Capacity(profile.Tracks, profile.Sides, profile.DoubleDensity))

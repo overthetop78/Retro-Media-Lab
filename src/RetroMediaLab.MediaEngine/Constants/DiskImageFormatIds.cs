@@ -5,6 +5,7 @@ namespace RetroMediaLab.MediaEngine.Constants;
 /// <summary>Regroupe les identifiants publics des formats d'images reconnus par le moteur.</summary>
 public static partial class DiskImageFormatIds
 {
+    public const string Jfd = MediaImageFormatIds.Jfd;
     /// <summary>Identifiant utilisé lorsqu'aucun format n'a pu être déterminé.</summary>
     public const string Unknown = "unknown";
     /// <summary>Identifiant générique des conteneurs ImageDisk.</summary>

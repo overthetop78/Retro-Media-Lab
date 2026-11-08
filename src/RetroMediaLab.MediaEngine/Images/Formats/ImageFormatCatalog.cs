@@ -34,6 +34,9 @@ public sealed class BuiltInImageFormatCatalog : IImageFormatCatalog
         var img = new Func<ImageExtension>(() => E(".img", "Extension.img", "IMG disk image"));
         IReadOnlyList<ImageExtension> Ibm() => [ima(true), img()];
         Formats = [
+            new(DiskImageFormatIds.Jfd, "Acorn", "JASPP Floppy Disk", [new(DiskImageFileExtensions.Jfd, "JFD", true)],
+                CompatibleSourceExtensions: Set(DiskImageFileExtensions.Jfd), Tag: "JFD", FormFactor: FloppyFormFactor.Unknown,
+                SupportsPhysicalRead: false, SupportsPhysicalWrite: false),
             new(
                 "raw.scp",
                 "Raw",
