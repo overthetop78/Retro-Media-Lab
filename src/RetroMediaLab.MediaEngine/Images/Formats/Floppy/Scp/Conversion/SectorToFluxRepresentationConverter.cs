@@ -31,7 +31,8 @@ internal sealed class SectorToFluxRepresentationConverter : IMediaRepresentation
     public bool CanConvert(MediaImageDocument source, string targetFormatId, MediaRepresentationKind targetRepresentationKind)
         => source.Representation is SectorMediaImageRepresentation sectors &&
            (targetFormatId.Equals(DiskImageFormatIds.RawScp, StringComparison.OrdinalIgnoreCase) ||
-            targetFormatId.Equals(DiskImageFormatIds.RawHfe, StringComparison.OrdinalIgnoreCase)) &&
+            targetFormatId.Equals(DiskImageFormatIds.RawHfe, StringComparison.OrdinalIgnoreCase) ||
+            targetFormatId.Equals(DiskImageFormatIds.RawHxcStream, StringComparison.OrdinalIgnoreCase)) &&
            targetRepresentationKind == MediaRepresentationKind.Flux &&
            conversion.CanCreate(sectors.Image);
 

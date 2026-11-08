@@ -52,7 +52,9 @@ public sealed partial class HxcStreamReader : IMediaImageReader
             tracks.Add(new ProtectedTrack(file.Cylinder, file.Head, null, [], [], [], decoded.Revolutions));
             writeProtected |= decoded.WriteProtected;
             foreach (var pair in decoded.Metadata) metadata.TryAdd(pair.Key, pair.Value);
+            metadata[$"hxcstream.native.{file.Cylinder}.{file.Head}"] = Convert.ToBase64String(decoded.NativeBytes);
         }
+        foreach (var track in tracks) metadata[$"hxcstream.digest.{track.Cylinder}.{track.Head}"] = HxcStreamEncoding.Digest(track, writeProtected);
 
         var associated = files.Select(file => file.Path).Where(path => !Path.GetFullPath(path).Equals(Path.GetFullPath(context.Source.PrimaryPath), StringComparison.OrdinalIgnoreCase)).ToArray();
         var source = new MediaSourceDescriptor(context.Source.PrimaryPath, associated, files.Sum(file => new FileInfo(file.Path).Length), context.Source.RequestedFormatId);
@@ -84,6 +86,11 @@ public sealed partial class HxcStreamReader : IMediaImageReader
     private static async Task<DecodedTrack> ReadTrackAsync(string path, CancellationToken cancellationToken)
     {
         var data = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        return ReadTrackBytes(data);
+    }
+
+    internal static DecodedTrack ReadTrackBytes(byte[] data)
+    {
         var flux = new List<uint>();
         var io = new List<ushort>();
         var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -130,8 +137,7 @@ public sealed partial class HxcStreamReader : IMediaImageReader
             offset += chunkSize;
         }
 
-        if (flux.Count == 0) throw new InvalidDataException("The HxC Stream track contains no flux transitions.");
-        return new DecodedTrack(CreateRevolutions(flux, io, resolutionNanoseconds), io.Any(value => (value & (1 << 5)) != 0), metadata);
+        return new DecodedTrack(CreateRevolutions(flux, io, resolutionNanoseconds), io.Any(value => (value & (1 << 5)) != 0), metadata, data);
     }
 
     private static int ReadPackedIo(byte[] data, int offset, int end, ICollection<ushort> destination)
@@ -196,18 +202,15 @@ public sealed partial class HxcStreamReader : IMediaImageReader
 
     private static IReadOnlyList<TrackFluxRevolution> CreateRevolutions(IReadOnlyList<uint> flux, IReadOnlyList<ushort> io, int resolutionNanoseconds)
     {
-        var indexes = new List<int>();
+        var indexes = new List<long>();
         var previous = false;
-        long ticks = 0;
-        var fluxIndex = 0;
         for (var ioIndex = 0; ioIndex < io.Count; ioIndex++)
         {
             var current = (io[ioIndex] & 1) != 0;
             if (current && !previous)
             {
                 var targetTicks = checked((long)ioIndex * HxcStreamFormat.IoSampleFluxTicks);
-                while (fluxIndex < flux.Count && ticks < targetTicks) ticks += flux[fluxIndex++];
-                indexes.Add(fluxIndex);
+                indexes.Add(targetTicks);
             }
             previous = current;
         }
@@ -215,7 +218,22 @@ public sealed partial class HxcStreamReader : IMediaImageReader
         var revolutions = new List<TrackFluxRevolution>();
         if (indexes.Count >= 2)
         {
-            for (var index = 1; index < indexes.Count; index++) AddRevolution(flux, indexes[index - 1], indexes[index], resolutionNanoseconds, revolutions);
+            var absolutePulses = new List<long>(flux.Count);
+            long time = 0;
+            foreach (var interval in flux) { time = checked(time + interval); absolutePulses.Add(time); }
+            var pulse = 0;
+            for (var index = 1; index < indexes.Count; index++)
+            {
+                var start = indexes[index - 1]; var end = indexes[index];
+                while (pulse < absolutePulses.Count && absolutePulses[pulse] <= start) pulse++;
+                var intervals = new List<uint>(); var previousPulse = start;
+                while (pulse < absolutePulses.Count && absolutePulses[pulse] <= end)
+                {
+                    intervals.Add(checked((uint)(absolutePulses[pulse] - previousPulse)));
+                    previousPulse = absolutePulses[pulse++];
+                }
+                revolutions.Add(new(resolutionNanoseconds, new FluxRevolution(checked((uint)(end - start)), intervals)));
+            }
         }
         else
         {
@@ -262,7 +280,7 @@ public sealed partial class HxcStreamReader : IMediaImageReader
         if (offset < 0 || count < 0 || offset > limit - count || limit > data.Length) throw new InvalidDataException("The HxC Stream structure is truncated.");
     }
 
-    private static uint ComputeCrc32(ReadOnlySpan<byte> data, uint seed)
+    internal static uint ComputeCrc32(ReadOnlySpan<byte> data, uint seed)
     {
         var crc = seed ^ uint.MaxValue;
         foreach (var value in data)
@@ -277,5 +295,5 @@ public sealed partial class HxcStreamReader : IMediaImageReader
     private static partial Regex TrackFileName();
 
     private sealed record TrackFile(string Path, int Cylinder, int Head);
-    private sealed record DecodedTrack(IReadOnlyList<TrackFluxRevolution> Revolutions, bool WriteProtected, IReadOnlyDictionary<string, string> Metadata);
+    internal sealed record DecodedTrack(IReadOnlyList<TrackFluxRevolution> Revolutions, bool WriteProtected, IReadOnlyDictionary<string, string> Metadata, byte[] NativeBytes);
 }

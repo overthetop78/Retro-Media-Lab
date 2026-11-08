@@ -4,6 +4,7 @@ namespace RetroMediaLab.MediaEngine.Constants;
 public static class MediaImageWriterIds
 {
     public const string Jfd = "jfd";
+    public const string HxcStream = "hxcstream";
     public const string MfmEmu = "mfm-emu";
     public const string AcornAtomDsk = "acorn-atom-dsk";
     public const string Apridisk = "apridisk";
