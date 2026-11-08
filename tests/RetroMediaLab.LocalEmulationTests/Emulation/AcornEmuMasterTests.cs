@@ -20,6 +20,27 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuMasterTests
 {
     [Fact]
+    public void WdClockContinuesWhileBoardResetIsHeldAndAfterRelease()
+    {
+        var disks = new Disks(enabled: true, wd1770: true);
+        disks.Reset();
+        var before = disks.CaptureState().WdDrive!.Chip.Writer.HalfClocks;
+        for (var tick = 0; tick < 10; tick++) disks.Tick();
+        var held = disks.CaptureState().WdDrive!.Chip;
+        Assert.Equal(before + 80UL, held.Writer.HalfClocks);
+        Assert.True(held.Reset);
+        Assert.False(held.Motor);
+        Assert.False(held.Irq);
+        Assert.False(held.Drq);
+
+        disks.Write(0xfe80, 0x20);
+        disks.Tick();
+        var released = disks.CaptureState().WdDrive!.Chip;
+        Assert.Equal(held.Writer.HalfClocks + 8UL, released.Writer.HalfClocks);
+        Assert.False(released.Reset);
+    }
+
+    [Fact]
     public void ExtensionFirmwareIsEditableBesideItsHardwareWithoutRomTabDuplicates()
     {
         var configuration = new RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Contracts.MachineConfiguration(MachineModel.BbcMaster128, core: Emulator.AcornEmu);
@@ -338,6 +359,30 @@ public sealed class AcornEmuMasterTests
         turbo.RunHostCycle(); // STA opcode and low address, not its write cycle.
         Assert.Equal(0, tube.HostRead(0) & 0x80);
         turbo.RunHostCycle(); // STA high address and write, sixth parasite cycle.
+        Assert.Equal(0x80, tube.HostRead(0) & 0x80);
+        Assert.Equal(0x5a, tube.HostRead(1));
+    }
+
+    [Fact]
+    public void TurboCompletesCpuResetSequenceAfterTubeResetIsReleased()
+    {
+        var rom = new byte[2048];
+        byte[] program = [0xa9, 0x5a, 0x8d, 0xf9, 0xfe, 0x4c, 5, 0xf0];
+        program.CopyTo(rom, 0);
+        rom[^4] = 0;
+        rom[^3] = 0xf0;
+        var tube = new TubeUla();
+        var turbo = new TurboBoard(tube, rom);
+        tube.ResetParasite = turbo.Reset;
+        tube.SetHostReset(true);
+        for (var host = 0; host < 5; host++) turbo.RunHostCycle();
+        Assert.Equal(0, tube.HostRead(0) & 0x80);
+
+        tube.SetHostReset(false);
+        // Six CPU cycles of reset, two for LDA and four for STA.
+        for (var host = 0; host < 5; host++) turbo.RunHostCycle();
+        Assert.Equal(0, tube.HostRead(0) & 0x80);
+        turbo.RunHostCycle();
         Assert.Equal(0x80, tube.HostRead(0) & 0x80);
         Assert.Equal(0x5a, tube.HostRead(1));
     }

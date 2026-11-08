@@ -45,7 +45,8 @@ internal sealed partial class Disks
         _nmi = asserted;
         NmiChanged?.Invoke(asserted);
     }
-    internal void Tick() { if (_enabled) { if (_wd1770) { if ((_control & 0x20) != 0) _wd!.Tick(); } else _intelDrive!.Tick(); } }
+    // /MR resets the controller; it does not gate the board's 8 MHz clock.
+    internal void Tick() { if (_enabled) { if (_wd1770) _wd!.Tick(); else _intelDrive!.Tick(); } }
     internal void Reset() { if (_enabled) { if (_wd1770) { _control = 0; _wd!.SetReset(true); _wd.Selected = false; } else { _controller!.Reset(); _intelDrive!.Reset(); } } }
     internal byte Read(ushort address)
     {

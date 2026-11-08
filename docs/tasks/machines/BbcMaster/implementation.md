@@ -1,5 +1,46 @@
 # AcornEmu — famille BBC Master
 
+## Revue rapide demandée le 9 novembre 2026
+
+Revue statique des fichiers courants, composant par composant puis raccordements. Les constats portent sur le code consulté et ne remplacent pas les validations fonctionnelles historiques. Aucun nouveau build de livraison demandé. Le Compact reste hors de cette reprise selon la consigne précédente.
+
+- [x] Revoir les composants du Master 128 puis son câblage.
+  - [x] Modifier ce suivi : consigner la revue du 65C12 et de son moteur 6502 partagé, horloges et entrées d'interruption.
+  - [x] Modifier ce suivi : consigner successivement la revue VIA6522, ACIA6850, Serial ULA, ADC7002 et HD146818.
+  - [x] Modifier ce suivi : consigner successivement la revue CRTC6845, Video ULA, SAA5050 et SN76489.
+  - [x] Modifier ce suivi : consigner successivement la revue WD1770, MC6854 et contrôleurs Winchester optionnels.
+  - [x] Corriger l'horloge WD pendant le reset de carte.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMicro/Common/Services/Disks.cs` : fournir les clocks au WD même lorsque /MR est maintenu, sans modifier le silicium.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuMasterTests.cs` : vérifier l'avancement 8 MHz pendant /MR, l'absence d'activité et la reprise après libération ; exécuter les tests Master existants avec ce cas.
+  - [x] Modifier ce suivi : consigner la vérification des fichiers de carte Master et BBC partagés, des entrées, de la vidéo, des sons et des médias.
+- [ ] Revoir les cartes coprocesseur Master déjà traitées.
+  - [x] Corriger le reset Turbo par l'entrée existante du CPU.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMaster/Tube/Services/TurboBoard.cs` : raccorder la notification RESET à `SetReset` et laisser le CPU gérer son maintien et la séquence de libération, sans geler son horloge dans la carte.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuMasterTests.cs` : vérifier par une écriture Tube que le CPU reste au reset puis effectue sa séquence réelle avant reprise ; exécuter le groupe Master.
+  - [x] Modifier ce suivi : consigner la revue Tube ULA, 65C102 et câblage Turbo.
+  - [ ] Modifier ce suivi : consigner la revue 80186 et câblage Master 512.
+
+Toute correction nécessaire sera ajoutée ici avec ses fichiers avant modification, immédiatement après la dernière action achevée, et réalisée avant de reprendre le composant suivant.
+
+Tube ULA (`TubeUla.cs`, `.Bus.cs`) et 65C102 (`Cpu65C102.cs`, moteur CMOS partagé) relus : FIFOs bornées par les capacités matérielles, transactions et IRQ/NMI/DMA/reset notifiés à mutation ; diviseur et phases du CPU locaux. Correction Turbo : la carte raccorde désormais RESET à `SetReset` au lieu de seulement geler l'horloge. Le test de libération contrôle la séquence CPU avant la première écriture Tube. **33 tests Master Debug réussis, zéro échec ni ignoré, 750 ms.** Le 80186 et la carte 512 restent en revue ; aucun verdict de clôture globale de la famille n'est déduit de ce groupe.
+
+### Constats de la revue des composants
+
+- 65C12 (`Cpu65C12.cs`, moteur partagé `Cpu6502.Clock.cs`, `.Pins.cs`, `.Interrupts.cs`, `.cs`) : variante GTE explicite, phases conservées, IRQ/NMI reçues et échantillonnées localement ; pas de consultation du bus d'interruption lorsqu'une entrée explicite est raccordée.
+- VIA6522 (`.Clock.cs`, `.Ports.cs`, `.Interrupts.cs`) : fronts PHI2 distincts, compteurs et décalage internes, PB6 mémorisé et IRQ notifiée à mutation. Les fournisseurs de ports servent aux transactions et captures matérielles, pas au sondage PB6 explicitement raccordé.
+- MC6850 (`.cs`, `.Outputs.cs`) et Serial ULA (`.Clock.cs`, `.Outputs.cs`) : phases TX/RX et diviseurs locaux, entrées retenues, notifications des lignes et des clocks ; intervalles différés vidés avant changement d'entrée.
+- ADC7002 (`.Clock.cs`, `.Conversion.cs`) : phases et échéance internes, notification de prochaine échéance. Les limites de caractérisation analogique déjà consignées restent identifiées ; aucune valeur nouvelle inventée par cette lecture.
+- HD146818 (`.Clock.cs`, `.Bus.cs`) : oscillateur converti avec résidu entier, calendrier et sorties périodiques internes, bus à strobes et échéance notifiée.
+- CRTC6845 (`.cs`, `.Timing.cs`, `.Outputs.cs`) : compteurs et historiques DE/curseur internes, sorties synchro/RA notifiées ; aucune transition intermédiaire du calcul RA publiée. Video ULA (`.Clock.cs`) : diviseur maître et décalage conservés. SAA5050 (`.Signals.cs`) : F1/TR6, fenêtres et compteurs locaux. SN76489 (`.cs`) : diviseur /16, oscillateurs maintenus, bus et sortie audio notifiée.
+- WD1770 (`.cs`, `.Clock.cs`, `.Outputs.cs`) : CLK indépendant de /MR dans le composant, entrées conservées, sorties mutées et horodatées. Défaut trouvé dans `Disks.Tick` : la carte supprimait les clocks pendant /MR ; correction ci-dessus.
+- MC6854 (`.Clock.cs`, `.Outputs.cs`) : phases série et repos stable locaux, RTS/activité notifiés. Adaptateur SCSI (`ScsiHostAdapter.cs`) : logique asynchrone à strobes, sans oscillateur inventé, sorties notifiées. ACB4000 (`Acb4000.cs`) : référence locale et causes des changements du tampon/bus raccordées aux phases de synchronisation existantes. Cette revue rapide ne refait pas la caractérisation complète des sous-circuits ACB déjà documentée.
+
+### Carte Master 128 et correction WD
+
+`BbcMicroMachine.cs`, `.Via.cs`, `.Interrupts.cs`, `BbcMicroMachine.Master.cs`, `MasterClock.cs`, `MasterMemory.cs`, `Serial.cs`, `Audio.cs`, `Video.cs`, `.Crtc.cs`, `.Fields.cs`, `Disks.cs` et `Econet.cs` relus. Les IRQ/NMI sont raccordées une fois et agrégées à mutation ; les phases VIA restent de part et d'autre des transactions ; ADC et RTC sont synchronisés avant accès et à leurs échéances. Le bus mémoire reste partagé selon ACCCON, sans passage des signaux matériels par App. Le prélèvement des sorties vidéo après un front caractère correspond à l'échantillonnage du bus vidéo, pas à une attente en boucle d'une réponse. Les champs vidéo sont transmis séparément avec leur parité ; la présentation n'agrandit pas le tampon à la taille hôte. Le PSG fournit le son de la machine ; les parcours `EmulatorCore.FloppySound.cs`, `.HardDiskSound.cs`, `.Disks.cs` et `.TapeSound.cs` raccordent les mécanismes existants, sans nouveau parcours ajouté dans App.
+
+Le WD reçoit désormais les clocks également pendant /MR. Le chemin existant `Wd1770Drive.Tick` moteur arrêté appelle `Wd1770.Advance`, puis `AdvanceIdle` : un ajout arithmétique des demi-clocks, pas une boucle de silicium ni un sondage d'autres composants. Les optimisations documentées de lecture et rotation restent intactes. La condition antérieure figure déjà dans l'historique antérieur à `422205110` ; aucune justification de conservation du temps pendant son blocage n'a été trouvée dans les fiches d'optimisation WD. Le nouveau test contrôle 80 demi-clocks pour dix cycles hôtes sous reset puis huit après un cycle libéré, sans moteur, IRQ ou DRQ pendant le maintien. **32 tests Master Debug réussis, zéro échec ni ignoré, 878 ms.** Il ne s'agit pas d'une nouvelle mesure de vitesse globale, d'une validation physique des médias ni d'un nouveau test RML.
+
 - [x] Implémenter les Master et leurs équipements
   - [x] Références et firmware
     - [x] Créer puis supprimer les références temporaires dans `%TEMP%/rml-master-reference/` : fichiers matériels publics B-Em, JSBeeb et b2, utilisés uniquement pour vérifier les registres et protocoles.
