@@ -78,3 +78,45 @@ Livraison corrigée terminée : `scripts/local-building.cmd --building=debug --m
 Essai réel Tape terminé : fichier `F:/Retro/Acorn System/System 2 RML PROBE 20261108.wav` créé par REC, sauvegarde `SAVE "PROBE"`, arrêt, rembobinage, `NEW`, puis `LOAD "PROBE"`. LIST retrouve `10 PRINT 42` ; RUN affiche 42. Le programme de contrôle sans END produit ensuite Error 94 ; l'ajout `20 END` fait terminer RUN normalement. Aucun correctif matériel tiré de cette absence de END. Capture `20261108-rml-tape-load-run.png` et `20261108-rml-tape-run-ended.png`. Le COS attend une touche après « Record drive 0 » et « Play drive 0 » ; respecter cette confirmation opérateur. Cadence réelle autour de 50 FPS, 1 MHz, 100 %. Les 33 tests AnalogTape existants passent aussi en Debug après la séparation du moniteur REC (`analog-tape-monitor-debug.trx`).
 
 Capture initiale : artifacts/TestsMachines/Acorn/Acorn System 2/20261108-rml-start-failed-missing-tape.png. Les trois firmwares de la configuration 678a2ea3 sont corrects. Le démarrage du 16:44:40 échouait dans InsertMedia : FileNotFoundException sur une ancienne image Barbarian II.uef absente. L'entrée média gardait isInserted=true malgré « Aucune cassette ». Après éjection dans RML, le COS démarre et les essais ci-dessus aboutissent. La présentation générique de cette erreur de fichier reste distincte du fonctionnement matériel vérifié.
+
+
+## Phase de points conservée dans le composant — 9 novembre 2026
+
+`SystemVideo.Teletext.cs` ne conserve plus une seconde copie du niveau TR6. Le raccordement utilise `Saa5050.ClockHalfDots` déjà existant : le composant conserve sa phase, avance les douze demi-points par caractère et restitue chaque RGB intermédiaire. Le module conserve uniquement les coordonnées de présentation et les niveaux raccordés. Aucun front de point ni résultat intermédiaire visible n'est supprimé.
+
+Après cette correction, les groupes existants `AcornEmuSystemTests` et `AcornEmuSystemRamIoTests` passent **75 cas en Debug, zéro échec ni ignoré, environ 1 s**. Ils vérifient le raccordement System ; les tests propres au pipeline restent ceux documentés dans la fiche SAA5050. Ce passage ne mesure pas le débit de la puce ni celui de la machine ; les mesures antérieures restent datées et ne sont pas présentées comme une comparaison avant/après.
+
+
+Avancement VDU du 9 novembre : suppression de `_videoPhase` et de sa boucle dans `AcornSystemMachine.Tick`. Pour les profils configurés, `VideoClock` est toujours égal à `_clock` : PH2/1 MHz sur VDU40, 2 MHz sur VDU80/carte rapide. Un appel direct conserve donc exactement un caractère par période de bus, sans accumulateur ni division artificiels. Les compteurs CRTC et la phase TR6 restent dans leurs composants. Les **75 tests System existants réussissent en Debug, zéro échec ni ignoré, durée 1 s** après cette modification. Aucun gain de débit n'est déduit de cette durée. Compilation des dépendances de tests seulement, sans livraison dans build/Debug ni ouverture de RML.
+
+
+## Débit actuel hors RML — 9 novembre 2026
+
+Scénario : vrai COS40 au moniteur, carte Standard6502 à 1 MHz, INS8154, RAM 2000–3FFF, VDU40/SAA5050, interface bande présente et transport arrêté ; aucun FDC monté. Quarante champs de chauffe puis trois fenêtres successives de 160 champs, compilation Debug sans optimisations Release, `RunFrame` et `DrainAudio` inclus. Aucun RML, aucune compilation ni autre test concurrents pendant les fenêtres ; lecture des compteurs et SHA256 hors chronométrage.
+
+| Fenêtre | ms/champ | champs/s sans limite | Cycles | MHz effectifs | Vitesse réelle | Cadence matérielle (Hz) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 10,184747 | 98,186044 | 3 200 001 | 1,963721 | 196,372148 % | 49,999984 |
+| 2 | 10,293092 | 97,152538 | 3 200 001 | 1,943051 | 194,305137 % | 49,999984 |
+| 3 | 10,201109 | 98,028554 | 3 199 998 | 1,960570 | 196,056985 % | 50,000031 |
+
+SHA256 du dernier champ identique dans les trois fenêtres : `34CEA6CB0AF78C656CB19666B7A0B08AEFB715CC07F64C33542754634AEC2E22`. Le débit tient la cadence du profil dans ce scénario actuel. Le relevé historique de 15,788811 ms/champ provient d'un passage distinct : aucun gain attribué isolément aux deux suppressions de redondance, sans comparaison contrôlée avant/après. Les mesures ne sont ni des FPS présentés par RML, ni des benchmarks isolés de chaque puce, ni un essai de bande en mouvement.
+
+Diagnostic temporaire `System2TimingProbe` exécuté seul, un succès sans échec. Premier passage sans affichage détaillé des mesures, deuxième avec sortie tronquée ; tableau ci-dessus issu du troisième passage complet, pas d'une sélection des meilleurs résultats. Entrées relâchées, bande éjectée, audio drainé et callbacks externes détachés dans finally. Aucun thread, processus, fenêtre ou fichier créé par le diagnostic. Source temporaire supprimée ensuite, sorties du projet régénérées pour ne pas conserver ce test dépendant des ROM externes.
+
+
+## Répétition du clavier — 9 novembre 2026
+
+Le manuel 400,013 permet de répéter le dernier code après relâchement du caractère. L'ancien retour anticipé de SystemKeyboard annulait cette fonction. Le raccordement transmet maintenant REPEAT même sans AKD ; le circuit temporel est transféré intégralement dans Chips/SystemKeyboard/SystemKeyboardRepeat. Le module conserve la traduction hôte et le code retenu. Suppression du retard artificiel d'un tick lors de l'action REPEAT ; valeurs nominales RC antérieures conservées, limites analogiques détaillées dans `docs/chips/Controllers/SystemKeyboardRepeat.md`. Cinq contrôles propres au circuit et 76 contrôles System passent en Debug, zéro échec/ignoré. Les mesures de débit précédentes ne sont pas présentées comme postérieures à cette correction.
+
+
+## Débits séparés des composants — 9 novembre 2026
+
+Trois fenêtres isolées en Debug : 6502 18,189–18,620 Mcycles/s pour INC/JMP avec bus RAM ; HD6845S 20,269–21,430 Mcaractères/s avec les registres COS40 ; SAA5050 5,811–5,827 Mcaractères/s, douze demi-points et F1 complets par caractère ; INS8154 statique 68,968–72,383 Mtransactions/s RAM/ports ; SystemTape 2647–2774 Mcycles PH2 de référence/s avec transitions comparateur et sorties notifiées, en regroupant ses compteurs entre échéances. Aucun pourcentage d'horloge attribué à l'INS8154 dépourvu d'oscillateur. Les tableaux, scénarios précis et limites sont dans les fiches correspondantes sous docs/chips. Ces mesures ne s'additionnent pas et n'incluent pas le coût du câblage, des autres composants ou du framebuffer ; elles ne remplacent pas la mesure machine complète. Diagnostic séquentiel réussi, zéro échec/ignoré, aucun RML ouvert ni build livré.
+
+
+## Bilan de la revue du raccordement System 2 — 9 novembre 2026
+
+Fichiers contrôlés : AcornSystemMachine et ses partiels Bus/Media, SystemKeyboard, SystemVideo et Teletext ; interfaces temporelles 6502, 8154, SAA5050, CRTC et SystemTape. Le profil standard conserve CPU 1 MHz, 8154 statique, VDU40 et carte bande ; ni VIA ni 8271 n'y sont cadencés. Les états internes des circuits restent dans Chips. Les accès RAM et registres sont les transactions de bus demandées par le matériel, pas des sondages pour découvrir des changements. PB7/STB et la lecture du port clavier représentent le même niveau actif bas ; les notifications HSYNC/RA/VSYNC alimentent les entrées du SAA5050. Les niveaux initiaux sont présentés au raccordement et au reset. Le reset chaud CPU n'arrête pas les compteurs de la carte bande.
+
+Corrections de cette reprise : fréquence CPU déclarée fournie au constructeur existant, phase TR6 conservée par SAA5050, retrait de l'accumulation vidéo 1:1 dans la carte, circuit de répétition transféré dans Chips et REPEAT après relâchement corrigé. Les contrôles de cette reprise sont ceux détaillés ci-dessus : 76 tests System, cinq tests du circuit de répétition et les mesures séparées. Les essais BASIC, sauvegarde/relecture bande et interface utilisateur demeurent les preuves datées du 8 novembre, sans être présentés comme réexécutés le 9. Les champs sont toujours transmis séparément avec leur parité. La machine n'a pas de buzzer ajouté : les sons ne sont pas inventés ; l'écoute et les mécanismes bande conservent leurs parcours existants.

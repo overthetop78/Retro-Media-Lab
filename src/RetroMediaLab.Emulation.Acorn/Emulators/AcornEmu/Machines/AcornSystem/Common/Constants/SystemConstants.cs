@@ -4,7 +4,7 @@ internal static class SystemConstants
 {
     internal const int AddressBytes = 65536;
     internal const int CpuCardRamBytes = 1024;
-    internal const int SystemOneClock = 1008000;
+    internal const int SystemOneClock = 1000000;
     internal const int StandardClock = 1000000;
     internal const int FastClock = 2000000;
     internal const int PresentationRate = 50;

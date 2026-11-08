@@ -3,7 +3,7 @@ namespace RetroMediaLab.Emulation.Acorn.Common.Machines.AcornSystem.Constants;
 internal static class SystemModelConstants
 {
     internal const string ResourcePrefix = "Emulation.Acorn.Model.";
-    internal const int SystemOneClock = 1008000;
+    internal const int SystemOneClock = 1000000;
     internal const int StandardClock = 1000000;
     internal const int FastClock = 2000000;
     internal const int CpuRamBytes = 1024;

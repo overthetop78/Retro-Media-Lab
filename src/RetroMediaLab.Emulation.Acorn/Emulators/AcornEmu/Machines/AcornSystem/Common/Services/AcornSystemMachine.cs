@@ -57,7 +57,6 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private long _ticks;
     private long _nextFrame;
     private long _lastFrameTicks;
-    private int _videoPhase;
     private int _viaPhase;
     private int _audioPhase;
     private bool _break;
@@ -240,12 +239,9 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             _viaPhase += C.ViaClock;
             while (_viaPhase >= _clock) { _viaPhase -= _clock; _via.Tick(); }
         }
-        if (_video is not null)
-        {
-            // VDU40 CLK is PH2; VDU80 keeps the fast card's 2 MHz character clock.
-            _videoPhase += VideoClock;
-            while (_videoPhase >= _clock) { _videoPhase -= _clock; _video.TickCharacter(); }
-        }
+        // VDU40 CLK is PH2 (1 MHz); VDU80 receives the fast card's 2 MHz.
+        // Each configured card supplies one character clock per CPU bus period.
+        _video?.TickCharacter();
         _audioPhase += C.AudioSampleRate;
         if (_audioPhase >= _clock)
         {

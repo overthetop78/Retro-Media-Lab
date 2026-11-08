@@ -43,3 +43,20 @@ Correction source seulement, sans test ni build pendant la revue demandée. Aucu
 Relecture du composant, de son contrat et du raccordement System : `_clock`, `_origin`, compteurs, bascules et `NextClockEvent` sont conservés dans `SystemTapeInterface`. Les changements du comparateur et de CASOUT sont reçus par méthodes horodatées ; les sorties et la prochaine échéance sont notifiées à mutation. La carte retient la prochaine échéance, sans refaire le calcul des compteurs ni sonder les sorties. L’avancement groupé conserve chaque transition observable selon les vérifications préexistantes du diviseur 26 et des fronts Q3.
 
 Les identifiants techniques ajoutés après le renommage général ont été corrigés : CassetteInput, CassetteOutput et CassetteOutputChanged deviennent TapeInput, TapeOutput et TapeOutputChanged dans la classe, le contrat, AcornSystemMachine et leurs tests. Aucun alias ni migration ; aucune modification de compteur, de front ou de durée. Groupe SystemTape Debug : **10 réussites, zéro échec/ignoré, 87 ms** ; groupes System et RAM/E/S : **72 réussites, zéro échec/ignoré, 1 s**. Aucun nouveau média physique, passage RML ou gain global mesuré.
+
+
+## Débit isolé System 2 — 9 novembre 2026
+
+Diagnostic temporaire `SystemComponentTimingProbe`, compilation Debug normale, exécuté seul hors RML : trois fenêtres consécutives, sans compilation ni autre test concurrent pendant la mesure. Le montage est synthétique et autonome ; les transactions et activités internes du composant restent exécutées, mais les autres composants et le rendu de la machine sont exclus. Les durées de cette section sont chronométrées par Stopwatch et ne sont pas les durées globales de découverte/exécution xUnit. Aucun gain avant/après ni absence universelle de coût n'est déduit de ce scénario.
+
+Chaque fenêtre avance **50 000 000 périodes PH2 de référence** à 1 MHz. La sortie inverse du comparateur change tous les 208 cycles, produisant un signal carré d'environ 2404 Hz. Chaque changement passe par SetComparatorInput/AdvanceTo ; les transitions de sortie bande et des broches d'entrée sont raccordées à un compteur. Le temps final exact et l'existence de transitions sont contrôlés après mesure. Le transport audio, la numérisation et le logiciel invité ne sont pas inclus.
+
+| Fenêtre | ms pour 50 Mcycles PH2 | Mcycles de référence/s | Rapport au PH2 1 MHz |
+| --- | ---: | ---: | ---: |
+| 1 | 18,888000 | 2647,183397 | 264718,340 % |
+| 2 | 18,642800 | 2682,000558 | 268200,056 % |
+| 3 | 18,027200 | 2773,586580 | 277358,658 % |
+
+Ce débit élevé est celui des compteurs groupés entre échéances observables, pas celui d'une boucle exécutant 50 millions de Tick ni celui d'une capture audio. Aucun front de sortie dû n'est retiré par le diagnostic ; l'équivalence du regroupement reste couverte par les tests fonctionnels déjà consignés.
+
+Passage réussi : un diagnostic séquentiel, zéro échec/ignoré. Le diagnostic ne possède que des objets gérés ; ses callbacks externes sont détachés dans finally. Source temporaire supprimée et projet de tests régénéré après consignation.

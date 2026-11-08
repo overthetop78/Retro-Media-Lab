@@ -1,12 +1,12 @@
 using System.Runtime.InteropServices;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants.SystemVideoConstants;
+using S = RetroMediaLab.Chips.Video.Philips.SAA50xx.SAA5050.Constants.Saa5050Constants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 
 internal sealed partial class SystemVideo
 {
     private int _teletextLineHalfDot;
-    private bool _teletextDotLevel;
     private int _teletextRasterParity = -1;
 
     private void ConfigureTeletextPins()
@@ -25,7 +25,6 @@ internal sealed partial class SystemVideo
     private void ResetTeletextWiring()
     {
         _teletextLineHalfDot = 0;
-        _teletextDotLevel = false;
         _teletextRasterParity = -1;
         ConfigureTeletextPins();
         _teletext?.SetDataEntryWindow(_crtc.VSync);
@@ -51,14 +50,16 @@ internal sealed partial class SystemVideo
         var pixels = MemoryMarshal.Cast<byte, uint>(_drawing.AsSpan());
         var line = _crtc.Scanline;
         var lineAddress = _crtc.MemoryAddress - _crtc.Column;
+        // The chip owns TR6 and its pipeline phase; the packed result retains
+        // the RGB produced after every real half-dot of the 6 MHz input.
+        var samples = chip.ClockHalfDots(C.TeletextHalfDotsPerCharacter);
         for (var halfDot = 0; halfDot < C.TeletextHalfDotsPerCharacter; halfDot++)
         {
-            _teletextDotLevel = !_teletextDotLevel;
-            chip.SetDotClock(_teletextDotLevel);
             var x = ++_teletextLineHalfDot - C.TeletextViewportHalfDots;
             if ((uint)x >= C.Width || (uint)line >= C.Height) continue;
             var cursor = _crtc.CursorForCell(lineAddress + x / C.TeletextCellPixels);
-            pixels[line * C.Width + x] = C.TeletextColours[chip.Rgb ^ (cursor ? C.White : 0)];
+            var rgb = (int)(samples >> (halfDot * S.ColourBits)) & S.ColourMask;
+            pixels[line * C.Width + x] = C.TeletextColours[rgb ^ (cursor ? C.White : 0)];
         }
     }
 }

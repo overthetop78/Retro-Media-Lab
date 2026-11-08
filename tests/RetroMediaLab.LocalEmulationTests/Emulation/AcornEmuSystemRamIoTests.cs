@@ -9,6 +9,22 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuSystemRamIoTests
 {
+    [Theory]
+    [InlineData((int)SystemCpuCard.Keypad6502, 1000000)]
+    [InlineData((int)SystemCpuCard.Standard6502, 1000000)]
+    [InlineData((int)SystemCpuCard.Fast6502A, 2000000)]
+    public void CpuRetainsItsConfiguredPhysicalClock(int cardValue, long frequency)
+    {
+        var card = (SystemCpuCard)cardValue;
+        var board = new AcornSystemMachine(card, new byte[512],
+            card == SystemCpuCard.Fast6502A ? new byte[2048] : [], [], false);
+        var cpu = Assert.IsType<RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services.Cpu6502>(
+            typeof(AcornSystemMachine).GetField("_cpu6502", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(board));
+        Assert.Equal(frequency, board.ProcessorClockHz);
+        Assert.Equal(frequency, cpu.ClockFrequency);
+        Assert.Equal(frequency, cpu.InputClockFrequency);
+    }
+
     [Fact]
     public void SystemFiveDramLinksPreserveUpperBasicRamAndTheIoGap()
     {

@@ -137,7 +137,58 @@ Le clavier ASCII ne reçoit plus d'appel par période quand aucune échéance ne
   - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Acorn/SystemTape/Services/SystemTapeInterface.cs`, `Interfaces/ISystemTapeInterface.cs`, le raccordement `AcornSystemMachine.cs` et `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemTapeTests.cs` : renommer les sorties/entrées techniques `Cassette…` en `Tape…`, sans alias ni migration ; conserver compteurs, échéances et signaux.
   - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemRamIoTests.cs` : remplacer les quatre lectures CassetteOutput restantes par TapeOutput.
   - [x] Modifier ce suivi et les fiches concernées : consigner la revue 6502/8154/SystemTape, le raccordement System 1 et les résultats des contrôles existants après ces corrections.
+  - [x] Corriger la fréquence nominale System 1 établie par le manuel constructeur.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Common/Machines/AcornSystem/Constants/ModelConstants.cs` et `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Constants/SystemConstants.cs` : remplacer 1 008 000 par 1 000 000 Hz, quartz indiqué dans la nomenclature du manuel System 1 archivé ; conserver les résultats historiques datés et documenter cette correction.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemRamIoTests.cs` : vérifier les fréquences nominales CPU System 1/standard/rapide et leur conservation dans le CPU ; exécuter ce groupe existant après ajout de ces trois cas.
+  - [x] Corriger la phase télétexte du raccordement System 2 partagé avec les System 3/4.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/SystemVideo.Teletext.cs` : supprimer la copie de niveau TR6 détenue par le module et utiliser l'avancement de douze demi-points existant du SAA5050, qui conserve sa phase et restitue chaque RGB intermédiaire ; garder seulement les coordonnées de présentation dans le module.
+    - [x] Modifier les résultats générés des tests existants System après la modification du raccordement et consigner le résultat, sans ajouter de nouveau test reproduisant les tests de pipeline déjà présents.
   - [ ] Modifier ce suivi : consigner la revue des composants et raccordements System 2, puis System 3 avec chacun de ses CPU, System 4 et System 5 ; ajouter avant réalisation les corrections établies avec leurs fichiers.
 
 
 System 1 : composants et bus relus (`Cpu6502.Clock.cs`, `.Pins.cs`, `.Interrupts.cs`, `RamIo8154.cs`, `.Ports.cs`, `SystemTapeInterface.cs`, `AcornSystemMachine.cs`, `.Bus.cs`, `SystemHexDisplay.cs`). Le CPU possède cycles, phases et entrées ; SystemTape possède temps, bascules, compteurs et échéance ; l’INS8154 est statique et commandé par les strobes, sans horloge interne fictive. La carte conserve les raccordements et les prochaines échéances notifiées, sans refaire les calculs internes. L’afficheur intègre les durées des sorties sans cadencer le matériel. Correction : fréquence déjà prévue par le profil transmise au constructeur 6502 (valeur déclarée auparavant nulle), et contrat technique SystemTape renommé en Tape. Aucun changement de fréquence réelle, de cycle, de bypass ni d’ordonnanceur commun. Résultats : 10 tests SystemTape Debug, 87 ms ; 72 tests System/RAM-E/S, 1 s ; zéro échec/ignoré. Fiches Mos6502, Ins8154, SystemTape et validation System 1 actualisées. Les performances historiques System 1 restent celles de leur passage, aucune nouvelle mesure globale revendiquée.
+
+
+### Suite ordonnée de la revue et des mesures
+
+- [ ] Terminer la revue System 2, puis System 3 avec ses deux CPU, System 4 et System 5.
+  - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 2/validation.md` : consigner le bilan du câblage 6502/8154/VDU/Tape après la revue de leurs fichiers et les corrections établies.
+  - [ ] Modifier `docs/project/emulations/Acorn/Acorn System/System 3/validation.md` : consigner successivement la revue 6502/8271 puis 6809/VIA, avec les corrections établies ajoutées au suivi avant leur réalisation.
+  - [ ] Modifier `docs/project/emulations/Acorn/Acorn System/System 4/validation.md` : consigner les raccordements vérifiés et leurs différences réelles par rapport au System 3.
+  - [ ] Modifier `docs/project/emulations/Acorn/Acorn System/System 5/validation.md` : consigner ensuite la revue de la carte rapide et du générateur physique, après réalisation des corrections de propriété temporelle définies avant modification.
+
+Correction télétexte du 9 novembre : le niveau TR6 dupliqué dans SystemVideo est supprimé. Le SAA5050 conserve sa phase et restitue les douze RGB successifs par ClockHalfDots ; les coordonnées de présentation restent dans le module. Groupe existant AcornEmuSystemTests/AcornEmuSystemRamIoTests : **75 réussites Debug, zéro échec ni ignoré, environ 1 s**. Ce temps est celui des tests fonctionnels, pas une mesure de débit. Aucun nouveau chronométrage de machine ou gain chiffré revendiqué.
+
+
+- [x] Supprimer le calcul de phase vidéo sans division sur les profils System actuels.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.cs` : retirer `_videoPhase` et appeler directement `TickCharacter` à chaque période CPU ; VDU40 reçoit PH2 à 1 MHz et VDU80 reçoit 2 MHz comme la carte rapide, sans rapport fractionnaire dans les profils existants.
+  - [x] Modifier les sorties générées du groupe de tests System existant : vérifier les champs, parités et raccordements après cette suppression ; consigner les résultats sans les assimiler à une mesure de débit.
+
+
+Avancement VDU du 9 novembre : suppression de `_videoPhase` et de sa boucle dans `AcornSystemMachine.Tick`. Pour les profils configurés, `VideoClock` est toujours égal à `_clock` : PH2/1 MHz sur VDU40, 2 MHz sur VDU80/carte rapide. Un appel direct conserve donc exactement un caractère par période de bus, sans accumulateur ni division artificiels. Les compteurs CRTC et la phase TR6 restent dans leurs composants. Les **75 tests System existants réussissent en Debug, zéro échec ni ignoré, durée 1 s** après cette modification. Aucun gain de débit n'est déduit de cette durée. Compilation des dépendances de tests seulement, sans livraison dans build/Debug ni ouverture de RML.
+
+
+- [x] Mesurer le System 2 actuel hors RML, rendu et drainage audio inclus.
+  - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System2TimingProbe.cs` : charger les firmwares existants COS40/SAA5050, chauffer quarante champs puis chronométrer trois fenêtres de 160 champs ; relever cycles et empreintes hors chronométrage, libérer les entrées, transport et callbacks dans finally.
+  - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 2/validation.md` : consigner les trois relevés, scénario, fréquences et limites de comparaison, après exécution isolée du diagnostic.
+  - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System2TimingProbe.cs` après utilisation et régénérer les sorties du projet sans ce diagnostic externe ; aucun fichier temporaire créé par le diagnostic.
+
+Débit System 2 actuel : trois fenêtres de 160 champs, 10,184747 / 10,293092 / 10,201109 ms par champ, soit 194,305–196,372 % du profil 1 MHz. Rendu et drainage audio inclus, COS40 au moniteur ; tableau complet et limites dans la fiche System 2. Ce passage ne clôture pas la revue des autres composants ni celle des autres machines.
+
+Nettoyage du diagnostic terminé : source supprimée, projet de tests régénéré sans dépendances, code 0 (quatre avertissements existants, aucune erreur). Aucune livraison de l’application effectuée.
+
+
+- [x] Terminer le raccordement du circuit de répétition clavier System 2 avant la suite.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/SystemKeyboard.cs` selon le suivi `docs/tasks/chips/SystemKeyboardRepeat/implementation.md` : retirer la gestion temporelle matérielle du module et raccorder AKD/REPEAT même après relâchement du dernier caractère ; vérifier le code retenu et le strobe avec le groupe System existant.
+
+Circuit de répétition déplacé dans Chips, REPEAT sans AKD raccordé : 5 tests propres et 76 tests System réussis. Fiche `docs/chips/Controllers/SystemKeyboardRepeat.md`, valeurs nominales RC et portée explicites. Revue globale System 2 et mesures isolées des autres puces restent ouvertes.
+
+
+- [x] Vérifier le débit séparé des composants System 2 sans modifier leur réalisation.
+  - [x] Créer `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemComponentTimingProbe.cs` : trois fenêtres isolées pour le 6502 avec bus mémoire, le CRTC programmé comme COS40, le SAA5050 avec tous ses demi-points, l'INS8154 en transactions RAM/ports et SystemTape en réception active ; effectuer les initialisations hors chronométrage et détacher les callbacks possédés dans finally. Présenter transactions/s pour le composant statique, cycles/s et rapport nominal pour les composants cadencés.
+  - [x] Modifier les fiches existantes `docs/chips/CPU/Mos6502.md`, `docs/chips/Video/Crtc6845.md`, `docs/chips/Video/Saa5050.md`, `docs/chips/IO/Ins8154.md`, `docs/chips/Controllers/SystemTape.md` et la fiche System 2 : consigner les relevés propres à chaque scénario, leurs unités et limites, après exécution du diagnostic seul.
+  - [x] Supprimer `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemComponentTimingProbe.cs` et régénérer le projet de tests sans ce diagnostic ; il ne crée ni fichier, ni fenêtre, ni thread.
+
+Débits séparés obtenus et consignés dans les cinq fiches : 6502 18,2–18,6 Mcycles/s ; HD6845S 20,3–21,4 Mcaractères/s ; SAA5050 5,81–5,83 Mcaractères/s ; INS8154 69,0–72,4 Mtransactions/s ; SystemTape 2647–2774 Mcycles PH2 de référence/s. Trois fenêtres par composant, scénarios isolés, pas de gain avant/après revendiqué.
+
+Diagnostic de débit supprimé ; projet Chips.Tests régénéré sans dépendances, code 0, un avertissement xUnit préexistant. Revue du câblage System 2 consignée : aucune nouvelle réécriture des puces déjà validées ; corrections temporelles ciblées et vérifiées. Suite de la revue : System 3 en 6502, puis 6809, puis System 4 ; générateur System 5 toujours non raccordé.
