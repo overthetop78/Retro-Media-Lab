@@ -1,4 +1,5 @@
 using C = RetroMediaLab.Chips.Controllers.Acorn.SystemTape.Constants.SystemTapeConstants;
+using RetroMediaLab.Chips.Controllers.Acorn.SystemTape.Interfaces;
 
 namespace RetroMediaLab.Chips.Controllers.Acorn.SystemTape.Services;
 
@@ -8,7 +9,7 @@ namespace RetroMediaLab.Chips.Controllers.Acorn.SystemTape.Services;
 /// On a comparator rising edge IC4 captures Q7 before the differentiated reset clears IC6.
 /// IC2 divides IC1 by 16/32, selected by CASOUT latched on IC1's reset pulse.
 /// RC pulse widths and analogue amplifier gain are outside this digital interface.</remarks>
-public sealed class SystemTapeInterface
+public sealed class SystemTapeInterface : ISystemTapeInterface
 {
     private long _origin;
     private long _clock;

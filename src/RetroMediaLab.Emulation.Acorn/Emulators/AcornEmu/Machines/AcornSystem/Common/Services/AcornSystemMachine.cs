@@ -5,6 +5,7 @@ using RetroMediaLab.Chips.Controllers.Acorn.SystemTape.Services;
 using RetroMediaLab.Chips.CPU.Motorola.M6800.Chip6809.Services;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Enums;
@@ -41,6 +42,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private long _nextTapeClock = long.MaxValue;
     private byte _tapeInputPins = byte.MaxValue;
     private bool _tapeOutputHigh;
+    private bool _tapeCb2Driven;
     private readonly SystemVideo? _video;
     private readonly SystemHexDisplay? _display;
     private readonly Cpu6502? _cpu6502;
@@ -77,7 +79,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             Array.Fill(_ramMapped, true, start, bytes);
         }
         _keyboard = new SystemKeyboard(_clock);
-        if (card is SystemCpuCard.Keypad6502 or SystemCpuCard.Standard6502) _tapeInterface = new SystemTapeInterface(_clock);
+        if (card is SystemCpuCard.Keypad6502 or SystemCpuCard.Standard6502 or SystemCpuCard.Motorola6809)
+            _tapeInterface = new SystemTapeInterface(_clock);
         _tape = new AnalogTape(_clock, _tapeInterface is null ? TapeSignalMode.FrequencyShiftKeying : TapeSignalMode.DirectWaveform);
         if (_tapeInterface is not null)
         {
@@ -111,8 +114,17 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             _ramIo.PortAPinsChanged = value => SetTapeOutput((value & KeyboardPins.TapeOutputBit) != 0);
             if (card == SystemCpuCard.Motorola6809)
             {
-                _via!.ReadPortB = () => (byte)(_keyboard.Data | (_tape.InputBit ? KeyboardPins.TapeInputBit : 0));
+                _via!.ReadPortB = () => (byte)(_keyboard.Data | (_tapeInputPins & KeyboardPins.TapeInputBit));
                 _keyboard.StrobeChanged = _via.SetCb1;
+                _via.SetCb1(!_keyboard.Strobe);
+                _via.Cb2PinsChanged = level => { if (_tapeCb2Driven) SetTapeOutput(level); };
+                _via.ControlOutputsChanged = outputs =>
+                {
+                    var driven = (outputs & ViaControlOutputs.Cb2) != 0;
+                    if (driven == _tapeCb2Driven) return;
+                    _tapeCb2Driven = driven;
+                    SetTapeOutput(driven ? _via.Cb2 : true);
+                };
             }
             else if (card == SystemCpuCard.Fast6502A) _via!.ReadPortA = () => _keyboard.DataWithStrobe;
         }
@@ -121,7 +133,15 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             _fdc = new Intel8271(_clock);
             _fdcDrive = new(_fdc, index => _disks[index], _clock);
         }
-        if (card == SystemCpuCard.Motorola6809) _cpu6809 = new Cpu6809(this);
+        if (card == SystemCpuCard.Motorola6809)
+        {
+            _cpu6809 = new Cpu6809(this);
+            _cpu6809.SetIrq(_via?.Irq == true);
+            _cpu6809.SetNmi(_fdc?.Nmi == true);
+            _cpu6809.SetFirq(false);
+            if (_via is not null) _via.IrqChanged = _cpu6809.SetIrq;
+            if (_fdc is not null) _fdc.NmiChanged = _cpu6809.SetNmi;
+        }
         else
         {
             _cpu6502 = new Cpu6502(this);
@@ -159,6 +179,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             }
         }
         _via?.Reset();
+        if (_card == SystemCpuCard.Motorola6809 && !_tapeCb2Driven) SetTapeOutput(true);
         _display?.Reset(_ticks);
         _ramIo.Reset();
         if (cold || _tapeInterface is null) _tape.ResetHardware();

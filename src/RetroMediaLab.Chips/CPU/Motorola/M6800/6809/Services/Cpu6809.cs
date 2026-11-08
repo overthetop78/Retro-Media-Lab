@@ -19,7 +19,13 @@ public sealed partial class Cpu6809(ICpuBus bus)
     public ushort S { get; private set; }
     public ushort PC { get; private set; }
     public long Cycles { get; private set; }
-    public Func<bool>? Firq { get; set; }
+    private bool _irqInput;
+    private bool _firqInput;
+    private bool _nmiInput;
+    /// <summary>Retained logical-active IRQ level; sampled by the processor's interrupt phase.</summary>
+    public void SetIrq(bool active) => _irqInput = active;
+    public void SetFirq(bool active) => _firqInput = active;
+    public void SetNmi(bool active) => _nmiInput = active;
     private bool _nmiLevel;
     private bool _nmiPending;
     private bool _stackInitialized;
@@ -37,7 +43,7 @@ public sealed partial class Cpu6809(ICpuBus bus)
         CC |= C.IrqMask | C.FirqMask;
         DP = 0;
         _nmiPending = _stackInitialized = _sync = _cwai = _freeRun = false;
-        _nmiLevel = bus.Nmi;
+        _nmiLevel = _nmiInput;
         _pendingPage = 0;
         _immediateStoreFlags = C.Negative;
         var start = Cycles;
@@ -72,7 +78,7 @@ public sealed partial class Cpu6809(ICpuBus bus)
     {
         bus.Tick();
         Cycles++;
-        var nmi = bus.Nmi;
+        var nmi = _nmiInput;
         if (nmi && !_nmiLevel) _nmiPending = true;
         _nmiLevel = nmi;
     }

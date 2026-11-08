@@ -7,6 +7,19 @@ namespace RetroMediaLab.Chips.Tests.CPU.Motorola.M6800.Chip6809;
 public sealed class Chip6809Tests
 {
     [Fact]
+    public void InterruptPinsAreReceivedWithoutQueryingTheBusProviders()
+    {
+        var (cpu, bus) = Start(Enumerable.Repeat((byte)0x12, 32).ToArray());
+        for (var index = 0; index < 16; index++) cpu.Step();
+        bus.Irq = true;
+        cpu.Step();
+        bus.Irq = false;
+        bus.Nmi = true;
+        cpu.Step();
+        Assert.Equal(0, bus.InterruptReads);
+    }
+
+    [Fact]
     public void NmiBeforeStackInitializationIsLatchedUntilLdsCompletes()
     {
         var (cpu, bus) = Start(0x12, 0x10, 0xce, 0x30, 0, 0x12);
@@ -48,10 +61,10 @@ public sealed class Chip6809Tests
         bus.Accesses.Clear(); bus.Ticks = 0;
         var before = cpu.Cycles;
         cpu.Step();
-        Assert.Equal(7, cpu.Cycles - before);
+        Assert.Equal(4, cpu.Cycles - before);
         Assert.Equal(0x2ff4, cpu.S);
         Assert.DoesNotContain(bus.Accesses, access => access.Write);
-        Assert.Equal(new[] { (5, 0xfff8), (6, 0xfff9) }, bus.Accesses.Select(a => (a.Tick, (int)a.Address)));
+        Assert.Equal(new[] { (2, 0xfff8), (3, 0xfff9) }, bus.Accesses.Select(a => (a.Tick, (int)a.Address)));
     }
 
     [Fact]
@@ -169,7 +182,7 @@ public sealed class Chip6809Tests
         cpu.Step();
         bus.Accesses.Clear(); bus.Ticks = 0;
         cpu.Step();
-        Assert.Equal(20, bus.Ticks);
+        Assert.Equal(16, bus.Ticks);
         Assert.Equal((3, (ushort)0x1006, false), bus.Accesses[2]);
         Assert.Equal(5, bus.Accesses.First(a => a.Write).Tick);
         Assert.Equal(16, bus.Accesses.Last(a => a.Write).Tick);
@@ -445,6 +458,8 @@ public sealed class Chip6809Tests
         program.CopyTo(bus.Memory, 0x1000);
         bus.Memory[0xfffe] = 0x10;
         var cpu = new Cpu6809(bus);
+        bus.IrqChanged = cpu.SetIrq;
+        bus.NmiChanged = cpu.SetNmi;
         cpu.Reset();
         bus.Accesses.Clear(); bus.Ticks = 0;
         return (cpu, bus);
@@ -455,8 +470,13 @@ public sealed class Chip6809Tests
         internal byte[] Memory { get; } = new byte[65536];
         internal int Ticks { get; set; }
         internal List<(int Tick, ushort Address, bool Write)> Accesses { get; } = [];
-        public bool Irq { get; set; }
-        public bool Nmi { get; set; }
+        private bool _irq;
+        private bool _nmi;
+        internal int InterruptReads;
+        internal Action<bool>? IrqChanged;
+        internal Action<bool>? NmiChanged;
+        public bool Irq { get { InterruptReads++; return _irq; } set { _irq = value; IrqChanged?.Invoke(value); } }
+        public bool Nmi { get { InterruptReads++; return _nmi; } set { _nmi = value; NmiChanged?.Invoke(value); } }
         public byte Read(ushort address) { Accesses.Add((Ticks, address, false)); return Memory[address]; }
         public void Write(ushort address, byte value) { Accesses.Add((Ticks, address, true)); Memory[address] = value; }
         public void Tick() { Ticks++; }

@@ -6,8 +6,8 @@ public sealed partial class Cpu6809
 {
     private bool ServiceInterrupt()
     {
-        var fast = Firq?.Invoke() == true;
-        if (bus.Irq || fast || _nmiPending) _sync = false;
+        var fast = _firqInput;
+        if (_irqInput || fast || _nmiPending) _sync = false;
         if (_nmiPending && _stackInitialized)
         {
             _nmiPending = false;
@@ -15,7 +15,7 @@ public sealed partial class Cpu6809
             return true;
         }
         if (fast && !IsSet(C.FirqMask)) { Interrupt(C.FirqVector, true, C.IrqMask | C.FirqMask); return true; }
-        if (bus.Irq && !IsSet(C.IrqMask)) { Interrupt(C.IrqVector, false, C.IrqMask); return true; }
+        if (_irqInput && !IsSet(C.IrqMask)) { Interrupt(C.IrqVector, false, C.IrqMask); return true; }
         return false;
     }
 
@@ -31,12 +31,12 @@ public sealed partial class Cpu6809
             Flag(C.EntireState, !fast);
             PushRegisters(fast ? (byte)0x81 : byte.MaxValue, false);
         }
-        else Idle(3);
+
         _cwai = _sync = false;
         CC |= masks;
         Idle();
         PC = ReadWord(vector);
-        Pad(start, waiting ? 7 : fast ? 10 : 19);
+        Pad(start, waiting ? 4 : fast ? 10 : 19);
     }
 
     private int SoftwareInterrupt(int page)

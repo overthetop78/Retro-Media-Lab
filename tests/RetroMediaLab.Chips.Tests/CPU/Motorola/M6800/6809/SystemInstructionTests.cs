@@ -43,18 +43,14 @@ public sealed class SystemInstructionTests
         bus.Memory[0x2000] = 0x86;
         bus.Memory[0x2001] = 0x55;
         bus.Memory[0x2002] = 0x3b;
-        var active = false;
-        var cpu = new Cpu6809(bus)
-        {
-            Firq = () => active
-        };
+        var cpu = new Cpu6809(bus);
         cpu.Reset();
         cpu.Step();
         cpu.Step();
-        active = true;
+        cpu.SetFirq(true);
         cpu.Step();
         Assert.Equal(0x2ffd, cpu.S);
-        active = false;
+        cpu.SetFirq(false);
         cpu.Step();
         cpu.Step();
         Assert.Equal(0x55, cpu.A);

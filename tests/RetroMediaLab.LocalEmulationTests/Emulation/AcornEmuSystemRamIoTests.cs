@@ -8,6 +8,43 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuSystemRamIoTests
 {
+    [Fact]
+    public void MotorolaKeyboardFirstPressProducesItsPhysicalCb1Interrupt()
+    {
+        var board = new AcornSystemMachine(SystemCpuCard.Motorola6809, new byte[2048], new byte[960], [], false);
+        try
+        {
+            board.Write(0x098e, 0x90);
+            board.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.R, EmulationKey.LeftShift } });
+            Assert.True(board.Irq);
+            Assert.Equal((byte)'R', board.Read(0x0980) & 0x7f);
+            Assert.False(board.Irq);
+        }
+        finally { board.SetInput(EmulationInputSnapshot.Empty); board.Reset(true); }
+    }
+
+    [Fact]
+    public void MotorolaCb2DrivesTheCassetteBoardFromItsActualPinOutput()
+    {
+        var board = new AcornSystemMachine(SystemCpuCard.Motorola6809, new byte[2048], new byte[960], [], false);
+        try
+        {
+            var tape = (RetroMediaLab.Chips.Controllers.Acorn.SystemTape.Services.SystemTapeInterface)typeof(AcornSystemMachine)
+                .GetField("_tapeInterface", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(board)!;
+            var ticks = (long)typeof(AcornSystemMachine).GetField("_ticks", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(board)!;
+            board.Write(0x098c, 0xe0);
+            for (; ticks < 208; ticks++) board.Tick();
+            Assert.True(tape.CassetteOutput);
+            board.Write(0x098c, 0xc0);
+            Assert.False(tape.CassetteOutput);
+            for (; ticks < 623; ticks++) board.Tick();
+            Assert.False(tape.CassetteOutput);
+            board.Tick();
+            Assert.True(tape.CassetteOutput);
+        }
+        finally { board.Reset(true); }
+    }
+
     [Theory]
     [InlineData(EmulationKey.Numpad0, 0, 0x18)]
     [InlineData(EmulationKey.Numpad1, 1, 0x19)]

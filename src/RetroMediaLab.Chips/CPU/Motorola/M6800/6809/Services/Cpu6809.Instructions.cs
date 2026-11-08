@@ -58,7 +58,8 @@ public sealed partial class Cpu6809
             case 0x3b: return ReturnInterrupt();
             case 0x3c:
                 CC &= Fetch(); Read(PC); Idle(); Flag(C.EntireState, true);
-                PushRegisters(byte.MaxValue, false); _cwai = true; return 20;
+                // CWAI minimum 20 includes the four vector cycles after waiting.
+                PushRegisters(byte.MaxValue, false); _cwai = true; return 16;
             case 0x3d:
                 Read(PC); D = (ushort)(A * B); Flag(C.Zero, D == 0); Flag(C.Carry, (B & C.ByteSign) != 0); return 11;
             default: throw Illegal(opcode);

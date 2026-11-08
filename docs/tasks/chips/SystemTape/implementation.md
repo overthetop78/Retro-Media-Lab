@@ -8,3 +8,7 @@
     - [x] Créer `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemTapeTests.cs` avec les attentes de schéma indépendantes du code : diviseur 26, sélection /16 ou /32, fronts réception/Q7, reset, événements et avancement groupé.
     - [x] Modifier les bancs temporaires sous `artifacts/.tmp-system2/` pour SAVE/LOAD COS et la régression du moniteur System 1, avec ROM externes et nettoyage en finally ; conserver captures et résultats sous TestsMachines et TestsChips.
     - [x] Supprimer les seuls bancs externes et leurs sorties de compilation après consignation et vérification des chemins ; conserver les preuves utiles ignorées par Git.
+  - [x] Compléter le contrat public imposé aux composants de la bibliothèque.
+    - [x] Créer `src/RetroMediaLab.Chips/Controllers/Acorn/SystemTape/Interfaces/ISystemTapeInterface.cs` avec les horloges, entrées, sorties et notifications publiques existantes, puis modifier SystemTapeInterface.cs pour l'implémenter ; vérifier les tests d'architecture communs.
+
+Contrat SystemTape vérifié : les tests globaux signalent encore 14 classes ACB-4000/SCSI inchangées sans interface dédiée ; aucun défaut SystemTape restant dans ce contrôle.

@@ -15,9 +15,6 @@ internal static class SystemConstants
     internal const int ViaStart = 0x0e00;
     internal const int Via6809Start = 0x0980;
     internal const int ViaRegisterMask = 0x0f;
-    internal const int ViaPeripheralControl = 12;
-    internal const int ViaCb2ControlMask = 0xe0;
-    internal const int ViaCb2High = 0xe0;
     internal const int SystemOneRomStart = 0xf800;
     internal const int SystemOneRomBytes = 512;
     internal const int StandardRomStart = 0xf000;

@@ -26,7 +26,9 @@ public interface ICpu6809
 
     long Cycles { get; }
 
-    Func<bool>? Firq { get; set; }
+    void SetIrq(bool active);
+    void SetNmi(bool active);
+    void SetFirq(bool active);
 
     void Reset();
     void Step();
