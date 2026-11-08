@@ -45,6 +45,7 @@ public static class MediaImageWriterIds
     public const string TapeAtariCas = "tape-atari-cas";
     public const string TapeTzx = "tape-tzx";
     public const string TapeSpectrumTap = "tape-spectrum-tap";
+    public const string TapeAtomTap = "tape-atom-tap";
     public const string TapeCommodoreTap = "tape-commodore-tap";
     public const string TapeMsxCas = "tape-msx-cas";
     public const string TapeUef = "tape-uef";

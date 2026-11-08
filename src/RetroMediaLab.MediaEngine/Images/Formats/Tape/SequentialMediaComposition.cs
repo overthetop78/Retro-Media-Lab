@@ -36,7 +36,8 @@ public sealed class SequentialMediaComposition
             new SpectrumTapeDecoder(),
             new CommodoreTapeDecoder(),
             new MsxTapeDecoder(),
-            new AcornTapeDecoder()
+            new AcornTapeDecoder(),
+            new AtomTapeDecoder()
         ]),
         new SequentialEncoderRegistry(
         [
@@ -45,6 +46,7 @@ public sealed class SequentialMediaComposition
             new SpectrumTapeEncoder(),
             new CommodoreTapeEncoder(),
             new MsxTapeEncoder(),
-            new AcornTapeEncoder()
+            new AcornTapeEncoder(),
+            new AtomTapeEncoder()
         ]));
 }

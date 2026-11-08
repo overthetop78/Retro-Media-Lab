@@ -49,6 +49,7 @@ using RetroMediaLab.MediaEngine.Images.Formats.Tape.CommodoreTap;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.MsxCas;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.Simh;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.SpectrumTap;
+using RetroMediaLab.MediaEngine.Images.Formats.Tape.AtomTap;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.Tzx;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.Uef;
 using RetroMediaLab.MediaEngine.Images.Formats.Tape.Voc;
@@ -217,6 +218,7 @@ public sealed class MediaWritingComposition
             tapeAtariCas,
             tapeTzx,
             tapeSpectrumTap,
+            new AtomTapWriter(),
             tapeCommodoreTap,
             tapeMsxCas,
             tapeUef,

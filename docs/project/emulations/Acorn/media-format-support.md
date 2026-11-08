@@ -22,7 +22,7 @@ Le sélecteur du lecteur d'émulation reprend `EmulationMediaDevice.AcceptedExte
 | UEF | `UefReader`, enregistré | `UefWriter`, enregistré ; enregistrement de signal par `TapeSignalFunctions` | `AcornTapeDecoder` pour les blocs BBC compatibles | La conformité de toutes les variantes Atom/UEF ne se déduit pas du décodeur BBC. Pas de nouveau passage cassette dans cet audit. |
 | CSW | `CswReader`, enregistré | `CswWriter`, enregistré ; enregistrement de signal commun | Décodeur Acorn sur le signal compatible | Conteneur d'impulsions, pas une liste universelle de fichiers BBC. Pas de nouveau passage réel ici. |
 | WAV | `WavTapeReader`, enregistré | `WavTapeWriter`, enregistré ; enregistrement de signal commun | Décodeur Acorn FSK lorsque le signal contient ce protocole | Un WAV quelconque n'est pas nécessairement une bande Acorn. Pas de nouveau passage réel ici. |
-| TAP Atom | `AtomTapReader`, enregistré ; nom/adresses/longueur Atom validés puis génération des blocs | Aucun écrivain TAP Atom enregistré ; les writers TAP Spectrum/Commodore ne le remplacent pas | Aucun décodeur Atom TAP enregistré dans `SequentialMediaComposition` | Le chargement dans Atom via le signal est présent ; l'extraction des fichiers et l'écriture native Atom TAP ne sont pas prouvées par ce trajet. |
+| TAP Atom | `AtomTapReader`, enregistré ; nom/adresses/longueur Atom validés puis génération des blocs | `AtomTapWriter`, enregistré | `AtomTapeDecoder`, enregistré dans `SequentialMediaComposition` | Extraction, encodage et écriture native vérifiés par les sept cas autonomes ci-dessous. |
 
 La visualisation et l'écriture sur un support physique restent subordonnées aux représentations réellement fournies et à la géométrie cible. La conversion vers SCP/HFE ne signifie pas qu'un écrivain natif HXCStream existe.
 
@@ -36,4 +36,12 @@ Tests autonomes conservés : `AcornDosPlus800Tests` et `AcornDosPlusFileSystemTe
 
 Diagnostic externe temporaire : lecture seule des six images dans `F:\Retro`, par `MediaRecognitionComposition.ReadingService`, vérification des destinations du registre d'écriture, encodabilité physique et exploration par `SectorFileSystemRegistry`. Les six cas passent (875 ms). Les fichiers vérifiés sont DOSBOOT sur les trois images de démarrage, GEM.BAT sur GEM2, DOCUMENT sur GEM3 et GEMSETUP.APP sur GEM4. Deux noms attendus initialement erronés dans le diagnostic ont été corrigés d'après leurs répertoires réels ; aucune correction matérielle n'en a été déduite. Le diagnostic `AcornMediaActualImagesTests.cs` a ensuite été supprimé, car il dépend des images externes. Aucun média de l'utilisateur n'a été modifié.
 
-Les images restent sous `F:\Retro`, comme demandé. Les références techniques restent dans `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/`, dont `m512tech09.htm` pour DOS Plus. L'inventaire JFD/HXCStream/TAP ci-dessus expose des fonctions encore absentes ; il ne constitue pas leur implémentation.
+Les images restent sous `F:\Retro`, comme demandé. Les références techniques restent dans `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/`, dont `m512tech09.htm` pour DOS Plus. Les fonctions JFD/HXCStream absentes restent à implémenter.
+
+## TAP Atom — écriture et exploration natives
+
+`AtomTapCodec` reconstitue les fichiers depuis les blocs série existants : synchronisation, nom, continuation, numéros, adresses et somme de contrôle. Le décodeur produit un fichier nommé complet ; le lecteur de systèmes de fichiers séquentiels commun l'expose à l'explorateur. `AtomTapeEncoder` reconstruit les segments, `AtomTapWriter` écrit les en-têtes natifs de 22 octets et les données via le mécanisme atomique existant. Les données incomplètes ou invalides restent signalées et sont refusées en écriture ; aucune injection RAM ni assimilation à TAP Spectrum n'est ajoutée.
+
+Références : [Atomulator, format ATM](https://github.com/hoglet67/Atomulator/blob/master/docs/atommmc2.txt), [AtomTapeUtils](https://github.com/joakimoh/AtomTapeUtils). Nom de 16 octets, adresses et longueur sur 16 bits little-endian ; un TAP rassemble successivement ces fichiers.
+
+`AtomTapMediaTests` : sept cas Debug réussis, 198 ms. Tailles 0, 1, 256, 257 et 65535 octets ; deux fichiers homonymes restent distincts ; extraction par `SequentialContentDecoderAdapter`, adresses conservées, aller-retour identique, checksum invalide et troncature refusés. Aucun nouveau test dans la fenêtre RML et aucune mesure de cadence machine ne sont revendiqués pour ce bloc.
