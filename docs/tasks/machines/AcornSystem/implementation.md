@@ -38,7 +38,7 @@
 ABC, Communicator, stations Unix et Pocket Book exclus de la demande actuelle. Le document Google lié exige une authentification actuellement indisponible ; la liste explicite de l’objectif reste conservée ici et sera confrontée au document dès que son accès sera possible.
 
 
-INS8154 : ports statiques, directions, accès par bit et RAM intégrés. Les cartes System actuellement raccordées utilisent ces ports ; les modes strobed supplémentaires ne sont pas proposés comme émulés.
+INS8154 : l'ancien constat limité aux ports statiques est périmé. Le composant partagé `Chips/IO/NationalSemiconductor/INS815x/8154` couvre également les modes strobed, les handshakes, les masques trois états et INTR ; voir [la fiche complète et ses preuves](../../../chips/IO/Ins8154.md). Les cartes System utilisent les modes programmés par leur logiciel et le câblage réel, sans raccorder arbitrairement INTR aux CPU. Les reprises du 8 novembre sont suivies par modèle dans `system1-validation.md` à `system5-validation.md`.
 
 
 VDU : mémoires à 0400 (40 colonnes) ou 1000/F000 (80 colonnes), CRTC à 0800 ou 1840/E840 avec miroirs de la carte 80 colonnes. Tampon 480 × 250, caractères 12/6 pixels, curseur fourni par le CRTC partagé. Sources exactes : `src/devices/bus/acorn/system/vdu40.cpp` et `vdu80.cpp` de MAME ; port 8154 contrôlé contre la fiche National Semiconductor : https://www.theoddys.com/acorn/semiconductor_datasheets/INS8154%20National%20Semiconductor.pdf . Raccordement terminé ; entrelacement vérifié par ROM synthétique puis captures des ROM réelles.

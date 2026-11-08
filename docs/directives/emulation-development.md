@@ -38,6 +38,7 @@
 - La création d’une disquette vierge et la création d’une bande depuis REC proposent explicitement « Créer et monter », « Créer », « Fermer » et « Annuler ». Créer seul ne monte pas le média ; le montage suit le parcours commun existant.
 
 - Les bruitages mécaniques doivent reproduire les lecteurs réels identifiés, pour toutes leurs opérations pertinentes. Des tonalités synthétiques génériques ne constituent pas des profils fidèles. Documenter les références et la provenance des enregistrements.
+- Pour le son de la machine, reproduire les bips et signaux électroniques issus des circuits et du buzzer ou haut-parleur réellement montés, à leurs instants matériels. En l'absence de dispositif sonore, conserver le silence : ne pas inventer un bip de démarrage. Aucun bruit de ventilateur ou de boîtier n'est demandé. Conserver séparément ces sons et les bruitages mécaniques des lecteurs.
 - Fournir des sons à un niveau suffisant, sans saturation, avec un réglage permettant de réduire leur volume. Après remplacement complet des sons, vider les anciens exports de `artifacts/audio-preview` et régénérer tous les WAV correspondants.
 
 - La couverture des sons mécaniques concerne les machines existantes de tous les modules, y compris les variantes de lecteurs d’une même machine. Partir des catalogues matériels du dépôt.
