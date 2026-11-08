@@ -8,3 +8,7 @@ Relevé Debug sans RML : 15,520111 ms/champ, 64,433 champs/s sans limite, 1,2886
 
 Captures de progression et journaux : artifacts/TestsMachines/Acorn/Acorn System 4/20261108-system4-*.bmp et *.log. Ce sont des sorties du banc natif ; essai RML regroupé avec System 2/3/5 après livraison.
 CAT1 vérifié sur le second port, au moins 512 octets relus et PROBE présent. Le passage complémentaire avec compilation concurrente mesurait 23,785812 ms/champ ; cette mesure chargée ne remplace pas le relevé initial sans concurrence.
+
+## Vérification dans RML Debug
+
+Le 8 novembre, firmware DOS System 3 et saa5050 conservés ; les deux lecteurs sont réglés sur ss80, vitesse 100 %. Montage de `F:/Retro/Acorn System/System BASIC.ssd` dans Floppy0, `CAT` correct puis `BASIC` chargé et exécuté depuis la disquette. `PRINT 12+34` donne 46 ; `PRINT 7*6` saisi au pavé numérique, avec Entrée étendue, donne 42. Éjection de Floppy0 puis montage du même fichier dans Floppy1, sans extinction : `*CAT1` affiche le catalogue et « drive 1 ». Cadence affichée pendant ces essais : environ 49,9–50,1 FPS, 49,9–50,1 Hz, 1,00 MHz et 100 %. Captures `20261108-rml-basic-keypad.png` et `20261108-rml-second-drive-catalog.png` dans le dossier TestsMachines de System 4. Aucun changement de code supplémentaire nécessaire ; les écritures SAVE/LOAD restent couvertes par le contrôle natif ci-dessus, sans réécrire l'image de référence pendant l'essai UI.
