@@ -39,7 +39,8 @@ public static class Interrupt80186Constants
     public const ushort DmaRequests = 0x000c;
     public const ushort SourceBits = 0x00ff;
     public const ushort TimerStatusBits = 0x0007;
-    public const ushort WritableStatus = 0x8007;
+    public const ushort DmaHalt = 0x8000;
+    public const ushort WritableStatus = DmaHalt | TimerStatusBits;
     public const byte VectorBaseMask = 0xf8;
     public const int EoiVectorMask = 0x1f;
     public const byte Timer0Vector = 0x08;

@@ -20,6 +20,14 @@ internal static class BlankSectorImageFactory
 {
     public static SectorImage Create(string formatId)
     {
+        if (formatId == DiskImageFormatIds.AcornDosPlus800)
+        {
+            var bytes = new byte[AcornAdfGeometry.Capacity];
+            // Pas de secteur d'amorçage : les entrées FAT réservées identifient le format à la réouverture.
+            bytes[0] = 0xfd;
+            bytes[1] = bytes[2] = 0xff;
+            return RegularSectorImageBuilder.Create(bytes, AcornAdfGeometry.DosPlus800, CancellationToken.None);
+        }
         if (formatId == DiskImageFormatIds.AcornAdfs800)
         {
             var bytes = new byte[AcornAdfGeometry.Capacity];

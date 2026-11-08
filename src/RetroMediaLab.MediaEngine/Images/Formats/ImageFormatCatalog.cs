@@ -271,6 +271,7 @@ public sealed class BuiltInImageFormatCatalog : IImageFormatCatalog
                 F("acorn.adfs.800", "Acorn", "Acorn — ADFS · 800 KiB", [E(".adf", "Extension.adf.acorn", "Acorn Disk File", true)], true, "ACORN-800", FloppyFormFactor.ThreeAndHalfInch, true, true, ".scp", ".adf", ".hfe"),
                 FloppyDensity.DoubleDensity
             ),
+            new(DiskImageFormatIds.AcornDosPlus800, "Acorn / BBC Master 512", "Acorn — DOS Plus · 800 KiB", [new(".img", "IMG", true), new(".800", "800")], true, Set(".img", ".800", ".scp", ".hfe"), "ACORN-DOS-800", FloppyFormFactor.FiveAndQuarterInch, true, true, FloppyDensity.DoubleDensity),
             new("acorn.adfs.160", "Acorn / BBC Micro", "ADFS S — 160 KiB", [new(".ads", "ADS", true), new(".adf", "ADF")], true, Set(".ads", ".adf", ".hfe"), "BBC-ADFS-S", FloppyFormFactor.FiveAndQuarterInch, true, true, FloppyDensity.DoubleDensity),
             new("acorn.adfs.320", "Acorn / BBC Micro", "ADFS M — 320 KiB", [new(".adm", "ADM", true), new(".adf", "ADF")], true, Set(".adm", ".adf", ".hfe"), "BBC-ADFS-M", FloppyFormFactor.FiveAndQuarterInch, true, true, FloppyDensity.DoubleDensity),
             new("acorn.adfs.640", "Acorn / BBC Micro", "ADFS L — 640 KiB", [new(".adl", "ADL", true), new(".adf", "ADF")], true, Set(".adl", ".adf", ".hfe"), "BBC-ADFS-L", FloppyFormFactor.FiveAndQuarterInch, true, true, FloppyDensity.DoubleDensity),

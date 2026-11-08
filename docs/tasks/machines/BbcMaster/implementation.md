@@ -47,6 +47,8 @@
 
 ## Résultats vérifiés
 
+**Reprise du 8 novembre 2026 : les résultats ci-dessous sont historiques, pas une validation du code courant.** Avant correction, les démarrages DOS Plus 1.2 et 2.1 ont échoué ; voir [configuration et preuves](../../../project/emulations/Acorn/BBC%20Master/Master%20512/board-validation.md). Le décodage miroir est toujours présent. Une régression distincte de RETF imm16, introduite dans `59702c180` après le premier bloc Master, a été identifiée et corrigée : la seule correction permet à DOS Plus 2.1 de retrouver A> dans le banc Debug actuel. Une autre image 1.2 de 8BS atteint également A> ; son CPM3.SYS compare la mémoire à 512 Kio, contre 896 Kio dans l'image initiale qui déclenche le test destructif. Aucun autre composant modifié. Ne pas déduire une machine terminée de l'ancienne invite A> ni de ces seuls nouveaux démarrages.
+
 - Démarrage des ROM Master 128, Turbo, ET et Compact vérifié ; DOS Plus 1.2 et 2.1 atteignent l’invite A> sur la carte 80186 de 512 Kio.
 - Capture conservée : `artifacts/acorn-master/master512-dosplus21.png`.
 - 353 tests Acorn réussis dans la sélection de régression. Les anciens scénarios `AcornModuleTests` et `AcornFloppyDialogAppliesControllerAndBootToItsDrive` sont exclus de cette sélection ; ce résultat ne représente pas la suite Acorn intégrale.

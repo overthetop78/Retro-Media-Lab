@@ -16,6 +16,7 @@ public sealed class AdfReader : IMediaImageReader
     private static readonly IReadOnlySet<string> SupportedFormatIds = new[]
     {
         DiskImageFormatIds.AcornAdfs800,
+        DiskImageFormatIds.AcornDosPlus800,
         DiskImageFormatIds.AcornAdfs1600,
         DiskImageFormatIds.AcornAdfs160,
         DiskImageFormatIds.AcornAdfs320,
@@ -25,7 +26,7 @@ public sealed class AdfReader : IMediaImageReader
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     private static readonly IReadOnlySet<string> SupportedExtensions = new[]
     {
-        DiskImageFileExtensions.Adf, DiskImageFileExtensions.Ads, DiskImageFileExtensions.Adm, DiskImageFileExtensions.Adl
+        DiskImageFileExtensions.Adf, DiskImageFileExtensions.Ads, DiskImageFileExtensions.Adm, DiskImageFileExtensions.Adl, ".800"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     private static readonly IReadOnlySet<MediaKind> SupportedMediaKinds = new[]
     {
@@ -60,7 +61,7 @@ public sealed class AdfReader : IMediaImageReader
 
     bool IMediaImageReader.SupportsFormatId(string formatId) => SupportedFormatIds.Contains(formatId);
 
-    /// <summary>Lit le fichier et reconstruit ses secteurs avec une numérotation commençant à zéro.</summary>
+    /// <summary>Lit le fichier en conservant la numérotation de son profil, dont DOS Plus à base un.</summary>
     public async Task<SectorImage> ReadAsync(string path, CancellationToken cancellationToken = default)
     {
         var data = await readBytes(path, cancellationToken).ConfigureAwait(false);
@@ -72,6 +73,8 @@ public sealed class AdfReader : IMediaImageReader
         cancellationToken.ThrowIfCancellationRequested();
         var requestedFormatMatches = context.RequestedFormatId is null || SupportedFormatIds.Contains(context.RequestedFormatId);
         var lengthMatches = context.Length <= int.MaxValue && AcceptedSizes.Contains((int)context.Length);
+        if (string.Equals(context.RequestedFormatId, DiskImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase))
+            return ValueTask.FromResult(context.Length == AcornAdfGeometry.Capacity);
         if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.Capacity == context.Length) is { } bbc)
             return ValueTask.FromResult(requestedFormatMatches && (context.RequestedFormatId is null ? SupportedExtensions.Contains(context.Extension) : context.RequestedFormatId.Equals(bbc.FormatId, StringComparison.OrdinalIgnoreCase)));
         return ValueTask.FromResult(requestedFormatMatches && lengthMatches);
@@ -80,14 +83,19 @@ public sealed class AdfReader : IMediaImageReader
     async Task<MediaImageDocument> IMediaImageReader.ReadAsync(MediaRecognitionContext context, CancellationToken cancellationToken)
     {
         var data = await context.ReadBytesAsync(cancellationToken).ConfigureAwait(false);
-        var image = Read(data.ToArray(), cancellationToken);
+        var image = Read(data.ToArray(), cancellationToken, context.RequestedFormatId);
         return MediaImageDocumentFactory.CreateFloppySector(context.Source, image);
     }
 
-    private static SectorImage Read(byte[] data, CancellationToken cancellationToken)
+    private static SectorImage Read(byte[] data, CancellationToken cancellationToken, string? requestedFormatId = null)
     {
         if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.Capacity == data.Length) is { } bbc) return AcornAdfLayout.CreateBbc(data, bbc, cancellationToken);
-        if (data.Length == AcornAdfGeometry.Capacity) return RegularSectorImageBuilder.Create(data, AcornAdfGeometry.Geometry, cancellationToken);
+        if (data.Length == AcornAdfGeometry.Capacity)
+        {
+            var dosPlus = string.Equals(requestedFormatId, DiskImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase)
+                || requestedFormatId is null && AcornAdfGeometry.HasDosPlusHeader(data);
+            return RegularSectorImageBuilder.Create(data, dosPlus ? AcornAdfGeometry.DosPlus800 : AcornAdfGeometry.Geometry, cancellationToken);
+        }
         if (data.Length == AcornAdfGeometry.PaddedCapacity) return RegularSectorImageBuilder.Create(data, AcornAdfGeometry.Geometry, cancellationToken, AcornAdfGeometry.PaddedTrailingByteCount);
         if (data.Length == AcornAdfGeometry.HighDensityCapacity) return RegularSectorImageBuilder.Create(data, AcornAdfGeometry.HighDensityGeometry, cancellationToken);
         if (data.Length == AmigaAdfGeometry.DoubleDensity.Capacity) return RegularSectorImageBuilder.Create(data, AmigaAdfGeometry.DoubleDensity, cancellationToken);

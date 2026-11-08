@@ -22,4 +22,5 @@ internal static class FloppyDriveConstants
     internal const string Adfs160 = "acorn.adfs.160";
     internal const string Adfs320 = "acorn.adfs.320";
     internal const string Adfs640 = "acorn.adfs.640";
+    internal const string DosPlus800 = "acorn.dosplus.800";
 }

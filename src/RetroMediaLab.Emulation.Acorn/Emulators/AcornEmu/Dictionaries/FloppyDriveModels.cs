@@ -28,7 +28,10 @@ internal static class FloppyDriveModels
         Format(C.DfsDouble80, "Dsd", C.DfsName, C.EightyTracks, 2, false),
         Format(C.Adfs160, "Ads", C.AdfsName, C.FortyTracks, 1, true),
         Format(C.Adfs320, "Adm", C.AdfsName, C.EightyTracks, 1, true),
-        Format(C.Adfs640, "Adl", C.AdfsName, C.EightyTracks, 2, true)
+        Format(C.Adfs640, "Adl", C.AdfsName, C.EightyTracks, 2, true),
+        new(C.DosPlus800, CommonHost.MediaProcessing.FileExtensions["Img"], "DOS Plus",
+            (long)C.EightyTracks * 2 * C.AdfsLargeSectors * C.AdfsLargeSectorSize)
+        { Tracks = C.EightyTracks, Sides = 2, DoubleDensity = true }
     ]);
 
     internal static IReadOnlyList<FloppyDriveModelChoice> All { get; } = Array.AsReadOnly(Profiles.Select(Describe).ToArray());
@@ -48,7 +51,7 @@ internal static class FloppyDriveModels
         var extensions = formats.Select(format => format.Extension).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         extensions.Add(CommonHost.MediaProcessing.FileExtensions["Scp"]);
         extensions.Add(CommonHost.MediaProcessing.FileExtensions["Hfe"]);
-        if (profile.DoubleDensity) { extensions.Add(CommonHost.MediaProcessing.FileExtensions["Adf"]); extensions.Add(CommonHost.MediaProcessing.FileExtensions["Img"]); }
+        if (profile.DoubleDensity) { extensions.Add(CommonHost.MediaProcessing.FileExtensions["Adf"]); extensions.Add(CommonHost.MediaProcessing.FileExtensions["Img"]); extensions.Add(CommonHost.MediaProcessing.FileExtensions["AcornDosPlus800"]); }
         return new(profile.Id, string.Empty, BlankImageSize: Capacity(profile.Tracks, profile.Sides, profile.DoubleDensity))
         {
             DiameterInches = profile.Diameter, Tracks = profile.Tracks, Sides = profile.Sides, DoubleDensity = profile.DoubleDensity,

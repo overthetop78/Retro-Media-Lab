@@ -153,7 +153,7 @@ public sealed class MediaWritingComposition
             Sector(MediaImageWriterIds.Apridisk, [DiskImageFileExtensions.Dsk],
                 (format, extension) => format.Equals(DiskImageFormatIds.ApricotPcXi315, StringComparison.OrdinalIgnoreCase) && extension.Equals(DiskImageFileExtensions.Dsk, StringComparison.OrdinalIgnoreCase),
                 (image, _, path, _, token) => WriteSingleAsync(apridisk.WriteAsync(image.WithFormatId(DiskImageFormatIds.ApricotPcXi315), path, token), path)),
-            new SectorMediaImageWriterAdapter(MediaImageWriterIds.AcornAdf, AcornAdfGeometry.All.Select(geometry => geometry.FormatId), [DiskImageFileExtensions.Adf, DiskImageFileExtensions.Ads, DiskImageFileExtensions.Adm, DiskImageFileExtensions.Adl],
+            new SectorMediaImageWriterAdapter(MediaImageWriterIds.AcornAdf, AcornAdfGeometry.All.Select(geometry => geometry.FormatId), [DiskImageFileExtensions.Adf, DiskImageFileExtensions.Ads, DiskImageFileExtensions.Adm, DiskImageFileExtensions.Adl, ".img", ".800"],
                 (image, _, format, extension) => image.FormatId.Equals(format, StringComparison.OrdinalIgnoreCase) && AcornAdfConversionService.CanCreate(format, extension), (image, _, path, _, token) => WriteSingleAsync(acornAdf.WriteAsync(image, path, token), path)),
             Sector(MediaImageWriterIds.AmigaAdf, [DiskImageFileExtensions.Adf], AmigaAdfConversionService.CanCreate, (image, _, path, _, token) => WriteSingleAsync(amigaAdf.WriteAsync(image, path, token), path)),
             Sector(MediaImageWriterIds.BbcDfs, [DiskImageFileExtensions.Ssd, DiskImageFileExtensions.Dsd], BbcDfsConversionService.CanCreate,

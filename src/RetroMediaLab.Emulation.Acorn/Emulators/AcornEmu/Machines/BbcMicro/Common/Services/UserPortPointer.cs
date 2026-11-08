@@ -21,9 +21,9 @@ internal sealed class UserPortPointer
     internal long? NextSignal => _nextSignal == long.MaxValue ? null : _nextSignal;
     internal Action<long?>? NextSignalChanged { get; set; }
 
-    internal UserPortPointer(bool compact, Action<bool> setCb1, Action<bool> setCb2)
+    internal UserPortPointer(bool acornPinout, Action<bool> setCb1, Action<bool> setCb2)
     {
-        (_xMask, _yMask, _leftMask, _middleMask, _rightMask) = compact
+        (_xMask, _yMask, _leftMask, _middleMask, _rightMask) = acornPinout
             ? (C.CompactX, C.CompactY, C.CompactLeft, C.CompactMiddle, C.CompactRight)
             : (C.UserX, C.UserY, C.UserLeft, C.UserMiddle, C.UserRight);
         _setCb1 = setCb1;

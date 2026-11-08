@@ -159,7 +159,9 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         if (userPortPointer)
         {
             if (_userVia is null) throw new ArgumentException(nameof(userPortPointer));
-            _pointer = new UserPortPointer(compact, _userVia.SetCb1, _userVia.SetCb2)
+            // La souris Acorn du 512 et le connecteur Compact emploient PB3/PB4,
+            // contrairement à l'AMX sur PB0/PB2. Le VIA reçoit les mêmes fronts physiques.
+            _pointer = new UserPortPointer(compact || coprocessor == MasterCoprocessor.Master512, _userVia.SetCb1, _userVia.SetCb2)
             {
                 NextSignalChanged = next => _pointerWakeTick = next ?? long.MaxValue
             };

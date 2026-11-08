@@ -7,6 +7,7 @@ Procédure commune : [puces et machines](../../directives/Emulations/procedure-p
 ## Accès direct
 
 - [Mos65C12 / Mos65C102](Mos65C12/suivi.md)
+- [Intel80186](Intel80186/suivi.md) : RETF imm16 corrigé, groupe autonome Debug et démarrages DOS vérifiés ; validation complète de la carte 512 en cours.
 - [Mos6522](Mos6522/suivi.md)
 - [Sn76489](Sn76489/suivi.md)
 - [Mc6850](Mc6850/suivi.md)

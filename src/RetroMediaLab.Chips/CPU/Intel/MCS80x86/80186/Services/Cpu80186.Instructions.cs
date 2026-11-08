@@ -117,12 +117,22 @@ public sealed partial class Cpu80186
                 if (nesting > 0) { for (var i = 1; i < nesting; i++) { _registers[Bp] -= 2; Push(ReadWord(Ss, _registers[Bp])); } Push(frame); }
                 _registers[Bp] = frame; _registers[Sp] -= allocation; return nesting == 0 ? T.EnterZero : nesting == 1 ? T.EnterOne : T.EnterNestedBase + T.EnterNestedLevel * (nesting - 1);
             case 0xc9: _registers[Sp] = _registers[Bp]; _registers[Bp] = Pop(); return T.Leave;
-            case 0xca: offset = FetchWord(); offset = Pop(); TransferControl(offset, Pop()); _registers[Sp] += offset; return T.ReturnFarImmediate;
+            case 0xca:
+                var stackAdjustment = FetchWord();
+                offset = Pop();
+                TransferControl(offset, Pop());
+                _registers[Sp] += stackAdjustment;
+                return T.ReturnFarImmediate;
             case 0xcb: offset = Pop(); TransferControl(offset, Pop()); return T.ReturnFar;
             case 0xcc: Interrupt(3); return 0;
             case 0xcd: Interrupt(Fetch()); return T.InterruptImmediate;
             case 0xce: if (!Has(Overflow)) return T.OverflowInterruptNotTaken; Interrupt(4); return T.OverflowInterruptTaken;
-            case 0xcf: offset = Pop(); TransferControl(offset, Pop()); _flags = (ushort)((Pop() & 0x0fd5) | Reserved); return T.ReturnInterrupt;
+            case 0xcf:
+                offset = Pop();
+                TransferControl(offset, Pop());
+                _flags = (ushort)((Pop() & 0x0fd5) | Reserved);
+                _interruptStatus &= unchecked((ushort)~Constants.Interrupt80186Constants.DmaHalt);
+                return T.ReturnInterrupt;
             case 0xd4:
                 var radix = Fetch(); if (radix == 0) { Interrupt(DivideVector); return T.ExceptionDecode; }
                 value = ByteRegister(Ax); SetByteRegister(4, value / radix); SetByteRegister(Ax, SetResult(value % radix, false)); return T.AsciiMultiplyAdjust;

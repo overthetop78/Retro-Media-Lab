@@ -23,7 +23,7 @@ internal sealed class DiskSystemResolver
         if (formatId.StartsWith(DiskImageFormatIds.Commodore900Prefix, StringComparison.OrdinalIgnoreCase)) return DiskSystemIds.Coherent;
         if (formatId.StartsWith(DiskImageFormatIds.CommodorePrefix, StringComparison.OrdinalIgnoreCase)) return DiskSystemIds.Commodore;
         if (formatId.StartsWith(DiskImageFormatIds.AmstradPrefix, StringComparison.OrdinalIgnoreCase)) return DiskSystemIds.Amstrad;
-        if (formatId.StartsWith(DiskImageFormatIds.AcornAdfsPrefix, StringComparison.OrdinalIgnoreCase) || formatId.StartsWith(DiskImageFormatIds.AcornDfsPrefix, StringComparison.OrdinalIgnoreCase)) return DiskSystemIds.AcornBbc;
+        if (formatId.Equals(DiskImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase) || formatId.StartsWith(DiskImageFormatIds.AcornAdfsPrefix, StringComparison.OrdinalIgnoreCase) || formatId.StartsWith(DiskImageFormatIds.AcornDfsPrefix, StringComparison.OrdinalIgnoreCase)) return DiskSystemIds.AcornBbc;
         if (formatId.StartsWith(DiskImageFormatIds.EpsonQx10Prefix, StringComparison.OrdinalIgnoreCase)) return DiskSystemIds.EpsonQx10;
         if (formatId.StartsWith(DiskImageFormatIds.MsxPrefix, StringComparison.OrdinalIgnoreCase)) return DiskSystemIds.Msx;
         if (formatId.StartsWith(DiskImageFormatIds.DecPrefix, StringComparison.OrdinalIgnoreCase)) return DiskSystemIds.Dec;

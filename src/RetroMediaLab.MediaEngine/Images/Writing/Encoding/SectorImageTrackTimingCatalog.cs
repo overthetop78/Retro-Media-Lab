@@ -25,7 +25,7 @@ internal static class SectorImageTrackTimingCatalog
         StringComparison.OrdinalIgnoreCase) || formatId.Equals(DiskImageFormatIds.Ibm1680,
         StringComparison.OrdinalIgnoreCase) || formatId.Equals(DiskImageFormatIds.IbmDmf,
         StringComparison.OrdinalIgnoreCase);
-    private static bool IsDoubleDensityFamily(string formatId) => formatId.StartsWith(DiskImageFormatIds.AtariPrefix,
+    private static bool IsDoubleDensityFamily(string formatId) => formatId.Equals(DiskImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase) || formatId.StartsWith(DiskImageFormatIds.AtariPrefix,
         StringComparison.OrdinalIgnoreCase) || formatId.StartsWith(DiskImageFormatIds.AtariStPrefix,
         StringComparison.OrdinalIgnoreCase) || formatId.StartsWith(DiskImageFormatIds.IbmPrefix,
         StringComparison.OrdinalIgnoreCase) || formatId.StartsWith(DiskImageFormatIds.MsxPrefix,

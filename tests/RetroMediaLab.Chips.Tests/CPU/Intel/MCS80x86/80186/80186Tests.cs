@@ -8,6 +8,18 @@ public sealed class Chip80186Tests
     private const int ProgramAddress = 0x1003;
 
     [Fact]
+    public void InvalidOpcodeEntersVectorSixWithoutRereadingItsInstructionForDiagnostics()
+    {
+        var (cpu, bus) = Start(0x0f);
+        bus.Vector(6, 0x2000);
+        bus.Reads.Clear();
+        cpu.Step();
+        Assert.Equal(0x2000, cpu.IP);
+        // Start a déjà préchargé cet octet ; la faute ne doit pas relire son adresse.
+        Assert.DoesNotContain(ProgramAddress, bus.Reads);
+    }
+
+    [Fact]
     public void DivideErrorReturnsAfterDivisionAndPreservesDividend()
     {
         var (cpu, bus) = Start(0xb8, 0, 0x10, 0xb3, 0, 0xf6, 0xf3);
@@ -134,6 +146,29 @@ public sealed class Chip80186Tests
         cpu.Step();
         Assert.Equal(0x7ffe, cpu.Register(4));
         Assert.Equal(0x7ffe, bus.Word(0x7ffe));
+    }
+
+    [Theory]
+    [InlineData(0, 0x8000, 0x8004)]
+    [InlineData(6, 0x8000, 0x800a)]
+    [InlineData(8, 0xfffc, 0x0008)]
+    public void FarReturnUsesImmediateForStackCleanup(int adjustment, int stack, int expectedStack)
+    {
+        var (cpu, bus) = Start(0xbc, (byte)stack, (byte)(stack >> 8), 0xca,
+            (byte)adjustment, (byte)(adjustment >> 8));
+        cpu.Step();
+        bus.Memory[stack] = 0x45;
+        bus.Memory[stack + 1] = 0x23;
+        bus.Memory[stack + 2] = 0x34;
+        bus.Memory[stack + 3] = 0x12;
+        var flags = cpu.Flags;
+
+        cpu.Step();
+
+        Assert.Equal(0x2345, cpu.IP);
+        Assert.Equal(0x1234, cpu.Segment(1));
+        Assert.Equal(expectedStack, cpu.Register(4));
+        Assert.Equal(flags, cpu.Flags);
     }
 
     [Fact]
@@ -842,6 +877,52 @@ public sealed class Chip80186Tests
     }
 
     [Fact]
+    public void TimerInputGateCanCloseAndReopenWithoutResettingCountOrClockPhase()
+    {
+        var (cpu, _) = StartHalted();
+        cpu.WriteIoWord(0xff52, 100);
+        cpu.WriteIoWord(0xff56, 0xc001);
+        cpu.SetTimerInput(0, true);
+        IdleClocks(cpu, 8);
+        Assert.Equal(2, cpu.ReadIoWord(0xff50));
+        cpu.SetTimerInput(0, false);
+        IdleClocks(cpu, 9);
+        Assert.Equal(2, cpu.ReadIoWord(0xff50));
+        cpu.SetTimerInput(0, true);
+        IdleClocks(cpu, 2);
+        Assert.Equal(2, cpu.ReadIoWord(0xff50));
+        IdleClocks(cpu, 1);
+        Assert.Equal(3, cpu.ReadIoWord(0xff50));
+    }
+
+    [Fact]
+    public void TimerClockSourceChangesTakeEffectWithoutResetOrDoubleCounting()
+    {
+        var (cpu, _) = StartHalted();
+        cpu.WriteIoWord(0xff52, 100);
+        cpu.WriteIoWord(0xff56, 0xc005);
+        cpu.SetTimerInput(0, true);
+        IdleClocks(cpu, 8);
+        Assert.Equal(1, cpu.ReadIoWord(0xff50));
+        cpu.WriteIoWord(0xff56, 0xc001);
+        IdleClocks(cpu, 8);
+        Assert.Equal(3, cpu.ReadIoWord(0xff50));
+        cpu.WriteIoWord(0xff56, 0xc009);
+        IdleClocks(cpu, 8);
+        Assert.Equal(3, cpu.ReadIoWord(0xff50));
+        cpu.WriteIoWord(0xff62, 2);
+        cpu.WriteIoWord(0xff66, 0xc001);
+        IdleClocks(cpu, 8);
+        Assert.Equal(4, cpu.ReadIoWord(0xff50));
+        cpu.SetTimerInput(0, false);
+        IdleClocks(cpu, 8);
+        Assert.Equal(4, cpu.ReadIoWord(0xff50));
+        cpu.SetTimerInput(0, true);
+        IdleClocks(cpu, 8);
+        Assert.Equal(5, cpu.ReadIoWord(0xff50));
+    }
+
+    [Fact]
     public void ExternalTimerCountsRisingEdgesWithoutCountingHeldLevelOrCpuClocks()
     {
         var (cpu, _) = StartHalted();
@@ -947,6 +1028,88 @@ public sealed class Chip80186Tests
         cpu.Step();
         Assert.Equal(0x22, bus.Memory[0x4100]);
         Assert.Equal(1, cpu.ReadIoWord(0xffd8));
+    }
+
+    [Fact]
+    public void DmaHaltStatusSuspendsTransfersUntilSoftwareClearsIt()
+    {
+        var (cpu, bus) = StartHalted();
+        bus.Memory[0x3000] = 0x5a;
+        ProgramDma(cpu, 0, 0x3000, 0x4000, 1, 0x9206);
+        cpu.WriteIoWord(0xff30, 0x8000);
+        cpu.Step();
+        Assert.Equal(1, cpu.ReadIoWord(0xffc8));
+        Assert.Equal(0, bus.Memory[0x4000]);
+        cpu.WriteIoWord(0xff30, 0);
+        cpu.Step();
+        Assert.Equal(0x5a, bus.Memory[0x4000]);
+        Assert.Equal(0, cpu.ReadIoWord(0xffc8));
+    }
+
+    [Fact]
+    public void HardwareNmiHaltsReadyDmaUntilIretWithoutChangingChannelRegisters()
+    {
+        var (cpu, bus) = StartHalted();
+        bus.Vector(2, 0x2000);
+        bus.Memory[0x2000] = 0xcf;
+        bus.Memory[0x3000] = 0x5a;
+        ProgramDma(cpu, 0, 0x3000, 0x4000, 1, 0x9206);
+        cpu.Nmi = true;
+        Assert.Equal(0x8000, cpu.ReadIoWord(0xff30) & 0x8000);
+        cpu.Step();
+        Assert.Equal(0x2000, cpu.IP);
+        Assert.Equal(1, cpu.ReadIoWord(0xffc8));
+        Assert.Equal(0x3000, cpu.ReadIoWord(0xffc0));
+        Assert.Equal(0x4000, cpu.ReadIoWord(0xffc4));
+        cpu.Step();
+        Assert.Equal(0, cpu.ReadIoWord(0xff30) & 0x8000);
+        Assert.Equal(1, cpu.ReadIoWord(0xffc8));
+        cpu.Step();
+        Assert.Equal(0x5a, bus.Memory[0x4000]);
+    }
+
+    [Fact]
+    public void NmiDuringWordDmaFinishesBothByteLanesBeforeHaltingNextTransfer()
+    {
+        var (cpu, bus) = StartHalted();
+        bus.Vector(2, 0x2000);
+        bus.Memory[0x3000] = 0x34;
+        bus.Memory[0x3001] = 0x12;
+        ProgramDma(cpu, 0, 0x3000, 0x4000, 2, 0x9207);
+        bus.Written = address => { if (address == 0x4000) cpu.Nmi = true; };
+        cpu.Step();
+        Assert.Equal(0x1234, bus.Word(0x4000));
+        Assert.Equal(1, cpu.ReadIoWord(0xffc8));
+        cpu.Step();
+        Assert.Equal(0x2000, cpu.IP);
+        Assert.Equal(1, cpu.ReadIoWord(0xffc8));
+        Assert.Equal(0, bus.Word(0x4002));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SlaveInterruptModeDoesNotHaltDmaForStatusBitOrNmi(bool nmi)
+    {
+        var (cpu, bus) = StartHalted();
+        cpu.WriteIoWord(0xfffe, 0x60ff);
+        bus.Memory[0x3000] = 0x5a;
+        ProgramDma(cpu, 0, 0x3000, 0x4000, 1, 0x9206);
+        if (nmi) cpu.Nmi = true;
+        else cpu.WriteIoWord(0xff30, 0x8000);
+        cpu.Step();
+        Assert.Equal(0x5a, bus.Memory[0x4000]);
+        Assert.Equal(nmi ? 0 : 0x8000, cpu.ReadIoWord(0xff30) & 0x8000);
+    }
+
+    [Fact]
+    public void SoftwareInterruptTwoDoesNotAssertDmaHalt()
+    {
+        var (cpu, bus) = Start(0xcd, 2);
+        bus.Vector(2, 0x2000);
+        cpu.Step();
+        Assert.Equal(0x2000, cpu.IP);
+        Assert.Equal(0, cpu.ReadIoWord(0xff30) & 0x8000);
     }
 
     [Fact]
@@ -1380,8 +1543,9 @@ public sealed class Chip80186Tests
         internal List<int> DataReads { get; } = [];
         internal List<int> Reads { get; } = [];
         internal List<int> Writes { get; } = [];
+        internal Action<int>? Written { get; set; }
         internal byte Read(int address) { Reads.Add(address); if (Cpu?.IsInstructionFetch != true) DataReads.Add(address); return Memory[address]; }
-        internal void Write(int address, byte value) { Writes.Add(address); Memory[address] = value; }
+        internal void Write(int address, byte value) { Writes.Add(address); Memory[address] = value; Written?.Invoke(address); }
         internal ushort Word(int address) => (ushort)(Memory[address] | Memory[address + 1] << 8);
         internal void Vector(int vector, ushort target)
         {

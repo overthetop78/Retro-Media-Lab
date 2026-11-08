@@ -6,6 +6,7 @@ using RetroMediaLab.Emulation.Acorn.Common.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Factories;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Enums;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Constants.UserPortPointerConstants;
 using M = RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Constants.MouseInputConstants;
 using Input = RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Functions.InputSnapshotFunctions;
@@ -14,6 +15,35 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuPointerInputTests
 {
+    [Theory]
+    [InlineData((int)MasterCoprocessor.None, 0xe0, 0xc0, 0x60, 0xa0)]
+    [InlineData((int)MasterCoprocessor.Master512, 0x07, 0x06, 0x03, 0x05)]
+    public void MasterBoardSelectsTheMousePinsOfItsHardware(int coprocessorId,
+        int mask, int left, int right, int middle)
+    {
+        var coprocessor = (MasterCoprocessor)coprocessorId;
+        var board = new BbcMicroMachine(new byte[16384], new byte[16384], 32768,
+            expandedIo: true, master: true, userPortPointer: true, coprocessor: coprocessor,
+            coprocessorRom: coprocessor == MasterCoprocessor.Master512 ? new byte[16384] : []);
+        try
+        {
+            board.Write(0xfe62, 0);
+            foreach (var (input, expected) in new[]
+            {
+                (new EmulationPointerState(0, 0, 0, true, false, false), left),
+                (new EmulationPointerState(0, 0, 0, false, true, false), right),
+                (new EmulationPointerState(0, 0, 0, false, false, true), middle)
+            })
+            {
+                board.SetInput(EmulationInputSnapshot.Empty with { Pointer = input });
+                Assert.Equal(expected, board.Read(0xfe60) & mask);
+            }
+            board.SetInput(EmulationInputSnapshot.Empty);
+            Assert.Equal(mask, board.Read(0xfe60) & mask);
+        }
+        finally { board.SetInput(EmulationInputSnapshot.Empty); board.Reset(true); }
+    }
+
     [Theory]
     [InlineData(MachineModel.BbcMicroModelB)]
     [InlineData(MachineModel.BbcMicroModelBPlus)]

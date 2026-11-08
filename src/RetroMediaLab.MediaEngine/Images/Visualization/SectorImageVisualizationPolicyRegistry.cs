@@ -22,7 +22,7 @@ internal sealed class SectorImageVisualizationPolicyRegistry
         new PrefixVisualizationPolicy(FluxCodecIds.IsoFm, DiskImageFormatIds.AcornDfsPrefix),
         new PrefixVisualizationPolicy(FluxCodecIds.IsoMfm, DiskImageFormatIds.AcornAdfsPrefix),
         new PrefixVisualizationPolicy(FluxCodecIds.IsoMfm, DiskImageFormatIds.IbmPrefix, DiskImageFormatIds.AmstradPrefix, DiskImageFormatIds.MsxPrefix, DiskImageFormatIds.UcsdPrefix, DiskImageFormatIds.EpsonQx10Prefix),
-        new ExactVisualizationPolicy(FluxCodecIds.IsoMfm, DiskImageFormatIds.Imd, DiskImageFormatIds.Td0)
+        new ExactVisualizationPolicy(FluxCodecIds.IsoMfm, DiskImageFormatIds.Imd, DiskImageFormatIds.Td0, DiskImageFormatIds.AcornDosPlus800)
     ]) { }
 
     /// <summary>Crée un registre depuis une collection ordonnée de politiques.</summary>

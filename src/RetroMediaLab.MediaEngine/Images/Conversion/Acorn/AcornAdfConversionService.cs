@@ -6,12 +6,14 @@ using RetroMediaLab.MediaEngine.Images.Models.Sectors;
 
 namespace RetroMediaLab.MediaEngine.Images.Conversion.Acorn;
 
-/// <summary>Convertit une capture SCP ou une image ADF Acorn en ADF 800 Kio.</summary>
+/// <summary>Convertit les images sectorielles Acorn selon le profil physique cible.</summary>
 public sealed class AcornAdfConversionService(IsoScpSectorImageReader scpReader, AdfReader reader, AcornAdfWriter writer)
 {
     /// <summary>Annonce ADF pour les géométries Acorn et ADS/ADM/ADL pour les géométries BBC correspondantes.</summary>
     public static bool CanCreate(string formatId, string extension) => AcornAdfGeometry.All.Any(geometry => geometry.FormatId.Equals(formatId, StringComparison.OrdinalIgnoreCase))
-        && (extension.Equals(DiskImageFileExtensions.Adf, StringComparison.OrdinalIgnoreCase) || (formatId, extension.ToLowerInvariant()) is (DiskImageFormatIds.AcornAdfs160, DiskImageFileExtensions.Ads) or (DiskImageFormatIds.AcornAdfs320, DiskImageFileExtensions.Adm) or (DiskImageFormatIds.AcornAdfs640, DiskImageFileExtensions.Adl));
+        && (formatId.Equals(DiskImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase)
+            ? extension.ToLowerInvariant() is ".img" or ".800"
+            : extension.Equals(DiskImageFileExtensions.Adf, StringComparison.OrdinalIgnoreCase) || (formatId, extension.ToLowerInvariant()) is (DiskImageFormatIds.AcornAdfs160, DiskImageFileExtensions.Ads) or (DiskImageFormatIds.AcornAdfs320, DiskImageFileExtensions.Adm) or (DiskImageFormatIds.AcornAdfs640, DiskImageFileExtensions.Adl));
 
     /// <summary>Reconstruit ou relit la source puis écrit l'ADF Acorn.</summary>
     public async Task ConvertAsync(string sourcePath, string outputPath, string formatId, CancellationToken cancellationToken = default)

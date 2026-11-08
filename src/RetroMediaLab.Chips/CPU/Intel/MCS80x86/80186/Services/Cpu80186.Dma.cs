@@ -102,6 +102,7 @@ public sealed partial class Cpu80186
             _dmaBusReleased = false;
             return false;
         }
+        if (!SlaveInterruptMode && (_interruptStatus & I.DmaHalt) != 0) return false;
         var ready0 = DmaReady(0);
         var ready1 = DmaReady(1);
         if (!ready0 && !ready1) return false;

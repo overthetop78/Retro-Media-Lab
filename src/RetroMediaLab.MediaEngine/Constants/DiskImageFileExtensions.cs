@@ -30,6 +30,8 @@ public static class DiskImageFileExtensions
 
     /// <summary>Extension des images Acorn ADFS au format L de 640 Kio.</summary>
     public const string Adl = ".adl";
+    /// <summary>Extension historique des images DOS Plus de 800 Kio du Master 512.</summary>
+    public const string AcornDosPlus800 = ".800";
 
     /// <summary>Extension des images Atari ATR.</summary>
     public const string Atr = ".atr";

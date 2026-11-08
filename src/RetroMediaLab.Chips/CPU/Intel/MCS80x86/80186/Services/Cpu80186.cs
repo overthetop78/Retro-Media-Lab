@@ -1,5 +1,6 @@
 using static RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Constants.Cpu80186Constants;
 using T = RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Constants.Cpu80186Timings;
+using I = RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Constants.Interrupt80186Constants;
 
 namespace RetroMediaLab.Chips.CPU.Intel.MCS80x86.Chip80186.Services;
 
@@ -10,7 +11,6 @@ public sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> wri
     private readonly ushort[] _segments = new ushort[4];
     private ushort _flags = Reserved;
     private ushort _start;
-    private int _diagnosticInvalidCount;
     private int _segmentOverride = -1;
     private byte _repeat;
     private bool _halted;
@@ -41,7 +41,12 @@ public sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> wri
         get => _nmiLevel;
         set
         {
-            if (value && !_nmiLevel) _nmiPending = true;
+            if (value && !_nmiLevel)
+            {
+                _nmiPending = true;
+                // DHLT arrête le prochain DMA ; le transfert qui reçoit ce front se termine.
+                if (!SlaveInterruptMode) _interruptStatus |= I.DmaHalt;
+            }
             _nmiLevel = value;
         }
     }
@@ -109,8 +114,6 @@ public sealed partial class Cpu80186(Func<int, byte> read, Action<int, byte> wri
     private bool Has(ushort flag) => (_flags & flag) != 0;
     private void Interrupt(byte vector, bool fault = false)
     {
-        if (vector == InvalidOpcodeVector && _diagnosticInvalidCount++ < 6)
-            Console.WriteLine($"INVALID {_segments[Cs]:X4}:{_start:X4} next={IP:X4} bytes={string.Join(' ', Enumerable.Range(0, 12).Select(index => read((Physical(Cs, _start) + index) & AddressMask).ToString("X2")))} AX={_registers[Ax]:X4} SP={_registers[Sp]:X4} DMA={_dma[0].Control:X4}:{_dma[0].Source:X5}->{_dma[0].Destination:X5}/{_dma[0].Count:X4} TIMER1={_timers[1].Control:X4}");
         _enteredInterrupt = true;
         _repeatContinuation = _repeatBusLock = _lockPrefix = _waiting = false;
         Cycles += InterruptCycles;

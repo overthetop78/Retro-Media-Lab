@@ -1,9 +1,29 @@
+using System.IO;
+using RetroMediaLab.MediaEngine.Constants;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Adf;
+
 namespace RetroMediaLab.MediaEngine.Images.Formats.Detection;
 
 internal sealed class AdfImageFormatDetectionRule : IImageFormatDetectionRule
 {
     public bool TryDetect(ImageFormatDetectionContext context, out DetectedImageFormat result)
     {
+        if (context.KnownLength == AcornAdfGeometry.Capacity && context.Extension is ".adf" or ".img" or ".800")
+        {
+            try
+            {
+                using var source = context.OpenRead(context.FilePath);
+                Span<byte> header = stackalloc byte[3];
+                if (source.ReadAtLeast(header, header.Length, throwOnEndOfStream: false) == header.Length
+                    && AcornAdfGeometry.HasDosPlusHeader(header))
+                {
+                    result = context.Result(DiskImageFormatIds.AcornDosPlus800, FormatConfidence.Certain, "Detection.AcornSize");
+                    return true;
+                }
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
         if (context.Extension != ".adf")
         {
             result = null!;

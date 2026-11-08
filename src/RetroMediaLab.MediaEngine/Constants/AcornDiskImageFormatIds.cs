@@ -11,6 +11,8 @@ public static partial class DiskImageFormatIds
     public const string AcornAdfs160 = "acorn.adfs.160", AcornAdfs320 = "acorn.adfs.320", AcornAdfs640 = "acorn.adfs.640";
     /// <summary>Image Acorn ADFS de 800 Kio.</summary>
     public const string AcornAdfs800 = MediaImageFormatIds.AcornAdfs800;
+    /// <summary>DOS Plus Master 512 : 800 Kio, secteurs de 1024 octets numérotés de 1 à 5.</summary>
+    public const string AcornDosPlus800 = "acorn.dosplus.800";
     /// <summary>Image Acorn ADFS de 1600 Kio.</summary>
     public const string AcornAdfs1600 = "acorn.adfs.1600";
     /// <summary>Préfixe des formats Acorn DFS.</summary>
