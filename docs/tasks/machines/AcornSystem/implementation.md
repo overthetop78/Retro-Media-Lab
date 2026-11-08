@@ -129,3 +129,15 @@ Le clavier ASCII ne reçoit plus d'appel par période quand aucune échéance ne
 
 
 
+
+## Continuité de la revue — 9 novembre 2026
+
+- [ ] Revoir System 1 puis les cartes System suivantes, sans réécrire les composants déjà vérifiés sans défaut établi.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.cs` : transmettre au constructeur 6502 la fréquence déjà définie par la carte, au lieu de laisser sa fréquence déclarée à zéro ; conserver le même avancement par les cycles de bus.
+  - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Acorn/SystemTape/Services/SystemTapeInterface.cs`, `Interfaces/ISystemTapeInterface.cs`, le raccordement `AcornSystemMachine.cs` et `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemTapeTests.cs` : renommer les sorties/entrées techniques `Cassette…` en `Tape…`, sans alias ni migration ; conserver compteurs, échéances et signaux.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemRamIoTests.cs` : remplacer les quatre lectures CassetteOutput restantes par TapeOutput.
+  - [x] Modifier ce suivi et les fiches concernées : consigner la revue 6502/8154/SystemTape, le raccordement System 1 et les résultats des contrôles existants après ces corrections.
+  - [ ] Modifier ce suivi : consigner la revue des composants et raccordements System 2, puis System 3 avec chacun de ses CPU, System 4 et System 5 ; ajouter avant réalisation les corrections établies avec leurs fichiers.
+
+
+System 1 : composants et bus relus (`Cpu6502.Clock.cs`, `.Pins.cs`, `.Interrupts.cs`, `RamIo8154.cs`, `.Ports.cs`, `SystemTapeInterface.cs`, `AcornSystemMachine.cs`, `.Bus.cs`, `SystemHexDisplay.cs`). Le CPU possède cycles, phases et entrées ; SystemTape possède temps, bascules, compteurs et échéance ; l’INS8154 est statique et commandé par les strobes, sans horloge interne fictive. La carte conserve les raccordements et les prochaines échéances notifiées, sans refaire les calculs internes. L’afficheur intègre les durées des sorties sans cadencer le matériel. Correction : fréquence déjà prévue par le profil transmise au constructeur 6502 (valeur déclarée auparavant nulle), et contrat technique SystemTape renommé en Tape. Aucun changement de fréquence réelle, de cycle, de bypass ni d’ordonnanceur commun. Résultats : 10 tests SystemTape Debug, 87 ms ; 72 tests System/RAM-E/S, 1 s ; zéro échec/ignoré. Fiches Mos6502, Ins8154, SystemTape et validation System 1 actualisées. Les performances historiques System 1 restent celles de leur passage, aucune nouvelle mesure globale revendiquée.

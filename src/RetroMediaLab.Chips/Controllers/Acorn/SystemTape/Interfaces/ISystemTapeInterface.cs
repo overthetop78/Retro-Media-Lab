@@ -6,10 +6,10 @@ public interface ISystemTapeInterface
     int ClockFrequency { get; }
     long ClockCount { get; }
     long NextClockEvent { get; }
-    bool CassetteInput { get; }
-    bool CassetteOutput { get; }
+    bool TapeInput { get; }
+    bool TapeOutput { get; }
     byte InputPins { get; }
-    Action<bool>? CassetteOutputChanged { get; set; }
+    Action<bool>? TapeOutputChanged { get; set; }
     Action<byte>? InputPinsChanged { get; set; }
     Action<long>? NextClockEventChanged { get; set; }
     void Reset(long clock = 0);

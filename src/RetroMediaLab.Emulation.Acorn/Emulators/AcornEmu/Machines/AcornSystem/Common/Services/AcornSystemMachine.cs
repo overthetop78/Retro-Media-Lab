@@ -89,7 +89,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         _tape.ActivityChanged += () => _tapeClockRequired = _tape.TapeActive;
         if (_tapeInterface is not null)
         {
-            _tapeInterface.CassetteOutputChanged = _tape.SetOutputLevel;
+            _tapeInterface.TapeOutputChanged = _tape.SetOutputLevel;
             _tapeInterface.InputPinsChanged = pins => _tapeInputPins = (byte)(pins
                 | (byte.MaxValue ^ (KeyboardPins.TapeInputBit | KeyboardPins.TapeCarrierBit)));
             _tapeInterface.NextClockEventChanged = clock => _nextTapeClock = clock;
@@ -158,7 +158,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         }
         else
         {
-            _cpu6502 = new Cpu6502(this);
+            _cpu6502 = new Cpu6502(this, _clock);
             // The CPU samples these retained input levels at its own phases.
             // Only mounted devices can publish a change; no board-wide polling is needed.
             _cpu6502.SetIrq(_via?.Irq == true);
@@ -198,7 +198,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         _display?.Reset(_ticks);
         _ramIo.Reset();
         if (cold || _tapeInterface is null) _tape.ResetHardware();
-        if (_tapeInterface is not null) _tape.SetOutputLevel(_tapeInterface.CassetteOutput);
+        if (_tapeInterface is not null) _tape.SetOutputLevel(_tapeInterface.TapeOutput);
         _fdc?.Reset();
         _fdcDrive?.Reset();
         if (_cpu6809 is not null) _cpu6809.Reset(); else _cpu6502!.Reset();

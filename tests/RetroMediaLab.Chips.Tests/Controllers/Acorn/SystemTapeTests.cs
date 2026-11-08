@@ -11,7 +11,7 @@ public sealed class SystemTapeTests
     {
         var card = new SystemTapeInterface(1_000_000);
         var edges = new List<long>();
-        card.CassetteOutputChanged = _ => edges.Add(card.ClockCount);
+        card.TapeOutputChanged = _ => edges.Add(card.ClockCount);
         card.SetOutputBit(mark, 0);
         card.AdvanceTo(halfPeriod * 4);
         Assert.Equal(new long[] { halfPeriod, halfPeriod * 2, halfPeriod * 3, halfPeriod * 4 }, edges);
@@ -25,9 +25,9 @@ public sealed class SystemTapeTests
         Assert.Equal(0x80, card.InputPins);
         card.AdvanceTo(554); // 64th Q3 falling edge: 21*26 + 8.
         Assert.Equal(0xa0, card.InputPins);
-        Assert.True(card.CassetteInput); // Q7 alone does not clock the receive flip-flop.
+        Assert.True(card.TapeInput); // Q7 alone does not clock the receive flip-flop.
         card.SetComparatorInput(true, 600);
-        Assert.False(card.CassetteInput);
+        Assert.False(card.TapeInput);
         Assert.Equal(0, card.InputPins); // Q7 sampled high, then asynchronously cleared.
         card.AdvanceTo(1151);
         Assert.Equal(0, card.InputPins);
@@ -54,7 +54,7 @@ public sealed class SystemTapeTests
         for (var cycle = 0; cycle < 8; cycle++)
         {
             card.SetComparatorInput(true, cycle * period);
-            if (cycle != 0) Assert.Equal(bit, card.CassetteInput);
+            if (cycle != 0) Assert.Equal(bit, card.TapeInput);
             Assert.Equal(0, card.InputPins & 0x20);
             card.SetComparatorInput(false, cycle * period + period / 2);
         }
@@ -65,7 +65,7 @@ public sealed class SystemTapeTests
     {
         var card = new SystemTapeInterface(1_000_000);
         var edges = new List<long>();
-        card.CassetteOutputChanged = _ => edges.Add(card.ClockCount);
+        card.TapeOutputChanged = _ => edges.Add(card.ClockCount);
         card.SetOutputBit(true, 0);
         card.SetOutputBit(false, 250);
         card.AdvanceTo(650);
@@ -96,7 +96,7 @@ public sealed class SystemTapeTests
             var card = new SystemTapeInterface(1_000_000);
             var audio = new List<(long, bool)>();
             var pins = new List<(long, byte)>();
-            card.CassetteOutputChanged = level => audio.Add((card.ClockCount, level));
+            card.TapeOutputChanged = level => audio.Add((card.ClockCount, level));
             card.InputPinsChanged = level => pins.Add((card.ClockCount, level));
             for (var clock = 0; clock < 10000; clock++)
             {
@@ -151,8 +151,8 @@ public sealed class SystemTapeTests
                 card.SetComparatorInput(true, clock);
             }
             if (clock % 833 == 416) card.SetComparatorInput(false, clock);
-            Assert.Equal((transmit & (selectedBit ? 8 : 16)) != 0, card.CassetteOutput);
-            Assert.Equal(receivedBit, card.CassetteInput);
+            Assert.Equal((transmit & (selectedBit ? 8 : 16)) != 0, card.TapeOutput);
+            Assert.Equal(receivedBit, card.TapeInput);
             Assert.Equal((receivedBit ? 0x80 : 0) | ((receive & 64) != 0 ? 0x20 : 0), card.InputPins);
         }
     }

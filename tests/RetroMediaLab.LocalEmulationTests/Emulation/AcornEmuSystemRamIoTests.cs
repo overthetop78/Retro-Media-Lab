@@ -55,13 +55,13 @@ public sealed class AcornEmuSystemRamIoTests
             var ticks = (long)typeof(AcornSystemMachine).GetField("_ticks", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(board)!;
             board.Write(0x098c, 0xe0);
             for (; ticks < 208; ticks++) board.Tick();
-            Assert.True(tape.CassetteOutput);
+            Assert.True(tape.TapeOutput);
             board.Write(0x098c, 0xc0);
-            Assert.False(tape.CassetteOutput);
+            Assert.False(tape.TapeOutput);
             for (; ticks < 623; ticks++) board.Tick();
-            Assert.False(tape.CassetteOutput);
+            Assert.False(tape.TapeOutput);
             board.Tick();
-            Assert.True(tape.CassetteOutput);
+            Assert.True(tape.TapeOutput);
         }
         finally { board.Reset(true); }
     }

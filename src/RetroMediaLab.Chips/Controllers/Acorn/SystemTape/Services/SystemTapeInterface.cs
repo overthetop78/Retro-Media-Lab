@@ -32,11 +32,11 @@ public sealed class SystemTapeInterface : ISystemTapeInterface
     public int ClockFrequency { get; }
     public long ClockCount => _clock;
     public long NextClockEvent { get; private set; }
-    public bool CassetteInput => _inputBit;
-    public bool CassetteOutput => _publishedOutput;
+    public bool TapeInput => _inputBit;
+    public bool TapeOutput => _publishedOutput;
     /// <summary>PA7 CASIN and PA5 NHITONE; other port bits are supplied by the owner.</summary>
     public byte InputPins => _publishedPins;
-    public Action<bool>? CassetteOutputChanged { get; set; }
+    public Action<bool>? TapeOutputChanged { get; set; }
     public Action<byte>? InputPinsChanged { get; set; }
     public Action<long>? NextClockEventChanged { get; set; }
 
@@ -114,7 +114,7 @@ public sealed class SystemTapeInterface : ISystemTapeInterface
         if (output != _publishedOutput)
         {
             _publishedOutput = output;
-            CassetteOutputChanged?.Invoke(output);
+            TapeOutputChanged?.Invoke(output);
         }
         var pins = (byte)((_inputBit ? C.DataInputPin : 0)
             | ((_receiveCounter & C.CarrierBit) != 0 ? C.CarrierInputPin : 0));

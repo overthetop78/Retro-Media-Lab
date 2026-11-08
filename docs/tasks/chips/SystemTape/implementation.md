@@ -16,3 +16,12 @@ Contrat SystemTape vérifié : les tests globaux signalent encore 14 classes ACB
 - [x] Supprimer les appels au transport arrêté, sans arrêter la carte Tape matérielle.
   - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.cs` : mémoriser l'activité via `AnalogTape.ActivityChanged` et appeler son transport uniquement pendant lecture, enregistrement ou déplacement ; conserver les échéances SystemTapeInterface.
   - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornAtom/Common/Services/AtomMachine.cs` : recevoir la même activité et supprimer les appels du transport arrêté ; conserver le générateur Tape, la vidéo et l'audio matériels.
+
+## Noms techniques — 9 novembre 2026
+
+- [x] Respecter le nom Tape dans le contrat ajouté après le renommage général.
+  - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Acorn/SystemTape/Services/SystemTapeInterface.cs`, `Interfaces/ISystemTapeInterface.cs`, `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.cs` et `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemTapeTests.cs` : renommer CassetteInput, CassetteOutput et CassetteOutputChanged en TapeInput, TapeOutput et TapeOutputChanged, sans alias de compatibilité et sans changement matériel.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemRamIoTests.cs` : adapter les quatre lectures de TapeOutput au contrat renommé.
+  - [x] Modifier les résultats générés des tests existants en exécutant le groupe SystemTape puis les contrôles System concernés ; consigner leurs résultats dans les fiches.
+
+Résultats : 10 contrôles SystemTape Debug réussis (87 ms), puis 72 contrôles System/RAM-E/S (1 s), zéro échec/ignoré. Aucun nouveau test ajouté.
