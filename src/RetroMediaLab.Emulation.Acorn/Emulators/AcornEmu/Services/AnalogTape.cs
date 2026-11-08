@@ -16,6 +16,7 @@ internal sealed class AnalogTape(int clock, TapeSignalMode signalMode = TapeSign
     private int _edgeTicks;
     private bool _inputLevel;
     private bool _hasLevel;
+    private bool _publishedInputSignal;
     private bool _outputBit;
     private bool _outputLevel;
     private int _outputPhase;
@@ -25,6 +26,8 @@ internal sealed class AnalogTape(int clock, TapeSignalMode signalMode = TapeSign
     private EmulationTapeCommand? _operation;
     private EmulationTapeState _state = EmulationTapeState.Empty;
     public event Action? ActivityChanged;
+    /// <summary>PCM comparator transitions; consumers retain the received level.</summary>
+    internal Action<bool>? InputSignalChanged { get; set; }
 
     internal bool InputBit { get; private set; } = true;
     internal bool InputPresent => _latency == 0 && _state == EmulationTapeState.Playing && _hasLevel;
@@ -103,6 +106,7 @@ internal sealed class AnalogTape(int clock, TapeSignalMode signalMode = TapeSign
         _outputBit = false;
         _outputLevel = false;
         InputBit = true;
+        PublishInputSignal(false);
         ActivityChanged?.Invoke();
     }
 
@@ -150,6 +154,7 @@ internal sealed class AnalogTape(int clock, TapeSignalMode signalMode = TapeSign
                 Seek((_signal!.BlockPositions ?? []).Where(value => value > _position).DefaultIfEmpty(Length).Min(), command);
                 break;
         }
+        if (_state != EmulationTapeState.Playing || _latency != 0 || _seekTarget is not null) PublishInputSignal(false);
         ActivityChanged?.Invoke();
     }
 
@@ -191,6 +196,7 @@ internal sealed class AnalogTape(int clock, TapeSignalMode signalMode = TapeSign
         if (!_hasLevel && sample != 0) _edgeTicks = 0;
         _hasLevel = sample != 0;
         _inputLevel = level;
+        PublishInputSignal(level);
         if (_edgeTicks > clock / C.SilenceTimeoutFrequency) InputBit = true;
         AdvancePhase(1);
         while (_samplePhase >= clock) { _samplePhase -= clock; _position++; }
@@ -245,7 +251,15 @@ internal sealed class AnalogTape(int clock, TapeSignalMode signalMode = TapeSign
         _edgeTicks = 0;
         _hasLevel = false;
         InputBit = true;
+        PublishInputSignal(false);
         ActivityChanged?.Invoke();
+    }
+
+    private void PublishInputSignal(bool level)
+    {
+        if (_publishedInputSignal == level) return;
+        _publishedInputSignal = level;
+        InputSignalChanged?.Invoke(level);
     }
     bool RetroMediaLab.Chips.Custom.Acorn.Electron.ULA.Interfaces.IElectronTapePins.InputPresent =>
         _latency == 0 && _state == EmulationTapeState.Playing;

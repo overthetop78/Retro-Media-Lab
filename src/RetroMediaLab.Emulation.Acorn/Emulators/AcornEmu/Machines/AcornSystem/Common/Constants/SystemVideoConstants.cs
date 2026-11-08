@@ -14,6 +14,7 @@ internal static class SystemVideoConstants
     internal const int MonochromeRamStart = 0x1000;
     internal const int RelocatedMonochromeRamStart = 0xf000;
     internal const int TeletextCrtcStart = 0x0800;
+    internal const int TeletextCrtcMirror = 0xfe;
     internal const int MonochromeCrtcStart = 0x1840;
     internal const int RelocatedMonochromeCrtcStart = 0xe840;
     internal const int MonochromeCrtcMirror = 0x3e;

@@ -21,7 +21,7 @@ internal sealed class SystemKeyboard(int clock)
     internal Action<bool>? StrobeChanged { get; set; }
     internal bool TapeOutput => (_selection & C.TapeOutputBit) != 0;
     internal byte Data => (byte)(_data & C.DataMask);
-    internal byte DataWithStrobe => (byte)(Data | (Strobe ? C.StrobeMask : 0));
+    internal byte DataWithStrobe => (byte)(Data | (Strobe ? 0 : C.StrobeMask));
 
     internal void SetInput(EmulationInputSnapshot input)
     {

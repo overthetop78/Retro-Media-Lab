@@ -22,4 +22,5 @@ internal static class SystemKeyboardConstants
     internal const int MatrixFirstBit = 3;
     internal const int TapeOutputBit = 0x40;
     internal const int TapeInputBit = 0x80;
+    internal const int TapeCarrierBit = 0x20;
 }

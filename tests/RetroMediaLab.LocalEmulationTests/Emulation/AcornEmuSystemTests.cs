@@ -11,11 +11,103 @@ using RetroMediaLab.Emulation.Acorn.Common.Machines.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Interfaces;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Services;
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Enums;
 
 namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuSystemTests
 {
+    [Fact]
+    public void WaveformTransportPublishesTransitionsAndReleasesTheComparatorOnStop()
+    {
+        var tape = new AnalogTape(48000, TapeSignalMode.DirectWaveform);
+        var levels = new List<bool>();
+        tape.InputSignalChanged = levels.Add;
+        try
+        {
+            tape.Insert(new EmulationTapeSignal(new short[] { 100, 100, -100, -100, 100 }, 48000), false);
+            tape.ExecuteTape(EmulationTapeCommand.Play);
+            for (var clock = 0; clock < 5; clock++) tape.Tick();
+            Assert.Equal(new[] { true, false, true }, levels);
+            tape.ExecuteTape(EmulationTapeCommand.Stop);
+            for (var clock = 0; clock < 10; clock++) tape.Tick();
+            Assert.Equal(new[] { true, false, true, false }, levels);
+        }
+        finally { tape.InputSignalChanged = null; tape.Eject(); }
+    }
+
+    [Fact]
+    public void AsciiKeyboardExposesTheSameActiveLowStrobeOnThePortAndTheWire()
+    {
+        var keyboard = new SystemKeyboard(1000000);
+        var levels = new List<bool>();
+        keyboard.StrobeChanged = levels.Add;
+        Assert.Equal(0x80, keyboard.DataWithStrobe & 0x80);
+        keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.A } });
+        Assert.Equal((byte)'a', keyboard.DataWithStrobe);
+        keyboard.SetInput(EmulationInputSnapshot.Empty);
+        Assert.Equal((byte)('a' | 0x80), keyboard.DataWithStrobe);
+        Assert.Equal(new[] { false, true }, levels);
+    }
+
+    [Theory]
+    [InlineData(MachineModel.AcornSystem2, FirmwareCategory.Basic, EmulationFirmwareCompatibility.Compatible)]
+    [InlineData(MachineModel.AcornSystem2, FirmwareCategory.OperatingSystem, EmulationFirmwareCompatibility.Incompatible)]
+    [InlineData(MachineModel.AcornSystem1, FirmwareCategory.Basic, EmulationFirmwareCompatibility.Incompatible)]
+    public void ReconstructedSystemBasicIsIdentifiedForItsVerifiedRole(MachineModel model, FirmwareCategory role, EmulationFirmwareCompatibility expected)
+    {
+        Assert.Equal(expected, AcornSystemModel.Get(model, HardwareCpu.Mos6502, "6571fca3e86e6dc99c2b56481979fbc24615bff2", role));
+    }
+
+    [Fact]
+    public void TeletextCrtcDecodesItsEntirePageWithoutClaimingAdjacentPages()
+    {
+        var video = new SystemVideo(false, new byte[960]);
+        try
+        {
+            for (var address = 0x0800; address < 0x0900; address += 2)
+            {
+                Assert.True(video.Handles(address));
+                Assert.True(video.Handles(address + 1));
+                video.Write(address, 14);
+                video.Write(address + 1, (byte)(address >> 1));
+                video.Write(0x0800, 14);
+                Assert.Equal((byte)((address >> 1) & 0x3f), video.Read(0x0801));
+            }
+            Assert.False(video.Handles(0x0900));
+            Assert.False(video.Handles(0x09ff));
+        }
+        finally { video.Reset(); }
+    }
+
+    [Theory]
+    [InlineData(0, 9, false)]
+    [InlineData(3, 18, true)]
+    public void TeletextPublishesEachNativeFieldAndItsCompletedParity(byte mode, byte raster, bool interlaced)
+    {
+        var video = new SystemVideo(false, new byte[960]);
+        try
+        {
+            ProgramTeletext(video, mode, raster);
+            var modes = new List<EmulationVideoScanMode>();
+            // Ignore the first field, whose registers were programmed mid-startup.
+            while (video.Frame < 5)
+            {
+                if (!video.TickCharacter() || video.Frame < 2) continue;
+                modes.Add(video.ScanMode);
+                Assert.Contains(video.CompletedFieldClocks, interlaced ? new long[] { 19968, 20032 } : [19968]);
+                Assert.Equal(480 * 250 * 4, video.CompletedFrame.Length);
+            }
+            if (interlaced)
+            {
+                Assert.All(modes, value => Assert.NotEqual(EmulationVideoScanMode.Progressive, value));
+                for (var index = 1; index < modes.Count; index++) Assert.NotEqual(modes[index - 1], modes[index]);
+            }
+            else Assert.All(modes, value => Assert.Equal(EmulationVideoScanMode.Progressive, value));
+        }
+        finally { video.Reset(); }
+    }
+
     [Fact]
     public void DisplayRetainsDrivenPinsAcrossPresentationsAndExtinguishesAfterRelease()
     {

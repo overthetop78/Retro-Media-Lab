@@ -6,6 +6,7 @@ internal static partial class AcornFirmware
     private static IReadOnlyDictionary<string, FirmwareDefinition> BasicRoms() =>
         new Dictionary<string, FirmwareDefinition>(StringComparer.OrdinalIgnoreCase)
         {
+            ["6571fca3e86e6dc99c2b56481979fbc24615bff2"] = new("Acorn System BASIC [Chris Oddy rebuild]", null, FirmwareCategory.Basic),
             ["ebcde5b36cb3a3344567cbba4c7b9fde015f4802"] = new("Acorn Atom Floating Point", null, FirmwareCategory.Basic),
             ["890f6e3e7fab3340f75b85e93ff29332bc9ecb2e"] = new("BASIC I", "I", FirmwareCategory.Basic),
             ["4a7393f3a45ea309f744441c16723e2ef447a281"] = new("BASIC II", "II", FirmwareCategory.Basic),

@@ -17,10 +17,13 @@ internal static class AcornSystemModel
     private static readonly IReadOnlySet<string> Monochrome = Roms("04c326a745ba6a78185ebc2adeecb53a166a6ab3");
     private static readonly IReadOnlySet<string> CompatibleDos40 = Roms("3becc10f6a938971f83b8898c28cfdd3e6897a41", "8d492106a1b06aa8ae2744919fcd83c7b42a2612");
     private static readonly IReadOnlySet<string> CompatibleSystemFive = Roms("3f787ab83e41e50889e367cbccddfa716b6a5c2b4");
+    private static readonly IReadOnlySet<string> CompatibleSystemBasic = Roms("6571fca3e86e6dc99c2b56481979fbc24615bff2");
 
     internal static EmulationFirmwareCompatibility Get(MachineModel model, HardwareCpu cpu, string hash, FirmwareCategory role)
     {
         if (!AcornFirmware.BySha1.ContainsKey(hash)) return EmulationFirmwareCompatibility.Unknown;
+        if (role == FirmwareCategory.Basic && model == MachineModel.AcornSystem2 && CompatibleSystemBasic.Contains(hash))
+            return EmulationFirmwareCompatibility.Compatible;
         if (role == FirmwareCategory.OperatingSystem && model == MachineModel.AcornSystem5 && CompatibleSystemFive.Contains(hash))
             return EmulationFirmwareCompatibility.Compatible;
         if (role == FirmwareCategory.OperatingSystem && cpu != HardwareCpu.Motorola6809

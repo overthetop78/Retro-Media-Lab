@@ -26,12 +26,12 @@ internal sealed partial class SystemVideo
         _teletextLineHalfDot = 0;
         _teletextDotLevel = false;
         ConfigureTeletextPins();
+        _teletext?.SetDataEntryWindow(_crtc.VSync);
     }
 
     private void ClockTeletext()
     {
         var chip = _teletext!;
-        chip.SetDataEntryWindow(_crtc.VSync);
         chip.SetGeneralLineReset(!_crtc.HSync);
         chip.CharacterRoundingSelect = (_crtc.RasterAddress & 1) == 0;
         chip.Data = _ram[_crtc.MemoryAddress & (_ram.Length - 1)];

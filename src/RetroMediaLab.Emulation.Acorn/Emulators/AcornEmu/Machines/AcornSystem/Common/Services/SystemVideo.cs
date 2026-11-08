@@ -21,6 +21,11 @@ internal sealed partial class SystemVideo
     private readonly int _crtcStart;
     private byte[] _drawing = new byte[C.FrameBytes];
     private byte[] _completed = new byte[C.FrameBytes];
+    private long _characterClocks;
+    private long _fieldStartClock;
+    private bool _drawingInterlaced;
+    private int _drawingParity;
+    private EmulationVideoScanMode _scanMode;
 
     internal SystemVideo(bool eightyColumns, ReadOnlySpan<byte> characters, bool relocated = false, bool inverted = false)
     {
@@ -34,11 +39,15 @@ internal sealed partial class SystemVideo
         if (!eightyColumns)
         {
             _teletext = new TeletextSaa5050(characters);
+            _crtc.VSyncChanged = _teletext.SetDataEntryWindow;
             ConfigureTeletextPins();
         }
     }
 
     internal long Frame => _crtc.Frame;
+    internal bool IsProgrammed => _crtc.IsProgrammed;
+    internal long CompletedFieldClocks { get; private set; }
+    internal EmulationVideoScanMode ScanMode => _scanMode;
     internal byte[] CompletedFrame => _completed;
 
     internal bool Handles(int address) => InRam(address) || CrtcPort(address) >= 0;
@@ -66,12 +75,17 @@ internal sealed partial class SystemVideo
         _crtc.Reset();
         _teletext?.Reset();
         ResetTeletextWiring();
+        _characterClocks = _fieldStartClock = CompletedFieldClocks = 0;
+        _drawingInterlaced = false;
+        _drawingParity = 0;
+        _scanMode = EmulationVideoScanMode.Progressive;
         Array.Clear(_drawing);
         Array.Clear(_completed);
     }
 
     internal bool TickCharacter()
     {
+        _characterClocks++;
         if (_eightyColumns)
         {
             if (_crtc.DisplayEnabled) DrawMonochromeCell();
@@ -81,6 +95,12 @@ internal sealed partial class SystemVideo
         if (_crtc.Column == 0) _teletextLineHalfDot = 0;
         if (!frameStarted) return false;
         (_drawing, _completed) = (_completed, _drawing);
+        CompletedFieldClocks = _characterClocks - _fieldStartClock;
+        _fieldStartClock = _characterClocks;
+        _scanMode = !_drawingInterlaced ? EmulationVideoScanMode.Progressive
+            : _drawingParity == 0 ? EmulationVideoScanMode.InterlacedEvenField : EmulationVideoScanMode.InterlacedOddField;
+        _drawingInterlaced = _crtc.InterlaceVideo;
+        _drawingParity = _crtc.RasterAddress & 1;
         Array.Clear(_drawing);
         return true;
     }
@@ -89,7 +109,7 @@ internal sealed partial class SystemVideo
 
     private int CrtcPort(int address)
     {
-        var decoded = _eightyColumns ? address & ~C.MonochromeCrtcMirror : address;
+        var decoded = address & ~(_eightyColumns ? C.MonochromeCrtcMirror : C.TeletextCrtcMirror);
         return decoded == _crtcStart ? 0 : decoded == _crtcStart + 1 ? 1 : -1;
     }
 
