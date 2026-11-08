@@ -17,3 +17,11 @@ Corrections : CB1 initial haut pour recevoir le premier appui, CASIN sur PB7, CA
 24 tests de raccordement System passent, 406 ms ; 61 tests CPU passent. Captures natives et journaux : artifacts/TestsMachines/Acorn/Acorn System 3/20261108-system3-*.bmp et *.log. Elles proviennent du banc sans fenêtre, pas de RML. Essai RML groupé avec System 2/4/5 à effectuer après livraison.
 
 Sources archivées : artifacts/.tmp-archives/machines/Acorn/Acorn System 3/Monitor6809.asm et dos.html ; [moniteur original](https://www.theoddys.com/acorn/acorn_system_software/6809_monitor/Monitor.asm). Le profil bas du moniteur original n'est pas présenté comme un montage FLEX à I/O relocalisées.
+
+## Essai RML Debug — carte 6502
+
+Le 8 novembre, montage configuré dans RML : MOS 6502 à 1 MHz, DOS System 3 et saa5050 ; Floppy0 changé de ss40 à ss80 pour l'image `F:/Retro/Acorn System/System BASIC.ssd` (80 pistes, simple face, 200 Kio). `CAT` lit le catalogue réel ; `LOAD BASIC` puis `BASIC` chargent et exécutent le langage depuis le lecteur. `PRINT 12+34` retourne 46, puis le même calcul saisi avec les chiffres/opérateur du pavé et son Entrée étendue retourne encore 46. La ponctuation hôte est transmise au BASIC. Cadence affichée : environ 50 FPS, 49,9–50,1 Hz, 1,00 MHz et 100 %, présentation entrelacée 480×500. Captures `20261108-rml-6502-catalog.png` et `20261108-rml-6502-basic-keyboard.png` ; elles complètent les transferts et mesures natifs déjà consignés. Carte 6809 dans RML encore à vérifier.
+
+## Essai RML Debug — carte 6809
+
+Après arrêt électrique du 6502, sélection Motorola MC6809 et ROM `Acorn System 6809 Monitor40.bin` dans les paramètres existants, caractères saa5050 conservés. Le moniteur démarre ; `R` affiche les registres. `M2000 86 5A B7 20 10 39;` saisit LDA #$5A / STA $2010 / RTS ; `G2000` exécute et retourne au moniteur ; `M2010` affiche bien `2010 5A`. Cadence affichée : environ 50 FPS, 49,9–50,1 Hz, 1,00 MHz, 100 %. Capture `20261108-rml-6809-memory-execute.png`. Le bootstrap 6809 reste prouvé par le banc natif décrit plus haut, pas par le disque BASIC 6502 resté monté. Aucun nouveau changement des puces nécessaire pendant ces essais. Les deux cartes sont maintenant vérifiées dans RML en complément des tests de circuits et des protocoles natifs.

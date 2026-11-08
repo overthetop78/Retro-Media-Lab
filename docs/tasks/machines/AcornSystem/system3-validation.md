@@ -15,3 +15,9 @@ Un seul modèle, deux cartes CPU sélectionnables dans le contrat existant. Apr�
     - [x] Créer `F:/Retro/Acorn System/System BASIC.ssd` à partir de la source Chris Oddy déjà identifiée, sans écraser un média différent ; ouvrir les images dans le banc via EmulationSdk.MediaProcessing, tester catalogue/chargement/exécution et écritures sur copie temporaire possédée.
     - [x] Modifier `artifacts/.tmp-system3/Program.cs` pour établir les défauts exacts de chaque carte, avec RAM/PC/cycles, parités et données disque ; ajouter les seuls fichiers de production nécessaires avant de les modifier.
     - [x] Réutiliser le banc commun `artifacts/.tmp-system3/Program.cs` pour System 4/5 ; sa suppression finale est suivie dans System 5, les captures et médias de référence restent conservés.
+
+- [x] Vérifier les deux cartes dans le Debug livré de RML.
+  - [x] Vérifier le montage 6502 et son logiciel invité.
+    - [x] Créer les captures `artifacts/TestsMachines/Acorn/Acorn System 3/20261108-rml-6502-*` : firmware DOS System 3, VDU40, catalogue de System BASIC.ssd, chargement BASIC, calcul, clavier principal et pavé ; conserver la cadence affichée et les commandes utilisées.
+  - [x] Vérifier le montage 6809 et son moniteur.
+    - [x] Créer les captures `artifacts/TestsMachines/Acorn/Acorn System 3/20261108-rml-6809-*` : moniteur 6809/VDU40, registres, édition mémoire et exécution d'un programme court ; noter les preuves de bootstrap déjà acquises séparément des opérations réelles dans RML.
