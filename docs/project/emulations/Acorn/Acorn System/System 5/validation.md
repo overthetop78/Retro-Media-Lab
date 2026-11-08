@@ -17,3 +17,13 @@ Carte complète Debug, 160 champs : 13,391210 ms/champ, 74,676 champs/s sans lim
 Preuves natives : artifacts/TestsMachines/Acorn/Acorn System 5/20261108-system5-*.bmp et 20261108-system5-native-debug.log. Essai RML groupé après livraison Debug ; aucun essai utilisateur présenté comme déjà effectué.
 Régression finale commune : 46 tests System passent en Debug (1 seconde), dont le nouveau contrôle des liens DRAM et des zones non équipées. Rapport artifacts/TestsMachines/Acorn/AcornSystem/systems-final-debug.trx.
 Livraison groupée du 8 novembre : scripts/local-building.cmd --building=debug --modules=A terminé avec code 0. Exécutable build/Debug/Retro Media Lab/retromedialab.exe, Chips dans lib et 24 manifestes/DLL de modules vérifiés. Acorn SHA256 1B5B4CD5E25AA48EDEC7A63C2B641409223319A1FDC7F2E548320B94172E11E2, identique à la sortie win-x64. Essais utilisateur dans RML à effectuer.
+
+## Vérification dans RML Debug du 8 novembre
+
+Essai effectué par l'agent avec l'autorisation de l'utilisateur, dans la livraison corrigée du clavier et du monitor Tape (Acorn SHA256 A578762690DAC8CCA506B0000C344C16FDEF124CAEAFB542A34A18C17A8C13C0). NOS80 et VDU80 sélectionnés ; deux lecteurs ss80 à 100 %. L'image de référence `F:/Retro/Acorn System/System BASIC.ssd` est seulement lue.
+
+CAT donne le catalogue du lecteur 0 ; BASIC charge et exécute le programme sur disque. PRINT 12+34 donne 46. Les touches physiques du pavé 7, multiplication, 6 et Entrée étendue donnent 42. Une première invocation incorrecte du helper avait saisi les caractères 13 au lieu d'envoyer Entrée ; l'Error 29 visible dans l'historique vient de cette saisie de diagnostic, corrigée avant le contrôle réussi, et ne constitue pas un défaut établi de la machine.
+
+Après éjection du lecteur 0 et montage de la même image sur le lecteur 1, sans redémarrage, *CAT1 affiche bien le catalogue « drive 1 ». Le signal progressif natif 480×250 est présenté à 50,0–50,1 FPS, 50,1 Hz et 2,00 MHz / 100 %. Les valeurs limitées de RML ne remplacent pas la mesure libre native ci-dessus.
+
+Captures : `artifacts/TestsMachines/Acorn/Acorn System 5/20261108-rml-basic-keypad.png` et `20261108-rml-second-drive-catalog.png`. Le contrôle des sons et des directives demandé ensuite reste un bloc distinct à terminer pour la famille.
