@@ -1,5 +1,13 @@
 # Acorn System 2 — références de reprise
 
+## Revue statique du 8 novembre — liaisons et codeur ASCII
+
+Le strobe PB7 est désormais aussi transmis à l'entrée STB du 8154, en plus de sa lecture de port. Le VDU reçoit HSYNC et RA du CRTC par notifications, vers GLR et CRS du SAA5050 : plus de relecture de ces sorties à chaque caractère. Initialisation de tous ces niveaux au raccordement/reset ; les fronts de balayage, données mémoire et horloges de points restent présents.
+
+Le codeur ASCII conserve son horloge et ses dates de répétition (500 ms puis demi-périodes de 50 ms). `NextClockEventChanged` actualise la date gardée dans la carte ; celle-ci appelle `AdvanceTo` à l'échéance ou avant un changement d'entrée/reset, au lieu d'appeler le codeur à chaque cycle. Une avancée groupée visite chaque front nécessaire. REPT est résolu à la réception des touches et conserve son action au tick suivant. Le System 1 sélectionne explicitement sa matrice passive ; les System ASCII ne recalculent plus cette matrice absente. Même raccordement commun aux autres cartes System, avec leur fréquence propre.
+
+Ces corrections sont issues de la lecture du code existant. Aucun nouveau test/build ou gain mesuré à ce stade ; les preuves et durées historiques ci-dessous ne valident pas ces modifications.
+
 ## Montage actuellement fourni par le code
 
 `SystemFunctions.Create` assemble `AcornSystemMachine` avec `Standard6502`, 1 MHz déclaré, 1 Kio sur la carte CPU et une carte RAM de 8 Kio à 2000. La carte System 2 possède l'INS8154, le clavier ASCII, le transport AnalogTape et la VDU 40 ; le VIA absent et le FDC absent ne sont pas instanciés. Les chips MOS6502, INS8154, MC6845 et SAA5050 ont déjà leurs fiches et tests ; ce passage porte d'abord sur leur câblage de System 2. Aucun modèle matériel n'est déclaré vérifié sur ces seules lectures.

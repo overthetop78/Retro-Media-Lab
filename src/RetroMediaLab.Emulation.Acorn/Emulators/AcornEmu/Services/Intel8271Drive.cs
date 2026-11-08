@@ -113,7 +113,6 @@ internal sealed partial class Intel8271Drive
     internal void SynchronizeClock()
     {
         _chip.AdvanceTo(_ownerTick);
-        _nextControllerTick = _chip.NextClockEvent ?? long.MaxValue;
     }
 
     private void SetIndexInput(int drive, bool level)

@@ -47,7 +47,9 @@ public sealed partial class Via6522
             return _pb6Input is not { } level ? pins : level ? (byte)(pins | C.Pb6) : (byte)(pins & ~C.Pb6);
         }
     }
-    private bool Pb6Level => ((InputB & ~_registers[C.DirectionB] | _registers[C.PortB] & _registers[C.DirectionB]) & C.Pb6) != 0;
+    private bool Pb6Level => (_registers[C.DirectionB] & C.Pb6) != 0
+        ? (_registers[C.PortB] & C.Pb6) != 0
+        : _pb6Input ?? ((ReadPortB?.Invoke() ?? byte.MaxValue) & C.Pb6) != 0;
 
     public void SetPb6(bool level) => _pb6Input = level;
     public void VSync() { SetCa1(true); SetCa1(false); }

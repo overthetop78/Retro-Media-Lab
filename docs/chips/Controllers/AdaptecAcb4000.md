@@ -823,3 +823,11 @@ Port 0 Debug, fenêtres montage/SAVE/après LOAD : 26,764500 / 20,587888 / 19,06
 ## Master 512 / DOS Plus — contrôle intégré du 8 novembre 2026
 
 Contrôleur existant, sans changement de code, de fréquence ou de délais. DAT/DSC ADFS 306 × 2 × 33 × 256 créé par le SDK ; HDISK 1.01 crée la partition DOS 4 Mo et la rend amorçable. COPY depuis la disquette vers C:, TYPE et comparaison indépendante des 512 octets publiés dans le DAT réussissent. Nouvelle instance avec seule disquette ADFS vierge : DOS Plus 2.1 atteint C> depuis le HDD et relit le témoin ; 718 puis 724 blocs lus, zéro écriture. Captures sous TestsChips/Acb4000/BBC Master 512. [Montage, phases, compteurs et mesures](../../project/emulations/Acorn/BBC%20Master/Master%20512/hdd-dos-plus.md). Le relevé 38,46–39,24 ms/champ porte sur la carte entière au repos, pas le seul contrôleur ni un transfert actif. Aucun gain nouveau annoncé.
+
+## 8 novembre 2026 — revue statique du raccordement hôte interne
+
+SynchronizeHostInterface était appelé deux fois par Tick, puis relisait SEL/BSY, ACK et HostOutputState pour comparer les sorties du tampon. Le tampon publie maintenant HostOutputsChanged aux mutations de ses sorties (programmation/reset, ACK, arbitrage achevé, début/fin/annulation des transferts hôte). Aucune publication n'est ajoutée dans un tick périodique ; son niveau est comparé uniquement à ces opérations.
+
+L'ACB reçoit cette notification et celle du bus. Les changements locaux de latch de données, ACK, DMA et stage marquent également la synchronisation nécessaire. SynchronizeHostInterface retourne directement lorsqu'aucune de ces causes n'a changé. Lorsqu'il est nécessaire, le calcul et l'ordre ACK→ASIC→BOE→bus restent à leurs points précédents : ni avancement supplémentaire d'horloge, ni décalage d'un tick, ni mise à jour immédiate d'un chemin auparavant cadencé ne sont ajoutés. Une notification causée par cette propagation reste disponible pour le point suivant ; elle n'est pas effacée après un callback.
+
+Revue des sites de mutation effectuée dans les services concernés ; source seulement, non compilée et non testée pendant la revue demandée. Aucun gain global mesuré et aucune clôture du contrôleur revendiqués. Les validations antérieures ne couvrent pas cette modification.

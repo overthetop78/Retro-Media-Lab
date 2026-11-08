@@ -78,3 +78,13 @@
   - [x] Modifier l’index Git et créer un commit propre au MOS 6522 entièrement terminé avant toute autre puce.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+- [x] Revue statique des entrées PB6, 8 novembre 2026.
+  - [x] Modifier `src/RetroMediaLab.Chips/IO/MOS/MCS6500/6522/Services/Via6522.Ports.cs` : dans `Pb6Level`, utiliser directement le latch de sortie lorsque DDRB6 est en sortie et le niveau reçu par `SetPb6` lorsqu'il est fourni ; consulter le fournisseur historique seulement en entrée sans niveau explicite. Conserver l'échantillonnage PH2 et les lectures complètes du port.
+
+Aucun test ni build lancé pour ce passage, suivant la demande de revue statique. Aucun gain global revendiqué : le fournisseur historique reste nécessaire aux cartes qui n'envoient pas explicitement PB6.
+
+- [x] Raccorder PB6 aux sources déjà présentes sans consultation répétée du port.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/SystemKeyboard.cs` et `AcornSystemMachine.cs` : publier les changements de donnée ASCII depuis leur mutation, alimenter PB6 depuis son bit 6 sur la carte 6809, initialiser le niveau ; câbler au niveau haut les cartes sans fournisseur PB6.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/BbcMicro/Common/Services/UserPortPointer.cs` et `BbcMicroMachine.cs` : publier les changements du fil PB6 des boutons, les raccorder au VIA utilisateur et initialiser PB6 système/utilisateur depuis les niveaux déjà fournis par le montage.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornAtom/Common/Services/AtomMachine.cs` : initialiser PB6 au niveau haut du port non raccordé, sans ajouter de source matérielle.

@@ -58,6 +58,8 @@ public sealed class Chip6809Tests
         cpu.Step(); cpu.Step();
         Assert.Equal(0x2ff4, cpu.S);
         bus.Irq = true;
+        // Two Q-falling samples synchronize the retained input while CWAI waits.
+        cpu.Step(); cpu.Step();
         bus.Accesses.Clear(); bus.Ticks = 0;
         var before = cpu.Cycles;
         cpu.Step();
@@ -75,6 +77,7 @@ public sealed class Chip6809Tests
         cpu.Step();
         Assert.Equal(0x1001, cpu.PC);
         bus.Irq = true;
+        cpu.Step(); cpu.Step();
         cpu.Step();
         Assert.Equal(0x1002, cpu.PC);
     }
@@ -86,6 +89,7 @@ public sealed class Chip6809Tests
         bus.Memory[0xfff8] = 0x20;
         cpu.Step(); cpu.Step();
         bus.Irq = true;
+        cpu.Step(); // NOP supplies the two synchronization cycles before recognition.
         bus.Accesses.Clear(); bus.Ticks = 0;
         var before = cpu.Cycles;
         cpu.Step();

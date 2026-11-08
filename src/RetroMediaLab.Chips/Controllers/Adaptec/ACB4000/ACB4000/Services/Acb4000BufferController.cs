@@ -86,6 +86,7 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
                 dmaControl = size = 0;
                 ResetHostInterface();
             }
+            PublishHostOutputs();
             return true;
         }
         if (ResetAsserted) return true;
@@ -102,6 +103,7 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
             case C.StopPointerHigh: StopPointer = High(StopPointer, value); done = false; break;
             case C.CpuBuffer: buffer[CpuPointer & physicalMask] = value; break;
         }
+        PublishHostOutputs();
         return true;
     }
 
@@ -217,6 +219,7 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
         outgoing = ReadBuffer();
         hostAcknowledgementSeen = false;
         hostPending = true;
+        PublishHostOutputs();
         return true;
     }
 
@@ -228,6 +231,7 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
         WriteBuffer(incoming);
         hostAcknowledgementSeen = false;
         hostPending = true;
+        PublishHostOutputs();
         return true;
     }
 
@@ -237,6 +241,7 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
         hostPending = false;
         done = hostLast;
         hostLast = false;
+        PublishHostOutputs();
         return true;
     }
 
@@ -246,6 +251,7 @@ public sealed partial class Acb4000BufferController : IAcb4000SequencerBus
         CancelHostCycle();
         hostPending = hostLast = done = false;
         dmaControl &= unchecked((byte)~(C.ReadLatch | C.WriteLatch));
+        PublishHostOutputs();
     }
 
     /// <summary>Échange hôte complet, pour un propriétaire qui a déjà achevé REQ/ACK.</summary>

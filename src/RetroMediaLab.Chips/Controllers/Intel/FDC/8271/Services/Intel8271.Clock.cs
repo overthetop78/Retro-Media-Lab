@@ -32,13 +32,14 @@ public sealed partial class Intel8271
     public void AdvanceTo(long inputClockCount)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(inputClockCount, _inputClockCount);
+        if (inputClockCount == _inputClockCount) return;
         while (_inputClockCount < inputClockCount)
         {
             if (_resetAsserted || (!_commandPending && !_parameterPending &&
                 (_phase == Phase.Idle || (_phase == Phase.ExternalSeek && _delay <= 0))))
             {
                 _inputClockCount = inputClockCount;
-                return;
+                break;
             }
             if (!_commandPending && !_parameterPending && _serialPhase == SerialPhase.Inactive && _delay > 1)
             {
@@ -50,6 +51,7 @@ public sealed partial class Intel8271
             ++_inputClockCount;
             TickCore();
         }
+        PublishClockEvent();
     }
 
     private void PublishClockEvent()

@@ -423,3 +423,7 @@
     - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/WinchesterTrackSignals.cs` en restaurant sa version 567b081b7 : retirer la phase conservée non bénéfique, garder les quatre assertions temporelles et les vérifier sur cette référence restaurée avant nettoyage.
 
 > Report explicite : budget HDD actif Debug incomplet, dernière référence autour de 42,6 ms/image. Recherches prolongées sans solution validée pour tenir 19,97 ms ; appliquer l'exception de durée, ne pas déclarer ce critère terminé. Les tentatives sans gain ont été retirées ; reprendre les autres composants ouverts du Model A avant de revenir sur ce budget avec une nouvelle attribution globale. Voir la fiche et clock-cell-profile.md.
+
+- [x] Remplacer la surveillance répétée du port hôte interne par ses changements reçus.
+  - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Adaptec/ACB4000/ACB4000/Services/Acb4000BufferController.HostInterface.cs` et `Acb4000BufferController.cs` : publier les changements SEL/BSY/BOE aux mutations de contrôle, ACK, DMA, reset, arbitrage et complétion hôte, sans publication périodique.
+  - [x] Modifier `Acb4000.Memory.cs`, `Acb4000.cs`, `Acb4000.BufferDma.cs` et `Acb4000.DriveOutputs.cs` dans le même dossier : recevoir les changements du bus et du tampon, marquer les mutations locales ACK/données/DMA/stage, et ne recalculer SynchronizeHostInterface qu'après ces événements aux phases de synchronisation existantes.

@@ -65,3 +65,17 @@
   - [x] Modifier ce suivi avec le résultat de la régression Acorn complète et de la revue des constantes Master ; conserver les avertissements et limites réels, puis committer le bloc Master compilé.
 
 Validation finale : 377 tests Acorn réussis, zéro échec et zéro exclusion. Les anciennes attentes B2 sont désormais explicitement rattachées à B2 ; les touches assignables comprennent BREAK. Revue des constantes : adresses, tailles, registres et libellés Master sont nommés dans les constantes matérielles ou les ressources ; les encodages des instructions restent dans le décodage CPU. Le dernier build Debug All reste à jour : seuls les tests et ce suivi ont changé depuis sa réussite.
+
+## Comparaison statique des liaisons événementielles — 8 novembre 2026
+
+Revue demandée après les omissions System/Atom ; les clôtures et chiffres ci-dessus sont historiques et ne prouvent pas les modifications présentes dans l'arbre courant. Le Compact est laissé de côté sur instruction explicite de l'utilisateur.
+
+Fichiers effectivement relus : `BbcMicroMachine.cs`, `.Interrupts.cs`, `.Via.cs`, `BbcMicroMachine.Master.cs`, `MasterClock.cs`, `MasterMemory.cs`, `TurboBoard.cs`, `Master512Board.cs` ; côté puces, horloges ADC7002/HD146818/VIA/WD1770, entrées et horloges 6502/65C12, interfaces Tube et entrées DMA/interruptions/timers/bus du 80186.
+
+- Le BBC Master réutilise la carte BBC pour VIA, ACIA, ADC, disquettes, Winchester, réseau et vidéo. `ConnectInterrupts` initialise les niveaux puis reçoit leurs mutations ; les masques IRQ/NMI conservés font notifier le CPU seulement quand le niveau agrégé change.
+- L'ADC et le RTC publient `NextClockEventChanged` ; la carte conserve l'échéance et ne relit pas leurs sorties pour rechercher une complétion. Les transactions ADC, y compris le décodage déplacé du Master, synchronisent le temps avant lecture/écriture. `MasterClock` synchronise le HD146818 avant les accès de son bus.
+- Le VIA reçoit ses phases distinctes ; la phase descendante attend la fin de la transaction CPU. L'échantillonnage PB6 utilise son entrée retenue lorsqu'elle est explicitement raccordée.
+- Les mutations Tube notifient IRQ, NMI/DMA et RESET. Turbo reçoit IRQ/NMI ; Master 512 reçoit DMA/INT0, les sorties de timers et HLDA vers sa logique de rafraîchissement. Les compteurs, demandes et phases des timers restent dans le CPU. Ces parcours observés ne recherchent pas périodiquement une réponse sur les sorties Tube.
+- `MasterMemory` notifie l'IRQ ACCCON lors de sa mutation et du reset. Ses lectures RAM restent des transactions demandées ; elles ne constituent pas un sondage de changement d'une autre puce.
+
+Cette lecture confirme ces parcours précis, pas la complétude de tous les modes des puces ou tous les raccordements Master. Aucun nouveau test/build Master, gain chiffré ou verdict global ajouté. Pour `PUSH SP`, réutiliser la contradiction documentaire déjà consignée dans `docs/chips/CPU/Intel80186.md` : aucune régression établie et aucune modification appliquée à cette instruction pendant cette revue.

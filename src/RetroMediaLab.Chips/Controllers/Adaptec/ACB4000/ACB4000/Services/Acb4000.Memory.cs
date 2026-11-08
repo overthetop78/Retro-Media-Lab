@@ -16,6 +16,7 @@ public sealed partial class Acb4000
     // Only driven cycles replace it; an unpopulated address does not become a fictitious register.
     private byte _boardDataBus;
     private bool _hostSignalsPublished;
+    private bool _hostInterfaceChanged = true;
     private bool _publishedHostSelect;
     private bool _publishedHostBusy;
     private bool _publishedHostAck;
@@ -25,6 +26,8 @@ public sealed partial class Acb4000
 
     private void SynchronizeHostInterface()
     {
+        if (!_hostInterfaceChanged) return;
+        _hostInterfaceChanged = false;
         var select = _bus.Select;
         var busy = _bus.Busy;
         if (!_hostSignalsPublished || select != _publishedHostSelect || busy != _publishedHostBusy
@@ -169,10 +172,17 @@ public sealed partial class Acb4000
         if (address >= E.RegisterPage && address <= E.RegisterPage + byte.MaxValue)
         {
             var register = (byte)(address - E.RegisterPage);
-            if (register == B.HostData) _hostDataLatch = value;
+            if (register == B.HostData) SetHostDataLatch(value);
             else if (!_sequencerBuffer.TryWrite(register, value)) _aic.TryWrite(register, value);
             SynchronizeHostInterface();
         }
+    }
+
+    private void SetHostDataLatch(byte value)
+    {
+        if (_hostDataLatch == value) return;
+        _hostDataLatch = value;
+        _hostInterfaceChanged = true;
     }
 
     private bool CanWriteBoardMemory(ushort address, int length)

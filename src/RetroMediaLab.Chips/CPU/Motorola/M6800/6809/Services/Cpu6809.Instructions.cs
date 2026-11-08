@@ -29,7 +29,7 @@ public sealed partial class Cpu6809
         {
             case 0x12:
             case 0x1b: Read(PC); return 2;
-            case 0x13: Read(PC); _sync = true; return 4;
+            case 0x13: Read(PC); _sync = true; SetBusStatus(true, false); return 4;
             case 0x14:
             case 0x15: _freeRun = true; return 1;
             case 0x16:

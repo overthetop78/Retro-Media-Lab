@@ -3,40 +3,70 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Co
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornAtom.Common.Services;
 
-/// <summary>Matrice Atom lue par le PPI, sans conversion en caractères par le cœur.</summary>
+/// <summary>Contacts Atom issus des entrées hôtes ; niveaux conservés jusqu'au prochain changement.</summary>
 internal sealed class AtomKeyboard
 {
-    private IReadOnlySet<EmulationKey> _keys = new HashSet<EmulationKey>();
+    private readonly byte[] _pins = new byte[C.KeyboardColumnMask + 1];
     private int _column;
 
-    internal bool Break => _keys.Contains(EmulationKey.Break);
-    internal bool Repeat => _keys.Contains(EmulationKey.RightControl);
+    internal AtomKeyboard() => Reset();
+    internal bool Break { get; private set; }
+    internal bool Repeat { get; private set; }
     internal void Select(byte pins) => _column = pins & C.KeyboardColumnMask;
-    internal void SetInput(EmulationInputSnapshot input) => _keys = new HashSet<EmulationKey>(input.Keys);
-
-    internal byte Read()
+    internal void SetInput(EmulationInputSnapshot input)
     {
-        var pins = byte.MaxValue;
-        if (_column < AtomKeyboardMap.Columns.Count)
+        var contacts = new HashSet<EmulationKey>();
+        bool? characterShift = null;
+        foreach (var key in input.Keys)
         {
-            var column = AtomKeyboardMap.Columns[_column];
-            for (var row = 0; row < column.Length; row++)
-                if (Pressed(column[row])) pins &= (byte)~(1 << row);
+            var hasCharacter = input.HostCharacters?.TryGetValue(key, out _) == true;
+            var character = hasCharacter ? input.HostCharacters![key] : AtomKeyboardMap.KeypadCharacter(key);
+            // Comme sur le BBC, les lettres suivent leur identité hôte ; LOCK reste traité par la ROM.
+            if (hasCharacter && key is >= EmulationKey.A and <= EmulationKey.Z
+                && char.ToUpperInvariant(character) == key.ToString()[0])
+            {
+                contacts.Add(key);
+                continue;
+            }
+            if (hasCharacter || character != '\0')
+            {
+                if (AtomKeyboardMap.Characters.TryGetValue(character, out var contact))
+                {
+                    if (character == ' ') { contacts.Add(contact.Key); continue; }
+                    if (characterShift.HasValue && characterShift != contact.Shift) continue;
+                    characterShift = contact.Shift;
+                    contacts.Add(contact.Key);
+                }
+                continue;
+            }
+            contacts.Add(key == EmulationKey.NumpadEnter ? EmulationKey.Return
+                : key == EmulationKey.Backspace ? EmulationKey.Delete : key);
         }
-        if (_keys.Contains(EmulationKey.LeftControl)) pins &= unchecked((byte)~C.KeyboardControl);
-        if (_keys.Contains(EmulationKey.LeftShift) || _keys.Contains(EmulationKey.RightShift)
-            || _keys.Contains(EmulationKey.Down) || _keys.Contains(EmulationKey.Left))
-            pins &= unchecked((byte)~C.KeyboardShift);
-        return pins;
+        var modifiers = byte.MaxValue;
+        if (contacts.Contains(EmulationKey.LeftControl)) modifiers &= unchecked((byte)~C.KeyboardControl);
+        var shift = characterShift ?? (contacts.Contains(EmulationKey.LeftShift) || contacts.Contains(EmulationKey.RightShift));
+        if (shift || contacts.Contains(EmulationKey.Down) || contacts.Contains(EmulationKey.Left))
+            modifiers &= unchecked((byte)~C.KeyboardShift);
+        Array.Fill(_pins, modifiers);
+        for (var column = 0; column < AtomKeyboardMap.Columns.Count; column++)
+        {
+            var keys = AtomKeyboardMap.Columns[column];
+            for (var row = 0; row < keys.Length; row++)
+                if (keys[row] != EmulationKey.Unknown && (contacts.Contains(keys[row])
+                    || keys[row] == EmulationKey.Up && contacts.Contains(EmulationKey.Down)
+                    || keys[row] == EmulationKey.Right && contacts.Contains(EmulationKey.Left)))
+                    _pins[column] &= (byte)~(1 << row);
+        }
+        Break = input.Keys.Contains(EmulationKey.Break);
+        Repeat = input.Keys.Contains(EmulationKey.RightControl);
     }
+
+    internal byte Read() => _pins[_column];
 
     internal void Reset()
     {
-        _keys = new HashSet<EmulationKey>();
+        Array.Fill(_pins, byte.MaxValue);
+        Break = Repeat = false;
         _column = 0;
     }
-
-    private bool Pressed(EmulationKey key) => key != EmulationKey.Unknown && (_keys.Contains(key)
-        || key == EmulationKey.Up && _keys.Contains(EmulationKey.Down)
-        || key == EmulationKey.Right && _keys.Contains(EmulationKey.Left));
 }

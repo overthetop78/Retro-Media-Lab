@@ -40,7 +40,9 @@ internal sealed partial class SystemVideo
         {
             _teletext = new TeletextSaa5050(characters);
             _crtc.VSyncChanged = _teletext.SetDataEntryWindow;
-            ConfigureTeletextPins();
+            _crtc.HSyncChanged = level => _teletext.SetGeneralLineReset(!level);
+            _crtc.RasterAddressChanged = SetTeletextRasterAddress;
+            ResetTeletextWiring();
         }
     }
 

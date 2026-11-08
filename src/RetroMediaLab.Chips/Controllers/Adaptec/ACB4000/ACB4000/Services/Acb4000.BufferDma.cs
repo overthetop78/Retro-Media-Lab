@@ -19,6 +19,7 @@ public sealed partial class Acb4000
         var physicalWrite = !outgoing && _writingDisk;
         _hostBufferDma = physicalRead || physicalWrite
             || _code is Acb4000CommandCode.ReadBuffer or Acb4000CommandCode.WriteBuffer;
+        _hostInterfaceChanged = true;
         if (!_hostBufferDma) return;
         // Firmware 1083h/109Dh: reset pointers, stop at 03FFh, then arm host DMA.
         if (physicalRead)
@@ -44,7 +45,7 @@ public sealed partial class Acb4000
     {
         if (!_hostBufferReadPending || !_sequencerBuffer.TryTakeHostCycle(out var value)) return;
         _hostBufferReadPending = false;
-        _hostDataLatch = value;
+        SetHostDataLatch(value);
         if (!_bus.TryBeginTransfer(Acb4000BusPhase.DataIn, value)) throw new InvalidOperationException();
         SynchronizeHostInterface();
     }
@@ -62,6 +63,7 @@ public sealed partial class Acb4000
         if (!_hostBufferDma) return;
         _sequencerBuffer.TryWrite(B.DmaControl, B.HostTargetControl);
         _hostBufferDma = false;
+        _hostInterfaceChanged = true;
         _hostBufferReadPending = false;
         _hostBufferWritePending = false;
     }

@@ -44,3 +44,10 @@
 - [x] Corriger le contrôle de configuration vidéo après l'ajout des options audio à chaud.
   - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuVideoTests.cs` : sélectionner explicitement l'option de sortie vidéo par sa clé existante, sans supposer qu'elle est l'unique option du cœur ; conserver les assertions de RAM, PC, cycles et modification à chaud.
   - [x] Exécuter le groupe vidéo/interruptions BBC Debug après cette correction ; ne modifier aucun circuit pour satisfaire une ancienne hypothèse de cardinalité du test. Résultat final : 50 réussites, zéro échec ni ignoré, 2 s ; les 79 contrôles propres au CRTC passent également (93 ms).
+
+- [x] Supprimer le sondage des sorties CRTC dans le raccordement télétexte System, revue statique du 8 novembre.
+  - [x] Modifier `src/RetroMediaLab.Chips/Video/Motorola/M6845/6845/Services/Crtc6845.Timing.cs` et `Crtc6845.cs` : publier HSYNC quand son équation change et l'adresse de raster après sa résolution en fin de ligne et la mise à jour des autres sorties, sans notifications de valeurs intermédiaires annulées sur le même front ni nouvel appel périodique.
+  - [x] Modifier `Services/Crtc6845.Reset.cs`, `Services/Crtc6845.State.cs` et `Interfaces/ICrtc6845.cs` dans ce dossier : exposer les notifications, publier les niveaux au reset et conserver le contrat de restauration silencieuse existant, sans modifier registres, compteurs ou cadence.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/SystemVideo.cs` et `SystemVideo.Teletext.cs` : raccorder HSYNC inversé à GLR et RA0 inversé à CRS ; initialiser ces niveaux au montage/reset puis retirer leur lecture dans chaque `ClockTeletext`. Conserver les lectures RAM et les fronts F1/TR6 nécessaires.
+
+Code revu statiquement ; aucune compilation, nouveau test ou mesure pendant cette revue demandée par l'utilisateur. Les validations historiques ne prouvent pas ces nouvelles notifications. Le MC6809 modifié reste également en attente de validation ; aucune clôture de machine déduite de cette revue.

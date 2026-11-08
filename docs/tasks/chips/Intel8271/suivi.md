@@ -108,3 +108,7 @@
 Le bloc de bus/horloge du 8271 est vérifié. La différence de comportement du jeu entre 16 et 32 Kio reste un point du Model A, pas une validation générale de cette machine. Références, mesures et limites dans `docs/chips/Controllers/Intel8271.md`.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+- [x] Corriger la publication des échéances internes du 8271 après avancement.
+  - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Intel/FDC/8271/Services/Intel8271.Clock.cs` et `Intel8271.cs` : publier l'échéance finale après AdvanceTo/Tick, y compris l'entrée au repos, sans changer les cycles ni publier les états intermédiaires.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/Intel8271Drive.cs` : conserver l'initialisation de l'échéance et recevoir ensuite ses changements par notification, sans relecture après chaque avancement.

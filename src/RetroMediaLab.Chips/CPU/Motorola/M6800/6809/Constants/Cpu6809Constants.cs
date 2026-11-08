@@ -36,6 +36,12 @@ public static class Cpu6809Constants
     public const int SecondPrefix = 0x11;
     public const int AddressSpaceSize = 0x10000;
     public const int ResetInternalCycles = 4;
+    public const int ResetReleaseInternalCycles = 3;
+    public const int ResetVectorAndRecoveryCycles = 3;
+    public const int InputClockDivider = 4;
+    public const int InterruptClockStages = 2;
+    public const int DmaCounterClearCycles = 2;
+    public const int DmaRefreshMask = 0x0f;
     public const byte NzvMask = Negative | Zero | Overflow;
     public const string OpcodeFormat = "X2";
 }

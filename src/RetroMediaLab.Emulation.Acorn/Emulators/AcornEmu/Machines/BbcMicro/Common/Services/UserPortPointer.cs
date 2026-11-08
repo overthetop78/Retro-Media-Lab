@@ -20,6 +20,7 @@ internal sealed class UserPortPointer
     internal long Time { get; private set; }
     internal long? NextSignal => _nextSignal == long.MaxValue ? null : _nextSignal;
     internal Action<long?>? NextSignalChanged { get; set; }
+    internal Action<bool>? Pb6Changed { get; set; }
 
     internal UserPortPointer(bool acornPinout, Action<bool> setCb1, Action<bool> setCb2)
     {
@@ -34,8 +35,10 @@ internal sealed class UserPortPointer
     {
         AdvanceTo(time);
         var buttons = _leftMask | _middleMask | _rightMask;
+        var previous = PortB;
         PortB = (byte)((PortB | buttons)
             & ~(pointer.Left ? _leftMask : 0) & ~(pointer.Middle ? _middleMask : 0) & ~(pointer.Right ? _rightMask : 0));
+        if (((previous ^ PortB) & 0x40) != 0) Pb6Changed?.Invoke((PortB & 0x40) != 0);
         if (_hasInputTime && time > _lastInputTime) _sampleCycles = time - _lastInputTime;
         _lastInputTime = time;
         _hasInputTime = true;

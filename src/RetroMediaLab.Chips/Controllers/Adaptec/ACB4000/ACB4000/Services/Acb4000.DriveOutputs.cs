@@ -51,6 +51,7 @@ public sealed partial class Acb4000
     {
         if (_stage == stage) return;
         _stage = stage;
+        _hostInterfaceChanged = true;
         UpdateDriveGates();
     }
 

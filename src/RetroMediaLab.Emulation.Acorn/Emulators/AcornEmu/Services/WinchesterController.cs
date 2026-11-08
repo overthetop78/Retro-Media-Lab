@@ -17,7 +17,8 @@ internal sealed class WinchesterController
     private uint deferredIdleTicks;
     private bool canDeferClock;
     private bool normalSpeedIdle;
-    private bool targetOutputsChanged;
+    private bool targetOutputsChanged = true;
+    private bool initiatorOutputsChanged = true;
     internal long ClockTicks { get; private set; }
     internal long? NextClockEvent => normalSpeedIdle ? null : checked(ClockTicks + 1);
 
@@ -43,6 +44,7 @@ internal sealed class WinchesterController
     {
         ArgumentNullException.ThrowIfNull(storage);
         target = new Acb4000(unit => storage(unit), C.OwnerClock, C.SequencerClock);
+        host.OutputsChanged += () => initiatorOutputsChanged = true;
         target.Bus.OutputsChanged += () => targetOutputsChanged = true;
         signals = new WinchesterTrackSignals(target, storage, C.OwnerClock);
         Synchronize();
@@ -167,12 +169,18 @@ internal sealed class WinchesterController
 
     private void Synchronize()
     {
-        // Target REQ/BSY asynchronously clear the host ACK/SEL flip-flops. Propagate those
-        // cleared outputs back before another host access; this does not advance either clock.
-        target.SetInitiator(host.OutputData, host.Select, host.Acknowledge, host.ResetAsserted);
-        PublishTarget();
-        target.SetInitiator(host.OutputData, host.Select, host.Acknowledge, host.ResetAsserted);
-        PublishTarget();
+        // REQ/BSY can clear ACK/SEL asynchronously. Resolve only notified changes,
+        // including those resulting from the preceding propagation, before the next
+        // bus access. No controller clock or artificial cycle is inserted here.
+        while (initiatorOutputsChanged || targetOutputsChanged)
+        {
+            if (initiatorOutputsChanged)
+            {
+                initiatorOutputsChanged = false;
+                target.SetInitiator(host.OutputData, host.Select, host.Acknowledge, host.ResetAsserted);
+            }
+            if (targetOutputsChanged) PublishTarget();
+        }
     }
 
     private void PublishTarget()

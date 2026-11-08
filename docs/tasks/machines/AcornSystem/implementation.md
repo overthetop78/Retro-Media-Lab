@@ -116,5 +116,16 @@ Build demandé réussi (code 0). Exécutable : build/Debug/Retro Media Lab/retro
 
 Validation finale du code : 391 contrôles Acorn autonomes réussis après suppression du diagnostic. Auparavant, neuf scénarios avec ROM externes ont réussi : six démarrages (System 3 avec chacun des deux CPU) et trois CAT via clavier et 8271, avec lecture du catalogue synthétique RML TEST. Captures réelles inspectées dans artifacts/acorn-system ; aucun dossier rml-system-boot restant. Correctifs : VDU entrelacé, polarité ASCII et repos clavier, persistance LED, absence de configuration HDD quand aucun HDD raccordé. Build Debug All terminé avec code 0 : 24 modules et exécutable présents, empreinte Acorn identique. Chemin : build/Debug/Retro Media Lab/retromedialab.exe.
 
+## Revue statique des horloges et liaisons — 8 novembre 2026
+
+Les chiffres de validation ci-dessus sont historiques et n'incluent pas les corrections de cette reprise. La demande actuelle porte sur le code et les fiches existantes, sans nouveaux tests/builds. Strobe PB7 du clavier Standard6502 raccordé à STB du 8154 ; HSYNC/RA du CRTC raccordés par notifications au SAA5050 ; complétion des broches et phases MC6809 en cours de validation différée. Aucune nouvelle clôture fonctionnelle ou performance déduite de ces seules lectures.
+
+- [x] Retirer l'appel périodique sans effet au codeur ASCII System.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/SystemKeyboard.cs` : conserver sa référence temporelle, son échéance de répétition et son strobe ; publier l'échéance lors des changements d'entrée et avancer directement à chaque front dû. Conserver 500 ms puis 50 ms et l'action de REPT au prochain tick, sans lire les touches à chaque période.
+  - [x] Modifier `Services/AcornSystemMachine.cs` dans ce dossier : conserver l'échéance notifiée dans la carte, avancer le codeur uniquement à cette échéance ou avant une entrée/reset ; sélectionner explicitement matrice hexadécimale ou codeur ASCII suivant la carte réellement montée.
+  - [x] Modifier les quatre constructions de matrice dans `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemRamIoTests.cs` : sélectionner explicitement le clavier hexadécimal, sans ajouter ni exécuter de test pendant la revue.
+
+Le clavier ASCII ne reçoit plus d'appel par période quand aucune échéance ne tombe. Il conserve son temps absolu et publie chaque front de strobe dû ; la carte retient seulement la date notifiée. REPT raccourcit le délai au prochain tick comme auparavant. La matrice du System 1 ne prépare plus d'état ASCII/repeat, et le codeur ASCII ne reconstruit plus cette matrice absente. Ces changements sont écrits et relus, sans nouvelle compilation ni exécution de test pendant cette revue ; aucun gain chiffré ou nouveau verdict de machine complète annoncé.
+
 
 

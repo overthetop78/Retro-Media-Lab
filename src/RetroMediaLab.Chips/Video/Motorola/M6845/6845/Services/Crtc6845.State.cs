@@ -75,7 +75,7 @@ public sealed partial class Crtc6845
         RestoreSyncOutput = _restoreSyncOutput,
     };
 
-    /// <summary>Restaure sans notification VSYNC ; conserve le raccordement existant.</summary>
+    /// <summary>Restaure sans notification de broche ; conserve le raccordement existant.</summary>
     public void RestoreState(Crtc6845State state)
     {
         ArgumentNullException.ThrowIfNull(state);
@@ -144,5 +144,7 @@ public sealed partial class Crtc6845
         _verticalSyncCounted = state.VerticalSyncCounted;
         _publishedVSync = state.PublishedVSync;
         _restoreSyncOutput = state.RestoreSyncOutput;
+        _publishedHSync = HSync;
+        _rasterOutputChanged = false;
     }
 }

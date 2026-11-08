@@ -12,6 +12,7 @@ public interface IAcornScsiHostAdapter
     bool IrqEnabled { get; }
     bool Irq { get; }
     Action<bool>? IrqChanged { get; set; }
+    event Action? OutputsChanged;
     bool ResetAsserted { get; }
     ScsiBusSignals TargetSignals { get; }
     void SetTarget(ScsiBusSignals signals, byte data);

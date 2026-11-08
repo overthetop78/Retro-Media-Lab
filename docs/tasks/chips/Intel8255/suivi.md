@@ -15,3 +15,6 @@
   - [x] Modifier l’index Git et créer le commit séparé du 8255 terminé, sans capture ni fichier artifacts.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+- [x] Utiliser les notifications de changement du 8255 pour les fils Atom.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornAtom/Common/Services/AtomMachine.cs` : raccorder A/C aux callbacks DriveChanged déjà existants, centraliser la réception de leurs niveaux et initialiser les lignes libérées au reset ; conserver les notifications de transactions du PPI pour leurs consommateurs existants.

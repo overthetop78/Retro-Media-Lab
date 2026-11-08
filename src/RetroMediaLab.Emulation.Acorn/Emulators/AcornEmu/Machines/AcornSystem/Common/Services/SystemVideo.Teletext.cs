@@ -7,6 +7,7 @@ internal sealed partial class SystemVideo
 {
     private int _teletextLineHalfDot;
     private bool _teletextDotLevel;
+    private int _teletextRasterParity = -1;
 
     private void ConfigureTeletextPins()
     {
@@ -25,15 +26,24 @@ internal sealed partial class SystemVideo
     {
         _teletextLineHalfDot = 0;
         _teletextDotLevel = false;
+        _teletextRasterParity = -1;
         ConfigureTeletextPins();
         _teletext?.SetDataEntryWindow(_crtc.VSync);
+        _teletext?.SetGeneralLineReset(!_crtc.HSync);
+        if (_teletext is not null) SetTeletextRasterAddress(_crtc.RasterAddress);
+    }
+
+    private void SetTeletextRasterAddress(int address)
+    {
+        var parity = address & 1;
+        if (_teletextRasterParity == parity) return;
+        _teletextRasterParity = parity;
+        _teletext!.CharacterRoundingSelect = parity == 0;
     }
 
     private void ClockTeletext()
     {
         var chip = _teletext!;
-        chip.SetGeneralLineReset(!_crtc.HSync);
-        chip.CharacterRoundingSelect = (_crtc.RasterAddress & 1) == 0;
         chip.Data = _ram[_crtc.MemoryAddress & (_ram.Length - 1)];
         chip.SetLoadOutputShiftEnable(_crtc.DisplayEnabled);
         chip.SetCharacterClock(true);

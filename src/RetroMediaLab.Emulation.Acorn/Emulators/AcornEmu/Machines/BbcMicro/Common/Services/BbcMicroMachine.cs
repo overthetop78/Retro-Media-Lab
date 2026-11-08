@@ -10,6 +10,7 @@ using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.S
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Tube.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Services;
 using Master = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants.MasterConstants;
+using CompactNonvolatile = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants.CompactNonvolatileMemoryConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Services;
 using Plus = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.ModelBPlus.Constants.ModelBPlusConstants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Contracts;
@@ -124,6 +125,12 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         _masterClock = master && !compact ? new MasterClock((byte)econetStation, diskInterface ? (byte)9 : (byte)8, () => _ticks) : null;
         _compact = compact;
         _compactEeprom = compact ? new CompactEeprom() : null;
+        if (_compactEeprom is not null)
+        {
+            var initial = _compactEeprom.Export();
+            CompactNonvolatile.InitialConfiguration.CopyTo(initial);
+            _compactEeprom.Import(initial);
+        }
         _compactJoystick = compact ? new CompactJoystick() : null;
         if (coprocessor != MasterCoprocessor.None)
         {
@@ -156,6 +163,7 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         };
         _via.ReadPortA = () => (_latch & 8) == 0 ? (byte)(_keyboard.Read(_via.OutputA) & (_masterClock?.ReadBus() ?? byte.MaxValue)) : _masterClock?.ReadBus() ?? byte.MaxValue;
         _userVia = expandedIo ? new Via6522() : null;
+        _userVia?.SetPb6(true);
         if (userPortPointer)
         {
             if (_userVia is null) throw new ArgumentException(nameof(userPortPointer));
@@ -166,6 +174,8 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
                 NextSignalChanged = next => _pointerWakeTick = next ?? long.MaxValue
             };
             _userVia.ReadPortB = () => _pointer.PortB;
+            _pointer.Pb6Changed = _userVia.SetPb6;
+            _userVia.SetPb6((_pointer.PortB & 0x40) != 0);
         }
         else if (_compactJoystick is not null) _userVia!.ReadPortB = () => _compactJoystick.Port;
         _adc = (analogInterface ?? expandedIo) && !compact ? new Adc7002(_via.SetCb1) : null;
@@ -177,6 +187,9 @@ internal sealed partial class BbcMicroMachine : ICpuBus, IAcornMachine
         }
         UpdateAnalogInputs(EmulationInputSnapshot.Empty.Controllers);
         _via.ReadPortB = () => _compactEeprom?.ReadPort ?? (_adc is null ? null : (byte?)_fireInputs) ?? Io.OpenInputs;
+        // Les fournisseurs raccordés ci-dessus maintiennent PB6 haut : EEPROM sur PB4/5,
+        // boutons analogiques sur PB4/5, sinon entrées ouvertes.
+        _via.SetPb6(true);
         _via.WritePortB = WriteLatch;
         if (_compactEeprom is not null) _via.PortBPinsChanged = _compactEeprom.WritePort;
         _via.WritePortA = value => _masterClock?.Update(_latch, value);

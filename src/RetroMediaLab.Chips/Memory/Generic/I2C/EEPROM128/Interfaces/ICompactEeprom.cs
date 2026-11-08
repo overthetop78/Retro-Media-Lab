@@ -3,6 +3,12 @@ namespace RetroMediaLab.Chips.Memory.Generic.I2C.EEPROM128.Interfaces;
 public interface ICompactEeprom
 {
     byte ReadPort { get; }
+    long ReferenceFrequency { get; }
+    long ClockCount { get; }
+    long? NextClockEvent { get; }
+    bool Writing { get; }
+    event Action<long?>? NextClockEventChanged;
+    void AdvanceTo(long clock);
 
     void WritePort(byte value);
     byte[] Export();

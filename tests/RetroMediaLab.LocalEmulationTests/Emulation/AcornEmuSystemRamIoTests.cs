@@ -79,7 +79,7 @@ public sealed class AcornEmuSystemRamIoTests
     [InlineData(EmulationKey.Numpad9, 1, 0x31)]
     public void NumericKeypadDrivesTheExistingDigitContact(EmulationKey key, byte row, byte pins)
     {
-        var keyboard = new SystemKeyboard(1008000);
+        var keyboard = new SystemKeyboard(1008000, asciiKeyboard: false);
         keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { key } });
         keyboard.Select(row);
         Assert.Equal(pins, keyboard.ReadMatrix(false));
@@ -92,7 +92,7 @@ public sealed class AcornEmuSystemRamIoTests
     [InlineData(EmulationKey.G, 1, 0x29)]
     public void MonitorCommandLetterDrivesTheExistingContact(EmulationKey key, byte row, byte pins)
     {
-        var keyboard = new SystemKeyboard(1008000);
+        var keyboard = new SystemKeyboard(1008000, asciiKeyboard: false);
         keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { key } });
         keyboard.Select(row);
         Assert.Equal(pins, keyboard.ReadMatrix(false));
@@ -107,7 +107,7 @@ public sealed class AcornEmuSystemRamIoTests
     public void ReleasingOneSourceDoesNotOpenAContactStillHeldByTheOtherSource(
         EmulationKey first, EmulationKey second, byte row, byte pins)
     {
-        var keyboard = new SystemKeyboard(1008000);
+        var keyboard = new SystemKeyboard(1008000, asciiKeyboard: false);
         keyboard.Select(row);
         keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { first, second } });
         Assert.Equal(pins, keyboard.ReadMatrix(false));
@@ -122,7 +122,7 @@ public sealed class AcornEmuSystemRamIoTests
     [Fact]
     public void MatrixRetainsIndependentKeysAndCombinesTheLiveTapeAndSelectionLines()
     {
-        var keyboard = new SystemKeyboard(1008000);
+        var keyboard = new SystemKeyboard(1008000, asciiKeyboard: false);
         keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.D8, EmulationKey.D0, EmulationKey.X } });
         keyboard.Select(0x40);
         Assert.Equal(0xd0, keyboard.ReadMatrix(true));

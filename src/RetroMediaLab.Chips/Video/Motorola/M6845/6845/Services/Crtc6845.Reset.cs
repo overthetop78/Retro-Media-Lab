@@ -29,7 +29,9 @@ public sealed partial class Crtc6845
         ClearTiming(false);
         RefreshParameters();
         _restoreSyncOutput = false;
+        PublishHorizontalSync();
         PublishVerticalSync();
+        if (_rasterOutputChanged) PublishRasterAddress();
     }
 
     private bool ClockReset()
@@ -54,7 +56,9 @@ public sealed partial class Crtc6845
                 _displayEnabled = false;
                 _cursor = false;
             }
+            if (_publishedHSync) PublishHorizontalSync();
             if (_publishedVSync) PublishVerticalSync();
+            if (_rasterOutputChanged) PublishRasterAddress();
             return true;
         }
         _restoreSyncOutput = _resetActive || _testModeActive;
@@ -65,6 +69,7 @@ public sealed partial class Crtc6845
 
     private void ClearTiming(bool suppressDisplay)
     {
+        var previousRaster = _rasterAddress;
         _column = 0;
         _row = 0;
         _scanline = 0;
@@ -99,5 +104,6 @@ public sealed partial class Crtc6845
         _cursor = false;
         RefreshCursorVisibility();
         RefreshVerticalGates();
+        if (previousRaster != 0) _rasterOutputChanged = true;
     }
 }

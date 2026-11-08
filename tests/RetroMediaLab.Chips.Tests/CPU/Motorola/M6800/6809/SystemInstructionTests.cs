@@ -48,6 +48,7 @@ public sealed class SystemInstructionTests
         cpu.Step();
         cpu.Step();
         cpu.SetFirq(true);
+        cpu.Step(); // Finish the NOP while FIRQ crosses the Q-falling synchronizer.
         cpu.Step();
         Assert.Equal(0x2ffd, cpu.S);
         cpu.SetFirq(false);
@@ -55,7 +56,7 @@ public sealed class SystemInstructionTests
         cpu.Step();
         Assert.Equal(0x55, cpu.A);
         Assert.Equal(0x3000, cpu.S);
-        Assert.Equal(0x1006, cpu.PC);
+        Assert.Equal(0x1007, cpu.PC);
     }
 
     private sealed class CpuBus : ICpuBus

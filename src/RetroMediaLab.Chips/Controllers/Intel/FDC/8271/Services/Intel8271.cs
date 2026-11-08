@@ -163,6 +163,7 @@ public sealed partial class Intel8271 : IIntel8271
     {
         _inputClockCount = checked(_inputClockCount + 1);
         TickCore();
+        PublishClockEvent();
     }
 
     private void TickCore()

@@ -12,3 +12,7 @@
     - [x] Créer `src/RetroMediaLab.Chips/Controllers/Acorn/SystemTape/Interfaces/ISystemTapeInterface.cs` avec les horloges, entrées, sorties et notifications publiques existantes, puis modifier SystemTapeInterface.cs pour l'implémenter ; vérifier les tests d'architecture communs.
 
 Contrat SystemTape vérifié : les tests globaux signalent encore 14 classes ACB-4000/SCSI inchangées sans interface dédiée ; aucun défaut SystemTape restant dans ce contrôle.
+
+- [x] Supprimer les appels au transport arrêté, sans arrêter la carte Tape matérielle.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.cs` : mémoriser l'activité via `AnalogTape.ActivityChanged` et appeler son transport uniquement pendant lecture, enregistrement ou déplacement ; conserver les échéances SystemTapeInterface.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornAtom/Common/Services/AtomMachine.cs` : recevoir la même activité et supprimer les appels du transport arrêté ; conserver le générateur Tape, la vidéo et l'audio matériels.

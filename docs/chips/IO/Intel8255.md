@@ -91,3 +91,11 @@ La lecture du mot de commande propre à certains dérivés CMOS et les contourne
 Le script `scripts/local-building.cmd --building=debug --modules=A` est terminé avec code zéro après la correction finale BSR. Les 24 manifestes ont chacun leur DLL d’entrée présente. L’exécutable est `build/Debug/Retro Media Lab/retromedialab.exe` (345 600 octets), avec `lib/retromedialab.chips.dll` (409 088 octets). Cette DLL correspond au fichier compilé, SHA-256 `3FC7C3BB251BC86E091019DDF70CBDC9596D280B68ED1054AD3A5733064D4984`.
 
 Les références téléchargées, bancs, programmes invités et journaux temporaires sous `artifacts/.tmp-i8255/` sont supprimés après usage. Les tests conservés sont autonomes ; le nouveau test de raccordement Atom n’utilise aucun fichier externe. Les quatre PNG restent ignorés par Git et ne sont pas inclus dans le commit.
+
+## 8 novembre 2026 — revue statique des échanges
+
+Le code actuel du Ppi8255 couvre les groupes indépendants, les modes 0/1/2, les fronts STB/ACK/RD/WR, BSR/INTE, reset et masques des pilotes ; il n'a pas de Tick ni d'oscillateur artificiel. Les lectures de fournisseurs correspondent aux accès bus ou à la capture d'une entrée strobed, pas à une boucle d'interrogation périodique. Les sorties DriveChanged comparent déjà niveaux et directions avant notification. Les callbacks PinsChanged conservent aussi l'observation des transactions, distincte d'une transition électrique.
+
+Le raccordement Atom employait PinsChanged pour ses fils A/C, et recalculait sélection clavier, mode/couleur vidéo et sortie Tape lors des écritures identiques. Il utilise désormais les callbacks DriveChanged existants. Les niveaux reçus restent identiques (sorties libérées résolues haut) ; le reset initialise explicitement A/C même si les pilotes étaient déjà libérés. Les contrats et modes du PPI sont conservés. La vidéo poursuit son balayage et le générateur Tape ses fronts indépendamment des écritures CPU.
+
+Revue et modification de source seulement : aucun test/build supplémentaire ni gain global mesuré pendant ce passage. La description initiale d'AtomPpi8255 et des modes manquants en tête de fiche décrit l'état historique avant la réécriture, pas le composant actuel.

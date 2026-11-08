@@ -104,6 +104,8 @@ public sealed partial class Acb4000 : IAcb4000
         _formatChannel = new(_aic);
         InitializeMemory();
         _bus = new Acb4000Bus(ticksPerSecond);
+        _bus.OutputsChanged += () => _hostInterfaceChanged = true;
+        _sequencerBuffer.HostOutputsChanged += () => _hostInterfaceChanged = true;
         _searchDeadline = new(ticksPerSecond, sequencerTStatesPerSecond);
         _positioners = [new(ticksPerSecond), new(ticksPerSecond)];
         _aic.Ecc.ResetChanged += _ => UpdateDriveGates();
@@ -114,7 +116,11 @@ public sealed partial class Acb4000 : IAcb4000
 
     public void SetInitiator(byte data, bool select, bool acknowledge, bool reset, bool attention = false)
     {
-        _hostAckInput = acknowledge;
+        if (_hostAckInput != acknowledge)
+        {
+            _hostAckInput = acknowledge;
+            _hostInterfaceChanged = true;
+        }
         if (_hostBufferWritePending)
         {
             _hostBufferInitiatorData = data;
@@ -318,6 +324,7 @@ public sealed partial class Acb4000 : IAcb4000
 
     private void ResetCommandState()
     {
+        _hostInterfaceChanged = true;
         InitializeAic();
         _hostBufferDma = false;
         _hostBufferReadPending = false;

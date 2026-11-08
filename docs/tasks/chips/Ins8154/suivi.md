@@ -1,5 +1,6 @@
 # Suivi — Ins8154
 
+
 - [x] National Semiconductor INS8154 RAM/I/O.
   - [x] Créer temporairement `artifacts/.tmp-ins8154/references/` : conserver la fiche National INS8154, les pages nécessaires et les sources d’émulateurs effectivement consultées ; supprimer ces fichiers au nettoyage de la puce.
   - [x] Créer `docs/chips/IO/Ins8154.md` : confronter le code existant à National, aux manuels Acorn et aux sources MAME/autres projets pertinents ; décrire les écarts réels des ports, du bus, des registres, des modes strobed/handshake, IRQ et reset, sans trame générique.
@@ -16,3 +17,8 @@
   - [x] Modifier l’index Git et créer le commit séparé de l’INS8154 terminé, sans image de test ni fichier artifacts.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+- [x] Revue statique du raccordement clavier System standard, 8 novembre 2026.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.cs` : transmettre les transitions physiques du strobe ASCII PB7 à `RamIo8154.SetStrobe`, initialiser son niveau au montage, uniquement sur la carte Standard6502. Conserver le décodage, les horloges et les liaisons des autres cartes.
+
+Omission trouvée dans la carte : la lecture PB7 recevait le strobe actif bas, mais le chemin asynchrone STB/ACK du 8154 restait à son niveau initial. Les modes strobed ne voyaient donc pas ses transitions. Le raccordement utilise la notification existante, sans sondage ni retard ajouté. Aucun test ni build exécuté pour cette revue, conformément à la demande utilisateur ; aucune nouvelle mesure de performance revendiquée.

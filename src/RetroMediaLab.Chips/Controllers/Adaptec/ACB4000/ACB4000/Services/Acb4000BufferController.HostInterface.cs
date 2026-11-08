@@ -10,6 +10,16 @@ public sealed partial class Acb4000BufferController
     private bool hostAcknowledgeInput;
     private bool hostAcknowledgementSeen;
     private uint hostArbitrationElapsed;
+    private byte publishedHostOutputs;
+    internal event Action? HostOutputsChanged;
+
+    private void PublishHostOutputs()
+    {
+        var outputs = HostOutputState;
+        if (publishedHostOutputs == outputs) return;
+        publishedHostOutputs = outputs;
+        HostOutputsChanged?.Invoke();
+    }
 
     public bool HostArbitrationPending { get; private set; }
     public bool HostSelectOutput => !ResetAsserted && (hostInterfaceControl & C.HostSelectOutput) != 0;
@@ -28,6 +38,7 @@ public sealed partial class Acb4000BufferController
         hostAcknowledgeInput = acknowledge;
         if (acknowledge && hostPending) hostAcknowledgementSeen = true;
         if (select || busy) hostArbitrationElapsed = 0;
+        PublishHostOutputs();
     }
 
     /// <summary>Délai d'arbitrage après libération de SEL-IN et BSY-IN, exprimé en temps matériel.</summary>
@@ -42,6 +53,7 @@ public sealed partial class Acb4000BufferController
         hostInterfaceControl |= C.HostBusyOutput | C.HostOutputEnable;
         HostArbitrationPending = false;
         hostArbitrationElapsed = 0;
+        PublishHostOutputs();
     }
 
     private byte ReadHostInterface() => (byte)(hostInterfaceControl

@@ -47,6 +47,8 @@ public interface ICrtc6845
     Action<bool>? VSyncChanged { get; set; }
 
     bool HSync { get; }
+    Action<bool>? HSyncChanged { get; set; }
+    Action<int>? RasterAddressChanged { get; set; }
 
     bool IsProgrammed { get; }
 

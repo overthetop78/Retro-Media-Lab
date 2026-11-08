@@ -110,3 +110,11 @@ Le cas repos qualifié/vitesse normale est maintenant retenu lors de l'entrée d
 Aucune puce ni horloge physique n'est modifiée ; seul le relais évite une consultation répétée d'un état déjà connu. Les 54 contrôles AcornEmuWinchesterStorageTests réussissent en Debug (15 s) et Release (3 s), avec les scénarios de bus, supports, signaux et restitution temporelle existants. Le gain sur le BBC complet reste à établir avant de retenir le bloc.
 
 Mesure du BBC complet : médiane Debug 22,1058 → 21,7464 ms/image, Release 3,7707 → 3,6331 ms/image, trois passages alternés par variante. Cycles, PC et empreintes vidéo/audio identiques dans les douze passages. Le relais est conservé ; les détails et limites se trouvent dans docs/chips/CPU/Mos6502.md. Aucun gain sur une commande de disque active n'est déduit de ce scénario au repos.
+
+## 8 novembre 2026 — propagation des lignes hôte/cible
+
+Défaut de structure établi : WinchesterController.Synchronize effectuait systématiquement deux SetInitiator et deux SetTarget, même pour une lecture de statut sans changement. L'hôte ne disposait que de sa notification IRQ ; ses changements de SEL, ACK, RESET, données et pilotage n'étaient pas publiés.
+
+ScsiHostAdapter publie maintenant OutputsChanged depuis SetTarget (effacements asynchrones et direction), SetReset, le strobe ACK et l'écriture de SEL/données. L'état final est mémorisé avant notification et aucune notification n'est émise à niveau identique. WinchesterController reçoit les changements des deux côtés, initialise les niveaux au raccordement et résout uniquement les côtés signalés ; les conséquences asynchrones REQ→ACK et BSY→SEL sont propagées dans la même synchronisation. La boucle s'arrête dès qu'aucune sortie ne change ; ce n'est ni une surveillance périodique ni une horloge supplémentaire. Les délais de sélection, REQ/ACK, RAM et séquenceur restent dans ACB-4000.
+
+Revue et correction statiques seulement : aucun test/build nouveau et aucun gain chronométré revendiqué. Les contrôles de protocole existants restent à exécuter sur ce code avant clôture.

@@ -7,3 +7,7 @@
   - [x] Supprimer `artifacts/bbc-winchester-idle/` après consignation.
 
 [Index des puces](../README.md) · [Machines](../../machines/README.md)
+
+- [x] Supprimer les doubles propagations fixes du raccordement SCSI.
+  - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Acorn/Winchester/Scsi/Services/ScsiHostAdapter.cs` et `Interfaces/IAcornScsiHostAdapter.cs` : notifier les changements du latch de données, du pilotage, de SEL/ACK/RESET après leurs mutations effectives ; conserver les bascules et l'IRQ.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/WinchesterController.cs` : recevoir les notifications hôte/cible, initialiser leurs niveaux et propager seulement les côtés modifiés jusqu'à stabilisation, sans avancement de leurs horloges ni double passe imposée.

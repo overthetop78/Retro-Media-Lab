@@ -37,7 +37,7 @@ public sealed partial class Cpu6809
             C.SecondPrefix => C.FirqVector,
             _ => C.ResetVector
         };
-        PC = ReadWord(vector);
+        PC = ReadVector(vector);
         return page == 0 ? 19 : 20;
     }
 

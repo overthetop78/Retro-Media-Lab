@@ -15,8 +15,26 @@ public sealed partial class Crtc6845
     private int _verticalSyncCounter = InactiveSyncCounter;
     private bool _verticalSyncCounted;
     private bool _publishedVSync;
+    private bool _publishedHSync;
+    private bool _rasterOutputChanged;
     private bool _restoreSyncOutput;
     public Action<bool>? VSyncChanged { get; set; }
+    public Action<bool>? HSyncChanged { get; set; }
+    public Action<int>? RasterAddressChanged { get; set; }
+
+    private void PublishHorizontalSync()
+    {
+        var level = HSync;
+        if (_publishedHSync == level) return;
+        _publishedHSync = level;
+        HSyncChanged?.Invoke(level);
+    }
+
+    private void PublishRasterAddress()
+    {
+        _rasterOutputChanged = false;
+        RasterAddressChanged?.Invoke(_rasterAddress);
+    }
 
     private void PublishVerticalSync()
     {
@@ -75,12 +93,16 @@ public sealed partial class Crtc6845
         var frameStarted = false;
         if (_column == _registers[HorizontalTotal])
         {
+            var previousRaster = _rasterAddress;
             frameStarted = EndScanline();
             RefreshCursorVisibility();
             RefreshVerticalGates();
             _column = 0;
             _horizontalDisplay = true;
             _memoryAddress = _lineAddress;
+            // EndScanline may increment RA and then load its row/field value.
+            // Only the final pin value is visible at this character-clock edge.
+            if (_rasterAddress != previousRaster) _rasterOutputChanged = true;
         }
         else _column = (_column + 1) & DataMask;
 
@@ -182,14 +204,22 @@ public sealed partial class Crtc6845
 
     private bool UpdateSynchronizations()
     {
+        var horizontalChanged = _restoreSyncOutput;
         if (_horizontalSyncCounter >= 0)
         {
             _horizontalSyncCounter = (_horizontalSyncCounter + 1) & SyncCounterMask;
             if (_horizontalWidth == 0 || _horizontalSyncCounter == (_horizontalWidth & SyncCounterMask))
+            {
                 _horizontalSyncCounter = InactiveSyncCounter;
+                horizontalChanged = true;
+            }
         }
         if (_horizontalSyncCounter < 0 && _horizontalWidth != 0 && _column == _registers[HorizontalSyncPosition])
+        {
             _horizontalSyncCounter = 0;
+            horizontalChanged = true;
+        }
+        if (horizontalChanged) PublishHorizontalSync();
 
         var syncPoint = _syncOnEveryCharacter || _column == _halfLineColumn;
         var ended = false;

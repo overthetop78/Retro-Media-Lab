@@ -31,3 +31,9 @@ System 2 complet, CPU/VDU/bande/audio inclus : 15,396809 ms/champ en Debug, 64,9
 Passage natif final après conservation de CASOUT : System 1 SAVE/LOAD/GO réussi, 86 400 échantillons ; System 2 SAVE/LOAD réussi et 15,788811 ms/champ, 63,336 champs/s, 1,266720 MHz effectifs / 126,672 %. Banc externe et sorties de compilation supprimés après vérification du chemin résolu. Les deux captures de protocole sont également dans artifacts/TestsChips/SystemTape/Acorn System 1 et Acorn System 2.
 
 Contrat public du 8 novembre : ISystemTapeInterface expose les mêmes entrées, sorties, notifications et domaine temporel que la classe. Les tests d’architecture ne signalent plus ce composant ; ils signalent encore 14 classes ACB-4000/SCSI non modifiées dans ce bloc. Raccordement 6809 : CASIN PB7, CASOUT CB2 via niveau et propriété de sortie réels du VIA, tirage haut quand CB2 est libérée.
+
+## 8 novembre 2026 — transport arrêté : revue statique
+
+System et Atom appelaient AnalogTape.Tick à chaque cycle CPU, y compris sans média ou pendant arrêt/pause. Ils reçoivent maintenant ActivityChanged et conservent l'activité du transport ; Tick n'est appelé que pendant lecture, enregistrement et déplacement. Insert/Eject/ResetHardware, les commandes et Stop publient déjà cette activité. La fin de bande passe par Stop et désactive donc également l'avancement. La latence de démarrage reste avancée pendant l'activité. Les générateurs matériels de la carte Tape System et de l'Atom continuent indépendamment de ce transport : aucune fréquence, transition ou durée active n'est retirée.
+
+Correction source seulement, sans test ni build pendant la revue demandée. Aucun gain global mesuré n'est revendiqué.

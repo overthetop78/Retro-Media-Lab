@@ -38,8 +38,10 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private readonly Via6522? _via;
     private readonly SystemKeyboard _keyboard;
     private readonly AnalogTape _tape;
+    private bool _tapeClockRequired;
     private readonly SystemTapeInterface? _tapeInterface;
     private long _nextTapeClock = long.MaxValue;
+    private long _nextKeyboardClock = long.MaxValue;
     private byte _tapeInputPins = byte.MaxValue;
     private bool _tapeOutputHigh;
     private bool _tapeCb2Driven;
@@ -78,10 +80,13 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             if (start < 0 || bytes <= 0 || start > C.AddressBytes - bytes) throw new ArgumentOutOfRangeException(nameof(ramCards));
             Array.Fill(_ramMapped, true, start, bytes);
         }
-        _keyboard = new SystemKeyboard(_clock);
+        _keyboard = new SystemKeyboard(_clock, asciiKeyboard: card != SystemCpuCard.Keypad6502);
+        if (card != SystemCpuCard.Keypad6502)
+            _keyboard.NextClockEventChanged = next => _nextKeyboardClock = next ?? long.MaxValue;
         if (card is SystemCpuCard.Keypad6502 or SystemCpuCard.Standard6502 or SystemCpuCard.Motorola6809)
             _tapeInterface = new SystemTapeInterface(_clock);
         _tape = new AnalogTape(_clock, _tapeInterface is null ? TapeSignalMode.FrequencyShiftKeying : TapeSignalMode.DirectWaveform);
+        _tape.ActivityChanged += () => _tapeClockRequired = _tape.TapeActive;
         if (_tapeInterface is not null)
         {
             _tapeInterface.CassetteOutputChanged = _tape.SetOutputLevel;
@@ -92,6 +97,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             _tape.InputSignalChanged = level => _tapeInterface.SetComparatorInput(!level, _ticks);
         }
         if (card is SystemCpuCard.Fast6502A or SystemCpuCard.Motorola6809) _via = new Via6522();
+        _via?.SetPb6(true);
         if (card == SystemCpuCard.Keypad6502)
         {
             _display = new SystemHexDisplay();
@@ -108,6 +114,12 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         {
             _video = new SystemVideo(card == SystemCpuCard.Fast6502A, characters);
             _ramIo.ReadPortB = () => _keyboard.DataWithStrobe;
+            if (card == SystemCpuCard.Standard6502)
+            {
+                // PB7 is also the 8154's asynchronous STB/ACK input.
+                _keyboard.StrobeChanged = _ramIo.SetStrobe;
+                _ramIo.SetStrobe(!_keyboard.Strobe);
+            }
             _ramIo.ReadPortA = _tapeInterface is null
                 ? () => _tape.InputBit ? byte.MaxValue : (byte)(byte.MaxValue ^ KeyboardPins.TapeInputBit)
                 : () => _tapeInputPins;
@@ -115,6 +127,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             if (card == SystemCpuCard.Motorola6809)
             {
                 _via!.ReadPortB = () => (byte)(_keyboard.Data | (_tapeInputPins & KeyboardPins.TapeInputBit));
+                _keyboard.DataChanged = data => _via.SetPb6((data & 0x40) != 0);
+                _via.SetPb6((_keyboard.Data & 0x40) != 0);
                 _keyboard.StrobeChanged = _via.SetCb1;
                 _via.SetCb1(!_keyboard.Strobe);
                 _via.Cb2PinsChanged = level => { if (_tapeCb2Driven) SetTapeOutput(level); };
@@ -166,6 +180,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         if (cold)
         {
             Array.Clear(_ram);
+            if (_display is null) _keyboard.AdvanceTo(_ticks);
             _keyboard.Reset();
             _video?.Reset();
             _samples.Clear();
@@ -216,9 +231,9 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     {
         _ticks++;
         // The System 1 has a passive scanned keypad, not the ASCII keyboard's repeater.
-        if (_display is null) _keyboard.Tick();
+        if (_ticks >= _nextKeyboardClock) _keyboard.AdvanceTo(_ticks);
         if (_ticks >= _nextTapeClock) _tapeInterface!.AdvanceTo(_ticks);
-        _tape.Tick();
+        if (_tapeClockRequired) _tape.Tick();
         _fdcDrive?.Tick();
         if (_via is not null)
         {
@@ -249,6 +264,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
 
     public void SetInput(EmulationInputSnapshot snapshot)
     {
+        if (_display is null) _keyboard.AdvanceTo(_ticks);
         _keyboard.SetInput(snapshot);
         if (_card == SystemCpuCard.Fast6502A) _via!.SetCa1(!_keyboard.Blank);
         if (_keyboard.Break && !_break) Reset(false);

@@ -6,22 +6,31 @@ public sealed partial class Cpu6809
 {
     private bool ServiceInterrupt()
     {
-        var fast = _firqInput;
-        if (_irqInput || fast || _nmiPending) _sync = false;
-        if (_nmiPending && _stackInitialized)
+        var fast = _firqSampled;
+        var irq = _irqSampled;
+        var nmi = _nmiPending && _stackInitialized;
+        if (_sync && (irq || fast || _nmiPending))
+        {
+            _sync = false;
+            SetBusStatus(false, false);
+            // BA falls before the dead bus-reacquisition cycle, even for a masked request.
+            ClockBusCycle();
+            if (_resetLatched) throw new ResetAcceptedException();
+        }
+        if (nmi)
         {
             _nmiPending = false;
             Interrupt(C.NmiVector, false, C.IrqMask | C.FirqMask);
             return true;
         }
         if (fast && !IsSet(C.FirqMask)) { Interrupt(C.FirqVector, true, C.IrqMask | C.FirqMask); return true; }
-        if (_irqInput && !IsSet(C.IrqMask)) { Interrupt(C.IrqVector, false, C.IrqMask); return true; }
+        if (irq && !IsSet(C.IrqMask)) { Interrupt(C.IrqVector, false, C.IrqMask); return true; }
         return false;
     }
 
     private void Interrupt(ushort vector, bool fast, byte masks)
     {
-        var start = Cycles;
+        var start = _processorCycles;
         var waiting = _cwai;
         if (!waiting)
         {
@@ -35,7 +44,7 @@ public sealed partial class Cpu6809
         _cwai = _sync = false;
         CC |= masks;
         Idle();
-        PC = ReadWord(vector);
+        PC = ReadVector(vector);
         Pad(start, waiting ? 4 : fast ? 10 : 19);
     }
 
@@ -47,7 +56,7 @@ public sealed partial class Cpu6809
         PushRegisters(byte.MaxValue, false);
         if (page == 0) CC |= C.IrqMask | C.FirqMask;
         Idle();
-        PC = ReadWord(page == 0x10 ? C.SwiTwoVector : page == 0x11 ? C.SwiThreeVector : C.SwiVector);
+        PC = ReadVector(page == 0x10 ? C.SwiTwoVector : page == 0x11 ? C.SwiThreeVector : C.SwiVector);
         return page == 0 ? 19 : 20;
     }
 
