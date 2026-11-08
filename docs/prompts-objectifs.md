@@ -108,10 +108,10 @@ Chaque puce doit fonctionner comme son équivalent électronique réel :
 
 ### 2. Architecture événementielle
 
-Implémente les mécanismes communs nécessaires dans `RetroMediaLab.Chips`, directement utilisables par les modules de machines comme `RetroMediaLab.Emulation.Acorn` :
+Implémente dans chaque puce, contrôleur et interface de `RetroMediaLab.Chips` sa propre gestion des événements, conforme au composant physique :
 
-- Un ordonnanceur temporel déterministe pour les horloges, leurs phases et les échéances matérielles.
-- Un mécanisme de signaux reliant les sorties des composants aux entrées réellement raccordées.
+- Son horloge matérielle, ses diviseurs, ses phases et ses échéances internes, suivant le câblage réel.
+- Ses entrées conservées localement et ses sorties notifiées aux entrées réellement raccordées.
 - Une propagation des changements sans sondage permanent.
 - Un traitement des événements à leur instant matériel exact, en respectant leur ordre.
 - Une conservation des états entre deux changements, sans recalcul inutile.
@@ -119,7 +119,7 @@ Implémente les mécanismes communs nécessaires dans `RetroMediaLab.Chips`, dir
 
 Les modules de machines utilisent directement les puces de `RetroMediaLab.Chips` et assurent leur câblage matériel. **Ne fais pas transiter leurs communications par `RetroMediaLab.Emulation`.**
 
-Il ne faut pas créer un thread ou une tâche asynchrone par puce. Il s'agit d'une simulation déterministe des circuits électroniques.
+Ne crée pas d'ordonnanceur commun ni de système de bypass. Chaque composant conserve son fonctionnement matériel propre ; les circuits restent raccordés par la carte réelle. Ne crée pas de thread ou de tâche asynchrone par puce.
 
 ### 3. CPU, vidéo et périphériques
 
@@ -147,12 +147,12 @@ Toute l'émulation et les états des composants doivent rester directement en m�
 
 **Passe maintenant à la modification effective du code.**
 
-Commence par les mécanismes communs d'ordonnancement, de signaux et de câblage dans `RetroMediaLab.Chips`, puis adapte progressivement les modules de machines et leurs raccordements directs aux puces.
+Termine chaque puce et contrôleur avec ses horloges, événements, entrées et sorties propres, puis raccorde-les directement selon la carte réelle. Réutilise les exigences et corrections consignées dans les fiches des puces BBC Micro A/B et les directives, en respectant les particularités de chaque composant.
 
 L'objectif est d'éliminer structurellement les consultations permanentes entre puces, pas de déplacer ces consultations dans d'autres méthodes.
 
-Ne te limite pas au CRTC, au VIA ou aux interruptions : cette architecture doit pouvoir servir à toutes les machines émulées par RML.
+Applique ces exigences à tous les composants de toutes les machines émulées par RML, pas seulement au CRTC, au VIA ou aux interruptions.
 
 Conserve les fonctionnalités existantes et les résultats matériels exacts. Après chaque bloc fonctionnel, vérifie les régressions, puis poursuis l'implémentation. Mesure les performances globales en Debug et Release lorsque les changements structurels sont intégrés.
 
-**Ne reviens pas à des micro-optimisations locales et ne t'arrête pas à une nouvelle documentation d'architecture. Implémente cette refonte dans le code existant, en conservant la précision matérielle.**
+**Optimise les redondances du code C# qui ne font pas partie du fonctionnement physique. Conserve toutes les fonctionnalités, les activités internes, les phases, les accès et les signaux réels ; ne remplace pas le matériel par un raccourci logiciel. Corrige effectivement le code existant.**
