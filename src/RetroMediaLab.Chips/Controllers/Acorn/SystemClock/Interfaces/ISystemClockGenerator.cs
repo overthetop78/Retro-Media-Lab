@@ -20,6 +20,8 @@ public interface ISystemClockGenerator
     Action<bool>? Clock3MHzChanged { get; set; }
     Action<bool>? Clock2MHzChanged { get; set; }
     Action<bool>? Clock1MHzChanged { get; set; }
+    IStableClockPeriodReceiver? Clock12MHzReceiver { get; set; }
+    bool Clock12MHzCanGroup { get; set; }
     void SetOscillator(bool high);
     void Clock();
     void AdvanceClocks(long clocks);

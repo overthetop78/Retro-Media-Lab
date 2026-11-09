@@ -1,9 +1,105 @@
 using RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Services;
+using RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Interfaces;
 
 namespace RetroMediaLab.Chips.Tests.Controllers.Acorn;
 
 public sealed class SystemClockGeneratorTests
 {
+    [Theory]
+    [InlineData(2, 0, 0)]
+    [InlineData(2, 0, 7)]
+    [InlineData(3, 15, 7)]
+    [InlineData(5, 15, 0)]
+    [InlineData(15, 7, 13)]
+    [InlineData(0, 3, 1)]
+    [InlineData(1, 12, 10)]
+    public void StablePeriodDeliveryPreservesClockBoundariesAndCounterPhases(byte a, byte b, byte c)
+    {
+        var fast = new SystemClockGenerator(a, b, c);
+        var unit = new SystemClockGenerator(a, b, c);
+        var fastReceiver = new StableReceiver();
+        var unitReceiver = new StableReceiver();
+        var first = new List<(long, bool, long, long, int)>();
+        var second = new List<(long, bool, long, long, int)>();
+        void Wire(SystemClockGenerator source, StableReceiver receiver,
+            List<(long, bool, long, long, int)> edges, bool grouped)
+        {
+            receiver.SetClock(source.Clock12MHz);
+            source.Clock12MHzReceiver = receiver;
+            source.Clock12MHzCanGroup = grouped;
+            source.Clock2MHzChanged = high =>
+            {
+                edges.Add((source.InputClockCount, high, receiver.Rises, receiver.Edges, Levels(source)));
+                if (source.InputClockCount == 120)
+                    source.Clock8MHzChanged = level => edges.Add((source.InputClockCount, level,
+                        receiver.Rises, receiver.Edges, Levels(source)));
+                if (source.InputClockCount == 240) source.Clock8MHzChanged = null;
+            };
+        }
+        Wire(fast, fastReceiver, first, true);
+        Wire(unit, unitReceiver, second, false);
+        foreach (var count in new[] { 1, 2, 5, 12, 31, 97, 301, 1001 })
+        {
+            fast.AdvanceClocks(count);
+            for (var clock = 0; clock < count; clock++)
+            {
+                unit.SetOscillator(true); unit.SetOscillator(false);
+            }
+            Assert.Equal(second, first);
+            Assert.Equal(unitReceiver.Rises, fastReceiver.Rises);
+            Assert.Equal(unitReceiver.Edges, fastReceiver.Edges);
+            Assert.Equal(unitReceiver.High, fastReceiver.High);
+            Assert.Equal(Levels(unit), Levels(fast));
+            Assert.Equal(unit.Ic2.Count, fast.Ic2.Count);
+            Assert.Equal(unit.Ic3.Count, fast.Ic3.Count);
+            Assert.Equal(unit.Ic4.Count, fast.Ic4.Count);
+            Assert.Equal(unit.Ic4.InputClockCount, fast.Ic4.InputClockCount);
+            Assert.False(fast.Ic2.ClockHigh); Assert.False(fast.Ic3.ClockHigh); Assert.False(fast.Ic4.ClockHigh);
+        }
+        Assert.True(fastReceiver.Accepted > 0);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AdditionalClockObserversRetainEveryEdgeAndDisableGrouping(bool observeTwelve)
+    {
+        var source = new SystemClockGenerator();
+        var receiver = new StableReceiver();
+        source.Clock12MHzReceiver = receiver;
+        source.Clock12MHzCanGroup = true;
+        var observations = 0;
+        if (observeTwelve) source.Clock12MHzChanged = _ => observations++;
+        else source.Clock8MHzChanged = _ => observations++;
+        source.AdvanceClocks(3600);
+        Assert.Equal(0, receiver.Accepted);
+        Assert.Equal(3600, receiver.Edges);
+        Assert.Equal(observeTwelve ? 3600 : 2400, observations);
+        Assert.Equal(3600, source.Ic2.InputClockCount);
+    }
+
+    private sealed class StableReceiver : IStableClockPeriodReceiver
+    {
+        public bool High { get; private set; }
+        public long Rises { get; private set; }
+        public long Edges { get; private set; }
+        public long Accepted { get; private set; }
+        public void SetClock(bool high)
+        {
+            if (high == High) return;
+            High = high; Edges++;
+            if (high) Rises++;
+        }
+        public int AdvanceStablePeriods(int maximumPeriods)
+        {
+            Assert.False(High);
+            Rises += maximumPeriods;
+            Edges += maximumPeriods * 2L;
+            Accepted += maximumPeriods;
+            return maximumPeriods;
+        }
+    }
+
     [Fact]
     public void AttachingEarlierOutputsDuringALaterPublicationDoesNotReplayTheSameEdge()
     {

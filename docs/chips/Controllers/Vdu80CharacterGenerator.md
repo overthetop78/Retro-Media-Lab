@@ -72,3 +72,24 @@ Debug, trois fenêtres de 12 millions de dots (1 s interne) après chauffe ; car
 Profil EventPipe du circuit seul, 8 s, dotnet-sampled-thread-time, piles evented intégrées sans addition des parents et descendants ; temps attribué au dernier composant réel (appels runtime inclus) : 7062,58 ms. Parts propres : SetDotClock 15,02 %, SN74LS165.PublishOutputs 11,09 %, ResolveGatedClock 8,75 %, get_SerialOutput 7,69 %, PublishVideo 7,27 %, MM52116.FirstDeadline 6,61 %, AdvanceLocalTime 5,61 %, MM52116.PublishNextEvent 5,29 %, MM52116.AdvanceTo 5,19 %, SetClock 4,35 %, UpdateDeadline 3,16 %. Ce sont des échantillons de temps managé, pas des cycles matériels ni une mesure machine. La publication du registre reconstruit son nullable même lorsque sa sortie ne change pas : prochaine action à inscrire dans son suivi. Les échéances restent celles du profil matériel accepté.
 
 Publication SN74LS165 optimisée et vérifiée : durée du montage synthétique source/VDU réduite de 10,7 % avec motifs nuls, 6,9 % avec motifs changeants ; toutes les empreintes inchangées. 71 contrôles après nettoyage (98 ms). Conditions et tableau dans la fiche Sn74LS165 ; aucune nouvelle cadence machine complète déduite.
+
+### Raccordement des intervalles stables vérifié — 9 novembre 2026
+
+Le trajet complet utilise les périodes stables sans dépasser les échéances locales et fronts observables. System 5 entier Debug : 74,691297 / 76,980154 / 76,304280 ms/champ ; référence 102,139359 / 102,206670 / 101,742130. Durée moyenne réduite de 25,5 % pour le bloc combiné, pas pour ce seul composant. Vitesse 25,94–26,73 % du nominal, source/CPU = 12, empreintes des trois champs identiques. Conditions et résultats complets : `docs/tasks/machines/AcornSystem/system5-validation.md`, passage « Intervalles stables raccordés ».
+
+Après nettoyage des bancs et régénération : 96 contrôles de composants (414 ms), 135 contrôles System/audio (3 s) réussis. La comparaison des champs couvre curseur, inversion, entrelacement et caractères variables, avec mêmes niveaux et instants de notifications. Capture réelle inspectée, conservée dans `artifacts/TestsChips/Vdu80CharacterGenerator/Acorn System 5/20261109-stable-intervals-monitor-debug.bmp`, SHA256 162FD4E97CB8FF4D3D07BE20A79393C087D912C1559AEFE60DB9F951DFB9DA12. Aucun gain propre supplémentaire déduit des seules mesures machine ; optimisation globale encore ouverte.
+
+### Mesure autonome finale des périodes stables — 9 novembre 2026
+
+Qualification notifiée depuis le mot ROM parallèle connu nul ; ce booléen décrit l'admissibilité d'une optimisation, pas une nouvelle broche matérielle. Le chemin groupé vérifie ensuite la sortie série effective et refuse toute période atteignant une échéance ROM/NL/DE/CU. Temps entier et fraction de la cadence 24 MHz restent locaux et exacts. Les autres motifs utilisent directement les fronts unitaires.
+
+Debug, 12 000 périodes de chauffe puis trois fenêtres de 12 millions de dots ; horloge caractère alternée tous les trois dots. Référence et regroupement sur le même circuit, toutes les empreintes et le temps final identiques.
+
+| Scénario | Niveaux unitaires, ms | Qualification/groupes, ms | Effet moyen |
+| --- | --- | --- | --- |
+| Mot parallèle établi nul | 1056,4372 / 1057,6809 / 1048,6312 | 866,3526 / 865,8350 / 886,4948 | durée réduite de 17,2 % |
+| Motifs changeants | 2027,7896 / 2043,8152 / 2040,7051 | 2086,8808 / 2069,1376 / 2118,6484 | durée augmentée de 2,7 % |
+
+Le compromis n'est pas présenté comme un gain universel : la qualification évite les recherches stables sur les motifs variables mais conserve un coût d'intégration. Les tentatives précédant le cache paresseux et cette qualification étaient encore moins favorables sur ces motifs ; la rétention s'appuie sur le gain vérifié du montage réel complet (25,5 % de durée moyenne en moins).
+
+Douze millions de dots et exactement 1 milliard de ns par fenêtre. Empreintes stables 20A4679F1A233685 / 5092FB8406E74D85 / E4D73504C65F6485 ; variables 9A1AAF9926676B95 / 41166DCBE409CD99 / 602DB1804A41DF9D. Banc autonome supprimé et assembly régénérée. Contrôles de périodes/échéances et quatre scénarios machine de huit champs : notifications horodatées, comptes, images et parités identiques au parcours unitaire.

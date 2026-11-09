@@ -15,4 +15,7 @@ public interface IVdu80CharacterGenerator
     void SetInverted(bool high);
     void SetCharacterClock(bool high);
     bool? SetDotClock(bool high);
+    int AdvanceStableDotClocks(int maximumClocks);
+    bool StableClockCandidate { get; }
+    Action<bool>? StableClockCandidateChanged { get; set; }
 }

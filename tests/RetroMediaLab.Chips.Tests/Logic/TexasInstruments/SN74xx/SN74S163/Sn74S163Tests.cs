@@ -5,6 +5,50 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74S163;
 public sealed class Sn74S163Tests
 {
     [Fact]
+    public void PeriodicInputIntervalsMatchIndividualSharedEdges()
+    {
+        for (var seed = 0; seed < 256; seed++)
+        {
+            byte[] pins = [(byte)seed, (byte)(seed * 73 + 17), (byte)(~seed ^ 0x5a)];
+            var inputs = new Sn74S163PeriodicInputs(pins, 6);
+            for (byte initial = 0; initial < 16; initial++)
+            for (var phase = 0; phase < 3; phase++)
+            for (var periods = 1; periods <= 6; periods++)
+            {
+                var grouped = new Sn74S163(24_000_000, initial);
+                var unit = new Sn74S163(24_000_000, initial);
+                grouped.CaptureClockPeriods(periods, inputs, -phase);
+                for (var edge = 0; edge < periods; edge++)
+                {
+                    Apply(unit, pins[(phase + edge) % 3]);
+                    unit.CaptureClock(true);
+                    Apply(unit, pins[(phase + edge + 1) % 3]);
+                    unit.ResolveClock();
+                    unit.ReceiveFallingClock();
+                }
+                grouped.ResolveClock();
+                grouped.ReceiveFallingClock();
+                Assert.Equal(unit.Count, grouped.Count);
+                Assert.Equal(unit.Carry, grouped.Carry);
+                Assert.Equal(unit.InputClockCount, grouped.InputClockCount);
+                Assert.False(grouped.ClockHigh);
+                unit.Clock();
+                grouped.Clock();
+                Assert.Equal(unit.Count, grouped.Count);
+                Assert.Equal(unit.Carry, grouped.Carry);
+            }
+        }
+
+        static void Apply(Sn74S163 counter, byte pins)
+        {
+            counter.SetClear((pins & 1) != 0);
+            counter.SetLoad((pins & 2) != 0);
+            counter.SetEnable((pins & 4) != 0, (pins & 8) != 0);
+            counter.SetData((byte)(pins >> 4));
+        }
+    }
+
+    [Fact]
     public void EveryControlCombinationMatchesTheTiPriorityTableForEveryInitialCount()
     {
         for (var flags = 0; flags < 16; flags++)

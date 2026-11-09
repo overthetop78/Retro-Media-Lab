@@ -107,3 +107,23 @@ Face au passage précédent à 114,775827 / 116,842544 / 114,562517 ms/champ, du
 Capture réellement produite et inspectée : `20261109-104807-critical-clock-path-monitor-debug.bmp`, SHA256 fichier 162FD4E97CB8FF4D3D07BE20A79393C087D912C1559AEFE60DB9F951DFB9DA12, sous TestsMachines/Acorn/Acorn System 5 et copie TestsChips/Sn74S163/Acorn System 5. Moniteur Acorn Dos et prompt lisibles, fichier identique à la capture du moniteur avant ce bloc.
 
 Nettoyage du cœur dans finally, aucun RML ni ressource graphique native créé. Banc temporaire supprimé, assembly régénérée ; 131 contrôles System/audio réussis (4 s) et 75 contrôles de composants réussis (99 ms). Aucun build de livraison utilisateur lancé. Le bloc de réduction des coûts par appel est vérifié ; System 5 reste en cours à 19,5–19,6 % Debug. Le générateur traite encore chaque période de 24 MHz et le rendu écrit chaque dot : avancement groupé et portions stables restent à traiter. Le CPU, les fréquences et les cycles matériels n'ont pas été modifiés.
+
+### Intervalles stables raccordés — 9 novembre 2026
+
+Mesure du System 5 entier, Debug normal : NOS80 et VDU80 externes, RAM 2000–DFFF, 8271 présent sans média. Quarante champs de chauffe puis trois fenêtres de quatre-vingts champs, rendu et drainage audio inclus, sans compilation ni autre test concurrent. La première invocation a validé le scénario mais le logger normal masquait les mesures des tests réussis ; la seconde utilise le logger détaillé et fournit les chiffres conservés ci-dessous.
+
+| Fenêtre | ms/champ | Champs/s sans limite | CPU MHz effectifs | Vitesse nominale | Périodes source | Cycles CPU |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 74,691297 | 13,388441 | 0,534681 | 26,734038 % | 38 338 560 | 3 194 880 |
+| 2 | 76,980154 | 12,990361 | 0,518783 | 25,939153 % | 38 338 560 | 3 194 880 |
+| 3 | 76,304280 | 13,105425 | 0,523378 | 26,168912 % | 38 338 560 | 3 194 880 |
+
+Référence du bloc précédent : 102,139359 / 102,206670 / 101,742130 ms/champ. Moyennes : 102,029386 → 75,991910 ms/champ, soit 25,5 % de durée en moins et environ 34,3 % de débit en plus. Vitesse moyenne 19,57 → 26,28 % ; ce n'est toujours pas la cadence nominale. La limite matérielle demeure 50,080128 champs/s et le CPU sélectionné à 2 MHz. Aucun cycle CPU, fréquence ni délai matériel changé.
+
+Les empreintes des trois framebuffers sont identiques à la référence : E9E458B2454C6AAD008F6EA0A02D78D406A9EBC80DA45D7057462F60FA99E76B ; 113FD6C47E8C8E57D4731313BFC2BDCFA42DF867D1FEED1D1CB1A1CB25719108 ; première empreinte de nouveau. Ratio source/CPU exactement 12 dans chaque fenêtre. Capture réelle inspectée : `20261109-stable-intervals-monitor-debug.bmp`, SHA256 fichier 162FD4E97CB8FF4D3D07BE20A79393C087D912C1559AEFE60DB9F951DFB9DA12 ; moniteur Acorn Dos et invite visibles, identiques à la référence.
+
+Bloc conservé : distance locale au prochain changement série, échéances VDU bornées, captures périodiques des trois compteurs après leur resynchronisation physique, portions constantes du framebuffer. Les comptes et phases restent dans leurs composants ; les motifs immuables ne contiennent que les entrées du câblage fixe. Les observateurs supplémentaires ou une période refusée rétablissent le parcours unitaire. Les délais ROM/NL/DE/CU, accès CPU et fronts 2 MHz bornent le regroupement. Aucun JIT/Dynarec ni saut arbitraire ajouté.
+
+Comparaisons permanentes : 73 728 combinaisons de motifs périodiques/compte/phase/longueur pour le compteur, sept phases initiales de réseau, changements de récepteurs, 6561 mots physiques du registre × trois états SER, quatre scénarios de huit champs complets avec caractères variables, curseur, inversion et entrelacement. Champs, notifications série horodatées et compteurs égaux aux fronts unitaires. Après suppression du banc natif et régénération : 96 contrôles de composants réussis (414 ms), 135 contrôles System/audio réussis (3 s), hors sauvegardes reportées. Module compilé sans avertissement ; quatre avertissements préexistants du projet de tests. Cœur réinitialisé dans finally ; aucun processus RML ni fenêtre créé. Aucun build de livraison utilisateur dans ce passage.
+
+Le profil antérieur ne mesure pas la répartition des coûts après ce bloc : aucun nouveau classement des ralentissements n'est revendiqué. Les requêtes stables et calculs/pubs aux frontières ont encore un coût ; le parcours unitaire reste nécessaire aux périodes variables et aux échéances observables. Il faut profiler de nouveau le montage actuel avant d'attribuer le coût résiduel ou retenir une prochaine optimisation. System 5 reste en cours pour la performance.

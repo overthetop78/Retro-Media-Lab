@@ -1,15 +1,48 @@
 using RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services;
+using RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Interfaces;
+using System.Runtime.InteropServices;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants.SystemVideoConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 
-internal sealed partial class SystemVideo
+internal sealed partial class SystemVideo : IStableClockPeriodReceiver
 {
     private Vdu80CharacterGenerator? _monochrome;
     private int _monochromeRamIndex;
     // Presentation coordinates only. The real clocks, latches and shift count live in Chips.
     private int _monochromeX;
     private int _monochromeY;
+
+    internal bool StableClockCandidate => _monochrome?.StableClockCandidate == true;
+    internal Action<bool>? StableClockCandidateChanged
+    {
+        get => _monochrome?.StableClockCandidateChanged;
+        set { if (_monochrome is { } circuit) circuit.StableClockCandidateChanged = value; }
+    }
+
+    void IStableClockPeriodReceiver.SetClock(bool high) => SetDotClock(high);
+
+    int IStableClockPeriodReceiver.AdvanceStablePeriods(int maximumPeriods)
+    {
+        if (_monochrome is null) return 0;
+        var white = _monochrome.VideoWhite == true;
+        var count = _monochrome.AdvanceStableDotClocks(maximumPeriods);
+        if (count == 0) return 0;
+        var first = _monochromeX;
+        _monochromeX += count;
+        if ((uint)_monochromeY >= C.Height) return count;
+        var start = Math.Max(0, first);
+        var end = Math.Min(C.Width, _monochromeX);
+        if (end <= start) return count;
+        // Monochrome frames are cleared to zero, including alpha. Fill the same
+        // native RGB bytes as explicit dots, preserving the zero alpha channel.
+        var pixel = white ? (uint)C.PixelLevel * 0x010101u : 0u;
+        if (!BitConverter.IsLittleEndian) pixel <<= 8;
+        var bytes = _drawing.AsSpan((_monochromeY * C.Width + start) * C.PixelBytes,
+            (end - start) * C.PixelBytes);
+        MemoryMarshal.Cast<byte, uint>(bytes).Fill(pixel);
+        return count;
+    }
 
     private void ConfigureMonochrome(ReadOnlySpan<byte> characters, bool inverted)
     {

@@ -8,7 +8,7 @@ namespace RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Services;
 /// <summary>24 MHz oscillator and three synchronous counters wired as Acorn 400,005 figure 9.</summary>
 /// <remarks>Counter state belongs to each SN74S163. All three capture the shared edge
 /// before upstream outputs settle. No CPU reset is wired to this free-running network.</remarks>
-public sealed class SystemClockGenerator : ISystemClockGenerator
+public sealed partial class SystemClockGenerator : ISystemClockGenerator
 {
     private readonly Sn74S163 _ic2;
     private readonly Sn74S163 _ic3;
@@ -51,7 +51,11 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     public bool Clock3MHz => (_levels & C.Clock3) != 0;
     public bool Clock2MHz => (_levels & C.Clock2) != 0;
     public bool Clock1MHz => (_levels & C.Clock1) != 0;
-    public Action<bool>? Clock12MHzChanged { get => GetReceiver(C.Clock12); set => SetReceiver(value, C.Clock12); }
+    public Action<bool>? Clock12MHzChanged
+    {
+        get => _clock12Observer;
+        set { _clock12Observer = value; UpdateClock12Route(); }
+    }
     public Action<bool>? Clock8MHzChanged { get => GetReceiver(C.Clock8); set => SetReceiver(value, C.Clock8); }
     public Action<bool>? Clock6MHzChanged { get => GetReceiver(C.Clock6); set => SetReceiver(value, C.Clock6); }
     public Action<bool>? Clock4MHzChanged { get => GetReceiver(C.Clock4); set => SetReceiver(value, C.Clock4); }
@@ -71,6 +75,7 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
 
     private void RisingClock()
     {
+        var aligning = !_stableDomainsAligned && !_ic4ClearHigh;
         _oscillatorHigh = true;
         _inputClockCount = checked(_inputClockCount + 1);
         // All receivers start low: the source owns their shared CLK and every
@@ -81,6 +86,12 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
         _ic2.ResolveClock();
         _ic3.ResolveClock();
         _ic4.ResolveClock();
+        if (aligning && _ic2Pins == C.DivideByThreeSeed)
+        {
+            _stableDomainsAligned = true;
+            _stableClockOrigin = _inputClockCount;
+            if (_stableClock12Eligible) UpdateNextClock2Edge();
+        }
         PublishOutputs();
     }
 
@@ -103,7 +114,8 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     {
         ArgumentOutOfRangeException.ThrowIfNegative(clocks);
         if (_oscillatorHigh) throw new InvalidOperationException(nameof(OscillatorHigh));
-        for (long clock = 0; clock < clocks; clock++) ClockPeriod();
+        if (_stableClock12Eligible) AdvanceWithStableReceiver(clocks);
+        else for (long clock = 0; clock < clocks; clock++) ClockPeriod();
     }
 
     private void ClockPeriod()
@@ -114,6 +126,7 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
 
     private void Ic2Outputs(byte count, bool carry)
     {
+        _ic2Pins = count;
         _levels = (byte)((_levels & ~C.Clock8) | ((count & 1) << 1));
         _ic2.SetClear((count & 2) == 0);
         var enable = (count & 1) != 0;
@@ -124,7 +137,8 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     {
         _levels = (byte)((_levels & ~(C.Clock4 | C.Clock2 | C.Clock1))
             | ((count & 1) << 3) | ((count & 6) << 4));
-        _ic4.SetClear(!carry);
+        _ic4ClearHigh = !carry;
+        _ic4.SetClear(_ic4ClearHigh);
     }
 
     private void Ic4Outputs(byte count, bool carry)
@@ -137,6 +151,7 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     {
         var remaining = (uint)(_levels ^ _publishedLevels);
         _publishedLevels = _levels;
+        if (_stableClock12Eligible && (remaining & C.Clock2) != 0) UpdateNextClock2Edge();
         if ((remaining & _observedClocks) == 0) return;
         var index = (int)_nextObserved[0];
         while (index < C.OutputCount)
@@ -157,6 +172,7 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
         var previous = _observedClocks;
         if (receiver is null) _observedClocks &= (byte)~output;
         else _observedClocks |= output;
+        UpdateStableClockEligibility();
         if (previous == _observedClocks) return;
         // Subscription metadata only; no clock, signal or counter state is shared.
         var next = (byte)C.OutputCount;

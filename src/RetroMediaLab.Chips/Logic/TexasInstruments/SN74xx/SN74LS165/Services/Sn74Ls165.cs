@@ -7,7 +7,7 @@ namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS165.Services;
 /// <remarks>The effective positive clock is SH/LD AND (CLK OR CLK INH).
 /// Its rising edge is the falling NOR output shown in the original circuit.
 /// No power-on state or reset is invented; unknown bits propagate through the stages.</remarks>
-public sealed class Sn74Ls165 : ISn74Ls165
+public sealed partial class Sn74Ls165 : ISn74Ls165
 {
     private long _inputClockCount;
     private long _shiftClockCount;
@@ -62,7 +62,12 @@ public sealed class Sn74Ls165 : ISn74Ls165
         if (!_shiftLoadHigh) LoadParallel();
     }
 
-    public void SetSerialInput(bool? high) => _serialInput = high;
+    public void SetSerialInput(bool? high)
+    {
+        if (_serialInput == high) return;
+        _serialInput = high;
+        _stableDeadlineValid = false;
+    }
 
     public void SetShiftLoad(bool high)
     {
@@ -139,19 +144,8 @@ public sealed class Sn74Ls165 : ISn74Ls165
         RequireLowClock();
         while (clocks > 0)
         {
-            if (!_shiftLoadHigh || _clockInhibitHigh)
-            {
-                _inputClockCount = checked(_inputClockCount + clocks);
-                return;
-            }
-            var settledValue = _serialInput == true ? byte.MaxValue : (byte)0;
-            var settledKnown = _serialInput.HasValue ? byte.MaxValue : (byte)0;
-            if (_register == settledValue && _knownBits == settledKnown)
-            {
-                _inputClockCount = checked(_inputClockCount + clocks);
-                _shiftClockCount = checked(_shiftClockCount + clocks);
-                return;
-            }
+            clocks -= AdvanceStableClocks(clocks);
+            if (clocks == 0) return;
             Clock();
             clocks--;
         }
@@ -166,6 +160,11 @@ public sealed class Sn74Ls165 : ISn74Ls165
         _shiftClockCount = checked(_shiftClockCount + 1);
         _register = (byte)((_register << 1) | (_serialInput == true ? 1 : 0));
         _knownBits = (byte)((_knownBits << 1) | (_serialInput.HasValue ? 1 : 0));
+        if (_stableDeadlineValid)
+        {
+            if (_stableShifts == 0) _stableDeadlineValid = false;
+            else if (_stableShifts != int.MaxValue) _stableShifts--;
+        }
         PublishOutputs();
     }
 
@@ -173,6 +172,7 @@ public sealed class Sn74Ls165 : ISn74Ls165
     {
         _register = _parallelData;
         _knownBits = _parallelKnownBits;
+        _stableDeadlineValid = false;
         PublishOutputs();
     }
 

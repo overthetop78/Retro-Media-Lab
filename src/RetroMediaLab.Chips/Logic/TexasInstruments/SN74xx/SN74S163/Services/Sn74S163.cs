@@ -6,7 +6,7 @@ namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74S163.Services;
 /// <summary>TI SN74S163: four synchronous flip-flops, synchronous CLR/LOAD and combinational RCO.</summary>
 /// <remarks>The initial count is a model seed, not a physical power-up reset.
 /// The board supplies CLK and electrical input levels; no host resource or other chip is queried.</remarks>
-public sealed class Sn74S163 : ISn74S163
+public sealed partial class Sn74S163 : ISn74S163
 {
     private bool _clearHigh = true;
     private bool _loadHigh = true;

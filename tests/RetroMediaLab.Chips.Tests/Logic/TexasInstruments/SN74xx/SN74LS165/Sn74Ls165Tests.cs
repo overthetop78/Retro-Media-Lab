@@ -6,6 +6,149 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74LS165;
 public sealed class Sn74Ls165Tests
 {
     [Fact]
+    public void StablePrefixMatchesEveryWordUntilItsFirstKnownOrUnknownOutputChange()
+    {
+        foreach (var (value, mask) in TriStateWords())
+        foreach (var serial in new bool?[] { null, false, true })
+        {
+            var probe = StableFixture((byte)value, mask, serial);
+            var original = probe.SerialOutput;
+            long expected = 10;
+            for (var clock = 0; clock < 10; clock++)
+            {
+                probe.Clock();
+                if (probe.SerialOutput != original) { expected = clock; break; }
+            }
+            var grouped = StableFixture((byte)value, mask, serial);
+            var unit = StableFixture((byte)value, mask, serial);
+            var changes = new List<bool?>();
+            grouped.OutputsChanged = (high, _) => changes.Add(high);
+            Assert.Equal(expected == 10 ? long.MaxValue : expected, grouped.StableClockPeriods);
+            Assert.Equal(expected, grouped.AdvanceStableClocks(10));
+            for (var clock = 0; clock < expected; clock++) unit.Clock();
+            Assert.Empty(changes);
+            Assert.Equal(unit.KnownBits, grouped.KnownBits);
+            Assert.Equal(unit.StoredData, grouped.StoredData);
+            Assert.Equal(unit.SerialOutput, grouped.SerialOutput);
+            Assert.Equal(unit.ComplementaryOutput, grouped.ComplementaryOutput);
+            Assert.Equal(unit.InputClockCount, grouped.InputClockCount);
+            Assert.Equal(unit.ShiftClockCount, grouped.ShiftClockCount);
+            Assert.Equal(unit.GatedClockHigh, grouped.GatedClockHigh);
+            Assert.False(grouped.ClockHigh);
+            if (expected < 10)
+            {
+                grouped.Clock();
+                Assert.Single(changes);
+                Assert.Equal(probe.SerialOutput, changes[0]);
+                Assert.Equal(probe.InputClockCount, grouped.InputClockCount);
+            }
+        }
+    }
+
+    [Fact]
+    public void SerialAndParallelChangesRearmTheRetainedOutputDeadline()
+    {
+        var chip = new Sn74Ls165(12_000_000, 0);
+        chip.SetSerialInput(false);
+        Assert.Equal(long.MaxValue, chip.StableClockPeriods);
+        chip.SetSerialInput(true);
+        Assert.Equal(7, chip.StableClockPeriods);
+        Assert.Equal(3, chip.AdvanceStableClocks(3));
+        Assert.Equal(4, chip.StableClockPeriods);
+        chip.SetParallelData(0xff);
+        chip.SetShiftLoad(false); chip.SetShiftLoad(true);
+        Assert.Equal(long.MaxValue, chip.StableClockPeriods);
+        chip.SetSerialInput(null);
+        Assert.Equal(7, chip.AdvanceStableClocks(100));
+        Assert.Equal(0x80, chip.KnownBits);
+        Assert.True(chip.SerialOutput);
+        Assert.Equal(0, chip.StableClockPeriods);
+        chip.Clock();
+        Assert.Null(chip.SerialOutput);
+        Assert.Equal(long.MaxValue, chip.StableClockPeriods);
+    }
+
+    private static IEnumerable<(byte Data, byte Known)> TriStateWords()
+    {
+        for (var word = 0; word < 6561; word++) // 3^8 physically distinct known-low/high/unknown words.
+        {
+            byte data = 0, known = 0;
+            var digits = word;
+            for (var bit = 0; bit < 8; bit++)
+            {
+                var level = digits % 3;
+                digits /= 3;
+                if (level != 0) known |= (byte)(1 << bit);
+                if (level == 2) data |= (byte)(1 << bit);
+            }
+            yield return (data, known);
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EstablishedSerialLevelsAdvanceLongSpansWithoutInventingTransitions(bool? serial)
+    {
+        var chip = new Sn74Ls165(12_000_000, serial.HasValue ? serial.Value ? (byte)255 : (byte)0 : null);
+        chip.SetSerialInput(serial);
+        var notifications = 0;
+        chip.OutputsChanged = (_, _) => notifications++;
+        Assert.Equal(1_000_000_000_000L, chip.AdvanceStableClocks(1_000_000_000_000L));
+        Assert.Equal(1_000_000_000_000L, chip.InputClockCount);
+        Assert.Equal(1_000_000_000_000L, chip.ShiftClockCount);
+        Assert.Equal(serial, chip.SerialOutput);
+        Assert.Equal(0, notifications);
+        Assert.False(chip.ClockHigh);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void StablePrefixPreservesTheLoadAndInhibitClockGates(bool loadHigh, bool inhibit)
+    {
+        var grouped = StableFixture(0xa5, 0xff, false);
+        var unit = StableFixture(0xa5, 0xff, false);
+        foreach (var chip in new[] { grouped, unit })
+        {
+            chip.SetShiftLoad(loadHigh);
+            chip.SetClockInhibit(inhibit);
+        }
+        Assert.Equal(20, grouped.AdvanceStableClocks(20));
+        for (var clock = 0; clock < 20; clock++) unit.Clock();
+        Assert.Equal(unit.StoredData, grouped.StoredData);
+        Assert.Equal(unit.KnownBits, grouped.KnownBits);
+        Assert.Equal(unit.InputClockCount, grouped.InputClockCount);
+        Assert.Equal(unit.ShiftClockCount, grouped.ShiftClockCount);
+        Assert.Equal(unit.GatedClockHigh, grouped.GatedClockHigh);
+    }
+
+    [Fact]
+    public void StablePrefixRejectsNegativeCountsAndAnUnresolvedHighClock()
+    {
+        var chip = new Sn74Ls165(12_000_000, 0);
+        Assert.Equal(0, chip.AdvanceStableClocks(0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chip.AdvanceStableClocks(-1));
+        chip.CaptureClock(true);
+        Assert.Throws<InvalidOperationException>(() => chip.AdvanceStableClocks(1));
+        chip.ResolveClock();
+        chip.SetClock(false);
+        Assert.False(chip.ClockHigh);
+    }
+
+    private static Sn74Ls165 StableFixture(byte data, byte known, bool? serial)
+    {
+        var chip = new Sn74Ls165(12_000_000);
+        chip.SetSerialInput(serial);
+        chip.SetParallelData(data, known);
+        chip.SetShiftLoad(false);
+        chip.SetShiftLoad(true);
+        return chip;
+    }
+
+    [Fact]
     public void CompleteInputEdgesMatchSharedCaptureWithChangingGateAndUnknownInputs()
     {
         var complete = new Sn74Ls165(12_000_000);

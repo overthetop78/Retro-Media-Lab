@@ -10,6 +10,66 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuSystemMonochromeTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void StableIntervalsPreserveCompleteFieldsAndSerialTransitions(bool inverted, bool interlaced)
+    {
+        var rom = new byte[2048];
+        for (var raster = 0; raster < 16; raster++) rom[16 + raster] = (byte)(raster * 37);
+        var unitVideo = new SystemVideo(true, rom, inverted: inverted);
+        var fastVideo = new SystemVideo(true, rom, inverted: inverted);
+        var unit = Connect(unitVideo);
+        var fast = Connect(fastVideo);
+        var unitCircuit = Field<Vdu80CharacterGenerator>(unitVideo, "_monochrome");
+        var fastCircuit = Field<Vdu80CharacterGenerator>(fastVideo, "_monochrome");
+        var unitEvents = new List<(long Time, bool? White)>();
+        var fastEvents = new List<(long Time, bool? White)>();
+        unitCircuit.VideoChanged += RecordUnit;
+        fastCircuit.VideoChanged += RecordFast;
+        try
+        {
+            fast.Clock12MHzChanged = null;
+            fast.Clock12MHzReceiver = fastVideo;
+            fastVideo.StableClockCandidateChanged = high => fast.Clock12MHzCanGroup = high;
+            fast.Clock12MHzCanGroup = fastVideo.StableClockCandidate;
+            Program(unitVideo, interlaced ? (byte)0x43 : (byte)0x40, 3, true);
+            Program(fastVideo, interlaced ? (byte)0x43 : (byte)0x40, 3, true);
+            for (var field = 0; field < 8; field++)
+            {
+                for (var cell = 0; cell < 80; cell++)
+                {
+                    var character = (byte)((cell + field) % 5 == 0 ? 1 : 0);
+                    unitVideo.Write(0x1000 + cell, character);
+                    fastVideo.Write(0x1000 + cell, character);
+                }
+                RunToFrame(unitVideo, unit, field + 1);
+                RunToFrame(fastVideo, fast, field + 1);
+                Assert.Equal(unitVideo.CompletedFrame, fastVideo.CompletedFrame);
+                Assert.Equal(unitVideo.ScanMode, fastVideo.ScanMode);
+                Assert.Equal(unit.InputClockCount, fast.InputClockCount);
+                Assert.Equal(unitCircuit.TimeNanoseconds, fastCircuit.TimeNanoseconds);
+                Assert.Equal(unitCircuit.DotClockCount, fastCircuit.DotClockCount);
+                Assert.Equal(unitCircuit.CharacterClockCount, fastCircuit.CharacterClockCount);
+                Assert.Equal(unitEvents, fastEvents);
+                unitEvents.Clear(); fastEvents.Clear();
+            }
+        }
+        finally
+        {
+            unitCircuit.VideoChanged -= RecordUnit;
+            fastCircuit.VideoChanged -= RecordFast;
+            fastVideo.StableClockCandidateChanged = null;
+            fast.Clock12MHzReceiver = null;
+            Disconnect(unitVideo, unit);
+            Disconnect(fastVideo, fast);
+        }
+        void RecordUnit(bool? white) => unitEvents.Add((unitCircuit.TimeNanoseconds, white));
+        void RecordFast(bool? white) => fastEvents.Add((fastCircuit.TimeNanoseconds, white));
+    }
+
     [Fact]
     public void ProgrammedCursorPulsesReachTheRcCircuitAtTheirCalculatedPhases()
     {

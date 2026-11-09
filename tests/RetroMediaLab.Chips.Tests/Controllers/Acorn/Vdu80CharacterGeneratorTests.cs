@@ -6,6 +6,75 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Acorn;
 public sealed class Vdu80CharacterGeneratorTests
 {
     [Fact]
+    public void StableDotPeriodsMatchExplicitEdgesAcrossChangingInputsAndAllLocalDeadlines()
+    {
+        var image = Enumerable.Range(0, 2048).Select(i => (byte)(i * 73 + 11)).ToArray();
+        var grouped = new Vdu80CharacterGenerator(image);
+        var unit = new Vdu80CharacterGenerator(image);
+        var groupEvents = new List<(long, bool?)>();
+        var unitEvents = new List<(long, bool?)>();
+        grouped.VideoChanged = level => groupEvents.Add((grouped.TimeNanoseconds, level));
+        unit.VideoChanged = level => unitEvents.Add((unit.TimeNanoseconds, level));
+        long groupedPeriods = 0;
+        for (var window = 0; window < 512; window++)
+        {
+            foreach (var video in new[] { grouped, unit })
+            {
+                video.SetCharacterData((byte)window);
+                video.SetRasterAddress(window >> 4);
+                video.SetDisplayEnabled(window % 7 != 0);
+                video.SetCursor(window % 31 == 2);
+                video.SetInverted((window & 128) != 0);
+                video.SetCharacterClock((window & 1) == 0);
+            }
+            var remaining = 3;
+            while (remaining > 0)
+            {
+                var sample = grouped.VideoWhite;
+                var accepted = grouped.AdvanceStableDotClocks(remaining);
+                if (accepted == 0)
+                {
+                    Assert.Equal(unit.SetDotClock(true), grouped.SetDotClock(true));
+                    unit.SetDotClock(false); grouped.SetDotClock(false);
+                    remaining--;
+                }
+                else
+                {
+                    groupedPeriods += accepted;
+                    for (var clock = 0; clock < accepted; clock++)
+                    {
+                        Assert.Equal(sample, unit.SetDotClock(true));
+                        unit.SetDotClock(false);
+                    }
+                    remaining -= accepted;
+                }
+                Assert.Equal(unit.TimeNanoseconds, grouped.TimeNanoseconds);
+                Assert.Equal(unit.DotClockCount, grouped.DotClockCount);
+                Assert.Equal(unit.CharacterClockCount, grouped.CharacterClockCount);
+                Assert.Equal(unit.VideoWhite, grouped.VideoWhite);
+                Assert.Equal(unitEvents, groupEvents);
+            }
+        }
+        Assert.True(groupedPeriods > 0); // The test must exercise the fast path.
+    }
+
+    [Fact]
+    public void StableDotPeriodsRetainInitialUnknownAndRejectHighClockOrEventBoundaries()
+    {
+        var video = new Vdu80CharacterGenerator(new byte[2048]);
+        Assert.Null(video.VideoWhite);
+        Assert.Equal(0, video.AdvanceStableDotClocks(0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => video.AdvanceStableDotClocks(-1));
+        video.SetCharacterClock(true); // NL expires after 20 ns, before one dot period.
+        Assert.Equal(0, video.AdvanceStableDotClocks(100));
+        Assert.Equal(0, video.TimeNanoseconds);
+        video.SetDotClock(true);
+        var time = video.TimeNanoseconds;
+        Assert.Equal(0, video.AdvanceStableDotClocks(100));
+        Assert.Equal(time, video.TimeNanoseconds);
+    }
+
+    [Fact]
     public void CancelledDisplayTransitionDoesNotBecomeASyntheticPulse()
     {
         var video = new Vdu80CharacterGenerator(Enumerable.Repeat((byte)0xf8, 2048).ToArray());

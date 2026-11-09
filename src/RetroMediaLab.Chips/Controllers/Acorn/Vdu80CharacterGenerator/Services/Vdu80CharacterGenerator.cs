@@ -27,6 +27,7 @@ public sealed partial class Vdu80CharacterGenerator : IVdu80CharacterGenerator
     private bool? _videoWhite;
     private bool _cursor;
     private bool _inverted;
+    private bool _stableClockCandidate;
 
     public Vdu80CharacterGenerator(ReadOnlySpan<byte> characters)
         : this(characters, C.CursorSwitchingFraction) { }
@@ -72,6 +73,9 @@ public sealed partial class Vdu80CharacterGenerator : IVdu80CharacterGenerator
     public long DotClockCount => _serializer.InputClockCount;
     public bool? VideoWhite => _videoWhite;
     public Action<bool?>? VideoChanged { get; set; }
+    /// <summary>Software batching qualification, not an additional hardware output.</summary>
+    public bool StableClockCandidate => _stableClockCandidate;
+    public Action<bool>? StableClockCandidateChanged { get; set; }
 
     public void SetCharacterData(byte data) => _characterData = (byte)(data & 0x7f);
 
@@ -124,9 +128,18 @@ public sealed partial class Vdu80CharacterGenerator : IVdu80CharacterGenerator
         _rom.SetAddress((ushort)(((data & 0x7f) << 4) | _rasterAddress));
     }
 
-    private void RomChanged(byte? data, bool driven) => _serializer.SetParallelData(
-        data is { } value && driven ? (byte)((value >> 1) & C.GlyphInputs) : (byte)0,
-        data.HasValue && driven ? byte.MaxValue : C.GroundedInputs);
+    private void RomChanged(byte? data, bool driven)
+    {
+        var known = data.HasValue && driven;
+        var parallel = known ? (byte)((data.GetValueOrDefault() >> 1) & C.GlyphInputs) : (byte)0;
+        _serializer.SetParallelData(parallel, known ? byte.MaxValue : C.GroundedInputs);
+        // Only qualify the cheap, established-fill case. Actual clock advances
+        // still check the serializer state and all local timing boundaries.
+        var candidate = known && parallel == 0;
+        if (_stableClockCandidate == candidate) return;
+        _stableClockCandidate = candidate;
+        StableClockCandidateChanged?.Invoke(candidate);
+    }
 
     private void PublishVideo()
     {

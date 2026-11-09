@@ -37,7 +37,9 @@ internal sealed partial class AcornSystemMachine
         control.CpuClockChanged = cpu.SetPhaseZeroInput;
         cpu.SetPhaseZeroInput(control.CpuClockHigh);
         _fastClock!.Clock2MHzChanged = SetFastReferenceClock;
-        _fastClock.Clock12MHzChanged = _video!.SetDotClock;
+        _fastClock.Clock12MHzReceiver = _video!;
+        _video!.StableClockCandidateChanged = high => _fastClock.Clock12MHzCanGroup = high;
+        _fastClock.Clock12MHzCanGroup = _video.StableClockCandidate;
         _video.SetDotClock(_fastClock.Clock12MHz);
         _video.SetCharacterClock(_fastClock.Clock2MHz);
         control.SetSelectedClock(_fastClock.Clock2MHz);

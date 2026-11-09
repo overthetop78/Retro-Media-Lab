@@ -28,4 +28,6 @@ public interface ISn74Ls165
     void ResolveClock();
     void Clock();
     void AdvanceClocks(long clocks);
+    long AdvanceStableClocks(long maximumClocks);
+    long StableClockPeriods { get; }
 }
