@@ -586,33 +586,35 @@ public sealed class Chip6502BusTests
     }
 
     [Fact]
-    public void DisabledDataBusSignalsUndrivenWriteButDoesNotChangeMemoryOrHaltExecution()
+    public void Nmos6502DoesNotSampleAnAbsentDataEnablePin()
     {
         var (cpu, bus) = Start(0xa9, 0x66, 0x8d, 0, 0x10, 0xad, 0, 0x10, 0x8d, 1, 0x10);
         bus.Bytes[0x1000] = 0x11;
         cpu.Step();
         bus.DrivenData = false;
+        bus.RejectDataEnableReads = true;
         cpu.Step();
-        Assert.Equal(new ushort[] { 0x1000 }, bus.UndrivenWrites);
-        Assert.Equal(0x11, bus.Bytes[0x1000]);
+        Assert.Empty(bus.UndrivenWrites);
+        Assert.Equal(0x66, bus.Bytes[0x1000]);
         Assert.Equal(0x66, cpu.A);
         cpu.Step();
-        Assert.Equal(0x11, cpu.A);
+        Assert.Equal(0x66, cpu.A);
         bus.DrivenData = true;
         cpu.Step();
-        Assert.Equal(0x11, bus.Bytes[0x1001]);
+        Assert.Equal(0x66, bus.Bytes[0x1001]);
     }
 
     [Fact]
-    public void UndrivenStackWriteStillDecrementsTheCpuStackPointer()
+    public void AbsentDataEnableCannotDisableTheNmosStackWrite()
     {
         var (cpu, bus) = Start(0x48);
         bus.Bytes[0x1fd] = 0x37;
         bus.DrivenData = false;
+        bus.RejectDataEnableReads = true;
         cpu.Step();
-        Assert.Equal(new ushort[] { 0x1fd }, bus.UndrivenWrites);
+        Assert.Empty(bus.UndrivenWrites);
         Assert.Equal(0xfc, cpu.S);
-        Assert.Equal(0x37, bus.Bytes[0x1fd]);
+        Assert.Equal(cpu.A, bus.Bytes[0x1fd]);
         Assert.Equal(3, bus.Ticks);
     }
 
@@ -653,6 +655,7 @@ public sealed class Chip6502BusTests
         internal Action<ushort>? ReadObserver { get; set; }
         internal Func<int, bool>? ResetSignal { get; set; }
         internal bool DrivenData { get; set; } = true;
+        internal bool RejectDataEnableReads { get; set; }
         internal List<ushort> UndrivenWrites { get; } = [];
         private bool _irq;
         internal int Ticks { get; set; }
@@ -664,7 +667,8 @@ public sealed class Chip6502BusTests
         public bool SetOverflow => OverflowInput;
         public bool Ready => ReadySignal?.Invoke(Ticks) ?? ReadyInput;
         public bool ResetRequested => ResetSignal?.Invoke(Ticks) ?? false;
-        public bool DataBusEnabled => DrivenData;
+        public bool DataBusEnabled => RejectDataEnableReads
+            ? throw new InvalidOperationException("DBE is not a pin on the NMOS 6502") : DrivenData;
         public void WriteUndriven(ushort address) => UndrivenWrites.Add(address);
         public void SetSync(bool asserted) => Sync = asserted;
         public byte Read(ushort address)

@@ -47,7 +47,7 @@ public partial class Cpu6502 : ICpu6502
         _samplesReady = variant != Cpu6502Variant.Gte65Sc12 && (signals & CpuBusControlSignals.Ready) != 0;
         _samplesReset = (signals & CpuBusControlSignals.Reset) != 0;
         _samplesOverflow = (signals & CpuBusControlSignals.SetOverflow) != 0;
-        _samplesDataEnable = variant != Cpu6502Variant.Gte65Sc102 && (signals & CpuBusControlSignals.DataBusEnable) != 0;
+        _samplesDataEnable = variant == Cpu6502Variant.Gte65Sc12 && (signals & CpuBusControlSignals.DataBusEnable) != 0;
         _publishesSync = (signals & CpuBusControlSignals.Sync) != 0;
     }
 
@@ -105,7 +105,12 @@ public partial class Cpu6502 : ICpu6502
     public void Reset()
     {
         RequireCycleBoundary();
-        if (!cmos) { BeginNmosReset(); StepNmos(); return; }
+        if (!cmos)
+        {
+            BeginNmosReset();
+            if (HasClockReceiver) Step(); else StepNmos();
+            return;
+        }
         BeginCmosReset();
         Step();
     }
@@ -114,11 +119,11 @@ public partial class Cpu6502 : ICpu6502
     public void Step()
     {
         RequireCycleBoundary();
-        if (!cmos) { StepNmos(); return; }
+        if (!cmos && !HasClockReceiver) { StepNmos(); return; }
         if (HasClockReceiver)
         {
             do { Clock(); }
-            while (_clockPhaseAdvanced && !AtInstructionBoundary);
+            while (_clockPhaseAdvanced && !AtInstructionBoundary && (cmos || _nmosPhase != Cpu6502BusPhase.Jammed));
             return;
         }
         StepCmos();

@@ -24,8 +24,17 @@ public partial class Cpu6502
 
     public void SetReset(bool asserted)
     {
+        var released = _resetPinConnected && _resetInput && !asserted;
         _resetPinConnected = _samplesReset = true;
         _resetInput = asserted;
+        // In external NMOS PH1, release makes the first reset address available
+        // before the next PH2. Do not carry a previously inhibited cycle across it.
+        if (released && !cmos && _externalClockDriven && !_externalClockInputHigh
+            && _clockCyclePrepared && _clockResetCycle)
+        {
+            _clockCyclePrepared = false;
+            PrepareAdvancedClockCycle();
+        }
     }
 
     public void SetReady(bool high)

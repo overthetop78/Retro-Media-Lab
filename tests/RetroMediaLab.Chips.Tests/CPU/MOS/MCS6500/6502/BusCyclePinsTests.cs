@@ -60,14 +60,16 @@ public sealed class BusCyclePinsTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void DataEnableIsSampledAfterPreparationAndTick(bool dataEnabled)
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    public void OnlyACmosDeviceWithDbeSamplesDataEnableAfterPreparationAndTick(bool cmos, bool dataEnabled)
     {
         var bus = new PreparedBus();
         byte[] program = [0xa9, 0x57, 0x8d, 0, 0x20];
         program.CopyTo(bus.Memory, 0x200);
-        var cpu = new Cpu6502(bus);
+        var cpu = new Cpu6502(bus, cmos);
         cpu.Reset();
         cpu.Step();
         bus.Edges.Clear();
@@ -76,9 +78,10 @@ public sealed class BusCyclePinsTests
         cpu.Step();
         Assert.Equal(new Edge(Signal.PrepareWrite, 0x2000, 0x57), bus.Edges[^3]);
         Assert.Equal(new Edge(Signal.Tick), bus.Edges[^2]);
-        Assert.Equal(dataEnabled ? new Edge(Signal.Write, 0x2000, 0x57)
+        var driven = !cmos || dataEnabled;
+        Assert.Equal(driven ? new Edge(Signal.Write, 0x2000, 0x57)
             : new Edge(Signal.Undriven, 0x2000), bus.Edges[^1]);
-        Assert.Equal(dataEnabled ? 0x57 : 0, bus.Memory[0x2000]);
+        Assert.Equal(driven ? 0x57 : 0, bus.Memory[0x2000]);
         AssertPreparationOrder(bus.Edges);
     }
 

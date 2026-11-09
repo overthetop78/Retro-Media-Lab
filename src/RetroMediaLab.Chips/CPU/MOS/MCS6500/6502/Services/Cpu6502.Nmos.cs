@@ -100,8 +100,12 @@ public partial class Cpu6502
     private bool ReadNmosCycle(ushort address, out byte value, bool sync = false)
     {
         value = default;
-        SetNmosSync(sync);
-        _cyclePins?.PrepareRead(address);
+        if (!_clockCyclePrepared)
+        {
+            SetNmosSync(sync);
+            _cyclePins?.PrepareRead(address);
+        }
+        if (_clockPresentOnly) return false;
         Tick();
         if (_samplesReset && ResetInputActive) { HoldNmosReset(); return false; }
         value = bus.Read(address);
@@ -113,13 +117,18 @@ public partial class Cpu6502
 
     private bool WriteNmosCycle(ushort address, byte value)
     {
-        SetNmosSync(false);
-        _cyclePins?.PrepareWrite(address, value);
+        if (!_clockCyclePrepared)
+        {
+            SetNmosSync(false);
+            _cyclePins?.PrepareWrite(address, value);
+        }
+        if (_clockPresentOnly) { _busCycleData = value; return false; }
+        if (_clockCyclePrepared) value = _busCycleData;
         Tick();
         if (_samplesReset && ResetInputActive) { HoldNmosReset(); return false; }
         // Les écritures NMOS ne sont jamais retenues par RDY.
-        if (!_samplesDataEnable || bus.DataBusEnabled) bus.Write(address, value);
-        else bus.WriteUndriven(address);
+        // The NMOS 6502 has no DBE pin (the SY6512 is a different device).
+        bus.Write(address, value);
         return true;
     }
 

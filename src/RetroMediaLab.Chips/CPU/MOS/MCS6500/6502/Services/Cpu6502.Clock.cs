@@ -14,13 +14,43 @@ public partial class Cpu6502
     private bool _clockOverflowSampled;
     private bool _externalClockDriven;
     private bool _externalClockInputHigh;
+    private Action<bool, bool>? _nmosPhaseOutputsChanged;
     protected Action<bool, bool>? AdvancedClockOutputsChanged { get; set; }
     protected Action<bool>? DirectClockOutputChanged { get; set; }
     protected bool ExternalClockInputHigh => _externalClockInputHigh;
     protected bool AdvancedPhase2High => _inputClockPhase >= C.AdvancedPhase2Start && _inputClockPhase < C.AdvancedClockDivider;
     protected bool AdvancedPhase4High => _inputClockPhase >= C.AdvancedPhase4Start && _inputClockPhase < C.AdvancedPhase4End;
-    private bool HasClockReceiver => _clockDivider == C.AdvancedClockDivider
-        ? AdvancedClockOutputsChanged is not null : DirectClockOutputChanged is not null;
+    private bool HasClockReceiver => !cmos ? _nmosPhaseOutputsChanged is not null
+        : _clockDivider == C.AdvancedClockDivider ? AdvancedClockOutputsChanged is not null : DirectClockOutputChanged is not null;
+    public bool PhaseOneHigh { get { RequireNmosClockPins(); return !_externalClockInputHigh; } }
+    public bool PhaseTwoHigh { get { RequireNmosClockPins(); return _externalClockInputHigh; } }
+    public Action<bool, bool>? PhaseOutputsChanged
+    {
+        get { RequireNmosClockPins(); return _nmosPhaseOutputsChanged; }
+        set { RequireNmosClockPins(); _nmosPhaseOutputsChanged = value; }
+    }
+
+    private void RequireNmosClockPins()
+    {
+        if (cmos) throw new NotSupportedException(nameof(SetPhaseZeroInput));
+    }
+
+    /// <summary>PH0 NMOS : présentation en phase basse, capture au front final, étirement sans transfert rejoué.</summary>
+    public void SetPhaseZeroInput(bool high)
+    {
+        RequireNmosClockPins();
+        SetExternalClockInput(high);
+    }
+
+    private void PublishDirectClock(bool high)
+    {
+        if (cmos) DirectClockOutputChanged?.Invoke(high);
+        else
+        {
+            _externalClockInputHigh = high;
+            _nmosPhaseOutputsChanged?.Invoke(!high, high);
+        }
+    }
     public long InputClocks => _clockCyclePrepared
         ? checked(_clockCycleStart + _inputClockPhase) : checked(_cycles * _clockDivider + _inputClockPhase);
 
@@ -61,10 +91,10 @@ public partial class Cpu6502
             {
                 PrepareAdvancedClockCycle();
                 if (_samplesOverflow) { SampleOverflow(); _clockOverflowSampled = true; }
-                DirectClockOutputChanged?.Invoke(true);
+                PublishDirectClock(true);
                 _inputClockPhase = C.DirectClockDivider;
                 CompletePreparedClockCycle();
-                DirectClockOutputChanged?.Invoke(false);
+                PublishDirectClock(false);
                 clocks--;
                 continue;
             }
@@ -85,7 +115,9 @@ public partial class Cpu6502
     }
 
     /// <summary>Entrée PHI2 du GTE12, ou CLK de l'oscillateur du GTE102 ; aucun thread ni attente hôte.</summary>
-    protected void SetCmosClockInput(bool high)
+    protected void SetCmosClockInput(bool high) => SetExternalClockInput(high);
+
+    private void SetExternalClockInput(bool high)
     {
         if (!_externalClockDriven)
         {
@@ -103,13 +135,13 @@ public partial class Cpu6502
         if (high)
         {
             if (_samplesOverflow) { SampleOverflow(); _clockOverflowSampled = true; }
-            DirectClockOutputChanged?.Invoke(true);
+            PublishDirectClock(true);
         }
         else
         {
             _inputClockPhase = C.DirectClockDivider;
             CompletePreparedClockCycle();
-            DirectClockOutputChanged?.Invoke(false);
+            PublishDirectClock(false);
             PrepareAdvancedClockCycle();
         }
     }
@@ -118,7 +150,12 @@ public partial class Cpu6502
     {
         try
         {
-            if (_clockResetCycle) { HoldCmosReset(); _clockPhaseAdvanced = false; Tick(); }
+            if (_clockResetCycle)
+            {
+                if (cmos) HoldCmosReset(); else HoldNmosReset();
+                _clockPhaseAdvanced = false;
+                Tick();
+            }
             else RunClockCycle();
         }
         finally { _inputClockPhase = 0; _clockCyclePrepared = false; }
@@ -137,8 +174,11 @@ public partial class Cpu6502
         _clockPresentOnly = true;
         try
         {
-            if (_clockResetCycle) HoldCmosReset();
-            else ClockCmos();
+            if (_clockResetCycle)
+            {
+                if (cmos) HoldCmosReset(); else HoldNmosReset();
+            }
+            else RunClockCycle();
         }
         finally { _clockPresentOnly = false; }
         _clockCyclePrepared = true;
@@ -160,7 +200,7 @@ public partial class Cpu6502
 
     private void ClockNmos()
     {
-        if (_samplesReset && ResetInputActive) { HoldNmosReset(); Tick(); return; }
+        if (_samplesReset && ResetInputActive) { HoldNmosReset(); _clockPhaseAdvanced = false; Tick(); return; }
         if (_nmosResetHeld) BeginNmosReset();
         if (_nmosPhase == Phase.Opcode)
         {
@@ -169,6 +209,6 @@ public partial class Cpu6502
             else if (_irqPending) BeginNmosInterrupt(C.IrqVector);
             else _instructionAddress = _pc;
         }
-        ExecuteNmosPhase();
+        _clockPhaseAdvanced = ExecuteNmosPhase();
     }
 }

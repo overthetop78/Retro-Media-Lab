@@ -26,6 +26,12 @@ public interface ICpu6502
     long InputClocks { get; }
     int ClockDivider { get; }
 
+    /// <summary>Entrée PH0 du NMOS ; les variantes CMOS possèdent leur propre contrat de broches.</summary>
+    void SetPhaseZeroInput(bool high);
+    bool PhaseOneHigh { get; }
+    bool PhaseTwoHigh { get; }
+    Action<bool, bool>? PhaseOutputsChanged { get; set; }
+
     void CompleteHostCall(byte result);
     void Reset();
     void Step();
