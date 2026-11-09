@@ -48,3 +48,16 @@ Revue statique demandée : aucun test/build lancé. Les résultats déjà consig
   - [x] Compléter ce même fichier avec les adressages indexés documentés : offsets signés, auto-incréments/décréments, D/A/B, PC relatif, indirection et rebouclage 16 bits ; contrôler adresse et cycles supplémentaires.
 
 Passage suivant : 80/80 tests autonomes MC6809 réussis en Debug, 95 ms ; `artifacts/TestsChips/MC6809/Acorn System 3/mc6809-instruction-matrix-debug.trx`. Les cinq nouveaux cas de matrice exécutent plusieurs combinaisons matérielles chacun. Cette étape couvre les familles nommées, pas encore une clôture de toutes les instructions et broches ni la preuve en machine. La comparaison BBC Micro/Master demandée ensuite est une revue de câblage ; elle ne clôture pas ce CPU et ne justifie pas de reprendre le Compact.
+
+
+## Reprise System 3/6809 — 9 novembre 2026
+
+- [x] Terminer la revue des fonctions encore ouvertes avant l'essai de carte.
+  - [x] Modifier `tests/RetroMediaLab.Chips.Tests/CPU/Motorola/M6800/6809/Cpu6809InstructionMatrixTests.cs` : ajouter les 256 masques des piles S/U (ordre big-endian, contenu, nombre de cycles et remontée du pointeur) et toutes les paires documentées de registres de même largeur pour TFR/EXG, avec PC après lecture du post-octet ; réutiliser le bus autonome existant et exécuter le groupe MC6809 hors états.
+  - [x] Modifier `docs/chips/CPU/Mc6809.md` : consigner les fichiers d'instructions/adressages/interruptions/broches relus, les références locales utilisées, les fonctions vérifiées et les résultats obtenus, sans assimiler le nombre de tests à une preuve de toutes les combinaisons électriques possibles.
+
+Lecture de référence : Motorola MC6809/MC6809E, rubriques MRDY et E/Q, page imprimée 12. MRDY n'étire pas les cycles VMA sans accès valide ; le prédicat existant ne doit donc pas être remplacé par un étirement systématique. Temps EXTAL, périodes E et cycles actifs restent distincts dans la puce. Aucun défaut de production établi dans les fichiers relus à ce stade.
+
+Passage actuel : 84 contrôles MC6809 réussis en Debug, 99 ms ; programme invité au moniteur System 3 exécuté, trois relevés après correction de carte consignés dans la fiche. La vérification actuelle du bootstrap reste séparée du moniteur et des preuves historiques.
+
+Bootstrap actuel System 3 confirmé : deux secteurs, 512 octets lus, programme chargé vérifié, 2010=5A et BOOT OK. Capture native actuelle inspectée, détail et limites du média dans les fiches CPU/machine. Les preuves historiques ne sont pas utilisées à la place de ce passage.

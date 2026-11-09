@@ -17,7 +17,7 @@ internal sealed partial class AcornSystemMachine
         }
         if (ViaAddress(address)) return _via!.Read(address & C.ViaRegisterMask);
         if (RamIoAddress(address)) return (address & C.RamIoRamSelect) == 0
-            ? _ramIo.ReadIo(address & C.RamIoMask) : _ramIo.ReadRam(address & C.RamIoMask);
+            ? _ramIo!.ReadIo(address & C.RamIoMask) : _ramIo!.ReadRam(address & C.RamIoMask);
         if (address >= _romStart) return _rom[(address - _romStart) % _rom.Length];
         if (_basic.Length != 0 && address >= C.BasicRomStart && address < C.BasicRomStart + _basic.Length) return _basic[address - C.BasicRomStart];
         if (_ramMapped[address]) return _ram[address];
@@ -44,8 +44,8 @@ internal sealed partial class AcornSystemMachine
         }
         if (RamIoAddress(address))
         {
-            if ((address & C.RamIoRamSelect) == 0) _ramIo.WriteIo(address & C.RamIoMask, value);
-            else _ramIo.WriteRam(address & C.RamIoMask, value);
+            if ((address & C.RamIoRamSelect) == 0) _ramIo!.WriteIo(address & C.RamIoMask, value);
+            else _ramIo!.WriteRam(address & C.RamIoMask, value);
             return;
         }
         if (address < _romStart && (_basic.Length == 0 || address < C.BasicRomStart || address >= C.BasicRomStart + _basic.Length) && _ramMapped[address]) _ram[address] = value;

@@ -153,7 +153,7 @@ System 1 : composants et bus relus (`Cpu6502.Clock.cs`, `.Pins.cs`, `.Interrupts
 
 - [ ] Terminer la revue System 2, puis System 3 avec ses deux CPU, System 4 et System 5.
   - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 2/validation.md` : consigner le bilan du câblage 6502/8154/VDU/Tape après la revue de leurs fichiers et les corrections établies.
-  - [ ] Modifier `docs/project/emulations/Acorn/Acorn System/System 3/validation.md` : consigner successivement la revue 6502/8271 puis 6809/VIA, avec les corrections établies ajoutées au suivi avant leur réalisation.
+  - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 3/validation.md` : consigner successivement la revue 6502/8271 puis 6809/VIA, avec les corrections établies ajoutées au suivi avant leur réalisation.
   - [ ] Modifier `docs/project/emulations/Acorn/Acorn System/System 4/validation.md` : consigner les raccordements vérifiés et leurs différences réelles par rapport au System 3.
   - [ ] Modifier `docs/project/emulations/Acorn/Acorn System/System 5/validation.md` : consigner ensuite la revue de la carte rapide et du générateur physique, après réalisation des corrections de propriété temporelle définies avant modification.
 
@@ -203,3 +203,34 @@ Diagnostic de débit supprimé ; projet Chips.Tests régénéré sans dépendanc
 System 3/6502 actuel : chargement BASIC par 8271 vérifié, empreinte exacte, PRINT 12+34=46, trois fenêtres Debug 182,947–189,285 % au prompt. Deux attentes/assertions du diagnostic corrigées après observation, aucun défaut de production établi. Résultats détaillés dans la fiche machine.
 
 Source temporaire System3NativeProbe supprimée ; projet régénéré sans dépendances, code 0, quatre avertissements préexistants et aucune erreur. Le bloc de revue 6502 est consigné, sans annoncer la clôture de la carte 6809.
+
+
+- [x] Revoir la carte System 3 en 6809.
+  - [x] Modifier les tests autonomes MC6809 et leur fiche selon `docs/tasks/chips/Mc6809/implementation.md` : compléter les masques de pile et transferts, puis vérifier les broches et instructions existantes avant la carte.
+  - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 3/validation.md` : consigner le câblage IRQ du VIA, NMI du 8271 et les données/strobes clavier/bande après la revue des fichiers ; ajouter avant réalisation le diagnostic de moniteur et les corrections effectivement nécessaires.
+
+
+- [x] Ne créer que le circuit RAM/E-S réellement monté sur la carte CPU System.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.cs` et `.Bus.cs` : rendre le 8154 optionnel, le créer/raccorder/réinitialiser uniquement pour Keypad6502 et Standard6502 ; conserver le VIA des cartes 6809/rapide et les décodages matériels existants.
+  - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemRamIoTests.cs` : compléter le contrôle de présence des circuits sur les quatre cartes avec l'absence/présence effective du 8154, puis vérifier le groupe System après correction.
+
+
+- [x] Mesurer la carte System 3/6809 après les modifications actuelles.
+  - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System6809NativeProbe.cs` : charger le moniteur et les caractères existants, utiliser les cartes RAM du profil 6809 ; saisir R, M2000/programme/G2000 puis M2010 par le clavier, vérifier l'écriture invitée 5A ; chronométrer trois fenêtres de 160 champs avec rendu/drainage audio et vérifier quatre périodes EXTAL par cycle E ; relâcher les entrées et détacher les médias/callbacks dans finally.
+  - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 3/validation.md` et `docs/chips/CPU/Mc6809.md` : consigner uniquement les résultats actuels de ce passage avec leurs unités, conditions et limites.
+  - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System6809NativeProbe.cs` après utilisation et régénérer l'assembly sans ce diagnostic externe ; aucun autre fichier temporaire n'est créé par le test.
+
+Mesure actuelle System 3/6809, après retrait de l’instance 8154 absente : 14,572009 / 14,172370 / 13,689057 ms par champ, 137,249–146,102 % à 1 MHz E. Programme invité 2010=5A, ratio EXTAL/E=4 vérifié. Bootstrap actuel encore à vérifier séparément.
+
+Nettoyage du diagnostic 6809 terminé, assembly régénérée sans dépendances : code 0, aucune erreur, quatre avertissements préexistants. Aucun build de livraison de RML.
+
+
+- [x] Vérifier le bootstrap disque actuel System 3/6809.
+  - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System6809BootstrapProbe.cs` : réutiliser MemoryTrackDisk et son encodeur MediaEngine avec deux secteurs de 256 octets, descripteur FF42 du moniteur et programme 6809 ; demander D par clavier, vérifier les 512 octets lus, les octets du programme chargé, son écriture 2010=5A et son texte BOOT OK en RAM vidéo ; libérer/détacher le média, les entrées et les callbacks dans finally.
+  - [x] Créer les preuves finales `artifacts/TestsMachines/Acorn/Acorn System 3/20261109-system3-6809-bootstrap-current.bmp` et `artifacts/TestsChips/MC6809/Acorn System 3/20261109-bootstrap-current.bmp` depuis le framebuffer natif actuel, sans retouche ; ces captures sont les preuves conservées, pas des fichiers temporaires du diagnostic.
+  - [x] Modifier les fiches MC6809, 8271 et System 3 : consigner les résultats actuels et la portée exacte du média de test, puis mettre à jour les suivis correspondants.
+  - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System6809BootstrapProbe.cs` et régénérer l'assembly sans le diagnostic dépendant des ROM externes ; aucun autre fichier temporaire créé.
+
+Bootstrap actuel réussi et capture inspectée : deux secteurs FM, 512 octets, programme 6809 exécuté, 2010=5A et BOOT OK. Premier diagnostic corrigé pour transmettre D majuscule au moniteur ; aucun changement de production nécessaire.
+
+Diagnostic de bootstrap supprimé et assembly régénérée sans dépendances, code 0 (quatre avertissements préexistants, aucune erreur). Les deux preuves BMP finales restent conservées hors Git. Revue System 3 des deux cartes effectuée ; suite dans l’ordre : System 4, puis générateur physique System 5.

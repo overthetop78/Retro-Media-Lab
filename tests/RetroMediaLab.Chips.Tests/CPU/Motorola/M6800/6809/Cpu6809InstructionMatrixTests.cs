@@ -6,6 +6,84 @@ namespace RetroMediaLab.Chips.Tests.CPU.Motorola.M6800.Chip6809;
 /// <summary>Documented Motorola instruction families, independent arithmetic and branch oracles.</summary>
 public sealed class Cpu6809InstructionMatrixTests
 {
+    private static readonly byte[] RegisterSetup =
+    [
+        0x86, 0xde, 0x1f, 0x8b, 0xcc, 0x9a, 0xbc, 0x8e, 0x12, 0x34,
+        0x10, 0x8e, 0x56, 0x78, 0xce, 0x40, 0x00, 0x10, 0xce, 0x30, 0x00,
+        0x1c, 0, 0x1a, 0xa5
+    ];
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EveryStackMaskUsesTheDocumentedFrameOrderAndByteCycleCount(bool user)
+    {
+        for (var mask = 0; mask <= 255; mask++)
+        {
+            var program = RegisterSetup.ToList();
+            program.AddRange([(byte)(user ? 0x36 : 0x34), (byte)mask,
+                (byte)(user ? 0x37 : 0x35), (byte)mask]);
+            var (cpu, bus) = Start(program);
+            for (var step = 0; step < 9; step++) cpu.Step();
+            var nextPc = (ushort)(0x1000 + RegisterSetup.Length + 2);
+            byte[][] fields =
+            [
+                [0xa5], [0x9a], [0xbc], [0xde], [0x12, 0x34], [0x56, 0x78],
+                user ? [0x30, 0] : [0x40, 0], [(byte)(nextPc >> 8), (byte)nextPc]
+            ];
+            var frame = fields.Where((_, bit) => (mask & (1 << bit)) != 0).SelectMany(bytes => bytes).ToArray();
+            var top = user ? 0x4000 : 0x3000;
+            var before = cpu.Cycles;
+            cpu.Step();
+            Assert.Equal(top - frame.Length, user ? cpu.U : cpu.S);
+            Assert.Equal(frame, bus.Memory.AsSpan(top - frame.Length, frame.Length).ToArray());
+            Assert.Equal(5 + frame.Length, cpu.Cycles - before);
+            before = cpu.Cycles;
+            cpu.Step();
+            Assert.Equal(top, user ? cpu.U : cpu.S);
+            Assert.Equal(5 + frame.Length, cpu.Cycles - before);
+            Assert.Equal((mask & 0x80) != 0 ? nextPc : nextPc + 2, cpu.PC);
+            Assert.Equal(0x9a, cpu.A); Assert.Equal(0xbc, cpu.B);
+            Assert.Equal(0xde, cpu.DP); Assert.Equal(0xa5, cpu.CC);
+            Assert.Equal(0x1234, cpu.X); Assert.Equal(0x5678, cpu.Y);
+            Assert.Equal(0x3000, cpu.S); Assert.Equal(0x4000, cpu.U);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TransfersAndExchangesCoverEverySameWidthRegisterPair(bool exchange)
+    {
+        int[][] families = [[0, 1, 2, 3, 4, 5], [8, 9, 10, 11]];
+        foreach (var family in families)
+        foreach (var source in family)
+        foreach (var destination in family)
+        {
+            var program = RegisterSetup.ToList();
+            program.AddRange([(byte)(exchange ? 0x1e : 0x1f), (byte)(source << 4 | destination)]);
+            var (cpu, _) = Start(program);
+            for (var step = 0; step < 9; step++) cpu.Step();
+            var nextPc = (ushort)(0x1000 + program.Count);
+            var values = family.ToDictionary(register => register,
+                register => register == 5 ? nextPc : TransferValue(cpu, register));
+            var expected = new Dictionary<int, ushort>(values) { [destination] = values[source] };
+            if (exchange) expected[source] = values[destination];
+            var before = cpu.Cycles;
+            cpu.Step();
+            Assert.Equal(exchange ? 8 : 6, cpu.Cycles - before);
+            foreach (var register in family) Assert.Equal(expected[register], TransferValue(cpu, register));
+            if (!family.Contains(5)) Assert.Equal(nextPc, cpu.PC);
+        }
+    }
+
+    private static ushort TransferValue(Cpu6809 cpu, int register) => register switch
+    {
+        0 => (ushort)(cpu.A * 256 + cpu.B), 1 => cpu.X, 2 => cpu.Y, 3 => cpu.U,
+        4 => cpu.S, 5 => cpu.PC, 8 => cpu.A, 9 => cpu.B, 10 => cpu.CC, 11 => cpu.DP,
+        _ => throw new ArgumentOutOfRangeException(nameof(register))
+    };
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

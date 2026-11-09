@@ -34,7 +34,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private readonly byte[] _rom;
     private readonly byte[] _basic;
     private readonly int _romStart;
-    private readonly RamIo8154 _ramIo = new();
+    private readonly RamIo8154? _ramIo;
     private readonly Via6522? _via;
     private readonly SystemKeyboard _keyboard;
     private readonly AnalogTape _tape;
@@ -65,6 +65,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         IReadOnlyList<(int Start, int Bytes)> ramCards, bool diskInterface, ReadOnlySpan<byte> basic = default)
     {
         _card = card;
+        if (card is SystemCpuCard.Keypad6502 or SystemCpuCard.Standard6502) _ramIo = new RamIo8154();
         _clock = card == SystemCpuCard.Keypad6502 ? C.SystemOneClock : card == SystemCpuCard.Fast6502A ? C.FastClock : C.StandardClock;
         var maximumRom = card == SystemCpuCard.Keypad6502 ? C.SystemOneRomBytes : card == SystemCpuCard.Fast6502A ? C.MaximumRomBytes : C.FastRomBytes;
         if (rom.Length == 0 || rom.Length > maximumRom) throw new ArgumentException(nameof(rom));
@@ -99,30 +100,29 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         _via?.SetPb6(true);
         if (card == SystemCpuCard.Keypad6502)
         {
+            var ramIo = _ramIo!;
             _display = new SystemHexDisplay();
-            _ramIo.ReadPortA = () => _keyboard.ReadMatrix((_tapeInputPins & KeyboardPins.TapeInputBit) != 0);
-            _ramIo.PortADriveChanged = (value, mask) =>
+            ramIo.ReadPortA = () => _keyboard.ReadMatrix((_tapeInputPins & KeyboardPins.TapeInputBit) != 0);
+            ramIo.PortADriveChanged = (value, mask) =>
             {
                 _keyboard.Select(value);
                 SetTapeOutput(_keyboard.TapeOutput);
                 _display.SelectDigit(value, (mask & KeyboardPins.DigitMask) == KeyboardPins.DigitMask, _ticks);
             };
-            _ramIo.PortBDriveChanged = (value, mask) => _display.SetSegments((byte)(value & mask), _ticks);
+            ramIo.PortBDriveChanged = (value, mask) => _display.SetSegments((byte)(value & mask), _ticks);
         }
         else
         {
             _video = new SystemVideo(card == SystemCpuCard.Fast6502A, characters);
-            _ramIo.ReadPortB = () => _keyboard.DataWithStrobe;
-            if (card == SystemCpuCard.Standard6502)
+            if (_ramIo is { } ramIo)
             {
+                ramIo.ReadPortB = () => _keyboard.DataWithStrobe;
                 // PB7 is also the 8154's asynchronous STB/ACK input.
-                _keyboard.StrobeChanged = _ramIo.SetStrobe;
-                _ramIo.SetStrobe(!_keyboard.Strobe);
+                _keyboard.StrobeChanged = ramIo.SetStrobe;
+                ramIo.SetStrobe(!_keyboard.Strobe);
+                ramIo.ReadPortA = () => _tapeInputPins;
+                ramIo.PortAPinsChanged = value => SetTapeOutput((value & KeyboardPins.TapeOutputBit) != 0);
             }
-            _ramIo.ReadPortA = _tapeInterface is null
-                ? () => _tape.InputBit ? byte.MaxValue : (byte)(byte.MaxValue ^ KeyboardPins.TapeInputBit)
-                : () => _tapeInputPins;
-            _ramIo.PortAPinsChanged = value => SetTapeOutput((value & KeyboardPins.TapeOutputBit) != 0);
             if (card == SystemCpuCard.Motorola6809)
             {
                 _via!.ReadPortB = () => (byte)(_keyboard.Data | (_tapeInputPins & KeyboardPins.TapeInputBit));
@@ -195,7 +195,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         _via?.Reset();
         if (_card == SystemCpuCard.Motorola6809 && !_tapeCb2Driven) SetTapeOutput(true);
         _display?.Reset(_ticks);
-        _ramIo.Reset();
+        _ramIo?.Reset();
         if (cold || _tapeInterface is null) _tape.ResetHardware();
         if (_tapeInterface is not null) _tape.SetOutputLevel(_tapeInterface.TapeOutput);
         _fdc?.Reset();

@@ -231,3 +231,8 @@ Contrôles existants actuels : **155 tests de puce Debug réussis, zéro échec/
 
 
 Confirmation invitée actuelle System 3/6502 : CAT et LOAD BASIC par la vraie image SSD en lecture seule, 4608 octets lus avant lancement ; empreinte des 4096 octets BASIC à C000 exacte (`6571FCA3E86E6DC99C2B56481979FBC24615BFF2`), puis PRINT 12+34 produit 46. Débit carte complète au prompt BASIC après chargement : 10,566098 / 10,932135 / 10,904064 ms par champ, soit 182,947–189,285 % du profil 1 MHz en Debug. Trois fenêtres de 160 champs, rendu et drainage audio inclus. Cette valeur concerne la carte complète au prompt, pas un débit isolé du contrôleur ni une lecture continue. Les ajustements du diagnostic, le montage, le tableau et son nettoyage sont détaillés dans la fiche System 3 ; aucun changement de production du 8271 nécessaire.
+
+
+## Bootstrap actuel System 3/6809 — 9 novembre 2026
+
+Deux secteurs FM de 256 octets, descripteur FF42 du moniteur et programme 6809, transmis depuis MemoryTrackDisk par l'encodeur MediaEngine et les broches normales du contrôleur. La commande invitée D lit exactement 512 octets ; les 256 octets du programme chargé sont contrôlés, puis son exécution écrit 2010=5A et BOOT OK en RAM vidéo. Passage final réussi, aucune modification de production du 8271. Capture actuelle inspectée et portée du média documentées dans les fiches MC6809/System 3 ; ne pas confondre ce diagnostic en mémoire avec une distribution de système d'exploitation. Le diagnostic temporaire est supprimé après consignation.

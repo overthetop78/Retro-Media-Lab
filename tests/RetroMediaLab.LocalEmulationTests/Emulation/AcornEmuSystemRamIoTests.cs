@@ -160,7 +160,7 @@ public sealed class AcornEmuSystemRamIoTests
     [InlineData((int)SystemCpuCard.Standard6502, false)]
     [InlineData((int)SystemCpuCard.Fast6502A, true)]
     [InlineData((int)SystemCpuCard.Motorola6809, true)]
-    public void OnlyCpuCardsWithAViaMountThatCircuit(int card, bool hasVia)
+    public void CpuCardsMountOnlyTheirActualRamIoCircuit(int card, bool hasVia)
     {
         var board = new AcornSystemMachine((SystemCpuCard)card, new byte[512],
             new byte[card == (int)SystemCpuCard.Fast6502A ? 2048 : 960], [], false);
@@ -168,6 +168,8 @@ public sealed class AcornEmuSystemRamIoTests
         {
             var via = typeof(AcornSystemMachine).GetField("_via", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(board);
             Assert.Equal(hasVia, via is not null);
+            var ramIo = typeof(AcornSystemMachine).GetField("_ramIo", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(board);
+            Assert.Equal(!hasVia, ramIo is not null);
         }
         finally { board.Reset(true); }
     }

@@ -52,3 +52,35 @@ Après exécution du calcul, quarante champs de chauffe, puis trois fenêtres de
 Cette mesure confirme la marge actuelle au prompt BASIC après chargement ; elle ne mesure pas un transfert disquette actif pendant toute la fenêtre et ne remplace pas les essais d'écriture historiques. Aucun gain avant/après attribué à une correction particulière. Aucun FPS présenté par une fenêtre déduit du banc.
 
 Passage final du diagnostic réussi, zéro échec/ignoré. Dans finally : entrées relâchées, média détaché, bande éjectée, audio drainé, callbacks externes supprimés, puis image possédée libérée même en cas d'erreur. Aucun fichier ni processus ni fenêtre créé par le diagnostic ; source temporaire supprimée après consignation et assembly régénérée sans le test externe. La carte 6809 reste la prochaine revue ; ces résultats ne clôturent pas les deux variantes du System 3 ensemble.
+
+
+## Carte 6809 actuelle après modifications — 9 novembre 2026
+
+Écart corrigé : AcornSystemMachine créait encore un INS8154 et ses callbacks sur les cartes utilisant un VIA. L'instance est désormais créée/raccordée/réinitialisée uniquement sur les cartes Keypad6502 et Standard6502 ; la carte 6809 et la carte rapide conservent leur seul VIA. Aucun décodeur matériel ajouté ni retiré. Le contrôle de présence existant couvre les quatre profils ; 76 tests System/RAM-E/S passent en Debug après modification, zéro échec/ignoré. MC6809 : 84 tests réussis (99 ms) après extension des masques de pile et TFR/EXG. VIA : 142 tests hors états réussis (102 ms), aucune modification du composant.
+
+Raccordements relus : IRQ VIA et NMI 8271 initialisées puis notifiées au CPU, FIRQ inactive, données clavier sur PB avec PB6 mémorisé pour T2, strobe CB1 et CASIN PB7, CASOUT issu du niveau/pilote CB2. Les échéances bande et clavier sont notifiées ; leurs traitements internes restent dans Chips. La VDU reprend le raccordement CRTC/SAA5050 contrôlé sur la carte 6502 ; aucun assemblage des deux champs dans le module.
+
+### Essai et cadence du code actuel
+
+Moniteur réel `Acorn System 6809 Monitor40.bin`, caractères `saa5050`, CPU Motorola6809, cartes RAM obtenues depuis SystemFunctions.RamCards du profil avec l'option CPU 6809. Saisie par contrat clavier : R, M2000 86 5A B7 20 10 39;, G2000, M2010. Le programme invité exécute LDA #5A / STA 2010 / RTS ; la lecture après exécution confirme 2010=5A. Aucun code injecté par écriture directe du diagnostic dans la RAM.
+
+Après quarante champs de chauffe, trois fenêtres de 160 champs, rendu RunFrame et drainage audio inclus, Debug normal, hors RML et sans compilation ni autre test concurrents :
+
+| Fenêtre | ms/champ | champs/s sans limite | Cycles E | Périodes EXTAL | MHz E effectifs | Vitesse réelle | Cadence matérielle |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 14,572009 | 68,624719 | 3 200 000 | 12 800 000 | 1,372494 | 137,249437 % | 50 Hz |
+| 2 | 14,172370 | 70,559829 | 3 200 000 | 12 800 000 | 1,411197 | 141,119657 % | 50 Hz |
+| 3 | 13,689057 | 73,051048 | 3 200 000 | 12 800 000 | 1,461021 | 146,102097 % | 50 Hz |
+
+Le diagnostic vérifie exactement quatre périodes EXTAL par cycle E dans chaque fenêtre. Cette mesure est postérieure à la suppression du 8154 absent ; elle ne réutilise pas les résultats antérieurs et ne revendique pas un gain comparatif sans banc avant/après. Scénario au moniteur après exécution du programme, sans disquette attachée : le bootstrap disque actuel demeure à vérifier. Le premier essai n'avait pas compilé car le diagnostic tentait de modifier le dictionnaire Options en lecture seule ; utilisation de son initialiseur prévu, sans modification de production. Passage exécuté final réussi. Entrées et médias détachés, bande éjectée, audio drainé et callbacks externes supprimés dans finally. Aucun fichier, thread ni fenêtre créé par le diagnostic ; sa source temporaire est supprimée après consignation et les sorties de test régénérées.
+
+
+## Bootstrap actuel vérifié — 9 novembre 2026
+
+Après les modifications de cette reprise, la commande D du vrai moniteur 6809 charge le descripteur FF42 puis le programme par le 8271. Média de diagnostic **en mémoire**, en lecture seule : deux secteurs FM de 256 octets, numéros 2 et 3 sur piste 0. MemoryTrackDisk réutilise l'encodeur MediaEngine et transmet les impulsions au raccordement normal ; aucun octet de programme n'est injecté directement dans la RAM de la carte.
+
+Descripteur : FF42, chargement 2000, un secteur de programme, exécution 2000. Le programme écrit 2010=5A, saute en 2050, écrit BOOT OK dans la RAM vidéo à 0720 puis boucle. Résultats actuels : **512 octets lus**, les 256 octets chargés correspondent au secteur (en tenant compte de sa propre écriture à l'offset 10), RAM 2010=5A et sept caractères BOOT OK vérifiés. Le diagnostic final passe, zéro échec/ignoré. Le premier passage envoyait d minuscule sans traduction hôte au moniteur sensible à la casse : correction du diagnostic pour transmettre D majuscule, sans modification de production.
+
+Capture réelle du framebuffer natif 480×250, inspectée visuellement : `artifacts/TestsMachines/Acorn/Acorn System 3/20261109-system3-6809-bootstrap-current.bmp`. Copie identique dans `artifacts/TestsChips/MC6809/Acorn System 3/20261109-bootstrap-current.bmp` ; elle documente la même exécution, pas un second essai indépendant. BOOT OK est bien visible sous la commande *D. Aucun agrandissement, assemblage de champs ni retouche. Les deux images constituent les preuves finales conservées hors Git.
+
+L'essai démontre le chargement et l'exécution d'un programme 6809 par le protocole de bootstrap original. Il ne présente pas ce média synthétique comme une distribution de système d'exploitation ou comme un disque BASIC 6502 compatible avec ce CPU. Les durées actuelles de cadence au moniteur restent celles mesurées plus haut sur le même code de production ; aucune nouvelle mesure de débit pendant le transfert n'est déduite de cet essai fonctionnel. Entrées et médias détachés dans finally, puis média possédé libéré ; flux des BMP fermés par using. Source temporaire supprimée après utilisation et assembly régénérée sans ce diagnostic externe.
