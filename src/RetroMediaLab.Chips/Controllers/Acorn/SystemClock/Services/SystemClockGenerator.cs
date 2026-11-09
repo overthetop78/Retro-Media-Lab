@@ -63,6 +63,9 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
         _ic2.CaptureClock(high);
         _ic3.CaptureClock(high);
         _ic4.CaptureClock(high);
+        // The falling edge still reaches each CLK pin, but this positive-edge
+        // network has no pending capture or output mutation to resolve on it.
+        if (!high) return;
         _ic2.ResolveClock();
         _ic3.ResolveClock();
         _ic4.ResolveClock();

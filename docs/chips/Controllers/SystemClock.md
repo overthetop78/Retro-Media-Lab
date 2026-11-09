@@ -39,3 +39,16 @@ Mesure isolée Debug net10.0, hors RML, sans compilation/test concurrent : 20 00
 | 3 | 538,184900 ms | 4,459434 |
 
 Le chemin actuel traite chaque période source : il atteint seulement 18,58–19,86 % des 24 MHz requis, avant les récepteurs. Ce n'est pas le pourcentage de la machine entière. Le banc exerce les captures/résolutions unitaires des trois compteurs à chaque front ; le coût est établi pour ce scénario sans le décomposer davantage. Étudier une avance équivalente avant validation de la cadence System 5, en conservant phases, fronts observables et retours synchrones. Aucun gain annoncé. Le banc temporaire commun avec SN74LS74A est supprimé après consignation.
+
+### Suppression des résolutions sans effet au front descendant
+
+Le front descendant est toujours transmis aux trois entrées CLK. Comme il ne déclenche aucune capture de ce réseau à fronts montants, les trois appels de résolution sans capture et la publication sans mutation sont retirés de ce seul front. Le front montant conserve l'ordre de capture/résolution partagé. Un contrôle permanent parcourt 96 périodes et vérifie CLK bas, comptes inchangés et absence de notification supplémentaire au front descendant ; les 12 tests compteur et les dix tests générateur passent (22 cas), plus les deux cas du banc temporaire.
+
+Comparaison sur le même banc Debug, 24 000 périodes de chauffe puis trois passages de 2 400 000 périodes, sans autres tests pendant les mesures finales :
+
+| Récepteurs | Avant, ms par passage | Après, ms par passage | Débit actuel, millions de périodes/s |
+| --- | --- | --- | --- |
+| Aucun externe | 511,376800 / 502,048400 / 515,595700 | 456,575200 / 446,563300 / 464,932300 | 5,256527 / 5,374378 / 5,162042 |
+| Sorties 2 et 1 MHz observées | 519,482600 / 576,829200 / 543,743600 | 456,676300 / 465,708000 / 526,997200 | 5,255364 / 5,153444 / 4,554104 |
+
+Les compteurs des trois puces sont contrôlés à chaque passage ; les deux sorties raccordées produisent exactement 600 000 notifications par passage. Les moyennes hôtes baissent de 10,5 % sans récepteurs et de 11,7 % avec ces récepteurs. La dispersion est conservée ; aucun de ces résultats n'atteint les 24 MHz requis. Cette réduction locale est réalisée, la performance de la machine complète reste à établir après raccordement. Le banc temporaire est supprimé et l'assembly régénérée sans lui.

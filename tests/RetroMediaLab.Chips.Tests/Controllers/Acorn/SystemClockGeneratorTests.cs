@@ -5,6 +5,31 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Acorn;
 public sealed class SystemClockGeneratorTests
 {
     [Fact]
+    public void FallingEdgeReachesEveryCounterWithoutChangingResolvedOutputs()
+    {
+        var circuit = new SystemClockGenerator();
+        var edges = new List<(long, int, bool)>();
+        Connect(circuit, (frequency, high) => edges.Add((circuit.InputClockCount, frequency, high)));
+        for (var period = 1; period <= 96; period++)
+        {
+            circuit.SetOscillator(true);
+            var outputs = Levels(circuit);
+            var notifications = edges.Count;
+            var counts = new[] { circuit.Ic2.Count, circuit.Ic3.Count, circuit.Ic4.Count };
+            circuit.SetOscillator(false);
+            Assert.Equal(outputs, Levels(circuit));
+            Assert.Equal(notifications, edges.Count);
+            var index = 0;
+            foreach (var counter in new[] { circuit.Ic2, circuit.Ic3, circuit.Ic4 })
+            {
+                Assert.False(counter.ClockHigh);
+                Assert.Equal(period, counter.InputClockCount);
+                Assert.Equal(counts[index++], counter.Count);
+            }
+        }
+    }
+
+    [Fact]
     public void EveryMasterEdgeMatchesFigureNineIncludingTheEightMhzDutyCycle()
     {
         var circuit = new SystemClockGenerator();
