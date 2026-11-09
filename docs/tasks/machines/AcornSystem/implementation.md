@@ -192,3 +192,14 @@ Circuit de répétition déplacé dans Chips, REPEAT sans AKD raccordé : 5 test
 Débits séparés obtenus et consignés dans les cinq fiches : 6502 18,2–18,6 Mcycles/s ; HD6845S 20,3–21,4 Mcaractères/s ; SAA5050 5,81–5,83 Mcaractères/s ; INS8154 69,0–72,4 Mtransactions/s ; SystemTape 2647–2774 Mcycles PH2 de référence/s. Trois fenêtres par composant, scénarios isolés, pas de gain avant/après revendiqué.
 
 Diagnostic de débit supprimé ; projet Chips.Tests régénéré sans dépendances, code 0, un avertissement xUnit préexistant. Revue du câblage System 2 consignée : aucune nouvelle réécriture des puces déjà validées ; corrections temporelles ciblées et vérifiées. Suite de la revue : System 3 en 6502, puis 6809, puis System 4 ; générateur System 5 toujours non raccordé.
+
+
+- [x] Revoir System 3 avec le 6502 avant la carte 6809.
+  - [x] Modifier les sorties générées des groupes existants 8271 Chips et Intel8271 module : exécuter les contrôles hors sauvegardes d'état après revue de Clock/Bus/DriveSignals, des fréquences 1 MHz propriétaire/2 MHz contrôleur et du raccordement Intel8271Drive, puis consigner le résultat et les limites dans les fiches 8271/System 3.
+  - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System3NativeProbe.cs` : charger la ROM DOS System 3 et la disquette BASIC existante en lecture seule par le SDK ; saisir CAT/LOAD BASIC/BASIC/PRINT 12+34 par le clavier ; vérifier les données transférées, le résultat écran et trois relevés de cadence avec vidéo/audio ; libérer l'image possédée et détacher les entrées dans finally.
+  - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 3/validation.md` et `docs/chips/Controllers/Intel8271.md` : consigner les résultats réellement obtenus par le diagnostic et les conditions de mesure.
+  - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System3NativeProbe.cs` et régénérer l'assembly de tests sans ce diagnostic externe ; conserver seulement les preuves finales prévues dans les dossiers machine.
+
+System 3/6502 actuel : chargement BASIC par 8271 vérifié, empreinte exacte, PRINT 12+34=46, trois fenêtres Debug 182,947–189,285 % au prompt. Deux attentes/assertions du diagnostic corrigées après observation, aucun défaut de production établi. Résultats détaillés dans la fiche machine.
+
+Source temporaire System3NativeProbe supprimée ; projet régénéré sans dépendances, code 0, quatre avertissements préexistants et aucune erreur. Le bloc de revue 6502 est consigné, sans annoncer la clôture de la carte 6809.

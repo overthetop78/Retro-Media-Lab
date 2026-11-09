@@ -112,3 +112,5 @@ Le bloc de bus/horloge du 8271 est vérifié. La différence de comportement du 
 - [x] Corriger la publication des échéances internes du 8271 après avancement.
   - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Intel/FDC/8271/Services/Intel8271.Clock.cs` et `Intel8271.cs` : publier l'échéance finale après AdvanceTo/Tick, y compris l'entrée au repos, sans changer les cycles ni publier les états intermédiaires.
   - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Services/Intel8271Drive.cs` : conserver l'initialisation de l'échéance et recevoir ensuite ses changements par notification, sans relecture après chaque avancement.
+
+Revue du 9 novembre, System 3/6502 : 155 tests Chips hors états et 87 tests de raccordement module réussis en Debug. Aucun changement de production nécessaire dans les chemins relus ; fréquences et notifications détaillées dans la fiche 8271.
