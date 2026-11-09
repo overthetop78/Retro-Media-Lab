@@ -27,3 +27,15 @@ La graine déterministe IC2=2, IC3=0, IC4=0 définit l'origine de phase du modè
 **21 contrôles Debug réussis, zéro échec/ignoré, 58 ms** : 12 cas propres au SN74S163 et neuf cas du générateur. Les contrôles parcourent 96 fronts contre les équations du chronogramme, comparent les trois comptes et leurs clocks reçus, vérifient les sept sorties, leurs nombres de fronts et leurs phases, le rapport cyclique 8 MHz, la resynchronisation d'IC4 initialement décalé et la visibilité simultanée des niveaux finaux chez les récepteurs. Le maintien d'un niveau CLK n'ajoute pas de front. Les avances groupées sont comparées aux unitaires, avec toutes les notifications et leurs horodatages.
 
 Ces durées sont celles des tests fonctionnels, pas une mesure du débit de la carte ou du générateur. Le composant n'est pas encore raccordé dans AcornSystemMachine : la suppression du calcul de phase VIA dans la carte et les essais actuels System 5 sont à réaliser après les circuits WAIT/READY. Ne pas présenter les anciennes mesures System 5 comme issues de ce générateur.
+
+### Débit actuel après réalisation — 9 novembre 2026
+
+Mesure isolée Debug net10.0, hors RML, sans compilation/test concurrent : 20 000 périodes de chauffe puis trois avances de 2 400 000 périodes source par `AdvanceClocks`. Les trois compteurs et leurs liaisons internes fonctionnent ; aucune sortie externe n'est raccordée à la machine dans ce scénario.
+
+| Passage | Durée hôte | Millions de périodes source par seconde |
+| --- | --- | --- |
+| 1 | 503,583900 ms | 4,765839 |
+| 2 | 507,499500 ms | 4,729069 |
+| 3 | 538,184900 ms | 4,459434 |
+
+Le chemin actuel traite chaque période source : il atteint seulement 18,58–19,86 % des 24 MHz requis, avant les récepteurs. Ce n'est pas le pourcentage de la machine entière. Le banc exerce les captures/résolutions unitaires des trois compteurs à chaque front ; le coût est établi pour ce scénario sans le décomposer davantage. Étudier une avance équivalente avant validation de la cadence System 5, en conservant phases, fronts observables et retours synchrones. Aucun gain annoncé. Le banc temporaire commun avec SN74LS74A est supprimé après consignation.

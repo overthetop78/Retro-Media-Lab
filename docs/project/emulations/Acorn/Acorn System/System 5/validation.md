@@ -54,3 +54,16 @@ Après fermeture effective de RML, lecture indépendante du SSD : 204 800 octets
 La carte 400,005 emploie une source 24 MHz et trois 74S163 IC2/IC3/IC4 pour les sorties 12/8/6/4/3/2/1 MHz. Le circuit SystemClockGenerator est réalisé dans Chips avec les trois instances et les liaisons du §2.3/figure 9 ; les bascules restent dans les compteurs. Ses neuf contrôles et les 12 du compteur passent en Debug (21 réussites, zéro échec/ignoré, 58 ms). Le 8 MHz conserve son vrai rapport cyclique d'un tiers. Référence et fonctionnement détaillés dans `docs/chips/Controllers/SystemClock.md`.
 
 Ce réseau est en amont des circuits WAIT/READY IC5 (74LS74) et de la sélection LK1/LK2/LK3. Il n'est pas encore raccordé aux récepteurs de la machine ; le calcul de phase VIA du module n'est donc pas encore supprimé. Les mesures antérieures ci-dessus ne sont pas celles de ce nouveau code. Les circuits requis doivent être terminés et raccordés avant les nouveaux essais System 5.
+
+
+### IC5 WAIT/READY : câblage confirmé, 9 novembre 2026
+
+Figure 21, page imprimée 23 = page PDF 62 (et non 64), rendue et inspectée dans System5-cpu-schematic-62.png. IC5 est un 74LS74 : PRE1/CLR1 et CLR2 sont reliés à +5 V, PRE2 via R8 à +5 V. D2/pin12 reçoit MR ; CLK2/pin11 reçoit l'horloge sélectionnée LK1/LK2/LK3 ; /Q2/pin8 est combiné par OR IC17 avec cette horloge pour former PH0. CLK1/pin3 reçoit PH0 ; D1/pin2 vaut NBRq OU NON(R/W), d'après IC1/IC18. Q1/pin5 pilote RDY et NBGt ; /Q1/pin6 inhibe les buffers adresse/commande lorsque le bus est concédé. MR haut ne force donc pas une sortie asynchrone : le prochain front montant de CLK2 capture son nouveau niveau, puis PH0 recommence à descendre avec la source. Aucun preset/clear inventé pour accélérer la reprise.
+
+La fiche constructeur TI SDLS119, page 1, confirme deux bascules D sur front montant avec PR/CLR asynchrones actifs bas. Elle est archivée sous artifacts/.tmp-archives/chips/Logic/TexasInstruments/SN74xx/SN74LS74A/. L'état PR=CLR=bas et sa sortie simultanée ne doivent pas être présentés comme un état complémentaire stable garanti.
+
+### Mesure du code actuel, après réalisation des composants — 9 novembre
+
+La double bascule est réalisée et ses 11 tests passent (59 ms). Son débit isolé avec les deux sorties changeantes et observées atteint 11,761373 / 12,053621 / 12,000576 millions de fronts partagés par seconde en Debug. Le générateur actuel, avec ses trois compteurs et leurs liaisons internes mais sans récepteurs externes, atteint seulement 4,765839 / 4,729069 / 4,459434 millions de périodes source par seconde, alors que sa source physique fonctionne à 24 MHz. Le chemin unitaire doit être optimisé avant validation de cadence ; aucune suppression de fonction ou de front matériel n'est autorisée.
+
+Ces mesures portent sur les composants actuels, après 20 000 périodes de chauffe et trois passages de 2 400 000 périodes chacun, hors RML et sans compilation/test concurrent. Détails dans les fiches `docs/chips/Logic/Sn74Ls74A.md` et `docs/chips/Controllers/SystemClock.md`. Le générateur et WAIT/READY ne sont pas encore raccordés à la machine : aucun nouveau pourcentage System 5 complet n'est déduit de ces mesures, et le relevé du 8 novembre ne valide pas les modifications présentes. Le banc temporaire a été supprimé, l'assembly régénérée avec zéro erreur.
