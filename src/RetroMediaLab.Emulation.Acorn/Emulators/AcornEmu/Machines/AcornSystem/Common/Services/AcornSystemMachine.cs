@@ -2,6 +2,8 @@ using RetroMediaLab.Chips.CPU.Common.Interfaces;
 using RetroMediaLab.Chips.CPU.Common.Enums;
 using RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services;
 using RetroMediaLab.Chips.Controllers.Acorn.SystemTape.Services;
+using RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Services;
+using RetroMediaLab.Chips.Controllers.Acorn.SystemCpuClock.Services;
 using RetroMediaLab.Chips.CPU.Motorola.M6800.Chip6809.Services;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services;
@@ -57,7 +59,6 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private long _ticks;
     private long _nextFrame;
     private long _lastFrameTicks;
-    private int _viaPhase;
     private int _audioPhase;
     private bool _break;
 
@@ -157,13 +158,21 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         }
         else
         {
-            _cpu6502 = new Cpu6502(this, _clock);
+            if (card == SystemCpuCard.Fast6502A) _fastCpuBus = new SystemFastCpuBus(this);
+            _cpu6502 = new Cpu6502(_fastCpuBus ?? (ICpuBus)this, _clock);
             // The CPU samples these retained input levels at its own phases.
             // Only mounted devices can publish a change; no board-wide polling is needed.
             _cpu6502.SetIrq(_via?.Irq == true);
             _cpu6502.SetNmi(_fdc?.Nmi == true);
             if (_via is not null) _via.IrqChanged = _cpu6502.SetIrq;
             if (_fdc is not null) _fdc.NmiChanged = _cpu6502.SetNmi;
+        }
+        if (_fastCpuBus is not null)
+        {
+            _fastClock = new SystemClockGenerator();
+            _fastCpuClock = new SystemCpuClockControl(_clock);
+            _fastAdvanceBatch = _fastClock.OscillatorFrequency / _clock;
+            WireFastClock();
         }
         Reset(true);
     }
@@ -200,7 +209,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         if (_tapeInterface is not null) _tape.SetOutputLevel(_tapeInterface.TapeOutput);
         _fdc?.Reset();
         _fdcDrive?.Reset();
-        if (_cpu6809 is not null) _cpu6809.Reset(); else _cpu6502!.Reset();
+        if (_fastClock is not null) ResetFastCpu();
+        else if (_cpu6809 is not null) _cpu6809.Reset(); else _cpu6502!.Reset();
         _nextFrame = _ticks + _clock / C.PresentationRate;
     }
 
@@ -212,7 +222,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         // unprogrammed CRTC retain their software presentation interval.
         while (_video?.IsProgrammed == true ? _video.Frame == field : _ticks < _nextFrame)
         {
-            if (_cpu6809 is not null) _cpu6809.Step(); else _cpu6502!.Step();
+            if (_fastClock is not null) _fastClock.AdvanceClocks(_fastAdvanceBatch);
+            else if (_cpu6809 is not null) _cpu6809.Step(); else _cpu6502!.Step();
         }
         _lastFrameTicks = _ticks - start;
         _nextFrame = _video is null ? _nextFrame + _clock / C.PresentationRate : _ticks + _clock / C.PresentationRate;
@@ -228,19 +239,21 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
 
     public void Tick()
     {
+        if (_fastClock is not null) _fastClock.AdvanceClocks(_fastAdvanceBatch);
+        else TickReferenceClock(advanceVia: true);
+    }
+
+    private void TickReferenceClock(bool advanceVia)
+    {
         _ticks++;
         // The System 1 has a passive scanned keypad, not the ASCII keyboard's repeater.
         if (_ticks >= _nextKeyboardClock) _keyboard.AdvanceTo(_ticks);
         if (_ticks >= _nextTapeClock) _tapeInterface!.AdvanceTo(_ticks);
         if (_tapeClockRequired) _tape.Tick();
         _fdcDrive?.Tick();
-        if (_via is not null)
-        {
-            _viaPhase += C.ViaClock;
-            while (_viaPhase >= _clock) { _viaPhase -= _clock; _via.Tick(); }
-        }
+        if (advanceVia) _via?.Tick();
         // VDU40 CLK is PH2 (1 MHz); VDU80 receives the fast card's 2 MHz.
-        // Each configured card supplies one character clock per CPU bus period.
+        // The fast card uses its free-running 2 MHz output, even during CPU WAIT.
         _video?.TickCharacter();
         _audioPhase += C.AudioSampleRate;
         if (_audioPhase >= _clock)
