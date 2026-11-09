@@ -11,4 +11,5 @@ internal static class SystemClockConstants
     internal const byte Clock3 = 16;
     internal const byte Clock2 = 32;
     internal const byte Clock1 = 64;
+    internal const int OutputCount = 7;
 }

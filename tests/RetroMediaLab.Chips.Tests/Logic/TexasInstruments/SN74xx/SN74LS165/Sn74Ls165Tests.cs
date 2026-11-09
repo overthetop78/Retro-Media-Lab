@@ -6,6 +6,54 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74LS165;
 public sealed class Sn74Ls165Tests
 {
     [Fact]
+    public void CompleteInputEdgesMatchSharedCaptureWithChangingGateAndUnknownInputs()
+    {
+        var complete = new Sn74Ls165(12_000_000);
+        var shared = new Sn74Ls165(12_000_000);
+        var first = new List<(bool?, bool?, long, long, bool)>();
+        var second = new List<(bool?, bool?, long, long, bool)>();
+        complete.OutputsChanged = (q, n) => first.Add((q, n, complete.InputClockCount, complete.ShiftClockCount, complete.ClockHigh));
+        shared.OutputsChanged = (q, n) => second.Add((q, n, shared.InputClockCount, shared.ShiftClockCount, shared.ClockHigh));
+        for (var step = 0; step < 128; step++)
+        {
+            foreach (var chip in new[] { complete, shared })
+            {
+                chip.SetParallelData((byte)(step * 37), step % 3 == 0 ? (byte)0x83 : byte.MaxValue);
+                chip.SetSerialInput(step % 7 == 0 ? null : (step & 4) != 0);
+                chip.SetShiftLoad((step & 8) != 0);
+                chip.SetClockInhibit((step & 2) != 0);
+            }
+            var high = (step & 1) != 0;
+            complete.SetClock(high);
+            shared.CaptureClock(high);
+            shared.ResolveClock();
+            Assert.Equal(shared.StoredData, complete.StoredData);
+            Assert.Equal(shared.KnownBits, complete.KnownBits);
+            Assert.Equal(shared.InputClockCount, complete.InputClockCount);
+            Assert.Equal(shared.ShiftClockCount, complete.ShiftClockCount);
+            Assert.Equal(shared.GatedClockHigh, complete.GatedClockHigh);
+            Assert.Equal(second, first);
+        }
+    }
+
+    [Fact]
+    public void CompleteInputCanResolveAPendingSharedEdgeWithoutCreatingAnotherClock()
+    {
+        var chip = new Sn74Ls165(12_000_000, 0x40);
+        var changes = new List<bool?>();
+        chip.OutputsChanged = (q, _) => changes.Add(q);
+        chip.CaptureClock(true);
+        Assert.Empty(changes);
+        Assert.Throws<InvalidOperationException>(() => chip.SetClock(false));
+        chip.SetClock(true);
+        Assert.Equal(new bool?[] { true }, changes);
+        Assert.Equal(1, chip.InputClockCount);
+        Assert.Equal(1, chip.ShiftClockCount);
+        chip.SetClock(false);
+        Assert.False(chip.ClockHigh);
+    }
+
+    [Fact]
     public void AParallelLoadKeepsKnownGroundPinsSeparateFromUnknownRomPins()
     {
         var chip = new Sn74Ls165(12_000_000);

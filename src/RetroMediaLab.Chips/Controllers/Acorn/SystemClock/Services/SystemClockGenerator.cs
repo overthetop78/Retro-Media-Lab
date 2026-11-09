@@ -1,3 +1,4 @@
+using System.Numerics;
 using RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74S163.Services;
 using C = RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Constants.SystemClockConstants;
@@ -17,13 +18,7 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     private long _inputClockCount;
     private bool _oscillatorHigh;
     private byte _observedClocks;
-    private Action<bool>? _clock12Changed;
-    private Action<bool>? _clock8Changed;
-    private Action<bool>? _clock6Changed;
-    private Action<bool>? _clock4Changed;
-    private Action<bool>? _clock3Changed;
-    private Action<bool>? _clock2Changed;
-    private Action<bool>? _clock1Changed;
+    private readonly Action<bool>?[] _receivers = new Action<bool>?[C.OutputCount];
 
     public SystemClockGenerator() : this(C.DivideByThreeSeed, 0, 0) { }
 
@@ -54,13 +49,13 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     public bool Clock3MHz => (_levels & C.Clock3) != 0;
     public bool Clock2MHz => (_levels & C.Clock2) != 0;
     public bool Clock1MHz => (_levels & C.Clock1) != 0;
-    public Action<bool>? Clock12MHzChanged { get => _clock12Changed; set => SetReceiver(ref _clock12Changed, value, C.Clock12); }
-    public Action<bool>? Clock8MHzChanged { get => _clock8Changed; set => SetReceiver(ref _clock8Changed, value, C.Clock8); }
-    public Action<bool>? Clock6MHzChanged { get => _clock6Changed; set => SetReceiver(ref _clock6Changed, value, C.Clock6); }
-    public Action<bool>? Clock4MHzChanged { get => _clock4Changed; set => SetReceiver(ref _clock4Changed, value, C.Clock4); }
-    public Action<bool>? Clock3MHzChanged { get => _clock3Changed; set => SetReceiver(ref _clock3Changed, value, C.Clock3); }
-    public Action<bool>? Clock2MHzChanged { get => _clock2Changed; set => SetReceiver(ref _clock2Changed, value, C.Clock2); }
-    public Action<bool>? Clock1MHzChanged { get => _clock1Changed; set => SetReceiver(ref _clock1Changed, value, C.Clock1); }
+    public Action<bool>? Clock12MHzChanged { get => GetReceiver(C.Clock12); set => SetReceiver(value, C.Clock12); }
+    public Action<bool>? Clock8MHzChanged { get => GetReceiver(C.Clock8); set => SetReceiver(value, C.Clock8); }
+    public Action<bool>? Clock6MHzChanged { get => GetReceiver(C.Clock6); set => SetReceiver(value, C.Clock6); }
+    public Action<bool>? Clock4MHzChanged { get => GetReceiver(C.Clock4); set => SetReceiver(value, C.Clock4); }
+    public Action<bool>? Clock3MHzChanged { get => GetReceiver(C.Clock3); set => SetReceiver(value, C.Clock3); }
+    public Action<bool>? Clock2MHzChanged { get => GetReceiver(C.Clock2); set => SetReceiver(value, C.Clock2); }
+    public Action<bool>? Clock1MHzChanged { get => GetReceiver(C.Clock1); set => SetReceiver(value, C.Clock1); }
     internal Sn74S163 Ic2 => _ic2;
     internal Sn74S163 Ic3 => _ic3;
     internal Sn74S163 Ic4 => _ic4;
@@ -117,7 +112,7 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
 
     private void Ic2Outputs(byte count, bool carry)
     {
-        _levels = (byte)((_levels & ~C.Clock8) | ((count & 1) != 0 ? C.Clock8 : 0));
+        _levels = (byte)((_levels & ~C.Clock8) | ((count & 1) << 1));
         _ic2.SetClear((count & 2) == 0);
         var enable = (count & 1) != 0;
         _ic3.SetEnable(enable, enable);
@@ -126,39 +121,38 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     private void Ic3Outputs(byte count, bool carry)
     {
         _levels = (byte)((_levels & ~(C.Clock4 | C.Clock2 | C.Clock1))
-            | ((count & 1) != 0 ? C.Clock4 : 0)
-            | ((count & 2) != 0 ? C.Clock2 : 0)
-            | ((count & 4) != 0 ? C.Clock1 : 0));
+            | ((count & 1) << 3) | ((count & 6) << 4));
         _ic4.SetClear(!carry);
     }
 
     private void Ic4Outputs(byte count, bool carry)
     {
         _levels = (byte)((_levels & ~(C.Clock12 | C.Clock6 | C.Clock3))
-            | ((count & 1) != 0 ? C.Clock12 : 0)
-            | ((count & 2) != 0 ? C.Clock6 : 0)
-            | ((count & 4) != 0 ? C.Clock3 : 0));
+            | (count & 1) | ((count & 2) << 1) | ((count & 4) << 2));
     }
 
     private void PublishOutputs()
     {
-        var changed = _levels ^ _publishedLevels;
+        var remaining = (uint)(_levels ^ _publishedLevels);
         _publishedLevels = _levels;
-        if ((changed & _observedClocks) == 0) return;
-        // Keep the full changed mask: an earlier receiver can connect another
-        // receiver for a later output of this same resolved edge.
-        if ((changed & C.Clock12) != 0) _clock12Changed?.Invoke(Clock12MHz);
-        if ((changed & C.Clock8) != 0) _clock8Changed?.Invoke(Clock8MHz);
-        if ((changed & C.Clock6) != 0) _clock6Changed?.Invoke(Clock6MHz);
-        if ((changed & C.Clock4) != 0) _clock4Changed?.Invoke(Clock4MHz);
-        if ((changed & C.Clock3) != 0) _clock3Changed?.Invoke(Clock3MHz);
-        if ((changed & C.Clock2) != 0) _clock2Changed?.Invoke(Clock2MHz);
-        if ((changed & C.Clock1) != 0) _clock1Changed?.Invoke(Clock1MHz);
+        while (true)
+        {
+            var observed = remaining & _observedClocks;
+            if (observed == 0) return;
+            var index = BitOperations.TrailingZeroCount(observed);
+            var bit = 1u << index;
+            // Preserve the original ascending order. A callback can attach or
+            // detach a later output of this same edge, but cannot replay an earlier one.
+            remaining &= ~(bit | (bit - 1));
+            _receivers[index]?.Invoke((_levels & bit) != 0);
+        }
     }
 
-    private void SetReceiver(ref Action<bool>? target, Action<bool>? receiver, byte output)
+    private Action<bool>? GetReceiver(byte output) => _receivers[BitOperations.TrailingZeroCount((uint)output)];
+
+    private void SetReceiver(Action<bool>? receiver, byte output)
     {
-        target = receiver;
+        _receivers[BitOperations.TrailingZeroCount((uint)output)] = receiver;
         if (receiver is null) _observedClocks &= (byte)~output;
         else _observedClocks |= output;
     }

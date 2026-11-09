@@ -1,0 +1,66 @@
+# VDU80 — trajet numérique de génération des caractères
+
+Circuit de la carte 400,019, manuel System 5 §2.3–2.6, figures 10, 14, 15 et 18. Références et extraits inspectés dans [la fiche de câblage](../../project/emulations/Acorn/Acorn%20System/System%205/vdu80.md). Composants : SN74LS374, ROM MM52116 et SN74LS165, déjà vérifiés séparément.
+
+Le modèle numérique reçoit les niveaux 2/12 MHz du bus. Le latch capture le caractère sur la montée 2 MHz ; NL charge d'abord le motif encore présent en sortie de ROM. L'accès de la nouvelle adresse ROM conserve son échéance, sans changer le mot déjà chargé dans le sérialiseur. Les fronts 12 MHz décalent les étages ; les données et masques connus proviennent des notifications des composants, jamais d'une consultation périodique de leurs fournisseurs.
+
+Profil documenté pour cette réalisation : NL = 20 ns typiques du manuel ; tA/tAC/tOFF = plafonds 450/120/100 ns de la ROM. Ce ne sont pas des mesures d'un exemplaire. L'absence de valeur nominale constructeur n'empêche pas le raccordement numérique, comme confirmé dans l'échange utilisateur. Le retard de DE est celui d'un caractère décrit au §2.5.1. Les réseaux analogiques ne font pas l'objet d'une simulation de tensions ; les portes de sortie et l'entrée CU sont résolues numériquement, sans délai logiciel artificiel d'un tick.
+
+L'échantillon retourné sur la montée 12 MHz termine l'intervalle précédent, avant le nouveau décalage. Cela permet au rendu de conserver les six positions H/G/F/E/D/C, dont H reliée à zéro. Le niveau vidéo issu des changements de QH reste distinct de cet échantillonnage. Une valeur inconnue reste inconnue si DE la laisse passer. Le rendu doit conserver dimensions, cadence, entrelacement et parité du CRTC ; ce composant ne possède aucun framebuffer ni ressource hôte.
+
+## Réalisation et contrôles — 9 novembre 2026
+
+Code : `RetroMediaLab.Chips/Controllers/Acorn/Vdu80CharacterGenerator/`, contrat, constantes et service partiel. Les composants internes gardent leurs registres et comptes ; le circuit conserve les niveaux reçus et ses échéances NL/DE/ROM. Le temps est accumulé exactement par fractions de demi-période 12 MHz (24 MHz), sans flottants. La prochaine échéance est conservée et recalculée seulement lorsque ses causes changent ; la ROM est synchronisée à ses réponses ou à une vraie transaction d'adresse. Aucun sondage du CRTC ni framebuffer. CS1/CS2 basses et CS3 haute ; données inconnues transmises avec A/B/H connus à zéro.
+
+Sept contrôles autonomes : motif précédent chargé pendant NL, capture indépendante des changements RAM, six sorties H/G/F/E/D/C, RA sans nouvelle capture du caractère, DE retardé et annulation de transition, XOR curseur/inversion sur le motif, niveaux identiques sans faux front. Source SystemClockGenerator raccordée : 240 périodes source = 20 captures caractère, 120 clocks dot et 10 000 ns. Groupe final avec SN74LS165, SN74LS374, MM52116 et SystemClockGenerator : **56 réussites, zéro échec/ignoré, 80 ms en Debug**. ROM synthétiques, sans fichiers externes. Contrôle graphique de la carte à faire après raccordement au rendu.
+
+Mesure Debug normale sans RML ni tâche concurrente : 24 000 périodes de chauffe puis trois fenêtres de 2 400 000 périodes du générateur complet raccordé au circuit, sans CPU ni CRTC. Par fenêtre : 200 000 captures caractère, 1 200 000 échantillons, 600 000 points blancs et 100 000 000 ns internes vérifiés. Cette mesure inclut le générateur 24 MHz et ses trois compteurs ; ce n'est ni le coût propre du seul circuit ni la vitesse de la machine complète.
+
+| Chemin | ms par fenêtre | Millions de périodes source/s | Pourcentage des 24 MHz requis |
+| --- | --- | --- | --- |
+| Recherche des échéances à chaque demi-dot | 537,2887 / 524,3529 / 528,3768 | 4,466872 / 4,577070 / 4,542213 | 18,611968 / 19,071126 / 18,925888 |
+| Prochaine échéance conservée aux mutations | 529,6830 / 524,7197 / 523,6695 | 4,531012 / 4,573871 / 4,583043 | 18,879216 / 19,057794 / 19,096014 |
+
+Aucun gain significatif établi : ne pas attribuer une amélioration de vitesse à cette factorisation. L'optimisation principale du montage reste ouverte, notamment le coût des appels des trois compteurs à 24 MHz. Aucun front ni état matériel retiré. Banc temporaire supprimé, assembly régénérée et groupe fonctionnel repassé sans lui. Le rendu machine n'utilise pas encore ce circuit : aucune cadence globale ni capture machine nouvelle revendiquée.
+
+### Séparation des coûts et niveaux conservés
+
+Banc temporaire séparé, même chauffe de 24 000 demi-dots et trois fenêtres de 2 400 000 demi-dots (100 ms internes). Source seule avec récepteurs comptant les fronts : 267,6882 / 268,1011 / 272,4140 ms. VDU80 seul, alimenté par les niveaux externes suivant exactement la phase 2/12 MHz, six échantillons par caractère : 208,9820 / 207,4084 / 203,6901 ms. Chaque fenêtre vérifie 1 200 000 clocks dot, 200 000 captures, 100 000 000 ns et 600 000 points blancs.
+
+Le service conserve désormais directement la sortie vidéo et décode la connaissance/niveau des entrées lors des notifications. Les lectures par dot ne repassent plus par son accesseur et la résolution ne multiplie plus les opérateurs nullable ; un zéro connu masque toujours une entrée inconnue dans le AND. Après changement : 182,4786 / 181,9812 / 171,4158 ms pour le circuit seul ; source témoin 273,2829 / 269,9661 / 276,8352 ms. Réduction médiane du temps propre au scénario isolé : environ 12,3 %, sans en déduire un gain global machine.
+
+Une garde supplémentaire à l'appel AdvanceLocalTime n'a pas établi de gain : 183,1168 / 192,9530 / 180,9337 ms, source témoin 291,5203 / 291,3130 / 285,7704 ms. Cette tentative est retirée. L'avancement local et chaque échéance restent effectués. Banc supprimé et assembly régénérée : groupe final de 56 contrôles, 78 ms, zéro échec/ignoré. Le coût des fronts reste important ; l'optimisation globale du montage reste à traiter avant clôture machine, sans modifier les options Debug ni les fréquences.
+
+### Écart révélé au raccordement — délai CU, 9 novembre 2026
+
+Les contrôles de la carte raccordée vérifient les caractères aux deux bords de 480 pixels, les rasters, les écritures RAM et les champs alternés. Deux cas de curseur échouent : le XOR commute au milieu du caractère dans le modèle actuel. Le contrôle isolé antérieur du XOR prouve sa table logique, pas son alignement électrique avec la chaîne de dots.
+
+Le manuel 400,019 §2.6.2 et figure 18 donne un délai CU par R12 = 1 kΩ, R13 = 2,7 kΩ, C6 = 330 pF avant IC16a (valeurs lues sur le schéma ; R12/R13 absents de la liste des résistances de la nomenclature). Ce réseau est absent du profil numérique initial, qui résout CU instantanément. Le profil n'est donc pas validé pour la phase du curseur. Ne pas ajouter une bascule fictive ni adapter l'attente du test à la sortie incorrecte. Le CRTC possède séparément un délai CUDISP maximal de 250 ns au front descendant ; ce maximum n'est pas une valeur nominale mesurée et ne doit pas être attribué au RC de la carte.
+
+Question utilisateur en cours : accepter un modèle RC paramétré avec profil nominal calculé/documenté, distinct d'une mesure de carte. Les composants, niveaux et délais doivent rester dans les composants qui les possèdent, pas dans une correction de framebuffer. Les constantes NL/ROM déjà choisies ne changent pas à cause de cet écart.
+
+Contrôle sur le reset CPU de la carte assemblée : même instance du composant, +9 captures caractère, +54 clocks dot, +4500 ns pendant la séquence CPU, sans remise à zéro de son temps. Neuf contrôles carte/horloges hors curseur réussissent en 204 ms ; les deux échecs curseur restent à corriger et ne sont pas inclus dans ce résultat ciblé.
+
+### Profil RC calculé autorisé
+
+L'utilisateur autorise le profil calculé faute de mesure réelle disponible. Le détail extrait `System5-vdu-CU-detail-93.png` confirme R12 en série depuis CU et R13/C6 en parallèle vers 0 V. Aucun service de réponse RC analytique réutilisable n'a été trouvé dans Chips ; SystemKeyboardRepeat traite un autre montage oscillant avec des échéances nominales fixes.
+
+Pour une source logique résolue, le modèle conserve la tension normalisée de C6 relativement à son niveau haut établi. Gain continu : R13/(R12+R13) = 27/37. Résistance de Thévenin : R12 parallèle R13 = 729,7297 Ω. Constante de temps : τ = (R12 parallèle R13) × C6 = 240,8108 ns. Réponse sur un intervalle d'entrée stable : v(t) = cible + (v0 − cible) exp(−Δt/τ). Un changement d'entrée conserve v0 ; il ne remplace pas la réponse par un retard fixe et ne remet pas C6 à zéro.
+
+Profil de référence calculé : seuil à 50 % du niveau haut établi, état initial déchargé explicitement choisi. Ce seuil relatif est une convention de calcul, pas une valeur typique garantie de l'entrée TTL ni une mesure de carte. Le paramètre reste explicite et modifiable pour une caractérisation réelle. Avec une entrée établie, le franchissement à 50 % vaut τ ln(2) ≈ 166,917 ns ; après une impulsion courte, il est recalculé depuis la charge réellement conservée. Résolution temporelle du modèle : 1 ns, échéance arrondie au prochain ns, pas au prochain caractère/dot. Le modèle décrit ce profil numérique, pas les tensions/transitoires de chaque exemplaire. Les délais de propagation internes du CRTC restent distincts.
+
+### Réalisation du RC et vérification du raccordement — 9 novembre 2026
+
+`Services/Vdu80CursorCircuit.cs` conserve entrée CU, charge normalisée, temps de référence et prochain franchissement. Toutes les valeurs physiques et le seuil relatif sont fournis à son constructeur. Le générateur choisit explicitement les composants de la carte, le profil calculé à 50 % et le condensateur initialement déchargé ; une surcharge permet de préciser un autre seuil relatif. La tension est évaluée analytiquement à une transition d'entrée ou à une observation explicite, pas à chaque dot. Le prochain franchissement est notifié au gestionnaire local VDU80 ; la sortie RC pilote le XOR via notification. Les inversions conservent la charge, une impulsion courte peut ne jamais atteindre le seuil. Aucun reset du RC lors du reset CPU.
+
+Sept contrôles du RC : coefficients de la carte, montée/descente, charge résiduelle, impulsion courte, avancement unitaire/groupé, réarmement depuis callback, paramètres non physiques. Pour une impulsion de 500 ns, la montée se produit à 167 ns et la descente à 635 ns (135 ns après la fin d'entrée), car C6 n'atteint pas entièrement son niveau haut. Le test de carte vérifie ces deux délais depuis les notifications CU réelles, sur les deux rasters du caractère.
+
+L'attente initiale d'une inversion des six dots exactement à la frontière du caractère n'était pas fondée sur ce profil électrique : elle supposait implicitement une autre phase de CU. Elle est remplacée par l'attente calculée depuis la réponse RC, et vérifiée séparément par les horodatages de signaux. Pour les clocks du montage, le dernier dot du premier caractère est après la descente RC ; aucun décalage artificiel du framebuffer, changement de skew R8 ou latch supplémentaire n'a été ajouté pour obtenir le résultat. Les limites du profil calculé et le contrat logique du CRTC restent celles indiquées ci-dessus ; ces tests ne prétendent pas être une mesure électrique de carte.
+
+Groupe autonome RC/VDU80/SN74LS165/MM52116 : **44 réussites, zéro échec/ignoré, 79 ms Debug**. Groupe System/8271/mélangeur/volumes, sauvegardes d'état différées exclues : **185 réussites, zéro échec/ignoré, 6 s**. Les deux cas curseur précédemment échoués passent avec ce profil et leurs contrôles de phase. Compilation du module et des contrôles réussie ; seuls quatre avertissements de tests préexistants sont présents. L'essai natif du logiciel et les nouvelles mesures complètes restent distincts et à effectuer avant clôture machine.
+
+### Preuve invitée du raccordement, passage 09:42–09:46
+
+System 5 démarre NOS80 avec ce trajet, charge le vrai BASIC depuis le SSD commun (4608 octets lus, empreinte C000 exacte 6571FCA3E86E6DC99C2B56481979FBC24615BFF2) et exécute PRINT 12+34 = 46. Captures inspectées sous `artifacts/TestsChips/Vdu80CharacterGenerator/Acorn System 5/` : `20261109-094546-vdu-rc-monitor-debug.bmp` (FD50347AC7BB06B1E18C3FC9D626FDF60B80C3B6F15E424A60C12178A457C630) et `20261109-094546-vdu-rc-disk-basic-debug.bmp` (66D1555978655007CC0AFE6BFB34A3380C4E1ABE98845030B8C66E4B72110949). Copies séparées dans TestsMachines, aucune retouche.
+
+Machine complète Debug : 115,806415–116,049232 ms/champ, 17,206490–17,242568 % sur trois fenêtres de 80 champs après 40 de chauffe. Ce sont des mesures incluant CPU, horloges, vidéo, rendu et audio, pas le coût propre de ce circuit ; tableau et contexte dans la validation machine. Le résultat reste insuffisant et l'optimisation globale ouverte. Banc externe supprimé, disque libéré, assembly régénérée ; 185 contrôles System/disque/audio réussissent après nettoyage. Pas de livraison RML dans ce passage.

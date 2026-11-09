@@ -5,6 +5,31 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74S163;
 public sealed class Sn74S163Tests
 {
     [Fact]
+    public void EveryControlCombinationMatchesTheTiPriorityTableForEveryInitialCount()
+    {
+        for (var flags = 0; flags < 16; flags++)
+        for (byte count = 0; count < 16; count++)
+        {
+            var clear = (flags & 1) != 0;
+            var load = (flags & 2) != 0;
+            var p = (flags & 4) != 0;
+            var t = (flags & 8) != 0;
+            var chip = new Sn74S163(24_000_000, count);
+            chip.SetClear(clear);
+            chip.SetLoad(load);
+            chip.SetData(0x1a); // Four physical data pins.
+            chip.SetEnable(p, t);
+            Assert.Equal(count, chip.Count); // Control inputs are synchronous.
+            chip.Clock();
+            var expected = !clear ? 0 : !load ? 10 : p && t ? (count + 1) & 15 : count;
+            Assert.Equal((byte)expected, chip.Count);
+            Assert.Equal(t && expected == 15, chip.Carry);
+            Assert.Equal(1, chip.InputClockCount);
+            Assert.False(chip.ClockHigh);
+        }
+    }
+
+    [Fact]
     public void CompletePeriodsMatchExplicitLevelsWithFeedbackOnTheSameEdge()
     {
         var periods = new Sn74S163(24_000_000, 13);

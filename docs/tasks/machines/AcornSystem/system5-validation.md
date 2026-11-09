@@ -61,3 +61,9 @@ Les deux cas existants `TapeAndHardDiskHotVolumesNotifyOnlyOnCommandsAndPreserve
     - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFormatProbe.cs` après diagnostic et consigner le résultat établi dans la fiche System 5. Le programme réel affiche Formatted puis Verified, pistes 00–4F ; aucune modification de production.
   - [x] Contrôler la persistance du formatage après libération du média.
     - [x] Créer `artifacts/TestsMachines/Acorn/Acorn System 5/20261108-format-persistence.json` depuis le fichier SSD fermé : taille 204800, catalogue sans fichier, capacité 800 secteurs, 798 secteurs de données remplis E5 et empreinte de l'image. Contrôles réussis ; processus RML absent.
+
+## Reprise du 9 novembre — VDU80 matérielle raccordée
+
+Trajet latch/ROM/sérialiseur et RC du curseur réalisés, raccordés et vérifiés : 44 contrôles de composants et 185 contrôles de carte/disque/audio réussis après nettoyage. Essai natif actuel : NOS80, catalogue du SSD, chargement BASIC exact et calcul 46, captures réellement inspectées du passage 09:42–09:46. Détails, empreintes et tableau complet dans `docs/project/emulations/Acorn/Acorn System/System 5/validation.md` ; captures sous TestsMachines et TestsChips/Vdu80CharacterGenerator, hors Git.
+
+Mesure Debug complète actuelle : 115,8–116,0 ms/champ, 8,62–8,64 champs/s sans limite, environ 0,344 MHz émulé et 17,2 % des 2 MHz réels ; vidéo matérielle 50,080128 Hz et ratio source/CPU 12 conservés. Le réseau 24 MHz et le trajet série coûtent déjà trop indépendamment du CPU. La machine demeure ouverte pour optimisation ; les anciennes mesures au-dessus de 100 % ou vers 26 % ne couvraient pas ce trajet complet.

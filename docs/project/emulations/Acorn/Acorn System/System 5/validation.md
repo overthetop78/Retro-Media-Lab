@@ -138,3 +138,30 @@ La figure 18 complète et les chronogrammes utiles sont extraits et inspectés ;
 ### Propagation de la ROM de caractères — 9 novembre 2026
 
 La figure 15 ne permet pas de charger instantanément le nouveau motif pendant NL bas. La source National détaillée identifie des accès par adresse et par sélection distincts, et un délai de coupure des drivers. Le MM52116 est donc réalisé comme composant numérique paramétrable, non encore raccordé : trois durées obligatoires, sélection active programmée sur trois broches, 2048×8, sorties trois états et échéances locales. Neuf contrôles dédiés réussissent ; groupe ROM/logique/générateur/CRTC 164 réussites. Débit isolé avec observateur : 5,433495–5,538212 millions de transactions/s en Debug, pour des transactions synthétiques espacées de 500 ns. Les plafonds 450/120/100 ns utilisés dans le banc ne sont pas attribués à un exemplaire réel. Profil temporel de carte demandé à l'utilisateur et encore en attente ; aucun nouveau résultat de machine assemblée ou de vidéo corrigée annoncé.
+
+### VDU80 raccordée et logiciel réel — 9 novembre 2026, passage 09:42–09:46
+
+Les composants SN74LS374, MM52116 et SN74LS165 ainsi que le RC du curseur sont désormais raccordés à la carte. MA physique, RA, DE et CU sont reçus par notifications ; les clocks 2/12 MHz proviennent du réseau 24 MHz. La RAM notifie une modification de la donnée actuellement adressée. Le module capture les dots réellement sérialisés et leur cadre natif 480×250 ; le dessin direct des glyphes est supprimé, ainsi que ses huit constantes inutilisées. Les données inconnues restent inconnues dans les composants, le rendu seul choisit un pixel noir pour une valeur non résolue. Champs et parité restent ceux du CRTC, sans assemblage artificiel. Le profil RC calculé autorisé et ses limites sont décrits dans Vdu80CharacterGenerator.md.
+
+Contrôles autonomes : 44 réussites RC/VDU80/registre/ROM (79 ms), puis 185 contrôles System/8271/audio/volumes hors états différés (7 s après nettoyage). Les cas natifs 80 colonnes vérifient bords, rasters, écritures RAM, XOR/inversion, phases CU calculées, champs et clocks libres pendant reset CPU. Le module compile sans erreur ni avertissement ; quatre avertissements préexistants restent dans le projet de contrôles.
+
+Essai natif sans RML : NOS80 et caractères VDU80 externes déjà identifiés, 40 champs de chauffe, puis trois fenêtres de 80 champs, rendu et drainage audio inclus. Aucun autre test/compilation concurrent.
+
+| Fenêtre | ms/champ | Champs/s sans limite | CPU MHz émulés | Vitesse nominale | Périodes source | Cycles CPU |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 116,049232 | 8,617032 | 0,344130 | 17,206490 % | 38 338 560 | 3 194 880 |
+| 2 | 115,806415 | 8,635100 | 0,344851 | 17,242568 % | 38 338 560 | 3 194 880 |
+| 3 | 116,009844 | 8,619958 | 0,344247 | 17,212332 % | 38 338 560 | 3 194 880 |
+
+Cadence vidéo matérielle 50,080128 Hz, ratio source/CPU exactement 12, CPU nominal 2 MHz. Le passage antérieur autour de 26 % utilisait encore le dessin direct des caractères : il ne mesure pas le coût de cette chaîne complète et n'établit pas son fonctionnement. Les gains isolés SN74LS165 et générateur restent ceux de leurs propres scénarios ; ils ne permettent pas de présenter une amélioration du débit global par rapport à cette ancienne chaîne.
+
+Vérification du logiciel : CAT puis BASIC depuis `F:/Retro/Acorn System/System BASIC.ssd` ouvert en lecture seule via EmulationSdk ; 4 608 octets lus. Les 4 096 octets BASIC à C000 ont le SHA1 6571FCA3E86E6DC99C2B56481979FBC24615BFF2. PRINT 12+34 produit 46, suivi du prompt >. La première assertion de banc exigeait à tort une ligne sans ce prompt : elle échoue après les mesures valides ; l'attente est corrigée dans le banc seulement. Le nouvel essai logiciel passe sans répéter les fenêtres de mesure ni modifier la production.
+
+Captures réellement produites, inspectées et conservées sous `artifacts/TestsMachines/Acorn/Acorn System 5/` et, séparément, `artifacts/TestsChips/Vdu80CharacterGenerator/Acorn System 5/` :
+
+- `20261109-094546-vdu-rc-monitor-debug.bmp`, SHA256 FD50347AC7BB06B1E18C3FC9D626FDF60B80C3B6F15E424A60C12178A457C630 ; même image que le moniteur de la première fenêtre `20261109-094224-vdu-rc-monitor-debug.bmp`.
+- `20261109-094546-vdu-rc-disk-basic-debug.bmp`, SHA256 66D1555978655007CC0AFE6BFB34A3380C4E1ABE98845030B8C66E4B72110949 ; catalogue, BASIC et résultat 46 visibles.
+
+Le disque est détaché et libéré dans finally, même si le nettoyage de la carte échoue ; entrées relâchées et bande éjectée. Aucun processus RML ni surface graphique native créé. Banc temporaire supprimé et assembly régénérée sans lui. Captures finales conservées hors Git.
+
+La machine n'est pas clôturée : performance Debug insuffisante. Le réseau 24 MHz seul consomme encore environ 2,45–2,48 s hôtes pour 1 s émulée avec récepteurs 12/2 MHz dans son scénario isolé. Le coût C# des trois compteurs et des notifications demeure établi indépendamment du CPU ; le trajet série ajoute son activité. Poursuivre les optimisations logicielles conservant tous les états/fronts, puis mesurer leur effet complet. Aucune modification de précision, d'options Debug, de cadence ou de matériel n'est autorisée pour atteindre artificiellement 100 %. Aucun dynarec n'a été ajouté à la suite des questions de conception.

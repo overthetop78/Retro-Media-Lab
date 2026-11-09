@@ -78,8 +78,19 @@ public sealed class Sn74Ls165 : ISn74Ls165
 
     public void SetClock(bool high)
     {
-        CaptureClock(high);
-        ResolveClock();
+        if (_clockHigh == high)
+        {
+            // A caller may finish a previously separated shared-edge capture.
+            if (_clockPending) ResolveClock();
+            return;
+        }
+        if (_clockPending) throw new InvalidOperationException(nameof(_clockPending));
+        if (!high) { ReceiveFallingClock(); return; }
+        _clockHigh = true;
+        _inputClockCount = checked(_inputClockCount + 1);
+        // This complete input transaction needs no deferred-publication flag.
+        // Shared buses still use CaptureClock/ResolveClock explicitly below.
+        ResolveGatedClock();
     }
 
     /// <summary>Capture shared CLK before any register on that wire publishes outputs.</summary>

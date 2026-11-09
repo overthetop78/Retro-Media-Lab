@@ -5,6 +5,22 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Acorn;
 public sealed class SystemClockGeneratorTests
 {
     [Fact]
+    public void AttachingEarlierOutputsDuringALaterPublicationDoesNotReplayTheSameEdge()
+    {
+        var circuit = new SystemClockGenerator();
+        var edges = new List<(long, int, bool)>();
+        circuit.Clock6MHzChanged = high =>
+        {
+            edges.Add((circuit.InputClockCount, 6, high));
+            circuit.Clock12MHzChanged = level => edges.Add((circuit.InputClockCount, 12, level));
+            circuit.Clock8MHzChanged = level => edges.Add((circuit.InputClockCount, 8, level));
+            circuit.Clock6MHzChanged = null;
+        };
+        circuit.AdvanceClocks(3);
+        Assert.Equal(new[] { (2L, 6, true), (3L, 12, true), (3L, 8, false) }, edges);
+    }
+
+    [Fact]
     public void ReceiversCanChangeDuringTheSameResolvedEdgeWithoutLosingLaterOutputs()
     {
         var circuit = new SystemClockGenerator();

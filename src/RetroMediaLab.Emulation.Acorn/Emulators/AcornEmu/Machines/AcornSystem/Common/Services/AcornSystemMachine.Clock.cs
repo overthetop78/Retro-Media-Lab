@@ -37,6 +37,9 @@ internal sealed partial class AcornSystemMachine
         control.CpuClockChanged = cpu.SetPhaseZeroInput;
         cpu.SetPhaseZeroInput(control.CpuClockHigh);
         _fastClock!.Clock2MHzChanged = SetFastReferenceClock;
+        _fastClock.Clock12MHzChanged = _video!.SetDotClock;
+        _video.SetDotClock(_fastClock.Clock12MHz);
+        _video.SetCharacterClock(_fastClock.Clock2MHz);
         control.SetSelectedClock(_fastClock.Clock2MHz);
     }
 
@@ -44,6 +47,7 @@ internal sealed partial class AcornSystemMachine
     {
         // Reference time and the free-running cards reach this edge before the
         // CPU captures its transfer. WAIT only stretches PH0/PH2, not this clock.
+        _video!.SetCharacterClock(high);
         if (!high) TickReferenceClock(advanceVia: false);
         _fastCpuClock!.SetSelectedClock(high);
     }
