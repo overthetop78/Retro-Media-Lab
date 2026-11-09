@@ -245,3 +245,9 @@ Diagnostic de bootstrap supprimé et assembly régénérée sans dépendances, c
 System 4 actuel : chargement exact BASIC, calcul 46, CAT1 après déplacement à chaud du média, 512 octets lus sur le second port. Trois fenêtres Debug 10,562988 / 10,471156 / 11,107172 ms par champ (180,064–191,001 %). Capture native actuelle inspectée. Aucun nouveau changement de production nécessaire.
 
 Diagnostic System 4 supprimé, assembly régénérée sans dépendances : code 0, aucune erreur, quatre avertissements préexistants. Suite : réalisation du générateur physique System 5, avant ses nouveaux essais de carte.
+
+
+- [ ] Reprendre le générateur réel de la carte System 5.
+  - [x] Créer le circuit `src/RetroMediaLab.Chips/Controllers/Acorn/SystemClock/` selon `docs/tasks/chips/SystemClock/implementation.md`, avec les trois compteurs physiques et leurs horloges partagées ; vérifier ses sorties avant de modifier le raccordement de la machine.
+
+Générateur 24 MHz réalisé dans Chips, avec trois 74S163 et ses sept sorties matérielles ; 21 contrôles Debug passent (12 compteur, neuf générateur), 58 ms. Le raccordement System 5 et la suppression du calcul de phase VIA restent à réaliser après WAIT/READY ; aucun résultat de cadence machine actuel n’est encore annoncé pour ce réseau.
