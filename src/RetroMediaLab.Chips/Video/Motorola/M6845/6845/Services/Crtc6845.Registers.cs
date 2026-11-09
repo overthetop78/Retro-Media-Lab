@@ -38,5 +38,6 @@ public sealed partial class Crtc6845
         }
         _registers[_selected] = (byte)(value & mask);
         RefreshParameters();
+        if (_observedPins != 0) PublishPins();
     }
 }

@@ -14,6 +14,9 @@ public interface ICrtc6845
     void SetReset(bool asserted);
 
     int MemoryAddress { get; }
+    Action<int>? MemoryAddressChanged { get; set; }
+    Action<bool>? DisplayEnabledChanged { get; set; }
+    Action<bool>? CursorChanged { get; set; }
 
     void SetLightPen(bool level);
 

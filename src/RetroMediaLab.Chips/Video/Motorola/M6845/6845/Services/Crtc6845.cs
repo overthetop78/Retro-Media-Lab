@@ -55,6 +55,7 @@ public sealed partial class Crtc6845 : ICrtc6845
         CaptureLightPen();
         if (_rasterOutputChanged) PublishRasterAddress();
         if (syncChanged) PublishVerticalSync();
+        if (_observedPins != 0) PublishPins();
         return frameStarted;
     }
 }

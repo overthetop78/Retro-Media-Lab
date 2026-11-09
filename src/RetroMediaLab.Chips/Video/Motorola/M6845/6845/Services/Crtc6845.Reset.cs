@@ -32,6 +32,7 @@ public sealed partial class Crtc6845
         PublishHorizontalSync();
         PublishVerticalSync();
         if (_rasterOutputChanged) PublishRasterAddress();
+        if (_observedPins != 0) PublishPins();
     }
 
     private bool ClockReset()
@@ -59,6 +60,7 @@ public sealed partial class Crtc6845
             if (_publishedHSync) PublishHorizontalSync();
             if (_publishedVSync) PublishVerticalSync();
             if (_rasterOutputChanged) PublishRasterAddress();
+            if (_observedPins != 0) PublishPins();
             return true;
         }
         _restoreSyncOutput = _resetActive || _testModeActive;
