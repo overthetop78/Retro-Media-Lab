@@ -84,3 +84,17 @@ Descripteur : FF42, chargement 2000, un secteur de programme, exécution 2000. L
 Capture réelle du framebuffer natif 480×250, inspectée visuellement : `artifacts/TestsMachines/Acorn/Acorn System 3/20261109-system3-6809-bootstrap-current.bmp`. Copie identique dans `artifacts/TestsChips/MC6809/Acorn System 3/20261109-bootstrap-current.bmp` ; elle documente la même exécution, pas un second essai indépendant. BOOT OK est bien visible sous la commande *D. Aucun agrandissement, assemblage de champs ni retouche. Les deux images constituent les preuves finales conservées hors Git.
 
 L'essai démontre le chargement et l'exécution d'un programme 6809 par le protocole de bootstrap original. Il ne présente pas ce média synthétique comme une distribution de système d'exploitation ou comme un disque BASIC 6502 compatible avec ce CPU. Les durées actuelles de cadence au moniteur restent celles mesurées plus haut sur le même code de production ; aucune nouvelle mesure de débit pendant le transfert n'est déduite de cet essai fonctionnel. Entrées et médias détachés dans finally, puis média possédé libéré ; flux des BMP fermés par using. Source temporaire supprimée après utilisation et assembly régénérée sans ce diagnostic externe.
+
+
+### Mesure du code actuel après les corrections communes — 9 novembre 2026
+
+Code de production au commit 2480c530d, incluant les corrections PH0 du 6502, les champs canoniques des compteurs et le câblage physique System 5. Mesure hors RML, compilation Debug normale, aucune compilation ni autre test concurrent. Scénario : vrai moniteur ROM du profil, sans média monté ni commande saisie ; 40 appels RunFrame de chauffe puis trois fenêtres de 80 appels, rendu vidéo et DrainAudio inclus. Ces résultats remplacent les anciennes valeurs pour décrire ce scénario sur le code actuel ; ils ne constituent pas une comparaison de performance avec les anciens essais exécutant BASIC ou un programme invité.
+
+| Carte | ms par présentation, fenêtres 1 / 2 / 3 | Vitesse matérielle en %, fenêtres 1 / 2 / 3 |
+| --- | --- | --- |
+| 6502 | 10,865029 / 10,923011 / 10,905851 | 184,076940 / 183,099692 / 183,387908 |
+| 6809 | 10,255088 / 10,704039 / 10,302785 | 195,025152 / 186,845362 / 194,122269 |
+
+Pourcentage = temps de référence réellement écoulé dans la carte / durée hôte × 100, sans limiteur. Fréquence nominale 1 MHz ; les compteurs CPU avancent du même nombre de cycles que la référence dans chaque fenêtre. Environ 1 600 000 cycles par fenêtre (écart de fin d'instruction de zéro ou un cycle pour le 6502). Le compteur System 1 présente son afficheur, les autres cartes leur vidéo ; un appel de présentation n'est pas assimilé à un front d'horloge de puce. Pas de mesure Release dans ce passage. Ce contrôle de débit ne remplace pas les validations fonctionnelles déjà consignées.
+
+Diagnostic temporaire SystemCurrentPerformanceProbe réussi ; entrées relâchées, disques détachés, bande éjectée et audio drainé dans finally. La source temporaire est retirée après consignation, puis l'assembly de tests est régénérée. Aucun fichier média, fenêtre ni processus applicatif créé.

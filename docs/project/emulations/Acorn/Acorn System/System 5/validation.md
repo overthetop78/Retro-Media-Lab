@@ -93,3 +93,16 @@ Après l'optimisation du générateur, trois fenêtres identiques donnent 84,661
 Le passage d'écriture utilise exclusivement une copie temporaire créée par FileMode.CreateNew sous `F:/Retro/Acorn System/RML-System5-20261109-write-probe.ssd`, 204 800 octets. L'image BASIC d'origine reste ouverte en lecture seule. Par clavier invité, `*SAVE PROBE 6000 6008` sauvegarde les huit octets 5A00FF0102807FA5 ; le 8271 émulé écrit 768 octets, catalogue et données compris. Après effacement RAM, `*LOAD PROBE` restitue les huit valeurs. Après FlushAsync, détachement, fermeture et réouverture du fichier par le SDK en lecture seule, un second effacement puis LOAD restitue de nouveau les huit octets ; le motif est aussi présent dans le SSD sauvegardé. `*CAT` affiche PROBE. Total lu par le contrôleur dans ce passage : 5120 octets.
 
 L'image d'origine conserve exactement son SHA1 initial. La copie possédée est détachée, fermée et supprimée dans finally ; absence du fichier et de tout compagnon portant son nom vérifiée après le test. Capture native du catalogue/SAVE/LOAD inspectée : `20261109-system5-clock-wiring-write.bmp` dans TestsMachines System 5, copie TestsChips/Mos6502. Ce passage ne répète pas les mesures de débit : il vérifie la persistance réelle du fichier, au-delà du cache. Régression finale du câblage actuel : **177 contrôles System, 8271 module et audio System réussis en Debug, zéro échec/ignoré, 5 s**, hors états. Aucun essai RML ni livraison nouvelle n'est déduit de ces contrôles hors interface.
+
+
+### Mesure du code actuel après les corrections communes — 9 novembre 2026
+
+Code de production au commit 2480c530d, incluant les corrections PH0 du 6502, les champs canoniques des compteurs et le câblage physique System 5. Mesure hors RML, compilation Debug normale, aucune compilation ni autre test concurrent. Scénario : vrai moniteur ROM du profil, sans média monté ni commande saisie ; 40 appels RunFrame de chauffe puis trois fenêtres de 80 appels, rendu vidéo et DrainAudio inclus. Ces résultats remplacent les anciennes valeurs pour décrire ce scénario sur le code actuel ; ils ne constituent pas une comparaison de performance avec les anciens essais exécutant BASIC ou un programme invité.
+
+| Carte | ms par présentation, fenêtres 1 / 2 / 3 | Vitesse matérielle en %, fenêtres 1 / 2 / 3 |
+| --- | --- | --- |
+| 6502A | 89,943281 / 87,672650 / 88,595791 | 22,200658 / 22,775632 / 22,538317 |
+
+Pourcentage = temps de référence réellement écoulé dans la carte / durée hôte × 100, sans limiteur. Fréquence nominale 2 MHz ; les compteurs CPU avancent du même nombre de cycles que la référence dans chaque fenêtre. 3 194 880 cycles par fenêtre ; la machine reste loin de 100 %, optimisation du générateur encore ouverte. Le compteur System 1 présente son afficheur, les autres cartes leur vidéo ; un appel de présentation n'est pas assimilé à un front d'horloge de puce. Pas de mesure Release dans ce passage. Ce contrôle de débit ne remplace pas les validations fonctionnelles déjà consignées.
+
+Diagnostic temporaire SystemCurrentPerformanceProbe réussi ; entrées relâchées, disques détachés, bande éjectée et audio drainé dans finally. La source temporaire est retirée après consignation, puis l'assembly de tests est régénérée. Aucun fichier média, fenêtre ni processus applicatif créé.

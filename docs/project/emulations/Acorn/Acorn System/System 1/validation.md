@@ -111,3 +111,16 @@ Contrôles existants : 10 tests SystemTape Debug réussis en 87 ms, puis 72 test
 La nomenclature du manuel System 1 archivé, rubrique XTAL, donne **1 MHz CRYSTAL**. Le profil historique 1 008 000 Hz n'était pas cette valeur nominale constructeur. `Common/Machines/AcornSystem/Constants/ModelConstants.cs` et `Machines/AcornSystem/Common/Constants/SystemConstants.cs` passent donc à **1 000 000 Hz**. Les chiffres et captures historiques ci-dessus restent datés à leur ancienne configuration, sans être réécrits comme s'ils avaient été mesurés à 1 MHz. Les trois nouvelles assertions System 1/standard/rapide contrôlent la fréquence gardée dans le CPU et celle annoncée par la carte : **28 tests RAM/E/S System réussis, zéro échec/ignoré, 574 ms**. Une première fixture fournissait à tort une ROM VDU80 au télétexte ; elle a été corrigée dans le test, sans adaptation du composant. Aucun gain d'optimisation revendiqué.
 
 La propriété temporelle demandée a été explicitement confirmée : temps, compteurs, diviseurs, phases et échéances internes restent dans chaque composant ; la carte ne les reproduit pas. Les oscillateurs/diviseurs partagés présents dans le schéma doivent être représentés par les circuits qui les produisent, pas déplacés dans une puce réceptrice. Les trois 74S163 du System 5 sont identifiés et leur implémentation est préparée pour supprimer les substitutions de carte lors du raccordement concerné.
+
+
+### Mesure du code actuel après les corrections communes — 9 novembre 2026
+
+Code de production au commit 2480c530d, incluant les corrections PH0 du 6502, les champs canoniques des compteurs et le câblage physique System 5. Mesure hors RML, compilation Debug normale, aucune compilation ni autre test concurrent. Scénario : vrai moniteur ROM du profil, sans média monté ni commande saisie ; 40 appels RunFrame de chauffe puis trois fenêtres de 80 appels, rendu vidéo et DrainAudio inclus. Ces résultats remplacent les anciennes valeurs pour décrire ce scénario sur le code actuel ; ils ne constituent pas une comparaison de performance avec les anciens essais exécutant BASIC ou un programme invité.
+
+| Carte | ms par présentation, fenêtres 1 / 2 / 3 | Vitesse matérielle en %, fenêtres 1 / 2 / 3 |
+| --- | --- | --- |
+| 6502 | 2,041342 / 1,916136 / 1,900181 | 979,746784 / 1 043,767112 / 1 052,530515 |
+
+Pourcentage = temps de référence réellement écoulé dans la carte / durée hôte × 100, sans limiteur. Fréquence nominale 1 MHz ; les compteurs CPU avancent du même nombre de cycles que la référence dans chaque fenêtre. Environ 1 600 000 cycles par fenêtre (écart de fin d'instruction de zéro ou un cycle pour le 6502). Le compteur System 1 présente son afficheur, les autres cartes leur vidéo ; un appel de présentation n'est pas assimilé à un front d'horloge de puce. Pas de mesure Release dans ce passage. Ce contrôle de débit ne remplace pas les validations fonctionnelles déjà consignées.
+
+Diagnostic temporaire SystemCurrentPerformanceProbe réussi ; entrées relâchées, disques détachés, bande éjectée et audio drainé dans finally. La source temporaire est retirée après consignation, puis l'assembly de tests est régénérée. Aucun fichier média, fenêtre ni processus applicatif créé.

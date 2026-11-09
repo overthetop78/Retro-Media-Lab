@@ -33,3 +33,16 @@ Après le catalogue du second lecteur, quarante champs de chauffe puis trois fen
 Ces relevés sont postérieurs aux modifications communes des System ; aucun chiffre historique ne les remplace. Scénario au prompt après lecture, sans prétendre mesurer un transfert continu ni un gain comparatif particulier. Aucun FPS présenté par l'application déduit de ces valeurs.
 
 Capture native actuelle 480×250 inspectée : `artifacts/TestsMachines/Acorn/Acorn System 4/20261109-system4-current.bmp`. Elle montre le chargement, PRINT 12+34=46 et le catalogue drive 1. Copie identique `artifacts/TestsChips/Intel8271/Acorn System 4/20261109-current.bmp`, même exécution et non un second essai indépendant ; aucun assemblage des champs ni retouche. Le diagnostic final passe. Une première compilation avait une ambiguïté EmulatorConstants avec les imports Atari du projet de tests ; alias Acorn explicite ajouté au diagnostic, sans changement de production. Dans finally : entrées relâchées, deux ports détachés, bande éjectée, audio drainé, callbacks externes supprimés, puis image possédée libérée. Flux BMP fermé par using. Source temporaire supprimée et assembly régénérée sans le diagnostic externe ; preuves finales seules conservées hors Git. Aucun build de livraison ni ouverture de RML pendant ce passage.
+
+
+### Mesure du code actuel après les corrections communes — 9 novembre 2026
+
+Code de production au commit 2480c530d, incluant les corrections PH0 du 6502, les champs canoniques des compteurs et le câblage physique System 5. Mesure hors RML, compilation Debug normale, aucune compilation ni autre test concurrent. Scénario : vrai moniteur ROM du profil, sans média monté ni commande saisie ; 40 appels RunFrame de chauffe puis trois fenêtres de 80 appels, rendu vidéo et DrainAudio inclus. Ces résultats remplacent les anciennes valeurs pour décrire ce scénario sur le code actuel ; ils ne constituent pas une comparaison de performance avec les anciens essais exécutant BASIC ou un programme invité.
+
+| Carte | ms par présentation, fenêtres 1 / 2 / 3 | Vitesse matérielle en %, fenêtres 1 / 2 / 3 |
+| --- | --- | --- |
+| 6502 | 10,932148 / 11,405983 / 11,215386 | 182,946786 / 175,346578 / 178,326560 |
+
+Pourcentage = temps de référence réellement écoulé dans la carte / durée hôte × 100, sans limiteur. Fréquence nominale 1 MHz ; les compteurs CPU avancent du même nombre de cycles que la référence dans chaque fenêtre. Environ 1 600 000 cycles par fenêtre (écart de fin d'instruction de zéro ou un cycle pour le 6502). Le compteur System 1 présente son afficheur, les autres cartes leur vidéo ; un appel de présentation n'est pas assimilé à un front d'horloge de puce. Pas de mesure Release dans ce passage. Ce contrôle de débit ne remplace pas les validations fonctionnelles déjà consignées.
+
+Diagnostic temporaire SystemCurrentPerformanceProbe réussi ; entrées relâchées, disques détachés, bande éjectée et audio drainé dans finally. La source temporaire est retirée après consignation, puis l'assembly de tests est régénérée. Aucun fichier média, fenêtre ni processus applicatif créé.

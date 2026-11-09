@@ -36,3 +36,12 @@ Mesure isolée du code actuel, Debug net10.0 hors RML, sans autre compilation/te
 | 3 | 309,363600 ms | 7,757862 |
 
 Ce débit concerne le circuit après sélection ; il n'inclut ni la production de ses fronts par la source 24 MHz, ni le CPU et les autres récepteurs. Le banc temporaire est supprimé après consignation et l'assembly régénérée. Les tests autonomes restent. Le raccordement aux broches du CPU dans le module, à ses accès de bus et aux autres circuits de la machine constitue la suite du travail System 5 ; ce document ne clôture pas la machine.
+
+
+### Débit isolé remesuré sur le code actuel — 9 novembre 2026
+
+Code de production 2480c530d, Debug normal, hors RML. 100 000 périodes de chauffe, puis trois fenêtres de 2 000 000 périodes complètes appelées par un délégué Action ; ce coût d'appel est inclus. Entrées conservées pendant la mesure, aucun récepteur externe de notification ; les opérations internes et leurs raccordements restent actifs. Ces mesures ne valent ni pour un composant sans activité interne ni pour tous les récepteurs d'une carte assemblée. Pas de mesure Release dans ce passage.
+
+Sélection 2 MHz, MR et NBRq hauts, R/W en lecture ; réception de chaque front montant puis descendant. Débits : **7,929548 / 7,978258 / 7,588961 millions de périodes sélectionnées/s**, soit **396,477378 / 398,912883 / 379,448032 %** de 2 MHz. Ce contrôle isolé dépasse sa cadence requise mais n'inclut ni le générateur 24 MHz ni ses destinataires CPU et bus. Le raccordement System 5 est désormais réalisé ; voir sa validation actuelle.
+
+Diagnostic temporaire réussi et supprimé après consignation ; assembly de tests régénérée sans ce banc utilisant les ROM externes pour son autre partie. Aucun changement de production pendant ces mesures.
