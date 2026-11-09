@@ -5,6 +5,30 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Acorn;
 public sealed class SystemClockGeneratorTests
 {
     [Fact]
+    public void ReceiversCanChangeDuringTheSameResolvedEdgeWithoutLosingLaterOutputs()
+    {
+        var circuit = new SystemClockGenerator();
+        var edges = new List<(long, bool)>();
+        circuit.Clock12MHzChanged = _ =>
+        {
+            if (circuit.InputClockCount == 2)
+                circuit.Clock8MHzChanged = high => edges.Add((circuit.InputClockCount, high));
+            if (circuit.InputClockCount == 3)
+            {
+                circuit.Clock8MHzChanged = null;
+                circuit.Clock12MHzChanged = null;
+            }
+        };
+        circuit.AdvanceClocks(4);
+        Assert.Equal(new[] { (2L, true) }, edges);
+        circuit.Clock8MHzChanged = high => edges.Add((circuit.InputClockCount, high));
+        Assert.Single(edges); // Wiring alone does not fabricate an edge.
+        circuit.AdvanceClocks(2);
+        Assert.Equal(new[] { (2L, true), (5L, true), (6L, false) }, edges);
+        Assert.Equal(ExpectedLevels(6), Levels(circuit));
+    }
+
+    [Fact]
     public void FallingEdgeReachesEveryCounterWithoutChangingResolvedOutputs()
     {
         var circuit = new SystemClockGenerator();

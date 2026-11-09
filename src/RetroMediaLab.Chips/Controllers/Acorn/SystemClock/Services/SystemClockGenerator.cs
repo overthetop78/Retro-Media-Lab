@@ -14,6 +14,16 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     private readonly Sn74S163 _ic4;
     private byte _levels;
     private byte _publishedLevels;
+    private long _inputClockCount;
+    private bool _oscillatorHigh;
+    private byte _observedClocks;
+    private Action<bool>? _clock12Changed;
+    private Action<bool>? _clock8Changed;
+    private Action<bool>? _clock6Changed;
+    private Action<bool>? _clock4Changed;
+    private Action<bool>? _clock3Changed;
+    private Action<bool>? _clock2Changed;
+    private Action<bool>? _clock1Changed;
 
     public SystemClockGenerator() : this(C.DivideByThreeSeed, 0, 0) { }
 
@@ -35,8 +45,8 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     }
 
     public long OscillatorFrequency => C.OscillatorFrequency;
-    public long InputClockCount { get; private set; }
-    public bool OscillatorHigh { get; private set; }
+    public long InputClockCount => _inputClockCount;
+    public bool OscillatorHigh => _oscillatorHigh;
     public bool Clock12MHz => (_levels & C.Clock12) != 0;
     public bool Clock8MHz => (_levels & C.Clock8) != 0;
     public bool Clock6MHz => (_levels & C.Clock6) != 0;
@@ -44,22 +54,22 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     public bool Clock3MHz => (_levels & C.Clock3) != 0;
     public bool Clock2MHz => (_levels & C.Clock2) != 0;
     public bool Clock1MHz => (_levels & C.Clock1) != 0;
-    public Action<bool>? Clock12MHzChanged { get; set; }
-    public Action<bool>? Clock8MHzChanged { get; set; }
-    public Action<bool>? Clock6MHzChanged { get; set; }
-    public Action<bool>? Clock4MHzChanged { get; set; }
-    public Action<bool>? Clock3MHzChanged { get; set; }
-    public Action<bool>? Clock2MHzChanged { get; set; }
-    public Action<bool>? Clock1MHzChanged { get; set; }
+    public Action<bool>? Clock12MHzChanged { get => _clock12Changed; set => SetReceiver(ref _clock12Changed, value, C.Clock12); }
+    public Action<bool>? Clock8MHzChanged { get => _clock8Changed; set => SetReceiver(ref _clock8Changed, value, C.Clock8); }
+    public Action<bool>? Clock6MHzChanged { get => _clock6Changed; set => SetReceiver(ref _clock6Changed, value, C.Clock6); }
+    public Action<bool>? Clock4MHzChanged { get => _clock4Changed; set => SetReceiver(ref _clock4Changed, value, C.Clock4); }
+    public Action<bool>? Clock3MHzChanged { get => _clock3Changed; set => SetReceiver(ref _clock3Changed, value, C.Clock3); }
+    public Action<bool>? Clock2MHzChanged { get => _clock2Changed; set => SetReceiver(ref _clock2Changed, value, C.Clock2); }
+    public Action<bool>? Clock1MHzChanged { get => _clock1Changed; set => SetReceiver(ref _clock1Changed, value, C.Clock1); }
     internal Sn74S163 Ic2 => _ic2;
     internal Sn74S163 Ic3 => _ic3;
     internal Sn74S163 Ic4 => _ic4;
 
     public void SetOscillator(bool high)
     {
-        if (OscillatorHigh == high) return;
-        OscillatorHigh = high;
-        if (high) InputClockCount = checked(InputClockCount + 1);
+        if (_oscillatorHigh == high) return;
+        _oscillatorHigh = high;
+        if (high) _inputClockCount = checked(_inputClockCount + 1);
         _ic2.CaptureClock(high);
         _ic3.CaptureClock(high);
         _ic4.CaptureClock(high);
@@ -75,7 +85,7 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     /// <summary>One complete source period, starting and ending low.</summary>
     public void Clock()
     {
-        if (OscillatorHigh) throw new InvalidOperationException(nameof(OscillatorHigh));
+        if (_oscillatorHigh) throw new InvalidOperationException(nameof(OscillatorHigh));
         SetOscillator(true);
         SetOscillator(false);
     }
@@ -83,7 +93,7 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     public void AdvanceClocks(long clocks)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(clocks);
-        if (OscillatorHigh) throw new InvalidOperationException(nameof(OscillatorHigh));
+        if (_oscillatorHigh) throw new InvalidOperationException(nameof(OscillatorHigh));
         for (long clock = 0; clock < clocks; clock++) Clock();
     }
 
@@ -116,12 +126,22 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     {
         var changed = _levels ^ _publishedLevels;
         _publishedLevels = _levels;
-        if ((changed & C.Clock12) != 0) Clock12MHzChanged?.Invoke(Clock12MHz);
-        if ((changed & C.Clock8) != 0) Clock8MHzChanged?.Invoke(Clock8MHz);
-        if ((changed & C.Clock6) != 0) Clock6MHzChanged?.Invoke(Clock6MHz);
-        if ((changed & C.Clock4) != 0) Clock4MHzChanged?.Invoke(Clock4MHz);
-        if ((changed & C.Clock3) != 0) Clock3MHzChanged?.Invoke(Clock3MHz);
-        if ((changed & C.Clock2) != 0) Clock2MHzChanged?.Invoke(Clock2MHz);
-        if ((changed & C.Clock1) != 0) Clock1MHzChanged?.Invoke(Clock1MHz);
+        if ((changed & _observedClocks) == 0) return;
+        // Keep the full changed mask: an earlier receiver can connect another
+        // receiver for a later output of this same resolved edge.
+        if ((changed & C.Clock12) != 0) _clock12Changed?.Invoke(Clock12MHz);
+        if ((changed & C.Clock8) != 0) _clock8Changed?.Invoke(Clock8MHz);
+        if ((changed & C.Clock6) != 0) _clock6Changed?.Invoke(Clock6MHz);
+        if ((changed & C.Clock4) != 0) _clock4Changed?.Invoke(Clock4MHz);
+        if ((changed & C.Clock3) != 0) _clock3Changed?.Invoke(Clock3MHz);
+        if ((changed & C.Clock2) != 0) _clock2Changed?.Invoke(Clock2MHz);
+        if ((changed & C.Clock1) != 0) _clock1Changed?.Invoke(Clock1MHz);
+    }
+
+    private void SetReceiver(ref Action<bool>? target, Action<bool>? receiver, byte output)
+    {
+        target = receiver;
+        if (receiver is null) _observedClocks &= (byte)~output;
+        else _observedClocks |= output;
     }
 }
