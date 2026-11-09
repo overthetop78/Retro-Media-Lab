@@ -1,9 +1,113 @@
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS165.Services;
+using RetroMediaLab.Chips.Memory.NationalSemiconductor.MM52116.Services;
 
 namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74LS165;
 
 public sealed class Sn74Ls165Tests
 {
+    [Fact]
+    public void AParallelLoadKeepsKnownGroundPinsSeparateFromUnknownRomPins()
+    {
+        var chip = new Sn74Ls165(12_000_000);
+        chip.SetSerialInput(false);
+        chip.SetParallelData(0, 0x83); // A, B and H grounded; C..G unknown.
+        chip.SetShiftLoad(false);
+        Assert.Equal(0x83, chip.ParallelKnownBits);
+        Assert.Equal(0x83, chip.KnownBits);
+        Assert.Null(chip.StoredData);
+        Assert.False(chip.SerialOutput);
+        chip.SetShiftLoad(true);
+        for (var i = 0; i < 5; i++)
+        {
+            chip.Clock();
+            Assert.Null(chip.SerialOutput);
+            Assert.Null(chip.ComplementaryOutput);
+        }
+        chip.Clock();
+        Assert.False(chip.SerialOutput); // B is grounded in this fixture.
+        Assert.Equal(byte.MaxValue, chip.KnownBits);
+    }
+
+    [Fact]
+    public void ResolvingAParallelInputWhileLoadIsLowUpdatesTheOutputWithoutAClock()
+    {
+        var chip = new Sn74Ls165(12_000_000);
+        chip.SetParallelData(0xff, 0x7f);
+        chip.SetShiftLoad(false);
+        Assert.Null(chip.SerialOutput);
+        var outputs = new List<(bool?, bool?)>();
+        chip.OutputsChanged = (high, inverse) => outputs.Add((high, inverse));
+        chip.SetParallelData(0xff);
+        Assert.Equal(byte.MaxValue, chip.ParallelKnownBits);
+        Assert.Equal(byte.MaxValue, chip.StoredData);
+        Assert.Equal(new (bool?, bool?)[] { (true, false) }, outputs);
+        Assert.Equal(0, chip.InputClockCount);
+        Assert.Equal(0, chip.ShiftClockCount);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(6)]
+    [InlineData(64)]
+    public void PartialParallelKnowledgeSurvivesGroupedAndExplicitClocking(int periods)
+    {
+        var grouped = new Sn74Ls165(12_000_000);
+        var unit = new Sn74Ls165(12_000_000);
+        var groupEdges = new List<(long, bool?)>();
+        var unitEdges = new List<(long, bool?)>();
+        foreach (var chip in new[] { grouped, unit })
+        {
+            chip.SetParallelData(0x80, 0x83);
+            chip.SetSerialInput(false);
+            chip.SetShiftLoad(false);
+            chip.SetShiftLoad(true);
+        }
+        grouped.OutputsChanged = (high, _) => groupEdges.Add((grouped.InputClockCount, high));
+        unit.OutputsChanged = (high, _) => unitEdges.Add((unit.InputClockCount, high));
+        grouped.AdvanceClocks(periods);
+        for (var i = 0; i < periods; i++) { unit.SetClock(true); unit.SetClock(false); }
+        Assert.Equal(unit.StoredData, grouped.StoredData);
+        Assert.Equal(unit.KnownBits, grouped.KnownBits);
+        Assert.Equal(unit.ShiftClockCount, grouped.ShiftClockCount);
+        Assert.Equal(unitEdges, groupEdges);
+    }
+
+    [Fact]
+    public void RomNotificationsResolveOnlyTheFiveConnectedParallelPins()
+    {
+        var contents = new byte[2048]; contents[0] = 0xa8; contents[1] = 0x50;
+        // Synthetic timing fixture; no VDU80 timing profile is selected here.
+        var rom = new Mm52116(contents, 0, 10, 4, 3);
+        var shift = new Sn74Ls165(12_000_000);
+        void Receive(byte? data, bool driven)
+        {
+            var known = driven && data.HasValue;
+            shift.SetParallelData(known ? (byte)((data!.Value >> 1) & 0x7c) : (byte)0,
+                known ? byte.MaxValue : (byte)0x83);
+        }
+        rom.OutputsChanged = Receive;
+        try
+        {
+            Receive(rom.OutputData, rom.OutputsDriven);
+            shift.SetSerialInput(false);
+            shift.SetShiftLoad(false);
+            Assert.False(shift.SerialOutput); // H is grounded even before ROM responds.
+            Assert.Equal(0x83, shift.KnownBits);
+            rom.AdvanceTo(4);
+            Assert.Equal(0x83, shift.KnownBits);
+            rom.AdvanceTo(10);
+            Assert.Equal((byte)0x54, shift.StoredData);
+            shift.SetShiftLoad(true);
+            rom.SetAddress(1); rom.AdvanceTo(20);
+            Assert.Equal((byte)0x54, shift.StoredData); // Parallel change cannot reload in shift mode.
+            Assert.Equal((byte)0x28, shift.ParallelData);
+            shift.SetShiftLoad(false);
+            Assert.Equal((byte)0x28, shift.StoredData);
+        }
+        finally { rom.OutputsChanged = null; }
+    }
+
     [Fact]
     public void EveryParallelPatternLoadsDirectlyAndSerializesFromHToA()
     {

@@ -14,3 +14,7 @@ Le chemin actuel `DrawMonochromeCell` ne représente pas ces captures et clocks.
 ## ROM et choix de profil temporel
 
 La fiche détaillée National MM52116, *1980 Memory Data Book* pages 7-30 à 7-32, fournit tA maximum 450 ns, tAC maximum 120 ns et tOFF maximum 100 ns, sans valeurs typiques dans ces colonnes. Elle distingue adresse avant sélection et adresse après sélection. Voir `docs/chips/Memory/Mm52116.md` pour les sources et conditions. Le composant paramétrable existe désormais dans Chips et gère ces trois délais localement, sans oscillateur fictif, mais aucune valeur de carte n'est imposée. L'utilisateur est interrogé sur l'emploi des bornes documentées ou l'exigence de mesures électriques réelles ; le raccordement qui dépend de cette décision reste en attente. Les durées des fixtures autonomes sont explicitement synthétiques et ne sont pas des mesures du montage.
+
+## Données avant la réponse de la ROM
+
+Le raccordement peut désormais transmettre au SN74LS165 les cinq broches C–G inconnues, tout en gardant A/B/H connus à zéro : masque 83 hex tant que la ROM ne fournit pas de mot connu. Une réponse connue place D3–D7 du mot sur C–G (décalage d'un bit vers la droite, masque 7C hex). La charge propage cette connaissance dans le registre ; les données reçues pendant SH/LD haut ne rechargent pas son contenu. Ce trajet est vérifié avec une ROM synthétique autonome, 28 contrôles ROM/registre réussis. Le profil temporel de la carte reste en attente de décision ; ce contrôle ne constitue pas encore la capture de l'écran de la carte raccordée.

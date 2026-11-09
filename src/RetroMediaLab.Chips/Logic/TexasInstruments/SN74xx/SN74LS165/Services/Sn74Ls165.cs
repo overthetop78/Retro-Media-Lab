@@ -17,6 +17,7 @@ public sealed class Sn74Ls165 : ISn74Ls165
     private bool _gatedClockHigh;
     private bool _clockPending;
     private byte _parallelData;
+    private byte _parallelKnownBits = byte.MaxValue;
     private bool? _serialInput;
     private byte _register;
     private byte _knownBits;
@@ -39,6 +40,7 @@ public sealed class Sn74Ls165 : ISn74Ls165
     public bool ShiftLoadHigh => _shiftLoadHigh;
     public bool GatedClockHigh => _gatedClockHigh;
     public byte ParallelData => _parallelData;
+    public byte ParallelKnownBits => _parallelKnownBits;
     public bool? SerialInput => _serialInput;
     public byte? StoredData => _knownBits == byte.MaxValue ? _register : null;
     public byte KnownBits => _knownBits;
@@ -47,9 +49,13 @@ public sealed class Sn74Ls165 : ISn74Ls165
     public bool? ComplementaryOutput => !SerialOutput;
     public Action<bool?, bool?>? OutputsChanged { get; set; }
 
-    public void SetParallelData(byte data)
+    public void SetParallelData(byte data) => SetParallelData(data, byte.MaxValue);
+
+    /// <summary>Keep undefined input levels separate from known zero/one pins.</summary>
+    public void SetParallelData(byte data, byte knownBits)
     {
-        _parallelData = data;
+        _parallelData = (byte)(data & knownBits);
+        _parallelKnownBits = knownBits;
         if (!_shiftLoadHigh) LoadParallel();
     }
 
@@ -152,7 +158,7 @@ public sealed class Sn74Ls165 : ISn74Ls165
     private void LoadParallel()
     {
         _register = _parallelData;
-        _knownBits = byte.MaxValue;
+        _knownBits = _parallelKnownBits;
         PublishOutputs();
     }
 

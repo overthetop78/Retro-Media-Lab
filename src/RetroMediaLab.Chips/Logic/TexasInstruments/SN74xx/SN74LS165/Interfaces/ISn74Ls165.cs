@@ -11,6 +11,7 @@ public interface ISn74Ls165
     bool ShiftLoadHigh { get; }
     bool GatedClockHigh { get; }
     byte ParallelData { get; }
+    byte ParallelKnownBits { get; }
     bool? SerialInput { get; }
     byte? StoredData { get; }
     byte KnownBits { get; }
@@ -18,6 +19,7 @@ public interface ISn74Ls165
     bool? ComplementaryOutput { get; }
     Action<bool?, bool?>? OutputsChanged { get; set; }
     void SetParallelData(byte data);
+    void SetParallelData(byte data, byte knownBits);
     void SetSerialInput(bool? high);
     void SetShiftLoad(bool high);
     void SetClockInhibit(bool high);
