@@ -17,12 +17,15 @@ public sealed class Sn74S163 : ISn74S163
     private bool _publishedCarry;
     private bool _clockPending;
     private byte _capturedCount;
+    private long _inputClockCount;
+    private bool _clockHigh;
+    private byte _count;
 
     public long ClockFrequency { get; }
-    public long InputClockCount { get; private set; }
-    public bool ClockHigh { get; private set; }
-    public byte Count { get; private set; }
-    public bool Carry => _enableT && Count == C.CounterMask;
+    public long InputClockCount => _inputClockCount;
+    public bool ClockHigh => _clockHigh;
+    public byte Count => _count;
+    public bool Carry => _enableT && _count == C.CounterMask;
     public Action<byte, bool>? OutputsChanged { get; set; }
 
     public Sn74S163(long clockFrequency, byte initialCount = 0)
@@ -30,7 +33,7 @@ public sealed class Sn74S163 : ISn74S163
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(clockFrequency);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(initialCount, C.CounterMask);
         ClockFrequency = clockFrequency;
-        Count = _publishedCount = initialCount;
+        _count = _publishedCount = initialCount;
     }
 
     public void SetClear(bool high) => _clearHigh = high;
@@ -55,11 +58,11 @@ public sealed class Sn74S163 : ISn74S163
     // outputs resolve. Both operations belong to the same physical edge.
     internal void CaptureClock(bool high)
     {
-        if (ClockHigh == high) return;
+        if (_clockHigh == high) return;
         if (_clockPending) throw new InvalidOperationException(nameof(_clockPending));
-        ClockHigh = high;
+        _clockHigh = high;
         if (!high) return;
-        InputClockCount = checked(InputClockCount + 1);
+        _inputClockCount = checked(_inputClockCount + 1);
         _capturedCount = NextCount();
         _clockPending = true;
     }
@@ -67,7 +70,7 @@ public sealed class Sn74S163 : ISn74S163
     internal void ResolveClock()
     {
         if (!_clockPending) return;
-        Count = _capturedCount;
+        _count = _capturedCount;
         _clockPending = false;
         PublishOutputs();
     }
@@ -88,11 +91,11 @@ public sealed class Sn74S163 : ISn74S163
         while (clocks > 0)
         {
             var next = NextCount();
-            if (OutputsChanged is null || next == Count)
+            if (OutputsChanged is null || next == _count)
             {
-                InputClockCount = checked(InputClockCount + clocks);
-                Count = !_clearHigh ? (byte)0 : !_loadHigh ? _data
-                    : _enableP && _enableT ? (byte)((Count + (clocks & C.CounterMask)) & C.CounterMask) : Count;
+                _inputClockCount = checked(_inputClockCount + clocks);
+                _count = !_clearHigh ? (byte)0 : !_loadHigh ? _data
+                    : _enableP && _enableT ? (byte)((_count + (clocks & C.CounterMask)) & C.CounterMask) : _count;
                 PublishOutputs();
                 return;
             }
@@ -102,19 +105,19 @@ public sealed class Sn74S163 : ISn74S163
     }
 
     private byte NextCount() => !_clearHigh ? (byte)0 : !_loadHigh ? _data
-        : _enableP && _enableT ? (byte)((Count + 1) & C.CounterMask) : Count;
+        : _enableP && _enableT ? (byte)((_count + 1) & C.CounterMask) : _count;
 
     private void RequireLowClock()
     {
-        if (ClockHigh) throw new InvalidOperationException(nameof(ClockHigh));
+        if (_clockHigh) throw new InvalidOperationException(nameof(ClockHigh));
     }
 
     private void PublishOutputs()
     {
         var carry = Carry;
-        if (_publishedCount == Count && _publishedCarry == carry) return;
-        _publishedCount = Count;
+        if (_publishedCount == _count && _publishedCarry == carry) return;
+        _publishedCount = _count;
         _publishedCarry = carry;
-        OutputsChanged?.Invoke(Count, carry);
+        OutputsChanged?.Invoke(_count, carry);
     }
 }

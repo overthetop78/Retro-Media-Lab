@@ -17,3 +17,8 @@ Contrôle actuel du 9 novembre : 11 tests Debug réussis, zéro échec/ignoré, 
   - [x] Modifier `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74S163/Sn74S163Tests.cs` : vérifier qu'un compte 14 vers 15 et ENT passant bas sur le même front partagé publient directement (15,RCO bas), sans état intermédiaire fictif ; vérifier la conservation des autres contrôles.
 
 Résultat du front partagé : 12 tests Debug réussis, zéro échec/ignoré, 68 ms. Les méthodes internes CaptureClock/ResolveClock capturent avant les publications raccordées et résolvent le même front sans nouveau temps matériel. SetClock public conserve son opération complète.
+
+- [x] Supprimer les appels C# d'accesseurs internes sur chaque front, sans modifier le compteur physique.
+  - [x] Modifier `src/RetroMediaLab.Chips/Logic/TexasInstruments/SN74xx/SN74S163/Services/Sn74S163.cs` : conserver Count, CLK et le compte de clocks dans des champs privés canoniques, garder les propriétés publiques comme lectures de ces mêmes champs et utiliser directement les champs dans les mutations internes ; ne changer ni capture, priorité, ordre, publication, ni regroupement. Exécuter les contrôles compteur/générateur existants, puis comparer le System 5 complet au même scénario natif avant/après et consigner le résultat dans la fiche de la puce.
+
+22 contrôles réussis, puis System 5 natif vérifié et mesuré : durée moyenne diminuée de 20,3 %, captures identiques et mêmes compteurs. Les valeurs individuelles et la portée sont dans la fiche. Aucun changement matériel.
