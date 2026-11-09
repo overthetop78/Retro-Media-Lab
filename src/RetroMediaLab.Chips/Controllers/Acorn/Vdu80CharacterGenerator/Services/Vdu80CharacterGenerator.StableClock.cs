@@ -14,11 +14,12 @@ public sealed partial class Vdu80CharacterGenerator
         if (maximumClocks == 0 || _dotClockHigh) return 0;
         maximumClocks = (int)Math.Min(maximumClocks, _serializer.StableClockPeriods);
         if (maximumClocks == 0) return 0;
-        if (EndTimeAfterDotPeriods(1) >= _nextDeadline) return 0;
-
         var count = maximumClocks;
-        if (EndTimeAfterDotPeriods(count) >= _nextDeadline)
+        var numerator = checked(count * 2L * C.NanosecondsPerSecond + _fraction);
+        var target = checked(_timeNanoseconds + numerator / C.HalfDotFrequency);
+        if (target >= _nextDeadline)
         {
+            if (count == 1 || EndTimeAfterDotPeriods(1) >= _nextDeadline) return 0;
             var low = 1;
             var high = count;
             while (low < high)
@@ -28,16 +29,22 @@ public sealed partial class Vdu80CharacterGenerator
                 else high = middle - 1;
             }
             count = low;
+            numerator = checked(count * 2L * C.NanosecondsPerSecond + _fraction);
+            target = checked(_timeNanoseconds + numerator / C.HalfDotFrequency);
         }
 
-        count = (int)_serializer.AdvanceStableClocks(count);
-        if (count == 0) return 0;
+        var accepted = (int)_serializer.AdvanceStableClocks(count);
+        if (accepted == 0) return 0;
+        if (accepted != count)
+        {
+            numerator = checked(accepted * 2L * C.NanosecondsPerSecond + _fraction);
+            target = checked(_timeNanoseconds + numerator / C.HalfDotFrequency);
+        }
         // Same rational accumulation as two explicit edges per period; no event
         // can occur within this span and the serializer published no transition.
-        var numerator = checked(count * 2L * C.NanosecondsPerSecond + _fraction);
-        _timeNanoseconds = checked(_timeNanoseconds + numerator / C.HalfDotFrequency);
+        _timeNanoseconds = target;
         _fraction = numerator % C.HalfDotFrequency;
-        return count;
+        return accepted;
     }
 
     private long EndTimeAfterDotPeriods(int count) => checked(_timeNanoseconds

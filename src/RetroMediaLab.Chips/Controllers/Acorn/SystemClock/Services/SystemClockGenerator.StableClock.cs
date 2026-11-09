@@ -88,6 +88,14 @@ public sealed partial class SystemClockGenerator
             {
                 ClockPeriod();
                 clocks--;
+                // No complete low-to-low receiver interval can start while CLK12
+                // is high. Deliver its next source period normally, including
+                // every callback, before reconsidering a grouped interval.
+                if (clocks > 0 && (_levels & C.Clock12) != 0)
+                {
+                    ClockPeriod();
+                    clocks--;
+                }
             }
         }
     }

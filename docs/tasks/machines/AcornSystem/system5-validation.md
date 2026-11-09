@@ -127,3 +127,51 @@ Bloc conservé : distance locale au prochain changement série, échéances VDU 
 Comparaisons permanentes : 73 728 combinaisons de motifs périodiques/compte/phase/longueur pour le compteur, sept phases initiales de réseau, changements de récepteurs, 6561 mots physiques du registre × trois états SER, quatre scénarios de huit champs complets avec caractères variables, curseur, inversion et entrelacement. Champs, notifications série horodatées et compteurs égaux aux fronts unitaires. Après suppression du banc natif et régénération : 96 contrôles de composants réussis (414 ms), 135 contrôles System/audio réussis (3 s), hors sauvegardes reportées. Module compilé sans avertissement ; quatre avertissements préexistants du projet de tests. Cœur réinitialisé dans finally ; aucun processus RML ni fenêtre créé. Aucun build de livraison utilisateur dans ce passage.
 
 Le profil antérieur ne mesure pas la répartition des coûts après ce bloc : aucun nouveau classement des ralentissements n'est revendiqué. Les requêtes stables et calculs/pubs aux frontières ont encore un coût ; le parcours unitaire reste nécessaire aux périodes variables et aux échéances observables. Il faut profiler de nouveau le montage actuel avant d'attribuer le coût résiduel ou retenir une prochaine optimisation. System 5 reste en cours pour la performance.
+
+### Profil après intervalles stables — 9 novembre 2026
+
+Version du bloc 6c1036cec, même NOS80/VDU80, RAM 2000–DFFF et 8271 sans média ; 440 champs avec rendu/drainage audio (40 de chauffe, 400 disponibles pour le profil). Attachement au processus testhost en exécution, huit secondes par dotnet-trace/dotnet-sampled-thread-time. Speedscope evented en millisecondes, intégration entre événements et attribution au dernier appelant Chips ou module réel, sans addition des parents/descendants. Total attribué 8019,70 ms. Le banc ne donne pas une nouvelle mesure de vitesse.
+
+| Traitement propre | Part du temps attribué |
+| --- | --- |
+| SystemClockGenerator.AdvanceWithStableReceiver | 6,14 % |
+| Sn74S163.CaptureClockPeriods | 5,49 % |
+| SystemClockGenerator.PublishOutputs | 5,22 % |
+| Sn74S163.ResolveClock | 4,91 % |
+| Vdu80CharacterGenerator.AdvanceStableDotClocks | 4,73 % |
+| Sn74S163PeriodicInputs.Capture | 3,92 % |
+| SystemVideo.AdvanceStablePeriods | 2,80 % |
+| Sn74S163.CaptureRisingClock | 2,59 % |
+| SystemClockGenerator.AdvanceStableClockNetwork | 2,46 % |
+| Sn74Ls74.CaptureClock | 2,41 % |
+| Cpu6502.ExecuteNmosPhase | 2,34 % |
+| Cpu6502.ClockNmos | 2,16 % |
+| Sn74Ls165.AdvanceStableClocks | 2,16 % |
+| SystemClockGenerator.RisingClock | 1,73 % |
+| Crtc6845.PublishOutputs | 1,63 % |
+| Vdu80CharacterGenerator.SetDotClock | 1,63 % |
+| Sn74Ls74.SetClock | 1,48 % |
+| Vdu80CharacterGenerator.AdvanceLocalTime | 1,39 % |
+| Sn74Ls374.PublishOutputs | 1,34 % |
+| Sn74Ls74.Get | 1,30 % |
+| Sn74S163.RequireLowClock | 1,20 % |
+
+Le calcul groupé remplace bien les fronts unitaires sur les intervalles admis, mais sa table lit séparément compte avant/après et entrées post-front, avec trois paramètres out et des validations répétées par les récepteurs possédés. Le générateur garantit déjà le front bas avant sa capture, comme pour CaptureRisingClock. Ce coût logiciel est à évaluer dans le composant ; aucun retrait d'activité matérielle justifié par ce profil. Le test du scénario a réussi (34 s, instrumenté).
+
+### Captures compactes et contrôle des intervalles — 9 novembre 2026
+
+Même scénario complet Debug, NOS80/VDU80, RAM 2000–DFFF, 8271 sans média, 40 champs de chauffe puis 3 × 80, rendu/drainage audio inclus, aucune mesure concurrente. Trois changements raccordés : capture périodique retournée en un mot combinatoire, suppression d'une itération de qualification lorsque CLK12 est haut (les deux périodes restent explicites), calcul de fin vidéo réutilisé au lieu de recalculer d'abord une période puis l'intervalle puis son temps final.
+
+| Fenêtre | ms/champ | Champs/s libres | Référence MHz | CPU MHz effectifs | Vitesse nominale | Source | Référence | Cycles CPU |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 72,242665 | 13,842236 | 0,552804 | 0,552804 | 27,640176 % | 38 338 560 | 3 194 880 | 3 194 880 |
+| 2 | 73,437973 | 13,616934 | 0,543806 | 0,543806 | 27,190293 % | 38 338 560 | 3 194 880 | 3 194 880 |
+| 3 | 73,475824 | 13,609919 | 0,543526 | 0,543526 | 27,176286 % | 38 338 560 | 3 194 880 | 3 194 880 |
+
+Moyenne 73,052154 ms/champ contre 75,991910 précédemment : durée réduite de 3,9 %, vitesse moyenne 26,28 → 27,34 %. Gain modeste du bloc complet, sans attribution séparée à chacune des trois modifications. Référence au début des intervalles stables : 102,029386 ms/champ ; réduction cumulée 28,4 %. La machine reste loin de 100 % et n'est pas clôturée.
+
+Correction de libellé : `_ticks` compte la référence 2 MHz libre de la carte, avant les éventuels WAIT CPU ; les anciens tableaux l'appelaient trop largement « cycles CPU ». Cette mesure relève aussi séparément `ICpu6502.Cycles` : les deux comptes sont effectivement égaux dans ce scénario et ne changent donc pas ses pourcentages antérieurs. Ne pas généraliser cette égalité aux logiciels qui font étirer PH0. Source/référence reste exactement 12, PC progresse dans la boucle NOS80 (FD59 / FD5B / FD58). Cadence matérielle 50,080128 Hz, CPU configuré à 2 MHz.
+
+Empreintes des trois champs identiques aux passages précédents : E9E458B2454C6AAD008F6EA0A02D78D406A9EBC80DA45D7057462F60FA99E76B ; 113FD6C47E8C8E57D4731313BFC2BDCFA42DF867D1FEED1D1CB1A1CB25719108 ; première de nouveau. Capture réelle produite/inspectée `20261109-packed-clock-monitor-debug.bmp`, SHA256 162FD4E97CB8FF4D3D07BE20A79393C087D912C1559AEFE60DB9F951DFB9DA12, moniteur et invite identiques. Copies séparées TestsChips/Sn74S163, SystemClock et Vdu80CharacterGenerator.
+
+Avant mesure : 96 contrôles de composants réussis (319 ms), 135 contrôles System/audio (3 s), dont les comparaisons de champs et notifications avec le parcours unitaire. Module sans avertissement ; quatre avertissements préexistants des tests. Cœur réinitialisé dans finally, aucun RML ni surface native possédé. Bancs et traces supprimés puis assemblies régénérées. Aucun build de livraison utilisateur effectué. Le profil détaillé précédent reste une preuve du coût avant ce petit bloc, pas une nouvelle répartition mesurée après celui-ci.
