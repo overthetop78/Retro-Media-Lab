@@ -5,6 +5,24 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74S163;
 public sealed class Sn74S163Tests
 {
     [Fact]
+    public void SharedEdgePublishesOnlyTheResolvedCountAndCarry()
+    {
+        var chip = new Sn74S163(24_000_000, 14);
+        chip.SetEnable(true, true);
+        var outputs = new List<(byte, bool)>();
+        chip.OutputsChanged = (count, carry) => outputs.Add((count, carry));
+        chip.CaptureClock(true);
+        chip.SetEnable(false, false);
+        Assert.Empty(outputs);
+        chip.ResolveClock();
+        Assert.Equal(new[] { ((byte)15, false) }, outputs);
+        Assert.Equal(1, chip.InputClockCount);
+        chip.SetClock(false);
+        chip.SetEnable(true, true);
+        Assert.Equal(((byte)15, true), outputs[^1]);
+    }
+
+    [Fact]
     public void AllSixteenPresetsCountAndWrapOnRisingEdgesOnly()
     {
         for (byte value = 0; value < 16; value++)

@@ -15,6 +15,8 @@ public sealed class Sn74S163 : ISn74S163
     private byte _data;
     private byte _publishedCount;
     private bool _publishedCarry;
+    private bool _clockPending;
+    private byte _capturedCount;
 
     public long ClockFrequency { get; }
     public long InputClockCount { get; private set; }
@@ -40,16 +42,33 @@ public sealed class Sn74S163 : ISn74S163
         _enableP = p;
         _enableT = t;
         // ENT qualifies RCO combinationally, even if ENP inhibits counting.
-        PublishOutputs();
+        if (!_clockPending) PublishOutputs();
     }
 
     public void SetClock(bool high)
     {
+        CaptureClock(high);
+        ResolveClock();
+    }
+
+    // Shared CLK: every receiver captures its old input levels before connected
+    // outputs resolve. Both operations belong to the same physical edge.
+    internal void CaptureClock(bool high)
+    {
         if (ClockHigh == high) return;
+        if (_clockPending) throw new InvalidOperationException(nameof(_clockPending));
         ClockHigh = high;
         if (!high) return;
         InputClockCount = checked(InputClockCount + 1);
-        Count = NextCount();
+        _capturedCount = NextCount();
+        _clockPending = true;
+    }
+
+    internal void ResolveClock()
+    {
+        if (!_clockPending) return;
+        Count = _capturedCount;
+        _clockPending = false;
         PublishOutputs();
     }
 
