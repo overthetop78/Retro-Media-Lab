@@ -19,12 +19,14 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     private bool _oscillatorHigh;
     private byte _observedClocks;
     private readonly Action<bool>?[] _receivers = new Action<bool>?[C.OutputCount];
+    private readonly byte[] _nextObserved = new byte[C.OutputCount + 1];
 
     public SystemClockGenerator() : this(C.DivideByThreeSeed, 0, 0) { }
 
     // A deterministic power-on phase, not a TI-guaranteed initial state.
     internal SystemClockGenerator(byte ic2, byte ic3, byte ic4)
     {
+        Array.Fill(_nextObserved, (byte)C.OutputCount);
         _ic2 = new Sn74S163(C.OscillatorFrequency, ic2);
         _ic3 = new Sn74S163(C.OscillatorFrequency, ic3);
         _ic4 = new Sn74S163(C.OscillatorFrequency, ic4);
@@ -135,16 +137,15 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     {
         var remaining = (uint)(_levels ^ _publishedLevels);
         _publishedLevels = _levels;
-        while (true)
+        if ((remaining & _observedClocks) == 0) return;
+        var index = (int)_nextObserved[0];
+        while (index < C.OutputCount)
         {
-            var observed = remaining & _observedClocks;
-            if (observed == 0) return;
-            var index = BitOperations.TrailingZeroCount(observed);
             var bit = 1u << index;
             // Preserve the original ascending order. A callback can attach or
             // detach a later output of this same edge, but cannot replay an earlier one.
-            remaining &= ~(bit | (bit - 1));
-            _receivers[index]?.Invoke((_levels & bit) != 0);
+            if ((remaining & bit) != 0) _receivers[index]?.Invoke((_levels & bit) != 0);
+            index = _nextObserved[index + 1];
         }
     }
 
@@ -153,7 +154,16 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     private void SetReceiver(Action<bool>? receiver, byte output)
     {
         _receivers[BitOperations.TrailingZeroCount((uint)output)] = receiver;
+        var previous = _observedClocks;
         if (receiver is null) _observedClocks &= (byte)~output;
         else _observedClocks |= output;
+        if (previous == _observedClocks) return;
+        // Subscription metadata only; no clock, signal or counter state is shared.
+        var next = (byte)C.OutputCount;
+        for (var index = C.OutputCount - 1; index >= 0; index--)
+        {
+            if ((_observedClocks & (1 << index)) != 0) next = (byte)index;
+            _nextObserved[index] = next;
+        }
     }
 }

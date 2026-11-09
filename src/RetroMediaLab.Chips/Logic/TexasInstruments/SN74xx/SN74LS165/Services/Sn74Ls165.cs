@@ -21,7 +21,9 @@ public sealed class Sn74Ls165 : ISn74Ls165
     private bool? _serialInput;
     private byte _register;
     private byte _knownBits;
-    private bool? _publishedOutput;
+    // Last published stage: bit 7 is known, bit 6 is high when known.
+    // This replaces the nullable publication cache, not the physical register.
+    private byte _publishedOutput;
 
     public Sn74Ls165(long clockFrequency, byte? initialData = null)
     {
@@ -29,7 +31,8 @@ public sealed class Sn74Ls165 : ISn74Ls165
         ClockFrequency = clockFrequency;
         _register = initialData.GetValueOrDefault();
         _knownBits = initialData.HasValue ? byte.MaxValue : (byte)0;
-        _publishedOutput = SerialOutput;
+        _publishedOutput = (byte)((_knownBits & C.LastStageMask)
+            | ((_register & _knownBits & C.LastStageMask) >> 1));
     }
 
     public long ClockFrequency { get; }
@@ -176,9 +179,11 @@ public sealed class Sn74Ls165 : ISn74Ls165
     private void PublishOutputs()
     {
         if (_clockPending) return;
-        var high = SerialOutput;
-        if (_publishedOutput == high) return;
-        _publishedOutput = high;
+        var pins = (byte)((_knownBits & C.LastStageMask)
+            | ((_register & _knownBits & C.LastStageMask) >> 1));
+        if (_publishedOutput == pins) return;
+        _publishedOutput = pins;
+        bool? high = (pins & C.LastStageMask) != 0 ? (pins & (C.LastStageMask >> 1)) != 0 : null;
         OutputsChanged?.Invoke(high, !high);
     }
 

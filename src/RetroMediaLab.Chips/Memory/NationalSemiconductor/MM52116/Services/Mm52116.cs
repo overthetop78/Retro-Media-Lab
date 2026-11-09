@@ -85,7 +85,8 @@ public sealed class Mm52116 : IMm52116
     public void AdvanceTo(long nanoseconds)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(nanoseconds, _timeNanoseconds);
-        while (FirstDeadline() is { } next && next <= nanoseconds)
+        var pending = FirstDeadline();
+        while (pending is { } next && next <= nanoseconds)
         {
             _timeNanoseconds = next;
             // Both mutations belong to one instant. Do not publish unknown data
@@ -101,10 +102,13 @@ public sealed class Mm52116 : IMm52116
                 _outputsDriven = _driveTarget;
             }
             PublishOutputs();
-            PublishNextEvent();
+            PublishNextEvent(FirstDeadline());
+            // A recipient can rearm or cancel an access during notification.
+            // Continue from the resolved deadline, not the value sent to it.
+            pending = _nextEvent;
         }
         _timeNanoseconds = nanoseconds;
-        PublishNextEvent();
+        PublishNextEvent(pending);
     }
 
     private long? FirstDeadline() => _dataReadyAt is not { } data ? _driveReadyAt
@@ -119,9 +123,8 @@ public sealed class Mm52116 : IMm52116
         OutputsChanged?.Invoke(data, _outputsDriven);
     }
 
-    private void PublishNextEvent()
+    private void PublishNextEvent(long? next)
     {
-        var next = FirstDeadline();
         if (_nextEvent == next) return;
         _nextEvent = next;
         NextEventNanosecondsChanged?.Invoke(next);

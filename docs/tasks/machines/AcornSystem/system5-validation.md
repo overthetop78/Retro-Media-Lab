@@ -67,3 +67,43 @@ Les deux cas existants `TapeAndHardDiskHotVolumesNotifyOnlyOnCommandsAndPreserve
 Trajet latch/ROM/sérialiseur et RC du curseur réalisés, raccordés et vérifiés : 44 contrôles de composants et 185 contrôles de carte/disque/audio réussis après nettoyage. Essai natif actuel : NOS80, catalogue du SSD, chargement BASIC exact et calcul 46, captures réellement inspectées du passage 09:42–09:46. Détails, empreintes et tableau complet dans `docs/project/emulations/Acorn/Acorn System/System 5/validation.md` ; captures sous TestsMachines et TestsChips/Vdu80CharacterGenerator, hors Git.
 
 Mesure Debug complète actuelle : 115,8–116,0 ms/champ, 8,62–8,64 champs/s sans limite, environ 0,344 MHz émulé et 17,2 % des 2 MHz réels ; vidéo matérielle 50,080128 Hz et ratio source/CPU 12 conservés. Le réseau 24 MHz et le trajet série coûtent déjà trop indépendamment du CPU. La machine demeure ouverte pour optimisation ; les anciennes mesures au-dessus de 100 % ou vers 26 % ne couvraient pas ce trajet complet.
+
+### Mesure actuelle après publication série — 9 novembre 2026, passage 10:17
+
+System 5 natif sans RML, NOS80 et VDU80 externes déjà identifiés, 48 Kio RAM 2000–DFFF, 8271 présent, aucun disque monté. 40 champs de chauffe puis trois fenêtres de 80 champs, RunFrame et drainage audio inclus, sans compilation/test concurrent. Ce passage mesure le moniteur ; il ne répète pas l'essai BASIC/disquette déjà effectué.
+
+| Fenêtre | ms/champ | Champs/s sans limite | CPU MHz émulés | Vitesse réelle | Périodes source | Cycles CPU |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 114,775827 | 8,712636 | 0,347948 | 17,397391 % | 38 338 560 | 3 194 880 |
+| 2 | 116,842544 | 8,558526 | 0,341793 | 17,089666 % | 38 338 560 | 3 194 880 |
+| 3 | 114,562517 | 8,728858 | 0,348596 | 17,429785 % | 38 338 560 | 3 194 880 |
+
+Cadence physique 50,080128 Hz, ratio source/CPU exactement 12. La publication série apporte 6,9–10,7 % sur son montage synthétique mesuré, mais ce passage complet reste proche du précédent 17,2 % : aucun gain global significatif n'est établi par cette comparaison, et aucun 100 % n'est annoncé. Les trois compteurs 24 MHz et le trajet vidéo conservent leur activité complète. Les empreintes de framebuffer diffèrent entre fenêtres ; ce passage ne vérifie pas leur égalité entre champs. La capture finale est inspectée : moniteur « Acorn Dos », prompt * lisible.
+
+Capture réelle `20261109-101751-serial-publication-monitor-debug.bmp`, SHA256 du fichier 162FD4E97CB8FF4D3D07BE20A79393C087D912C1559AEFE60DB9F951DFB9DA12, sous TestsMachines/Acorn/Acorn System 5 et copie TestsChips/Sn74LS165/Acorn System 5. Aucun RML ni ressource graphique native créé ; cœur réinitialisé et bande éjectée dans finally. La performance complète reste ouverte.
+
+Nettoyage terminé : banc temporaire supprimé, assembly régénérée ; 131 contrôles System/audio réussis (3 s), sans sauvegardes reportées. Aucun build de livraison utilisateur lancé à ce stade.
+
+### Profil actuel de la machine complète — 9 novembre 2026
+
+Profil EventPipe de huit secondes du moniteur NOS80 sur la machine complète après les optimisations de publication série et de ROM. Même RAM 2000–DFFF, VDU80 et 8271 sans média, rendu et drainage audio inclus ; 40 champs de chauffe et 240 champs exécutés. Compteurs vérifiés : 9 584 640 cycles de référence, 115 015 680 périodes source (ratio 12), empreinte framebuffer E9E458B2454C6AAD008F6EA0A02D78D406A9EBC80DA45D7057462F60FA99E76B. Le profil est instrumenté : aucune nouvelle vitesse nominale n'est déduite de sa durée.
+
+Piles evented intégrées par intervalles ; attribution au dernier appelant réel de Chips ou du module, appels runtime inclus, sans additionner les coûts propres et inclusifs. Total attribué 8024,85 ms. Parts propres : SN74S163.PublishOutputs 9,52 %, SystemClockGenerator.PublishOutputs 8,71 %, VDU80.SetDotClock 6,69 %, SN74S163.NextCount 6,45 %, SystemVideo.SetDotClock 4,21 %, générateur.RisingClock 3,89 %, compteur.CaptureRisingClock 3,82 %, SN74LS165.ResolveGatedClock 3,74 %, compteur.ResolveClock 3,04 %, générateur.Ic2Outputs 2,58 %, compteur.get_Carry 2,28 %, générateur.Ic4Outputs 2,14 %. CPU ClockNmos 1,28 %, ExecuteNmosPhase 1,25 %, 8271Drive.Tick 1,17 %, TickReferenceClock 0,85 %. Les coûts faibles ne prouvent pas l'absence de défaut ; ils orientent l'optimisation.
+
+Le coût principal reste donc le réseau des trois compteurs et de ses publications, pas le CPU. La publication du compteur calcule le RCO par un accesseur et compare deux champs séparés de dernière publication ; une représentation directe des broches publiées sera évaluée dans son suivi, en gardant le compte et la phase privés de chaque compteur. Le framebuffer représente 4,21 % dans ce scénario : il n'explique pas seul la lenteur. Aucun mode matériel ni front n'a été supprimé, aucun dynarec ajouté.
+
+### Gain natif du bloc critique — 9 novembre 2026, passage 10:48
+
+Après optimisations du compteur, de son destinataire direct et du routage des sorties, même NOS80/VDU80 externes, RAM 2000–DFFF, 8271 présent sans média, 40 champs de chauffe puis trois fenêtres de 80 champs. Debug normal, rendu et drainage audio inclus, aucun test ni compilation concurrent.
+
+| Fenêtre | ms/champ | Champs/s sans limite | CPU MHz émulés | Vitesse réelle | Périodes source | Cycles CPU |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 102,139359 | 9,790545 | 0,390995 | 19,549760 % | 38 338 560 | 3 194 880 |
+| 2 | 102,206670 | 9,784097 | 0,390738 | 19,536885 % | 38 338 560 | 3 194 880 |
+| 3 | 101,742130 | 9,828770 | 0,392522 | 19,626088 % | 38 338 560 | 3 194 880 |
+
+Face au passage précédent à 114,775827 / 116,842544 / 114,562517 ms/champ, durée moyenne réduite d'environ 11,6 %. Ce passage inclut aussi la réduction des recalculs ROM : ne pas attribuer le gain entier au seul routage. Cadence matérielle 50,080128 Hz et ratio source/CPU exactement 12. Les trois empreintes de framebuffer sont identiques à celles du passage précédent : E9E458B2454C6AAD008F6EA0A02D78D406A9EBC80DA45D7057462F60FA99E76B, 113FD6C47E8C8E57D4731313BFC2BDCFA42DF867D1FEED1D1CB1A1CB25719108, puis la première de nouveau.
+
+Capture réellement produite et inspectée : `20261109-104807-critical-clock-path-monitor-debug.bmp`, SHA256 fichier 162FD4E97CB8FF4D3D07BE20A79393C087D912C1559AEFE60DB9F951DFB9DA12, sous TestsMachines/Acorn/Acorn System 5 et copie TestsChips/Sn74S163/Acorn System 5. Moniteur Acorn Dos et prompt lisibles, fichier identique à la capture du moniteur avant ce bloc.
+
+Nettoyage du cœur dans finally, aucun RML ni ressource graphique native créé. Banc temporaire supprimé, assembly régénérée ; 131 contrôles System/audio réussis (4 s) et 75 contrôles de composants réussis (99 ms). Aucun build de livraison utilisateur lancé. Le bloc de réduction des coûts par appel est vérifié ; System 5 reste en cours à 19,5–19,6 % Debug. Le générateur traite encore chaque période de 24 MHz et le rendu écrit chaque dot : avancement groupé et portions stables restent à traiter. Le CPU, les fréquences et les cycles matériels n'ont pas été modifiés.

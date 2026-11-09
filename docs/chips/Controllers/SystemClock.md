@@ -112,3 +112,37 @@ Fenêtres Debug normales sans RML ni compilation concurrente : 24 000 périodes 
 Par rapport à la référence, diminution moyenne du temps d'environ 10,6 % sans observateur, 10,9 % avec les clocks 12/2 MHz du montage et 3,6 % avec sept sorties. La publication ciblée seule est moins favorable que le parcours fixe pour sept destinataires (environ +3,2 % par rapport à l'étape intermédiaire), mais l'ensemble reste plus rapide que la référence dans les trois scénarios. Aucun gain machine n'en est déduit.
 
 Contrôles permanents : ajout d'un cas de branchement des sorties antérieures depuis une publication ultérieure, sans rejeu du front. Groupe compteur/générateur/trajet VDU80 : **34 réussites, zéro échec/ignoré, 59 ms en Debug**. Les autres cas conservent les sept clocks, leur phase, les fronts descendants, l'état résolu simultané, le branchement/débranchement pendant publication, le duty cycle 8 MHz et les seeds hors phase. Banc temporaire supprimé ; assembly régénérée sans lui, zéro erreur (avertissement xUnit2031 préexistant). Le débit 12/2 MHz isolé reste vers 9,66–9,80 millions de périodes source/s pour 24 MHz requis : optimisation du montage toujours ouverte, pas de clôture de System 5.
+
+### Profil actuel de la machine complète — 9 novembre 2026
+
+Profil EventPipe de huit secondes du moniteur NOS80 sur la machine complète après les optimisations de publication série et de ROM. Même RAM 2000–DFFF, VDU80 et 8271 sans média, rendu et drainage audio inclus ; 40 champs de chauffe et 240 champs exécutés. Compteurs vérifiés : 9 584 640 cycles de référence, 115 015 680 périodes source (ratio 12), empreinte framebuffer E9E458B2454C6AAD008F6EA0A02D78D406A9EBC80DA45D7057462F60FA99E76B. Le profil est instrumenté : aucune nouvelle vitesse nominale n'est déduite de sa durée.
+
+Piles evented intégrées par intervalles ; attribution au dernier appelant réel de Chips ou du module, appels runtime inclus, sans additionner les coûts propres et inclusifs. Total attribué 8024,85 ms. Parts propres : SN74S163.PublishOutputs 9,52 %, SystemClockGenerator.PublishOutputs 8,71 %, VDU80.SetDotClock 6,69 %, SN74S163.NextCount 6,45 %, SystemVideo.SetDotClock 4,21 %, générateur.RisingClock 3,89 %, compteur.CaptureRisingClock 3,82 %, SN74LS165.ResolveGatedClock 3,74 %, compteur.ResolveClock 3,04 %, générateur.Ic2Outputs 2,58 %, compteur.get_Carry 2,28 %, générateur.Ic4Outputs 2,14 %. CPU ClockNmos 1,28 %, ExecuteNmosPhase 1,25 %, 8271Drive.Tick 1,17 %, TickReferenceClock 0,85 %. Les coûts faibles ne prouvent pas l'absence de défaut ; ils orientent l'optimisation.
+
+Le coût principal reste donc le réseau des trois compteurs et de ses publications, pas le CPU. La publication du compteur calcule le RCO par un accesseur et compare deux champs séparés de dernière publication ; une représentation directe des broches publiées sera évaluée dans son suivi, en gardant le compte et la phase privés de chaque compteur. Le framebuffer représente 4,21 % dans ce scénario : il n'explique pas seul la lenteur. Aucun mode matériel ni front n'a été supprimé, aucun dynarec ajouté.
+
+### Parcours critique compteurs et routage — 9 novembre 2026
+
+Le compteur conserve son ENT sous forme de masque canonique, à la place du booléen. RCO est exactement ENT ET (Q=15), projeté par (compte+1)&masqueENT. La dernière publication tient dans un seul mot compte/RCO ; le calcul capturé et la publication résolue évitent les sous-appels NextCount, get_Carry et PublishOutputs à chaque front. Le destinataire est invoqué depuis son champ canonique, avec le même accesseur public. Compte, capture, horloge et compte de périodes restent propres à chaque SN74S163. Les 4096 combinaisons indépendantes et les cas de feedback/capture partagée sont conservés.
+
+Le générateur mémorise uniquement les indices des prochains destinataires observés, recalculés aux changements d'abonnements. La publication parcourt ces indices dans l'ordre et consulte l'indice suivant après le callback : branchements et retraits au même front restent effectifs, sans rejouer une sortie antérieure. Ce cache de routage n'est pas un état matériel ni un ordonnanceur. Les fronts, captures et résolutions des trois compteurs restent inchangés.
+
+Debug normal, chauffe 24 000 périodes puis trois fenêtres de 24 millions (1 s interne), aucun test/compilation concurrent.
+
+| Variante | Réseau, récepteurs 12/2 MHz (ms) | Réseau + VDU synthétique (ms) |
+| --- | --- | --- |
+| Référence avant ce bloc | 2837,0274 / 2762,8523 / 2784,6698 | 4165,5247 / 4180,8090 / 4181,4692 |
+| Compteur : broches et résolution intégrées | 2646,3759 / 2680,2011 / 2696,6161 | 3937,0670 / 3856,9520 / 4090,6708 |
+| Essai de réception des deux fronts en une opération | 2669,2376 / 2629,2168 / 2646,5488 | 3937,8506 / 3954,3991 / 4025,5690 |
+| Compteur avec destinataire direct + indices de routage | 2480,6366 / 2508,2260 / 2435,8936 | 3795,6925 / 3861,7357 / 3713,0588 |
+| Variante table immuable de décodage des masques | 2542,3598 / 2543,1030 / 2545,3548 | 3785,0632 / 3758,8685 / 3808,0601 |
+
+Variante retenue : compteur avec destinataire direct et indices de routage, environ 11,4 % de durée réseau en moins et 9,2 % de durée du montage en moins face à la référence. Ces gains concernent le bloc combiné ; ne pas les attribuer entièrement au seul routage. Le regroupement des wrappers de fronts n'établit pas de gain utile : retiré. La table immuable est moins favorable sur le réseau à deux destinataires : retirée. Aucune variante n'a supprimé de front ou de composant.
+
+Empreintes de tous les dots identiques pour les cinq variantes : 19586B6F325B9EA6 / 0CC139C34DCAABA6 / B8853FE145B5B8A6. Chaque fenêtre conserve 12 millions de fronts montants dot et 2 millions de fronts montants caractère.
+
+Contrôle des autres branchements, même compteur optimisé, trois fenêtres de 2,4 millions : routage initial sans observateur 209,7413 / 212,3085 / 211,2226 ms ; indices retenus 210,2018 / 212,8954 / 208,5326 ms. Sept sorties : initial 308,5136 / 334,6820 / 299,7805 ms ; indices 321,9640 / 307,9789 / 302,8348 ms. Aucun gain significatif ni régression nette dans ces deux scénarios ; 3,6 millions de fronts montants vérifiés par fenêtre avec sept sorties. Le gain utile est établi pour le montage à peu de destinataires de System 5.
+
+Après suppression du banc et régénération, 75 contrôles compteur/générateur/VDU/RC/ROM/registre passent (99 ms), dont niveaux explicites contre périodes et branchements modifiés pendant publication. Mesure complète de la machine à réaliser après ce bloc ; aucune nouvelle cadence native n'est déduite du banc.
+
+Vérification native après le bloc de coûts : System 5 NOS80, 101,742130–102,206670 ms/champ et 19,536885–19,626088 % en Debug. Durée moyenne réduite d'environ 11,6 % face au passage précédent ; compteurs et trois empreintes vidéo identiques. Ce gain porte sur le bloc combiné, pas sur une seule modification. Capture réelle inspectée, banc supprimé, 131 contrôles System/audio (4 s) et 75 contrôles de composants (99 ms) réussis après nettoyage. Conditions et tableau dans la validation System 5 ; machine toujours en cours.

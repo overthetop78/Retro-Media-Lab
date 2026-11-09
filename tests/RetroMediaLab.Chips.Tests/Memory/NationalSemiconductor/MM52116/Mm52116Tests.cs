@@ -5,6 +5,62 @@ namespace RetroMediaLab.Chips.Tests.Memory.NationalSemiconductor.MM52116;
 public sealed class Mm52116Tests
 {
     [Fact]
+    public void DeadlineObserverCanRearmTheNextAddressDuringGroupedAdvance()
+    {
+        var contents = new byte[2048]; contents[0] = 0x11; contents[1] = 0x22;
+        var chip = new Mm52116(contents, 0, 10, 4, 3);
+        var data = new List<(long, byte?)>();
+        var deadlines = new List<(long, long?)>();
+        var rearmed = false;
+        chip.OutputsChanged = (value, _) => data.Add((chip.TimeNanoseconds, value));
+        chip.NextEventNanosecondsChanged = next =>
+        {
+            deadlines.Add((chip.TimeNanoseconds, next));
+            if (next is null && !rearmed)
+            {
+                rearmed = true;
+                chip.SetAddress(1);
+            }
+        };
+        chip.AdvanceTo(30);
+        Assert.Equal(new (long, byte?)[] { (4, null), (10, 0x11), (20, 0x22) }, data);
+        Assert.Equal(new (long, long?)[] { (4, 10), (10, null), (10, 20), (20, null) }, deadlines);
+        Assert.Null(chip.NextEventNanoseconds);
+        Assert.Equal(30, chip.TimeNanoseconds);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(4)]
+    [InlineData(10)]
+    public void DeadlineObserverCanReselectWithZeroIndependentOrEqualDelays(int driverDelay)
+    {
+        var contents = new byte[2048]; contents[0] = 0x11; contents[1] = 0x22;
+        var chip = new Mm52116(contents, 0, 10, driverDelay, driverDelay);
+        chip.AdvanceTo(10);
+        var edges = new List<(long, byte?, bool)>();
+        var reselected = false;
+        chip.OutputsChanged = (data, driven) => edges.Add((chip.TimeNanoseconds, data, driven));
+        chip.NextEventNanosecondsChanged = next =>
+        {
+            if (next is null && !reselected)
+            {
+                reselected = true;
+                chip.SetChipSelects(0);
+            }
+        };
+        chip.SetAddress(1);
+        chip.SetChipSelects(1);
+        chip.AdvanceTo(40);
+        Assert.Equal(new (long, byte?, bool)[]
+        {
+            (10 + driverDelay, null, false), (20 + driverDelay, 0x22, true)
+        }, edges);
+        Assert.Null(chip.NextEventNanoseconds);
+        Assert.Equal(40, chip.TimeNanoseconds);
+    }
+
+    [Fact]
     public void AllAddressesAndAllProgrammedSelectCombinationsReadTheMaskImage()
     {
         var contents = Enumerable.Range(0, 2048).Select(i => (byte)(i * 73 + (i >> 8))).ToArray();

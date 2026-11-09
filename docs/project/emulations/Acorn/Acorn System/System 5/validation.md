@@ -165,3 +165,35 @@ Captures réellement produites, inspectées et conservées sous `artifacts/Tests
 Le disque est détaché et libéré dans finally, même si le nettoyage de la carte échoue ; entrées relâchées et bande éjectée. Aucun processus RML ni surface graphique native créé. Banc temporaire supprimé et assembly régénérée sans lui. Captures finales conservées hors Git.
 
 La machine n'est pas clôturée : performance Debug insuffisante. Le réseau 24 MHz seul consomme encore environ 2,45–2,48 s hôtes pour 1 s émulée avec récepteurs 12/2 MHz dans son scénario isolé. Le coût C# des trois compteurs et des notifications demeure établi indépendamment du CPU ; le trajet série ajoute son activité. Poursuivre les optimisations logicielles conservant tous les états/fronts, puis mesurer leur effet complet. Aucune modification de précision, d'options Debug, de cadence ou de matériel n'est autorisée pour atteindre artificiellement 100 %. Aucun dynarec n'a été ajouté à la suite des questions de conception.
+
+### Mesure actuelle après publication série — 9 novembre 2026, passage 10:17
+
+System 5 natif sans RML, NOS80 et VDU80 externes déjà identifiés, 48 Kio RAM 2000–DFFF, 8271 présent, aucun disque monté. 40 champs de chauffe puis trois fenêtres de 80 champs, RunFrame et drainage audio inclus, sans compilation/test concurrent. Ce passage mesure le moniteur ; il ne répète pas l'essai BASIC/disquette déjà effectué.
+
+| Fenêtre | ms/champ | Champs/s sans limite | CPU MHz émulés | Vitesse réelle | Périodes source | Cycles CPU |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 114,775827 | 8,712636 | 0,347948 | 17,397391 % | 38 338 560 | 3 194 880 |
+| 2 | 116,842544 | 8,558526 | 0,341793 | 17,089666 % | 38 338 560 | 3 194 880 |
+| 3 | 114,562517 | 8,728858 | 0,348596 | 17,429785 % | 38 338 560 | 3 194 880 |
+
+Cadence physique 50,080128 Hz, ratio source/CPU exactement 12. La publication série apporte 6,9–10,7 % sur son montage synthétique mesuré, mais ce passage complet reste proche du précédent 17,2 % : aucun gain global significatif n'est établi par cette comparaison, et aucun 100 % n'est annoncé. Les trois compteurs 24 MHz et le trajet vidéo conservent leur activité complète. Les empreintes de framebuffer diffèrent entre fenêtres ; ce passage ne vérifie pas leur égalité entre champs. La capture finale est inspectée : moniteur « Acorn Dos », prompt * lisible.
+
+Capture réelle `20261109-101751-serial-publication-monitor-debug.bmp`, SHA256 du fichier 162FD4E97CB8FF4D3D07BE20A79393C087D912C1559AEFE60DB9F951DFB9DA12, sous TestsMachines/Acorn/Acorn System 5 et copie TestsChips/Sn74LS165/Acorn System 5. Aucun RML ni ressource graphique native créé ; cœur réinitialisé et bande éjectée dans finally. La performance complète reste ouverte.
+
+Nettoyage terminé : banc temporaire supprimé, assembly régénérée ; 131 contrôles System/audio réussis (3 s), sans sauvegardes reportées. Aucun build de livraison utilisateur lancé à ce stade.
+
+### Gain natif du bloc critique — 9 novembre 2026, passage 10:48
+
+Après optimisations du compteur, de son destinataire direct et du routage des sorties, même NOS80/VDU80 externes, RAM 2000–DFFF, 8271 présent sans média, 40 champs de chauffe puis trois fenêtres de 80 champs. Debug normal, rendu et drainage audio inclus, aucun test ni compilation concurrent.
+
+| Fenêtre | ms/champ | Champs/s sans limite | CPU MHz émulés | Vitesse réelle | Périodes source | Cycles CPU |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 102,139359 | 9,790545 | 0,390995 | 19,549760 % | 38 338 560 | 3 194 880 |
+| 2 | 102,206670 | 9,784097 | 0,390738 | 19,536885 % | 38 338 560 | 3 194 880 |
+| 3 | 101,742130 | 9,828770 | 0,392522 | 19,626088 % | 38 338 560 | 3 194 880 |
+
+Face au passage précédent à 114,775827 / 116,842544 / 114,562517 ms/champ, durée moyenne réduite d'environ 11,6 %. Ce passage inclut aussi la réduction des recalculs ROM : ne pas attribuer le gain entier au seul routage. Cadence matérielle 50,080128 Hz et ratio source/CPU exactement 12. Les trois empreintes de framebuffer sont identiques à celles du passage précédent : E9E458B2454C6AAD008F6EA0A02D78D406A9EBC80DA45D7057462F60FA99E76B, 113FD6C47E8C8E57D4731313BFC2BDCFA42DF867D1FEED1D1CB1A1CB25719108, puis la première de nouveau.
+
+Capture réellement produite et inspectée : `20261109-104807-critical-clock-path-monitor-debug.bmp`, SHA256 fichier 162FD4E97CB8FF4D3D07BE20A79393C087D912C1559AEFE60DB9F951DFB9DA12, sous TestsMachines/Acorn/Acorn System 5 et copie TestsChips/Sn74S163/Acorn System 5. Moniteur Acorn Dos et prompt lisibles, fichier identique à la capture du moniteur avant ce bloc.
+
+Nettoyage du cœur dans finally, aucun RML ni ressource graphique native créé. Banc temporaire supprimé, assembly régénérée ; 131 contrôles System/audio réussis (4 s) et 75 contrôles de composants réussis (99 ms). Aucun build de livraison utilisateur lancé. Le bloc de réduction des coûts par appel est vérifié ; System 5 reste en cours à 19,5–19,6 % Debug. Le générateur traite encore chaque période de 24 MHz et le rendu écrit chaque dot : avancement groupé et portions stables restent à traiter. Le CPU, les fréquences et les cycles matériels n'ont pas été modifiés.

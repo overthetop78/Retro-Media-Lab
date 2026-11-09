@@ -26,3 +26,10 @@ Bloc terminé : masque des entrées parallèle conservé dans la charge, appel e
   - [x] Supprimer `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/Sn74Ls165InputThroughputProbe.cs`, régénérer l'assembly et reporter les résultats dans `docs/chips/Logic/Sn74LS165.md` et le suivi System 5 avant commit.
 
 Contrôles concrets de ce chemin : modifier `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74LS165/Sn74Ls165Tests.cs` pour comparer SetClock complet et capture/résolution séparées avec SH/LD, INH, entrées parallèles partiellement connues et SER inconnu, puis vérifier la résolution d'une capture en attente par répétition du niveau haut. Ces contrôles précèdent les mesures et le nettoyage du bloc ci-dessus.
+
+- [x] Réduire les conversions répétées de la sortie série, révélées par le profil VDU80.
+  - [x] Créer `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/Sn74Ls165PublicationProbe.cs` : trois fenêtres de 24 millions de périodes du montage source/VDU, sorties stables puis motifs changeants, compte et empreinte vidéo vérifiés avant/après ; relever la référence sans activité concurrente.
+  - [x] Modifier `src/RetroMediaLab.Chips/Logic/TexasInstruments/SN74xx/SN74LS165/Services/Sn74Ls165.cs` : comparer les bits physiques de connaissance/niveau avec la dernière sortie publiée avant de construire les nullable et leur complément pour les destinataires ; préserver les sorties inconnues, captures partagées, rebranchements et feedback, sans dupliquer le registre ni supprimer de décalage. Réutiliser les contrôles existants, mesurer le même banc et retirer sans gain établi.
+  - [x] Supprimer `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/Sn74Ls165PublicationProbe.cs`, régénérer l'assembly, consigner dans les fiches registre/VDU et suivi machine ; conserver les résultats réels sous `artifacts/TestsChips/Sn74LS165/Acorn System 5/`. Ne créer aucun commit isolé pour cette petite modification.
+
+Résultats : gains 10,7 % / 6,9 %, empreintes et comptes exacts, 71 contrôles réussis après nettoyage (98 ms). Banc supprimé, preuve conservée hors Git et fiche actualisée ; pas de nouveau petit commit.

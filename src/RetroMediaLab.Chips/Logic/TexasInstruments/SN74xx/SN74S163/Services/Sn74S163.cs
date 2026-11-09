@@ -11,29 +11,29 @@ public sealed class Sn74S163 : ISn74S163
     private bool _clearHigh = true;
     private bool _loadHigh = true;
     private bool _enableP;
-    private bool _enableT;
+    private byte _enableTMask;
     private byte _data;
-    private byte _publishedCount;
-    private bool _publishedCarry;
+    private byte _publishedOutputs;
     private bool _clockPending;
     private byte _capturedCount;
     private long _inputClockCount;
     private bool _clockHigh;
     private byte _count;
+    private Action<byte, bool>? _outputsChanged;
 
     public long ClockFrequency { get; }
     public long InputClockCount => _inputClockCount;
     public bool ClockHigh => _clockHigh;
     public byte Count => _count;
-    public bool Carry => _enableT && _count == C.CounterMask;
-    public Action<byte, bool>? OutputsChanged { get; set; }
+    public bool Carry => ((_count + 1) & _enableTMask) != 0;
+    public Action<byte, bool>? OutputsChanged { get => _outputsChanged; set => _outputsChanged = value; }
 
     public Sn74S163(long clockFrequency, byte initialCount = 0)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(clockFrequency);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(initialCount, C.CounterMask);
         ClockFrequency = clockFrequency;
-        _count = _publishedCount = initialCount;
+        _count = _publishedOutputs = initialCount;
     }
 
     public void SetClear(bool high) => _clearHigh = high;
@@ -43,9 +43,9 @@ public sealed class Sn74S163 : ISn74S163
     public void SetEnable(bool p, bool t)
     {
         _enableP = p;
-        _enableT = t;
+        _enableTMask = t ? C.CarryMask : (byte)0;
         // ENT qualifies RCO combinationally, even if ENP inhibits counting.
-        if (!_clockPending) PublishOutputs();
+        if (!_clockPending) ResolveClock();
     }
 
     public void SetClock(bool high)
@@ -70,7 +70,8 @@ public sealed class Sn74S163 : ISn74S163
     {
         _clockHigh = true;
         _inputClockCount = checked(_inputClockCount + 1);
-        _capturedCount = NextCount();
+        _capturedCount = !_clearHigh ? (byte)0 : !_loadHigh ? _data
+            : _enableP && _enableTMask != 0 ? (byte)((_count + 1) & C.CounterMask) : _count;
         _clockPending = true;
     }
 
@@ -80,10 +81,17 @@ public sealed class Sn74S163 : ISn74S163
 
     internal void ResolveClock()
     {
-        if (!_clockPending) return;
-        _count = _capturedCount;
-        _clockPending = false;
-        PublishOutputs();
+        if (_clockPending)
+        {
+            _count = _capturedCount;
+            _clockPending = false;
+        }
+        // RCO is ENT AND all four count bits: count+1 projects that condition
+        // into bit 4. Compare the resolved pins before decoding the callback.
+        var outputs = (byte)(_count | ((_count + 1) & _enableTMask));
+        if (_publishedOutputs == outputs) return;
+        _publishedOutputs = outputs;
+        _outputsChanged?.Invoke(_count, (outputs & C.CarryMask) != 0);
     }
 
     /// <summary>One complete CLK period starting and ending low.</summary>
@@ -101,12 +109,12 @@ public sealed class Sn74S163 : ISn74S163
         while (clocks > 0)
         {
             var next = NextCount();
-            if (OutputsChanged is null || next == _count)
+            if (_outputsChanged is null || next == _count)
             {
                 _inputClockCount = checked(_inputClockCount + clocks);
                 _count = !_clearHigh ? (byte)0 : !_loadHigh ? _data
-                    : _enableP && _enableT ? (byte)((_count + (clocks & C.CounterMask)) & C.CounterMask) : _count;
-                PublishOutputs();
+                    : _enableP && _enableTMask != 0 ? (byte)((_count + (clocks & C.CounterMask)) & C.CounterMask) : _count;
+                ResolveClock();
                 return;
             }
             ClockPeriod();
@@ -122,19 +130,11 @@ public sealed class Sn74S163 : ISn74S163
     }
 
     private byte NextCount() => !_clearHigh ? (byte)0 : !_loadHigh ? _data
-        : _enableP && _enableT ? (byte)((_count + 1) & C.CounterMask) : _count;
+        : _enableP && _enableTMask != 0 ? (byte)((_count + 1) & C.CounterMask) : _count;
 
     private void RequireLowClock()
     {
         if (_clockHigh) throw new InvalidOperationException(nameof(ClockHigh));
     }
 
-    private void PublishOutputs()
-    {
-        var carry = Carry;
-        if (_publishedCount == _count && _publishedCarry == carry) return;
-        _publishedCount = _count;
-        _publishedCarry = carry;
-        OutputsChanged?.Invoke(_count, carry);
-    }
 }
