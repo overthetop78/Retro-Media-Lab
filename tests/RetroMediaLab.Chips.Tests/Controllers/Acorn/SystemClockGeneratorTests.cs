@@ -135,14 +135,25 @@ public sealed class SystemClockGeneratorTests
     {
         var grouped = new SystemClockGenerator();
         var unit = new SystemClockGenerator();
+        var levels = new SystemClockGenerator();
         var first = new List<(long, int, bool)>();
         var second = new List<(long, int, bool)>();
+        var third = new List<(long, int, bool)>();
         Connect(grouped, (frequency, high) => first.Add((grouped.InputClockCount, frequency, high)));
         Connect(unit, (frequency, high) => second.Add((unit.InputClockCount, frequency, high)));
+        Connect(levels, (frequency, high) => third.Add((levels.InputClockCount, frequency, high)));
         grouped.AdvanceClocks(periods);
-        for (var i = 0; i < periods; i++) unit.Clock();
+        for (var i = 0; i < periods; i++)
+        {
+            unit.Clock();
+            levels.SetOscillator(true);
+            levels.SetOscillator(false);
+        }
         Assert.Equal(second, first);
+        Assert.Equal(third, first);
         Assert.Equal(Levels(unit), Levels(grouped));
+        Assert.Equal(Levels(levels), Levels(grouped));
+        Assert.Equal(levels.InputClockCount, grouped.InputClockCount);
         Assert.Equal(unit.Ic3.Count, grouped.Ic3.Count);
         Assert.Equal(unit.Ic4.Count, grouped.Ic4.Count);
     }

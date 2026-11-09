@@ -68,33 +68,51 @@ public sealed class SystemClockGenerator : ISystemClockGenerator
     public void SetOscillator(bool high)
     {
         if (_oscillatorHigh == high) return;
-        _oscillatorHigh = high;
-        if (high) _inputClockCount = checked(_inputClockCount + 1);
-        _ic2.CaptureClock(high);
-        _ic3.CaptureClock(high);
-        _ic4.CaptureClock(high);
-        // The falling edge still reaches each CLK pin, but this positive-edge
-        // network has no pending capture or output mutation to resolve on it.
-        if (!high) return;
+        if (high) RisingClock();
+        else FallingClock();
+    }
+
+    private void RisingClock()
+    {
+        _oscillatorHigh = true;
+        _inputClockCount = checked(_inputClockCount + 1);
+        // All receivers start low: the source owns their shared CLK and every
+        // preceding falling edge reached them. Capture before resolving outputs.
+        _ic2.CaptureRisingClock();
+        _ic3.CaptureRisingClock();
+        _ic4.CaptureRisingClock();
         _ic2.ResolveClock();
         _ic3.ResolveClock();
         _ic4.ResolveClock();
         PublishOutputs();
     }
 
+    private void FallingClock()
+    {
+        _oscillatorHigh = false;
+        _ic2.ReceiveFallingClock();
+        _ic3.ReceiveFallingClock();
+        _ic4.ReceiveFallingClock();
+    }
+
     /// <summary>One complete source period, starting and ending low.</summary>
     public void Clock()
     {
         if (_oscillatorHigh) throw new InvalidOperationException(nameof(OscillatorHigh));
-        SetOscillator(true);
-        SetOscillator(false);
+        ClockPeriod();
     }
 
     public void AdvanceClocks(long clocks)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(clocks);
         if (_oscillatorHigh) throw new InvalidOperationException(nameof(OscillatorHigh));
-        for (long clock = 0; clock < clocks; clock++) Clock();
+        for (long clock = 0; clock < clocks; clock++) ClockPeriod();
+    }
+
+    private void ClockPeriod()
+    {
+        RisingClock();
+        FallingClock();
     }
 
     private void Ic2Outputs(byte count, bool carry)

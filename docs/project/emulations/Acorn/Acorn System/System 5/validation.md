@@ -106,3 +106,19 @@ Code de production au commit 2480c530d, incluant les corrections PH0 du 6502, le
 Pourcentage = temps de référence réellement écoulé dans la carte / durée hôte × 100, sans limiteur. Fréquence nominale 2 MHz ; les compteurs CPU avancent du même nombre de cycles que la référence dans chaque fenêtre. 3 194 880 cycles par fenêtre ; la machine reste loin de 100 %, optimisation du générateur encore ouverte. Le compteur System 1 présente son afficheur, les autres cartes leur vidéo ; un appel de présentation n'est pas assimilé à un front d'horloge de puce. Pas de mesure Release dans ce passage. Ce contrôle de débit ne remplace pas les validations fonctionnelles déjà consignées.
 
 Diagnostic temporaire SystemCurrentPerformanceProbe réussi ; entrées relâchées, disques détachés, bande éjectée et audio drainé dans finally. La source temporaire est retirée après consignation, puis l'assembly de tests est régénérée. Aucun fichier média, fenêtre ni processus applicatif créé.
+
+### Factorisation des opérations de fronts, gain actuel — 9 novembre 2026
+
+Les SN74S163 et le générateur utilisent les mêmes opérations canoniques pour les niveaux explicites et les périodes complètes. Les préconditions publiques restent vérifiées ; aucun front matériel, état, compteur, phase ou notification raccordée n'est supprimé. 34 contrôles fonctionnels compteur/générateur/WAIT-READY passent, ainsi que 177 contrôles System/disque/audio.
+
+Mesure actuelle Debug hors RML au même NOS80, sans média ni commande, 40 présentations de chauffe puis trois fenêtres de 80, vidéo/audio inclus :
+
+| Fenêtre | ms/présentation | présentations/s libres | MHz CPU effectifs | Vitesse matérielle |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 76,259704 | 13,113085 | 0,523684 | 26,184209 % |
+| 2 | 75,102638 | 13,315112 | 0,531752 | 26,587615 % |
+| 3 | 76,012375 | 13,155753 | 0,525388 | 26,269407 % |
+
+Chacune compte 38 338 560 clocks source, 3 194 880 cycles CPU et 50,080128 Hz matériels, ratio source/CPU exactement 12. Référence identique avant les deux factorisations : 89,943281 / 87,672650 / 88,595791 ms par présentation ; baisse moyenne de durée hôte d'environ **14,6 %**. La mesure précédente à BASIC n'est pas utilisée pour cette comparaison. Le réseau isolé avec sorties 1/2 MHz observées atteint 9,246456–9,415594 millions de périodes/s contre 24 MHz requis : son coût de traitement reste limitant. Détails avant/après dans la fiche SystemClock. La revue des coûts reste ouverte, aucune clôture de machine ou prétention de cadence nominale.
+
+Vérification logicielle après la mesure, même instance : disque BASIC ouvert en lecture seule via EmulationSdk, CAT puis BASIC, 4 608 octets lus ; programme C000 de 4 096 octets exactement conforme, SHA1 6571FCA3E86E6DC99C2B56481979FBC24615BFF2 ; PRINT 12+34 affiche 46. Capture réelle inspectée `artifacts/TestsMachines/Acorn/Acorn System 5/20261109-system5-canonical-edges.bmp`, copie `artifacts/TestsChips/Mos6502/Acorn System 5/20261109-canonical-edges.bmp` : même SHA256 53D97862D9313589B6DDF4D6F149F094038FE64A8FF6C3C8F17F0D5485613A89 que les captures précédentes, sans retouche. Source/moniteur et périphériques conservent leur activité. Disque détaché et libéré dans finally, entrées relâchées, bande éjectée. Diagnostics temporaires supprimés après consignation et assemblies régénérées sans eux ; captures finales conservées hors Git. Pas de build de livraison ni de comparaison Release dans ce bloc.
