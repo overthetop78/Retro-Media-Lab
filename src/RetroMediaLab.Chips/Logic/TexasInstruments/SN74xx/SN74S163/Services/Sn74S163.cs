@@ -60,12 +60,23 @@ public sealed class Sn74S163 : ISn74S163
     {
         if (_clockHigh == high) return;
         if (_clockPending) throw new InvalidOperationException(nameof(_clockPending));
-        _clockHigh = high;
-        if (!high) return;
+        if (high) CaptureRisingClock();
+        else ReceiveFallingClock();
+    }
+
+    // The owner of a complete period has already established CLK low and no
+    // pending edge. Shared sources capture every receiver before resolving any.
+    internal void CaptureRisingClock()
+    {
+        _clockHigh = true;
         _inputClockCount = checked(_inputClockCount + 1);
         _capturedCount = NextCount();
         _clockPending = true;
     }
+
+    // Used only after the rising edge has been resolved. This real falling edge
+    // updates the pin; positive-edge flip-flops do not sample their data again.
+    internal void ReceiveFallingClock() => _clockHigh = false;
 
     internal void ResolveClock()
     {
@@ -79,8 +90,7 @@ public sealed class Sn74S163 : ISn74S163
     public void Clock()
     {
         RequireLowClock();
-        SetClock(true);
-        SetClock(false);
+        ClockPeriod();
     }
 
     /// <summary>Complete periods with stable inputs. Every connected output transition remains observable.</summary>
@@ -99,9 +109,16 @@ public sealed class Sn74S163 : ISn74S163
                 PublishOutputs();
                 return;
             }
-            Clock();
+            ClockPeriod();
             clocks--;
         }
+    }
+
+    private void ClockPeriod()
+    {
+        CaptureRisingClock();
+        ResolveClock();
+        ReceiveFallingClock();
     }
 
     private byte NextCount() => !_clearHigh ? (byte)0 : !_loadHigh ? _data

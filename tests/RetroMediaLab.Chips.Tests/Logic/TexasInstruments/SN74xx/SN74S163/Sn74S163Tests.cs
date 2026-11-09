@@ -5,6 +5,58 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74S163;
 public sealed class Sn74S163Tests
 {
     [Fact]
+    public void CompletePeriodsMatchExplicitLevelsWithFeedbackOnTheSameEdge()
+    {
+        var periods = new Sn74S163(24_000_000, 13);
+        var levels = new Sn74S163(24_000_000, 13);
+        var periodEdges = new List<(long, byte, bool, bool)>();
+        var levelEdges = new List<(long, byte, bool, bool)>();
+        void Connect(Sn74S163 chip, List<(long, byte, bool, bool)> edges)
+        {
+            chip.SetEnable(true, true);
+            chip.OutputsChanged = (count, carry) =>
+            {
+                edges.Add((chip.InputClockCount, count, carry, chip.ClockHigh));
+                chip.SetClear(count != 7);
+                chip.SetData((byte)((count + 3) & 15));
+                chip.SetLoad(count != 11);
+            };
+        }
+        Connect(periods, periodEdges);
+        Connect(levels, levelEdges);
+        for (var clock = 0; clock < 133; clock++)
+        {
+            periods.Clock();
+            levels.SetClock(true);
+            levels.SetClock(true);
+            levels.SetClock(false);
+            levels.SetClock(false);
+            Assert.Equal(levels.Count, periods.Count);
+            Assert.Equal(levels.Carry, periods.Carry);
+            Assert.Equal(levels.InputClockCount, periods.InputClockCount);
+            Assert.False(periods.ClockHigh);
+        }
+        Assert.Equal(levelEdges, periodEdges);
+        Assert.All(periodEdges, edge => Assert.True(edge.Item4));
+    }
+
+    [Fact]
+    public void CompletePeriodsRejectHighClockAndGeneralInputRejectsUnresolvedEdge()
+    {
+        var chip = new Sn74S163(24_000_000);
+        chip.SetClock(true);
+        Assert.Throws<InvalidOperationException>(() => chip.Clock());
+        Assert.Throws<InvalidOperationException>(() => chip.AdvanceClocks(1));
+        chip.SetClock(false);
+        chip.CaptureClock(true);
+        Assert.Throws<InvalidOperationException>(() => chip.SetClock(false));
+        chip.ResolveClock();
+        chip.SetClock(false);
+        Assert.False(chip.ClockHigh);
+        Assert.Equal(2, chip.InputClockCount);
+    }
+
+    [Fact]
     public void SharedEdgePublishesOnlyTheResolvedCountAndCarry()
     {
         var chip = new Sn74S163(24_000_000, 14);
