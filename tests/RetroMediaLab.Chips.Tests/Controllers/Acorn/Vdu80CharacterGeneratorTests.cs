@@ -5,6 +5,81 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Acorn;
 
 public sealed class Vdu80CharacterGeneratorTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SettledZeroPeriodsHandleLoadInternallyButStopBeforeRomAndCursor(bool cursor)
+    {
+        var image = new byte[2048];
+        image[16] = 0xa8;
+        var grouped = new Vdu80CharacterGenerator(image);
+        var unit = new Vdu80CharacterGenerator(image);
+        var groupEvents = new List<(long, bool?)>();
+        var unitEvents = new List<(long, bool?)>();
+        var groupQualification = new List<(long, bool)>();
+        var unitQualification = new List<(long, bool)>();
+        grouped.VideoChanged = level => groupEvents.Add((grouped.TimeNanoseconds, level));
+        unit.VideoChanged = level => unitEvents.Add((unit.TimeNanoseconds, level));
+        grouped.StableClockCandidateChanged = level => groupQualification.Add((grouped.TimeNanoseconds, level));
+        unit.StableClockCandidateChanged = level => unitQualification.Add((unit.TimeNanoseconds, level));
+        for (var window = 0; window < 24; window++)
+        {
+            foreach (var video in new[] { unit, grouped })
+            {
+                video.SetDisplayEnabled(true);
+                video.SetCharacterClock((window & 1) == 0);
+                for (var clock = 0; clock < 3; clock++)
+                {
+                    video.SetDotClock(true); video.SetDotClock(false);
+                }
+            }
+        }
+        Assert.True(grouped.StableClockCandidate);
+        foreach (var video in new[] { unit, grouped })
+        {
+            video.SetCharacterData(1);
+            video.SetCharacterClock(true); // NL+20 ns; changed ROM word at +450 ns.
+            if (cursor) video.SetCursor(true); // RC crossing before the ROM event.
+        }
+        var accepted = grouped.AdvanceStableDotClocks(3);
+        Assert.Equal(cursor ? 2 : 3, accepted);
+        AdvanceUnit(accepted);
+        AssertEquivalent();
+        if (!cursor)
+        {
+            grouped.SetCharacterClock(false); unit.SetCharacterClock(false);
+            accepted = grouped.AdvanceStableDotClocks(3);
+            Assert.Equal(2, accepted); // Complete periods strictly before +450 ns.
+            AdvanceUnit(accepted);
+            AssertEquivalent();
+        }
+        var time = grouped.TimeNanoseconds;
+        Assert.Equal(0, grouped.AdvanceStableDotClocks(1));
+        Assert.Equal(time, grouped.TimeNanoseconds);
+        // The real boundary still goes through explicit edges and notifications.
+        grouped.SetDotClock(true); grouped.SetDotClock(false);
+        AdvanceUnit(1);
+        AssertEquivalent();
+
+        void AdvanceUnit(int count)
+        {
+            for (var clock = 0; clock < count; clock++)
+            {
+                unit.SetDotClock(true); unit.SetDotClock(false);
+            }
+        }
+        void AssertEquivalent()
+        {
+            Assert.Equal(unit.TimeNanoseconds, grouped.TimeNanoseconds);
+            Assert.Equal(unit.DotClockCount, grouped.DotClockCount);
+            Assert.Equal(unit.CharacterClockCount, grouped.CharacterClockCount);
+            Assert.Equal(unit.VideoWhite, grouped.VideoWhite);
+            Assert.Equal(unit.StableClockCandidate, grouped.StableClockCandidate);
+            Assert.Equal(unitEvents, groupEvents);
+            Assert.Equal(unitQualification, groupQualification);
+        }
+    }
+
     [Fact]
     public void StableDotPeriodsMatchExplicitEdgesAcrossChangingInputsAndAllLocalDeadlines()
     {

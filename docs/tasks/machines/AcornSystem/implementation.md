@@ -382,5 +382,14 @@ Bloc des intervalles stables raccordé et vérifié : 74,69–76,98 ms/champ et 
 
 Bloc vérifié : 73,052154 ms/champ en moyenne, 27,34 % Debug ; durée réduite de 3,9 % face au bloc stable précédent. CPU réellement mesuré et référence égaux ici, libellé de la référence précisé dans la validation. Images inchangées, 96 contrôles composants et 135 System/audio réussis. Bancs temporaires supprimés, aucun build de livraison. Machine toujours en cours.
 
-- [ ] Enregistrer le bloc de simplification des captures et intervalles vérifié.
-  - [ ] Mettre à jour `.git/index` et créer un commit cohérent des captures compactes, du contrôle des périodes et du calcul vidéo avec leurs preuves documentées ; exclure tous les bancs et artefacts ignorés.
+- [x] Enregistrer le bloc de simplification des captures et intervalles vérifié.
+  - [x] Mettre à jour `.git/index` et créer un commit cohérent des captures compactes, du contrôle des périodes et du calcul vidéo avec leurs preuves documentées ; exclure tous les bancs et artefacts ignorés.
+
+- [x] Mesurer l'admission des événements vidéo internes sur la machine entière.
+  - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System5LocalEventsProbe.cs` : scénario natif NOS80/VDU80 inchangé, 40 champs de chauffe puis 3 × 80, 8271 et RAM réels, rendu/audio inclus ; relever source, référence, cycles CPU effectifs, empreintes et capture réelle. Libérer le cœur dans finally ; comparer au passage compact à 73,052154 ms/champ sans tests concurrents.
+  - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System5LocalEventsProbe.cs`, régénérer l'assembly et consigner résultat, limites et preuve de champ dans la validation machine et la fiche VDU80 ; retirer le nouveau parcours en l'absence de gain utile. Ajouter le principe réutilisable au tableau seulement après gain établi.
+
+Passage local vidéo retenu : 60,067840 ms/champ, 33,24 % Debug ; réduction de durée 17,8 % face au passage précédent. Images et cycles réels CPU/source identiques, 98 contrôles composants et 135 System/audio réussis. Banc retiré et assembly régénérée ; preuves et conditions dans system5-validation.md. Performance et clôture machine encore ouvertes.
+
+- [ ] Enregistrer le bloc vidéo établi puis poursuivre les coûts restant mesurables.
+  - [ ] Mettre à jour `.git/index` et créer le commit du traitement des événements vidéo internes, de ses contrôles et de sa documentation ; exclure les bancs et preuves ignorés.
