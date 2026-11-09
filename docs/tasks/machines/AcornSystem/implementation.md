@@ -154,7 +154,7 @@ System 1 : composants et bus relus (`Cpu6502.Clock.cs`, `.Pins.cs`, `.Interrupts
 - [ ] Terminer la revue System 2, puis System 3 avec ses deux CPU, System 4 et System 5.
   - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 2/validation.md` : consigner le bilan du câblage 6502/8154/VDU/Tape après la revue de leurs fichiers et les corrections établies.
   - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 3/validation.md` : consigner successivement la revue 6502/8271 puis 6809/VIA, avec les corrections établies ajoutées au suivi avant leur réalisation.
-  - [ ] Modifier `docs/project/emulations/Acorn/Acorn System/System 4/validation.md` : consigner les raccordements vérifiés et leurs différences réelles par rapport au System 3.
+  - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 4/validation.md` : consigner les raccordements vérifiés et leurs différences réelles par rapport au System 3.
   - [ ] Modifier `docs/project/emulations/Acorn/Acorn System/System 5/validation.md` : consigner ensuite la revue de la carte rapide et du générateur physique, après réalisation des corrections de propriété temporelle définies avant modification.
 
 Correction télétexte du 9 novembre : le niveau TR6 dupliqué dans SystemVideo est supprimé. Le SAA5050 conserve sa phase et restitue les douze RGB successifs par ClockHalfDots ; les coordonnées de présentation restent dans le module. Groupe existant AcornEmuSystemTests/AcornEmuSystemRamIoTests : **75 réussites Debug, zéro échec ni ignoré, environ 1 s**. Ce temps est celui des tests fonctionnels, pas une mesure de débit. Aucun nouveau chronométrage de machine ou gain chiffré revendiqué.
@@ -234,3 +234,14 @@ Nettoyage du diagnostic 6809 terminé, assembly régénérée sans dépendances 
 Bootstrap actuel réussi et capture inspectée : deux secteurs FM, 512 octets, programme 6809 exécuté, 2010=5A et BOOT OK. Premier diagnostic corrigé pour transmettre D majuscule au moniteur ; aucun changement de production nécessaire.
 
 Diagnostic de bootstrap supprimé et assembly régénérée sans dépendances, code 0 (quatre avertissements préexistants, aucune erreur). Les deux preuves BMP finales restent conservées hors Git. Revue System 3 des deux cartes effectuée ; suite dans l’ordre : System 4, puis générateur physique System 5.
+
+
+- [x] Revoir et vérifier le System 4 actuel après le System 3.
+  - [x] Créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System4NativeProbe.cs` : construire le profil System 4 par SystemFunctions.Create avec ses ROM existantes, ouvrir l'image BASIC existante en lecture seule par le SDK, vérifier catalogue/chargement exact/exécution/calcul sur le port 0, déplacer le même média vers le port 1 à chaud et vérifier CAT1 et ses octets lus ; relever trois fenêtres de 160 champs avec vidéo/audio et détacher/libérer toutes les ressources possédées dans finally.
+  - [x] Créer les preuves finales `artifacts/TestsMachines/Acorn/Acorn System 4/20261109-system4-current.bmp` et sa copie `artifacts/TestsChips/Intel8271/Acorn System 4/20261109-current.bmp` depuis le framebuffer natif, sans retouche.
+  - [x] Modifier `docs/project/emulations/Acorn/Acorn System/System 4/validation.md` et `docs/chips/Controllers/Intel8271.md` : consigner les différences réelles de profil avec System 3, les fichiers de câblage communs relus, les résultats actuels et leurs unités ; ne pas réécrire les puces communes sans défaut établi.
+  - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/System4NativeProbe.cs` et régénérer l'assembly sans le diagnostic externe ; conserver uniquement les captures finales prévues hors Git.
+
+System 4 actuel : chargement exact BASIC, calcul 46, CAT1 après déplacement à chaud du média, 512 octets lus sur le second port. Trois fenêtres Debug 10,562988 / 10,471156 / 11,107172 ms par champ (180,064–191,001 %). Capture native actuelle inspectée. Aucun nouveau changement de production nécessaire.
+
+Diagnostic System 4 supprimé, assembly régénérée sans dépendances : code 0, aucune erreur, quatre avertissements préexistants. Suite : réalisation du générateur physique System 5, avant ses nouveaux essais de carte.

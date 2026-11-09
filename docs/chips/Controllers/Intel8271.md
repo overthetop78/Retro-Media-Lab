@@ -236,3 +236,8 @@ Confirmation invitée actuelle System 3/6502 : CAT et LOAD BASIC par la vraie im
 ## Bootstrap actuel System 3/6809 — 9 novembre 2026
 
 Deux secteurs FM de 256 octets, descripteur FF42 du moniteur et programme 6809, transmis depuis MemoryTrackDisk par l'encodeur MediaEngine et les broches normales du contrôleur. La commande invitée D lit exactement 512 octets ; les 256 octets du programme chargé sont contrôlés, puis son exécution écrit 2010=5A et BOOT OK en RAM vidéo. Passage final réussi, aucune modification de production du 8271. Capture actuelle inspectée et portée du média documentées dans les fiches MC6809/System 3 ; ne pas confondre ce diagnostic en mémoire avec une distribution de système d'exploitation. Le diagnostic temporaire est supprimé après consignation.
+
+
+## Deux ports System 4 actuels — 9 novembre 2026
+
+Contrôle par la fabrique normale SystemFunctions.Create : CAT et LOAD BASIC sur le port 0 (4608 octets lus, empreinte des 4096 octets chargés exacte), exécution BASIC et calcul 46, puis déplacement du média en lecture seule vers le port 1 sans reset et *CAT1 (512 octets, drive 1 affiché). Aucun changement de production du contrôleur. Capture actuelle inspectée : `artifacts/TestsChips/Intel8271/Acorn System 4/20261109-current.bmp`, copie de la même exécution conservée sous TestsMachines. Cadence carte complète Debug après lecture : 10,562988 / 10,471156 / 11,107172 ms par champ, soit 180,064–191,001 % du profil 1 MHz. Ces valeurs ne sont ni le débit isolé du 8271 ni une mesure de lecture continue. Montage, tableau et nettoyage détaillés dans la fiche System 4.
