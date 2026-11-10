@@ -1355,3 +1355,110 @@ Cadence matérielle19,968 ms/champ (50,080 Hz), CPU nominal2 MHz. Nouveau calcul
 Preuves :20261110-line-prefix-native.{json,md,trx} dans artifacts/TestsMachines/Acorn/Acorn System 5.25 contrôles privés réussis en2 s, dont deux comparaisons directes16/ligne avec états CRTC/VIA et clocks ; autres contrôles existants couvrent clavier, IRQ, écritures vidéo et WAIT/DMA. Banc temporaire supprimé, validation complète sans diagnostic en cours. Aucun changement de puce dans ce bloc.
 
 Validation finale du bloc :278 contrôles System/carte/8271 réussis en1m28 s (`20261110-line-prefix-integration.trx`), puis25 contrôles privés en1 s après renforcement du scénario sans accès vidéo raccourcissant les portions (`20261110-line-prefix-private-final.trx`). Les contrôles existants comparent transferts lecture/écriture/relecture, flux et NMI avec phase CPU. Banc supprimé et assembly reconstruite sans lui, module Acorn0 erreur/0 avertissement ; quatre avertissements locaux préexistants. Aucun processus possédé conservé, aucun changement matériel ni modification d’App/SDK/MediaEngine. Gain retenu sans clôturer la machine.
+
+### Coûts de carte après regroupement par ligne —10 novembre2026
+Trois relevés diagnostiques distincts, une paire NOS80/VDU80 par relevé, protocole CAT/BASIC/PRINT46 et120 champs alternés,48 moteur actif/1 transition/71 arrêté. Cœurs/médias libérés et empreinte du SSD identique. Les sondes chronomètrent des racines AdvancePart avec leurs callbacks ; ce sont des temps muraux, pas des temps CPU propres. Les sous-portées ne s’ajoutent jamais à leur parent.
+Premier relevé (`20261110-current-board-costs`) : actif, total carte21,197 ms/champ, séparateur3,444 (7718,58 appels), latch10,412 (14073,88), connecteur5,394 (7257,42), diviseur0,662, timeout0,096 et résiduel1,190. Hors carte21,349.312 AdvanceTo/champ. Champ complet sans/avec sonde41,187→42,546 (+3,299 %) ; arrêté22,301→21,307, variation qui interdit d’en déduire un coût d’instrumentation exact.
+Deuxième relevé (`20261110-current-latch-costs`) : racine latch10,626, dont callback porte0/reset7,816 ms ; portes1/2/3 respectivement0,225/0,215/0,335. Ce callback reset appelle les compteurs et leurs notifications imbriquées. Actif complet40,919→41,548 (+1,537 %), arrêté19,911→19,927 (+0,081 %). Aucune optimisation mesurée dans ce passage.
+Troisième relevé (`20261110-current-reset-costs`) : racine latch11,965, callback reset9,245 ; avances IC14/IC7 respectivement1,957/1,281 ms et entrées reset IC14/IC7 3,183/1,873 ms, chacune7257,42 appels/champ. Ces quatre portées descendent du callback reset et ne sont pas quatre puces supplémentaires. Actif complet38,935→42,457 (+9,047 %), arrêté21,387→21,609 (+1,038 %) : les scopes fins ajoutent un coût visible. Les sorties/cycles/données comparés correspondent ; aucune attribution de pourcentage CPU propre.
+Les trois contrôles natifs réussissent en24/23/24 s. Les rapports.{json,md,trx} sont sous artifacts/TestsMachines/Acorn/Acorn System 5. Les sources de sondes/banc sont supprimées et les deux fichiers de carte rétablis àaae18f081. La cible suivante est la publication d’échéances pendant les changements d’entrée et de description d’horloge, pas la fonction NAND seule. Ces relevés ne prouvent aucun gain ni une cadence nominale. Aucun changement d’App/SDK/MediaEngine.
+
+### Candidats locaux retirés après comparaison —10 novembre2026
+Publication des échéances après mutation93 : première mesure33,05314→31,74712 ms/champ (-3,951 %), mais le mode témoin republiait une seconde fois au finally. Passage conservé sous20261110-input-deadline-native-initial, non retenu comme comparaison finale. Après correction du témoin : trois paires29,77605→28,82508 ;33,18722→32,13013 ;27,37164→26,71944. Moyenne360 champs30,11164→29,22488 (-2,945 %), actif42,89544→40,58512 (-5,386 %), arrêté21,50947→21,58541 (+0,353 %). Annonces IC7 comptées hors chronométrage33 452→22 952 ; ce n’est pas un temps économisé. Rapports20261110-input-deadline-native.{json,md,trx}.
+Combinaison avec résolution directe des intervalles non observés : trois paires31,41690→30,37429 ;28,98659→28,09925 ;29,29092→28,70335. Moyenne360 champs29,89813→29,05896 (-2,807 %), actif41,09202→38,97042 (-5,163 %), arrêté22,34068→22,36868 (+0,125 %). Même protocole trois paires natives NOS80/BASIC que le passage précédent, RunFrame/DrainAudio inclus, comparaisons à chaque champ hors temps, SSD inchangé après libération ; borne immuable de settling commune aux deux modes. Contrôle réussi en1m14 s, rapports20261110-direct-input-native.{json,md,trx}. Aucun gain supplémentaire utile de la résolution directe démontré. Ces relevés différents ne permettent pas de soustraire leurs moyennes pour attribuer un coût isolé.
+Les deux candidats sont retirés : les deux Services93 rétablis exactement àaae18f081, aucun flag de candidat conservé et banc temporaire supprimé.32 contrôles93 et63 de carte passaient avec les candidats ; seul le contrôle autonome de l’échéance finale reçue après reset/reconfiguration est conservé, sans imposer leur nouvelle architecture au test. Aucun gain ajouté au tableau des directives. La mesure suivante porte sur le coût effectif des reconstructions sur la référence restaurée, avant toute nouvelle modification de production ; le travail doit ensuite viser la chaîne complète de propagation.
+
+### Coût direct des reconstructions sur la référence restaurée —10 novembre2026
+Source93 deaae18f081, sans les candidats. Une paire native NOS80/BASIC,40 champs de chauffe, CAT512/BASIC4096/PRINT46, dix champs de stabilisation et un champ séparé, puis120 champs alternés. Les deux93 IC7/IC14 sont instrumentés seulement dans la machine mesurée. Comparaison CPU/RAM/vidéo/audio/transferts hors temps et empreinte SSD après fermeture ; test réussi en23 s. Rapport20261110-reconstruction-costs.{json,md,trx}. Catégories non imbriquées dans ces compteurs ; pas d’extrapolation ni d’attribution de temps CPU propre.
+
+| Catégorie, moteur actif | Appels/champ | ms/champ instrumentés |
+|---|---:|---:|
+|Regroupements des sections acceptés|12249,42|1,31768|
+|Regroupements des sections refusés|58119,96|2,96436|
+|Regroupements QA acceptés|7257,42|0,54400|
+|Regroupements QA refusés|50862,54|2,02018|
+|Réponses/ripple sans observation|1363,29|0,08782|
+|Somme des portées|—|6,93404|
+
+La dernière portée est limitée au masque observé nul, sans écouteur d’échéance interne et avec description QA absente ou déjà active ; aucune sortie ni description ne peut notifier un destinataire pendant cette reconstruction. Elle ne mesure ni tous les usages du93 ni les portées avec sortie observée. Les regroupements acceptés totalisent1,86168 ms ; les refus4,98454 ms comprennent qualifications et instrumentation. Ne pas présenter leur suppression comme un gain possible de4,98 ms ni les ajouter au temps de carte déjà mesuré dans les relevés précédents.
+Calibration du champ complet sans/avec instrumentation : actif39,44301→45,58690 ms (+15,577 %), arrêté20,13804→19,81672 (-1,596 %, variation), moyenne27,90240→30,19011 (+8,199 %). La surcharge visible empêche de transformer les portées en coûts CPU natifs ou de soustraire simplement les durées. Néanmoins les seules réponses sans observation visées par le candidat ne constituent pas un goulet de plusieurs ms ; cette piste locale est arrêtée. La représentation directe n’a d’ailleurs pas amélioré le gain global au-delà du candidat de métadonnées.
+Sondes et banc supprimés, Services93 rétablis exactement àaae18f081. Prochain travail : refonte de la chaîne de propagation des reset et des descriptions IC14→IC7→NAND→Data Window, avec comparaison du parcours complet ; les relevés de carte identifient les appels imbriqués, pas une preuve d’un gain architectural déjà obtenu. Conserver les états propres aux composants, leurs entrées/horloges et toutes les transitions observables. Aucun nouveau matériel ni modification d’App/SDK/MediaEngine ; machine non clôturée.
+
+Validation finale après retrait des candidats et sondes :31 contrôles93 réussis en1 s (`20261110-restored-input-chip.trx`) et63 contrôles carte en16 s (`20261110-restored-input-board.trx`). Sources de production93 identiques àaae18f081, module Acorn reconstruit0 erreur/0 avertissement, assembly de tests sans banc ; quatre avertissements locaux préexistants. Aucun testhost ni diagnostic possédé conservé. Les résultats négatifs restent documentés et une assertion d’échéance finale reçue reste dans le test autonome existant.
+
+### Transport QA complet évalué puis retiré —10 novembre2026
+La description candidate couvrait niveau maintenu, dernier front du reset, premier front de reprise et régime périodique, sur les deux fils. Le reset partagé était remis sans temps intermédiaire et les anciennes clocks/counters/NAND étaient conservés.37 contrôles93,68 contrôles carte (avec variantes de bascule) et comparaisons aux fronts explicites passaient. Une annulation de montée future avant propagation a été détectée/corrigée pendant les phases denses avant mesure.
+Premier parcours avec validation complète et callback de masque à chaque description : trois paires120 champs28,91221→29,83083 ;28,57304→29,50771 ;28,47195→29,73929. Moyenne360 champs28,65240→29,69261 (+3,630 %), actif40,28745→42,88466 (+6,447 %), arrêté20,82542→20,80476 (-0,099 %, aucun gain utile). Rapports20261110-clock-link-native-initial.{json,md,trx}, test natif réussi en1m13 s.
+Deuxième parcours avec liaison producteur/récepteur validée au branchement et notification du masque seulement aux changements de validité :
+| Group | Fields/mode | Previous ms/field | Current ms/field | Time saved % | Nominal % |
+|---|---:|---:|---:|---:|---:|
+|Pair 1|120|28.45266|28.77605|-1.137|69.391|
+|Pair 2|120|28.92900|29.61027|-2.355|67.436|
+|Pair 3|120|28.19589|28.58189|-1.369|69.862|
+|All|360|28.52585|28.98940|-1.625|68.880|
+|Motor True/True|144|40.69183|41.97738|-3.159|47.568|
+|Motor True/False|3|30.29953|26.50943|12.509|75.324|
+|Motor False/False|213|20.27597|20.24373|0.159|98.638|
+
+IC7 deadline announcements, separate fields (not AdvancePart invocation counts):
+Pair 1: 33452 -> 19452
+Pair 2: 33452 -> 19452
+Pair 3: 33452 -> 19452
+
+Les colonnes précédentes reproduisent le rapport comparatif : un signe négatif de temps économisé est une régression. Même protocole NOS80/BASIC, trois paires360 champs, RunFrame/DrainAudio, ordre alterné, comparaisons CPU/RAM/vidéo/audio/transferts hors temps ;4608 octets lus, zéro écrit et SSD identique après libération. Test réussi en1m11 s. Aucune économie conservée : retrait de toute la refonte, modèles/APIs/flags et banc supprimés, sources de production rétablies àaae18f081. La baisse d’annonces de33 452→19 452 n’indique pas un gain de temps. Ni règle nouvelle au tableau ni déclaration de cadence nominale. Seuls des contrôles autonomes de comportement physique restent utiles.
+Le prochain relevé partitionne le champ complet CPU/VIA, vidéo, générateur, carte et résiduel, car environ20 ms hors carte n’ont pas encore d’attribution actuelle après les regroupements par ligne. Il ne s’agit pas d’un nouveau candidat local93.
+
+### Répartition exhaustive du champ après restauration —10 novembre2026
+Trois paires NOS80/BASIC identiques, sondes sur une machine et désactivées sur l’autre ;40 champs de chauffe, CAT512/BASIC4096/PRINT46, dix champs de stabilisation, un champ séparé puis120 champs alternés par paire. RunFrame/DrainAudio inclus. CPU/RAM/vidéo/audio/transferts identiques à chaque champ, SSD inchangé après libération ; test réussi en1m9 s. Les temps de carte inclus dans CPU/vidéo/source sont soustraits de ces portées. Le résiduel est explicite et les catégories totalisent100 % du champ instrumenté ; ce ne sont pas des temps CPU propres ni des gains récupérables.
+| Group | Fields/mode | Plain ms/field | Probed ms/field | Overhead % | Plain nominal % |
+|---|---:|---:|---:|---:|---:|
+|Pair 1|120|27.76045|27.81980|0.214|71.930|
+|Pair 2|120|27.47905|27.45195|-0.099|72.666|
+|Pair 3|120|26.96111|27.22648|0.984|74.062|
+|All|360|27.40021|27.49941|0.362|72.875|
+|Motor True/True|144|38.15333|38.49959|0.908|52.336|
+|Motor True/False|3|26.77123|26.44000|-1.237|74.588|
+|Motor False/False|213|20.13934|20.07759|-0.307|99.149|
+
+Exclusive wall-time scopes; disk time is subtracted from any enclosing CPU/video/source scope. Residual includes scalar/unqualified paths, coordination, buffer copies and audio drain. These are not CPU self times or recoverable gains.
+
+|Motor|Stage|Calls/field|ms/field|Probed field %|
+|---|---|---:|---:|---:|
+|Motor True/True|CPU/VIA qualified portions|312.00|12.52134|32.523|
+|Motor True/True|video qualified portions|312.00|7.12873|18.516|
+|Motor True/True|source/control resolution|312.00|0.06046|0.157|
+|Motor True/True|all disk advances|312.00|18.55675|48.200|
+|Motor True/True|residual||0.23231|0.603|
+|Motor True/True|total||38.49959|100|
+
+Represented CPU periods/field: 39936.00
+
+|Motor True/False|CPU/VIA qualified portions|312.00|12.38187|46.830|
+|Motor True/False|video qualified portions|312.00|7.23407|27.360|
+|Motor True/False|source/control resolution|312.00|0.05513|0.209|
+|Motor True/False|all disk advances|312.00|6.57213|24.857|
+|Motor True/False|residual||0.19680|0.744|
+|Motor True/False|total||26.44000|100|
+
+Represented CPU periods/field: 39936.00
+
+|Motor False/False|CPU/VIA qualified portions|312.00|12.29432|61.234|
+|Motor False/False|video qualified portions|312.00|6.89678|34.351|
+|Motor False/False|source/control resolution|312.00|0.04799|0.239|
+|Motor False/False|all disk advances|312.00|0.66879|3.331|
+|Motor False/False|residual||0.16971|0.845|
+|Motor False/False|total||20.07759|100|
+
+Represented CPU periods/field: 39936.00
+
+
+Moteur actif : CPU/VIA12,52134 ms (32,523 %), vidéo7,12873 (18,516 %), résolution des clocks0,06046 (0,157 %), carte18,55675 (48,200 %), résiduel0,23231 (0,603 %). Moteur arrêté : CPU/VIA12,29432 (61,234 %), vidéo6,89678 (34,351 %), source0,04799 (0,239 %), carte0,66879 (3,331 %), résiduel0,16971 (0,845 %).312 portions et39936 cycles représentés par champ. La borne matérielle de ligne explique les128 cycles/portion ; son franchissement n’est pas établi indépendant des interactions et n’est pas modifié.
+Calibration globale27,40021→27,49941 ms/champ (+0,362 %), actif38,15333→38,49959 (+0,908 %), arrêté20,13934→20,07759 (-0,307 %, variation). Source restaurée : cadence libre moyenne72,875 %, actif52,336 %, arrêté99,149 %, référence19,968 ms/champ/50,080 Hz/CPU2 MHz ; ce ne sont pas des FPS présentés par RML. Les20 ms hors carte viennent essentiellement de CPU/VIA et vidéo. Il faut maintenant considérer ces domaines aussi bien que la simulation disque, sans recommencer une optimisation du générateur qui ne coûte que0,06 ms dans ce parcours.
+Sondes et banc supprimés, PrivateClock/Clock rétablis àaae18f081. Le rendu de bruitages mécaniques n’est pas appelé dans ce parcours ; un comparatif audio séparé demandé par l’utilisateur teste les blocs communs sans changer la simulation des lecteurs. Preuves20261110-full-field-costs.{json,md,trx}, documents de l’audit commun dans docs/project/mechanical-audio-runtime.md.
+
+### Bruitages mécaniques exclus du coût natif et comparatif demandé —10 novembre2026
+Le profil18,55675 ms de carte ne rendait aucun bruitage. Comparatif séparé, mêmes machines et matériel, trois paires360 champs : profil BBC du module à50 %, rendu/mixage commun44100 Hz/882 échantillons réellement exécuté dans un mode et aucun appel de génération/mixage dans l’autre. Tous les états CPU/RAM/vidéo/son matériel et les pistes/têtes/rotations/pulses/temps des lecteurs correspondent ;4608 octets lus, aucun écrit, SSD inchangé après fermeture. PCM non nul sur les144 champs moteur actif ; mode désactivé sans tampon mécanique.
+Moteur actif : son0,13915 ms/bloc, aucun calcul0 ms ; total40,90523→41,92398 ms/champ, dont cœur40,90443→41,78396. Ne pas attribuer toute la différence1,01875 ms au rendu :0,87953 ms se situent dans le cœur et leur cause n’est pas isolée. Banc séquentiel sans worker/WASAPI, pas une mesure de contention RML. Les882 échantillons valent20 ms contre19,968 ms/champ (+0,16 % audio) et le banc continue de demander des blocs même quand la résonance s’est terminée. Son coût direct reste faible face aux18,56 ms de simulation. Rapports20261110-mechanical-audio-native.{json,md,trx}, contrôle réussi en1m14 s, banc supprimé.
+Audit du code commun : worker séparé, mais `_sync` partagé entre RenderAudio et les commandes mécaniques ; attente possible sans mesure de durée. MediaDriveSoundEvent et le contrat de commandes n’ont pas d’horodatage émulé. Ces constats sont consignés séparément dans docs/project/mechanical-audio-runtime.md ; aucune modification de production commune entreprise. La suite reste la simulation du lecteur et les coûts CPU/VIA/vidéo, pas le calcul des bruitages.
+
+Vérification finale après retrait de tous les diagnostics :32 contrôles93 réussis en1 s (`20261110-final-native-diagnostics-chip.trx`) et63 de carte en17 s (`20261110-final-native-diagnostics-board.trx`). Module Acorn reconstruit0 erreur/0 avertissement, quatre avertissements locaux préexistants, aucun processus de test possédé ni source de banc restant. Diff de production nul contreaae18f081. Les seuls ajouts de code conservés sont des contrôles physiques autonomes et un message d’échec plus précis ; aucune optimisation sans gain ni API de transport expérimentale conservée. La machine demeure non clôturée.

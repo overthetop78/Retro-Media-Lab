@@ -60,7 +60,8 @@ public sealed class SystemFloppyBoardTests
                 Assert.Equal(b.Outputs, a.Outputs);
                 for (var input = 0; input < 2; input++)
                 {
-                    Assert.Equal(b.GetInputClockCount(input), a.GetInputClockCount(input));
+                    Assert.True(b.GetInputClockCount(input) == a.GetInputClockCount(input),
+                        $"{name} clock{input}, phase{phase}, spacing{spacing}: {b.GetInputClockCount(input)} != {a.GetInputClockCount(input)}");
                     Assert.Equal(b.GetClock(input), a.GetClock(input));
                 }
             }

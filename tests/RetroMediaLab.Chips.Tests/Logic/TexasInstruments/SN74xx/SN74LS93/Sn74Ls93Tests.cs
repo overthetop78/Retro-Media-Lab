@@ -171,6 +171,8 @@ public sealed class Sn74Ls93Tests
         for (byte seed = 0; seed < 16; seed++)
         {
             var chip = Create(seed); var scalar = Create(seed);
+            long? announced = null;
+            chip.NextOutputEventNanosecondsChanged = next => announced = next;
             chip.SetClock(1, (seed & 1) != 0); scalar.SetClock(1, (seed & 1) != 0);
             var actual = new List<(long, byte, byte)>(); var expected = new List<(long, byte, byte)>();
             var described = false;
@@ -211,9 +213,28 @@ public sealed class Sn74Ls93Tests
                 Assert.Equal(scalar.GetInputClockCount(1), chip.GetInputClockCount(1));
                 var reset = end is 711 or 1_233 or 10_000 or 30_380;
                 scalar.SetResets(reset, reset); chip.SetResets(reset, reset);
+                Assert.Equal(chip.NextOutputEventNanoseconds, announced);
                 previous = end;
             }
         }
+    }
+
+    [Fact]
+    public void ResetCancelsPendingQaRiseWithoutCreatingAnEdgeOnTheExternalWire()
+    {
+        var source = Create(); var receiver = Create();
+        source.OutputsChanged = (pins, changed) =>
+        {
+            if ((changed & 1) == 0) return;
+            receiver.AdvanceTo(source.TimeNanoseconds);
+            receiver.SetClock(0, (pins & 1) != 0);
+        };
+        source.SetClock(0, true); source.AdvanceTo(125); source.SetClock(0, false);
+        source.AdvanceTo(130); // QA would rise at135 ns without this clear.
+        source.SetResets(true, true);
+        source.AdvanceTo(200); receiver.AdvanceTo(200);
+        Assert.Equal(0, source.Outputs); Assert.False(receiver.GetClock(0));
+        Assert.Equal(0, receiver.GetInputClockCount(0)); Assert.Equal(0, receiver.Outputs);
     }
 
     [Fact]
