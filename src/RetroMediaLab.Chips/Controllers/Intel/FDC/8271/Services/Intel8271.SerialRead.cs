@@ -87,6 +87,7 @@ public sealed partial class Intel8271
             _clockPulse = true;
         }
         else _dataPulse = true;
+        PublishClockEvent();
     }
 
     private void ResetSerialRead()

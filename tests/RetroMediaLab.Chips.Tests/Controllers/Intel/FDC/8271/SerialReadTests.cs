@@ -4,6 +4,36 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Intel.FDC.Chip8271;
 
 public sealed class SerialReadTests
 {
+    [Theory]
+    [InlineData(2_000_000, false, false)]
+    [InlineData(2_000_000, true, false)]
+    [InlineData(4_000_000, false, false)]
+    [InlineData(4_000_000, true, false)]
+    [InlineData(2_000_000, false, true)]
+    [InlineData(4_000_000, true, true)]
+    public void EventClockingPreservesFullFmTransferAndLateDmaDates(int clock, bool nonDma, bool late)
+    {
+        using var grouped = new Wire(clock, nonDma, phaseLocked: true) { GroupClocks = true, ServiceRequests = !late };
+        using var unit = new Wire(clock, nonDma, phaseLocked: true) { ServiceRequests = !late };
+        unit.Chip.GroupSerialReadClocks = false;
+        var actualEdges = new List<(long, bool)>(); var expectedEdges = new List<(long, bool)>();
+        grouped.Chip.NmiChanged = high => actualEdges.Add((grouped.Chip.InputClockCount, high));
+        unit.Chip.NmiChanged = high => expectedEdges.Add((unit.Chip.InputClockCount, high));
+        foreach (var wire in new[] { grouped, unit })
+        {
+            wire.Command(0x52, 0, 1);
+            wire.Field(0xfe, [0, 0, 1, 0]);
+            wire.Field(0xfb, Enumerable.Range(0, 128).Select(i => (byte)(i ^ 0x5a)).ToArray());
+            wire.Delay(200);
+        }
+        Assert.Equal(expectedEdges, actualEdges);
+        Assert.Equal(unit.RequestTimes, grouped.RequestTimes);
+        Assert.Equal(unit.Bytes, grouped.Bytes);
+        Assert.Equal(late ? 0x0a : 0, grouped.Result());
+        Assert.Equal(late ? 0x0a : 0, unit.Result());
+        Assert.True(grouped.AdvanceCalls < unit.AdvanceCalls / 2);
+    }
+
     public static TheoryData<int, byte> SectorSizes
     {
         get
@@ -338,6 +368,9 @@ public sealed class SerialReadTests
     {
         internal readonly Intel8271 Chip;
         internal readonly List<byte> Bytes = [];
+        internal readonly List<long> RequestTimes = [];
+        internal bool GroupClocks;
+        internal int AdvanceCalls;
         internal bool ServiceRequests = true;
         internal Func<int, byte>? Key;
         internal Action<int>? BeforeRequest;
@@ -385,23 +418,28 @@ public sealed class SerialReadTests
             {
                 _clockHalf = true;
                 if ((clocks & (1 << bit)) != 0) Pulse();
-                for (var t = 0; t < _halfBitTicks; t++) Tick();
+                Delay(_halfBitTicks);
                 _clockHalf = false;
                 if ((data & (1 << bit)) != 0) Pulse();
-                for (var t = 0; t < _halfBitTicks; t++) Tick();
+                Delay(_halfBitTicks);
             }
         }
 
         internal void Delay(int ticks)
         {
-            for (var tick = 0; tick < ticks; tick++) Tick();
+            while (ticks > 0)
+            {
+                var count = GroupClocks
+                    ? (int)Math.Min(ticks, Math.Max(1, (Chip.NextClockEvent ?? ((long)_tick + ticks)) - _tick)) : 1;
+                Advance(count); ticks -= count;
+            }
         }
 
         internal void StartOnDataHalfCell()
         {
             _clockHalf = false;
             Pulse();
-            for (var tick = 0; tick < _halfBitTicks; tick++) Tick();
+            Delay(_halfBitTicks);
         }
 
         private void Pulse()
@@ -412,12 +450,17 @@ public sealed class SerialReadTests
             Chip.SetUnseparatedData(true);
             Chip.SetUnseparatedData(false);
         }
-        private void Tick()
+        private void Tick() => Advance(1);
+
+        private void Advance(int cycles)
         {
-            _tick++;
-            Chip.Tick();
+            _tick += cycles;
+            AdvanceCalls++;
+            if (GroupClocks) Chip.AdvanceTo(_tick);
+            else Chip.Tick();
             if (FirstRequestTick is null && (Chip.Drq || (Chip.Read(0) & 4) != 0)) FirstRequestTick = _tick;
             if (!ServiceRequests || !Chip.Drq && (Chip.Read(0) & 4) == 0) return;
+            RequestTimes.Add(_tick);
             BeforeRequest?.Invoke(Bytes.Count);
             if (Key is null) Bytes.Add(Chip.Read(4));
             else Chip.Write(4, Key(KeysWritten++));

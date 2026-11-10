@@ -30,6 +30,7 @@ public sealed partial class Intel8271
         if (!_awaitingData) return;
         _dataRequest = _awaitingData = false;
         SetStatus((byte)(_status & ~(C.Interrupt | C.NonDma)));
+        PublishClockEvent();
     }
 
     private void UpdateTiming()

@@ -10,16 +10,19 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuSystemDiskTransferTests
 {
     [Theory]
-    [InlineData(1, true)]
-    [InlineData(10, true)]
-    [InlineData(10, false)]
-    public void CpuReadsWritesAndRereadsThroughThePhysicalBoardWithIdenticalSourceModes(int sectors, bool defer)
+    [InlineData(1, true, false)]
+    [InlineData(10, true, false)]
+    [InlineData(10, false, false)]
+    [InlineData(1, true, true)]
+    [InlineData(10, true, true)]
+    public void CpuReadsWritesAndRereadsThroughThePhysicalBoardWithIdenticalSourceModes(int sectors, bool defer, bool compareControllerClocks)
     {
         using var disk = CreateDisk(sectors);
         using var otherDisk = CreateDisk(sectors);
         using var actual = Create(disk, defer);
         using var reference = Create(otherDisk, defer);
-        reference.GroupActiveFloppyPeriods = false;
+        reference.GroupActiveFloppyPeriods = compareControllerClocks;
+        if (compareControllerClocks) SetSerialReadGrouping(reference, false);
         var actualNmi = CaptureNmi(actual); var expectedNmi = CaptureNmi(reference);
         for (var field = 0; field < 80; field++)
         {
@@ -35,7 +38,14 @@ public sealed class AcornEmuSystemDiskTransferTests
         }
         Validate(actual, disk); Validate(reference, otherDisk);
         Assert.Equal(otherDisk.WindowWrites, disk.WindowWrites);
-        Assert.True(actual.RepresentedPrivateClockPeriods > reference.RepresentedPrivateClockPeriods);
+        if (!compareControllerClocks)
+            Assert.True(actual.RepresentedPrivateClockPeriods > reference.RepresentedPrivateClockPeriods);
+    }
+
+    internal static void SetSerialReadGrouping(AcornSystemMachine machine, bool enabled)
+    {
+        var chip = Field<object>(Field<SystemFloppyBoard>(machine, "_floppyBoard"), "_fdc");
+        chip.GetType().GetProperty("GroupSerialReadClocks", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(chip, enabled);
     }
 
     private static List<(long Time, long Cycles, long Ticks, bool Phase, bool? Level)> CaptureNmi(AcornSystemMachine machine)
