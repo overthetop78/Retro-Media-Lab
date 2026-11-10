@@ -32,13 +32,16 @@ public sealed class AcornEmuSystemPrivateClockTests
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(3)]
-    public void IsolatedViaReadsRetainKeyboardIrqVideoStateAndControlModeFallback(byte mode)
+    [InlineData(0, false)]
+    [InlineData(3, false)]
+    [InlineData(0, true)]
+    [InlineData(3, true)]
+    public void IsolatedViaReadsRetainKeyboardIrqVideoStateAndControlModeFallback(byte mode, bool previousPrefixes)
     {
         using var actual = Create(true, true, mode);
         using var reference = Create(true, true, mode);
-        reference.GroupViaReadPeriods = false;
+        reference.GroupViaReadPeriods = previousPrefixes;
+        reference.GroupIndependentBusCycles = false;
         var via = Field<RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services.Via6522>(actual, "_via");
         var otherVia = Field<RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services.Via6522>(reference, "_via");
         var video = Field<SystemVideo>(actual, "_video"); var otherVideo = Field<SystemVideo>(reference, "_video");
@@ -62,7 +65,8 @@ public sealed class AcornEmuSystemPrivateClockTests
                 (a.DotClockCount, a.CharacterClockCount, a.TimeNanoseconds));
         }
         Assert.True(actual.RepresentedViaReadPeriods > 0);
-        Assert.Equal(0, reference.RepresentedViaReadPeriods);
+        if (previousPrefixes) Assert.True(reference.RepresentedViaReadPeriods > 0);
+        else Assert.Equal(0, reference.RepresentedViaReadPeriods);
         var count = actual.RepresentedViaReadPeriods;
         // CA2 pulse output: the ordinary bus/clock route must handle handshakes.
         actual.Write(0x0e0c, 0x0a); reference.Write(0x0e0c, 0x0a);

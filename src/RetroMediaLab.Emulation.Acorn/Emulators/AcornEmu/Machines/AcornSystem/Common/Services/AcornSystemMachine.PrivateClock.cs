@@ -9,6 +9,7 @@ internal sealed partial class AcornSystemMachine
     internal bool GroupPrivateClockPeriods { get; set; } = true;
     internal long RepresentedPrivateClockPeriods { get; private set; }
     internal bool GroupViaReadPeriods { get; set; } = true;
+    internal bool GroupIndependentBusCycles { get; set; } = true;
     internal long RepresentedViaReadPeriods { get; private set; }
     internal bool GroupActiveFloppyPeriods { get; set; } = true;
     internal bool GroupIdleDriveInteractions { get; set; } = true;
@@ -31,9 +32,13 @@ internal sealed partial class AcornSystemMachine
         var clockFloppyAtCpuEdges = _floppyBoard is not null && !_floppyBoard.CpuClockCanRunIndependently;
         if (_floppyBoard is not null && (!_floppyBoard.PrivateBusPinsSettled
             || (clockFloppyAtCpuEdges && !GroupActiveFloppyPeriods))) return false;
-        // The VIA transaction itself still executes at its real CPU phase.
-        // Limit this case to one cycle so no intermediate bus address is lost.
-        var maximum = viaRead ? 1 : Math.Min(C.FastPrivateClockBatch, _video.ClocksToLineBoundary);
+        // Every qualified transaction still executes at its actual CPU phase.
+        // In 0E00-0FFF IC4 has A9=A10=1, so its only connected output Y1
+        // stays inactive. Private addresses inhibit the decoder entirely. No
+        // intermediate address in this prefix can select the disk controller;
+        // changed VIA control modes or another address end the prefix below.
+        var maximum = viaRead && !GroupIndependentBusCycles ? 1
+            : Math.Min(C.FastPrivateClockBatch, _video.ClocksToLineBoundary);
         // With an idle, disconnected controller no drive event can affect this
         // private span. The existing prefix-end advance still consumes every
         // drive/card event at its local date before the next interaction.
@@ -50,12 +55,19 @@ internal sealed partial class AcornSystemMachine
         var source = _fastClock.InputClockCount;
         _ = checked(source + maximum * (long)C.FastSourceClocksPerReferencePeriod);
         var consumed = 0;
+        var viaCycles = 0;
         _fastCpuBus.BeginRepresentedPrivateCycles();
         try
         {
-            while (consumed < maximum && (_fastCpuBus.CanRepresentPreparedCycle
-                || (viaRead && consumed == 0 && _fastCpuBus.CanRepresentPreparedViaRead)))
+            while (consumed < maximum)
             {
+                var isViaCycle = false;
+                if (!_fastCpuBus.CanRepresentPreparedCycle)
+                {
+                    if (!GroupViaReadPeriods || !_fastCpuBus.CanRepresentPreparedViaRead
+                        || (!GroupIndependentBusCycles && (!viaRead || consumed != 0))) break;
+                    isViaCycle = true;
+                }
                 // The established 4 MHz wire lets the disk card consume its
                 // own events independently. Deliver NMI before the same PH0
                 // edges as the scalar source path, never at the prefix end.
@@ -68,6 +80,7 @@ internal sealed partial class AcornSystemMachine
                 TickReferenceClock(advanceVia: false, advanceVideo: false);
                 _cpu6502.SetPhaseZeroInput(false);
                 consumed++;
+                if (isViaCycle) viaCycles++;
             }
         }
         finally
@@ -81,7 +94,7 @@ internal sealed partial class AcornSystemMachine
                     _fastClock.AdvanceRepresentedNetworkClocks(consumed * (long)C.FastSourceClocksPerReferencePeriod);
                     AdvanceFloppyToSource();
                     RepresentedPrivateClockPeriods += consumed;
-                    if (viaRead) RepresentedViaReadPeriods += consumed;
+                    RepresentedViaReadPeriods += viaCycles;
                 }
             }
             finally { _fastCpuBus.EndRepresentedPrivateCycles(); }
