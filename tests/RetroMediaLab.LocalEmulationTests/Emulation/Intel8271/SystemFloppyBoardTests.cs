@@ -8,6 +8,36 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class SystemFloppyBoardTests
 {
     [Fact]
+    public void IdleDriveIndependenceRejectsPendingNmiAndActiveIndexWait()
+    {
+        var chip = new Fdc8271(2_000_000);
+        using var card = new SystemFloppyBoard(chip);
+        var clock = new ClockWire(card, periodic: true);
+        card.SetBusAddress(0xe000); clock.AdvanceTo(1000);
+        Assert.True(card.DriveEventsIndependentOfCpu);
+        chip.Write(0, 0x3f); // Unsupported command completes with an interrupt.
+        Assert.False(chip.Active); Assert.Null(chip.NextClockEvent);
+        Assert.False(card.DriveEventsIndependentOfCpu);
+        clock.AdvanceTo(1100); Assert.True(card.DriveEventsIndependentOfCpu);
+        chip.Read(1); Assert.False(card.DriveEventsIndependentOfCpu);
+        clock.AdvanceTo(1200); Assert.True(card.DriveEventsIndependentOfCpu);
+
+        WriteSpecial(chip, H.DriveOutput, (byte)(H.Drive0Select | H.OutputLoadHead));
+        clock.AdvanceTo(2000);
+        card.SetIndexLevel(false); clock.AdvanceTo(3000);
+        card.SetIndexLevel(true); clock.AdvanceTo(4000);
+        card.SetIndexLevel(false); clock.AdvanceTo(5000);
+        card.SetIndexLevel(true); card.SetDriveSensorLevels(false, true);
+        Assert.True(card.Ready0);
+        chip.Write(0, 0x2c); chip.Read(1); // Clear the earlier not-ready latch.
+        chip.Write(0, 0x35); foreach (byte b in new byte[] { 0x0d, 1, 0, 0x10 }) chip.Write(1, b);
+        chip.Write(0, 0x63); foreach (byte b in new byte[] { 0, 8, 1, 0, 10 }) chip.Write(1, b);
+        clock.AdvanceTo(20_000);
+        Assert.True(chip.Active); Assert.Null(chip.NextClockEvent);
+        Assert.False(card.DriveEventsIndependentOfCpu);
+    }
+
+    [Fact]
     public void UnconnectedDecoderResponsesDoNotBlockTheBusAndConnectedResponsesKeepTheirDates()
     {
         var chip = new Fdc8271(2_000_000); var referenceChip = new Fdc8271(2_000_000);

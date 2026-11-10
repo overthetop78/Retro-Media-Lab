@@ -4,6 +4,8 @@ using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Enums;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 using RetroMediaLab.Tests.Emulation.Intel8271;
+using FdcChip = RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services.Intel8271;
+using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS00.Services;
 
 namespace RetroMediaLab.Tests.Emulation;
 
@@ -23,6 +25,60 @@ public sealed class AcornEmuSystemDiskTransferTests
         using var reference = Create(otherDisk, defer);
         reference.GroupActiveFloppyPeriods = compareControllerClocks;
         if (compareControllerClocks) SetSerialReadGrouping(reference, false);
+        Compare(actual, reference, disk, otherDisk);
+        if (!compareControllerClocks)
+            Assert.True(actual.RepresentedPrivateClockPeriods > reference.RepresentedPrivateClockPeriods);
+    }
+
+    [Theory]
+    [InlineData(1, 0)]
+    [InlineData(10, 0)]
+    [InlineData(10, 3)]
+    public void IdleDriveInteractionGroupingPreservesFluxAndInterruptDates(int sectors, byte videoMode)
+    {
+        using var disk = CreateDisk(sectors); using var otherDisk = CreateDisk(sectors);
+        using var actual = Create(disk, true); using var reference = Create(otherDisk, true);
+        foreach (var machine in new[] { actual, reference })
+        {
+            var video = Field<SystemVideo>(machine, "_video");
+            video.Write(0x1840, 8); video.Write(0x1841, videoMode);
+        }
+        reference.GroupIdleDriveInteractions = false;
+        var a = CaptureDrive(actual); var b = CaptureDrive(reference);
+        var board = Field<SystemFloppyBoard>(actual, "_floppyBoard");
+        var chip = Field<FdcChip>(actual, "_fdc"); var waitingForFlux = false;
+        void CheckWait(long? next)
+        {
+            if (next.HasValue || !chip.Active) return;
+            Assert.False(board.DriveEventsIndependentOfCpu);
+            waitingForFlux = true;
+        }
+        chip.NextClockEventChanged += CheckWait;
+        try
+        {
+            Compare(actual, reference, disk, otherDisk);
+            Assert.Equal(b.Lines, a.Lines); Assert.Equal(b.Windows, a.Windows);
+            Assert.True(waitingForFlux);
+            Assert.True(actual.RepresentedPrivateClockPeriods > reference.RepresentedPrivateClockPeriods);
+        }
+        finally { chip.NextClockEventChanged -= CheckWait; }
+    }
+
+    private static (List<(long, byte, byte, byte)> Lines, List<(long, bool?)> Windows) CaptureDrive(AcornSystemMachine machine)
+    {
+        var board = Field<SystemFloppyBoard>(machine, "_floppyBoard");
+        var lines = new List<(long, byte, byte, byte)>(); var windows = new List<(long, bool?)>();
+        var wire = board.DriveLinesChanged;
+        board.DriveLinesChanged = (levels, known, changed) =>
+        { lines.Add((board.TimeNanoseconds, levels, known, changed)); wire?.Invoke(levels, known, changed); };
+        var latch = Field<Sn74Ls00>(board, "_ic12"); var output = latch.OutputChanged;
+        latch.OutputChanged = (gate, level) =>
+        { if (gate == 2) windows.Add((latch.TimeNanoseconds, level)); output?.Invoke(gate, level); };
+        return (lines, windows);
+    }
+
+    private static void Compare(AcornSystemMachine actual, AcornSystemMachine reference, MemoryTrackDisk disk, MemoryTrackDisk otherDisk)
+    {
         var actualNmi = CaptureNmi(actual); var expectedNmi = CaptureNmi(reference);
         for (var field = 0; field < 80; field++)
         {
@@ -38,8 +94,6 @@ public sealed class AcornEmuSystemDiskTransferTests
         }
         Validate(actual, disk); Validate(reference, otherDisk);
         Assert.Equal(otherDisk.WindowWrites, disk.WindowWrites);
-        if (!compareControllerClocks)
-            Assert.True(actual.RepresentedPrivateClockPeriods > reference.RepresentedPrivateClockPeriods);
     }
 
     internal static void SetSerialReadGrouping(AcornSystemMachine machine, bool enabled)

@@ -30,6 +30,7 @@ internal sealed partial class SystemFloppyBoard
     private void ControllerDriveChanged()
     {
         if (_disposed) return;
+        _controllerIdle = !_fdc.Active;
         _ic5.AdvanceTo(_time); _ic6.AdvanceTo(_time);
         var control = _fdc.DriveControl;
         _ic5.SetInputs(0, (control & H.Drive0Select) != 0, (control & H.Drive0Select) != 0);

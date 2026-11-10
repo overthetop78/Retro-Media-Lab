@@ -11,6 +11,7 @@ internal sealed partial class AcornSystemMachine
     internal bool GroupViaReadPeriods { get; set; } = true;
     internal long RepresentedViaReadPeriods { get; private set; }
     internal bool GroupActiveFloppyPeriods { get; set; } = true;
+    internal bool GroupIdleDriveInteractions { get; set; } = true;
 
     internal bool IsIndependentViaReadAddress(ushort address)
         => _viaReadCanRunIndependently && ViaAddress(address) && (address & C.ViaRegisterMask) == Via.PortA;
@@ -33,7 +34,12 @@ internal sealed partial class AcornSystemMachine
         // The VIA transaction itself still executes at its real CPU phase.
         // Limit this case to one cycle so no intermediate bus address is lost.
         var maximum = viaRead ? 1 : Math.Min(C.FastPrivateClockBatch, _video.ClocksToLineBoundary);
-        if (!clockFloppyAtCpuEdges && _floppyBoard is not null && _floppyBoard.NextDriveInteractionNanoseconds != long.MaxValue)
+        // With an idle, disconnected controller no drive event can affect this
+        // private span. The existing prefix-end advance still consumes every
+        // drive/card event at its local date before the next interaction.
+        if (!clockFloppyAtCpuEdges && _floppyBoard is not null
+            && _floppyBoard.NextDriveInteractionNanoseconds != long.MaxValue
+            && (!GroupIdleDriveInteractions || !_floppyBoard.DriveEventsIndependentOfCpu))
         {
             var now = (_fastClock.InputClockCount - 1) * 125 / 3;
             var until = _floppyBoard.NextDriveInteractionNanoseconds - now;

@@ -8,9 +8,15 @@ internal sealed partial class SystemFloppyBoard
     private long _controllerClockOrigin, _controllerClockCount;
     private bool _synchronizingController;
     private bool _controllerTimingPending;
+    private bool _controllerIdle;
     private bool _dividerCascadeDescribed;
 
     internal bool CpuClockCanRunIndependently => !_disposed && !_controllerTimingPending;
+
+    // Active index/flux waits remain dependent even with no scheduled clock.
+    // A private CPU span also requires settled bus pins and no pending NMI.
+    internal bool DriveEventsIndependentOfCpu => CpuClockCanRunIndependently && _controllerIdle
+        && PrivateBusPinsSettled && _deadlines[C.Interrupt] == 0;
 
     private void SynchronizeController(bool includeCurrentTime = false)
     {
