@@ -49,3 +49,27 @@ Rapports : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-observable93-{r
 
 ### Preuve conservée et raccordement mesuré
 - [x] Créer `artifacts/TestsChips/Sn74LS93/Acorn System 5/20261110-unobserved-sections.md` avec le résultat des23 contrôles exécutés, leurs conditions et le chemin du rapport global ; compléter la fiche93 avec la mesure appariée du bloc carte sans attribuer de gain isolé à la puce.
+
+## État périodique final sans sorties observées —10 novembre2026
+- [x] Évaluer le calcul direct des dernières réponses périodiques du93 sans modifier ses réponses physiques.
+  - [x] Modifier `src/RetroMediaLab.Chips/Logic/TexasInstruments/SN74xx/SN74LS93/Services/Sn74Ls93.cs` et `Sn74Ls93.PeriodicInput.cs` : retourner directement lorsque aucune réponse/descente reçue ne peut survenir avant la cible ; calculer les comptes CKA/CKB et leur dernière propagation dans les sections sans observateur, y compris le slot encore pendant à la cible. Conserver le chemin existant en référence interne, refuser tout état/observateur non qualifié et préserver reset, phases, délais, événements et débordements.
+  - [x] Compléter `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74LS93/Sn74Ls93Tests.cs` : comparer aux fronts explicites aux frontières de chaque étage pour toutes les graines, entrées indépendantes et reset ; comparer états et échéances, réactiver les observateurs et vérifier chaque notification datée. Consigner le passage dans `docs/chips/Logic/Sn74LS93.md` avant toute mesure machine.
+
+26 contrôles93 réussis en786 ms, dont7776 combinaisons de graines/phase/section/queue0–80 ns confrontées aux fronts explicites, puis réactivation des sorties et reset sur réponse pendante. Référence TRX20261110-final-periodic-state. Gain non encore mesuré ; le calcul est encore un candidat, non clôturé avant la décision de rétention.
+
+  - [x] Rétablir les deux Services93 exactement à30af8b3ee après la mesure native négative ; conserver les nouveaux contrôles autonomes comme couverture indépendante, reconstruire et vérifier26 cas sans le candidat. Compléter la fiche avec33,11958→33,75989 ms/champ (+1,933 %), sans annoncer de gain ni ajouter cette tentative au tableau des solutions retenues.
+
+Référence rétablie et26 contrôles autonomes réussis en766 ms, y compris les nouveaux oracles. La tentative est close sans optimisation retenue ; aucun gain inventé, aucune entrée ajoutée au tableau pour ce candidat.
+
+## Échéance des seules réponses raccordées —10 novembre2026
+- [x] Évaluer les échéances des seules réponses raccordées et leur coût global.
+  - [x] Modifier `src/RetroMediaLab.Chips/Logic/TexasInstruments/SN74xx/SN74LS93/Services/Sn74Ls93.PeriodicOutput.cs` : calculer la première réponse observée depuis les périodes établies, sorties, compteurs et propagations en attente ; conserver les descendes/ripples dans le résolveur canonique, les priorités et le repli en cas de reset, clear, chevauchement, observateur interne ou QA non décrit. Garder une sélection interne du calcul précédent pour mesure ; ne pas anticiper les callbacks ni déclencher une erreur de représentation depuis une simple consultation.
+  - [x] Compléter `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74LS93/Sn74Ls93Tests.cs` : confronter chaque échéance raccordée et les sorties datées à des fronts explicites, toutes graines/masques, CKA/CKB indépendantes et callbacks/reset/reconfiguration. Consigner le passage dans la fiche93 avant la mesure du raccordement machine.
+
+30 contrôles93 réussis en903 ms, dont16 graines ×16 masques ×3 phases pilotées aux premières réponses observées prédites, comparaison aux fronts explicites, reset et changements de masque ; seuils de représentation et observateur interne conservent le transport antérieur. La première version du banc changeait sa variable de boucle de masques : corrigée avant le passage final, qui parcourt effectivement les16 masques. Mesure raccordée encore nécessaire avant rétention.
+
+  - [x] Compléter `Sn74Ls93.cs`, `Sn74Ls93.PeriodicInput.cs` et `Sn74Ls93.PeriodicOutput.cs` dans le même dossier Services : mettre en cache la réponse raccordée déjà établie jusqu'à sa consommation ou une cause extérieure (masque, reset, entrée explicite, source/observateur changé, description QA révoquée/rétablie). Invalider à toutes ces causes et pendant les callbacks, conserver le calcul au front même et ne pas recopier d'état physique. Ne calculer que le premier bit observé de chaque section pour les entrées futures : un bit supérieur ne peut changer avant le premier bit inférieur observé ; traiter séparément toutes les propagations déjà pendantes. Refaire les contrôles de notifications/échéances avant une nouvelle comparaison native.
+
+  - [x] Rétablir les trois Services93 exactement à30af8b3ee après le résultat global insuffisant ; garder seulement les contrôles de comportement matériel indépendants du candidat, sans exiger une nouvelle précision du contrat d'échéance. Refaire ces contrôles sur la référence rétablie et consigner la décision dans la fiche93.
+
+Référence rétablie :29 contrôles93 réussis en951 ms. Les comparaisons de toutes les graines/masques restent autonomes et acceptent les échéances conservatives existantes ; aucun code de projection/cache ni flag expérimental conservé. Aucun gain de vitesse retenu dans ces essais.

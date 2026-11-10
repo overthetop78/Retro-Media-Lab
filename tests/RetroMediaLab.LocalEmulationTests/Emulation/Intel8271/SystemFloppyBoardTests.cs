@@ -112,9 +112,10 @@ public sealed class SystemFloppyBoardTests
     [InlineData(108)]
     [InlineData(500)]
     [InlineData(1700)]
-    public void LatchedSeparatorDeferredInputsPreserveEveryWindowDateAcrossPulsePhases(int width)
+    [InlineData(500, true)]
+    public void LatchedSeparatorDeferredInputsPreserveEveryWindowDateAcrossPulsePhases(int width, bool dense = false)
     {
-        for (var phase = 0; phase < 16_000; phase += 37)
+        for (var phase = 0; phase < (dense ? 1000 : 16_000); phase += dense ? 1 : 37)
         {
             var chip = new Fdc8271(2_000_000); var referenceChip = new Fdc8271(2_000_000);
             using var card = new SystemFloppyBoard(chip);

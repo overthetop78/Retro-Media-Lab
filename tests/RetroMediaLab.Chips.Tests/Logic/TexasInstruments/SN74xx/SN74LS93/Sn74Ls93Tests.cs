@@ -11,6 +11,113 @@ public sealed class Sn74Ls93Tests
     [InlineData(0)]
     [InlineData(17)]
     [InlineData(79)]
+    public void ConservativeConnectedDeadlinesPreserveEveryObservedResponseAndStateAcrossMasks(int phase)
+    {
+        for (byte seed = 0; seed < 16; seed++)
+        for (byte mask = 0; mask < 16; mask++)
+        {
+            var chip = Create(seed); var reference = Create(seed);
+            chip.SetObservedOutputs(mask); reference.SetObservedOutputs(mask);
+            chip.SetClock(0, true); reference.SetClock(0, true);
+            chip.SetClock(1, true); reference.SetClock(1, true);
+            chip.ConnectPeriodicClock(0, 125, 250, 125);
+            chip.ConnectPeriodicClock(1, 250 - phase, 500, 250);
+            var observed = mask;
+            var actual = new List<(long Time, byte Levels, byte Changed)>();
+            var expected = new List<(long Time, byte Levels, byte Changed)>();
+            chip.OutputsChanged = (level, changed) => actual.Add((chip.TimeNanoseconds, (byte)(level & observed), changed));
+            reference.OutputsChanged = (level, changed) => expected.Add((reference.TimeNanoseconds, (byte)(level & observed), changed));
+            long nextA = 125, nextB = 250 - phase; bool a = true, b = true;
+            void Advance(long target)
+            {
+                while (Math.Min(nextA, nextB) <= target)
+                {
+                    var at = Math.Min(nextA, nextB); reference.AdvanceTo(at);
+                    if (at == nextA) { a = !a; reference.SetClock(0, a); nextA += 125; }
+                    if (at == nextB) { b = !b; reference.SetClock(1, b); nextB += 250; }
+                }
+                reference.AdvanceTo(target); chip.AdvanceTo(target);
+                Assert.Equal(expected, actual); Assert.Equal(reference.Outputs, chip.Outputs);
+                for (var clock = 0; clock < 2; clock++)
+                {
+                    Assert.Equal(reference.GetInputClockCount(clock), chip.GetInputClockCount(clock));
+                    Assert.Equal(reference.GetClock(clock), chip.GetClock(clock));
+                }
+            }
+            while (chip.TimeNanoseconds < 5000)
+            {
+                var next = chip.NextOutputEventNanoseconds ?? 5000;
+                Assert.True(next > chip.TimeNanoseconds);
+                var target = Math.Min(next, 5000);
+                Advance(target);
+                Assert.All(expected, item => Assert.Equal(target, item.Time));
+                actual.Clear(); expected.Clear();
+            }
+            chip.SetResets(true, true); reference.SetResets(true, true);
+            Advance(5007);
+            chip.SetResets(false, false); reference.SetResets(false, false);
+            Advance(6019);
+            actual.Clear(); expected.Clear();
+            observed = (byte)(mask ^ 15); chip.SetObservedOutputs(observed); reference.SetObservedOutputs(observed);
+            Advance(7031);
+        }
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(17)]
+    [InlineData(79)]
+    public void FinalUnobservedRippleMatchesExplicitEdgesAtEveryNanosecondAndResumes(int phase)
+    {
+        for (byte seed = 0; seed < 16; seed++)
+        for (var section = 0; section < 2; section++)
+        for (var tail = 0; tail <= 80; tail++)
+        {
+            var chip = Create(seed); var reference = Create(seed);
+            chip.SetObservedOutputs(0);
+            chip.SetClock(0, true); reference.SetClock(0, true);
+            chip.SetClock(1, true); reference.SetClock(1, true);
+            chip.ConnectPeriodicClock(0, 125, 250, 125);
+            chip.ConnectPeriodicClock(1, 250 - phase, 500, 250);
+            long nextA = 125, nextB = 250 - phase;
+            bool a = true, b = true;
+            void Advance(long target)
+            {
+                while (Math.Min(nextA, nextB) <= target)
+                {
+                    var at = Math.Min(nextA, nextB); reference.AdvanceTo(at);
+                    if (at == nextA) { a = !a; reference.SetClock(0, a); nextA += 125; }
+                    if (at == nextB) { b = !b; reference.SetClock(1, b); nextB += 250; }
+                }
+                reference.AdvanceTo(target); chip.AdvanceTo(target);
+                Assert.Equal(reference.Outputs, chip.Outputs);
+                var nextFallA = a ? nextA : nextA + 125;
+                var nextFallB = b ? nextB : nextB + 250;
+                Assert.Equal(Math.Min(reference.NextEventNanoseconds ?? long.MaxValue,
+                    Math.Min(nextFallA, nextFallB)), chip.NextEventNanoseconds);
+                for (var clock = 0; clock < 2; clock++)
+                {
+                    Assert.Equal(reference.GetInputClockCount(clock), chip.GetInputClockCount(clock));
+                    Assert.Equal(reference.GetClock(clock), chip.GetClock(clock));
+                }
+            }
+            var target = (section == 0 ? 10_125 : 10_250 - phase) + tail;
+            Advance(target);
+            var expected = new List<(long, byte, byte)>(); var actual = new List<(long, byte, byte)>();
+            reference.OutputsChanged = (levels, changed) => expected.Add((reference.TimeNanoseconds, levels, changed));
+            chip.OutputsChanged = (levels, changed) => actual.Add((chip.TimeNanoseconds, levels, changed));
+            chip.SetObservedOutputs(15);
+            // A new asynchronous input may arrive while the last ripple is pending.
+            if ((tail & 1) == 0) { reference.SetResets(true, true); chip.SetResets(true, true); }
+            Advance(target + 550);
+            Assert.Equal(expected, actual);
+        }
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(17)]
+    [InlineData(79)]
     public void UnobservedIndependentSectionsMatchExplicitEdgesAndResumeTheirPartialRipple(int phase)
     {
         for (byte seed = 0; seed < 16; seed++)
