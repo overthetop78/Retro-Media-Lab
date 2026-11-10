@@ -14,8 +14,17 @@ internal sealed partial class SystemFloppyBoard
         // A wire callback must not consume another package's response at this
         // same date ahead of the board's existing tie order.
         var limit = includeCurrentTime ? _time : _time - 1;
-        if (_ic8.TimeNanoseconds < limit) _ic8.AdvanceTo(limit);
-        var count = checked(_controllerClockOrigin + _ic8.GetQaRisingClockCount(0));
+        long qa;
+        if (_ic8.TimeNanoseconds < limit)
+        {
+            if (!_ic8.TryGetQaRisingClockCountAt(0, limit, out qa))
+            {
+                _ic8.AdvanceTo(limit);
+                qa = _ic8.GetQaRisingClockCount(0);
+            }
+        }
+        else qa = _ic8.GetQaRisingClockCount(0);
+        var count = checked(_controllerClockOrigin + qa);
         if (count == _controllerClockCount) return;
         _synchronizingController = true;
         try { _fdc.AdvanceTo(count); _controllerClockCount = count; }

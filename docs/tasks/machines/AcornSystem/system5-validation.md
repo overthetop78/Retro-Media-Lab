@@ -747,3 +747,49 @@ La cible est la chaîne complète de distribution des horloges et de coordinatio
 ### Point de reprise avant prolongement du train d’horloge aval
 Premier raccordement complet du motif4 MHz aux393/93 :48 contrôles carte/horloges réussis, zéro échec/ignoré,15 s, incluant lecture128 octets5A, écriture128 octetsA6 puis relecture, variante scalaire et périodique, reset et fenêtre du séparateur. Comparaison native Debug dans le même processus,20 champs de chauffe et3×20, ordre alterné, vidéo/audio inclus :166,03954→168,74964 ms/champ, soit **1,632 % de temps supplémentaire**. Les trois empreintes vidéo/audio correspondantes sont identiques entre les transports. Rapport : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-clock-chain-native.md`. Ce candidat n'est pas validé comme optimisation ; le câblage périodique initial est présent dans le point de reprise demandé par l'utilisateur, la refonte reste en cours.
 La représentation de la sortie QA du93 et le calcul différé de CKA sont maintenant réalisés dans le composant, mais ne sont pas encore raccordés à IC7 dans la carte.19 contrôles93 réussissent, zéro échec/ignoré,616 ms : le nouveau cas compare le récepteur aval aux fronts explicites sur les seize états initiaux, avec reset asynchrone y compris relâché avant fin de clear, niveaux et traces datées, puis une avance différée jusqu'à50 µs. Aucun gain machine attribué à cette capacité non encore raccordée. La cadence System5 et la reprise globale restent ouvertes ; aucun build applicatif ni essai RML nouveau.
+
+### Première propagation périodique aval —10 novembre2026
+Raccordement IC14/QA→IC7/CKA, avec révocation au reset et retour aux niveaux explicites.48 contrôles carte/horloges existants réussis, zéro échec/ignoré,15 s, plus un contrôle de comparaison nanoseconde par nanoseconde sur30 µs : transitions QA/QB/QD de l'aval, fenêtre, NMI, comptes et resets identiques au transport explicite,160 ms.
+Comparaison native Debug dans le même processus,20 champs de chauffe puis3×20 alternés, NOS80/VDU80/400004 sans média : référence158,83973 /164,78276 /160,42874 ms/champ, candidat141,89778 /143,09833 /142,65693. Moyennes **161,35041→142,55102 ms/champ, −11,651 %** ; les trois empreintes vidéo/audio et les durées matérielles sont identiques. Champ19,968 ms à50,08013 Hz ; candidat7,01503 champs/s,14,00762 % nominal,280152 cycles émulés/s. Ce gain ne termine pas la cadence. Rapport : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-clock-chain-separator-native.md`.
+
+### Propagation périodique jusqu'au fil IC7/QA→CKB —10 novembre2026
+La carte raccorde aussi le fil extérieur QA→CKB d'IC7 par sa description périodique ; QA repasse en notifications explicites lors des resets ou d'une source modifiée. IC14 et IC7 annoncent les seuls événements raccordés nécessaires ; les sorties QB/QD du latch restent datées et explicites.20 contrôles93 passent (690 ms) et49 contrôles carte/horloges passent (15 s), zéro échec/ignoré. Le contrôle de carte compare chaque niveau de fenêtre à la nanoseconde, les traces QB/QD, NMI, resets, comptes CKA/CKB et mots finaux ; les lectures/écritures/relectures réelles128 octets restent couvertes dans les deux transports.
+Comparaison native Debug, même scénario et protocole que ci-dessus : référence159,89451 /160,20502 /161,71427 ms/champ ; candidat129,39777 /128,07345 /132,05419. Moyennes **160,60460→129,84181 ms/champ, −19,154 %**. Trois empreintes vidéo/audio correspondantes et durées matérielles identiques. Candidat **7,70168 champs/s,15,37871 % nominal,307574 cycles émulés/s**, face au champ19,968 ms (50,08013 Hz). Rapport : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-clock-chain-cascade-native.md`. Ce gain concerne le raccordement complet, pas le coût isolé d'une méthode. Il ne prouve pas100 % et ne termine pas la machine ; le profil global restant doit guider la suite.
+
+### Profil global actuel après la refonte des fils périodiques
+Collecte Debug native de58 champs complets,8068,9954 ms hôte ;8070,138 ms attribuées aux piles RunFrame/DrainAudio, avec intervalle de conversion Speedscope contrôlé et temps d'attente exclu. Le léger écart échantillonnage/chronomètre n'est pas un coût supplémentaire mesuré. Options Debug non optimisées par le JIT confirmées ; Acorn SHA256E60B2C0D0B880A8D1B7A65A01C39B9D8A5748BCDBB889D59B7791295C24884FA. La collecte est instrumentée et ne remplace pas le relevé libre129,84181 ms/champ.
+
+| Groupe | Temps propre actuel % |
+| --- | ---: |
+|74LS393 |24,576057 |
+|74LS93 |11,272918 |
+| Autres composants et méthodes |10,955447 |
+| Carte disquette |8,708615 |
+| Générateur |7,264854 |
+| VDU80 caractères |6,939794 |
+| CPU6502 |6,462322 |
+| Coordination machine |6,258624 |
+|74S163 |6,177800 |
+|74LS165 |4,147344 |
+| Vidéo |3,225735 |
+| CRTC |2,591646 |
+|8271 |1,418846 |
+| **Total avant arrondi** | **100,000000** |
+
+Les trois premières méthodes propres sont maintenant393.ResolvePending4,9996 %,393.AdvancePeriodicTime4,7902 %,393.ConnectedDeadline3,2908 %. Viennent VDU.AdvanceStableDotClockPeriods3,2140 %,93.AdvancePeriodicInputs2,4775 %,93.SkipUnobservedCka2,4521 %,393.PublishDeadline2,3581 %. La liste complète et les inclusifs séparés sont dans `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-clock-chain-profile-methods.{md,json}` ; aucun coût non affiché n'est traité comme inconnu. La chaîne393 est maintenant le premier groupe propre. Lecture du câblage : SynchronizeController matérialise encore tout le ripple393 à chaque synchronisation de carte pour lire le seul compte QA. Une projection locale de ce compte entre deux effets raccordés peut éviter cette matérialisation répétée ; elle doit conserver le traitement des sorties et demandes qualifiées aux échéances annoncées. C'est la prochaine cible établie, pas encore un gain obtenu.
+
+## Comparaison du bloc architectural complet —10 novembre2026
+Le générateur résout directement les états canoniques des trois163 depuis les motifs d'entrée déjà établis, puis publie les seuls niveaux externes de la frontière ; aucun fil interne décrit n'est rejoué. Le393 projette localement le compte QA entre deux effets raccordés au lieu de matérialiser chaque ripple lors de la synchronisation8271. Le bus de carte retient ses pins et ne transmet plus les variations à8271 pendant une désélection déjà effective ; la sélection et sa libération restent transmises. Les trains IC14/QA→IC7/CKA et IC7/QA→CKB conservent leurs révocations/reset et repli explicite.
+Contrôles :50 cas393 (894 ms),16 cas163 (432 ms),49 cas générateur (171 ms),49 cas carte/horloges (16 s), tous réussis sans échec/ignoré. Le contrôle393 couvre les projections non mutantes et leur refus aux frontières qualifiées ; les contrôles163 et générateur comparent aussi le retour au parcours explicite. Les contrôles de carte conservent les bus/mirroirs, NMI, resets, fenêtre et lectures/écritures/relectures128 octets.
+Comparaison native appariée dans le même processus : deux contextes collectables isolent chacun leur couple Acorn/Chips. Référence : les cinq sources source-clock/carte du point63d77fc27 ; les autres sources (dont les nouvelles API inutilisées dans ce témoin) et la fabrique sont identiques. Aucun réglage matériel ni option Debug différent ; DisableOptimizations vérifié dans les quatre DLL.20 champs de chauffe puis3×20, ordre alterné, vidéo/audio inclus et empreintes hors chronométrage.
+
+| Fenêtre | Référence ms/champ | Candidat ms/champ |
+| --- | ---: | ---: |
+|1 |177,58559 |115,42187 |
+|2 |177,71615 |113,45575 |
+|3 |178,55178 |114,99553 |
+| **Moyenne** | **177,95117** | **114,62438** |
+
+**Temps réduit de35,587 %, accélération1,5525×.** Les trois empreintes vidéo/audio et les durées émulées sont identiques ; les deux cœurs sont fermés et les deux contextes effectivement déchargés après la mesure. Champ matériel19,968 ms à50,08013 Hz ; candidat **8,72415 champs/s et17,42038 % nominal**, sans limite et hors RML. Cette refonte n'atteint ni la réduction50 % demandée ni100 % de cadence. La machine reste ouverte ; les avances entre interactions et les coûts globaux restants nécessitent une poursuite structurelle, pas une déclaration de clôture.
+Rapport ignoré : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-architecture-block-native.md`. Les cinq sources courantes ont été sauvegardées en octets avant la construction témoin et restaurées dans finally, puis le candidat a été reconstruit. Fabrique, diagnostics externes et copies DLL sont retirés après consignation ; le rapport reste conservé.
+Nettoyage final de ce point de reprise : fabrique et test externes supprimés, dossier de copies DLL retiré après preuve du déchargement des deux contextes. Reconstruction Acorn réussie sans avertissement/erreur ; reconstruction des tests locaux réussie avec quatre avertissements préexistants, zéro erreur. Rapports ignorés conservés, aucun nouveau build de l'application RML. Le commit demandé enregistre un travail de performance encore en cours.

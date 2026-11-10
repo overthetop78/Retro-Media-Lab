@@ -9,6 +9,7 @@ public interface ISn74Ls393
     long? NextOutputEventNanoseconds { get; }
     Action<long?>? NextOutputEventNanosecondsChanged { get; set; }
     long GetQaRisingClockCount(int channel);
+    bool TryGetQaRisingClockCountAt(int channel, long nanoseconds, out long count);
     void RequestQaClock(int channel, long? risingClockCount);
     Action<long>? FirstQaClockReached { get; set; }
     Action<long>? SecondQaClockReached { get; set; }

@@ -8,6 +8,57 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class SystemFloppyBoardTests
 {
     [Fact]
+    public void DescribedSeparatorClockPreservesAllDownstreamEdgesAndResetDates()
+    {
+        var chip = new Fdc8271(2_000_000); var referenceChip = new Fdc8271(2_000_000);
+        using var card = new SystemFloppyBoard(chip); using var reference = new SystemFloppyBoard(referenceChip);
+        var actual = new List<(long, byte, byte)>(); var expected = new List<(long, byte, byte)>();
+        var actualNmi = new List<(long, bool?)>(); var expectedNmi = new List<(long, bool?)>();
+        static RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS93.Services.Sn74Ls93 Counter(SystemFloppyBoard owner, string name)
+            => (RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS93.Services.Sn74Ls93)typeof(SystemFloppyBoard)
+                .GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(owner)!;
+        void Capture(SystemFloppyBoard owner, List<(long, byte, byte)> trace)
+        {
+            var counter = Counter(owner, "_ic7"); var receiver = counter.OutputsChanged;
+            counter.OutputsChanged = (levels, changed) =>
+            {
+                // QA is represented by its physical external wire. Compare
+                // every scalar output still connected to the NAND latch.
+                if ((changed & 10) != 0) trace.Add((owner.TimeNanoseconds, (byte)(levels & 10), (byte)(changed & 10)));
+                receiver?.Invoke(levels, changed);
+            };
+        }
+        Capture(card, actual); Capture(reference, expected);
+        card.NmiChanged = high => actualNmi.Add((card.TimeNanoseconds, high));
+        reference.NmiChanged = high => expectedNmi.Add((reference.TimeNanoseconds, high));
+        var periodic = new ClockWire(card, periodic: true); var scalar = new ClockWire(reference);
+        for (long time = 1; time <= 30_000; time++)
+        {
+            periodic.AdvanceTo(time); scalar.AdvanceTo(time);
+            if (time is 2_001 or 2_109 or 5_253 or 5_259 or 11_500 or 11_526)
+            {
+                var high = time is 2_109 or 5_259 or 11_526;
+                card.SetReadDataLevel(high); reference.SetReadDataLevel(high);
+            }
+            if (time is 17_001 or 19_013)
+            {
+                card.SetResetLine(time == 19_013); reference.SetResetLine(time == 19_013);
+            }
+            Assert.Equal(reference.DataWindow, card.DataWindow);
+            Assert.Equal(referenceChip.InputClockCount, chip.InputClockCount);
+        }
+        Assert.Equal(expected, actual); Assert.Equal(expectedNmi, actualNmi);
+        foreach (var name in new[] { "_ic14", "_ic7" })
+        {
+            var first = Counter(card, name); var second = Counter(reference, name);
+            first.AdvanceTo(30_000); second.AdvanceTo(30_000);
+            Assert.Equal(second.Outputs, first.Outputs);
+            Assert.Equal(second.GetInputClockCount(0), first.GetInputClockCount(0));
+            Assert.Equal(second.GetInputClockCount(1), first.GetInputClockCount(1));
+        }
+    }
+
+    [Fact]
     public void IdleDividerRetainsAllQaClocksWithFarFewerConnectedWakeups()
     {
         var chip = new Fdc8271(2_000_000); var reference = new Fdc8271(2_000_000);

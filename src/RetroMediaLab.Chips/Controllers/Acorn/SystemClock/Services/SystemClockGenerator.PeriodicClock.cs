@@ -28,12 +28,17 @@ public sealed partial class SystemClockGenerator
         // changing output. This interval ends no later than the next 2 MHz edge.
         _oscillatorHigh = true;
         _inputClockCount = checked(_inputClockCount + periods);
-        _ic2.CaptureClockPeriods(periods, Ic2PeriodicInputs, _stableClockOrigin);
-        _ic3.CaptureClockPeriods(periods, Ic3PeriodicInputs, _stableClockOrigin);
-        _ic4.CaptureClockPeriods(periods, Ic4PeriodicInputs, _stableClockOrigin);
-        _ic2.ResolveClock();
-        _ic3.ResolveClock();
-        _ic4.ResolveClock();
+        // These internal input waveforms already represent the complete wired
+        // network. Resolve each component's canonical state directly; replaying
+        // its pin callbacks would repeat that same internal work. External pins
+        // are published only once all three states have reached the shared edge.
+        var ic2 = _ic2.ResolveRepresentedClockPeriods(periods, Ic2PeriodicInputs, _stableClockOrigin);
+        var ic3 = _ic3.ResolveRepresentedClockPeriods(periods, Ic3PeriodicInputs, _stableClockOrigin);
+        var ic4 = _ic4.ResolveRepresentedClockPeriods(periods, Ic4PeriodicInputs, _stableClockOrigin);
+        _ic2Pins = (byte)(ic2 & 15);
+        _ic4ClearHigh = (ic3 & 16) == 0;
+        _levels = (byte)(((ic2 & 1) << 1) | ((ic3 & 1) << 3) | ((ic3 & 6) << 4)
+            | (ic4 & 1) | ((ic4 & 2) << 1) | ((ic4 & 4) << 2));
         if (representedClocks != 0)
         {
             // These receiver fronts were delivered by its accepted periods.

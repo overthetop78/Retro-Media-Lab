@@ -588,6 +588,28 @@ public sealed class SystemClockGeneratorTests
         Assert.Equal(expected, actual);
     }
 
+    [Fact]
+    public void RepresentedNetworkCanReturnToAllExplicitClockOutputsWithoutAStateJump()
+    {
+        var grouped = new SystemClockGenerator(); var scalar = new SystemClockGenerator();
+        var receiver = new IndependentReceiver();
+        receiver.SetClock(grouped.Clock12MHz); grouped.Clock12MHzReceiver = receiver;
+        grouped.Clock2MHzChanged = _ => { };
+        grouped.AdvanceClocks(10_001); scalar.AdvanceClocks(10_001);
+        Assert.True(receiver.Periods > 0);
+        grouped.Clock12MHzReceiver = null;
+        var actual = new List<(long, int, bool)>(); var expected = new List<(long, int, bool)>();
+        Connect(grouped, (clock, high) => actual.Add((grouped.InputClockCount, clock, high)));
+        Connect(scalar, (clock, high) => expected.Add((scalar.InputClockCount, clock, high)));
+        grouped.AdvanceClocks(1_001); scalar.AdvanceClocks(1_001);
+        Assert.Equal(expected, actual);
+        Assert.Equal(scalar.Ic2.Count, grouped.Ic2.Count);
+        Assert.Equal(scalar.Ic3.Count, grouped.Ic3.Count);
+        Assert.Equal(scalar.Ic4.Count, grouped.Ic4.Count);
+        Assert.Equal(scalar.Ic4.Carry, grouped.Ic4.Carry);
+        Assert.Equal(scalar.Ic4.InputClockCount, grouped.Ic4.InputClockCount);
+    }
+
     private static int ExpectedLevels(long sourceTime) =>
         (sourceTime % 2 != 0 ? 1 : 0) | (sourceTime % 3 == 2 ? 2 : 0)
         | (sourceTime % 4 >= 2 ? 4 : 0) | (sourceTime / 3 % 2 != 0 ? 8 : 0)

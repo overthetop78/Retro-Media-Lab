@@ -101,6 +101,10 @@ internal sealed partial class SystemFloppyBoard
         if (!_disposed)
         {
             var active = _csHigh == false || _dackHigh == false;
+            // No host-bus transaction reaches a deselected8271. The card already
+            // retains all received pins and presents them together on selection.
+            // Always deliver the selected->deselected edge to release the bus.
+            if (!active && !_controllerBusActive) return;
             if (active || _controllerBusActive) SynchronizeController();
             _controllerBusActive = active;
             _fdc.SetBus(_csHigh == false, !_nRead, !_nWrite, _dackHigh == false, _address & 3, _busValue);

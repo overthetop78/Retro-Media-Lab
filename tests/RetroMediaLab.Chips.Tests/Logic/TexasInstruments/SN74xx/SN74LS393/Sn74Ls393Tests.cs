@@ -6,6 +6,52 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74LS393;
 public sealed class Sn74Ls393Tests
 {
     [Theory]
+    [InlineData(0)]
+    [InlineData(8)]
+    public void DeferredQaClockCountMatchesExplicitInputsWithoutMaterializingTheCounter(byte observed)
+    {
+        for (byte seed = 0; seed < 16; seed++)
+        {
+            var chip = new Sn74Ls393(4_000_000, 1_000_000, seed, 0, Sn74Ls393Timing.CalculatedTypical);
+            var scalar = new Sn74Ls393(4_000_000, 1_000_000, seed, 0, Sn74Ls393Timing.CalculatedTypical);
+            chip.SetObservedOutputs(0, observed); chip.FirstOutputsChanged = (_, _) => { };
+            chip.SetClock(0, true); scalar.SetClock(0, true);
+            chip.ConnectPeriodicClock(0, 125, 250, 125);
+            for (long time = 1; time <= 10_000; time++)
+            {
+                scalar.AdvanceTo(time); scalar.SetClock(0, time % 250 < 125);
+                while (chip.NextOutputEventNanoseconds is long next && next <= time) chip.AdvanceTo(next);
+                var beforeTime = chip.TimeNanoseconds; var beforeWord = chip.GetOutputs(0);
+                var beforeClocks = chip.GetInputClockCount(0); var beforeQa = chip.GetQaRisingClockCount(0);
+                Assert.True(chip.TryGetQaRisingClockCountAt(0, time, out var projected));
+                Assert.Equal(scalar.GetQaRisingClockCount(0), projected);
+                Assert.Equal(beforeTime, chip.TimeNanoseconds); Assert.Equal(beforeWord, chip.GetOutputs(0));
+                Assert.Equal(beforeClocks, chip.GetInputClockCount(0)); Assert.Equal(beforeQa, chip.GetQaRisingClockCount(0));
+            }
+            chip.AdvanceTo(10_000);
+            Assert.Equal(scalar.GetOutputs(0), chip.GetOutputs(0));
+            Assert.Equal(scalar.GetQaRisingClockCount(0), chip.GetQaRisingClockCount(0));
+        }
+    }
+
+    [Fact]
+    public void QaClockProjectionStopsAtARequestedResponseAndRejectsUnknownOrClearedClocks()
+    {
+        var chip = new Sn74Ls393(4_000_000, 1_000_000, 0, 0, Sn74Ls393Timing.CalculatedTypical);
+        chip.SetClock(0, true); chip.ConnectPeriodicClock(0, 125, 250, 125);
+        chip.FirstQaClockReached = _ => { }; chip.RequestQaClock(0, 2);
+        var deadline = chip.NextOutputEventNanoseconds!.Value;
+        Assert.True(chip.TryGetQaRisingClockCountAt(0, deadline - 1, out var count)); Assert.Equal(1, count);
+        Assert.False(chip.TryGetQaRisingClockCountAt(0, deadline, out _));
+        chip.AdvanceTo(deadline);
+        Assert.Equal(2, chip.GetQaRisingClockCount(0));
+        chip.SetClear(0, true);
+        Assert.False(chip.TryGetQaRisingClockCountAt(0, deadline + 1, out _));
+        chip.AdvanceTo(deadline + 100); chip.SetClear(0, false); chip.DisconnectPeriodicClock(0);
+        Assert.False(chip.TryGetQaRisingClockCountAt(0, deadline + 101, out _));
+    }
+
+    [Theory]
     [InlineData(40, 20)]
     [InlineData(250, 238)]
     public void PeriodicInputMatchesOverlappingRipplesAndResponsesAtTheNextInputRise(long period, long highDuration)

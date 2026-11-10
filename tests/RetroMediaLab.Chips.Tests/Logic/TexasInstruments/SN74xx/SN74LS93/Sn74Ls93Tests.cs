@@ -8,6 +8,57 @@ public sealed class Sn74Ls93Tests
     private static Sn74Ls93 Create(byte initial = 0) => new(4_000_000, 2_000_000, initial, Sn74Ls93Timing.CalculatedTypical);
 
     [Fact]
+    public void ExternalPeriodicQaToCkbWireMatchesTheScalarCascadeAndReset()
+    {
+        for (byte seed = 0; seed < 16; seed++)
+        {
+            var chip = Create(seed); var scalar = Create(seed);
+            chip.SetClock(1, (seed & 1) != 0); scalar.SetClock(1, (seed & 1) != 0);
+            var actual = new List<(long, byte, byte)>(); var expected = new List<(long, byte, byte)>();
+            var described = false;
+            chip.OutputsChanged = (levels, changed) =>
+            {
+                if (!described && (changed & 1) != 0) chip.SetClock(1, (levels & 1) != 0);
+                if ((changed & 14) != 0) actual.Add((chip.TimeNanoseconds, levels, (byte)(changed & 14)));
+            };
+            chip.QaPeriodicClockChanged = (fall, period, high) =>
+            {
+                if (period == 0)
+                {
+                    chip.DisconnectPeriodicClock(1); described = false; chip.SetObservedOutputs(15);
+                }
+                else
+                {
+                    chip.ConnectPeriodicClock(1, fall, period, high); described = true; chip.SetObservedOutputs(14);
+                }
+            };
+            scalar.OutputsChanged = (levels, changed) =>
+            {
+                if ((changed & 1) != 0) scalar.SetClock(1, (levels & 1) != 0);
+                if ((changed & 14) != 0) expected.Add((scalar.TimeNanoseconds, levels, (byte)(changed & 14)));
+            };
+            chip.SetClock(0, true); scalar.SetClock(0, true);
+            chip.ConnectPeriodicClock(0, 125, 250, 125);
+            long previous = 0;
+            foreach (var end in new long[] { 711, 717, 1_233, 1_259, 10_000, 10_100, 50_000 })
+            {
+                for (var time = previous + 1; time <= end; time++)
+                {
+                    scalar.AdvanceTo(time); scalar.SetClock(0, time % 250 < 125);
+                }
+                chip.AdvanceTo(end);
+                Assert.Equal(expected, actual);
+                Assert.Equal(scalar.Outputs, chip.Outputs);
+                Assert.Equal(scalar.GetInputClockCount(0), chip.GetInputClockCount(0));
+                Assert.Equal(scalar.GetInputClockCount(1), chip.GetInputClockCount(1));
+                var reset = end is 711 or 1_233 or 10_000;
+                scalar.SetResets(reset, reset); chip.SetResets(reset, reset);
+                previous = end;
+            }
+        }
+    }
+
+    [Fact]
     public void PeriodicQaWirePreservesDownstreamTransitionsAcrossAsynchronousResets()
     {
         for (byte seed = 0; seed < 16; seed++)

@@ -52,7 +52,7 @@ public sealed partial class Sn74Ls393 : ISn74Ls393
     /// <summary>Next connected pin or requested QA rising-clock response.
     /// Unobserved internal stages are still resolved before every input.</summary>
     public long? NextOutputEventNanoseconds => (_periodicChannels == 0 ? OutputDeadline() : ConnectedDeadline()) is var next && next != 0 ? next : null;
-    public Action<long?>? NextOutputEventNanosecondsChanged { get => _nextOutputEventChanged; set => _nextOutputEventChanged = value; }
+    public Action<long?>? NextOutputEventNanosecondsChanged { get => _nextOutputEventChanged; set { _nextOutputEventChanged = value; PublishDeadline(); } }
     public Action<long>? FirstQaClockReached { get => _firstQaClockReached; set { _firstQaClockReached = value; PublishDeadline(); } }
     public Action<long>? SecondQaClockReached { get => _secondQaClockReached; set { _secondQaClockReached = value; PublishDeadline(); } }
     public long GetQaRisingClockCount(int channel) => Get(channel).QaRises;

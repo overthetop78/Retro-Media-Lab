@@ -55,8 +55,14 @@ public sealed partial class Sn74Ls93
         // Unobserved QA cannot affect the other section without an external wire.
         // Its waveform recipient carries that wire, so only already pending
         // responses (including asynchronous reset) can require board attention.
-        if (_periodicInputs == 1 && ((_observed & 1) == 0 || _resets == 3))
-            return _observed == 0 ? 0 : _next;
+        if ((_periodicInputs & 1) != 0 && (_observed & 1) == 0)
+        {
+            // A described QA edge is consumed by its waveform receiver. CKB
+            // and its pending ripple remain independent observable causes.
+            var response = (_pending & ~1) != 0 ? _next : 0;
+            return EarlierInput(response, _inputFall[1]);
+        }
+        if (_periodicInputs == 1 && _resets == 3) return _next;
         return ReceivedDeadline();
     }
 }

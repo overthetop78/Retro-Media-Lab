@@ -5,6 +5,8 @@ namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.
 internal sealed partial class SystemFloppyBoard
 {
     internal bool? DataWindow => _ic12.GetOutput(2);
+    private bool _separatorClockDescribed;
+    private bool _separatorCascadeDescribed;
 
     private void WireSeparator()
     {
@@ -12,15 +14,51 @@ internal sealed partial class SystemFloppyBoard
         _ic7.SetObservedOutputs(C.Qa | C.Qb | C.Qd);
         _ic14.OutputsChanged = (levels, _) =>
         {
+            if (_separatorClockDescribed) return;
             _ic7.AdvanceTo(_time);
             _ic7.SetClock(0, (levels & C.Qa) != 0);
         };
+        _ic14.QaPeriodicClockChanged = (fall, period, high) =>
+        {
+            if (_disposed) return;
+            _ic7.AdvanceTo(_time);
+            if (period == 0)
+            {
+                _ic7.DisconnectPeriodicClock(0);
+                _separatorClockDescribed = false;
+                _ic14.SetObservedOutputs(C.Qa);
+            }
+            else
+            {
+                _ic7.ConnectPeriodicClock(0, fall, period, high);
+                _separatorClockDescribed = true;
+                _ic14.SetObservedOutputs(0);
+            }
+        };
         _ic7.OutputsChanged = (levels, changed) =>
         {
-            if ((changed & C.Qa) != 0) _ic7.SetClock(1, (levels & C.Qa) != 0);
+            if (!_separatorCascadeDescribed && (changed & C.Qa) != 0) _ic7.SetClock(1, (levels & C.Qa) != 0);
             if ((changed & (C.Qb | C.Qd)) == 0) return;
             _ic12.AdvanceTo(_time);
             _ic12.SetInputs(1, (levels & C.Qd) != 0, (levels & C.Qb) != 0);
+        };
+        // This is the physical external QA->CKB wire, not an implicit cascade
+        // inside the counter. During reset its explicit level changes remain.
+        _ic7.QaPeriodicClockChanged = (fall, period, high) =>
+        {
+            if (_disposed) return;
+            if (period == 0)
+            {
+                _ic7.DisconnectPeriodicClock(1);
+                _separatorCascadeDescribed = false;
+                _ic7.SetObservedOutputs(C.Qa | C.Qb | C.Qd);
+            }
+            else
+            {
+                _ic7.ConnectPeriodicClock(1, fall, period, high);
+                _separatorCascadeDescribed = true;
+                _ic7.SetObservedOutputs(C.Qb | C.Qd);
+            }
         };
         _ic12.OutputChanged = (gate, high) =>
         {

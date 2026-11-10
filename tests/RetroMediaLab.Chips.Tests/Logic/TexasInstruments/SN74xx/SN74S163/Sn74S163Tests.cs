@@ -17,6 +17,9 @@ public sealed class Sn74S163Tests
             {
                 var grouped = new Sn74S163(24_000_000, initial);
                 var unit = new Sn74S163(24_000_000, initial);
+                var represented = new Sn74S163(24_000_000, initial);
+                represented.ResolveRepresentedClockPeriods(periods, inputs, -phase);
+                Assert.True(represented.ClockHigh);
                 grouped.CaptureClockPeriods(periods, inputs, -phase);
                 for (var edge = 0; edge < periods; edge++)
                 {
@@ -28,14 +31,21 @@ public sealed class Sn74S163Tests
                 }
                 grouped.ResolveClock();
                 grouped.ReceiveFallingClock();
+                represented.ReceiveFallingClock();
                 Assert.Equal(unit.Count, grouped.Count);
+                Assert.Equal(unit.Count, represented.Count);
                 Assert.Equal(unit.Carry, grouped.Carry);
+                Assert.Equal(unit.Carry, represented.Carry);
                 Assert.Equal(unit.InputClockCount, grouped.InputClockCount);
+                Assert.Equal(unit.InputClockCount, represented.InputClockCount);
                 Assert.False(grouped.ClockHigh);
                 unit.Clock();
                 grouped.Clock();
+                represented.Clock();
                 Assert.Equal(unit.Count, grouped.Count);
+                Assert.Equal(unit.Count, represented.Count);
                 Assert.Equal(unit.Carry, grouped.Carry);
+                Assert.Equal(unit.Carry, represented.Carry);
             }
         }
 

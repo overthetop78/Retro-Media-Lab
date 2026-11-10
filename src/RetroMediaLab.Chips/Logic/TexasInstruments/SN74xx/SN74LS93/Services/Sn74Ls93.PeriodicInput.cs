@@ -101,8 +101,12 @@ public sealed partial class Sn74Ls93
         // CKA drives QA only: it has no internal wire to CKB. A periodic QA
         // recipient already represents these transitions; scalar observers still
         // require the ordinary response path. Keep the unfinished last response.
-        if (_periodicInputs != 1 || _pending != 0 || (_observed & 1) != 0
+        if ((_periodicInputs & 1) == 0 || _pending != 0 || (_observed & 1) != 0
             || _inputFall[0] == 0 || target < Math.Max(_rise[0], _fall[0])) return false;
+        // CKB is a genuinely independent input (possibly wired from QA by the
+        // caller). Stop before its next edge; never precompute past feedback.
+        if (_inputFall[1] != 0) target = Math.Min(target, _inputFall[1] - 1);
+        if (target < Math.Max(_rise[0], _fall[0])) return false;
         var lastSettled = target - Math.Max(_rise[0], _fall[0]);
         var first = _inputFall[0];
         if (first > lastSettled) return false;

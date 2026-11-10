@@ -52,13 +52,13 @@ internal sealed partial class SystemFloppyBoard : IDisposable
         _ic4.NextEventNanosecondsChanged = next => RememberDeadline(C.Decode, next);
         _ic5.NextEventNanosecondsChanged = next => RememberDeadline(C.Drive, next);
         _ic6.NextEventNanosecondsChanged = next => RememberDeadline(C.Write, next);
-        _ic7.NextEventNanosecondsChanged = next => RememberDeadline(C.Separator, next);
+        _ic7.NextOutputEventNanosecondsChanged = next => RememberDeadline(C.Separator, next);
         _ic8.NextOutputEventNanosecondsChanged = next => RememberDeadline(C.Divider, next);
         _ic9.NextEventNanosecondsChanged = next => RememberDeadline(C.Timeout, next);
         _ic10.NextEventNanosecondsChanged = next => RememberDeadline(C.Ready1, next);
         _ic11.NextEventNanosecondsChanged = next => RememberDeadline(C.Ready0, next);
         _ic12.NextEventNanosecondsChanged = next => RememberDeadline(C.Latch, next);
-        _ic14.NextEventNanosecondsChanged = next => RememberDeadline(C.Predivider, next);
+        _ic14.NextOutputEventNanosecondsChanged = next => RememberDeadline(C.Predivider, next);
         WireBus(); WireReady(); WireSeparator(); WireDrive();
         _fdc.DriveSignalsChanged += ControllerDriveChanged;
         _fdc.WriteDataChanged += ControllerWriteDataChanged;
@@ -207,6 +207,10 @@ internal sealed partial class SystemFloppyBoard : IDisposable
         _fdc.NextClockEventChanged -= ControllerClockEventChanged;
         _ic8.NextOutputEventNanosecondsChanged = null;
         _ic8.FirstQaClockReached = null;
+        _ic14.QaPeriodicClockChanged = null;
+        _ic14.NextOutputEventNanosecondsChanged = null;
+        _ic7.QaPeriodicClockChanged = null;
+        _ic7.NextOutputEventNanosecondsChanged = null;
         NextEventNanosecondsChanged = null;
         DriveLinesChanged = null; NmiChanged = null;
         // The borrowed controller, media and machine are never reset or destroyed here.

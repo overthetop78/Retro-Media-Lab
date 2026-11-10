@@ -223,3 +223,21 @@ Contrôles actuels :48 cas SystemClock,18 cas93 et47 cas393, soit113 réussites,
 
 ### Point de reprise du transport périodique4 MHz
 Le premier raccordement machine complet a48 contrôles carte/horloges réussis, y compris lecture/écriture/relecture avec les deux transports. La comparaison native Debug reste défavorable :166,03954→168,74964 ms/champ (+1,632 %), empreintes vidéo/audio égales. Ne pas considérer la simple description du signal4 MHz comme une accélération obtenue ; les réveils du récepteur aval restent à refondre. Aucun changement des fréquences ni des options Debug. Le commit complet demandé constitue un point de reprise, pas une clôture System5.
+
+### Réseau qualifié résolu directement
+49 contrôles générateur réussissent, zéro échec/ignoré,171 ms. Les trois163 résolvent chacun leur capture périodique dans leur propre état canonique ; leurs liaisons internes déjà décrites ne sont pas rejouées par callbacks, et les niveaux externes sont réunis seulement après résolution des trois états. Les fronts de sortie12/4/2 MHz et les descentes CLK restent représentés. Les comparaisons de phases/graines et d'ordres des fronts existantes passent ; un cas supplémentaire revient du réseau groupé aux sept sorties explicites après10001 périodes et compare1001 fronts supplémentaires, états, RCO et comptes identiques. Aucun gain isolé annoncé ; comparaison sur le bloc complet.
+
+## Comparaison du bloc architectural complet —10 novembre2026
+Le générateur résout directement les états canoniques des trois163 depuis les motifs d'entrée déjà établis, puis publie les seuls niveaux externes de la frontière ; aucun fil interne décrit n'est rejoué. Le393 projette localement le compte QA entre deux effets raccordés au lieu de matérialiser chaque ripple lors de la synchronisation8271. Le bus de carte retient ses pins et ne transmet plus les variations à8271 pendant une désélection déjà effective ; la sélection et sa libération restent transmises. Les trains IC14/QA→IC7/CKA et IC7/QA→CKB conservent leurs révocations/reset et repli explicite.
+Contrôles :50 cas393 (894 ms),16 cas163 (432 ms),49 cas générateur (171 ms),49 cas carte/horloges (16 s), tous réussis sans échec/ignoré. Le contrôle393 couvre les projections non mutantes et leur refus aux frontières qualifiées ; les contrôles163 et générateur comparent aussi le retour au parcours explicite. Les contrôles de carte conservent les bus/mirroirs, NMI, resets, fenêtre et lectures/écritures/relectures128 octets.
+Comparaison native appariée dans le même processus : deux contextes collectables isolent chacun leur couple Acorn/Chips. Référence : les cinq sources source-clock/carte du point63d77fc27 ; les autres sources (dont les nouvelles API inutilisées dans ce témoin) et la fabrique sont identiques. Aucun réglage matériel ni option Debug différent ; DisableOptimizations vérifié dans les quatre DLL.20 champs de chauffe puis3×20, ordre alterné, vidéo/audio inclus et empreintes hors chronométrage.
+
+| Fenêtre | Référence ms/champ | Candidat ms/champ |
+| --- | ---: | ---: |
+|1 |177,58559 |115,42187 |
+|2 |177,71615 |113,45575 |
+|3 |178,55178 |114,99553 |
+| **Moyenne** | **177,95117** | **114,62438** |
+
+**Temps réduit de35,587 %, accélération1,5525×.** Les trois empreintes vidéo/audio et les durées émulées sont identiques ; les deux cœurs sont fermés et les deux contextes effectivement déchargés après la mesure. Champ matériel19,968 ms à50,08013 Hz ; candidat **8,72415 champs/s et17,42038 % nominal**, sans limite et hors RML. Cette refonte n'atteint ni la réduction50 % demandée ni100 % de cadence. La machine reste ouverte ; les avances entre interactions et les coûts globaux restants nécessitent une poursuite structurelle, pas une déclaration de clôture.
+Rapport ignoré : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-architecture-block-native.md`. Les cinq sources courantes ont été sauvegardées en octets avant la construction témoin et restaurées dans finally, puis le candidat a été reconstruit. Fabrique, diagnostics externes et copies DLL sont retirés après consignation ; le rapport reste conservé.
