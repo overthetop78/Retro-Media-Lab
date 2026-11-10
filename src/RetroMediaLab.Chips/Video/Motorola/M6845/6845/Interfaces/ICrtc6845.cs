@@ -64,5 +64,6 @@ public interface ICrtc6845
 
     bool CursorForCell(int address);
     bool Tick();
+    int AdvanceLinearCharacters(int maximum, Func<int, int, bool> receiveAddresses);
     void Reset();
 }

@@ -10,6 +10,44 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuSystemPrivateClockTests
 {
     [Theory]
+    [InlineData(0, 0, true)]
+    [InlineData(3, 0, true)]
+    [InlineData(3, 1, true)]
+    [InlineData(3, 2, true)]
+    [InlineData(0, 3, true)]
+    [InlineData(0, 0, false)]
+    [InlineData(3, 2, false)]
+    public void LinearCharactersPreserveFieldsWritesCrtcAndVduState(byte mode, byte skew, bool constant)
+    {
+        using var actual = Create(true, true, mode, constant);
+        using var reference = Create(true, true, mode, constant);
+        var video = Field<SystemVideo>(actual, "_video"); var expected = Field<SystemVideo>(reference, "_video");
+        expected.GroupLinearCharacters = false;
+        foreach (var machine in new[] { actual, reference })
+        {
+            machine.Write(0x1840, 8); machine.Write(0x1841, (byte)(mode | skew << 4 | skew << 6));
+            // Repeated runs, transitions at their ends, and distinct glyphs.
+            for (var address = 0; address < 1024; address++)
+                machine.Write((ushort)(0x1000 + address), (byte)((address / 37) % 5));
+        }
+        for (var field = 0; field < 8; field++)
+        {
+            CompareFields(reference, actual, 1);
+            var crtc = Field<RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services.Crtc6845>(video, "_crtc");
+            var other = Field<RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services.Crtc6845>(expected, "_crtc");
+            Assert.Equivalent(other.CaptureState(), crtc.CaptureState(), strict: true);
+            var a = Field<RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services.Vdu80CharacterGenerator>(video, "_monochrome");
+            var b = Field<RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services.Vdu80CharacterGenerator>(expected, "_monochrome");
+            Assert.Equal((b.DotClockCount, b.CharacterClockCount, b.TimeNanoseconds, b.VideoWhite),
+                (a.DotClockCount, a.CharacterClockCount, a.TimeNanoseconds, a.VideoWhite));
+            var address = (ushort)(0x1000 + ((field * 83) & 1023));
+            actual.Write(address, (byte)(field + 9)); reference.Write(address, (byte)(field + 9));
+        }
+        if (constant) Assert.True(video.RepresentedLinearCharacters > 0);
+        Assert.Equal(0, expected.RepresentedLinearCharacters);
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(3)]
     public void SettledCharacterPeriodsMatchAllFieldsAndVideoClockTotals(byte mode)

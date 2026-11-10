@@ -14,6 +14,9 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
     private int _monochromeY;
     internal bool GroupSettledCharacters { get; set; } = true;
     internal long RepresentedSettledCharacters { get; private set; }
+    internal bool GroupLinearCharacters { get; set; } = true;
+    internal long RepresentedLinearCharacters { get; private set; }
+    private Func<int, int, bool>? _linearAddressReceiver;
 
     /// <summary>The CPU has consumed only private-memory cycles. No VDU input
     /// changed during this prefix; replay its clocks independently, preserving
@@ -23,6 +26,18 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
         var dots = (IIndependentClockPeriodReceiver)this;
         for (var period = 0; period < periods; period++)
         {
+            if (GroupSettledCharacters && GroupLinearCharacters && periods - period >= 2)
+            {
+                var count = _crtc.AdvanceLinearCharacters(periods - period, _linearAddressReceiver!);
+                if (count != 0)
+                {
+                    period += count - 1;
+                    _characterClocks += count;
+                    RepresentedSettledCharacters += count;
+                    RepresentedLinearCharacters += count;
+                    continue;
+                }
+            }
             if (GroupSettledCharacters && _monochrome!.TryAdvanceSettledCharacterPeriods(1, out var white))
             {
                 DrawConstantMonochromeDots(C.MonochromeCellPixels / 2, white);
@@ -38,6 +53,21 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
             SetCharacterClock(false);
             TickCharacter();
         }
+    }
+
+    private bool ReceiveLinearAddresses(int first, int count)
+    {
+        var data = _ram[_monochromeRamIndex];
+        for (var offset = 0; offset < count; offset++)
+            if (_ram[(first + offset) & (_ram.Length - 1)] != data) return false;
+        if (!_monochrome!.TryAdvanceSettledCharacterPeriods(count, out var white)) return false;
+        // First half-cell finishes the preceding position; each intervening
+        // character then resets X to the next adjacent six-pixel cell. No line
+        // boundary can occur inside the CRTC's accepted range.
+        DrawConstantMonochromeDots(C.MonochromeCellPixels / 2, white);
+        PositionMonochromeCharacterPixels();
+        DrawConstantMonochromeDots(count * C.MonochromeCellPixels - C.MonochromeCellPixels / 2, white);
+        return true;
     }
 
     internal bool StableClockCandidate => _monochrome?.StableClockCandidate == true;
@@ -105,6 +135,7 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
     private void ConfigureMonochrome(ReadOnlySpan<byte> characters, bool inverted)
     {
         var circuit = _monochrome = new Vdu80CharacterGenerator(characters);
+        _linearAddressReceiver = ReceiveLinearAddresses;
         _crtc.MemoryAddressChanged = SetMonochromeAddress;
         _crtc.RasterAddressChanged = circuit.SetRasterAddress;
         _crtc.DisplayEnabledChanged = circuit.SetDisplayEnabled;

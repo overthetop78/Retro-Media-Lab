@@ -572,3 +572,18 @@ Comparaison native Debug, mêmes DLL/ROM NOS80/VDU80 et horloges, 20 champs de c
 | Moyenne | 56,67859 | 49,25275 |
 
 Temps réduit de 13,102 %, soit 40,542 % du nominal et 20,303 champs/s hors interface. Vidéo, audio, durée, registres CPU, RAM et compteurs identiques pour les trois paires. Ce résultat concerne la machine entière, pas un débit isolé du 393. System 5 reste sous la cadence nominale et non terminé. Rapport : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-qd-divider-native.md`.
+
+## Portions vidéo linéaires retenues —10 novembre2026
+Le CRTC conserve ses compteurs et calcule une portion sans autre changement de signal. Son destinataire accepte les adresses successives uniquement si la RAM présente les mêmes données et si le VDU peut représenter les périodes complètes avant ses échéances. Le rendu conserve les coordonnées des demi-cellules et les mêmes RGB. Les frontières de ligne, DE/CU, synchronisations, changements de données, LP et reset reprennent le parcours ordinaire.
+110 contrôles CRTC et164 contrôles System/carte réussis, zéro échec. Les nouveaux tests comparent états CRTC complets, traces datées, phases et comptes VDU, champs, audio, CPU et RAM ; skews0..3, progressif/entrelacé et écritures vidéo inclus. Rapports TRX `20261110-linear-characters.trx` sous TestsChips/MC6845 et `20261110-linear-video-integration.trx` sous TestsMachines/Acorn/Acorn System 5.
+
+Comparaison Debug native NOS80/VDU80, RAM2000–DFFF, carte400004 sans média, mêmes DLL et horloges, tous les parcours déjà retenus actifs ; seul GroupLinearCharacters diffère.20 champs de chauffe puis3×20 en ordre alterné. RunFrame/DrainAudio chronométrés ; calcul des hashes hors chronomètre.
+
+| Fenêtre | Caractères unitaires, ms/champ | Portion linéaire, ms/champ |
+| --- | ---: | ---: |
+| 1 | 51,26419 | 47,17495 |
+| 2 | 50,50883 | 46,79031 |
+| 3 | 51,23617 | 43,49262 |
+| Moyenne | 51,00306 | 45,81929 |
+
+Temps réduit de10,164 %, cadence43,580 % nominal,21,82487 champs/s hors interface.2 039 859 caractères effectivement représentés pendant chauffe/mesure. Les trois hashes vidéo/audio/durée, registres CPU/cycles, RAM, ticks/source, état CRTC et comptes VDU sont identiques. Deux cœurs possédés libérés par using ; aucun lancement RML ni changement de compilation Debug. Rapport `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-linear-video-native.md`. Comparaison appariée de ce bloc uniquement : les valeurs de passages antérieurs ne constituent pas sa référence. Gain retenu, System5 reste incomplet sur sa cadence ; aucun passage à la machine suivante.
