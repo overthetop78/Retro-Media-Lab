@@ -1,4 +1,6 @@
 using System.Reflection;
+using RetroMediaLab.Emulation.Contracts;
+using RetroMediaLab.Emulation.Enums;
 using RetroMediaLab.Chips.CPU.MOS.MCS6500.Chip6502.Services;
 using RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Services;
 using RetroMediaLab.Chips.Controllers.Acorn.SystemCpuClock.Services;
@@ -9,6 +11,50 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuSystemPrivateClockTests
 {
+    [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
+    public void IsolatedViaReadsRetainKeyboardIrqVideoStateAndControlModeFallback(byte mode)
+    {
+        using var actual = Create(true, true, mode);
+        using var reference = Create(true, true, mode);
+        reference.GroupViaReadPeriods = false;
+        var via = Field<RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services.Via6522>(actual, "_via");
+        var otherVia = Field<RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services.Via6522>(reference, "_via");
+        var video = Field<SystemVideo>(actual, "_video"); var otherVideo = Field<SystemVideo>(reference, "_video");
+        var actualVdu = Field<RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services.Vdu80CharacterGenerator>(video, "_monochrome");
+        var expectedVdu = Field<RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services.Vdu80CharacterGenerator>(otherVideo, "_monochrome");
+        var videoEvents = new List<(long, bool?)>(); var expectedVideoEvents = new List<(long, bool?)>();
+        actualVdu.VideoChanged = level => videoEvents.Add((actualVdu.TimeNanoseconds, level));
+        expectedVdu.VideoChanged = level => expectedVideoEvents.Add((expectedVdu.TimeNanoseconds, level));
+        for (var field = 0; field < 8; field++)
+        {
+            var input = field % 2 == 0 ? EmulationInputSnapshot.Empty with
+                { Keys = new HashSet<EmulationKey> { EmulationKey.A } } : EmulationInputSnapshot.Empty;
+            actual.SetInput(input); reference.SetInput(input);
+            CompareFields(reference, actual, 1);
+            Assert.Equivalent(otherVia.CaptureState(), via.CaptureState(), strict: true);
+            Assert.Equal(expectedVideoEvents, videoEvents);
+            expectedVideoEvents.Clear(); videoEvents.Clear();
+            var a = Field<RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services.Vdu80CharacterGenerator>(video, "_monochrome");
+            var b = Field<RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services.Vdu80CharacterGenerator>(otherVideo, "_monochrome");
+            Assert.Equal((b.DotClockCount, b.CharacterClockCount, b.TimeNanoseconds),
+                (a.DotClockCount, a.CharacterClockCount, a.TimeNanoseconds));
+        }
+        Assert.True(actual.RepresentedViaReadPeriods > 0);
+        Assert.Equal(0, reference.RepresentedViaReadPeriods);
+        var count = actual.RepresentedViaReadPeriods;
+        // CA2 pulse output: the ordinary bus/clock route must handle handshakes.
+        actual.Write(0x0e0c, 0x0a); reference.Write(0x0e0c, 0x0a);
+        CompareFields(reference, actual, 2);
+        Assert.Equal(count, actual.RepresentedViaReadPeriods);
+        Assert.Equivalent(otherVia.CaptureState(), via.CaptureState(), strict: true);
+        actual.Write(0x0e0c, 0); reference.Write(0x0e0c, 0);
+        CompareFields(reference, actual, 2);
+        Assert.True(actual.RepresentedViaReadPeriods > count);
+        Assert.Equivalent(otherVia.CaptureState(), via.CaptureState(), strict: true);
+    }
+
     [Theory]
     [InlineData(0, 0, true)]
     [InlineData(3, 0, true)]

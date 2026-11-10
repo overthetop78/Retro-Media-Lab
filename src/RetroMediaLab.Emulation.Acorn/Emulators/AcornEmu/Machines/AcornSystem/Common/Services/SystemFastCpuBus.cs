@@ -14,6 +14,8 @@ internal sealed class SystemFastCpuBus(AcornSystemMachine board) : ICpuBus, ICpu
     private byte _preparedValue;
     internal bool CanRepresentPreparedCycle => _prepared && _buffersEnabled && !_phaseHigh
         && board.IsPrivateCpuMemoryAddress(_preparedAddress);
+    internal bool CanRepresentPreparedViaRead => _prepared && _buffersEnabled && !_phaseHigh && ReadHigh
+        && board.IsIndependentViaReadAddress(_preparedAddress);
 
     internal void BeginRepresentedPrivateCycles()
     {

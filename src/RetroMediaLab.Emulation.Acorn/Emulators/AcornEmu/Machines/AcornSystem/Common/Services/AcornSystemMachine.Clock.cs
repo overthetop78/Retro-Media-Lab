@@ -1,5 +1,6 @@
 using RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Services;
 using RetroMediaLab.Chips.Controllers.Acorn.SystemCpuClock.Services;
+using RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Enums;
 using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Constants.SystemConstants;
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
@@ -12,6 +13,7 @@ internal sealed partial class AcornSystemMachine
     // API batch size only. Physical division and phase remain in the three counters.
     private readonly long _fastAdvanceBatch;
     private long _floppySourceCount = -1;
+    private bool _viaReadCanRunIndependently;
 
     private void WireFastClock()
     {
@@ -28,6 +30,8 @@ internal sealed partial class AcornSystemMachine
         bus.BuffersEnabled = control.BusBuffersEnabled;
         cpu.SetReady(control.Ready);
         cpu.SetReset(false);
+        _via!.ControlOutputsChanged = outputs => _viaReadCanRunIndependently = outputs == ViaControlOutputs.None;
+        _viaReadCanRunIndependently = _via.ControlOutputs == ViaControlOutputs.None;
         cpu.PhaseOutputsChanged = (_, high) =>
         {
             bus.SetPhase(high);

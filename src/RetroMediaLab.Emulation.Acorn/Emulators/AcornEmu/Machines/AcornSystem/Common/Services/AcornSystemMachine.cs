@@ -301,6 +301,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine, IDisp
 
     public void Dispose()
     {
+        if (_fastCpuBus is not null && _via is not null) _via.ControlOutputsChanged = null;
         try { _floppyConnector?.Dispose(); }
         finally { _floppyBoard?.Dispose(); }
     }
