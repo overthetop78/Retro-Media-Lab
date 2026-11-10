@@ -6,6 +6,8 @@ internal static class Vdu80CharacterConstants
     internal const long DotFrequency = 12_000_000;
     internal const long HalfDotFrequency = 24_000_000;
     internal const long NanosecondsPerSecond = 1_000_000_000;
+    internal const long CharacterPeriodNanoseconds = NanosecondsPerSecond / CharacterFrequency;
+    internal const long DotPeriodsPerCharacter = DotFrequency / CharacterFrequency;
     internal const long LoadPulseNanoseconds = 20; // Handbook typical, not a board measurement.
     internal const long DisplayDelayNanoseconds = 500; // Handbook: one character.
     internal const long RomAddressNanoseconds = 450; // National maximums.

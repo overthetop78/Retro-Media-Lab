@@ -10,6 +10,24 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuSystemPrivateClockTests
 {
     [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
+    public void SettledCharacterPeriodsMatchAllFieldsAndVideoClockTotals(byte mode)
+    {
+        using var actual = Create(true, true, mode, constantCharacters: true);
+        using var reference = Create(true, true, mode, constantCharacters: true);
+        var video = Field<SystemVideo>(actual, "_video"); var expected = Field<SystemVideo>(reference, "_video");
+        expected.GroupSettledCharacters = false;
+        CompareFields(reference, actual, 8);
+        Assert.True(video.RepresentedSettledCharacters > 0);
+        Assert.Equal(0, expected.RepresentedSettledCharacters);
+        var a = Field<RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services.Vdu80CharacterGenerator>(video, "_monochrome");
+        var b = Field<RetroMediaLab.Chips.Controllers.Acorn.Vdu80CharacterGenerator.Services.Vdu80CharacterGenerator>(expected, "_monochrome");
+        Assert.Equal(b.DotClockCount, a.DotClockCount); Assert.Equal(b.CharacterClockCount, a.CharacterClockCount);
+        Assert.Equal(b.TimeNanoseconds, a.TimeNanoseconds);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void WaitOrDmaKeepsTheOrdinaryPathAndResumesAtTheSameCpuPhase(bool dma)
@@ -87,10 +105,10 @@ public sealed class AcornEmuSystemPrivateClockTests
         }
     }
 
-    private static AcornSystemMachine Create(bool disk, bool timer, byte mode)
+    private static AcornSystemMachine Create(bool disk, bool timer, byte mode, bool constantCharacters = false)
     {
         var rom = new byte[8192]; rom[^4] = 0; rom[^3] = 2; rom[^2] = 0; rom[^1] = 3;
-        var characters = Enumerable.Range(0, 2048).Select(index => (byte)(index * 37 & 63)).ToArray();
+        var characters = constantCharacters ? new byte[2048] : Enumerable.Range(0, 2048).Select(index => (byte)(index * 37 & 63)).ToArray();
         var machine = new AcornSystemMachine(SystemCpuCard.Fast6502A, rom, characters, [(0x2000, 0xc000)], disk);
         try
         {

@@ -12,6 +12,8 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
     // Presentation coordinates only. The real clocks, latches and shift count live in Chips.
     private int _monochromeX;
     private int _monochromeY;
+    internal bool GroupSettledCharacters { get; set; } = true;
+    internal long RepresentedSettledCharacters { get; private set; }
 
     /// <summary>The CPU has consumed only private-memory cycles. No VDU input
     /// changed during this prefix; replay its clocks independently, preserving
@@ -21,6 +23,15 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
         var dots = (IIndependentClockPeriodReceiver)this;
         for (var period = 0; period < periods; period++)
         {
+            if (GroupSettledCharacters && _monochrome!.TryAdvanceSettledCharacterPeriods(1, out var white))
+            {
+                DrawConstantMonochromeDots(C.MonochromeCellPixels / 2, white);
+                PositionMonochromeCharacterPixels();
+                DrawConstantMonochromeDots(C.MonochromeCellPixels / 2, white);
+                TickCharacter();
+                RepresentedSettledCharacters++;
+                continue;
+            }
             dots.AdvancePeriods(C.MonochromeCellPixels / 2, dotHigh);
             SetCharacterClock(true);
             dots.AdvancePeriods(C.MonochromeCellPixels / 2, dotHigh);
@@ -70,12 +81,18 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
         var count = startHigh ? _monochrome.AdvanceStableDotClockPeriods(maximumPeriods)
             : _monochrome.AdvanceStableDotClocks(maximumPeriods);
         if (count == 0) return 0;
+        DrawConstantMonochromeDots(count, white);
+        return count;
+    }
+
+    private void DrawConstantMonochromeDots(int count, bool white)
+    {
         var first = _monochromeX;
         _monochromeX += count;
-        if ((uint)_monochromeY >= C.Height) return count;
+        if ((uint)_monochromeY >= C.Height) return;
         var start = Math.Max(0, first);
         var end = Math.Min(C.Width, _monochromeX);
-        if (end <= start) return count;
+        if (end <= start) return;
         // Monochrome frames are cleared to zero, including alpha. Fill the same
         // native RGB bytes as explicit dots, preserving the zero alpha channel.
         var pixel = white ? (uint)C.PixelLevel * 0x010101u : 0u;
@@ -83,7 +100,6 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
         var bytes = _drawing.AsSpan((_monochromeY * C.Width + start) * C.PixelBytes,
             (end - start) * C.PixelBytes);
         MemoryMarshal.Cast<byte, uint>(bytes).Fill(pixel);
-        return count;
     }
 
     private void ConfigureMonochrome(ReadOnlySpan<byte> characters, bool inverted)
@@ -113,10 +129,15 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
         {
             // Crop the native active area after the one-character ROM pipeline.
             // Do not undo CRTC skew: its physical MA/DE/CU already reach the circuit.
-            _monochromeX = (_crtc.Column - 1) * C.MonochromeCellPixels;
-            _monochromeY = _crtc.Scanline;
+            PositionMonochromeCharacterPixels();
         }
         _monochrome.SetCharacterClock(high);
+    }
+
+    private void PositionMonochromeCharacterPixels()
+    {
+        _monochromeX = (_crtc.Column - 1) * C.MonochromeCellPixels;
+        _monochromeY = _crtc.Scanline;
     }
 
     internal void SetDotClock(bool high)

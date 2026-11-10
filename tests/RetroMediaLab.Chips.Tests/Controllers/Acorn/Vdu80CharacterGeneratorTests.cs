@@ -8,6 +8,62 @@ public sealed class Vdu80CharacterGeneratorTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void SettledCharactersPreserveLoadPulseShiftsAndTheNextOrdinaryCharacter(bool phase)
+    {
+        foreach (var length in new[] { 1, 3, 17, 101 })
+        {
+            var actual = new Vdu80CharacterGenerator(new byte[2048]); var reference = new Vdu80CharacterGenerator(new byte[2048]);
+            foreach (var video in new[] { actual, reference })
+            {
+                video.SetInverted((length & 2) != 0);
+                video.SetDisplayEnabled(true); video.SetDotClock(phase);
+                for (var character = 0; character < 8; character++) Character(video);
+            }
+            var events = new List<bool?>(); actual.VideoChanged = events.Add;
+            Assert.True(actual.TryAdvanceSettledCharacterPeriods(length, out var white));
+            Assert.Equal(reference.VideoWhite, white);
+            for (var character = 0; character < length; character++) Character(reference);
+            Assert.Empty(events);
+            Compare();
+            actual.SetCharacterData(1); reference.SetCharacterData(1);
+            Assert.False(actual.TryAdvanceSettledCharacterPeriods(1, out _));
+            Character(actual); Character(reference); Compare();
+            actual.SetCursor(true); reference.SetCursor(true);
+            Assert.False(actual.TryAdvanceSettledCharacterPeriods(1, out _));
+            Character(actual); Character(reference); Compare();
+            actual.SetDisplayEnabled(false); reference.SetDisplayEnabled(false);
+            Assert.False(actual.TryAdvanceSettledCharacterPeriods(1, out _));
+            Character(actual); Character(reference); Compare();
+            actual.SetCharacterClock(true); reference.SetCharacterClock(true);
+            Assert.False(actual.TryAdvanceSettledCharacterPeriods(1, out _));
+            actual.SetCharacterClock(false); reference.SetCharacterClock(false);
+            Assert.False(actual.TryAdvanceSettledCharacterPeriods(1, out _));
+            Character(actual); Character(reference); Compare();
+            void Compare()
+            {
+                Assert.Equal(reference.TimeNanoseconds, actual.TimeNanoseconds);
+                Assert.Equal(reference.DotClockCount, actual.DotClockCount);
+                Assert.Equal(reference.CharacterClockCount, actual.CharacterClockCount);
+                Assert.Equal(reference.VideoWhite, actual.VideoWhite);
+                Assert.Equal(Serializer(reference).ShiftClockCount, Serializer(actual).ShiftClockCount);
+                Assert.Equal(Serializer(reference).GatedClockHigh, Serializer(actual).GatedClockHigh);
+            }
+        }
+        void Character(Vdu80CharacterGenerator video)
+        {
+            for (var i = 0; i < 3; i++) { video.SetDotClock(!phase); video.SetDotClock(phase); }
+            video.SetCharacterClock(true);
+            for (var i = 0; i < 3; i++) { video.SetDotClock(!phase); video.SetDotClock(phase); }
+            video.SetCharacterClock(false);
+        }
+        static RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS165.Services.Sn74Ls165 Serializer(Vdu80CharacterGenerator video)
+            => (RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS165.Services.Sn74Ls165)typeof(Vdu80CharacterGenerator)
+                .GetField("_serializer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(video)!;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void SettledZeroPeriodsHandleLoadInternallyButStopBeforeRomAndCursor(bool cursor)
     {
         var image = new byte[2048];

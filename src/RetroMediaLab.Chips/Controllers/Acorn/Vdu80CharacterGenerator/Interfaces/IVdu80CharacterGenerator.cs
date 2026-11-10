@@ -16,6 +16,7 @@ public interface IVdu80CharacterGenerator
     void SetCharacterClock(bool high);
     bool? SetDotClock(bool high);
     int AdvanceStableDotClocks(int maximumClocks);
+    bool TryAdvanceSettledCharacterPeriods(int periods, out bool white);
     bool StableClockCandidate { get; }
     Action<bool>? StableClockCandidateChanged { get; set; }
 }

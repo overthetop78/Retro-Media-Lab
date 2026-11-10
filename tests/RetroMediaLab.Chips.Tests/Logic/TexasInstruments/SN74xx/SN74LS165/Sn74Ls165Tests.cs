@@ -6,6 +6,55 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74LS165;
 public sealed class Sn74Ls165Tests
 {
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void ConstantLoadedPeriodsKeepTheAdditionalHighClockLoadEdges(bool high, bool phase)
+    {
+        foreach (var periods in new[] { 0, 1, 3, 17, 101 })
+        {
+            Sn74Ls165 Create()
+            {
+                var chip = new Sn74Ls165(12_000_000, high ? byte.MaxValue : (byte)0);
+                chip.SetSerialInput(high); chip.SetParallelData(high ? byte.MaxValue : (byte)0); chip.SetClock(phase);
+                return chip;
+            }
+            var actual = Create(); var reference = Create();
+            Assert.True(actual.TryAdvanceConstantLoadedPeriods(periods * 6, periods));
+            for (var i = 0; i < periods; i++)
+            {
+                for (var clock = 0; clock < 3; clock++) { reference.SetClock(!phase); reference.SetClock(phase); }
+                reference.SetShiftLoad(false); reference.SetShiftLoad(true);
+                for (var clock = 0; clock < 3; clock++) { reference.SetClock(!phase); reference.SetClock(phase); }
+            }
+            Assert.Equal(reference.InputClockCount, actual.InputClockCount);
+            Assert.Equal(reference.ShiftClockCount, actual.ShiftClockCount);
+            Assert.Equal(reference.StoredData, actual.StoredData);
+            Assert.Equal(reference.GatedClockHigh, actual.GatedClockHigh);
+            actual.SetParallelData(high ? (byte)0 : byte.MaxValue);
+            Assert.False(actual.TryAdvanceConstantLoadedPeriods(6, 1));
+        }
+    }
+
+    [Fact]
+    public void ConstantLoadsRejectUnknownInputsAndCounterOverflowAtomically()
+    {
+        var chip = new Sn74Ls165(12_000_000, 0);
+        Assert.False(chip.TryAdvanceConstantLoadedPeriods(6, 1));
+        chip.SetSerialInput(false); chip.SetParallelData(0);
+        chip.AdvanceStableClocks(long.MaxValue - 1);
+        Assert.Throws<OverflowException>(() => chip.TryAdvanceConstantLoadedPeriods(2, 1));
+        Assert.Equal(long.MaxValue - 1, chip.InputClockCount);
+        chip.SetClock(true);
+        Assert.Throws<OverflowException>(() => chip.TryAdvanceConstantLoadedPeriods(0, 1));
+        Assert.Equal(long.MaxValue, chip.InputClockCount);
+        Assert.Equal(long.MaxValue, chip.ShiftClockCount);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chip.TryAdvanceConstantLoadedPeriods(-1, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chip.TryAdvanceConstantLoadedPeriods(0, -1));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void StablePrefixMatchesEveryWordUntilItsFirstKnownOrUnknownOutputChange(bool startHigh)
