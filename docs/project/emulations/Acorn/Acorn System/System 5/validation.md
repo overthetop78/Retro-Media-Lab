@@ -856,3 +856,42 @@ Preuves dans `artifacts/TestsMachines/Acorn/Acorn System 5/` : `20261110-current
 ### Indépendance après commande, 10 novembre2026
 Câblage CPU/carte400004 : nouvelle qualification reçue du8271 inactif, bus stabilisé, aucune échéance ni propagation NMI en attente. Les événements lecteur ne coupent plus inutilement le préfixe CPU privé ; leur avancement complet à ses dates propres reste exécuté avant la prochaine interaction. Gardes et transferts avec NMI/DataWindow/lignes lecteur datés vérifiés. NOS80/BASIC,3paires alternées de120 champs :43,68878→39,29389 ms/champ (-10,060 %) ; moteur actif70,15062→56,14132 (-19,970 %). Moteur arrêté30,25865→30,75040 : aucun gain revendiqué. CAT/BASIC/PRINT46, vidéo/audio/CPU/RAM identiques et SSD inchangé. Protocole, fenêtres, limites et preuves dans la validation machine `docs/tasks/machines/AcornSystem/system5-validation.md`, rubrique « Préfixes CPU indépendants de la rotation inactive » et rapports20261110-idle-drive-native. Aucun changement interne de puce, de clock ou de média ; aucune prise en charge de machine supplémentaire déduite, System5 reste ouvert pour la cadence.
 Validation finale sans banc temporaire :265 contrôles System/carte/relai8271 réussis en1m11 s (`20261110-idle-drive-integration.trx`), incluant les trois variantes de transfert avec nouvelles traces (un/dix secteurs, progressif et entrelacé), la garde NMI et l'attente d'index. Assemblies locales reconstruites sans diagnostic :0 erreur,4 avertissements préexistants. Aucun changement interne d'une puce, aucun outil de capture ni processus de test conservé ; les cœurs/images possédés ont été libérés. Bloc de coordination retenu pour son gain apparié, sans clôturer System5 ni annoncer les100 %.
+
+### Relevé par grandes étapes après7a3c4376a — 10 novembre2026
+Diagnostic temporaire Debug, fabrique NOS80/VDU80 et SSD System BASIC en lecture seule. Deux machines appariées, ordre alterné,40 champs de chauffe,20 au moniteur puis CAT/BASIC/PRINT12+34=46 et120 champs après chargement. CPU/RAM/vidéo/audio comparés par champ ; empreinte du média inchangée. Contrôle réussi en37,848 s. Aucun nouveau changement de production retenu dans ce relevé.
+
+| Étape, durée murale exclusive instrumentée | BASIC moteur actif,40 champs (ms/champ) | BASIC moteur arrêté,79 champs (ms/champ) |
+|---|---:|---:|
+| Carte disquette, AdvanceTo |27,65065|2,27015|
+| Parcours privé CPU/VIA/bus/bande |14,44143|13,96770|
+| Vidéo indépendante |10,58316|9,86107|
+| Horloges représentées |1,57901|1,47176|
+| Repli source scalaire, CPU/vidéo inclus |0,16550|0,13538|
+| Coordination restante, DrainAudio inclus |7,61496|6,64543|
+| Total |62,03471|34,35148|
+
+Le relevé couvre100 % du temps mural exclusif ; les inclusifs ne sont pas additionnés. Environ11589 portions privées et11678 avancements carte/champ : leur fréquence ne prouve pas leur redondance. Moteur actif, la carte est le premier coût observé (44,573 % du temps instrumenté), puis CPU/VIA (23,280 %) et vidéo (17,060 %). Moteur arrêté, CPU/VIA et vidéo dominent. Le périmètre carte ne comprend pas tous les appels de bus/qualification liés au disque.
+Calibration avec sondes désactivées dans le même binaire :58,58063→62,03471 ms/champ moteur actif (+5,896 %) ;32,00290→34,35148 moteur arrêté (+7,339 %) ;32,90444→37,23723 au moniteur (+13,168 %). Même sans aucune sonde, les deux modes identiques présentent des écarts de1,932 %,1,009 % et4,390 % respectivement. Ces différences ne permettent pas une correction exacte de la surcharge. Les durées sont murales, pas des temps CPU propres ; GetThreadTimes sur les fenêtres complètes donne un temps CPU proche du mural, avec granularité visible. Aucune économie potentielle n'est assimilée automatiquement à ces pourcentages. Le champ unique de transition ne sert pas à conclure.
+Le rapport ne valide ni n'invalide à lui seul les45,79 % auparavant attribués aux deux compteurs : il mesure la carte entière, pas leur temps propre. Preuves :artifacts/TestsMachines/Acorn/Acorn System 5/20261110-stage-cost-{baseline,profile}.{json,md,trx}. Les trois sources instrumentées sont rétablies exactement à7a3c4376a et les deux sources de diagnostic supprimées ; reconstruction sans sonde réussie : module Acorn0 erreur/0 avertissement, tests locaux0 erreur/4 avertissements préexistants. System5 reste incomplet pour sa cadence Debug.
+
+### Portions indépendantes mémoire et VIA — 10 novembre2026
+Le préfixe CPU existant accepte maintenant les cycles privés et les lectures VIA déjà qualifiées dans une même portion, au lieu de coordonner les domaines après chaque lecture VIA. Chaque prochain accès reste qualifié avant exécution ; les cycles/transactions CPU, fronts PH2, lectures et acquittements VIA, timers et clavier restent unitaires dans leurs composants. Une écriture VIA, un autre registre ou une lecture VIA en mode de contrôle sortant termine la portion, comme les dépendances WAIT/DMA, accès partagés et frontières vidéo prévues par le parcours existant. Les événements disquette actifs sont toujours livrés avant chaque phase CPU comme auparavant. Les horloges et états restent dans leurs composants ; aucun moteur supplémentaire ni changement du matériel.
+Justification du bus : IC4 reçoit A9/A10 ; dans0E00–0FFF ces deux lignes sont hautes, doncY1 (seule sortie raccordée) reste inactive. Les adresses mémoire privées inhibent le décodeur. Les adresses intermédiaires qualifiées ne peuvent donc sélectionner8271 ou activer DACK. L'adresse préparée suivante et ses propagations sont présentées à la fin du préfixe avant une transaction non indépendante. Référence :fdc400004.md, décodage IC4, figure8/PDF108. Sélection interne GroupIndependentBusCycles=false pour comparer au découpage précédent ; aucune option utilisateur.
+Mesure Debug native appariée, même DLL et fabrique NOS80/VDU80, RAM49Kio, lecteursss80, SSD System BASIC en lecture seule. Trois paires neuves,40 champs de chauffe, CAT/BASIC/PRINT12+34=46 par clavier, dix champs de stabilisation puis120 champs mesurés par paire. Ordre alterné à chaque champ ; RunFrame/DrainAudio compris, contrôles hors temps, aucune compilation/capture concurrente. CAT512 octets et BASIC4096, aucun octet écrit ; empreinte SSD inchangée après libération des images. CPU/RAM/vidéo/audio et compteurs de transfert identiques à chaque champ dès le démarrage.
+
+| Paire,120 champs/mode | Précédent ms/champ | Nouveau ms/champ | Temps en moins |
+|---|---:|---:|---:|
+|1|42,79890|32,46000|24,157 %|
+|2|42,25019|32,60263|22,834 %|
+|3|43,31908|33,64120|22,341 %|
+|Moyenne360 champs|42,78939|32,90128|23,109 %|
+
+| Activité avant/après | Champs/mode | Précédent ms/champ | Nouveau ms/champ | Temps en moins | Champs/s calculés | CPU équivalent | Nominal |
+|---|---:|---:|---:|---:|---:|---:|---:|
+|Moteur actif/actif après chargement|147|58,57317|48,00265|18,047 %|20,832|0,832 MHz|41,598 %|
+|Moteur arrêté/arrêté|210|31,75328|22,32799|29,683 %|44,787|1,789 MHz|89,430 %|
+|Transition actif/arrêté|3|41,91200|33,06347|21,112 %|30,245|1,208 MHz|60,393 %|
+
+Moyenne globale32,90128 ms/champ :30,394 champs/s,1,214 MHz équivalent,60,691 % nominal. Référence matérielle :19,968 ms/champ,50,080 Hz,CPU2 MHz. Vitesse maximale de calcul sans limite, pas des FPS présentés par RML ; aucune fréquence matérielle changée. La moyenne dépend de la répartition des champs moteur actif/arrêté : comparer les modes appariés, pas les valeurs absolues de collectes antérieures. Ce scénario mesure l'invite après chargement, pas le gain pendant les transferts actifs. La cadence moteur actif reste ouverte ; System5 non terminé.
+Contrôles :270 cas System/carte/8271 réussis en1m39 s, dont trois nouveaux programmes lecture/écriture/relecture un/dix secteurs avec lectures VIA intercalées, progressif/entrelacé ; NMI avec temps, phase et cycles CPU, DataWindow et lignes lecteur datées identiques au découpage précédent. Les contrôles privés comparent aussi états VIA, IRQ/timers, clavier, modes de contrôle et notifications vidéo datées. Aucun changement interne de puce.
+Preuves :artifacts/TestsMachines/Acorn/Acorn System 5/20261110-mixed-span-native.{json,md,trx},20261110-mixed-span-private.trx et20261110-mixed-span-integration.trx. Banc natif réussi en1m28 s puis supprimé ; reconstruction sans diagnostic réussie : Acorn0 erreur/0 avertissement, tests locaux0 erreur/4 avertissements préexistants.

@@ -77,6 +77,28 @@ public sealed class AcornEmuSystemDiskTransferTests
         return (lines, windows);
     }
 
+    [Theory]
+    [InlineData(1, 0)]
+    [InlineData(10, 0)]
+    [InlineData(10, 3)]
+    public void MixedPrivateAndViaPrefixesPreserveActiveTransfersAndSignalDates(int sectors, byte videoMode)
+    {
+        using var disk = CreateDisk(sectors); using var otherDisk = CreateDisk(sectors);
+        using var actual = Create(disk, true, viaReads: true);
+        using var reference = Create(otherDisk, true, viaReads: true);
+        reference.GroupIndependentBusCycles = false;
+        foreach (var machine in new[] { actual, reference })
+        {
+            var video = Field<SystemVideo>(machine, "_video");
+            video.Write(0x1840, 8); video.Write(0x1841, videoMode);
+        }
+        var a = CaptureDrive(actual); var b = CaptureDrive(reference);
+        Compare(actual, reference, disk, otherDisk);
+        Assert.Equal(b.Lines, a.Lines); Assert.Equal(b.Windows, a.Windows);
+        Assert.True(actual.RepresentedViaReadPeriods > 0);
+        Assert.True(reference.RepresentedViaReadPeriods > 0);
+    }
+
     private static void Compare(AcornSystemMachine actual, AcornSystemMachine reference, MemoryTrackDisk disk, MemoryTrackDisk otherDisk)
     {
         var actualNmi = CaptureNmi(actual); var expectedNmi = CaptureNmi(reference);
@@ -137,7 +159,7 @@ public sealed class AcornEmuSystemDiskTransferTests
         return disk;
     }
 
-    internal static AcornSystemMachine Create(MemoryTrackDisk disk, bool defer)
+    internal static AcornSystemMachine Create(MemoryTrackDisk disk, bool defer, bool viaReads = false)
     {
         var rom = new byte[8192]; rom[^6] = 0; rom[^5] = 0xff; rom[^4] = 0; rom[^3] = 2; rom[^2] = 0; rom[^1] = 0xff;
         rom[^256] = 0x40; // RTI in mapped ROM: actual NMI entry/return while the program polls requests.
@@ -149,7 +171,7 @@ public sealed class AcornEmuSystemDiskTransferTests
             byte[] video = [127, 80, 98, 0x28, 30, 2, 25, 28, 0x40, 9, 0x20, 9, 0, 0, 0, 0];
             for (byte index = 0; index < video.Length; index++)
             { machine.Write(0x1840, index); machine.Write(0x1841, video[index]); }
-            var program = Program(disk.Sectors.Count);
+            var program = Program(disk.Sectors.Count, viaReads);
             Assert.True(program.Length <= 0x200); // Remaining on-card RAM ends at 03FF.
             for (var index = 0; index < program.Length; index++) machine.Write((ushort)(0x200 + index), program[index]);
             machine.AttachFloppy(0, disk);
@@ -160,7 +182,7 @@ public sealed class AcornEmuSystemDiskTransferTests
         catch { machine.Dispose(); throw; }
     }
 
-    private static byte[] Program(int sectors)
+    private static byte[] Program(int sectors, bool viaReads)
     {
         var bytes = new List<byte>(); var labels = new Dictionary<string, int>();
         var branches = new List<(int Offset, string Label)>();
@@ -176,7 +198,9 @@ public sealed class AcornEmuSystemDiskTransferTests
             if (sectors == 1) Command(command, 0, 1);
             else Command((byte)(command | 1), 0, 1, (byte)sectors);
             Emit(0xa0, (byte)sectors); Label(name + "Sector"); Emit(0xa2, 0);
-            Label(name); Read(0x0a00); Emit(0x29, 4); Branch(0xf0, name);
+            Label(name);
+            if (viaReads) Read(0x0e01); // Real keyboard-port read between private and FDC cycles.
+            Read(0x0a00); Emit(0x29, 4); Branch(0xf0, name);
             if (write) Write(0x0a04, 0xa6);
             else { Read(0x0a04); Emit(0x9d, (byte)destination, (byte)(destination >> 8)); }
             Emit(0xe8, 0xe0, 128); Branch(0xd0, name);
