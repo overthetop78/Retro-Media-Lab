@@ -10,6 +10,7 @@ internal sealed partial class AcornSystemMachine
     internal long RepresentedPrivateClockPeriods { get; private set; }
     internal bool GroupViaReadPeriods { get; set; } = true;
     internal long RepresentedViaReadPeriods { get; private set; }
+    internal bool GroupActiveFloppyPeriods { get; set; } = true;
 
     internal bool IsIndependentViaReadAddress(ushort address)
         => _viaReadCanRunIndependently && ViaAddress(address) && (address & C.ViaRegisterMask) == Via.PortA;
@@ -26,11 +27,13 @@ internal sealed partial class AcornSystemMachine
         var privateCycle = _fastCpuBus!.CanRepresentPreparedCycle;
         var viaRead = !privateCycle && GroupViaReadPeriods && _fastCpuBus.CanRepresentPreparedViaRead;
         if (!privateCycle && !viaRead) return false;
-        if (_floppyBoard is not null && (!_floppyBoard.CpuClockCanRunIndependently || !_floppyBoard.PrivateBusPinsSettled)) return false;
+        var clockFloppyAtCpuEdges = _floppyBoard is not null && !_floppyBoard.CpuClockCanRunIndependently;
+        if (_floppyBoard is not null && (!_floppyBoard.PrivateBusPinsSettled
+            || (clockFloppyAtCpuEdges && !GroupActiveFloppyPeriods))) return false;
         // The VIA transaction itself still executes at its real CPU phase.
         // Limit this case to one cycle so no intermediate bus address is lost.
         var maximum = viaRead ? 1 : Math.Min(C.FastPrivateClockBatch, _video.ClocksToLineBoundary);
-        if (_floppyBoard is not null && _floppyBoard.NextDriveInteractionNanoseconds != long.MaxValue)
+        if (!clockFloppyAtCpuEdges && _floppyBoard is not null && _floppyBoard.NextDriveInteractionNanoseconds != long.MaxValue)
         {
             var now = (_fastClock.InputClockCount - 1) * 125 / 3;
             var until = _floppyBoard.NextDriveInteractionNanoseconds - now;
@@ -38,6 +41,8 @@ internal sealed partial class AcornSystemMachine
             maximum = (int)Math.Min(maximum, (until - 1) / C.FastReferencePeriodNanoseconds);
         }
         if (maximum < 2 && !viaRead) return false;
+        var source = _fastClock.InputClockCount;
+        _ = checked(source + maximum * (long)C.FastSourceClocksPerReferencePeriod);
         var consumed = 0;
         _fastCpuBus.BeginRepresentedPrivateCycles();
         try
@@ -45,7 +50,15 @@ internal sealed partial class AcornSystemMachine
             while (consumed < maximum && (_fastCpuBus.CanRepresentPreparedCycle
                 || (viaRead && consumed == 0 && _fastCpuBus.CanRepresentPreparedViaRead)))
             {
+                // The established 4 MHz wire lets the disk card consume its
+                // own events independently. Deliver NMI before the same PH0
+                // edges as the scalar source path, never at the prefix end.
+                if (clockFloppyAtCpuEdges)
+                    AdvanceFloppyToSource(source + consumed * (long)C.FastSourceClocksPerReferencePeriod
+                        + C.FastSourceClocksPerReferencePeriod / 2);
                 _cpu6502!.SetPhaseZeroInput(true);
+                if (clockFloppyAtCpuEdges)
+                    AdvanceFloppyToSource(source + (consumed + 1L) * C.FastSourceClocksPerReferencePeriod);
                 TickReferenceClock(advanceVia: false, advanceVideo: false);
                 _cpu6502.SetPhaseZeroInput(false);
                 consumed++;

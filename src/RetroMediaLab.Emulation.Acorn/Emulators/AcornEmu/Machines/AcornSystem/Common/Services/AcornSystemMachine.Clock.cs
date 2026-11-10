@@ -93,10 +93,17 @@ internal sealed partial class AcornSystemMachine
 
     private void AdvanceFloppyToSource()
     {
+        if (_floppyBoard is not null) AdvanceFloppyToSource(_fastClock!.InputClockCount);
+    }
+
+    private void AdvanceFloppyToSource(long count)
+    {
         if (_floppyBoard is null) return;
+        // A represented CPU prefix supplies its exact source-edge position.
+        // The disk card consumes those inputs now; unrelated generator/video
+        // calculations may remain deferred until the common observation.
         // Rising source period n is at (n-1)/24 MHz. Keep the rational source
         // position; do not accumulate rounded 41 ns periods into a second clock.
-        var count = _fastClock!.InputClockCount;
         if (_floppySourceCount == count) return;
         _floppySourceCount = count;
         var target = count == 0 ? 0 : (count - 1) * 125 / 3;

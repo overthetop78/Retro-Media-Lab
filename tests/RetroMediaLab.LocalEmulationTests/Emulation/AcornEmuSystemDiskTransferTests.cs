@@ -10,14 +10,17 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuSystemDiskTransferTests
 {
     [Theory]
-    [InlineData(1)]
-    [InlineData(10)]
-    public void CpuReadsWritesAndRereadsThroughThePhysicalBoardWithIdenticalSourceModes(int sectors)
+    [InlineData(1, true)]
+    [InlineData(10, true)]
+    [InlineData(10, false)]
+    public void CpuReadsWritesAndRereadsThroughThePhysicalBoardWithIdenticalSourceModes(int sectors, bool defer)
     {
         using var disk = CreateDisk(sectors);
         using var otherDisk = CreateDisk(sectors);
-        using var actual = Create(disk, true);
-        using var reference = Create(otherDisk, false);
+        using var actual = Create(disk, defer);
+        using var reference = Create(otherDisk, defer);
+        reference.GroupActiveFloppyPeriods = false;
+        var actualNmi = CaptureNmi(actual); var expectedNmi = CaptureNmi(reference);
         for (var field = 0; field < 80; field++)
         {
             Assert.Equal(reference.RunFrame(), actual.RunFrame());
@@ -28,9 +31,25 @@ public sealed class AcornEmuSystemDiskTransferTests
             Assert.Equal((b.PC, b.A, b.X, b.Y, b.S, b.P, b.Cycles), (a.PC, a.A, a.X, a.Y, a.S, a.P, a.Cycles));
             Assert.Equal(reference.FloppyReadBytes(0), actual.FloppyReadBytes(0));
             Assert.Equal(reference.FloppyWrittenBytes(0), actual.FloppyWrittenBytes(0));
+            Assert.Equal(expectedNmi, actualNmi); expectedNmi.Clear(); actualNmi.Clear();
         }
         Validate(actual, disk); Validate(reference, otherDisk);
         Assert.Equal(otherDisk.WindowWrites, disk.WindowWrites);
+        Assert.True(actual.RepresentedPrivateClockPeriods > reference.RepresentedPrivateClockPeriods);
+    }
+
+    private static List<(long Time, long Cycles, long Ticks, bool Phase, bool? Level)> CaptureNmi(AcornSystemMachine machine)
+    {
+        var trace = new List<(long, long, long, bool, bool?)>();
+        var board = Field<SystemFloppyBoard>(machine, "_floppyBoard");
+        var cpu = Field<Cpu6502>(machine, "_cpu6502");
+        var wire = board.NmiChanged;
+        board.NmiChanged = high =>
+        {
+            trace.Add((board.TimeNanoseconds, cpu.Cycles, Field<long>(machine, "_ticks"), cpu.PhaseTwoHigh, high));
+            wire?.Invoke(high);
+        };
+        return trace;
     }
 
     internal static void Validate(AcornSystemMachine machine, MemoryTrackDisk disk)
