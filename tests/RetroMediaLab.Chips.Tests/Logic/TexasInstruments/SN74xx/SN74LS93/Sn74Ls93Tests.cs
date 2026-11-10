@@ -11,6 +11,8 @@ public sealed class Sn74Ls93Tests
     [InlineData(0)]
     [InlineData(17)]
     [InlineData(79)]
+    [InlineData(125)]
+    [InlineData(135)]
     public void ConservativeConnectedDeadlinesPreserveEveryObservedResponseAndStateAcrossMasks(int phase)
     {
         for (byte seed = 0; seed < 16; seed++)
@@ -23,10 +25,12 @@ public sealed class Sn74Ls93Tests
             chip.ConnectPeriodicClock(0, 125, 250, 125);
             chip.ConnectPeriodicClock(1, 250 - phase, 500, 250);
             var observed = mask;
-            var actual = new List<(long Time, byte Levels, byte Changed)>();
-            var expected = new List<(long Time, byte Levels, byte Changed)>();
-            chip.OutputsChanged = (level, changed) => actual.Add((chip.TimeNanoseconds, (byte)(level & observed), changed));
-            reference.OutputsChanged = (level, changed) => expected.Add((reference.TimeNanoseconds, (byte)(level & observed), changed));
+            var actual = new List<(long Time, byte Levels, byte Changed, long A, long B, bool Cka, bool Ckb)>();
+            var expected = new List<(long Time, byte Levels, byte Changed, long A, long B, bool Cka, bool Ckb)>();
+            chip.OutputsChanged = (level, changed) => actual.Add((chip.TimeNanoseconds, (byte)(level & observed), changed,
+                chip.GetInputClockCount(0), chip.GetInputClockCount(1), chip.GetClock(0), chip.GetClock(1)));
+            reference.OutputsChanged = (level, changed) => expected.Add((reference.TimeNanoseconds, (byte)(level & observed), changed,
+                reference.GetInputClockCount(0), reference.GetInputClockCount(1), reference.GetClock(0), reference.GetClock(1)));
             long nextA = 125, nextB = 250 - phase; bool a = true, b = true;
             void Advance(long target)
             {

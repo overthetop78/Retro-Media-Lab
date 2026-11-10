@@ -73,3 +73,28 @@ Référence rétablie et26 contrôles autonomes réussis en766 ms, y compris les
   - [x] Rétablir les trois Services93 exactement à30af8b3ee après le résultat global insuffisant ; garder seulement les contrôles de comportement matériel indépendants du candidat, sans exiger une nouvelle précision du contrat d'échéance. Refaire ces contrôles sur la référence rétablie et consigner la décision dans la fiche93.
 
 Référence rétablie :29 contrôles93 réussis en951 ms. Les comparaisons de toutes les graines/masques restent autonomes et acceptent les échéances conservatives existantes ; aucun code de projection/cache ni flag expérimental conservé. Aucun gain de vitesse retenu dans ces essais.
+
+## Calcul indépendant de QA pendant une propagation CKB —10 novembre2026
+- [x] Évaluer le calcul QA indépendant pendant les réponses pendantes CKB (candidat retiré).
+  - [x] Modifier `src/RetroMediaLab.Chips/Logic/TexasInstruments/SN74xx/SN74LS93/Services/Sn74Ls93.PeriodicInput.cs` : prolonger le calcul arithmétique de la section QA non observée lorsqu'une autre section a une réponse pendante. Borner avant la prochaine entrée ou réponse CKB susceptible de provoquer un callback ; conserver la dernière propagation QA, ses comptes/phases et les entrées aux mêmes dates. Refuser clear QA, observation des échéances internes ou description QA non établie ; garder une sélection interne du chemin précédent.
+  - [x] Compléter `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74LS93/Sn74Ls93Tests.cs` : comparer aussi les comptes et niveaux des deux horloges vus dans les callbacks de chaque sortie, pour toutes les graines/masques/phases, puis réutiliser les contrôles reset/cascade et cibles nanoseconde. Consigner les résultats avant mesure native.
+
+  - [x] Compléter `Sn74Ls93.PeriodicInput.cs` : conserver la borne stricte avant une réponse CKB observable, mais permettre la résolution QA à la date d'une entrée CKB, celle-ci restant à traiter par le chemin canonique au même instant. Les entrées simultanées restent dans l'ordre CKA puis CKB déjà utilisé, sans réponse instantanée ni observateur interne. Ajouter dans `Sn74Ls93Tests.cs` les phases125/135 ns pour comparer dans les callbacks les entrées coïncidentes et les entrées QA à la date d'une réponse CKB ; refaire les contrôles autonomes avant raccordement.
+
+31 contrôles93 réussis en1 s, dont les phases125/135 ns ajoutées pour les coïncidences entrée/entrée et entrée/réponse, et comparaison des niveaux/comptes CKA/CKB à chaque callback.58 contrôles de carte réussis en18 s. Prochaine étape : mesure native du seul calcul interne, sans changement des délais ni de la coordination.
+
+  - [x] Rétablir `Sn74Ls93.PeriodicInput.cs` à58d8b9d4d après la régression native33,90700→35,03799 ms/champ (+3,336 %) ; conserver les contrôles indépendants des niveaux/comptes dans les callbacks et consigner le retrait. Aucun gain ajouté au tableau.
+## Sections observées mais stables entre réponses —10 novembre2026
+- [x] Représenter les intervalles avant la première sortie observée, plutôt que tous les fronts internes.
+  - [x] Modifier `Sn74Ls93.PeriodicInput.cs` : réutiliser le calcul groupé existant des deux sections quand leurs bits observés ne peuvent encore changer, borner avant le front susceptible de changer le premier bit observé et laisser son ripple canonique. Modifier `Sn74Ls93.PeriodicOutput.cs` : pour QA non observé et décrit, calculer la première réponse CKB observée depuis l'état et le premier bit observé ; traiter les carries déjà pendants et conserver un repli pour clear/reset, observateur interne, description non établie ou date non représentable. Conserver une sélection interne pour comparaison, sans cache physique ni nouvelle horloge.
+  - [x] Réutiliser et compléter `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74LS93/Sn74Ls93Tests.cs` : les cinq phases, toutes graines/masques, compte/niveau des deux clocks dans chaque callback, cibles nanoseconde, resets et cascades doivent correspondre aux fronts explicites. Consigner la vérification avant le raccordement NAND.
+
+Sections observées stables :31 contrôles93 réussis en1 s, avant raccordement NAND, rapport20261110-observed-stable-sections.trx. Toutes les phases/callbacks sont comparés à un oracle explicite, pas au seul ancien regroupement. Le gain reste à établir sur le raccordement ciblé.
+
+  - [x] Compléter `Sn74Ls93.PeriodicInput.cs` et `Sn74Ls93.PeriodicOutput.cs` : réserver le nouveau calcul des portions CKB au cas où QB n'est pas observé ; sinon réutiliser le chemin ordinaire/QA existant plutôt que recalculer une borne qui interdit tout regroupement CKB. Garder le cas reset stable. Vérifier à nouveau les31 contrôles avant mesure finale, sans modifier le comportement des configurations totalement observées.
+
+Qualification finale :31 contrôles93 réussis en1 s (`20261110-masked-qb-chip-final.trx`). La combinaison raccordée au NAND donne un gain natif apparié8,060 % global et14,048 % moteur actif ; aucune part isolée attribuée à la seule puce. Vérification System/flux/NMI sans banc en cours avant enregistrement du bloc.
+
+Bloc raccordé vérifié :31 contrôles93 et276 contrôles System/carte/8271 réussis, gain combiné8,060 % global et14,048 % moteur actif. La solution retenue porte sur les sections aux sorties observées stables et le masquage du fil QB par QD, pas sur le candidat QA indépendant retiré. Fiche complétée, captures liées, tableau des directives mis à jour ; enregistrement du bloc complet en cours.
+
+Bloc compteur et raccordement NAND enregistré après les contrôles31/276 et les trois paires natives finales. Les essais sans gain sont retirés, les preuves persistent hors Git ; aucune puce ni machine supplémentaire annoncée comme terminée.

@@ -1312,3 +1312,28 @@ Preuves finales20261110-connected-response-native.{json,md,trx} : diagnostic ré
 Les comparaisons aux fronts explicites, graines/masques et phases fines sont conservées comme contrôles de comportement, indépendants du candidat. Elles acceptent la borne conservative historique de NextOutputEventNanoseconds et n'exigent pas une API plus précise pour faire réussir le code. La garde spécifique à la projection retirée est supprimée ; les cas d'erreur préexistants restent couverts. Prochaine analyse à cibler sur le travail effectué dans les résolveurs et leurs destinataires, plutôt que le seul nombre d'annonces ; le relevé par gestionnaire donne une attribution inclusive, pas encore leur coût propre individuel. Cadence System5 non clôturée.
 
 Validation finale de la référence restaurée :29 contrôles93 réussis en951 ms (`20261110-reference-oracle-coverage.trx`),58 contrôles carte réussis en16 s (`20261110-reference-board-coverage.trx`). Module Acorn reconstruit sans source de diagnostic :0 erreur/0 avertissement ; quatre avertissements locaux préexistants. Les fichiers de production93 et de carte sont identiques à30af8b3ee ; seules la couverture matérielle indépendante et la consignation de ce passage sont conservées. Aucun gain ni nouvelle solution ajoutés au tableau des directives pour ces essais retirés. Aucun processus de diagnostic possédé conservé. System5 reste ouvert.
+
+### QA indépendant retiré après mesure —10 novembre2026
+Trois paires NOS80/BASIC :34,24170→35,33838 ;33,71508→34,86294 ;33,76421→34,91266 ms/champ. Moyenne360 champs33,90700→35,03799 (+3,336 %), moteur actif50,10975→52,82385 (+5,416 %). Annonces IC7 identiques62 428 sur chacun des trois champs de comptage. Le candidat est retiré et PeriodicInput rétabli à58d8b9d4d ; seuls les contrôles des comptes/niveaux d'entrée vus dans les callbacks et phases125/135 sont conservés. Résultats20261110-independent-qa-native.{json,md,trx}, contrôle réussi en1m28 s et support inchangé. Aucun gain revendiqué.
+
+### Résultat natif final du masque QB et des sections observées stables —10 novembre2026
+Combinaison retenue après les vérifications finales ci-dessous : le compteur regroupe seulement les préfixes avant un bit observé pouvant changer ; quand QB lui-même est observé, le parcours ordinaire/QA existant reste utilisé. Le raccordement NAND observe QB seulement lorsque QD ne masque pas son effet, avec matérialisation des deux niveaux avant démasquage. Aucune fréquence ni propagation électrique modifiée, aucun cache de phase dans la carte ni ordonnanceur commun. Flags internes GroupObservedIntervals=false et GroupMaskedQb=false pour le témoin.
+Protocole : même DLL Debug et fabrique System5 NOS80/VDU80, RAM49 Kio, lecteursss80, SSD System BASIC en lecture seule. Trois paires neuves ;40 champs de chauffe,CAT512 octets,BASIC4096 puisPRINT12+34=46 par clavier ; dix champs de stabilisation et un champ séparé de comptage des annonces, puis120 champs mesurés par paire. Ordre alterné à chaque champ, RunFrame/DrainAudio compris, comparaison hors temps des registres/cycles CPU, RAM, vidéo, audio et compteurs de transfert. Aucun octet écrit et empreinte du support inchangée après fermeture ; aucun test/compilation concurrent pendant la mesure. Contrôle natif réussi en1m17 s. Les annonces sont comptées hors chronométrage, pas assimilées à des appels AdvancePart ni à une économie de temps.
+
+| Paire,120 champs/mode | Ancien ms/champ | Nouveau ms/champ | Temps en moins |
+|---|---:|---:|---:|
+|1|33,07070|30,31914|8,320 %|
+|2|34,24645|31,32877|8,520 %|
+|3|32,76518|30,36773|7,317 %|
+|Moyenne360 champs|33,36078|30,67188|8,060 %|
+
+| Moteur avant/après | Champs/mode | Ancien ms/champ | Nouveau ms/champ | Temps en moins | Nouveau nominal |
+|---|---:|---:|---:|---:|---:|
+|Actif/actif après chargement|144|48,82300|41,96417|14,048 %|47,583 %|
+|Actif/arrêté|3|32,02180|31,01483|3,145 %|64,382 %|
+|Arrêté/arrêté|213|22,92631|23,03283|-0,465 %|86,694 %|
+
+Référence du montage19,968 ms/champ (50,080 Hz),CPU nominal2 MHz. Calcul libre : moyenne32,603 champs/s, actif23,830 champs/s et arrêté43,416 ; ce ne sont pas des FPS présentés par RML. Les pourcentages donnent respectivement1,302/0,952/1,734 MHz équivalents au nominal2 MHz, pas une nouvelle mesure indépendante de fréquence. Aucun gain moteur arrêté revendiqué ni cause spéculative attribuée à l'écart. Annonces IC7 sur chacun des trois champs séparés :62 428→33 452 (-46,415 %). La cadence reste insuffisante, notamment moteur actif ; System5 n'est pas terminé. Le gain concerne cette combinaison, pas le seul getter d'échéance ni la seule porte.
+Preuves :artifacts/TestsMachines/Acorn/Acorn System 5/20261110-masked-qb-native.{json,md,trx}. Premier passage avant qualification QB observé conservé sous20261110-masked-qb-native-initial :33,31193→30,34587 ms/champ (-8,904 %), moteur actif49,20792→42,09750 (-14,450 %), annonces62 428→31 960 ; ces valeurs ne remplacent pas la comparaison finale. Banc temporaire supprimé ; validation d'intégration finale en cours,31 contrôles93 déjà réussis en1 s sur le code final.
+
+Validation finale sans banc :31 contrôles93 réussis en1 s (`20261110-masked-qb-chip-final.trx`) et276 contrôles System/carte/8271 en1m36 s (`20261110-masked-qb-integration.trx`). Les transferts lecture/écriture/relecture, NMI avec temps/phase CPU et flux observés restent identiques aux parcours de référence. Le banc natif est supprimé et l'assembly locale reconstruite sans lui ; module Acorn0 erreur/0 avertissement, quatre avertissements locaux préexistants. Aucun processus possédé conservé. La combinaison est retenue pour son gain global apparié, sans clôturer la cadence System5.

@@ -6,6 +6,12 @@ public sealed partial class Sn74Ls93
     private Action<long?>? _outputDeadlineChanged;
     private bool _qaPatternActive;
     private long _publishedOutput;
+    private bool _groupObservedIntervals = true;
+    internal bool GroupObservedIntervals
+    {
+        get => _groupObservedIntervals;
+        set { if (_groupObservedIntervals == value) return; _groupObservedIntervals = value; PublishDeadline(); }
+    }
 
     /// <summary>QA waveform: next falling date, period, high duration, in ns.
     /// All zeros revoke the description at TimeNanoseconds, before the cause
@@ -57,6 +63,7 @@ public sealed partial class Sn74Ls93
     private long ConnectedResponseDeadline()
     {
         if (_observed == 0 && (_qaPatternChanged is null || _qaPatternActive)) return 0;
+        if (_groupObservedIntervals && TryObservedSectionDeadline(out var connected)) return connected;
         // Unobserved QA cannot affect the other section without an external wire.
         // Its waveform recipient carries that wire, so only already pending
         // responses (including asynchronous reset) can require board attention.
@@ -69,5 +76,49 @@ public sealed partial class Sn74Ls93
         }
         if (_periodicInputs == 1 && _resets == 3) return _next;
         return ReceivedDeadline();
+    }
+
+    private bool TryObservedSectionDeadline(out long next)
+    {
+        next = 0;
+        var observedB = (byte)(_observed & 14);
+        if ((_observed & 3) != 0 || observedB == 0 || _nextChanged is not null
+            || _resets == 3 || _clearing != 0 || _inputPeriod[1] <= Timing.MaximumRipple
+            || _inputFall[1] == 0 || (_qaPatternChanged is not null && !_qaPatternActive)) return false;
+        var pending = (byte)(_pending & 14);
+        if ((pending & (pending - 1)) != 0) return false;
+        var after = _outputs;
+        if (pending != 0)
+        {
+            var bit = System.Numerics.BitOperations.TrailingZeroCount((uint)pending);
+            var due = _due[bit];
+            while (true)
+            {
+                var mask = (byte)(1 << bit);
+                if ((observedB & mask) != 0) next = EarlierInput(next, due);
+                var falling = (after & mask) != 0; after ^= mask;
+                if (!falling || bit == 3) break;
+                ++bit;
+                var delay = (after & (1 << bit)) != 0 ? _fall[bit] : _rise[bit];
+                if (due > long.MaxValue - delay) return false;
+                due += delay;
+            }
+            if (due > _inputFall[1]) return false;
+        }
+        var firstBit = System.Numerics.BitOperations.TrailingZeroCount((uint)observedB);
+        var modulus = 1 << (firstBit - 1);
+        var distance = modulus - ((after >> 1) & (modulus - 1));
+        var first = _inputFall[1]; var period = _inputPeriod[1];
+        if (distance != 1 && period > (long.MaxValue - first) / (distance - 1L)) return false;
+        var response = first + (distance - 1L) * period;
+        for (var bit = 1; bit < firstBit; bit++)
+        {
+            if (response > long.MaxValue - _fall[bit]) return false;
+            response += _fall[bit];
+        }
+        var lastDelay = (after & (1 << firstBit)) != 0 ? _fall[firstBit] : _rise[firstBit];
+        if (response > long.MaxValue - lastDelay) return false;
+        next = EarlierInput(next, response + lastDelay);
+        return true;
     }
 }

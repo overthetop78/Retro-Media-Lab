@@ -127,8 +127,26 @@ public sealed partial class Sn74Ls93
 
     private bool SkipUnobservedSections(long target)
     {
-        if (_observed != 0 || _nextChanged is not null || _pending != 0
+        if ((_observed != 0 && !_groupObservedIntervals) || _nextChanged is not null || _pending != 0
             || (_qaPatternChanged is not null && !_qaPatternActive && _resets != 3)) return false;
+        // Every CKB input changes QB. The existing QA-only calculation is
+        // cheaper when QB is observed and no CKB prefix can remain stable.
+        if (_resets != 3 && (_observed & 2) != 0) return false;
+        if (_resets != 3)
+        {
+            // Stop before the first input which can change an observed bit.
+            // Lower, unobserved stages still accumulate in this component.
+            if ((_observed & 1) != 0 && _inputFall[0] != 0) target = Math.Min(target, _inputFall[0] - 1);
+            var observedB = _observed >> 1;
+            if (observedB != 0 && _inputFall[1] != 0)
+            {
+                var modulus = 1 << System.Numerics.BitOperations.TrailingZeroCount((uint)observedB);
+                var stable = modulus - ((_outputs >> 1) & (modulus - 1)) - 1;
+                if (stable != 0 && _inputPeriod[1] > (long.MaxValue - _inputFall[1]) / stable) return false;
+                var boundary = _inputFall[1] + stable * _inputPeriod[1];
+                target = Math.Min(target, boundary - 1);
+            }
+        }
         var settle = Math.Max(Math.Max(_rise[0], _fall[0]),
             Math.Max(_rise[1], _fall[1]) + Math.Max(_rise[2], _fall[2]) + Math.Max(_rise[3], _fall[3]));
         if (target < settle || target - settle < _time) return false;

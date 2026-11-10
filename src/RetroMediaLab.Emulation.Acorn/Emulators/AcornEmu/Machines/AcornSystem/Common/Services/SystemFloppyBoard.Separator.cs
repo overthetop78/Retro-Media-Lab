@@ -8,6 +8,28 @@ internal sealed partial class SystemFloppyBoard
     private bool _separatorClockDescribed;
     private bool _separatorCascadeDescribed;
     private bool _separatorDeferred, _readDataHigh, _separatorRestoring;
+    private bool _separatorQdHigh;
+    private bool _groupMaskedQb = true;
+    // Differential reference transport, never a configurable hardware option.
+    internal bool GroupMaskedQb
+    {
+        get => _groupMaskedQb;
+        set
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_groupMaskedQb == value) return;
+            if (_advancing) throw new InvalidOperationException("Cannot replace separator observation during an advance.");
+            if (!_separatorDeferred)
+            {
+                _ic7.AdvanceTo(_time); _ic12.AdvanceTo(_time);
+                var levels = _ic7.Outputs;
+                _separatorQdHigh = (levels & C.Qd) != 0;
+                _ic12.SetInputs(1, _separatorQdHigh, (levels & C.Qb) != 0);
+            }
+            _groupMaskedQb = value;
+            ObserveSeparatorOutputs();
+        }
+    }
 
     private void WireSeparator()
     {
@@ -40,8 +62,10 @@ internal sealed partial class SystemFloppyBoard
         {
             if (!_separatorCascadeDescribed && (changed & C.Qa) != 0) _ic7.SetClock(1, (levels & C.Qa) != 0);
             if ((changed & (C.Qb | C.Qd)) == 0) return;
+            _separatorQdHigh = (levels & C.Qd) != 0;
             _ic12.AdvanceTo(_ic7.TimeNanoseconds);
-            _ic12.SetInputs(1, (levels & C.Qd) != 0, (levels & C.Qb) != 0);
+            _ic12.SetInputs(1, _separatorQdHigh, (levels & C.Qb) != 0);
+            ObserveSeparatorOutputs();
         };
         // This is the physical external QA->CKB wire, not an implicit cascade
         // inside the counter. During reset its explicit level changes remain.
@@ -109,8 +133,15 @@ internal sealed partial class SystemFloppyBoard
         _ic12.SetInputB(3, nReadData);
     }
 
-    private void ObserveSeparatorOutputs() => _ic7.SetObservedOutputs((byte)
-        ((_separatorCascadeDescribed ? 0 : C.Qa) | (_separatorDeferred ? 0 : C.Qb | C.Qd)));
+    private void ObserveSeparatorOutputs()
+    {
+        // QD low forces NAND pin6 high regardless of QB. On QD's change,
+        // its resolved counter word supplies both inputs before unmasking QB.
+        var mask = _separatorCascadeDescribed ? 0 : C.Qa;
+        if (!_separatorDeferred)
+            mask |= C.Qd | (!_groupStableSeparator || !_groupMaskedQb || _separatorQdHigh ? C.Qb : 0);
+        _ic7.SetObservedOutputs((byte)mask);
+    }
 
     private void DeferLatchedSeparator()
     {
@@ -137,6 +168,7 @@ internal sealed partial class SystemFloppyBoard
             var start = Math.Max(Math.Max(_ic7.TimeNanoseconds, _ic12.TimeNanoseconds), _time - C.SeparatorHistoryNanoseconds);
             _ic7.AdvanceTo(start); _ic12.AdvanceTo(start);
             var levels = _ic7.Outputs;
+            _separatorQdHigh = (levels & C.Qd) != 0;
             _ic12.SetInputs(1, (levels & C.Qd) != 0, (levels & C.Qb) != 0);
             _separatorDeferred = false;
             ObserveSeparatorOutputs();

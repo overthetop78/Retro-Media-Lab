@@ -7,6 +7,67 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class SystemFloppyBoardTests
 {
+    [Theory]
+    [InlineData(1000)]
+    [InlineData(2000)]
+    [InlineData(4000)]
+    [InlineData(8000)]
+    [InlineData(17000)]
+    public void ContinuousFluxAndObservationChangesPreserveEveryWindowAndCounter(int spacing)
+    {
+        for (var phase = 0; phase < 1000; phase += 17)
+        {
+            var chip = new Fdc8271(2_000_000); var otherChip = new Fdc8271(2_000_000);
+            using var card = new SystemFloppyBoard(chip);
+            using var reference = new SystemFloppyBoard(otherChip, groupStableSeparator: false);
+            static RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS93.Services.Sn74Ls93 Counter(SystemFloppyBoard owner, string name)
+                => (RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS93.Services.Sn74Ls93)typeof(SystemFloppyBoard)
+                    .GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(owner)!;
+            foreach (var name in new[] { "_ic7", "_ic14" })
+                Counter(reference, name).GetType().GetProperty("GroupObservedIntervals", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                    .SetValue(Counter(reference, name), false);
+            var actual = new List<(long, bool?)>(); var expected = new List<(long, bool?)>();
+            void Capture(SystemFloppyBoard owner, List<(long, bool?)> trace)
+            {
+                var latch = (RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS00.Services.Sn74Ls00)typeof(SystemFloppyBoard)
+                    .GetField("_ic12", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(owner)!;
+                var wire = latch.OutputChanged;
+                latch.OutputChanged = (gate, level) => { if (gate == 2) trace.Add((latch.TimeNanoseconds, level)); wire?.Invoke(gate, level); };
+            }
+            Capture(card, actual); Capture(reference, expected);
+            var clock = new ClockWire(card, periodic: true); var other = new ClockWire(reference, periodic: true);
+            for (var pulse = 0; pulse < 24; pulse++)
+            {
+                var start = 30_000 + phase + (long)pulse * spacing;
+                clock.AdvanceTo(start); other.AdvanceTo(start);
+                if (pulse == 8) card.GroupMaskedQb = false;
+                if (pulse == 16) card.GroupMaskedQb = true;
+                card.SetReadDataLevel(false); reference.SetReadDataLevel(false);
+                clock.AdvanceTo(start + 500); other.AdvanceTo(start + 500);
+                card.SetReadDataLevel(true); reference.SetReadDataLevel(true);
+                Assert.Equal(expected, actual);
+            }
+            var end = 30_000 + phase + 23L * spacing + 20_000;
+            clock.AdvanceTo(end); other.AdvanceTo(end);
+            Assert.Equal(expected, actual);
+            Assert.Equal(reference.DataWindow, card.DataWindow);
+            foreach (var name in new[] { "_ic7", "_ic14" })
+            {
+                var a = Counter(card, name); var b = Counter(reference, name);
+                // Observe both counters at the same physical instant, including
+                // inputs whose transport was deferred while the NAND masked them.
+                a.AdvanceTo(end); b.AdvanceTo(end);
+                Assert.Equal(b.Outputs, a.Outputs);
+                for (var input = 0; input < 2; input++)
+                {
+                    Assert.Equal(b.GetInputClockCount(input), a.GetInputClockCount(input));
+                    Assert.Equal(b.GetClock(input), a.GetClock(input));
+                }
+            }
+            Assert.Equal(otherChip.InputClockCount, chip.InputClockCount);
+        }
+    }
+
     [Fact]
     public void IdleDriveIndependenceRejectsPendingNmiAndActiveIndexWait()
     {
