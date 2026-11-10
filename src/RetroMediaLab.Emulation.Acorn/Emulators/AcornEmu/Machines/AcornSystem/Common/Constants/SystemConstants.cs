@@ -7,6 +7,10 @@ internal static class SystemConstants
     internal const int SystemOneClock = 1000000;
     internal const int StandardClock = 1000000;
     internal const int FastClock = 2000000;
+    // Software prefix bound, not a new hardware clock or latency.
+    internal const int FastPrivateClockBatch = 16;
+    internal const int FastSourceClocksPerReferencePeriod = 12;
+    internal const int FastReferencePeriodNanoseconds = 500;
     internal const int PresentationRate = 50;
     internal const int RamIoStart = 0x0e00;
     internal const int RamIoEnd = 0x1000;

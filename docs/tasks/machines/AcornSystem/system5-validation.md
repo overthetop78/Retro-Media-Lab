@@ -793,3 +793,30 @@ Comparaison native appariée dans le même processus : deux contextes collectabl
 **Temps réduit de35,587 %, accélération1,5525×.** Les trois empreintes vidéo/audio et les durées émulées sont identiques ; les deux cœurs sont fermés et les deux contextes effectivement déchargés après la mesure. Champ matériel19,968 ms à50,08013 Hz ; candidat **8,72415 champs/s et17,42038 % nominal**, sans limite et hors RML. Cette refonte n'atteint ni la réduction50 % demandée ni100 % de cadence. La machine reste ouverte ; les avances entre interactions et les coûts globaux restants nécessitent une poursuite structurelle, pas une déclaration de clôture.
 Rapport ignoré : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-architecture-block-native.md`. Les cinq sources courantes ont été sauvegardées en octets avant la construction témoin et restaurées dans finally, puis le candidat a été reconstruit. Fabrique, diagnostics externes et copies DLL sont retirés après consignation ; le rapport reste conservé.
 Nettoyage final de ce point de reprise : fabrique et test externes supprimés, dossier de copies DLL retiré après preuve du déchargement des deux contextes. Reconstruction Acorn réussie sans avertissement/erreur ; reconstruction des tests locaux réussie avec quatre avertissements préexistants, zéro erreur. Rapports ignorés conservés, aucun nouveau build de l'application RML. Le commit demandé enregistre un travail de performance encore en cours.
+
+## Profil global du pointa9245eb4b
+NOS80/VDU80,400004 sans média,20 champs de chauffe exclus par la pile de mesure.70 champs collectés en8050,2266 ms ; Debug IsJITOptimizerDisabled=true. Les temps échantillonnés ne remplacent pas le comparatif natif libre114,62438 ms/champ. Chaque intervalle est attribué une fois au dernier cadre Chips/Acorn ; les inclusifs restent séparés.
+
+| Groupe | Temps propre % |
+| --- | ---: |
+|Sn74Ls93|13.142729|
+|Autres|12.015584|
+|Sn74Ls393|10.304847|
+|SystemFloppyBoard|10.211913|
+|Vdu80CharacterGenerator|9.215136|
+|Cpu6502|8.323591|
+|SystemClockGenerator|7.405354|
+|AcornSystemMachine|7.318572|
+|Sn74S163|7.018723|
+|Sn74Ls165|4.784358|
+|SystemVideo|4.495358|
+|Crtc6845|3.621606|
+|Via6522|1.087034|
+|Intel8271|1.055194|
+| **Total avant arrondi** | **100,000000** |
+Méthodes principales :163.ResolveRepresentedClockPeriods4,0013 %,VDU.AdvanceStableDotClockPeriods3,9902 %,93.SkipUnobservedCka3,2391 %,163.Capture2,8481 %,393.TryGetQaRisingClockCountAt2,7910 %,93.AdvancePeriodicInputs2,7788 %. Aucune méthode unique ne porte le retard global. Le coût suit encore les très petites plages d'avance imposées par les frontières de raccordement. La prochaine refonte doit regrouper ces plages entre interactions établies, avec capacités locales de calcul de plages longues et conservation des observables ; aucune accélération supplémentaire déjà obtenue n'est annoncée. Rapports exhaustifs : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-post-refactor-profile-methods.{json,md}.
+
+
+### Préparation de la refonte des avances entre interactions
+Les primitives longues163/source et les périodes WAIT/READY représentées sont maintenant réalisées et vérifiées (71 contrôles163/source et13 contrôlesWAIT/READY, tous réussis). Elles ne sont pas encore raccordées à la boucle native ; la dernière cadence machine mesurée reste8,72415 champs/s,17,42038 % nominal. Aucun nouveau gain de performance n'est attribué à cette préparation.
+Audit des interactions : SystemFastCpuBus présente déjà le prochain accès pendant la phase basse du6502 ; le CPU peut donc s'arrêter avant un cycle périphérique. La mémoireVDU et les portsCRTC sont identifiés par SystemVideo.Handles, la VIA par ViaAddress et les fenêtres8271 par le décodeur physique de la carte. Les accès privés ne modifient pas la vidéo ; les écritures périphériques doivent interrompre le préfixe avant leur réalisation. Les notifications vidéo existantes n'alimentent ni IRQ ni NMI du CPU dans ce câblage ; la VIA reste cadencée par les vrais frontsCPU. Le CRTC ne change Frame que par EndScanline/BeginFrame ; une borne de ligne doit empêcher tout dépassement de champ, y compris l'ajustement et l'entrelacement. Les événements8271/connecteur qui peuvent agir sur NMI/READY bornent le préfixe ; tous les autres cas conservent la voie normale. Le plan de fichiers, tests et invalidations est inscrit dans implementation.md avant raccordement.

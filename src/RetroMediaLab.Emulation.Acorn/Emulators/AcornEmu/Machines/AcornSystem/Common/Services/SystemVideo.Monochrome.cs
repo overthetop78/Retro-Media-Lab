@@ -13,6 +13,22 @@ internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
     private int _monochromeX;
     private int _monochromeY;
 
+    /// <summary>The CPU has consumed only private-memory cycles. No VDU input
+    /// changed during this prefix; replay its clocks independently, preserving
+    /// dot-before-character ordering at coincident source edges.</summary>
+    internal void AdvanceIndependentCharacterPeriods(int periods, bool dotHigh)
+    {
+        var dots = (IIndependentClockPeriodReceiver)this;
+        for (var period = 0; period < periods; period++)
+        {
+            dots.AdvancePeriods(C.MonochromeCellPixels / 2, dotHigh);
+            SetCharacterClock(true);
+            dots.AdvancePeriods(C.MonochromeCellPixels / 2, dotHigh);
+            SetCharacterClock(false);
+            TickCharacter();
+        }
+    }
+
     internal bool StableClockCandidate => _monochrome?.StableClockCandidate == true;
     internal Action<bool>? StableClockCandidateChanged
     {

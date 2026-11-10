@@ -12,6 +12,7 @@ internal static class SystemFloppyBoardConstants
     internal const int DriveConnector = 15;
     internal const int LastPart = DriveConnector;
     internal const ushort CpuPageMask = 0xf000;
+    internal const ushort CpuDecoderEnableMask = 0x0800;
     internal const byte AllPinsKnown = 0x3f;
     internal const byte Qa = 1, Qb = 2, Qd = 8;
     internal const ushort ReadyTimeoutOutput = 1 << 12; // CD4020B pin2, Q13.

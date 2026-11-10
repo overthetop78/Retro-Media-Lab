@@ -5,6 +5,37 @@ namespace RetroMediaLab.Chips.Controllers.Acorn.SystemClock.Services;
 
 public sealed partial class SystemClockGenerator
 {
+    /// <summary>Boundary suitable for complete represented2 MHz periods. The
+    /// caller still has to qualify all receiver interactions independently.</summary>
+    public bool CanRepresentReferencePeriods => !_oscillatorHigh && _stableDomainsAligned
+        && _stableClock12Eligible && _clock12IndependentReceiver is not null
+        && (_observedClocks & ~(C.Clock12 | C.Clock2)) == 0 && !Clock2MHz
+        && _nextReceiverEdge - _inputClockCount == C.Clock2HalfPeriodSourceClocks;
+
+    /// <summary>Resolve a source interval whose12/2 MHz receivers have already
+    /// represented every effect and interaction. This does not run receivers or
+    /// replay their callbacks. Other observed clocks forbid this operation.</summary>
+    public void AdvanceRepresentedNetworkClocks(long clocks)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(clocks);
+        if (clocks == 0) return;
+        RequireReceiverBoundary();
+        if (_oscillatorHigh || !_stableDomainsAligned || !_stableClock12Eligible
+            || _clock12IndependentReceiver is null || (_observedClocks & ~(C.Clock12 | C.Clock2)) != 0)
+            throw new InvalidOperationException("Every connected source output must be represented before advancing this range.");
+        var end = checked(_inputClockCount + clocks);
+        var ic2 = _ic2.ResolveRepresentedClockRange(clocks, Ic2PeriodicInputs, _stableClockOrigin);
+        var ic3 = _ic3.ResolveRepresentedClockRange(clocks, Ic3PeriodicInputs, _stableClockOrigin);
+        var ic4 = _ic4.ResolveRepresentedClockRange(clocks, Ic4PeriodicInputs, _stableClockOrigin);
+        _inputClockCount = end;
+        _ic2Pins = (byte)(ic2 & 15); _ic4ClearHigh = (ic3 & 16) == 0;
+        _levels = (byte)(((ic2 & 1) << 1) | ((ic3 & 1) << 3) | ((ic3 & 6) << 4)
+            | (ic4 & 1) | ((ic4 & 2) << 1) | ((ic4 & 4) << 2));
+        _publishedLevels = _levels;
+        FallingClock();
+        UpdateNextReceiverEdge();
+    }
+
     // Actual post-edge input waveforms from figure 9, anchored at IC4 clear
     // with IC2=2. Immutable wiring data; every counter retains its own time/state.
     private static readonly Sn74S163PeriodicInputs Ic2PeriodicInputs = new(

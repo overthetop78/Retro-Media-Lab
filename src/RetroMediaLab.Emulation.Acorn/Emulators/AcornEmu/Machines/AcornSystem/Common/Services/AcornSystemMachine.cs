@@ -232,7 +232,10 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine, IDisp
         // unprogrammed CRTC retain their software presentation interval.
         while (_video?.IsProgrammed == true ? _video.Frame == field : _ticks < _nextFrame)
         {
-            if (_fastClock is not null) _fastClock.AdvanceClocks(_fastAdvanceBatch);
+            if (_fastClock is not null)
+            {
+                if (!TryRunPrivateClockPrefix()) _fastClock.AdvanceClocks(_fastAdvanceBatch);
+            }
             else if (_cpu6809 is not null) _cpu6809.Step(); else _cpu6502!.Step();
         }
         _lastFrameTicks = _ticks - start;
@@ -253,7 +256,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine, IDisp
         else TickReferenceClock(advanceVia: true);
     }
 
-    private void TickReferenceClock(bool advanceVia)
+    private void TickReferenceClock(bool advanceVia, bool advanceVideo = true)
     {
         _ticks++;
         // The System 1 has a passive scanned keypad, not the ASCII keyboard's repeater.
@@ -264,7 +267,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine, IDisp
         if (advanceVia) _via?.Tick();
         // VDU40 CLK is PH2 (1 MHz); VDU80 receives the fast card's 2 MHz.
         // The fast card uses its free-running 2 MHz output, even during CPU WAIT.
-        _video?.TickCharacter();
+        if (advanceVideo) _video?.TickCharacter();
         _audioPhase += C.AudioSampleRate;
         if (_audioPhase >= _clock)
         {

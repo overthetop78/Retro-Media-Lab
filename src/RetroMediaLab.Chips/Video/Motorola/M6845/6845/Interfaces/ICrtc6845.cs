@@ -27,6 +27,7 @@ public interface ICrtc6845
     void SetBus(bool selected, bool registerSelect, bool read, bool enable, byte data);
 
     int Column { get; }
+    int ClocksToLineBoundary { get; }
 
     int Row { get; }
 

@@ -7,6 +7,9 @@ internal sealed partial class SystemFloppyBoard
 {
     private long _controllerClockOrigin, _controllerClockCount;
     private bool _synchronizingController;
+    private bool _controllerTimingPending;
+
+    internal bool CpuClockCanRunIndependently => !_disposed && !_controllerTimingPending;
 
     private void SynchronizeController(bool includeCurrentTime = false)
     {
@@ -32,7 +35,10 @@ internal sealed partial class SystemFloppyBoard
     }
 
     private void ControllerClockEventChanged(long? next)
-        => _ic8.RequestQaClock(0, next.HasValue ? checked(next.Value - _controllerClockOrigin) : null);
+    {
+        _controllerTimingPending = next.HasValue;
+        _ic8.RequestQaClock(0, next.HasValue ? checked(next.Value - _controllerClockOrigin) : null);
+    }
 
     private void WireReady()
     {

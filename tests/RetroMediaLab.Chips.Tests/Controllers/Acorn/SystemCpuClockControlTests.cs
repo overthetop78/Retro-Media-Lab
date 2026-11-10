@@ -9,6 +9,58 @@ public sealed class SystemCpuClockControlTests
     [InlineData(1_000_000)]
     [InlineData(2_000_000)]
     [InlineData(3_000_000)]
+    public void RepresentedPeriodsKeepBistableCountsAndResumeWaitAndDmaExactly(long frequency)
+    {
+        var actual = new SystemCpuClockControl(frequency); var scalar = new SystemCpuClockControl(frequency);
+        var actualEdges = new List<(long, bool)>(); var expectedEdges = new List<(long, bool)>();
+        actual.CpuClockChanged = high => actualEdges.Add((actual.InputClockCount, high));
+        scalar.CpuClockChanged = high => expectedEdges.Add((scalar.InputClockCount, high));
+        foreach (var periods in new[] { 1, 100_001 })
+        {
+            Assert.True(actual.CanRepresentClockPeriods);
+            actual.AdvanceRepresentedClockPeriods(periods);
+            Assert.Empty(actualEdges);
+            for (var i = 0; i < periods; i++) SourcePeriod(scalar);
+            Assert.Equal(scalar.InputClockCount, actual.InputClockCount);
+            Assert.Equal(scalar.CpuClockCount, actual.CpuClockCount);
+            Assert.Equal(scalar.Ready, actual.Ready); Assert.Equal(scalar.CpuClockHigh, actual.CpuClockHigh);
+            expectedEdges.Clear();
+        }
+        actual.SetMemoryReady(false); scalar.SetMemoryReady(false);
+        Assert.False(actual.CanRepresentClockPeriods);
+        Assert.Throws<InvalidOperationException>(() => actual.AdvanceRepresentedClockPeriods(1));
+        SourcePeriod(actual); SourcePeriod(scalar);
+        actual.SetMemoryReady(true); scalar.SetMemoryReady(true);
+        SourcePeriod(actual); SourcePeriod(scalar);
+        actual.SetBusRequest(false); scalar.SetBusRequest(false);
+        Assert.False(actual.CanRepresentClockPeriods);
+        SourcePeriod(actual); SourcePeriod(scalar);
+        actual.SetBusRequest(true); scalar.SetBusRequest(true);
+        SourcePeriod(actual); SourcePeriod(scalar);
+        Assert.Equal(expectedEdges, actualEdges);
+        Assert.Equal(scalar.InputClockCount, actual.InputClockCount); Assert.Equal(scalar.CpuClockCount, actual.CpuClockCount);
+        Assert.True(actual.CanRepresentClockPeriods);
+    }
+
+    [Fact]
+    public void RepresentedPeriodsRejectHalfPeriodsAndOverflowBeforeChangingTheBistables()
+    {
+        var circuit = new SystemCpuClockControl(2_000_000);
+        circuit.SetSelectedClock(true);
+        Assert.False(circuit.CanRepresentClockPeriods);
+        Assert.Throws<InvalidOperationException>(() => circuit.AdvanceRepresentedClockPeriods(1));
+        circuit.SetSelectedClock(false);
+        circuit.AdvanceRepresentedClockPeriods(long.MaxValue - 1);
+        Assert.Equal(long.MaxValue, circuit.InputClockCount); Assert.Equal(long.MaxValue, circuit.CpuClockCount);
+        Assert.Throws<OverflowException>(() => circuit.AdvanceRepresentedClockPeriods(1));
+        Assert.Equal(long.MaxValue, circuit.InputClockCount); Assert.Equal(long.MaxValue, circuit.CpuClockCount);
+        Assert.False(circuit.SelectedClockHigh); Assert.False(circuit.CpuClockHigh);
+    }
+
+    [Theory]
+    [InlineData(1_000_000)]
+    [InlineData(2_000_000)]
+    [InlineData(3_000_000)]
     public void EveryPhysicalClockSelectionPassesBothLevelsWithoutDuplicates(long frequency)
     {
         var circuit = new SystemCpuClockControl(frequency);

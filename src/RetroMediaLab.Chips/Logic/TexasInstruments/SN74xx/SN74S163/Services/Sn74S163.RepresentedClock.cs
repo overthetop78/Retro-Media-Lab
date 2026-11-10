@@ -4,6 +4,19 @@ namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74S163.Services;
 
 public sealed partial class Sn74S163
 {
+    /// <summary>Resolve a long represented range. Only the count and elapsed
+    /// source periods need materializing before the final ordinary capture,
+    /// which establishes every final input and output pin.</summary>
+    internal byte ResolveRepresentedClockRange(long periods, Sn74S163PeriodicInputs inputs, long originClock)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(periods);
+        var end = checked(_inputClockCount + periods);
+        var beforeLast = inputs.CountAfter(_count, _inputClockCount, originClock, periods - 1);
+        _count = beforeLast;
+        _inputClockCount = end - 1;
+        return ResolveRepresentedClockPeriods(1, inputs, originClock);
+    }
+
     /// <summary>Resolve an interval whose intervening pin changes and internal
     /// recipients are already represented by the supplied periodic input graph.
     /// No pin callback is replayed. The owner publishes external observations

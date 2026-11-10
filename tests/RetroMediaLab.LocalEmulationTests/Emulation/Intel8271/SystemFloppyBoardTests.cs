@@ -8,6 +8,25 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class SystemFloppyBoardTests
 {
     [Fact]
+    public void IndependentCpuQualificationTracksTheControllersNotifiedTimingState()
+    {
+        var controller = new Fdc8271(2_000_000);
+        using var card = new SystemFloppyBoard(controller);
+        var clock = new ClockWire(card, periodic: true);
+        Assert.Equal(!controller.NextClockEvent.HasValue, card.CpuClockCanRunIndependently);
+        clock.AdvanceTo(10_000);
+        Assert.Equal(!controller.NextClockEvent.HasValue, card.CpuClockCanRunIndependently);
+        controller.Write(0, 0x52); controller.Write(1, 0); controller.Write(1, 1);
+        Assert.Equal(!controller.NextClockEvent.HasValue, card.CpuClockCanRunIndependently);
+        for (var time = 10_500L; time <= 50_000; time += 500)
+        {
+            clock.AdvanceTo(time);
+            Assert.Equal(!controller.NextClockEvent.HasValue, card.CpuClockCanRunIndependently);
+        }
+        Assert.Equal(long.MaxValue, card.NextDriveInteractionNanoseconds);
+    }
+
+    [Fact]
     public void DescribedSeparatorClockPreservesAllDownstreamEdgesAndResetDates()
     {
         var chip = new Fdc8271(2_000_000); var referenceChip = new Fdc8271(2_000_000);

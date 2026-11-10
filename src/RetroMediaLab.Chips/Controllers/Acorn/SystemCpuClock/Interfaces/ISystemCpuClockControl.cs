@@ -18,4 +18,6 @@ public interface ISystemCpuClockControl
     void SetMemoryReady(bool high);
     void SetBusRequest(bool high);
     void SetCpuRead(bool read);
+    bool CanRepresentClockPeriods { get; }
+    void AdvanceRepresentedClockPeriods(long periods);
 }

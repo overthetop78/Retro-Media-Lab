@@ -45,6 +45,7 @@ internal sealed partial class SystemVideo
 
     internal long Frame => _crtc.Frame;
     internal bool IsProgrammed => _crtc.IsProgrammed;
+    internal int ClocksToLineBoundary => _crtc.ClocksToLineBoundary;
     internal long CompletedFieldClocks { get; private set; }
     internal EmulationVideoScanMode ScanMode => _scanMode;
     internal byte[] CompletedFrame => _completed;

@@ -60,3 +60,8 @@ Code revu statiquement ; aucune compilation, nouveau test ou mesure pendant cett
   - [x] Supprimer `tests/RetroMediaLab.Chips.Tests/Video/Motorola/M6845/6845/PinThroughputProbe.cs` après consignation des mesures et régénérer l'assembly sans le diagnostic externe. Ne pas modifier la DLL de référence empruntée.
 
 Résultat du bloc : 88 contrôles CRTC réussis (112 ms), traces MA/DE/CU identiques à la DLL précédente sur le scénario de référence. Débit actuel 15,29–15,82 millions de caractères/s avec trois récepteurs, 20,76–21,50 sans récepteur. Aucun gain global annoncé ; surcoût moyen isolé sans destinataire environ 1,7 %, plages recouvrantes. Première compilation de la nouvelle fixture corrigée par conversion explicite de l'indexeur int vers byte. Banc externe supprimé, assembly régénérée sans lui : zéro erreur, un avertissement préexistant. Aucun état sauvegardé développé. Câblage VDU80 encore en cours selon le suivi machine.
+
+## Borne de ligne pour les avances entre interactions —10 novembre2026
+- [x] Fournir une borne locale qui empêche de franchir un début de champ.
+  - [x] Modifier `src/RetroMediaLab.Chips/Video/Motorola/M6845/6845/Services/Crtc6845.Timing.cs` et `Interfaces/ICrtc6845.cs` : calculer les clocks jusqu'au prochain EndScanline depuis colonne/R0, avec wrap8 bits ; renvoyer une seule clock conservatrice pendant reset/test. Ne modifier aucun balayage, registre ou notification.
+  - [x] Créer `tests/RetroMediaLab.Chips.Tests/Video/Motorola/M6845/6845/LineBoundaryTests.cs` : vérifier les deux variantes, modes progressif/entrelacé et ajustement, écritureR0 derrière la colonne et reset ; consigner dans `docs/chips/Video/Crtc6845.md` avant raccordement de la machine.

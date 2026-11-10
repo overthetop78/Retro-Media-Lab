@@ -9,6 +9,23 @@ internal sealed class SystemFastCpuBus(AcornSystemMachine board) : ICpuBus, ICpu
     internal bool ReadHigh { get; private set; } = true;
     private bool _buffersEnabled = true, _phaseHigh;
     private byte? _latchedRead;
+    private bool _representedPrivateCycles, _prepared;
+    private ushort _preparedAddress;
+    private byte _preparedValue;
+    internal bool CanRepresentPreparedCycle => _prepared && _buffersEnabled && !_phaseHigh
+        && board.IsPrivateCpuMemoryAddress(_preparedAddress);
+
+    internal void BeginRepresentedPrivateCycles()
+    {
+        if (_representedPrivateCycles) throw new InvalidOperationException("A private CPU prefix is already active.");
+        _representedPrivateCycles = true;
+    }
+
+    internal void EndRepresentedPrivateCycles()
+    {
+        _representedPrivateCycles = false;
+        if (_prepared && _buffersEnabled) board.PrepareFastBus(_preparedAddress, _preparedValue);
+    }
     internal bool BuffersEnabled
     {
         get => _buffersEnabled;
@@ -27,34 +44,36 @@ internal sealed class SystemFastCpuBus(AcornSystemMachine board) : ICpuBus, ICpu
     public byte Read(ushort address)
     {
         try { return BuffersEnabled ? _latchedRead ?? board.Read(address) : byte.MaxValue; }
-        finally { board.SetFastBusPhase(false, ReadHigh); }
+        finally { if (!_representedPrivateCycles) board.SetFastBusPhase(false, ReadHigh); }
     }
     public void Write(ushort address, byte value)
     {
         try { if (BuffersEnabled) board.Write(address, value); }
-        finally { board.SetFastBusPhase(false, ReadHigh); }
+        finally { if (!_representedPrivateCycles) board.SetFastBusPhase(false, ReadHigh); }
     }
 
     // The 24 MHz network drives the board independently of CPU transactions.
     public void Tick() { }
     public void PrepareRead(ushort address)
     {
+        _prepared = true; _preparedAddress = address; _preparedValue = 0;
         _latchedRead = null;
-        if (BuffersEnabled) board.PrepareFastBus(address);
+        if (BuffersEnabled && !_representedPrivateCycles) board.PrepareFastBus(address);
         SetReadWrite(true);
     }
     public void PrepareWrite(ushort address, byte data)
     {
+        _prepared = true; _preparedAddress = address; _preparedValue = data;
         _latchedRead = null;
-        if (BuffersEnabled) board.PrepareFastBus(address, data);
+        if (BuffersEnabled && !_representedPrivateCycles) board.PrepareFastBus(address, data);
         SetReadWrite(false);
     }
 
     internal void SetPhase(bool high)
     {
-        if (!high && _phaseHigh && BuffersEnabled && ReadHigh) _latchedRead = board.FastDiskBusData;
+        if (!_representedPrivateCycles && !high && _phaseHigh && BuffersEnabled && ReadHigh) _latchedRead = board.FastDiskBusData;
         _phaseHigh = high;
-        board.SetFastBusPhase(high && BuffersEnabled, ReadHigh);
+        if (!_representedPrivateCycles) board.SetFastBusPhase(high && BuffersEnabled, ReadHigh);
     }
 
     private void SetReadWrite(bool read)

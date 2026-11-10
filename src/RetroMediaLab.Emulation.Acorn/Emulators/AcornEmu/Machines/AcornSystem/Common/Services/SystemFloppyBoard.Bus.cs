@@ -13,6 +13,13 @@ internal sealed partial class SystemFloppyBoard
     private bool _controllerBusActive;
     internal bool ChipSelected => _csHigh == false;
     internal bool DataAcknowledged => _dackHigh == false;
+    internal bool PrivateBusPinsSettled => _csHigh == true && _dackHigh == true
+        && _deadlines[C.Decode] == 0 && _deadlines[C.Control] == 0;
+
+    // Either inhibited enable proves all decoder outputs inactive. This is not
+    // a second address decoder; all other cases retain the actual gate circuit.
+    internal static bool AddressInhibitsDecoder(ushort address)
+        => (address & C.CpuPageMask) != 0 || (address & C.CpuDecoderEnableMask) == 0;
     internal byte? BusData
     {
         get

@@ -77,6 +77,8 @@ internal sealed partial class SystemFloppyBoard : IDisposable
     internal long TimeNanoseconds => _time;
     internal long? NextEventNanoseconds => _next == 0 ? null : _next;
     internal Action<long?>? NextEventNanosecondsChanged { get; set; }
+    internal long NextDriveInteractionNanoseconds => _deadlines[C.DriveConnector] == 0
+        ? long.MaxValue : _deadlines[C.DriveConnector];
 
     internal void ConnectDriveTiming(SystemFloppyDrive drives)
     {

@@ -13,6 +13,7 @@ public sealed class SystemCpuClockControl : ISystemCpuClockControl
     private bool _waitHigh;
     private bool _busRequestHigh = true;
     private bool _cpuRead = true;
+    private bool _memoryReady = true;
 
     public SystemCpuClockControl(long clockFrequency)
     {
@@ -45,7 +46,30 @@ public sealed class SystemCpuClockControl : ISystemCpuClockControl
     public Action<bool>? CpuClockChanged { get; set; }
     public Action<bool>? ReadyChanged { get; set; }
 
-    public void SetMemoryReady(bool high) => _ic5.SetData(C.WaitChannel, high);
+    public void SetMemoryReady(bool high)
+    {
+        _memoryReady = high;
+        _ic5.SetData(C.WaitChannel, high);
+    }
+
+    /// <summary>The receiver can represent complete normal PH0 periods only
+    /// while these received inputs and resolved bistables keep the path normal.</summary>
+    public bool CanRepresentClockPeriods => _memoryReady && _busRequestHigh && Ready
+        && !_waitHigh && !SelectedClockHigh && !CpuClockHigh;
+
+    /// <summary>Account for selected periods whose PH0 effects the CPU receiver
+    /// has already consumed. No clock callback is replayed; the two real
+    /// bistables retain their counters and resolved stable states.</summary>
+    public void AdvanceRepresentedClockPeriods(long periods)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(periods);
+        if (periods == 0) return;
+        if (!CanRepresentClockPeriods) throw new InvalidOperationException("WAIT/READY is not qualified for represented periods.");
+        _ = checked(InputClockCount + periods);
+        _ = checked(CpuClockCount + periods);
+        _ic5.AdvanceClocks(C.WaitChannel, periods);
+        _ic5.AdvanceClocks(C.ReadyChannel, periods);
+    }
 
     public void SetBusRequest(bool high)
     {

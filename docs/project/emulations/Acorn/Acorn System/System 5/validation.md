@@ -430,3 +430,26 @@ Comparaison native appariée dans le même processus : deux contextes collectabl
 
 **Temps réduit de35,587 %, accélération1,5525×.** Les trois empreintes vidéo/audio et les durées émulées sont identiques ; les deux cœurs sont fermés et les deux contextes effectivement déchargés après la mesure. Champ matériel19,968 ms à50,08013 Hz ; candidat **8,72415 champs/s et17,42038 % nominal**, sans limite et hors RML. Cette refonte n'atteint ni la réduction50 % demandée ni100 % de cadence. La machine reste ouverte ; les avances entre interactions et les coûts globaux restants nécessitent une poursuite structurelle, pas une déclaration de clôture.
 Rapport ignoré : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-architecture-block-native.md`. Les cinq sources courantes ont été sauvegardées en octets avant la construction témoin et restaurées dans finally, puis le candidat a été reconstruit. Fabrique, diagnostics externes et copies DLL sont retirés après consignation ; le rapport reste conservé.
+
+## Profil global du pointa9245eb4b
+NOS80/VDU80,400004 sans média,20 champs de chauffe exclus par la pile de mesure.70 champs collectés en8050,2266 ms ; Debug IsJITOptimizerDisabled=true. Les temps échantillonnés ne remplacent pas le comparatif natif libre114,62438 ms/champ. Chaque intervalle est attribué une fois au dernier cadre Chips/Acorn ; les inclusifs restent séparés.
+
+| Groupe | Temps propre % |
+| --- | ---: |
+|Sn74Ls93|13.142729|
+|Autres|12.015584|
+|Sn74Ls393|10.304847|
+|SystemFloppyBoard|10.211913|
+|Vdu80CharacterGenerator|9.215136|
+|Cpu6502|8.323591|
+|SystemClockGenerator|7.405354|
+|AcornSystemMachine|7.318572|
+|Sn74S163|7.018723|
+|Sn74Ls165|4.784358|
+|SystemVideo|4.495358|
+|Crtc6845|3.621606|
+|Via6522|1.087034|
+|Intel8271|1.055194|
+| **Total avant arrondi** | **100,000000** |
+Méthodes principales :163.ResolveRepresentedClockPeriods4,0013 %,VDU.AdvanceStableDotClockPeriods3,9902 %,93.SkipUnobservedCka3,2391 %,163.Capture2,8481 %,393.TryGetQaRisingClockCountAt2,7910 %,93.AdvancePeriodicInputs2,7788 %. Aucune méthode unique ne porte le retard global. Le coût suit encore les très petites plages d'avance imposées par les frontières de raccordement. La prochaine refonte doit regrouper ces plages entre interactions établies, avec capacités locales de calcul de plages longues et conservation des observables ; aucune accélération supplémentaire déjà obtenue n'est annoncée. Rapports exhaustifs : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-post-refactor-profile-methods.{json,md}.
+

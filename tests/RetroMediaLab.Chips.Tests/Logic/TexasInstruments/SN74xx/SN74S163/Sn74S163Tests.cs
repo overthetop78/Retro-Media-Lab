@@ -5,6 +5,57 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74S163;
 public sealed class Sn74S163Tests
 {
     [Fact]
+    public void LongRepresentedRangesPreserveEveryControlModePhaseAndExplicitResumption()
+    {
+        byte[] longPattern = Enumerable.Repeat((byte)15, 48).ToArray(); longPattern[^1] = 14;
+        byte[][] patterns = [[15], [3], [14], [0xa1], [15, 15, 3], [15, 0xb1, 15],
+            [14, 15, 15], [0x71, 14, 15, 7, 15], [15, 0xf1, 3, 15, 0x51, 15], longPattern];
+        foreach (var pins in patterns)
+        {
+            var inputs = new Sn74S163PeriodicInputs(pins, 6);
+            for (byte seed = 0; seed < 16; seed++)
+            for (var phase = 0; phase < pins.Length; phase++)
+            foreach (var periods in new[] { 1, 6, 7, 47, 48, 49, 1_001 })
+            {
+                var actual = new Sn74S163(24_000_000, seed); var scalar = new Sn74S163(24_000_000, seed);
+                for (var i = 0; i < periods; i++)
+                {
+                    Apply(scalar, pins[(phase + i) % pins.Length]); scalar.CaptureRisingClock();
+                    Apply(scalar, pins[(phase + i + 1) % pins.Length]); scalar.ResolveClock(); scalar.ReceiveFallingClock();
+                }
+                actual.ResolveRepresentedClockRange(periods, inputs, -phase);
+                Assert.True(actual.ClockHigh); actual.ReceiveFallingClock();
+                Assert.Equal(scalar.Count, actual.Count); Assert.Equal(scalar.Carry, actual.Carry);
+                Assert.Equal(scalar.InputClockCount, actual.InputClockCount);
+                scalar.Clock(); actual.Clock();
+                Assert.Equal(scalar.Count, actual.Count); Assert.Equal(scalar.Carry, actual.Carry);
+            }
+        }
+        static void Apply(Sn74S163 chip, byte pins)
+        {
+            chip.SetClear((pins & 1) != 0); chip.SetLoad((pins & 2) != 0);
+            chip.SetEnable((pins & 4) != 0, (pins & 8) != 0); chip.SetData((byte)(pins >> 4));
+        }
+    }
+
+    [Fact]
+    public void LongRangesKeepTheExactCountAtTheRepresentationLimitAndRejectOverflowBeforeMutation()
+    {
+        var inputs = new Sn74S163PeriodicInputs([15, 3, 15], 6);
+        var chip = new Sn74S163(24_000_000, 9);
+        chip.ResolveRepresentedClockRange(long.MaxValue, inputs, 0); chip.ReceiveFallingClock();
+        var increments = long.MaxValue / 3 * 2 + 1;
+        Assert.Equal((byte)((9 + increments) & 15), chip.Count);
+        Assert.Equal(long.MaxValue, chip.InputClockCount);
+        var before = chip.Count;
+        Assert.Throws<OverflowException>(() => chip.ResolveRepresentedClockRange(1, inputs, 0));
+        Assert.Equal(before, chip.Count); Assert.False(chip.ClockHigh);
+        Assert.Equal(long.MaxValue, chip.InputClockCount);
+        Assert.Throws<ArgumentOutOfRangeException>(() => inputs.CountAfter(0, 0, 1, 7));
+        Assert.Throws<ArgumentOutOfRangeException>(() => inputs.CountAfter(0, 0, 0, -1));
+    }
+
+    [Fact]
     public void PeriodicInputIntervalsMatchIndividualSharedEdges()
     {
         for (var seed = 0; seed < 256; seed++)

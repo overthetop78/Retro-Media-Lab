@@ -25,4 +25,6 @@ public interface ISystemClockGenerator
     void SetOscillator(bool high);
     void Clock();
     void AdvanceClocks(long clocks);
+    void AdvanceRepresentedNetworkClocks(long clocks);
+    bool CanRepresentReferencePeriods { get; }
 }

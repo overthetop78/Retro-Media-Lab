@@ -5,6 +5,69 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Acorn;
 
 public sealed class SystemClockGeneratorTests
 {
+    [Fact]
+    public void CompleteReferencePeriodsAreQualifiedOnlyAtTheirPhysicalLowBoundary()
+    {
+        var source = new SystemClockGenerator(); source.Clock12MHzReceiver = new IndependentReceiver();
+        Assert.False(source.CanRepresentReferencePeriods);
+        for (var clock = 1; clock <= 200; clock++)
+        {
+            source.Clock();
+            if (clock >= 96) Assert.Equal(clock % 12 == 0, source.CanRepresentReferencePeriods);
+        }
+        source.Clock4MHzChanged = _ => { };
+        for (var clock = 0; clock < 20; clock++) { source.Clock(); Assert.False(source.CanRepresentReferencePeriods); }
+    }
+
+    [Theory]
+    [InlineData(2, 0, 0)]
+    [InlineData(0, 7, 13)]
+    [InlineData(3, 15, 7)]
+    public void LongRepresentedSourceRangesMatchUnitaryClocksAndResumeAllOutputs(byte a, byte b, byte c)
+    {
+        var actual = new SystemClockGenerator(a, b, c); var expected = new SystemClockGenerator(a, b, c);
+        var receiver = new IndependentReceiver(); receiver.SetClock(actual.Clock12MHz);
+        actual.Clock12MHzReceiver = receiver;
+        actual.AdvanceClocks(128); expected.AdvanceClocks(128);
+        foreach (var length in new long[] { 1, 7, 47, 48, 49, 1_001, 20_003 })
+        {
+            // The wire owner has represented these clock levels independently.
+            receiver.AdvancePeriods((int)(length / 2), receiver.High);
+            if ((length & 1) != 0) receiver.SetClock(!receiver.High);
+            actual.AdvanceRepresentedNetworkClocks(length);
+            expected.AdvanceClocks(length);
+            Assert.Equal(Levels(expected), Levels(actual));
+            Assert.Equal(expected.InputClockCount, actual.InputClockCount);
+            Assert.False(actual.OscillatorHigh);
+            foreach (var pair in new[] { (actual.Ic2, expected.Ic2), (actual.Ic3, expected.Ic3), (actual.Ic4, expected.Ic4) })
+            {
+                Assert.Equal(pair.Item2.Count, pair.Item1.Count); Assert.Equal(pair.Item2.Carry, pair.Item1.Carry);
+                Assert.Equal(pair.Item2.InputClockCount, pair.Item1.InputClockCount); Assert.False(pair.Item1.ClockHigh);
+            }
+        }
+        actual.Clock12MHzReceiver = null;
+        var actualPins = new List<(long, int, bool)>(); var expectedPins = new List<(long, int, bool)>();
+        Connect(actual, (frequency, high) => actualPins.Add((actual.InputClockCount, frequency, high)));
+        Connect(expected, (frequency, high) => expectedPins.Add((expected.InputClockCount, frequency, high)));
+        actual.AdvanceClocks(101); expected.AdvanceClocks(101);
+        Assert.Equal(expectedPins, actualPins);
+    }
+
+    [Fact]
+    public void RepresentedRangeRejectsUnqualifiedNetworksAndUnrepresentedObservers()
+    {
+        var source = new SystemClockGenerator(); var receiver = new IndependentReceiver();
+        source.Clock12MHzReceiver = receiver;
+        Assert.Throws<InvalidOperationException>(() => source.AdvanceRepresentedNetworkClocks(12));
+        Assert.Equal(0, source.InputClockCount);
+        source.AdvanceClocks(128); source.Clock4MHzChanged = _ => { };
+        Assert.Throws<InvalidOperationException>(() => source.AdvanceRepresentedNetworkClocks(12));
+        Assert.Equal(128, source.InputClockCount);
+        source.Clock4MHzChanged = null;
+        Assert.Throws<OverflowException>(() => source.AdvanceRepresentedNetworkClocks(long.MaxValue));
+        Assert.Equal(128, source.InputClockCount);
+    }
+
     [Theory]
     [InlineData(2, 0, 0)]
     [InlineData(3, 15, 7)]

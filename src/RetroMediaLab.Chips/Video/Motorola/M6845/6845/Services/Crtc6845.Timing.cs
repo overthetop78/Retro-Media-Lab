@@ -4,6 +4,12 @@ namespace RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services;
 
 public sealed partial class Crtc6845
 {
+    /// <summary>Conservative character-clock bound through the next line end.
+    /// R0 changed behind the current column is reached after the real8-bit wrap.
+    /// Reset/test modes retain the ordinary single-clock path.</summary>
+    public int ClocksToLineBoundary => _resetPin || _resetActive || _testModeActive ? 1
+        : ((_registers[HorizontalTotal] - _column) & DataMask) + 1;
+
     private int _adjustCounter;
     private bool _checkAdjust;
     private bool _endMain;

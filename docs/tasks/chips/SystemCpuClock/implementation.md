@@ -12,3 +12,8 @@ Source acquise : System 5 Handbook §2.4/2.5, figure 21 (PDF 62), archive déjà
   - [x] Supprimer `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemCpuClockThroughputProbe.cs` après consignation, puis régénérer l'assembly sans le diagnostic.
 
 Bloc actuel : neuf tests autonomes réussis, puis banc isolé réussi à 7,590152–7,757862 millions de périodes/s. Diagnostic supprimé et assembly régénérée, zéro erreur et un avertissement xUnit2031 préexistant. Fiche `docs/chips/Controllers/SystemCpuClock.md` et fiche System 5 complétées. Le bloc de circuit est distinct du raccordement CPU restant.
+
+## Périodes dont PH0 est représenté par le récepteur —10 novembre2026
+- [x] Avancer les comptes des deux bascules pour un intervalle prouvé normal.
+  - [x] Modifier `Services/SystemCpuClockControl.cs` et `Interfaces/ISystemCpuClockControl.cs` : mémoriser l'entrée MR, qualifier MR/NBRq hauts, READY établi et horloges basses ; prévalider les comptes puis utiliser AdvanceClocks des deux74LS74 avec D/Q stables. Ne pas publier de PH0 ou READY fictif ; conserver le traitement ordinaire des autres états.
+  - [x] Modifier `tests/RetroMediaLab.Chips.Tests/Controllers/Acorn/SystemCpuClockControlTests.cs` : périodes1/100001, trois liens, reprise MR/DMA, phases et refus ; consigner les contrôles dans `docs/chips/Controllers/SystemCpuClock.md`, sans gain machine annoncé avant raccordement macro complet.
