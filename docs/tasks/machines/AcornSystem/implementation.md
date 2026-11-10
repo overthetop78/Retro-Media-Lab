@@ -1235,7 +1235,11 @@ Validation finale sans banc temporaire :265 contrôles System/carte/relai8271 r�
 Relevé par étapes terminé : contrôle apparié réussi en37,848 s, rapports et deux validations complétés avec calibration et limites. Sources de production rétablies à7a3c4376a, diagnostics retirés. Reconstruction Acorn sans sonde :0 erreur/0 avertissement ; tests locaux sans banc :0 erreur/4 avertissements préexistants. Aucun gain de production nouveau revendiqué et aucun petit commit documentaire isolé.
 
 ## Portions indépendantes contenant mémoire et lectures VIA — 10 novembre2026
+<<<<<<< HEAD
 - [x] Réduire les reprises de coordination entre transactions dont les domaines restent indépendants.
+=======
+- [ ] Réduire les reprises de coordination entre transactions dont les domaines restent indépendants.
+>>>>>>> 435ea50b375ea7459340ccdff24940a7b7ea7cfa
   - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.PrivateClock.cs` : étendre le préfixe existant aux lectures VIA déjà qualifiées entre cycles privés, qualifier chaque transaction avant exécution et conserver une sélection interne du parcours précédent. Exécuter chaque transaction/phase CPU et acquittement VIA ; conserver les frontières vidéo, WAIT/DMA, horloges, propagations disque/NMI et repli dès qu'une entrée/sortie non indépendante intervient. Justifier l'absence d'effet des adresses omises sur IC4/Y1 depuis le décodage documenté400004.
   - [x] Compléter `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemPrivateClockTests.cs` : comparaison au découpage précédent avec clavier, IRQ/timers, modes vidéo et contrôle VIA ; réutiliser les tests bus/disque pour les transitions actives. Vérifier aussi les événements vidéo datés et les états VIA.
   - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFiveMixedSpanTiming.cs` : deux machines réelles NOS80/VDU80, SSD System BASIC en lecture seule, clavier CAT/BASIC/PRINT46 ; comparer CPU/RAM/vidéo/audio et comptes par champ, mesurer plusieurs fenêtres appariées en alternant l'ordre, moteur actif/arrêté séparés. Écrire `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-mixed-span-native.{json,md,trx}` ; conserver seulement un gain global utile. Libérer machines/images dans finally/using et vérifier le SSD inchangé.
@@ -1245,10 +1249,17 @@ Relevé par étapes terminé : contrôle apparié réussi en37,848 s, rapports e
 Premier contrôle du découpage :23 cas privés réussis en1 s, dont les comparaisons au parcours scalaire et au découpage précédent, progressive/entrelacée, clavier, états VIA et notifications vidéo datées. Mesure native et transferts disque restent à faire.
 
   - [x] Compléter `docs/directives/Emulations/procedure-puces-machines.md`, tableau Application aux composants : vérifier la couverture des solutions conservées des derniers blocs (sorties raccordées, vidéo stable/linéaire, horloges différées, série8271, contrôleur actif/rotation inactive, portions mémoire/VIA) et préciser leur réutilisation lors des nouvelles machines ou des reprises existantes, sans ajout hors tableau ni méthode non validée. Conserver les exemples mesurés et leurs limites ; ne pas démarrer d'audit des autres machines.
+<<<<<<< HEAD
   - [x] Enregistrer le bloc vérifié (coordination CPU/VIA, tests autonomes, validations et tableau) dans Git, sans captures ni banc temporaire ; compléter ce suivi après réussite du commit.
+=======
+  - [ ] Enregistrer le bloc vérifié (coordination CPU/VIA, tests autonomes, validations et tableau) dans Git, sans captures ni banc temporaire ; compléter ce suivi après réussite du commit.
+>>>>>>> 435ea50b375ea7459340ccdff24940a7b7ea7cfa
 
 Reconstruction après retrait du banc natif : Acorn0 erreur/0 avertissement ; tests locaux0 erreur/4 avertissements préexistants. Le bloc de coordination est fonctionnellement vérifié ; la machine reste ouverte pour sa cadence.
 
 Couverture du tableau vérifiée pour les blocs conservés : Y1 seul raccordé (8e769e853), portions vidéo linéaires (bfa9f8e14), périodes isolées VIA (26a88f94f), résolutions différées (09b6ced35), notifications disque avant phases CPU (aecf9e9ba), série8271 aux frontières observables (3d7726b8f), rotation indépendante pendant inactivité contrôleur (7a3c4376a), et nouvelles portions mixtes. Les règles générales et exemples restent dans les lignes existantes, avec chiffres et invariants ; aucune reprise de code des autres machines dans ce bloc.
+<<<<<<< HEAD
 
 Bloc mémoire/VIA enregistré dans Git après les270 contrôles et la reconstruction sans diagnostic. Les mesures de grandes étapes et la calibration sont incluses dans le même bloc cohérent ; aucune capture ni source temporaire ajoutée. System5 reste en cours, notamment pour la cadence pendant la rotation.
+=======
+>>>>>>> 435ea50b375ea7459340ccdff24940a7b7ea7cfa
