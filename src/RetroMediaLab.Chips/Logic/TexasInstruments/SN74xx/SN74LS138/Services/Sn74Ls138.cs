@@ -7,7 +7,7 @@ using C = RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS138.Constants.
 namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS138.Services;
 
 /// <summary>Clockless 3-to-8 decoder with six locally retained inputs and physical path delays.</summary>
-public sealed class Sn74Ls138 : ISn74Ls138
+public sealed partial class Sn74Ls138 : ISn74Ls138
 {
     private readonly long[] _due = new long[C.Outputs];
     // Rows: unknown, high, low. Columns: select-2, select-3, enable-2, enable-3.
@@ -46,7 +46,12 @@ public sealed class Sn74Ls138 : ISn74Ls138
         var mask = 1 << output;
         return (_known & mask) == 0 ? null : (_levels & mask) != 0;
     }
-    public void SetObservedOutputs(byte mask) => _observed = mask;
+    public void SetObservedOutputs(byte mask)
+    {
+        if (_observed == mask) return;
+        _observed = mask;
+        PublishDeadline();
+    }
 
     public void SetInput(Sn74Ls138Input pin, bool? high)
     {
@@ -139,7 +144,7 @@ public sealed class Sn74Ls138 : ISn74Ls138
             }
             recompute |= oldDue != 0 && oldDue == oldNext;
         }
-        if (recompute) _next = FindDeadline();
+        if (recompute) _next = FindDeadline(_pending);
         PublishDeadline();
     }
 
@@ -224,7 +229,7 @@ public sealed class Sn74Ls138 : ISn74Ls138
                     _known = (byte)((_known & ~mask) | (_targetKnown & mask));
                     changed |= mask;
                 }
-                _next = FindDeadline();
+                _next = FindDeadline(_pending);
                 while (changed != 0)
                 {
                     var output = BitOperations.TrailingZeroCount((uint)changed);
@@ -240,9 +245,8 @@ public sealed class Sn74Ls138 : ISn74Ls138
         finally { _resolving = false; PublishDeadline(); }
     }
 
-    private long FindDeadline()
+    private long FindDeadline(byte pending)
     {
-        var pending = _pending;
         if (pending == 0) return 0;
         if ((pending & (pending - 1)) == 0) return _due[BitOperations.TrailingZeroCount((uint)pending)];
         long next = 0;
@@ -258,8 +262,14 @@ public sealed class Sn74Ls138 : ISn74Ls138
 
     private void PublishDeadline()
     {
-        if (_resolving || _publishedNext == _next) return;
-        _publishedNext = _next;
-        _nextChanged?.Invoke(_next == 0 ? null : _next);
+        if (_resolving) return;
+        if (_publishedNext != _next)
+        {
+            _publishedNext = _next;
+            _nextChanged?.Invoke(_next == 0 ? null : _next);
+        }
+        // The all-output callback may have changed inputs or the observed mask.
+        // Compute this view afterwards from the resulting canonical slots.
+        PublishOutputDeadline();
     }
 }

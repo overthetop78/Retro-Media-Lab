@@ -41,6 +41,26 @@ internal sealed partial class SystemFloppyBoard : IDisposable
     private int _nextPart;
     private bool _advancing, _disposed;
     private readonly bool _groupStableSeparator;
+    private bool _groupDecoderDeadlines = true;
+
+    // Reference transport for native comparisons; no hardware option is added.
+    internal bool GroupDecoderDeadlines
+    {
+        get => _groupDecoderDeadlines;
+        set
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_groupDecoderDeadlines == value) return;
+            if (_advancing) throw new InvalidOperationException("Cannot replace decoder wiring during an advance.");
+            _ic4.AdvanceTo(_time);
+            _ic4.NextEventNanosecondsChanged = null;
+            _ic4.NextOutputEventNanosecondsChanged = null;
+            _groupDecoderDeadlines = value;
+            if (value) _ic4.NextOutputEventNanosecondsChanged = next => RememberDeadline(C.Decode, next);
+            else _ic4.NextEventNanosecondsChanged = next => RememberDeadline(C.Decode, next);
+            RememberDeadline(C.Decode, value ? _ic4.NextOutputEventNanoseconds : _ic4.NextEventNanoseconds);
+        }
+    }
 
     internal SystemFloppyBoard(IIntel8271 controller, bool groupStableSeparator = true)
     {
@@ -51,7 +71,7 @@ internal sealed partial class SystemFloppyBoard : IDisposable
         _groupStableSeparator = groupStableSeparator;
         _ic2.NextEventNanosecondsChanged = next => RememberDeadline(C.Control, next);
         _ic3.NextEventNanosecondsChanged = next => RememberDeadline(C.Interrupt, next);
-        _ic4.NextEventNanosecondsChanged = next => RememberDeadline(C.Decode, next);
+        _ic4.NextOutputEventNanosecondsChanged = next => RememberDeadline(C.Decode, next);
         _ic5.NextEventNanosecondsChanged = next => RememberDeadline(C.Drive, next);
         _ic6.NextEventNanosecondsChanged = next => RememberDeadline(C.Write, next);
         _ic7.NextOutputEventNanosecondsChanged = next => { if (!_separatorRestoring) RememberDeadline(C.Separator, next); };
@@ -209,6 +229,8 @@ internal sealed partial class SystemFloppyBoard : IDisposable
         _fdc.WriteDataChanged -= ControllerWriteDataChanged;
         _fdc.NmiChanged -= ControllerInterruptChanged;
         _fdc.NextClockEventChanged -= ControllerClockEventChanged;
+        _ic4.NextEventNanosecondsChanged = null;
+        _ic4.NextOutputEventNanosecondsChanged = null;
         _ic8.NextOutputEventNanosecondsChanged = null;
         _ic8.FirstQaClockReached = null;
         _ic8.SetQdPeriodicClockReceiver(0, null);

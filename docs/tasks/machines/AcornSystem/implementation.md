@@ -946,3 +946,80 @@ Comparaison Debug native NOS80/VDU80, RAM2000–DFFF, carte400004 sans média, m
 Temps réduit de10,164 %, cadence43,580 % nominal,21,82487 champs/s hors interface.2 039 859 caractères effectivement représentés pendant chauffe/mesure. Les trois hashes vidéo/audio/durée, registres CPU/cycles, RAM, ticks/source, état CRTC et comptes VDU sont identiques. Deux cœurs possédés libérés par using ; aucun lancement RML ni changement de compilation Debug. Rapport `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-linear-video-native.md`. Comparaison appariée de ce bloc uniquement : les valeurs de passages antérieurs ne constituent pas sa référence. Gain retenu, System5 reste incomplet sur sa cadence ; aucun passage à la machine suivante.
 
 Diagnostic externe supprimé après consignation ; reconstruction sans lui réussie,0 erreur et4 avertissements préexistants. Bloc conservé, cadence globale encore ouverte.
+
+## Profil après QD et portions vidéo linéaires —10 novembre2026
+- [x] Établir le coût actuel de tous les domaines avant la prochaine refonte.
+  - [x] Créer temporairement `artifacts/TestsMachines/Acorn/Acorn System 5/.linear-profile/Profile.csproj`, `Program.cs`, `Run.ps1` et `Analyze.py` : console native amie, DLL Debug actuelles,20 champs de chauffe puis8 s de champs complets avec drainage audio ; collecter dotnet-trace en possédant et libérant son processus dans finally, cœur libéré par using. Filtrer les piles par MeasureFields, attribuer chaque intervalle une fois au dernier appelant Chips/Acorn, séparer coûts propres et inclusifs. Écrire `20261110-linear-profile-methods.json` et `.md` avec conditions, toutes les catégories et leur somme ; consigner les résultats dans les validations.
+  - [x] Supprimer le seul dossier temporaire `.linear-profile` après fin effective du processus et consignation, en conservant les rapports persistants ; définir ensuite le bloc concret à modifier d’après le profil courant.
+
+## Portions privées bornées par les interactions —10 novembre2026
+- [x] Réduire les remises à jour répétées aux frontières logicielles de16 cycles.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.PrivateClock.cs` : utiliser ClocksToLineBoundary et la prochaine interaction de lecteur comme bornes maximales, vérifier chaque prochain accès CPU avant son exécution ; conserver CPU/VIA/IRQ par phases et les événements clavier/bande/audio. Garder le plafond16 comme sélecteur de référence interne, compter les portions pour prouver le changement effectivement consommé. Réutiliser sans changement les avances de source/compteurs et les capacités CRTC/VDU validées.
+  - [x] Compléter `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemPrivateClockTests.cs` : comparer la nouvelle borne aux16 cycles et au parcours ordinaire, CPU/RAM/audio/champs et comptes source/VIA/VDU ; inclure périphériques, WAIT/DMA, interruptions et entrelacement via les scénarios autonomes existants et un programme privé prolongé. Vérifier que les portions sont effectivement moins nombreuses.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFiveInteractionBoundTiming.cs` : même mesure native NOS80/VDU80 appariée,20 champs de chauffe puis3×20 alternés, références limitées au choix du plafond16 ; comparer hashes vidéo/audio/durée et CPU/RAM/comptes, libérer chaque cœur par using. Écrire `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-interaction-bound-native.md`, consigner résultat/décision dans les validations et le suivi ; supprimer ce diagnostic après consignation et reconstruire sans lui. Retirer la tentative si le gain complet n’est pas établi.
+
+### Décision de l’essai
+168 contrôles System/carte réussis. Mesure appariée43,78620→43,98451 ms/champ, soit0,453 % plus lent.463993→463812 portions cumulées sur80 champs (20 de chauffe+60 mesurés),181 évitées seulement. Aucun gain établi ; retrait des changements de production, des seuls tests de cette tentative et du diagnostic externe. Le plafond16 n’est pas retenu comme goulet établi.
+
+## Classification des arrêts de portions —10 novembre2026
+- [x] Séparer interactions matérielles et conditions logicielles avant toute autre modification d’architecture.
+  - [x] Rétablir depuis HEAD les seules modifications de cette tentative dans `AcornSystemMachine.PrivateClock.cs` et `AcornEmuSystemPrivateClockTests.cs`, supprimer `SystemFiveInteractionBoundTiming.cs` après consignation du rapport conservé ; garder le profil complet actuel.
+  - [x] Créer temporairement `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.PrefixProbe.cs` et instrumenter `AcornSystemMachine.PrivateClock.cs`/`SystemFastCpuBus.cs` et le retour ordinaire de RunFrame dans `AcornSystemMachine.cs` : compter portions exécutées et tentatives refusées, classifier chaque retour et prochain accès (VIA/VDU/décodeur, lecture/écriture et registre), attribuer les temps séparément à la boucle CPU/VIA, vidéo, remise à jour horloges, disquette et bus ; conserver un parcours sonde désactivée. Aucun changement de borne ni comportement. Conserver une copie exacte des trois sources de référence sous `artifacts/TestsMachines/Acorn/Acorn System 5/.prefix-causes`.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFivePrefixCauses.cs` : deux cœurs NOS80/VDU80 possédés via using,20 champs de chauffe puis20 champs comparés et mesurés avec/sans sonde, mêmes vidéo/audio/durée/CPU/RAM/comptes. Écrire `20261110-prefix-causes.json` et `.md` sous les captures machine : fréquences par champ, temps total et par domaine, surcoût de sonde, distinction cause d’arrêt/coût intrinsèque de cette cause et totalité des catégories ; consigner la conclusion sans modifier davantage le fonctionnement.
+  - [x] Compléter temporairement la classification avec `SystemFloppyBoard.PrefixProbe.cs` : lire uniquement à des fins de diagnostic le masque pending du138 par réflexion sur les champs vérifiés et ses échéances de carte, distinguer sorties non raccordées de Y1/contrôle/CS/DACK. Rejouer les20 champs comparés vers les rapports séparés `20261110-prefix-causes-refined.{json,md,trx}` ; conserver les premières mesures et expliquer le surcoût de sonde. Supprimer également ce fichier partiel au nettoyage.
+  - [x] Après fin du processus, restaurer les trois sources instrumentées depuis leurs copies vérifiées, supprimer les deux fichiers partiels de diagnostic et le test de diagnostic ainsi que le seul dossier `.prefix-causes`. Reconstruire Acorn et les tests sans instrumentation/externe, vérifier le diff et conserver les rapports et conclusions dans les suivis avant toute prochaine refonte.
+
+## Causes des arrêts de portions —10 novembre2026
+Retour intégral au code de production du point bfa9f8e14 après l’essai sans gain du plafond16. Sonde temporaire ensuite appliquée sans changement des bornes, avec comparaison native NOS80/VDU80/carte400004 sans média :20 champs de chauffe exclus, puis20 champs comparés avec et sans sonde en ordre alterné. Vidéo/audio/durée, CPU, RAM, ticks et compte source identiques ; les deux diagnostics ont réussi et leurs cœurs possédés ont été libérés par using.
+
+345874 tentatives sur20 champs, dont116777 portions exécutées (5838,85/champ) et229097 refus (11454,85/champ). Les463993 portions de l’essai précédent étaient cumulées sur80 champs, et non par champ.
+
+| Cause | Nombre sur20 champs | Par champ | Vérification ou portion complète, ms/champ | Parcours ordinaire après refus, ms/champ |
+| --- | ---: | ---: | ---: | ---: |
+|executed/next/via/read/r1|113211|5660.55|20.89793|0.00000|
+|refused/prepared/via/read/r1|114103|5705.15|2.58478|13.23084|
+|refused/bus-propagation-pending/decode-unconnected-outputs-only|114103|5705.15|2.60431|11.60355|
+|executed/line-boundary|3566|178.30|0.63385|0.00000|
+|refused/short/line-boundary|891|44.55|0.01175|0.10248|
+
+Les temps de portion entière incluent son CPU/VIA/audio, sa vidéo et ses remises à jour ; ils ne sont pas le coût intrinsèque de la cause d’arrêt. Les sous-domaines détaillés dans les rapports ne s’ajoutent pas à leurs parents. Sonde active1078,6248 ms contre913,7078 ms désactivée sur20 champs :18,049 % de surcoût. Les mesures instrumentées servent à classer le travail, pas à annoncer une cadence ni une économie récupérable intégralement. Vérifications refusées104,0166 ms cumulées (5,20083 ms/champ), incluant la construction des classifications par la sonde ; cette valeur ne mesure pas le seul coût de la vérification dans le code sans sonde.
+
+Conclusions établies :
+- Les lectures VIA du registre1 (portA, clavier) sont de véritables transactions. Les acquittements et IRQ de Via6522.Read/AcknowledgePort doivent rester à leur phase CPU ; leur fréquence ne prouve pas que le VIA soit coûteux.
+- Le refus suivant « bus-propagation-pending » a été affiné sans modifier le matériel :114103 cas sur114103 avec seulement des sorties non raccordées du138 en attente, aucun pendingY1, aucune échéance du contrôle, CS et DACK déjà hauts. `SystemFloppyBoard.PrivateBusPinsSettled` attend actuellement la prochaine échéance interne globale du138. Cette attente est une condition logicielle trop large ; elle n’établit aucune interaction physique à attendre sur les fils raccordés.
+- Le parcours ordinaire après ce seul refus représente232,0709 ms instrumentées,11,60355 ms/champ ; il contient encore du travail matériel réel (CPU/vidéo/horloges) à représenter, donc ne pas promettre sa suppression intégrale. La suite doit distinguer les échéances internes et celles des sorties raccordées dans la puce, puis raccorder la carte à ces dernières, sans supprimer aucun délai interne.
+-3566 portions se terminent à une frontière de ligne et891 tentatives y sont trop courtes ; ces limites protègent le début de champ. Aucune activité de lecteur, attente/DMA ou bande active n’a causé d’arrêt dans ce scénario au repos ; cela ne vaut pas couverture de ces autres scénarios.
+
+Rapports exhaustifs conservés : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-prefix-causes.{json,md,trx}` et `20261110-prefix-causes-refined.{json,md,trx}`. Les deux passages donnent les mêmes effectifs ; la seconde sonde distingue les sorties non raccordées. Aucun gain de performance produit par ce diagnostic ni modification d’architecture conservée.
+
+Instrumentation et diagnostics retirés ; sources de production restaurées exactement. Reconstructions Acorn et tests sans sonde réussies :0 erreur,0 puis4 avertissements préexistants. Aucun changement de comportement conservé de cette analyse.
+
+## Coordination du décodeur limitée aux sorties raccordées —10 novembre2026
+- [x] Retirer l’attente sans interaction établie par la sonde, après vérification du schéma.
+  - [x] Compléter `docs/project/emulations/Acorn/Acorn System/System 5/fdc400004.md` avec le relevé des huit sorties IC4, destinations physiques et code : seulY1 est relié, figure8/PDF108 et brochage TI page1 inspectés ; aucun raccordement manquant de ce boîtier établi.
+  - [x] Terminer les échéances observées du138 et leurs contrôles autonomes définis dans le suivi de puce avant raccordement.
+  - [x] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/SystemFloppyBoard.cs` : coordonner IC4 par NextOutputEventNanosecondsChanged, conserver son avance locale avant chaque nouvelle entrée de bus et le chemin global comme témoin interne de comparaison. Détacher l’écouteur possédé au Dispose. Les réponses Y1/CS/DACK et le contrôleur restent aux mêmes dates.
+  - [x] Compléter `tests/RetroMediaLab.LocalEmulationTests/Emulation/Intel8271/SystemFloppyBoardTests.cs` : comparer sorties/commandes, propagation de sélection/désélection, READY/NMI et contrôles existants lecture/écriture ; vérifier qu’une propagation non raccordée n’empêche plus les cycles indépendants, sans assouplir les dates.
+  - [x] Modifier `docs/directives/Emulations/procedure-puces-machines.md`, tableau Application aux composants : distinguer échéances internes et effets raccordés pour toutes les prochaines puces/machines, conserver les délais et synchroniser les états avant chaque interaction. Aucun audit ni correction des autres machines maintenant.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFiveDecoderDeadlineTiming.cs` : deux cœurs NOS80/VDU80, seul le choix échéance globale/observée du décodeur diffère,20 champs de chauffe puis3×20 alternés ; comparer CPU/RAM/vidéo/audio/durée/comptes, libérer les cœurs par using. Écrire `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-decoder-deadline-native.md`, consigner fenêtres et limites dans les fiches/validations, retenir seulement un gain réel. Supprimer ce diagnostic externe puis reconstruire sans lui ; conserver les tests autonomes.
+
+Inventaire des autres machines/puces reporté explicitement par l’utilisateur : ne pas le poursuivre maintenant. La règle générique doit figurer au tableau des directives pour les prochaines implémentations.
+
+## Échéances raccordées du décodeur retenues —10 novembre2026
+Le schéma400,004 figure8/PDF108 et le brochage TI page1 ont été inspectés : IC4/Y1 (broche14) seul est relié au8271/24 et à IC2/12 ; les sept autres sorties ne sont pas exportées. Le tableau complet des destinations se trouve dans fdc400004.md. Aucun oubli de raccordement de ce boîtier établi.
+Le138 conserve toutes ses propagations internes et offre séparément NextOutputEventNanoseconds. La carte reçoit ce dernier écouteur pour son masqueY1 et synchronise toujours la puce avant chaque nouvelle entrée de bus. Les changements de CS/DACK et leurs effets restent datés ; l’attente liée uniquement aux sorties non raccordées ne bloque plus les périodes indépendantes. Le chemin global reste sélectionnable en interne pour comparaison, sans nouvelle option utilisateur ni matériel. Les écouteurs possédés sont détachés à Dispose.
+
+19 contrôles138 réussis (519 ms) puis165 contrôles System/carte réussis (20 s), zéro échec/ignoré. Le nouveau contrôle compare CS/DACK/READY/NMI/compte8271 nanoseconde par nanoseconde, sur sélections/désélections et miroirs, et distingue la propagation interne non raccordée du bus réellement disponible. Les contrôles de transferts préexistants sont conservés.
+Comparaison native Debug sans sonde, mêmes DLL, NOS80/VDU80, RAM2000–DFFF,400004 sans média ; seul le transport d’échéance globale/observée diffère.20 champs de chauffe puis3×20 appariés en ordre alterné, RunFrame/DrainAudio chronométrés et hashes hors temps.
+
+| Fenêtre | Échéance globale, ms/champ | Échéance raccordée, ms/champ |
+| --- | ---: | ---: |
+| 1 | 45,15266 | 33,90353 |
+| 2 | 44,78374 | 34,06753 |
+| 3 | 47,62626 | 34,41513 |
+| Moyenne | 45,85422 | 34,12873 |
+
+Temps réduit de25,571 %, vitesse×1,34357. Champ matériel19,968 ms,50,08013 Hz ; candidat29,30083 champs/s,58,508 % nominal, environ1,170 MHz émulé pour le CPU2 MHz. Vidéo/audio/durée, CPU/cycles, RAM, ticks/source et niveaux/connus des huit sorties138 identiques sur les trois fenêtres. Les sorties internes différées sont matérialisées avant cette observation, hors chronométrage. Chaque cœur est libéré via using. Aucun changement des options Debug ni des fréquences ; aucune capture RML ni mesure Release déduite. Rapport `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-decoder-deadline-native.md` et TRX associé. Gain retenu ; System5 reste sous sa cadence nominale.
+La règle générale est ajoutée au tableau Application aux composants pour les prochaines machines et puces. L’inventaire des autres machines et leurs corrections sont reportés à la demande explicite de l’utilisateur ; aucune modification de ces autres machines réalisée.
+
+Diagnostic natif externe supprimé après consignation ; reconstruction des tests sans lui réussie,0 erreur et4 avertissements préexistants. Ce bloc est terminé et vérifié ; la cadence et la clôture System5 restent ouvertes.

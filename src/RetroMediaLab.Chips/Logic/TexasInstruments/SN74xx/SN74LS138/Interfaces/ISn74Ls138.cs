@@ -7,6 +7,8 @@ public interface ISn74Ls138
     long TimeNanoseconds { get; }
     long? NextEventNanoseconds { get; }
     Action<long?>? NextEventNanosecondsChanged { get; set; }
+    long? NextOutputEventNanoseconds { get; }
+    Action<long?>? NextOutputEventNanosecondsChanged { get; set; }
     Action<int, bool?>? OutputChanged { get; set; }
     byte OutputLevels { get; }
     byte OutputKnown { get; }

@@ -7,6 +7,35 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class SystemFloppyBoardTests
 {
+    [Fact]
+    public void UnconnectedDecoderResponsesDoNotBlockTheBusAndConnectedResponsesKeepTheirDates()
+    {
+        var chip = new Fdc8271(2_000_000); var referenceChip = new Fdc8271(2_000_000);
+        using var card = new SystemFloppyBoard(chip); using var reference = new SystemFloppyBoard(referenceChip);
+        reference.GroupDecoderDeadlines = false;
+        var actualClock = new ClockWire(card, periodic: true); var expectedClock = new ClockWire(reference, periodic: true);
+        actualClock.AdvanceTo(1_000); expectedClock.AdvanceTo(1_000);
+        card.SetBusAddress(0x0e01); reference.SetBusAddress(0x0e01);
+        Assert.True(card.PrivateBusPinsSettled);
+        Assert.False(reference.PrivateBusPinsSettled);
+        long time = 1_000;
+        foreach (var address in new ushort[] { 0xe000, 0x0a00, 0x0a04, 0x0a7f, 0x0a80, 0x0e01, 0xe001, 0x0a01 })
+        {
+            time += 100;
+            actualClock.AdvanceTo(time); expectedClock.AdvanceTo(time);
+            card.SetBusAddress(address); reference.SetBusAddress(address);
+            for (var step = 1; step <= 80; step++)
+            {
+                actualClock.AdvanceTo(time + step); expectedClock.AdvanceTo(time + step);
+                Assert.Equal(reference.ChipSelected, card.ChipSelected);
+                Assert.Equal(reference.DataAcknowledged, card.DataAcknowledged);
+                Assert.Equal(reference.Ready0, card.Ready0); Assert.Equal(reference.Ready1, card.Ready1);
+                Assert.Equal(reference.Nmi, card.Nmi);
+                Assert.Equal(referenceChip.InputClockCount, chip.InputClockCount);
+            }
+        }
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]

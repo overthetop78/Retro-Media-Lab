@@ -587,3 +587,77 @@ Comparaison Debug native NOS80/VDU80, RAM2000–DFFF, carte400004 sans média, m
 | Moyenne | 51,00306 | 45,81929 |
 
 Temps réduit de10,164 %, cadence43,580 % nominal,21,82487 champs/s hors interface.2 039 859 caractères effectivement représentés pendant chauffe/mesure. Les trois hashes vidéo/audio/durée, registres CPU/cycles, RAM, ticks/source, état CRTC et comptes VDU sont identiques. Deux cœurs possédés libérés par using ; aucun lancement RML ni changement de compilation Debug. Rapport `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-linear-video-native.md`. Comparaison appariée de ce bloc uniquement : les valeurs de passages antérieurs ne constituent pas sa référence. Gain retenu, System5 reste incomplet sur sa cadence ; aucun passage à la machine suivante.
+
+## Profil global courant après portions linéaires —10 novembre2026
+167 champs,8025,6878 ms hôte,19,968 ms matériels/champ, Debug DisableOptimizations=true. Chauffe20 champs exclue ; seules les piles RunFrame/DrainAudio de MeasureFields sont retenues.8025,1494 ms attribuées une seule fois au dernier appelant Acorn/Chips ; coûts inclusifs séparés dans le rapport, aucun parent ajouté à ses descendants.
+
+| Groupe | Temps propre % | ms/champ collecté |
+| --- | ---: | ---: |
+|Cpu6502|16.057170|7.716239|
+|AcornSystemMachine|12.765054|6.134220|
+|Vdu80CharacterGenerator|8.037419|3.862365|
+|SystemVideo|7.893255|3.793087|
+|SystemFloppyBoard|7.397564|3.554884|
+|SystemClockGenerator|6.321460|3.037764|
+|Crtc6845|4.750016|2.282610|
+|Sn74Ls138|4.508375|2.166490|
+|SystemFastCpuBus|4.477966|2.151877|
+|Sn74Ls393|4.382241|2.105877|
+|Sn74Ls165|4.066384|1.954092|
+|Sn74S163|4.058823|1.950459|
+|Sn74S163PeriodicInputs|3.982776|1.913914|
+|Sn74Ls374|2.437764|1.171462|
+|Sn74Ls74|2.420082|1.162965|
+|SystemCpuClockControl|2.352796|1.130631|
+|Via6522|1.553167|0.746371|
+|Intel8271|1.065553|0.512049|
+|Sn74Ls00|0.591102|0.284053|
+|Mm52116|0.336189|0.161555|
+|Cd4020B|0.210638|0.101222|
+|SystemKeyboard|0.201869|0.097008|
+|IStableClockPeriodReceiver|0.093748|0.045050|
+|IIndependentClockPeriodReceiver|0.019845|0.009537|
+|AnalogTape|0.018744|0.009007|
+|Total avant arrondi|100,000000||
+
+Premier coût de méthode :163.ResolveRepresentedClockPeriods3,552 % ; CPU.ClockNmos3,135 % ; VDU.AdvanceStableDotClockPeriods2,824 % ; CPU.ExecuteNmosPhase2,751 %. Le coût reste distribué. Le découpage logiciel des portions privées à16 cycles répète les fins de portion ; la prochaine comparaison utilise les bornes réelles déjà fournies par les composants, sans modifier le CPU ni les fréquences. Ces temps collectés ne sont pas un gain apparié. Rapports exhaustifs : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-linear-profile-methods.{json,md}`.
+
+## Causes des arrêts de portions —10 novembre2026
+Retour intégral au code de production du point bfa9f8e14 après l’essai sans gain du plafond16. Sonde temporaire ensuite appliquée sans changement des bornes, avec comparaison native NOS80/VDU80/carte400004 sans média :20 champs de chauffe exclus, puis20 champs comparés avec et sans sonde en ordre alterné. Vidéo/audio/durée, CPU, RAM, ticks et compte source identiques ; les deux diagnostics ont réussi et leurs cœurs possédés ont été libérés par using.
+
+345874 tentatives sur20 champs, dont116777 portions exécutées (5838,85/champ) et229097 refus (11454,85/champ). Les463993 portions de l’essai précédent étaient cumulées sur80 champs, et non par champ.
+
+| Cause | Nombre sur20 champs | Par champ | Vérification ou portion complète, ms/champ | Parcours ordinaire après refus, ms/champ |
+| --- | ---: | ---: | ---: | ---: |
+|executed/next/via/read/r1|113211|5660.55|20.89793|0.00000|
+|refused/prepared/via/read/r1|114103|5705.15|2.58478|13.23084|
+|refused/bus-propagation-pending/decode-unconnected-outputs-only|114103|5705.15|2.60431|11.60355|
+|executed/line-boundary|3566|178.30|0.63385|0.00000|
+|refused/short/line-boundary|891|44.55|0.01175|0.10248|
+
+Les temps de portion entière incluent son CPU/VIA/audio, sa vidéo et ses remises à jour ; ils ne sont pas le coût intrinsèque de la cause d’arrêt. Les sous-domaines détaillés dans les rapports ne s’ajoutent pas à leurs parents. Sonde active1078,6248 ms contre913,7078 ms désactivée sur20 champs :18,049 % de surcoût. Les mesures instrumentées servent à classer le travail, pas à annoncer une cadence ni une économie récupérable intégralement. Vérifications refusées104,0166 ms cumulées (5,20083 ms/champ), incluant la construction des classifications par la sonde ; cette valeur ne mesure pas le seul coût de la vérification dans le code sans sonde.
+
+Conclusions établies :
+- Les lectures VIA du registre1 (portA, clavier) sont de véritables transactions. Les acquittements et IRQ de Via6522.Read/AcknowledgePort doivent rester à leur phase CPU ; leur fréquence ne prouve pas que le VIA soit coûteux.
+- Le refus suivant « bus-propagation-pending » a été affiné sans modifier le matériel :114103 cas sur114103 avec seulement des sorties non raccordées du138 en attente, aucun pendingY1, aucune échéance du contrôle, CS et DACK déjà hauts. `SystemFloppyBoard.PrivateBusPinsSettled` attend actuellement la prochaine échéance interne globale du138. Cette attente est une condition logicielle trop large ; elle n’établit aucune interaction physique à attendre sur les fils raccordés.
+- Le parcours ordinaire après ce seul refus représente232,0709 ms instrumentées,11,60355 ms/champ ; il contient encore du travail matériel réel (CPU/vidéo/horloges) à représenter, donc ne pas promettre sa suppression intégrale. La suite doit distinguer les échéances internes et celles des sorties raccordées dans la puce, puis raccorder la carte à ces dernières, sans supprimer aucun délai interne.
+-3566 portions se terminent à une frontière de ligne et891 tentatives y sont trop courtes ; ces limites protègent le début de champ. Aucune activité de lecteur, attente/DMA ou bande active n’a causé d’arrêt dans ce scénario au repos ; cela ne vaut pas couverture de ces autres scénarios.
+
+Rapports exhaustifs conservés : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-prefix-causes.{json,md,trx}` et `20261110-prefix-causes-refined.{json,md,trx}`. Les deux passages donnent les mêmes effectifs ; la seconde sonde distingue les sorties non raccordées. Aucun gain de performance produit par ce diagnostic ni modification d’architecture conservée.
+
+## Échéances raccordées du décodeur retenues —10 novembre2026
+Le schéma400,004 figure8/PDF108 et le brochage TI page1 ont été inspectés : IC4/Y1 (broche14) seul est relié au8271/24 et à IC2/12 ; les sept autres sorties ne sont pas exportées. Le tableau complet des destinations se trouve dans fdc400004.md. Aucun oubli de raccordement de ce boîtier établi.
+Le138 conserve toutes ses propagations internes et offre séparément NextOutputEventNanoseconds. La carte reçoit ce dernier écouteur pour son masqueY1 et synchronise toujours la puce avant chaque nouvelle entrée de bus. Les changements de CS/DACK et leurs effets restent datés ; l’attente liée uniquement aux sorties non raccordées ne bloque plus les périodes indépendantes. Le chemin global reste sélectionnable en interne pour comparaison, sans nouvelle option utilisateur ni matériel. Les écouteurs possédés sont détachés à Dispose.
+
+19 contrôles138 réussis (519 ms) puis165 contrôles System/carte réussis (20 s), zéro échec/ignoré. Le nouveau contrôle compare CS/DACK/READY/NMI/compte8271 nanoseconde par nanoseconde, sur sélections/désélections et miroirs, et distingue la propagation interne non raccordée du bus réellement disponible. Les contrôles de transferts préexistants sont conservés.
+Comparaison native Debug sans sonde, mêmes DLL, NOS80/VDU80, RAM2000–DFFF,400004 sans média ; seul le transport d’échéance globale/observée diffère.20 champs de chauffe puis3×20 appariés en ordre alterné, RunFrame/DrainAudio chronométrés et hashes hors temps.
+
+| Fenêtre | Échéance globale, ms/champ | Échéance raccordée, ms/champ |
+| --- | ---: | ---: |
+| 1 | 45,15266 | 33,90353 |
+| 2 | 44,78374 | 34,06753 |
+| 3 | 47,62626 | 34,41513 |
+| Moyenne | 45,85422 | 34,12873 |
+
+Temps réduit de25,571 %, vitesse×1,34357. Champ matériel19,968 ms,50,08013 Hz ; candidat29,30083 champs/s,58,508 % nominal, environ1,170 MHz émulé pour le CPU2 MHz. Vidéo/audio/durée, CPU/cycles, RAM, ticks/source et niveaux/connus des huit sorties138 identiques sur les trois fenêtres. Les sorties internes différées sont matérialisées avant cette observation, hors chronométrage. Chaque cœur est libéré via using. Aucun changement des options Debug ni des fréquences ; aucune capture RML ni mesure Release déduite. Rapport `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-decoder-deadline-native.md` et TRX associé. Gain retenu ; System5 reste sous sa cadence nominale.
+La règle générale est ajoutée au tableau Application aux composants pour les prochaines machines et puces. L’inventaire des autres machines et leurs corrections sont reportés à la demande explicite de l’utilisateur ; aucune modification de ces autres machines réalisée.

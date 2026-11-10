@@ -6,6 +6,89 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74LS138;
 
 public sealed class Sn74Ls138Tests
 {
+    [Fact]
+    public void ObservedDeadlinesPreserveAllPinsWithInterruptedInputsAndNewReceivers()
+    {
+        Sn74Ls138Timing[] profiles = [Sn74Ls138Timing.Typical, Sn74Ls138Timing.CharacterizedMaximum,
+            new(30, 1, 1, 40, 8, 9, 10, 11)];
+        byte[] masks = [0, 1, 2, 4, 8, 16, 32, 64, 128, 255];
+        foreach (var timing in profiles)
+        foreach (var mask in masks)
+        for (byte initial = 0; initial < 8; initial++)
+        for (byte target = 0; target < 64; target++)
+        {
+            var actual = new Sn74Ls138(timing); var reference = new Sn74Ls138(timing);
+            actual.SetInputs((byte)(8 | initial), 63); reference.SetInputs((byte)(8 | initial), 63);
+            actual.AdvanceTo(100); reference.AdvanceTo(100);
+            actual.SetObservedOutputs(mask); reference.SetObservedOutputs(mask);
+            var observed = new List<(long, int, bool?)>(); var expected = new List<(long, int, bool?)>();
+            actual.OutputChanged = (pin, high) => observed.Add((actual.TimeNanoseconds, pin, high));
+            reference.OutputChanged = (pin, high) => expected.Add((reference.TimeNanoseconds, pin, high));
+            actual.SetInputs(target, 63); reference.SetInputs(target, 63);
+            Advance(105);
+            actual.SetInputs((byte)(target & 37), 37); reference.SetInputs((byte)(target & 37), 37);
+            Advance(121);
+            // Wiring changes occur at a synchronized transaction time, even
+            // when no previously connected output requested this catch-up.
+            actual.SetObservedOutputs((byte)~mask); reference.SetObservedOutputs((byte)~mask);
+            Advance(150);
+            actual.SetInputs((byte)(target ^ 8), 63); reference.SetInputs((byte)(target ^ 8), 63);
+            Advance(200);
+
+            void Advance(long end)
+            {
+                while (actual.NextOutputEventNanoseconds is { } next && next <= end)
+                {
+                    Assert.True(next > actual.TimeNanoseconds);
+                    actual.AdvanceTo(next);
+                }
+                actual.AdvanceTo(end);
+                for (var time = reference.TimeNanoseconds + 1; time <= end; time++) reference.AdvanceTo(time);
+                Assert.Equal(reference.OutputLevels, actual.OutputLevels);
+                Assert.Equal(reference.OutputKnown, actual.OutputKnown);
+                Assert.Equal(reference.NextEventNanoseconds, actual.NextEventNanoseconds);
+                Assert.Equal(expected, observed);
+            }
+        }
+    }
+
+    [Fact]
+    public void OutputDeadlineTracksMasksCancellationAndFeedbackWithoutLosingInternalResponses()
+    {
+        var chip = Create(); chip.SetObservedOutputs(2);
+        var deadlines = new List<long?>();
+        chip.NextOutputEventNanosecondsChanged = next =>
+        {
+            deadlines.Add(next);
+            if (next is null && chip.TimeNanoseconds == 120) chip.SetInput(Sn74Ls138Input.G1, false);
+        };
+        chip.SetInput(Sn74Ls138Input.A, true);
+        Assert.Equal(111, chip.NextEventNanoseconds); Assert.Equal(120, chip.NextOutputEventNanoseconds);
+        chip.AdvanceTo(105); chip.SetObservedOutputs(1);
+        Assert.Equal(111, chip.NextOutputEventNanoseconds);
+        chip.SetObservedOutputs(0); Assert.Null(chip.NextOutputEventNanoseconds);
+        Assert.Equal(111, chip.NextEventNanoseconds); // Unconnected response retained.
+        chip.SetObservedOutputs(2); chip.AdvanceTo(120);
+        Assert.True(chip.GetOutput(0)); Assert.False(chip.GetOutput(1));
+        Assert.Equal(134, chip.NextOutputEventNanoseconds);
+        chip.AdvanceTo(134);
+        Assert.Equal(byte.MaxValue, chip.OutputLevels); Assert.Null(chip.NextOutputEventNanoseconds);
+        Assert.Equal(new long?[] { 120, 111, null, 120, null, 134, null }, deadlines);
+    }
+
+    [Fact]
+    public void GlobalDeadlineFeedbackDoesNotPublishAnObsoleteObservedDate()
+    {
+        var chip = Create(); var dates = new List<long?>();
+        chip.NextOutputEventNanosecondsChanged = dates.Add;
+        chip.NextEventNanosecondsChanged = next => { if (next.HasValue) chip.SetObservedOutputs(2); };
+        chip.SetInput(Sn74Ls138Input.A, true);
+        Assert.Equal(new long?[] { 120 }, dates);
+        chip.AdvanceTo(105); chip.SetInput(Sn74Ls138Input.A, false);
+        Assert.Null(chip.NextEventNanoseconds); Assert.Null(chip.NextOutputEventNanoseconds);
+        Assert.Equal(new long?[] { 120, null }, dates);
+    }
+
     private static Sn74Ls138 Create(byte inputs = 8)
     {
         var chip = new Sn74Ls138(Sn74Ls138Timing.Typical);
