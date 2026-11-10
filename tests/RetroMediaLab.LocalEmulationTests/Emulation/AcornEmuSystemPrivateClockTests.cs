@@ -14,6 +14,34 @@ public sealed class AcornEmuSystemPrivateClockTests
     [Theory]
     [InlineData(0)]
     [InlineData(3)]
+    public void LineBoundedPeriodsPreserveStatesAgainstSixteenCyclePrefixes(byte mode)
+    {
+        using var actual = Create(true, true, mode);
+        using var reference = Create(true, true, mode);
+        reference.GroupLineClockPeriods = false;
+        // Keep the foreground independent across more than sixteen cycles;
+        // the timer interrupt still acknowledges T1 through the ordinary bus.
+        byte[] program = [0x58, 0xad, 1, 0x0e, 0x4c, 1, 2];
+        for (var i = 0; i < program.Length; i++)
+        {
+            actual.Write((ushort)(0x200 + i), program[i]);
+            reference.Write((ushort)(0x200 + i), program[i]);
+        }
+        CompareFields(reference, actual, 8);
+        Assert.True(actual.RepresentedViaReadPeriods > 0);
+        var video = Field<SystemVideo>(actual, "_video");
+        var expected = Field<SystemVideo>(reference, "_video");
+        Assert.Equivalent(Field<RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services.Crtc6845>(expected, "_crtc").CaptureState(),
+            Field<RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services.Crtc6845>(video, "_crtc").CaptureState(), strict: true);
+        Assert.Equivalent(Field<RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services.Via6522>(reference, "_via").CaptureState(),
+            Field<RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services.Via6522>(actual, "_via").CaptureState(), strict: true);
+        Assert.Equal(Field<SystemClockGenerator>(reference, "_fastClock").InputClockCount,
+            Field<SystemClockGenerator>(actual, "_fastClock").InputClockCount);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
     public void DeferredSourceResolutionPreservesTransactionsAndFieldStates(byte mode)
     {
         using var actual = Create(true, true, mode);

@@ -13,6 +13,7 @@ internal sealed partial class AcornSystemMachine
     internal long RepresentedViaReadPeriods { get; private set; }
     internal bool GroupActiveFloppyPeriods { get; set; } = true;
     internal bool GroupIdleDriveInteractions { get; set; } = true;
+    internal bool GroupLineClockPeriods { get; set; } = true;
 
     internal bool IsIndependentViaReadAddress(ushort address)
         => _viaReadCanRunIndependently && ViaAddress(address) && (address & C.ViaRegisterMask) == Via.PortA;
@@ -37,7 +38,11 @@ internal sealed partial class AcornSystemMachine
         // stays inactive. Private addresses inhibit the decoder entirely. No
         // intermediate address in this prefix can select the disk controller;
         // changed VIA control modes or another address end the prefix below.
+        // The line boundary already bounds independent video advancement.
+        // A software batch limit adds no hardware interaction; retain it only
+        // for comparison. Each following bus transaction is still qualified.
         var maximum = viaRead && !GroupIndependentBusCycles ? 1
+            : GroupLineClockPeriods ? _video.ClocksToLineBoundary
             : Math.Min(C.FastPrivateClockBatch, _video.ClocksToLineBoundary);
         // With an idle, disconnected controller no drive event can affect this
         // private span. The existing prefix-end advance still consumes every
