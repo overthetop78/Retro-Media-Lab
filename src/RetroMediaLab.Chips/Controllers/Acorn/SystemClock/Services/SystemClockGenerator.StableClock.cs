@@ -23,7 +23,7 @@ public sealed partial class SystemClockGenerator
     public bool Clock4MHzCanChangeClock12Inputs
     {
         get => _clock4CanChangeClock12Inputs;
-        set { RequireReceiverBoundary(); _clock4CanChangeClock12Inputs = value; UpdateStableClockEligibility(); }
+        set { RequireReceiverBoundary(); ResolveDeferredClockNetwork(); _clock4CanChangeClock12Inputs = value; UpdateStableClockEligibility(); }
     }
 
     private void RequireReceiverBoundary()
@@ -35,13 +35,13 @@ public sealed partial class SystemClockGenerator
     public IStableClockPeriodReceiver? Clock12MHzReceiver
     {
         get => _clock12PeriodReceiver;
-        set { RequireReceiverBoundary(); _clock12PeriodReceiver = value; UpdateClock12Route(); }
+        set { RequireReceiverBoundary(); ResolveDeferredClockNetwork(); _clock12PeriodReceiver = value; UpdateClock12Route(); }
     }
 
     public bool Clock12MHzCanGroup
     {
         get => _clock12CanGroup;
-        set { _clock12CanGroup = value; UpdateStableClockEligibility(); }
+        set { ResolveDeferredClockNetwork(); _clock12CanGroup = value; UpdateStableClockEligibility(); }
     }
 
     private void UpdateClock12Route()

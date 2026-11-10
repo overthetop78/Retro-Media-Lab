@@ -1049,3 +1049,97 @@ Mesure native Debug, NOS80/VDU80, RAM2000–DFFF,400004 sans média, même DLL e
 Temps réduit de9,693 %,65,444 % nominal,32,77451 champs/s hors interface (champ19,968 ms,50,08013 Hz), environ1,309 MHz CPU équivalents pour les2 MHz réels.453088 lectures représentées pendant80 champs chauffe/mesure. Les trois hashes vidéo/audio/durée, CPU/cycles, RAM, ticks/source, état VIA et comptes VDU sont identiques. Cœurs libérés via using, aucune fenêtre RML ni compilation Release. Gain modéré mais retrouvé dans les trois fenêtres et conservé ; ce passage ne termine pas System5 ni sa cadence. Rapport `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-via-read-native.md`. Le parcours ordinaire demeure la référence interne et traite intégralement les cas non qualifiés. Aucune reprise d’autres machines ou puces.
 
 Diagnostic externe retiré après consignation ; reconstruction des tests sans lui réussie :0 erreur,4 avertissements préexistants. Bloc conservé et vérifié ; les autres coûts et la clôture de System5 restent ouverts.
+
+## Qualification mémoire conservée pendant le cycle préparé —10 novembre2026
+- [ ] Évaluer la suppression du redécodage logiciel des accès mémoire privés, sans mettre leurs données en cache.
+  - [ ] Modifier `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services/AcornSystemMachine.Bus.cs` et `SystemFastCpuBus.cs` : extraire les seules lectures/écritures RAM-ROM déjà existantes en opérations communes ; conserver la qualification privée de l’adresse lors de PrepareRead/PrepareWrite et la réutiliser durant la portion indépendante déjà validée. Lire les données à la phase réelle, conserver les écritures ROM ignorées, les trous et la priorité du vrai bus hors de ces portions. Aucun nouveau décodeur physique, nouvelle copie de mémoire ni changement de transaction. Garder un témoin interne désactivant cette réutilisation.
+  - [ ] Compléter `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemPrivateClockTests.cs` : comparer mémoire/CPU/champs/audio/VIA au témoin, vérifier lecture après mutation RAM entre préparation et transfert, ROM/trou en écriture et exclusion des accès périphériques ; conserver les cas WAIT/DMA/IRQ et transferts précédents.
+  - [ ] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFivePreparedMemoryTiming.cs` : deux cœurs NOS80/VDU80 identiques, qualification réutilisée false/true,20 champs de chauffe puis3×20 alternés ; comparer CPU/RAM/vidéo/audio/durée/comptes et libérer les cœurs via using. Écrire `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-prepared-memory-native.md`, consigner les fenêtres et décider selon le gain réel ; retirer l’essai si faible ou instable. Supprimer le diagnostic externe après consignation et reconstruire sans lui. Ajouter au tableau seulement un gain significatif retenu.
+
+### Essai de qualification mémoire interrompu avant mesure
+À la nouvelle demande utilisateur, remettre les deux sources modifiées au point26a88f94f et mesurer d’abord les parts vidéo et les coûts autour du VIA. Le code de cet essai n’a été ni compilé ni testé ni mesuré ; aucun gain attribué et aucune nouvelle optimisation retenue.
+
+## Répartition vidéo et coûts autour du VIA —10 novembre2026
+- [x] Mesurer les deux premières pistes utilisateur avant de choisir une nouvelle modification.
+  - [x] Rétablir `AcornSystemMachine.Bus.cs` et `SystemFastCpuBus.cs` depuis HEAD pour retirer le seul essai mémoire non mesuré.
+  - [x] Créer temporairement `SystemVideo.PeriodProbe.cs` sous `src/RetroMediaLab.Emulation.Acorn/Emulators/AcornEmu/Machines/AcornSystem/Common/Services`, instrumenter `SystemVideo.Monochrome.cs` pour compter offres/acceptations de portions, caractères unitaires et points stables/scalaires ; conserver les comptes physiques VDU/CRTC comme contrôle de totalité. Instrumenter temporairement `AcornSystemMachine.PrivateClock.cs` avec deux wrappers NoInlining VIA/mémoire appelant le même corps pour attribuer les piles sans changer l’exécution ; conserver le parcours initial pour référence. Copier exactement les deux sources avant instrumentation sous `artifacts/TestsMachines/Acorn/Acorn System 5/.video-via-profile`.
+  - [x] Créer temporairement `.video-via-profile/Profile.csproj`, `Program.cs`, `Run.ps1` et `Analyze.py` : console native amie,20 champs de chauffe puis8 secondes de champs complets/drainage audio, collecte dotnet-trace possédée/fermée/attendue/libérée dans finally, cœurs libérés via using. Écrire les compteurs, coûts propres disjoints et inclusifs séparés, part VIA/mémoire/autres et leur totalité dans `20261110-video-via-profile.{json,md}`. Comparer à un cœur témoin sur des champs synchrones avant collecte chronométrée ; qualifier le coût de sonde sans annoncer un gain. Consigner dans les validations System5 et choisir le prochain bloc depuis ces mesures.
+  - [x] Après fin effective du processus, restaurer les deux sources instrumentées, supprimer `SystemVideo.PeriodProbe.cs` et le seul dossier `.video-via-profile`, reconstruire Acorn et les tests sans ces diagnostics. Garder les rapports persistants, constater le diff et laisser l’optimisation mémoire reportée.
+
+## Répartition vidéo et coût des cycles VIA —10 novembre2026
+À la demande utilisateur, l’essai de réutilisation du décodage mémoire a été retiré sans compilation, tests ni mesure. Les deux sources de cet essai ont été rétablies depuis26a88f94f avant ce diagnostic. Aucun gain mémoire annoncé.
+Profil natif NOS80/VDU80, RAM2000–DFFF,400004 sans média, Debug inchangé (DisableOptimizations=true).20 champs de chauffe puis8 champs appariés avec/sans sonde, vidéo/audio/durée/CPU/RAM/état VIA identiques ; puis245 champs complets sur8009,2153 ms de RunFrame/DrainAudio. Unités Speedscope milliseconds contrôlées. Calibration8 champs :256,7001 ms avec sonde,256,8216 ms sans ;−0,047 % est une variation à cette précision, pas un gain démontré. Les temps de collecte ne remplacent pas la dernière cadence native appariée30,51151 ms/champ. Deux cœurs et le processus de collecte possédés fermés/attendus/libérés via using/finally.
+
+| Vidéo sur245 champs | Périodes | Part |
+| --- | ---: | ---: |
+| Caractères en portions linéaires | 7549421 | 77.15836 % |
+| Autres caractères complets établis | 1902283 | 19.44216 % |
+| Caractères hors de ces deux représentations | 332616 | 3.39948 % |
+| Total caractères physiques | 9784320 |100 %|
+| Points représentés par les caractères complets | 56710224 | 96.60052 % |
+| Autres périodes dot stables | 1734025 | 2.95375 % |
+| Montées dot traitées individuellement | 261671 | 0.44573 % |
+| Total périodes dot physiques | 58705920 |100 %|
+
+La somme calculée des points est exactement58705920, égale au compte physique VDU, sans tolérance. Les caractères complets incluent des traitements d’un seul caractère :96,60052 % ne signifie donc pas96,6 % de longues portions. Le sous-total linéaire77,15836 % identifie les portions de plusieurs caractères. Dans le récepteur indépendant,9773400 caractères ont été offerts,321696 ont suivi la boucle par caractère ;1990945 offres linéaires et2223979 offres de caractère établi ont été évaluées. Les offres ne comptent pas des acceptations de portions ; les compteurs de périodes acceptées sont distincts.
+
+| Partie de l’exécution | Temps propre % | ms/champ collecté |
+| --- | ---: | ---: |
+|PrivateMemory|65.836061|21.519689|
+|VIA|29.159054|9.531156|
+|Other|5.004885|1.635936|
+|Total|100,000000||
+
+Les repères NoInlining VIA/mémoire appellent le même corps de traitement, avec les mêmes gardes. Chaque intervalle est attribué une seule fois au dernier appelant Chips/Acorn ; la partie VIA comprend tout son CPU/vidéo/horloges/bus, pas le coût intrinsèque de Via6522.Read.1397760 lectures VIA ont été représentées pendant la collecte, soit5705,14 par champ. Les compteurs de référence comptent9784320 cycles ;9773400 sont représentés dans le domaine CPU/VIA, dont ces lectures.
+
+| Coût autour du VIA | ms/champ | Part de cette branche |
+| --- | ---: | ---: |
+|ClockCatchup|2.130077|22.348565 %|
+|CpuViaKeyboardAudio|2.092013|21.949209 %|
+|Video|2.061697|21.631133 %|
+|FloppyComponents|1.971315|20.682858 %|
+|BusWiring|0.702673|7.372380 %|
+|CoordinationAndOther|0.573380|6.015854 %|
+|Total|9,531156|100 %|
+
+| Composant, coût propre | % du total | ms/champ |
+| --- | ---: | ---: |
+|Cpu6502|23.815393|7.784485|
+|AcornSystemMachine|15.421898|5.040922|
+|SystemVideo|9.107868|2.977069|
+|Sn74Ls138|6.112459|1.997966|
+|SystemFastCpuBus|5.983158|1.955702|
+|Sn74S163PeriodicInputs|5.399411|1.764894|
+|Crtc6845|4.409419|1.441297|
+|Vdu80CharacterGenerator|4.166695|1.361958|
+|SystemFloppyBoard|3.898553|1.274311|
+|Sn74S163|3.536443|1.155949|
+|Sn74Ls374|3.295306|1.077129|
+|Sn74Ls393|3.086777|1.008968|
+|Via6522|2.261502|0.739212|
+|SystemCpuClockControl|1.956130|0.639396|
+|SystemClockGenerator|1.890235|0.617857|
+|Sn74Ls74|1.603857|0.524249|
+|Sn74Ls165|1.574333|0.514599|
+|Intel8271|1.118669|0.365657|
+|Mm52116|0.543365|0.177608|
+|Cd4020B|0.351722|0.114967|
+|SystemKeyboard|0.223914|0.073190|
+|IIndependentClockPeriodReceiver|0.168206|0.054981|
+|Sn74Ls138Timing|0.055962|0.018292|
+|SystemKeyboardRepeat|0.018726|0.006121|
+|Total|100 %||
+
+Conclusion : les fronts dot unitaires ne représentent plus que0,44573 % des périodes, donc leur nombre ne soutient pas une nouvelle refonte point par point en priorité. Le travail autour du VIA se répartit principalement en remises à jour horloges2,1301 ms, CPU/VIA/clavier/audio2,0920 ms, vidéo2,0617 ms et composants disquette1,9713 ms par champ. La priorité reste l’amortissement des mises à jour indépendantes autour des transactions, en conservant chaque adresse reçue, lecture, acquittement, IRQ et événement à sa date. Aucune économie intégrale de ces9,53 ms n’est promise : ils comprennent du travail matériel utile. La réutilisation du décodage demeure reportée ; aucune architecture supplémentaire n’a été conservée de ce diagnostic.
+Limite : scénario au repos sans média. Les durées de lecture/écriture disquette et leurs interactions doivent être mesurées séparément avec les scénarios de transfert existants ; ces valeurs ne leur sont pas attribuées. Aucune reprise des autres machines. Rapports complets persistants `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-video-via-profile.{json,md}` : toutes les méthodes propres, inclusifs séparés et attribution par branche, aucun parent ajouté à ses descendants.
+
+Sondes retirées et sources rétablies exactement au point26a88f94f ; reconstructions Acorn/tests sans diagnostic réussies,0 erreur,0 puis4 avertissements préexistants. Seuls les documents de mesure restent modifiés. Le contrôle des performances avec médias et la réduction des mises à jour autour du VIA restent à réaliser ; aucune nouvelle optimisation de production annoncée.
+
+## Résolution source amortie entre transactions —10 novembre2026
+- [x] Réduire les résolutions communes répétées, sans nouveau traitement par périphérique.
+  - [x] Terminer la résolution différée de SystemClock définie dans son suivi, avec ses contrôles autonomes avant montage.
+  - [x] Compléter `tests/RetroMediaLab.LocalEmulationTests/Emulation/AcornEmuSystemPrivateClockTests.cs` : comparer phases/comptes/CPU/RAM/vidéo/audio/VIA entre résolution immédiate et différée du générateur, sorties/reprises et accèsVIA déjà couverts ; réutiliser les contrôles de carte existants. Aucun changement du câblage ou des lectures VIA.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFiveDeferredSourceTiming.cs` : deux cœurs NOS80/VDU80 identiques, seul le témoin interne SystemClock différé false/true diffère,20 champs de chauffe puis3×20 alternés ; comparer vidéo/audio/durée/CPU/RAM/VIA/comptes, libérer via using. Écrire `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-deferred-source-native.md`, consigner fenêtres/gain/limites dans les fiches et validations. Retirer sans gain utile ; supprimer ce diagnostic externe et reconstruire sans lui. Conserver les résultats du profil vidéo/VIA déjà acquis dans le même bloc cohérent ; aucune reprise des autres machines.
+  - [x] Compléter le tableau « Application aux composants » de `docs/directives/Emulations/procedure-puces-machines.md` avec le principe réutilisable de résolution différée entre observations, son gain mesuré et ses conditions ; documenter le résultat dans `docs/chips/Controllers/SystemClock.md`, `docs/tasks/machines/AcornSystem/system5-validation.md` et `docs/project/emulations/Acorn/Acorn System/System 5/validation.md`.
+
+Diagnostic natif externe supprime apres consignation ; reconstruction du projet local sans ce fichier reussie : zero erreur, quatre avertissements preexistants. Aucun processus ni coeur de diagnostic conserve.

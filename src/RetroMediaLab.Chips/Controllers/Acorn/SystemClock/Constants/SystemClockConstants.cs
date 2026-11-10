@@ -13,5 +13,6 @@ internal static class SystemClockConstants
     internal const byte Clock1 = 64;
     internal const int OutputCount = 7;
     internal const int Clock2HalfPeriodSourceClocks = 6;
+    internal const int Clock2PeriodSourceClocks = 2 * Clock2HalfPeriodSourceClocks;
     internal const byte StableReceiverMask = Clock12 | Clock4 | Clock2;
 }

@@ -24,6 +24,22 @@ public sealed partial class SystemClockGenerator
             || _clock12IndependentReceiver is null || (_observedClocks & ~(C.Clock12 | C.Clock2)) != 0)
             throw new InvalidOperationException("Every connected source output must be represented before advancing this range.");
         var end = checked(_inputClockCount + clocks);
+        if (_deferRepresentedResolution && clocks % C.Clock2PeriodSourceClocks == 0 && CanRepresentReferencePeriods)
+        {
+            _deferredNetworkClocks = checked(_deferredNetworkClocks + clocks);
+            _inputClockCount = end;
+            // Complete CLK2 periods retain both connected pin levels and the
+            // same IC2 phase. The next connected edge stays six source clocks away.
+            _nextReceiverEdge = end > long.MaxValue - C.Clock2HalfPeriodSourceClocks
+                ? long.MaxValue : end + C.Clock2HalfPeriodSourceClocks;
+            return;
+        }
+        ResolveDeferredClockNetwork();
+        ResolveRepresentedClockNetwork(clocks, end);
+    }
+
+    private void ResolveRepresentedClockNetwork(long clocks, long end)
+    {
         var ic2 = _ic2.ResolveRepresentedClockRange(clocks, Ic2PeriodicInputs, _stableClockOrigin);
         var ic3 = _ic3.ResolveRepresentedClockRange(clocks, Ic3PeriodicInputs, _stableClockOrigin);
         var ic4 = _ic4.ResolveRepresentedClockRange(clocks, Ic4PeriodicInputs, _stableClockOrigin);

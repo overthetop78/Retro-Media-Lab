@@ -5,6 +5,80 @@ namespace RetroMediaLab.Chips.Tests.Controllers.Acorn;
 
 public sealed class SystemClockGeneratorTests
 {
+    [Theory]
+    [InlineData(2, 0, 0)]
+    [InlineData(0, 7, 13)]
+    [InlineData(3, 15, 7)]
+    public void SuccessiveRepresentedPeriodsKeepConnectedPhasesAndResolveBeforeNewObservers(byte a, byte b, byte c)
+    {
+        var actual = new SystemClockGenerator(a, b, c); var expected = new SystemClockGenerator(a, b, c);
+        var receiver = new IndependentReceiver(); receiver.SetClock(actual.Clock12MHz);
+        actual.Clock12MHzReceiver = receiver;
+        actual.AdvanceClocks(128); expected.AdvanceClocks(128);
+        for (var step = 0; !actual.CanRepresentReferencePeriods && step < 24; step++)
+        { actual.Clock(); expected.Clock(); }
+        Assert.True(actual.CanRepresentReferencePeriods);
+        foreach (var clocks in new long[] { 12, 24, 192, 12, 1_200, 396, 48, 12 })
+        {
+            receiver.AdvancePeriods((int)(clocks / 2), receiver.High);
+            actual.AdvanceRepresentedNetworkClocks(clocks); expected.AdvanceClocks(clocks);
+            Assert.Equal(expected.InputClockCount, actual.InputClockCount);
+            Assert.Equal(expected.Clock12MHz, actual.Clock12MHz);
+            Assert.Equal(expected.Clock2MHz, actual.Clock2MHz);
+            Assert.True(actual.CanRepresentReferencePeriods); Assert.False(actual.OscillatorHigh);
+        }
+        var before = actual.InputClockCount;
+        Assert.Throws<OverflowException>(() => actual.AdvanceRepresentedNetworkClocks(long.MaxValue));
+        Assert.Equal(before, actual.InputClockCount);
+        // Reading one previously unobserved output resolves all canonical
+        // counter states, without moving source time or fabricating an edge.
+        Assert.Equal(expected.Clock1MHz, actual.Clock1MHz);
+        Assert.Equal(expected.Clock3MHz, actual.Clock3MHz);
+        foreach (var pair in new[] { (actual.Ic2, expected.Ic2), (actual.Ic3, expected.Ic3), (actual.Ic4, expected.Ic4) })
+        {
+            Assert.Equal(pair.Item2.Count, pair.Item1.Count);
+            Assert.Equal(pair.Item2.Carry, pair.Item1.Carry);
+            Assert.Equal(pair.Item2.InputClockCount, pair.Item1.InputClockCount);
+            Assert.Equal(pair.Item2.ClockHigh, pair.Item1.ClockHigh);
+        }
+        foreach (var clocks in new long[] { 12, 36, 120 })
+        {
+            receiver.AdvancePeriods((int)(clocks / 2), receiver.High);
+            actual.AdvanceRepresentedNetworkClocks(clocks); expected.AdvanceClocks(clocks);
+        }
+        var observed = new List<(long, int, bool)>(); var reference = new List<(long, int, bool)>();
+        Connect(actual, (pin, level) => observed.Add((actual.InputClockCount, pin, level)));
+        Connect(expected, (pin, level) => reference.Add((expected.InputClockCount, pin, level)));
+        Assert.Empty(observed);
+        actual.AdvanceClocks(121); expected.AdvanceClocks(121);
+        Assert.Equal(reference, observed); Assert.Equal(Levels(expected), Levels(actual));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void DeferredPeriodsResumeWithTheSameOscillatorAndGeneralRangeEdges(int resume)
+    {
+        var actual = new SystemClockGenerator(); var expected = new SystemClockGenerator();
+        var receiver = new IndependentReceiver(); actual.Clock12MHzReceiver = receiver;
+        actual.AdvanceClocks(132); expected.AdvanceClocks(132);
+        Assert.True(actual.CanRepresentReferencePeriods);
+        for (var part = 0; part < 19; part++)
+        { receiver.AdvancePeriods(6, receiver.High); actual.AdvanceRepresentedNetworkClocks(12); expected.AdvanceClocks(12); }
+        if (resume == 0) { actual.SetOscillator(true); expected.SetOscillator(true); }
+        else if (resume == 1) { actual.Clock(); expected.Clock(); }
+        else { receiver.AdvancePeriods(3, receiver.High); receiver.SetClock(!receiver.High);
+            actual.AdvanceRepresentedNetworkClocks(7); expected.AdvanceClocks(7); }
+        Assert.Equal(Levels(expected), Levels(actual));
+        Assert.Equal(expected.OscillatorHigh, actual.OscillatorHigh);
+        Assert.Equal(expected.InputClockCount, actual.InputClockCount);
+        Assert.Equal(expected.Ic4.Count, actual.Ic4.Count);
+        if (resume == 0) { actual.SetOscillator(false); expected.SetOscillator(false); }
+        actual.AdvanceClocks(37); expected.AdvanceClocks(37);
+        Assert.Equal(Levels(expected), Levels(actual));
+    }
+
     [Fact]
     public void CompleteReferencePeriodsAreQualifiedOnlyAtTheirPhysicalLowBoundary()
     {

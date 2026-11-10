@@ -15,6 +15,7 @@ public sealed partial class SystemClockGenerator
         set
         {
             RequireReceiverBoundary();
+            ResolveDeferredClockNetwork();
             _clock4Pattern = value;
             _clock4PatternPublished = false;
             PublishClock4Pattern();

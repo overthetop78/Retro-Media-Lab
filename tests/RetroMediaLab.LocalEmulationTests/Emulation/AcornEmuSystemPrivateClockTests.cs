@@ -14,6 +14,26 @@ public sealed class AcornEmuSystemPrivateClockTests
     [Theory]
     [InlineData(0)]
     [InlineData(3)]
+    public void DeferredSourceResolutionPreservesTransactionsAndFieldStates(byte mode)
+    {
+        using var actual = Create(true, true, mode);
+        using var reference = Create(true, true, mode);
+        var clock = Field<SystemClockGenerator>(actual, "_fastClock");
+        var expected = Field<SystemClockGenerator>(reference, "_fastClock");
+        typeof(SystemClockGenerator).GetProperty("DeferRepresentedResolution",
+            BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(expected, false);
+        CompareFields(reference, actual, 8);
+        Assert.Equal(expected.Clock1MHz, clock.Clock1MHz);
+        Assert.Equal(expected.Clock3MHz, clock.Clock3MHz);
+        Assert.Equal(expected.Clock4MHz, clock.Clock4MHz);
+        Assert.Equivalent(Field<RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services.Via6522>(reference, "_via").CaptureState(),
+            Field<RetroMediaLab.Chips.IO.MOS.MCS6500.Chip6522.Services.Via6522>(actual, "_via").CaptureState(), strict: true);
+        CompareFields(reference, actual, 2);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
     public void IsolatedViaReadsRetainKeyboardIrqVideoStateAndControlModeFallback(byte mode)
     {
         using var actual = Create(true, true, mode);

@@ -45,12 +45,12 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
     public long InputClockCount => _inputClockCount;
     public bool OscillatorHigh => _oscillatorHigh;
     public bool Clock12MHz => (_levels & C.Clock12) != 0;
-    public bool Clock8MHz => (_levels & C.Clock8) != 0;
-    public bool Clock6MHz => (_levels & C.Clock6) != 0;
-    public bool Clock4MHz => (_levels & C.Clock4) != 0;
-    public bool Clock3MHz => (_levels & C.Clock3) != 0;
+    public bool Clock8MHz => ReadResolvedClock(C.Clock8);
+    public bool Clock6MHz => ReadResolvedClock(C.Clock6);
+    public bool Clock4MHz => ReadResolvedClock(C.Clock4);
+    public bool Clock3MHz => ReadResolvedClock(C.Clock3);
     public bool Clock2MHz => (_levels & C.Clock2) != 0;
-    public bool Clock1MHz => (_levels & C.Clock1) != 0;
+    public bool Clock1MHz => ReadResolvedClock(C.Clock1);
     public Action<bool>? Clock12MHzChanged
     {
         get => _clock12Observer;
@@ -66,12 +66,13 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
     public Action<bool>? Clock3MHzChanged { get => GetReceiver(C.Clock3); set => SetReceiver(value, C.Clock3); }
     public Action<bool>? Clock2MHzChanged { get => GetReceiver(C.Clock2); set => SetReceiver(value, C.Clock2); }
     public Action<bool>? Clock1MHzChanged { get => GetReceiver(C.Clock1); set => SetReceiver(value, C.Clock1); }
-    internal Sn74S163 Ic2 => _ic2;
-    internal Sn74S163 Ic3 => _ic3;
-    internal Sn74S163 Ic4 => _ic4;
+    internal Sn74S163 Ic2 { get { ResolveDeferredClockNetwork(); return _ic2; } }
+    internal Sn74S163 Ic3 { get { ResolveDeferredClockNetwork(); return _ic3; } }
+    internal Sn74S163 Ic4 { get { ResolveDeferredClockNetwork(); return _ic4; } }
 
     public void SetOscillator(bool high)
     {
+        ResolveDeferredClockNetwork();
         if (_oscillatorHigh == high) return;
         if (high) RisingClock();
         else FallingClock();
@@ -79,6 +80,7 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
 
     private void RisingClock()
     {
+        ResolveDeferredClockNetwork();
         var aligning = !_stableDomainsAligned && !_ic4ClearHigh;
         _oscillatorHigh = true;
         _inputClockCount = checked(_inputClockCount + 1);
@@ -119,6 +121,7 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
     {
         ArgumentOutOfRangeException.ThrowIfNegative(clocks);
         if (_oscillatorHigh) throw new InvalidOperationException(nameof(OscillatorHigh));
+        if (clocks != 0) ResolveDeferredClockNetwork();
         if (_stableClock12Eligible) AdvanceWithStableReceiver(clocks);
         else for (long clock = 0; clock < clocks; clock++) ClockPeriod();
     }
@@ -175,6 +178,7 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
     private void SetReceiver(Action<bool>? receiver, byte output)
     {
         RequireReceiverBoundary();
+        ResolveDeferredClockNetwork();
         _receivers[BitOperations.TrailingZeroCount((uint)output)] = receiver;
         var previous = _observedClocks;
         if (receiver is null) _observedClocks &= (byte)~output;

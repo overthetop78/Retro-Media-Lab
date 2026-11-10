@@ -679,3 +679,76 @@ Mesure native Debug, NOS80/VDU80, RAM2000–DFFF,400004 sans média, même DLL e
 | Moyenne | 33,78643 | 30,51151 |
 
 Temps réduit de9,693 %,65,444 % nominal,32,77451 champs/s hors interface (champ19,968 ms,50,08013 Hz), environ1,309 MHz CPU équivalents pour les2 MHz réels.453088 lectures représentées pendant80 champs chauffe/mesure. Les trois hashes vidéo/audio/durée, CPU/cycles, RAM, ticks/source, état VIA et comptes VDU sont identiques. Cœurs libérés via using, aucune fenêtre RML ni compilation Release. Gain modéré mais retrouvé dans les trois fenêtres et conservé ; ce passage ne termine pas System5 ni sa cadence. Rapport `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-via-read-native.md`. Le parcours ordinaire demeure la référence interne et traite intégralement les cas non qualifiés. Aucune reprise d’autres machines ou puces.
+
+## Répartition vidéo et coût des cycles VIA —10 novembre2026
+À la demande utilisateur, l’essai de réutilisation du décodage mémoire a été retiré sans compilation, tests ni mesure. Les deux sources de cet essai ont été rétablies depuis26a88f94f avant ce diagnostic. Aucun gain mémoire annoncé.
+Profil natif NOS80/VDU80, RAM2000–DFFF,400004 sans média, Debug inchangé (DisableOptimizations=true).20 champs de chauffe puis8 champs appariés avec/sans sonde, vidéo/audio/durée/CPU/RAM/état VIA identiques ; puis245 champs complets sur8009,2153 ms de RunFrame/DrainAudio. Unités Speedscope milliseconds contrôlées. Calibration8 champs :256,7001 ms avec sonde,256,8216 ms sans ;−0,047 % est une variation à cette précision, pas un gain démontré. Les temps de collecte ne remplacent pas la dernière cadence native appariée30,51151 ms/champ. Deux cœurs et le processus de collecte possédés fermés/attendus/libérés via using/finally.
+
+| Vidéo sur245 champs | Périodes | Part |
+| --- | ---: | ---: |
+| Caractères en portions linéaires | 7549421 | 77.15836 % |
+| Autres caractères complets établis | 1902283 | 19.44216 % |
+| Caractères hors de ces deux représentations | 332616 | 3.39948 % |
+| Total caractères physiques | 9784320 |100 %|
+| Points représentés par les caractères complets | 56710224 | 96.60052 % |
+| Autres périodes dot stables | 1734025 | 2.95375 % |
+| Montées dot traitées individuellement | 261671 | 0.44573 % |
+| Total périodes dot physiques | 58705920 |100 %|
+
+La somme calculée des points est exactement58705920, égale au compte physique VDU, sans tolérance. Les caractères complets incluent des traitements d’un seul caractère :96,60052 % ne signifie donc pas96,6 % de longues portions. Le sous-total linéaire77,15836 % identifie les portions de plusieurs caractères. Dans le récepteur indépendant,9773400 caractères ont été offerts,321696 ont suivi la boucle par caractère ;1990945 offres linéaires et2223979 offres de caractère établi ont été évaluées. Les offres ne comptent pas des acceptations de portions ; les compteurs de périodes acceptées sont distincts.
+
+| Partie de l’exécution | Temps propre % | ms/champ collecté |
+| --- | ---: | ---: |
+|PrivateMemory|65.836061|21.519689|
+|VIA|29.159054|9.531156|
+|Other|5.004885|1.635936|
+|Total|100,000000||
+
+Les repères NoInlining VIA/mémoire appellent le même corps de traitement, avec les mêmes gardes. Chaque intervalle est attribué une seule fois au dernier appelant Chips/Acorn ; la partie VIA comprend tout son CPU/vidéo/horloges/bus, pas le coût intrinsèque de Via6522.Read.1397760 lectures VIA ont été représentées pendant la collecte, soit5705,14 par champ. Les compteurs de référence comptent9784320 cycles ;9773400 sont représentés dans le domaine CPU/VIA, dont ces lectures.
+
+| Coût autour du VIA | ms/champ | Part de cette branche |
+| --- | ---: | ---: |
+|ClockCatchup|2.130077|22.348565 %|
+|CpuViaKeyboardAudio|2.092013|21.949209 %|
+|Video|2.061697|21.631133 %|
+|FloppyComponents|1.971315|20.682858 %|
+|BusWiring|0.702673|7.372380 %|
+|CoordinationAndOther|0.573380|6.015854 %|
+|Total|9,531156|100 %|
+
+| Composant, coût propre | % du total | ms/champ |
+| --- | ---: | ---: |
+|Cpu6502|23.815393|7.784485|
+|AcornSystemMachine|15.421898|5.040922|
+|SystemVideo|9.107868|2.977069|
+|Sn74Ls138|6.112459|1.997966|
+|SystemFastCpuBus|5.983158|1.955702|
+|Sn74S163PeriodicInputs|5.399411|1.764894|
+|Crtc6845|4.409419|1.441297|
+|Vdu80CharacterGenerator|4.166695|1.361958|
+|SystemFloppyBoard|3.898553|1.274311|
+|Sn74S163|3.536443|1.155949|
+|Sn74Ls374|3.295306|1.077129|
+|Sn74Ls393|3.086777|1.008968|
+|Via6522|2.261502|0.739212|
+|SystemCpuClockControl|1.956130|0.639396|
+|SystemClockGenerator|1.890235|0.617857|
+|Sn74Ls74|1.603857|0.524249|
+|Sn74Ls165|1.574333|0.514599|
+|Intel8271|1.118669|0.365657|
+|Mm52116|0.543365|0.177608|
+|Cd4020B|0.351722|0.114967|
+|SystemKeyboard|0.223914|0.073190|
+|IIndependentClockPeriodReceiver|0.168206|0.054981|
+|Sn74Ls138Timing|0.055962|0.018292|
+|SystemKeyboardRepeat|0.018726|0.006121|
+|Total|100 %||
+
+Conclusion : les fronts dot unitaires ne représentent plus que0,44573 % des périodes, donc leur nombre ne soutient pas une nouvelle refonte point par point en priorité. Le travail autour du VIA se répartit principalement en remises à jour horloges2,1301 ms, CPU/VIA/clavier/audio2,0920 ms, vidéo2,0617 ms et composants disquette1,9713 ms par champ. La priorité reste l’amortissement des mises à jour indépendantes autour des transactions, en conservant chaque adresse reçue, lecture, acquittement, IRQ et événement à sa date. Aucune économie intégrale de ces9,53 ms n’est promise : ils comprennent du travail matériel utile. La réutilisation du décodage demeure reportée ; aucune architecture supplémentaire n’a été conservée de ce diagnostic.
+Limite : scénario au repos sans média. Les durées de lecture/écriture disquette et leurs interactions doivent être mesurées séparément avec les scénarios de transfert existants ; ces valeurs ne leur sont pas attribuées. Aucune reprise des autres machines. Rapports complets persistants `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-video-via-profile.{json,md}` : toutes les méthodes propres, inclusifs séparés et attribution par branche, aucun parent ajouté à ses descendants.
+
+### Résolution commune différée entre observations — 10 novembre 2026
+Le générateur cumule les portions complètes de douze périodes source déjà représentées par leurs destinataires, puis résout ses trois compteurs canoniques avant une observation pertinente, un nouveau raccordement ou une progression ordinaire. Les temps source et niveaux raccordés 12/2 MHz restent exacts immédiatement. Aucun chemin VIA supplémentaire ni changement du câblage de la machine. Les autres sorties observées ou les portions non complètes conservent la résolution immédiate.
+Validation Debug : 60 contrôles autonomes SystemClock réussis (182 ms), puis 170 contrôles System/carte/banc natif réussis (19 s), dont les deux nouveaux cas comparant la machine avec résolution immédiate/différée. Vidéo/audio/durées, registres et cycles CPU, RAM, temps source, ticks et état VIA égaux. Retour aux sorties supplémentaires et fronts explicites vérifié dans les contrôles du composant.
+Mesure native appariée isolée : NOS80/VDU80, RAM2000–DFFF, carte400004 sans média,20 champs de chauffe puis3×20, ordre alterné, même DLL. Fenêtres immédiat→différé en ms/champ :30,51730→28,04264 ;30,75249→27,43949 ;34,78871→27,91811. Moyennes32,01950→27,80008, soit13,1777 % de temps en moins ;35,9711 champs calculés/s et71,8271 % du nominal (champ19,968 ms). Les trois fenêtres progressent ; la variation de la troisième référence interdit d’attribuer une précision supérieure à ces mesures. Rapport `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-deferred-source-native.md`, TRX `20261110-deferred-native.trx`.
+La première mesure exécutée avec les autres tests variait fortement (37,72585→32,82611 ms/champ) ; elle est conservée dans `20261110-deferred-source-concurrent.md` mais ne sert pas de référence au gain retenu. Le gain réduit le travail logiciel commun, sans promettre 100 %. Aucun résultat de lecture/écriture active de disquette n’est déduit de ce scénario sans média ; ce contrôle reste à faire. System5 demeure non terminé pour la cadence.
