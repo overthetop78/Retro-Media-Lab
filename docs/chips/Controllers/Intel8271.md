@@ -280,3 +280,12 @@ Retrait terminé et vérifié : aucune différence src/tests avec3d7726b8f ; Chi
 
 ### Réutilisation sans changement du8271 — 10 novembre2026
 La carte400004 reçoit la qualification d'inactivité depuis les notifications existantes DriveSignalsChanged et conserve les demandes d'échéance ; le composant reste intégralement inchangé depuis3d7726b8f. La coordination du CPU peut traverser les événements lecteur pendant l'inactivité prouvée, sans retirer leur exécution. Refus vérifié pour formatage actif en attente d'index sans échéance interne et pour NMI en propagation ; transferts et notifications datées comparés. NOS80/BASIC entier :70,15062→56,14132 ms/champ moteur actif (-19,970 %), bilan360champs43,68878→39,29389 (-10,060 %). Ces gains concernent le raccordement, pas la vitesse isolée du8271. Protocole complet et preuves dans la validation System5 ; pas de gain annoncé moteur arrêté ni de modification des autres machines.
+
+## Bilan System5 Debug/Release —10 novembre2026
+Production identique àc1a362111 ; aucune modification de ce composant par cet audit. Tests autonomes actuels et scénario isolé, distincts de la vitesse assemblée. Les comptes portent sur la famille/variante des tests, pas sur autant de logiciels invités.
+| Scénario | Tests Debug réussis/échoués | Tests Release réussis/échoués | Debug ms/1M unités | Release ms/1M unités |
+|---|---:|---:|---:|---:|
+|cycle : Tick au repos, aucune synthèse mécanique|168/0|168/0|23,50|3,91|
+|cycle : recherche série sans index, NRDATA500 ns/4 us et DataWindow|mêmes168/0|mêmes168/0|91,56|18,19|
+Médiane de cinq fenêtres réellement chronométrées de1M unités après10k+3M unités de chauffe non chronométrées, observateurs et boucle inclus ; aucun coût CPU propre déduit. Pour le8271, la ligne active utilise des entrées série et reste BUSY, sans index : ne pas l’assimiler à une lecture native complète. Les profils et délais physiques restent ceux déjà documentés, sans fréquence modifiée.
+Le [bilan détaillé](../../tasks/machines/AcornSystem/system5-performance-audit.md) contient min/max, horloges réelles, unités exactes, limites de fidélité, captures TRX/JSON, avant/après historiques comparables et résultats de la machine entière. Bancs temporaires supprimés et assemblies reconstruites sans diagnostic ; aucune extrapolation de gain isolé à la machine.

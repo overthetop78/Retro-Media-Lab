@@ -1,0 +1,17 @@
+# Sorties du clavier ASCII Acorn400,013
+
+Vérification du raccordement courant :195 contrôles System/carte réussis dans chaque mode, Debug1m31 et Release17 s, zéro échec/ignoré. Rapports machine `20261110-current-system-regressions.trx` et `20261110-current-system-Release.trx` ; les12 contrôles de sortie/répétition isolés restent consignés ci-dessous. Les195 incluent les régressions System partagées, pas195 cas propres à ce contrôleur. Aucune validation utilisateur de la saisie normale n’est déduite de l’ancienne session RML.
+
+Le contrôleur `SystemKeyboardOutput` reçoit les caractères déjà validés/décodés à la frontière hôte existante. Il conserve le code ASCII, AKD, la transition de chevauchement et les échéances dans Chips ; il réutilise `SystemKeyboardRepeat` pour le circuit RC. Il ne se présente pas comme une émulation de la matrice brute, de la ROM interne et de toutes les variantes AY-3-4592.
+
+Référence primaire : [System5 Handbook, clavier400,013](https://www.theoddys.com/acorn/acorn_system_computers/system_5/System%205%20Handbook%20Part%202%20Section%206%20Acorn%20Keyboard%20%5B2%5D.pdf), §2.1–2.3, pages imprimées3–4. L’archive complète et son texte sont sous `artifacts/.tmp-archives/machines/Acorn/Acorn System 5/System5Handbook.{pdf,txt}`. La fiche GI AY-3-4592, page2-43, confirme la coupure AKD de deux clocks lors du second appui : [spécifications constructeur](https://telcontar.net/KBK/General_Instrument/docs/General%20Instrument%20AY-3-4592%20specifications.pdf).
+
+Le manuel configure l’oscillateur à256 kHz. Deux périodes représentent7,8125 µs (8 µs arrondis dans son texte). Le composant annonce le premier front du domaine de référence à/au-delà de cette date :8 clocks à1 MHz ou16 à2 MHz. Ce quantificateur ne crée ni un oscillateur supplémentaire ni un retard systématique arbitraire. La résolution plus fine d’un accès direct à la matrice n’est pas revendiquée à cette frontière de codes déjà validés.
+
+Le code suivant est exposé après désassertion du strobe précédent ; la réassertion survient à l’échéance locale. Un relâchement avant l’échéance l’annule. Un changement de modificateur sur une touche maintenue peut modifier le code sans fabriquer un nouvel appui. REPEAT conserve le dernier code après relâchement ; reset arrête les échéances sans reculer le temps. Les notifications d’échéance sont regroupées pendant une mutation, mais toutes les transitions de sortie physiques restent publiées à leurs dates de référence. Aucune FIFO, thread ni consultation répétée d’un autre composant.
+
+Fichiers : `Controllers/Acorn/SystemKeyboard/Constants/SystemKeyboardOutputConstants.cs`, `Interfaces/ISystemKeyboardOutput.cs`, `Services/SystemKeyboardOutput.cs` dans Chips. Tests autonomes `Controllers/Acorn/SystemKeyboardOutputTests.cs`. Validation en cours avant raccordement au module ; aucun résultat non exécuté déclaré acquis.
+
+Premier passage Debug :12 contrôles sortie/répétition réussis,0 échec/ignoré,231 ms. Les7 nouveaux cas vérifient le chevauchement daté, son annulation, les changements de code sans nouveau front, la répétition/reset et le groupé/unitaire à1/2 MHz ; les5 cas de répétition existants restent inclus. Vérification Release en cours avant raccordement.
+
+Release : mêmes12 contrôles sortie/répétition réussis,0 échec/ignoré,219 ms. Le raccordement au module peut maintenant utiliser cette sortie vérifiée ; il ne déplace aucune échéance dans la carte.

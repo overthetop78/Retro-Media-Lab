@@ -1,5 +1,7 @@
 # Suivi — AcornSystem
 
+11 novembre2026 : l’utilisateur demande d’arrêter le travail sur System5 et de passer à Atom. Derniers résultats réels et limites dans [la validation](system5-validation.md) et [le bilan](system5-performance-audit.md). Les50 FPS historiques ci-dessous concernent des écrans peu chargés : le texte après FORM80 a montré31,6 FPS, Ctrl+L rétablissant50,2 FPS. Correction clavier testée dans le code mais non livrée à la session utilisateur ; candidat de caractère VDU testé isolément, non raccordé ni mesuré sur machine. Ces limites sont conservées au passage à Atom, pas présentées comme résolues.
+
 - [x] Acorn System : terminer toutes les puces et valider les variantes exposées.
   - [x] Modifier `docs/tasks/machines/AcornSystem/implementation.md` avec les actions concrètes restantes, notamment la carte CPU 6809, après clôture du bloc Master ; consigner les tests de tous les modèles/équipements, médias et captures réellement obtenus.
   - [x] Terminer le contrôle sonore demandé dans `system5-validation.md` : chemin Windows vérifié, chargement BASIC entendu par l'utilisateur au volume 10 ; formatage prolongé du lecteur 1 terminé et vérifié, puis persistance des 800 secteurs contrôlée après fermeture. L'écoute de ce formatage précis reste distincte du chargement déjà entendu.

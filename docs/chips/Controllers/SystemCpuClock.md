@@ -53,3 +53,10 @@ Le contrôleur mémorise maintenant l'entrée MR et qualifie le regroupement uni
 ### Raccordement macro System5 —10 novembre2026
 La plage représentée est maintenant utilisée avec les préfixes de cycles mémoire privés du6502. Les récepteurs ont déjà consommé leurs effets avant matérialisation des comptes : aucune publication n'est rejouée. La qualification de frontière basse/cycle complet conserve les reprises ordinaires. Les8 comparaisons autonomes System passent, y compris IRQ, NMI déjà reçu, commande8271, WAIT/DMA et reprise ;143 contrôles System/carte préexistants passent aussi avant ces3 derniers cas.
 Le bloc entier NOS80/VDU80 mesure111,08373→92,10335 ms/champ en Debug (17,087 % de moins,21,680 % nominal),20 champs de chauffe puis3×20 appariés ; vidéo/audio/CPU/RAM/comptes égaux. Aucun gain isolé de ce composant n'est déduit. Conditions, limites et fenêtres dans docs/tasks/machines/AcornSystem/system5-validation.md.
+## Bilan System5 Debug/Release —10 novembre2026
+Production identique àc1a362111 ; aucune modification de ce composant par cet audit. Tests autonomes actuels et scénario isolé, distincts de la vitesse assemblée. Les comptes portent sur la famille/variante des tests, pas sur autant de logiciels invités.
+| Scénario | Tests Debug réussis/échoués | Tests Release réussis/échoués | Debug ms/1M unités | Release ms/1M unités |
+|---|---:|---:|---:|---:|
+|cycle : 2 MHz, CPU et READY raccordés, sans WAIT|13/0|13/0|112,51|12,52|
+Médiane de cinq fenêtres réellement chronométrées de1M unités après10k+3M unités de chauffe non chronométrées, observateurs et boucle inclus ; aucun coût CPU propre déduit. Les profils et délais physiques restent ceux déjà documentés, sans fréquence modifiée.
+Le [bilan détaillé](../../tasks/machines/AcornSystem/system5-performance-audit.md) contient min/max, horloges réelles, unités exactes, limites de fidélité, captures TRX/JSON, avant/après historiques comparables et résultats de la machine entière. Bancs temporaires supprimés et assemblies reconstruites sans diagnostic ; aucune extrapolation de gain isolé à la machine.

@@ -138,7 +138,7 @@ public sealed partial class Vdu80CharacterGenerator : IVdu80CharacterGenerator
         var candidate = known && parallel == 0;
         if (_stableClockCandidate == candidate) return;
         _stableClockCandidate = candidate;
-        StableClockCandidateChanged?.Invoke(candidate);
+        if (!_representingCharacter) StableClockCandidateChanged?.Invoke(candidate);
     }
 
     private void PublishVideo()

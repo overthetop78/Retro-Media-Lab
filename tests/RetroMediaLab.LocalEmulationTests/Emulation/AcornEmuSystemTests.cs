@@ -17,6 +17,60 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class AcornEmuSystemTests
 {
+    [Theory]
+    [InlineData(1_000_000, 8)]
+    [InlineData(2_000_000, 16)]
+    public void OverlappingBasicAndReturnAreAllDeliveredWithoutReleasingThePreviousKeyFirst(int frequency, int gap)
+    {
+        var keyboard = new SystemKeyboard(frequency);
+        var received = new List<byte>();
+        keyboard.StrobeChanged = high => { if (!high) received.Add(keyboard.Data); };
+        EmulationKey[] keys = [EmulationKey.B, EmulationKey.A, EmulationKey.S, EmulationKey.I, EmulationKey.C, EmulationKey.Return];
+        const string text = "basic\r";
+        for (var i = 0; i < keys.Length; i++)
+        {
+            var held = new HashSet<EmulationKey> { keys[i] };
+            var chars = new Dictionary<EmulationKey, char> { [keys[i]] = text[i] };
+            if (i != 0) { held.Add(keys[i - 1]); chars[keys[i - 1]] = text[i - 1]; }
+            keyboard.SetInput(EmulationInputSnapshot.Empty with { Keys = held, HostCharacters = chars });
+            if (i != 0)
+            {
+                Assert.False(keyboard.Strobe);
+                keyboard.AdvanceTo(keyboard.InputClockCount + gap - 1);
+                Assert.False(keyboard.Strobe);
+                keyboard.AdvanceTo(keyboard.InputClockCount + 1);
+            }
+            Assert.True(keyboard.Strobe);
+            keyboard.SetInput(EmulationInputSnapshot.Empty with {
+                Keys = new HashSet<EmulationKey> { keys[i] }, HostCharacters = chars });
+            keyboard.AdvanceTo(keyboard.InputClockCount + frequency / 50);
+        }
+        keyboard.SetInput(EmulationInputSnapshot.Empty);
+        Assert.Equal(text.Select(ch => (byte)ch), received);
+    }
+
+    [Theory]
+    [InlineData(1_000_000)]
+    [InlineData(2_000_000)]
+    public void ReleasingTheLatestKeyDoesNotEncodeAnOlderHeldKeyAgain(int frequency)
+    {
+        var keyboard = new SystemKeyboard(frequency);
+        var received = new List<byte>();
+        keyboard.StrobeChanged = high => { if (!high) received.Add(keyboard.Data); };
+        void Set(params EmulationKey[] keys) => keyboard.SetInput(EmulationInputSnapshot.Empty with {
+            Keys = new HashSet<EmulationKey>(keys), HostCharacters = new Dictionary<EmulationKey, char> {
+                [EmulationKey.A] = 'a', [EmulationKey.B] = 'b' } });
+        Set(EmulationKey.A);
+        keyboard.AdvanceTo(frequency / 50);
+        Set(EmulationKey.A, EmulationKey.B);
+        keyboard.AdvanceTo(frequency / 25);
+        Set(EmulationKey.A);
+        Assert.Equal((byte)'b', keyboard.Data);
+        keyboard.AdvanceTo(frequency / 20);
+        Set();
+        Assert.Equal(new byte[] { (byte)'a', (byte)'b' }, received);
+    }
+
     [Fact]
     public void RepeatKeyRepeatsTheRetainedAsciiCodeAfterItsCharacterIsReleased()
     {
