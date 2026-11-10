@@ -132,34 +132,51 @@ internal static class EmulationInteractionScenarios
         Assert.Equal(LocExtension.Get("Emulation.Value.Disabled"),AutomationProperties.GetItemStatus(bar.PointerStatus));
         Assert.Equal(LocExtension.Get("Emulation.Value.Enabled"),AutomationProperties.GetItemStatus(bar.ControllerStatus));
         bar.SetPowered(false); Assert.False(Find(EmulationResourceKeys.QuickSave).IsEnabled); Assert.False(Find(EmulationResourceKeys.QuickLoad).IsEnabled);
-        using var view = new MachineView();
-        view.AttachCommands(bar.Presentation);
-        var overlay = view.Root.Children.OfType<Border>().Single(border => Grid.GetRow(border) == 1);
-        Assert.Equal(1, Grid.GetRow(overlay));
-        Assert.Equal(2, Grid.GetRow(view.DisplayHost));
-        Assert.Equal(GridLength.Auto, view.Root.RowDefinitions[1].Height);
-        Assert.Single(view.DisplayHost.Children); // Its entire measured bounds remain the video viewport.
-        Assert.False(overlay.IsHitTestVisible);
-        Assert.Equal(HorizontalAlignment.Center, overlay.HorizontalAlignment);
-        Assert.Equal(VerticalAlignment.Top, overlay.VerticalAlignment);
-        var rows = Assert.IsType<StackPanel>(overlay.Child);
-        Assert.Equal(Orientation.Horizontal, rows.Orientation);
-        Assert.Equal(5, rows.Children.Count);
-        Assert.DoesNotContain(MachineConfigurationScenarios.Controls<TextBlock>(host), block => ReferenceEquals(block, bar.RendererStatus));
-        var sources = new[] { bar.Presentation.RendererStatus, bar.Presentation.SizeStatus, bar.Presentation.FpsStatus, bar.Presentation.FrequencyStatus, bar.Presentation.ExecutionStatus };
-        for (var index = 0; index < sources.Length; index++)
+        foreach (var aboveDisplay in new[] { false, true })
         {
-            var row = Assert.IsType<DockPanel>(rows.Children[index]);
-            Assert.Equal(MachinePresentationConstants.StatusFieldWidth, row.Width);
-            Assert.Equal(MachinePresentationConstants.StatusRowHeight, row.Height);
-            var icon = Assert.IsType<TextBlock>(row.Children[0]);
-            var value = Assert.IsType<TextBlock>(row.Children[1]);
-            sources[index].Text = index.ToString();
-            Assert.Equal(sources[index].Text, value.Text);
-            Assert.Same(icon.Foreground, value.Foreground);
-            Assert.Equal(TextWrapping.NoWrap, value.TextWrapping);
+            bar.Presentation.StatusAboveDisplay = aboveDisplay;
+            using var view = new MachineView();
+            view.AttachCommands(bar.Presentation);
+            var overlay = aboveDisplay
+                ? view.Root.Children.OfType<Border>().Single(border => Grid.GetRow(border) == 1)
+                : view.DisplayHost.Children.OfType<Border>().Single(border => Panel.GetZIndex(border) == 1);
+            Assert.Equal(aboveDisplay ? 2 : 1, Grid.GetRow(view.DisplayHost));
+            Assert.Equal(aboveDisplay ? 3 : 2, Grid.GetRow(view.BottomBar));
+            Assert.Equal(aboveDisplay ? 1 : 2, view.DisplayHost.Children.Count);
+            if (aboveDisplay) Assert.Equal(GridLength.Auto, view.Root.RowDefinitions[1].Height);
+            else
+            {
+                Assert.Equal(MachinePresentationConstants.StatusMaximumWidth, overlay.Width);
+                Assert.Equal(MachinePresentationConstants.StatusOverlayHeight, overlay.Height);
+                Assert.Equal(new Thickness(MachinePresentationConstants.StatusOverlayMargin), overlay.Margin);
+            }
+            Assert.False(overlay.IsHitTestVisible);
+            Assert.Equal(aboveDisplay ? HorizontalAlignment.Center : HorizontalAlignment.Right, overlay.HorizontalAlignment);
+            Assert.Equal(VerticalAlignment.Top, overlay.VerticalAlignment);
+            var rows = Assert.IsType<StackPanel>(overlay.Child);
+            Assert.Equal(aboveDisplay ? Orientation.Horizontal : Orientation.Vertical, rows.Orientation);
+            Assert.Equal(5, rows.Children.Count);
+            Assert.DoesNotContain(MachineConfigurationScenarios.Controls<TextBlock>(host), block => ReferenceEquals(block, bar.RendererStatus));
+            var sources = new[] { bar.Presentation.RendererStatus, bar.Presentation.SizeStatus, bar.Presentation.FpsStatus, bar.Presentation.FrequencyStatus, bar.Presentation.ExecutionStatus };
+            for (var index = 0; index < sources.Length; index++)
+            {
+                var row = Assert.IsType<DockPanel>(rows.Children[index]);
+                if (aboveDisplay) Assert.Equal(MachinePresentationConstants.StatusFieldWidth, row.Width);
+                else Assert.True(double.IsNaN(row.Width));
+                Assert.Equal(aboveDisplay ? MachinePresentationConstants.StatusLineRowHeight : MachinePresentationConstants.StatusRowHeight, row.Height);
+                var icon = Assert.IsType<TextBlock>(row.Children[0]);
+                var value = Assert.IsType<TextBlock>(row.Children[1]);
+                sources[index].Text = index.ToString();
+                Assert.Equal(sources[index].Text, value.Text);
+                Assert.Same(icon.Foreground, value.Foreground);
+                Assert.Equal(TextWrapping.NoWrap, value.TextWrapping);
+            }
+            bar.RendererStatus.Text = "OpenGL";
+            Assert.Equal("OpenGL", Assert.IsType<TextBlock>(Assert.IsType<DockPanel>(rows.Children[0]).Children[1]).Text);
         }
-        bar.RendererStatus.Text = "OpenGL";
-        Assert.Equal("OpenGL", Assert.IsType<TextBlock>(Assert.IsType<DockPanel>(rows.Children[0]).Children[1]).Text);
+        Assert.True(RetroMediaLab.App.Functions.Machine.MachinePresentationFunctions.StatusAboveDisplay("acorn", "AcornSystem1"));
+        Assert.False(RetroMediaLab.App.Functions.Machine.MachinePresentationFunctions.StatusAboveDisplay("acorn", "AcornSystem5"));
+        Assert.False(RetroMediaLab.App.Functions.Machine.MachinePresentationFunctions.StatusAboveDisplay("acorn", "AcornSystem2"));
+        Assert.False(RetroMediaLab.App.Functions.Machine.MachinePresentationFunctions.StatusAboveDisplay("other", "AcornSystem1"));
     }
 }

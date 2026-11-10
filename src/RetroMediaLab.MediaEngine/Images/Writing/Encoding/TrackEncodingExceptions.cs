@@ -3,6 +3,9 @@ namespace RetroMediaLab.MediaEngine.Images.Writing.Encoding;
 /// <summary>Construit les erreurs communes produites pendant l'encodage d'une piste.</summary>
 internal static class TrackEncodingExceptions
 {
+    /// <summary>Signale un profil physique trop court pour conserver tous les secteurs demandés.</summary>
+    public static NotSupportedException PhysicalTrackCapacityExceeded(string encoderId, int cylinder, int head, int capacity)
+        => new($"Physical {encoderId} track {cylinder}.{head} cannot retain all sectors within {capacity} bit cells at the selected timing.");
     /// <summary>Crée l'erreur signalant une valeur propre à un format située hors de sa plage.</summary>
     /// <param name="format">Nom du format.</param>
     /// <param name="field">Nom du champ concerné.</param>

@@ -9,6 +9,10 @@ namespace RetroMediaLab.App.Functions.Machine;
 
 internal static class MachinePresentationFunctions
 {
+    internal static bool StatusAboveDisplay(string moduleId, string machineId) =>
+        string.Equals(moduleId, MachinePresentationConstants.StatusAboveDisplayModuleId, StringComparison.Ordinal)
+        && string.Equals(machineId, MachinePresentationConstants.StatusAboveDisplayMachineId, StringComparison.Ordinal);
+
     internal static void UpdateStatus(MachineCommandPresentation presentation, VideoFrame frame,
         double expectedFramesPerSecond, double measuredFramesPerSecond, EmulationExecutionRate? executionRate = null)
     {

@@ -54,11 +54,15 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
     public Action<bool>? Clock12MHzChanged
     {
         get => _clock12Observer;
-        set { _clock12Observer = value; UpdateClock12Route(); }
+        set { RequireReceiverBoundary(); _clock12Observer = value; UpdateClock12Route(); }
     }
     public Action<bool>? Clock8MHzChanged { get => GetReceiver(C.Clock8); set => SetReceiver(value, C.Clock8); }
     public Action<bool>? Clock6MHzChanged { get => GetReceiver(C.Clock6); set => SetReceiver(value, C.Clock6); }
-    public Action<bool>? Clock4MHzChanged { get => GetReceiver(C.Clock4); set => SetReceiver(value, C.Clock4); }
+    public Action<bool>? Clock4MHzChanged
+    {
+        get => GetReceiver(C.Clock4);
+        set { RequireReceiverBoundary(); _clock4CanChangeClock12Inputs = true; SetReceiver(value, C.Clock4); }
+    }
     public Action<bool>? Clock3MHzChanged { get => GetReceiver(C.Clock3); set => SetReceiver(value, C.Clock3); }
     public Action<bool>? Clock2MHzChanged { get => GetReceiver(C.Clock2); set => SetReceiver(value, C.Clock2); }
     public Action<bool>? Clock1MHzChanged { get => GetReceiver(C.Clock1); set => SetReceiver(value, C.Clock1); }
@@ -90,9 +94,10 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
         {
             _stableDomainsAligned = true;
             _stableClockOrigin = _inputClockCount;
-            if (_stableClock12Eligible) UpdateNextClock2Edge();
+            if (_stableClock12Eligible) UpdateNextReceiverEdge();
         }
         PublishOutputs();
+        PublishClock4Pattern();
     }
 
     private void FallingClock()
@@ -151,7 +156,8 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
     {
         var remaining = (uint)(_levels ^ _publishedLevels);
         _publishedLevels = _levels;
-        if (_stableClock12Eligible && (remaining & C.Clock2) != 0) UpdateNextClock2Edge();
+        if (_stableClock12Eligible && (remaining & (C.Clock2 | (_observedClocks & C.Clock4))) != 0)
+            UpdateNextReceiverEdge();
         if ((remaining & _observedClocks) == 0) return;
         var index = (int)_nextObserved[0];
         while (index < C.OutputCount)
@@ -168,6 +174,7 @@ public sealed partial class SystemClockGenerator : ISystemClockGenerator
 
     private void SetReceiver(Action<bool>? receiver, byte output)
     {
+        RequireReceiverBoundary();
         _receivers[BitOperations.TrailingZeroCount((uint)output)] = receiver;
         var previous = _observedClocks;
         if (receiver is null) _observedClocks &= (byte)~output;

@@ -19,7 +19,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 
 /// <summary>Bus Eurocard des Acorn System ; les profils déterminent les cartes réellement installées.</summary>
-internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
+internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine, IDisposable
 {
     public long? ProcessorClockHz => _clock;
     public int? VideoWidth => _video is null ? null : VideoConstants.Width;
@@ -53,6 +53,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private readonly Cpu6809? _cpu6809;
     private readonly Intel8271? _fdc;
     private readonly Intel8271Drive? _fdcDrive;
+    private readonly SystemFloppyBoard? _floppyBoard;
+    private readonly SystemFloppyDrive? _floppyConnector;
     private readonly IEmulationDiskImage?[] _disks = new IEmulationDiskImage?[C.FloppyDrives];
     private readonly int[] _speeds = [C.DefaultSpeedPercent, C.DefaultSpeedPercent];
     private readonly List<short> _samples = [];
@@ -63,7 +65,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     private bool _break;
 
     internal AcornSystemMachine(SystemCpuCard card, ReadOnlySpan<byte> rom, ReadOnlySpan<byte> characters,
-        IReadOnlyList<(int Start, int Bytes)> ramCards, bool diskInterface, ReadOnlySpan<byte> basic = default)
+        IReadOnlyList<(int Start, int Bytes)> ramCards, bool diskInterface, ReadOnlySpan<byte> basic = default,
+        IReadOnlyList<int>? floppyHeads = null)
     {
         _card = card;
         if (card is SystemCpuCard.Keypad6502 or SystemCpuCard.Standard6502) _ramIo = new RamIo8154();
@@ -145,7 +148,12 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         if (diskInterface)
         {
             _fdc = new Intel8271(_clock);
-            _fdcDrive = new(_fdc, index => _disks[index], _clock);
+            if (card == SystemCpuCard.Fast6502A)
+            {
+                _floppyBoard = new SystemFloppyBoard(_fdc);
+                _floppyConnector = new SystemFloppyDrive(_floppyBoard, floppyHeads);
+            }
+            else _fdcDrive = new(_fdc, index => _disks[index], _clock);
         }
         if (card == SystemCpuCard.Motorola6809)
         {
@@ -165,7 +173,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
             _cpu6502.SetIrq(_via?.Irq == true);
             _cpu6502.SetNmi(_fdc?.Nmi == true);
             if (_via is not null) _via.IrqChanged = _cpu6502.SetIrq;
-            if (_fdc is not null) _fdc.NmiChanged = _cpu6502.SetNmi;
+            if (_floppyBoard is not null) _floppyBoard.NmiChanged = high => _cpu6502.SetNmi(high == true);
+            else if (_fdc is not null) _fdc.NmiChanged = _cpu6502.SetNmi;
         }
         if (_fastCpuBus is not null)
         {
@@ -207,7 +216,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
         _ramIo?.Reset();
         if (cold || _tapeInterface is null) _tape.ResetHardware();
         if (_tapeInterface is not null) _tape.SetOutputLevel(_tapeInterface.TapeOutput);
-        _fdc?.Reset();
+        if (_floppyBoard is not null) _floppyBoard.SetResetLine(false);
+        else _fdc?.Reset();
         _fdcDrive?.Reset();
         if (_fastClock is not null) ResetFastCpu();
         else if (_cpu6809 is not null) _cpu6809.Reset(); else _cpu6502!.Reset();
@@ -285,4 +295,10 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine
     public bool ReceiveNetworkFrame(ReadOnlySpan<byte> frame, bool validFcs = true) => false;
     public void SetNetworkLine(bool clockPresent, bool clearToSend = true, bool idle = true) { }
     public void SetOption(string key, string value) => throw new ArgumentOutOfRangeException(nameof(key));
+
+    public void Dispose()
+    {
+        try { _floppyConnector?.Dispose(); }
+        finally { _floppyBoard?.Dispose(); }
+    }
 }

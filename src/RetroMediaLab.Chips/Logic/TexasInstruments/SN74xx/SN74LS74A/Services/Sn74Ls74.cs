@@ -17,8 +17,9 @@ public sealed class Sn74Ls74 : ISn74Ls74
         internal bool Data;
         internal bool PresetHigh = true;
         internal bool ClearHigh = true;
-        internal bool? Q = initialQ;
-        internal bool? NotQ = initialQ.HasValue ? !initialQ.Value : null;
+        // Canonical levels and their knowledge, including PR=CLR=low (both high).
+        internal byte Outputs = initialQ.HasValue
+            ? initialQ.Value ? C.HighOutputs : C.LowOutputs : C.UnknownOutputs;
     }
 
     private readonly Channel[] _channels;
@@ -35,8 +36,8 @@ public sealed class Sn74Ls74 : ISn74Ls74
     public long GetClockFrequency(int channel) => Get(channel).Frequency;
     public long GetInputClockCount(int channel) => Get(channel).Clocks;
     public bool GetClock(int channel) => Get(channel).ClockHigh;
-    public bool? GetQ(int channel) => Get(channel).Q;
-    public bool? GetNotQ(int channel) => Get(channel).NotQ;
+    public bool? GetQ(int channel) => DecodeOutput(Get(channel).Outputs, C.QMask);
+    public bool? GetNotQ(int channel) => DecodeOutput(Get(channel).Outputs, C.NotQMask);
     public void SetData(int channel, bool high) => Get(channel).Data = high;
 
     public void SetClock(int channel, bool high)
@@ -60,7 +61,11 @@ public sealed class Sn74Ls74 : ISn74Ls74
         state.ClockHigh = high;
         if (!high) return false;
         state.Clocks = checked(state.Clocks + 1);
-        return state.PresetHigh && state.ClearHigh && StoreOutputs(state, state.Data, !state.Data);
+        if (!state.PresetHigh || !state.ClearHigh) return false;
+        var outputs = state.Data ? C.HighOutputs : C.LowOutputs;
+        if (state.Outputs == outputs) return false;
+        state.Outputs = outputs;
+        return true;
     }
 
     public void SetPreset(int channel, bool high)
@@ -84,17 +89,20 @@ public sealed class Sn74Ls74 : ISn74Ls74
         var forbidden = !state.PresetHigh && !state.ClearHigh;
         state.PresetHigh = presetHigh;
         state.ClearHigh = clearHigh;
-        var changed = !presetHigh || !clearHigh
-            ? StoreOutputs(state, !presetHigh, !clearHigh)
-            : forbidden && StoreOutputs(state, null, null);
-        if (changed) Notify(channel, state);
+        var outputs = !presetHigh || !clearHigh
+            ? (byte)(C.KnownMask | (!presetHigh ? C.QMask : 0) | (!clearHigh ? C.NotQMask : 0))
+            : forbidden ? C.UnknownOutputs : state.Outputs;
+        if (state.Outputs == outputs) return;
+        state.Outputs = outputs;
+        Notify(channel, state);
     }
 
     public void Clock(int channel)
     {
-        if (Get(channel).ClockHigh) throw new InvalidOperationException(nameof(channel));
-        SetClock(channel, true);
-        SetClock(channel, false);
+        var state = Get(channel);
+        if (state.ClockHigh) throw new InvalidOperationException(nameof(channel));
+        if (CaptureClock(state, true)) Notify(channel, state);
+        CaptureClock(state, false);
     }
 
     /// <summary>Stable inputs; output feedback is re-evaluated after each notified transition.</summary>
@@ -105,13 +113,19 @@ public sealed class Sn74Ls74 : ISn74Ls74
         if (state.ClockHigh) throw new InvalidOperationException(nameof(channel));
         while (clocks > 0)
         {
-            bool? q = state.PresetHigh && state.ClearHigh ? state.Data : !state.PresetHigh;
-            bool? notQ = state.PresetHigh && state.ClearHigh ? !state.Data : !state.ClearHigh;
+            var outputs = state.PresetHigh && state.ClearHigh
+                ? state.Data ? C.HighOutputs : C.LowOutputs
+                : (byte)(C.KnownMask | (!state.PresetHigh ? C.QMask : 0)
+                    | (!state.ClearHigh ? C.NotQMask : 0));
             var observed = channel == 0 ? FirstOutputsChanged : SecondOutputsChanged;
-            if (observed is null || state.Q == q && state.NotQ == notQ)
+            if (observed is null || state.Outputs == outputs)
             {
                 state.Clocks = checked(state.Clocks + clocks);
-                if (StoreOutputs(state, q, notQ)) Notify(channel, state);
+                if (state.Outputs != outputs)
+                {
+                    state.Outputs = outputs;
+                    Notify(channel, state);
+                }
                 return;
             }
             Clock(channel);
@@ -125,16 +139,13 @@ public sealed class Sn74Ls74 : ISn74Ls74
         return _channels[channel];
     }
 
-    private static bool StoreOutputs(Channel state, bool? q, bool? notQ)
-    {
-        if (state.Q == q && state.NotQ == notQ) return false;
-        state.Q = q; state.NotQ = notQ;
-        return true;
-    }
+    private static bool? DecodeOutput(byte outputs, byte mask) =>
+        (outputs & C.KnownMask) != 0 ? (outputs & mask) != 0 : null;
 
     private void Notify(int channel, Channel state)
     {
-        if (channel == 0) FirstOutputsChanged?.Invoke(state.Q, state.NotQ);
-        else SecondOutputsChanged?.Invoke(state.Q, state.NotQ);
+        var receiver = channel == 0 ? FirstOutputsChanged : SecondOutputsChanged;
+        if (receiver is null) return;
+        receiver(DecodeOutput(state.Outputs, C.QMask), DecodeOutput(state.Outputs, C.NotQMask));
     }
 }

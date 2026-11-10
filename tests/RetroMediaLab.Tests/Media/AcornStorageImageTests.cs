@@ -63,9 +63,11 @@ public sealed class AcornStorageImageTests
     [Theory]
     [InlineData(DiskImageFormatIds.AcornDfsDoubleSided)]
     [InlineData(DiskImageFormatIds.AcornDfsDoubleSided80)]
+    [InlineData(DiskImageFormatIds.Jfd)]
     public async Task DoubleSidedDfsKeepsIdenticallyNamedFilesOnTheirOwnSide(string format)
     {
-        var blank = RetroMediaLab.MediaEngine.Images.Creation.BlankSectorImageFactory.Create(format);
+        var blank = RetroMediaLab.MediaEngine.Images.Creation.BlankSectorImageFactory.Create(
+            format == DiskImageFormatIds.Jfd ? DiskImageFormatIds.AcornDfsDoubleSided : format);
         var blocks = blank.AvailableBlocks.ToDictionary(block => block.LogicalBlock, block => block.Data.ToArray());
         for (var head = 0; head < 2; head++)
         {

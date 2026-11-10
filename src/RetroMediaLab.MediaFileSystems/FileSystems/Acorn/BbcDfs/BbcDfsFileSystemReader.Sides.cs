@@ -5,10 +5,14 @@ using RetroMediaLab.MediaFileSystems.Interfaces;
 
 namespace RetroMediaLab.MediaFileSystems.FileSystems.Acorn.BbcDfs;
 
-/// <summary>Projette les pistes entrelacées des deux faces DSD sur les catalogues DFS indépendants.</summary>
+/// <summary>Projette les pistes entrelacées DSD ou JFD de géométrie DFS sur les catalogues indépendants des deux faces.</summary>
 public sealed partial class BbcDfsFileSystemReader
 {
-    private static bool IsDoubleSided(IMediaSectorImage image) => image.Heads == 2 && image.FormatId is MediaImageFormatIds.AcornDfsDoubleSided or MediaImageFormatIds.AcornDfsDoubleSided80;
+    private static bool IsDoubleSided(IMediaSectorImage image) => image.Heads == 2
+        && (image.FormatId is MediaImageFormatIds.AcornDfsDoubleSided or MediaImageFormatIds.AcornDfsDoubleSided80
+            || image.FormatId == MediaImageFormatIds.Jfd
+            && image.BlockSize == BbcDfsFileSystemLayout.SectorSize
+            && image.SectorsPerTrack == BbcDfsFileSystemLayout.SectorsPerTrack);
 
     private FileSystemVolume ReadSides(IMediaSectorImage image)
     {

@@ -6,6 +6,30 @@ namespace RetroMediaLab.Tests.Media;
 
 public sealed class IsoMfmPhysicalTrackTests
 {
+    [Theory]
+    [InlineData("acorn.dfs.ss", 256)]
+    [InlineData("ibm.360", 512)]
+    public void ReconstructingAnOverfullPhysicalTrackRefusesToLoseSectorData(string format, int bytes)
+    {
+        var image = new SectorImage(format, bytes, 1, 1, 40,
+            Enumerable.Range(0, 40).Select(number => new SectorBlock(number, new(0, 0, number), new byte[bytes])));
+        Assert.Throws<NotSupportedException>(() => new SectorImageTrackEncoder().EncodePhysical(image));
+    }
+
+    [Fact]
+    public void ReconstructedDfsFluxRecordsTheGapClocksInsteadOfVisualizationSilence()
+    {
+        var image = new SectorImage("acorn.dfs.ss", 256, 1, 1, 10,
+            Enumerable.Range(0, 10).Select(number => new SectorBlock(number, new(0, 0, number), new byte[256])));
+        var service = new RetroMediaLab.MediaEngine.Images.Formats.Floppy.Scp.Conversion.SectorImageScpConversionService(
+            new SectorImageTrackEncoder(), new RetroMediaLab.MediaEngine.Images.Formats.Floppy.Scp.ScpEncodedTrackFluxService(),
+            new RetroMediaLab.MediaEngine.Images.Formats.Floppy.Scp.ScpWriter());
+        var flux = Assert.Single(Assert.Single(service.Create(image).Tracks).Revolutions).Flux;
+        Assert.Equal(8_000_000u, flux.IndexTimeTicks); //200 ms in25 ns SCP ticks.
+        Assert.All(flux.FluxIntervals.Take(32), interval => Assert.Equal(160u, interval)); //FF has both FM clock and data transitions.
+        Assert.InRange(flux.FluxIntervals.Aggregate(0UL, (sum, interval) => sum + interval), 7_999_680UL, 8_000_000UL);
+    }
+
     private static readonly IReadOnlyDictionary<string, int> Attributes =
         new Dictionary<string, int> { [TrackEncodingAttributeKeys.MfmPhysicalLayout] = 1 };
 

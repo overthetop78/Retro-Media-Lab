@@ -10,6 +10,7 @@ internal sealed record MachineCommandPresentation(
     TextBlock ControllerStatus,
     TextBlock PointerStatus)
 {
+    internal bool StatusAboveDisplay { get; set; }
     internal TextBlock SizeStatus { get; } = new();
     internal TextBlock FpsStatus { get; } = new();
     internal TextBlock FrequencyStatus { get; } = new();

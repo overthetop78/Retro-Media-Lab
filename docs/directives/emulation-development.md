@@ -1,4 +1,5 @@
 - Respecter l'architecture, les interfaces et les services déjà en place pour créer ou compléter un émulateur.
+  - Pour toutes les puces et machines, garantir la fidélité des comportements observables, timings, interruptions et interactions, sans imposer une reproduction littérale du circuit par les appels logiciels. Privilégier calculs directs, événements locaux planifiés, traitements groupés et états différés ; actualiser les états avant les observations qui en dépendent. Refondre les architectures inefficaces plutôt qu'accumuler des correctifs successifs, conformément aux directives puces et machines ; conserver intégralement les fonctions matérielles.
   - Appliquer le cycle Power commun : éteindre arrête et libère le cœur ; rallumer crée une nouvelle instance, en conservant l'application et le module ouverts.
   - Réserver les modifications d'App et d'Emulation aux cas d'extrême nécessité.
     - Concevoir ces modifications pour toute catégorie d'émulateur : ordinateur, console, arcade, flipper ou autre électronique.

@@ -269,7 +269,11 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorTapeTranspo
             if (_machine?.TapeTransport is { } transport) transport.ActivityChanged -= OnTapeActivityChanged;
             ResetMechanicalAudio();
             try { DisposeDisks(); }
-            finally { try { DisposeHardDisks(); } finally { try { DisposeNetwork(); } finally { _machine = null; LatestVideoFrame = null; ClearAudio(); _disposed = true; } } }
+            finally
+            {
+                try { (_machine as IDisposable)?.Dispose(); }
+                finally { try { DisposeHardDisks(); } finally { try { DisposeNetwork(); } finally { _machine = null; LatestVideoFrame = null; ClearAudio(); _disposed = true; } } }
+            }
         }
     }
 }

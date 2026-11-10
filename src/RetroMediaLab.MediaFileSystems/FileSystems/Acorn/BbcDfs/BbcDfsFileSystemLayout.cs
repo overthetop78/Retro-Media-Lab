@@ -5,6 +5,8 @@ public static class BbcDfsFileSystemLayout
 {
     /// <summary>Taille d'un secteur.</summary>
     public const int SectorSize = 256;
+    /// <summary>Nombre de secteurs par piste du format DFS standard.</summary>
+    public const int SectorsPerTrack = 10;
     /// <summary>Secteur contenant les noms.</summary>
     public const int NamesSector = 0;
     /// <summary>Secteur contenant les métadonnées.</summary>

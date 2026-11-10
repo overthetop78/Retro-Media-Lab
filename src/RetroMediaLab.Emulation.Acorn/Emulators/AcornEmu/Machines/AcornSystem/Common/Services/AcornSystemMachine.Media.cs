@@ -21,15 +21,22 @@ internal sealed partial class AcornSystemMachine
     {
         CheckDrive(index);
         if (_fdc is null && image is not null) throw new NotSupportedException();
+        if (_floppyConnector is not null)
+        {
+            AdvanceFloppyToSource();
+            _floppyConnector.Attach(index, image);
+            _disks[index] = image;
+            return;
+        }
         if (_fdc?.Active == true && _fdc.ActiveDrive == index) { _fdc.Reset(); _fdcDrive!.Reset(); }
         _disks[index] = image;
         _fdcDrive?.MediaChanged(index);
     }
 
     public bool FloppyActive(int index) => FloppyMotor(index) && _disks[index] is not null;
-    public bool FloppyMotor(int index) => _fdc?.Motor == true && _fdc.ActiveDrive == index;
-    public bool FloppyReading(int index) => _fdc?.Reading == true && _fdc.ActiveDrive == index;
-    public bool FloppyWriting(int index) => _fdc?.Writing == true && _fdc.ActiveDrive == index;
+    public bool FloppyMotor(int index) => _floppyConnector?.Motor(index) ?? (_fdc?.Motor == true && _fdc.ActiveDrive == index);
+    public bool FloppyReading(int index) => _fdc?.Reading == true && (_floppyConnector?.Selected(index) ?? (_fdc.ActiveDrive == index));
+    public bool FloppyWriting(int index) => _floppyConnector?.Writing(index) ?? (_fdc?.Writing == true && _fdc.ActiveDrive == index);
     public long FloppySeekSteps(int index) => _fdc?.SeekSteps(index) ?? 0;
     public long FloppyReadBytes(int index) => _fdc?.ReadBytes(index) ?? 0;
     public long FloppyWrittenBytes(int index) => _fdc?.WrittenBytes(index) ?? 0;

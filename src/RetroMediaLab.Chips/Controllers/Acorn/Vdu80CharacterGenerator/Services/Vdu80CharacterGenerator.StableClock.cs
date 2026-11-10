@@ -13,7 +13,14 @@ public sealed partial class Vdu80CharacterGenerator
     {
         ArgumentOutOfRangeException.ThrowIfNegative(maximumClocks);
         if (maximumClocks == 0 || _dotClockHigh) return 0;
-        maximumClocks = (int)Math.Min(maximumClocks, _serializer.StableClockPeriods);
+        return AdvanceStableDotClockPeriods(maximumClocks);
+    }
+
+    /// <summary>Advance output-stable complete periods preserving the received CLK level.</summary>
+    public int AdvanceStableDotClockPeriods(int maximumClocks)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(maximumClocks);
+        maximumClocks = (int)Math.Min(maximumClocks, _serializer.StableClockPeriodsAtCurrentPhase);
         if (maximumClocks == 0) return 0;
         var count = maximumClocks;
         var numerator = checked(count * 2L * C.NanosecondsPerSecond + _fraction);
@@ -28,7 +35,7 @@ public sealed partial class Vdu80CharacterGenerator
             target = checked(_timeNanoseconds + numerator / C.HalfDotFrequency);
         }
 
-        var accepted = (int)_serializer.AdvanceStableClocks(count);
+        var accepted = (int)_serializer.AdvanceStableClockPeriods(count);
         if (accepted == 0) return 0;
         if (accepted != count)
         {
@@ -73,13 +80,14 @@ public sealed partial class Vdu80CharacterGenerator
         }
         for (var period = 0; period < count; period++)
         {
-            SetDotClock(true);
-            SetDotClock(false);
+            var initialHigh = _dotClockHigh;
+            SetDotClock(!initialHigh);
+            SetDotClock(initialHigh);
             // Once the internal event is handled, resume arithmetic advancement;
             // do not turn a long, now uneventful interval into a per-dot loop.
             var done = period + 1;
             if (done < count && _nextDeadline > target)
-                return done + AdvanceStableDotClocks(count - done);
+                return done + AdvanceStableDotClockPeriods(count - done);
         }
         return count;
     }

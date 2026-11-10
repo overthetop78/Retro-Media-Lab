@@ -7,6 +7,189 @@ public sealed class SystemClockGeneratorTests
 {
     [Theory]
     [InlineData(2, 0, 0)]
+    [InlineData(3, 15, 7)]
+    [InlineData(0, 3, 1)]
+    public void IndependentPeriodsPreserveChangingPixelsAndEveryOtherDomainEdge(byte a, byte b, byte c)
+    {
+        var fast = new SystemClockGenerator(a, b, c); var unit = new SystemClockGenerator(a, b, c);
+        var video = new IndependentReceiver(); var reference = new IndependentReceiver();
+        var actual = new List<(long, bool, int, byte, byte, byte)>();
+        var expected = new List<(long, bool, int, byte, byte, byte)>();
+        var actualTwo = new List<(long, bool, long)>(); var expectedTwo = new List<(long, bool, long)>();
+        void Wire(SystemClockGenerator source, IndependentReceiver receiver,
+            List<(long, bool, int, byte, byte, byte)> fours, List<(long, bool, long)> twos)
+        {
+            receiver.SetClock(source.Clock12MHz);
+            source.Clock12MHzReceiver = receiver;
+            // Intentionally never qualifies as output-stable.
+            source.Clock12MHzCanGroup = false;
+            source.Clock4MHzChanged = high => fours.Add((source.InputClockCount, high, Levels(source),
+                source.Ic2.Count, source.Ic3.Count, source.Ic4.Count));
+            source.Clock4MHzCanChangeClock12Inputs = false;
+            source.Clock2MHzChanged = high => twos.Add((source.InputClockCount, high, receiver.Edges));
+        }
+        Wire(fast, video, actual, actualTwo); Wire(unit, reference, expected, expectedTwo);
+        var bindingRejected = false;
+        video.Changed = () =>
+        {
+            if (!video.InPeriods) return;
+            Assert.Throws<InvalidOperationException>(() => fast.Clock4MHzChanged = null);
+            bindingRejected = true;
+        };
+        foreach (var span in new[] { 1, 2, 5, 12, 31, 97, 301, 1001 })
+        {
+            fast.AdvanceClocks(span);
+            for (var i = 0; i < span; i++) unit.Clock();
+            Assert.Equal(expected, actual); Assert.Equal(expectedTwo, actualTwo);
+            Assert.Equal(reference.Edges, video.Edges); Assert.Equal(reference.High, video.High);
+            Assert.Equal(unit.Ic2.InputClockCount, fast.Ic2.InputClockCount);
+            Assert.Equal(unit.Ic3.InputClockCount, fast.Ic3.InputClockCount);
+            Assert.Equal(unit.Ic4.InputClockCount, fast.Ic4.InputClockCount);
+            Assert.Equal(reference.Trace, video.Trace);
+        }
+        Assert.True(video.Periods > 0); Assert.True(bindingRejected);
+    }
+
+    private sealed class IndependentReceiver : IIndependentClockPeriodReceiver
+    {
+        internal bool High, InPeriods;
+        internal long Edges, Periods;
+        internal Action? Changed;
+        internal readonly List<(long, bool)> Trace = [];
+        public void SetClock(bool high)
+        {
+            if (High == high) return;
+            High = high; Edges++; Trace.Add((Edges, high)); Changed?.Invoke();
+        }
+        public int AdvanceStablePeriods(int maximumPeriods) => 0;
+        public void AdvancePeriods(int periods, bool startHigh)
+        {
+            Assert.Equal(startHigh, High);
+            InPeriods = true;
+            try { for (var i = 0; i < periods; i++) { SetClock(!startHigh); SetClock(startHigh); } }
+            finally { InPeriods = false; }
+            Periods += periods;
+        }
+    }
+
+    [Theory]
+    [InlineData(2, 0, 0, 1)]
+    [InlineData(2, 0, 0, 2)]
+    [InlineData(2, 0, 0, 3)]
+    [InlineData(3, 15, 7, 1)]
+    [InlineData(3, 15, 7, 2)]
+    [InlineData(3, 15, 7, 3)]
+    [InlineData(0, 3, 1, 1)]
+    [InlineData(0, 3, 1, 2)]
+    [InlineData(0, 3, 1, 3)]
+    public void IndependentFourMhzKeepsEveryBoundaryAndPartialReceiverPeriod(byte a, byte b, byte c, int maximum)
+    {
+        var fast = new SystemClockGenerator(a, b, c);
+        var unit = new SystemClockGenerator(a, b, c);
+        var video = new StableReceiver(true, maximum);
+        var reference = new StableReceiver(true);
+        var actualFour = new List<(long, bool, int, byte, byte, byte)>();
+        var expectedFour = new List<(long, bool, int, byte, byte, byte)>();
+        var actualTwo = new List<(long, bool, long, long, bool)>();
+        var expectedTwo = new List<(long, bool, long, long, bool)>();
+        void Wire(SystemClockGenerator source, StableReceiver receiver, bool grouped,
+            List<(long, bool, int, byte, byte, byte)> fours, List<(long, bool, long, long, bool)> twos)
+        {
+            receiver.SetClock(source.Clock12MHz);
+            source.Clock12MHzReceiver = receiver; source.Clock12MHzCanGroup = grouped;
+            source.Clock4MHzChanged = high =>
+            {
+                // This independent receiver sees the real source state, but
+                // neither reads nor changes the preadvanced video receiver.
+                fours.Add((source.InputClockCount, high, Levels(source), source.Ic2.Count, source.Ic3.Count, source.Ic4.Count));
+                Assert.Equal(source.InputClockCount, source.Ic2.InputClockCount);
+                Assert.Equal(source.InputClockCount, source.Ic3.InputClockCount);
+                Assert.Equal(source.InputClockCount, source.Ic4.InputClockCount);
+            };
+            source.Clock2MHzChanged = high => twos.Add((source.InputClockCount, high, receiver.Edges, receiver.Rises, receiver.High));
+            source.Clock4MHzCanChangeClock12Inputs = !grouped;
+        }
+        Wire(fast, video, true, actualFour, actualTwo);
+        Wire(unit, reference, false, expectedFour, expectedTwo);
+        foreach (var span in new[] { 1, 2, 5, 12, 31, 97, 301, 1001 })
+        {
+            fast.AdvanceClocks(span);
+            for (var i = 0; i < span; i++) unit.Clock();
+            Assert.Equal(expectedFour, actualFour); Assert.Equal(expectedTwo, actualTwo);
+            Assert.Equal(reference.Edges, video.Edges); Assert.Equal(reference.Rises, video.Rises);
+            Assert.Equal(reference.High, video.High); Assert.Equal(Levels(unit), Levels(fast));
+            Assert.Equal(unit.Ic2.Count, fast.Ic2.Count); Assert.Equal(unit.Ic3.Count, fast.Ic3.Count);
+            Assert.Equal(unit.Ic4.Count, fast.Ic4.Count);
+        }
+        Assert.True(video.Accepted > 0);
+    }
+
+    [Fact]
+    public void IndependentWindowRejectsBindingChangesBeforeItsCausalBoundary()
+    {
+        var source = new SystemClockGenerator();
+        var video = new StableReceiver(true);
+        source.Clock12MHzReceiver = video; source.Clock12MHzCanGroup = true;
+        var rejected = false; var allowed = false;
+        source.Clock4MHzChanged = _ =>
+        {
+            if (source.InputClockCount != 51) return;
+            Assert.Throws<InvalidOperationException>(() => source.Clock12MHzChanged = _ => { });
+            Assert.Null(source.Clock12MHzChanged);
+            rejected = true;
+        };
+        source.Clock2MHzChanged = _ =>
+        {
+            if (source.InputClockCount != 54) return;
+            source.Clock8MHzChanged = _ => { };
+            allowed = true;
+        };
+        source.Clock4MHzCanChangeClock12Inputs = false;
+        source.AdvanceClocks(96);
+        Assert.True(rejected); Assert.True(allowed);
+    }
+
+    [Theory]
+    [InlineData(2, 0, 0)]
+    [InlineData(3, 15, 7)]
+    [InlineData(0, 3, 1)]
+    public void HighPhasePeriodsKeepFourAndTwoMhzBoundariesAndEveryCounter(byte a, byte b, byte c)
+    {
+        var fast = new SystemClockGenerator(a, b, c);
+        var unit = new SystemClockGenerator(a, b, c);
+        var receiver = new StableReceiver(true); var reference = new StableReceiver();
+        var actual = new List<(long, int, bool, long, long, int)>();
+        var expected = new List<(long, int, bool, long, long, int)>();
+        void Wire(SystemClockGenerator source, StableReceiver video,
+            List<(long, int, bool, long, long, int)> log, bool grouped)
+        {
+            video.SetClock(source.Clock12MHz);
+            source.Clock12MHzReceiver = video; source.Clock12MHzCanGroup = grouped;
+            source.Clock4MHzChanged = high => log.Add((source.InputClockCount, 4, high, video.Edges, video.Rises, Levels(source)));
+            source.Clock2MHzChanged = high => log.Add((source.InputClockCount, 2, high, video.Edges, video.Rises, Levels(source)));
+        }
+        Wire(fast, receiver, actual, true); Wire(unit, reference, expected, false);
+        foreach (var span in new[] { 1, 2, 5, 12, 31, 97, 301, 1001 })
+        {
+            fast.AdvanceClocks(span);
+            for (var i = 0; i < span; i++) unit.Clock();
+            Assert.Equal(expected, actual);
+            Assert.Equal(reference.High, receiver.High);
+            Assert.Equal(reference.Edges, receiver.Edges);
+            Assert.Equal(reference.Rises, receiver.Rises);
+            Assert.Equal(Levels(unit), Levels(fast));
+            Assert.Equal(unit.Ic2.Count, fast.Ic2.Count);
+            Assert.Equal(unit.Ic3.Count, fast.Ic3.Count);
+            Assert.Equal(unit.Ic4.Count, fast.Ic4.Count);
+            Assert.Equal(unit.Ic2.InputClockCount, fast.Ic2.InputClockCount);
+            Assert.Equal(unit.Ic3.InputClockCount, fast.Ic3.InputClockCount);
+            Assert.Equal(unit.Ic4.InputClockCount, fast.Ic4.InputClockCount);
+        }
+        Assert.True(receiver.HighAccepted > 0);
+    }
+
+    [Theory]
+    [InlineData(2, 0, 0)]
     [InlineData(2, 0, 7)]
     [InlineData(3, 15, 7)]
     [InlineData(5, 15, 0)]
@@ -78,12 +261,112 @@ public sealed class SystemClockGeneratorTests
         Assert.Equal(3600, source.Ic2.InputClockCount);
     }
 
-    private sealed class StableReceiver : IStableClockPeriodReceiver
+    [Theory]
+    [InlineData(2, 0, 0)]
+    [InlineData(2, 0, 7)]
+    [InlineData(3, 15, 7)]
+    [InlineData(5, 15, 0)]
+    [InlineData(15, 7, 13)]
+    [InlineData(0, 3, 1)]
+    [InlineData(1, 12, 10)]
+    public void FourMhzReceiverPreservesEveryFrontWithoutDisablingStableVideo(byte a, byte b, byte c)
+    {
+        var fast = new SystemClockGenerator(a, b, c);
+        var unit = new SystemClockGenerator(a, b, c);
+        var fastVideo = new StableReceiver();
+        var unitVideo = new StableReceiver();
+        var actual = new List<(long, int, bool, long, long, int)>();
+        var expected = new List<(long, int, bool, long, long, int)>();
+        void Wire(SystemClockGenerator source, StableReceiver video,
+            List<(long, int, bool, long, long, int)> log, bool group)
+        {
+            video.SetClock(source.Clock12MHz);
+            source.Clock12MHzReceiver = video;
+            source.Clock12MHzCanGroup = group;
+            source.Clock4MHzChanged = high =>
+            {
+                log.Add((source.InputClockCount, 4, high, video.Rises, video.Edges, Levels(source)));
+                // A physical receiver can invalidate the next stable interval.
+                if (group && source.InputClockCount == 90) source.Clock12MHzCanGroup = false;
+                if (group && source.InputClockCount == 150) source.Clock12MHzCanGroup = true;
+            };
+            source.Clock2MHzChanged = high => log.Add((source.InputClockCount, 2, high,
+                video.Rises, video.Edges, Levels(source)));
+        }
+        Wire(fast, fastVideo, actual, true);
+        Wire(unit, unitVideo, expected, false);
+        foreach (var size in new[] { 1, 2, 3, 5, 12, 31, 97, 301, 1001 })
+        {
+            fast.AdvanceClocks(size);
+            for (var i = 0; i < size; i++) unit.Clock();
+            Assert.Equal(expected, actual);
+            Assert.Equal(unitVideo.Edges, fastVideo.Edges);
+            Assert.Equal(unitVideo.Rises, fastVideo.Rises);
+            Assert.Equal(unitVideo.High, fastVideo.High);
+            Assert.Equal(Levels(unit), Levels(fast));
+            Assert.Equal(unit.Ic2.Count, fast.Ic2.Count);
+            Assert.Equal(unit.Ic3.Count, fast.Ic3.Count);
+            Assert.Equal(unit.Ic4.Count, fast.Ic4.Count);
+            Assert.Equal(unit.InputClockCount, fast.InputClockCount);
+            Assert.Equal(unit.Ic2.InputClockCount, fast.Ic2.InputClockCount);
+            Assert.Equal(unit.Ic3.InputClockCount, fast.Ic3.InputClockCount);
+            Assert.Equal(unit.Ic4.InputClockCount, fast.Ic4.InputClockCount);
+            Assert.False(fast.OscillatorHigh);
+            Assert.False(fast.Ic2.ClockHigh);
+            Assert.False(fast.Ic3.ClockHigh);
+            Assert.False(fast.Ic4.ClockHigh);
+        }
+        Assert.True(fastVideo.Accepted > 0);
+    }
+
+    [Fact]
+    public void FourMhzSubscriptionChangesDuringAFrontRetainTheNextPhysicalBoundary()
+    {
+        var fast = new SystemClockGenerator();
+        var unit = new SystemClockGenerator();
+        var actual = new List<(long, int, bool, long)>();
+        var expected = new List<(long, int, bool, long)>();
+        void Wire(SystemClockGenerator source, List<(long, int, bool, long)> log, bool group)
+        {
+            var video = new StableReceiver();
+            source.Clock12MHzReceiver = video;
+            source.Clock12MHzCanGroup = group;
+            source.Clock2MHzChanged = high =>
+            {
+                log.Add((source.InputClockCount, 2, high, video.Edges));
+                if (source.InputClockCount == 120)
+                    source.Clock4MHzChanged = level => log.Add((source.InputClockCount, 4, level, video.Edges));
+                if (source.InputClockCount == 240) source.Clock4MHzChanged = null;
+                if (source.InputClockCount == 360)
+                    source.Clock4MHzChanged = level => log.Add((source.InputClockCount, 4, level, video.Edges));
+            };
+        }
+        Wire(fast, actual, true); Wire(unit, expected, false);
+        fast.AdvanceClocks(1200);
+        for (var i = 0; i < 1200; i++) unit.Clock();
+        Assert.Equal(expected, actual);
+        Assert.Equal(unit.Ic2.Count, fast.Ic2.Count);
+        Assert.Equal(unit.Ic3.Count, fast.Ic3.Count);
+        Assert.Equal(unit.Ic4.Count, fast.Ic4.Count);
+    }
+
+    private sealed class StableReceiver(bool highPeriods = false, int maximumAccepted = int.MaxValue) : IStableClockPeriodReceiver
     {
         public bool High { get; private set; }
         public long Rises { get; private set; }
         public long Edges { get; private set; }
         public long Accepted { get; private set; }
+        public long HighAccepted { get; private set; }
+        public int AdvanceStablePeriods(int maximumPeriods, bool startHigh)
+        {
+            if (!startHigh) return AdvanceStablePeriods(maximumPeriods);
+            if (!highPeriods) return 0;
+            Assert.True(High);
+            maximumPeriods = Math.Min(maximumPeriods, maximumAccepted);
+            Rises += maximumPeriods; Edges += maximumPeriods * 2L;
+            Accepted += maximumPeriods; HighAccepted += maximumPeriods;
+            return maximumPeriods;
+        }
         public void SetClock(bool high)
         {
             if (high == High) return;
@@ -93,6 +376,7 @@ public sealed class SystemClockGeneratorTests
         public int AdvanceStablePeriods(int maximumPeriods)
         {
             Assert.False(High);
+            maximumPeriods = Math.Min(maximumPeriods, maximumAccepted);
             Rises += maximumPeriods;
             Edges += maximumPeriods * 2L;
             Accepted += maximumPeriods;
@@ -268,6 +552,40 @@ public sealed class SystemClockGeneratorTests
         Assert.Equal(levels.InputClockCount, grouped.InputClockCount);
         Assert.Equal(unit.Ic3.Count, grouped.Ic3.Count);
         Assert.Equal(unit.Ic4.Count, grouped.Ic4.Count);
+    }
+
+    [Theory]
+    [InlineData(2, 0, 0)]
+    [InlineData(0, 7, 13)]
+    [InlineData(1, 15, 5)]
+    public void StableFourMhzDescriptionMatchesAllSubsequentPhysicalEdges(byte ic2, byte ic3, byte ic4)
+    {
+        var circuit = new SystemClockGenerator(ic2, ic3, ic4);
+        long firstFall = 0, period = 0, highLength = 0, publishedAt = 0;
+        var announcements = 0;
+        var actual = new List<(long, bool)>();
+        circuit.Clock4MHzChanged = high =>
+        {
+            if (announcements != 0) actual.Add((circuit.InputClockCount, high));
+        };
+        circuit.Clock4MHzPeriodicAvailable = (fall, length, high) =>
+        {
+            firstFall = fall; period = length; highLength = high;
+            publishedAt = circuit.InputClockCount; announcements++;
+        };
+        circuit.AdvanceClocks(512);
+        Assert.Equal(1, announcements);
+        Assert.Equal(6, period); Assert.Equal(3, highLength);
+        var expected = new List<(long, bool)>();
+        for (var fall = firstFall; fall <= 512; fall += period)
+        {
+            if (fall - highLength > publishedAt) expected.Add((fall - highLength, true));
+            expected.Add((fall, false));
+        }
+        // Include a last rising edge whose following fall lies beyond the window.
+        var lastRise = firstFall + ((512 - firstFall) / period + 1) * period - highLength;
+        if (lastRise <= 512) expected.Add((lastRise, true));
+        Assert.Equal(expected, actual);
     }
 
     private static int ExpectedLevels(long sourceTime) =>

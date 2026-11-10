@@ -5,27 +5,31 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74LS165;
 
 public sealed class Sn74Ls165Tests
 {
-    [Fact]
-    public void StablePrefixMatchesEveryWordUntilItsFirstKnownOrUnknownOutputChange()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StablePrefixMatchesEveryWordUntilItsFirstKnownOrUnknownOutputChange(bool startHigh)
     {
         foreach (var (value, mask) in TriStateWords())
         foreach (var serial in new bool?[] { null, false, true })
         {
             var probe = StableFixture((byte)value, mask, serial);
+            probe.SetClock(startHigh);
             var original = probe.SerialOutput;
             long expected = 10;
             for (var clock = 0; clock < 10; clock++)
             {
-                probe.Clock();
+                Period(probe);
                 if (probe.SerialOutput != original) { expected = clock; break; }
             }
             var grouped = StableFixture((byte)value, mask, serial);
             var unit = StableFixture((byte)value, mask, serial);
+            grouped.SetClock(startHigh); unit.SetClock(startHigh);
             var changes = new List<bool?>();
             grouped.OutputsChanged = (high, _) => changes.Add(high);
-            Assert.Equal(expected == 10 ? long.MaxValue : expected, grouped.StableClockPeriods);
-            Assert.Equal(expected, grouped.AdvanceStableClocks(10));
-            for (var clock = 0; clock < expected; clock++) unit.Clock();
+            Assert.Equal(expected == 10 ? long.MaxValue : expected, grouped.StableClockPeriodsAtCurrentPhase);
+            Assert.Equal(expected, startHigh ? grouped.AdvanceStableClockPeriods(10) : grouped.AdvanceStableClocks(10));
+            for (var clock = 0; clock < expected; clock++) Period(unit);
             Assert.Empty(changes);
             Assert.Equal(unit.KnownBits, grouped.KnownBits);
             Assert.Equal(unit.StoredData, grouped.StoredData);
@@ -34,15 +38,17 @@ public sealed class Sn74Ls165Tests
             Assert.Equal(unit.InputClockCount, grouped.InputClockCount);
             Assert.Equal(unit.ShiftClockCount, grouped.ShiftClockCount);
             Assert.Equal(unit.GatedClockHigh, grouped.GatedClockHigh);
-            Assert.False(grouped.ClockHigh);
+            Assert.Equal(startHigh, grouped.ClockHigh);
             if (expected < 10)
             {
-                grouped.Clock();
+                Period(grouped);
                 Assert.Single(changes);
                 Assert.Equal(probe.SerialOutput, changes[0]);
                 Assert.Equal(probe.InputClockCount, grouped.InputClockCount);
             }
         }
+
+        void Period(Sn74Ls165 chip) { chip.SetClock(!startHigh); chip.SetClock(startHigh); }
     }
 
     [Fact]

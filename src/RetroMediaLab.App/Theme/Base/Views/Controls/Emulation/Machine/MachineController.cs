@@ -98,6 +98,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
             _input = new MachineInputController(_view, _video.InputView, _video.InputHandle, () => _session.Machine, options.GlobalShortcuts, ExecuteShortcutAsync,
                 () => PresentationActivation?.Invoke() ?? options.IsActive(), inputHandleProvider: () => _video.InputHandle);
             _commands = new MachineCommandBar(_view.Toolbar, CreateActions(), options.GlobalShortcuts, options.ShowError, _input.RestoreFocus);
+            _commands.Presentation.StatusAboveDisplay = MachinePresentationFunctions.StatusAboveDisplay(options.ModuleId, options.MachineId);
             _view.AttachCommands(_commands.Presentation);
             _commands.SetSavedStateAvailability(_quickStates.IsSupported, _quickStates.IsAvailable);
             _video.SurfaceChanged += VideoSurfaceChanged;

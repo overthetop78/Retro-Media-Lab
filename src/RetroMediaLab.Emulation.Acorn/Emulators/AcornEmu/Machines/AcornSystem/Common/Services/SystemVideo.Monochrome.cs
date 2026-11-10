@@ -5,7 +5,7 @@ using C = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.
 
 namespace RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 
-internal sealed partial class SystemVideo : IStableClockPeriodReceiver
+internal sealed partial class SystemVideo : IIndependentClockPeriodReceiver
 {
     private Vdu80CharacterGenerator? _monochrome;
     private int _monochromeRamIndex;
@@ -23,10 +23,36 @@ internal sealed partial class SystemVideo : IStableClockPeriodReceiver
     void IStableClockPeriodReceiver.SetClock(bool high) => SetDotClock(high);
 
     int IStableClockPeriodReceiver.AdvanceStablePeriods(int maximumPeriods)
+        => AdvanceMonochromePeriods(maximumPeriods, false);
+
+    int IStableClockPeriodReceiver.AdvanceStablePeriods(int maximumPeriods, bool startHigh)
+        => AdvanceMonochromePeriods(maximumPeriods, startHigh);
+
+    void IIndependentClockPeriodReceiver.AdvancePeriods(int periods, bool startHigh)
+    {
+        // Neither dot output nor presentation changes CPU/disk/source inputs.
+        // The source stops at their next possible character-clock interaction.
+        // Preserve every varying dot; only already-proven stable portions may
+        // use arithmetic advancement and a presentation span fill.
+        while (periods > 0)
+        {
+            if (StableClockCandidate)
+            {
+                var stable = AdvanceMonochromePeriods(periods, startHigh);
+                if (stable != 0) { periods -= stable; continue; }
+            }
+            SetDotClock(!startHigh);
+            SetDotClock(startHigh);
+            periods--;
+        }
+    }
+
+    private int AdvanceMonochromePeriods(int maximumPeriods, bool startHigh)
     {
         if (_monochrome is null) return 0;
         var white = _monochrome.VideoWhite == true;
-        var count = _monochrome.AdvanceStableDotClocks(maximumPeriods);
+        var count = startHigh ? _monochrome.AdvanceStableDotClockPeriods(maximumPeriods)
+            : _monochrome.AdvanceStableDotClocks(maximumPeriods);
         if (count == 0) return 0;
         var first = _monochromeX;
         _monochromeX += count;

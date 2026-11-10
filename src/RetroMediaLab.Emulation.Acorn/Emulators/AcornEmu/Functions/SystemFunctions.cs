@@ -69,7 +69,11 @@ internal static partial class SystemFunctions
         var monitor = ReadImage(configuration, EmulatorConstants.SystemFirmware, true);
         var characters = configuration.Model == MachineModel.AcornSystem1 ? [] : ReadImage(configuration, EmulatorConstants.CharacterFirmware, true);
         var basic = configuration.Model == MachineModel.AcornSystem2 ? ReadImage(configuration, EmulatorConstants.BasicFirmware, false) : [];
-        return new AcornSystemMachine(card, monitor, characters, RamCards(configuration), HasDisk(configuration), basic);
+        var floppyHeads = card == SystemCpuCard.Fast6502A
+            ? Enumerable.Range(0, StorageConstants.DriveCount).Select(drive => StorageConstants.Models
+                .Single(model => model.Value == StorageFunctions.Settings(configuration, drive).Model).Sides).ToArray()
+            : null;
+        return new AcornSystemMachine(card, monitor, characters, RamCards(configuration), HasDisk(configuration), basic, floppyHeads);
     }
 
     internal static IReadOnlyList<EmulationSettingsBlock> Describe(MachineConfiguration configuration)

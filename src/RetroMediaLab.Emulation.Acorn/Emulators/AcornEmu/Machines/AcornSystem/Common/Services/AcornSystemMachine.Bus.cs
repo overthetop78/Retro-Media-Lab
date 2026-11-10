@@ -8,12 +8,13 @@ internal sealed partial class AcornSystemMachine
 {
     public byte Read(ushort address)
     {
+        if (_floppyBoard?.ChipSelected == true) return _floppyBoard.BusData ?? byte.MaxValue;
         if (_video?.Handles(address) == true) return _video.Read(address);
         var disk = DiskRegister(address);
-        if (_fdc is not null && disk >= 0)
+        if (_fdcDrive is not null && disk >= 0)
         {
             _fdcDrive!.SynchronizeClock();
-            return _fdc.Read(disk);
+            return _fdc!.Read(disk);
         }
         if (ViaAddress(address)) return _via!.Read(address & C.ViaRegisterMask);
         if (RamIoAddress(address)) return (address & C.RamIoRamSelect) == 0
@@ -26,13 +27,14 @@ internal sealed partial class AcornSystemMachine
 
     public void Write(ushort address, byte value)
     {
+        if (_floppyBoard?.ChipSelected == true) return; // Captured by the wired WR strobe.
         if (_video?.Handles(address) == true) { _video.Write(address, value); return; }
         var disk = DiskRegister(address);
-        if (_fdc is not null && disk >= 0)
+        if (_fdcDrive is not null && disk >= 0)
         {
             _fdcDrive!.SynchronizeClock();
-            if (disk == 0) _fdc.MechanicalSpeedPercent = _speeds[(value & Disk.Drive1Select) == 0 ? 0 : 1];
-            _fdc.Write(disk, value);
+            if (disk == 0) _fdc!.MechanicalSpeedPercent = _speeds[(value & Disk.Drive1Select) == 0 ? 0 : 1];
+            _fdc!.Write(disk, value);
             _fdcDrive!.Synchronize();
             return;
         }

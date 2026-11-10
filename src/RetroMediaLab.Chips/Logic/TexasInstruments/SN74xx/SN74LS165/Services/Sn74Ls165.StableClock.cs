@@ -11,10 +11,12 @@ public sealed partial class Sn74Ls165
     private static readonly byte[] StablePrefixDecoder = CreateStablePrefixDecoder();
 
     public long StableClockPeriods
+        => _clockHigh ? 0 : StableClockPeriodsAtCurrentPhase;
+
+    internal long StableClockPeriodsAtCurrentPhase
     {
         get
         {
-            if (_clockHigh) return 0;
             if (!_shiftLoadHigh || _clockInhibitHigh) return long.MaxValue;
             if (!_stableDeadlineValid) UpdateStableShiftDeadline();
             return _stableShifts == int.MaxValue ? long.MaxValue : _stableShifts;
@@ -29,6 +31,16 @@ public sealed partial class Sn74Ls165
     {
         ArgumentOutOfRangeException.ThrowIfNegative(maximumClocks);
         RequireLowClock();
+        return AdvanceStableClockPeriods(maximumClocks);
+    }
+
+    /// <summary>Complete stable periods preserving the received CLK phase.</summary>
+    /// <remarks>High-to-high periods contain a falling then rising edge. The final
+    /// gate level equals the initial one; every real rising edge still shifts.</remarks>
+    internal long AdvanceStableClockPeriods(long maximumClocks)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(maximumClocks);
+        if (_clockPending) throw new InvalidOperationException(nameof(_clockPending));
         if (maximumClocks == 0) return 0;
         if (!_shiftLoadHigh || _clockInhibitHigh)
         {
@@ -37,6 +49,17 @@ public sealed partial class Sn74Ls165
         }
 
         if (!_stableDeadlineValid) UpdateStableShiftDeadline();
+        if (_stableShifts == int.MaxValue && _knownBits == byte.MaxValue)
+        {
+            // All eight stages already equal the received serial level. Every
+            // real shift leaves the known word unchanged; only its clock totals
+            // advance. Input/load changes invalidate the local qualification.
+            var inputs = checked(_inputClockCount + maximumClocks);
+            var shifts = checked(_shiftClockCount + maximumClocks);
+            _inputClockCount = inputs;
+            _shiftClockCount = shifts;
+            return maximumClocks;
+        }
         var periods = _stableShifts == int.MaxValue ? maximumClocks : Math.Min(maximumClocks, _stableShifts);
         if (periods == 0) return 0;
         var inputClocks = checked(_inputClockCount + periods);

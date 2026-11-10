@@ -80,8 +80,10 @@ public sealed class Vdu80CharacterGeneratorTests
         }
     }
 
-    [Fact]
-    public void StableDotPeriodsMatchExplicitEdgesAcrossChangingInputsAndAllLocalDeadlines()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StableDotPeriodsMatchExplicitEdgesAcrossChangingInputsAndAllLocalDeadlines(bool startHigh)
     {
         var image = Enumerable.Range(0, 2048).Select(i => (byte)(i * 73 + 11)).ToArray();
         var grouped = new Vdu80CharacterGenerator(image);
@@ -90,6 +92,7 @@ public sealed class Vdu80CharacterGeneratorTests
         var unitEvents = new List<(long, bool?)>();
         grouped.VideoChanged = level => groupEvents.Add((grouped.TimeNanoseconds, level));
         unit.VideoChanged = level => unitEvents.Add((unit.TimeNanoseconds, level));
+        grouped.SetDotClock(startHigh); unit.SetDotClock(startHigh);
         long groupedPeriods = 0;
         for (var window = 0; window < 512; window++)
         {
@@ -106,11 +109,12 @@ public sealed class Vdu80CharacterGeneratorTests
             while (remaining > 0)
             {
                 var sample = grouped.VideoWhite;
-                var accepted = grouped.AdvanceStableDotClocks(remaining);
+                var accepted = startHigh ? grouped.AdvanceStableDotClockPeriods(remaining)
+                    : grouped.AdvanceStableDotClocks(remaining);
                 if (accepted == 0)
                 {
-                    Assert.Equal(unit.SetDotClock(true), grouped.SetDotClock(true));
-                    unit.SetDotClock(false); grouped.SetDotClock(false);
+                    Assert.Equal(unit.SetDotClock(!startHigh), grouped.SetDotClock(!startHigh));
+                    Assert.Equal(unit.SetDotClock(startHigh), grouped.SetDotClock(startHigh));
                     remaining--;
                 }
                 else
@@ -118,8 +122,8 @@ public sealed class Vdu80CharacterGeneratorTests
                     groupedPeriods += accepted;
                     for (var clock = 0; clock < accepted; clock++)
                     {
-                        Assert.Equal(sample, unit.SetDotClock(true));
-                        unit.SetDotClock(false);
+                        Assert.Equal(sample, unit.SetDotClock(!startHigh));
+                        Assert.Equal(sample, unit.SetDotClock(startHigh));
                     }
                     remaining -= accepted;
                 }

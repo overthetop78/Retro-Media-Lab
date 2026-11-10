@@ -8,4 +8,9 @@ public interface IStableClockPeriodReceiver
     /// output notification. Retain all internal phases, counters and elapsed time.
     /// Return zero at an input/event boundary; the source then delivers real edges.</summary>
     int AdvanceStablePeriods(int maximumPeriods);
+
+    /// <summary>Complete periods preserving the input phase. Historical receivers
+    /// can refuse high-to-high periods and receive their ordinary edges instead.</summary>
+    int AdvanceStablePeriods(int maximumPeriods, bool startHigh)
+        => startHigh ? 0 : AdvanceStablePeriods(maximumPeriods);
 }

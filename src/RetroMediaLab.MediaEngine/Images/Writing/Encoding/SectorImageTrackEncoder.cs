@@ -55,16 +55,21 @@ public sealed class SectorImageTrackEncoder
             var address = policy.VisualAddress(image, block.Address);
             return address.Cylinder == cylinder && address.Head == head;
         });
-        var supplied = policy.TrackAttributes(image, count);
-        var attributes = supplied is null ? new Dictionary<string, int>() : new Dictionary<string, int>(supplied);
-        if (encoding == FluxCodecIds.IsoFm) attributes[TrackEncodingAttributeKeys.FmPhysicalLayout] = IsoFmFormat.PhysicalLayoutEnabled;
-        else if (encoding == FluxCodecIds.IsoMfm) attributes[TrackEncodingAttributeKeys.MfmPhysicalLayout] = IsoMfmFormat.PhysicalLayoutEnabled;
+        var attributes = PhysicalAttributes(encoding, policy.TrackAttributes(image, count));
         return EncodeTrack(image, cylinder, head, encoding, attributes,
             checked(policy.BitCellTicks(image, cylinder) * EncodedTrackTiming.TickNanoseconds), indexTimeNanoseconds);
     }
 
     /// <summary>Encode toutes les pistes disponibles dans l'ordre cylindre puis face.</summary>
     public IReadOnlyList<EncodedDiskTrack> Encode(SectorImage image, CancellationToken cancellationToken = default)
+        => Encode(image, physical: false, cancellationToken);
+
+    /// <summary>Reconstruit les pistes physiques avec leurs gaps enregistrés pour conversion ou écriture.</summary>
+    /// <remarks>Les durées conservent les unités communes de25 ns, contrairement à EncodePhysicalTrack.</remarks>
+    public IReadOnlyList<EncodedDiskTrack> EncodePhysical(SectorImage image, CancellationToken cancellationToken = default)
+        => Encode(image, physical: true, cancellationToken);
+
+    private IReadOnlyList<EncodedDiskTrack> Encode(SectorImage image, bool physical, CancellationToken cancellationToken)
     {
         if (image.AddressingKind == SectorImageAddressingKind.Logical)
             throw SectorImageVisualizationExceptions.LogicalAddressing(image.FormatId);
@@ -78,12 +83,25 @@ public sealed class SectorImageTrackEncoder
             if (sectors.Count == 0) continue;
             var bitCellTicks = policy.BitCellTicks(image, group.Key.Cylinder);
             var indexTimeTicks = policy.IndexTimeTicks(image, group.Key.Cylinder);
+            var encoding = policy.EncoderId(image);
+            var attributes = policy.TrackAttributes(image, sectors.Count);
+            if (physical) attributes = PhysicalAttributes(encoding, attributes, requireComplete: true);
             EncodedTrack encoded;
-            try { encoded = encoders.Encode(policy.EncoderId(image), new TrackEncodeRequest(group.Key.Cylinder, group.Key.Head, sectors, policy.TrackAttributes(image, sectors.Count), bitCellTicks, indexTimeTicks)); }
+            try { encoded = encoders.Encode(encoding, new TrackEncodeRequest(group.Key.Cylinder, group.Key.Head, sectors, attributes, bitCellTicks, indexTimeTicks)); }
             catch (KeyNotFoundException) { throw SectorImageVisualizationExceptions.MissingPolicy(image.FormatId); }
             tracks.Add(new(group.Key.Cylinder, group.Key.Head, bitCellTicks, encoded));
         }
         if (tracks.Count == 0) throw SectorImageVisualizationExceptions.NoTrack(image.FormatId);
         return tracks.AsReadOnly();
+    }
+
+    private static IReadOnlyDictionary<string, int>? PhysicalAttributes(string encoding, IReadOnlyDictionary<string, int>? supplied, bool requireComplete = false)
+    {
+        if (encoding is not (FluxCodecIds.IsoFm or FluxCodecIds.IsoMfm)) return supplied;
+        var attributes = supplied is null ? new Dictionary<string, int>() : new Dictionary<string, int>(supplied);
+        if (encoding == FluxCodecIds.IsoFm) attributes[TrackEncodingAttributeKeys.FmPhysicalLayout] = IsoFmFormat.PhysicalLayoutEnabled;
+        else attributes[TrackEncodingAttributeKeys.MfmPhysicalLayout] = IsoMfmFormat.PhysicalLayoutEnabled;
+        if (requireComplete) attributes[TrackEncodingAttributeKeys.RequireCompletePhysicalTrack] = 1;
+        return attributes;
     }
 }

@@ -20,7 +20,7 @@ public sealed class SectorImageScpConversionService(SectorImageTrackEncoder enco
     public ScpImage Create(SectorImage image, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(image);
-        var encoded = encoder.Encode(image, cancellationToken);
+        var encoded = encoder.EncodePhysical(image, cancellationToken);
         if (encoded.Count == 0) throw SectorImageScpConversionExceptions.MissingTrack(image.FormatId);
         var tracks = encoded.Select(track => CreateTrack(track)).ToArray();
         var startTrack = tracks.Min(track => track.TrackNumber);

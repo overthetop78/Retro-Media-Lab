@@ -22,7 +22,7 @@ public sealed partial class SystemClockGenerator
         return new Sn74S163PeriodicInputs(pins, C.Clock2HalfPeriodSourceClocks);
     }
 
-    private void AdvanceStableClockNetwork(int periods)
+    private void AdvanceStableClockNetwork(int periods, byte representedClocks = 0, byte extraClocks = 0)
     {
         // The receiver has accepted the intervening 12 MHz periods without
         // changing output. This interval ends no later than the next 2 MHz edge.
@@ -34,6 +34,15 @@ public sealed partial class SystemClockGenerator
         _ic2.ResolveClock();
         _ic3.ResolveClock();
         _ic4.ResolveClock();
+        if (representedClocks != 0)
+        {
+            // These receiver fronts were delivered by its accepted periods.
+            // Only publication bookkeeping changes here, never the real pins.
+            // For the one additional physical front, retain the receiver's
+            // opposite preceding level so ordinary publication delivers it once.
+            _publishedLevels = (byte)((_publishedLevels & ~representedClocks)
+                | ((_levels ^ extraClocks) & representedClocks));
+        }
         PublishOutputs();
         FallingClock();
     }

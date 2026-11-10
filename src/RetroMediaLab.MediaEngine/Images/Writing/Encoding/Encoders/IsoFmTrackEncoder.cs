@@ -36,6 +36,8 @@ public sealed class IsoFmTrackEncoder : TrackEncoderBase
     {
         var bits = TrackBitEncoding.Bits();
         var capacity = checked((int)(request.IndexTimeTicks / request.BitCellTicks));
+        var requireComplete = Attribute(request, TrackEncodingAttributeKeys.RequireCompletePhysicalTrack, 0) != 0;
+        var completed = 0;
         WriteRun(bits, IsoFmFormat.GapFill, IsoFmFormat.InitialGapByteCount);
         foreach (var sector in request.Sectors)
         {
@@ -46,8 +48,16 @@ public sealed class IsoFmTrackEncoder : TrackEncoderBase
             WriteRun(bits, IsoFmFormat.GapFill, IsoFmFormat.InterFieldGapByteCount);
             WriteRun(bits, IsoFmFormat.SyncFill, IsoFmFormat.SyncByteCount);
             WriteDataField(bits, sector, 0);
+            completed++;
+            if (requireComplete && bits.Count > capacity)
+                throw TrackEncodingExceptions.PhysicalTrackCapacityExceeded(IsoFmFormat.CodecId, request.Cylinder, request.Head, capacity);
             WriteRun(bits, IsoFmFormat.GapFill, IsoFmFormat.InterSectorGapByteCount);
-            if (bits.Count >= capacity) break;
+            if (bits.Count >= capacity)
+            {
+                if (requireComplete && completed < request.Sectors.Count)
+                    throw TrackEncodingExceptions.PhysicalTrackCapacityExceeded(IsoFmFormat.CodecId, request.Cylinder, request.Head, capacity);
+                break;
+            }
         }
         var remaining = Math.Max(0, capacity - bits.Count);
         WriteRun(bits, IsoFmFormat.GapFill,

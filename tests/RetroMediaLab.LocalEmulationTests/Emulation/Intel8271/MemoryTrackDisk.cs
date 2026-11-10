@@ -16,6 +16,8 @@ internal class MemoryTrackDisk : IEmulationDiskImage
     private int _physicalTrack;
     internal int RequestedHead;
     internal int WindowWrites { get; private set; }
+    internal int LastWriteCylinder { get; private set; }
+    internal int LastWriteHead { get; private set; }
     internal uint LastWriteStart { get; private set; }
     internal uint LastWriteDuration { get; private set; }
     internal IReadOnlyList<uint> LastWritePulses { get; private set; } = [];
@@ -67,6 +69,8 @@ internal class MemoryTrackDisk : IEmulationDiskImage
         IReadOnlyList<uint> transitionOffsetsNanoseconds, IReadOnlyDictionary<string, int>? attributes = null,
         bool includeEndingInstant = false)
     {
+        LastWriteCylinder = cylinder;
+        LastWriteHead = head;
         LastWriteStart = startNanoseconds;
         LastWriteDuration = durationNanoseconds;
         LastWritePulses = transitionOffsetsNanoseconds.ToArray();

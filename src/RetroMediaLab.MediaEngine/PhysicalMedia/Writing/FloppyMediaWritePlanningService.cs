@@ -25,7 +25,7 @@ public sealed class FloppyMediaWritePlanningService(DiskImageExplorer explorer)
         var document = await explorer.ReadDocumentAsync(sourcePath, formatId, cancellationToken).ConfigureAwait(false);
         if (document.Representation is FluxMediaImageRepresentation flux) return CreatePlan(flux.Image, scpRevolution);
         var explored = await explorer.ExploreAsync(document, formatId, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return CreatePlan(new SectorImageTrackEncoder().Encode(explored.Image, cancellationToken));
+        return CreatePlan(new SectorImageTrackEncoder().EncodePhysical(explored.Image, cancellationToken));
     }
 
     public MediaWritePlan CreatePlan(ProtectedTrackImage image, int revolution = 0)
