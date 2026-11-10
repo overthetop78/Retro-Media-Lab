@@ -6,6 +6,97 @@ namespace RetroMediaLab.Chips.Tests.Logic.TexasInstruments.SN74xx.SN74LS393;
 public sealed class Sn74Ls393Tests
 {
     [Theory]
+    [InlineData(0, 250, 125, 15)]
+    [InlineData(1, 250, 125, 8)]
+    [InlineData(0, 80, 30, 8)]
+    [InlineData(1, 40, 20, 15)]
+    public void DescribedQdWireKeepsBothChannelsQaRequestsClearsAndExplicitResume(int source, long period, long high, byte observed)
+    {
+        var destination = 1 - source;
+        for (byte seed = 0; seed < 16; seed++)
+        {
+            Sn74Ls393 Create() => new(source == 0 ? 1_000_000_000 / period : 1_000_000_000 / period / 16,
+                source == 1 ? 1_000_000_000 / period : 1_000_000_000 / period / 16,
+                source == 0 ? seed : (byte)(seed * 7 & 15), source == 1 ? seed : (byte)(seed * 7 & 15), Sn74Ls393Timing.CalculatedTypical);
+            var actual = Create(); var reference = Create();
+            var a = new List<(long, byte, byte)>(); var b = new List<(long, byte, byte)>();
+            var qa = new List<(long, int, long)>(); var expectedQa = new List<(long, int, long)>();
+            var described = false; var descriptions = 0;
+            void Bind(Sn74Ls393 chip, bool optimized, List<(long, byte, byte)> trace, List<(long, int, long)> requests)
+            {
+                chip.SetClock(destination, (seed & 8) != 0);
+                chip.SetObservedOutputs(source, 8); chip.SetObservedOutputs(destination, observed);
+                Action<byte, byte> clock = (levels, changed) =>
+                { if ((!optimized || !described) && (changed & 8) != 0) chip.SetClock(destination, (levels & 8) != 0); };
+                Action<byte, byte> capture = (levels, changed) => trace.Add((chip.TimeNanoseconds, levels, changed));
+                if (source == 0) { chip.FirstOutputsChanged = clock; chip.SecondOutputsChanged = capture; }
+                else { chip.SecondOutputsChanged = clock; chip.FirstOutputsChanged = capture; }
+                for (var index = 0; index < 2; index++)
+                {
+                    var channel = index;
+                    Action<long> request = count =>
+                    {
+                        requests.Add((chip.TimeNanoseconds, channel, count));
+                        chip.RequestQaClock(channel, count + (channel == source ? 97 : 7));
+                    };
+                    if (channel == 0) chip.FirstQaClockReached = request; else chip.SecondQaClockReached = request;
+                    chip.RequestQaClock(channel, 1);
+                }
+            }
+            Bind(actual, true, a, qa); Bind(reference, false, b, expectedQa);
+            actual.SetQdPeriodicClockReceiver(source, (fall, length, width) =>
+            {
+                if (length == 0)
+                {
+                    actual.DisconnectPeriodicClock(destination); described = false; actual.SetObservedOutputs(source, 8);
+                }
+                else
+                {
+                    actual.ConnectPeriodicClock(destination, fall, length, width);
+                    described = true; descriptions++; actual.SetObservedOutputs(source, 0);
+                }
+            });
+            actual.SetClock(source, true); reference.SetClock(source, true);
+            actual.ConnectPeriodicClock(source, high, period, high);
+            var currentPeriod = period; var currentHigh = high;
+            var level = true; var nextToggle = high;
+            void Advance(long target)
+            {
+                while (nextToggle <= target)
+                {
+                    reference.AdvanceTo(nextToggle); level = !level; reference.SetClock(source, level);
+                    nextToggle += level ? currentHigh : currentPeriod - currentHigh;
+                }
+                reference.AdvanceTo(target); actual.AdvanceTo(target);
+                Assert.Equal(b, a); Assert.Equal(expectedQa, qa);
+                for (var channel = 0; channel < 2; channel++)
+                {
+                    Assert.Equal(reference.GetOutputs(channel), actual.GetOutputs(channel));
+                    Assert.Equal(reference.GetInputClockCount(channel), actual.GetInputClockCount(channel));
+                    Assert.Equal(reference.GetQaRisingClockCount(channel), actual.GetQaRisingClockCount(channel));
+                    Assert.Equal(reference.GetClock(channel), actual.GetClock(channel));
+                }
+            }
+            foreach (var end in new long[] { 711, 717, 1233, 1259, 10_000, 10_100, 30_380, 30_880, 50_000, 100_000 })
+            {
+                Advance(end);
+                var reset = end is 711 or 1233 or 30_380;
+                actual.SetClear(source, reset); reference.SetClear(source, reset);
+                actual.SetClear(destination, end == 10_000); reference.SetClear(destination, end == 10_000);
+                if (end == 50_000)
+                {
+                    currentPeriod *= 2; currentHigh *= 2;
+                    nextToggle = end + (level ? currentHigh : currentPeriod - currentHigh);
+                    actual.ConnectPeriodicClock(source, level ? nextToggle : nextToggle + currentHigh, currentPeriod, currentHigh);
+                }
+            }
+            Assert.True(descriptions > 0);
+            actual.SetQdPeriodicClockReceiver(source, null);
+            Advance(200_000);
+        }
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(8)]
     public void DeferredQaClockCountMatchesExplicitInputsWithoutMaterializingTheCounter(byte observed)

@@ -889,3 +889,36 @@ NOS80 :111,08373→92,10335 ms/champ,17,087 % de réduction,21,680 % nominal. Ma
 
 ### Statut de fin du passage caractères
 Essai de paquets dot retiré après comparaison ; seules les périodes complètes de caractères établis sont conservées.50 contrôles composants et155 contrôles System/carte passent. Diagnostic externe supprimé et DLL de tests reconstruite sans lui (0 erreur,4 avertissements préexistants). Mesure globale retenue65,38816→58,78570 ms/champ,10,097 % de moins,33,967 % nominal. Les autres points de qualification des préfixes et la cadence machine restent ouverts ; aucun passage à la machine suivante ni nouvelle livraison RML déduit.
+
+## Profil global après séparateur et caractères établis —10 novembre2026
+- [x] Établir les coûts restants du point537967385 avant la prochaine refonte.
+  - [x] Créer temporairement `artifacts/TestsMachines/Acorn/Acorn System 5/.settled-profile/Profile.csproj`, `Program.cs` et `Run.ps1` : console amie native, mêmes DLL Debug courantes,20 champs de chauffe puis8 secondes de RunFrame/DrainAudio. Collecter dotnet-trace avec enfant possédé, fermé/attendu/libéré dans finally ; le cœur est libéré par using. Analyser les événements Speedscope en temps propres disjoints par méthode, inclusifs séparés, chauffe exclue par MeasureFields et groupes totalisant100 %. Écrire les rapports persistants `20261110-settled-profile-methods.json` et `.md`, avec répartition exhaustive et unités, puis consigner les coûts dans les validations System5.
+  - [x] Supprimer uniquement le dossier temporaire `.settled-profile` après fin des processus et contrôle du chemin absolu ; conserver les rapports synthétiques ignorés, définir ensuite le bloc de code à modifier à partir des coûts établis.
+
+## Fil extérieur QD du diviseur READY —10 novembre2026
+- [x] Réduire le transport répété QD→CLK sans changer READY ni la clock8271.
+  - [x] Terminer et vérifier les capacités393 définies dans son suivi avant tout raccordement.
+  - [x] Modifier `SystemFloppyBoard.Ready.cs` et `SystemFloppyBoard.cs` sous Machines/AcornSystem/Common : recevoir la période QD du premier canal393 et la raccorder à CLK du second, puis retirer uniquement le transport scalaire déjà représenté. Révoquer/remettre les niveaux explicites si le compteur le demande, conserver les demandes QA du8271, les fronts QD du second canal vers4020 et tous les clears. Détacher le récepteur possédé à Dispose.
+  - [x] Compléter SystemFloppyBoardTests.cs : comparaison avec la liaison QD scalaire conservée comme référence, comptes8271/393 et READY, capteurs/commandes et transferts de médias. Réutiliser les tests de lecture/écriture existants avant le relevé natif. Définir les fichiers de diagnostic et leur retrait avant création ; mesurer la machine entière après20 champs de chauffe puis3×20 appariés, CPU/RAM/vidéo/audio/durée comparés, et consigner le résultat réel avant rétention.
+  - [x] Créer temporairement `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFiveQdDividerTiming.cs` : deux cœurs NOS80/VDU80 avec les mêmes DLL ; sur le témoin, actualiser393 à la date déjà atteinte par la carte et retirer le récepteur QD pour restaurer le fil scalaire avant chauffe.20 champs puis3×20 alternés, rendu/audio chronométrés, hashes et CPU/RAM/comptes comparés, cœurs libérés par using. Écrire `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-qd-divider-native.md`, consigner les fenêtres et la décision, puis supprimer ce diagnostic externe et reconstruire sans lui. Aucun gain isolé393 ni cadence100 % sans preuve.
+
+- [x] Finaliser le bloc avant commit.
+  - [x] Supprimer `tests/RetroMediaLab.LocalEmulationTests/Emulation/SystemFiveQdDividerTiming.cs`, reconstruire le projet de tests sans diagnostic externe et consigner le résultat.
+
+## Liaison QD établie — 10 novembre 2026
+Le premier canal du 74LS393 décrit son signal QD au second canal par le raccordement extérieur de la carte. Chaque canal conserve ses phases, compteurs et échéances. Les clears et changements de source révoquent la description et rétablissent les fronts explicites jusqu’à requalification ; les demandes QA du 8271 restent datées.
+
+Validation : 54 contrôles autonomes du 393 réussis, y compris remplacement de période source et reprise explicite ; 157 contrôles System/carte réussis. TRX final : `artifacts/TestsChips/Sn74LS393/Acorn System 5/20261110-qd-periodic-wire-final.trx`.
+
+Comparaison native Debug, mêmes DLL/ROM NOS80/VDU80 et horloges, 20 champs de chauffe puis trois paires alternées de 20 champs :
+
+| Fenêtre | QD scalaire, ms/champ | QD décrit, ms/champ |
+| --- | ---: | ---: |
+| 1 | 55,89058 | 48,50899 |
+| 2 | 57,47379 | 49,64622 |
+| 3 | 56,67139 | 49,60304 |
+| Moyenne | 56,67859 | 49,25275 |
+
+Temps réduit de 13,102 %, soit 40,542 % du nominal et 20,303 champs/s hors interface. Vidéo, audio, durée, registres CPU, RAM et compteurs identiques pour les trois paires. Ce résultat concerne la machine entière, pas un débit isolé du 393. System 5 reste sous la cadence nominale et non terminé. Rapport : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-qd-divider-native.md`.
+
+Diagnostic temporaire supprimé ; reconstruction des tests sans ce fichier réussie : 0 erreur, 4 avertissements préexistants.

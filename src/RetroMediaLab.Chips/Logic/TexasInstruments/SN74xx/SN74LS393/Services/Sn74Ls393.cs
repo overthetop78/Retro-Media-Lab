@@ -19,6 +19,8 @@ public sealed partial class Sn74Ls393 : ISn74Ls393
         internal long Period, HighDuration, NextFall, LastFall;
         internal bool ClockHigh;
         internal bool ClearHigh;
+        internal bool QdPatternActive;
+        internal Action<long, long, long>? QdReceiver;
         internal byte Outputs = initial;
         internal byte Observed = C.OutputMask;
         internal byte EffectiveObserved;
@@ -151,6 +153,7 @@ public sealed partial class Sn74Ls393 : ISn74Ls393
         if (state.ClearHigh == high) return;
         // Check the duration before mutating the input or cancelling pending stages.
         var due = high ? checked(_timeNanoseconds + _clearNanoseconds) : 0;
+        InvalidateQdPattern(state);
         state.ClearHigh = high;
         if (high)
         {
@@ -474,6 +477,7 @@ public sealed partial class Sn74Ls393 : ISn74Ls393
     private void PublishDeadline()
     {
         if (_resolving || _advancingPeriodic) return;
+        UpdateQdPatterns();
         var next = _periodicChannels == 0 ? _nextEvent : InputDeadline();
         if (_publishedDeadline != next)
         {

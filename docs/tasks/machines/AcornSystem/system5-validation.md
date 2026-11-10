@@ -894,3 +894,48 @@ Comparatif natif dans la même DLL Debug : NOS80/VDU80, RAM2000–DFFF,400004 sa
 
 **10,097 % de temps en moins, accélération1,11231×**, champ natif19,968 ms ; **17,01094 champs/s et33,967 % du nominal** en Debug libre hors RML.1 652 598 caractères complets représentés sur les60 champs mesurés. Les trois empreintes vidéo/audio/durée, CPU(registres/cycles), RAM, ticks et compte source sont identiques. Aucun gain isolé attribué au165, aucune fréquence ou option Debug changée. Les deux cœurs sont libérés par using.
 Rapport ignoré : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-settled-characters-native.md. Le diagnostic externe est supprimé après consignation et la DLL de tests reconstruite sans lui. Ce résultat concerne le moniteur sans média ; les tests de transferts disquette ne sont pas une mesure de leur débit. La tentative de paquets dot retirée reste documentée séparément. System5 reste ouvert, environ2,94 fois trop lent ; poursuivre la réduction des autres coûts globaux et les validations avant clôture.
+## Profil global du point537967385 —10 novembre2026
+132 champs NOS80/VDU80 collectés en8022,3786 ms après20 champs de chauffe exclus par MeasureFields ; RunFrame/DrainAudio seuls retenus, Debug IsJITOptimizerDisabled=true. Temps propres attribués une fois au dernier cadre Chips/Acorn ; inclusifs séparés. Le temps échantillonné ne remplace pas le comparatif natif libre58,78570 ms/champ.
+
+| Composant ou raccordement | Temps propre % | ms/champ échantillonné |
+| --- | ---: | ---: |
+|Cpu6502|13.118722|7.971762|
+|Sn74Ls393|13.034641|7.920670|
+|AcornSystemMachine|10.137950|6.160457|
+|SystemVideo|9.182709|5.579992|
+|Vdu80CharacterGenerator|8.428219|5.121517|
+|Crtc6845|6.678423|4.058231|
+|SystemFloppyBoard|6.256530|3.801862|
+|SystemClockGenerator|4.936642|2.999815|
+|Sn74Ls374|4.805275|2.919988|
+|Sn74Ls165|3.794994|2.306077|
+|Sn74Ls138|3.642058|2.213144|
+|SystemFastCpuBus|3.294171|2.001746|
+|Sn74S163PeriodicInputs|3.193014|1.940276|
+|Sn74S163|3.182247|1.933734|
+|Sn74Ls74|2.056062|1.249393|
+|SystemCpuClockControl|1.534578|0.932506|
+|Via6522|1.057170|0.642403|
+|Intel8271|0.863826|0.524915|
+|Mm52116|0.264393|0.160662|
+|Sn74Ls00|0.232401|0.141221|
+|Cd4020B|0.231165|0.140470|
+|SystemKeyboard|0.074810|0.045459|
+| **Total avant arrondi** | **100,000000** | |
+
+Aucune méthode unique ne dépasse3,143 % :393.ResolvePending3,142 %,6502.ExecuteNmosPhase2,749 %,163.ResolveRepresentedClockPeriods2,658 %,374.PublishOutputs2,649 %,6502.ClockNmos2,427 %. Le coût est réparti. Les groupes393(13,035 %) et6502(13,119 %) sont les premiers ; la liaison QD du premier compteur393 vers le second est encore transportée par fronts explicites dans le circuit READY. La prochaine refonte qualifie cette période extérieure dans393, avec ses délais et phases, avant raccordement ; ne pas attribuer13 % de gain sans mesure. Rapports exhaustifs : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-settled-profile-methods.{json,md}.
+## Liaison QD établie — 10 novembre 2026
+Le premier canal du 74LS393 décrit son signal QD au second canal par le raccordement extérieur de la carte. Chaque canal conserve ses phases, compteurs et échéances. Les clears et changements de source révoquent la description et rétablissent les fronts explicites jusqu’à requalification ; les demandes QA du 8271 restent datées.
+
+Validation : 54 contrôles autonomes du 393 réussis, y compris remplacement de période source et reprise explicite ; 157 contrôles System/carte réussis. TRX final : `artifacts/TestsChips/Sn74LS393/Acorn System 5/20261110-qd-periodic-wire-final.trx`.
+
+Comparaison native Debug, mêmes DLL/ROM NOS80/VDU80 et horloges, 20 champs de chauffe puis trois paires alternées de 20 champs :
+
+| Fenêtre | QD scalaire, ms/champ | QD décrit, ms/champ |
+| --- | ---: | ---: |
+| 1 | 55,89058 | 48,50899 |
+| 2 | 57,47379 | 49,64622 |
+| 3 | 56,67139 | 49,60304 |
+| Moyenne | 56,67859 | 49,25275 |
+
+Temps réduit de 13,102 %, soit 40,542 % du nominal et 20,303 champs/s hors interface. Vidéo, audio, durée, registres CPU, RAM et compteurs identiques pour les trois paires. Ce résultat concerne la machine entière, pas un débit isolé du 393. System 5 reste sous la cadence nominale et non terminé. Rapport : `artifacts/TestsMachines/Acorn/Acorn System 5/20261110-qd-divider-native.md`.

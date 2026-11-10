@@ -25,6 +25,7 @@ public interface ISn74Ls393
     void SetClock(int channel, bool high);
     void ConnectPeriodicClock(int channel, long nextFallingNanoseconds, long periodNanoseconds, long highNanoseconds);
     void DisconnectPeriodicClock(int channel);
+    void SetQdPeriodicClockReceiver(int channel, Action<long, long, long>? receiver);
     void SetClear(int channel, bool high);
     void AdvanceTo(long nanoseconds);
     /// <summary>Stable external inputs, integral-nanosecond periods only.

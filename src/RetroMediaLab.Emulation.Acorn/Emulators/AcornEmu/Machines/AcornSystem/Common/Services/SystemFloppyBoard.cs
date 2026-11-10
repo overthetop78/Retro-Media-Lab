@@ -211,6 +211,7 @@ internal sealed partial class SystemFloppyBoard : IDisposable
         _fdc.NextClockEventChanged -= ControllerClockEventChanged;
         _ic8.NextOutputEventNanosecondsChanged = null;
         _ic8.FirstQaClockReached = null;
+        _ic8.SetQdPeriodicClockReceiver(0, null);
         _ic14.QaPeriodicClockChanged = null;
         _ic14.NextOutputEventNanosecondsChanged = null;
         _ic7.QaPeriodicClockChanged = null;

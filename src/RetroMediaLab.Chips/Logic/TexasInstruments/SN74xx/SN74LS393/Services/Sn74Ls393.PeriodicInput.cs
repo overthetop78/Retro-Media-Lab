@@ -22,6 +22,7 @@ public sealed partial class Sn74Ls393
             throw new ArgumentOutOfRangeException(nameof(nextFallingNanoseconds));
         if (ClockLevel(state) != (nextFallingNanoseconds - _timeNanoseconds <= highNanoseconds))
             throw new ArgumentException("The waveform must preserve the received CLK level.");
+        InvalidateQdPattern(state);
         state.Period = periodNanoseconds;
         state.HighDuration = highNanoseconds;
         state.NextFall = nextFallingNanoseconds;
@@ -33,6 +34,7 @@ public sealed partial class Sn74Ls393
     {
         var state = Get(channel);
         if (state.Period == 0) return;
+        InvalidateQdPattern(state);
         state.ClockHigh = ClockLevel(state);
         state.Period = state.NextFall = 0;
         _periodicChannels &= (byte)~(1 << channel);
@@ -97,6 +99,7 @@ public sealed partial class Sn74Ls393
 
     private bool TrySkipUnobservedInputPeriods(long target)
     {
+        if (_periodicChannels == 3) return TrySkipPairedInputPeriods(target);
         if (_periodicChannels is 0 or 3 || _nextEvent != 0 || target < _maximumRippleNanoseconds) return false;
         var channel = _periodicChannels == 1 ? 0 : 1;
         var state = _channels[channel];
@@ -130,6 +133,64 @@ public sealed partial class Sn74Ls393
         state.NextFall = Future(last, state.Period);
         _timeNanoseconds = checked(last + _maximumRippleNanoseconds);
         return true;
+    }
+
+    private bool TrySkipPairedInputPeriods(long target)
+    {
+        if (_nextEvent != 0 || _nextEventChanged is not null || target < _maximumRippleNanoseconds) return false;
+        var end = target;
+        for (var channel = 0; channel < C.Channels; channel++)
+        {
+            var state = _channels[channel];
+            if (state.Period < _maximumRippleNanoseconds || state.NextFall == 0) return false;
+            if (state.ClearHigh) continue;
+            var observed = state.EffectiveObserved;
+            if (observed != 0)
+            {
+                var step = observed & -observed;
+                var clocks = step - (state.Outputs & (step - 1));
+                var at = FutureOutputTime(state, clocks, 0);
+                if (at != 0) end = Math.Min(end, at);
+            }
+            var needed = state.RequestedQaClock - state.QaRises;
+            if (needed > 0 && needed <= long.MaxValue / 2
+                && (channel == 0 ? _firstQaClockReached : _secondQaClockReached) is not null)
+            {
+                var clocks = needed * 2 - ((state.Outputs & 1) == 0 ? 1 : 0);
+                var at = FutureOutputTime(state, clocks, 0);
+                if (at != 0) end = Math.Min(end, at);
+            }
+        }
+        var limit = end - _maximumRippleNanoseconds;
+        if (limit < _timeNanoseconds) return false;
+        var first = _channels[0]; var second = _channels[1];
+        var a = first.NextFall <= limit ? (limit - first.NextFall) / first.Period + 1 : 0;
+        var b = second.NextFall <= limit ? (limit - second.NextFall) / second.Period + 1 : 0;
+        if ((a | b) == 0) return false;
+        ValidateRepresentedPeriods(first, a); ValidateRepresentedPeriods(second, b);
+        ApplyRepresentedPeriods(first, a); ApplyRepresentedPeriods(second, b);
+        _timeNanoseconds = limit;
+        return true;
+    }
+
+    private static void ValidateRepresentedPeriods(Channel state, long periods)
+    {
+        _ = checked(state.Clocks + periods);
+        if (!state.ClearHigh) _ = checked(state.QaRises + periods / 2
+            + (((periods & 1) != 0 && (state.Outputs & 1) == 0) ? 1 : 0));
+    }
+
+    private static void ApplyRepresentedPeriods(Channel state, long periods)
+    {
+        if (periods == 0) return;
+        state.Clocks += periods;
+        if (!state.ClearHigh)
+        {
+            state.QaRises += periods / 2 + (((periods & 1) != 0 && (state.Outputs & 1) == 0) ? 1 : 0);
+            state.Outputs = (byte)((state.Outputs + (periods & C.OutputMask)) & C.OutputMask);
+        }
+        state.LastFall = state.NextFall + (periods - 1) * state.Period;
+        state.NextFall = Future(state.LastFall, state.Period);
     }
 
     private long ConnectedDeadline()

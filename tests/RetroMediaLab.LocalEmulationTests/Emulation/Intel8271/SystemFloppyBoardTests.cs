@@ -8,6 +8,44 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class SystemFloppyBoardTests
 {
     [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void DescribedDividerQdPreservesReadyTimeoutControllerClocksAndDeselection(int drive)
+    {
+        var chip = new Fdc8271(2_000_000); var referenceChip = new Fdc8271(2_000_000);
+        using var card = new SystemFloppyBoard(chip); using var reference = new SystemFloppyBoard(referenceChip);
+        Divider(reference).SetQdPeriodicClockReceiver(0, null);
+        var actualClock = new ClockWire(card, periodic: true); var expectedClock = new ClockWire(reference, periodic: true);
+        void Advance(long time)
+        {
+            actualClock.AdvanceTo(time); expectedClock.AdvanceTo(time);
+            Divider(card).AdvanceTo(time); Divider(reference).AdvanceTo(time);
+            Assert.Equal(reference.Ready0, card.Ready0); Assert.Equal(reference.Ready1, card.Ready1);
+            Assert.Equal(reference.Nmi, card.Nmi); Assert.Equal(referenceChip.InputClockCount, chip.InputClockCount);
+            for (var channel = 0; channel < 2; channel++)
+            {
+                Assert.Equal(Divider(reference).GetOutputs(channel), Divider(card).GetOutputs(channel));
+                Assert.Equal(Divider(reference).GetInputClockCount(channel), Divider(card).GetInputClockCount(channel));
+                Assert.Equal(Divider(reference).GetQaRisingClockCount(channel), Divider(card).GetQaRisingClockCount(channel));
+            }
+        }
+        Advance(4_000);
+        var selected = (byte)((drive == 0 ? H.Drive0Select : H.Drive1Select) | H.OutputLoadHead);
+        WriteSpecial(chip, H.DriveOutput, selected); WriteSpecial(referenceChip, H.DriveOutput, selected);
+        Advance(6_000);
+        foreach (var (time, level) in new (long, bool)[] { (10_000, false), (20_000, true), (30_000, false), (333_000_000, true), (333_001_000, false) })
+        {
+            Advance(time); card.SetIndexLevel(level); reference.SetIndexLevel(level); Advance(time + 100);
+        }
+        WriteSpecial(chip, H.DriveOutput, 0); WriteSpecial(referenceChip, H.DriveOutput, 0);
+        Advance(333_003_000);
+        chip.Write(0, H.DriveStatus); referenceChip.Write(0, H.DriveStatus);
+        Advance(333_005_000);
+        Assert.Equal(referenceChip.Read(0), chip.Read(0)); Assert.Equal(referenceChip.Read(1), chip.Read(1));
+        Assert.False(drive == 0 ? card.Ready0 : card.Ready1);
+    }
+
+    [Theory]
     [InlineData(1)]
     [InlineData(6)]
     [InlineData(26)]

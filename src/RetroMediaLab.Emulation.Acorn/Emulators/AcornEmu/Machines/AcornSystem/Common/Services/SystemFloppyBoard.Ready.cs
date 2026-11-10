@@ -8,6 +8,7 @@ internal sealed partial class SystemFloppyBoard
     private long _controllerClockOrigin, _controllerClockCount;
     private bool _synchronizingController;
     private bool _controllerTimingPending;
+    private bool _dividerCascadeDescribed;
 
     internal bool CpuClockCanRunIndependently => !_disposed && !_controllerTimingPending;
 
@@ -53,8 +54,26 @@ internal sealed partial class SystemFloppyBoard
         ControllerClockEventChanged(_fdc.NextClockEvent);
         _ic8.FirstOutputsChanged = (levels, changed) =>
         {
-            if ((changed & C.Qd) != 0) _ic8.SetClock(1, (levels & C.Qd) != 0);
+            if (!_dividerCascadeDescribed && (changed & C.Qd) != 0) _ic8.SetClock(1, (levels & C.Qd) != 0);
         };
+        _ic8.SetQdPeriodicClockReceiver(0, (fall, period, high) =>
+        {
+            if (_disposed) return;
+            if (period == 0)
+            {
+                _ic8.DisconnectPeriodicClock(1);
+                _dividerCascadeDescribed = false;
+                _ic8.SetObservedOutputs(0, C.Qd);
+            }
+            else
+            {
+                // Actual external IC8/6 -> IC8/13 wire. Each channel still
+                // owns its count, phase and ripple; only transport is represented.
+                _ic8.ConnectPeriodicClock(1, fall, period, high);
+                _dividerCascadeDescribed = true;
+                _ic8.SetObservedOutputs(0, 0);
+            }
+        });
         _ic8.SecondOutputsChanged = (levels, _) =>
         {
             _ic9.AdvanceTo(_time);
