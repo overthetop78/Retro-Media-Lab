@@ -4,6 +4,8 @@ internal static class SystemFloppyBoardConstants
 {
     internal const int Clock4MHz = 4_000_000;
     internal const int ControllerClock = 2_000_000;
+    // One real CKB period of IC7 (external QA wire, after the two /2 stages).
+    internal const long SeparatorHistoryNanoseconds = 4_000_000_000L / Clock4MHz;
     internal const int DividerSecondClock = 250_000;
     internal const int ReadyClock = 15_625;
     internal const int IndexClock = 5; // Nominal200 ms per revolution; input edges remain external.

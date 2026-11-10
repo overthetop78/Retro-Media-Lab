@@ -40,24 +40,26 @@ internal sealed partial class SystemFloppyBoard : IDisposable
     private long _time, _next, _publishedNext;
     private int _nextPart;
     private bool _advancing, _disposed;
+    private readonly bool _groupStableSeparator;
 
-    internal SystemFloppyBoard(IIntel8271 controller)
+    internal SystemFloppyBoard(IIntel8271 controller, bool groupStableSeparator = true)
     {
         ArgumentNullException.ThrowIfNull(controller);
         if (controller.InputClockFrequency != C.ControllerClock || controller.ControllerClockFrequency != C.ControllerClock)
             throw new ArgumentException("This board clocks its 8271 from the physical 2 MHz divider output.", nameof(controller));
         _fdc = controller;
+        _groupStableSeparator = groupStableSeparator;
         _ic2.NextEventNanosecondsChanged = next => RememberDeadline(C.Control, next);
         _ic3.NextEventNanosecondsChanged = next => RememberDeadline(C.Interrupt, next);
         _ic4.NextEventNanosecondsChanged = next => RememberDeadline(C.Decode, next);
         _ic5.NextEventNanosecondsChanged = next => RememberDeadline(C.Drive, next);
         _ic6.NextEventNanosecondsChanged = next => RememberDeadline(C.Write, next);
-        _ic7.NextOutputEventNanosecondsChanged = next => RememberDeadline(C.Separator, next);
+        _ic7.NextOutputEventNanosecondsChanged = next => { if (!_separatorRestoring) RememberDeadline(C.Separator, next); };
         _ic8.NextOutputEventNanosecondsChanged = next => RememberDeadline(C.Divider, next);
         _ic9.NextEventNanosecondsChanged = next => RememberDeadline(C.Timeout, next);
         _ic10.NextEventNanosecondsChanged = next => RememberDeadline(C.Ready1, next);
         _ic11.NextEventNanosecondsChanged = next => RememberDeadline(C.Ready0, next);
-        _ic12.NextEventNanosecondsChanged = next => RememberDeadline(C.Latch, next);
+        _ic12.NextEventNanosecondsChanged = next => { if (!_separatorRestoring) RememberDeadline(C.Latch, next); };
         _ic14.NextOutputEventNanosecondsChanged = next => RememberDeadline(C.Predivider, next);
         WireBus(); WireReady(); WireSeparator(); WireDrive();
         _fdc.DriveSignalsChanged += ControllerDriveChanged;

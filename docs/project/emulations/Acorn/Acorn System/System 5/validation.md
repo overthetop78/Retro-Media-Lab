@@ -453,3 +453,57 @@ NOS80/VDU80,400004 sans média,20 champs de chauffe exclus par la pile de mesure
 | **Total avant arrondi** | **100,000000** |
 Méthodes principales :163.ResolveRepresentedClockPeriods4,0013 %,VDU.AdvanceStableDotClockPeriods3,9902 %,93.SkipUnobservedCka3,2391 %,163.Capture2,8481 %,393.TryGetQaRisingClockCountAt2,7910 %,93.AdvancePeriodicInputs2,7788 %. Aucune méthode unique ne porte le retard global. Le coût suit encore les très petites plages d'avance imposées par les frontières de raccordement. La prochaine refonte doit regrouper ces plages entre interactions établies, avec capacités locales de calcul de plages longues et conservation des observables ; aucune accélération supplémentaire déjà obtenue n'est annoncée. Rapports exhaustifs : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-post-refactor-profile-methods.{json,md}.
 
+
+## Préfixes privés CPU et rattrapage indépendant —10 novembre2026
+Le raccordement de la refonte est réalisé : les vrais cycles PH0 du6502 et les phases VIA restent consommés, mais la propagation répétée du bus désélectionné et la résolution du réseau source sont différées sur un préfixe privé. Chaque accès préparé est qualifié avant son exécution ; VDU/VIA/8271, contrôleur actif, WAIT/DMA, bande active, événement lecteur et fin de ligne bornent ou refusent ce préfixe. Le contrôleur WAIT/READY et les trois163 retrouvent leurs états canoniques, puis la carte disquette est actualisée avant le prochain accès. Le rendu rejoue tous les effets dot/caractère/ROM/curseur, sans omettre de pixels.
+Les8 tests autonomes de préfixe passent (1 s) : CPU/RAM, vidéo/audio, durées et comptes source/contrôleur, VIA IRQ, NMI déjà reçu, commande8271, WAIT/DMA puis reprise et modes progressif/entrelacé. Le premier passage System/carte a réussi143 contrôles en17 s avant l'ajout des3 cas WAIT/DMA/NMI ; ils sont vérifiés séparément, pas présentés comme un nouveau passage146 complet.
+Comparaison native appariée dans le même processus :20 champs de chauffe puis3×20, ordre alterné, vidéo et DrainAudio chronométrés ; empreintes hors chronométrage. Même DLL Debug et même matériel ; GroupPrivateClockPeriods=false conserve exactement le parcours de référence, true sélectionne le préfixe. Aucune fréquence ni option de compilation changée.
+
+| NOS80/VDU80,400004 sans média | Référence ms/champ | Préfixes ms/champ |
+| --- | ---: | ---: |
+| Fenêtre1 |113,87665|90,56639|
+| Fenêtre2 |107,58486|101,05664|
+| Fenêtre3 |111,78969|84,68701|
+| **Moyenne** | **111,08373** | **92,10335** |
+
+**17,087 % de temps en moins,21,680 % du nominal**, champ matériel19,968 ms, soit10,858 champs/s hors RML.1 708 870 périodes CPU privées représentées sur les60 champs mesurés. Les trois empreintes vidéo/audio/durées sont identiques, ainsi que CPU, RAM, ticks et compte source. Les fenêtres fluctuent ; le résultat moyen ne doit pas être remplacé par la meilleure fenêtre.
+Second scénario autonome (vrai code6502 avec lectures statut8271/VIA, écrituresVDU, timerVIA et entrelacement) :1,80676→1,40747 ms/champ,22,100 % de réduction,25 291 périodes représentées. Sa programmation CRTC produit des champs courts de0,252 ms :17,904 % nominal, ce n'est ni un écran50 Hz ni une preuve de vitesse d'un logiciel chargé depuis disquette.
+Rapport ignoré : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-private-prefix-native.md. Les deux cœurs sont libérés par using même après assertion. Ce gain reste insuffisant pour terminer System5 : environ4,61 fois trop lent sur le moniteur NOS80. La poursuite doit traiter les coûts restants du parcours complet ; aucun gain attribué isolément au6502, au163, auCRTC ou au8271.
+## Profil global après préfixes privés —10 novembre2026
+90 champs complets NOS80/VDU80 collectés en8055,1607 ms après20 champs de chauffe exclus par la pile MeasureFields. Debug IsJITOptimizerDisabled=true ; RunFrame et DrainAudio inclus. Les durées profilées ne remplacent pas le comparatif apparié libre92,10335 ms/champ. Les temps propres sont disjoints ; les inclusifs restent séparés.
+
+| Groupe | Temps propre % |
+| --- | ---: |
+|Sn74Ls93|15.791127|
+|Others|15.648810|
+|Vdu80CharacterGenerator|10.952126|
+|Sn74Ls393|9.455014|
+|SystemFloppyBoard|8.774869|
+|Cpu6502|8.431855|
+|SystemVideo|7.215915|
+|AcornSystemMachine|6.647136|
+|Sn74Ls165|5.513124|
+|Crtc6845|4.222328|
+|SystemClockGenerator|3.727101|
+|Sn74S163|2.157195|
+|Via6522|0.789915|
+|Intel8271|0.673485|
+| **Total avant arrondi** | **100,000000** |
+
+Principales méthodes : VDU.AdvanceStableDotClockPeriods5,192 %,93.AdvancePeriodicInputs3,926 %,93.SkipUnobservedCka3,591 %,carte.RememberDeadline2,870 %,93.PublishDeadline2,421 %,Video.AdvanceMonochromePeriods2,310 %. Les détails exhaustifs, y compris les15,649 % classés Autres (374, tables163,138,00, bus et autres méthodes), restent dans le JSON/Markdown de preuve : aucun80 % manquant ni addition des inclusifs.
+La chaîne93+393+carte représente34,021 % ; vidéo+VDU+165+CRTC27,903 %. Source+163 représente5,884 %, contre14,424 % dans le profil précédent : les préfixes réduisent effectivement ce poste. Les répartitions sont statistiques et les pourcentages relatifs ne sont pas des gains appariés. Aucun poste seul ne suffit à garantir50 % de réduction totale. Prochaine analyse : qualifier les interactions externes réellement nécessaires de la chaîne disquette avant de remplacer son transport interne répétitif ; examiner ensuite le parcours vidéo complet.
+Rapports persistants ignorés : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-private-prefix-profile-methods.{json,md}. Cœur et processus possédés fermés/attendus ; dossier de profilage temporaire retiré après analyse.
+## Bloc séparateur différé retenu —10 novembre2026
+Après correction de la restauration, **153 contrôles System/carte réussissent**, zéro échec/ignoré,18 s. Cela conserve notamment les lectures/écritures/relectures8271 et les horloges/WAIT/DMA ; les7 nouveaux cas balayent3031 chronologies de pulses et comparent chaque transition DATA WINDOW datée. Le contrôle préexistant qui observe explicitement toutes les lignes internes QB/QD conserve le transport complet dans ses deux témoins ; ses assertions de niveaux/dates sont inchangées.
+Comparaison native appariée NOS80/VDU80, RAM2000–DFFF et400004 sans média :20 champs de chauffe puis3×20 en ordre alterné, rendu et DrainAudio chronométrés, empreintes hors temps. Même DLL Debug, fréquences et matériel ; seul le sélecteur interne de représentation du séparateur diffère. Les deux chemins conservent les préfixes privés précédemment vérifiés.
+
+| Fenêtre | Transport complet ms/champ | Séparateur différé ms/champ |
+| --- | ---: | ---: |
+|1|84,69996|67,00028|
+|2|87,45087|65,77199|
+|3|85,40294|65,41775|
+| **Moyenne** | **85,85126** | **66,06334** |
+
+**23,049 % de temps en moins, accélération1,29953×**, champ matériel19,968 ms ; **15,13699 champs/s et30,226 % nominal** en Debug natif libre, hors RML. Les trois empreintes vidéo/audio/durées sont identiques, ainsi que CPU(registres/cycles), RAM, ticks et compte source. Le latch est effectivement en état différé en fin de mesure ; ce n'est pas un chemin non utilisé.
+La référence de ce passage inclut déjà la correction de phaseQA et le helper93 courant : les85,85126 ms ne remplacent pas rétroactivement les92,10335 ms du passage précédent. Seul le gain apparié23,049 % est attribué à cette sélection de parcours. Aucune mesure isolée de puce n'est déduite.
+Rapport ignoré : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-deferred-separator-native.md. Les deux cœurs sont libérés par using après assertions. Le logiciel de mesure temporaire est ensuite supprimé et les tests reconstruits sans lui. Les opérations disquette sont couvertes par les tests de fonctionnement, mais ce relevé de vitesse concerne le moniteur sans média, pas le formatage ou un chargement. System5 demeure ouvert, environ3,31 fois trop lent ; la suite doit traiter le parcours vidéo et les autres coûts globaux, sans réduire les fonctionnalités.

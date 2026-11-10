@@ -7,6 +7,53 @@ public sealed class Sn74Ls93Tests
 {
     private static Sn74Ls93 Create(byte initial = 0) => new(4_000_000, 2_000_000, initial, Sn74Ls93Timing.CalculatedTypical);
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(17)]
+    [InlineData(79)]
+    public void UnobservedIndependentSectionsMatchExplicitEdgesAndResumeTheirPartialRipple(int phase)
+    {
+        for (byte seed = 0; seed < 16; seed++)
+        {
+            var chip = Create(seed); var reference = Create(seed);
+            chip.SetObservedOutputs(0);
+            chip.SetClock(0, true); reference.SetClock(0, true);
+            chip.SetClock(1, true); reference.SetClock(1, true);
+            chip.ConnectPeriodicClock(0, 125, 250, 125);
+            chip.ConnectPeriodicClock(1, 250 - phase, 500, 250);
+            long nextA = 125, nextB = 250 - phase;
+            bool a = true, b = true;
+            void Advance(long target)
+            {
+                while (Math.Min(nextA, nextB) <= target)
+                {
+                    var at = Math.Min(nextA, nextB); reference.AdvanceTo(at);
+                    if (at == nextA) { a = !a; reference.SetClock(0, a); nextA += 125; }
+                    if (at == nextB) { b = !b; reference.SetClock(1, b); nextB += 250; }
+                }
+                reference.AdvanceTo(target); chip.AdvanceTo(target);
+                Assert.Equal(reference.Outputs, chip.Outputs);
+                var nextFallA = a ? nextA : nextA + 125;
+                var nextFallB = b ? nextB : nextB + 250;
+                Assert.Equal(Math.Min(reference.NextEventNanoseconds ?? long.MaxValue, Math.Min(nextFallA, nextFallB)), chip.NextEventNanoseconds);
+                for (var clock = 0; clock < 2; clock++)
+                {
+                    Assert.Equal(reference.GetInputClockCount(clock), chip.GetInputClockCount(clock));
+                    Assert.Equal(reference.GetClock(clock), chip.GetClock(clock));
+                }
+            }
+            foreach (var target in new long[] { 7, 125, 135, 251, 263, 3_017, 100_001, 100_011 }) Advance(target);
+            reference.SetResets(true, true); chip.SetResets(true, true);
+            Advance(110_012); reference.SetResets(false, false); chip.SetResets(false, false);
+            Advance(120_023);
+            var actual = new List<(long, byte, byte)>(); var expected = new List<(long, byte, byte)>();
+            chip.OutputsChanged = (levels, changed) => actual.Add((chip.TimeNanoseconds, levels, changed));
+            reference.OutputsChanged = (levels, changed) => expected.Add((reference.TimeNanoseconds, levels, changed));
+            chip.SetObservedOutputs(15); Advance(125_000);
+            Assert.Equal(expected, actual);
+        }
+    }
+
     [Fact]
     public void ExternalPeriodicQaToCkbWireMatchesTheScalarCascadeAndReset()
     {
@@ -40,7 +87,7 @@ public sealed class Sn74Ls93Tests
             chip.SetClock(0, true); scalar.SetClock(0, true);
             chip.ConnectPeriodicClock(0, 125, 250, 125);
             long previous = 0;
-            foreach (var end in new long[] { 711, 717, 1_233, 1_259, 10_000, 10_100, 50_000 })
+            foreach (var end in new long[] { 711, 717, 1_233, 1_259, 10_000, 10_100, 30_380, 30_880, 50_000 })
             {
                 for (var time = previous + 1; time <= end; time++)
                 {
@@ -51,7 +98,7 @@ public sealed class Sn74Ls93Tests
                 Assert.Equal(scalar.Outputs, chip.Outputs);
                 Assert.Equal(scalar.GetInputClockCount(0), chip.GetInputClockCount(0));
                 Assert.Equal(scalar.GetInputClockCount(1), chip.GetInputClockCount(1));
-                var reset = end is 711 or 1_233 or 10_000;
+                var reset = end is 711 or 1_233 or 10_000 or 30_380;
                 scalar.SetResets(reset, reset); chip.SetResets(reset, reset);
                 previous = end;
             }

@@ -37,3 +37,15 @@ Rapports : artifacts/TestsMachines/Acorn/Acorn System 5/20261110-observable93-{r
 - [x] Réduire le transport interne de la chaîne raccordée sans ajouter de cascade implicite.
   - [x] Modifier `Services/Sn74Ls93.PeriodicInput.cs` : borner le calcul direct CKA à la prochaine entrée indépendante CKB, conserver les propagations encore inachevées. Modifier `Services/Sn74Ls93.PeriodicOutput.cs` : pour QA représenté et non observé explicitement, annoncer les réponses restantes et les fronts CKB concernés, sans réveil de carte pour chaque CKA. Les chemins restent dans le dossier SN74LS93 existant.
   - [x] Modifier `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74LS93/Sn74Ls93Tests.cs` : câble externe explicite QA→CKB par description, trace QB/QC/QD équivalente pour les seize graines, resets en propagation et états différés ; consigner dans `docs/chips/Logic/Sn74LS93.md` les résultats avant raccordement à la carte.
+
+## Sections périodiques sans sortie observée —10 novembre2026
+- [x] Terminer le calcul direct des deux sections pour les plages sans effet raccordé.
+  - [x] Modifier `Services/Sn74Ls93.PeriodicInput.cs` : résoudre les fronts entièrement établis par les périodes CKA/CKB, modulo2 et8, sans relation implicite entre les entrées. Garder les réponses encore partielles sur le chemin ordinaire ; refuser le regroupement si une sortie ou une échéance interne est observée, si un carry reste ou si la période permet un chevauchement des réponses. Prévalider les deux comptes avant mutation. Modifier `Sn74Ls93.PeriodicOutput.cs` : ne pas annoncer de réveil extérieur pour une sortie non observée dont le fil QA est déjà décrit ; conserver les échéances de rétablissement d'une description annulée.
+  - [x] Compléter `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74LS93/Sn74Ls93Tests.cs` : oracle de fronts explicites, toutes graines et phases, deux périodes indépendantes, cibles partielles et longues, reprise/reset et observation réactivée ; consigner résultats et limites avant raccordement de la carte, sans mesure isolée intermédiaire.
+
+### Frontière de rétablissement après reset révélée par les pulses de carte
+- [x] Corriger la qualification de la description avant de retenir la reprise du séparateur.
+  - [x] Modifier `Services/Sn74Ls93.PeriodicOutput.cs` : ne publier la période QA que si sa phase est déjà établie depuis le niveau actuel, la prochaine descente et le rapport cyclique réel. Après un reset asynchrone, conserver les fronts explicites pendant le premier intervalle tronqué ; ne modifier aucun front ni délai. Compléter `Sn74Ls93Tests.cs` pour les phases de libération du reset et une entrée réceptrice qui vérifie la cohérence de la période annoncée ; consigner puis reprendre les tests de carte.
+
+### Preuve conservée et raccordement mesuré
+- [x] Créer `artifacts/TestsChips/Sn74LS93/Acorn System 5/20261110-unobserved-sections.md` avec le résultat des23 contrôles exécutés, leurs conditions et le chemin du rapport global ; compléter la fiche93 avec la mesure appariée du bloc carte sans attribuer de gain isolé à la puce.

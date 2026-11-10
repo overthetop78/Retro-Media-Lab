@@ -66,7 +66,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine, IDisp
 
     internal AcornSystemMachine(SystemCpuCard card, ReadOnlySpan<byte> rom, ReadOnlySpan<byte> characters,
         IReadOnlyList<(int Start, int Bytes)> ramCards, bool diskInterface, ReadOnlySpan<byte> basic = default,
-        IReadOnlyList<int>? floppyHeads = null)
+        IReadOnlyList<int>? floppyHeads = null, bool groupStableSeparator = true)
     {
         _card = card;
         if (card is SystemCpuCard.Keypad6502 or SystemCpuCard.Standard6502) _ramIo = new RamIo8154();
@@ -150,7 +150,7 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine, IDisp
             _fdc = new Intel8271(_clock);
             if (card == SystemCpuCard.Fast6502A)
             {
-                _floppyBoard = new SystemFloppyBoard(_fdc);
+                _floppyBoard = new SystemFloppyBoard(_fdc, groupStableSeparator);
                 _floppyConnector = new SystemFloppyDrive(_floppyBoard, floppyHeads);
             }
             else _fdcDrive = new(_fdc, index => _disks[index], _clock);

@@ -10,6 +10,47 @@ namespace RetroMediaLab.Tests.Emulation;
 public sealed class AcornEmuSystemPrivateClockTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WaitOrDmaKeepsTheOrdinaryPathAndResumesAtTheSameCpuPhase(bool dma)
+    {
+        using var actual = Create(true, true, 3); using var reference = Create(true, true, 3);
+        reference.GroupPrivateClockPeriods = false;
+        foreach (var machine in new[] { reference, actual })
+        {
+            var control = Field<SystemCpuClockControl>(machine, "_fastCpuClock");
+            if (dma) control.SetBusRequest(false); else control.SetMemoryReady(false);
+            for (var i = 0; i < 4; i++) machine.Tick();
+        }
+        var represented = actual.RepresentedPrivateClockPeriods;
+        CompareFields(reference, actual, 3);
+        Assert.Equal(represented, actual.RepresentedPrivateClockPeriods);
+        foreach (var machine in new[] { reference, actual })
+        {
+            var control = Field<SystemCpuClockControl>(machine, "_fastCpuClock");
+            if (dma) control.SetBusRequest(true); else control.SetMemoryReady(true);
+        }
+        CompareFields(reference, actual, 8);
+        Assert.True(actual.RepresentedPrivateClockPeriods > represented);
+    }
+
+    [Fact]
+    public void PendingDiskCommandAndNmiKeepTheirEffectsBeforePrivateCyclesResume()
+    {
+        using var actual = Create(true, true, 3); using var reference = Create(true, true, 3);
+        reference.GroupPrivateClockPeriods = false;
+        foreach (var machine in new[] { reference, actual })
+        {
+            var controller = Field<RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services.Intel8271>(machine, "_fdc");
+            controller.Write(0, 0x52); controller.Write(1, 0); controller.Write(1, 1);
+            Field<Cpu6502>(machine, "_cpu6502").SetNmi(true);
+        }
+        CompareFields(reference, actual, 8);
+        Assert.Equal(Field<RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services.Intel8271>(reference, "_fdc").Nmi,
+            Field<RetroMediaLab.Chips.Controllers.Intel.FDC.Chip8271.Services.Intel8271>(actual, "_fdc").Nmi);
+    }
+
+    [Theory]
     [InlineData(false, false, 0)]
     [InlineData(true, false, 0)]
     [InlineData(true, true, 0)]
@@ -19,7 +60,14 @@ public sealed class AcornEmuSystemPrivateClockTests
     {
         using var actual = Create(disk, timer, mode); using var reference = Create(disk, timer, mode);
         reference.GroupPrivateClockPeriods = false;
-        for (var field = 0; field < 8; field++)
+        CompareFields(reference, actual, 8);
+        Assert.True(actual.RepresentedPrivateClockPeriods > 0);
+        Assert.Equal(0, reference.RepresentedPrivateClockPeriods);
+    }
+
+    private static void CompareFields(AcornSystemMachine reference, AcornSystemMachine actual, int count)
+    {
+        for (var field = 0; field < count; field++)
         {
             Assert.Equal(reference.RunFrame(), actual.RunFrame());
             Assert.Equal(reference.DrainAudio(), actual.DrainAudio());
@@ -37,8 +85,6 @@ public sealed class AcornEmuSystemPrivateClockTests
             Assert.Equal(expectedClock.InputClockCount, clock.InputClockCount);
             Assert.Equal(expectedClock.CpuClockCount, clock.CpuClockCount);
         }
-        Assert.True(actual.RepresentedPrivateClockPeriods > 0);
-        Assert.Equal(0, reference.RepresentedPrivateClockPeriods);
     }
 
     private static AcornSystemMachine Create(bool disk, bool timer, byte mode)

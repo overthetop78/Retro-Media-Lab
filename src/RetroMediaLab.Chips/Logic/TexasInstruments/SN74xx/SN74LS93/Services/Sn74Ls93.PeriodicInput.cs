@@ -70,6 +70,7 @@ public sealed partial class Sn74Ls93
         {
             while (true)
             {
+                if (SkipUnobservedSections(target)) continue;
                 if (SkipUnobservedCka(target)) continue;
                 var fall = EarlierInput(_inputFall[0], _inputFall[1]);
                 if (_next != 0 && _next <= target && (fall == 0 || _next <= fall))
@@ -122,5 +123,43 @@ public sealed partial class Sn74Ls93
         _inputFall[0] = _inputPeriod[0] > long.MaxValue - last ? 0 : last + _inputPeriod[0];
         _time = last + Math.Max(_rise[0], _fall[0]);
         return true;
+    }
+
+    private bool SkipUnobservedSections(long target)
+    {
+        if (_observed != 0 || _nextChanged is not null || _pending != 0
+            || (_qaPatternChanged is not null && !_qaPatternActive && _resets != 3)) return false;
+        var settle = Math.Max(Math.Max(_rise[0], _fall[0]),
+            Math.Max(_rise[1], _fall[1]) + Math.Max(_rise[2], _fall[2]) + Math.Max(_rise[3], _fall[3]));
+        if (target < settle || target - settle < _time) return false;
+        for (var clock = 0; clock < 2; clock++)
+            if (_inputPeriod[clock] != 0 && _inputPeriod[clock] <= settle) return false;
+        var limit = target - settle;
+        long first = 0, second = 0;
+        if (_inputFall[0] != 0 && _inputFall[0] <= limit) first = (limit - _inputFall[0]) / _inputPeriod[0] + 1;
+        if (_inputFall[1] != 0 && _inputFall[1] <= limit) second = (limit - _inputFall[1]) / _inputPeriod[1] + 1;
+        if ((first | second) == 0) return false;
+        var countA = checked(_counts[0] + first); var countB = checked(_counts[1] + second);
+        if (_resets != 3)
+        {
+            var qa = (_outputs ^ (first & 1)) & 1;
+            var section = ((_outputs >> 1) + (second & 7)) & 7;
+            _outputs = _targets = (byte)(qa | (section << 1));
+        }
+        _counts[0] = countA; _counts[1] = countB;
+        AdvanceInput(0, first); AdvanceInput(1, second);
+        // Sections have no internal connection. Any response represented here
+        // finishes before target and before the next edge of its own section.
+        // Leave the final partial periods to the ordinary ripple resolver.
+        _time = limit;
+        return true;
+    }
+
+    private void AdvanceInput(int clock, long periods)
+    {
+        if (periods == 0) return;
+        var last = _inputFall[clock] + (periods - 1) * _inputPeriod[clock];
+        _lastInputFall[clock] = last;
+        _inputFall[clock] = _inputPeriod[clock] > long.MaxValue - last ? 0 : last + _inputPeriod[clock];
     }
 }

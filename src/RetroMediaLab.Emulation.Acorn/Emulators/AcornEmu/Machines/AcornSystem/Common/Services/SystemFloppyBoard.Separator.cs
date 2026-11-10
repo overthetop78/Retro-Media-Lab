@@ -7,6 +7,7 @@ internal sealed partial class SystemFloppyBoard
     internal bool? DataWindow => _ic12.GetOutput(2);
     private bool _separatorClockDescribed;
     private bool _separatorCascadeDescribed;
+    private bool _separatorDeferred, _readDataHigh, _separatorRestoring;
 
     private void WireSeparator()
     {
@@ -39,7 +40,7 @@ internal sealed partial class SystemFloppyBoard
         {
             if (!_separatorCascadeDescribed && (changed & C.Qa) != 0) _ic7.SetClock(1, (levels & C.Qa) != 0);
             if ((changed & (C.Qb | C.Qd)) == 0) return;
-            _ic12.AdvanceTo(_time);
+            _ic12.AdvanceTo(_ic7.TimeNanoseconds);
             _ic12.SetInputs(1, (levels & C.Qd) != 0, (levels & C.Qb) != 0);
         };
         // This is the physical external QA->CKB wire, not an implicit cascade
@@ -51,13 +52,13 @@ internal sealed partial class SystemFloppyBoard
             {
                 _ic7.DisconnectPeriodicClock(1);
                 _separatorCascadeDescribed = false;
-                _ic7.SetObservedOutputs(C.Qa | C.Qb | C.Qd);
+                ObserveSeparatorOutputs();
             }
             else
             {
                 _ic7.ConnectPeriodicClock(1, fall, period, high);
                 _separatorCascadeDescribed = true;
-                _ic7.SetObservedOutputs(C.Qb | C.Qd);
+                ObserveSeparatorOutputs();
             }
         };
         _ic12.OutputChanged = (gate, high) =>
@@ -69,14 +70,21 @@ internal sealed partial class SystemFloppyBoard
                     _ic14.AdvanceTo(_time); _ic7.AdvanceTo(_time);
                     _ic14.SetResets(high.Value, high.Value); _ic7.SetResets(high.Value, high.Value);
                     break;
-                case 1: _ic12.SetInputA(2, high); break; // 6->9.
+                case 1:
+                    _ic12.SetInputA(2, high); // 6->9.
+                    DeferLatchedSeparator();
+                    break;
                 case 2:
                     _ic12.SetInputA(3, high); // 8->12, latch feedback.
                     // This pin only stores the window level. All consumption
                     // remains at the requested 8271 clock or raw-data edge.
                     if (high.HasValue && !_disposed) _fdc.SetDataWindow(high.Value);
+                    DeferLatchedSeparator();
                     break;
-                case 3: _ic12.SetInputB(2, high); break; // 11->10.
+                case 3:
+                    _ic12.SetInputB(2, high); // 11->10.
+                    DeferLatchedSeparator();
+                    break;
             }
         };
     }
@@ -91,11 +99,55 @@ internal sealed partial class SystemFloppyBoard
     internal void SetReadDataLevel(bool nReadData)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        if (!nReadData) ResumeSeparatorInputs();
         _ic12.AdvanceTo(_time);
+        _readDataHigh = nReadData;
         // Raw data reaches pin27 directly; counter resets arrive later through IC12/3.
         SynchronizeController();
         _fdc.SetUnseparatedData(!nReadData);
         _ic12.SetInputs(0, nReadData, nReadData);
         _ic12.SetInputB(3, nReadData);
+    }
+
+    private void ObserveSeparatorOutputs() => _ic7.SetObservedOutputs((byte)
+        ((_separatorCascadeDescribed ? 0 : C.Qa) | (_separatorDeferred ? 0 : C.Qb | C.Qd)));
+
+    private void DeferLatchedSeparator()
+    {
+        if (!_groupStableSeparator || _separatorDeferred || _separatorRestoring || !_readDataHigh
+            || _ic12.NextEventNanoseconds.HasValue
+            || _ic12.GetOutput(2) != true || _ic12.GetOutput(3) != false) return;
+        // Pin11 low forces pin8 high regardless of the periodic QB/QD inputs
+        // of gate1. Their counter state remains in IC7, not in this wire owner.
+        _separatorDeferred = true;
+        ObserveSeparatorOutputs();
+    }
+
+    private void ResumeSeparatorInputs()
+    {
+        if (!_separatorDeferred) return;
+        _separatorRestoring = true;
+        try
+        {
+            _ic14.AdvanceTo(_time);
+            // A complete real CKB period contains a long settled QB/QD interval.
+            // Reconstruct this short tail so gate1's current level AND pending
+            // response match the scalar wire before NRDATA unmasks the latch.
+            // These are independent local times; board/controller time never moves back.
+            var start = Math.Max(Math.Max(_ic7.TimeNanoseconds, _ic12.TimeNanoseconds), _time - C.SeparatorHistoryNanoseconds);
+            _ic7.AdvanceTo(start); _ic12.AdvanceTo(start);
+            var levels = _ic7.Outputs;
+            _ic12.SetInputs(1, (levels & C.Qd) != 0, (levels & C.Qb) != 0);
+            _separatorDeferred = false;
+            ObserveSeparatorOutputs();
+            _ic7.AdvanceTo(_time);
+            _ic12.AdvanceTo(_time);
+        }
+        finally
+        {
+            _separatorRestoring = false;
+            RememberDeadline(C.Separator, _ic7.NextOutputEventNanoseconds);
+            RememberDeadline(C.Latch, _ic12.NextEventNanoseconds);
+        }
     }
 }

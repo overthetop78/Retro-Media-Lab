@@ -46,12 +46,17 @@ public sealed partial class Sn74Ls93
             nextFall = _inputFall[0] + delay;
         }
         var high = inputPeriod + _fall[0] - _rise[0];
+        // An asynchronous clear can truncate the first low interval. Retain
+        // explicit edges until the actual pin belongs to the described phase.
+        var remaining = nextFall - _time;
+        if (remaining > inputPeriod * 2 || ((_outputs & 1) != 0) != (remaining <= high)) return;
         _qaPatternActive = true;
         _qaPatternChanged(nextFall, inputPeriod * 2, high);
     }
 
     private long ConnectedResponseDeadline()
     {
+        if (_observed == 0 && (_qaPatternChanged is null || _qaPatternActive)) return 0;
         // Unobserved QA cannot affect the other section without an external wire.
         // Its waveform recipient carries that wire, so only already pending
         // responses (including asynchronous reset) can require board attention.

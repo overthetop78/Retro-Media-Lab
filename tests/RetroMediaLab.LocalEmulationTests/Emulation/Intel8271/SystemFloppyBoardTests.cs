@@ -7,6 +7,66 @@ namespace RetroMediaLab.Tests.Emulation;
 
 public sealed class SystemFloppyBoardTests
 {
+    [Theory]
+    [InlineData(1)]
+    [InlineData(6)]
+    [InlineData(26)]
+    [InlineData(30)]
+    [InlineData(108)]
+    [InlineData(500)]
+    [InlineData(1700)]
+    public void LatchedSeparatorDeferredInputsPreserveEveryWindowDateAcrossPulsePhases(int width)
+    {
+        for (var phase = 0; phase < 16_000; phase += 37)
+        {
+            var chip = new Fdc8271(2_000_000); var referenceChip = new Fdc8271(2_000_000);
+            using var card = new SystemFloppyBoard(chip);
+            using var reference = new SystemFloppyBoard(referenceChip, groupStableSeparator: false);
+            var actual = new List<(long, bool?)>(); var expected = new List<(long, bool?)>();
+            static void Capture(SystemFloppyBoard board, List<(long, bool?)> trace)
+            {
+                var latch = (RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS00.Services.Sn74Ls00)
+                    typeof(SystemFloppyBoard).GetField("_ic12", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(board)!;
+                var wire = latch.OutputChanged;
+                latch.OutputChanged = (gate, high) =>
+                {
+                    if (gate == 2) trace.Add((board.TimeNanoseconds, high));
+                    wire?.Invoke(gate, high);
+                };
+            }
+            Capture(card, actual); Capture(reference, expected);
+            var clock = new ClockWire(card, periodic: true); var scalar = new ClockWire(reference, periodic: true);
+            void Advance(long at)
+            {
+                try { clock.AdvanceTo(at); }
+                catch (Exception error) { throw new InvalidOperationException($"candidate width={width}, phase={phase}, at={at}", error); }
+                try { scalar.AdvanceTo(at); }
+                catch (Exception error) { throw new InvalidOperationException($"reference width={width}, phase={phase}, at={at}", error); }
+            }
+            foreach (var (time, high) in new (long, bool)[]
+                { (30_000 + phase, false), (30_000 + phase + width, true), (60_000 + phase, false), (60_500 + phase, true) })
+            {
+                Advance(time);
+                card.SetReadDataLevel(high); reference.SetReadDataLevel(high);
+                if (!high)
+                {
+                    static byte Pins(SystemFloppyBoard board) => ((RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS93.Services.Sn74Ls93)
+                        typeof(SystemFloppyBoard).GetField("_ic7", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(board)!).Outputs;
+                    Assert.True((Pins(card) & 10) == (Pins(reference) & 10), $"Counter QB/QD differ: phase={phase}, time={time}, actual={Pins(card)}, expected={Pins(reference)}");
+                }
+            }
+            Advance(90_000);
+            card.SetResetLine(false); reference.SetResetLine(false);
+            Advance(90_100);
+            card.SetResetLine(true); reference.SetResetLine(true);
+            Advance(100_000);
+            Assert.True(expected.SequenceEqual(actual), $"width={width}, phase={phase}: expected {string.Join(';', expected)}, actual {string.Join(';', actual)}");
+            Assert.Equal(reference.DataWindow, card.DataWindow);
+            Assert.Equal(referenceChip.InputClockCount, chip.InputClockCount);
+            Assert.Equal(referenceChip.Nmi, chip.Nmi);
+        }
+    }
+
     [Fact]
     public void IndependentCpuQualificationTracksTheControllersNotifiedTimingState()
     {
@@ -30,7 +90,10 @@ public sealed class SystemFloppyBoardTests
     public void DescribedSeparatorClockPreservesAllDownstreamEdgesAndResetDates()
     {
         var chip = new Fdc8271(2_000_000); var referenceChip = new Fdc8271(2_000_000);
-        using var card = new SystemFloppyBoard(chip); using var reference = new SystemFloppyBoard(referenceChip);
+        // This diagnostic observes the internal QB/QD wires as well as the
+        // external latch. Retain their full transport for both clock sources.
+        using var card = new SystemFloppyBoard(chip, groupStableSeparator: false);
+        using var reference = new SystemFloppyBoard(referenceChip, groupStableSeparator: false);
         var actual = new List<(long, byte, byte)>(); var expected = new List<(long, byte, byte)>();
         var actualNmi = new List<(long, bool?)>(); var expectedNmi = new List<(long, bool?)>();
         static RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS93.Services.Sn74Ls93 Counter(SystemFloppyBoard owner, string name)

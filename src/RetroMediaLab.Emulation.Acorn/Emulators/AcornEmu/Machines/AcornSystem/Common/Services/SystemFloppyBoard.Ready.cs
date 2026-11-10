@@ -28,7 +28,10 @@ internal sealed partial class SystemFloppyBoard
         }
         else qa = _ic8.GetQaRisingClockCount(0);
         var count = checked(_controllerClockOrigin + qa);
-        if (count == _controllerClockCount) return;
+        // An external input can arrive after AdvanceTo has already consumed
+        // the clock at this same date. The exclusive callback view must not
+        // rewind that completed clock; it only prevents consuming it early.
+        if (count <= _controllerClockCount) return;
         _synchronizingController = true;
         try { _fdc.AdvanceTo(count); _controllerClockCount = count; }
         finally { _synchronizingController = false; }
