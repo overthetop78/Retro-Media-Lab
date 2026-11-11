@@ -1,7 +1,7 @@
 # Validation finale des médias et du matériel
 
 Cette liste ne contient que le travail encore actif. Les tâches achevées et leurs résultats sont
-conservés dans [validation-completed.md](validation-completed.md).
+conservés dans validation-completed.md.
 
 Les corpus à auditer en lecture seule sont exactement `F:\Rétro` pour les disquettes,
 `F:\86Box\Isos` pour les CD et images optiques, `C:\Users\overt\Documents\Retro Media Lab\Emulation\HDD`
