@@ -56,7 +56,11 @@ internal sealed partial class Intel8271Drive
         _chip = chip;
         _ownerTick = chip.InputClockCount;
         _nextControllerTick = chip.NextClockEvent ?? long.MaxValue;
-        _chip.NextClockEventChanged += next => _nextControllerTick = next ?? long.MaxValue;
+        _chip.NextClockEventChanged += next =>
+        {
+            _nextControllerTick = next ?? long.MaxValue;
+            PublishClockEvent();
+        };
         _images = images;
         _ownerClock = ownerClock;
         _nanosecondsPerTick = checked((uint)(C.NanosecondsPerSecond / ownerClock));
@@ -66,10 +70,24 @@ internal sealed partial class Intel8271Drive
         _dataWindowThresholdNanoseconds = checked((uint)((long)C.StandardSingleShotWindowNanoseconds
             * H.StandardClock / chipClock));
         _chip.WriteDataChanged += WriteDataChanged;
-        _chip.DriveSignalsChanged += () => { _signalsChanged = true; _trackChanged = true; };
+        _chip.DriveSignalsChanged += () =>
+        {
+            _signalsChanged = true;
+            _trackChanged = true;
+            PublishClockEvent();
+        };
     }
 
     internal void Tick()
+    {
+        // Les utilisateurs unitaires sans écouteur gardent le même parcours direct.
+        if (_clockEventChanged is null) { TickCore(); return; }
+        _clockMutationDepth++;
+        try { TickCore(); }
+        finally { _clockMutationDepth--; PublishClockEvent(); }
+    }
+
+    private void TickCore()
     {
         var elapsed = _nanosecondsPerTick;
         _timeFraction += _nanosecondRemainder;
@@ -79,7 +97,7 @@ internal sealed partial class Intel8271Drive
             elapsed++;
         }
         _time += elapsed;
-        Synchronize();
+        SynchronizeCore();
         if (_readDataHigh)
         {
             SynchronizeClock();
@@ -107,7 +125,7 @@ internal sealed partial class Intel8271Drive
         }
         ++_ownerTick;
         if (_ownerTick >= _nextControllerTick) SynchronizeClock();
-        Synchronize();
+        SynchronizeCore();
     }
 
     internal void SynchronizeClock()
@@ -124,6 +142,13 @@ internal sealed partial class Intel8271Drive
     }
 
     internal void Synchronize()
+    {
+        _clockMutationDepth++;
+        try { SynchronizeCore(); }
+        finally { _clockMutationDepth--; PublishClockEvent(); }
+    }
+
+    private void SynchronizeCore()
     {
         if (!_signalsChanged)
         {
