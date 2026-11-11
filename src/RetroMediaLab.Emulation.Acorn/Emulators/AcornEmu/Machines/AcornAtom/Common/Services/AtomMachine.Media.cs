@@ -21,6 +21,7 @@ internal sealed partial class AtomMachine
     {
         CheckDrive(index);
         if (_fdc is null && image is not null) throw new NotSupportedException();
+        SynchronizeDiskClock();
         if (_fdc?.Active == true && _fdc.ActiveDrive == index) { _fdc.Reset(); _fdcDrive!.Reset(); }
         _disks[index] = image;
         _fdcDrive?.MediaChanged(index);
@@ -38,6 +39,7 @@ internal sealed partial class AtomMachine
     {
         CheckDrive(index);
         ArgumentOutOfRangeException.ThrowIfNegative(percent);
+        SynchronizeDiskClock();
         _speeds[index] = percent;
         if (_fdc?.ActiveDrive == index) _fdc.MechanicalSpeedPercent = percent;
     }

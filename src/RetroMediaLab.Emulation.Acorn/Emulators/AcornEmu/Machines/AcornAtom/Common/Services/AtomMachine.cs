@@ -76,6 +76,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
         }
         _cpu = new Cpu6502(this, C.CpuClock);
         WireCpuClock();
+        WireDiskClock();
         _cpu.SetIrq(_via.Irq);
         _via.SetPb6(true);
         _cpu.SetNmi(_fdc?.Nmi == true);
@@ -94,6 +95,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
     {
         var frame = _video.Frame;
         while (_video.Frame == frame) _cpu.Step();
+        _fdcDrive?.AdvanceTo(_diskClock);
         return _video.CompletedFrame;
     }
 
@@ -106,7 +108,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
 
     public void Tick()
     {
-        _fdcDrive?.Tick();
+        ClockDisk();
         if (++_tapePhase >= C.TapeHalfPeriod)
         {
             _tapePhase = 0;
@@ -165,6 +167,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
 
     public void Reset(bool cold)
     {
+        SynchronizeDiskClock();
         if (cold)
         {
             Array.Clear(_ram);

@@ -8,6 +8,58 @@ internal sealed partial class AtomMachine
     // Témoin de comparaison du transport seulement ; aucune option ni variante matérielle.
     internal bool GroupVideoClocks { get; set; } = true;
 
+    private long _diskClock;
+    private long _nextDiskClock = long.MaxValue;
+    private bool _groupDiskClocks = true;
+    private bool _canGroupDiskClocks = true;
+
+    internal bool GroupDiskClocks
+    {
+        get => _groupDiskClocks;
+        set
+        {
+            if (value == _groupDiskClocks) return;
+            _fdcDrive?.AdvanceTo(_diskClock);
+            _groupDiskClocks = value;
+            DiskClockGroupingChanged(_canGroupDiskClocks);
+        }
+    }
+
+    private void WireDiskClock()
+    {
+        if (_fdcDrive is null) return;
+        _fdcDrive.ClockGroupingChanged += DiskClockGroupingChanged;
+        DiskClockGroupingChanged(_fdcDrive.CanGroupClocks);
+    }
+
+    private void DiskClockGroupingChanged(bool allowed)
+    {
+        _canGroupDiskClocks = allowed;
+        if (_fdcDrive is null) return;
+        _fdcDrive.NextClockEventChanged -= DiskClockEventChanged;
+        _nextDiskClock = long.MaxValue;
+        if (!_groupDiskClocks || !allowed) return;
+        _nextDiskClock = _fdcDrive.NextClockEvent ?? long.MaxValue;
+        _fdcDrive.NextClockEventChanged += DiskClockEventChanged;
+    }
+
+    private void DiskClockEventChanged(long? next) => _nextDiskClock = next ?? long.MaxValue;
+
+    private void ClockDisk()
+    {
+        if (_fdcDrive is null) return;
+        ++_diskClock;
+        if (!_groupDiskClocks || !_canGroupDiskClocks) _fdcDrive.Tick();
+        else if (_diskClock >= _nextDiskClock) _fdcDrive.AdvanceTo(_diskClock);
+    }
+
+    private void SynchronizeDiskClock()
+    {
+        if (_fdcDrive is null) return;
+        _fdcDrive.AdvanceTo(_diskClock);
+        _fdcDrive.SynchronizeClock();
+    }
+
     private void ClockVideo()
     {
         // Tick précède le transfert CPU : la RAM et les entrées de contrôle restent
