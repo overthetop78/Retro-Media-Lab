@@ -124,7 +124,9 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
         var speaker = (_outputs & C.SpeakerOutput) != 0 ? C.SpeakerAmplitude : 0;
         _speakerFiltered = speaker - _speakerPrevious + C.SpeakerDcRetention * _speakerFiltered;
         _speakerPrevious = speaker;
-        _samples.Add((short)Math.Clamp(_speakerFiltered + _tape.MonitorSample, short.MinValue, short.MaxValue));
+        // PC2 drives the speaker; CAS IN reaches PC5, with no audio mixing wire.
+        // Tape transport mechanics are rendered separately by the common host.
+        _samples.Add((short)Math.Clamp(_speakerFiltered, short.MinValue, short.MaxValue));
     }
 
     /// <summary>Les entrées du PPI conservent les niveaux reçus de chaque fil câblé.

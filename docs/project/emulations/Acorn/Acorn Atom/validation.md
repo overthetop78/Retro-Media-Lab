@@ -195,4 +195,34 @@ Tests ciblés :15 contrôles autonomes AtomTap Debug réussis après checksum, p
 
 Les diagnostics terminent avec nettoyage du cœur dans finally ; aucune fenêtre RML ouverte ni processus de diagnostic restant. Le banc et ses médias jetables sont conservés uniquement pour les validations encore prévues, leur suppression reste inscrite au suivi. Restent notamment protections/éjection/extinction, filtres, sons mécaniques, parcours physiques et essai RML ; aucun achèvement de la machine ni build Debug complet n'est déduit de ce bloc.
 
+### Persistance automatique des supports —11 novembre2026
+
+Nouveau programme saisi par BASIC : écriture77 à3BFF, PRINT PERSIST PASS, END. SAVE est exécuté par la ROM ; aucun appel explicite à SaveMediaChanges dans ces scénarios. Le rapport confirme des modifications encore pendantes avant fermeture. Un nouveau cœur, créé depuis les firmwares sélectionnés, monte le fichier fermé en lecture seule puis exécute LOAD/RUN ; marqueur77 et PERSIST PASS exigés. Les JSON/BMP ont pour préfixe20261111-final-persist-, avec un rapport reopened séparé pour la seconde instance ; propriétaires libérés dans finally.
+
+| Support et fermeture | Identifiant du passage | Résultat |
+|---|---|---|
+| DSK, EjectMedia |disc-041331673|Code0, fichier102400octets, modifications pendantes sauvegardées ; nouveau cœur valide77.|
+| DSK, Stop/Dispose |disc-041415021|Code0, mêmes octets persistés que l'éjection, nouveau cœur valide77.|
+| WAV, EjectMedia |base-041456738|Code0, REC encore actif et modifications pendantes, nouveau cœur valide77 ; les480derniers échantillons d'une bande60secondes restent identiques.|
+| WAV, Stop/Dispose |base-041546166|Code0, REC encore actif et modifications pendantes, nouveau cœur valide77 ; même contrôle de longueur et de fin de bande intacte.|
+| UEF, Stop/Dispose |base-041639702|Code0, modifications pendantes et nouveau cœur valide77.|
+| CSW, EjectMedia |base-041723464|Code0, modifications pendantes et nouveau cœur valide77.|
+| RAW, Stop/Dispose |base-041758469|Code0, modifications pendantes et nouveau cœur valide77, profil par défaut48kHz mono16bits signé little-endian.|
+
+Ces résultats vérifient les fichiers montés et leur persistance automatique ; aucun média utilisateur écrasé et aucune écriture physique revendiquée. Les médias du diagnostic restent jetables ; les formats REC supplémentaires et les protections sont encore en cours de vérification.
+
+Protection disque : `20261111-final-protect-disc-042007799`, code0. Copie jetable du DSK valide, montage en lecture seule puis SAVE Q par la ROM ; capture native inspectée : DISK PROT et ERROR182, résultat8271=0x12. Aucun changement pendant ni après éjection : SHA256 identique et aucune modification pendante. Bande : `20261111-final-protect-base-042021421`, code0 ; REC refusé sur montage en lecture seule, puis sur montage inscriptible avec tape.protected activé à chaud. Le retrait de la protection rend REC disponible sans redémarrage ; empreinte intacte après éjection. La disponibilité du bouton REC de création dans le contrat du cœur reste distincte des commandes permises sur le support monté.
+
+### Séparation des données et du haut-parleur — défaut constaté
+
+Passage `20261111-final-audio-route-base-042143361`, code1 : BASIC au repos, bruitages mécaniques coupés via tape.sound, aucun ordre sonore invité. Crête PCM0 au repos ; après montage/PLAY d'une porteuse WAV2400Hz d'amplitude16000, crête16000 dans le PCM machine. WAV du PCM, JSON et capture natifs conservés. `AtomMachine.Tick` additionne explicitement AnalogTape.MonitorSample au haut-parleur.
+
+Références déjà archivées relues : schéma202.000/C issue3, PC2(pin16 du8255) vers IC45/R28/C52 et haut-parleur ; CAS IN passe par le comparateur séparé vers PC5. Manuel Atomic Theory and Practice25.5, page194 : PC2=loudspeaker, PC5=cassette input. Aucun fil du signal PCM cassette vers ce haut-parleur n'est représenté. Le mélange automatique constitue donc un ajout logiciel à retirer conformément à la directive de séparation des sons ; conserver le signal électrique cassette, le filtre du buzzer et la mécanique commune. La correction et ses tests restent à effectuer à ce stade.
+
+Correction réalisée dans AtomMachine.Tick : retrait du seul ajout MonitorSample au PCM, filtre PC2 conservé.75 contrôles Atom Debug passent,0échec/ignoré en3s (`20261111-atom-speaker-routing-debug.trx`), dont deux contrôles autonomes nouveaux en lecture/enregistrement : silence quand PC2 ne commande aucun son, CAS IN encore actif sur PC5, enregistrement encore modifié et sortie sonore encore présente quand PC2 change. Le transport est éjecté/réinitialisé en finally ; ces tests n'utilisent aucun fichier, firmware externe ni sortie audio hôte.
+
+Rejeu réel `20261111-final-audio-route-base-042418921`, code0 : crête0 au repos et0 pendant PLAY de la même porteuse16000 ; PCM machine exporté sans son de données ajouté. Le signal électrique et les commandes de transport restent actifs, sans modifier les clocks ou le câblage du8255. Rejeu BASIC aux ROM sélectionnées `20261111-final-basic-base-042431191`, code0 : calculs46/42/3, graphismes et bip PRINT$7 toujours réussis, crête8192 sans saturation.120champs Debug, vidéo/drainage audio inclus, sans test/build concurrent : repos13,85672ms/champ,72,17champs/s libres,1,20434MHz/120,43% nominal ; graphismes13,29957ms/champ,75,19champs/s,1,25479MHz/125,48%. Cadence matérielle59,9227434Hz. Aucun gain attribué au retrait du mélange à partir de ces passages successifs ; aucune écoute Windows ni cadence RML revendiquée.
+
+Les neuf diagnostics de persistance/protection terminent code0 et les deux nouveaux passages audio/BASIC terminent code0. Les preuves d'échec avant correction restent conservées. Les vérifications du bloc sont réalisées ; restent les bruitages mécaniques effectifs, filtres/dialogues, opérations physiques, nettoyage final du banc et essai RML coordonné. L'Atom n'est pas clôturé.
+
 Contrôle des formats interrompu avant conversion : le décodeur Atom commun n'extrait aucun bloc du WAV pourtant rechargé par la ROM, avec diagnostic Unrecognized bytes remain in the Atom serial stream. Le cadrage actuel demande8bits et2stops ; [manuel Acorn,19 Cassette Operating System](https://vintagecomputer.net/fjkraan/comp/atom/atap/atap03.html) décrit un start zéro,8bits et un stop un, avec4cycles1,2kHz pour zéro et8cycles2,4kHz pour un,300bits/s. Cette divergence justifie une comparaison diagnostique, pas encore une modification du décodeur. Échecs JSON datés conservés, aucune puce modifiée.
