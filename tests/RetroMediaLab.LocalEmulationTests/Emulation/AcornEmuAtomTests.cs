@@ -119,7 +119,7 @@ public sealed class AcornEmuAtomTests
             board.Write(0xb80e, 0xc0);
             board.Write(0xb804, 1);
             board.Write(0xb805, 0);
-            for (var tick = 0; tick < 4; tick++) board.Tick();
+            for (var tick = 0; tick < 4; tick++) cpu.Clock();
             Assert.True(board.Irq);
             Assert.True(cpu.CaptureState().IrqInput);
             board.Read(0xb804);

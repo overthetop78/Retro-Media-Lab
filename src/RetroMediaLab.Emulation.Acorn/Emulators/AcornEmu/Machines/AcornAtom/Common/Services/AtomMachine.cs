@@ -74,7 +74,8 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
             _fdc = new Intel8271(C.CpuClock);
             _fdcDrive = new(_fdc, index => _disks[index], C.CpuClock);
         }
-        _cpu = new Cpu6502(this);
+        _cpu = new Cpu6502(this, C.CpuClock);
+        WireCpuClock();
         _cpu.SetIrq(_via.Irq);
         _via.SetPb6(true);
         _cpu.SetNmi(_fdc?.Nmi == true);
@@ -105,7 +106,6 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
 
     public void Tick()
     {
-        _via.Tick();
         _fdcDrive?.Tick();
         if (++_tapePhase >= C.TapeHalfPeriod)
         {
@@ -115,8 +115,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
             UpdateTapeOutput();
         }
         if (_tapeClockRequired) _tape.Tick();
-        _videoPhase += V.CharacterClock;
-        while (_videoPhase >= C.CpuClock) { _videoPhase -= C.CpuClock; _video.Tick(); }
+        ClockVideo();
         _audioPhase += C.AudioSampleRate;
         if (_audioPhase < C.CpuClock) return;
         _audioPhase -= C.CpuClock;
