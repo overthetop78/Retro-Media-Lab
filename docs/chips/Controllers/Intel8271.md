@@ -79,6 +79,53 @@ Le raccordement d’une écriture ne force pas la nouvelle phase sur les anciens
 
 Un défaut réel de relecture a été corrigé : exiger un intervalle exactement égal à la cellule entière classait mal des transitions légèrement déphasées au raccordement. Le single-shot utilise maintenant sa fenêtre documentée. La relecture d’une écriture privée de données conserve son préfixe, l’ancienne fin et le CRC fautif, puis une écriture complète rétablit une piste publiable.
 
+### Reprise de la revue après MC6847 — 11 novembre2026
+
+L'utilisateur confirme de conserver et consigner les limites actuelles : consommation CF/PF à une clock nominale faute de latence interne publiée, délais de sortie nominaux et séparateur/PLO analogique externe non simulé. Ce choix ne constitue pas une mesure matérielle de ces points. Les références Intel AFN-00223B déjà consignées restent la référence fonctionnelle ; l'archive PDF est conservée dans `artifacts/.tmp-archives/chips/Controllers/Intel/FDC/8271/`. Son extraction texte locale ne contient que des séparateurs de pages : ne pas la présenter comme un texte constructeur exploitable ; réutiliser la fiche et les scans.
+
+Relecture de Clock/SerialRead/SerialWrite/Bus/Registers et des suites correspondantes : les compteurs et phases restent dans le composant, les entrées sont mémorisées aux méthodes de broches, les notifications sont publiées depuis leurs causes. AdvanceTo regroupe repos/reset/délais et préfixes de lecture ; chaque frontière reste dans TickCore. L'écriture demeure unitaire après l'essai mesuré et retiré du10 novembre ; cet essai n'est pas répété. Les contrôles actuels couvrent également l'horloge propriétaire différente du contrôleur, les strobages CF/PF/DACK et les délais DMA, sans fixer les latences non publiées depuis un émulateur.
+
+Premier banc de cette reprise :165 contrôles Debug hors états réussissent, zéro échec/ignoré. Comparaison isolée du transport FM128octets et des avances existantes, soixante fenêtres Tick/AdvanceTo identiques sur données, résultats, compteurs et notifications datées. Read groupe les préfixes ; l'invocation AdvanceTo pour une seule période écrite montre un surcoût. La sélection canonique d'un seul Tick doit être examinée avant de changer le composant. Le premier lancement n'a pas enregistré de rapport, car le dossier de sortie AcornAtom manquait ; invocation corrigée en créant ce dossier, sans modification de production. Les2048octets par fenêtre de64transferts sont les tableaux params du banc, pas attribués à la puce ; les séparer avant le relevé final. Rapports `artifacts/TestsChips/Intel8271/AcornAtom/20261111-review-first-*` ; aucune clôture à ce stade.
+
+### Résultat retenu de la revue Atom — 11 novembre2026
+
+`Intel8271.Clock.cs` utilise maintenant le Tick canonique pour une avance d'une seule période ; l'échéance série d'écriture, déjà obligatoirement à la période suivante, est retournée directement. Le Tick et ses publications restent uniques, avec leurs compteurs et fractions dans le composant. La lecture garde ses préfixes et l'écriture ses clocks ordinaires ; aucune extension du regroupement écriture retiré le10 novembre n'est réintroduite. Cette simplification réutilise les parcours canoniques et les qualifications déjà établies dans le tableau de la procédure.
+
+**165 contrôles Debug et165 Release hors états réussissent, zéro échec/ignoré**, avec les suites existantes Bus/Register/DriveSignal/Clock/SerialRead/SerialWrite. Les cas actuels couvrent notamment avances d'une période, buffers, reset, échéances, IRQ/DMA, toutes tailles N, transferts complets, phases et notifications datées. Aucun nouveau test redondant. Les comparaisons diagnostiques d'états déjà présentes sont conservées sans modification des API de sauvegarde/chargement. Rapports `20261111-review-final-{debug,release}.trx` sous TestsChips/Intel8271/AcornAtom.
+
+Banc isolé Debug .NET10 aux paramètres ordinaires : même transport FM issu des tests de broches, horloge d'entrée2MHz, contrôleur2/4MHz, DMA/non-DMA. Une fenêtre de chauffe puis cinq chronométrées, trois séries rapprochées référence Tick / actuel Tick / référence AdvanceTo / actuel AdvanceTo, sans test/build concurrent. Repos et recherche sans flux :1M périodes par fenêtre. Lecture/écriture :64 commandes FM réellement menées à terme, ID/CRC,128octets, acquittements, résultat0 et notifications NMI/Drive/WriteData inclus. Les commandes du banc utilisent Write direct ; ce débit n'inclut ni CPU, ni mécanique, ni strobages CF/PF, ni média, ni rendu. La vérification des demandes fait partie du coût du banc. Tableaux de paramètres et chronomètre préparés hors du compteur d'allocations.
+
+**540 fenêtres identiques** entre les parcours comparés sur données et résultats, temps d'entrée, états publiés, compteurs, comptes de notifications et empreinte de leur date/valeur. Toutes les boucles finales mesurées allouent **0octet**. Les soixante fenêtres de la première paire étaient déjà identiques, mais les2048octets des tableaux params du banc y étaient inclus ; cette invocation n'est pas assimilée à une allocation du composant.
+
+Durées ci-dessous en **ms par transfert128octets** : médiane des trois médianes de fenêtres, divisée par64. Réductions calculées par paire ; elles ne sont pas le quotient des deux médianes affichées.
+
+| Charge | Entrée | Avant | Après | Réduction appariée |
+|---|---|---:|---:|---:|
+| Lecture 2MHz DMA |Tick|1,6854|1,7223|0,65 %|
+| Lecture 2MHz non-DMA |Tick|1,6440|1,7154|-2,32 %|
+| Lecture 4MHz DMA |Tick|0,9338|0,9742|-2,90 %|
+| Lecture 4MHz non-DMA |Tick|0,9665|1,0178|-3,51 %|
+| Écriture 2MHz DMA |Tick|2,0564|1,5568|24,37 %|
+| Écriture 2MHz non-DMA |Tick|2,0614|1,5246|25,64 %|
+| Écriture 4MHz DMA |Tick|1,1565|0,9031|23,50 %|
+| Écriture 4MHz non-DMA |Tick|1,1422|0,9039|22,53 %|
+| Lecture 2MHz DMA |AdvanceTo|0,5598|0,5830|-3,55 %|
+| Lecture 2MHz non-DMA |AdvanceTo|0,5606|0,5711|-1,87 %|
+| Lecture 4MHz DMA |AdvanceTo|0,5714|0,5796|1,83 %|
+| Lecture 4MHz non-DMA |AdvanceTo|0,6117|0,5717|8,28 %|
+| Écriture 2MHz DMA |AdvanceTo|2,4377|1,5487|37,00 %|
+| Écriture 2MHz non-DMA |AdvanceTo|2,4536|1,5739|35,86 %|
+| Écriture 4MHz DMA |AdvanceTo|1,4447|0,9471|34,44 %|
+| Écriture 4MHz non-DMA |AdvanceTo|1,4651|0,9699|33,02 %|
+
+Sur AdvanceTo en lecture, les réductions appariées sont−3,55/−1,87/1,83/8,28 % selon les quatre charges, avec dispersion comprenant des écarts défavorables : aucun gain général de lecture attribué à ce changement. En écriture, AdvanceTo gagne33,02–37,00 % et Tick22,53–25,64 %. Le parcours courant AdvanceTo reste0,22–7,30 % plus lent que Tick en écriture selon cette invocation, alors que la lecture groupée est40,51–65,94 % plus rapide que ses Tick : conserver cette distinction au raccordement et ne pas généraliser le gain d'un parcours. Ces résultats sont ceux du contrôleur avec son transport de banc, pas des performances Atom/System5.
+
+Au repos ou en recherche sans impulsion ni DMA pendant, AdvanceTo représente1M périodes en un appel inférieur à0,001ms sur ces fenêtres ; ne pas convertir cette mesure proche de la résolution en une fréquence physique ou un pourcentage de gain significatif. Les Tick font toujours leurs opérations et observations du banc à chaque période. Les résultats bruts, périodes, allocations et dispersions sont conservés dans les douze JSON `20261111-review-<0..2>-<reference|current>-<tick|grouped>.json`, `20261111-review-summary.json` et les empreintes DLL `20261111-review-assemblies.json`. Le profil est séparé des chronométrages ; aucun nouveau débit Release revendiqué.
+
+La capture historique `artifacts/TestsChips/Intel8271/BbcMicroModelB/guest-disk-commands.png` a été réinspectée : six opérations PASS et le verdict global lisibles. Elle est réutilisée sans réexécuter ce programme graphique et sans la présenter comme une nouvelle preuve de silicium. Le banc temporaire et ses produits sont supprimés après terminaison des processus ; rapports et image restent hors Git.
+
+**Revue8271 vérifiée dans le périmètre accepté**, avec les limites nominales explicitement conservées sur décision utilisateur. Cela ne certifie pas les latences non publiées ni le séparateur analogique. Le prochain bloc est le câblage Atom et ses validations : utilisation effective des parcours qualifiés, phases VIA, horloge vidéo et interactions disque ; aucun gain de machine complète acquis par cette mesure isolée.
+
 ## Résultats finaux des tests automatisés
 
 | Passage | Réussites | Échecs | Durée |
@@ -102,6 +149,14 @@ La carte BBC Model B 32 Kio utilise les fichiers existants MOS 1.20, BASIC II et
 Le programme compare les 128 octets initiaux, écrit puis relit et compare un motif XOR A5, compare les quatre octets Read ID, déplace la tête à 1 et vérifie son registre avant retour à 0, exécute Verify, puis formate et compare les 128 octets E5 du nouveau secteur 9. Son verdict global en RAM ne devient PASS qu’après ces comparaisons. L’hôte contrôle également au moins 388 octets réellement lus et 132 octets CPU écrits. Diagnostic réussi, zéro échec, 6 s.
 
 Cette capture prouve ces six opérations sur BBC Model B ; elle ne prétend pas prouver les modes PLO, les dommages interrompus ou toutes les autres cartes. Ces fonctions disposent de leurs contrôles de broches/intégration distincts. Le diagnostic temporaire est supprimé et son assembly reconstruit ; les médias/cartes sont détachés et réinitialisés dans finally, les objets graphiques libérés dans using/finally.
+
+## Revue Atom — 11 novembre 2026
+
+Production inchangée : **165 cas 8271 hors états passent en Debug et 165 en Release**, zéro échec/ignoré. Rapports `artifacts/TestsChips/AcornAtomReview/20261111-chips-{debug,release}.trx`. Ils couvrent les fonctions et comparaisons de chronologie décrites dans cette fiche ; aucune latence interne non publiée n'est certifiée par un autre émulateur.
+
+Banc actuel isolé, propriétaire 1 MHz, contrôleur mini 2 MHz, au repos : 1 million de Tick de chauffe, cinq fenêtres de 1 million, médiane et boucle comprises. **Debug 22,3860 ns/Tick propriétaire ; Release 4,3742 ns/Tick.** Tick courant met aussi à jour le temps et la publication d'échéance : ce chemin n'est pas celui du banc historique de la première réécriture. Aucun gain/régression de production n'est déduit de leur différence. Pas de flux média, mécanique, CPU ou rendu inclus. Les vitesses actives et AdvanceTo ne sont pas mesurées par ce cas au repos. JSON `artifacts/TestsChips/AcornAtomReview/20261111-speed-{Debug,Release}.json`.
+
+Le regroupement lecture et les échéances locales sont réellement présents ; l'écriture reste scalaire après le retrait mesuré de l'essai du 10 novembre. La latence CF/PF nominale et le PLO analogique externe restent les limites décrites plus haut. Le raccordement Atom doit encore être examiné après traitement successif des puces. [Bilan de revue](../../tasks/machines/AcornAtom/chip-review.md).
 
 ## Performances hôte
 
@@ -289,3 +344,5 @@ Production identique àc1a362111 ; aucune modification de ce composant par cet a
 |cycle : recherche série sans index, NRDATA500 ns/4 us et DataWindow|mêmes168/0|mêmes168/0|91,56|18,19|
 Médiane de cinq fenêtres réellement chronométrées de1M unités après10k+3M unités de chauffe non chronométrées, observateurs et boucle inclus ; aucun coût CPU propre déduit. Pour le8271, la ligne active utilise des entrées série et reste BUSY, sans index : ne pas l’assimiler à une lecture native complète. Les profils et délais physiques restent ceux déjà documentés, sans fréquence modifiée.
 Le [bilan détaillé](../../tasks/machines/AcornSystem/system5-performance-audit.md) contient min/max, horloges réelles, unités exactes, limites de fidélité, captures TRX/JSON, avant/après historiques comparables et résultats de la machine entière. Bancs temporaires supprimés et assemblies reconstruites sans diagnostic ; aucune extrapolation de gain isolé à la machine.
+
+Profil de la reprise Atom : temps propres/inclusifs échantillonnés séparés, sans addition des parents/enfants. AdvanceTo736,16/3331,44ms, SerialReadClocksToEvent770,73/860,85ms, NextClockEvent659,76/1120,30ms et PublishClockEvent480,59/1608,90ms. La feuille CPU_TIME est attribuée au dernier cadre réel, pas à une fonction fictive. Le parcours AdvanceTo d'une seule période refait les admissions/branches de la boucle avant TickCore ; l'écriture y redemande une admission série qui retourne systématiquement1. Simplification à vérifier par le Tick canonique et retour direct de l'échéance d'écriture. Trace/profil sous20261111-review-reference.*, résuméJSON ; aucune mesure de débit déduite du profilage.

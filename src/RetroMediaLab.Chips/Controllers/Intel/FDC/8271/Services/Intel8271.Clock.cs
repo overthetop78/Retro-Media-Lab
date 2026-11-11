@@ -27,6 +27,7 @@ public sealed partial class Intel8271
             if (_phase == Phase.Idle) return null;
             if (_serialPhase != SerialPhase.Inactive)
             {
+                if (_serialPhase == SerialPhase.Writing) return checked(_inputClockCount + 1);
                 var cycles = SerialReadClocksToEvent();
                 return cycles.HasValue ? checked(_inputClockCount + cycles.Value) : null;
             }
@@ -40,6 +41,9 @@ public sealed partial class Intel8271
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(inputClockCount, _inputClockCount);
         if (inputClockCount == _inputClockCount) return;
+        // Une seule période ne peut amortir l'admission des préfixes de la boucle.
+        // Réutiliser le même Tick, avec ses effets et sa publication d'échéance.
+        if (inputClockCount - _inputClockCount == 1) { Tick(); return; }
         while (_inputClockCount < inputClockCount)
         {
             if (_resetAsserted || (!_commandPending && !_parameterPending &&

@@ -1,5 +1,17 @@
 # Suivi — Intel8271
 
+## Revue Atom — 11 novembre 2026, après le MC6847
+
+- [x] Vérifier le8271 actuel avant le câblage de la carte Atom.
+  - [x] Réutiliser les preuves constructeur et mesurer les parcours existants.
+    - [x] Créer `artifacts/.tmp-i8271-review/Bench.csproj` et `Program.cs` : réutiliser le transport FM des tests de broches existants, mesurer Tick et AdvanceTo au repos, recherche et transferts128octets lecture/écriture DMA/non-DMA à2/4MHz, compteurs et notifications datées identiques ; rapports/profil sous `artifacts/TestsChips/Intel8271/AcornAtom/20261111-review-*`. Pas de nouveau moteur ni comportement matériel ; callbacks détachés en finally, aucune ressource native créée. Compléter `docs/chips/Controllers/Intel8271.md` avec la correspondance références/code/tests, la décision utilisateur sur les limites et les mesures obtenues ; ne pas répéter l'essai d'optimisation écriture déjà retiré.
+  - [x] Simplifier les avances d'une seule période identifiées par le profil.
+    - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Intel/FDC/8271/Services/Intel8271.Clock.cs` : après validation de la cible, une seule période utilise le Tick canonique ; NextClockEvent en écriture renvoie directement sa prochaine période déjà imposée, sans recalculer l'admission de lecture. Même temps, même séquenceur, mêmes effets et publications ; aucune nouvelle phase, échéance, fréquence ni fonction omise. Comparer les deux entrées Tick/AdvanceTo à la DLL de référence isolée, trois séries de quatre parcours, états/notifications et allocations identiques ; conserver uniquement un gain utile mesuré et consigner tout résultat défavorable dans la fiche.
+  - [x] Fermer les vérifications du composant.
+    - [x] Modifier les rapports `artifacts/TestsChips/Intel8271/AcornAtom/20261111-review-{debug,release}.trx` en exécutant les suites actuelles hors états et consigner leur portée effective dans la fiche, sans ajouter de test redondant ; inspecter la capture historique `BbcMicroModelB/guest-disk-commands.png`. Si un défaut établi nécessite une modification de production, ajouter ses fichiers/actions ici avant intervention et revérifier le bloc concerné.
+    - [x] Supprimer `artifacts/.tmp-i8271-review/` et ses produits après terminaison des mesures et consignation ; conserver les rapports utiles hors Git. Mettre à jour cette fiche de suivi, `docs/tasks/machines/AcornAtom/chip-review.md` et `implementation.md`, puis committer le bloc8271 vérifié avant le câblage Atom, seulement après résolution de la question sur ses limites.
+
+
 - [x] Intel 8271 : contrôleur entier, temporisations originales et raccordement BBC.
   - [x] Créer `artifacts/.tmp-i8271/references/` avec la documentation Intel et les implémentations b2, B-Em, JSBeeb et MAME pertinentes ; confronter commandes, registres, bus et signaux au code existant.
   - [x] Créer `docs/chips/Controllers/Intel8271.md` avec les fonctions réelles, les écarts documentés et la matrice de vérifications ; conserver les références et limites établies.
