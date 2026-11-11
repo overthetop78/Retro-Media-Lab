@@ -28,6 +28,15 @@ public interface IVia6522
     void Tick();
     void Phi2LeadingEdge();
     void Phi2TrailingEdge();
+    /// <summary>Représente un préfixe de périodes PH2 complètes sans effet extérieur.
+    /// Retourne le nombre accepté, éventuellement zéro, avant la première frontière.
+    /// Les entrées doivent rester stables ; le câblage livre toute observation ou nouvelle
+    /// entrée avant le prochain appel et traite les fronts de frontière à leur vraie date.</summary>
+    long TryAdvanceStableClocks(long clocks);
+    /// <summary>Même préfixe ; false dans retryAfterBoundary demande de garder les
+    /// fronts ordinaires pour le reste de l'intervalle d'entrées stables, sans retry
+    /// à chaque période. Une nouvelle entrée/observation permet une nouvelle demande.</summary>
+    long TryAdvanceStableClocks(long clocks, out bool retryAfterBoundary);
     byte Read(int register);
     void Write(int register, byte value);
     Action<bool>? Ca2PinsChanged { get; set; }
