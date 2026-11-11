@@ -14,6 +14,8 @@ public sealed class ApridiskWriter(IAtomicImageFileWriter? fileWriter = null)
     private static readonly RegularSectorGeometry Geometry = new(DiskImageFormatIds.ApricotPcXi315,
         ApridiskReader.BlockSize, ApridiskReader.Cylinders, ApridiskReader.Heads, ApridiskReader.SectorsPerTrack);
 
+    internal static bool CanWrite(SectorImage image) => LinearSectorImageWriter.MatchesGeometry(image, Geometry, requireFormatId: false);
+
     public async Task WriteAsync(SectorImage image, string path, CancellationToken cancellationToken = default)
     {
         LinearSectorImageWriter.ValidateGeometry(image, Geometry);

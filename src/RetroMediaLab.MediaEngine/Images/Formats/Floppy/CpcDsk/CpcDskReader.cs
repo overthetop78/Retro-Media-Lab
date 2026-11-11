@@ -85,7 +85,11 @@ public sealed class CpcDskReader : IMediaImageReader
         var logicalBlocks = blocks.OrderBy(block => block.Address.Cylinder).ThenBy(block => block.Address.Head)
             .ThenBy(block => block.Address.Number).Select((block, logicalBlock) => block with { LogicalBlock = logicalBlock }).ToArray();
         var dominantSize = sectorSizes.OrderByDescending(item => item.Value).First().Key;
-        var image = new SectorImage(CpcDskFormat.FormatId, dominantSize, cylinders, heads, Math.Max(CpcDskLayout.MinimumSectorsPerTrack, maximumSectors), logicalBlocks, sectorSizes.Count > 1, logicalBlocks.Sum(block => (long)block.Data.Count), logicalBlocks.Length);
+        var sectorsPerTrack = Math.Max(CpcDskLayout.MinimumSectorsPerTrack, maximumSectors);
+        var image = sectorSizes.Count == 1
+            ? RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.Sectors.UniformSectorImageLayout.TryCreate(CpcDskFormat.FormatId, dominantSize, cylinders, heads, sectorsPerTrack, logicalBlocks)
+            : null;
+        image ??= new SectorImage(CpcDskFormat.FormatId, dominantSize, cylinders, heads, sectorsPerTrack, logicalBlocks, sectorSizes.Count > 1, logicalBlocks.Sum(block => (long)block.Data.Count), logicalBlocks.Length);
         return new(kind, checked((byte)cylinders), checked((byte)heads), tracks, image);
     }
 
@@ -147,7 +151,11 @@ public sealed class CpcDskReader : IMediaImageReader
             var sectorData = storedData.AsSpan(0, Math.Min(nominalSize, storedSize)).ToArray();
             var integrityValid = (status1 & CpcDskLayout.DataErrorMask) == 0 && (status2 & CpcDskLayout.DataErrorMask) == 0;
             sectors.Add(new(sectorCylinder, sectorHead, sectorId, sectorSizeCode, status1, status2, storedData));
-            blocks.Add(new(blocks.Count, new(cylinder, head, sectorId), sectorData, integrityValid, FormatCode: sectorSizeCode)
+            // Native tags retain ST1/ST2 and, when longer than nominal, the entire stored data field.
+            var nativeTag = status1 != 0 || status2 != 0 || storedSize > nominalSize
+                ? new byte[] { status1, status2 }.Concat(storedSize > nominalSize ? storedData : []).ToArray()
+                : null;
+            blocks.Add(new(blocks.Count, new(cylinder, head, sectorId), sectorData, integrityValid, Tag: nativeTag, FormatCode: sectorSizeCode)
             {
                 RecordedAddress = new(sectorCylinder, sectorHead, sectorId),
                 RecordedTrackOrder = sectorIndex,

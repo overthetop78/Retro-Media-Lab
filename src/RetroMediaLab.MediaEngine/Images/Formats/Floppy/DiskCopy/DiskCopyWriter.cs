@@ -8,6 +8,28 @@ namespace RetroMediaLab.MediaEngine.Images.Formats.Floppy.DiskCopy;
 public sealed class DiskCopyWriter(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageFileWriter? fileSystem = null)
 {
     private readonly RetroMediaLab.MediaEngine.Interfaces.IAtomicImageFileWriter files = fileSystem ?? new RetroMediaLab.MediaEngine.Interfaces.AtomicImageFileWriter();
+    internal static bool HasSupportedDataLayout(SectorImage image) => DataLayoutError(image) is null;
+
+    private static string? DataLayoutError(SectorImage image)
+    {
+        // SectorImage guarantees unique logical indices within BlockCount.
+        if (image.AvailableBlocks.Count != image.BlockCount)
+            return "DiskCopy exige une image sectorielle complète et ordonnée.";
+        long dataLength = 0;
+        var tagged = false;
+        var allTagsValid = true;
+        foreach (var block in image.AvailableBlocks)
+        {
+            dataLength += block.Data.Count;
+            tagged |= block.Tag is not null;
+            allTagsValid &= block.Tag?.Count == DiskCopyLayout.TagSizePerBlock;
+        }
+        if (dataLength != (long)image.BlockCount * DiskCopyLayout.DataBlockSize)
+            return "DiskCopy exige des blocs de 512 octets.";
+        if (tagged && !allTagsValid)
+            return "Tous les tags DiskCopy doivent contenir 12 octets.";
+        return null;
+    }
     /// <summary>Écrit une image avec les métadonnées d'en-tête indiquées.</summary>
     public async Task WriteAsync(SectorImage image, string path, DiskCopyImage? source = null, CancellationToken cancellationToken = default)
     {
@@ -19,15 +41,10 @@ public sealed class DiskCopyWriter(RetroMediaLab.MediaEngine.Interfaces.IAtomicI
     /// <summary>Sérialise l'en-tête, les blocs et leurs tags facultatifs.</summary>
     internal static byte[] Build(SectorImage image, DiskCopyImage metadata)
     {
+        if (DataLayoutError(image) is { } error) throw new InvalidDataException(error);
         var blocks = image.AvailableBlocks.OrderBy(block => block.LogicalBlock).ToArray();
-        if (blocks.Length != image.BlockCount || blocks.Select((block, index) => block.LogicalBlock == index).Any(valid => !valid))
-            throw new InvalidDataException("DiskCopy exige une image sectorielle complète et ordonnée.");
         var data = blocks.SelectMany(block => block.Data).ToArray();
-        if (data.Length != image.BlockCount * DiskCopyLayout.DataBlockSize)
-            throw new InvalidDataException("DiskCopy exige des blocs de 512 octets.");
         var tagged = blocks.Any(block => block.Tag is not null);
-        if (tagged && blocks.Any(block => block.Tag?.Count != DiskCopyLayout.TagSizePerBlock))
-            throw new InvalidDataException("Tous les tags DiskCopy doivent contenir 12 octets.");
         var tags = tagged ? blocks.SelectMany(block => block.Tag!).ToArray() : [];
         var container = new byte[checked(DiskCopyLayout.HeaderSize + data.Length + tags.Length)];
         WriteName(container, metadata.NameBytes);

@@ -15,7 +15,7 @@ namespace RetroMediaLab.MediaEngine.Images.Reading.Decoding.Sequential.Acorn;
 public sealed class AtomTapeDecoder : ISequentialMediaDecoder
 {
     public string Id => "acorn-atom-tape";
-    public IReadOnlySet<string> FormatIds { get; } = new[] { TapeImageFormatIds.AtomTap, TapeImageFormatIds.Uef, TapeImageFormatIds.Wav, TapeImageFormatIds.Csw, TapeImageFormatIds.Raw }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlySet<string> FormatIds { get; } = new[] { TapeImageFormatIds.AtomTap, TapeImageFormatIds.Uef, TapeImageFormatIds.Wav, TapeImageFormatIds.Csw, TapeImageFormatIds.Raw, TapeImageFormatIds.Voc }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     public IReadOnlySet<string> MachineIds { get; } = new[] { "acorn-atom" }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     public bool CanDecode(MediaImageDocument document, string? machineId = null) => document.MediaKind == MediaKind.Tape
         && FormatIds.Contains(document.FormatId) && (machineId is null || MachineIds.Contains(machineId))
@@ -27,7 +27,10 @@ public sealed class AtomTapeDecoder : ISequentialMediaDecoder
         if (document.FormatId.Equals(TapeImageFormatIds.AtomTap, StringComparison.OrdinalIgnoreCase))
             return await AtomTapCodec.DecodeAsync(image, cancellationToken).ConfigureAwait(false);
         var pcm = document;
-        if (document.FormatId.Equals(TapeImageFormatIds.Uef, StringComparison.OrdinalIgnoreCase))
+        // L'indexeur matérialise les cycles UEF en PCM avant de rechercher les blocs.
+        // Ce document garde son format source, mais ne contient plus de chunks UEF.
+        if (document.FormatId.Equals(TapeImageFormatIds.Uef, StringComparison.OrdinalIgnoreCase)
+            && !PcmSampleFunctions.TryGetProfile(document.Metadata, out _, out _, out _, out _))
         {
             if ((image.Segments ?? []).All(segment => segment.Kind is SequentialSegmentKind.Carrier or SequentialSegmentKind.Silence
                 || segment.Kind == SequentialSegmentKind.DataBlock && segment.Metadata.GetValueOrDefault(UefConstants.ChunkIdMetadataKey) is "0100" or "0104" or "0105"

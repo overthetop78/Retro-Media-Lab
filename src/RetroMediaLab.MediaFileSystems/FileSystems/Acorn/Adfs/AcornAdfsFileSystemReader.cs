@@ -13,11 +13,12 @@ public sealed partial class AcornAdfsFileSystemReader : IFileSystemReader
     public IReadOnlySet<string> CatalogFormatIds { get; } = new[]
     {
         MediaImageFormatIds.AcornAdfs800,
+        MediaImageFormatIds.AcornAdfs1600,
         MediaImageFormatIds.Jfd
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
-    public bool CanRead(IMediaSectorImage image) => (image.BlockSize == AcornAdfsLayout.FileCoreUnitSize || CatalogFormatIds.Contains(image.FormatId) && image.BlockSize == AcornAdfsLayout.BlockSize) && TryCreateLayout(image,
+    public bool CanRead(IMediaSectorImage image) => (image.BlockSize == AcornAdfsLayout.FileCoreUnitSize || image.BlockSize == AcornAdfsLayout.BlockSize) && TryCreateLayout(image,
         out var layout) && AcornAdfsDirectoryReader.TryRead(image, layout.RootAddress, layout, out _);
     /// <inheritdoc/>
     public FileSystemVolume Read(IMediaSectorImage image)

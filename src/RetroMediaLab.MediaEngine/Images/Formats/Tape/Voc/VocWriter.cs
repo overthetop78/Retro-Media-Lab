@@ -60,7 +60,7 @@ public sealed class VocWriter : IMediaImageWriter
         var shift = bitsPerSample - 8;
         for (var index = 0; index < outputCount; index++)
         {
-            var sourceIndex = Math.Min(input.Count - 1, (int)Math.Floor(index * sampleRate / vocRate));
+            var sourceIndex = Math.Min(input.Count - 1, (int)Math.Floor((double)index * sampleRate / vocRate));
             var value = shift >= 0 ? input[sourceIndex] >> shift : input[sourceIndex] << -shift;
             pcm[index] = (byte)Math.Clamp(value + 128, 0, 255);
         }
@@ -71,19 +71,27 @@ public sealed class VocWriter : IMediaImageWriter
 
     private static async Task WriteVocAsync(Stream output, byte[] pcm, byte timeConstant, CancellationToken cancellationToken)
     {
-        if (pcm.Length > 0x00fffffd) throw new NotSupportedException("The VOC sound block exceeds its 24-bit length field.");
         var header = new byte[26];
         Signature.CopyTo(header, 0);
         BinaryPrimitives.WriteUInt16LittleEndian(header.AsSpan(20), checked((ushort)header.Length));
         BinaryPrimitives.WriteUInt16LittleEndian(header.AsSpan(22), Version);
         BinaryPrimitives.WriteUInt16LittleEndian(header.AsSpan(24), unchecked((ushort)(~Version + 0x1234)));
         await output.WriteAsync(header, cancellationToken).ConfigureAwait(false);
-        await output.WriteAsync(new[] { (byte)1 }, cancellationToken).ConfigureAwait(false);
-        var blockLength = new byte[3];
-        RetroMediaLab.MediaEngine.Functions.BitPrimitives.WriteUInt24LittleEndian(blockLength, pcm.Length + 2);
-        await output.WriteAsync(blockLength, cancellationToken).ConfigureAwait(false);
-        await output.WriteAsync(new[] { timeConstant, (byte)0 }, cancellationToken).ConfigureAwait(false);
-        await output.WriteAsync(pcm, cancellationToken).ConfigureAwait(false);
+        // Creative Hardware Programming Guide, annexe B, pp. B-4/B-5 :
+        // les données dépassant la longueur 24 bits continuent dans des blocs de type 2.
+        var offset = 0;
+        do
+        {
+            var first = offset == 0;
+            var count = Math.Min(pcm.Length - offset, first ? 0x00fffffd : 0x00ffffff);
+            var blockHeader = new byte[4];
+            blockHeader[0] = first ? (byte)1 : (byte)2;
+            BitPrimitives.WriteUInt24LittleEndian(blockHeader.AsSpan(1), count + (first ? 2 : 0));
+            await output.WriteAsync(blockHeader, cancellationToken).ConfigureAwait(false);
+            if (first) await output.WriteAsync(new[] { timeConstant, (byte)0 }, cancellationToken).ConfigureAwait(false);
+            await output.WriteAsync(pcm.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
+            offset += count;
+        } while (offset < pcm.Length);
         await output.WriteAsync(new byte[1], cancellationToken).ConfigureAwait(false);
     }
 

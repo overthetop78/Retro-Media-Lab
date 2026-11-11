@@ -20,6 +20,8 @@ public static class HfeFormat
     public const byte IsoMfmEncoding = 0x00;
     public const byte AmigaMfmEncoding = 0x01;
     public const byte IsoFmEncoding = 0x02;
+    // HxC HFE specification: track_encoding = UNKNOWN_ENCODING when unspecified.
+    public const byte UnknownEncoding = 0xff;
     public const byte UnknownInterfaceMode = 0xff;
     public const byte WriteProtected = 1;
     public const byte WriteAllowed = 0xff;

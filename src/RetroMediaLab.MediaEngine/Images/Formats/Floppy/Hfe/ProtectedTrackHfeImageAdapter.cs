@@ -107,7 +107,7 @@ internal static class ProtectedTrackHfeImageAdapter
         if (hfeEncoding.HasValue) return hfeEncoding.Value;
         var scpDiskType = ReadByte(metadata, ScpMetadataKeys.DiskType);
         if (scpDiskType.HasValue) return ScpHfeEncodingResolver.Resolve(scpDiskType.Value);
-        throw new NotSupportedException("The flux document does not declare an HFE encoding or an SCP disk type.");
+        return HfeFormat.UnknownEncoding;
     }
 
     private static ushort CalculateBitRate(uint bitCellTicks)

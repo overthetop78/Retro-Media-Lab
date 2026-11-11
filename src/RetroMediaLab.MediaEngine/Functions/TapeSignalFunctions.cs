@@ -108,7 +108,7 @@ internal static class TapeSignalFunctions
                     }
                     if (pairs > 0) end = cursor;
                 }
-                if (pairs == 0) Chunk(UefConstants.SecurityCycles, [1, 0, 0, (byte)(polarity > 0 ? 'P' : 'W'), (byte)(polarity < 0 ? 'P' : 'W'), 0]);
+                if (pairs == 0) Chunk(UefConstants.SecurityCycles, [1, 0, 0, (byte)(polarity < 0 ? 'P' : 'W'), (byte)(polarity > 0 ? 'P' : 'W'), 0]);
                 else
                 {
                     var cycles = new byte[5 + (pairs + 7) / 8]; cycles[0] = (byte)pairs; cycles[1] = (byte)(pairs >> 8); cycles[2] = (byte)(pairs >> 16); cycles[3] = cycles[4] = (byte)'W';
@@ -243,8 +243,8 @@ internal static class TapeSignalFunctions
                         var lowOnly = cycle == cycles - 1 && data[4] == 'P';
                         var phase = int.Parse(segment.Metadata[UefConstants.PhaseMetadataKey], CultureInfo.InvariantCulture);
                         var positive = phase < 180 ? UefConstants.PcmAmplitude : (short)-UefConstants.PcmAmplitude;
-                        if (!lowOnly) Pulse(positive, half);
-                        if (!highOnly) Pulse((short)-positive, half);
+                        if (!highOnly) Pulse(positive, half);
+                        if (!lowOnly) Pulse((short)-positive, half);
                     }
                     break;
                 case UefConstants.BaseFrequency: case UefConstants.BaudRate: break;

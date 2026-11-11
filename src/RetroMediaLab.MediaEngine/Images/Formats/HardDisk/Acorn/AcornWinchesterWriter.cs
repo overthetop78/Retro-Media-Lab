@@ -34,9 +34,9 @@ public sealed class AcornWinchesterWriter : IMediaImageWriter
         if (!CanWrite(document, format, Path.GetExtension(outputPath))) throw new InvalidDataException("Winchester output requires complete blocks and a supported DSC geometry.");
         var blocks = (BlockMediaImageRepresentation)document.Representation;
         var descriptor = document.Metadata.TryGetValue(AcornWinchesterFormat.DescriptorMetadataKey, out var encoded) ? Convert.FromBase64String(encoded) : [];
-        if (descriptor.Length < AcornWinchesterFormat.DescriptorSize) Array.Resize(ref descriptor, AcornWinchesterFormat.DescriptorSize);
+        if (descriptor.Length < AcornWinchesterFormat.MinimumDescriptorSize) Array.Resize(ref descriptor, AcornWinchesterFormat.DescriptorSize);
         var geometry = blocks.Geometry!;
-        AcornWinchesterFormat.WriteGeometry(descriptor, geometry);
+        AcornWinchesterFormat.UpdateGeometryIfChanged(descriptor, geometry, blocks.Capacity);
         var dat = Path.GetFullPath(outputPath); var dsc = Path.ChangeExtension(dat, DiskImageFileExtensions.Dsc);
         await AtomicMediaFileSetWriter.WriteAsync(new Dictionary<string, Func<Stream, CancellationToken, Task>>(StringComparer.OrdinalIgnoreCase)
         {

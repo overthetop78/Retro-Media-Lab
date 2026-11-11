@@ -37,13 +37,47 @@ internal sealed class AdfImageFormatDetectionRule : IImageFormatDetectionRule
             return false;
         }
 
+        if (context.KnownLength == AmigaAdfGeometry.DoubleDensityCapacity || context.KnownLength == AmigaAdfGeometry.HighDensityCapacity)
+        {
+            result = context.Result(context.KnownLength == AmigaAdfGeometry.DoubleDensityCapacity
+                ? DiskImageFormatIds.AmigaDos : DiskImageFormatIds.AmigaDosHighDensity, FormatConfidence.Certain, "Detection.AmigaSize");
+            return true;
+        }
+
+        if (context.KnownLength is > 512 and < AcornAdfGeometry.HighDensityCapacity)
+        {
+            try
+            {
+                using var source = context.OpenRead(context.FilePath);
+                var header = new byte[Math.Min(AcornAdfPartialImage.ProbeLength, (int)context.KnownLength.Value)];
+                var count = source.ReadAtLeast(header, header.Length, throwOnEndOfStream: false);
+                if (AcornAdfPartialImage.TryDescribe(header.AsSpan(0, count), context.KnownLength.Value, out _, out _))
+                {
+                    var bytes = new byte[(int)context.KnownLength.Value];
+                    header.AsSpan(0, count).CopyTo(bytes);
+                    source.ReadExactly(bytes.AsSpan(count));
+                    if (AcornAdfPartialImage.TryCreate(bytes, out var partial))
+                    {
+                        result = context.Result(partial.FormatId, FormatConfidence.Certain, "Detection.AcornSize");
+                        return true;
+                    }
+                }
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
+
+        if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.Capacity == context.KnownLength) is { } bbc)
+        {
+            result = context.Result(bbc.FormatId, FormatConfidence.Certain, "Detection.AcornSize");
+            return true;
+        }
+
         result = context.KnownLength switch
         {
-            901120 => context.Result("amiga.amigados", FormatConfidence.Certain, "Detection.AmigaSize"),
-            1802240 => context.Result("amiga.amigados_hd", FormatConfidence.Certain, "Detection.AmigaSize"),
             819200 or 820224 => context.Result("acorn.adfs.800", FormatConfidence.Certain, "Detection.AcornSize"),
             _ => context.Ambiguous("Detection.Multiple")
         };
-        return context.KnownLength is 901120 or 1802240 or 819200 or 820224;
+        return context.KnownLength is 819200 or 820224;
     }
 }

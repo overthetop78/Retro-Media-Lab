@@ -21,7 +21,7 @@ public sealed class AcornAtomDskReader : IMediaImageReader
     internal const int Capacity = BlockSize * Cylinders * Heads * SectorsPerTrack;
 
     private static readonly IReadOnlySet<string> SupportedFormatIds = new[] { DiskImageFormatIds.AcornAtomDos }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
-    private static readonly IReadOnlySet<string> SupportedExtensions = new[] { DiskImageFileExtensions.Dsk }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly IReadOnlySet<string> SupportedExtensions = new[] { DiskImageFileExtensions.Dsk, DiskImageFileExtensions.Ima, DiskImageFileExtensions.Img }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     private static readonly IReadOnlySet<MediaKind> SupportedMediaKinds = new[] { MediaKind.Floppy }.ToFrozenSet();
     private static readonly IReadOnlySet<MediaRepresentationKind> SupportedRepresentations = new[] { MediaRepresentationKind.Sectors }.ToFrozenSet();
     private readonly Func<string, CancellationToken, Task<byte[]>> readBytes;

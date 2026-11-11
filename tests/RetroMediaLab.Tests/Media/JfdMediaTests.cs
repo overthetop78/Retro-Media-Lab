@@ -109,8 +109,13 @@ public sealed class JfdMediaTests
         var output = new MemoryWriter();
         await new JfdWriter(output).WriteAsync(document, "created.jfd", DiskImageFormatIds.Jfd);
         var decoded = JfdCodec.Decode(output.Bytes);
-        Assert.Equal(1, decoded.Sectors.Heads); Assert.Equal(2, decoded.Sectors.Cylinders);
-        Assert.Equal(2, decoded.Sectors.BlockCount);
+        // The native table contains at least 160 side slots. Empty trailing
+        // tracks remain represented, without fabricating their sector data.
+        Assert.Equal(1, decoded.Sectors.Heads); Assert.Equal(80, decoded.Sectors.Cylinders);
+        Assert.Equal(80, decoded.Sectors.BlockCount);
+        Assert.Equal(2, decoded.Sectors.AvailableBlocks.Count);
+        for (var absent = 2; absent < decoded.Sectors.BlockCount; absent++)
+            Assert.False(decoded.Sectors.TryGetBlock(absent, out _));
         Assert.All(decoded.Sectors.AvailableBlocks, block => Assert.Equal(density, block.FormatCode));
         foreach (var block in decoded.Sectors.AvailableBlocks) Assert.Equal(blocks[block.LogicalBlock].Data, block.Data);
     }

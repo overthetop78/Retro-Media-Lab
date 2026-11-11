@@ -109,7 +109,7 @@ public sealed class Td0Reader : IMediaImageReader
 
         if (tracks.Sum(track => track.Sectors.Count) == 0)
             throw Td0Exceptions.NoSectors();
-        return new(header, comment, tracks, BuildSectorImage(tracks));
+        return new(header, comment, tracks, BuildSectorImage(tracks, header.DataRate));
     }
 
     async ValueTask<bool> IMediaImageReader.CanReadAsync(MediaRecognitionContext context, CancellationToken cancellationToken)
@@ -192,23 +192,33 @@ public sealed class Td0Reader : IMediaImageReader
         return new(cylinder, head, number, sizeCode, flags, sectorData);
     }
 
-    private static SectorImage BuildSectorImage(IReadOnlyList<Td0Track> tracks)
+    private static SectorImage BuildSectorImage(IReadOnlyList<Td0Track> tracks, byte dataRate)
     {
-        var sectors = tracks.SelectMany(track => track.Sectors).ToArray();
-        var blockSize = sectors.GroupBy(sector => Td0Layout.BaseSectorSize << sector.SizeCode).OrderByDescending(group => group.Count()).First().Key;
-        var logicalSectors = sectors.Where(sector => (Td0Layout.BaseSectorSize << sector.SizeCode) == blockSize).ToArray();
+        var sectors = tracks.SelectMany(track => track.Sectors.Select((sector, order) => (Track: track, Sector: sector, Order: order))).ToArray();
+        var blockSize = sectors.GroupBy(item => Td0Layout.BaseSectorSize << item.Sector.SizeCode).OrderByDescending(group => group.Count()).First().Key;
+        var logicalSectors = sectors.Where(item => (Td0Layout.BaseSectorSize << item.Sector.SizeCode) == blockSize).ToArray();
         var cylinders = tracks.Max(track => track.Cylinder) + 1;
         var heads = tracks.Max(track => track.Head & Td0Layout.HeadMask) + 1;
         var sectorsPerTrack = tracks.Max(track => track.Sectors.Count);
-        var ordered = logicalSectors.OrderBy(sector => sector.Cylinder).ThenBy(sector => sector.Head & Td0Layout.HeadMask).ThenBy(sector => sector.Number).ToArray();
-        var blocks = ordered.Select((sector, logical) => (sector, logical)).Where(item => item.sector.Data is not null).Select(item => new SectorBlock(
+        var ordered = logicalSectors.OrderBy(item => item.Track.Cylinder).ThenBy(item => item.Track.Head & Td0Layout.HeadMask).ThenBy(item => item.Sector.Number).ToArray();
+        var blocks = ordered.Select((entry, logical) => (entry.Track, sector: entry.Sector, entry.Order, logical)).Where(item => item.sector.Data is not null).Select(item => new SectorBlock(
                 item.logical,
-                new(item.sector.Cylinder, item.sector.Head & Td0Layout.HeadMask, item.sector.Number),
+                new(item.Track.Cylinder, item.Track.Head & Td0Layout.HeadMask, item.sector.Number),
                 item.sector.Data!,
                 (((Td0SectorFlags)item.sector.Flags) & Td0SectorFlags.DataCrcError) == 0,
-                DiagnosticCode: item.sector.Flags
-            )).ToArray();
+                FormatCode: dataRate, DiagnosticCode: item.sector.Flags
+            )
+            {
+                RecordedAddress = new(item.sector.Cylinder, item.sector.Head, item.sector.Number),
+                RecordedSizeCode = item.sector.SizeCode,
+                RecordedTrackOrder = item.Order,
+                DataIntegrityValid = (((Td0SectorFlags)item.sector.Flags) & Td0SectorFlags.DataCrcError) == 0,
+                DeletedDataMark = (((Td0SectorFlags)item.sector.Flags) & Td0SectorFlags.DeletedData) != 0
+            }).ToArray();
         var formatId = Td0SectorImageClassifier.Detect(blocks, blockSize, cylinders, heads, sectorsPerTrack);
+        if (logicalSectors.Length == sectors.Length
+            && RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.Sectors.UniformSectorImageLayout.TryCreate(formatId, blockSize, cylinders, heads, sectorsPerTrack, blocks) is { } uniform)
+            return uniform;
         return new(formatId, blockSize, cylinders, heads, sectorsPerTrack, blocks, capacity: ordered.LongLength * blockSize, logicalBlockCount: ordered.Length);
     }
 

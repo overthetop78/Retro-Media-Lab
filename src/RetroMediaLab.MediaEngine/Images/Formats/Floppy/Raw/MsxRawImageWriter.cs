@@ -11,12 +11,20 @@ public sealed class MsxRawImageWriter(LinearSectorImageWriter writer)
     {
     }
 
+    internal static bool CanWrite(SectorImage image, string formatId)
+        => MsxDiskGeometryCatalog.TryFromFormatId(formatId, out var geometry) && MatchesGeometry(image, geometry);
+
+    private static bool MatchesGeometry(SectorImage image, MsxDiskGeometry geometry)
+        => image.BlockSize == FatBootSectorLayout.SectorSize && image.Cylinders == geometry.Cylinders
+            && image.Heads == geometry.Heads && image.SectorsPerTrack == geometry.SectorsPerTrack
+            && image.BlockCount * image.BlockSize == geometry.Capacity;
+
     /// <summary>Écrit l'image MSX après validation stricte du profil cible.</summary>
     public Task WriteAsync(SectorImage image, string path, string formatId, CancellationToken cancellationToken = default)
     {
         if (!MsxDiskGeometryCatalog.TryFromFormatId(formatId, out var geometry))
             throw MsxRawImageWriterExceptions.UnsupportedFormat(formatId);
-        if (image.BlockSize != FatBootSectorLayout.SectorSize || image.Cylinders != geometry.Cylinders || image.Heads != geometry.Heads || image.SectorsPerTrack != geometry.SectorsPerTrack || image.BlockCount * image.BlockSize != geometry.Capacity)
+        if (!MatchesGeometry(image, geometry))
             throw MsxRawImageWriterExceptions.GeometryMismatch(image.FormatId, formatId);
         var expected = new RegularSectorGeometry(formatId, FatBootSectorLayout.SectorSize, geometry.Cylinders, geometry.Heads, geometry.SectorsPerTrack);
         return writer.WriteAsync(image.FormatId.Equals(formatId, StringComparison.OrdinalIgnoreCase) ? image : image.WithFormatId(formatId), path, expected, cancellationToken);

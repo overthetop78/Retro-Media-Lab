@@ -25,7 +25,7 @@ public sealed class MediaImageWriterRegistry
         ArgumentException.ThrowIfNullOrWhiteSpace(targetFormatId);
         ArgumentException.ThrowIfNullOrWhiteSpace(targetExtension);
         var extension = MediaFileExtensionFunctions.Normalize(targetExtension);
-        return writers.Where(writer => writer.FormatIds.Contains(targetFormatId, StringComparer.OrdinalIgnoreCase) && writer.ProducedFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase)).ToArray();
+        return writers.Where(writer => writer.SupportsTarget(targetFormatId, extension)).ToArray();
     }
 
     public IMediaImageWriter? Resolve(MediaImageDocument document, string targetFormatId, string targetExtension)

@@ -18,8 +18,8 @@ internal sealed class BbcIsoScpSectorImagePolicy : IIsoScpSectorImagePolicy
     /// <exception cref="ArgumentException">L'identifiant demandé ne correspond à aucune géométrie BBC DFS prise en charge.</exception>
     public SectorImage Build(string? formatId, IsoSectorCandidateSet candidateSet)
     {
-        var measured = IsoSectorImageBuilder.Measure(candidateSet.Addressed);
+        var measured = IsoSectorImageBuilder.Measure(candidateSet.Physical);
         var geometry = formatId is null ? BbcDfsGeometry.FromObservedGeometry(measured.Cylinders, measured.Heads) : BbcDfsGeometry.FindByFormatId(formatId) ?? throw ScpReconstructionExceptions.InvalidRequestedFormat(BbcDfsGeometry.FormatFamilyName, formatId);
-        return IsoSectorImageBuilder.CreateUniform(geometry.FormatId, candidateSet.Addressed, measured.SectorSize, geometry.Cylinders, geometry.Heads, BbcDfsGeometry.SectorsPerTrack, address => Array.IndexOf(measured.SectorOrder, address.Number));
+        return IsoSectorImageBuilder.CreateUniform(geometry.FormatId, candidateSet.Physical, measured.SectorSize, geometry.Cylinders, geometry.Heads, BbcDfsGeometry.SectorsPerTrack, address => Array.IndexOf(measured.SectorOrder, address.Number));
     }
 }

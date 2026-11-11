@@ -16,6 +16,10 @@ public interface IMediaImageWriter
 
     bool ProducesMultipleFiles { get; }
 
+    /// <summary>Vérifie le couple cible indépendamment de la représentation source à convertir.</summary>
+    bool SupportsTarget(string targetFormatId, string targetExtension) => FormatIds.Contains(targetFormatId, StringComparer.OrdinalIgnoreCase)
+        && ProducedFileExtensions.Contains(targetExtension, StringComparer.OrdinalIgnoreCase);
+
     bool CanWrite(MediaImageDocument document, string targetFormatId, string targetExtension);
 
     Task<IReadOnlyList<string>> WriteAsync(MediaImageDocument document, string outputPath, string targetFormatId, CancellationToken cancellationToken = default);

@@ -78,6 +78,15 @@ public static class AcornWinchesterFormat
         return true;
     }
 
+    internal static void UpdateGeometryIfChanged(Span<byte> descriptor, HardDiskGeometry geometry, long dataLength)
+    {
+        var original = Geometry(descriptor, dataLength);
+        if (original is not null && original.Cylinders == geometry.Cylinders && original.Heads == geometry.Heads
+            && original.SectorsPerTrack == geometry.SectorsPerTrack && original.SectorSize == geometry.SectorSize)
+            return;
+        WriteGeometry(descriptor, geometry);
+    }
+
     internal static void WriteGeometry(Span<byte> descriptor, HardDiskGeometry geometry)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(descriptor.Length, MinimumDescriptorSize);

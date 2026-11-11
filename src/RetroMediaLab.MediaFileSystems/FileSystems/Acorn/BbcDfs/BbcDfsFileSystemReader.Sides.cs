@@ -9,10 +9,8 @@ namespace RetroMediaLab.MediaFileSystems.FileSystems.Acorn.BbcDfs;
 public sealed partial class BbcDfsFileSystemReader
 {
     private static bool IsDoubleSided(IMediaSectorImage image) => image.Heads == 2
-        && (image.FormatId is MediaImageFormatIds.AcornDfsDoubleSided or MediaImageFormatIds.AcornDfsDoubleSided80
-            || image.FormatId == MediaImageFormatIds.Jfd
-            && image.BlockSize == BbcDfsFileSystemLayout.SectorSize
-            && image.SectorsPerTrack == BbcDfsFileSystemLayout.SectorsPerTrack);
+        && image.BlockSize == BbcDfsFileSystemLayout.SectorSize
+        && image.SectorsPerTrack == BbcDfsFileSystemLayout.SectorsPerTrack;
 
     private FileSystemVolume ReadSides(IMediaSectorImage image)
     {
@@ -41,7 +39,9 @@ public sealed partial class BbcDfsFileSystemReader
     /// <summary>Vue empruntée sans copie des données ; le numéro DFS est relatif à sa face.</summary>
     private sealed class SideImage(IMediaSectorImage image, int head) : IMediaSectorImage
     {
-        public string FormatId => image.Cylinders > 40 ? MediaImageFormatIds.AcornDfsSingleSided80 : MediaImageFormatIds.AcornDfsSingleSided;
+        public string FormatId => image.FormatId is MediaImageFormatIds.Jfd or MediaImageFormatIds.AcornDfsDoubleSided or MediaImageFormatIds.AcornDfsDoubleSided80
+            ? image.Cylinders > 40 ? MediaImageFormatIds.AcornDfsSingleSided80 : MediaImageFormatIds.AcornDfsSingleSided
+            : image.FormatId;
         public int BlockSize => image.BlockSize;
         public int Cylinders => image.Cylinders;
         public int Heads => 1;

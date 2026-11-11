@@ -11,6 +11,7 @@ internal abstract class MediaImageWriterAdapter<TImage> : IMediaImageWriter
     where TImage : class
 {
     private readonly Func<TImage, MediaImageDocument, string, string, bool> canWrite;
+    private readonly Func<string, string, bool>? supportsTarget;
     private readonly Func<TImage, MediaImageDocument, string, string, CancellationToken, Task<IReadOnlyList<string>>> write;
 
     protected MediaImageWriterAdapter(
@@ -20,7 +21,8 @@ internal abstract class MediaImageWriterAdapter<TImage> : IMediaImageWriter
         IEnumerable<string> producedFileExtensions,
         Func<TImage, MediaImageDocument, string, string, bool> canWrite,
         Func<TImage, MediaImageDocument, string, string, CancellationToken, Task<IReadOnlyList<string>>> write,
-        bool producesMultipleFiles)
+        bool producesMultipleFiles,
+        Func<string, string, bool>? supportsTarget = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(formatIds);
@@ -39,6 +41,7 @@ internal abstract class MediaImageWriterAdapter<TImage> : IMediaImageWriter
         FormatIds = formats.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
         ProducedFileExtensions = extensions.Select(MediaFileExtensionFunctions.Normalize).ToFrozenSet(StringComparer.OrdinalIgnoreCase);
         this.canWrite = canWrite;
+        this.supportsTarget = supportsTarget;
         this.write = write;
         ProducesMultipleFiles = producesMultipleFiles;
     }
@@ -53,11 +56,18 @@ internal abstract class MediaImageWriterAdapter<TImage> : IMediaImageWriter
 
     public bool ProducesMultipleFiles { get; }
 
+    public bool SupportsTarget(string targetFormatId, string targetExtension)
+    {
+        var extension = MediaFileExtensionFunctions.Normalize(targetExtension);
+        return FormatIds.Contains(targetFormatId) && ProducedFileExtensions.Contains(extension)
+            && (supportsTarget?.Invoke(targetFormatId, extension) ?? true);
+    }
+
     public bool CanWrite(MediaImageDocument document, string targetFormatId, string targetExtension)
     {
         ArgumentNullException.ThrowIfNull(document);
         var extension = MediaFileExtensionFunctions.Normalize(targetExtension);
-        return TryGetImage(document, out var image) && FormatIds.Contains(targetFormatId) && ProducedFileExtensions.Contains(extension) && canWrite(image, document, targetFormatId, extension);
+        return TryGetImage(document, out var image) && SupportsTarget(targetFormatId, extension) && canWrite(image, document, targetFormatId, extension);
     }
 
     public async Task<IReadOnlyList<string>> WriteAsync(MediaImageDocument document, string outputPath, string targetFormatId, CancellationToken cancellationToken = default)

@@ -36,6 +36,9 @@ public sealed class TapeSignalRepresentationConverter : IMediaRepresentationConv
         {
             var signal = await TapeSignalFunctions.UefAsync((SequentialMediaImageRepresentation)source.Representation, new Dictionary<long, int>(), cancellationToken).ConfigureAwait(false);
             document = TapePcmFunctions.Document(descriptor, targetFormatId, signal);
+            losses = source.FormatId == TapeImageFormatIds.Uef
+                ? ["Original UEF chunk structure and non-signal information are not retained by the target signal format."]
+                : ["The output signal is reconstructed from Atom file data; TAP contains no recorded pulse timing."];
         }
         return new(document, source.Diagnostics, losses);
     }

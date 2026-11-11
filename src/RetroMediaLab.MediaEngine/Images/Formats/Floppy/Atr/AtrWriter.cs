@@ -8,11 +8,17 @@ namespace RetroMediaLab.MediaEngine.Images.Formats.Floppy.Atr;
 public sealed class AtrWriter(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageFileWriter? fileSystem = null)
 {
     private readonly RetroMediaLab.MediaEngine.Interfaces.IAtomicImageFileWriter files = fileSystem ?? new RetroMediaLab.MediaEngine.Interfaces.AtomicImageFileWriter();
+    internal static bool CanWrite(SectorImage image, string formatId)
+        => AtrFormatCatalog.TryGet(formatId, out var profile) && MatchesGeometry(image, profile);
+
+    private static bool MatchesGeometry(SectorImage image, AtrFormatProfile profile)
+        => image.FormatId.Equals(profile.FormatId, StringComparison.OrdinalIgnoreCase)
+            && image.BlockCount == profile.SectorCount && image.Capacity == profile.PayloadLength;
     /// <summary>Valide le profil demandé et écrit tous les secteurs sans remplissage implicite.</summary>
     public async Task WriteAsync(SectorImage image, string path, string formatId, CancellationToken cancellationToken = default)
     {
         if (!AtrFormatCatalog.TryGet(formatId, out var profile)) throw AtrExceptions.UnsupportedFormat(formatId);
-        if (!image.FormatId.Equals(profile.FormatId, StringComparison.OrdinalIgnoreCase) || image.BlockCount != profile.SectorCount || image.Capacity != profile.PayloadLength) throw AtrExceptions.IncompatibleSectorImage(image, profile);
+        if (!MatchesGeometry(image, profile)) throw AtrExceptions.IncompatibleSectorImage(image, profile);
         await files.WriteAsync(path, async (output, cancellationToken) =>
         {
         var header = new byte[AtrLayout.HeaderSize];

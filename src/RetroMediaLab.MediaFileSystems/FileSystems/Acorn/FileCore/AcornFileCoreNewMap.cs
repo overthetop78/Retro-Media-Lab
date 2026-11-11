@@ -38,26 +38,85 @@ internal sealed class AcornFileCoreNewMap : IFileCoreAddressResolver
     internal static bool TryCreate(IMediaSectorImage image, out AcornFileCoreNewMap? map)
     {
         map = null;
-        if (!image.TryGetBlock(AcornFileCoreLayout.DiscRecordBlock, out var firstBlock) || firstBlock.Data.Count < AcornFileCoreLayout.DiscRecordOffset + AcornFileCoreLayout.DiscRecordLength)
-            return false;
+        // F-format has no map at block zero: the checked boot record locates it.
+        // E-format has no boot block and keeps its single-zone map at block zero.
+        if (!TryReadBootRecord(image, out var locator) && !TryReadMapRecord(image, AcornFileCoreLayout.DiscRecordBlock, out locator)) return false;
+        if (locator is null || (1 << locator.Log2SectorSize) != image.BlockSize) return false;
+        var mapAddress = CalculateMapAddress(locator, locator.Log2BytesPerMapBit - locator.Log2SectorSize);
+        if (mapAddress < 0 || mapAddress >= image.BlockCount) return false;
+        for (var copy = 0; copy < 2; copy++)
+        {
+            if (!TryReadMapCopy(image, mapAddress, mapAddress + copy * locator.ZoneCount, locator.ZoneCount, out map)) continue;
+            return true;
+        }
+        return false;
+    }
 
-        var bytes = firstBlock.Data.ToArray();
-        var recordBytes = bytes.AsSpan(AcornFileCoreLayout.DiscRecordOffset, AcornFileCoreLayout.DiscRecordLength);
-        if (!AcornFileCoreDiscRecord.TryParse(recordBytes, image.Capacity, out var record) || record is null) return false;
-
-        var mapToBlockShift = record.Log2BytesPerMapBit - record.Log2SectorSize;
-        var mapAddress = CalculateMapAddress(record, mapToBlockShift);
-        if (mapAddress < 0 || mapAddress + record.ZoneCount > image.BlockCount) return false;
+    private static bool TryReadMapCopy(IMediaSectorImage image, int mapAddress, int copyAddress, int zoneCount, out AcornFileCoreNewMap? map)
+    {
+        map = null;
+        if (copyAddress < 0 || copyAddress + zoneCount > image.BlockCount
+            || !TryReadMapRecord(image, copyAddress, out var record) || record is null || record.ZoneCount != zoneCount) return false;
+        // PRM: once the map has been found, its record takes precedence over the boot record.
+        if ((1 << record.Log2SectorSize) != image.BlockSize || mapAddress + record.ZoneCount > image.BlockCount
+            || CalculateMapAddress(record, record.Log2BytesPerMapBit - record.Log2SectorSize) != mapAddress) return false;
 
         var zones = new AcornFileCoreZone[record.ZoneCount];
         var describedBits = CalculateDescribedBits(image.Capacity, record.Log2BytesPerMapBit);
+        var crossCheck = 0;
         for (var index = 0; index < zones.Length; index++)
         {
-            if (!image.TryGetBlock(mapAddress + index, out var block) || block.Data.Count != image.BlockSize || !TryCreateZone(block.Data, index, zones.Length, record, describedBits, out zones[index])) return false;
+            if (!image.TryGetBlock(copyAddress + index, out var block) || block.Data.Count != image.BlockSize) return false;
+            var bytes = block.Data.ToArray();
+            // FileCore Identify: FreeLink terminator, per-zone checksum, then whole-map cross-check.
+            if ((bytes[2] & 0x80) == 0 || ZoneCheck(bytes) != bytes[0]
+                || !TryCreateZone(bytes, index, zones.Length, record, describedBits, out zones[index])) return false;
+            crossCheck ^= bytes[3];
         }
-
+        if (crossCheck != 0xff) return false;
         map = new(image, record, zones);
         return true;
+    }
+
+    private static byte ZoneCheck(ReadOnlySpan<byte> data)
+    {
+        uint a = 0, b = 0, c = 0, d = 0;
+        for (var offset = data.Length - 4; offset > 0; offset -= 4)
+        {
+            a += data[offset] + (d >> 8); d &= 255;
+            b += data[offset + 1] + (a >> 8); a &= 255;
+            c += data[offset + 2] + (b >> 8); b &= 255;
+            d += data[offset + 3] + (c >> 8); c &= 255;
+        }
+        a += d >> 8;
+        b += data[1] + (a >> 8);
+        c += data[2] + (b >> 8);
+        d += data[3] + (c >> 8);
+        return (byte)(a ^ b ^ c ^ d);
+    }
+
+    private static bool TryReadMapRecord(IMediaSectorImage image, int address, out AcornFileCoreDiscRecord? record)
+    {
+        record = null;
+        return image.TryGetBlock(address, out var block)
+            && block.Data.Count >= AcornFileCoreLayout.DiscRecordOffset + AcornFileCoreLayout.DiscRecordLength
+            && AcornFileCoreDiscRecord.TryParse(block.Data.ToArray().AsSpan(AcornFileCoreLayout.DiscRecordOffset,
+                AcornFileCoreLayout.DiscRecordLength), image.Capacity, out record);
+    }
+
+    private static bool TryReadBootRecord(IMediaSectorImage image, out AcornFileCoreDiscRecord? record)
+    {
+        record = null;
+        var address = AcornFileCoreLayout.BootBlockAddress / image.BlockSize;
+        var offset = AcornFileCoreLayout.BootBlockAddress % image.BlockSize;
+        if (!image.TryGetBlock(address, out var block) || block.Data.Count - offset < AcornFileCoreLayout.BootBlockLength) return false;
+        var boot = block.Data.ToArray().AsSpan(offset, AcornFileCoreLayout.BootBlockLength);
+        var checksum = 0;
+        for (var index = boot.Length - 2; index >= 0; index--)
+            checksum = (checksum & 255) + (checksum >> 8) + boot[index];
+        return (byte)checksum == boot[^1]
+            && AcornFileCoreDiscRecord.TryParse(boot.Slice(AcornFileCoreLayout.BootDiscRecordOffset,
+                AcornFileCoreLayout.DiscRecordLength), image.Capacity, out record);
     }
 
     /// <summary>Calcule l'adresse du premier bloc de carte.</summary>

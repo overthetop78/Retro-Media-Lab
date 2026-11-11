@@ -8,11 +8,18 @@ namespace RetroMediaLab.MediaEngine.Images.Conversion.Atari;
 /// <summary>Valide et transforme sans perte une image sectorielle vers une géométrie Atari ST cataloguée.</summary>
 internal static class AtariStGeometryTransformer
 {
+    internal static bool CanTransformGeometry(SectorImage source, string targetFormatId)
+        => AtariStGeometry.TryFromFormatId(targetFormatId, out var target) && MatchesGeometry(source, target);
+
+    private static bool MatchesGeometry(SectorImage source, AtariStGeometry target)
+        => source.BlockSize == AtariStGeometry.SectorSize && source.Capacity == target.Capacity
+            && source.BlockCount == target.Capacity / AtariStGeometry.SectorSize;
+
     /// <summary>Reconstruit les adresses de la géométrie cible en conservant exactement tous les secteurs logiques.</summary>
     public static SectorImage Transform(SectorImage source, string targetFormatId, bool completeMissingSectors = false)
     {
         if (!AtariStGeometry.TryFromFormatId(targetFormatId, out var target)) throw AtariStConversionExceptions.UnsupportedTargetFormat(targetFormatId);
-        if (source.BlockSize != AtariStGeometry.SectorSize || source.Capacity != target.Capacity || source.BlockCount != target.Capacity / AtariStGeometry.SectorSize) throw AtariStConversionExceptions.LossyGeometryChange(source, target);
+        if (!MatchesGeometry(source, target)) throw AtariStConversionExceptions.LossyGeometryChange(source, target);
         var blocks = new List<SectorBlock>(source.BlockCount);
         for (var logical = 0; logical < source.BlockCount; logical++)
         {

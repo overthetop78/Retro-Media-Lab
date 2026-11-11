@@ -7,6 +7,12 @@ namespace RetroMediaLab.MediaEngine.Images.Formats.Floppy.Raw;
 public sealed class CoherentRawImageWriter(IAtomicImageFileWriter? fileWriter = null)
 {
     private readonly IAtomicImageFileWriter files = fileWriter ?? new AtomicImageFileWriter();
+    internal static bool CanWrite(SectorImage image)
+        => image.FormatId.Equals(DiskImageFormatIds.Commodore900Coherent, StringComparison.OrdinalIgnoreCase)
+            && image.BlockSize == Commodore900Geometry.SectorSize
+            && image.Cylinders == Commodore900Geometry.CylinderCount && image.Heads == Commodore900Geometry.HeadCount
+            && image.SectorsPerTrack == Commodore900Geometry.MaximumSectorsPerTrack
+            && image.BlockCount <= Commodore900Geometry.BlockCount;
     /// <summary>Valide chaque bloc et écrit atomiquement le dump BIN ou IMG.</summary>
     public async Task WriteAsync(SectorImage image, string path, CancellationToken cancellationToken = default)
     {
@@ -30,18 +36,7 @@ public sealed class CoherentRawImageWriter(IAtomicImageFileWriter? fileWriter = 
     /// <summary>Contrôle l'identifiant, la géométrie et la longueur logique de l'image.</summary>
     private static void ValidateImage(SectorImage image)
     {
-        if (!image.FormatId.Equals(DiskImageFormatIds.Commodore900Coherent,
-            StringComparison.OrdinalIgnoreCase) 
-            || image.BlockSize 
-            != Commodore900Geometry.SectorSize 
-            || image.Cylinders 
-            != Commodore900Geometry.CylinderCount 
-            || image.Heads 
-            != Commodore900Geometry.HeadCount 
-            || image.SectorsPerTrack 
-            != Commodore900Geometry.MaximumSectorsPerTrack 
-            || image.BlockCount 
-            > Commodore900Geometry.BlockCount)
+        if (!CanWrite(image))
             throw new InvalidDataException("L'image sectorielle n'utilise pas la géométrie zonée du Commodore 900.");
     }
 }

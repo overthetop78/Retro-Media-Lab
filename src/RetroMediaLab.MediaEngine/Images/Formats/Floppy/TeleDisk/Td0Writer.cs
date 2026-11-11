@@ -8,6 +8,16 @@ namespace RetroMediaLab.MediaEngine.Images.Formats.Floppy.TeleDisk;
 public sealed class Td0Writer(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageFileWriter? fileSystem = null)
 {
     private readonly RetroMediaLab.MediaEngine.Interfaces.IAtomicImageFileWriter files = fileSystem ?? new RetroMediaLab.MediaEngine.Interfaces.AtomicImageFileWriter();
+    internal static bool HasRepresentablePayload(SectorImage image)
+    {
+        if (!TryGetSizeCode(image.BlockSize, out var defaultCode)) return false;
+        var blocks = image.AvailableBlocks;
+        return blocks.Count > 0 && blocks.All(block =>
+        {
+            var code = block.RecordedSizeCode ?? defaultCode;
+            return code <= Td0Layout.MaximumSectorSizeCode && block.Data.Count == (Td0Layout.BaseSectorSize << code);
+        });
+    }
     /// <summary>Écrit atomiquement une image sectorielle avec une carte TeleDisk standard.</summary>
     public Task WriteAsync(SectorImage image, string path, CancellationToken cancellationToken = default) => WriteAsync(CreateDetailedImage(image), path, cancellationToken);
 
@@ -109,17 +119,36 @@ public sealed class Td0Writer(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageF
         return new(header, null, tracks, image);
     }
 
-    private static Td0Track[] CreateTracks(SectorImage image, byte sizeCode) => image.AvailableBlocks.GroupBy(block => (block.Address.Cylinder, block.Address.Head)).OrderBy(group => group.Key.Cylinder).ThenBy(group => group.Key.Head)
-        .Select(group => new Td0Track(checked((byte)group.Key.Cylinder), checked((byte)group.Key.Head), CreateSectors(group, sizeCode)))
-        .ToArray();
+    private static Td0Track[] CreateTracks(SectorImage image, byte sizeCode)
+    {
+        var groups = image.AvailableBlocks.GroupBy(block => (block.Address.Cylinder, block.Address.Head))
+            .ToDictionary(group => group.Key, group => group.AsEnumerable());
+        return Enumerable.Range(0, image.Cylinders).SelectMany(cylinder => Enumerable.Range(0, image.Heads)
+            .Select(head => new Td0Track(checked((byte)cylinder), checked((byte)head),
+                CreateSectors(groups.GetValueOrDefault((cylinder, head)) ?? [], sizeCode)))).ToArray();
+    }
 
     private static Td0Sector[] CreateSectors(IEnumerable<SectorBlock> blocks, byte sizeCode) => blocks.OrderBy(block => block.Address.Number)
-        .Select(block => new Td0Sector(checked((byte)block.Address.Cylinder), checked((byte)block.Address.Head), checked((byte)block.Address.Number), sizeCode, block.IntegrityValid == false ? (byte)Td0SectorFlags.DataCrcError : (byte)Td0SectorFlags.None, block.Data))
+        .Select(block =>
+        {
+            var recorded = block.RecordedAddress ?? block.Address;
+            var flags = (block.IntegrityValid == false || block.DataIntegrityValid == false ? Td0SectorFlags.DataCrcError : Td0SectorFlags.None)
+                | (block.DeletedDataMark == true ? Td0SectorFlags.DeletedData : Td0SectorFlags.None);
+            return new Td0Sector(checked((byte)recorded.Cylinder), checked((byte)recorded.Head), checked((byte)recorded.Number),
+                block.RecordedSizeCode ?? sizeCode, (byte)flags, block.Data);
+        })
         .ToArray();
 
     private static byte GetSizeCode(int size)
     {
-        for (byte code = 0; code <= Td0Layout.MaximumSectorSizeCode; code++) if ((Td0Layout.BaseSectorSize << code) == size) return code;
+        if (TryGetSizeCode(size, out var code)) return code;
         throw new InvalidDataException($"Sector size {size} cannot be represented by TeleDisk.");
+    }
+
+    private static bool TryGetSizeCode(int size, out byte code)
+    {
+        for (code = 0; code <= Td0Layout.MaximumSectorSizeCode; code++)
+            if ((Td0Layout.BaseSectorSize << code) == size) return true;
+        return false;
     }
 }

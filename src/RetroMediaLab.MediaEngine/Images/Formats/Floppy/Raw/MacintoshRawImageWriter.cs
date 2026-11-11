@@ -7,6 +7,18 @@ namespace RetroMediaLab.MediaEngine.Images.Formats.Floppy.Raw;
 public sealed class MacintoshRawImageWriter(RetroMediaLab.MediaEngine.Interfaces.IAtomicImageFileWriter? fileSystem = null)
 {
     private readonly RetroMediaLab.MediaEngine.Interfaces.IAtomicImageFileWriter files = fileSystem ?? new RetroMediaLab.MediaEngine.Interfaces.AtomicImageFileWriter();
+    private static int ExpectedBlockCount(SectorImage image) => image.Capacity switch
+    {
+        MacintoshGcrGeometry.Capacity400K => MacintoshGcrGeometry.SingleSidedBlockCount,
+        MacintoshGcrGeometry.Capacity800K => MacintoshGcrGeometry.SingleSidedBlockCount * MacintoshGcrGeometry.DoubleSidedHeadCount,
+        MacintoshMfmGeometry.Capacity => MacintoshMfmGeometry.SectorCount,
+        _ => 0
+    };
+
+    internal static bool HasSupportedGeometry(SectorImage image)
+        => ExpectedBlockCount(image) is > 0 and var count
+            && image.BlockSize == MacintoshGcrGeometry.BlockSize && image.BlockCount == count;
+
     /// <summary>Valide la géométrie et l'ordre zoné ou linéaire avant l'écriture atomique.</summary>
     public async Task WriteAsync(SectorImage image, string path, CancellationToken cancellationToken = default)
     {
@@ -17,14 +29,9 @@ public sealed class MacintoshRawImageWriter(RetroMediaLab.MediaEngine.Interfaces
     /// <summary>Construit les octets bruts dans l'ordre logique Macintosh.</summary>
     internal static byte[] BuildPayload(SectorImage image)
     {
-        var expectedBlocks = image.Capacity switch
-        {
-            MacintoshGcrGeometry.Capacity400K => MacintoshGcrGeometry.SingleSidedBlockCount,
-            MacintoshGcrGeometry.Capacity800K => MacintoshGcrGeometry.SingleSidedBlockCount * MacintoshGcrGeometry.DoubleSidedHeadCount,
-            MacintoshMfmGeometry.Capacity => MacintoshMfmGeometry.SectorCount,
-            _ => throw new InvalidDataException($"La capacité Macintosh {image.Capacity} n'est pas prise en charge.")
-        };
-        if (image.BlockSize != MacintoshGcrGeometry.BlockSize || image.BlockCount != expectedBlocks) throw new InvalidDataException("L'image ne possède pas une géométrie Macintosh complète.");
+        var expectedBlocks = ExpectedBlockCount(image);
+        if (expectedBlocks == 0) throw new InvalidDataException($"La capacité Macintosh {image.Capacity} n'est pas prise en charge.");
+        if (!HasSupportedGeometry(image)) throw new InvalidDataException("L'image ne possède pas une géométrie Macintosh complète.");
         var bytes = new byte[checked(expectedBlocks * MacintoshGcrGeometry.BlockSize)];
         for (var logicalBlock = 0; logicalBlock < expectedBlocks; logicalBlock++)
         {

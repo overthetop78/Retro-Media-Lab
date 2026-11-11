@@ -19,7 +19,7 @@ namespace RetroMediaLab.MediaEngine.Images.Reading.Decoding.Sequential.Acorn;
 /// <summary>Decodes Acorn tape filing system blocks from UEF byte streams or compatible PCM FSK signals.</summary>
 public sealed class AcornTapeDecoder : ISequentialMediaDecoder
 {
-    private static readonly IReadOnlySet<string> SupportedFormats = new[] { TapeImageFormatIds.Uef, TapeImageFormatIds.Wav, TapeImageFormatIds.Csw, TapeImageFormatIds.Raw }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly IReadOnlySet<string> SupportedFormats = new[] { TapeImageFormatIds.Uef, TapeImageFormatIds.Wav, TapeImageFormatIds.Csw, TapeImageFormatIds.Raw, TapeImageFormatIds.Voc }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     private static readonly IReadOnlySet<string> SupportedMachines = new[] { DiskSystemIds.AcornBbc }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     public string Id => UefConstants.DecoderId;
@@ -67,40 +67,21 @@ public sealed class AcornTapeDecoder : ISequentialMediaDecoder
 
     private static async Task<SequentialDecodeResult> DecodeWaveAsync(MediaImageDocument document, SequentialMediaImageRepresentation representation, CancellationToken cancellationToken)
     {
-        if (!PcmSampleFunctions.TryGetProfile(document.Metadata, out var channels, out var sampleRate, out var bitsPerSample, out var blockAlign))
+        if (!PcmSampleFunctions.TryGetProfile(document.Metadata, out _, out _, out _, out _))
             return new SequentialDecodeResult(UefConstants.DecoderId, 0, [], representation.Segments ?? [], ["The WAV PCM profile is incomplete or incompatible."]);
 
-        var decodedBytes = new List<byte>();
-        var sourcePositions = new List<long>();
-        var byteSamples = new List<int>();
-        var slowBytes = new List<byte>();
-        var slowSamples = new List<int>();
-        foreach (var segment in (representation.Segments ?? []).Where(segment => segment.Kind == SequentialSegmentKind.Samples && segment.ChannelNumber == 0).OrderBy(segment => segment.Position))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var pcm = await BlockMediaDataReader.ReadRangeAsync(segment.DataRange, cancellationToken).ConfigureAwait(false);
-            if (pcm is null) continue;
-            var samples = PcmSampleFunctions.ExtractChannel(pcm, channels, bitsPerSample, blockAlign, 0);
-            var serial = FskSerialFunctions.Decode(
-                samples,
-                sampleRate,
-                UefConstants.DefaultBaudRate,
-                UefConstants.AcornZeroFrequency,
-                UefConstants.AcornOneFrequency,
-                UefConstants.AcornDataBitsPerFrame,
-                UefConstants.AcornStopBitsPerFrame,
-                UefConstants.MinimumSamplesPerBit);
-            var slower = FskSerialFunctions.Decode(samples, sampleRate, 300, UefConstants.AcornZeroFrequency, UefConstants.AcornOneFrequency, UefConstants.AcornDataBitsPerFrame, UefConstants.AcornStopBitsPerFrame, UefConstants.MinimumSamplesPerBit);
-            decodedBytes.AddRange(serial.Bytes);
-            slowBytes.AddRange(slower.Bytes);
-            var segmentStart = checked((int)Math.Round((segment.Start ?? TimeSpan.Zero).TotalSeconds * sampleRate));
-            byteSamples.AddRange(serial.Positions.Select(position => position + segmentStart));
-            slowSamples.AddRange(slower.Positions.Select(position => position + segmentStart));
-            if (serial.Bytes.Count > 0 || slower.Bytes.Count > 0) sourcePositions.Add(segment.Position);
-        }
-
-        var fastBlocks = DecodeBlocks(decodedBytes, sourcePositions, "wav-fsk", 0, byteSamples);
-        var slowBlocks = DecodeBlocks(slowBytes, sourcePositions, "wav-fsk", 0, slowSamples);
+        // Les segments PCM sont des repères de présentation, pas des resets UART.
+        // Le canal est continu même si une frontière coupe un caractère ou sa porteuse.
+        var pcm = await TapePcmFunctions.ChannelsAsync(document, cancellationToken).ConfigureAwait(false);
+        var serial = FskSerialFunctions.Decode(pcm.Channels[0], pcm.Rate, UefConstants.DefaultBaudRate,
+            UefConstants.AcornZeroFrequency, UefConstants.AcornOneFrequency, UefConstants.AcornDataBitsPerFrame,
+            UefConstants.AcornStopBitsPerFrame, UefConstants.MinimumSamplesPerBit);
+        var slower = FskSerialFunctions.Decode(pcm.Channels[0], pcm.Rate, 300,
+            UefConstants.AcornZeroFrequency, UefConstants.AcornOneFrequency, UefConstants.AcornDataBitsPerFrame,
+            UefConstants.AcornStopBitsPerFrame, UefConstants.MinimumSamplesPerBit);
+        var sourcePositions = (representation.Segments ?? []).Where(segment => segment.Kind == SequentialSegmentKind.Samples && segment.ChannelNumber is null or 0).Select(segment => segment.Position).Distinct().ToArray();
+        var fastBlocks = DecodeBlocks(serial.Bytes, sourcePositions, "wav-fsk", 0, serial.Positions);
+        var slowBlocks = DecodeBlocks(slower.Bytes, sourcePositions, "wav-fsk", 0, slower.Positions);
         // Le CRC valide les blocs à chaque débit ; une même bande peut changer de débit entre deux fichiers.
         var valid = fastBlocks.Concat(slowBlocks).Where(block => block.IntegrityValid == true).OrderBy(block => int.Parse(block.Metadata["samplePosition"], CultureInfo.InvariantCulture)).DistinctBy(block => (block.Metadata["samplePosition"], block.Metadata["fileName"], block.Metadata["blockNumber"])).ToArray();
         IReadOnlyList<SequentialDecodedBlock> blocks = valid.Length == 0 ? fastBlocks.Count >= slowBlocks.Count ? fastBlocks : slowBlocks : valid.Select((block, index) => new SequentialDecodedBlock(index, block.Data, block.SourceSegmentPositions, block.IntegrityValid, block.Metadata)).ToArray();

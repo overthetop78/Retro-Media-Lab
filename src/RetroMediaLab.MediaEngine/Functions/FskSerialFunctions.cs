@@ -45,16 +45,19 @@ public static class FskSerialFunctions
         if (samplesPerBit < minimumSamplesPerBit) return new FskSerialDecodeResult([], 0, 0);
         // Decode the tone intervals once, then synchronize each UART frame separately.
         // A single grid for the whole tape accumulates oscillator/tape-speed drift.
-        var tones = ToneLevels(samples, sampleRate, zeroFrequency, oneFrequency, out var tapeTimeScale);
-        samplesPerBit *= tapeTimeScale;
+        var tones = ToneLevels(samples, sampleRate, zeroFrequency, oneFrequency, out var clockRecoveries);
+        var nominalSamplesPerBit = samplesPerBit;
+        var recovery = 0;
         var bytes = new List<byte>();
         var positions = new List<int>();
         var tested = 0;
         for (var start = 1; start < tones.Length; start++)
         {
+            if (tones[start] || !tones[start - 1]) continue;
+            while (recovery < clockRecoveries.Count && clockRecoveries[recovery].Position <= start)
+                samplesPerBit = nominalSamplesPerBit * clockRecoveries[recovery++].TimeScale;
             var lastStop = (int)Math.Round(start + (dataBits + stopBits + 0.5) * samplesPerBit);
             if (lastStop >= tones.Length) break;
-            if (tones[start] || !tones[start - 1]) continue;
             if (tones[(int)Math.Round(start + samplesPerBit / 2)]) continue;
             tested++;
             var validStop = true;
@@ -72,7 +75,7 @@ public static class FskSerialFunctions
         return new FskSerialDecodeResult(bytes, bytes.Count, tested, positions);
     }
 
-    private static bool[] ToneLevels(IReadOnlyList<int> samples, int sampleRate, int zeroFrequency, int oneFrequency, out double tapeTimeScale)
+    private static bool[] ToneLevels(IReadOnlyList<int> samples, int sampleRate, int zeroFrequency, int oneFrequency, out IReadOnlyList<(int Position, double TimeScale)> clockRecoveries)
     {
         var result = new bool[samples.Count];
         Array.Fill(result, true);
@@ -84,8 +87,7 @@ public static class FskSerialFunctions
         var edge = -1;
         var carrierWaves = 0;
         long carrierSamples = 0;
-        var longestCarrier = 0;
-        tapeTimeScale = 1;
+        var recoveries = new List<(int Position, double TimeScale)>();
         for (var index = 0; index < samples.Count; index++)
         {
             var current = Math.Sign(samples[index]);
@@ -101,21 +103,26 @@ public static class FskSerialFunctions
                     {
                         ++carrierWaves;
                         carrierSamples += duration;
-                        if (carrierWaves >= MinimumCarrierHalfWavesForClockRecovery && carrierWaves > longestCarrier)
-                        {
-                            longestCarrier = carrierWaves;
-                            // Tape speed changes both tones and baud rate by the same factor.
-                            tapeTimeScale = carrierSamples / (carrierWaves * oneHalfWave);
-                        }
                     }
-                    else { carrierWaves = 0; carrierSamples = 0; }
+                    else EndCarrier(edge);
                 }
-                else { carrierWaves = 0; carrierSamples = 0; }
+                else EndCarrier(edge);
             }
             edge = index;
             previous = current;
         }
+        clockRecoveries = recoveries;
         return result;
+
+        void EndCarrier(int position)
+        {
+            // La vitesse agit sur les tons et le débit dans les mêmes proportions.
+            // Seule une porteuse déjà rencontrée peut régler la trame suivante.
+            if (carrierWaves >= MinimumCarrierHalfWavesForClockRecovery)
+                recoveries.Add((position, carrierSamples / (carrierWaves * oneHalfWave)));
+            carrierWaves = 0;
+            carrierSamples = 0;
+        }
     }
 
     private static void AppendPcmBit(List<short> samples, ref short level, int sampleRate, int baudRate, int zeroFrequency, int oneFrequency, bool value)

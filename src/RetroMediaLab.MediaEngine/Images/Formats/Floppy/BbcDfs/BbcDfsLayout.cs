@@ -8,16 +8,19 @@ internal static class BbcDfsLayout
     /// <summary>Les faces DFS sont deux disques logiques ; le formateur Acorn inscrit H=0 sur chacune.</summary>
     internal const int RecordedHead = 0;
 
-    /// <summary>Construit les secteurs complets du conteneur, en séparant leur face physique de l'ID enregistré.</summary>
+    /// <summary>Conserve les octets disponibles, y compris un dernier secteur incomplet, et sépare la face physique de l'ID enregistré.</summary>
     internal static SectorImage CreateImage(byte[] data, BbcDfsGeometry geometry, CancellationToken cancellationToken)
     {
-        var blocks = new SectorBlock[data.Length / BbcDfsGeometry.SectorSize];
+        var blocks = new SectorBlock[(data.Length + BbcDfsGeometry.SectorSize - 1) / BbcDfsGeometry.SectorSize];
         for (var logical = 0; logical < blocks.Length; logical++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var perCylinder = geometry.Heads * BbcDfsGeometry.SectorsPerTrack;
             var address = new SectorAddress(logical / perCylinder, logical / BbcDfsGeometry.SectorsPerTrack % geometry.Heads, logical % BbcDfsGeometry.SectorsPerTrack);
-            blocks[logical] = new(logical, address, data.AsSpan(logical * BbcDfsGeometry.SectorSize, BbcDfsGeometry.SectorSize).ToArray())
+            var offset = logical * BbcDfsGeometry.SectorSize;
+            var length = Math.Min(BbcDfsGeometry.SectorSize, data.Length - offset);
+            blocks[logical] = new(logical, address, data.AsSpan(offset, length).ToArray(),
+                IntegrityValid: length == BbcDfsGeometry.SectorSize ? true : null)
             {
                 RecordedAddress = new(address.Cylinder, RecordedHead, address.Number)
             };

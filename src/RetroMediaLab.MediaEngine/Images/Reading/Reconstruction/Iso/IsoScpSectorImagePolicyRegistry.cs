@@ -1,6 +1,7 @@
 using RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.Atari;
 using RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.EpsonQx10;
 using RetroMediaLab.MediaEngine.Constants;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Adf;
 
 namespace RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.Iso;
 
@@ -11,6 +12,9 @@ internal static class IsoScpSectorImagePolicyRegistry
     [
         (format => format.Equals(DiskImageFormatIds.AcornAtomDos, StringComparison.OrdinalIgnoreCase),
             _ => new GenericIsoScpSectorImagePolicy()),
+        (format => format.StartsWith(DiskImageFormatIds.AcornAdfsPrefix, StringComparison.OrdinalIgnoreCase)
+            && AcornAdfGeometry.All.Any(geometry => geometry.FormatId.Equals(format, StringComparison.OrdinalIgnoreCase)),
+            _ => new AcornAdfsIsoScpSectorImagePolicy()),
         (format => format.StartsWith(DiskImageFormatIds.AtariPrefix, StringComparison.OrdinalIgnoreCase),
             format => new Atari8BitIsoScpSectorImagePolicy(format)),
         (format => format.StartsWith(DiskImageFormatIds.AtariStPrefix, StringComparison.OrdinalIgnoreCase),

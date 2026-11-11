@@ -12,7 +12,8 @@ internal static class SectorImageTrackTimingCatalog
             return TrackEncodingTimings.HighDensityMfmBitCellTicks;
         if (formatId.Equals(DiskImageFormatIds.Atari90, StringComparison.OrdinalIgnoreCase) || formatId.Equals(DiskImageFormatIds.AtariXfd90, StringComparison.OrdinalIgnoreCase) || formatId.StartsWith(DiskImageFormatIds.AcornDfsPrefix, StringComparison.OrdinalIgnoreCase))
             return TrackEncodingTimings.SingleDensityFmBitCellTicks;
-        if (formatId.Equals(DiskImageFormatIds.AtariSt1440, StringComparison.OrdinalIgnoreCase) || IsHighDensityIbm(formatId))
+        if (formatId.Equals(DiskImageFormatIds.AcornAdfs1600, StringComparison.OrdinalIgnoreCase)
+            || formatId.Equals(DiskImageFormatIds.AtariSt1440, StringComparison.OrdinalIgnoreCase) || IsHighDensityIbm(formatId))
             return TrackEncodingTimings.HighDensityMfmBitCellTicks;
         if (IsDoubleDensityFamily(formatId))
             return TrackEncodingTimings.DoubleDensityMfmBitCellTicks;

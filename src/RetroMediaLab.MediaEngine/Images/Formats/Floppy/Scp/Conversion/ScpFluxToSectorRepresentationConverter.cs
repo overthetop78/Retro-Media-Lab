@@ -53,7 +53,10 @@ internal sealed class ScpFluxToSectorRepresentationConverter : IMediaRepresentat
             $"Converting c={string.Join(',', flux.Tracks.Select(track => track.Cylinder).Distinct().Order())}:h={string.Join(',', flux.Tracks.Select(track => track.Head).Distinct().Order())}",
             0,
             source.MediaKind));
-        var image = await reader.ReadAsync(flux.Image, targetFormatId, progress is null ? null : new ConversionProgressRelay(progress, source.MediaKind), cancellationToken).ConfigureAwait(false);
+        // These are sector containers, not requests to reformat a disk as CPC or UCSD.
+        var formatHint = targetFormatId.Equals(DiskImageFormatIds.CpcEmuDsk, StringComparison.OrdinalIgnoreCase)
+            || targetFormatId.Equals(DiskImageFormatIds.UcsdIbmMfm, StringComparison.OrdinalIgnoreCase) ? null : targetFormatId;
+        var image = await reader.ReadAsync(flux.Image, formatHint, progress is null ? null : new ConversionProgressRelay(progress, source.MediaKind), cancellationToken).ConfigureAwait(false);
         var document = MediaImageDocumentFactory.CreateFloppySector(source.Source, image);
         return new MediaRepresentationConversionResult(document, [], ["Physical flux timing and protection information is not preserved in the sector representation."]);
     }

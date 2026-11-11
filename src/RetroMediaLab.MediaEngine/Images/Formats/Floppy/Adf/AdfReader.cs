@@ -69,30 +69,50 @@ public sealed class AdfReader : IMediaImageReader
         return Read(data, cancellationToken);
     }
 
-    ValueTask<bool> IMediaImageReader.CanReadAsync(MediaRecognitionContext context, CancellationToken cancellationToken)
+    async ValueTask<bool> IMediaImageReader.CanReadAsync(MediaRecognitionContext context, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var requestedFormatMatches = context.RequestedFormatId is null || SupportedFormatIds.Contains(context.RequestedFormatId);
+        if (requestedFormatMatches && context.Extension.Equals(DiskImageFileExtensions.Adf, StringComparison.OrdinalIgnoreCase)
+            && context.Length < AcornAdfGeometry.HighDensityCapacity && !AcceptedSizes.Contains((int)context.Length))
+        {
+            var header = await context.ReadHeaderAsync(AcornAdfPartialImage.ProbeLength, cancellationToken).ConfigureAwait(false);
+            if (AcornAdfPartialImage.TryDescribe(header.Span, context.Length, out _, out _))
+            {
+                var bytes = await context.ReadBytesAsync(cancellationToken).ConfigureAwait(false);
+                if (AcornAdfPartialImage.TryCreate(bytes.Span, out var partial)
+                    && (context.RequestedFormatId is null || partial.FormatId.Equals(context.RequestedFormatId, StringComparison.OrdinalIgnoreCase))) return true;
+            }
+        }
         var lengthMatches = context.Length <= int.MaxValue && AcceptedSizes.Contains((int)context.Length);
         if (context.Extension.Equals(DiskImageFileExtensions.AcornAdfs640, StringComparison.OrdinalIgnoreCase))
-            return ValueTask.FromResult(context.Length == 655360 && (context.RequestedFormatId is null
-                || context.RequestedFormatId.Equals(DiskImageFormatIds.AcornAdfs640, StringComparison.OrdinalIgnoreCase)));
+            return context.Length == 655360 && (context.RequestedFormatId is null
+                || context.RequestedFormatId.Equals(DiskImageFormatIds.AcornAdfs640, StringComparison.OrdinalIgnoreCase));
         if (string.Equals(context.RequestedFormatId, DiskImageFormatIds.AcornDosPlus800, StringComparison.OrdinalIgnoreCase))
-            return ValueTask.FromResult(context.Length == AcornAdfGeometry.Capacity);
+            return context.Length == AcornAdfGeometry.Capacity;
         if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.Capacity == context.Length) is { } bbc)
-            return ValueTask.FromResult(requestedFormatMatches && (context.RequestedFormatId is null ? SupportedExtensions.Contains(context.Extension) : context.RequestedFormatId.Equals(bbc.FormatId, StringComparison.OrdinalIgnoreCase)));
-        return ValueTask.FromResult(requestedFormatMatches && lengthMatches);
+            return requestedFormatMatches && (context.RequestedFormatId is null ? SupportedExtensions.Contains(context.Extension) : context.RequestedFormatId.Equals(bbc.FormatId, StringComparison.OrdinalIgnoreCase));
+        return requestedFormatMatches && lengthMatches;
     }
 
     async Task<MediaImageDocument> IMediaImageReader.ReadAsync(MediaRecognitionContext context, CancellationToken cancellationToken)
     {
         var data = await context.ReadBytesAsync(cancellationToken).ConfigureAwait(false);
         var image = Read(data.ToArray(), cancellationToken, context.RequestedFormatId);
+        if (data.Length < image.Capacity)
+            return MediaImageDocument.CreateUnexplored(context.Source, image.FormatId, MediaKind.Floppy,
+                new SectorMediaImageRepresentation(image), [AdfExceptions.InvalidSize(data.Length, [checked((int)image.Capacity)]).Message], new Dictionary<string, string>());
         return MediaImageDocumentFactory.CreateFloppySector(context.Source, image);
     }
 
     private static SectorImage Read(byte[] data, CancellationToken cancellationToken, string? requestedFormatId = null)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        // Preserve the established Amiga DD/HD decisions before probing incomplete Acorn images.
+        if (data.Length == AmigaAdfGeometry.DoubleDensity.Capacity) return RegularSectorImageBuilder.Create(data, AmigaAdfGeometry.DoubleDensity, cancellationToken);
+        if (data.Length == AmigaAdfGeometry.HighDensity.Capacity) return RegularSectorImageBuilder.Create(data, AmigaAdfGeometry.HighDensity, cancellationToken);
+        if (AcornAdfPartialImage.TryCreate(data, out var partial)
+            && (requestedFormatId is null || partial.FormatId.Equals(requestedFormatId, StringComparison.OrdinalIgnoreCase))) return partial;
         if (AcornAdfGeometry.BbcGeometries.FirstOrDefault(geometry => geometry.Capacity == data.Length) is { } bbc) return AcornAdfLayout.CreateBbc(data, bbc, cancellationToken);
         if (data.Length == AcornAdfGeometry.Capacity)
         {
@@ -102,8 +122,6 @@ public sealed class AdfReader : IMediaImageReader
         }
         if (data.Length == AcornAdfGeometry.PaddedCapacity) return RegularSectorImageBuilder.Create(data, AcornAdfGeometry.Geometry, cancellationToken, AcornAdfGeometry.PaddedTrailingByteCount);
         if (data.Length == AcornAdfGeometry.HighDensityCapacity) return RegularSectorImageBuilder.Create(data, AcornAdfGeometry.HighDensityGeometry, cancellationToken);
-        if (data.Length == AmigaAdfGeometry.DoubleDensity.Capacity) return RegularSectorImageBuilder.Create(data, AmigaAdfGeometry.DoubleDensity, cancellationToken);
-        if (data.Length == AmigaAdfGeometry.HighDensity.Capacity) return RegularSectorImageBuilder.Create(data, AmigaAdfGeometry.HighDensity, cancellationToken);
         throw AdfExceptions.InvalidSize(data.Length, AcceptedSizes);
     }
 }

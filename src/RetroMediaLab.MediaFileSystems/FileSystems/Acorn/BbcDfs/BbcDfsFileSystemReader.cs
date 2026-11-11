@@ -22,8 +22,7 @@ public sealed partial class BbcDfsFileSystemReader : IFileSystemReader
     public bool CanRead(IMediaSectorImage image)
     {
         if (IsDoubleSided(image)) return Enumerable.Range(0, image.Heads).Any(head => CanRead(new SideImage(image, head)));
-        if (!CatalogFormatIds.Contains(image.FormatId) 
-            || image.BlockSize 
+        if (image.BlockSize
             != BbcDfsFileSystemLayout.SectorSize 
             || !image.TryGetBlock(BbcDfsFileSystemLayout.NamesSector,
             out var names) 
@@ -35,6 +34,8 @@ public sealed partial class BbcDfsFileSystemReader : IFileSystemReader
             != BbcDfsFileSystemLayout.SectorSize)
             return false;
         var count = metadata.Data[BbcDfsFileSystemLayout.EntryCountOffset];
+        if (!CatalogFormatIds.Contains(image.FormatId)
+            && !HasStructuredCatalogue(image, names.Data.ToArray(), metadata.Data.ToArray())) return false;
         return count 
             % BbcDfsFileSystemLayout.EntryPartSize 
             == 0 
@@ -46,6 +47,25 @@ public sealed partial class BbcDfsFileSystemReader : IFileSystemReader
             << BitConstants.BitsPerByte 
             | metadata.Data[BbcDfsFileSystemLayout.TotalSectorsLowOffset]) 
             <= image.BlockCount;
+    }
+
+    private static bool HasStructuredCatalogue(IMediaSectorImage image, ReadOnlySpan<byte> names, ReadOnlySpan<byte> metadata)
+    {
+        var total = ((metadata[BbcDfsFileSystemLayout.TotalSectorsHighOffset] & BbcDfsFileSystemLayout.TotalSectorsHighMask) << 8)
+            | metadata[BbcDfsFileSystemLayout.TotalSectorsLowOffset];
+        var count = metadata[BbcDfsFileSystemLayout.EntryCountOffset];
+        if (image.SectorsPerTrack != BbcDfsFileSystemLayout.SectorsPerTrack || total is not (400 or 800)
+            || total > image.BlockCount || count % BbcDfsFileSystemLayout.EntryPartSize != 0
+            || count > BbcDfsFileSystemLayout.MaximumEntryCount * BbcDfsFileSystemLayout.EntryPartSize) return false;
+        for (var offset = BbcDfsFileSystemLayout.FirstEntryOffset; offset < count + BbcDfsFileSystemLayout.FirstEntryOffset; offset += BbcDfsFileSystemLayout.EntryPartSize)
+        {
+            for (var character = 0; character < BbcDfsFileSystemLayout.EntryPartSize; character++)
+                if ((names[offset + character] & BbcDfsFileSystemLayout.CharacterMask) is < 32 or > 126) return false;
+            var start = BbcDfsEntryDecoder.StartSector(metadata, offset);
+            var length = BbcDfsEntryDecoder.Length(metadata, offset);
+            if (start < 2 || start + (length + BbcDfsFileSystemLayout.SectorSize - 1) / BbcDfsFileSystemLayout.SectorSize > total) return false;
+        }
+        return true;
     }
 
     public FileSystemVolume Read(IMediaSectorImage image)

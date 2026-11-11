@@ -33,6 +33,7 @@ public sealed class MediaConversionService
     {
         ArgumentNullException.ThrowIfNull(document);
         return writers.Writers.SelectMany(writer => writer.FormatIds.SelectMany(formatId => writer.ProducedFileExtensions.Select(extension => (Writer: writer, FormatId: formatId, Extension: extension))))
+            .Where(candidate => candidate.Writer.SupportsTarget(candidate.FormatId, candidate.Extension))
             .Where(candidate =>
                 candidate.Writer.CanWrite(document, candidate.FormatId, candidate.Extension) ||
                 candidate.Writer.RepresentationKinds.Any(targetKind => converters.Resolve(document, candidate.FormatId, targetKind) is not null))

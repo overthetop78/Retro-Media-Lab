@@ -35,7 +35,7 @@ internal static class ScpCandidateRanker
         foreach (var inspection in inspections)
         {
             var image = NormalizeCompatibleGeometry(inspection.Image, source);
-            if (image is null || !HasCompatibleGeometry(image, source))
+            if (image is null || !HasCompatibleGeometry(image, source) && !HasCredibleSparseGeometry(image, inspection, source))
             {
                 rejected.Add(inspection);
                 continue;
@@ -85,6 +85,13 @@ internal static class ScpCandidateRanker
         var minimumCylinders = Math.Max(1, (int)Math.Floor(sourceCylinders * 0.9));
         return image.Heads == sourceHeads && image.Cylinders >= minimumCylinders && image.Cylinders <= sourceCylinders;
     }
+
+    private static bool HasCredibleSparseGeometry(SectorImage image, ScpCandidateInspection inspection, ScpImage source)
+        => source.Tracks.Count > 0 && image.Heads == source.Tracks.Max(track => track.Head) + 1
+            && image.Cylinders >= source.Tracks.Max(track => track.Cylinder) + 1
+            && image.Cylinders > source.Tracks.Select(track => track.Cylinder).Distinct().Count()
+            && image.AvailableBlocks.Count < image.BlockCount
+            && inspection.Matches.Any(match => match.Image.FormatId == image.FormatId && FileSystemAlternativePolicy.IsCredible(match.Volume));
 
     internal static SectorImage? NormalizeCompatibleGeometry(SectorImage? image, ScpImage source)
     {

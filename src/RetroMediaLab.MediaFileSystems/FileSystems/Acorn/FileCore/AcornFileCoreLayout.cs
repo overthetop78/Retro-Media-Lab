@@ -12,6 +12,10 @@ public static class AcornFileCoreLayout
     public const int DiscRecordOffset = 4;
     /// <summary>Longueur du DiscRecord en octets.</summary>
     public const int DiscRecordLength = 60;
+    /// <summary>Adresse et longueur du bloc d'amorçage FileCore, PRM « Boot blocks ».</summary>
+    public const int BootBlockAddress = 0xc00, BootBlockLength = 512;
+    /// <summary>Position du DiscRecord dans le bloc d'amorçage.</summary>
+    public const int BootDiscRecordOffset = 0x1c0;
     /// <summary>Longueur du DiscRecord en bits.</summary>
     public const int DiscRecordBitLength = DiscRecordLength * BitConstants.BitsPerByte;
     /// <summary>Identifiant du fragment racine.</summary>

@@ -58,7 +58,8 @@ internal static class JfdCodec
         }
         var records = active.OrderBy(pair => pair.Key).SelectMany(pair => pair.Value).ToArray();
         var ordinary = records.Where(record => !record.RawTrack).ToArray();
-        var cylinders = Math.Max(1, (active.Keys.DefaultIfEmpty(0).Max() / 2) + 1);
+        // Empty trailing entries are still physical tracks in the native table.
+        var cylinders = Math.Max(1, (trackCount + 1) / 2);
         var heads = active.Keys.Any(track => track % 2 != 0) ? 2 : 1;
         var spt = Math.Max(1, ordinary.GroupBy(record => record.Track).Select(group => group.Select(record => (record.Header >> 8) & 255).Distinct().Count()).DefaultIfEmpty(1).Max());
         var size = ordinary.GroupBy(record => record.Length).OrderByDescending(group => group.Count()).Select(group => group.Key).FirstOrDefault(1024);

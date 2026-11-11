@@ -32,6 +32,7 @@
   <data name="Format.commodore.1571"><value>Commodore 128 — 1571</value></data>
   <data name="Format.commodore.1581"><value>Commodore 128 — 1581</value></data>
   <data name="Format.acorn.adfs.800"><value>Acorn — ADFS · 800 KiB</value></data>
+  <data name="Format.acorn.adfs.1600"><value>Acorn — ADFS · 1600 KiB</value></data>
   <data name="Format.acorn.dosplus.800"><value>Acorn — DOS Plus · 800 KiB</value></data>
   <data name="Format.raw.hfe"><value>HxC flux image</value></data>
   <data name="Format.apple2.appledos.113"><value>Apple II DOS 3.2 — 113 KiB</value></data>

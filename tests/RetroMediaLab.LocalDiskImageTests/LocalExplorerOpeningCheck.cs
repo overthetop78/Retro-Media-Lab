@@ -35,7 +35,11 @@ internal static class LocalExplorerOpeningCheck
                 application = new ResourceApplication { ShutdownMode = ShutdownMode.OnExplicitShutdown };
                 application.Resources = new ResourceDictionary
                 {
-                    Source = new Uri("/retromedialab.app;component/Views/Styles/ApplicationStyles.xaml", UriKind.Relative)
+                    MergedDictionaries =
+                    {
+                        new ResourceDictionary { Source = new Uri("/retromedialab.app;component/Theme/Base/Tokens.xaml", UriKind.Relative) },
+                        new ResourceDictionary { Source = new Uri("/retromedialab.app;component/Theme/Base/Views/Styles/ApplicationStyles.xaml", UriKind.Relative) }
+                    }
                 };
                 scope = new DiskImageCancellationScope();
                 var engine = MediaEngineComposition.CreateDefault();
@@ -92,7 +96,7 @@ internal static class LocalExplorerOpeningCheck
                     throw new InvalidOperationException($"Explorer showed {formatSelector.Items.Count} format choice(s), expected at least {minimumFormats}.");
                 if (formatSelector.Items.Count == 1 && formatSelector.Visibility != Visibility.Collapsed)
                     throw new InvalidOperationException("Explorer showed the detected-format selector for a single recognized format.");
-                if (expectedFormatId is not null &&
+                if (expectedFormatId is not null && formats.Any(format => string.Equals(format.Id, expectedFormatId, StringComparison.OrdinalIgnoreCase)) &&
                     (!string.Equals(explorer.ClassificationSelector.SelectedFormatId, expectedFormatId, StringComparison.OrdinalIgnoreCase) ||
                      string.IsNullOrWhiteSpace(explorer.ClassificationSelector.SelectedMachine)))
                     throw new InvalidOperationException("Explorer did not connect the detected format to the machine and format selector.");

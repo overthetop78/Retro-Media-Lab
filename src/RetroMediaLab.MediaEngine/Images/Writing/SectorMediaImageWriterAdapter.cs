@@ -13,7 +13,8 @@ internal sealed class SectorMediaImageWriterAdapter : MediaImageWriterAdapter<Se
         IEnumerable<string> producedFileExtensions,
         Func<SectorImage, MediaImageDocument, string, string, bool> canWrite,
         Func<SectorImage, MediaImageDocument, string, string, CancellationToken, Task<IReadOnlyList<string>>> write,
-        bool producesMultipleFiles = false)
+        bool producesMultipleFiles = false,
+        Func<string, string, bool>? supportsTarget = null)
         : base(
             id,
             MediaRepresentationKind.Sectors,
@@ -21,7 +22,8 @@ internal sealed class SectorMediaImageWriterAdapter : MediaImageWriterAdapter<Se
             producedFileExtensions,
             canWrite,
             write,
-            producesMultipleFiles)
+            producesMultipleFiles,
+            supportsTarget)
     {
     }
 

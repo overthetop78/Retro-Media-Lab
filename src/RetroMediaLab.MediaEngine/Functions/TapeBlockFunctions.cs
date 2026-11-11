@@ -30,11 +30,8 @@ internal static class TapeBlockFunctions
     /// <summary>Découpe la présentation PCM aux starts validés sans modifier ni réencoder les données du fichier.</summary>
     internal static async Task<MediaImageDocument> IndexAsync(MediaImageDocument document, CancellationToken token)
     {
-        if (document.FormatId == TapeImageFormatIds.Uef && document.Representation is SequentialMediaImageRepresentation sourceImage && (sourceImage.Segments ?? []).Any(segment => segment.Metadata.GetValueOrDefault(UefConstants.ChunkIdMetadataKey) == UefConstants.SecurityCycles.ToString("x4", CultureInfo.InvariantCulture)))
-        {
-            var signal = await TapeSignalFunctions.UefAsync(sourceImage, new Dictionary<long, int>(), token).ConfigureAwait(false);
-            document = TapePcmFunctions.Document(document.Source, TapeImageFormatIds.Uef, signal);
-        }
+        // Un UEF natif conserve ses chunks, y compris les métadonnées et les pulses.
+        // Les décodeurs peuvent en rendre le signal sans remplacer le document source.
         if (document.FormatId is not (TapeImageFormatIds.Wav or TapeImageFormatIds.Csw or TapeImageFormatIds.Raw or TapeImageFormatIds.Uef) || document.Representation is not SequentialMediaImageRepresentation { Segments: { Count: > 0 } segments } image || !PcmSampleFunctions.TryGetProfile(document.Metadata, out _, out var rate, out _, out var align)) return document;
         // Le découpage conserve les canaux et les données originales ; les décodeurs apportent seulement des repères.
         var registry = SequentialMediaComposition.CreateDefault().Decoders;

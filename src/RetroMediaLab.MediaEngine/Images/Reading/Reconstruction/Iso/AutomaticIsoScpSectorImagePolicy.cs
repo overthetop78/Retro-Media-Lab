@@ -5,6 +5,8 @@ using RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.Atari;
 using RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.EpsonQx10;
 using RetroMediaLab.MediaEngine.Constants;
 using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Raw;
+using RetroMediaLab.MediaEngine.Images.Formats.Floppy.Adf;
+using RetroMediaLab.MediaFileSystems.FileSystems.Acorn.Adfs;
 
 namespace RetroMediaLab.MediaEngine.Images.Reading.Reconstruction.Iso;
 /// <summary>Sélectionne automatiquement la politique sectorielle adaptée aux candidats ISO FM ou MFM.</summary>
@@ -22,6 +24,7 @@ internal sealed class AutomaticIsoScpSectorImagePolicy : IIsoScpSectorImagePolic
         if (TryDetectEpsonFormat(candidates.Physical, out var epsonFormat))
             return EpsonQx10SectorImageBuilder.Create(epsonFormat, candidates.Physical);
         var measured = IsoSectorImageBuilder.Measure(candidates.Addressed);
+        if (TryDetectAcornAdfs(candidates.Physical, out var acorn)) return acorn;
         if (measured.ZeroBased && measured.SectorSize == AutomaticIsoScpSelectionRules.BbcSectorSize && measured.SectorsPerTrack == AutomaticIsoScpSelectionRules.BbcSectorsPerTrack)
             return new BbcIsoScpSectorImagePolicy().Build(null, candidates);
         if (measured.SectorSize == AutomaticIsoScpSelectionRules.IbmSectorSize && !measured.ZeroBased)
@@ -38,6 +41,33 @@ internal sealed class AutomaticIsoScpSectorImagePolicy : IIsoScpSectorImagePolic
             == DiskGeometryConstants.SingleSidedHeadCount 
             && measured.SectorsPerTrack is AutomaticIsoScpSelectionRules.AtariStandardSectorsPerTrack or AutomaticIsoScpSelectionRules.AtariEnhancedSectorsPerTrack;
         return atari8Bit ? new Atari8BitIsoScpSectorImagePolicy(null).Build(null, candidates) : new AtariStIsoScpSectorImagePolicy().Build(null, candidates);
+    }
+
+    private static bool TryDetectAcornAdfs(IReadOnlyDictionary<SectorAddress, List<IsoSectorCandidate>> candidates, out SectorImage image)
+    {
+        image = null!;
+        if (candidates.Count == 0) return false;
+        var measured = IsoSectorImageBuilder.Measure(candidates);
+        if (!measured.ZeroBased || measured.SectorSize is not (256 or 1024)) return false;
+        foreach (var geometry in AcornAdfGeometry.All.Where(geometry => geometry.FormatId.StartsWith(DiskImageFormatIds.AcornAdfsPrefix, StringComparison.OrdinalIgnoreCase)
+            && geometry.BlockSize == measured.SectorSize && geometry.Heads == measured.Heads && geometry.SectorsPerTrack == measured.SectorsPerTrack))
+        {
+            var candidate = IsoSectorImageBuilder.CreateUniform(geometry.FormatId, candidates, geometry.BlockSize,
+                geometry.Cylinders, geometry.Heads, geometry.SectorsPerTrack, address => address.Number);
+            if (geometry.BlockSize == 256)
+            {
+                if (!candidate.TryGetBlock(0, out var first) || !candidate.TryGetBlock(1, out var second)
+                    || first.Data.Count != 256 || second.Data.Count != 256) continue;
+                var firstBytes = first.Data.ToArray();
+                if (!AcornAdfPartialImage.ValidOldMapChecksum(firstBytes)
+                    || !AcornAdfPartialImage.ValidOldMapChecksum(second.Data.ToArray())
+                    || (firstBytes[252] | firstBytes[253] << 8 | firstBytes[254] << 16) * 256L != geometry.Capacity) continue;
+            }
+            if (!new AcornAdfsFileSystemReader().CanRead(candidate)) continue;
+            image = candidate;
+            return true;
+        }
+        return false;
     }
 
     /// <summary>Écarte les candidats dépourvus de données puis appelle directement le détecteur Epson commun.</summary>

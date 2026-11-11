@@ -18,20 +18,21 @@ public sealed class LinearSectorImageWriter(IAtomicImageFileWriter? fileWriter =
         }, cancellationToken).ConfigureAwait(false);
     }
 
+    internal static bool MatchesGeometry(SectorImage image, RegularSectorGeometry geometry, bool requireFormatId = true)
+        => (!requireFormatId || image.FormatId.Equals(geometry.FormatId, StringComparison.OrdinalIgnoreCase))
+            && image.BlockSize == geometry.BlockSize && image.Cylinders == geometry.Cylinders
+            && image.Heads == geometry.Heads && image.SectorsPerTrack == geometry.SectorsPerTrack
+            && image.BlockCount == geometry.BlockCount;
+
+    internal static bool HasCompletePayload(SectorImage image, int blockSize)
+    {
+        var blocks = image.AvailableBlocks;
+        return blocks.Count == image.BlockCount && blocks.All(block => block.Data.Count == blockSize);
+    }
+
     internal static void ValidateGeometry(SectorImage image, RegularSectorGeometry geometry)
     {
-        if (!image.FormatId.Equals(geometry.FormatId,
-            StringComparison.OrdinalIgnoreCase) 
-            || image.BlockSize 
-            != geometry.BlockSize 
-            || image.Cylinders 
-            != geometry.Cylinders 
-            || image.Heads 
-            != geometry.Heads 
-            || image.SectorsPerTrack 
-            != geometry.SectorsPerTrack 
-            || image.BlockCount 
-            != geometry.BlockCount)
+        if (!MatchesGeometry(image, geometry))
             throw LinearSectorImageWriterExceptions.InvalidGeometry(image.FormatId, image.BlockSize, image.Cylinders, image.Heads, image.SectorsPerTrack, geometry.FormatId, geometry.BlockSize, geometry.Cylinders, geometry.Heads, geometry.SectorsPerTrack);
     }
 
