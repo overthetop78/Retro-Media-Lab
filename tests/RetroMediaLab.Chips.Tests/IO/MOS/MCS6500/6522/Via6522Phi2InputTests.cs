@@ -8,6 +8,29 @@ namespace RetroMediaLab.Chips.Tests.IO.MOS.MCS6500.Chip6522;
 public sealed class Via6522Phi2InputTests
 {
     [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void InvariantPeriodsKeepTheIdleStateAndResumePb6Sampling(bool pulse)
+    {
+        using var pair = new Pair();
+        pair.Both(via =>
+        {
+            via.SetPb6(true);
+            if (!pulse) return;
+            via.Write(C.Auxiliary, 0x20);
+            via.Write(C.Timer2Low, 0xff); via.Write(C.Timer2High, 0xff);
+        });
+        for (var cycle = 0; cycle < 5000; cycle++)
+        {
+            if (cycle == 2500) pair.Both(via => via.SetPb6(false));
+            pair.High(cycle); pair.Low(cycle);
+        }
+        pair.Check();
+        var expected = pulse ? 65534 : 65535;
+        foreach (var via in new[] { pair.First, pair.Second })
+            Assert.Equal(expected, via.Read(C.Timer2Low) | via.Read(C.Timer2High) << 8);
+    }
+
+    [Theory]
     [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)]
     [InlineData(4)] [InlineData(5)] [InlineData(6)] [InlineData(7)]
     public void ReceivedPhasesPreserveTheExplicitEdgesAcrossModesAndInputs(int mode)

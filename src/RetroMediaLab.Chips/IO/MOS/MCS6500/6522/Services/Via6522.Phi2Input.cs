@@ -12,6 +12,18 @@ public sealed partial class Via6522
     {
         _receivingPhi2Input = true;
         if (high == _phi2High) return;
+        if (_stablePhi2Clocks == long.MaxValue)
+        {
+            // Aucun compteur temporel ne peut avancer : une qualification avec
+            // T1 ou T2 intervalle serait bornée à au plus 65535 périodes.
+            _phi2High = high;
+            if (!high)
+            {
+                _timer1JustFired = _timer2JustFired = false;
+                _timer2PulseSampled = false;
+            }
+            return;
+        }
         if (!high)
         {
             if (_stablePhi2Clocks > 0)
