@@ -14,6 +14,28 @@ public sealed class ClockPhaseTests
 
     [Theory]
     [MemberData(nameof(Opcodes))]
+    public void StepLoopKeepsEveryOpcodeTransferAndStateOfTheSingleCycleSequencer(int opcode, bool initialized)
+    {
+        byte[] prefix = initialized ? [0xa2, 0x7f, 0xa0, 0x80, 0xa9, 0x5a, 0xf8, 0x38] : [];
+        var program = prefix.Concat(new byte[] { (byte)opcode, 0xff, 0x20 }).ToArray();
+        var (step, first) = Start(program);
+        var (clock, second) = Start(program);
+        for (var instruction = 0; instruction < (initialized ? 6 : 1); instruction++)
+        {
+            var before = step.Cycles;
+            step.Step();
+            var elapsed = step.Cycles - before;
+            Assert.InRange(elapsed, 1, 8);
+            for (var period = 0L; period < elapsed; period++) clock.Clock();
+            AssertRegisters(step, clock);
+            Assert.Equal(first.Transfers, second.Transfers);
+            Assert.Equal(first.Presentations, second.Presentations);
+            Assert.Equal(first.Memory, second.Memory);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Opcodes))]
     public void AllOpcodesKeepTheirBusTraceAndRegistersWhenDrivenByLevels(int opcode, bool initialized)
     {
         byte[] instruction = [(byte)opcode, 0xff, 0x20];

@@ -1,6 +1,22 @@
 # Acorn Atom — reprise du 8 novembre 2026
 
+## 11 novembre — reprise et revue des puces avant poursuite de la carte
+
+L'utilisateur confirme System 5 terminé et demande Atom, puis impose la revue des puces avant la suite. [Bilan détaillé](../../../../tasks/machines/AcornAtom/chip-review.md) : code relu, limites de fidélité, optimisations présentes/manquantes, 989 tests propres aux cinq groupes en Debug et autant en Release, et mesures isolées réelles. Ces tests ne certifient pas à eux seuls le matériel réel ; aucune puce ni machine n'est clôturée par cet inventaire.
+
+Un premier passage regroupe le diagnostic temporel et les contrôles Atom : 53 succès et un échec bande TAP, A5 attendu et aucune donnée décodée. Les temps de ce passage ne sont pas retenus, car les autres tests pouvaient s'exécuter simultanément. Le diagnostic est ensuite rejoué seul : succès, 31 s, `artifacts/TestsMachines/Acorn/Acorn Atom/20261111-atom-isolated-debug.trx`. Aucun changement de production.
+
+Montages à ROM BASIC/OS, flottants et caractères existantes, RAM texte 5 Kio et vidéo 6 Kio ; 40 champs de chauffe puis trois fenêtres de 120 champs, RunFrame/DrainAudio inclus, empreintes hors temps. Base : moyenne 27,5289 ms/champ, 36,33 champs/s libres, 0,6062 MHz effectifs, 60,62 % nominal. Disc Pack sans support : 26,8508 ms/champ, 37,24 champs/s, 0,6215 MHz, 62,15 %. Cadence matérielle conservée 59,9227434 Hz. Chaque fenêtre exécute 2 002 577–2 002 580 cycles ; les fins d'instruction expliquent ces trois cycles d'écart. Les empreintes vidéo/audio et RAM concordent entre montages à chaque passage correspondant ; les données sont dans `20261111-current-debug.json` (rejoué isolément). Ordre successif, aucune comparaison appariée ni optimisation conservée : l'écart ne prouve aucun gain du Disc Pack. Pas de mesure de présentation RML.
+
+Le récepteur vidéo avec circuit seuls, RAM synthétique, donne 24,3403 ms/champ en moyenne dans ce diagnostic ; il s'agit d'un coût inclusif distinct, jamais ajouté à celui de la carte. Ces résultats montrent une cadence Debug encore insuffisante. La fidélité et l'optimisation doivent maintenant être traitées puce par puce, selon les références du matériel réel ; aucune nouvelle caractéristique n'est déduite des émulateurs tiers ou du LLM. L'échec TAP reste identifié, sans cause attribuée arbitrairement au CPU/PPI.
+
+Optimisation CPU ultérieure dans cette reprise : boucle Step conservée dans le séquenceur canonique, 1130 contrôles CPU hors états réussis en Debug et Release. Mesures avant/après CPU et compromis Clock détaillés dans la fiche CPU ; aucune nouvelle mesure de carte, validation RML ou clôture Atom.
+
+Décisions utilisateur reçues pour la clôture de la revue6502 : conserver les limites du BCD non spécifié et des opcodes non officiels ; reporter les délais PH1/PH2, en plus du report PLP/SEI. Voir la fiche CPU pour les preuves et la portée. La suite reste puce par puce après commit du bloc CPU, avant câblage/validation Atom.
+
 ## Montage et références réutilisées
+
+Revue CPU du 11 novembre, après les références IRQ fournies par l'utilisateur : **618 contrôles 6502 Debug et618 Release** hors états réussissent, zéro échec/ignoré. Trois cas autonomes reproduisent l'observation rapportée CLI/INY sur Apple IIe, par Step, Clock et PH0 ; production inchangée. Les sources, les limites et la divergence PLP/SEI restent dans `docs/chips/CPU/Mos6502/reset-interrupt-reference.md`. Ces tests de puce ne constituent pas une nouvelle validation de la carte Atom ni une mesure de vitesse. Les deux questions ont reçu réponse ; aucun relevé matériel PLP/SEI disponible. Maintien du code confirmé, puis report explicite de ce seul cas par l'utilisateur pour une éventuelle anomalie ; poursuite autorisée sans le présenter comme matériellement validé : voir la note CPU liée. La revue du composant reste inachevée.
 
 Les composants existants sont réutilisés : CPU 6502 à 1 MHz, PPI Intel 8255, VIA 6522, VDG MC6847 et Disc Pack 8271 lorsqu'il est installé. Fiches : `docs/chips/IO/Intel8255.md`, `docs/chips/Video/Mc6847.md` ; historique de réalisation et médias dans `docs/tasks/machines/AcornAtom/implementation.md`. Le PPI n'a pas d'oscillateur : ses accès et handshakes suivent les fronts du bus et de ses broches. Ne pas inventer un Tick interne de ce composant asynchrone.
 

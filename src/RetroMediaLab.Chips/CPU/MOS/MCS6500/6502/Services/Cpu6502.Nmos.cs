@@ -84,12 +84,7 @@ public partial class Cpu6502
         }
         try
         {
-            do
-            {
-                if (!ExecuteNmosPhase()) return;
-                if (_nmosPhase == Phase.Jammed) return;
-            }
-            while (_nmosPhase != Phase.Opcode);
+            ExecuteNmosPhase(completeInstruction: true);
         }
         finally
         {
@@ -132,8 +127,11 @@ public partial class Cpu6502
         return true;
     }
 
-    private bool ExecuteNmosPhase()
+    private bool ExecuteNmosPhase(bool completeInstruction = false)
     {
+        // Step conserve la boucle dans le séquenceur canonique. Clock/PH0 ne
+        // demandent qu'une phase ; chaque transfert conserve Tick et ses entrées.
+    ExecuteNextPhase:
         byte value = default;
         switch (_nmosPhase)
         {
@@ -143,7 +141,7 @@ public partial class Cpu6502
                 if (_nmosOpcodeHeld && (_nmiPrevious || _irqPrevious && (_p & InterruptDisable) == 0))
                 {
                     BeginNmosInterrupt(_nmiPrevious ? C.NmiVector : C.IrqVector, opcodeRead: true);
-                    return true;
+                    break;
                 }
                 _nmosOpcodeHeld = false;
                 _pc++;
@@ -367,6 +365,7 @@ public partial class Cpu6502
                 break;
             default: throw new InvalidOperationException(nameof(_nmosPhase));
         }
+        if (completeInstruction && _nmosPhase is not (Phase.Opcode or Phase.Jammed)) goto ExecuteNextPhase;
         return true;
     }
 
