@@ -171,7 +171,7 @@ public sealed partial class Ppi8255 : IPpi8255
                 var writable = (byte)(_freeC & ~_freeInputC);
                 if (_modeA != PpiMode.Basic) writable &= C.LowerC;
                 _outputC = (byte)((_outputC & ~writable) | (value & writable));
-                Publish(C.ObserveC);
+                PublishPortC();
                 return;
             case C.Control:
                 if ((value & C.ModeSet) != 0) Configure(value);

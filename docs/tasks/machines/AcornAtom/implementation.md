@@ -1,6 +1,6 @@
 # AcornEmu — Acorn Atom
 
-État de la reprise du11 novembre2026 : **Atom en cours**, après System5 confirmé terminé par l'utilisateur. La revue6502 est vérifiée dans le périmètre accepté, avec ses limites explicitement conservées/reportées ; commit du bloc avant le composant suivant. Les autres puces, le raccordement, les performances de carte, les médias et l'essai RML restent dans le suivi de reprise. Les cases historiques ci-dessous ne déclarent pas cette nouvelle revue terminée.
+État de la reprise du11 novembre2026 : **Atom en cours**, après System5 confirmé terminé par l'utilisateur. La revue6502 est vérifiée dans le périmètre accepté, avec ses limites explicitement conservées/reportées ; commit du bloc avant le composant suivant. La revue8255 suivante est vérifiée après publication GPIO C ciblée,30 contrôles Debug/Release et mesures comparées ; commit avant le VIA. VIA/VDG/8271, raccordement, performances de carte, médias et essai RML restent dans le suivi de reprise. Les cases historiques ci-dessous ne déclarent pas cette nouvelle revue terminée.
 
 - [x] Réaliser le bloc Atom après le commit System 8224c1751.
   - [x] Composants et carte mère.

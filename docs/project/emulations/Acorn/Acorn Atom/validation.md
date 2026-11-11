@@ -14,6 +14,8 @@ Optimisation CPU ultérieure dans cette reprise : boucle Step conservée dans le
 
 Décisions utilisateur reçues pour la clôture de la revue6502 : conserver les limites du BCD non spécifié et des opcodes non officiels ; reporter les délais PH1/PH2, en plus du report PLP/SEI. Voir la fiche CPU pour les preuves et la portée. La suite reste puce par puce après commit du bloc CPU, avant câblage/validation Atom.
 
+Revue8255 suivante : GPIO C publiés seuls,30 contrôles Debug/Release réussis et mesures isolées comparées consignées dans la fiche8255. Les autres modes et le câblage sont conservés. Aucun nouveau passage de machine ni gain Atom attribué ; le VIA reste le composant suivant après commit.
+
 ## Montage et références réutilisées
 
 Revue CPU du 11 novembre, après les références IRQ fournies par l'utilisateur : **618 contrôles 6502 Debug et618 Release** hors états réussissent, zéro échec/ignoré. Trois cas autonomes reproduisent l'observation rapportée CLI/INY sur Apple IIe, par Step, Clock et PH0 ; production inchangée. Les sources, les limites et la divergence PLP/SEI restent dans `docs/chips/CPU/Mos6502/reset-interrupt-reference.md`. Ces tests de puce ne constituent pas une nouvelle validation de la carte Atom ni une mesure de vitesse. Les deux questions ont reçu réponse ; aucun relevé matériel PLP/SEI disponible. Maintien du code confirmé, puis report explicite de ce seul cas par l'utilisateur pour une éventuelle anomalie ; poursuite autorisée sans le présenter comme matériellement validé : voir la note CPU liée. La revue du composant reste inachevée.

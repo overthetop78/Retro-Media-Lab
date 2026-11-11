@@ -1,5 +1,17 @@
 # Suivi — Intel8255
 
+## Reprise Atom du11 novembre2026, après commit6502
+
+- [x] Terminer la revue8255 avant le VIA et la carte Atom.
+  - [x] Vérifier les chemins existants et traiter les redondances établies.
+    - [x] Modifier `docs/chips/IO/Intel8255.md` avec la correspondance des modes/bus/handshakes et des tests existants, en réutilisant les prescriptions constructeur et captures déjà consignées ; limites électriques et transactions distinctes des changements de fils. Pas de Tick. Invariance de A/B/INTR lors d'une écriture GPIO C établie dans les chemins BeginWrite/EndWrite.
+    - [x] Créer `artifacts/.tmp-i8255-c-publication/Bench.csproj` et `Program.cs` : références aux DLL de production, commandes des modes0/1/2, écritures C variables avec/sans observateur, lectures réelles, comptes de notifications et état final. Mesurer isolément le code actuel après chauffe, conserver une copie de référence ; enregistrer les rapports sous `artifacts/TestsChips/Intel8255/AcornAtom/20261111-c-publication-*`. Aucun build/test pendant les mesures.
+    - [x] Modifier `src/RetroMediaLab.Chips/IO/Intel/MCS80/8255/Services/Ppi8255.Ports.cs` et `Ppi8255.cs` : pour une écriture des seuls GPIO C, publier directement C comme pour A/B au lieu de reconstruire les trois ports. Valeur/masque complets avant callback, transaction même inchangée, modes et handshakes conservés ; publication atomique complète gardée pour les autres causes. Invariance A/B/INTR établie.
+  - [x] Vérifier le bloc modifié et mesurer le résultat.
+    - [x] Modifier les rapports `artifacts/TestsChips/Intel8255/AcornAtom/20261111-c-publication-*` par les tests8255 existants Debug/Release hors états et quatre paires alternées :30 succès par configuration,240 fenêtres appariées conservant lectures/masques/interruptions/commande et comptes/sommes des notifications. Candidat conservé, réduction médiane appariée28,42–43,62 % selon scénario ; conditions, dispersion et absence de gain Atom extrapolé consignées.
+    - [x] Supprimer `artifacts/.tmp-i8255-c-publication/` et ses produits après terminaison des processus et consignation ; conserver les rapports utiles, régénérer les assemblies si le candidat est retiré.
+    - [x] Modifier `docs/chips/IO/Intel8255.md` et ce suivi après examen des résultats et des quatre captures historiques48P ; aucun test supplémentaire nécessaire pour les invariants établis. Commit du seul bloc8255 créé avec succès,7 fichiers vérifiés à l'index, aucun artifacts ni autre puce inclus. Cocher après ce résultat puis intégrer ce suivi au même commit local avant le VIA.
+
 - [x] Intel 8255 PPI utilisé par l’Acorn Atom.
   - [x] Créer temporairement `artifacts/.tmp-i8255/references/` : conserver les fiches constructeur 8255/8255A, le câblage Atom pertinent et les sources d’émulateurs examinées, avec leurs origines ; lire les modes 0/1/2, BSR, interruptions, bus, reset et particularités de variantes avant modification.
   - [x] Créer `docs/chips/IO/Intel8255.md` : décrire l’implémentation réellement présente, les écarts établis avec les références et la couverture précise à vérifier, sans fiche générique.

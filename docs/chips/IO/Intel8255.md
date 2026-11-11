@@ -1,5 +1,48 @@
 # 8255 / 8255A — interface parallèle programmable
 
+## Revue Atom — 11 novembre 2026
+
+### Reprise après commit6502
+
+Chemins relus : `Ppi8255.cs`, `.Bus.cs`, `.Handshake.cs`, `.Ports.cs`. Les prescriptions et références constructeur détaillées ci-dessous sont réutilisées ; aucune règle issue d'un autre émulateur ne fixe une attente matérielle. Correspondances de tests autonomes dans `tests/RetroMediaLab.Chips.Tests/IO/Intel/MCS80/8255/` :
+
+| Domaine | Contrôles existants réutilisables |
+|---|---|
+| Mode0, directions et GPIO | `Ppi8255BasicTests` :16 configurations×256 valeurs, écritures/entrées séparées, BSR et bits ignorés, tous mots de mode |
+| Bus et reset | Tests RD maintenu, capture à la fin WR, CS/combinaisons illégales, reset pendant écriture ou lecture par fournisseur, callbacks relisant l'état complet |
+| Modes1 A/B | `Ppi8255HandshakeTests` : STB/IBF/INTR/INTE, ACK/OBF, acquittements sur fronts distincts et indépendance des groupes |
+| Mode2 | Six ordres matériels permis dans `Ppi8255BusTests`, deux encodages du mode dans `Ppi8255HandshakeTests`, deux requêtes et pilote A limité à ACK bas |
+| C/BSR | Accès aux statuts documentés, INTR forcées conservées devant événement sans rapport, GPIO supérieurs nécessitant BSR en mode strobed A |
+
+Redondance établie à examiner : `EndWrite(PortC)` ne modifie que `_outputC` sur les GPIO autorisés, après le contrôle RESET ; `BeginWrite(PortC)` n'arme aucun handshake. Aucune entrée STB/ACK, direction, donnée A/B ou INTR n'est modifiée par cette écriture. Pourtant elle appelle la publication complète qui reconstruit A/B/C et les deux interruptions. Une publication C analogue à celles de A/B peut conserver son état complet avant callback et sa notification de transaction, sans recalculer les ports invariants. Les changements de mode, handshakes et BSR restent dans leur parcours complet. Le gain reste à mesurer avant rétention ; aucun gain Atom déduit de cette seule lecture.
+
+### Résultat de la publication C limitée au port concerné
+
+`Ppi8255.cs` appelle désormais `PublishPortC` pour cette seule écriture GPIO. Le helper conserve la même expression de valeur/masque, les actualise avant le premier callback, ne notifie DriveChanged qu'en cas de changement et conserve PinsChanged pour chaque transaction, même identique. L'examen du chemin établit l'invariance des autres ports et des deux INTR ; la publication complète reste utilisée pour les causes qui peuvent les modifier. Technique déjà prescrite par le tableau commun : limiter les publications aux sorties réellement concernées, sans retirer de transaction ni activité matérielle.
+
+Quatre paires de processus Debug en ordre alterné, sans build/test concurrent, .NET10 ordinaire. Six commandes, avec ou sans les observateurs A/B/C de transaction et de pilotage ;100000 écritures C de chauffe, cinq fenêtres de1000000 écritures variables par processus. Les lectures de contrôle et états sont hors temps. Les callbacks observés comptent leurs appels et cumulent valeurs/masques ; leur coût est inclus.
+
+| Commande / mode | Sans observateur, avant→après ns/écriture | Réduction médiane appariée | Avec observateurs, avant→après ns/écriture | Réduction médiane appariée |
+|---|---:|---:|---:|---:|
+| 80, mode0 sorties | 41,37→23,23 | 43,62 % | 47,32→32,08 | 31,94 % |
+| 8A, mode0 câblage logique Atom | 40,94→23,43 | 43,42 % | 47,91→31,07 | 35,14 % |
+| A0, A mode1 sortie | 59,57→38,34 | 36,12 % | 65,88→46,39 | 29,67 % |
+| B0, A mode1 entrée | 61,55→37,81 | 38,58 % | 66,43→46,90 | 28,42 % |
+| C0, A mode2 | 59,12→36,64 | 37,78 % | 64,56→44,52 | 31,58 % |
+| 84, B mode1 sortie | 47,83→30,61 | 36,14 % | 52,50→35,18 | 32,87 % |
+
+Les durées sont les médianes des quatre médianes de cinq fenêtres ; les pourcentages sont calculés par paire, pas depuis le quotient de ces colonnes. Toutes les paires sont plus rapides dans ces charges : réduction comprise entre23,77 et47,08 % selon le passage et le scénario. Les240 fenêtres appariées conservent lectures A/B/C, masques, interruptions, commande, comptes et sommes des notifications. Ces sommes ne sont pas une trace exhaustive d'ordre ; les tests de fronts restent distincts. Le banc maintient STB/ACK hauts, INTE désactivées ; ses écritures C ne mesurent pas le débit d'un protocole strobed actif ni les callbacks réels du module Atom. Le PPI n'a pas d'horloge : ns/écriture est un coût hôte, pas une fréquence matérielle modifiée.
+
+**30 tests PPI Debug et30 Release réussis**, zéro échec/ignoré, hors états ; avertissement xUnit2031 partagé préexistant. Les matrices déjà conservées vérifient les mots de mode, directions, BSR, statuts et handshakes ; aucun nouveau test miroir du helper ajouté. Rapports `artifacts/TestsChips/Intel8255/AcornAtom/20261111-c-publication-{debug,release}.trx`, fichiers des quatre paires et `20261111-c-publication-summary.json` dans le même dossier. Aucun gain Atom complet annoncé, aucun build d'application ni nouvelle validation de carte dans ce passage.
+
+Les quatre captures historiques référencées plus bas sont présentes et inspectées :48P, sans F, dans les scénarios indiqués. Ce sont les résultats invités du3 novembre, réutilisés comme tels, pas de nouvelles captures après optimisation. Les limites électriques et le domaine des conditions légales documentés restent explicites ; l'optimisation ne change aucun comportement de mode ni choix de variante. Le composant reste entièrement événementiel, sans Tick/oscillateur ni sondage périodique ajouté. Candidat conservé après comparaison ; banc temporaire et copies de référence supprimés après terminaison code zéro des mesures. Revue8255 vérifiée dans le domaine numérique et les conditions légales décrits ; commit du bloc avant le VIA. Les limites électriques ne sont pas présentées comme une simulation analogique réalisée.
+
+Production inchangée. **30 cas propres au PPI passent en Debug et 30 en Release**, zéro échec/ignoré, hors états. Rapports `artifacts/TestsChips/AcornAtomReview/20261111-chips-{debug,release}.trx`. Les matrices et chronologies couvertes restent celles décrites ci-dessous ; les preuves invitées historiques ne sont pas réattribuées à un nouveau diagnostic matériel.
+
+Banc isolé actuel, mode 0, commande 8A, C reçu A0, sans observateurs de sortie : 1 million d'accès de chauffe puis cinq fenêtres de 1 million, médiane avec boucle. Lecture C **19,1505 ns Debug / 1,3778 ns Release** ; écriture A changeante **21,5978 / 11,8858 ns**. La boucle de lecture inclut un accumulateur ; l'écriture change les niveaux sans destinataire, donc ne mesure pas le câblage Atom. Paramètres ordinaires .NET 10 ; aucune option Debug modifiée. Données `artifacts/TestsChips/AcornAtomReview/20261111-speed-{Debug,Release}.json`. Pas de mesure actuelle des performances strobed ni de gain avant/après démontré.
+
+Le PPI ne possède pas de Tick ni d'oscillateur : l'avance aux échéances ne doit pas lui en inventer un. Les notifications de niveaux/directions sont déjà conditionnelles ; les captures sur accès bus et handshakes demeurent nécessaires. Les limites électriques ci-dessous restent ouvertes à toute nouvelle conclusion de fidélité. [Bilan de revue](../../tasks/machines/AcornAtom/chip-review.md).
+
 ## Implantation existante et utilisation réelle
 
 L’Acorn Atom instancie actuellement `AtomPpi8255` depuis `RetroMediaLab.Chips/IO/Intel/MCS80/8255/`. Ses accès B000–B003 utilisent les trois ports et le registre de commande. A sélectionne les lignes du clavier et le mode vidéo ; B reçoit les colonnes du clavier ; C reçoit les entrées de la carte et pilote notamment tape, haut-parleur et choix des couleurs. Le nom Atom n’a donc pas à désigner le composant générique dans Chips : ce câblage reste dans le module Acorn.

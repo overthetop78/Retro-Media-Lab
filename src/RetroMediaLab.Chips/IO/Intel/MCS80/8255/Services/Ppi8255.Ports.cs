@@ -66,6 +66,19 @@ public sealed partial class Ppi8255
         PortBPinsChanged?.Invoke(value);
     }
 
+    private void PublishPortC()
+    {
+        // A GPIO byte write to C cannot alter A/B, modes or handshake state.
+        // Keep the transaction callback even when no physical drive changes.
+        var mask = PortCDriveMask;
+        var value = (byte)((_outputC & _freeC & ~_freeInputC) | StatusC(false) | ~mask);
+        var changed = _publishedC != value || _maskC != mask;
+        _publishedC = value;
+        _maskC = mask;
+        if (changed) PortCDriveChanged?.Invoke(value, mask);
+        PortCPinsChanged?.Invoke(value);
+    }
+
     private void Publish(byte observe = 0)
     {
         var maskA = PortADriveMask;

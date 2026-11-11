@@ -68,3 +68,6 @@ Après le report ciblé PLP/SEI demandé par l'utilisateur : optimisation de la 
 
 
 Clôture de la revue6502 dans le périmètre explicitement validé : PLP/SEI reporté ; BCD non spécifié et opcodes non officiels conservés avec leurs limites ; délais PH1/PH2 reportés. Ces choix ne sont pas des mesures matérielles. Les1130 succès Debug/Release et les deux captures CPU historiques réutilisées sont contrôlés ; aucun nouveau passage de carte. Prochain composant seulement après commit CPU. Tous les autres travaux et la clôture Atom restent ouverts.
+
+
+Revue8255 après le bloc CPU : publication des écritures GPIO C limitée au port réellement modifié, sans changer modes, BSR, handshakes, notifications de transactions ou niveaux/pilotes.30 tests Debug et30 Release réussis ; quatre paires isolées,240 fenêtres, réduction médiane appariée28,42–43,62 % selon les six commandes et observateurs. Données, limites et quatre captures historiques réutilisées dans la fiche8255. Banc temporaire supprimé. Aucun gain global Atom, aucun nouveau test de carte. Bloc8255 vérifié, commit avant le VIA ; Atom reste en cours.
