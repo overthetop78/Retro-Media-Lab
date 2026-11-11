@@ -13,4 +13,8 @@ public interface IAtomVideo
     void SetColorSet(bool value);
     void Reset();
     bool Tick();
+    /// <summary>Périodes CLK fournies sans entrée extérieure ni observation intermédiaire.
+    /// Le propriétaire borne l'appel avant leurs changements ; les accès mémoire et FS
+    /// restent traités à chaque frontière physique pendant cet intervalle.</summary>
+    void AdvanceClocks(int clocks);
 }

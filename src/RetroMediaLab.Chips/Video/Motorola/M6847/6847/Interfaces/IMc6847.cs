@@ -27,5 +27,10 @@ public interface IMc6847
     int ChromaBMillivolts { get; }
     int ChromaBiasMillivolts { get; }
     void SetClock(bool level);
+    /// <summary>Représente au plus halfClocks fronts alternés sans transaction ni changement
+    /// de sortie. Retourne le préfixe accepté avant la première frontière, éventuellement zéro.
+    /// L'appelant livre toute nouvelle entrée/observation avant une nouvelle demande et
+    /// traite la frontière par SetClock à sa date réelle. Aucun callback pendant le préfixe.</summary>
+    int TryAdvanceStableHalfClocks(int halfClocks);
     void Reset();
 }

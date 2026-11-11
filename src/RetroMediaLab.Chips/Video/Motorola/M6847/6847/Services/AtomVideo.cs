@@ -89,6 +89,37 @@ public sealed class AtomVideo : Interfaces.IAtomVideo
         return Frame != frame;
     }
 
+    /// <inheritdoc />
+    public void AdvanceClocks(int clocks)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(clocks);
+        var remaining = (long)clocks * V.HalfClocksPerClock;
+        while (remaining != 0)
+        {
+            var start = _chip.HalfClock;
+            var count = _chip.TryAdvanceStableHalfClocks((int)Math.Min(remaining, int.MaxValue));
+            if (count != 0)
+            {
+                if (_chip.Active)
+                {
+                    var offset = ((_chip.Scanline - V.ActiveLineStart) * C.Width
+                        + start + 1 - V.ActiveHalfClockStart) * C.PixelBytes;
+                    System.Runtime.InteropServices.MemoryMarshal.Cast<byte, int>(
+                        _drawing.AsSpan(offset, count * C.PixelBytes)).Fill(Colours[(int)_chip.Colour]);
+                }
+                remaining -= count;
+                continue;
+            }
+            var field = Frame;
+            _chip.SetClock(!_chip.Clock);
+            if (_chip.Active)
+                WritePixel(_chip.HalfClock - V.ActiveHalfClockStart,
+                    _chip.Scanline - V.ActiveLineStart, Colours[(int)_chip.Colour]);
+            if (Frame != field) (_drawing, _completed) = (_completed, _drawing);
+            remaining--;
+        }
+    }
+
     private void WritePixel(int x, int y, int colour)
     {
         var offset = (y * C.Width + x) * C.PixelBytes;

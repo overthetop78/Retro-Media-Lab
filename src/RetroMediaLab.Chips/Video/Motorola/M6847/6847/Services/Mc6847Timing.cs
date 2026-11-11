@@ -48,6 +48,13 @@ internal sealed class Mc6847Timing
         AdvanceHalfClock();
     }
 
+    // Le propriétaire a borné strictement avant toute frontière de ligne/sortie.
+    internal void AdvanceStableHalfClocks(int count)
+    {
+        HalfClock += count;
+        if ((count & 1) != 0) _clock = !_clock;
+    }
+
     private void AdvanceHalfClock()
     {
         if (++HalfClock < C.HalfClocksPerLine) return;
