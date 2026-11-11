@@ -1,5 +1,49 @@
 # Acorn Atom — reprise du 8 novembre 2026
 
+## Manques explicites et raison de leur absence — 11 novembre 2026
+
+**L'Atom démarre et exécute le BASIC ; sa réalisation complète n'est pas clôturée.** Le périmètre a été réduit au montage de base et au Disc Pack sans faire valider l'exclusion des autres interfaces demandées. Les omissions suivantes ne sont pas justifiées par un blocage technique établi ni par une décision de report de l'utilisateur.
+
+| Élément | Ce qui reste à implémenter | Pourquoi ce n'est pas fait |
+| --- | --- | --- |
+| Carte couleur optionnelle Acorn | Réaliser ses circuits et leur câblage, la conversion 60 → 50 Hz, l'insertion de lignes et la suspension de CLK du MC6847, puis proposer et valider cette configuration matérielle. | La notice a été archivée, mais la réalisation s'est arrêtée au MC6847 et à son récepteur RGB. La carte a été considérée comme optionnelle puis laissée au stade documentaire sans validation utilisateur de cette exclusion. Le montage courant est NTSC, environ 59,92 Hz ; la palette RGB ne prouve pas la réalisation de cette carte. |
+| Interface joystick | Identifier les interfaces réellement compatibles avec l'Atom à partir de références vérifiées, réaliser les composants manquants, leur câblage et le raccordement aux entrées hôtes existantes. | Le recensement matériel n'a pas été terminé ; aucune interface joystick native n'a été réalisée pour Atom. Le code Atom traduit les touches et écarte les états de contrôleurs ; cela ne constitue pas un joystick matériel émulé. |
+| Interface souris | Identifier les interfaces réellement compatibles et documentées, réaliser leurs composants et leur câblage, puis raccorder la souris hôte par les contrats existants. | Le travail d'entrée a été limité au clavier. Aucune interface souris Atom n'a été identifiée et réalisée dans ce bloc. Aucune compatibilité matérielle précise ne doit être inventée pour combler cette absence. |
+
+### Correctif clavier écrit, encore en cours
+
+Les transitions hôtes sont désormais conservées avec leurs dates dans le module Acorn, puis livrées aux contacts Atom aux échéances CPU. Le transport ajoute une frame de latence hôte pour préserver les événements survenus pendant l'attente entre deux frames ; il ne transforme pas une pression en caractère injecté et ne modifie pas le balayage effectué par la ROM. Les autres cœurs conservent leur parcours d'entrée antérieur. Les pauses, changements d'associations et resets réamorcent l'historique.
+
+Passage groupé `AcornEmuAtom` et `AcornSessionInputRouteTests` : **86 réussites Debug, aucun échec ni ignoré, 4 s, code 0**, dont huit nouveaux contrôles autonomes de chronologie et de contacts effectifs. Rapport `20261111-keyboard-timeline-debug.trx` sous TestsMachines/Acorn/Acorn Atom. Ce passage ne clôture pas le défaut utilisateur : le correctif n'est pas livré dans le Debug RML actuellement ouvert, n'a pas été essayé par l'utilisateur et les modes accélérés restent à qualifier. Les limitations de saisie observées en exécutant la ROM ne sont pas supprimées par ce transport.
+
+### Vérifications encore ouvertes et exclusions décidées par l'utilisateur
+
+L'exécution du jeu sélectionné n'est pas validée par sa seule lecture de catalogue. Les autres observations interactives non consignées comme réussies ne sont pas déclarées acquises. L'utilisateur indique que l'erreur d'insertion disquette n'est plus présente et demande de ne plus la poursuivre.
+
+Les opérations physiques ne sont pas testées sur demande explicite de l'utilisateur ; l'infrastructure audio est conservée sans raccordement supplémentaire. Les sauvegardes et chargements d'état restent reportés. Les firmwares sont exclus de la revue des images de médias et le cas UEF 747 est reporté. Ces décisions explicites restent distinctes des omissions de carte couleur, souris et joystick ci-dessus.
+
+**Objectif déjà en pause sur demande de l'utilisateur :** seule la consignation, la vérification du bloc courant et le commit de l'ensemble sont effectués pour terminer cette demande. Dernier passage `20261111-keyboard-suspension-debug.trx` : 86 réussites Debug, aucun échec ni ignoré, 4 s, code 0, après libération de la référence possédée au transport clavier dans Dispose. Aucun passage à une autre machine Acorn ni déclaration d'achèvement de l'Atom.
+
+## Point actuel après le bloc médias — 11 novembre 2026
+
+### Essai utilisateur dans RML et diagnostic de frappe rapide
+
+Vérification des images enregistrées par l'utilisateur, en lecture seule dans LocalDiskImageTests : `G:/Retro/test-enregistrement-atom.wav`, 4543494 octets, mono 48000 Hz/16 bits, contient P valide de 47 octets (chargement 2900, exécution C2B2), avec les trois lignes BASIC `PRINT "ATOM TEST"`, `PRINT 123+456`, `END`. `test-enregistrement-atom1.wav`, 2747580 octets, ne fournit aucun fichier Atom décodé ; aucune cause de cette différence n'est inventée. SHA-256 contrôlés inchangés après lecture ; un cas Debug réussi, 49 s, code 0. La capture fournie ensuite par l'utilisateur montre effectivement LIST et RUN après LOAD, avec `ATOM TEST` et 579. Le journal rapporte distinctement une insertion disquette refusée puis une réinitialisation refusée après passage en défaut ; l'utilisateur précise ensuite que cette erreur n'est plus présente et demande de ne plus la poursuivre.
+
+Catalogue lu de l'image sélectionnée `Atomic Jet Set Willy (2015)(van Oss, Kees)(FW).dsk` : `JSWRUN`, chargeur BASIC de 1575 octets, et `JSWCODE`, 23298 octets. Instructions proposées : `*DOS`, `*CAT`, `LOAD "JSWRUN"`, `RUN`. Ce passage vérifie le catalogue et la nature du chargeur, pas encore l'exécution du jeu. Rapport `20261111-user-game-catalogue-debug.trx`, un cas Debug réussi, 440 ms, code 0. Les tests externes temporaires de ces images sont supprimés après consignation.
+
+L'utilisateur signale des touches perdues en saisie rapide. Observation de sa fenêtre existante sans activation, clic ni saisie : `LIST` contient les trois lignes du programme, `RUN` affiche `ATOM TEST` et 579 ; l'Atom attend ensuite `PLAY TAPE` après `LOAD "P"`. L'overlay indique Direct3D11, 256×192, 59,8 FPS, 59,9 Hz et 1,00 MHz à 100 %. Il s'agit d'un relevé instantané de RML, pas d'une moyenne de performances. Capture réelle conservée : `artifacts/TestsMachines/Acorn/Acorn Atom/20261111-rml-basic-user.jpg`. Ni le succès du rechargement bande ni l'écoute du bip ne sont déduits de cette image.
+
+Diagnostic séparé hors interface, avec les ROM sélectionnées, via `EmulatorCore.SetInput` et les frames réellement exécutées ; chaque cœur est arrêté/libéré dans finally et l'audio drainé. Pour `ABCD1234`, durées exprimées en nombre de champs NTSC d'environ 16,69 ms : appui/relâchement 6/6 → `ABCD1234` ; 3/3 → `ABCD134` ; 3/2 → `AC13` ; 6/2 et 6/3 → `ABCD1234` ; 3/1 → `AC13` ; 1/1 → `AD3` ; 3/0 → `A`. Aucun temps CPU n'est exécuté dans les intervalles de relâchement nuls. Ces résultats décrivent la ROM exécutée sur ce montage, pas une caractérisation physique du clavier ; ils ne justifient ni une modification de la ROM ni l'ajout d'un tampon de caractères matériel.
+
+Une seconde perte est établie indépendamment du balayage ROM : l'accumulateur commun conserve seulement les derniers états absolus et la session les transmet une fois par frame ; appui A puis relâchement avant `Consume()` → zéro touche reçue par le cœur. L'application publie pourtant les deux événements. Cette preuve de perte de transitions dans le transport ne démontre pas à elle seule qu'elle explique toutes les omissions rapportées par l'utilisateur. Rapports `20261111-keyboard-contact-timing-debug.trx` et `20261111-keyboard-contact-timing-extended-debug.trx` sous TestsMachines/Acorn/Acorn Atom ; second passage : 1 succès Debug, 9 s, code 0. Diagnostic externe supprimé après usage ; correction du transport encore ouverte, aucune clôture du défaut clavier.
+
+Le bloc médias est committé sous `a679f0bda`. Le build demandé `scripts/local-building.cmd --building=debug --modules=acorn` termine code 0 ; `build/Debug/Retro Media Lab/retromedialab.exe` (345600 octets) et `Modules/acorn/retromedialab.emulation.acorn.dll` (2307584 octets) sont présents. Example est inclus systématiquement par le script. Cette livraison n'est pas un nouveau build de tous les modules.
+
+Les **75 contrôles Atom Debug passent**, aucun échec ni ignoré, 4 s, code 0, après les corrections médias. Rapport : `artifacts/TestsMachines/Acorn/Acorn Atom/20261111-post-media-atom-debug.trx`. Aucun nouveau test ni changement de puce ajouté pour ce passage. L'essai interactif RML reste à effectuer en coordination avec l'utilisateur ; aucun achèvement Atom n'est déduit de ces seuls tests.
+
+Les décisions ultérieures de l'utilisateur remplacent les attentes physiques décrites dans l'historique ci-dessous : infrastructure audio conservée sans raccordement supplémentaire ; aucun essai sur appareil physique demandé ; firmwares exclus de la revue médias ; cas UEF 747 explicitement reporté. Ces points ne doivent pas relancer le chantier de cassette physique. Les preuves et réserves des formats restent dans [la revue médias](../media-format-support.md).
+
 ## 11 novembre — reprise et revue des puces avant poursuite de la carte
 
 L'utilisateur confirme System 5 terminé et demande Atom, puis impose la revue des puces avant la suite. [Bilan détaillé](../../../../tasks/machines/AcornAtom/chip-review.md) : code relu, limites de fidélité, optimisations présentes/manquantes, 989 tests propres aux cinq groupes en Debug et autant en Release, et mesures isolées réelles. Ces tests ne certifient pas à eux seuls le matériel réel ; aucune puce ni machine n'est clôturée par cet inventaire.

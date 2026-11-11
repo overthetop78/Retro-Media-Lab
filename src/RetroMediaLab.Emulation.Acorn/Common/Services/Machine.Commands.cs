@@ -29,6 +29,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
                 StartAudio();
                 lock (_gate)
                 {
+                    _keyboardInput?.Reset(EmulationInputSnapshot.Empty);
                     State = EmulationMachineState.Running;
                     _started?.TrySetResult();
                 }
@@ -37,7 +38,9 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
                 long videoSequence = default;
                 CommonCoreHostFunctions.MachineExecution.RunLoop(nextFrame, _gate, _commands, () => _pauseRequested,
                     () => {
-                        _core.SetInput(_input.Consume());
+                        var input = _input.Consume();
+                        if (_keyboardInput is null) _core.SetInput(input);
+                        else _core.SetKeyboardInputFrame(_keyboardInput.Consume());
                         _core.SetAudioBufferStatus(_audio.BufferStatus);
                         _core.RunFrame();
                         if (_core.ShutdownRequested) return;
@@ -125,6 +128,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
 
     private void ResetCore(bool hardReset = true)
     {
+        _keyboardInput?.Reset(EmulationInputSnapshot.Empty);
         _audio.Reset();
         if (hardReset) _core.HardReset(); else CommonCoreHostFunctions.MachineExecution.SoftReset(_runtimePolicy?.SoftResetKeys ?? new HashSet<EmulationKey>(), _core.SetInput, _core.RunFrame, _core.SoftReset);
     }

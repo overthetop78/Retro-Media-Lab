@@ -42,6 +42,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     private readonly ConcurrentQueue<MachineCommand> _commands = new();
     private readonly AudioOutputController _audio;
     private readonly IEmulationInputAccumulator _input = CommonControllerFunctions.CreateInputAccumulator();
+    private readonly KeyboardInputHistory? _keyboardInput;
     private Thread? _thread;
     private readonly List<MediaConfiguration> _mountedMedia;
     /// <summary>Configuration des entrées de session actualisée après acceptation des changements par le cœur.</summary>
@@ -60,6 +61,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         _inputConfiguration = configuration;
         _mountedMedia = configuration.Media.Where(item => item.IsInserted).ToList();
         _core = core;
+        _keyboardInput = core.UsesKeyboardTimeline ? new KeyboardInputHistory() : null;
         _inputMapper = inputMapper;
         _pointerCapabilities = inputMapper as IEmulatorPointerCapabilities;
         _mediaCapabilities = _inputMapper as IEmulatorMediaCapabilities;
@@ -88,6 +90,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         lock (_gate)
         {
             _inputConfiguration = _inputConfiguration with { Input = next.Input };
+            _keyboardInput?.Reset(EmulationInputSnapshot.Empty);
         }
     }
 

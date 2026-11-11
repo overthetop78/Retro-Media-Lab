@@ -177,9 +177,9 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorTapeTranspo
             Interlocked.Add(ref _bufferedAudioFrames, LatestAudioChunk.FrameCount);
         }
     }
-    public void SetInput(EmulationInputSnapshot snapshot) => _machine?.SetInput(snapshot);
-    public void SoftReset() { _network?.Reset(); _machine?.Reset(false); ClearAudio(); }
-    public void HardReset() { _network?.Reset(); _machine?.Reset(true); ClearAudio(); }
+    public void SetInput(EmulationInputSnapshot snapshot) { ClearKeyboardPlayback(); _machine?.SetInput(snapshot); }
+    public void SoftReset() { ClearKeyboardPlayback(); _network?.Reset(); _machine?.Reset(false); ClearAudio(); }
+    public void HardReset() { ClearKeyboardPlayback(); _network?.Reset(); _machine?.Reset(true); ClearAudio(); }
     public void Stop() { try { SaveNonvolatileMemory(); SaveMediaChanges(EmulationMediaSlot.Tape0); SaveDisks(); SaveHardDisks(); } finally { try { DisposeNetwork(); } finally { ResetMechanicalAudio(); ShutdownRequested = true; ClearAudio(); } } }
     /// <summary>Transfère un bloc audio possédé au parcours audio Common déjà utilisé par les autres cœurs.</summary>
     public bool TryDequeueAudio(out AudioChunk? chunk)
@@ -266,6 +266,8 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorTapeTranspo
         try { SaveNonvolatileMemory(); SaveMediaChanges(EmulationMediaSlot.Tape0); SaveDisks(); SaveHardDisks(); ShutdownRequested = true; }
         finally
         {
+            ClearKeyboardPlayback();
+            _keyboardPlayback = null;
             if (_machine?.TapeTransport is { } transport) transport.ActivityChanged -= OnTapeActivityChanged;
             ResetMechanicalAudio();
             try { DisposeDisks(); }

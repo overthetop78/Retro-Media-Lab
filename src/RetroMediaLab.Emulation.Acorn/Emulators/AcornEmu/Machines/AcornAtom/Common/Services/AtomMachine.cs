@@ -108,6 +108,7 @@ internal sealed partial class AtomMachine : ICpuBus, IAcornMachine
 
     public void Tick()
     {
+        if (_cpu.Cycles >= _nextKeyboardInputClock) _keyboardInputClock?.Invoke(_cpu.Cycles);
         ClockDisk();
         if (++_tapePhase >= C.TapeHalfPeriod)
         {

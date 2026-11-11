@@ -58,6 +58,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         {
             if (State != EmulationMachineState.Running) return ValueTask.CompletedTask;
             _pauseRequested = true;
+            _keyboardInput?.Reset();
             State = EmulationMachineState.Paused;
             _audio.Pause();
         }
@@ -71,6 +72,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         {
             if (State != EmulationMachineState.Paused) return ValueTask.CompletedTask;
             _pauseRequested = false;
+            _keyboardInput?.Reset();
             State = EmulationMachineState.Running;
             _audio.Resume();
             Monitor.PulseAll(_gate);
@@ -110,7 +112,12 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         }
     }
 
-    public void SetInput(EmulationInputSnapshot snapshot) => _input.Update(MapInput(snapshot));
+    public void SetInput(EmulationInputSnapshot snapshot)
+    {
+        var mapped = MapInput(snapshot);
+        _input.Update(mapped);
+        _keyboardInput?.Update(mapped, State == EmulationMachineState.Running);
+    }
 
     public void SetControllerPortDevice(int port, PeripheralCategory peripheral) => QueueCommand(() =>
     {

@@ -7,6 +7,15 @@ internal sealed partial class AtomMachine
 {
     // Témoin de comparaison du transport seulement ; aucune option ni variante matérielle.
     internal bool GroupVideoClocks { get; set; } = true;
+    internal long ProcessorCycles => _cpu.Cycles;
+    private long _nextKeyboardInputClock = long.MaxValue;
+    private Action<long>? _keyboardInputClock;
+
+    internal void SetKeyboardInputDeadline(long? cycle, Action<long>? receiver)
+    {
+        _nextKeyboardInputClock = cycle ?? long.MaxValue;
+        _keyboardInputClock = cycle.HasValue ? receiver : null;
+    }
 
     private long _diskClock;
     private long _nextDiskClock = long.MaxValue;
