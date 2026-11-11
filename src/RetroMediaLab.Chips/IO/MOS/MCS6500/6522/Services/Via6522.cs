@@ -27,6 +27,7 @@ public sealed partial class Via6522 : IVia6522
 
     public void Reset()
     {
+        if (_receivingPhi2Input) SynchronizePhi2Input();
         var previousOutputs = ControlOutputs;
         var shift = _registers[C.Shift];
         var latch2Low = _registers[C.Timer2Low];
@@ -54,6 +55,7 @@ public sealed partial class Via6522 : IVia6522
 
     public byte Read(int register)
     {
+        if (_receivingPhi2Input) SynchronizePhi2Input();
         register &= C.RegisterMask;
         switch (register)
         {
@@ -88,6 +90,7 @@ public sealed partial class Via6522 : IVia6522
 
     public void Write(int register, byte value)
     {
+        if (_receivingPhi2Input) SynchronizePhi2Input();
         register &= C.RegisterMask;
         switch (register)
         {

@@ -51,11 +51,12 @@ public sealed partial class Via6522
         ? (_registers[C.PortB] & C.Pb6) != 0
         : _pb6Input ?? ((ReadPortB?.Invoke() ?? byte.MaxValue) & C.Pb6) != 0;
 
-    public void SetPb6(bool level) => _pb6Input = level;
+    public void SetPb6(bool level) { if (_receivingPhi2Input) SynchronizePhi2Input(); _pb6Input = level; }
     public void VSync() { SetCa1(true); SetCa1(false); }
 
     public void SetCa1(bool level)
     {
+        if (_receivingPhi2Input) SynchronizePhi2Input();
         if (level != _ca1 && level == ((_registers[C.Peripheral] & C.Ca1Rising) != 0))
         {
             if ((_registers[C.Auxiliary] & C.LatchA) != 0) _inputLatchA = LivePinsA;
@@ -68,12 +69,14 @@ public sealed partial class Via6522
     public void SetKeyboardLine(bool level) => SetCa2(level);
     public void SetCa2(bool level)
     {
+        if (_receivingPhi2Input) SynchronizePhi2Input();
         if (level != _ca2 && ActiveControlEdge(_controlModeA, level)) InterruptFlags |= C.Ca2Interrupt;
         _ca2 = level;
     }
 
     public void SetCb1(bool level)
     {
+        if (_receivingPhi2Input) SynchronizePhi2Input();
         if (!_shiftInternalClock)
         {
             CaptureCb1Edge(_cb1, level);
@@ -106,6 +109,7 @@ public sealed partial class Via6522
 
     public void SetCb2(bool level)
     {
+        if (_receivingPhi2Input) SynchronizePhi2Input();
         if (!ShiftOwnsCb2 && level != _cb2 && ActiveControlEdge(_controlModeB, level)) InterruptFlags |= C.Cb2Interrupt;
         _cb2 = level;
     }
