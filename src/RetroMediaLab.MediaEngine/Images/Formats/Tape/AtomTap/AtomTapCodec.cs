@@ -71,7 +71,7 @@ internal static class AtomTapCodec
                 && bytes is { Length: 2 } && BinaryPrimitives.ReadUInt16LittleEndian(bytes) == C.Baud) continue;
             if (segment.Kind != SequentialSegmentKind.DataBlock || bytes is null || bytes.Length < 3
                 || segment.Metadata.GetValueOrDefault(UefConstants.ChunkIdMetadataKey) != "0104"
-                || bytes[0] != C.DataBits || bytes[1] != C.NoParity || bytes[2] != C.StopBits)
+                || bytes[0] != C.DataBits || bytes[1] != C.NoParity || bytes[2] is not (1 or 2))
             {
                 retained.Add(segment);
                 continue;
@@ -113,7 +113,7 @@ internal static class AtomTapCodec
                 diagnostics.Add("Truncated Atom tape block.");
                 continue;
             }
-            valid &= unchecked((byte)(header.Skip(C.SyncBytes).Sum(value => (int)value)
+            valid &= unchecked((byte)(header.Sum(value => (int)value)
                 + data.Take(count).Sum(value => (int)value))) == data[count];
             payload.AddRange(data.Take(count));
             header = null; number++;

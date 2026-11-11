@@ -3,6 +3,7 @@ using System.IO;
 using RetroMediaLab.MediaEngine.Enums;
 using RetroMediaLab.MediaEngine.Contracts;
 using RetroMediaLab.MediaEngine.Constants;
+using RetroMediaLab.MediaEngine.Functions;
 using RetroMediaLab.MediaEngine.Images.Reading.Decoding.Sequential;
 using RetroMediaLab.MediaEngine.Images.Writing.Encoding.Sequential;
 
@@ -81,6 +82,12 @@ public sealed class SequentialMediaConversionService
         if (decoded.UndecodedSegments.Count > 0 && request.RetainedSegments.Count == 0)
             losses.Add($"{decoded.UndecodedSegments.Count} source segment(s) cannot be represented by the selected target format.");
         if (encoded.Segments?.Any(segment => segment.Metadata.TryGetValue("reconstructedSignal", out var reconstructed) && bool.TryParse(reconstructed, out var isReconstructed) && isReconstructed) == true)
+            losses.Add("The target signal timing is a standard reconstruction rather than the original recording timing.");
+        if (targetFormatId == TapeImageFormatIds.AtomTap && source.FormatId != TapeImageFormatIds.AtomTap)
+            losses.Add("Atom TAP stores file data and addresses, without preserving the source signal timing.");
+        if (targetFormatId == TapeImageFormatIds.Uef
+            && PcmSampleFunctions.TryGetProfile(source.Metadata, out _, out _, out _, out _)
+            && encoded.Segments?.Any(segment => segment.Kind == SequentialSegmentKind.DataBlock) == true)
             losses.Add("The target signal timing is a standard reconstruction rather than the original recording timing.");
 
         var metadata = BuildTargetMetadata(selectedParameters, encoded);

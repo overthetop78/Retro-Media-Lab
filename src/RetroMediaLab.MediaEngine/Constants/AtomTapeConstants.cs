@@ -19,7 +19,8 @@ internal static class AtomTapeConstants
     internal const int FlagHistoryShift = 2;
     internal const int FlagHistoryMask = 0x1f;
     internal const int Baud = 300;
-    internal const int StopBits = 2;
+    // Acorn, Atomic Theory and Practice, §19: one stop bit at 300 bit/s.
+    internal const int StopBits = 1;
     internal const int DataBits = 8;
     internal const byte NoParity = (byte)'N';
     internal const int CarrierCycles = 9600;

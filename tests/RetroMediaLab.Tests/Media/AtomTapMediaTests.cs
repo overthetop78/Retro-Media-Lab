@@ -92,6 +92,9 @@ public sealed class AtomTapMediaTests
         var wave = await service.PlanAsync(source, TapeImageFormatIds.Wav, "acorn-atom", new Dictionary<string, string> { ["sampleRate"] = sampleRate.ToString() });
         Assert.Equal(sampleRate.ToString(), wave.TargetDocument.Metadata["sampleRate"]);
         var back = await service.PlanAsync(wave.TargetDocument, TapeImageFormatIds.AtomTap, "acorn-atom");
+        Assert.Contains(back.Losses, loss => loss.Contains("source signal timing"));
+        var recordedToUef = await service.PlanAsync(wave.TargetDocument, TapeImageFormatIds.Uef, "acorn-atom");
+        Assert.Contains(recordedToUef.Losses, loss => loss.Contains("standard reconstruction"));
         var output = new MemoryWriter();
         await new AtomTapWriter(output).WriteAsync(back.TargetDocument, "copy.tap", TapeImageFormatIds.AtomTap);
         Assert.Equal(bytes, output.Bytes);
@@ -116,7 +119,7 @@ public sealed class AtomTapMediaTests
     [Fact]
     public async Task IncompatibleUefFramingIsRetainedInsteadOfSilentlyDropped()
     {
-        byte[] bytes = [8, (byte)'N', 1, 42];
+        byte[] bytes = [8, (byte)'N', 0, 42];
         var segment = new SequentialMediaSegment(0, SequentialSegmentKind.DataBlock,
             dataRange: new(0, bytes.Length, MediaDataRangeKind.Stored, new MemoryRandomAccessData(bytes)),
             metadata: new Dictionary<string, string> { [UefConstants.ChunkIdMetadataKey] = "0104" });
@@ -126,6 +129,50 @@ public sealed class AtomTapMediaTests
         Assert.Empty(decoded.Blocks);
         Assert.Same(segment, Assert.Single(decoded.UndecodedSegments));
         Assert.NotEmpty(decoded.Diagnostics);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task UefAcceptsOneStopAndHistoricalTwoStopFraming(int stopBits)
+    {
+        byte[] expected = [0, 42, 255];
+        var native = AtomTapReader.ReadBytes(new("memory.tap", []), File("P", expected));
+        var original = (SequentialMediaImageRepresentation)native.Representation;
+        var segments = new List<SequentialMediaSegment>();
+        foreach (var segment in original.Segments!)
+        {
+            if (segment.Kind != SequentialSegmentKind.DataBlock) { segments.Add(segment); continue; }
+            var bytes = (await RetroMediaLab.MediaEngine.Images.Reading.Blocks.BlockMediaDataReader.ReadRangeAsync(segment.DataRange, CancellationToken.None))!;
+            Assert.Equal(1, bytes[2]); // The canonical reconstruction follows Acorn §19.
+            bytes[2] = (byte)stopBits;
+            segments.Add(new(segment.Position, segment.Kind, dataRange: new(0, bytes.Length, MediaDataRangeKind.Stored, new MemoryRandomAccessData(bytes)), metadata: segment.Metadata));
+        }
+        var uef = MediaImageDocument.CreateUnexplored(new("memory.uef", []), TapeImageFormatIds.Uef, MediaKind.Tape,
+            new SequentialMediaImageRepresentation(null, segments: segments), [], new Dictionary<string, string>());
+        var decoded = await SequentialMediaComposition.CreateDefault().Decoders.DecodeAsync(uef, "acorn-atom");
+        var block = Assert.Single(decoded.Blocks);
+        Assert.True(block.IntegrityValid); Assert.Equal(expected, block.Data.ToArray());
+        Assert.Empty(decoded.Diagnostics); Assert.Empty(decoded.UndecodedSegments);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RomRecordedBlockIncludesSyncBytesInChecksum(bool corrupt)
+    {
+        // Actual SAVE "P" serial bytes, selected Acorn BASIC/OS ROM,
+        // 20261111-final-tape-base-035329770; no encoder-under-test constructs this fixture.
+        var serial = Convert.FromHexString("2A2A2A2A500D4500002AC2B229000D000A203F23334246463D34320D0014205052494E54224D454449412050415353220D001E20454E440DFF45");
+        var expected = serial.AsSpan(14, 43).ToArray();
+        if (corrupt) serial[20] ^= 1;
+        var result = await AtomTapCodec.DecodeStreamAsync(serial, CancellationToken.None);
+        var block = Assert.Single(result.Blocks);
+        Assert.Equal(!corrupt, block.IntegrityValid);
+        Assert.Equal("P", block.Metadata["fileName"]);
+        Assert.Equal("2900", block.Metadata["loadAddress"]);
+        if (!corrupt) { Assert.Equal(expected, block.Data.ToArray()); Assert.Empty(result.Diagnostics); }
+        else Assert.NotEmpty(result.Diagnostics);
     }
 
     private static byte[] File(string name, byte[] data)

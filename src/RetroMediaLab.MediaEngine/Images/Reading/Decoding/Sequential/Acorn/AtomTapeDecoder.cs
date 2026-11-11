@@ -41,7 +41,7 @@ public sealed class AtomTapeDecoder : ISequentialMediaDecoder
                     var id = segment.Metadata.GetValueOrDefault(UefConstants.ChunkIdMetadataKey);
                     if (id is "0100" or "0105") values.AddRange(bytes);
                     else if (id == "0104" && bytes.Length >= 3 && bytes[0] == AtomTapeConstants.DataBits
-                        && bytes[1] == AtomTapeConstants.NoParity && bytes[2] == AtomTapeConstants.StopBits) values.AddRange(bytes.AsSpan(3).ToArray());
+                        && bytes[1] == AtomTapeConstants.NoParity && bytes[2] is 1 or 2) values.AddRange(bytes.AsSpan(3).ToArray());
                     else return new(Id, 0, [], image.Segments ?? [], ["UEF serial framing is not compatible with Atom tape blocks."]);
                 }
                 return FromSource(await AtomTapCodec.DecodeStreamAsync(values.ToArray(), cancellationToken).ConfigureAwait(false));

@@ -32,7 +32,8 @@ public sealed class AcornEmuAtomTapTests
         Assert.Equal(data, chunks[1][..^1].Concat(chunks[3][..^1]));
         for (var i = 0; i < chunks.Count; i += 2)
         {
-            var checksum = chunks[i][4..].Sum(value => (int)value) + chunks[i + 1][..^1].Sum(value => (int)value);
+            // The ROM checksum includes all four 0x2A synchronization bytes.
+            var checksum = chunks[i].Sum(value => (int)value) + chunks[i + 1][..^1].Sum(value => (int)value);
             Assert.Equal(unchecked((byte)checksum), chunks[i + 1][^1]);
         }
     }
@@ -48,8 +49,8 @@ public sealed class AcornEmuAtomTapTests
         var dataSegments = representation.Segments!.Where(segment => segment.Kind == SequentialSegmentKind.DataBlock).ToArray();
         Assert.Equal(2, positions.Count);
         var start = positions[dataSegments[1].Position];
-        // 1 start + 8 données + 2 stops : 1760 échantillons par octet à 48 kHz/300 bauds.
-        bool[] frame = [false, true, false, true, false, false, true, false, true, true, true];
+        // Acorn §19 : 1 start + 8 données + 1 stop, soit1600échantillons à48kHz/300bauds.
+        bool[] frame = [false, true, false, true, false, false, true, false, true, true];
         for (var bit = 0; bit < frame.Length; bit++)
         {
             var halfWaveSamples = frame[bit] ? 10 : 20; // 2400Hz ou1200Hz à48kHz.
@@ -61,8 +62,8 @@ public sealed class AcornEmuAtomTapTests
         }
         // Le décodeur doit recevoir la transition porteuse→start, pas seulement
         // le signal déjà bas au début d'une fenêtre coupée sur ce start.
-        var samples = signal.Samples.Slice(start - 160, 160 + 1760).ToArray().Select(sample => (int)sample).ToArray();
-        var decoded = FskSerialFunctions.Decode(samples, signal.SampleRate, 300, 1200, 2400, 8, 2, 8);
+        var samples = signal.Samples.Slice(start - 160, 160 + 1600).ToArray().Select(sample => (int)sample).ToArray();
+        var decoded = FskSerialFunctions.Decode(samples, signal.SampleRate, 300, 1200, 2400, 8, 1, 8);
         Assert.Equal(new byte[] { 0xa5 }, decoded.Bytes);
         Assert.All(signal.Samples.Span[..start].ToArray(), sample => Assert.NotEqual((short)0, sample));
     }

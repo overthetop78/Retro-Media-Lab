@@ -100,7 +100,7 @@ public sealed class AtomTapReader : IMediaImageReader
                 BigEndian(header, load + copied);
                 var headerBytes = header.ToArray();
                 var payload = bytes.AsSpan(offset + copied, count).ToArray();
-                var checksum = headerBytes.Skip(C.SyncBytes).Sum(value => (int)value) + payload.Sum(value => (int)value);
+                var checksum = headerBytes.Sum(value => (int)value) + payload.Sum(value => (int)value);
                 Array.Resize(ref payload, count + 1);
                 payload[count] = unchecked((byte)checksum);
                 Carrier(C.CarrierCycles);
