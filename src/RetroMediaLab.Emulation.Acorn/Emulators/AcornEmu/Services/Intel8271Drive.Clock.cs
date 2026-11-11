@@ -7,6 +7,18 @@ internal sealed partial class Intel8271Drive
     private int _clockMutationDepth;
     private long? _publishedClockEvent;
     private Action<long?>? _clockEventChanged;
+    private bool _publishedClockGrouping = true;
+
+    internal bool CanGroupClocks => !_motor || (_pulses.Length == 0 && _writingImage is null);
+    internal event Action<bool>? ClockGroupingChanged;
+
+    private void PublishClockGrouping()
+    {
+        var allowed = CanGroupClocks;
+        if (_publishedClockGrouping == allowed) return;
+        _publishedClockGrouping = allowed;
+        ClockGroupingChanged?.Invoke(allowed);
+    }
 
     /// <summary>Prochaine période source nécessitant le parcours canonique du lecteur.</summary>
     internal long? NextClockEvent

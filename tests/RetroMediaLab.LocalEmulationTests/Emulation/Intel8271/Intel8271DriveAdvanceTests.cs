@@ -8,6 +8,31 @@ namespace RetroMediaLab.Tests.Emulation.Intel8271;
 
 public sealed class Intel8271DriveAdvanceTests
 {
+    [Fact]
+    public void GroupingQualificationChangesOnlyWithTheActualTransport()
+    {
+        using var pair = new Pair(1_000_000);
+        var modes = new List<bool>();
+        Action<bool> receiver = modes.Add;
+        pair.Grouped.ClockGroupingChanged += receiver;
+        try
+        {
+            Assert.True(pair.Grouped.CanGroupClocks);
+            pair.Control(H.Drive0Select | H.OutputLoadHead);
+            pair.Advance(1);
+            Assert.False(pair.Grouped.CanGroupClocks);
+            pair.Advance(10_001);
+            Assert.Equal(new[] { false }, modes);
+            pair.Control(0);
+            Assert.True(pair.Grouped.CanGroupClocks);
+            pair.ChangeMedia(false);
+            pair.Control(H.Drive0Select | H.OutputLoadHead);
+            pair.Advance(1_001);
+            Assert.Equal(new[] { false, true }, modes);
+        }
+        finally { pair.Grouped.ClockGroupingChanged -= receiver; }
+    }
+
     [Theory]
     [InlineData(15_625)]
     [InlineData(15_627)]

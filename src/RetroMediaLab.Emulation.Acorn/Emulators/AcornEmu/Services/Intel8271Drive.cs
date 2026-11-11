@@ -81,7 +81,13 @@ internal sealed partial class Intel8271Drive
     internal void Tick()
     {
         // Les utilisateurs unitaires sans écouteur gardent le même parcours direct.
-        if (_clockEventChanged is null) { TickCore(); return; }
+        if (_clockEventChanged is null)
+        {
+            TickCore();
+            // Le chargement de piste a pu rétablir un écouteur pendant ce Tick.
+            PublishClockEvent();
+            return;
+        }
         _clockMutationDepth++;
         try { TickCore(); }
         finally { _clockMutationDepth--; PublishClockEvent(); }
@@ -156,6 +162,7 @@ internal sealed partial class Intel8271Drive
             {
                 PublishWindow(continueWriting: true);
                 _motor = _chip.Motor;
+                PublishClockGrouping();
             }
             return;
         }
@@ -199,6 +206,7 @@ internal sealed partial class Intel8271Drive
         _previousControl = control;
         _previousDrive = drive;
         _motor = _chip.Motor;
+        PublishClockGrouping();
     }
 
     internal void Reset()
@@ -239,7 +247,7 @@ internal sealed partial class Intel8271Drive
         _cachedHead = head;
         _pulses = [];
         _nextPulse = 0;
-        if (image is null) return;
+        if (image is null) { PublishClockGrouping(); return; }
         try
         {
             var revolution = image.ReadTrack(_cachedTrack, head, C.EncodingId, _cellNanoseconds,
@@ -251,6 +259,7 @@ internal sealed partial class Intel8271Drive
         }
         catch (Exception error) when (error is IOException or ArgumentException or NotSupportedException)
         { _pulses = []; }
+        PublishClockGrouping();
     }
 
     private void ReadPulse()
