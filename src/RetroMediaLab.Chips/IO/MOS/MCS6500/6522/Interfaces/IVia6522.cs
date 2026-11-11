@@ -28,16 +28,6 @@ public interface IVia6522
     void Tick();
     void Phi2LeadingEdge();
     void Phi2TrailingEdge();
-    /// <summary>Reçoit le niveau PH2 réellement livré. Les périodes sans effet sont
-    /// conservées localement jusqu'à la prochaine observation, entrée ou frontière.
-    /// Les changements d'entrée doivent passer par les méthodes du composant ;
-    /// un remplacement de fournisseur ou un passage aux fronts historiques exige
-    /// SynchronizePhi2Input au préalable, sans changement du niveau physique.</summary>
-    void SetPhi2Input(bool high);
-    /// <summary>Résout uniquement les périodes PH2 déjà reçues, sans avancer le temps.
-    /// Les accès et nouvelles entrées le font automatiquement ; utile avant une
-    /// observation d'ensemble ou le remplacement d'un raccordement historique.</summary>
-    void SynchronizePhi2Input();
     /// <summary>Représente un préfixe de périodes PH2 complètes sans effet extérieur.
     /// Retourne le nombre accepté, éventuellement zéro, avant la première frontière.
     /// Les entrées doivent rester stables ; le câblage livre toute observation ou nouvelle

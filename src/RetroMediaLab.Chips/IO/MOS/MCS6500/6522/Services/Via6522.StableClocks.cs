@@ -11,14 +11,6 @@ public sealed partial class Via6522
     public long TryAdvanceStableClocks(long clocks, out bool retryAfterBoundary)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(clocks);
-        SynchronizePhi2Input();
-        var count = StableClockPrefix(clocks, out retryAfterBoundary);
-        if (count > 0) ApplyStableClockPrefix(count);
-        return count;
-    }
-
-    private long StableClockPrefix(long clocks, out bool retryAfterBoundary)
-    {
         retryAfterBoundary = true;
         if (clocks == 0) return 0;
         // These sources cannot amortize a qualification every period. The caller
@@ -57,16 +49,13 @@ public sealed partial class Via6522
             }
         }
         if (count <= 0) return 0;
-        return count;
-    }
 
-    private void ApplyStableClockPrefix(long count)
-    {
         // All effects at the next boundary remain in the canonical edge methods.
         // When a counter runs, its bound above also makes the int conversion safe.
         if (_timer1Running) _timer1 -= (int)count;
         if (_timer2Running && !_timer2PulseMode) _timer2 -= (int)count;
         _timer1JustFired = _timer2JustFired = false;
         _timer2PulseSampled = false;
+        return count;
     }
 }
