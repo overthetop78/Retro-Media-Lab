@@ -3,6 +3,7 @@ namespace RetroMediaLab.MediaEngine.Constants;
 /// <summary>Defines invariant metadata keys used by neutral physical media operations.</summary>
 public static class MediaPhysicalMetadataKeys
 {
+    public const string SampleRate = "sampleRate";
     public const string Encoding = "encoding";
     public const string Cylinder = "cylinder";
     public const string Head = "head";

@@ -7,6 +7,7 @@ using RetroMediaLab.MediaEngine.Images.Conversion;
 using RetroMediaLab.MediaEngine.Images.Conversion.Optical;
 using RetroMediaLab.MediaEngine.Images.Conversion.Sequential;
 using RetroMediaLab.MediaEngine.PhysicalMedia.Writing;
+using RetroMediaLab.MediaEngine.PhysicalMedia.Reading;
 using RetroMediaLab.MediaEngine.Images.Reading;
 using MediaExplorer = RetroMediaLab.MediaEngine.Images.Reading.MediaExplorer;
 using FileSystemsMediaExplorer = RetroMediaLab.MediaFileSystems.Exploration.MediaExplorer;
@@ -39,6 +40,8 @@ public sealed class MediaEngineComposition
         Visualization = visualization;
         FloppyFluxAcquisitionService = new FloppyFluxAcquisitionService();
         FloppyMediaWritePlanningService = new FloppyMediaWritePlanningService(DiskImageExplorer.CreateDefault());
+        TapeMediaWritePlanningService = new TapeMediaWritePlanningService(RuntimePreparation);
+        TapeMediaAcquisitionService = new TapeMediaAcquisitionService();
         ConversionService = new MediaConversionService(conversion.Registry, writing.Registry, writing.WritingService);
         OpticalConversionService = conversion.CreateOpticalImageConverter(writing);
         SequentialConversionService = conversion.CreateSequentialMediaConverter(writing);
@@ -55,6 +58,10 @@ public sealed class MediaEngineComposition
     public FloppyFluxAcquisitionService FloppyFluxAcquisitionService { get; }
 
     public FloppyMediaWritePlanningService FloppyMediaWritePlanningService { get; }
+
+    public TapeMediaWritePlanningService TapeMediaWritePlanningService { get; }
+
+    public TapeMediaAcquisitionService TapeMediaAcquisitionService { get; }
 
     public MediaImageReadingService ReadingService => Recognition.ReadingService;
 

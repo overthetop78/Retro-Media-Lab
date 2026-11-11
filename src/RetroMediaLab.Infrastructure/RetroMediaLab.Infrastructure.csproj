@@ -8,6 +8,7 @@
 </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NAudio.Wasapi" Version="2.3.0" />
     <InternalsVisibleTo Include="RetroMediaLab.Tests" />
     <InternalsVisibleTo Include="RetroMediaLab.LocalEmulationTests" />
     <ProjectReference Include="..\RetroMediaLab.MediaEngine\RetroMediaLab.MediaEngine.csproj" />
