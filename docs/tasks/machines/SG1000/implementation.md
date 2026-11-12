@@ -130,3 +130,37 @@ Deux essais de portions de quartz retirés après mesures : candidat1 +16,06/+13
     - [x] Créer `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/SG1000/Services/Sg1000Board.Domains.cs` et modifier `Sg1000Board.Clock.cs`, `Sg1000Board.cs`, `Sg1000Board.Bus.cs`, `Sg1000Board.Rom.cs`, `Sg1000Board.State.cs` : distribuer la source quartz au VDP et sa sortie CPUCLK au CPU/PSG ; avancer la vidéo et ses huit DRAM avant toute interaction active, le CPU avant ses interactions et READY/IRQ ; recevoir les échéances par notifications, conserver les transactions, dates, priorités, états et restauration. Garder le trajet explicite comme référence interne de comparaison.
   - [x] Vérifier le lot machine et mesurer son coût complet.
     - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/Sg1000BoardTests.cs` : comparer référence et domaines sur le programme autonome avec RAM, VRAM, son, manettes et restauration ; utiliser le banc de profilage existant pour trois tailles/configurations représentatives et comparer états complets, images et PCM aux captures précédentes.
+
+- [x] Raccorder le parcours ROM canonique refondu et mesurer le lot vidéo/ROM complet.
+  - [x] Livrer les niveaux effectivement raccordés sans contrats intermédiaires.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/SG1000/Services/Sg1000Board.Rom.cs` : utiliser ReceiveParallelPins du même moteur ROM pour chaque boîtier présent, conserver les signaux CE/OE, miroirs, profils, origines de temps et option de ROM interne.
+  - [x] Comparer l'ensemble à la capture précédente.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/Sg1000BoardTests.cs` seulement si une couverture manque ; réutiliser le test d'équivalence des états complets et les groupes machine, puis lancer le banc de profilage existant seul sur Champion Tennis, Girl’s Garden et The Castle et comparer à c1b074fb6.
+
+- [x] Conserver la plage vidéo dans le composant et mettre en cache les frontières des fils depuis leurs mutations.
+  - [x] Refondre la coordination des réponses réellement raccordées.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/SG1000/Services/Sg1000Board.Domains.cs`, `Services/Sg1000Board.Bus.cs`, `Services/Sg1000Board.Clock.cs`, `Services/Sg1000Board.cs`, `Services/Sg1000Board.State.cs`, `Services/Sg1000Board.Rom.cs` : notifier au VDP le prochain changement des entrées DRAM et livrer ses réponses dans le rappel daté sans sortir de toute la plage ; conserver les huit résolutions et leur ordre causal, y compris les boucles de retour à la même date. Mettre en cache les minima CPU/VRAM et les invalider aux seules notifications/câblages/reset/restaurations qui les changent ; ne consulter aucune puce en boucle pour découvrir ses signaux.
+  - [x] Vérifier et profiler la machine complète.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/Sg1000BoardTests.cs` si un cas utile manque pour la livraison commune à la même date ; reprendre la comparaison complète aux fils explicites, puis le banc trois-ROM existant seul, sans lancer d'autres mesures ni tests concurrents.
+
+- [ ] Distribuer le lot de contrôles VRAM communs par le transport canonique des DRAM.
+  - [ ] Conserver les huit puces et leur ordre de résolution.
+    - [ ] Modifier `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/SG1000/Services/Sg1000Board.Bus.cs` : remplacer les huit appels publics et constructions des mêmes niveaux communs par ReceiveSharedPins, avec le masque exact des destinataires déjà calculé ; conserver les huit sorties, réponses et boucles de retour indépendantes ainsi que la publication de frontière après le lot.
+  - [ ] Vérifier le transport sur les scénarios machine existants.
+    - [ ] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/Sg1000BoardTests.cs` si un défaut de couverture est établi ; réutiliser la comparaison complète aux fils explicites et le profil trois-ROM pour décider de la rétention de tout le lot.
+
+- [ ] Consommer les séquences vidéo passives au raccordement de la machine.
+  - [ ] Garder le signal natif et la cadence physique.
+    - [ ] Modifier `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/SG1000/Services/Sg1000Board.cs` et `Services/Sg1000Board.Output.cs` : raccorder le récepteur passif par plages au trajet natif, appliquer les échantillons sans sous-appel par pixel ; garder le destinataire unitaire dans la référence, mêmes pixels/qualifications, frontières d'image et compte de frames, nettoyage des abonnements.
+  - [ ] Vérifier l'ensemble de la refonte de transport.
+    - [ ] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/Sg1000BoardTests.cs` seulement si un cas de livraison partielle manque ; reprendre les 14 contrôles machine et le profil trois-ROM, vérifier chaque image/bloc PCM/état complet contre les captures de référence.
+
+- [x] Retirer les deux transports expérimentaux sans gain utile confirmé, conserver les plages vidéo vérifiées.
+  - [x] Restituer le transport antérieur de ces seuls signaux.
+    - [x] Modifier `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/SG1000/Services/Sg1000Board.Bus.cs`, `Sg1000Board.Output.cs`, `Sg1000Board.cs`, les services/contrats vidéo et MB8118 concernés ci-dessus : retirer le transport partagé et le récepteur vidéo passif, conserver les frontières des entrées au sein de la plage, les minima notifiés et les huit sorties séparées. Retirer uniquement le test de séquences vidéo dans ClockDomainTests.cs.
+    - [x] Supprimer `src/RetroMediaLab.Chips/Video/TexasInstruments/TMS99xx/TMS9918A/Contracts/Tms9918VideoSequenceHandler.cs`.
+    - [x] Supprimer `src/RetroMediaLab.Chips/Video/TexasInstruments/TMS99xx/TMS9918A/Services/Tms9918A.VideoSequence.cs`.
+    - [x] Supprimer `src/RetroMediaLab.Chips/Memory/Fujitsu/MB81xx/MB8118/Services/Mb8118.SharedInputs.cs`.
+    - [x] Supprimer `tests/RetroMediaLab.Chips.Tests/Memory/Fujitsu/MB81xx/MB8118/SharedInputTests.cs`.
+  - [x] Vérifier le bloc conservé et mesurer son résultat.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/Sg1000BoardTests.cs` si la restitution révèle une couverture manquante ; exécuter les contrôles composants utiles, les 14 contrôles machine et le banc trois-ROM pour confirmer états/images/PCM et coût de la version conservée.

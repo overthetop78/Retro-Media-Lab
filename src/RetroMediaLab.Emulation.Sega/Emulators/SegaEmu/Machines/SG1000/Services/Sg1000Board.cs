@@ -174,6 +174,7 @@ internal sealed partial class Sg1000Board : IDisposable
             _vdp.CpuClockChanged = null; _vdp.CpuOutputsChanged = null; _vdp.VramPinsChanged = null;
             _vdp.VideoSignalProduced = null; _vdp.FrameStarted = null; _vdp.NextEventNanosecondsChanged = null;
             _vdp.CpuClockSourceChanged = null; _vdp.NextCpuEventNanosecondsChanged = null;
+            _vdp.ClockInputBoundaryReached = null;
             _psg.OutputChanged = null; _psg.ReadyChanged = null; _psg.NextEventNanosecondsChanged = null;
             _decoder.OutputChanged = null; _decoder.NextEventNanosecondsChanged = null;
             _gates.OutputChanged = null; _gates.NextEventNanosecondsChanged = null;

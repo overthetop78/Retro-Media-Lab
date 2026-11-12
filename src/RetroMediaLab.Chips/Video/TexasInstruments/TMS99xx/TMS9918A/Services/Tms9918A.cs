@@ -16,29 +16,21 @@ public sealed partial class Tms9918A : ITms9918A
     private Tms9918StatusReadBus _statusReadBus;
     private readonly Tms9918CpuTiming _cpuTiming;
     private Tms9918CpuPins _cpuPins;
-    private long? _dataDue;
+    private long _dataDue = -1, _nextDue = -1;
     private bool _dataTargetDriven;
     private bool _readMode;
     private bool _readQualified;
     private bool _reset;
     private long _resetStarted;
     private bool _publishing;
-    private long? _announcedDeadline;
+    private long _announcedDeadline = -1;
     private bool _qualified = true;
     private Tms9918ClockRegisters _clock;
     private Tms9918RasterRegisters _raster;
     private bool _deliveringClock;
 
     public long TimeNanoseconds { get; private set; }
-    public long? NextEventNanoseconds
-    {
-        get
-        {
-            long next = Math.Min(_dataDue.GetValueOrDefault(long.MaxValue),
-                Math.Min(_vramDue.GetValueOrDefault(long.MaxValue), _vramWriteEnd.GetValueOrDefault(long.MaxValue)));
-            return next == long.MaxValue && !_dataDue.HasValue && !_vramDue.HasValue && !_vramWriteEnd.HasValue ? null : next;
-        }
-    }
+    public long? NextEventNanoseconds => _nextDue < 0 ? null : _nextDue;
     public Tms9918CpuOutputs CpuOutputs { get; private set; }
     public bool IsCpuInterfaceQualified => _qualified && !_writeBus.Capture().QualificationLost;
     public Tms9918ClockState ClockState => _clock;
@@ -98,19 +90,21 @@ public sealed partial class Tms9918A : ITms9918A
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
         if (_publishing && timeNanoseconds != TimeNanoseconds)
             throw new InvalidOperationException("Cannot advance TMS9918A time from a pin callback.");
-        while (NextEventNanoseconds is { } due && due <= timeNanoseconds)
+        while (_nextDue >= 0 && _nextDue <= timeNanoseconds)
         {
+            long due = _nextDue;
             if (_drivingMasterSource && due >= _masterBoundary && due > TimeNanoseconds) return false;
             TimeNanoseconds = due;
             if (_vramWriteEnd == due)
             {
-                _vramWriteEnd = null;
+                _vramWriteEnd = -1;
+                RefreshNextDeadline();
                 _vramBus.ApplyOutputs(due, VramPins with { ReadWriteHigh = true });
             }
             if (_vramDue == due) AdvanceVramSequence();
             if (_dataDue == due)
             {
-                _dataDue = null;
+                SetDataDeadline(-1);
                 if (_dataTargetDriven && !_cpuPins.CsrHigh && _cpuPins.CswHigh && !_reset)
                 {
                     byte value = _readMode ? _status.Value : _memory.Data;
@@ -145,12 +139,32 @@ public sealed partial class Tms9918A : ITms9918A
     private void PublishDeadline()
     {
         PublishCpuBoundary();
-        if (_announcedDeadline == NextEventNanoseconds) return;
-        _announcedDeadline = NextEventNanoseconds;
+        if (_announcedDeadline == _nextDue) return;
+        _announcedDeadline = _nextDue;
         bool wasPublishing = _publishing;
         _publishing = true;
-        try { NextEventNanosecondsChanged?.Invoke(_announcedDeadline); }
+        try { NextEventNanosecondsChanged?.Invoke(_announcedDeadline < 0 ? null : _announcedDeadline); }
         finally { _publishing = wasPublishing; }
+    }
+
+    private void SetDataDeadline(long due)
+    {
+        _dataDue = due;
+        RefreshNextDeadline();
+    }
+
+    private void SetVramDeadline(long due)
+    {
+        _vramDue = due;
+        RefreshNextDeadline();
+    }
+
+    private void RefreshNextDeadline()
+    {
+        long next = _dataDue;
+        if (_vramDue >= 0 && (next < 0 || _vramDue < next)) next = _vramDue;
+        if (_vramWriteEnd >= 0 && (next < 0 || _vramWriteEnd < next)) next = _vramWriteEnd;
+        _nextDue = next;
     }
 
     internal void EndOfActiveDisplay()

@@ -9,7 +9,7 @@ public sealed partial class Tms9918A
 {
     private Tms9918VramBus _vramBus;
     private Tms9918BackgroundPipeline _background = new(default);
-    private long? _vramDue, _vramWriteEnd;
+    private long _vramDue = -1, _vramWriteEnd = -1;
     private long _vramStarted, _vramStartedHalfEdge, _cpuReadyHalfEdge;
     private int _vramStep;
     private bool _vramActive, _vramWrite, _vramAddressKnown;
@@ -97,7 +97,7 @@ public sealed partial class Tms9918A
         _vramStarted = TimeNanoseconds;
         _vramStartedHalfEdge = _clock.HalfEdges;
         _vramStep = 1;
-        _vramDue = checked(TimeNanoseconds + V.RasAssert);
+        SetVramDeadline(checked(TimeNanoseconds + V.RasAssert));
         _vramBus.ApplyOutputs(TimeNanoseconds, VramPins with
             { AddressData = _vramRow, AddressDataKnown = address.Qualified });
         PublishDeadline();
@@ -142,18 +142,19 @@ public sealed partial class Tms9918A
                 nextOffset = V.CasRelease;
                 break;
             case 7:
-                _vramDue = null;
+                _vramDue = -1;
                 if (_vramWrite)
                 {
                     QueueRamLoad(0, _vramAddressKnown, true);
                     _vramWriteEnd = checked(_vramStarted + V.WriteRelease);
                 }
+                RefreshNextDeadline();
                 _vramBus.ApplyOutputs(TimeNanoseconds, pins with { CasHigh = true });
                 _vramActive = false;
                 return;
             default: throw new InvalidOperationException("Invalid VDP VRAM sequencer phase.");
         }
-        _vramDue = checked(_vramStarted + nextOffset);
+        SetVramDeadline(checked(_vramStarted + nextOffset));
         _vramBus.ApplyOutputs(TimeNanoseconds, pins);
     }
 
@@ -190,7 +191,8 @@ public sealed partial class Tms9918A
 
     private void CancelVramOnReset()
     {
-        _vramDue = _vramWriteEnd = null;
+        _vramDue = _vramWriteEnd = -1;
+        RefreshNextDeadline();
         _vramActive = _ramLoadActive = _cpuVramInService = false;
         var state = _background.Capture();
         _background = new(state with { NameKnown = false, PatternKnown = false, ColourKnown = false,

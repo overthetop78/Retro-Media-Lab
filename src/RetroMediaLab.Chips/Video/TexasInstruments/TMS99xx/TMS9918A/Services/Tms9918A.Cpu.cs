@@ -10,7 +10,7 @@ public sealed partial class Tms9918A
     /// domain. They cannot capture data, acknowledge status or drive CPU data.</summary>
     public bool TryReceiveInactiveCpuPins(long timeNanoseconds, Tms9918CpuPins pins)
     {
-        if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || !pins.CsrHigh || !pins.CswHigh || _dataDue is not null)
+        if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || !pins.CsrHigh || !pins.CswHigh || _dataDue >= 0)
             return false;
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _cpuInputTime);
@@ -26,7 +26,7 @@ public sealed partial class Tms9918A
 
     public bool TryAdvanceInactiveCpuInterfaceTo(long timeNanoseconds)
     {
-        if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || _dataDue is not null) return false;
+        if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || _dataDue >= 0) return false;
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _cpuInputTime);
         _cpuInputTime = timeNanoseconds;
@@ -65,7 +65,7 @@ public sealed partial class Tms9918A
             _readMode = pins.Mode;
             _readQualified = pins.CswHigh;
             _dataTargetDriven = true;
-            _dataDue = checked(timeNanoseconds + _cpuTiming.AccessNanoseconds);
+            SetDataDeadline(checked(timeNanoseconds + _cpuTiming.AccessNanoseconds));
         }
         if (!previous.CsrHigh && (pins.Mode != previous.Mode || !pins.CswHigh))
         { _readQualified = false; _qualified = false; }
@@ -84,9 +84,9 @@ public sealed partial class Tms9918A
                 _memory.DataReadAccepted();
                 if (!pending) ArmCpuVramRequest();
             }
-            if (_dataDue is { } access && access > timeNanoseconds) _qualified = false;
+            if (_dataDue > timeNanoseconds) _qualified = false;
             _dataTargetDriven = false;
-            _dataDue = checked(timeNanoseconds + _cpuTiming.ReleaseNanoseconds);
+            SetDataDeadline(checked(timeNanoseconds + _cpuTiming.ReleaseNanoseconds));
         }
         if (!pins.CsrHigh && !pins.CswHigh) _qualified = false;
         PublishDeadline();
@@ -163,7 +163,7 @@ public sealed partial class Tms9918A
             _memory = new(new(null, _memory.Data, Tms9918CpuVramOperation.None, _memory.DataKnown));
             CancelVramOnReset();
             ResetSpritePipeline();
-            _dataDue = null;
+            SetDataDeadline(-1);
             PublishCpuOutputs(CpuOutputs.Data, false, false);
         }
         else

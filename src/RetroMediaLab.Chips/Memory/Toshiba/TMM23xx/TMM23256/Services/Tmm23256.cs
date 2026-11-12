@@ -14,13 +14,16 @@ public sealed class Tmm23256 : ITmm23256
     private readonly byte[] _rom;
     private readonly string _hash;
     private readonly Tmm23256Timing _timing;
-    private Tmm23256Pins _pins = new(0, false, true, true);
+    private readonly Tmm23256LocalTiming _busTiming;
+    private ushort _address;
+    private bool _addressKnown, _ceHigh = true, _oeHigh = true;
     private ushort _latchedAddress;
     private bool _latchedKnown, _initialized, _initialCeHigh = true, _qualified = true, _publishing;
     private long _ceFall = -1, _ceRise = -1, _oeFall = -1, _accessReady;
-    private long? _outputDue, _invalidateDue, _nextDue, _announcedDue;
+    private long _outputDue = -1, _invalidateDue = -1, _nextDue = -1, _announcedDue = -1;
     private long _addressChanged;
-    private Tmm23256Output _target, _output;
+    private const ushort Known = 0x100, Driven = 0x200;
+    private ushort _target, _output;
 
     public Tmm23256(ReadOnlySpan<byte> contents, Tmm23256Timing timing)
     {
@@ -30,93 +33,96 @@ public sealed class Tmm23256 : ITmm23256
         _rom = contents.ToArray();
         _hash = Convert.ToHexString(SHA256.HashData(_rom));
         _timing = timing;
+        _busTiming = new(timing);
         _initialized = timing.Startup == 0;
         _accessReady = timing.LatchesAddress ? 0 : timing.Access;
-        if (IsOeActive(_pins.OeHigh)) _oeFall = 0;
+        if (IsOeActive(_oeHigh)) _oeFall = 0;
     }
     public long TimeNanoseconds { get; private set; }
-    public long? NextEventNanoseconds => _nextDue;
+    public long? NextEventNanoseconds => _nextDue < 0 ? null : _nextDue;
     public bool IsInitialized => _initialized;
     public bool IsTimingQualified => _qualified && _timing.ElectricallyCharacterized;
-    public Tmm23256Output Output => _output;
+    public Tmm23256Output Output => new((byte)_output, (_output & Known) != 0, (_output & Driven) != 0);
     public Action<Tmm23256Output>? OutputChanged { get; set; }
     public Action<long?>? NextEventNanosecondsChanged { get; set; }
 
     public void ReceivePins(long timeNanoseconds, Tmm23256Pins pins)
+        => ReceiveParallelPins(timeNanoseconds, pins.Address, pins.AddressKnown, pins.CeHigh, pins.OeHigh);
+
+    public void ReceiveParallelPins(long timeNanoseconds, ushort address, bool addressKnown, bool ceHigh, bool oeHigh)
     {
-        if (pins.Address >= _timing.Capacity) throw new ArgumentOutOfRangeException(nameof(pins));
+        if (address >= _busTiming.Capacity) throw new ArgumentOutOfRangeException(nameof(address));
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
-        _ = checked(timeNanoseconds + Math.Max(_timing.OutputHold,Math.Max(_timing.Access, Math.Max(_timing.OutputEnable, _timing.OutputDisable))));
+        _ = checked(timeNanoseconds + _busTiming.MaximumDelay);
         AdvanceTo(timeNanoseconds);
-        if (_pins == pins) return;
-        var previous = _pins;
-        bool falling = previous.CeHigh && !pins.CeHigh;
-        bool rising = !previous.CeHigh && pins.CeHigh;
-        bool addressChanged = previous.Address != pins.Address || previous.AddressKnown != pins.AddressKnown;
+        if (_address == address && _addressKnown == addressKnown && _ceHigh == ceHigh && _oeHigh == oeHigh) return;
+        bool falling = _ceHigh && !ceHigh;
+        bool rising = !_ceHigh && ceHigh;
+        bool addressChanged = _address != address || _addressKnown != addressKnown;
         if (addressChanged) _addressChanged = timeNanoseconds;
-        if (_timing.LatchesAddress && addressChanged && _ceFall >= 0 && timeNanoseconds - _ceFall < _timing.AddressHold)
+        if (_busTiming.LatchesAddress && addressChanged && _ceFall >= 0 && timeNanoseconds - _ceFall < _busTiming.AddressHold)
         { _qualified = false; _latchedKnown = false; }
         if (falling)
         {
-            if (_ceFall >= _timing.Startup) _initialized = true; // method2: a complete post-pause CE cycle
-            bool valid = (_ceFall < 0 || timeNanoseconds - _ceFall >= _timing.Cycle)
-                && (_ceRise < 0 || timeNanoseconds - _ceRise >= _timing.CeOff)
-                && (_ceFall < 0 || timeNanoseconds - _accessReady >= _timing.Precharge);
+            if (_ceFall >= _busTiming.Startup) _initialized = true; // method2: a complete post-pause CE cycle
+            bool valid = (_ceFall < 0 || timeNanoseconds - _ceFall >= _busTiming.Cycle)
+                && (_ceRise < 0 || timeNanoseconds - _ceRise >= _busTiming.CeOff)
+                && (_ceFall < 0 || timeNanoseconds - _accessReady >= _busTiming.Precharge);
             _qualified &= valid;
             _initialCeHigh = false;
             _ceFall = timeNanoseconds;
-            if (_timing.LatchesAddress)
+            if (_busTiming.LatchesAddress)
             {
-                _latchedAddress = pins.Address;
-                _latchedKnown = pins.AddressKnown && _initialized && valid;
-                _accessReady = checked(timeNanoseconds + _timing.Access);
+                _latchedAddress = address;
+                _latchedKnown = addressKnown && _initialized && valid;
+                _accessReady = checked(timeNanoseconds + _busTiming.Access);
             }
         }
         if (rising)
         {
-            if (timeNanoseconds - _ceFall < _timing.CePulse) _qualified = false;
+            if (timeNanoseconds - _ceFall < _busTiming.CePulse) _qualified = false;
             _ceRise = timeNanoseconds;
         }
-        if (!_timing.LatchesAddress && (addressChanged || falling))
+        if (!_busTiming.LatchesAddress && (addressChanged || falling))
         {
-            _latchedAddress = pins.Address;
-            _latchedKnown = pins.AddressKnown && _initialized;
-            _accessReady = checked(_addressChanged + _timing.Access);
-            if (_ceFall >= 0) _accessReady = Math.Max(_accessReady,checked(_ceFall + _timing.Access));
-            if (addressChanged && _output.Driven && _output.Known)
+            _latchedAddress = address;
+            _latchedKnown = addressKnown && _initialized;
+            _accessReady = checked(_addressChanged + _busTiming.Access);
+            if (_ceFall >= 0) _accessReady = Math.Max(_accessReady,checked(_ceFall + _busTiming.Access));
+            if (addressChanged && (_output & (Driven | Known)) == (Driven | Known))
             {
-                long invalidate = checked(timeNanoseconds + _timing.OutputHold);
-                _invalidateDue = _invalidateDue is { } pending ? Math.Min(pending,invalidate) : invalidate;
+                long invalidate = checked(timeNanoseconds + _busTiming.OutputHold);
+                _invalidateDue = _invalidateDue >= 0 ? Math.Min(_invalidateDue, invalidate) : invalidate;
             }
         }
-        bool previousOeActive = IsOeActive(previous.OeHigh), oeActive = IsOeActive(pins.OeHigh);
+        bool previousOeActive = IsOeActive(_oeHigh), oeActive = IsOeActive(oeHigh);
         if (!previousOeActive && oeActive) _oeFall = timeNanoseconds;
-        _pins = pins;
-        if (!pins.CeHigh && oeActive)
+        _address = address; _addressKnown = addressKnown; _ceHigh = ceHigh; _oeHigh = oeHigh;
+        if (!ceHigh && oeActive)
         {
-            var target = new Tmm23256Output(_latchedKnown ? _rom[_latchedAddress] : (byte)0, _latchedKnown, true);
-            long ready = _timing.OeMode == Tmm23256OutputEnableMode.AlwaysEnabled ? _accessReady
-                : Math.Max(_accessReady, checked(_oeFall + _timing.OutputEnable));
-            Arm(target, Math.Max(ready, timeNanoseconds),!_timing.LatchesAddress && addressChanged);
+            ushort target = _latchedKnown ? (ushort)(_rom[_latchedAddress] | Known | Driven) : Driven;
+            long ready = _busTiming.AlwaysEnabled ? _accessReady
+                : Math.Max(_accessReady, checked(_oeFall + _busTiming.OutputEnable));
+            Arm(target, Math.Max(ready, timeNanoseconds), !_busTiming.LatchesAddress && addressChanged);
         }
         else if (previousOeActive && (rising || !oeActive))
         {
             // The first disabling control starts tOD; another high control cannot postpone it.
-            if (_target.Driven || _outputDue is null) Arm(default, checked(timeNanoseconds + _timing.OutputDisable));
+            if ((_target & Driven) != 0 || _outputDue < 0) Arm(0, checked(timeNanoseconds + _busTiming.OutputDisable));
         }
         UpdateNext();
         PublishDeadline();
-        AdvanceTo(timeNanoseconds); // a deliberately selected zero-delay profile is resolved in this transaction
+        if (_nextDue >= 0 && _nextDue <= timeNanoseconds)
+            AdvanceTo(timeNanoseconds); // Resolve a selected zero-delay profile in this same transaction.
     }
 
-    private bool IsOeActive(bool high) => _timing.OeMode == Tmm23256OutputEnableMode.AlwaysEnabled
-        || high == (_timing.OeMode == Tmm23256OutputEnableMode.ActiveHigh);
+    private bool IsOeActive(bool high) => _busTiming.AlwaysEnabled || high == _busTiming.ActiveHigh;
 
-    private void Arm(Tmm23256Output target, long due,bool rearm = false)
+    private void Arm(ushort target, long due, bool rearm = false)
     {
-        if (!rearm && _target == target && _outputDue is not null) return;
+        if (!rearm && _target == target && _outputDue >= 0) return;
         _target = target;
-        _outputDue = target != _output || (_invalidateDue.HasValue && target.Driven) ? due : null;
+        _outputDue = target != _output || (_invalidateDue >= 0 && (target & Driven) != 0) ? due : -1;
     }
 
     public void AdvanceTo(long timeNanoseconds)
@@ -127,27 +133,28 @@ public sealed class Tmm23256 : ITmm23256
             if (timeNanoseconds != TimeNanoseconds) throw new InvalidOperationException("Cannot advance ROM from its output callback.");
             return;
         }
-        if (!_initialized && _initialCeHigh && _pins.CeHigh && timeNanoseconds >= _timing.Startup) _initialized = true;
-        while (_nextDue is { } due && due <= timeNanoseconds)
+        if (!_initialized && _initialCeHigh && _ceHigh && timeNanoseconds >= _busTiming.Startup) _initialized = true;
+        while (_nextDue >= 0 && _nextDue <= timeNanoseconds)
         {
+            long due = _nextDue;
             TimeNanoseconds = due;
             var previous = _output;
             if (_invalidateDue == due)
             {
-                _invalidateDue = null;
-                if (_output.Driven) _output = new(0,false,true);
+                _invalidateDue = -1;
+                if ((_output & Driven) != 0) _output = Driven;
             }
             if (_outputDue == due)
             {
-                _outputDue = null; _output = _target;
-                if (!_output.Driven) _invalidateDue = null;
+                _outputDue = -1; _output = _target;
+                if ((_output & Driven) == 0) _invalidateDue = -1;
             }
-            if (_output == _target && _invalidateDue is null) _outputDue = null;
+            if (_output == _target && _invalidateDue < 0) _outputDue = -1;
             UpdateNext();
             if (_output != previous)
             {
                 _publishing = true;
-                try { OutputChanged?.Invoke(_output); }
+                try { OutputChanged?.Invoke(Output); }
                 finally { _publishing = false; }
             }
             PublishDeadline();
@@ -155,8 +162,8 @@ public sealed class Tmm23256 : ITmm23256
         TimeNanoseconds = timeNanoseconds;
     }
 
-    private void UpdateNext() => _nextDue = _outputDue is null ? _invalidateDue
-        : _invalidateDue is null ? _outputDue : Math.Min(_outputDue.Value,_invalidateDue.Value);
+    private void UpdateNext() => _nextDue = _outputDue < 0 ? _invalidateDue
+        : _invalidateDue < 0 ? _outputDue : Math.Min(_outputDue, _invalidateDue);
 
     private void PublishDeadline()
     {
@@ -165,7 +172,7 @@ public sealed class Tmm23256 : ITmm23256
         {
             _announcedDue = _nextDue;
             _publishing = true;
-            try { NextEventNanosecondsChanged?.Invoke(_nextDue); }
+            try { NextEventNanosecondsChanged?.Invoke(_nextDue < 0 ? null : _nextDue); }
             finally { _publishing = false; }
         }
     }
@@ -173,9 +180,11 @@ public sealed class Tmm23256 : ITmm23256
     public Tmm23256State CaptureState()
     {
         if (_publishing) throw new InvalidOperationException("Cannot snapshot a partial ROM publication.");
-        return new(C.StateVersion, _hash, _timing, TimeNanoseconds, _pins, _latchedAddress,
+        return new(C.StateVersion, _hash, _timing, TimeNanoseconds, new(_address, _addressKnown, _ceHigh, _oeHigh), _latchedAddress,
             _latchedKnown, _initialized, _initialCeHigh, _qualified, _ceFall, _ceRise, _oeFall,
-            _accessReady, _outputDue, _target, _output,_addressChanged,_invalidateDue);
+            _accessReady, _outputDue < 0 ? null : _outputDue,
+            new((byte)_target, (_target & Known) != 0, (_target & Driven) != 0), Output,
+            _addressChanged, _invalidateDue < 0 ? null : _invalidateDue);
     }
     public void RestoreState(Tmm23256State state)
     {
@@ -200,13 +209,16 @@ public sealed class Tmm23256 : ITmm23256
             || (state.Target.Known && (!state.LatchedKnown || state.Target.Data != _rom[state.LatchedAddress]))
             || state.AccessReady != ExpectedAccessReady(state))
             throw new ArgumentException(nameof(state));
-        TimeNanoseconds = state.Time; _pins = state.Pins; _latchedAddress = state.LatchedAddress;
+        TimeNanoseconds = state.Time;
+        _address = state.Pins.Address; _addressKnown = state.Pins.AddressKnown;
+        _ceHigh = state.Pins.CeHigh; _oeHigh = state.Pins.OeHigh; _latchedAddress = state.LatchedAddress;
         _latchedKnown = state.LatchedKnown; _initialized = state.Initialized; _initialCeHigh = state.InitialCeHigh;
         _qualified = state.TimingQualified; _ceFall = state.CeFall; _ceRise = state.CeRise; _oeFall = state.OeFall;
-        _accessReady = state.AccessReady; _outputDue = state.OutputDue;
-        _addressChanged = state.AddressChanged; _invalidateDue = state.InvalidateDue;
+        _accessReady = state.AccessReady; _outputDue = state.OutputDue ?? -1;
+        _addressChanged = state.AddressChanged; _invalidateDue = state.InvalidateDue ?? -1;
         UpdateNext(); _announcedDue = _nextDue;
-        _target = state.Target; _output = state.Output;
+        _target = (ushort)(state.Target.Data | (state.Target.Known ? Known : 0) | (state.Target.Driven ? Driven : 0));
+        _output = (ushort)(state.Output.Data | (state.Output.Known ? Known : 0) | (state.Output.Driven ? Driven : 0));
     }
     private Int128 ExpectedAccessReady(Tmm23256State state)
     {

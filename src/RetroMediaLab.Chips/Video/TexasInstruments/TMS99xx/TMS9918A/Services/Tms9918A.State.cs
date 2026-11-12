@@ -13,9 +13,10 @@ public sealed partial class Tms9918A
             throw new InvalidOperationException("Synchronize the video domain before observing its complete state.");
         return new(5, TimeNanoseconds, _registers.Capture(), _status.Value, _protocol.Capture(),
             _memory.Capture(), new(_cpuPins, _readMode, _readQualified, _reset, _resetStarted,
-                _qualified, _dataDue, _dataTargetDriven), _writeBus.Capture(), _statusReadBus.Capture(),
+                _qualified, _dataDue < 0 ? null : _dataDue, _dataTargetDriven), _writeBus.Capture(), _statusReadBus.Capture(),
             CpuOutputs, _clock, _raster, VideoSignal, _vramBus.Capture(),
-            new(_vramDue, _vramWriteEnd, _vramStarted, _vramStartedHalfEdge, _cpuReadyHalfEdge,
+            new(_vramDue < 0 ? null : _vramDue, _vramWriteEnd < 0 ? null : _vramWriteEnd,
+                _vramStarted, _vramStartedHalfEdge, _cpuReadyHalfEdge,
                 _vramStep, _vramActive, _vramWrite, _vramAddressKnown, _vramRow, _vramColumn,
                 _vramWriteData, _refreshRow, (int)_vramSlot.Kind, _vramSlot.Index,
                 (int)_ramSlot.Kind, _ramSlot.Index, _ramLoadActive, _ramDataKnown,
@@ -46,6 +47,7 @@ public sealed partial class Tms9918A
         var active = (Tms9918SpriteChannelState[])state.Sprites.Active.Clone();
 
         DetachMasterClockSource();
+        _clockInputBoundary = long.MaxValue;
 
         _writeBus.WriteCaptured = null;
         _statusReadBus.StatusAcknowledged = null;
@@ -61,9 +63,9 @@ public sealed partial class Tms9918A
         var cpu = state.CpuInterface;
         _cpuPins = cpu.Pins; _readMode = cpu.ReadMode; _readQualified = cpu.ReadQualified;
         _reset = cpu.Reset; _resetStarted = cpu.ResetStarted; _qualified = cpu.Qualified;
-        _dataDue = cpu.DataDue; _dataTargetDriven = cpu.DataTargetDriven;
+        _dataDue = cpu.DataDue ?? -1; _dataTargetDriven = cpu.DataTargetDriven;
         var bus = state.VramSequencer;
-        _vramDue = bus.Due; _vramWriteEnd = bus.WriteEnd; _vramStarted = bus.Started;
+        _vramDue = bus.Due ?? -1; _vramWriteEnd = bus.WriteEnd ?? -1; _vramStarted = bus.Started;
         _vramStartedHalfEdge = bus.StartedHalfEdge; _cpuReadyHalfEdge = bus.CpuReadyHalfEdge;
         _vramStep = bus.Step; _vramActive = bus.Active; _vramWrite = bus.Write;
         _vramAddressKnown = bus.AddressKnown; _vramRow = bus.Row; _vramColumn = bus.Column;
@@ -91,7 +93,8 @@ public sealed partial class Tms9918A
         };
         // Aucun faux front de restauration. La carte rétablit ses abonnements
         // et échéances depuis l'état restauré de l'ensemble de ses composants.
-        _announcedDeadline = NextEventNanoseconds;
+        RefreshNextDeadline();
+        _announcedDeadline = _nextDue;
     }
 
     private void EnsureStateBoundary()

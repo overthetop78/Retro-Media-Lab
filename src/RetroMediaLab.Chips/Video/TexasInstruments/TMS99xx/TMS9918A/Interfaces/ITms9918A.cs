@@ -23,6 +23,8 @@ public interface ITms9918A
     Action<long?>? NextEventNanosecondsChanged { get; set; }
     Action<RationalClockSource?>? CpuClockSourceChanged { get; set; }
     Action<long?>? NextCpuEventNanosecondsChanged { get; set; }
+    Action<long>? ClockInputBoundaryReached { get; set; }
+    void SetClockInputBoundary(long? timeNanoseconds);
     RationalClockSource? CpuClockSource { get; }
     long? NextCpuEventNanoseconds { get; }
     long? NextFrameBoundaryNanoseconds { get; }

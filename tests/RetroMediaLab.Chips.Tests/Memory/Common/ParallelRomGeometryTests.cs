@@ -8,6 +8,59 @@ namespace RetroMediaLab.Chips.Tests.Memory.Common;
 
 public sealed class ParallelRomGeometryTests
 {
+    [Fact]
+    public void ParallelLevelsPreserveAllProfileModesFeedbackAndPendingState()
+    {
+        foreach (bool latched in new[] { false, true })
+        foreach (long access in new[] { 0L, 25L })
+        foreach (var mode in Enum.GetValues<Tmm23256OutputEnableMode>())
+        {
+            var timing = new Tmm23256Timing("transport-comparison", access, access / 2,
+                access / 4, 0, 0, 0, 0, 0, 0, mode, latched, access / 5, 8192, false);
+            byte[] data = Enumerable.Range(0, 8192).Select(i => (byte)(i ^ (i >> 7))).ToArray();
+            var scalar = new Tmm23256(data, timing);
+            var parallel = new Tmm23256(data, timing);
+            var expected = new List<(long, Tmm23256Output, long?)>();
+            var actual = new List<(long, Tmm23256Output, long?)>();
+            bool activeOe = mode == Tmm23256OutputEnableMode.ActiveHigh;
+            void Send(Tmm23256 chip, bool direct, long time, Tmm23256Pins pins)
+            {
+                if (direct) chip.ReceiveParallelPins(time, pins.Address, pins.AddressKnown, pins.CeHigh, pins.OeHigh);
+                else chip.ReceivePins(time, pins);
+            }
+            void Wire(Tmm23256 chip, bool direct, List<(long, Tmm23256Output, long?)> changes)
+            {
+                chip.OutputChanged = pins =>
+                {
+                    changes.Add((chip.TimeNanoseconds, pins, chip.NextEventNanoseconds));
+                    if (pins.Driven && pins.Known && pins.Data == 0)
+                        Send(chip, direct, chip.TimeNanoseconds, new(0, true, true, !activeOe));
+                };
+            }
+            try
+            {
+                Wire(scalar, false, expected); Wire(parallel, true, actual);
+                for (int i = 0; i < 64; i++)
+                {
+                    long time = i * 200L;
+                    var pins = new Tmm23256Pins((ushort)(i * 17), i % 5 != 3, false, activeOe);
+                    Send(scalar, false, time, pins); Send(parallel, true, time, pins);
+                    scalar.AdvanceTo(time + 7); parallel.AdvanceTo(time + 7);
+                    if (i == 7) parallel.RestoreState(parallel.CaptureState());
+                    scalar.AdvanceTo(time + 50); parallel.AdvanceTo(time + 50);
+                    pins = pins with { Address = (ushort)(i * 17 + 1), OeHigh = !activeOe };
+                    Send(scalar, false, time + 60, pins); Send(parallel, true, time + 60, pins);
+                    pins = pins with { CeHigh = true };
+                    Send(scalar, false, time + 90, pins); Send(parallel, true, time + 90, pins);
+                    scalar.AdvanceTo(time + 120); parallel.AdvanceTo(time + 120);
+                    Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()), JsonSerializer.Serialize(parallel.CaptureState()));
+                }
+                Assert.Equal(expected, actual);
+            }
+            finally { scalar.OutputChanged = parallel.OutputChanged = null; }
+        }
+    }
+
     private static Tmm23256Timing Geometry(int capacity, bool latched = false) => new(
         $"test-logical-ROM-{capacity}", 0, 0, 0, 0, 0, 0, 0, 0, 0,
         Tmm23256OutputEnableMode.ActiveLow, latched, capacity: capacity, electricallyCharacterized: false);

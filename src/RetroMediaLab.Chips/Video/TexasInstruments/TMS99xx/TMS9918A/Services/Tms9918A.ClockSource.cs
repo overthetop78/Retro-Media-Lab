@@ -9,6 +9,7 @@ public sealed partial class Tms9918A
     private RationalClockInput _masterInput;
     private bool _hasMasterSource, _drivingMasterSource;
     private long _masterBoundary = long.MaxValue;
+    private long _clockInputBoundary = long.MaxValue;
     private long? _announcedCpuBoundary;
     private long? _irqPrediction;
     private long _framePredictionNumber = -1, _framePredictionTime;
@@ -21,6 +22,16 @@ public sealed partial class Tms9918A
 
     public Action<RationalClockSource?>? CpuClockSourceChanged { get; set; }
     public Action<long?>? NextCpuEventNanosecondsChanged { get; set; }
+    public Action<long>? ClockInputBoundaryReached { get; set; }
+
+    /// <summary>A prediction received from the connected input wires, not an
+    /// event queue or a clock owned by the VDP. Cancellation replaces it too.</summary>
+    public void SetClockInputBoundary(long? timeNanoseconds)
+    {
+        if (timeNanoseconds is { } time)
+            ArgumentOutOfRangeException.ThrowIfLessThan(time, TimeNanoseconds);
+        _clockInputBoundary = timeNanoseconds ?? long.MaxValue;
+    }
     public RationalClockSource? CpuClockSource => !_hasMasterSource ? null
         : _masterInput.Divide(3, 2 - _clock.HalfEdgePhase % 3, !_clock.CpuClockHigh);
 
@@ -45,7 +56,7 @@ public sealed partial class Tms9918A
     {
         get
         {
-            long? next = _dataDue;
+            long? next = _dataDue < 0 ? null : _dataDue;
             if (!_hasMasterSource || _reset) return next;
             int pixels;
             if (_externalVideo.SyncActive) pixels = 0;
@@ -106,16 +117,28 @@ public sealed partial class Tms9918A
         _drivingMasterSource = true;
         try
         {
-            while (_masterInput.NextTime < _masterBoundary && consumed < int.MaxValue)
+            while (consumed < int.MaxValue
+                && (_masterInput.NextTime < _masterBoundary || _clockInputBoundary < _masterBoundary))
             {
+                if (_clockInputBoundary < _masterBoundary && _clockInputBoundary <= _masterInput.NextTime)
+                {
+                    if (ClockInputBoundaryReached is not { } deliver) break;
+                    long inputDate = _clockInputBoundary;
+                    deliver(inputDate);
+                    if (_clockInputBoundary <= inputDate)
+                        throw new InvalidOperationException("The connected input boundary was not consumed or advanced.");
+                    continue;
+                }
+                long boundary = Math.Min(_masterBoundary, _clockInputBoundary);
                 int count = Math.Min(HalfEdgesToPixel, int.MaxValue - consumed);
                 if (CpuClockChanged is not null) count = Math.Min(count, 3 - _clock.HalfEdgePhase % 3);
                 if (GromClockChanged is not null) count = Math.Min(count, 24 - _clock.GromHalfEdgePhase % 24);
                 if (_ramLoadActive) count = (int)Math.Min(count, Math.Max(1, _ramLoadHalfEdge - _clock.HalfEdges));
-                count = Math.Min(count, _masterInput.EdgesBefore(_masterBoundary));
+                count = Math.Min(count, _masterInput.EdgesBefore(boundary));
                 long date = _masterInput.TimeAfterEdges(count - 1);
-                if (NextEventNanoseconds is { } due && due <= date)
+                if (_nextDue >= 0 && _nextDue <= date)
                 {
+                    long due = _nextDue;
                     count = Math.Min(count, _masterInput.EdgesBefore(due));
                     if (count == 0)
                     {
@@ -131,7 +154,11 @@ public sealed partial class Tms9918A
                 consumed += count;
             }
         }
-        finally { _drivingMasterSource = false; _masterBoundary = long.MaxValue; }
+        finally
+        {
+            _drivingMasterSource = false;
+            _masterBoundary = long.MaxValue;
+        }
         return consumed;
     }
 

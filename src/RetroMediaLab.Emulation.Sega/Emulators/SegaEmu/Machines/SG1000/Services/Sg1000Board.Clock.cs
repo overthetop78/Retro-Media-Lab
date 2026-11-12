@@ -92,5 +92,6 @@ internal sealed partial class Sg1000Board
         _due[16] = GlobalRomDue(_cartridgeHigh?.NextEventNanoseconds) ?? long.MaxValue;
         _due[17] = _internalRom?.NextEventNanoseconds ?? long.MaxValue;
         _due[18] = GlobalRomDue(_cartridgeRam?.NextEventNanoseconds) ?? long.MaxValue;
+        _videoMemoryDueDirty = _cpuWireDueDirty = true;
     }
 }

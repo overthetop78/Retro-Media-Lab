@@ -11,6 +11,103 @@ namespace RetroMediaLab.Chips.Tests.Video.TexasInstruments.TMS99xx.TMS9918A;
 public sealed class ClockDomainTests
 {
     [Fact]
+    public void VideoRangeResumesAfterDatedInputBatchesWithoutReturningToItsClockDriver()
+    {
+        foreach (int phase in new[] { 0, 3, 7, 11 })
+        {
+            var scalar = Create(phase, false);
+            var grouped = Create(phase, false);
+            var source = new RationalClockSource(17, 1_000_000_000, 21_477_270, 1, true);
+            long[] inputs = [source.EdgeNanoseconds(2), source.EdgeNanoseconds(17), 500, 500,
+                12345, source.EdgeNanoseconds(2048) + 1];
+            Array.Sort(inputs);
+            var expected = new List<Tms9918VideoSignal>();
+            var actual = new List<Tms9918VideoSignal>();
+            var expectedInputs = new List<(long, Tms9918ClockState)>();
+            var actualInputs = new List<(long, Tms9918ClockState)>();
+            int scalarInput = 0, groupedInput = 0;
+            void Receive(Tms9918A chip, int index, List<(long, Tms9918ClockState)> trace)
+            {
+                chip.SetVramReadData(inputs[index], (byte)(index * 53), (index & 1) != 0);
+                trace.Add((inputs[index], chip.ClockState));
+            }
+            try
+            {
+                scalar.VideoSignalProduced = expected.Add;
+                grouped.VideoSignalProduced = actual.Add;
+                grouped.ReceiveMasterClockSource(source);
+                grouped.SetClockInputBoundary(inputs[0]);
+                grouped.ClockInputBoundaryReached = date =>
+                {
+                    while (groupedInput < inputs.Length && inputs[groupedInput] == date)
+                        Receive(grouped, groupedInput++, actualInputs);
+                    grouped.SetClockInputBoundary(groupedInput == inputs.Length ? null : inputs[groupedInput]);
+                };
+                for (int edge = 1; edge <= 2048; edge++)
+                {
+                    long date = source.EdgeNanoseconds(edge);
+                    while (scalarInput < inputs.Length && inputs[scalarInput] <= date)
+                        Receive(scalar, scalarInput++, expectedInputs);
+                    scalar.ReceiveMasterClock(date, (edge & 1) != 0);
+                }
+                while (scalarInput < inputs.Length) Receive(scalar, scalarInput++, expectedInputs);
+                Assert.Equal(2048, grouped.AdvanceMasterClockSourceUntil(inputs[^1] + 1));
+                Assert.Equal(expected, actual);
+                Assert.Equal(expectedInputs, actualInputs);
+                Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()), JsonSerializer.Serialize(grouped.CaptureState()));
+                Assert.Throws<ArgumentOutOfRangeException>(() => grouped.SetClockInputBoundary(grouped.TimeNanoseconds - 1));
+                grouped.SetClockInputBoundary(grouped.TimeNanoseconds);
+                grouped.ClockInputBoundaryReached = _ => { };
+                Assert.Throws<InvalidOperationException>(() => grouped.AdvanceMasterClockSourceUntil(grouped.TimeNanoseconds + 1));
+            }
+            finally
+            {
+                scalar.VideoSignalProduced = grouped.VideoSignalProduced = null;
+                grouped.ClockInputBoundaryReached = null;
+            }
+        }
+    }
+
+    [Fact]
+    public void LocalMinimumIsCurrentBeforeCallbacksAndSurvivesRestoreAndMaximumDate()
+    {
+        var chip = new Tms9918A(new(default, 0, default,
+            new(0, 0, Tms9918CpuVramOperation.None), new(0, true, true, true, true)), new(120, 10));
+        var deadlines = new List<long?>();
+        var responses = new List<(long, bool, long?)>();
+        try
+        {
+            chip.NextEventNanosecondsChanged = due =>
+            {
+                Assert.Equal(due, chip.NextEventNanoseconds);
+                deadlines.Add(due);
+            };
+            chip.CpuOutputsChanged = pins =>
+            {
+                responses.Add((pins.TimeNanoseconds, pins.DataDriven, chip.NextEventNanoseconds));
+                if (pins.DataDriven)
+                    chip.ReceiveCpuPins(pins.TimeNanoseconds, new(0, true, true, true, true));
+            };
+            chip.ReceiveCpuPins(0, new(0, true, true, false, true));
+            chip.AdvanceTo(100);
+            var saved = chip.CaptureState();
+            chip.RestoreState(saved);
+            Assert.Equal(120L, chip.NextEventNanoseconds);
+            chip.AdvanceTo(130);
+            Assert.Equal(new long?[] { 120, 130, null }, deadlines);
+            Assert.Equal(new (long, bool, long?)[] { (120, true, null), (130, false, null) }, responses);
+            chip.CpuOutputsChanged = null;
+            chip.AdvanceTo(long.MaxValue - 120);
+            chip.ReceiveCpuPins(long.MaxValue - 120, new(0, true, true, false, true));
+            Assert.Equal(long.MaxValue, chip.NextEventNanoseconds);
+            chip.AdvanceTo(long.MaxValue);
+            Assert.Null(chip.NextEventNanoseconds);
+            Assert.True(chip.CpuOutputs.DataDriven);
+        }
+        finally { chip.CpuOutputsChanged = null; chip.NextEventNanosecondsChanged = null; }
+    }
+
+    [Fact]
     public void WideRationalTransportAndOrdinaryArithmeticProduceTheSameExactDates()
     {
         var idle = Create(0, false);

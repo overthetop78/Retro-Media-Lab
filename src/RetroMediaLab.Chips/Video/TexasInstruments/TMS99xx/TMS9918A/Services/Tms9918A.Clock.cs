@@ -40,7 +40,7 @@ public sealed partial class Tms9918A
                 24 - _clock.GromHalfEdgePhase % 24);
             int count = Math.Min(distance, train.EdgeCount - consumed);
             long date = TrainDate(train, train.FirstEdgeIndex + consumed + count - 1L);
-            if (count > 1 && NextEventNanoseconds is { } pending && pending <= date)
+            if (count > 1 && _nextDue >= 0 && _nextDue <= date)
             {
                 long firstDate = TrainDate(train, train.FirstEdgeIndex + consumed);
                 // Même une échéance <= premier front peut en réarmer une autre

@@ -7,6 +7,8 @@ internal sealed partial class Sg1000Board
 {
     private bool _clockDomainsConnected, _synchronizingVideo;
     private long _videoCpuDue = long.MaxValue;
+    private long _videoMemoryDue = long.MaxValue, _cpuWireDue = long.MaxValue;
+    private bool _videoMemoryDueDirty = true, _cpuWireDueDirty = true;
 
     private void ConnectClockDomains()
     {
@@ -19,37 +21,74 @@ internal sealed partial class Sg1000Board
         _vdp.NextCpuEventNanosecondsChanged = next =>
         {
             _videoCpuDue = next ?? long.MaxValue;
+            _cpuWireDueDirty = true;
             if (next is { } due) _cpu.LimitClockSourceBefore(due);
         };
+        _vdp.ClockInputBoundaryReached = DeliverVideoInputs;
         _vdp.ReceiveMasterClockSource(new RationalClockSource(0, C.NanosecondsPerSecond,
             C.CrystalHertz * 2, _nextMasterIndex, !_masterHigh));
         _videoCpuDue = _vdp.NextCpuEventNanoseconds ?? long.MaxValue;
         _clockDomainsConnected = true;
+        _videoMemoryDueDirty = _cpuWireDueDirty = true;
+        PublishVideoInputBoundary();
     }
 
     private void ReceiveDomainDeadline(int slot, long? next)
     {
-        _due[slot] = next ?? long.MaxValue;
-        if (!_useClockDomains || next is not { } due) return;
-        if (slot is >= 7 and <= 14) _vdp.LimitMasterClockSourceBefore(due);
-        else _cpu.LimitClockSourceBefore(due);
+        long previous = _due[slot], due = next ?? long.MaxValue;
+        if (previous == due) return;
+        _due[slot] = due;
+        if (!_useClockDomains) return;
+        if (slot is >= 7 and <= 14)
+        {
+            if (due < _videoMemoryDue) { _videoMemoryDue = due; _videoMemoryDueDirty = false; }
+            else if (previous == _videoMemoryDue) _videoMemoryDueDirty = true;
+        }
+        else
+        {
+            _cpuWireDueDirty = true;
+            if (next.HasValue) _cpu.LimitClockSourceBefore(due);
+        }
     }
 
     private long NextVideoMemoryDeadline()
     {
+        if (!_videoMemoryDueDirty) return _videoMemoryDue;
         long next = long.MaxValue;
         for (int i = 7; i <= 14; i++) next = Math.Min(next, _due[i]);
-        return next;
+        _videoMemoryDue = next;
+        _videoMemoryDueDirty = false;
+        return _videoMemoryDue;
     }
 
     private long NextCpuWireDeadline()
     {
+        if (!_cpuWireDueDirty) return _cpuWireDue;
         long next = _videoCpuDue;
         for (int i = 2; i <= 6; i++) next = Math.Min(next, _due[i]);
         for (int i = 15; i <= 18; i++) next = Math.Min(next, _due[i]);
         if (!_vdpReleased) next = Math.Min(next, C.VdpReleaseNanoseconds);
         if (!_cpuReleased) next = Math.Min(next, C.CpuReleaseNanoseconds);
-        return next;
+        _cpuWireDue = next;
+        _cpuWireDueDirty = false;
+        return _cpuWireDue;
+    }
+
+    private void PublishVideoInputBoundary()
+    {
+        if (!_useClockDomains || !_clockDomainsConnected) return;
+        long next = NextVideoMemoryDeadline();
+        _vdp.SetClockInputBoundary(next == long.MaxValue ? null : next);
+    }
+
+    private void DeliverVideoInputs(long time)
+    {
+        // Preserve the connected package order. A response can cause new VDP
+        // outputs and same-date input deliveries before the next package.
+        for (int i = 0; i < 8; i++)
+            if (_due[7 + i] <= time) _dram[i].AdvanceTo(time);
+        _vdp.AdvanceTo(time);
+        PublishVideoInputBoundary();
     }
 
     private void SynchronizeVideoDomain(long time)
@@ -63,17 +102,13 @@ internal sealed partial class Sg1000Board
         _synchronizingVideo = true;
         try
         {
-            while (true)
+            int count;
+            do
             {
-                long boundary = Math.Min(NextVideoMemoryDeadline(), checked(time + 1));
-                int count = _vdp.AdvanceMasterClockSourceUntil(boundary);
+                count = _vdp.AdvanceMasterClockSourceUntil(checked(time + 1));
                 _nextMasterIndex = checked(_nextMasterIndex + count);
-                _masterHigh = _vdp.ClockState.MasterHigh;
-                long memory = NextVideoMemoryDeadline();
-                if (memory > time) break;
-                for (int i = 0; i < 8; i++)
-                    if (_due[7 + i] <= memory) _dram[i].AdvanceTo(memory);
-            }
+            } while (count == int.MaxValue);
+            _masterHigh = _vdp.ClockState.MasterHigh;
             _vdp.AdvanceTo(time);
         }
         finally { _synchronizingVideo = false; }
@@ -94,11 +129,13 @@ internal sealed partial class Sg1000Board
         {
             SynchronizeVideoDomain(time);
             _vdpReleased = true;
+            _cpuWireDueDirty = true;
             _vdp.SetReset(time, false);
         }
         if (!_cpuReleased && time == C.CpuReleaseNanoseconds)
         {
             _cpuReleased = true;
+            _cpuWireDueDirty = true;
             _cpu.SetReset(false);
         }
         _cpu.AdvanceTo(time);
@@ -131,6 +168,7 @@ internal sealed partial class Sg1000Board
         SynchronizeVideoDomain(TimeNanoseconds);
         SynchronizeReceivers(TimeNanoseconds);
         _videoCpuDue = _vdp.NextCpuEventNanoseconds ?? long.MaxValue;
+        _cpuWireDueDirty = true;
         AdvanceAudio(TimeNanoseconds);
     }
 }

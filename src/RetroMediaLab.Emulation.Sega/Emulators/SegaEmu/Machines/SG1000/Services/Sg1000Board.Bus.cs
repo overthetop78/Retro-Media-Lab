@@ -158,6 +158,7 @@ internal sealed partial class Sg1000Board
             _dram[index].ReceiveMultiplexedPins(signal.TimeNanoseconds, address, known,
                 rasHigh, casHigh, writeHigh, known ? (addressData & (1 << index)) != 0 : null);
         }
+        PublishVideoInputBoundary();
     }
     private void CacheDramOutput(int bit, LogicPinState value)
     {

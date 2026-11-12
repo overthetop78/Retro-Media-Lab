@@ -130,6 +130,7 @@ internal sealed partial class Sg1000Board
         _due[15] = GlobalRomDue(_cartridgeLow?.NextEventNanoseconds) ?? long.MaxValue;
         _due[16] = GlobalRomDue(_cartridgeHigh?.NextEventNanoseconds) ?? long.MaxValue;
         _due[18] = GlobalRomDue(_cartridgeRam?.NextEventNanoseconds) ?? long.MaxValue;
+        _cpuWireDueDirty = true;
     }
 
     private long? GlobalRomDue(long? time) => time.HasValue ? checked(time.Value + _cartridgeOrigin) : null;
@@ -140,6 +141,7 @@ internal sealed partial class Sg1000Board
         if (_cartridgeHigh is { } high) { high.OutputChanged = null; high.NextEventNanosecondsChanged = null; }
         if (_cartridgeRam is { } ram) { ram.OutputChanged = null; ram.NextEventNanosecondsChanged = null; }
         _due[15] = _due[16] = _due[18] = long.MaxValue;
+        _cpuWireDueDirty = true;
     }
 
     private void UpdateRomBus(long time, int memories = 15)
@@ -149,11 +151,11 @@ internal sealed partial class Sg1000Board
         long cartridgeTime = time - _cartridgeOrigin;
         // Enri48K: CE=/MREQ, OE=/EXM2 or /EXM1. Addresses above a
         // package's pins are unwired, giving its physical mirrors.
-        if ((memories & 1) != 0) _cartridgeLow?.ReceivePins(cartridgeTime,new((ushort)(address & _cartridgeLowMask),
+        if ((memories & 1) != 0) _cartridgeLow?.ReceiveParallelPins(cartridgeTime, (ushort)(address & _cartridgeLowMask),
             _cpuAddress.HasValue,_romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? false : mreqHigh,
-            _gatePins[0] != LogicPinState.Low));
-        if ((memories & 2) != 0) _cartridgeHigh?.ReceivePins(cartridgeTime,new((ushort)(address & _cartridgeHighMask),
-            _cpuAddress.HasValue,mreqHigh,_decodePins[2] != LogicPinState.Low));
+            _gatePins[0] != LogicPinState.Low);
+        if ((memories & 2) != 0) _cartridgeHigh?.ReceiveParallelPins(cartridgeTime, (ushort)(address & _cartridgeHighMask),
+            _cpuAddress.HasValue,mreqHigh,_decodePins[2] != LogicPinState.Low);
         if ((memories & 8) != 0 && _cartridgeRam is { } ram)
         {
             int mask = _romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? 8191 : 2047;
@@ -165,7 +167,7 @@ internal sealed partial class Sg1000Board
         }
         // Optional16KiB internal game. Cartridge presence inhibits the ROM,
         // independently of the current cartridge address or data bus value.
-        if ((memories & 4) != 0) _internalRom?.ReceivePins(time,new((ushort)(address & 16383),_cpuAddress.HasValue,
-            mreqHigh || CartridgePresent || address >= 0x4000,_readHigh != false));
+        if ((memories & 4) != 0) _internalRom?.ReceiveParallelPins(time, (ushort)(address & 16383),_cpuAddress.HasValue,
+            mreqHigh || CartridgePresent || address >= 0x4000,_readHigh != false);
     }
 }
