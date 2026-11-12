@@ -23,30 +23,29 @@ internal sealed partial class Sg1000Board
         | (1u << (int)BusRecipient.InternalRom) | (1u << (int)BusRecipient.CartridgeRam) | (1u << (int)BusRecipient.Sound);
     private readonly struct CpuBusWires
     {
-        public readonly ushort? Address;
-        public readonly byte? Data;
-        public readonly bool? MemoryRequestHigh, IoRequestHigh, ReadHigh, WriteHigh, JoySelect;
         public readonly ushort AddressValue;
         public readonly byte DataValue, DataKnowledge, DecoderLevels, DecoderKnown, GateCpuLevels, GateCpuKnown;
+        public readonly byte Controls, ControlKnown;
         public readonly bool AddressKnown, DataIsKnown;
+        public bool MemoryInactive => (ControlKnown & 1) == 0 || (Controls & 1) != 0;
+        public bool ReadInactive => (ControlKnown & 4) == 0 || (Controls & 4) != 0;
+        public bool WriteInactive => (ControlKnown & 8) == 0 || (Controls & 8) != 0;
 
         public CpuBusWires(Z80BusPins pins)
         {
-            Address = pins.Address; Data = pins.Data;
-            MemoryRequestHigh = pins.MemoryRequestHigh; IoRequestHigh = pins.IoRequestHigh;
-            ReadHigh = pins.ReadHigh; WriteHigh = pins.WriteHigh;
-            AddressValue = Address.GetValueOrDefault(); AddressKnown = Address.HasValue;
-            DataValue = Data.GetValueOrDefault(); DataIsKnown = Data.HasValue;
+            AddressValue = pins.GetAddressOrZero(); AddressKnown = pins.AddressDriven;
+            DataValue = pins.GetDataOrZero(); DataIsKnown = pins.DataDriven;
             DataKnowledge = DataIsKnown ? (byte)255 : (byte)0;
-            JoySelect = AddressKnown ? (AddressValue & 1) != 0 : null;
-            DecoderLevels = (byte)(((AddressValue >> 14) & 3) | (MemoryRequestHigh == true ? 4 : 0)
-                | ((AddressValue >> 3) & 24) | (IoRequestHigh == true ? 32 : 0));
-            DecoderKnown = (byte)((AddressKnown ? 27 : 0) | (MemoryRequestHigh.HasValue ? 4 : 0)
-                | (IoRequestHigh.HasValue ? 32 : 0));
-            GateCpuLevels = (byte)((AddressKnown && (AddressValue & 0x8000) != 0 ? 1 : 0)
-                | (MemoryRequestHigh == true ? 2 : 0) | (ReadHigh == true ? 136 : 0) | (WriteHigh == true ? 32 : 0));
-            GateCpuKnown = (byte)((AddressKnown ? 1 : 0) | (MemoryRequestHigh.HasValue ? 2 : 0)
-                | (ReadHigh.HasValue ? 136 : 0) | (WriteHigh.HasValue ? 32 : 0));
+            ControlKnown = pins.ControlDriven;
+            Controls = (byte)(pins.ControlLevels & ControlKnown);
+            DecoderLevels = (byte)(((AddressValue >> 14) & 3) | ((Controls & 1) << 2)
+                | ((AddressValue >> 3) & 24) | ((Controls & 2) << 4));
+            DecoderKnown = (byte)((AddressKnown ? 27 : 0) | ((ControlKnown & 1) << 2)
+                | ((ControlKnown & 2) << 4));
+            GateCpuLevels = (byte)(((AddressValue & 0x8000) >> 15) | ((Controls & 1) << 1)
+                | ((Controls & 4) << 1) | ((Controls & 4) << 5) | ((Controls & 8) << 2));
+            GateCpuKnown = (byte)((AddressKnown ? 1 : 0) | ((ControlKnown & 1) << 1)
+                | ((ControlKnown & 4) << 1) | ((ControlKnown & 4) << 5) | ((ControlKnown & 8) << 2));
         }
     }
     private readonly record struct CpuWireChange(long Time, CpuBusWires Wires, uint Recipients);
@@ -307,12 +306,12 @@ internal sealed partial class Sg1000Board
     private uint ChangedRecipients(in CpuBusWires old, in CpuBusWires current)
     {
         uint recipients = 0;
-        bool address = old.Address != current.Address;
-        int addressBits = old.Address.HasValue == current.Address.HasValue
-            ? old.Address.GetValueOrDefault() ^ current.Address.GetValueOrDefault() : 65535;
-        bool data = old.Data != current.Data, read = old.ReadHigh != current.ReadHigh, write = old.WriteHigh != current.WriteHigh;
-        bool memory = old.MemoryRequestHigh != current.MemoryRequestHigh;
-        if ((addressBits & 0xc0c0) != 0 || memory || old.IoRequestHigh != current.IoRequestHigh) recipients |= Bit(BusRecipient.Decoder);
+        int addressBits = old.AddressKnown == current.AddressKnown ? old.AddressValue ^ current.AddressValue : 65535;
+        bool address = addressBits != 0;
+        byte controls = (byte)((old.Controls ^ current.Controls) | (old.ControlKnown ^ current.ControlKnown));
+        bool data = old.DataValue != current.DataValue || old.DataIsKnown != current.DataIsKnown;
+        bool read = (controls & 4) != 0, write = (controls & 8) != 0, memory = (controls & 1) != 0;
+        if ((addressBits & 0xc0c0) != 0 || memory || (controls & 2) != 0) recipients |= Bit(BusRecipient.Decoder);
         if ((addressBits & 0x8000) != 0 || memory || read || write) recipients |= Bit(BusRecipient.Gates);
         if ((addressBits & 1023) != 0 || data || read || write) recipients |= Bit(BusRecipient.Ram);
         if (address || memory) recipients |= Bit(BusRecipient.RomLow) | Bit(BusRecipient.RomHigh);
@@ -445,7 +444,7 @@ internal sealed partial class Sg1000Board
                 break;
             case BusRecipient.Ram:
                 var ramPins = new Tmm2009Pins((ushort)(address & 1023), addressKnown,
-                    Logic(decoder, 3) != LogicPinState.Low, false, cpu.ReadHigh != false, cpu.WriteHigh != false, data, dataKnown);
+                    Logic(decoder, 3) != LogicPinState.Low, false, cpu.ReadInactive, cpu.WriteInactive, data, dataKnown);
                 if (ramPins != _ramWirePins) { StoreBusWord(_busRamInputs, new(time, ramPins)); _ramWirePins = ramPins; }
                 break;
             case BusRecipient.RomLow:
@@ -453,10 +452,10 @@ internal sealed partial class Sg1000Board
             case BusRecipient.InternalRom:
                 bool internalRom = recipient == BusRecipient.InternalRom;
                 int mask = internalRom ? 16383 : recipient == BusRecipient.RomLow ? _cartridgeLowMask : _cartridgeHighMask;
-                bool ce = internalRom ? cpu.MemoryRequestHigh != false || CartridgePresent || address >= 0x4000
+                bool ce = internalRom ? cpu.MemoryInactive || CartridgePresent || address >= 0x4000
                     : recipient == BusRecipient.RomLow && _romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle
-                        ? false : cpu.MemoryRequestHigh != false;
-                bool oe = internalRom ? cpu.ReadHigh != false : recipient == BusRecipient.RomLow
+                        ? false : cpu.MemoryInactive;
+                bool oe = internalRom ? cpu.ReadInactive : recipient == BusRecipient.RomLow
                     ? Logic(gates, 0) != LogicPinState.Low : Logic(decoder, 2) != LogicPinState.Low;
                 int romIndex = internalRom ? 2 : recipient == BusRecipient.RomLow ? 0 : 1;
                 var romPins = new Tmm23256Pins((ushort)(address & mask), addressKnown, ce, oe);
@@ -466,7 +465,7 @@ internal sealed partial class Sg1000Board
             case BusRecipient.CartridgeRam:
                 int ramMask = _romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? 8191 : 2047;
                 var cartPins = new Tmm2016Pins((ushort)(address & ramMask), addressKnown, Logic(decoder, 2) != LogicPinState.Low,
-                    cpu.ReadHigh != false, cpu.WriteHigh != false, data, dataKnown, true);
+                    cpu.ReadInactive, cpu.WriteInactive, data, dataKnown, true);
                 if (cartPins != _cartridgeRamWirePins)
                 { StoreBusWord(_busCartridgeRamInputs, new(time - _cartridgeOrigin, cartPins)); _cartridgeRamWirePins = cartPins; }
                 break;
@@ -474,7 +473,7 @@ internal sealed partial class Sg1000Board
             case BusRecipient.JoyHigh:
                 levels = recipient == BusRecipient.JoyLow ? _muxContactLow : _muxContactHigh;
                 known = 255;
-                InputBit(ref levels, ref known, 8, cpu.JoySelect);
+                levels |= (ulong)(address & 1) << 8; known |= addressKnown ? 256UL : 0;
                 InputBit(ref levels, ref known, 9, Level(Logic(gates, 3)));
                 StoreLogicInput(recipient == BusRecipient.JoyLow ? 2 : 3, time, levels, known);
                 break;
@@ -495,7 +494,7 @@ internal sealed partial class Sg1000Board
         => new(cpu.DataValue, cpu.DataIsKnown, (cpu.AddressValue & 1) != 0,
             Logic(gates, 1) != LogicPinState.Low, Logic(gates, 2) != LogicPinState.Low);
     private static (byte Data, bool Selected, bool Write) MakeSoundPins(in CpuBusWires cpu, ushort decoder)
-        => (cpu.DataValue, Logic(decoder, 5) == LogicPinState.Low, cpu.WriteHigh == false);
+        => (cpu.DataValue, Logic(decoder, 5) == LogicPinState.Low, !cpu.WriteInactive);
 
     private void ConsumeMainRam()
     {
@@ -630,3 +629,4 @@ internal sealed partial class Sg1000Board
         AdvanceAudio(TimeNanoseconds);
     }
 }
+

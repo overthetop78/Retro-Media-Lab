@@ -187,6 +187,8 @@ public sealed partial class Mb8118 : IMb8118
     {
         if (_publishing) return;
         long next = NextResponseTime;
+        if (_announcedDue == next) return;
+        if (NextEventNanosecondsChanged is null) { _announcedDue = next; return; }
         while (_announcedDue != next)
         {
             _announcedDue = next;

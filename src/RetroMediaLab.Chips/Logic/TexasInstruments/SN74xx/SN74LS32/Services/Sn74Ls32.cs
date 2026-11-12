@@ -4,6 +4,7 @@ using RetroMediaLab.Chips.Logic.Common.Services;
 using RetroMediaLab.Chips.Logic.Common.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Models;
+using System.Numerics;
 
 namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Services;
 
@@ -74,8 +75,11 @@ public sealed class Sn74Ls32 : ISn74Ls32, ICombinationalRangeModel
         targets = default;
         if (_levels == levels && _known == known) return false;
         targets = Resolve(levels, known);
-        for (int gate = 0; gate < 4; gate++)
+        uint changedTargets = (uint)(targets ^ _pins.Targets);
+        while (changedTargets != 0)
         {
+            int gate = BitOperations.TrailingZeroCount(changedTargets) >> 1;
+            changedTargets &= ~(3u << (gate * 2));
             var target = (LogicPinState)((targets >> (gate * 2)) & 3);
             delays[gate] = target == LogicPinState.High ? _timing[0] : target == LogicPinState.Low ? _timing[1] : Math.Max(_timing[0], _timing[1]);
         }
@@ -84,15 +88,10 @@ public sealed class Sn74Ls32 : ISn74Ls32, ICombinationalRangeModel
 
     private static ushort Resolve(ulong levels, ulong known)
     {
-        ushort result = 0;
-        for (int gate = 0; gate < 4; gate++)
-        {
-            int shift = gate * 2;
-            ulong k = (known >> shift) & 3, l = (levels >> shift) & k;
-            var output = l != 0 ? LogicPinState.High : k == 3 ? LogicPinState.Low : LogicPinState.Unknown;
-            result |= (ushort)((int)output << shift);
-        }
-        return result;
+        ulong qualified = levels & known;
+        ulong high = (qualified | (qualified >> 1)) & 0x55;
+        ulong low = known & (known >> 1) & ~high & 0x55;
+        return (ushort)((high << 1) | low);
     }
     public CombinationalState CaptureState() => _pins.Capture(Part, _levels, _known, _timing);
     public void RestoreState(CombinationalState state)

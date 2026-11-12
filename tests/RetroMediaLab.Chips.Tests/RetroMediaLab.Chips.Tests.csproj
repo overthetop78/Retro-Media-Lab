@@ -5,6 +5,10 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <ItemGroup Condition="'$(RmlChipEfficiencyOnly)' == 'true'">
+    <Compile Remove="**/*.cs" />
+    <Compile Include="Performance/Sg1000ChipEfficiency.cs;Performance/Sg1000ChipEfficiency.Generated.cs;Performance/CombinationalTruthTableTests.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />

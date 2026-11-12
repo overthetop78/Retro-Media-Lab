@@ -72,7 +72,7 @@ public sealed partial class Mb8118
         // callback may withdraw this waveform, so recheck ownership afterward.
         if (_hasReadCycle && _readInputStep == 1 && Reaches(_receivedReadCycle.RasFall, timeNanoseconds, includeBoundaryInput))
         {
-            ResolveReadOutputTo(_receivedReadCycle.RasFall);
+            if (_outputDue >= 0 && _outputDue <= _receivedReadCycle.RasFall) ResolveReadOutputTo(_receivedReadCycle.RasFall);
             if (_hasReadCycle)
             {
                 TimeNanoseconds = _receivedReadCycle.RasFall;
@@ -82,7 +82,7 @@ public sealed partial class Mb8118
         }
         if (_hasReadCycle && _readInputStep == 2 && Reaches(_receivedReadCycle.CasFall, timeNanoseconds, includeBoundaryInput))
         {
-            ResolveReadOutputTo(_receivedReadCycle.CasFall);
+            if (_outputDue >= 0 && _outputDue <= _receivedReadCycle.CasFall) ResolveReadOutputTo(_receivedReadCycle.CasFall);
             if (_hasReadCycle)
             {
                 TimeNanoseconds = _receivedReadCycle.CasFall;
@@ -93,7 +93,7 @@ public sealed partial class Mb8118
         }
         if (_hasReadCycle && _readInputStep == 3 && Reaches(_receivedReadCycle.RasRise, timeNanoseconds, includeBoundaryInput))
         {
-            ResolveReadOutputTo(_receivedReadCycle.RasRise);
+            if (_outputDue >= 0 && _outputDue <= _receivedReadCycle.RasRise) ResolveReadOutputTo(_receivedReadCycle.RasRise);
             if (_hasReadCycle)
             {
                 TimeNanoseconds = _receivedReadCycle.RasRise;
@@ -103,7 +103,7 @@ public sealed partial class Mb8118
         }
         if (_hasReadCycle && _readInputStep == 4 && Reaches(_receivedReadCycle.CasRise, timeNanoseconds, includeBoundaryInput))
         {
-            ResolveReadOutputTo(_receivedReadCycle.CasRise);
+            if (_outputDue >= 0 && _outputDue <= _receivedReadCycle.CasRise) ResolveReadOutputTo(_receivedReadCycle.CasRise);
             if (_hasReadCycle)
             {
                 TimeNanoseconds = _receivedReadCycle.CasRise;
@@ -111,7 +111,7 @@ public sealed partial class Mb8118
                 EndColumn(TimeNanoseconds);
             }
         }
-        ResolveReadOutputTo(timeNanoseconds);
+        if (_outputDue >= 0 && _outputDue <= timeNanoseconds) ResolveReadOutputTo(timeNanoseconds);
         TimeNanoseconds = timeNanoseconds;
         if (_hasReadCycle && timeNanoseconds >= _readResponseTime) _readResponseRepresented = true;
         PublishDeadline();

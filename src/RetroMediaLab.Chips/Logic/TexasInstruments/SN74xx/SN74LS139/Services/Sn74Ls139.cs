@@ -4,6 +4,7 @@ using RetroMediaLab.Chips.Logic.Common.Services;
 using RetroMediaLab.Chips.Logic.Common.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Models;
+using System.Numerics;
 
 namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Services;
 
@@ -14,6 +15,9 @@ public sealed class Sn74Ls139 : ISn74Ls139, ICombinationalRangeModel
     private readonly CombinationalOutputs _pins = new(8);
     private readonly long[] _timing;
     private byte _levels, _known;
+    // Each independent decoder has only three ternary inputs. The complete
+    // 64-entry levels/known table includes noncanonical words as well.
+    private static readonly byte[] DecoderTable = BuildDecoderTable();
     public Sn74Ls139(Sn74Ls139Timing timing)
     {
         ArgumentNullException.ThrowIfNull(timing);
@@ -63,8 +67,11 @@ public sealed class Sn74Ls139 : ISn74Ls139, ICombinationalRangeModel
         if (_levels == levels && _known == known) return false;
         targets = Resolve(levels, known);
         byte changed = (byte)((_levels ^ levels) | (_known ^ known));
-        for (int output = 0; output < 8; output++)
+        uint changedTargets = (uint)(targets ^ _pins.Targets);
+        while (changedTargets != 0)
         {
+            int output = BitOperations.TrailingZeroCount(changedTargets) >> 1;
+            changedTargets &= ~(3u << (output * 2));
             int inputs = (changed >> ((output / 4) * 3)) & 7;
             var target = (LogicPinState)((targets >> (output * 2)) & 3);
             long delay = 0;
@@ -79,18 +86,23 @@ public sealed class Sn74Ls139 : ISn74Ls139, ICombinationalRangeModel
         : target == LogicPinState.Low ? _timing[path + 1] : Math.Max(_timing[path], _timing[path + 1]);
 
     private static ushort Resolve(ulong levels, ulong known)
+        => (ushort)(DecoderTable[(int)((levels & 7) | ((known & 7) << 3))]
+            | (DecoderTable[(int)(((levels >> 3) & 7) | (known & 56))] << 8));
+
+    private static byte[] BuildDecoderTable()
     {
-        ushort result = 0;
-        for (int output = 0; output < 8; output++)
+        var table = new byte[64];
+        for (int index = 0; index < table.Length; index++)
         {
-            int shift = (output / 4) * 3;
-            int k = (int)(known >> shift) & 7, l = (int)(levels >> shift) & k;
-            int selection = output & 3;
-            bool excluded = ((l & 4) != 0) || (((l ^ selection) & k & 3) != 0);
-            var value = excluded ? LogicPinState.High : k == 7 ? LogicPinState.Low : LogicPinState.Unknown;
-            result |= (ushort)((int)value << (output * 2));
+            int k = index >> 3, l = (index & 7) & k;
+            for(int output=0;output<4;output++)
+            {
+                bool excluded = (l & 4) != 0 || ((l ^ output) & k & 3) != 0;
+                var value = excluded ? LogicPinState.High : k == 7 ? LogicPinState.Low : LogicPinState.Unknown;
+                table[index] |= (byte)((int)value << (output * 2));
+            }
         }
-        return result;
+        return table;
     }
     public CombinationalState CaptureState() => _pins.Capture(Part, _levels, _known, _timing);
     public void RestoreState(CombinationalState state)

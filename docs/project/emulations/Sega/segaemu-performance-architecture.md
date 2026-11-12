@@ -354,3 +354,98 @@ Les fenêtres exécutent encore les échantillonnages ; leurs compteurs ne sont 
 | Sg1000Board.ChangedRecipients |2,51 /2,59|3,00 /3,07|2,51 /2,51|
 
 Ces coûts inclusifs se recouvrent et ne s'additionnent pas. Les coûts propres par groupes, les valeurs absolues en millisecondes et toutes les méthodes sont dans chaque cpu-costs.json ; les traces complètes sont conservées. La réception des préfixes représente encore 43,83 % inclusifs sur Champion ; le domaine vidéo comprend ses réponses DRAM. Les contrôles d'échéance DRAM et la préparation/distribution des causes restent des coûts importants. La réduction des livraisons seule n'a toujours pas établi l'accélération globale exigée. Le commit de sauvegarde conserve donc un travail d'optimisation inachevé, pas une machine déclarée terminée.
+
+## Efficacité individuelle des puces — 12 novembre 2026
+
+Banc `tests/RetroMediaLab.Chips.Tests/Performance/Sg1000ChipEfficiency.cs`, lancé avec `pwsh -NoProfile -File tests/RetroMediaLab.Chips.Tests/Profile-Sg1000Chips.ps1`. Aucun code de production modifié. 17 composants/profils, deux parcours chacun : 34 cas par configuration, Debug puis Release séquentiels. Les 34 cas réussissent dans chaque configuration; les 17 paires ont des empreintes identiques des états capturés complets à la fin du scénario. Les volumes de transitions de sortie concordent également. Cela compare les deux parcours, sans constituer une preuve de conformité au silicium.
+
+Huit lots d'échauffement, cinq échantillons de huit lots chacun; médiane du coût par unité. Construction, vérifications et empreintes hors chronométrage; préparation des entrées groupées et réceptions de sorties incluses. .NET 10.0.15, aucun débogueur attaché; compilation JIT par paliers désactivée dans le processus du banc pour éviter les recompilations pendant les mesures courtes. Optimiseur JIT désactivé en Debug et activé en Release. Ce protocole est distinct du comportement JIT par défaut de RML. Tous les lots mesurés rapportent zéro octet alloué sur le thread du banc.
+
+| Composant / profil | Unité (millions/s) | Debug fronts | Debug plages | Release fronts | Release plages |
+|---|---|---:|---:|---:|---:|
+| CPU Zilog Z80 NMOS | clocks | 2,345 | 1,897 | 14,492 | 14,300 |
+| CPU NEC µPD780C-1 | clocks | 2,319 | 2,001 | 15,074 | 13,410 |
+| SN74LS139 maximum | mots entrée | 2,017 | 2,361 | 12,698 | 13,542 |
+| SN74LS32 maximum | mots entrée | 3,359 | 4,604 | 21,221 | 35,339 |
+| SN74LS257 maximum | mots entrée | 3,744 | 4,561 | 25,302 | 29,807 |
+| TMM2009 non caractérisée | paires écrire/lire | 1,821 | 1,669 | 11,816 | 9,193 |
+| SRAM MB8464-15L | paires écrire/lire | 0,682 | 0,658 | 4,684 | 3,788 |
+| SRAM NEC-uPD4016-2 | paires écrire/lire | 0,773 | 0,708 | 4,843 | 4,413 |
+| ROM logical-8192-unqualified | lectures | 2,036 | 2,265 | 12,167 | 13,440 |
+| ROM logical-16384-unqualified | lectures | 2,119 | 2,180 | 11,582 | 13,511 |
+| ROM logical-32768-unqualified | lectures | 2,117 | 2,171 | 11,731 | 13,479 |
+| ROM NEC-uPD23256A | lectures | 2,295 | 2,264 | 12,500 | 13,872 |
+| ROM MB83256-MPR10152-unqualified-grade | lectures | 1,893 | 2,119 | 11,173 | 12,447 |
+| MB8118 Speed12 ×1 | bits lus | 1,762 | 2,464 | 8,194 | 14,095 |
+| MB8118 Speed12 ×8 | octets lus | 0,218 | 0,327 | 1,257 | 1,734 |
+| TMS9918A NTSC | clocks maître | 2,020 | 2,196 | 13,269 | 16,809 |
+| SN76489AN READY150ns | clocks entrée | 10,268 | 102,009 | 44,593 | 503,929 |
+
+CPU : clocks effectives (MHz), boucle de transferts/arithmétique/écritures/sauts et mémoire idéale externe via le bus, WAIT/INT stables. VDP : clocks maître, affichage actif avec donnée VRAM externe constante connue, sans CPU ni DRAM raccordés, chaque signal vidéo observé. PSG : trois tonalités et bruit actifs avec toutes les transitions audio observées. Logique : mots complets variables toutes les µs, délais conservés et sorties comptées. SRAM : paires écriture/relecture (deux accès), phases espacées de 1 µs. ROM : lectures CE/OE complètes, trois phases espacées de 1 µs. DRAM : lectures complètes, RAS+45/CAS+85/RAS haut+270/CAS haut+335 ns, période 1 µs; cellules connues et démarrage préparés hors mesure, huit propriétaires distincts pour le banc octet.
+
+Les profils TMM2009 et ROM logical restent électriquement non caractérisés. Le grade réel de la ROM Castle demeure non qualifié : les valeurs nominales du montage sont utilisées. Speed12 est le profil MB8118 actuellement câblé; ce nom ne prouve pas le grade réel des composants de carte.
+
+Constat : les parcours groupés du CPU et des SRAM ne procurent pas de gain sur ces scénarios. Le banc DRAM de huit propriétaires ne dépasse que 0,33 million d'octets lus/s en Debug. Le VDP isolé atteint environ 2,20 MHz maître en Debug pour 10,738635 MHz requis; le CPU NEC groupé environ 2,00 MHz pour 3,579545 MHz requis. Ces deux composants isolés restent sous leur cadence nominale dans ce protocole Debug. Le PSG bénéficie fortement de l'avance par source. Ce travail mesure les coûts, sans réaliser d'optimisation ni annoncer un gain machine ou une clôture matérielle.
+
+Rapports détaillés, chaque échantillon (temps, unités, nanosecondes émulées, transitions, allocations), empreintes et TRX : `artifacts/TestsChips/Sega/SG-1000/Efficiency/20261112T212037308Z/{Debug,Release}/results.{json,md}`. Le passage court précédent `20261112T211948244Z` est exploratoire et remplacé par ce protocole stabilisé. L'entrée xUnit générée a été supprimée dans finally; le lanceur restaure les variables d'environnement. L'option MSBuild `RmlChipEfficiencyOnly=true` compile uniquement le banc : elle évite une dépendance absente de l'ancien test NEC sans modifier ce test.
+
+## Attribution aux composants pendant les images complètes — 12 novembre 2026
+
+Réanalyse des trois profils complets déjà capturés, sans relancer un benchmark et sans modifier les modèles. Le SHA256 du module Debug présent est identique à celui des passes natives/profilées : `708478fc4016d7351294ec32e268404d142155e202238ae65206f54a71a2faec`. Script reproductible : `tests/RetroMediaLab.LocalEmulationTests/Summarize-Sg1000ComponentCosts.ps1`, paramètres `-Report` (chemins séparés par `|` lors de l'emploi de pwsh -File), `-OutputDirectory`.
+
+Sommes des coûts propres des méthodes de chaque composant : partition des échantillons de RunFrame, sans addition des descendants. Les paramètres des signatures ne sont pas des propriétaires. Les trois partitions sont vérifiées contre le total échantillonné et les éventuels temps bloqués.
+
+| Composant | Champion propre % | Girl propre % | Castle propre % |
+|---|---:|---:|---:|
+| Câblage | 23,94 | 24,49 | 24,90 |
+| DRAM MB8118 | 20,44 | 20,40 | 19,33 |
+| VDP | 19,46 | 19,42 | 17,43 |
+| Logique | 14,85 | 14,64 | 14,08 |
+| CPU | 9,46 | 9,08 | 9,41 |
+| Autres mémoires | 8,48 | 8,57 | 11,87 |
+| Runtime et autres | 1,73 | 2,08 | 1,90 |
+| PSG | 1,16 | 0,85 | 0,71 |
+| Backend | 0,49 | 0,47 | 0,36 |
+
+Les coûts propres CPU/VDP/DRAM restent distincts des rappels vers leurs destinataires. Sur Champion, `Mb8118.AdvanceCore` représente 4,82 % propres mais 23,41 % inclusifs; `PublishDeadline` 3,78/6,45 %. Pour le VDP, `AdvanceMasterClockSourceUntil` représente 3,32/48,58 %, `AdvanceMasterHalfEdges` 2,49/17,78 %, et `ProduceRasterPixel` 1,47/14,92 %. Pour le CPU : `Z80BusSequencer.AdvanceTo` 2,13/2,43 % et `ScheduleTargets` 1,08/1,08 %. Pour la logique, `CombinationalOutputs.ExecuteInputRange` 2,72/10,97 %. Ces coûts inclusifs se recouvrent et ne s'additionnent pas. Ils ne sont pas des comptes d'appels.
+
+Volume moyen sur Champion : 16768 formes de lecture VRAM/image, soit 134144 réceptions par les huit DRAM; 89604 signaux vidéo natifs/image; environ 11491 livraisons CPU/image contenant 109997 mots; 121778 mots d'entrée logique; 146472 mots d'entrée mémoire. Ces moyennes sont calculées par différence des lignes cumulées des images complètes, en excluant la première pour éviter d'inclure le démarrage et l'échauffement. Les deux synchronisations vidéo/image ne prouvent pas que le VDP ne traite que deux événements : le travail interne reste dans la puce.
+
+Projection indicative sur le temps mural natif moyen : DRAM environ 64,6–67,3 ms/image, VDP 60,4–64,0, CPU 29,9–32,6, câblage 75,6–86,2, logique 46,9–48,8. Ce sont des estimations issues des parts échantillonnées de la passe profilée; aucun chronométrage direct n'a été ajouté dans les puces. Les millisecondes échantillonnées par image profilée sont aussi conservées séparément. Ne pas présenter ces projections comme une décomposition exacte des médianes natives de 310–342 ms/image.
+
+Priorités établies : DRAM (avances/résolution/délais), VDP (avances temporelles/raster), et transport/logique forment le gros du coût; le CPU reste lent isolément mais représente seulement environ 9 % propres du scénario machine. Le PSG reste secondaire. Les profils couvrent douze images et deux images d'échauffement sur trois jeux : ils ne couvrent pas toutes les phases de jeu. Aucune nouvelle optimisation ni gain machine annoncé. Rapports complets par composant, méthodes propres/inclusives et volumes : `artifacts/TestsMachines/Sega/SG1000/ComponentCosts/20261112/component-costs.{json,md}`.
+
+## Lot ciblé transport / logique / DRAM — 12 novembre 2026
+
+Lot guidé par les coûts mesurés, sans nouvelle architecture ni modification des fonctions physiques. Le contrat Z80 expose les niveaux et pilotages primitifs de son mot existant (propriétés exclues de la sérialisation); CpuBusWires prépare la projection des fils sans six reconstructions Nullable par mot, puis compare les masques primitifs. Le séquenceur CPU reste inchangé. LS139 résout ses deux décodeurs indépendants par une table complète de 64 mots niveaux/pilotages; LS32 calcule les quatre résultats ternaires en parallèle. Les délais ne sont calculés que pour les cibles effectivement changées, en conservant leur prévalidation, les annulations et les propagations. Les DRAM ne traversent plus ResolveReadOutputTo lorsqu'aucune sortie n'est échue; les publications d'échéance évitent les passages sans changement et sans destinataire. Huit propriétaires DRAM restent distincts.
+
+Essai rejeté : éviter les livraisons d'entrée VRAM inchangées conservait images, PCM et observations natives mais décalait la date capturée VramBus.TimeNanoseconds de 80 ns sur Champion. Cette partie a été retirée; le rapport rejeté 20261112T220040953Z-facf94 reste une preuve négative, pas une validation. Les résultats ci-dessous portent sur le lot corrigé et des états finaux strictement identiques.
+
+| ROM | Référence Debug ms/image | Après ms/image | Temps réduit |
+|---|---:|---:|---:|
+| Champion Tennis (Japan) | 310,363 | 289,966 | 6,57 % |
+| Girl's Garden (Japan) | 318,573 | 296,191 | 7,03 % |
+| Castle, The (Japan) | 341,538 | 308,648 | 9,63 % |
+
+Médianes des passes natives sans profileur, 12 images après 2 images d'échauffement; mêmes ROM et scénario que les références 310,363/318,573/341,538. Aucun gain attribué à une seule modification du lot. Le gain de 6,6 à 9,6 % est réel sur ces passages mais reste limité; la cible de temps réel Debug reste largement non atteinte.
+
+Validation regroupée : 34 cas du banc d'efficacité par configuration Debug/Release, plus trois contrôles autonomes (729 entrées ternaires du LS139, 6561 entrées ternaires du LS32, 81 états de pilotage des quatre commandes CPU). Les 34 empreintes isolées Debug avant/après sont identiques. Sur les trois ROM : états finaux complets identiques aux références; vidéo, PCM et observations de chaque image identiques, soit 36 observations natives. Les volumes CPU/clocks/instructions, mots CPU/logique/mémoire, formes VRAM et livraisons explicites sont inchangés. Aucune transaction matérielle éliminée : réduction des conversions, calculs et sous-appels logiciels. Les appels internes évités ne sont pas instrumentés; ne pas présenter un nombre d'appels déduit comme mesuré.
+
+Les nouveaux profils complets sont capturés séparément après chaque passe native. Répartition des coûts propres :
+
+| Composant | Champion % | Girl % | Castle % |
+|---|---:|---:|---:|
+| Câblage | 21,12 | 22,51 | 28,37 |
+| DRAM MB8118 | 21,09 | 26,03 | 20,01 |
+| VDP | 22,76 | 18,35 | 19,96 |
+| Logique | 13,50 | 11,91 | 8,58 |
+| CPU | 7,86 | 6,81 | 4,50 |
+| Autres mémoires | 9,14 | 11,08 | 13,08 |
+| PSG | 0,87 | 0,43 | 0,82 |
+
+Les parts échantillonnées présentent plus de dispersion sur ce passage court; ne pas annoncer de gain ou de régression de chaque composant à partir de sa seule variation de pourcentage. Les méthodes propres/inclusives, leurs ms profilées/image et les volumes sont conservés dans `artifacts/TestsMachines/Sega/SG1000/ComponentCosts/20261112-after-transport-logic-dram/component-costs.{json,md}`. Les dominantes restent DRAM, VDP et câblage.
+
+Rapports individuels Debug/Release : `artifacts/TestsChips/Sega/SG-1000/Efficiency/20261112T215908880Z`. Profils machine conservés :
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\Profiles\Champion Tennis (Japan)\20261112T220138661Z-8b9eeb\report.json`
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\Profiles\Girl's Garden (Japan)\20261112T220202168Z-08106e\report.json`
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\Profiles\Castle, The (Japan)\20261112T220225291Z-690f93\report.json`

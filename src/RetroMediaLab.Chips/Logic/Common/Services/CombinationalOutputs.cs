@@ -18,6 +18,7 @@ internal sealed class CombinationalOutputs(int count)
     private bool _publishing, _executingRange;
     private TimedLogicOutput[]? _rangeOutput;
     public long Time { get; private set; }
+    internal ushort Targets => _targets;
     public long? Next => _pending == 0 ? null : _next;
     public Action<int, LogicPinState>? Changed { get; set; }
     public Action<long?>? DeadlineChanged { get; set; }

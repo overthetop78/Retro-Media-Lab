@@ -81,6 +81,17 @@ public readonly record struct Z80BusPins
     public bool IsIoWrite() => (_bits & (C.IoWrite | C.IoHigh | C.WriteHigh)) == C.IoWrite;
     public ushort GetAddressOrZero() => (ushort)_bits;
     public byte GetDataOrZero() => (byte)(_bits >> C.DataShift);
+    /// <summary>Physical drive masks for address/data, without constructing nullable bus values.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool AddressDriven => (_bits & C.AddressDriven) != 0;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool DataDriven => (_bits & C.DataDriven) != 0;
+    /// <summary>MREQ, IORQ, RD, WR in bits 0..3; remaining bits are M1, RFSH, HALT, BUSACK.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public byte ControlLevels => (byte)(_bits >> 24);
+    /// <summary>Drive qualification for the first four ControlLevels bits.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public byte ControlDriven => (byte)((_bits >> 34) & 15);
     public bool Equals(Z80BusPins other) => _bits == other._bits;
     public override int GetHashCode() => _bits.GetHashCode();
 
