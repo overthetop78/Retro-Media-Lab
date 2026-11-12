@@ -9,6 +9,7 @@ internal sealed class Tms9918StatusReadBus
     private readonly Tms9918Status _status;
     private readonly Tms9918CpuProtocol _protocol;
     private Tms9918StatusReadState _state;
+    private long _observationTime;
     private bool _publishing;
     internal Action<long>? StatusAcknowledged { get; set; }
 
@@ -21,17 +22,24 @@ internal sealed class Tms9918StatusReadBus
         if (initial.Pins.CsrHigh && initial.StatusSelected)
             throw new ArgumentException("A status read cannot be selected with CSR high.");
         _state = initial;
+        _observationTime = initial.TimeNanoseconds;
         _status = status;
         _protocol = protocol;
     }
 
-    internal Tms9918StatusReadState Capture() => _state;
+    internal Tms9918StatusReadState Capture() => _state with { TimeNanoseconds = _observationTime };
+
+    internal void AdvanceInputTime(long timeNanoseconds)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _observationTime);
+        if (_publishing && timeNanoseconds != _observationTime)
+            throw new InvalidOperationException("Cannot advance input time from a status callback.");
+        _observationTime = timeNanoseconds;
+    }
 
     internal void ReceivePins(long timeNanoseconds, Tms9918CpuPins pins)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _state.TimeNanoseconds);
-        if (_publishing && timeNanoseconds != _state.TimeNanoseconds)
-            throw new InvalidOperationException("Cannot advance input time from a status callback.");
+        AdvanceInputTime(timeNanoseconds);
         var previous = _state;
         bool selected = previous.StatusSelected;
         bool qualified = previous.SelectionQualified;

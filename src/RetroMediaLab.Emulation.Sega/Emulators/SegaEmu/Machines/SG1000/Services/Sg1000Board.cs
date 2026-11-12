@@ -91,16 +91,17 @@ internal sealed partial class Sg1000Board : IDisposable
         _decoder.OutputChanged = (pin, value) =>
         {
             _decodePins[pin] = value;
-            UpdateGateInputs(_decoder.TimeNanoseconds);
+            if (pin == 6) UpdateGateInputs(_decoder.TimeNanoseconds, 6);
+            else if (pin == 7) UpdateGateInputs(_decoder.TimeNanoseconds, 8);
             if (pin == 3) UpdateRamBus(_decoder.TimeNanoseconds);
-            if (pin == 2) UpdateRomBus(_decoder.TimeNanoseconds);
+            if (pin == 2) UpdateRomBus(_decoder.TimeNanoseconds, 10);
             if (pin == 5) UpdatePsgBus(_decoder.TimeNanoseconds);
         };
         _gates.OutputChanged = (pin, value) =>
         {
             _gatePins[pin] = value;
             long time = _gates.TimeNanoseconds;
-            if (pin == 0) UpdateRomBus(time);
+            if (pin == 0) UpdateRomBus(time, 1);
             else if (pin is 1 or 2) UpdateVdpBus(time);
             else UpdateJoyBus(time);
         };
@@ -127,8 +128,9 @@ internal sealed partial class Sg1000Board : IDisposable
         {
             int chip = index;
             _dramPins[index] = _dram[index].Output;
+            CacheDramOutput(index, _dramPins[index]);
             _dram[index].NextEventNanosecondsChanged = next => _due[7 + chip] = next ?? long.MaxValue;
-            _dram[index].OutputChanged = value => { _dramPins[chip] = value; UpdateVramReadData(_dram[chip].TimeNanoseconds); };
+            _dram[index].OutputChanged = value => { _dramPins[chip] = value; UpdateVramReadData(_dram[chip].TimeNanoseconds, chip, value); };
         }
         ConnectCartridge();
         if (_internalRom is { } internalRom)

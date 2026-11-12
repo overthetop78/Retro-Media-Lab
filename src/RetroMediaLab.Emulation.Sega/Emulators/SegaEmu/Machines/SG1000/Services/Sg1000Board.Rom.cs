@@ -142,31 +142,30 @@ internal sealed partial class Sg1000Board
         _due[15] = _due[16] = _due[18] = long.MaxValue;
     }
 
-    private void UpdateRomBus(long time)
+    private void UpdateRomBus(long time, int memories = 15)
     {
-        var pins = _cpuPins;
-        ushort address = pins.Address ?? 0;
-        bool mreqHigh = pins.MemoryRequestHigh != false;
+        ushort address = _cpuAddress.GetValueOrDefault();
+        bool mreqHigh = _memoryHigh != false;
         long cartridgeTime = time - _cartridgeOrigin;
         // Enri48K: CE=/MREQ, OE=/EXM2 or /EXM1. Addresses above a
         // package's pins are unwired, giving its physical mirrors.
-        _cartridgeLow?.ReceivePins(cartridgeTime,new((ushort)(address & _cartridgeLowMask),
-            pins.Address.HasValue,_romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? false : mreqHigh,
+        if ((memories & 1) != 0) _cartridgeLow?.ReceivePins(cartridgeTime,new((ushort)(address & _cartridgeLowMask),
+            _cpuAddress.HasValue,_romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? false : mreqHigh,
             _gatePins[0] != LogicPinState.Low));
-        _cartridgeHigh?.ReceivePins(cartridgeTime,new((ushort)(address & _cartridgeHighMask),
-            pins.Address.HasValue,mreqHigh,_decodePins[2] != LogicPinState.Low));
-        if (_cartridgeRam is { } ram)
+        if ((memories & 2) != 0) _cartridgeHigh?.ReceivePins(cartridgeTime,new((ushort)(address & _cartridgeHighMask),
+            _cpuAddress.HasValue,mreqHigh,_decodePins[2] != LogicPinState.Low));
+        if ((memories & 8) != 0 && _cartridgeRam is { } ram)
         {
             int mask = _romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? 8191 : 2047;
             // Enri Castle/Othello drawings: /EXM1 selects SRAM, /RD->OE,
             // /WR->WE; the Castle's second chip select is tied to VDD.
-            ram.ReceivePins(cartridgeTime,new((ushort)(address & mask),pins.Address.HasValue,
-                _decodePins[2] != LogicPinState.Low,pins.ReadHigh != false,pins.WriteHigh != false,
-                pins.Data ?? 0,pins.Data.HasValue ? (byte)255 : (byte)0,Cs2High:true));
+            ram.ReceivePins(cartridgeTime,new((ushort)(address & mask),_cpuAddress.HasValue,
+                _decodePins[2] != LogicPinState.Low,_readHigh != false,_writeHigh != false,
+                _cpuData.GetValueOrDefault(),_cpuData.HasValue ? (byte)255 : (byte)0,Cs2High:true));
         }
         // Optional16KiB internal game. Cartridge presence inhibits the ROM,
         // independently of the current cartridge address or data bus value.
-        _internalRom?.ReceivePins(time,new((ushort)(address & 16383),pins.Address.HasValue,
-            mreqHigh || CartridgePresent || address >= 0x4000,pins.ReadHigh != false));
+        if ((memories & 4) != 0) _internalRom?.ReceivePins(time,new((ushort)(address & 16383),_cpuAddress.HasValue,
+            mreqHigh || CartridgePresent || address >= 0x4000,_readHigh != false));
     }
 }

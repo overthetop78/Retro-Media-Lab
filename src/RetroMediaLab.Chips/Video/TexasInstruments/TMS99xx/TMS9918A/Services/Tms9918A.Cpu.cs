@@ -5,6 +5,16 @@ namespace RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
 
 public sealed partial class Tms9918A
 {
+    /// <summary>Stable-input time transport. Actual pending VRAM/data responses
+    /// still run through AdvanceTo; only unchanged input decoding is avoided.</summary>
+    public void AdvanceCpuInterfaceTo(long timeNanoseconds)
+    {
+        AdvanceTo(timeNanoseconds);
+        if (_reset) return;
+        _statusReadBus.AdvanceInputTime(timeNanoseconds);
+        _writeBus.AdvanceInputTime(timeNanoseconds);
+    }
+
     public void ReceiveCpuPins(long timeNanoseconds, Tms9918CpuPins pins)
     {
         AdvanceTo(timeNanoseconds);

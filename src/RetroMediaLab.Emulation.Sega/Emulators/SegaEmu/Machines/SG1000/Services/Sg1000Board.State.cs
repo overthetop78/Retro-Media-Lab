@@ -91,11 +91,13 @@ internal sealed partial class Sg1000Board
         _audioTime = state.AudioTime; _sampleIndex = state.SampleIndex; _sampleStart = state.SampleStart;
         _sampleArea = state.SampleArea; _previousSample = state.PreviousSample;
         _dcOutput = state.DcOutput; _audioLevel = state.AudioLevel;
-        _cpuPins = _cpu.Pins;
+        CacheCpuWires(_cpu.Pins);
+        _vramWirePins = _vdp.VramPins; _vramWiresInitialized = true;
         for (int pin = 0; pin < 8; pin++)
         {
             _decodePins[pin] = _decoder.GetOutput(pin);
             _dramPins[pin] = _dram[pin].Output;
+            CacheDramOutput(pin, _dramPins[pin]);
             _joyPins[pin] = _joy[pin / 4].GetOutput(pin & 3);
         }
         for (int pin = 0; pin < 4; pin++) _gatePins[pin] = _gates.GetOutput(pin);

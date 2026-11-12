@@ -2,8 +2,7 @@ using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts;
 
 namespace RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Interfaces;
 
-/// <summary>Interface en cours de réalisation. Les accès CPU sont raccordés ;
-/// horloge, VRAM et vidéo seront complétés avant la qualification du VDP.</summary>
+/// <summary>Signals, external clocks and local state of the TMS9918A.</summary>
 public interface ITms9918A
 {
     long TimeNanoseconds { get; }
@@ -22,6 +21,8 @@ public interface ITms9918A
     Action<Tms9918CpuOutputs>? CpuOutputsChanged { get; set; }
     Action<long?>? NextEventNanosecondsChanged { get; set; }
     void ReceiveCpuPins(long timeNanoseconds, Tms9918CpuPins pins);
+    /// <summary>Advances with the currently received CPU levels, without replaying an input transition.</summary>
+    void AdvanceCpuInterfaceTo(long timeNanoseconds);
     void SetReset(long timeNanoseconds, bool asserted);
     void ReceiveMasterClock(long timeNanoseconds, bool high);
     void ReceiveMasterClockTrain(Tms9918ClockTrain train);

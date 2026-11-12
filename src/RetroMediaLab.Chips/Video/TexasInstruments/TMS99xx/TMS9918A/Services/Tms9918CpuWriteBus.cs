@@ -8,6 +8,7 @@ namespace RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
 internal sealed class Tms9918CpuWriteBus
 {
     private Tms9918CpuWriteState _state;
+    private long _observationTime;
     private bool _publishing;
     internal Action<Tms9918CpuWrite>? WriteCaptured { get; set; }
 
@@ -23,15 +24,22 @@ internal sealed class Tms9918CpuWriteBus
             || state.LastCapture > state.TimeNanoseconds)
             throw new ArgumentException("Invalid TMS9918 CPU write state.");
         _state = state;
+        _observationTime = state.TimeNanoseconds;
     }
 
-    internal Tms9918CpuWriteState Capture() => _state;
+    internal Tms9918CpuWriteState Capture() => _state with { TimeNanoseconds = _observationTime };
+
+    internal void AdvanceInputTime(long timeNanoseconds)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _observationTime);
+        if (_publishing && timeNanoseconds != _observationTime)
+            throw new InvalidOperationException("Cannot advance input time from a CPU capture callback.");
+        _observationTime = timeNanoseconds;
+    }
 
     internal void ReceivePins(long timeNanoseconds, Tms9918CpuPins pins)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _state.TimeNanoseconds);
-        if (_publishing && timeNanoseconds != _state.TimeNanoseconds)
-            throw new InvalidOperationException("Cannot advance input time from a CPU capture callback.");
+        AdvanceInputTime(timeNanoseconds);
         var previous = _state;
         bool modeChanged = previous.Pins.Mode != pins.Mode;
         bool dataChanged = previous.Pins.Data != pins.Data || previous.Pins.DataKnown != pins.DataKnown;

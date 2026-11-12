@@ -9,6 +9,42 @@ namespace RetroMediaLab.Chips.Tests.Video.TexasInstruments.TMS99xx.TMS9918A;
 public sealed class CpuInterfaceTests
 {
     [Fact]
+    public void StableCpuInputsPreserveEveryStateFieldWithoutReplayingStrobes()
+    {
+        var pins = new Tms9918CpuPins(0x5a, true, false, true, true);
+        var explicitPins = new Tms9918A(new(default, 0, default, default, pins), Tms9918CpuTiming.SpecifiedMaximum);
+        var stable = new Tms9918A(new(default, 0, default, default, pins), Tms9918CpuTiming.SpecifiedMaximum);
+        long time = 0;
+        try
+        {
+            foreach (var received in new[]
+            {
+                pins, pins with { CswHigh = false }, pins with { CswHigh = false },
+                pins with { CswHigh = false }, pins,
+                pins with { Mode = true }, pins with { Mode = true, CsrHigh = false },
+                pins with { Mode = true, CsrHigh = false }, pins with { Mode = true },
+                pins with { CsrHigh = false, CswHigh = false },
+                pins with { CsrHigh = false, CswHigh = false }, pins
+            })
+            {
+                time += 1000;
+                explicitPins.ReceiveCpuPins(time, received);
+                if (received == pins) stable.AdvanceCpuInterfaceTo(time);
+                else stable.ReceiveCpuPins(time, received);
+                pins = received;
+                Assert.Equal(System.Text.Json.JsonSerializer.Serialize(explicitPins.CaptureState()),
+                    System.Text.Json.JsonSerializer.Serialize(stable.CaptureState()));
+            }
+            Assert.Throws<ArgumentOutOfRangeException>(() => stable.AdvanceCpuInterfaceTo(time - 1));
+        }
+        finally
+        {
+            explicitPins.CpuOutputsChanged = stable.CpuOutputsChanged = null;
+            explicitPins.NextEventNanosecondsChanged = stable.NextEventNanosecondsChanged = null;
+        }
+    }
+
+    [Fact]
     public void PendingVramDoesNotDiscardRegisterCommandsAndConflictResumesWithoutAQueue()
     {
         var pins = new Tms9918CpuPins(0, true, true, true, true);
