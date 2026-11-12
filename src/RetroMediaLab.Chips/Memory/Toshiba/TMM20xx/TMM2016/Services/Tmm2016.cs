@@ -92,8 +92,14 @@ public sealed partial class Tmm2016 : ITmm2016
     {
         if (pins.Address >= _timing.Capacity) throw new ArgumentOutOfRangeException(nameof(pins));
         AdvanceTo(timeNanoseconds);
-        ulong received = PackPins(pins);
-        if (received == _pins) return;
+        if (!ApplyPackedPins(timeNanoseconds, PackPins(pins))) return;
+        if (_internalNext >= 0 && _internalNext <= timeNanoseconds) AdvanceTo(timeNanoseconds);
+        PublishDeadline();
+    }
+
+    private bool ApplyPackedPins(long timeNanoseconds, ulong received)
+    {
+        if (received == _pins) return false;
         _ = checked(timeNanoseconds + _maximumDelay);
         GuardRetention(received);
         var old = _pins;
@@ -178,8 +184,7 @@ public sealed partial class Tmm2016 : ITmm2016
             }
         }
         FindNext();
-        if (_internalNext >= 0 && _internalNext <= timeNanoseconds) AdvanceTo(timeNanoseconds);
-        PublishDeadline();
+        return true;
     }
 
     private void CommitWrite(long time, ulong previous)
@@ -260,27 +265,9 @@ public sealed partial class Tmm2016 : ITmm2016
         }
         while (_internalNext >= 0 && _internalNext <= timeNanoseconds)
         {
-            long due = _internalNext;
-            TimeNanoseconds = due;
-            if (_invalidateDue == due) { _invalidateDue = -1; _readData = _readKnown = 0; }
-            if (_dataDue == due) { _dataDue = -1; _readData = _targetData; _readKnown = _targetKnown; }
-            if (_writeEnableDue == due)
-            { _writeEnableDue = -1; _readData = _readKnown = 0; _driven = true; }
-            if (_writeDisableDue == due)
+            bool changed = ResolveOutputAt(_internalNext);
+            if (changed)
             {
-                _writeDisableDue = -1; _driven = false;
-                if (!_driveTarget) _driveDue = -1;
-            }
-            if (_driveDue == due)
-            {
-                _driveDue = -1; _driven = _driveTarget;
-                if (!_driven) _writeEnableDue = _writeDisableDue = -1;
-            }
-            FindNext();
-            uint output = OutputBits;
-            if (output != _published)
-            {
-                _published = output;
                 _publishing = true;
                 try { OutputChanged?.Invoke(Output); }
                 finally { _publishing = false; }
@@ -288,6 +275,30 @@ public sealed partial class Tmm2016 : ITmm2016
             PublishDeadline();
         }
         TimeNanoseconds = timeNanoseconds;
+    }
+
+    private bool ResolveOutputAt(long due)
+    {
+        TimeNanoseconds = due;
+        if (_invalidateDue == due) { _invalidateDue = -1; _readData = _readKnown = 0; }
+        if (_dataDue == due) { _dataDue = -1; _readData = _targetData; _readKnown = _targetKnown; }
+        if (_writeEnableDue == due)
+        { _writeEnableDue = -1; _readData = _readKnown = 0; _driven = true; }
+        if (_writeDisableDue == due)
+        {
+            _writeDisableDue = -1; _driven = false;
+            if (!_driveTarget) _driveDue = -1;
+        }
+        if (_driveDue == due)
+        {
+            _driveDue = -1; _driven = _driveTarget;
+            if (!_driven) _writeEnableDue = _writeDisableDue = -1;
+        }
+        FindNext();
+        uint output = OutputBits;
+        if (output == _published) return false;
+        _published = output;
+        return true;
     }
 
     private void PublishDeadline()

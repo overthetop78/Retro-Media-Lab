@@ -80,29 +80,19 @@ internal sealed partial class Sg1000Board
         _cartridgeOrigin = state.CartridgeOrigin;
         for (int chip = 0; chip < 8; chip++) _dram[chip].RestoreState(state.Dram[chip]);
         TimeNanoseconds = state.Time; _nextMasterIndex = state.NextMasterIndex; _masterHigh = state.MasterHigh;
-        // Derived source-clock caches, not a second saved clock or VDP phase.
-        Int128 sourceDate = (Int128)_nextMasterIndex * C.NanosecondsPerSecond;
-        _nextMasterTime = checked((long)(sourceDate / (C.CrystalHertz * 2)));
-        _masterFraction = (long)(sourceDate % (C.CrystalHertz * 2));
         _vdpReleased = state.VdpReleased; _cpuReleased = state.CpuReleased;
         _pressed = state.Pressed; _pause = state.Pause; FramesCompleted = state.Frames;
+        RefreshControllerContacts();
         state.Pixels.CopyTo(_pixels, 0); state.PixelKnown.CopyTo(_pixelKnown, 0);
         _samples.Clear(); _samples.AddRange(state.Samples);
         _audioTime = state.AudioTime; _sampleIndex = state.SampleIndex; _sampleStart = state.SampleStart;
         _sampleArea = state.SampleArea; _previousSample = state.PreviousSample;
         _dcOutput = state.DcOutput; _audioLevel = state.AudioLevel;
-        CacheCpuWires(_cpu.Pins);
         _vramWirePins = _vdp.VramPins; _vramWiresInitialized = true;
-        for (int pin = 0; pin < 8; pin++)
-        {
-            _decodePins[pin] = _decoder.GetOutput(pin);
-            _dramPins[pin] = _dram[pin].Output;
-            CacheDramOutput(pin, _dramPins[pin]);
-            _joyPins[pin] = _joy[pin / 4].GetOutput(pin & 3);
-        }
-        for (int pin = 0; pin < 4; pin++) _gatePins[pin] = _gates.GetOutput(pin);
-        RefreshDeadlines();
-        ResolveCpuData();
-        if (_useClockDomains) ConnectClockDomains();
+        for (int bit = 0; bit < 8; bit++) CacheDramOutput(bit, _dram[bit].Output);
+        RefreshVideoMemoryBoundaries();
+        ConnectRangeBus();
+        ConnectClockDomains();
+        ResolveRangeCpuData();
     }
 }

@@ -15,6 +15,9 @@ public interface ITms9918A
     Tms9918VideoSignal VideoSignal { get; }
     Tms9918VramPins VramPins { get; }
     Action<Tms9918VramSignal>? VramPinsChanged { get; set; }
+    Action<Tms9918VramSignal>? UnrepresentedVramPinsChanged { get; set; }
+    Tms9918VramReadCycleReceiver? VramReadCycleProduced { get; set; }
+    Action<long>? VramReadCycleCancelled { get; set; }
     Action<Tms9918ClockOutput>? CpuClockChanged { get; set; }
     Action<Tms9918ClockOutput>? GromClockChanged { get; set; }
     Action<Tms9918VideoSignal>? VideoSignalProduced { get; set; }

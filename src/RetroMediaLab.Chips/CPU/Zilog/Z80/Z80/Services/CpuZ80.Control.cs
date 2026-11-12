@@ -15,6 +15,7 @@ public sealed partial class CpuZ80
 
     private void SampleControlInputs()
     {
+        _bus.ExchangeControlInputs();
         _control.SampledBusRequest = _control.BusRequested;
         _control.SampledInt = _interrupts.IntAsserted;
         _control.SampledNmi = _interrupts.NmiPending;

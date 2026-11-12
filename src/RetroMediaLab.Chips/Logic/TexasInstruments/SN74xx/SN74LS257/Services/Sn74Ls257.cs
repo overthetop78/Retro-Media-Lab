@@ -1,13 +1,14 @@
 using RetroMediaLab.Chips.Logic.Common.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Chips.Logic.Common.Services;
+using RetroMediaLab.Chips.Logic.Common.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Models;
 
 namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Services;
 
 /// <summary>TI LS257B: four non-inverting 2:1 multiplexers with shared select and output disable.</summary>
-public sealed class Sn74Ls257 : ISn74Ls257
+public sealed class Sn74Ls257 : ISn74Ls257, ICombinationalRangeModel
 {
     private const string Part = "SN74LS257B";
     private readonly CombinationalOutputs _pins = new(4);
@@ -36,11 +37,30 @@ public sealed class Sn74Ls257 : ISn74Ls257
     public void SetInputs(ushort levels, ushort known)
     {
         if (((levels | known) & ~1023) != 0) throw new ArgumentOutOfRangeException(nameof(levels));
-        levels &= known;
-        if (_levels == levels && _known == known) return;
-        ushort targets = Resolve(levels, known);
-        int changed = (_levels ^ levels) | (_known ^ known);
         Span<long> delays = stackalloc long[4];
+        if (!PrepareInputs(levels, known, delays, out ushort targets)) return;
+        _pins.Validate(targets, delays);
+        _levels = (ushort)(levels & known); _known = known;
+        _pins.SetTargets(targets, delays);
+    }
+
+    public LogicOutputRange ExecuteInputRange(in LogicInputRange range) => _pins.ExecuteInputRange(in range, 1023, this);
+
+    bool ICombinationalRangeModel.PrepareRangeInput(in TimedLogicInput input, Span<long> delays, out ushort targets)
+        => PrepareInputs((ushort)input.Levels, (ushort)input.Known, delays, out targets);
+
+    void ICombinationalRangeModel.CommitRangeInput(in TimedLogicInput input)
+    {
+        _levels = (ushort)(input.Levels & input.Known); _known = (ushort)input.Known;
+    }
+
+    private bool PrepareInputs(ushort levels, ushort known, Span<long> delays, out ushort targets)
+    {
+        levels &= known;
+        targets = default;
+        if (_levels == levels && _known == known) return false;
+        targets = Resolve(levels, known);
+        int changed = (_levels ^ levels) | (_known ^ known);
         for (int output = 0; output < 4; output++)
         {
             var target = (LogicPinState)((targets >> (output * 2)) & 3);
@@ -61,9 +81,7 @@ public sealed class Sn74Ls257 : ISn74Ls257
             }
             delays[output] = delay;
         }
-        _pins.Validate(targets, delays);
-        _levels = levels; _known = known;
-        _pins.SetTargets(targets, delays);
+        return true;
     }
     private long Pair(int offset, LogicPinState target) => target == LogicPinState.High ? _timing[offset]
         : target == LogicPinState.Low ? _timing[offset + 1] : Math.Max(_timing[offset], _timing[offset + 1]);

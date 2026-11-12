@@ -37,23 +37,7 @@ public sealed partial class CpuZ80
         {
             while (consumed < int.MaxValue && _clockInput.NextTime < _clockSourceBoundary)
             {
-                int stable = _internalClocksRemaining >= 3 ? StableInternalEdges(int.MaxValue - consumed) : 0;
-                if (stable >= 4)
-                {
-                    stable = Math.Min(stable, _clockInput.EdgesBefore(_clockSourceBoundary));
-                    if (stable >= 4)
-                    {
-                        int rising = (stable + (_clockInput.NextHigh ? 1 : 0)) / 2;
-                        long last = _clockInput.TimeAfterEdges(stable - 1);
-                        int lastRisingOffset = (_clockInput.NextHigh ? 0 : 1) + 2 * (rising - 1);
-                        long lastRising = _clockInput.TimeAfterEdges(lastRisingOffset);
-                        _bus.AdvanceStableClockEdges(_clockInput.NextTime, last, lastRising, stable);
-                        _internalClocksRemaining -= rising;
-                        _clockInput.Advance(stable);
-                        consumed += stable;
-                        continue;
-                    }
-                }
+                if (AdvanceStableInternalPrefix(_clockSourceBoundary, ref consumed)) continue;
                 if (!_bus.AdvanceTo(_clockInput.NextTime)) break;
                 _insideClock = true;
                 try { ApplyClockEdge(_clockInput.NextHigh); }
@@ -70,8 +54,28 @@ public sealed partial class CpuZ80
         }
     }
 
+    private bool AdvanceStableInternalPrefix(long boundaryExclusive, ref int consumed)
+    {
+        if (_internalClocksRemaining < 3) return false;
+        int stable = StableInternalEdges(int.MaxValue - consumed);
+        if (stable < 4) return false;
+        stable = Math.Min(stable, _clockInput.EdgesBefore(boundaryExclusive));
+        if (stable < 4) return false;
+        int rising = (stable + (_clockInput.NextHigh ? 1 : 0)) / 2;
+        long last = _clockInput.TimeAfterEdges(stable - 1);
+        int lastRisingOffset = (_clockInput.NextHigh ? 0 : 1) + 2 * (rising - 1);
+        long lastRising = _clockInput.TimeAfterEdges(lastRisingOffset);
+        _bus.AdvanceStableClockEdges(_clockInput.NextTime, last, lastRising, stable);
+        _internalClocksRemaining -= rising;
+        _clockInput.Advance(stable);
+        consumed += stable;
+        return true;
+    }
+
     public void LimitClockSourceBefore(long boundaryExclusive)
     {
+        if (_bus.IsCapturingRange)
+            throw new InvalidOperationException("A bus range must exchange replies at its input fences, not shorten a scalar execution boundary.");
         if (!_drivingClockSource) return;
         ArgumentOutOfRangeException.ThrowIfLessThan(boundaryExclusive, TimeNanoseconds);
         if (boundaryExclusive >= _clockSourceBoundary) return;

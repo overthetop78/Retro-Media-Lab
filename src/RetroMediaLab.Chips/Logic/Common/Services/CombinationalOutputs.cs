@@ -1,33 +1,44 @@
+using System.Numerics;
 using RetroMediaLab.Chips.Logic.Common.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Enums;
+using RetroMediaLab.Chips.Logic.Common.Interfaces;
 
 namespace RetroMediaLab.Chips.Logic.Common.Services;
 
 /// <summary>Local propagation storage, owned by one package. No global clock or shared state.</summary>
 internal sealed class CombinationalOutputs(int count)
 {
-    private readonly long?[] _due = new long?[count];
+    private readonly long[] _due = new long[count];
+    private readonly ushort _outputMask = (ushort)((1u << (count * 2)) - 1);
     private ushort _outputs, _targets;
-    private long? _next, _announced;
-    private bool _publishing;
+    private uint _pending;
+    // The pending mask distinguishes absence from a real long.MaxValue date.
+    private long _next = long.MaxValue;
+    private long? _announced;
+    private bool _publishing, _executingRange;
+    private TimedLogicOutput[]? _rangeOutput;
     public long Time { get; private set; }
-    public long? Next => _next;
+    public long? Next => _pending == 0 ? null : _next;
     public Action<int, LogicPinState>? Changed { get; set; }
     public Action<long?>? DeadlineChanged { get; set; }
+
     public LogicPinState Get(int pin)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)pin, (uint)count);
         return (LogicPinState)((_outputs >> (pin * 2)) & 3);
     }
 
-    /// <summary>Validate every date before changing any pin; callers commit inputs after this preflight.</summary>
+    /// <summary>Preflight every affected date before the package commits inputs.</summary>
     public void Validate(ushort targets, ReadOnlySpan<long> delays)
     {
         if (delays.Length != count) throw new ArgumentException(nameof(delays));
-        for (int pin = 0; pin < count; pin++)
+        uint changed = (uint)((targets ^ _targets) & _outputMask);
+        while (changed != 0)
         {
-            int shift = pin * 2;
-            if (((targets ^ _targets) & (3 << shift)) == 0 || ((targets ^ _outputs) & (3 << shift)) == 0) continue;
+            int pin = BitOperations.TrailingZeroCount(changed) >> 1;
+            uint mask = 3u << (pin * 2);
+            changed &= ~mask;
+            if (((targets ^ _outputs) & mask) == 0) continue;
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(delays[pin]);
             _ = checked(Time + delays[pin]);
         }
@@ -35,16 +46,34 @@ internal sealed class CombinationalOutputs(int count)
 
     public void SetTargets(ushort targets, ReadOnlySpan<long> delays)
     {
-        ushort changed = (ushort)(targets ^ _targets);
+        uint changed = (uint)(targets ^ _targets);
         if (changed == 0) return;
         _targets = targets;
-        for (int pin = 0; pin < count; pin++)
+        changed &= _outputMask;
+        long earliest = _next;
+        bool displacedMinimum = false;
+        while (changed != 0)
         {
-            int mask = 3 << (pin * 2);
-            if ((changed & mask) == 0) continue;
-            _due[pin] = ((_targets ^ _outputs) & mask) == 0 ? null : Time + delays[pin];
+            int pin = BitOperations.TrailingZeroCount(changed) >> 1;
+            uint mask = 3u << (pin * 2), bit = 1u << pin;
+            changed &= ~mask;
+            if ((_pending & bit) != 0 && _due[pin] == _next) displacedMinimum = true;
+            if (((_targets ^ _outputs) & mask) == 0)
+            {
+                _pending &= ~bit;
+                _due[pin] = 0;
+            }
+            else
+            {
+                long due = Time + delays[pin];
+                _due[pin] = due;
+                _pending |= bit;
+                if (due < earliest) earliest = due;
+            }
         }
-        FindNext();
+        if (_pending == 0) _next = long.MaxValue;
+        else if (displacedMinimum) FindNext();
+        else _next = earliest;
         PublishDeadline();
     }
 
@@ -56,54 +85,133 @@ internal sealed class CombinationalOutputs(int count)
             if (time != Time) throw new InvalidOperationException("Cannot advance logic from a pin callback.");
             return;
         }
-        while (_next is { } next && next <= time)
+        while (_pending != 0 && _next <= time)
         {
-            Time = next;
-            byte changed = 0;
-            for (int pin = 0; pin < count; pin++)
-            {
-                if (_due[pin] != next) continue;
-                _due[pin] = null;
-                int mask = 3 << (pin * 2);
-                if (((_outputs ^ _targets) & mask) == 0) continue;
-                _outputs = (ushort)((_outputs & ~mask) | (_targets & mask));
-                changed |= (byte)(1 << pin);
-            }
-            FindNext();
+            uint changed = ResolveOutputsAt(_next);
             _publishing = true;
             try
             {
-                for (int pin = 0; pin < count; pin++)
-                    if ((changed & (1 << pin)) != 0) Changed?.Invoke(pin, Get(pin));
+                // Resolve all simultaneous pins first, then preserve their
+                // ascending publication order and dynamic observer changes.
+                while (changed != 0)
+                {
+                    int pin = BitOperations.TrailingZeroCount(changed);
+                    changed &= changed - 1;
+                    Changed?.Invoke(pin, (LogicPinState)((_outputs >> (pin * 2)) & 3));
+                }
             }
             finally { _publishing = false; PublishDeadline(); }
         }
         Time = time;
     }
 
+    private byte ResolveOutputsAt(long next)
+    {
+        Time = next;
+        byte changed = 0;
+        long following = long.MaxValue;
+        uint pending = _pending;
+        while (pending != 0)
+        {
+            int pin = BitOperations.TrailingZeroCount(pending);
+            uint bit = 1u << pin;
+            pending &= pending - 1;
+            long due = _due[pin];
+            if (due != next)
+            {
+                if (due < following) following = due;
+                continue;
+            }
+            _due[pin] = 0; _pending &= ~bit;
+            int mask = 3 << (pin * 2);
+            if (((_outputs ^ _targets) & mask) == 0) continue;
+            _outputs = (ushort)((_outputs & ~mask) | (_targets & mask));
+            changed |= (byte)bit;
+        }
+        _next = following;
+        return changed;
+    }
+
+    internal LogicOutputRange ExecuteInputRange(in LogicInputRange range, ulong inputMask,
+        ICombinationalRangeModel model)
+    {
+        range.Validate(Time, inputMask);
+        if (_publishing || _executingRange)
+            throw new InvalidOperationException("Cannot recursively execute a logic input range.");
+        if (Changed is not null || DeadlineChanged is not null)
+            throw new InvalidOperationException("Scalar observers require explicit input delivery, rather than a guaranteed range.");
+        _rangeOutput ??= new TimedLogicOutput[(LogicInputRange.MaximumChanges + 1) * count];
+        long start = Time;
+        ushort initial = _outputs;
+        int inputIndex = 0, outputCount = 0;
+        Span<long> delays = stackalloc long[count];
+        _executingRange = true;
+        try
+        {
+            while (true)
+            {
+                bool hasInput = inputIndex < range.Changes.Length;
+                long inputTime = hasInput ? range.Changes[inputIndex].TimeNanoseconds : range.KnownUntilNanoseconds;
+                if (_pending != 0 && _next <= inputTime)
+                {
+                    long due = _next;
+                    byte changed = ResolveOutputsAt(due);
+                    if (changed != 0) _rangeOutput[outputCount++] = new(due, _outputs, changed);
+                    continue;
+                }
+                if (!hasInput) break;
+                ref readonly var input = ref range.Changes[inputIndex++];
+                Time = input.TimeNanoseconds;
+                if (!model.PrepareRangeInput(in input, delays, out ushort targets)) continue;
+                Validate(targets, delays);
+                model.CommitRangeInput(in input);
+                SetTargets(targets, delays);
+            }
+            Time = range.KnownUntilNanoseconds;
+            return new(start, Time, initial, _rangeOutput.AsSpan(0, outputCount), Next);
+        }
+        finally { _announced = Next; _executingRange = false; }
+    }
+
     private void FindNext()
     {
-        _next = null;
-        for (int pin = 0; pin < count; pin++)
-            if (_due[pin] is { } due && (_next is null || due < _next)) _next = due;
+        long next = long.MaxValue;
+        uint pending = _pending;
+        while (pending != 0)
+        {
+            int pin = BitOperations.TrailingZeroCount(pending);
+            pending &= pending - 1;
+            if (_due[pin] < next) next = _due[pin];
+        }
+        _next = next;
     }
 
     private void PublishDeadline()
     {
-        if (_publishing) return;
-        while (_announced != _next)
+        if (_publishing || _executingRange) return;
+        long? next = Next;
+        while (_announced != next)
         {
-            _announced = _next;
+            _announced = next;
             _publishing = true;
-            try { DeadlineChanged?.Invoke(_next); }
+            try { DeadlineChanged?.Invoke(next); }
             finally { _publishing = false; }
+            next = Next;
         }
     }
 
     public CombinationalState Capture(string part, ulong levels, ulong known, long[] timing)
     {
         if (_publishing) throw new InvalidOperationException("Cannot snapshot a partial pin publication.");
-        return new(1, part, Time, levels, known, _outputs, _targets, (long?[])_due.Clone(), (long[])timing.Clone());
+        var due = new long?[count];
+        uint pending = _pending;
+        while (pending != 0)
+        {
+            int pin = BitOperations.TrailingZeroCount(pending);
+            pending &= pending - 1;
+            due[pin] = _due[pin];
+        }
+        return new(1, part, Time, levels, known, _outputs, _targets, due, (long[])timing.Clone());
     }
 
     public void ValidateRestore(CombinationalState state, string part, ulong inputMask, ushort targets, long[] timing)
@@ -127,10 +235,13 @@ internal sealed class CombinationalOutputs(int count)
     public void Restore(CombinationalState state)
     {
         Time = state.TimeNanoseconds;
-        _outputs = state.Outputs;
-        _targets = state.Targets;
-        state.DueNanoseconds.CopyTo(_due, 0);
+        _outputs = state.Outputs; _targets = state.Targets; _pending = 0;
+        for (int pin = 0; pin < count; pin++)
+        {
+            _due[pin] = state.DueNanoseconds[pin].GetValueOrDefault();
+            if (state.DueNanoseconds[pin].HasValue) _pending |= 1u << pin;
+        }
         FindNext();
-        _announced = _next;
+        _announced = Next;
     }
 }

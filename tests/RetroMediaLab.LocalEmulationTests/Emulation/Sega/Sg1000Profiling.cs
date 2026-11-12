@@ -23,7 +23,11 @@ internal static class Sg1000Profiling
         double ProcessCpuMs, long AllocatedBytes, double GcPauseMs, int Gc0, int Gc1, int Gc2,
         ushort Pc, long Instructions, long CpuClocks, long MasterHalfEdges, int KnownPixels,
         int ColourMask, bool VdpQualified, bool CpuFaulted, bool IntAsserted, bool NmiPending,
-        int AudioFrames, int AudioPeak, int NonzeroSamples, string VideoHash, string PcmHash);
+        int AudioFrames, int AudioPeak, int NonzeroSamples, string VideoHash, string PcmHash,
+        long BusRangeDeliveries = 0, long CpuOutputWords = 0, long LogicInputWords = 0, long MemoryInputWords = 0,
+        long VramReadWaveDeliveries = 0, long DramExplicitPinDeliveries = 0, long VideoSynchronizationCalls = 0,
+        long NativeVideoSamples = 0, long CpuBusResolutions = 0, long HeldWaitSamples = 0, long HeldControlSamples = 0,
+        long DirectCauseVisits = 0, long GateCauseVisits = 0, long GateSkippedCpuWords = 0, long MemoryResponseRecordsOmitted = 0);
     internal sealed record Statistics(double MedianMs, double MeanMs, double P95Ms, double MinMs,
         double MaxMs, double HostFps, double NominalPercent, long AllocatedBytes, double GcPauseMs);
     internal sealed record Cost(string Name, double OwnMs, double InclusiveMs, double OwnPercent, double InclusivePercent);
@@ -35,10 +39,11 @@ internal static class Sg1000Profiling
         bool JitOptimizationsDisabled, Statistics Statistics, FrameRow[] Frames, string StateHash,
         string FinalVideoHash, string AudioHash, CpuProfile? Cpu, OutputInfo Output);
     internal sealed record Comparison(string PreviousReport, double PreviousMedianMs, double CurrentMedianMs,
-        double TimeReductionPercent, bool FinalStateEqual, bool VideoEqual, bool AudioEqual);
+        double TimeReductionPercent, bool FinalStateEqual, bool VideoEqual, bool AudioEqual,
+        int ComparedFrames = 0, bool EveryFrameEqual = false);
     internal sealed record Result(string Rom, long Bytes, string Sha256, string Layout, int FrameCount,
         int WarmupFrames, string Runtime, string Status, string Directory, Pass[] Passes,
-        Comparison? Comparison, string? Error, string Host = "", int ScenarioVersion = 1);
+        Comparison? Comparison, string? Error, string Host = "", int ScenarioVersion = 1, string Execution = "Reference");
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNameCaseInsensitive = true };
 
     internal static async Task<Result[]> RunRequestedAsync(string requestPath, Action<string>? log = null)
@@ -73,8 +78,13 @@ internal static class Sg1000Profiling
             var result = new Result(game, rom.Length, hash, layout, request.Frames, request.WarmupFrames,
                 System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
                 error is null ? "Completed" : "Failed", directory, passes.ToArray(), null, error,
-                Environment.MachineName + "/" + Environment.ProcessorCount + "/" + System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+                Environment.MachineName + "/" + Environment.ProcessorCount + "/" + System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture,
+                Execution: "ReceivedSignalRanges");
             result = result with { Comparison = FindComparison(request, result, gameDirectory) };
+            if (result.Comparison is { } compared && (!compared.FinalStateEqual || !compared.VideoEqual
+                || !compared.AudioEqual || !compared.EveryFrameEqual))
+                result = result with { Status = "Failed", Error = "Current hardware observations differ from the retained reference: "
+                    + $"state={compared.FinalStateEqual}, video={compared.VideoEqual}, PCM={compared.AudioEqual}, every frame={compared.EveryFrameEqual}." };
             await File.WriteAllTextAsync(Path.Combine(directory, "report.json"), JsonSerializer.Serialize(result, Json)).ConfigureAwait(false);
             await File.WriteAllTextAsync(Path.Combine(directory, "report.md"), Markdown(result)).ConfigureAwait(false);
             results.Add(result);
@@ -140,7 +150,11 @@ internal static class Sg1000Profiling
                         cpuMs, bytes, pauseMs, c0, c1, c2, board.Cpu.Registers.PC, board.Cpu.InstructionsCompleted,
                         board.Cpu.InputClockCount, board.Vdp.ClockState.HalfEdges, known, colours,
                         board.Vdp.IsCpuInterfaceQualified, board.Cpu.IsFaulted, interrupts.IntAsserted, interrupts.NmiPending,
-                        sample.Frames, sample.Peak, sample.Nonzero, Hash(core.LatestVideoFrame!.Pixels.Span), sample.Hash);
+                        sample.Frames, sample.Peak, sample.Nonzero, Hash(core.LatestVideoFrame!.Pixels.Span), sample.Hash,
+                        board.BusRangeDeliveries, board.CpuOutputWords, board.LogicInputWords, board.MemoryInputWords,
+                        board.VramReadWaveDeliveries, board.DramExplicitPinDeliveries, board.VideoSynchronizationCalls, board.NativeVideoSamples,
+                        board.CpuBusResolutions, board.Cpu.BusRangeStatistics.HeldWaitSamples, board.Cpu.BusRangeStatistics.HeldControlSamples,
+                        board.DirectCauseVisits, board.GateCauseVisits, board.GateSkippedCpuWords, board.MemoryResponseRecordsOmitted);
                     rows.Add(row); progress.WriteLine(JsonSerializer.Serialize(row)); progress.Flush();
                     if (frame % 15 == 0) log?.Invoke($"{kind}: frame {frame + 1}/{request.Frames}, {row.WallMs:F2}ms, PC={row.Pc:X4}, alloc={bytes}, GC={pauseMs:F3}ms");
                     if (board.Cpu.IsFaulted) throw new InvalidOperationException($"CPU fault at frame{frame},PC={row.Pc:X4}.");
@@ -243,13 +257,27 @@ internal static class Sg1000Profiling
             total == 0 ? 0 : own.GetValueOrDefault(name) / total * 100, total == 0 ? 0 : inclusive.GetValueOrDefault(name) / total * 100)).OrderByDescending(cost => cost.OwnMs).ToArray();
         return new(total, blocked, methods, groups);
     }
-    private static string Group(string name) => name.Contains("Chips.CPU.", StringComparison.Ordinal) ? "CPU"
-        : name.Contains("Chips.Video.", StringComparison.Ordinal) ? "VDP"
-        : name.Contains("Chips.Memory.", StringComparison.Ordinal) ? "Memory"
-        : name.Contains("Chips.Audio.", StringComparison.Ordinal) ? "PSG"
-        : name.Contains("Chips.Logic.", StringComparison.Ordinal) ? "Logic"
-        : name.Contains("Sg1000Board", StringComparison.Ordinal) ? "Wiring"
-        : name.Contains("EmulatorCore", StringComparison.Ordinal) ? "NativeBackend" : "RuntimeAndOther";
+    private static string Group(string name)
+    {
+        int signature = name.IndexOf('(');
+        string owner = signature < 0 ? name : name[..signature];
+        return owner.Contains("Chips.CPU.", StringComparison.Ordinal) ? "CPU"
+            : owner.Contains("Chips.Video.", StringComparison.Ordinal) ? "VDP"
+            : owner.Contains("Chips.Memory.", StringComparison.Ordinal) ? "Memory"
+            : owner.Contains("Chips.Audio.", StringComparison.Ordinal) ? "PSG"
+            : owner.Contains("Chips.Logic.", StringComparison.Ordinal) ? "Logic"
+            : owner.Contains("Sg1000Board", StringComparison.Ordinal) ? "Wiring"
+            : owner.Contains("EmulatorCore", StringComparison.Ordinal) ? "NativeBackend" : "RuntimeAndOther";
+    }
+
+    private static bool SameNativeFrame(FrameRow a, FrameRow b)
+        => a.Frame == b.Frame && a.Phase == b.Phase && a.MachineNanoseconds == b.MachineNanoseconds
+            && a.Pc == b.Pc && a.Instructions == b.Instructions && a.CpuClocks == b.CpuClocks
+            && a.MasterHalfEdges == b.MasterHalfEdges && a.KnownPixels == b.KnownPixels
+            && a.ColourMask == b.ColourMask && a.VdpQualified == b.VdpQualified && a.CpuFaulted == b.CpuFaulted
+            && a.IntAsserted == b.IntAsserted && a.NmiPending == b.NmiPending
+            && a.AudioFrames == b.AudioFrames && a.AudioPeak == b.AudioPeak && a.NonzeroSamples == b.NonzeroSamples
+            && a.VideoHash == b.VideoHash && a.PcmHash == b.PcmHash;
 
     private static Comparison? FindComparison(Request request, Result current, string gameDirectory)
     {
@@ -262,12 +290,15 @@ internal static class Sg1000Profiling
             Result? previous = JsonSerializer.Deserialize<Result>(File.ReadAllText(path), Json);
             Pass? before = previous?.Passes.FirstOrDefault(pass => pass.Kind == "Measure");
             if (before is null || previous!.Error is not null || previous.Sha256 != current.Sha256
+                || string.IsNullOrEmpty(request.CompareTo) && previous.Execution != "Reference"
                 || previous.Layout != current.Layout || previous.FrameCount != current.FrameCount || previous.WarmupFrames != current.WarmupFrames
                 || previous.Host != current.Host || previous.Runtime != current.Runtime || previous.ScenarioVersion != current.ScenarioVersion
                 || before.JitOptimizationsDisabled != measured.JitOptimizationsDisabled) continue;
             return new(path, before.Statistics.MedianMs, measured.Statistics.MedianMs,
                 100 * (1 - measured.Statistics.MedianMs / before.Statistics.MedianMs),
-                measured.StateHash == before.StateHash, measured.FinalVideoHash == before.FinalVideoHash, measured.AudioHash == before.AudioHash);
+                measured.StateHash == before.StateHash, measured.FinalVideoHash == before.FinalVideoHash, measured.AudioHash == before.AudioHash,
+                measured.Frames.Length, measured.Frames.Length == before.Frames.Length
+                    && measured.Frames.Zip(before.Frames).All(pair => SameNativeFrame(pair.First, pair.Second)));
         }
         return null;
     }
@@ -283,6 +314,11 @@ internal static class Sg1000Profiling
             var s = pass.Statistics;
             text.AppendLine(FormattableString.Invariant($"| {pass.Kind} | {s.MedianMs:F3} | {s.MeanMs:F3} | {s.P95Ms:F3} | {s.HostFps:F3} | {s.NominalPercent:F3} | {s.AllocatedBytes} | {s.GcPauseMs:F3} |"));
             text.AppendLine($"\n{pass.Kind}: JIT optimizations disabled={pass.JitOptimizationsDisabled}; core SHA256 `{pass.CoreSha256}`.\n");
+            if (pass.Frames.LastOrDefault() is { } counts)
+            {
+                text.AppendLine($"Cumulative counts, including warmup: CPU fences={counts.BusRangeDeliveries}; CPU words={counts.CpuOutputWords}; logic inputs={counts.LogicInputWords}; memory inputs={counts.MemoryInputWords}; VRAM read forms={counts.VramReadWaveDeliveries}; explicit DRAM pin deliveries={counts.DramExplicitPinDeliveries}; video synchronizations={counts.VideoSynchronizationCalls}; native samples={counts.NativeVideoSamples}.\n");
+                text.AppendLine($"Cumulative software work: bus resolutions={counts.CpuBusResolutions}; held WAIT/control samples={counts.HeldWaitSamples}/{counts.HeldControlSamples}; direct/gate cause visits={counts.DirectCauseVisits}/{counts.GateCauseVisits}; skipped CPU words inspected by the gate filter={counts.GateSkippedCpuWords}; omitted memory response records={counts.MemoryResponseRecordsOmitted}. The filter inspections are work, not eliminated operations.\n");
+            }
             foreach (var group in pass.Frames.GroupBy(row => row.Phase))
                 text.AppendLine(FormattableString.Invariant($"- {group.Key}: {group.Count()} frames, mean {group.Average(row => row.WallMs):F3}ms, CPU {group.Average(row => row.ProcessCpuMs):F3}ms/frame."));
             if (pass.Cpu is { } cpu)

@@ -102,3 +102,255 @@ Chaque état final complet et chacune des 36 lignes d'images/PCM/compteurs maté
 Vérification finale du code conservé : **70 contrôles composants Debug (3 s) et Release (2 s), 14 contrôles machine Debug (8 s) et Release (4 s), zéro échec/ignoré**. Captures `20261112-retained-ranges-{debug,release}.trx` sous TestsChips/Sega/SG-1000 et `20261112-retained-ranges-machine-{debug,release}.trx` sous TestsMachines/Sega/SG1000. Les tests ajoutés restent autonomes, les ROM locales ne sont lues que par le lanceur de LocalEmulationTests, aucune image utilisateur n'est modifiée, aucun périphérique commandé et aucune fenêtre RML ouverte.
 
 Le résultat reste à **4,91–5,27 % du nominal Debug** ; la machine et son optimisation ne sont pas déclarées terminées. Champion Tennis, profil final : VDP 26,09 %, mémoires 24,54 %, logique 18,72 %, CPU 14,62 %, câblage 13,64 % du temps propre. Principaux postes propres : ReceiveLevels DRAM 8,14 %, OnVramPins 5,25 %, avance de plage VDP 4,06 %, OnCpuPins 2,84 %, avance logique 2,84 %. Ces groupes incluent aussi les mécanismes de propagation internes à chaque composant ; les seuls appels de carte n'expliquent pas tous les coûts. Les inclusifs ne s'additionnent pas. Il faut maintenant réduire le coût des transactions complètes et de leur représentation, tout en conservant les mêmes effets et dates, plutôt que déplacer simplement la boucle des huit destinataires.
+
+## Proposition de remplacement global de l'exécution — 12 novembre 2026
+
+Statut : conception proposée après l'arrêt explicite de l'approche incrémentale. Les contrats et noyaux sont écrits ; un premier raccordement CPU–bus expérimental a été comparé puis profilé. Il est régressif et reste désactivé par défaut. La refonte globale n'est pas achevée et aucun gain n'est attribué à ce candidat ; résultats ci-dessous. Elle remplace la poursuite des petites optimisations de l'architecture a15240c11 ; elle ne consiste pas à renommer AdvanceDomains ni à envelopper ses boucles dans une autre méthode.
+
+### Diagnostic architectural et périmètre
+
+Le profil complet de la version conservée attribue, pour Champion Tennis, 26,09 % du temps propre au VDP, 24,54 % aux mémoires, 18,72 % à la logique, 14,62 % au CPU et 13,64 % au câblage. Les coûts de transport et de progression sont présents dans ces différents groupes ; le seul groupe câblage ne mesure donc pas toute l'orchestration. Ces chiffres ne prouvent pas à eux seuls la fraction qui pourra être éliminée.
+
+Le choix remis en cause est la représentation d'une interaction matérielle par une succession d'appels publics unitaires, avec avancement temporel, décodage, propagation et notification répétés à chaque frontière. Le CPU dispose de plans de cycles Z80BusStep, mais son trajet normal avance encore majoritairement par demi-front. Le VDP conserve des passages par pixel et par phase VRAM. La carte participe encore à de nombreuses propagations locales au travers de ses échéances et callbacks. Mettre ces appels en cache ou déplacer une boucle ne change pas cette unité de travail.
+
+L'unité nouvelle est une transaction électrique datée, ou une plage de signal dont tous les effets sont établis. Elle décrit les broches, pilotes, valeurs/masques connus, fronts, instants d'échantillonnage et validité temporelle. Les valeurs électriquement inconnues restent représentées par leurs masques ; elles ne forcent pas un arrêt lorsque leur propagation est définie par le modèle. Une description peut être partielle : WAIT, une lecture non résolue, un changement asynchrone ou une dépendance temporelle non résolue arrêtent l'exécution au point nécessaire. Aucun résultat futur n'est deviné.
+
+### Schéma cible — montage NTSC actuellement réalisé
+
+```mermaid
+flowchart TB
+    RML["RML : demander la prochaine image native"] --> FRAME["Entrée du circuit<br/>objectif de progression, aucun agenda global"]
+    Q["Quartz matériel"] --> VDP["VDP<br/>modèle et état conservés<br/>exécuteur par transactions VRAM et portions de balayage"]
+    VDP -->|"CPUCLK réel décrit avec sa phase"| CPU["Z80 / profil NEC<br/>modèle et état conservés<br/>exécuteur des plans de cycles"]
+    VDP -->|"même CPUCLK matériel"| PSG["PSG<br/>compteurs et état conservés<br/>exécuteur par plages"]
+    FRAME -->|"demander une progression bornée"| CPU
+    VDP -->|"frontière native d'image"| FRAME
+    CPU -->|"cycles de bus datés, éventuellement partiels"| BUS["Câblage pré-résolu<br/>ports temporels et résolution des pilotes<br/>aucun état de puce déplacé ici"]
+    BUS --> TTL["139 / 32 / 257<br/>logique et délais conservés<br/>consommation de séquences d'entrée"]
+    TTL --> MEM["ROM / SRAM<br/>modèles et profils conservés<br/>transactions et réponses datées"]
+    MEM -->|"signaux de données reçus"| BUS
+    BUS -->|"échantillonnage des entrées mémorisées"| CPU
+    TTL -->|"E/S sélectionnées, fronts et délais réels"| VDP
+    TTL -->|"commandes datées"| PSG
+    PAD["Manettes : niveaux des contacts"] --> TTL
+    VDP -->|"séquences RAS / CAS / WE / adresses"| VRAM["8 MB8118<br/>8 états et mémoires propres<br/>consommation locale de séquences datées"]
+    VRAM -->|"réponses des huit pilotes avec leurs dates"| VDP
+    VDP -->|"IRQ datée"| CPU
+    PSG -->|"READY / WAIT daté"| CPU
+    VDP --> VIDEO["Vidéo native<br/>pixels, qualifications et synchronisations"]
+    PSG --> AUDIO["Audio natif daté"]
+    VIDEO --> RML
+    AUDIO --> RML
+```
+
+Les flèches représentent les liaisons et échanges temporels, pas une nouvelle horloge par domaine. Le VDP conserve ses diviseurs et fournit réellement CPUCLK dans ce montage. La demande d'image ne fixe pas la cadence du CPU. Le câblage résout les fils, leurs pilotes et leurs connexions ; il n'exécute pas les fonctions internes des puces et ne possède pas de file globale d'événements.
+
+### Ce qui est supprimé, remplacé ou conservé
+
+| Mécanisme actuel | Architecture proposée | Effet recherché |
+| --- | --- | --- |
+| Boucle normale AdvanceDomains, tableau global de 19 échéances et réveils de la carte pour les propagations locales | Progression causale entre ports ; chaque puce exécute localement jusqu'à une entrée/observation requise, avec une garantie explicite de validité des signaux reçus | Retirer le passage de toutes ces phases dans un pilote commun ; ne pas recréer ce même agenda ailleurs |
+| Avance normale du CPU demi-front par demi-front, publication des changements de broches phase par phase | Exécuteur des plans canoniques de cycles, production de séquences de bus jusqu'au prochain échantillonnage ou arrêt matériel | Amortir les couches d'appel sur un cycle/prefixe exact, pas sur chaque demi-front ; pas de second décodeur ni de CPU spécialisé SG-1000 |
+| Cascade PinsChanged / AdvanceTo / NextEventChanged sur les chemins rapides | Ports recevant des séquences de niveaux/pilotes et leurs dates ; les sorties sont reçues et mémorisées avant l'échantillonnage | Retirer les aller-retours et recalculs génériques pour une forme déjà décrite ; garder un parcours explicite pour les interactions non regroupables |
+| Livraison de chaque phase VRAM séparément à chacune des huit DRAM | Description de la séquence électrique ; chaque DRAM consomme son préfixe et produit ses réponses depuis son état propre | Amortir le transport d'un cycle complet ; ne pas simplement déplacer la boucle de huit appels. Préserver RAS/CAS/WE, rétention, refresh, DIN et toutes les latences individuelles |
+| Produit un pixel puis retraverse les couches d'exécution, sprites, mémoire et notifications | Exécuteur de portions de balayage, avec les opérations canoniques de fetch, latch et sérialisation, et une représentation native des plages constantes et des pixels variables | Éviter le coût de tout le chemin de coordination pour chacun des 89 604 points d'une image native ; conserver chaque valeur et sa date, y compris hors zone visible |
+| Domaines indépendants appelés pour retrouver une réponse ou une frontière déjà connue | Contrats temporels envoyés par les sources et arrêt avant leur fin de validité | Avancer CPU, vidéo et son indépendamment tant qu'aucune interaction physique ne l'interdit ; aucun accès direct du CPU à un tableau de mémoire |
+| Registres, ALU, décodeurs d'instructions, profils matériels, cellules mémoires, contraintes électriques et règles d'IRQ/reset | Conservés, avec un seul état canonique propriétaire dans chaque puce | Changer l'exécution et le transport, pas les modèles physiques, les fonctionnalités ou les variantes |
+| Trajet par fronts explicites et banc de comparaison | Conservés comme référence de vérification et repli exact lorsque nécessaire | Comparer aux mêmes opérations matérielles sans doubler les modèles ni garder ce trajet comme coût systématique du mode normal |
+
+### Règles d'exécution causale
+
+1. Une sortie décrit ce qu'elle garantit jusqu'à une date, avec ses transitions exactes et ses pilotes/masques connus. Cette validité est déterminée par le composant producteur et ses entrées, jamais par une prédiction de logiciel invité.
+2. Le destinataire consomme cette description dans son exécuteur local et échantillonne ses entrées mémorisées aux phases de son propre modèle. Il ne rappelle pas un fournisseur pour obtenir directement un octet de mémoire.
+3. Une lecture mémoire traverse toujours le décodage, les délais des circuits, la sélection de la ROM/SRAM et la résolution du bus. Une lecture VRAM traverse toujours les huit DRAM et leurs fonctions. Une transaction structurée ne contourne pas ces composants.
+4. Une dépendance non résolue, WAIT, une nouvelle commande, une entrée asynchrone ou une observation nécessaire termine le préfixe au premier instant concerné. Avant d'appliquer une nouvelle cause, les effets antérieurs sont matérialisés puis la partie future devenue invalide est abandonnée. Aucune avance au-delà d'une garantie reçue, aucune correction rétroactive ni rollback spéculatif.
+5. Les échéances internes restent dans les composants. La carte ne réunit plus leurs événements dans une boucle globale ; les sources fournissent les informations de validité aux destinataires raccordés. Une dépendance non résolue conduit à une livraison exacte, pas à une recherche répétée des sorties.
+6. Les événements à la même date conservent leurs captures, priorités et ordre causal. Plusieurs fils ne sont regroupés en une résolution commune que si aucun échantillonnage ni retour de câblage ne peut distinguer les étapes ; sinon la séquence les représente explicitement.
+7. Une observation de broche, de registre ou d'état à une date intermédiaire matérialise le préfixe nécessaire. Les frontières d'interruption, collisions/débordements, RAMLOAD, refresh, contentions et phases de bus ne sont pas déplacées aux fins de ligne ou d'instruction.
+
+### Exemple d'une lecture CPU et d'une portion vidéo
+
+Pour une lecture CPU, le plan de cycle fournit les sorties d'adresse/contrôle et les phases d'échantillonnage depuis CPUCLK. Les composants de logique consomment cette séquence selon leurs délais et transmettent leurs sélections. La mémoire consomme ses vrais niveaux CE/OE, capture ou suit l'adresse selon son profil, puis fournit la forme de sa sortie. Le port de données du CPU échantillonne le bus résolu. Si WAIT impose un arrêt, seul le préfixe réellement déterminé est exécuté et la reprise conserve la phase restante.
+
+Pour la vidéo, le VDP conserve son calendrier de fetch et ses registres. Son exécuteur traite des portions déterminées du balayage ; les cycles VRAM sont transportés comme séquences vers les huit mémoires. Les réponses alimentent les mêmes latches et pipelines. Les pixels constants peuvent être représentés par une plage datée, les pixels variables par leurs valeurs natives ; un adaptateur de vérification peut reconstruire chaque échantillon. Les collisions et autres effets internes sont appliqués à leur position/date exacte. Une écriture CPU ou une entrée de contrôle arrête la portion avant son effet ; un bloc n'est jamais une ligne indivisible qui retarderait une écriture ou une interruption.
+
+### Lots cohérents et critère de réussite
+
+Le premier lot porte sur le contrat de signaux/transactions, les ports et l'exécution CPU–bus–logique–mémoire complète. Le second porte sur VDP–VRAM–balayage, avec l'entrée/sortie des mêmes ports et les boucles de retour. Le raccordement final intègre PSG/READY, entrées et frontière native d'image. Il s'agit de remplacer les chemins d'exécution de bout en bout, pas d'ajouter un orchestrateur autour des boucles existantes.
+
+La version a15240c11 reste la référence figée. Avant toute adoption, comparaison rigoureuse des états complets, phases, accès/échantillonnages, signaux et chronologies, IRQ/NMI/WAIT/reset, chaque pixel et le PCM, avec reprises en milieu de transaction et plusieurs ROM/configurations. Les observations explicites doivent retrouver le même état aux frontières intermédiaires, pas seulement le même hash de fin d'image. Les limites matérielles déjà acceptées restent identifiées ; une équivalence entre exécuteurs n'est pas une nouvelle preuve physique.
+
+Après chaque grosse refonte retenue : mesure sans instrumentation concurrente puis profil complet séparé sur la même version, attribution propre/inclusive et comparaison des sorties. Ajouter les volumes de transactions et de livraisons pertinents pour vérifier que le nombre de communications dépend bien des interactions matérielles structurées, plutôt que du produit des fronts par le nombre de destinataires. Aucun débit cible n'est obtenu en modifiant les options Debug, fréquences, timings ou précision.
+
+Le gain massif est une hypothèse à vérifier : l'objectif est de supprimer des catégories d'overhead répétées sur les principaux domaines, pas de gagner sur une méthode isolée. Les profils actuels établissent la dispersion des coûts, pas un facteur d'accélération garanti. Si le nouveau chemin conserve pratiquement la même granularité d'appels et les mêmes coûts, sa rupture architecturale ne sera pas considérée comme réalisée, même si quelques pour cent sont gagnés. La cible machine reste le temps réel en Debug, avec sa marge de calcul à mesurer.
+
+### État réel des fondations du premier lot
+
+Les contrats LogicInputRange/LogicOutputRange, le noyau local CombinationalOutputs et les entrées par séquences des SN74LS139/32/257 sont écrits, avec préparation et résolution partagées avec leur trajet explicite. Le CPU possède son transport Z80BusRange et livre ses sorties aux points canoniques de consommation des entrées. Les variantes utilisent le même moteur. Les 26 contrôles ciblés CPU/plages/logique passent en Release ; le groupe large de 146 contrôles CPU/logique Debug puis les huit contrôles ciblés après ajout du contrôle de refus/nettoyage passent. Preuves et limites dans les fiches des composants.
+
+Le trajet CPU–bus–mémoire expérimental est désormais raccordé par des séquences et une fusion des sources propres à chaque destinataire, sans rejouer OnCpuPins pour chaque élément. Son pilote n'utilise pas l'agenda global des19 échéances. Ce raccordement est vérifié fonctionnellement mais son coût de distribution est régressif ; il doit être remplacé avant adoption. Le CPU conserve encore sa boucle locale de fronts ; la suppression des traversées externes est préparée, pas encore mesurée sur la machine. Le VDP–VRAM–balayage et le raccordement final son/entrées restent ouverts. Aucun nouveau FPS n'est annoncé et aucun profil de machine n'est lancé sur ces fondations non raccordées.
+
+Les moteurs ROM partagé, SRAM TMM2009 et SRAM TMM2016/NEC/Fujitsu possèdent maintenant ExecuteInputRange. Ils fusionnent localement les entrées et propagations et réutilisent les mutations canoniques du trajet explicite, sans boucle sur les méthodes publiques unitaires. Le groupe mémoire statique complet passe :55 contrôles Debug et55 Release, zéro échec/ignoré. Après factorisation, les14 contrôles du trajet machine existant passent aussi en Debug. Références de rapports et invariants dans les fiches Tmm23256/Tmm2009/Tmm2016. Ces vérifications isolées précèdent le raccordement expérimental décrit ci-dessous ; elles ne suffisent pas à adopter la refonte globale.
+
+### Premier raccordement CPU–bus : équivalent, mais régressif et non adopté
+
+`Sg1000CpuBus.cs` réalise un trajet expérimental sélectionné uniquement par le banc (`Profile-Sg1000.ps1 -BusRanges`), désactivé par défaut dans la machine et le cœur applicatif. Les sources de signaux sont fusionnées pour leurs seuls destinataires physiques ; les circuits logiques et mémoires exécutent leurs propres séquences, puis le bus CPU est résolu depuis les niveaux reçus. Le pilote par plages n'utilise plus AdvanceDomains/NextCpuWireDeadline ni le minimum global des19slots. Le VDP–VRAM conserve encore son trajet précédent et le CPU sa progression locale par fronts : la refonte globale reste inachevée.
+
+Comparaison Debug : **22 contrôles machine réussis, zéro échec/ignoré**,25s, `20261112-native-bus-all-machine-debug.trx`. Les tests ROM et cartouches SRAM sont exécutés avec chaque transport : géométries8/16/32/48KiB, deuxROM8KiB/mirroirs explicitement sélectionnés, profils constructeur, ROM interne facultative et inhibition, insertion/retrait/origine de temps, deux SRAM de cartouche, restauration et refus atomiques. Une comparaison directe des états complets couvre sept dates arbitraires et rasters, manettes, restauration et NMI Pause, puis PCM. Les premiers écarts concernaient deux avances sans cause introduites par ce raccordement : date d'interfaceCPU du VDP avancée à chaque barrière et date de la TMM2009 avancée sans livraison. Elles ont été retirées ; aucune tolérance de comparaison ajoutée.
+
+Mesure sans trace puis profil complet séparé, même scénario de12images et2échauffements, aucune compilation/test concurrent :
+
+| ROM | Référence a15240c11 ms/image | Candidat ms/image | Résultat |
+| --- | ---: | ---: | --- |
+| Champion Tennis8KiB |315,6934|714,75935|Non adopté|
+| Girl’s Garden32KiB |312,91855|713,5109|Non adopté|
+| The Castle32KiB+SRAM8KiB |335,1103|819,2795|Non adopté|
+
+Rapports : Champion `20261112T182524714Z-da8748`, Girl `20261112T182546551Z-8e8856`, Castle `20261112T182608195Z-0757fe` sous leurs dossiers Profiles. Test de profil demandé réussi en1min7s, `Profiles/TestRun-1ff08243adc8464ea6d62a80986565c2/profile.trx`. Les états finaux, vidéo et PCM sont identiques aux références conservées. La comparaison directe retrouve aussi tous les compteurs matériels, qualifications, empreintes vidéo et PCM de chacune des12images mesurées, pour les trois jeux. Synthèse `artifacts/TestsMachines/Sega/SG1000/20261112-native-bus-candidate-review.json`.
+
+Le coût ajouté est établi : BuildBusInputs reparcourt le même préfixe pour presque tous les destinataires et ProjectBusInputs reconstruit leurs mots, y compris lorsqu'aucune entrée raccordée n'a changé. Sur Champion, BuildBusInputs représente11,87% propres et33,54% inclusifs ; ProjectBusInputs5,27% propres, inclus dans le précédent (ne pas additionner ces temps inclusifs). Les compteurs cumulés des14images totalisent546555 livraisons,1539089 mots CPU,10078537 mots d'entrée logique et4203400 mots mémoire. Le regroupement a donc ajouté une distribution et des validations trop nombreuses ; la suppression de l'agenda central n'apporte pas à elle seule un gain.
+
+Correction d'attribution : les premiers regroupements cherchaient Chips.CPU dans toute la signature ; le paramètre Z80BusRange faisait attribuer des méthodes de câblage au CPU. Group analyse désormais uniquement le propriétaire avant les paramètres ; trois contrôles d'analyse réussissent (`20261112-profile-signature-ownership-debug.trx`). La synthèse conservée reclasse les coûts propres des mêmes traces sans changer les mesures : Champion câblage33,81%, CPU17,73%, logique15,63%, mémoire16,13%, VDP12,69%, PSG2,99%. Pour Girl : câblage31,45%, logique19,94%, CPU16,54%, mémoire15,37%, VDP12,79% ; Castle : câblage32,57%, mémoire21,15%, CPU15,78%, logique15,50%, VDP12,21%. Les rapports bruts d'origine restent conservés ; leurs anciens totaux par groupe ne doivent pas être réutilisés sans cette correction.
+
+La prochaine action porte sur le remplacement de cette distribution répétitive : décoder les mots de fils une fois, livrer les seuls changements raccordés, conserver les réponses pendantes localement et réunir les barrières au même instant sans cause nouvelle. Le candidat reste isolé ; le résultat doit être comparé à a15240c11, et non seulement à ce candidat ralenti. Aucun changement de fréquence, précision, options Debug ou fonction de puce n'est permis pour améliorer les chiffres.
+
+### Distribution commune et filtrée — résultat toujours non adopté
+
+Le lot de distribution est remplacé : les fils CPU sont décodés une seule fois dans CpuBusWires ; une fusion prépare les entrées des portes, une seconde distribue les causes aux seuls destinataires raccordés. BuildBusInputs et ses parcours par destinataire sont supprimés. Les mots identiques ne sont plus réinjectés à chaque barrière. Les sorties de séquences publient leur prochaine réponse locale ; une entrée inchangée sans réponse due ne réveille pas le composant. Les échéances restent dans leurs propriétaires ; le raccordement conserve les informations reçues sans les interroger ni créer de minimum global. Les observations finales matérialisent les états différés. Les échanges CPU sans cause nouvelle au même instant sont réunis ; RESET/NMI/BUSRQ restent appliqués aux frontières qualifiées.
+
+Vérifications Debug : **71 contrôles composants** réussis (`20261112-sparse-routing-components-debug.trx`), puis **25 contrôles machine/analyse** réussis (`20261112-sparse-routing-machine-debug.trx`), zéro échec/ignoré. Les conditions d'exécution précédentes sont conservées : source réelle, tous les modèles/profils, exactitude des états, délais, snapshots et inconnus acceptés. Aucun mode de précision réduit ni option Debug modifiée.
+
+Mesure complète sans instrumentation puis profil complet séparé, trois ROM,12images et2échauffements, aucune compilation ni test concurrent :
+
+| ROM | Référence conservée ms/image | Distribution corrigée ms/image | Décision |
+| --- | ---: | ---: | --- |
+| Champion Tennis |315,6934|415,4509|Non adopté|
+| Girl’s Garden |312,91855|416,2747|Non adopté|
+| The Castle |335,1103|437,2870|Non adopté|
+
+Rapports sous Profiles : Champion `20261112T184158837Z-379ae7`, Girl `20261112T184211910Z-e95efc`, Castle `20261112T184224490Z-f7298e`. Passage demandé réussi en40s, `Profiles/TestRun-f0939614b7a74e9bab7c13f73127e598/profile.trx`. Les états finaux, vidéo et PCM concordent aux références a15240c11 ; la comparaison directe retrouve aussi chaque ligne de compteurs/qualifications/hashes natifs des12images. Les champs hôtes de durée et nouveaux compteurs de transport ne sont pas des états matériels.
+
+Les volumes cumulés sur14images baissent : Champion entrées logiques10078537→1703951, entrées mémoire4203400→2049464 ; Girl10077781→1703867 et4203015→2049292 ; Castle10163675→1869636 et6938616→2147070. Les livraisons CPU restent546555/546650/550359 : le nombre de barrières aux entrées n'a pas encore diminué dans ce scénario. Cela établit la suppression d'une grande partie du transport inutile, mais **aucun gain sur la référence conservée**. Ne pas annoncer le gain contre le candidat raté comme un résultat satisfaisant.
+
+Nouveaux coûts propres Champion : VDP22,80%, câblage23,92%, mémoire21,22%, logique16,12%, CPU11,24%, PSG1,60% (arrondis). Méthodes principales : AdvanceMasterClockSourceUntil5,04% propres/41,64% inclusifs, ProjectBusInputs4,93% propres, MB8118.ReceiveLevels4,32% propres, MB8118.AdvanceTo3,38% propres. Ces profils portent sur la machine entière. La granularité des barrières CPU et les trajets VDP–VRAM–balayage restent à remplacer conformément au schéma global ; ne pas considérer la refonte terminée parce que les nouvelles structures existent.
+
+Le lanceur PowerShell fournit CompareTo vide sous forme de chaîne vide, non null : le premier filtre d'exclusion des candidats ne l'avait pas pris en compte. La condition utilise maintenant IsNullOrEmpty. Les trois comparaisons de cette capture ont été corrigées directement vers leurs références a15240c11 conservées, sans changer aucune mesure ni état. Les rapports json/md et latest-results portent ces références corrigées. Ce recalcul de comparaison n'est pas une nouvelle mesure ; ne pas réutiliser les pourcentages initialement calculés contre le candidat régressif. La version applicative reste sur le trajet antérieur ; aucun gain nouveau n'est adopté.
+
+### Bilan d'opérations du chemin complet avant modification supplémentaire
+
+Examen du trajet actuellement raccordé : CPU (plans canoniques, DATA/WAIT/INT) → mots de fils communs → décodeur → portes → ROM/SRAM/manettes → résolution des pilotes → CPU ; quartz → diviseur VDP → balayage/fetch/sprites → séquence VRAM → huit DRAM → données VRAM/captureCAS/RAMLOAD ; PSG → intégration PCM ; indices vidéo → présentation native XRGB. Le mode expérimental reste désactivé par défaut. Les chiffres disponibles ci-dessous proviennent de la capture415–437ms et ne constituent pas une mesure du nouveau lot VDP.
+
+| Travail | Fréquence établie dans la capture Champion (14images, échauffement compris) | Traitement du lot |
+| --- | --- | --- |
+| Horloges matérielles |837020 clocks CPU et5022118 demi-fronts maître | Conservées avec mêmes phases/fréquences ; aucune réduction physique |
+| Échantillonnages et livraisons CPU |546555 barrières,1539089 mots de sortie | Conservés lorsque nécessaires ; le CPU n'est pas autorisé à ignorer une dépendance |
+| Décodage commun des fils CPU |Une préparation par mot CPU reçu, non une par destinataire | Conservé ; les deux fusions par étages n'effectuent plus de recherche globale des destinataires |
+| Entrées effectives logique/mémoire |1703951 /2049464 mots, après suppression des mots identiques | Conservées lorsqu'une cause raccordée change ; ne pas réintroduire les mots initiaux à chaque barrière |
+| Avance du balayage depuis le CPU |Le candidat précédent appelait SynchronizeVideoDomain à chacune des546555 barrières, plus les accès actifs et observations | Supprimer l'appel systématique ; synchroniser avant une entrée active, une réponse/IRQ annoncée et toute observation. Mesurer les appels restants et la taille des plages réelles |
+| Transport de chaque lecture VRAM déterminée |4fronts RAS/CAS ×8 =32 livraisons de broches minimum, plus la ligne d'adresse initiale selon ses changements | Remplacer par8 réceptions d'une même forme commune préparée une fois. Au moins24 appels publics de livraison de phases supprimés par cycle représenté ; pas de suppression des mutations dans les huit états |
+| Traitement local DRAM |Capture row/column, refresh/rétention, startup, qualification, données et délais | Conservé intégralement ; fusion des entrées reçues et réponses dans le moteur de chaque instance, sans retour par la carte pour chaque phase |
+| Écritures VRAM et cycles non déterminés |Données du registre CPU prises à leur vraie phase189ns, fronts WE et relâchements | Conservés sur le transport explicite ; aucun octet futur capturé prématurément |
+| Pixels et sorties natives |89604 points par raster complet ;49152 pixels actifs présentés en XRGB | Conservés, avec mêmes dates/couleurs/known, sprites, collisions, sync et frontière native |
+| Son |Diviseurs, commandes, READY et PCM natif | Conservés ; ce trajet n'est pas remplacé par une écoute ou un périphérique hôte |
+
+Le prochain changement supplémentaire ne crée pas d'exécuteur : préparer la forme DRAM commune une fois à la réception VDP et ne varier que les deux DIN par destinataire. Les nouveaux compteurs devront donner le nombre réel de cycles représentés, livraisons explicites par bit restantes, appels de synchronisation vidéo et points produits. Le minimum24×R d'appels de réception de phases retirés sera présenté comme une borne structurelle pour R lectures représentées, jamais comme le nombre de toutes les opérations C# économisées. Les huit appels aux propriétaires et leurs opérations internes restent comptés. Le gain reste à prouver sur les313–335ms, pas sur les candidats ralentis.
+
+### Mesure du transport des lectures complètes — lot non adopté, 12 novembre 2026
+
+Le lot est implémenté : une forme commune préparée une fois, huit réceptions avec DIN séparés, résolution locale des phases et des réponses, annulation du futur à RESET/synchronisation externe, reprise explicite après restauration. Le CPU ne synchronise plus systématiquement le balayage à chaque barrière DATA/WAIT/INT ; les accès actifs, réponses vidéo dues et observations conservent leur synchronisation. Le trajet applicatif par défaut n'est pas changé.
+
+Les trois exécutions sont séquentielles, Debug sans optimisations JIT, même cœur SHA256 `cd200fc9dfb313185b720110449bf3933a57bc62ed6455d722ebba7fb6ee328f`, deux images d'échauffement puis douze mesurées. La mesure sans trace précède le profil EventPipe dans chaque exécution. Aucun build ou test concurrent lancé par cet agent pendant ces passes.
+
+| ROM | Référence a15240c11 ms/image | Nouveau lot ms/image | Surcroît de durée | Synchronisations vidéo sur 14 images |
+| --- | ---: | ---: | ---: | ---: |
+| Champion Tennis, 8 Kio |315,6934|431,1915|36,59 %|31|
+| Girl's Garden, 32 Kio |312,91855|473,07575|51,18 %|37|
+| The Castle, 32 Kio + SRAM |335,1103|530,79285|58,39 %|31|
+
+Rapports complets sous `artifacts/TestsMachines/Sega/SG1000/Profiles/` : Champion `Champion Tennis (Japan)/20261112T192639504Z-0ea693`, Girl `Girl's Garden (Japan)/20261112T193026718Z-cfc5ab`, Castle `Castle, The (Japan)/20261112T193112356Z-53f915`. Chaque dossier conserve report.json/md, Measure et Profile, les lignes par image, état final, XRGB, WAV, nettrace, speedscope et coûts propres/inclusifs. Les deux derniers TRX sont `TestRun-b341879b3fb947fb9178655e30897e4b/profile.trx` et `TestRun-c5a138c28867491ca7514c65d585aca8/profile.trx`. La première exécution est terminée, son rapport est Completed et son fichier de test généré a été nettoyé ; son identifiant de session terminal n'a pas été récupéré après troncature de la sortie, ne pas inventer cet identifiant.
+
+**Volumes réellement mesurés, cumulés avec l'échauffement :** chacun des trois jeux reçoit 234621 formes de lecture VRAM et 5224 livraisons de broches DRAM explicites. Cela donne 1876968 réceptions de formes dans les huit propriétaires. Le minimum structurel de livraisons de phases supprimées est 24 × 234621 = **5630904**, hors éventuelles livraisons supplémentaires de l'adresse initiale. Il ne s'agit ni du nombre de toutes les opérations supprimées ni d'une baisse de durée. Les 1254456 échantillons vidéo natifs, soit 14 × 89604, restent produits. Les barrières CPU demeurent respectivement 546555, 546650 et 550359 ; les entrées logiques/mémoire ne baissent pas davantage que dans le lot précédent. Le nouvel appel conditionnel réduit les synchronisations du balayage de plus de 546000 à 31–37 ; il ne supprime aucune clock CPU ou vidéo. Cette comparaison des synchronisations utilise la borne établie du précédent appel inconditionnel, pas un ancien compteur qui n'existait pas.
+
+**Fidélité sur les scénarios mesurés :** les états finaux complets, vidéo et audio concordent aux trois références a15240c11. La comparaison directe des champs matériels de chacune des 36 images retrouve dates, compteurs CPU/quartz, PC, instructions, qualifications, interruption, quantités PCM et hashes vidéo/PCM identiques ; seuls les temps hôtes et compteurs diagnostiques sont exclus. Les deux passes de chaque jeu concordent également. Les 57 contrôles composants Debug et 25 contrôles machine/profilage Debug passent (`20261112-vram-shared-wave-components-debug.trx` et `20261112-vram-shared-wave-machine-debug.trx`). Ces comparaisons ne sont pas une preuve exhaustive de tous les comportements physiques.
+
+| Coût observé | Champion propre / inclusif | Girl propre / inclusif | Castle propre / inclusif |
+| --- | ---: | ---: | ---: |
+| MB8118.AdvanceCore |7,18 /29,38 %|5,90 /27,69 %|4,31 /26,65 %|
+| Distribution des sources du bus |5,37 /10,83 %|6,08 /9,97 %|5,06 /10,59 %|
+| MB8118.ApplyLevels |4,01 /9,20 %|4,62 /9,36 %|4,60 /10,05 %|
+| MB8118.PublishDeadline |3,87 /6,94 %|3,22 /7,04 %|3,48 /8,78 %|
+| Réception des plages CPU |3,99 /45,97 %|4,15 /44,99 %|3,22 /47,42 %|
+
+Les coûts inclusifs se recouvrent : ne pas les additionner. Sur Champion, la construction locale `ReadInputLevels` coûte encore 4,88 % propres ; le moteur réinterprète les cinq phases dans chaque DRAM, avec des recherches de prochaine phase/réponse et des publications répétées. **La disparition des appels de transport n'a pas supprimé assez de travail total.** Ce sont des surcoûts de la représentation logicielle, distincts des captures row/column, refresh/rétention, qualifications, délais et sorties indispensables. Le bilan invalide ce lot comme optimisation globale : il reste expérimental et désactivé, aucune accélération ni clôture n'est revendiquée. Avant un nouveau lot, son plan doit supprimer cette réinterprétation et la propagation répétée des échéances, ainsi que le travail de distribution CPU encore important ; déplacer ces mêmes boucles ou ajouter une couche de séquences supplémentaire reproduirait l'échec constaté.
+
+## Moteur unique, validation globale du 12 novembre 2026
+
+Cette section remplace les statuts courants « candidat désactivé » des étapes historiques ci-dessus. Le chemin SG-1000 antérieur, son agenda de dix-neuf slots et ses cascades de callbacks ont été retirés. Il n'existe plus de sélecteur d'exécution dans le module ni dans le lanceur de profilage. Les API scalaires génériques des puces restent disponibles aux autres montages ; ce ne sont pas des moteurs SG-1000 alternatifs.
+
+Le même trajet traite alimentation/démarrage, CPU, décodeur, portes, ROM/SRAM, commandes VDP/PSG, manettes, changement de cartouche et restauration. Les mots CPU et leur contribution commune sont préparés une fois ; le premier parcours CPU/décodeur livre les portes et les destinataires indépendants des portes. Le second traite les causes des sorties de portes sans rejouer le décodeur ni redistribuer les destinataires déjà servis. Le filtre de ce second parcours inspecte encore les mots CPU non concernés : ce coût est compté séparément, pas présenté comme supprimé.
+
+Chaque puce conserve ses états et ses réponses temporelles. Le CPU reçoit des fenêtres WAIT/contrôle bornées par les échéances et connexions réelles ; les cycles I/O et d'acquittement invalident ces fenêtres jusqu'aux dernières propagations. Les échantillonnages restent exécutés, depuis les niveaux reçus. Les dépendances DATA imposent toujours une livraison avant consommation. Les portions internes déjà qualifiées utilisent le helper commun, sans second décodeur. Les quatre boîtiers logiques résolvent les pins pendantes et leur prochain minimum dans le même parcours ; les réponses simultanées sont toutes résolues avant leur publication ordonnée. Le masque de présence distingue une absence d'une vraie date long.MaxValue.
+
+Les huit DRAM restent huit propriétaires. Une forme commune de lecture est reçue une fois par propriétaire ; le préfixe déterminé applique directement les opérations physiques partagées avec le trajet scalaire, sans reconstruire cinq mots ni réinterpréter leurs changements. Les entrées explicites et annulations gardent leur ordre. Le VDP conserve chaque mutation et capture CAS/RAMLOAD, mais ne rappelle plus le transport des broches représentées sans destinataire ; l'observation explicite redevient active aux changements d'abonnement et pour le repli. Les mémoires statiques exécutent toutes leurs propagations, mais ne construisent aucun historique de sorties lorsque seul le niveau à la prochaine frontière CPU est consommé : FinalOutput et HasCompleteHistory rendent cette observation explicite. Ce n'est ni une stabilité fictive du signal ni une suppression d'activité mémoire. Les contacts des deux multiplexeurs sont préparés aux changements de manette, et le bus CPU n'est résolu de nouveau qu'à changement de pilote.
+
+### Défaut détecté et correction
+
+Le premier passage global a retrouvé chaque image et PCM, mais refusé l'état final : Vdp.CpuWriteBus.WriteMode différait. Capture conservée : `Profiles/Champion Tennis (Japan)/20261112T204501190Z-a13146`, TRX `Profiles/TestRun-58ab3fde56444540b5fc68af03af030a/profile.trx`. Le cache de liaison VDP/PSG était amorcé depuis des niveaux calculés du CPU, considérés à tort comme déjà reçus. Il est maintenant amorcé depuis les entrées canoniques réellement reçues par ces deux puces. La référence et ses champs n'ont pas été modifiés ou normalisés. Après correction, la comparaison complète passe.
+
+### Résultats finaux Debug
+
+Deux images d'échauffement puis douze mesurées, trois jeux, mesure sans trace puis profil EventPipe séparé, pas d'autre compilation/test lancé par l'agent pendant chaque mesure. Même module SHA256 `708478fc4016d7351294ec32e268404d142155e202238ae65206f54a71a2faec`, .NET 10.0.15, optimisations JIT désactivées. Références explicites a15240c11 conservées : 315,6934 / 312,91855 / 335,1103 ms, jamais les candidats ralentis.
+
+| Jeu | Référence ms/image | Moteur unique ms/image | Réduction de durée |
+| --- | ---: | ---: | ---: |
+| Champion Tennis, 8 Kio |315,6934|310,3631|+1,6884 %|
+| Girl's Garden, 32 Kio |312,91855|318,57305|-1,8070 %|
+| The Castle, 32 Kio avec SRAM |335,1103|341,53755|-1,9180 %|
+
+**Aucun gain massif ni gain global établi : la cible de dépassement large du temps réel Debug reste non atteinte.** L'ancien chemin n'a pas été réintroduit. Ces passages ne démontrent pas que le moteur soit suffisamment optimisé, ni que tous les jeux/périphériques ou comportements physiques soient vérifiés.
+
+Rapports finaux sous `artifacts/TestsMachines/Sega/SG1000/Profiles/` :
+
+- Champion : `Champion Tennis (Japan)/20261112T204929832Z-7c0879`, TRX `TestRun-f63c4a78a7c84e73ab4137beedd77ccf/profile.trx`.
+- Girl : `Girl's Garden (Japan)/20261112T205037816Z-ae52e1`, TRX `TestRun-b4633ebd4de5422787d6b332c3f92ddf/profile.trx`.
+- Castle : `Castle, The (Japan)/20261112T205157565Z-3f213d`, TRX `TestRun-cddd7111207243478c7fbbce142632c2/profile.trx`.
+
+Chaque dossier contient report.json/md, les lignes par image, état complet final, pixels XRGB, WAV natif, nettrace, speedscope et tous les coûts propres/inclusifs. Les trois états finaux complets et chacune des 36 observations natives par image (dates, compteurs, PC, instructions, qualifications, IRQ/NMI, quantités audio et hashes vidéo/PCM) concordent aux références. Mesure et profil concordent également sur leurs états/images/PCM. Le banc refuse un résultat dont ces comparaisons échouent ; il attribue les coûts au propriétaire de la méthode avant sa signature.
+
+Le passage autonome complémentaire `20261112-single-path-execution-debug.trx`, sous `artifacts/TestsMachines/Sega/SG1000/`, réussit ses trois scénarios en 2 s, zéro échec/ignoré. Le programme synthétique vérifie RAM et miroir, quatre zones VRAM connues, pixels attendus, commandes PSG et PCM bipolaire, les deux manettes et NMI. La reprise compare l'état complet après sauvegarde JSON à 391237 ns puis 501901, 1000071, 4000003 et 5000007 ns avec changements d'entrée ; le refus d'états mal formés reste atomique. C'est une vérification du montage et de ces parcours, pas une caractérisation indépendante exhaustive de chaque silicium. Les anciens tests de puces/machine supprimés à la demande de l'utilisateur ne sont pas présentés comme rejoués sur cette révision. Aucun passage Release ni essai d'interface RML n'est annoncé pour ce lot.
+
+### Volumes réels du nouveau trajet
+
+Cumuls comprenant le démarrage et les deux échauffements. Le comptage démarre désormais à la construction du moteur unique ; les anciens compteurs du candidat commençaient après l'alimentation initiale. Les différences d'initialisation ne doivent pas être présentées comme des cycles matériels ajoutés.
+
+| Volume | Champion | Girl | Castle |
+| --- | ---: | ---: | ---: |
+| Livraisons de préfixes CPU |160792|160912|155773|
+| Mots CPU |1539089|1538889|1564518|
+| Mots d'entrée logique |1703958|1703874|1869643|
+| Mots d'entrée mémoire |2049465|2049293|2147072|
+| Échantillonnages WAIT sans redistribution |160741|160744|164809|
+| Échantillonnages de contrôle sans redistribution |225031|225003|229786|
+| Résolutions du bus CPU |160753|160746|155608|
+| Visites des causes directes |1603411|1603311|1643424|
+| Visites des causes de portes |1442639|1442437|1450899|
+| Mots CPU inspectés puis écartés du second parcours |160752|160794|174055|
+| Enregistrements de sorties mémoire non construits |578657|578539|687276|
+| Formes de lecture VRAM reçues |234752|234752|234752|
+| Livraisons explicites de broches DRAM |0|0|0|
+| Synchronisations vidéo |31|37|31|
+| Échantillons vidéo natifs |1254456|1254456|1254456|
+
+Les fenêtres exécutent encore les échantillonnages ; leurs compteurs ne sont pas une soustraction exacte des callbacks anciens, qui pouvaient déjà fusionner deux demandes au même instant. À titre de contexte, le précédent candidat livrait 546555 / 546650 / 550359 préfixes. Les formes VRAM impliquent chacune huit réceptions séparées : 1878016 réceptions par scénario. Par rapport à une livraison minimale de quatre fronts à chacune des huit puces, la borne structurelle est de 24 × 234752 = 5634048 réceptions de phases évitées. Ce calcul ne compte pas toutes les opérations internes et ne constitue pas un pourcentage de temps gagné. Les scénarios ROM courts n'exercent pas les livraisons VRAM explicites ; le programme synthétique complémentaire vérifie les écritures.
+
+### Nouveau profil complet
+
+| Méthode | Champion propre/inclusif % | Girl propre/inclusif % | Castle propre/inclusif % |
+| --- | ---: | ---: | ---: |
+| MB8118.AdvanceCore |4,82 /23,41|5,37 /22,99|4,44 /20,53|
+| MB8118.PublishDeadline |3,78 /6,45|4,05 /6,78|3,56 /6,18|
+| VDP.AdvanceMasterClockSourceUntil |3,32 /48,58|3,48 /48,19|2,67 /45,27|
+| CombinationalOutputs.ExecuteInputRange |2,72 /10,97|2,50 /10,80|2,61 /10,04|
+| Sg1000Board.ChangedRecipients |2,51 /2,59|3,00 /3,07|2,51 /2,51|
+
+Ces coûts inclusifs se recouvrent et ne s'additionnent pas. Les coûts propres par groupes, les valeurs absolues en millisecondes et toutes les méthodes sont dans chaque cpu-costs.json ; les traces complètes sont conservées. La réception des préfixes représente encore 43,83 % inclusifs sur Champion ; le domaine vidéo comprend ses réponses DRAM. Les contrôles d'échéance DRAM et la préparation/distribution des causes restent des coûts importants. La réduction des livraisons seule n'a toujours pas établi l'accélération globale exigée. Le commit de sauvegarde conserve donc un travail d'optimisation inachevé, pas une machine déclarée terminée.

@@ -9,7 +9,7 @@ namespace RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Services;
 
 /// <summary>Shared parallel ROM peripheral: address capture or static tracking is selected by its hardware profile.</summary>
 /// <remarks>All dates and pending output propagation are local. No machine, provider callback or host clock is consulted.</remarks>
-public sealed class Tmm23256 : ITmm23256
+public sealed partial class Tmm23256 : ITmm23256
 {
     private readonly byte[] _rom;
     private readonly string _hash;
@@ -55,6 +55,14 @@ public sealed class Tmm23256 : ITmm23256
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
         _ = checked(timeNanoseconds + _busTiming.MaximumDelay);
         AdvanceTo(timeNanoseconds);
+        ApplyParallelPins(timeNanoseconds, address, addressKnown, ceHigh, oeHigh);
+        PublishDeadline();
+        if (_nextDue >= 0 && _nextDue <= timeNanoseconds)
+            AdvanceTo(timeNanoseconds);
+    }
+
+    private void ApplyParallelPins(long timeNanoseconds, ushort address, bool addressKnown, bool ceHigh, bool oeHigh)
+    {
         if (_address == address && _addressKnown == addressKnown && _ceHigh == ceHigh && _oeHigh == oeHigh) return;
         bool falling = _ceHigh && !ceHigh;
         bool rising = !_ceHigh && ceHigh;
@@ -111,9 +119,6 @@ public sealed class Tmm23256 : ITmm23256
             if ((_target & Driven) != 0 || _outputDue < 0) Arm(0, checked(timeNanoseconds + _busTiming.OutputDisable));
         }
         UpdateNext();
-        PublishDeadline();
-        if (_nextDue >= 0 && _nextDue <= timeNanoseconds)
-            AdvanceTo(timeNanoseconds); // Resolve a selected zero-delay profile in this same transaction.
     }
 
     private bool IsOeActive(bool high) => _busTiming.AlwaysEnabled || high == _busTiming.ActiveHigh;
@@ -133,25 +138,11 @@ public sealed class Tmm23256 : ITmm23256
             if (timeNanoseconds != TimeNanoseconds) throw new InvalidOperationException("Cannot advance ROM from its output callback.");
             return;
         }
-        if (!_initialized && _initialCeHigh && _ceHigh && timeNanoseconds >= _busTiming.Startup) _initialized = true;
+        InitializeThrough(timeNanoseconds);
         while (_nextDue >= 0 && _nextDue <= timeNanoseconds)
         {
-            long due = _nextDue;
-            TimeNanoseconds = due;
-            var previous = _output;
-            if (_invalidateDue == due)
-            {
-                _invalidateDue = -1;
-                if ((_output & Driven) != 0) _output = Driven;
-            }
-            if (_outputDue == due)
-            {
-                _outputDue = -1; _output = _target;
-                if ((_output & Driven) == 0) _invalidateDue = -1;
-            }
-            if (_output == _target && _invalidateDue < 0) _outputDue = -1;
-            UpdateNext();
-            if (_output != previous)
+            bool changed = ResolveOutputAt(_nextDue);
+            if (changed)
             {
                 _publishing = true;
                 try { OutputChanged?.Invoke(Output); }
@@ -160,6 +151,30 @@ public sealed class Tmm23256 : ITmm23256
             PublishDeadline();
         }
         TimeNanoseconds = timeNanoseconds;
+    }
+
+    private void InitializeThrough(long timeNanoseconds)
+    {
+        if (!_initialized && _initialCeHigh && _ceHigh && timeNanoseconds >= _busTiming.Startup) _initialized = true;
+    }
+
+    private bool ResolveOutputAt(long due)
+    {
+        TimeNanoseconds = due;
+        var previous = _output;
+        if (_invalidateDue == due)
+        {
+            _invalidateDue = -1;
+            if ((_output & Driven) != 0) _output = Driven;
+        }
+        if (_outputDue == due)
+        {
+            _outputDue = -1; _output = _target;
+            if ((_output & Driven) == 0) _invalidateDue = -1;
+        }
+        if (_output == _target && _invalidateDue < 0) _outputDue = -1;
+        UpdateNext();
+        return _output != previous;
     }
 
     private void UpdateNext() => _nextDue = _outputDue < 0 ? _invalidateDue

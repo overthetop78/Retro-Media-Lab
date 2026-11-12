@@ -53,6 +53,7 @@ public sealed partial class Tms9918A
             _raster = _raster with { Dot = T.HorizontalSyncStart };
             // Terminer la fraction de cycle en cours, sans effacer les
             // registres CPU ou consommer la demande mémoire interrompue.
+            WithdrawVramReadWave();
             _vramDue = _vramWriteEnd = -1;
             RefreshNextDeadline();
             _vramActive = _ramLoadActive = _cpuVramInService = false;

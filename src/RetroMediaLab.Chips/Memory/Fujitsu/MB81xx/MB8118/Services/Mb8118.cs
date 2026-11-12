@@ -6,7 +6,7 @@ using RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Models;
 namespace RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Services;
 
 /// <summary>16K×1 dynamic memory. RAS and CAS latch addresses; CAS controls the output latch.</summary>
-public sealed class Mb8118 : IMb8118
+public sealed partial class Mb8118 : IMb8118
 {
     private const long Retention = 2_000_000, Startup = 200_000, MaximumPulse = 10_000;
     private readonly Mb8118LocalTiming _timing;
@@ -28,7 +28,7 @@ public sealed class Mb8118 : IMb8118
         Array.Fill(_refreshed, -1);
     }
     public long TimeNanoseconds { get; private set; }
-    public long? NextEventNanoseconds => _outputDue < 0 ? null : _outputDue;
+    public long? NextEventNanoseconds { get { long next = NextResponseTime; return next < 0 ? null : next; } }
     public bool IsTimingQualified => _qualified;
     public LogicPinState Output => _output;
     public Action<LogicPinState>? OutputChanged { get; set; }
@@ -44,28 +44,21 @@ public sealed class Mb8118 : IMb8118
     private void ReceiveLevels(long timeNanoseconds, Mb8118InputLevels pins)
     {
         if (pins.Address > 127) throw new ArgumentOutOfRangeException(nameof(pins));
-        AdvanceTo(timeNanoseconds);
+        AdvanceCore(timeNanoseconds, false);
+        _hasReadCycle = false; // Explicit delivery supersedes promised inputs at this date.
+        ApplyLevels(pins);
+        PublishDeadline();
+    }
+
+    private void ApplyLevels(Mb8118InputLevels pins)
+    {
         if (pins.Address == _pins.Address && pins.AddressKnown == _pins.AddressKnown
             && pins.RasHigh == _pins.RasHigh && pins.CasHigh == _pins.CasHigh
             && pins.WriteHigh == _pins.WriteHigh && pins.Data == _pins.Data) return;
-        _ = checked(timeNanoseconds + _timing.MaximumOutputDelay);
+        _ = checked(TimeNanoseconds + _timing.MaximumOutputDelay);
         var old = _pins;
         long now = TimeNanoseconds;
-        bool addressChanged = pins.Address != old.Address || pins.AddressKnown != old.AddressKnown;
-        if (addressChanged)
-        {
-            if (_rasFall >= 0 && now - _rasFall < 15) { _qualified = false; _rowKnown = false; }
-            if (_casFall >= 0 && now - _casFall < 15) { _qualified = false; _columnKnown = false; }
-            if (_rowActive && _rasFall >= 0 && now - _rasFall < _timing.ColumnFromRas && !old.CasHigh)
-                _qualified = false;
-            _addressChanged = now;
-        }
-        if (pins.Data != old.Data)
-        {
-            if (_writeAt >= 0 && now < _writeHoldUntil)
-            { _cells[_writeAddress] = 0; _qualified = false; }
-            _dataChanged = now;
-        }
+        ChangeAddressData(now, pins.Address, pins.AddressKnown, pins.Data);
         _pins = pins;
         if (old.RasHigh && !pins.RasHigh) BeginRow(now, pins);
         if (old.CasHigh && !pins.CasHigh) BeginColumn(now, pins);
@@ -84,15 +77,38 @@ public sealed class Mb8118 : IMb8118
             && (now - _writeFall < _timing.WriteHold || now - _casFall < _timing.WriteHold
                 || now - _rasFall < _timing.WriteHoldFromRas)) _qualified = false;
         if (!old.RasHigh && pins.RasHigh) EndRow(now);
-        if (!old.CasHigh && pins.CasHigh)
+        if (!old.CasHigh && pins.CasHigh) EndColumn(now);
+    }
+
+    // Shared physical mutations: the scalar input decoder and the received
+    // complete read use exactly these address/data qualification rules.
+    private void ChangeAddressData(long now, byte address, bool addressKnown, bool? data)
+    {
+        bool addressChanged = address != _pins.Address || addressKnown != _pins.AddressKnown;
+        if (addressChanged)
         {
-            if (_casFall >= 0 && (now - _casFall < _timing.CasPulse || now - _casFall > MaximumPulse
-                || now - _rasFall < _timing.CasHold || (_cycleWrite && now - _writeAt < _timing.WriteToCas)))
+            if (_rasFall >= 0 && now - _rasFall < 15) { _qualified = false; _rowKnown = false; }
+            if (_casFall >= 0 && now - _casFall < 15) { _qualified = false; _columnKnown = false; }
+            if (_rowActive && _rasFall >= 0 && now - _rasFall < _timing.ColumnFromRas && !_pins.CasHigh)
                 _qualified = false;
-            _casRise = now;
-            Arm(checked(now + _timing.OutputOff), LogicPinState.HighImpedance);
+            _addressChanged = now;
         }
-        PublishDeadline();
+        if (data != _pins.Data)
+        {
+            if (_writeAt >= 0 && now < _writeHoldUntil)
+            { _cells[_writeAddress] = 0; _qualified = false; }
+            _dataChanged = now;
+        }
+        _pins.Address = address; _pins.AddressKnown = addressKnown; _pins.Data = data;
+    }
+
+    private void EndColumn(long now)
+    {
+        if (_casFall >= 0 && (now - _casFall < _timing.CasPulse || now - _casFall > MaximumPulse
+            || now - _rasFall < _timing.CasHold || (_cycleWrite && now - _writeAt < _timing.WriteToCas)))
+            _qualified = false;
+        _casRise = now;
+        Arm(checked(now + _timing.OutputOff), LogicPinState.HighImpedance);
     }
 
     private void BeginRow(long now, Mb8118InputLevels pins)
@@ -165,36 +181,19 @@ public sealed class Mb8118 : IMb8118
         _outputDue = target == _output ? -1 : due;
     }
 
-    public void AdvanceTo(long timeNanoseconds)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
-        if (_publishing)
-        {
-            if (timeNanoseconds != TimeNanoseconds) throw new InvalidOperationException("Cannot advance DRAM from an output callback.");
-            return;
-        }
-        while (_outputDue >= 0 && _outputDue <= timeNanoseconds)
-        {
-            long due = _outputDue;
-            TimeNanoseconds = due;
-            _outputDue = -1;
-            _output = _target;
-            _publishing = true;
-            try { OutputChanged?.Invoke(_output); }
-            finally { _publishing = false; PublishDeadline(); }
-        }
-        TimeNanoseconds = timeNanoseconds;
-    }
+    public void AdvanceTo(long timeNanoseconds) => AdvanceCore(timeNanoseconds, true);
 
     private void PublishDeadline()
     {
         if (_publishing) return;
-        while (_announcedDue != _outputDue)
+        long next = NextResponseTime;
+        while (_announcedDue != next)
         {
-            _announcedDue = _outputDue;
+            _announcedDue = next;
             _publishing = true;
-            try { NextEventNanosecondsChanged?.Invoke(_outputDue < 0 ? null : _outputDue); }
+            try { NextEventNanosecondsChanged?.Invoke(next < 0 ? null : next); }
             finally { _publishing = false; }
+            next = NextResponseTime;
         }
     }
 
@@ -205,7 +204,7 @@ public sealed class Mb8118 : IMb8118
             TimeNanoseconds, _pins, _row, _column, _rowKnown, _columnKnown, _rowActive,
             _cycleWrite, _readCycle, _qualified, _startupCycles, _rasFall, _casFall,
             _rasRise, _casRise, _addressChanged, _dataChanged, _writeFall, _writeAt,
-            _writeHoldUntil, _writeAddress, NextEventNanoseconds, _target, _output);
+            _writeHoldUntil, _writeAddress, _outputDue < 0 ? null : _outputDue, _target, _output);
     }
 
     public void RestoreState(Mb8118State state)
@@ -224,6 +223,7 @@ public sealed class Mb8118 : IMb8118
             || state.OutputDue.HasValue != (state.Output != state.OutputTarget)
             || state.RowActive == state.Pins.RasHigh)
             throw new ArgumentException(nameof(state));
+        _hasReadCycle = false;
         state.Cells.CopyTo(_cells, 0); state.Refreshed.CopyTo(_refreshed, 0);
         TimeNanoseconds = state.Time; _pins = state.Pins; _row = state.Row; _column = state.Column;
         _rowKnown = state.RowKnown; _columnKnown = state.ColumnKnown; _rowActive = state.RowActive;

@@ -33,6 +33,9 @@ public interface ICpuZ80
     void ReceiveClockEdges(long firstEdgeNanoseconds, long halfPeriodNanoseconds, int edgeCount);
     void ReceiveClockSource(RationalClockSource source);
     int AdvanceClockSourceUntil(long boundaryExclusive);
+    int AdvanceBusRangeUntil(long boundaryExclusive, Z80BusRangeHandler receiver);
+    void ReceiveBusInputWindow(Z80BusInputWindow window);
+    Z80BusRangeStatistics BusRangeStatistics { get; }
     void LimitClockSourceBefore(long boundaryExclusive);
     void AdvanceTo(long nanoseconds);
     CpuZ80State CaptureState();

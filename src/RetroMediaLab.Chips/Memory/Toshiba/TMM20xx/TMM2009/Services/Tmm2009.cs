@@ -4,7 +4,7 @@ using RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2009.Interfaces;
 namespace RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2009.Services;
 
 /// <summary>Functional 1K×8 model; electrical delays and the chosen CE2 polarity remain uncharacterized.</summary>
-public sealed class Tmm2009(bool ce2ActiveHigh) : ITmm2009
+public sealed partial class Tmm2009(bool ce2ActiveHigh) : ITmm2009
 {
     private readonly byte[] _cells = new byte[1024], _known = new byte[1024];
     private Tmm2009Pins _pins = new(0, false, true, !ce2ActiveHigh, true, true, 0, 0);
@@ -30,8 +30,13 @@ public sealed class Tmm2009(bool ce2ActiveHigh) : ITmm2009
     {
         if (pins.Address > 1023) throw new ArgumentOutOfRangeException(nameof(pins));
         AdvanceTo(timeNanoseconds);
+        if (ApplyPins(pins)) PublishOutput();
+    }
+
+    private bool ApplyPins(Tmm2009Pins pins)
+    {
         pins = pins with { Data = (byte)(pins.Data & pins.DataKnown) };
-        if (pins == _pins) return;
+        if (pins == _pins) return false;
         bool writing = Selected(pins) && !pins.WriteHigh;
         if (_writing && !writing && _writeAddressKnown)
         {
@@ -51,7 +56,10 @@ public sealed class Tmm2009(bool ce2ActiveHigh) : ITmm2009
         }
         _writing = writing;
         _pins = pins;
-        PublishOutput();
+        var value = ResolveOutput();
+        if (value == _output) return false;
+        _output = value;
+        return true;
     }
 
     private Tmm2009Output ResolveOutput()
@@ -61,9 +69,7 @@ public sealed class Tmm2009(bool ce2ActiveHigh) : ITmm2009
     }
     private void PublishOutput()
     {
-        var value = ResolveOutput();
-        if (value == _output) return;
-        _output = value;
+        var value = _output;
         bool publishing = _publishing;
         _publishing = true;
         try { OutputChanged?.Invoke(value); }

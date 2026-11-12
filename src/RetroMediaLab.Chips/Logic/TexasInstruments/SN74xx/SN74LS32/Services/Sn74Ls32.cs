@@ -1,13 +1,14 @@
 using RetroMediaLab.Chips.Logic.Common.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Chips.Logic.Common.Services;
+using RetroMediaLab.Chips.Logic.Common.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Models;
 
 namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Services;
 
 /// <summary>Four independent positive OR gates, with no clock or reset.</summary>
-public sealed class Sn74Ls32 : ISn74Ls32
+public sealed class Sn74Ls32 : ISn74Ls32, ICombinationalRangeModel
 {
     private const string Part = "SN74LS32";
     private readonly CombinationalOutputs _pins = new(4);
@@ -50,17 +51,35 @@ public sealed class Sn74Ls32 : ISn74Ls32
 
     private void SetPacked(byte levels, byte known)
     {
-        if (_levels == levels && _known == known) return;
-        ushort targets = Resolve(levels, known);
         Span<long> delays = stackalloc long[4];
+        if (!PrepareInputs(levels, known, delays, out ushort targets)) return;
+        _pins.Validate(targets, delays);
+        _levels = (byte)(levels & known); _known = known;
+        _pins.SetTargets(targets, delays);
+    }
+
+    public LogicOutputRange ExecuteInputRange(in LogicInputRange range) => _pins.ExecuteInputRange(in range, 255, this);
+
+    bool ICombinationalRangeModel.PrepareRangeInput(in TimedLogicInput input, Span<long> delays, out ushort targets)
+        => PrepareInputs((byte)input.Levels, (byte)input.Known, delays, out targets);
+
+    void ICombinationalRangeModel.CommitRangeInput(in TimedLogicInput input)
+    {
+        _levels = (byte)(input.Levels & input.Known); _known = (byte)input.Known;
+    }
+
+    private bool PrepareInputs(byte levels, byte known, Span<long> delays, out ushort targets)
+    {
+        levels &= known;
+        targets = default;
+        if (_levels == levels && _known == known) return false;
+        targets = Resolve(levels, known);
         for (int gate = 0; gate < 4; gate++)
         {
             var target = (LogicPinState)((targets >> (gate * 2)) & 3);
             delays[gate] = target == LogicPinState.High ? _timing[0] : target == LogicPinState.Low ? _timing[1] : Math.Max(_timing[0], _timing[1]);
         }
-        _pins.Validate(targets, delays);
-        _levels = levels; _known = known;
-        _pins.SetTargets(targets, delays);
+        return true;
     }
 
     private static ushort Resolve(ulong levels, ulong known)

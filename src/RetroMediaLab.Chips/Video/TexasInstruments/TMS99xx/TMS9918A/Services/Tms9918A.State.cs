@@ -54,6 +54,7 @@ public sealed partial class Tms9918A
         _vramBus.PinsChanged = null;
         _vramBus.ReadCaptured = null;
         _registers = registers; _status = status; _protocol = protocol; _memory = memory;
+        _vramReadWaveRouted = false;
         _writeBus = write; _statusReadBus = read; _vramBus = vram; _background = background;
         TimeNanoseconds = state.TimeNanoseconds;
         _cpuInputTime = Math.Max(state.CpuWriteBus.TimeNanoseconds, state.StatusReadBus.TimeNanoseconds);
@@ -84,13 +85,7 @@ public sealed partial class Tms9918A
         _writeBus.WriteCaptured = AcceptCpuWrite;
         _statusReadBus.StatusAcknowledged = _ => PublishCpuOutputs();
         _vramBus.ReadCaptured = CaptureVramRead;
-        _vramBus.PinsChanged = pins =>
-        {
-            bool wasPublishing = _publishing;
-            _publishing = true;
-            try { VramPinsChanged?.Invoke(new(TimeNanoseconds, pins)); }
-            finally { _publishing = wasPublishing; }
-        };
+        UpdateVramPinObservation();
         // Aucun faux front de restauration. La carte rétablit ses abonnements
         // et échéances depuis l'état restauré de l'ensemble de ses composants.
         RefreshNextDeadline();

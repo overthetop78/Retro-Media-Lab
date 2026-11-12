@@ -13,6 +13,7 @@ public interface ISn74Ls139
     void SetInputs(int decoder, bool? a, bool? b, bool? enableHigh);
     /// <summary>Physical high levels; A/B/G for decoder 0 in bits0/1/2, decoder1 in3/4/5.</summary>
     void SetInputs(byte levels, byte known);
+    LogicOutputRange ExecuteInputRange(in LogicInputRange range);
     void AdvanceTo(long nanoseconds);
     CombinationalState CaptureState();
     void RestoreState(CombinationalState state);

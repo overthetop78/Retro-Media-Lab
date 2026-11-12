@@ -35,6 +35,72 @@ internal sealed class Z80BusSequencer
     private bool _nextDirty;
     private uint _pending;
     private long _executionBoundary = long.MaxValue;
+    private TimedZ80BusPins[]? _rangeChanges;
+    private bool _capturingRange;
+    private int _rangeChangeCount;
+    private long _rangeStart;
+    private Z80BusPins _rangeInitial;
+    private Z80BusRangeHandler? _rangeReceiver;
+    private bool _rangeDelivered;
+    private long _waitStableBefore, _controlStableBefore, _waitOutputsSettled, _controlOutputsSettled;
+    private uint _waitDependentCycles, _controlDependentCycles;
+    private long _heldWaitSamples, _heldControlSamples;
+    internal Z80BusRangeStatistics RangeStatistics => new(_heldWaitSamples, _heldControlSamples);
+
+    internal void ReceiveInputWindow(Z80BusInputWindow window)
+    {
+        if (!_capturingRange || !_publishing)
+            throw new InvalidOperationException("Input stability must be delivered with the received bus prefix.");
+        ArgumentOutOfRangeException.ThrowIfLessThan(window.WaitBefore, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(window.ControlBefore, TimeNanoseconds);
+        if (((window.WaitDependentCycles | window.ControlDependentCycles) & ~63u) != 0)
+            throw new ArgumentOutOfRangeException(nameof(window));
+        _waitDependentCycles = window.WaitDependentCycles;
+        _controlDependentCycles = window.ControlDependentCycles;
+        _waitStableBefore = window.WaitBefore; _controlStableBefore = window.ControlBefore;
+        // A promise received halfway through a dependent transaction cannot
+        // cover its later strobes, even if no response is pending yet.
+        if (IsActive)
+        {
+            uint cycle = 1u << (int)_cycle;
+            if ((_waitDependentCycles & cycle) != 0) _waitOutputsSettled = long.MaxValue;
+            if ((_controlDependentCycles & cycle) != 0) _controlOutputsSettled = long.MaxValue;
+        }
+        else if (_pending != 0)
+        {
+            uint cycle = 1u << (int)_cycle;
+            long settled = LastPendingOutputTime();
+            if ((_waitDependentCycles & cycle) != 0) _waitOutputsSettled = settled;
+            if ((_controlDependentCycles & cycle) != 0) _controlOutputsSettled = settled;
+        }
+    }
+
+    private long LastPendingOutputTime()
+    {
+        long settled = TimeNanoseconds;
+        uint pending = _pending;
+        while (pending != 0)
+        {
+            int line = BitOperations.TrailingZeroCount(pending);
+            pending &= pending - 1;
+            if (_due[line] > settled) settled = _due[line];
+        }
+        return settled;
+    }
+
+    internal void ExchangeWaitInputs()
+    {
+        if (_capturingRange && TimeNanoseconds < _waitStableBefore && TimeNanoseconds >= _waitOutputsSettled)
+        { _heldWaitSamples++; return; }
+        ExchangeRangeInputs();
+    }
+
+    internal void ExchangeControlInputs()
+    {
+        if (_capturingRange && TimeNanoseconds < _controlStableBefore && TimeNanoseconds >= _controlOutputsSettled)
+        { _heldControlSamples++; return; }
+        ExchangeRangeInputs();
+    }
 
     internal Z80BusSequencer(Z80BusTiming timing, byte initialInputData)
     {
@@ -49,6 +115,7 @@ internal sealed class Z80BusSequencer
 
     internal long CompletedCycles => _completedCycles;
     internal bool IsPublishing => _publishing;
+    internal bool IsCapturingRange => _capturingRange;
     internal bool AtCycleStart => IsActive && _phase == 0 && TimeNanoseconds == _lastRisingEdge;
     internal bool HasSample => _hasSample;
     internal int Phase => _phase;
@@ -64,6 +131,39 @@ internal sealed class Z80BusSequencer
     internal long? PublishedNextEventNanoseconds => _publishedNext == long.MaxValue ? null : _publishedNext;
     internal Z80BusPins Pins => new(_levels);
 
+    internal int RangeChangeCount => _rangeChangeCount;
+
+    internal void BeginRangeCapture(Z80BusRangeHandler receiver)
+    {
+        if (_capturingRange || _publishing || PinsChanged is not null || NextEventNanosecondsChanged is not null)
+            throw new InvalidOperationException("Range delivery requires exclusive ownership of bus output transport.");
+        _rangeChanges ??= new TimedZ80BusPins[128];
+        _rangeStart = TimeNanoseconds;
+        _rangeInitial = Pins;
+        _rangeChangeCount = 0;
+        _rangeDelivered = false;
+        _waitStableBefore = _controlStableBefore = 0;
+        _capturingRange = true;
+        _rangeReceiver = receiver;
+    }
+
+    internal void ExchangeRangeInputs()
+    {
+        if (!_capturingRange) return;
+        if (_rangeDelivered && _rangeChangeCount == 0 && _rangeStart == TimeNanoseconds) return;
+        _rangeDelivered = true;
+        var result = new Z80BusRange(_rangeStart, TimeNanoseconds, _rangeInitial,
+            _rangeChanges.AsSpan(0, _rangeChangeCount));
+        _rangeStart = TimeNanoseconds;
+        _rangeInitial = Pins;
+        _rangeChangeCount = 0;
+        _publishing = true;
+        try { _rangeReceiver!(in result); }
+        finally { _publishing = false; }
+    }
+
+    internal void EndRangeCapture() { _capturingRange = false; _rangeReceiver = null; _rangeChangeCount = 0; }
+
     internal void SetData(byte data) => _inputData = data;
     internal void SetWait(bool asserted) => _waitAsserted = asserted;
 
@@ -77,6 +177,7 @@ internal sealed class Z80BusSequencer
     internal void SetBusGranted(bool granted)
     {
         EnsureClockOperation();
+        _waitStableBefore = _controlStableBefore = 0;
         if (granted)
         {
             if (IsActive) throw new InvalidOperationException("Cannot grant an active Z80 bus transaction.");
@@ -101,6 +202,8 @@ internal sealed class Z80BusSequencer
     internal void EnterReset()
     {
         EnsureClockOperation();
+        _waitStableBefore = _controlStableBefore = 0;
+        _waitOutputsSettled = _controlOutputsSettled = checked(TimeNanoseconds + _maximumDelay);
         IsActive = _waiting = _hasSample = _holdWriteData = false;
         Schedule(L.Address, -1, _timing.AddressFloat);
         Schedule(L.Data, -1, _timing.DataFloat);
@@ -128,6 +231,8 @@ internal sealed class Z80BusSequencer
             throw new ArgumentException("Only a memory write can hold output data.", nameof(holdWriteData));
         if (_completedCycles == long.MaxValue) throw new OverflowException();
         _cycle = cycle;
+        if ((_waitDependentCycles & (1u << (int)cycle)) != 0) _waitOutputsSettled = long.MaxValue;
+        if ((_controlDependentCycles & (1u << (int)cycle)) != 0) _controlOutputsSettled = long.MaxValue;
         _steps = _waveforms.Cycles[(int)cycle];
         _address = address;
         _refreshAddress = refreshAddress;
@@ -171,7 +276,11 @@ internal sealed class Z80BusSequencer
         if (!IsActive) return;
         if (_waiting)
         {
-            if (!high) _waiting = _waitAsserted;
+            if (!high)
+            {
+                ExchangeWaitInputs();
+                _waiting = _waitAsserted;
+            }
             return;
         }
         _phase++;
@@ -237,6 +346,8 @@ internal sealed class Z80BusSequencer
     private void ApplyStep(in Z80BusStep step)
     {
         var action = step.Action;
+        if ((action & Z80BusStepAction.Sample) != 0) ExchangeRangeInputs();
+        else if ((action & Z80BusStepAction.Wait) != 0) ExchangeWaitInputs();
         if ((action & Z80BusStepAction.Sample) != 0) { _sampledData = _inputData; _hasSample = true; }
         if ((action & Z80BusStepAction.Wait) != 0) _waiting = _waitAsserted;
         ulong mask = step.Mask, targets = step.Targets;
@@ -250,7 +361,16 @@ internal sealed class Z80BusSequencer
         { mask &= ~C.Masks[L.Data]; outputs &= ~(1u << L.Data); }
         if (outputs != 0) ScheduleTargets(mask, targets, outputs, step.Delays);
         if ((action & (Z80BusStepAction.Complete | Z80BusStepAction.CompleteWrite)) != 0)
-        { IsActive = false; _completedCycles++; }
+        {
+            IsActive = false; _completedCycles++;
+            uint cycle = 1u << (int)_cycle;
+            if (((_waitDependentCycles | _controlDependentCycles) & cycle) != 0)
+            {
+                long settled = LastPendingOutputTime();
+                if ((_waitDependentCycles & cycle) != 0) _waitOutputsSettled = settled;
+                if ((_controlDependentCycles & cycle) != 0) _controlOutputsSettled = settled;
+            }
+        }
     }
 
     internal void ReleaseWriteData()
@@ -327,6 +447,8 @@ internal sealed class Z80BusSequencer
             }
             NextEventTimestamp = next;
             _nextDirty = false;
+            if (_capturingRange && _levels != previousLevels)
+                _rangeChanges![_rangeChangeCount++] = new(TimeNanoseconds, new(_levels));
             if (_levels != previousLevels && PinsChanged is { } listener)
             {
                 _publishing = true;
@@ -382,6 +504,12 @@ internal sealed class Z80BusSequencer
         ArgumentNullException.ThrowIfNull(state);
         if (_publishing) throw new InvalidOperationException("Cannot restore state from a pin callback.");
         ValidateState(state);
+        long inputSettled = state.Time;
+        foreach (long due in state.Deadlines)
+            if (due != long.MaxValue && due > inputSettled) inputSettled = due;
+        _waitStableBefore = _controlStableBefore = 0;
+        _waitDependentCycles = _controlDependentCycles = 0;
+        _waitOutputsSettled = _controlOutputsSettled = inputSettled;
         TimeNanoseconds = state.Time; _lastClockEdge = state.LastClockEdge; _lastRisingEdge = state.LastRisingEdge;
         RisingClocks = state.RisingClocks; _completedCycles = state.CompletedCycles;
         ClockHigh = state.ClockHigh; IsActive = state.Active; _waiting = state.Waiting;

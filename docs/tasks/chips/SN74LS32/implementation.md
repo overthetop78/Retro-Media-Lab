@@ -6,3 +6,9 @@
     - [x] Créer `src/RetroMediaLab.Chips/Logic/TexasInstruments/SN74xx/SN74LS32/Interfaces/ISn74Ls32.cs`, `Models/Sn74Ls32Timing.cs` et `Services/Sn74Ls32.cs` : quatre portes OU indépendantes, entrées connues/inconnues, absence de calcul sans mutation, profil TI LS page 4 typique14/14 ns maximum22/22 ns (5 V,25°C,15 pF,2 kΩ), événements de changement et état complet.
   - [x] Vérifier la puce et le contrat commun.
     - [x] Créer `tests/RetroMediaLab.Chips.Tests/Logic/TexasInstruments/SN74xx/SN74LS32/Sn74Ls32Tests.cs` : toutes les combinaisons connues/inconnues, quatre portes, délais/fronts/annulations/feedback, reprise JSON et états invalides atomiques ; exécuter ce groupe et les contrôles d’architecture.
+
+- [x] Raccorder les portes au noyau de séquences du nouveau trajet de bus.
+  - [x] Garder la logique et les délais, remplacer le contrat de progression.
+    - [x] Modifier `src/RetroMediaLab.Chips/Logic/TexasInstruments/SN74xx/SN74LS32/Services/Sn74Ls32.cs` et `Interfaces/ISn74Ls32.cs` : factoriser la préparation canonique des cibles et exposer ExecuteInputRange sur la même instance et le même état, sans une seconde implémentation des portes ni callback par broche.
+  - [x] Vérifier les mêmes opérations.
+    - [x] Compléter `tests/RetroMediaLab.Chips.Tests/Logic/Common/LogicRangeTests.cs` : comparer les portes scalaires et les plages avec séquences identiques, entrées simultanées et retours inertiels ; reprendre les contrôles matériels existants après le lot.

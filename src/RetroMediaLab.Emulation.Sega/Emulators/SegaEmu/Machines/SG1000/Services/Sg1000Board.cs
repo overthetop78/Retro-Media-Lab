@@ -36,16 +36,11 @@ internal sealed partial class Sg1000Board : IDisposable
     private readonly Sn74Ls257[] _joy = [new(Sn74Ls257Timing.CharacterizedMaximum), new(Sn74Ls257Timing.CharacterizedMaximum)];
     private readonly Tmm2009 _ram = new(false);
     private readonly Mb8118[] _dram = Enumerable.Range(0, 8).Select(_ => new Mb8118(Mb8118Timing.Speed12)).ToArray();
-    private readonly long[] _due = Enumerable.Repeat(long.MaxValue, 19).ToArray();
-    private readonly LogicPinState[] _decodePins = new LogicPinState[8], _gatePins = new LogicPinState[4];
-    private readonly LogicPinState[] _joyPins = new LogicPinState[8], _dramPins = new LogicPinState[8];
     private ushort _pressed;
+    private byte _muxContactLow = 255, _muxContactHigh = 255;
     private bool _disposed, _pause, _masterHigh;
     private long _nextMasterIndex = 1;
-    private long _nextMasterTime = C.NanosecondsPerSecond / (C.CrystalHertz * 2);
-    private long _masterFraction = C.NanosecondsPerSecond % (C.CrystalHertz * 2);
     private bool _vdpReleased, _cpuReleased;
-    private readonly bool _useClockDomains;
     public long TimeNanoseconds { get; private set; }
     public CpuZ80 Cpu => _cpu;
     public Tms9918A Vdp => _vdp;
@@ -53,10 +48,8 @@ internal sealed partial class Sg1000Board : IDisposable
     public bool DataBusKnown { get; private set; }
 
     public Sg1000Board(ReadOnlySpan<byte> cartridge, bool powerUp = true,
-        Sg1000RomConfiguration? romConfiguration = null,ReadOnlySpan<byte> internalGame = default,
-        bool useClockDomains = true)
+        Sg1000RomConfiguration? romConfiguration = null,ReadOnlySpan<byte> internalGame = default)
     {
-        _useClockDomains = useClockDomains;
         _romConfiguration = romConfiguration ?? new();
         if (_romConfiguration.InternalGameEnabled && internalGame.Length != 16384)
             throw new ArgumentException("The selected internal game requires a complete16KiB ROM image.",nameof(internalGame));
@@ -73,11 +66,12 @@ internal sealed partial class Sg1000Board : IDisposable
             Connect();
             _cpu.SetReset(true);
             _vdp.SetReset(0, true);
-            OnCpuPins(_cpu.Pins);
             _cpu.SetWait(!_psg.Ready);
             _cpu.SetInt(!_vdp.CpuOutputs.IntHigh);
             _audioLevel = _psg.Output;
-            if (_useClockDomains) ConnectClockDomains();
+            ConnectRangeBus();
+            InitializeBusPins();
+            ConnectClockDomains();
             if (powerUp) AdvanceTo(C.CpuReleaseNanoseconds);
             initialized = true;
         }
@@ -86,63 +80,29 @@ internal sealed partial class Sg1000Board : IDisposable
 
     private void Connect()
     {
-        _cpu.PinsChanged = OnCpuPins;
-        _cpu.NextEventNanosecondsChanged = next => _due[0] = next ?? long.MaxValue;
-        _vdp.NextEventNanosecondsChanged = next => _due[1] = next ?? long.MaxValue;
-        _psg.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(2, next);
-        _decoder.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(3, next);
-        _gates.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(4, next);
-        _decoder.OutputChanged = (pin, value) =>
+        _psg.NextEventNanosecondsChanged = next => _psgReadyDue = next ?? long.MaxValue;
+        _vdp.CpuOutputsChanged = output =>
         {
-            _decodePins[pin] = value;
-            if (pin == 6) UpdateGateInputs(_decoder.TimeNanoseconds, 6);
-            else if (pin == 7) UpdateGateInputs(_decoder.TimeNanoseconds, 8);
-            if (pin == 3) UpdateRamBus(_decoder.TimeNanoseconds);
-            if (pin == 2) UpdateRomBus(_decoder.TimeNanoseconds, 10);
-            if (pin == 5) UpdatePsgBus(_decoder.TimeNanoseconds);
+            _cpu.SetInt(!output.IntHigh);
+            var driver = new DataWire(output.Data, output.DataKnown ? (byte)255 : (byte)0, output.DataDriven ? (byte)255 : (byte)0);
+            if (driver != _busVideoDriver) { _busVideoDriver = driver; _cpuBusDirty = true; }
+            ResolveRangeCpuData();
         };
-        _gates.OutputChanged = (pin, value) =>
-        {
-            _gatePins[pin] = value;
-            long time = _gates.TimeNanoseconds;
-            if (pin == 0) UpdateRomBus(time, 1);
-            else if (pin is 1 or 2) UpdateVdpBus(time);
-            else UpdateJoyBus(time);
-        };
-        _ram.OutputChanged = _ => ResolveCpuData();
-        _vdp.CpuOutputsChanged = output => { _cpu.SetInt(!output.IntHigh); ResolveCpuData(); };
-        if (!_useClockDomains) _vdp.CpuClockChanged = output =>
-        {
-            _cpu.AdvanceTo(output.TimeNanoseconds);
-            _psg.ReceiveClock(output.TimeNanoseconds, output.High);
-            _cpu.SetClock(output.High);
-        };
-        _vdp.VramPinsChanged = OnVramPins;
+        _vdp.UnrepresentedVramPinsChanged = OnVramPins;
+        _vdp.VramReadCycleProduced = ReceiveVramReadCycle;
+        _vdp.VramReadCycleCancelled = CancelVramReadCycle;
         _vdp.VideoSignalProduced = OnVideo;
         _vdp.FrameStarted = _ => FramesCompleted = _vdp.RasterState.Frame;
         _psg.ReadyChanged = ready => _cpu.SetWait(!ready);
         _psg.OutputChanged = level => { AdvanceAudio(_psg.TimeNanoseconds); _audioLevel = level; };
-        for (int index = 0; index < 2; index++)
-        {
-            int chip = index;
-            _joy[index].NextEventNanosecondsChanged = next => ReceiveDomainDeadline(5 + chip, next);
-            _joy[index].OutputChanged = (pin, value) => { _joyPins[chip * 4 + pin] = value; ResolveCpuData(); };
-        }
         for (int index = 0; index < 8; index++)
         {
             int chip = index;
-            _dramPins[index] = _dram[index].Output;
-            CacheDramOutput(index, _dramPins[index]);
-            _dram[index].NextEventNanosecondsChanged = next => ReceiveDomainDeadline(7 + chip, next);
-            _dram[index].OutputChanged = value => { _dramPins[chip] = value; UpdateVramReadData(_dram[chip].TimeNanoseconds, chip, value); };
+            CacheDramOutput(index, _dram[index].Output);
+            _dram[index].NextEventNanosecondsChanged = next => ReceiveVideoMemoryDeadline(chip, next);
+            _dram[index].OutputChanged = value => UpdateVramReadData(_dram[chip].TimeNanoseconds, chip, value);
         }
-        ConnectCartridge();
-        if (_internalRom is { } internalRom)
-        {
-            internalRom.OutputChanged = _ => ResolveCpuData();
-            internalRom.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(17, next);
-        }
-        RefreshDeadlines();
+        RefreshVideoMemoryBoundaries();
     }
 
     public void SetController(int port, byte pressedButtons)
@@ -151,8 +111,19 @@ internal sealed partial class Sg1000Board : IDisposable
         ArgumentOutOfRangeException.ThrowIfGreaterThan(pressedButtons, (byte)63);
         ObjectDisposedException.ThrowIf(_disposed, this);
         int shift = port * 6;
-        _pressed = (ushort)((_pressed & ~(63 << shift)) | (pressedButtons << shift));
-        UpdateJoyBus(TimeNanoseconds);
+        ushort next = (ushort)((_pressed & ~(63 << shift)) | (pressedButtons << shift));
+        if (next == _pressed) return;
+        _pressed = next;
+        RefreshControllerContacts();
+        DeliverExternalBusInputs();
+    }
+
+    private void RefreshControllerContacts()
+    {
+        byte p0 = (byte)(~_pressed & 63), p1 = (byte)((~_pressed >> 6) & 63);
+        byte even = (byte)(p0 | ((p1 & 3) << 6)), odd = (byte)((p1 >> 2) | 0xf0);
+        _muxContactLow = (byte)((even & 15) | ((odd & 15) << 4));
+        _muxContactHigh = (byte)((even >> 4) | (odd & 240));
     }
 
     public void SetPause(bool pressed)
@@ -174,6 +145,8 @@ internal sealed partial class Sg1000Board : IDisposable
             _vdp.CpuClockChanged = null; _vdp.CpuOutputsChanged = null; _vdp.VramPinsChanged = null;
             _vdp.VideoSignalProduced = null; _vdp.FrameStarted = null; _vdp.NextEventNanosecondsChanged = null;
             _vdp.CpuClockSourceChanged = null; _vdp.NextCpuEventNanosecondsChanged = null;
+            _vdp.VramReadCycleProduced = null; _vdp.VramReadCycleCancelled = null;
+            _vdp.UnrepresentedVramPinsChanged = null;
             _vdp.ClockInputBoundaryReached = null;
             _psg.OutputChanged = null; _psg.ReadyChanged = null; _psg.NextEventNanosecondsChanged = null;
             _decoder.OutputChanged = null; _decoder.NextEventNanosecondsChanged = null;

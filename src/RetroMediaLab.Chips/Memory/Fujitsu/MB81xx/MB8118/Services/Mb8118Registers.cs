@@ -3,12 +3,12 @@ using RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Models;
 
 namespace RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Services;
 
-internal readonly struct Mb8118InputLevels(byte address, bool addressKnown,
+internal struct Mb8118InputLevels(byte address, bool addressKnown,
     bool rasHigh, bool casHigh, bool writeHigh, bool? data)
 {
-    internal readonly byte Address = address;
-    internal readonly bool AddressKnown = addressKnown, RasHigh = rasHigh, CasHigh = casHigh, WriteHigh = writeHigh;
-    internal readonly bool? Data = data;
+    internal byte Address = address;
+    internal bool AddressKnown = addressKnown, RasHigh = rasHigh, CasHigh = casHigh, WriteHigh = writeHigh;
+    internal bool? Data = data;
     public static implicit operator Mb8118InputLevels(Mb8118Pins p)
         => new(p.Address, p.AddressKnown, p.RasHigh, p.CasHigh, p.WriteHigh, p.Data);
     public static implicit operator Mb8118Pins(Mb8118InputLevels p)

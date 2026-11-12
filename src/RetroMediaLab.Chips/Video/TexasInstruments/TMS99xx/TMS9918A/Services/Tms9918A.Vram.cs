@@ -21,7 +21,43 @@ public sealed partial class Tms9918A
     private bool _cpuVramInService;
 
     public Tms9918VramPins VramPins => _vramBus.Pins;
-    public Action<Tms9918VramSignal>? VramPinsChanged { get; set; }
+    private readonly Action<Tms9918VramPins> _vramPinDispatch;
+    private Action<Tms9918VramSignal>? _vramPinsObserver, _unrepresentedVramPinsObserver;
+    public Action<Tms9918VramSignal>? VramPinsChanged
+    {
+        get => _vramPinsObserver;
+        set { _vramPinsObserver = value; UpdateVramPinObservation(); }
+    }
+    public Action<Tms9918VramSignal>? UnrepresentedVramPinsChanged
+    {
+        get => _unrepresentedVramPinsObserver;
+        set { _unrepresentedVramPinsObserver = value; UpdateVramPinObservation(); }
+    }
+    public Tms9918VramReadCycleReceiver? VramReadCycleProduced { get; set; }
+    public Action<long>? VramReadCycleCancelled { get; set; }
+    private bool _vramReadWaveRouted;
+
+    private void UpdateVramPinObservation()
+    {
+        if (_vramBus is null) return;
+        _vramBus.PinsChanged = _vramPinsObserver is not null
+            || !_vramReadWaveRouted && _unrepresentedVramPinsObserver is not null ? _vramPinDispatch : null;
+    }
+
+    private void PublishVramPins(Tms9918VramPins pins)
+    {
+        bool wasPublishing = _publishing;
+        _publishing = true;
+        try
+        {
+            var signal = new Tms9918VramSignal(TimeNanoseconds, pins);
+            _vramPinsObserver?.Invoke(signal);
+            // The first observer may change subscriptions or withdraw a
+            // represented waveform at this date. Read the actual binding now.
+            if (!_vramReadWaveRouted) _unrepresentedVramPinsObserver?.Invoke(signal);
+        }
+        finally { _publishing = wasPublishing; }
+    }
 
     public void SetVramReadData(long timeNanoseconds, byte data, bool known)
     {
@@ -98,6 +134,19 @@ public sealed partial class Tms9918A
         _vramStartedHalfEdge = _clock.HalfEdges;
         _vramStep = 1;
         SetVramDeadline(checked(TimeNanoseconds + V.RasAssert));
+        _vramReadWaveRouted = false;
+        if (!write && _vramWriteEnd < 0 && VramPins.RasHigh && VramPins.CasHigh && VramPins.ReadWriteHigh
+            && VramReadCycleProduced is { } receiver)
+        {
+            var cycle = new Tms9918VramReadCycle(TimeNanoseconds, checked(TimeNanoseconds + V.RasAssert),
+                checked(TimeNanoseconds + V.CasAssert), checked(TimeNanoseconds + V.RasRelease),
+                checked(TimeNanoseconds + V.CasRelease), _vramRow, _vramColumn, address.Qualified);
+            bool wasPublishing = _publishing;
+            _publishing = true;
+            try { _vramReadWaveRouted = receiver(in cycle); }
+            finally { _publishing = wasPublishing; }
+        }
+        UpdateVramPinObservation();
         _vramBus.ApplyOutputs(TimeNanoseconds, VramPins with
             { AddressData = _vramRow, AddressDataKnown = address.Qualified });
         PublishDeadline();
@@ -150,6 +199,8 @@ public sealed partial class Tms9918A
                 }
                 RefreshNextDeadline();
                 _vramBus.ApplyOutputs(TimeNanoseconds, pins with { CasHigh = true });
+                _vramReadWaveRouted = false;
+                UpdateVramPinObservation();
                 _vramActive = false;
                 return;
             default: throw new InvalidOperationException("Invalid VDP VRAM sequencer phase.");
@@ -189,8 +240,22 @@ public sealed partial class Tms9918A
         }
     }
 
+    private void WithdrawVramReadWave()
+    {
+        if (_vramReadWaveRouted)
+        {
+            bool wasPublishing = _publishing;
+            _publishing = true;
+            try { VramReadCycleCancelled?.Invoke(TimeNanoseconds); }
+            finally { _publishing = wasPublishing; }
+            _vramReadWaveRouted = false;
+            UpdateVramPinObservation();
+        }
+    }
+
     private void CancelVramOnReset()
     {
+        WithdrawVramReadWave();
         _vramDue = _vramWriteEnd = -1;
         RefreshNextDeadline();
         _vramActive = _ramLoadActive = _cpuVramInService = false;

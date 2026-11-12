@@ -18,6 +18,7 @@ internal sealed partial class Sg1000Board
 
     private void OnVideo(Tms9918VideoSignal signal)
     {
+        _nativeVideoSamples++;
         if (signal.Dot == 341 && signal.Line == 261) _completedRaster = true;
         if (signal.Dot is < 0 or >= C.Width || signal.Line is < 0 or >= C.Height) return;
         int offset = signal.Line * C.Width + signal.Dot;

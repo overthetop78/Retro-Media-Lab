@@ -3,7 +3,6 @@ using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Contracts;
 using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Enums;
 using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Models;
 using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Services;
-using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Contracts;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Enums;
 using RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2016.Services;
@@ -105,69 +104,14 @@ internal sealed partial class Sg1000Board
         _rom = contents; _cartridgeHash = hash; _romConfiguration = configuration;
         (_cartridgeLow,_cartridgeHigh,_cartridgeLowMask,_cartridgeHighMask,_cartridgeRam) = replacement;
         _cartridgeOrigin = TimeNanoseconds;
-        ConnectCartridge();
-        UpdateRomBus(TimeNanoseconds);
-        ResolveCpuData();
+        ConnectRangeBus();
+        InitializeBusPins();
     }
-
-    private void ConnectCartridge()
-    {
-        if (_cartridgeLow is { } low)
-        {
-            low.OutputChanged = _ => ResolveCpuData();
-            low.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(15, GlobalRomDue(next));
-        }
-        if (_cartridgeHigh is { } high)
-        {
-            high.OutputChanged = _ => ResolveCpuData();
-            high.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(16, GlobalRomDue(next));
-        }
-        if (_cartridgeRam is { } ram)
-        {
-            ram.OutputChanged = _ => ResolveCpuData();
-            ram.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(18, GlobalRomDue(next));
-        }
-        _due[15] = GlobalRomDue(_cartridgeLow?.NextEventNanoseconds) ?? long.MaxValue;
-        _due[16] = GlobalRomDue(_cartridgeHigh?.NextEventNanoseconds) ?? long.MaxValue;
-        _due[18] = GlobalRomDue(_cartridgeRam?.NextEventNanoseconds) ?? long.MaxValue;
-        _cpuWireDueDirty = true;
-    }
-
-    private long? GlobalRomDue(long? time) => time.HasValue ? checked(time.Value + _cartridgeOrigin) : null;
 
     private void DisconnectCartridge()
     {
         if (_cartridgeLow is { } low) { low.OutputChanged = null; low.NextEventNanosecondsChanged = null; }
         if (_cartridgeHigh is { } high) { high.OutputChanged = null; high.NextEventNanosecondsChanged = null; }
         if (_cartridgeRam is { } ram) { ram.OutputChanged = null; ram.NextEventNanosecondsChanged = null; }
-        _due[15] = _due[16] = _due[18] = long.MaxValue;
-        _cpuWireDueDirty = true;
-    }
-
-    private void UpdateRomBus(long time, int memories = 15)
-    {
-        ushort address = _cpuAddress.GetValueOrDefault();
-        bool mreqHigh = _memoryHigh != false;
-        long cartridgeTime = time - _cartridgeOrigin;
-        // Enri48K: CE=/MREQ, OE=/EXM2 or /EXM1. Addresses above a
-        // package's pins are unwired, giving its physical mirrors.
-        if ((memories & 1) != 0) _cartridgeLow?.ReceiveParallelPins(cartridgeTime, (ushort)(address & _cartridgeLowMask),
-            _cpuAddress.HasValue,_romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? false : mreqHigh,
-            _gatePins[0] != LogicPinState.Low);
-        if ((memories & 2) != 0) _cartridgeHigh?.ReceiveParallelPins(cartridgeTime, (ushort)(address & _cartridgeHighMask),
-            _cpuAddress.HasValue,mreqHigh,_decodePins[2] != LogicPinState.Low);
-        if ((memories & 8) != 0 && _cartridgeRam is { } ram)
-        {
-            int mask = _romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? 8191 : 2047;
-            // Enri Castle/Othello drawings: /EXM1 selects SRAM, /RD->OE,
-            // /WR->WE; the Castle's second chip select is tied to VDD.
-            ram.ReceivePins(cartridgeTime,new((ushort)(address & mask),_cpuAddress.HasValue,
-                _decodePins[2] != LogicPinState.Low,_readHigh != false,_writeHigh != false,
-                _cpuData.GetValueOrDefault(),_cpuData.HasValue ? (byte)255 : (byte)0,Cs2High:true));
-        }
-        // Optional16KiB internal game. Cartridge presence inhibits the ROM,
-        // independently of the current cartridge address or data bus value.
-        if ((memories & 4) != 0) _internalRom?.ReceiveParallelPins(time, (ushort)(address & 16383),_cpuAddress.HasValue,
-            mreqHigh || CartridgePresent || address >= 0x4000,_readHigh != false);
     }
 }

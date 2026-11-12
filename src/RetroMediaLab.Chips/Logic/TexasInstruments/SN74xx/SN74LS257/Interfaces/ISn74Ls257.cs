@@ -13,6 +13,7 @@ public interface ISn74Ls257
     void SetInputs(byte aLevels, byte aKnown, byte bLevels, byte bKnown, bool? selectB, bool? disableHigh);
     /// <summary>Bits0..3=A,4..7=B,8=S,9=G. High means physical high.</summary>
     void SetInputs(ushort levels, ushort known);
+    LogicOutputRange ExecuteInputRange(in LogicInputRange range);
     void AdvanceTo(long nanoseconds);
     CombinationalState CaptureState();
     void RestoreState(CombinationalState state);

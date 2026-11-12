@@ -1,13 +1,14 @@
 using RetroMediaLab.Chips.Logic.Common.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Chips.Logic.Common.Services;
+using RetroMediaLab.Chips.Logic.Common.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Models;
 
 namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Services;
 
 /// <summary>TI LS139A: two independent active-low one-of-four decoders.</summary>
-public sealed class Sn74Ls139 : ISn74Ls139
+public sealed class Sn74Ls139 : ISn74Ls139, ICombinationalRangeModel
 {
     private const string Part = "SN74LS139A";
     private readonly CombinationalOutputs _pins = new(8);
@@ -38,11 +39,30 @@ public sealed class Sn74Ls139 : ISn74Ls139
     public void SetInputs(byte levels, byte known)
     {
         if (((levels | known) & ~63) != 0) throw new ArgumentOutOfRangeException(nameof(levels));
-        levels &= known;
-        if (_levels == levels && _known == known) return;
-        ushort targets = Resolve(levels, known);
-        byte changed = (byte)((_levels ^ levels) | (_known ^ known));
         Span<long> delays = stackalloc long[8];
+        if (!PrepareInputs(levels, known, delays, out ushort targets)) return;
+        _pins.Validate(targets, delays);
+        _levels = (byte)(levels & known); _known = known;
+        _pins.SetTargets(targets, delays);
+    }
+
+    public LogicOutputRange ExecuteInputRange(in LogicInputRange range) => _pins.ExecuteInputRange(in range, 63, this);
+
+    bool ICombinationalRangeModel.PrepareRangeInput(in TimedLogicInput input, Span<long> delays, out ushort targets)
+        => PrepareInputs((byte)input.Levels, (byte)input.Known, delays, out targets);
+
+    void ICombinationalRangeModel.CommitRangeInput(in TimedLogicInput input)
+    {
+        _levels = (byte)(input.Levels & input.Known); _known = (byte)input.Known;
+    }
+
+    private bool PrepareInputs(byte levels, byte known, Span<long> delays, out ushort targets)
+    {
+        levels &= known;
+        targets = default;
+        if (_levels == levels && _known == known) return false;
+        targets = Resolve(levels, known);
+        byte changed = (byte)((_levels ^ levels) | (_known ^ known));
         for (int output = 0; output < 8; output++)
         {
             int inputs = (changed >> ((output / 4) * 3)) & 7;
@@ -53,9 +73,7 @@ public sealed class Sn74Ls139 : ISn74Ls139
             if ((inputs & 4) != 0) delay = Math.Max(delay, Delay(4, target));
             delays[output] = delay;
         }
-        _pins.Validate(targets, delays);
-        _levels = levels; _known = known;
-        _pins.SetTargets(targets, delays);
+        return true;
     }
     private long Delay(int path, LogicPinState target) => target == LogicPinState.High ? _timing[path]
         : target == LogicPinState.Low ? _timing[path + 1] : Math.Max(_timing[path], _timing[path + 1]);

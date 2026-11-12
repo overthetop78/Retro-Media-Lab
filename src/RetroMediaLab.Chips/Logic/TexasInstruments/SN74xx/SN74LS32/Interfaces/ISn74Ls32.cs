@@ -12,6 +12,7 @@ public interface ISn74Ls32
     LogicPinState GetOutput(int gate);
     void SetInputs(int gate, bool? a, bool? b);
     void SetInputs(byte aLevels, byte aKnown, byte bLevels, byte bKnown);
+    LogicOutputRange ExecuteInputRange(in LogicInputRange range);
     void AdvanceTo(long nanoseconds);
     CombinationalState CaptureState();
     void RestoreState(CombinationalState state);

@@ -50,6 +50,7 @@ public sealed partial class Tms9918A : ITms9918A
 
     public Tms9918A(Tms9918InitialState initial, Tms9918CpuTiming timing)
     {
+        _vramPinDispatch = PublishVramPins;
         ArgumentNullException.ThrowIfNull(timing);
         _cpuTiming = timing;
         if (initial.Clock.HalfEdgePhase is < 0 or >= 12 || initial.Clock.HalfEdges < 0
@@ -72,13 +73,6 @@ public sealed partial class Tms9918A : ITms9918A
         _vramBus = new(new(0, new(0, false, true, true, true), 0, false, 0, null))
         {
             ReadCaptured = CaptureVramRead,
-            PinsChanged = pins =>
-            {
-                bool wasPublishing = _publishing;
-                _publishing = true;
-                try { VramPinsChanged?.Invoke(new(TimeNanoseconds, pins)); }
-                finally { _publishing = wasPublishing; }
-            },
         };
     }
 

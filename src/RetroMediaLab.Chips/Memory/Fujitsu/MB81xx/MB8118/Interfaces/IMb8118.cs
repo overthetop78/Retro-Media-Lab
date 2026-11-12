@@ -14,6 +14,9 @@ public interface IMb8118
     void ReceivePins(long timeNanoseconds, Mb8118Pins pins);
     void ReceiveMultiplexedPins(long timeNanoseconds, byte address, bool addressKnown,
         bool rasHigh, bool casHigh, bool writeHigh, bool? data);
+    void ReceiveReadCycle(Mb8118ReadCycle cycle);
+    void ReceiveReadCycle(in Mb8118ReadCycle cycle, bool? rowData, bool? columnData);
+    void CancelReadCycle(long timeNanoseconds);
     void AdvanceTo(long timeNanoseconds);
     Mb8118State CaptureState();
     void RestoreState(Mb8118State state);
