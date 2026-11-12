@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>אפשרות 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>המונחים</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>מוגבלות</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>משחק פנימי ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>נכים כברירת מחדל.בחר תמונת משחק פנימית של 16KB. הכנסת מחסנית מתפוררת זה פנימי ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>משחק פנימי ROM תמונה</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>קרטרידג' ROM פריסת פריסה</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>תקן Standard ROM פריסת פריסה</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>2 8KB ROMs עם מראות</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>כפתור Puse</value></data>
 </root>

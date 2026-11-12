@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Aktivera 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Aktiverad</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Inaktiverad</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Möjliggöra internt spel ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Inaktiverad som standard. Välj en 16 KiB intern spelbild. Infoga en patron inaktiverar denna interna ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Internt spel ROM bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Cartridge ROM layout</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard Standard ROM layout</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Två 8 KiB ROM med adressspeglar</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Console Pause knapp</value></data>
 </root>

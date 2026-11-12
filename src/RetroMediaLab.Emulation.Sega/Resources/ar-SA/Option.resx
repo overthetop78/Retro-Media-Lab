@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>التمكين 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>التمكين</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>المعوقين</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>لعبة داخلية تمكينية ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>مُعوقون بسبب الفشل، إختاروا صورة لعبة داخلية لـ16 كيلو بي بي، و أُرسلوا خرطوشة مُعطلة ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>اللعبة الداخلية ROM صورة</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Cartridge ROM مخطط</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>المعيار ROM مخطط</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>قرصان من طراز كيب بذاكرة قراءة فقط مع مرايا عناوين</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>زر وقف إطلاق النار</value></data>
 </root>

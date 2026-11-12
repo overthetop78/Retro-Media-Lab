@@ -18,4 +18,11 @@ public sealed record Sn76489State
     public required bool ChipSelected { get; init; }
     public required bool WriteEnabled { get; init; }
     public required int Output { get; init; }
+    public required int ReadyAssertDelayNanoseconds { get; init; }
+    public required bool ReadyOutput { get; init; }
+    public required bool DirectTransfer { get; init; }
+    public required bool ClockHigh { get; init; }
+    public required long InputClockCount { get; init; }
+    public required long TimeNanoseconds { get; init; }
+    public required long? ReadyDueNanoseconds { get; init; }
 }

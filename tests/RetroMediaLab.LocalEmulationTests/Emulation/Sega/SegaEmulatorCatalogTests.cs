@@ -176,7 +176,7 @@ public sealed class SegaEmulatorCatalogTests
     }
 
     [Theory]
-    [InlineData("Sg1000", "bluemsx", "gearsystem", "genesisplusgx", "genesis_plus_gx_wide", "picodrive")]
+    [InlineData("Sg1000", "bluemsx", "gearsystem", "genesisplusgx", "genesis_plus_gx_wide", "picodrive", "segaemu")]
     [InlineData("Sc3000", "bluemsx", "genesisplusgx", "genesis_plus_gx_wide", "picodrive")]
     [InlineData("Sf7000", "bluemsx")]
     [InlineData("MegaCd", "clownmdemu", "genesisplusgx", "genesis_plus_gx_wide", "picodrive")]
@@ -196,7 +196,7 @@ public sealed class SegaEmulatorCatalogTests
     public void EveryFactoryAndMachineHasAnExplicitValidDefinition()
     {
         var adapters = EmulatorCatalog.CreateAdapters();
-        Assert.Equal(16, adapters.Count);
+        Assert.Equal(17, adapters.Count);
         Assert.Equal(adapters.Count, adapters.Select(adapter => adapter.EmulatorId).Distinct().Count());
         Assert.Equal(19, ModelCatalog.All.Count);
         Assert.All(ModelCatalog.All, model => Assert.Contains(EmulatorCatalog.GetAll(model.Id), core => core.Id == EmulatorCatalog.DefaultEmulator(model.Id)));

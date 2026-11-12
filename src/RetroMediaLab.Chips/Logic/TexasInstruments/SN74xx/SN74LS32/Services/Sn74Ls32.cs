@@ -1,0 +1,89 @@
+using RetroMediaLab.Chips.Logic.Common.Contracts;
+using RetroMediaLab.Chips.Logic.Common.Enums;
+using RetroMediaLab.Chips.Logic.Common.Services;
+using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Interfaces;
+using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Models;
+
+namespace RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Services;
+
+/// <summary>Four independent positive OR gates, with no clock or reset.</summary>
+public sealed class Sn74Ls32 : ISn74Ls32
+{
+    private const string Part = "SN74LS32";
+    private readonly CombinationalOutputs _pins = new(4);
+    private readonly long[] _timing;
+    private byte _levels, _known;
+    public Sn74Ls32(Sn74Ls32Timing timing)
+    {
+        ArgumentNullException.ThrowIfNull(timing);
+        _timing = [timing.Rise, timing.Fall];
+    }
+    public long TimeNanoseconds => _pins.Time;
+    public long? NextEventNanoseconds => _pins.Next;
+    public Action<long?>? NextEventNanosecondsChanged { get => _pins.DeadlineChanged; set => _pins.DeadlineChanged = value; }
+    public Action<int, LogicPinState>? OutputChanged { get => _pins.Changed; set => _pins.Changed = value; }
+    public LogicPinState GetOutput(int gate) => _pins.Get(gate);
+    public void AdvanceTo(long nanoseconds) => _pins.AdvanceTo(nanoseconds);
+
+    public void SetInputs(int gate, bool? a, bool? b)
+    {
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)gate, 4U);
+        int shift = gate * 2;
+        byte levels = (byte)((_levels & ~(3 << shift)) | ((a == true ? 1 : 0) << shift) | ((b == true ? 2 : 0) << shift));
+        byte known = (byte)((_known & ~(3 << shift)) | ((a.HasValue ? 1 : 0) << shift) | ((b.HasValue ? 2 : 0) << shift));
+        SetPacked(levels, known);
+    }
+
+    public void SetInputs(byte aLevels, byte aKnown, byte bLevels, byte bKnown)
+    {
+        if (((aLevels | aKnown | bLevels | bKnown) & 0xf0) != 0) throw new ArgumentOutOfRangeException(nameof(aLevels));
+        byte levels = 0, known = 0;
+        for (int gate = 0; gate < 4; gate++)
+        {
+            levels |= (byte)((((aLevels & aKnown) >> gate) & 1) << (gate * 2));
+            levels |= (byte)((((bLevels & bKnown) >> gate) & 1) << (gate * 2 + 1));
+            known |= (byte)(((aKnown >> gate) & 1) << (gate * 2));
+            known |= (byte)(((bKnown >> gate) & 1) << (gate * 2 + 1));
+        }
+        SetPacked(levels, known);
+    }
+
+    private void SetPacked(byte levels, byte known)
+    {
+        if (_levels == levels && _known == known) return;
+        ushort targets = Resolve(levels, known);
+        Span<long> delays = stackalloc long[4];
+        for (int gate = 0; gate < 4; gate++)
+        {
+            var target = (LogicPinState)((targets >> (gate * 2)) & 3);
+            delays[gate] = target == LogicPinState.High ? _timing[0] : target == LogicPinState.Low ? _timing[1] : Math.Max(_timing[0], _timing[1]);
+        }
+        _pins.Validate(targets, delays);
+        _levels = levels; _known = known;
+        _pins.SetTargets(targets, delays);
+    }
+
+    private static ushort Resolve(ulong levels, ulong known)
+    {
+        ushort result = 0;
+        for (int gate = 0; gate < 4; gate++)
+        {
+            int shift = gate * 2;
+            ulong k = (known >> shift) & 3, l = (levels >> shift) & k;
+            var output = l != 0 ? LogicPinState.High : k == 3 ? LogicPinState.Low : LogicPinState.Unknown;
+            result |= (ushort)((int)output << shift);
+        }
+        return result;
+    }
+    public CombinationalState CaptureState() => _pins.Capture(Part, _levels, _known, _timing);
+    public void RestoreState(CombinationalState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        _pins.ValidateRestore(state, Part, 0xff, Resolve(state.InputLevels, state.InputKnown), _timing);
+        // Push-pull OR outputs never enter a known high-impedance state.
+        for (int gate = 0; gate < 4; gate++)
+            if (((state.Outputs >> (gate * 2)) & 3) == 3) throw new ArgumentException(nameof(state));
+        _levels = (byte)state.InputLevels; _known = (byte)state.InputKnown;
+        _pins.Restore(state);
+    }
+}

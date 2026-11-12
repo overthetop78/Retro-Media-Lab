@@ -20,4 +20,5 @@ public enum Emulator
     YabaSanshiro,
     Yabause,
     Ymir,
+    SegaEmu,
 }

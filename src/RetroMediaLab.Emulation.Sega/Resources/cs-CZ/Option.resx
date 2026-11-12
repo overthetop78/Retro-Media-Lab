@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Povolit 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Povoleno</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Zakázáno</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Povolit vnitřní hru ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Zvolte obrázek 16 KiB vnitřní hry. Vložení zásobní vložky vypne tento vnitřní ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Vnitřní hra ROM obrázek</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Zásobník ROM Rozvržení</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standardní ROM Rozvržení</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dva 8 kiB ROM s adresovými zrcadly</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Tlačítko Konzole Pauza</value></data>
 </root>

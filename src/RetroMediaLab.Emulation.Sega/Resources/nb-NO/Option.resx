@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Slå på 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Aktivert</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Deaktivert</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Aktiver internt spill ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Deaktivert som standard. Velg et 16 KiB internt spillbilde. Setter inn en patron deaktiverer dette interne ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Internt spill ROM bilde</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Patron ROM layout</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard ROM layout</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>To 8 KiB-ROMer med adressespeil</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Konsollpause-knappen</value></data>
 </root>

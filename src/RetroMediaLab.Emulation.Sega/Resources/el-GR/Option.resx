@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Ενεργοποίηση 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Ενεργοποιημένο</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Απενεργοποίηση</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Ενεργοποίηση εσωτερικού παιχνιδιού ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Απενεργοποίηση προεπιλογής. Επιλέξτε μια εικόνα του εσωτερικού παιχνιδιού 16 KiB. Η εισαγωγή ενός φυσιγγίου απενεργοποιεί αυτό το εσωτερικό ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Εσωτερικό παιχνίδι ROM εικόνα</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Φυσίγγιο ROM διάταξη</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Τυπικό ROM διάταξη</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Δύο 8 KiB ROM με καθρέπτες διευθύνσεων</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Κουμπί παύσης κονσόλας</value></data>
 </root>

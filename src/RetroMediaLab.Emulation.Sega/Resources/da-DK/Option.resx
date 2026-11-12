@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Aktivér 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Aktiveret</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Deaktiveret</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Aktivér internt spil ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Deaktiveret som standard. Vælg et 16 KiB internt spilbillede. Indsætter en cylinderampul deaktiverer dette interne ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Intern spil ROM billede</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Cylinderampul ROM layout</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard ROM layout</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>To 8 KiB-rommer med adressespejle</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Konsol Pause knap</value></data>
 </root>

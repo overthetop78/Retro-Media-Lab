@@ -5389,4 +5389,6 @@ The 'All VMUs' setting creates up to 8 unique VMU files (A1/A2/B1/B2/C1/C2/D1/D2
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000"><value>SC3000</value></data>
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000MultiCart"><value>SC3000MultiCart</value></data>
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000MegaCart"><value>SC3000MegaCart</value></data>
+  <data name="Emulation.Emulator.segaemu"><value>SegaEmu</value></data>
+  <data name="Emulation.Emulator.segaemu.Description"><value>Built-in emulator for Sega machines. SG-1000 NTSC support is currently being developed.</value></data>
 </root>

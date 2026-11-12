@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Bật 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Đã bật</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Đã tắt</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Bật trò chơi nội bộ ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Bị tắt theo mặc định. Chọn một trò chơi nội bộ 16 KiB. Đang chèn một hộp mực vô hiệu hoá nội bộ này ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Trò chơi nội bộ ROM ảnh</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Hộp mực ROM bố trí</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Chuẩn ROM bố trí</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>2 0 KB ROMs với các địa chỉ gương</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Nút Tạm Dừng điều khiển</value></data>
 </root>

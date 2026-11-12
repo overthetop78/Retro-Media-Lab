@@ -3435,4 +3435,5 @@
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000"><value>SC3000</value></data>
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000MultiCart"><value>SC3000MultiCart</value></data>
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000MegaCart"><value>SC3000MegaCart</value></data>
+  <data name="Emulation.Emulator.segaemu.Description"><value>Sega makineleri için yerleşik emülatör. SG-1000 NTSC Destek şu anda geliştiriliyor.</value></data>
 </root>

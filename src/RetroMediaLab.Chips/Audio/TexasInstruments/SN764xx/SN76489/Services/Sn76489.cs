@@ -24,14 +24,25 @@ public sealed partial class Sn76489 : ISn76489
     private bool _writeEnabled;
     private int _output;
 
-    public Sn76489() => Reset();
+    public Sn76489() : this(0) { }
+
+    /// <summary>Choisit le délai CE→READY dans les bornes TI. Zéro conserve
+    /// le contrat historique par clocks ; le raccordement daté choisit 90/150 ns.</summary>
+    public Sn76489(int readyAssertDelayNanoseconds)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(readyAssertDelayNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(readyAssertDelayNanoseconds,
+            Sn76489Constants.MaximumReadyAssertNanoseconds);
+        _readyAssertDelay = readyAssertDelayNanoseconds;
+        Reset();
+    }
 
     /// <summary>Somme instantanée, sans duplication stéréo ni application du volume de l'hôte.</summary>
     public int Output => _output;
     public Action<int>? OutputChanged { get; set; }
 
     /// <summary>État relâché de READY (collecteur ouvert) ; false représente le niveau bas.</summary>
-    public bool Ready => _transferClocks == 0;
+    public bool Ready => _readyOutput;
 
     /// <summary>Périodes d'entrée avant le prochain front interne ou la fin du transfert en cours.</summary>
     public int ClocksUntilNextEvent
@@ -52,7 +63,10 @@ public sealed partial class Sn76489 : ISn76489
             + ((_shift & Sn76489Constants.NoiseOutputBit) != 0 ? _amplitudes[Sn76489Constants.NoiseChannel] : 0);
         if (_output == output) return;
         _output = output;
-        OutputChanged?.Invoke(output);
+        bool wasPublishing = _publishing;
+        _publishing = true;
+        try { OutputChanged?.Invoke(output); }
+        finally { _publishing = wasPublishing; }
     }
 
     /// <summary>Initialisation du modèle ; le circuit ne possède pas de broche RESET externe.</summary>
@@ -72,15 +86,27 @@ public sealed partial class Sn76489 : ISn76489
         _busData = 0;
         _chipSelected = false;
         _writeEnabled = false;
+        _directTransfer = false;
+        _readyOutput = true;
+        _readyDue = null;
+        _inputClockCount = 0;
+        _clockHigh = false;
         UpdateOutput();
+        PublishReady();
+        PublishReadyDeadline();
     }
 
     /// <summary>Accepte un octet du bus lorsque le câblage propriétaire valide une écriture.</summary>
     public void Write(byte value)
     {
+        ValidateReadyAssertion();
+        _directTransfer = true;
         _transferClocks = Sn76489Constants.TransferClocks;
         ApplyData(value);
+        ResolveReady();
         UpdateOutput();
+        PublishReady();
+        PublishReadyDeadline();
     }
 
     private void ApplyData(byte value)
@@ -115,38 +141,55 @@ public sealed partial class Sn76489 : ISn76489
     public void SetBus(byte value, bool chipSelected, bool writeEnabled)
     {
         if (chipSelected && (!_chipSelected || writeEnabled && !_writeEnabled))
+        {
+            ValidateReadyAssertion();
             _transferClocks = Sn76489Constants.TransferClocks;
+        }
+        _directTransfer = false;
         _busData = value;
         _chipSelected = chipSelected;
         _writeEnabled = writeEnabled;
+        ResolveReady();
+        PublishReady();
+        PublishReadyDeadline();
     }
 
     /// <summary>Avance d'une période d'entrée ; les compteurs internes travaillent après division par seize.</summary>
     public void Tick()
     {
+        if (_publishing) throw new InvalidOperationException("Cannot clock the PSG from an output callback.");
+        _inputClockCount = checked(_inputClockCount + 1);
+        bool completed = _transferClocks == 1;
         if (_transferClocks != 0)
             --_transferClocks;
-        if (++_divider < Sn76489Constants.ClockDivider)
-            return;
-        _divider = 0;
-        ClockDivided();
+        bool divided = ++_divider == Sn76489Constants.ClockDivider;
+        if (divided) { _divider = 0; ClockDivided(); }
+        if (completed) ResolveReady();
+        if (divided) UpdateOutput();
+        if (completed) { PublishReady(); PublishReadyDeadline(); }
     }
 
     /// <summary>Avance des périodes complètes sans entrée intermédiaire ; chaque front interne garde son ordre.</summary>
     public void AdvanceClocks(int clocks)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(clocks);
-        var distance = Sn76489Constants.ClockDivider - _divider;
-        while (clocks >= distance)
+        if (_publishing && clocks != 0) throw new InvalidOperationException("Cannot clock the PSG from an output callback.");
+        _ = checked(_inputClockCount + clocks);
+        while (clocks > 0)
         {
-            if (_transferClocks != 0) _transferClocks = Math.Max(0, _transferClocks - distance);
+            int distance = Math.Min(clocks, Sn76489Constants.ClockDivider - _divider);
+            if (_transferClocks > 0) distance = Math.Min(distance, _transferClocks);
+            bool completed = _transferClocks > 0 && distance == _transferClocks;
+            _inputClockCount += distance;
+            if (_transferClocks > 0) _transferClocks -= distance;
             clocks -= distance;
-            _divider = 0;
-            ClockDivided();
-            distance = Sn76489Constants.ClockDivider;
+            _divider += distance;
+            bool divided = _divider == Sn76489Constants.ClockDivider;
+            if (divided) { _divider = 0; ClockDivided(); }
+            if (completed) ResolveReady();
+            if (divided) UpdateOutput();
+            if (completed) { PublishReady(); PublishReadyDeadline(); }
         }
-        if (_transferClocks != 0) _transferClocks = Math.Max(0, _transferClocks - clocks);
-        _divider += clocks;
     }
 
     private void ClockDivided()
@@ -168,7 +211,6 @@ public sealed partial class Sn76489 : ISn76489
         }
         if (_chipSelected && _writeEnabled)
             ApplyData(_busData);
-        UpdateOutput();
     }
 
     /// <summary>Résout le diviseur TI ; fréquence du ton = horloge / (32 × période).</summary>

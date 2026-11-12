@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Habilitación 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Activado</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Desactivado</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Activar el juego interno ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Discapacitado por defecto. Seleccione una imagen interna de juego de 16 KiB. Insertar un cartucho desactiva este interior ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Juegos Interna juego ROM imagen</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Cartridge ROM diseño</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Estándar ROM diseño</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dos 8 ROMs con espejos de dirección</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Consola botón de pausa</value></data>
 </root>

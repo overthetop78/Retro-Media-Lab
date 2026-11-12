@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Включить 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Включено</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Отключено</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Включите внутреннюю игру ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Выберите внутреннее игровое изображение 16 KiB. Вставка картриджа отключает это внутреннее изображение. ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Внутренняя игра ROM изображение</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Картридж ROM планировка</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Стандартный стандарт ROM планировка</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Две 8-кибовые ПЗУ с адресными зеркалами</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Кнопка Console Pause</value></data>
 </root>

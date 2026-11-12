@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Aktifkan 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Diaktifkan</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Dinonaktifkan</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Aktifkan permainan internal ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Dimatikan secara baku. Pilih sebuah 16 KiB gambar permainan internal. Menginserting sebuah kartrid menonaktifkan internal ini ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Permainan internal ROM gambar</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Cartridge ROM tata letak</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standar ROM tata letak</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dua 8 Rumah Sakit Jiwa KiB dengan cermin alamat</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Tombol Jeda Konsol</value></data>
 </root>

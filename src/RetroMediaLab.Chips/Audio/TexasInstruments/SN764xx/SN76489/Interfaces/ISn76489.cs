@@ -12,6 +12,14 @@ public interface ISn76489
     Action<int>? OutputChanged { get; set; }
     /// <summary>True lorsque la sortie READY à collecteur ouvert est relâchée.</summary>
     bool Ready { get; }
+    Action<bool>? ReadyChanged { get; set; }
+    long InputClockCount { get; }
+    long TimeNanoseconds { get; }
+    long? NextEventNanoseconds { get; }
+    Action<long?>? NextEventNanosecondsChanged { get; set; }
+    void AdvanceTo(long timeNanoseconds);
+    void ReceiveClock(long timeNanoseconds, bool high);
+    void SetBus(long timeNanoseconds, byte value, bool chipSelected, bool writeEnabled);
     /// <summary>Périodes avant le prochain événement matériel interne.</summary>
     int ClocksUntilNextEvent { get; }
 

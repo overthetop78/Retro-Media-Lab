@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>32X aktivieren</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Aktiviert</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Deaktiviert</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Internes Spiel ermöglichen ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Standardmäßig deaktiviert. Wählen Sie ein 16-Kib-internes Spielbild. Einfügen einer Patrone deaktiviert dieses interne Spiel ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Internes Spiel ROM Bild</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Kartusche ROM Layout</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard ROM Layout</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Zwei 8 KiB ROMs mit Adressspiegeln</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Konsolenpausen-Taste</value></data>
 </root>

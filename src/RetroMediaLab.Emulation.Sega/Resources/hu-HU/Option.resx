@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>32X engedélyezése</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Engedélyezett</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Letiltva</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Belső játék engedélyezése ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Alapértelmezés szerint kikapcsolva. Válasszon ki egy 16 KiB belső játékképet. A patron behelyezése ezt a belső ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Belső játék ROM kép</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Patron ROM elrendezése</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Szabvány ROM elrendezése</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Két 8 KiB ROM címtükrökkel</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Konzol Szünet gomb</value></data>
 </root>

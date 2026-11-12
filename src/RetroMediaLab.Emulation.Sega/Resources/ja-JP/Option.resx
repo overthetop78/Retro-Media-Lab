@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>32X を有効にする</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>有効</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>無効</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>社内ゲームを有効にします ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>デフォルトで無効に。16 KiB内部ゲーム画像を選択します。 カートリッジをインサートすると、内部が無効になります。 ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>社内ゲーム ROM 映像</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>カートリッジ ROM レイアウト</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>スタンダード ROM レイアウト</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>アドレスミラーが付いている2つの8 KiB ROMs</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>コンソール マウス ボタン</value></data>
 </root>

@@ -19,7 +19,7 @@ internal static partial class InputSettingsFunctions
             return new EmulationControllerPort(index + 1,
                 ControllerCatalog.Types(model).Select(Choice).ToArray(), type.ToString(),
                 current?.DeviceId,
-                new EmulationInputBindingSet(ControllerDefinitions(type), current?.Mappings ?? new Dictionary<string, string>(), EmulationInputSource.Keyboard | EmulationInputSource.Mouse | EmulationInputSource.Controller, true),
+                new EmulationInputBindingSet(SessionControllerDefinitions(configuration, type, index), current?.Mappings ?? new Dictionary<string, string>(), EmulationInputSource.Keyboard | EmulationInputSource.Mouse | EmulationInputSource.Controller, true),
                 DeadZonePercent: current?.DeadZonePercent ?? 0, VisualId: visualId) { OutputBindings = current?.OutputBindings ?? new Dictionary<string, EmulationControllerOutputBinding>() };
         }).ToArray();
         return new EmulationInputSettings(keyboard, mouse, ports);
@@ -52,6 +52,15 @@ internal static partial class InputSettingsFunctions
     }
 
     private static IReadOnlyList<InputBindingDefinition> KeyboardDefinitions(Model model) => [];
+
+    private static IReadOnlyList<InputBindingDefinition> SessionControllerDefinitions(MachineConfiguration configuration, PeripheralCategory type, int port)
+    {
+        var definitions = ControllerDefinitions(type);
+        return configuration.EmulatorId == Emulators.SegaEmu.Constants.EmulatorConstants.Id
+            && configuration.Model == ModelConstants.Sg1000 && port == 0
+            ? [.. definitions, new(EmulationControllerCommandIds.Start,
+                Emulators.SegaEmu.Constants.EmulatorConstants.PauseLabel, string.Empty)] : definitions;
+    }
 
     private static IReadOnlyList<InputBindingDefinition> MouseDefinitions() =>
     [

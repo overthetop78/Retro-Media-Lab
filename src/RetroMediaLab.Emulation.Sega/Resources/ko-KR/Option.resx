@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>32X 사용</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>사용</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>사용 안 함</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>내부 게임 ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>기본적으로 비활성화. 16 KiB 내부 게임 이미지를 선택하십시오. 카트리지를 삽입하면 내부를 비활성화합니다. ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>내부 게임 ROM 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>카트리지 ROM 의 특징</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ROM 의 특징</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>주소 거울 2 8 KiB ROMs</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>콘솔 일시 버튼</value></data>
 </root>

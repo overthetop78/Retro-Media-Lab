@@ -3435,4 +3435,5 @@
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000"><value>SC3000</value></data>
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000MultiCart"><value>SC3000다카트</value></data>
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.SC3000MegaCart"><value>SC3000메가카트</value></data>
+  <data name="Emulation.Emulator.segaemu.Description"><value>Sega 기계에 대한 내장 에뮬레이터. SG-1000 NTSC 지원은 현재 개발되고 있습니다.</value></data>
 </root>

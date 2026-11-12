@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>32X inschakelen</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Ingeschakeld</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Uitgeschakeld</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Intern spel inschakelen ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Standaard uitgeschakeld. Selecteer een 16 KiB interne spel afbeelding. Een cartridge invoegen schakelt dit interne spel uit ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Intern spel ROM afbeelding</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Patroon ROM indeling</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standaard ROM indeling</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Twee 8 KiB ROM's met adresspiegels</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Console-pauzeknop</value></data>
 </root>

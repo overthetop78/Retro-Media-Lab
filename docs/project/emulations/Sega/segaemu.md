@@ -4,9 +4,7 @@ Décisions de l’utilisateur du 11 novembre 2026. Le développement Acorn reste
 
 ## Organisation du travail
 
-- [ ] Préparer la réalisation de la SG-1000.
-  - [x] Consigner les décisions communes.
-    - [x] Créer `docs/project/emulations/Sega/segaemu.md` avec l’ordre des modèles, les règles de regroupement et d’extensions, les états, l’optimisation et le suivi des questions ci-dessous.
+Les tâches décrivent uniquement le code à réaliser. La tenue des documents est obligatoire et intégrée au travail, sans tâche ni case dédiée.
 
 Les actions d’implémentation seront définies dans `docs/tasks/machines/SG1000/implementation.md` et les suivis des composants dans `docs/tasks/chips/<Puce>/`, avec des actions concrètes ordonnées et les chemins concernés. Ne pas créer de trames vides pour les machines suivantes. Les résultats durables vont dans `docs/chips/` et `docs/project/emulations/Sega/<Gamme>/<Modèle>/` ; supprimer les suivis terminés, conserver le dossier `docs/tasks/chips` pour les prochains composants.
 

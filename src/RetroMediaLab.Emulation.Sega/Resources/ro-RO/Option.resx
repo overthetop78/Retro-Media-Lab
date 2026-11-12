@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Activează 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Activat</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Dezactivat</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Activează jocul intern ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Dezactivează implicit. Selectaţi o imagine de 16 kib internă de joc. Inserarea unui cartuş dezactivează acest interior ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Joc intern ROM imagine</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Cartuș ROM aspect</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard ROM aspect</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Două 8 ROM KiB cu oglinzi cu adrese</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Buton de pauza Console</value></data>
 </root>

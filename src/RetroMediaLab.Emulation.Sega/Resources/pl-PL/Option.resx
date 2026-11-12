@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Włącz 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Włączone</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Wyłączone</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Włącz wewnętrzną grę ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Domyślnie wyłączone. Wybierz obraz gry wewnętrznej 16 KiB. Wstawianie wkładu wyłącza to wewnętrzne ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Gra wewnętrzna ROM obrazek</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Wkrycie ROM układ</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standardowy ROM układ</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dwa 8 ROM KiB z lusterkami adresowymi</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Przycisk Pause Console</value></data>
 </root>

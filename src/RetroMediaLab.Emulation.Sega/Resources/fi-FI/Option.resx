@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Ota 32X käyttöön</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Käytössä</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Ei käytössä</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Käytä sisäistä peliä ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Oletuksena ei käytössä. Valitse 16 KiB:n sisäinen pelikuva. Painuman lisääminen poistaa tämän sisäisen pelin käytöstä ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Sisäinen peli ROM kuva</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Sylinteriampulli ROM ulkoasu</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standardi ROM ulkoasu</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Kaksi 8 KiB ROM-levyä osoitepeileillä</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Konsolitaukopainike</value></data>
 </root>

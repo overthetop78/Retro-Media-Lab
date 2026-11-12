@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>เปิดใช้งาน 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>เปิดใช้งาน</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>ปิดการใช้งาน</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>เปิดการใช้งานเกมภายใน ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>ปิดการใช้งานโดยปริยาย เลือกภาพเกมภายในแบบ 16 กิโลไบต์ แทรกตลับเพื่อปิดการใช้งานภายในนี้ ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>เกมภายใน ROM รูปภาพ</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>ตลับหมึก ROM การจัดวาง</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>มาตรฐาน ROM การจัดวาง</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>2 กิโลไบต์</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>ปุ่มหยุดคอนโซล</value></data>
 </root>

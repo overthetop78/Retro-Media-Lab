@@ -18,4 +18,11 @@
   <data name="Emulation.Sega.MegaDrive.32X"><value>Увімкнути 32X</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Enabled"><value>Увімкнено</value></data>
   <data name="Emulation.Sega.MegaDrive.32X.Disabled"><value>Вимкнено</value></data>
+  <data name="Emulation.SegaEmu.InternalGame"><value>Увімкнути внутрішню гру ROM</value></data>
+  <data name="Emulation.SegaEmu.InternalGame.Help"><value>Вимкнено за замовчуванням. Виберіть зображення внутрішньої гри 16 KiB. Вставляючи картридж вимкнено цей внутрішній ROM.</value></data>
+  <data name="Emulation.SegaEmu.InternalRom"><value>Внутрішня гра ROM кицька</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout"><value>Кошик ROM верстка</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Стандарти ROM верстка</value></data>
+  <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Два 8 КОБ ROMs з адресними дзеркалами</value></data>
+  <data name="Emulation.SegaEmu.ConsolePause"><value>Консоль Пауза кнопка</value></data>
 </root>
