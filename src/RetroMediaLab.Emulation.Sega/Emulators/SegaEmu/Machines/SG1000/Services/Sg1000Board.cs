@@ -45,6 +45,7 @@ internal sealed partial class Sg1000Board : IDisposable
     private long _nextMasterTime = C.NanosecondsPerSecond / (C.CrystalHertz * 2);
     private long _masterFraction = C.NanosecondsPerSecond % (C.CrystalHertz * 2);
     private bool _vdpReleased, _cpuReleased;
+    private readonly bool _useClockDomains;
     public long TimeNanoseconds { get; private set; }
     public CpuZ80 Cpu => _cpu;
     public Tms9918A Vdp => _vdp;
@@ -52,8 +53,10 @@ internal sealed partial class Sg1000Board : IDisposable
     public bool DataBusKnown { get; private set; }
 
     public Sg1000Board(ReadOnlySpan<byte> cartridge, bool powerUp = true,
-        Sg1000RomConfiguration? romConfiguration = null,ReadOnlySpan<byte> internalGame = default)
+        Sg1000RomConfiguration? romConfiguration = null,ReadOnlySpan<byte> internalGame = default,
+        bool useClockDomains = true)
     {
+        _useClockDomains = useClockDomains;
         _romConfiguration = romConfiguration ?? new();
         if (_romConfiguration.InternalGameEnabled && internalGame.Length != 16384)
             throw new ArgumentException("The selected internal game requires a complete16KiB ROM image.",nameof(internalGame));
@@ -74,6 +77,7 @@ internal sealed partial class Sg1000Board : IDisposable
             _cpu.SetWait(!_psg.Ready);
             _cpu.SetInt(!_vdp.CpuOutputs.IntHigh);
             _audioLevel = _psg.Output;
+            if (_useClockDomains) ConnectClockDomains();
             if (powerUp) AdvanceTo(C.CpuReleaseNanoseconds);
             initialized = true;
         }
@@ -85,9 +89,9 @@ internal sealed partial class Sg1000Board : IDisposable
         _cpu.PinsChanged = OnCpuPins;
         _cpu.NextEventNanosecondsChanged = next => _due[0] = next ?? long.MaxValue;
         _vdp.NextEventNanosecondsChanged = next => _due[1] = next ?? long.MaxValue;
-        _psg.NextEventNanosecondsChanged = next => _due[2] = next ?? long.MaxValue;
-        _decoder.NextEventNanosecondsChanged = next => _due[3] = next ?? long.MaxValue;
-        _gates.NextEventNanosecondsChanged = next => _due[4] = next ?? long.MaxValue;
+        _psg.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(2, next);
+        _decoder.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(3, next);
+        _gates.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(4, next);
         _decoder.OutputChanged = (pin, value) =>
         {
             _decodePins[pin] = value;
@@ -107,7 +111,7 @@ internal sealed partial class Sg1000Board : IDisposable
         };
         _ram.OutputChanged = _ => ResolveCpuData();
         _vdp.CpuOutputsChanged = output => { _cpu.SetInt(!output.IntHigh); ResolveCpuData(); };
-        _vdp.CpuClockChanged = output =>
+        if (!_useClockDomains) _vdp.CpuClockChanged = output =>
         {
             _cpu.AdvanceTo(output.TimeNanoseconds);
             _psg.ReceiveClock(output.TimeNanoseconds, output.High);
@@ -121,7 +125,7 @@ internal sealed partial class Sg1000Board : IDisposable
         for (int index = 0; index < 2; index++)
         {
             int chip = index;
-            _joy[index].NextEventNanosecondsChanged = next => _due[5 + chip] = next ?? long.MaxValue;
+            _joy[index].NextEventNanosecondsChanged = next => ReceiveDomainDeadline(5 + chip, next);
             _joy[index].OutputChanged = (pin, value) => { _joyPins[chip * 4 + pin] = value; ResolveCpuData(); };
         }
         for (int index = 0; index < 8; index++)
@@ -129,14 +133,14 @@ internal sealed partial class Sg1000Board : IDisposable
             int chip = index;
             _dramPins[index] = _dram[index].Output;
             CacheDramOutput(index, _dramPins[index]);
-            _dram[index].NextEventNanosecondsChanged = next => _due[7 + chip] = next ?? long.MaxValue;
+            _dram[index].NextEventNanosecondsChanged = next => ReceiveDomainDeadline(7 + chip, next);
             _dram[index].OutputChanged = value => { _dramPins[chip] = value; UpdateVramReadData(_dram[chip].TimeNanoseconds, chip, value); };
         }
         ConnectCartridge();
         if (_internalRom is { } internalRom)
         {
             internalRom.OutputChanged = _ => ResolveCpuData();
-            internalRom.NextEventNanosecondsChanged = next => _due[17] = next ?? long.MaxValue;
+            internalRom.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(17, next);
         }
         RefreshDeadlines();
     }
@@ -169,6 +173,7 @@ internal sealed partial class Sg1000Board : IDisposable
             _cpu.PinsChanged = null; _cpu.NextEventNanosecondsChanged = null;
             _vdp.CpuClockChanged = null; _vdp.CpuOutputsChanged = null; _vdp.VramPinsChanged = null;
             _vdp.VideoSignalProduced = null; _vdp.FrameStarted = null; _vdp.NextEventNanosecondsChanged = null;
+            _vdp.CpuClockSourceChanged = null; _vdp.NextCpuEventNanosecondsChanged = null;
             _psg.OutputChanged = null; _psg.ReadyChanged = null; _psg.NextEventNanosecondsChanged = null;
             _decoder.OutputChanged = null; _decoder.NextEventNanosecondsChanged = null;
             _gates.OutputChanged = null; _gates.NextEventNanosecondsChanged = null;

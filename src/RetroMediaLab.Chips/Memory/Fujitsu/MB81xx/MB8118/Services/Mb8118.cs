@@ -9,37 +9,46 @@ namespace RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Services;
 public sealed class Mb8118 : IMb8118
 {
     private const long Retention = 2_000_000, Startup = 200_000, MaximumPulse = 10_000;
-    private readonly Mb8118Timing _timing;
+    private readonly Mb8118LocalTiming _timing;
     private readonly byte[] _cells = new byte[16384];
     private readonly long[] _refreshed = new long[128];
-    private Mb8118Pins _pins = new(0, false, true, true, true, null);
+    private Mb8118InputLevels _pins = new(0, false, true, true, true, null);
     private int _row, _column, _startupCycles, _writeAddress;
     private bool _rowKnown, _columnKnown, _rowActive, _cycleWrite, _readCycle;
     private bool _qualified = true, _publishing;
     private long _rasFall = -1, _casFall = -1, _rasRise = -1, _casRise = -1;
     private long _addressChanged = -1, _dataChanged = -1, _writeFall = -1, _writeAt = -1;
     private long _writeHoldUntil = -1;
-    private long? _outputDue, _announcedDue;
+    private long _outputDue = -1, _announcedDue = -1;
     private LogicPinState _output = LogicPinState.HighImpedance, _target = LogicPinState.HighImpedance;
     public Mb8118(Mb8118Timing timing)
     {
         ArgumentNullException.ThrowIfNull(timing);
-        _timing = timing;
+        _timing = new(timing);
         Array.Fill(_refreshed, -1);
     }
     public long TimeNanoseconds { get; private set; }
-    public long? NextEventNanoseconds => _outputDue;
+    public long? NextEventNanoseconds => _outputDue < 0 ? null : _outputDue;
     public bool IsTimingQualified => _qualified;
     public LogicPinState Output => _output;
     public Action<LogicPinState>? OutputChanged { get; set; }
     public Action<long?>? NextEventNanosecondsChanged { get; set; }
 
-    public void ReceivePins(long timeNanoseconds, Mb8118Pins pins)
+    public void ReceivePins(long timeNanoseconds, Mb8118Pins receivedPins)
+        => ReceiveLevels(timeNanoseconds, receivedPins);
+
+    public void ReceiveMultiplexedPins(long timeNanoseconds, byte address, bool addressKnown,
+        bool rasHigh, bool casHigh, bool writeHigh, bool? data)
+        => ReceiveLevels(timeNanoseconds, new(address, addressKnown, rasHigh, casHigh, writeHigh, data));
+
+    private void ReceiveLevels(long timeNanoseconds, Mb8118InputLevels pins)
     {
         if (pins.Address > 127) throw new ArgumentOutOfRangeException(nameof(pins));
         AdvanceTo(timeNanoseconds);
-        if (pins == _pins) return;
-        _ = checked(timeNanoseconds + Math.Max(_timing.RasAccess, _timing.OutputOff));
+        if (pins.Address == _pins.Address && pins.AddressKnown == _pins.AddressKnown
+            && pins.RasHigh == _pins.RasHigh && pins.CasHigh == _pins.CasHigh
+            && pins.WriteHigh == _pins.WriteHigh && pins.Data == _pins.Data) return;
+        _ = checked(timeNanoseconds + _timing.MaximumOutputDelay);
         var old = _pins;
         long now = TimeNanoseconds;
         bool addressChanged = pins.Address != old.Address || pins.AddressKnown != old.AddressKnown;
@@ -86,7 +95,7 @@ public sealed class Mb8118 : IMb8118
         PublishDeadline();
     }
 
-    private void BeginRow(long now, Mb8118Pins pins)
+    private void BeginRow(long now, Mb8118InputLevels pins)
     {
         if (now < Startup || (_rasRise >= 0 && now - _rasRise < _timing.RasPrecharge)
             || (_rasFall >= 0 && now - _rasFall < (_readCycle && _cycleWrite ? _timing.ReadWriteCycle : _timing.Cycle)))
@@ -107,7 +116,7 @@ public sealed class Mb8118 : IMb8118
         }
     }
 
-    private void BeginColumn(long now, Mb8118Pins pins)
+    private void BeginColumn(long now, Mb8118InputLevels pins)
     {
         bool page = _casFall >= _rasFall && _rasFall >= 0;
         if (_casRise >= 0 && now - _casRise < (page ? _timing.PagePrecharge : _timing.CasPrecharge)) _qualified = false;
@@ -153,7 +162,7 @@ public sealed class Mb8118 : IMb8118
     private void Arm(long due, LogicPinState target)
     {
         _target = target;
-        _outputDue = target == _output ? null : due;
+        _outputDue = target == _output ? -1 : due;
     }
 
     public void AdvanceTo(long timeNanoseconds)
@@ -164,10 +173,11 @@ public sealed class Mb8118 : IMb8118
             if (timeNanoseconds != TimeNanoseconds) throw new InvalidOperationException("Cannot advance DRAM from an output callback.");
             return;
         }
-        while (_outputDue is { } due && due <= timeNanoseconds)
+        while (_outputDue >= 0 && _outputDue <= timeNanoseconds)
         {
+            long due = _outputDue;
             TimeNanoseconds = due;
-            _outputDue = null;
+            _outputDue = -1;
             _output = _target;
             _publishing = true;
             try { OutputChanged?.Invoke(_output); }
@@ -183,7 +193,7 @@ public sealed class Mb8118 : IMb8118
         {
             _announcedDue = _outputDue;
             _publishing = true;
-            try { NextEventNanosecondsChanged?.Invoke(_outputDue); }
+            try { NextEventNanosecondsChanged?.Invoke(_outputDue < 0 ? null : _outputDue); }
             finally { _publishing = false; }
         }
     }
@@ -195,7 +205,7 @@ public sealed class Mb8118 : IMb8118
             TimeNanoseconds, _pins, _row, _column, _rowKnown, _columnKnown, _rowActive,
             _cycleWrite, _readCycle, _qualified, _startupCycles, _rasFall, _casFall,
             _rasRise, _casRise, _addressChanged, _dataChanged, _writeFall, _writeAt,
-            _writeHoldUntil, _writeAddress, _outputDue, _target, _output);
+            _writeHoldUntil, _writeAddress, NextEventNanoseconds, _target, _output);
     }
 
     public void RestoreState(Mb8118State state)
@@ -222,7 +232,7 @@ public sealed class Mb8118 : IMb8118
         _rasRise = state.RasRise; _casRise = state.CasRise; _addressChanged = state.AddressChanged;
         _dataChanged = state.DataChanged; _writeFall = state.WriteFall; _writeAt = state.WriteAt;
         _writeHoldUntil = state.WriteHoldUntil;
-        _writeAddress = state.WriteAddress; _outputDue = _announcedDue = state.OutputDue;
+        _writeAddress = state.WriteAddress; _outputDue = _announcedDue = state.OutputDue ?? -1;
         _target = state.OutputTarget; _output = state.Output;
     }
 }

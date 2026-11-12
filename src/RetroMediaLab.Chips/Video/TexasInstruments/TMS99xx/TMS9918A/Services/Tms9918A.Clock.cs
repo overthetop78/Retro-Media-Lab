@@ -9,6 +9,7 @@ public sealed partial class Tms9918A
         AdvanceTo(timeNanoseconds);
         if (_clock.MasterHigh == high) return;
         if (_deliveringClock || _publishing) throw new InvalidOperationException("Recursive master clock transition.");
+        DetachMasterClockSource();
         _ = checked(_clock.HalfEdges + 1);
         AdvanceMasterHalfEdges(1);
     }
@@ -27,6 +28,7 @@ public sealed partial class Tms9918A
         long firstTime = TrainDate(train, train.FirstEdgeIndex);
         ArgumentOutOfRangeException.ThrowIfLessThan(firstTime, TimeNanoseconds);
         _ = checked(_clock.HalfEdges + train.EdgeCount);
+        DetachMasterClockSource();
 
         int consumed = 0;
         while (consumed < train.EdgeCount)
@@ -66,16 +68,19 @@ public sealed partial class Tms9918A
     private void AdvanceMasterHalfEdges(int count)
     {
         int phase = (_clock.HalfEdgePhase + count) % 12;
-        bool cpuChanged = phase % 3 == 0;
-        bool pixelChanged = phase % 2 == 0;
+        int cpuTransitions = (_clock.HalfEdgePhase % 3 + count) / 3;
+        int pixelTransitions = (_clock.HalfEdgePhase % 2 + count) / 2;
+        bool cpuChanged = cpuTransitions != 0;
+        bool pixelChanged = pixelTransitions != 0;
         // TI MP010A §3.6 : maître /24, soit 48 demi-fronts par période.
         // Rapport cyclique 50 % et phase de départ : représentation nominale.
         int gromPhase = (_clock.GromHalfEdgePhase + count) % 48;
-        bool gromChanged = gromPhase % 24 == 0;
+        int gromTransitions = (_clock.GromHalfEdgePhase % 24 + count) / 24;
+        bool gromChanged = gromTransitions != 0;
         _clock = new((count & 1) == 0 ? _clock.MasterHigh : !_clock.MasterHigh, phase,
-            cpuChanged ? !_clock.CpuClockHigh : _clock.CpuClockHigh,
-            pixelChanged ? !_clock.PixelClockHigh : _clock.PixelClockHigh, _clock.HalfEdges + count,
-            gromPhase, gromChanged ? !_clock.GromClockHigh : _clock.GromClockHigh);
+            (cpuTransitions & 1) != 0 ? !_clock.CpuClockHigh : _clock.CpuClockHigh,
+            (pixelTransitions & 1) != 0 ? !_clock.PixelClockHigh : _clock.PixelClockHigh, _clock.HalfEdges + count,
+            gromPhase, (gromTransitions & 1) != 0 ? !_clock.GromClockHigh : _clock.GromClockHigh);
         _deliveringClock = true;
         try
         {

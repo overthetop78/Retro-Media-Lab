@@ -20,7 +20,7 @@ public sealed partial class Tms9918A
     private long _ramLoadHalfEdge;
     private bool _cpuVramInService;
 
-    public Tms9918VramPins VramPins => _vramBus.Capture().Pins;
+    public Tms9918VramPins VramPins => _vramBus.Pins;
     public Action<Tms9918VramSignal>? VramPinsChanged { get; set; }
 
     public void SetVramReadData(long timeNanoseconds, byte data, bool known)

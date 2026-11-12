@@ -12,7 +12,7 @@ public sealed partial class Sn76489
     public Action<long?>? NextEventNanosecondsChanged { get; set; }
     public long InputClockCount => _inputClockCount;
     public long TimeNanoseconds { get; private set; }
-    public long? NextEventNanoseconds => _readyDue;
+    public long? NextEventNanoseconds => NextReadyEvent;
     private bool ReadyTarget => _transferClocks == 0 || (!_chipSelected && !_directTransfer);
 
     public void SetBus(long timeNanoseconds, byte value, bool chipSelected, bool writeEnabled)
@@ -23,6 +23,16 @@ public sealed partial class Sn76489
 
     public void ReceiveClock(long timeNanoseconds, bool high)
     {
+        if (_hasClockSource)
+        {
+            if (_advancingClockSource)
+            {
+                if (timeNanoseconds == TimeNanoseconds && high == _clockHigh) return;
+                throw new InvalidOperationException("Recursive PSG clock transition.");
+            }
+            AdvancePeriodicClockTo(timeNanoseconds, false);
+            DetachClockSource();
+        }
         AdvanceTo(timeNanoseconds);
         if (_clockHigh == high) return;
         if (_publishing) throw new InvalidOperationException("Recursive PSG clock transition.");
@@ -36,6 +46,11 @@ public sealed partial class Sn76489
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
         if (_publishing && timeNanoseconds != TimeNanoseconds)
             throw new InvalidOperationException("Cannot advance PSG time from an output callback.");
+        if (_hasClockSource && !_advancingClockSource)
+        {
+            AdvancePeriodicClockTo(timeNanoseconds, true);
+            return;
+        }
         while (_readyDue is { } due && due <= timeNanoseconds)
         {
             TimeNanoseconds = due;
@@ -80,11 +95,12 @@ public sealed partial class Sn76489
 
     private void PublishReadyDeadline()
     {
-        if (_announcedReadyDue == _readyDue) return;
-        _announcedReadyDue = _readyDue;
+        long? next = NextReadyEvent;
+        if (_announcedReadyDue == next) return;
+        _announcedReadyDue = next;
         bool wasPublishing = _publishing;
         _publishing = true;
-        try { NextEventNanosecondsChanged?.Invoke(_readyDue); }
+        try { NextEventNanosecondsChanged?.Invoke(next); }
         finally { _publishing = wasPublishing; }
     }
 }

@@ -80,5 +80,6 @@ public sealed partial class Sn76489
         _inputClockCount = state.InputClockCount;
         TimeNanoseconds = state.TimeNanoseconds;
         _readyDue = _announcedReadyDue = state.ReadyDueNanoseconds;
+        _hasClockSource = false;
     }
 }

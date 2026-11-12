@@ -16,6 +16,7 @@ public sealed partial class CpuZ80
         if (_insideClock || _publishingDeadline)
             throw new InvalidOperationException("Cannot recursively drive the CPU clock.");
         _bus.ValidateClockTrain(firstEdgeNanoseconds, halfPeriodNanoseconds, edgeCount);
+        _hasClockSource = false;
         long next = firstEdgeNanoseconds;
         int remaining = edgeCount;
         while (remaining != 0)

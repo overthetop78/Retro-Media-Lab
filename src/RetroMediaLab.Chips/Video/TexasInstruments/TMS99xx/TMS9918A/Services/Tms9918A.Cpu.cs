@@ -5,11 +5,46 @@ namespace RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
 
 public sealed partial class Tms9918A
 {
+    private long _cpuInputTime;
+    /// <summary>Only inactive strobes can be transported ahead of the video
+    /// domain. They cannot capture data, acknowledge status or drive CPU data.</summary>
+    public bool TryReceiveInactiveCpuPins(long timeNanoseconds, Tms9918CpuPins pins)
+    {
+        if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || !pins.CsrHigh || !pins.CswHigh || _dataDue is not null)
+            return false;
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _cpuInputTime);
+        _cpuInputTime = timeNanoseconds;
+        _cpuPins = pins;
+        if (!_reset)
+        {
+            _statusReadBus.ReceivePins(timeNanoseconds, pins);
+            _writeBus.ReceivePins(timeNanoseconds, pins);
+        }
+        return true;
+    }
+
+    public bool TryAdvanceInactiveCpuInterfaceTo(long timeNanoseconds)
+    {
+        if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || _dataDue is not null) return false;
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _cpuInputTime);
+        _cpuInputTime = timeNanoseconds;
+        if (!_reset)
+        {
+            _statusReadBus.AdvanceInputTime(timeNanoseconds);
+            _writeBus.AdvanceInputTime(timeNanoseconds);
+        }
+        return true;
+    }
+
     /// <summary>Stable-input time transport. Actual pending VRAM/data responses
     /// still run through AdvanceTo; only unchanged input decoding is avoided.</summary>
     public void AdvanceCpuInterfaceTo(long timeNanoseconds)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _cpuInputTime);
         AdvanceTo(timeNanoseconds);
+        _cpuInputTime = timeNanoseconds;
         if (_reset) return;
         _statusReadBus.AdvanceInputTime(timeNanoseconds);
         _writeBus.AdvanceInputTime(timeNanoseconds);
@@ -17,7 +52,9 @@ public sealed partial class Tms9918A
 
     public void ReceiveCpuPins(long timeNanoseconds, Tms9918CpuPins pins)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _cpuInputTime);
         AdvanceTo(timeNanoseconds);
+        _cpuInputTime = timeNanoseconds;
         var previous = _cpuPins;
         _cpuPins = pins;
         if (_reset) return;
@@ -112,6 +149,7 @@ public sealed partial class Tms9918A
         AdvanceTo(timeNanoseconds);
         if (_reset == asserted) return;
         _reset = asserted;
+        InvalidateClockPredictions();
         if (asserted)
         {
             _resetStarted = timeNanoseconds;
@@ -141,5 +179,6 @@ public sealed partial class Tms9918A
             _readQualified = false;
         }
         PublishDeadline();
+        if (_hasMasterSource && asserted) CpuClockSourceChanged?.Invoke(CpuClockSource);
     }
 }

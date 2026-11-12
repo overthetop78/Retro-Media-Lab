@@ -37,6 +37,7 @@ public sealed partial class CpuZ80
         // Toutes les opérations susceptibles de refuser l'état précèdent le remplacement des champs.
         var interrupts = new Z80InterruptControl(state.Interrupts);
         _bus.RestoreState(state.Bus);
+        _hasClockSource = false;
         _interrupts = interrupts;
         _registers = state.Registers; _flow = state.Flow; _operation = state.Operation;
         _started = state.Started; _faulted = state.Faulted; _prefixEd = state.PrefixEd;

@@ -1,4 +1,5 @@
 using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Contracts;
+using RetroMediaLab.Chips.Logic.Common.Contracts;
 
 namespace RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Interfaces;
 /// <summary>Contrat matériel du composant Sn76489 ; aucune ressource hôte n'est possédée par ce contrat.</summary>
@@ -19,6 +20,7 @@ public interface ISn76489
     Action<long?>? NextEventNanosecondsChanged { get; set; }
     void AdvanceTo(long timeNanoseconds);
     void ReceiveClock(long timeNanoseconds, bool high);
+    void ReceiveClockSource(RationalClockSource source);
     void SetBus(long timeNanoseconds, byte value, bool chipSelected, bool writeEnabled);
     /// <summary>Périodes avant le prochain événement matériel interne.</summary>
     int ClocksUntilNextEvent { get; }

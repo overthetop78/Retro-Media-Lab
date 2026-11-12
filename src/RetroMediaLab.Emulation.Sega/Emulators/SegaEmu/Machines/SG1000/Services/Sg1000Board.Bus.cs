@@ -58,7 +58,11 @@ internal sealed partial class Sg1000Board
             UpdateRamBus(time);
         else _ram.AdvanceTo(time); // Preserve the existing observation timestamp without redispatching pins.
         if (dataChanged || a0Changed) UpdateVdpBus(time);
-        else _vdp.AdvanceCpuInterfaceTo(time);
+        else if (!_useClockDomains || !_vdp.TryAdvanceInactiveCpuInterfaceTo(time))
+        {
+            if (_useClockDomains) SynchronizeVideoDomain(time);
+            _vdp.AdvanceCpuInterfaceTo(time);
+        }
         if (dataChanged || writeChanged) UpdatePsgBus(time);
         if (a0Changed) UpdateJoyBus(time);
         int memories = addressChanged ? 15 : (memoryChanged ? 7 : 0)
@@ -81,9 +85,15 @@ internal sealed partial class Sg1000Board
             _decodePins[3] != LogicPinState.Low, false, _readHigh != false, _writeHigh != false,
             _cpuData.GetValueOrDefault(), _cpuData.HasValue ? (byte)255 : (byte)0));
     }
-    private void UpdateVdpBus(long time) => _vdp.ReceiveCpuPins(time, new(_cpuData.GetValueOrDefault(),
-        _cpuData.HasValue, (_cpuAddress.GetValueOrDefault() & 1) != 0,
-        _gatePins[1] != LogicPinState.Low, _gatePins[2] != LogicPinState.Low));
+    private void UpdateVdpBus(long time)
+    {
+        var pins = new Tms9918CpuPins(_cpuData.GetValueOrDefault(), _cpuData.HasValue,
+            (_cpuAddress.GetValueOrDefault() & 1) != 0,
+            _gatePins[1] != LogicPinState.Low, _gatePins[2] != LogicPinState.Low);
+        if (_useClockDomains && _vdp.TryReceiveInactiveCpuPins(time, pins)) return;
+        if (_useClockDomains && _clockDomainsConnected) SynchronizeVideoDomain(time);
+        _vdp.ReceiveCpuPins(time, pins);
+    }
     private void UpdatePsgBus(long time) => _psg.SetBus(time, _cpuData.GetValueOrDefault(),
         _decodePins[5] == LogicPinState.Low, _writeHigh == false);
 
@@ -133,16 +143,20 @@ internal sealed partial class Sg1000Board
     {
         var pins = signal.Pins;
         var previous = _vramWirePins;
-        bool all = !_vramWiresInitialized || ((pins.AddressData ^ previous.AddressData) & 127) != 0
-            || pins.AddressDataKnown != previous.AddressDataKnown || pins.RasHigh != previous.RasHigh
-            || pins.CasHigh != previous.CasHigh || pins.ReadWriteHigh != previous.ReadWriteHigh;
+        byte addressData = pins.AddressData;
+        bool known = pins.AddressDataKnown, rasHigh = pins.RasHigh,
+            casHigh = pins.CasHigh, writeHigh = pins.ReadWriteHigh;
+        int changes = addressData ^ previous.AddressData;
+        bool all = !_vramWiresInitialized || (changes & 127) != 0
+            || known != previous.AddressDataKnown || rasHigh != previous.RasHigh
+            || casHigh != previous.CasHigh || writeHigh != previous.ReadWriteHigh;
         _vramWirePins = pins; _vramWiresInitialized = true;
+        byte address = (byte)(addressData & 127);
         for (int index = 0; index < 8; index++)
         {
-            if (!all && ((pins.AddressData ^ previous.AddressData) & (1 << index)) == 0) continue;
-            _dram[index].ReceivePins(signal.TimeNanoseconds, new((byte)(pins.AddressData & 127), pins.AddressDataKnown,
-                pins.RasHigh, pins.CasHigh, pins.ReadWriteHigh,
-                pins.AddressDataKnown ? (pins.AddressData & (1 << index)) != 0 : null));
+            if (!all && (changes & (1 << index)) == 0) continue;
+            _dram[index].ReceiveMultiplexedPins(signal.TimeNanoseconds, address, known,
+                rasHigh, casHigh, writeHigh, known ? (addressData & (1 << index)) != 0 : null);
         }
     }
     private void CacheDramOutput(int bit, LogicPinState value)

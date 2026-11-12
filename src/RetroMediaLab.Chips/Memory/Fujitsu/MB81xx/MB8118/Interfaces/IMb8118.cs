@@ -12,6 +12,8 @@ public interface IMb8118
     Action<LogicPinState>? OutputChanged { get; set; }
     Action<long?>? NextEventNanosecondsChanged { get; set; }
     void ReceivePins(long timeNanoseconds, Mb8118Pins pins);
+    void ReceiveMultiplexedPins(long timeNanoseconds, byte address, bool addressKnown,
+        bool rasHigh, bool casHigh, bool writeHigh, bool? data);
     void AdvanceTo(long timeNanoseconds);
     Mb8118State CaptureState();
     void RestoreState(Mb8118State state);

@@ -83,6 +83,7 @@ public sealed partial class CpuZ80 : ICpuZ80
         if (_faulted) throw new InvalidOperationException("The incomplete Z80 decoder is stopped on an unsupported operation.");
         if (_bus.ClockHigh == high) return;
         if (_insideClock || _publishingDeadline) throw new InvalidOperationException("Cannot recursively drive the CPU clock.");
+        _hasClockSource = false;
         _insideClock = true;
         try
         {

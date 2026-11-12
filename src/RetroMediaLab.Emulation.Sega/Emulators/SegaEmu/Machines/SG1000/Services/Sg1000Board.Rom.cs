@@ -115,17 +115,17 @@ internal sealed partial class Sg1000Board
         if (_cartridgeLow is { } low)
         {
             low.OutputChanged = _ => ResolveCpuData();
-            low.NextEventNanosecondsChanged = next => _due[15] = GlobalRomDue(next) ?? long.MaxValue;
+            low.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(15, GlobalRomDue(next));
         }
         if (_cartridgeHigh is { } high)
         {
             high.OutputChanged = _ => ResolveCpuData();
-            high.NextEventNanosecondsChanged = next => _due[16] = GlobalRomDue(next) ?? long.MaxValue;
+            high.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(16, GlobalRomDue(next));
         }
         if (_cartridgeRam is { } ram)
         {
             ram.OutputChanged = _ => ResolveCpuData();
-            ram.NextEventNanosecondsChanged = next => _due[18] = GlobalRomDue(next) ?? long.MaxValue;
+            ram.NextEventNanosecondsChanged = next => ReceiveDomainDeadline(18, GlobalRomDue(next));
         }
         _due[15] = GlobalRomDue(_cartridgeLow?.NextEventNanoseconds) ?? long.MaxValue;
         _due[16] = GlobalRomDue(_cartridgeHigh?.NextEventNanoseconds) ?? long.MaxValue;

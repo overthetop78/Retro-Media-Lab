@@ -1,4 +1,5 @@
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts;
+using RetroMediaLab.Chips.Logic.Common.Contracts;
 
 namespace RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Interfaces;
 
@@ -20,6 +21,16 @@ public interface ITms9918A
     Action<long>? FrameStarted { get; set; }
     Action<Tms9918CpuOutputs>? CpuOutputsChanged { get; set; }
     Action<long?>? NextEventNanosecondsChanged { get; set; }
+    Action<RationalClockSource?>? CpuClockSourceChanged { get; set; }
+    Action<long?>? NextCpuEventNanosecondsChanged { get; set; }
+    RationalClockSource? CpuClockSource { get; }
+    long? NextCpuEventNanoseconds { get; }
+    long? NextFrameBoundaryNanoseconds { get; }
+    void ReceiveMasterClockSource(RationalClockSource source);
+    int AdvanceMasterClockSourceUntil(long boundaryExclusive);
+    void LimitMasterClockSourceBefore(long boundaryExclusive);
+    bool TryReceiveInactiveCpuPins(long timeNanoseconds, Tms9918CpuPins pins);
+    bool TryAdvanceInactiveCpuInterfaceTo(long timeNanoseconds);
     void ReceiveCpuPins(long timeNanoseconds, Tms9918CpuPins pins);
     /// <summary>Advances with the currently received CPU levels, without replaying an input transition.</summary>
     void AdvanceCpuInterfaceTo(long timeNanoseconds);

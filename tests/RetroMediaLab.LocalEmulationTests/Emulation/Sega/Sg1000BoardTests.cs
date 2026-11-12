@@ -7,6 +7,27 @@ namespace RetroMediaLab.Tests.Emulation.Sega;
 public sealed class Sg1000BoardTests
 {
     [Fact]
+    public void IndependentClockDomainsMatchExplicitWiresAndResumeAtArbitraryBoundaries()
+    {
+        Sg1000Board? scalar = null, domains = null;
+        try
+        {
+            var cartridge = BuildCartridge();
+            scalar = new(cartridge, useClockDomains: false);
+            domains = new(cartridge);
+            foreach (long date in new long[] { 330_019, 400_137, 2_000_003, 17_000_017, 35_000_001, 40_000_137 })
+            {
+                scalar.SetController(0, 33); domains.SetController(0, 33);
+                scalar.SetController(1, 22); domains.SetController(1, 22);
+                scalar.AdvanceTo(date); domains.AdvanceTo(date);
+                Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()), JsonSerializer.Serialize(domains.CaptureState()));
+                if (date == 2_000_003) domains.RestoreState(domains.CaptureState());
+            }
+        }
+        finally { domains?.Dispose(); scalar?.Dispose(); }
+    }
+
+    [Fact]
     public void CpuProgramUsesRealRamVramSoundControllersAndPauseWiring()
     {
         Sg1000Board? board = null;

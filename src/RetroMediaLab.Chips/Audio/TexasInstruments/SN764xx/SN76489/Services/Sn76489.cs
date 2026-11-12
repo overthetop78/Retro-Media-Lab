@@ -72,6 +72,7 @@ public sealed partial class Sn76489 : ISn76489
     /// <summary>Initialisation du modèle ; le circuit ne possède pas de broche RESET externe.</summary>
     public void Reset()
     {
+        _hasClockSource = false;
         Array.Clear(_periods);
         Array.Clear(_counts);
         Array.Clear(_levels);
@@ -158,6 +159,7 @@ public sealed partial class Sn76489 : ISn76489
     public void Tick()
     {
         if (_publishing) throw new InvalidOperationException("Cannot clock the PSG from an output callback.");
+        if (!_advancingClockSource) DetachClockSource();
         _inputClockCount = checked(_inputClockCount + 1);
         bool completed = _transferClocks == 1;
         if (_transferClocks != 0)
@@ -174,6 +176,7 @@ public sealed partial class Sn76489 : ISn76489
     {
         ArgumentOutOfRangeException.ThrowIfNegative(clocks);
         if (_publishing && clocks != 0) throw new InvalidOperationException("Cannot clock the PSG from an output callback.");
+        if (!_advancingClockSource && clocks != 0) DetachClockSource();
         _ = checked(_inputClockCount + clocks);
         while (clocks > 0)
         {

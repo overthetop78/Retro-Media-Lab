@@ -7,7 +7,11 @@ namespace RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
 /// du VDP fournit ses sorties réellement résolues. RD provient du câblage externe.</summary>
 internal sealed class Tms9918VramBus
 {
-    private Tms9918VramBusState _state;
+    private long _time, _inputChanged;
+    private Tms9918VramPins _pins;
+    private byte _inputData;
+    private bool _inputKnown;
+    private Tms9918VramRead? _lastRead;
     private bool _publishing;
     internal Action<Tms9918VramPins>? PinsChanged { get; set; }
     internal Action<Tms9918VramRead>? ReadCaptured { get; set; }
@@ -18,32 +22,41 @@ internal sealed class Tms9918VramBus
             || initial.InputDataChanged > initial.TimeNanoseconds || initial.LastRead?.TimeNanoseconds < 0
             || initial.LastRead?.TimeNanoseconds > initial.TimeNanoseconds)
             throw new ArgumentException("Invalid TMS9918 VRAM bus state.");
-        _state = initial;
+        _time = initial.TimeNanoseconds;
+        _pins = initial.Pins;
+        _inputData = initial.InputData;
+        _inputKnown = initial.InputDataKnown;
+        _inputChanged = initial.InputDataChanged;
+        _lastRead = initial.LastRead;
     }
 
-    internal Tms9918VramBusState Capture() => _state;
+    internal Tms9918VramPins Pins => _pins;
+    internal Tms9918VramBusState Capture() => new(_time, _pins, _inputData, _inputKnown, _inputChanged, _lastRead);
 
     internal void SetInputData(long timeNanoseconds, byte data, bool known)
     {
         ValidateInputTime(timeNanoseconds);
-        bool changed = data != _state.InputData || known != _state.InputDataKnown;
-        _state = _state with { TimeNanoseconds = timeNanoseconds, InputData = data, InputDataKnown = known,
-            InputDataChanged = changed ? timeNanoseconds : _state.InputDataChanged };
+        if (data != _inputData || known != _inputKnown) _inputChanged = timeNanoseconds;
+        _time = timeNanoseconds;
+        _inputData = data;
+        _inputKnown = known;
     }
 
     internal void ApplyOutputs(long timeNanoseconds, Tms9918VramPins pins)
     {
         ValidateInputTime(timeNanoseconds);
         if (_publishing) throw new InvalidOperationException("Cannot recursively change VRAM sequencing.");
-        var previous = _state;
-        bool read = !previous.Pins.CasHigh && pins.CasHigh && previous.Pins.ReadWriteHigh;
-        Tms9918VramRead? captured = read ? new(timeNanoseconds, previous.InputData,
-            previous.InputDataKnown && timeNanoseconds - previous.InputDataChanged >= T.ReadDataSetup) : null;
-        _state = previous with { TimeNanoseconds = timeNanoseconds, Pins = pins, LastRead = captured ?? previous.LastRead };
+        var previous = _pins;
+        bool read = !previous.CasHigh && pins.CasHigh && previous.ReadWriteHigh;
+        Tms9918VramRead? captured = read ? new(timeNanoseconds, _inputData,
+            _inputKnown && timeNanoseconds - _inputChanged >= T.ReadDataSetup) : null;
+        _time = timeNanoseconds;
+        _pins = pins;
+        if (captured is { } valueRead) _lastRead = valueRead;
         _publishing = true;
         try
         {
-            if (previous.Pins != pins) PinsChanged?.Invoke(pins);
+            if (previous != pins) PinsChanged?.Invoke(pins);
             // La capture est antérieure au callback : le DRAM peut relâcher RD
             // immédiatement à CAS haut (hold 0 ns), sans modifier l'octet échantillonné.
             if (captured is { } value) ReadCaptured?.Invoke(value);
@@ -53,8 +66,8 @@ internal sealed class Tms9918VramBus
 
     private void ValidateInputTime(long timeNanoseconds)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _state.TimeNanoseconds);
-        if (_publishing && timeNanoseconds != _state.TimeNanoseconds)
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
+        if (_publishing && timeNanoseconds != _time)
             throw new InvalidOperationException("Cannot advance VRAM input time from an output callback.");
     }
 }

@@ -2,6 +2,7 @@ using System.Numerics;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Contracts;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Enums;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Models;
+using RetroMediaLab.Chips.Logic.Common.Contracts;
 using C = RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Constants.Z80PinEncoding;
 using L = RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Constants.Z80BusLines;
 
@@ -33,6 +34,7 @@ internal sealed class Z80BusSequencer
     private bool _hasSample, _holdWriteData;
     private bool _nextDirty;
     private uint _pending;
+    private long _executionBoundary = long.MaxValue;
 
     internal Z80BusSequencer(Z80BusTiming timing, byte initialInputData)
     {
@@ -196,6 +198,21 @@ internal sealed class Z80BusSequencer
         checked { _ = RisingClocks + (count + (ClockHigh ? 0L : 1L)) / 2; }
     }
 
+    internal void ValidateClockSource(RationalClockSource source)
+    {
+        long first = source.FirstEdgeNanoseconds;
+        ArgumentOutOfRangeException.ThrowIfLessThan(first, TimeNanoseconds);
+        if (first >= long.MaxValue - _maximumDelay) throw new OverflowException();
+        long shortestHalf = source.HalfPeriodNumerator / source.HalfPeriodDenominator;
+        if (source.FirstEdgeHigh == ClockHigh || shortestHalf < _timing.MinimumHigh
+            || shortestHalf < _timing.MinimumLow
+            || (Int128)2 * source.HalfPeriodNumerator / source.HalfPeriodDenominator < _timing.MinimumPeriod)
+            throw new ArgumentException("Clock waveform does not match the selected profile or input level.");
+        ValidateClockEdge(first, source.FirstEdgeHigh);
+    }
+
+    internal void SetExecutionBoundary(long boundaryExclusive) => _executionBoundary = boundaryExclusive;
+
     /// <summary>Préfixe interne sans effet ni propagation, qualifié par le CPU.
     /// Les compteurs et dates représentent tous les fronts réellement reçus.</summary>
     internal void AdvanceStableClockEdges(long first, long halfPeriod, int count)
@@ -203,10 +220,18 @@ internal sealed class Z80BusSequencer
         bool firstHigh = !ClockHigh;
         long rising = (count + (firstHigh ? 1L : 0L)) / 2;
         long last = first + (count - 1L) * halfPeriod;
+        long lastRising = first + ((firstHigh ? 0L : 1L) + 2 * (rising - 1)) * halfPeriod;
+        AdvanceStableClockEdges(first, last, lastRising, count);
+    }
+
+    internal void AdvanceStableClockEdges(long first, long last, long lastRising, int count)
+    {
+        long rising = (count + (ClockHigh ? 0L : 1L)) / 2;
+        long clocks = checked(RisingClocks + rising);
         ClockHigh = (count & 1) != 0 ? !ClockHigh : ClockHigh;
         TimeNanoseconds = _lastClockEdge = last;
-        RisingClocks += rising;
-        if (rising != 0) _lastRisingEdge = first + ((firstHigh ? 0L : 1L) + 2 * (rising - 1)) * halfPeriod;
+        RisingClocks = clocks;
+        if (rising != 0) _lastRisingEdge = lastRising;
     }
 
     private void ApplyStep(in Z80BusStep step)
@@ -269,16 +294,18 @@ internal sealed class Z80BusSequencer
     }
 
     /// <summary>Avance seulement aux propagations locales ; aucune boucle par ns ou cycle.</summary>
-    internal void AdvanceTo(long nanoseconds)
+    internal bool AdvanceTo(long nanoseconds)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(nanoseconds, TimeNanoseconds);
         if (_publishing)
         {
             if (nanoseconds != TimeNanoseconds) throw new InvalidOperationException("Cannot advance time from a pin callback.");
-            return;
+            return true;
         }
         while (NextEventTimestamp != long.MaxValue && NextEventTimestamp <= nanoseconds)
         {
+            if (_executionBoundary != long.MaxValue && NextEventTimestamp >= _executionBoundary
+                && NextEventTimestamp > TimeNanoseconds) return false;
             TimeNanoseconds = NextEventTimestamp;
             ulong previousLevels = _levels;
             long next = long.MaxValue;
@@ -308,7 +335,9 @@ internal sealed class Z80BusSequencer
             }
             PublishDeadline(recompute: false);
         }
+        if (_executionBoundary != long.MaxValue && nanoseconds >= _executionBoundary) return false;
         TimeNanoseconds = nanoseconds;
+        return true;
     }
 
     private void FindNext()

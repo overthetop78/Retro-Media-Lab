@@ -1,5 +1,6 @@
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Contracts;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Models;
+using RetroMediaLab.Chips.Logic.Common.Contracts;
 
 namespace RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Interfaces;
 
@@ -30,6 +31,9 @@ public interface ICpuZ80
     void SetBusRequest(bool asserted);
     void SetClock(bool high);
     void ReceiveClockEdges(long firstEdgeNanoseconds, long halfPeriodNanoseconds, int edgeCount);
+    void ReceiveClockSource(RationalClockSource source);
+    int AdvanceClockSourceUntil(long boundaryExclusive);
+    void LimitClockSourceBefore(long boundaryExclusive);
     void AdvanceTo(long nanoseconds);
     CpuZ80State CaptureState();
     void RestoreState(CpuZ80State state);

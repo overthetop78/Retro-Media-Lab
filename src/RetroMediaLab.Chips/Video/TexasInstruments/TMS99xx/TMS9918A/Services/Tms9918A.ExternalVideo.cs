@@ -39,11 +39,14 @@ public sealed partial class Tms9918A
         else if (!sync)
             _externalVideo = _externalVideo with { SyncActive = false, SyncPending = false,
                 VerticalSyncRecognized = false };
+        InvalidateClockPredictions();
+        PublishCpuBoundary();
     }
 
     private void ApplyExternalSyncAtPixel()
     {
         if (!_externalVideo.ResetSyncKnown || !_externalVideo.SyncActive) return;
+        InvalidateClockPredictions();
         if (_externalVideo.SyncPending)
         {
             _externalVideo = _externalVideo with { SyncPending = false };

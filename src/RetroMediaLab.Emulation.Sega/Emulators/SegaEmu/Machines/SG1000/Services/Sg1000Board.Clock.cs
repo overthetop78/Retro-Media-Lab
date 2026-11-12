@@ -12,6 +12,7 @@ internal sealed partial class Sg1000Board
 
     private void Advance(long timeNanoseconds, bool stopAtFrame)
     {
+        if (_useClockDomains) { AdvanceDomains(timeNanoseconds, stopAtFrame); return; }
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
         _completedRaster = false;

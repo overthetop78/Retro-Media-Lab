@@ -25,12 +25,20 @@ public sealed partial class Tms9918A : ITms9918A
     private bool _publishing;
     private long? _announcedDeadline;
     private bool _qualified = true;
-    private Tms9918ClockState _clock;
-    private Tms9918RasterState _raster;
+    private Tms9918ClockRegisters _clock;
+    private Tms9918RasterRegisters _raster;
     private bool _deliveringClock;
 
     public long TimeNanoseconds { get; private set; }
-    public long? NextEventNanoseconds => Earliest(_dataDue, Earliest(_vramDue, _vramWriteEnd));
+    public long? NextEventNanoseconds
+    {
+        get
+        {
+            long next = Math.Min(_dataDue.GetValueOrDefault(long.MaxValue),
+                Math.Min(_vramDue.GetValueOrDefault(long.MaxValue), _vramWriteEnd.GetValueOrDefault(long.MaxValue)));
+            return next == long.MaxValue && !_dataDue.HasValue && !_vramDue.HasValue && !_vramWriteEnd.HasValue ? null : next;
+        }
+    }
     public Tms9918CpuOutputs CpuOutputs { get; private set; }
     public bool IsCpuInterfaceQualified => _qualified && !_writeBus.Capture().QualificationLost;
     public Tms9918ClockState ClockState => _clock;
@@ -83,12 +91,16 @@ public sealed partial class Tms9918A : ITms9918A
     }
 
     public void AdvanceTo(long timeNanoseconds)
+        => AdvanceClockEventsTo(timeNanoseconds);
+
+    private bool AdvanceClockEventsTo(long timeNanoseconds)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
         if (_publishing && timeNanoseconds != TimeNanoseconds)
             throw new InvalidOperationException("Cannot advance TMS9918A time from a pin callback.");
         while (NextEventNanoseconds is { } due && due <= timeNanoseconds)
         {
+            if (_drivingMasterSource && due >= _masterBoundary && due > TimeNanoseconds) return false;
             TimeNanoseconds = due;
             if (_vramWriteEnd == due)
             {
@@ -108,11 +120,14 @@ public sealed partial class Tms9918A : ITms9918A
             }
             PublishDeadline();
         }
+        if (_drivingMasterSource && timeNanoseconds >= _masterBoundary) return false;
         TimeNanoseconds = timeNanoseconds;
+        return true;
     }
 
     private void PublishCpuOutputs(byte? data = null, bool? driven = null, bool? known = null)
     {
+        PublishCpuBoundary();
         var previous = CpuOutputs;
         var next = new Tms9918CpuOutputs(TimeNanoseconds, data ?? previous.Data,
             driven ?? previous.DataDriven, known ?? previous.DataKnown,
@@ -129,6 +144,7 @@ public sealed partial class Tms9918A : ITms9918A
 
     private void PublishDeadline()
     {
+        PublishCpuBoundary();
         if (_announcedDeadline == NextEventNanoseconds) return;
         _announcedDeadline = NextEventNanoseconds;
         bool wasPublishing = _publishing;

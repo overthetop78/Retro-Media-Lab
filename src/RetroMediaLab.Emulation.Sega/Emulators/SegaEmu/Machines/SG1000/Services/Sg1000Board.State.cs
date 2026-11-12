@@ -103,5 +103,6 @@ internal sealed partial class Sg1000Board
         for (int pin = 0; pin < 4; pin++) _gatePins[pin] = _gates.GetOutput(pin);
         RefreshDeadlines();
         ResolveCpuData();
+        if (_useClockDomains) ConnectClockDomains();
     }
 }
