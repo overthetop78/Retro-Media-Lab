@@ -730,6 +730,37 @@ public sealed class Mb8118ReadWaveformTests
 public sealed class VdpClockBoundaryTests
 {
     [Theory]
+    [InlineData(7)] [InlineData(16)] [InlineData(17)] [InlineData(18)]
+    public void NewClockObserversReceiveOnlyEdgesAtOrAfterTheirConnection(int observerPixel)
+    {
+        Tms9918A Make()=>new(new(new(0,0xc0,6,0x80,0,0x7e,7,0xe3),0,default,
+            new(null,0,Tms9918CpuVramOperation.None,false),new(0,true,true,true,true)),Tms9918CpuTiming.SpecifiedMaximum);
+        var scalar=Make();var range=Make();
+        var a=new List<Tms9918ClockOutput>();var b=new List<Tms9918ClockOutput>();
+        var ga=new List<Tms9918ClockOutput>();var gb=new List<Tms9918ClockOutput>();
+        int sa=0,sb=0;
+        scalar.VideoSignalProduced=_=>{if(++sa==observerPixel){scalar.CpuClockChanged=a.Add;scalar.GromClockChanged=ga.Add;}};
+        range.VideoSignalProduced=_=>{if(++sb==observerPixel){range.CpuClockChanged=b.Add;range.GromClockChanged=gb.Add;}};
+        var clock=new RationalClockSource(0,1_000_000_000,21_477_270,1,true);
+        try
+        {
+            range.ReceiveMasterClockSource(clock);
+            long boundary=clock.EdgeNanoseconds(4097);
+            for(long edge=1;clock.EdgeNanoseconds(edge)<boundary;edge++)
+                scalar.ReceiveMasterClock(clock.EdgeNanoseconds(edge),(edge&1)!=0);
+            scalar.AdvanceTo(boundary-1);range.AdvanceMasterClockSourceUntil(boundary);range.AdvanceTo(boundary-1);
+            Assert.Equal(a,b);Assert.Equal(ga,gb);
+            Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(range.CaptureState()));
+        }
+        finally
+        {
+            scalar.VideoSignalProduced=null;range.VideoSignalProduced=null;
+            scalar.CpuClockChanged=null;range.CpuClockChanged=null;
+            scalar.GromClockChanged=null;range.GromClockChanged=null;
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void ReceivedVramWordsKeepLocalOutputOrderingAndExactObservationBoundaries(bool source)

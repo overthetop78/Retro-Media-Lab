@@ -68,6 +68,7 @@ public sealed partial class Tms9918A
     private void AdvanceMasterHalfEdges(int count)
     {
         ResolveVramReadInputs(_time);
+        bool hadCpuObserver = CpuClockChanged is not null, hadGromObserver = GromClockChanged is not null;
         int phase = (_clock.HalfEdgePhase + count) % 12;
         int cpuTransitions = (_clock.HalfEdgePhase % 3 + count) / 3;
         int pixelTransitions = (_clock.HalfEdgePhase % 2 + count) / 2;
@@ -88,14 +89,19 @@ public sealed partial class Tms9918A
             if (_ramLoadActive && _clock.HalfEdges >= _ramLoadHalfEdge) ApplyRamLoad();
             if (pixelChanged && _clock.PixelClockHigh && !_reset)
             { ApplyExternalSyncAtPixel(); ProduceRasterPixel(); }
-            if (cpuChanged && CpuClockChanged is { } listener)
+            // A listener attached by the pixel callback did not observe an
+            // earlier edge inside this prefix. Only a coincident edge may be
+            // delivered to that new connection at the current date.
+            if (cpuChanged && (hadCpuObserver || _clock.HalfEdgePhase % 3 == 0)
+                && CpuClockChanged is { } listener)
             {
                 bool wasPublishing = _publishing;
                 _publishing = true;
                 try { listener(new(_time, _clock.CpuClockHigh)); }
                 finally { _publishing = wasPublishing; }
             }
-            if (gromChanged && GromClockChanged is { } gromListener)
+            if (gromChanged && (hadGromObserver || _clock.GromHalfEdgePhase % 24 == 0)
+                && GromClockChanged is { } gromListener)
             {
                 bool wasPublishing = _publishing;
                 _publishing = true;

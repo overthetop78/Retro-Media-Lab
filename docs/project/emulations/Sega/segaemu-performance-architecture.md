@@ -999,3 +999,28 @@ Pour CPU–logique, le profil confirme que le coût ne se limite pas au pilote C
 Ce lot a réduit la granularité des phases VRAM représentées. Il n’a pas encore remplacé les89604productions raster unitaires ni les historiques CPU–logique. Le temps réel et la marge Debug demandée ne sont pas atteints; l’objectif global reste ouvert.
 
 Les copies compilées M-Debug/M-Release et leur parent Runners vide sont supprimés après les dernières comparaisons N. Rapports et profils M conservés. N-Debug/N-Release restent les seules références temporaires utiles à la prochaine comparaison; leur suppression suivra leur dernière utilisation.
+
+## 13 novembre2026 — Candidat O/O2 rejeté : le travail déplacé reste du travail
+
+La tentative associait une boucle de périodes pixel, une sortie native dans des tableaux empruntés, la reconstruction du signal complet à son observation et la condensation des entrées désactivées LS257/TMM2009. Elle a été comparée à N dans deux blocs ABBA par configuration, trois ROM,8images après2d’échauffement et deux répétitions natives amorcées. États complets, images, PCM et768observations concordent;96états finaux égaux. Le résultat de performance ne justifie pas la rétention :
+
+| Configuration | Jeu | N ms/image | O2 ms/image | Réduction de durée |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis | 172,644 | 171,708 | 0,54 % |
+| Debug | Girl’s Garden | 173,169 | 171,509 | 0,96 % |
+| Debug | The Castle | 192,971 | 187,129 | 3,03 % |
+| Release | Champion Tennis | 24,835 | 25,142 | −1,24 % |
+| Release | Girl’s Garden | 25,675 | 26,399 | −2,82 % |
+| Release | The Castle | 28,011 | 28,680 | −2,39 % |
+
+Les trois ROM courtes produisent72836périodes dans la nouvelle boucle et50305visites du pilote extérieur. Leur somme123141est pratiquement le nombre123140du pilote N : le compteur extérieur réduit masquait le déplacement de la boucle. La production raster restait89604opérations unitaires. Le retrait des callbacks vidéo n’a pas suffi à transformer ces opérations en calcul de séquences.
+
+Les multiplexeurs ne condensent que0,86–1,43mot/image : les préfixes CPU sont trop courts pour amortir leur préparation dans cette portée. La SRAM condense31878–32165mots/image, mais la suppression de ces mots, dans ce modèle fonctionnel simple, n’a pas établi de gain global utile. Aucune durée propre à ces deux transformations n’est inventée. Les comptes expliquent pourquoi il faut vérifier la portée réelle des regroupements et compter aussi le travail des nouvelles boucles, plutôt que se fier au seul nombre d’appels extérieurs.
+
+Le candidat est retiré, ses API, buffers et tests dépendants aussi. Les sources retrouvent N75f517660; aucune architecture O désactivée n’est laissée dans l’application. Les mesures et volumes de rejet restent sous artifacts/TestsMachines/Sega/SG1000/RasterRanges-20261113/ABBA-Summary. Aucun profil complet supplémentaire ni passage long n’est lancé pour un candidat rejeté; les profils N restent la référence conservée.
+
+La seule correction indépendante conservée concerne un abonnement CPUCLK/GROMCLK ajouté pendant le callback d’un pixel : le nouvel observateur ne doit pas recevoir un front antérieur au raccordement, déplacé à la fin d’un préfixe. Les fronts coïncidant réellement avec cette date sont conservés. Quatre classes d’attachement sont comparées aux fronts scalaires, avec les états complets. Aucun gain de vitesse n’est revendiqué pour cette correction.
+
+Conséquence pour le prochain lot : une vraie séquence doit calculer les effets de plusieurs positions, et non déplacer la boucle de pixels dans un helper. Le pipeline de fond possède des octets actifs distincts de ses octets en préparation; les sorties sprites lisent quatre lignes actives, avec des sorties préparatoires distinctes après dot310 et des collisions à dater. La représentation doit donc séparer les travaux de préchargement réellement imposés et les sorties calculables depuis ces registres, avec restitution de PixelPosition et des flags à toute observation. Ces pistes ne sont pas encore implémentées et aucun gain n’en est annoncé.
+
+Après retrait,23contrôles composants et6machine passent dans chaque configuration. Captures sous RasterRanges-20261113/AfterRemoval-Machine-Debug et Release, et artifacts/TestsChips/TMS9918A/SG1000/RasterRanges-20261113/AfterRemoval-Debug et Release. Les quatre copies compilées O/O2 et leur parent vide sont supprimés séparément; rapports conservés. Les copies N sont les seules références temporaires encore utiles.
