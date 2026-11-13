@@ -954,3 +954,48 @@ Réutilisation : conserver un historique reçu commun aux composants réellement
 Le balayage reste produit pixel par pixel et le CPU conserve son séquenceur de fronts. Le CPU regroupe déjà les plages internes stables dans AdvanceStableInternalPrefix; les fronts des cycles actifs, échantillonnages DATA/WAIT/INT et frontières RESET/NMI/BUSRQ ne sont pas absorbés sans représentation exacte de leurs dépendances. Le bus conserve ses historiques CPU/décodeur/portes et projections; le nouveau profil confirme leur coût. Leur suppression et la granularité du VDP restent à traiter. Le temps réel, même en Release, et la marge importante en Debug ne sont pas atteints. L’objectif global reste ouvert.
 
 Preuves : ReadPort-20261113/ABBA-Summary, EventPipe-M-Summary et Long-M.23contrôles composants passent dans chaque configuration; captures TRX sous artifacts/TestsChips/MB8118/SG1000/ReadPort-20261113. Six contrôles machine passent dans les deux configurations. Les anciennes références compilées L/K et leurs parents vides sont supprimés après leur dernière utilisation, rapports conservés. Seuls M-Debug/M-Release restent temporairement utiles à la prochaine comparaison; leur suppression suivra leur dernière utilisation.
+
+## 13 novembre2026 — Lot N : phases de sortie VRAM calculées jusqu’à CAS haut
+
+Le VDP conserve la responsabilité du séquenceur. Lorsqu’une lecture complète est acceptée par le raccordement DRAM, sans observateur scalaire de broches ni d’échéances, il conserve les phases45,85,85et270ns sous forme calculée et avance jusqu’à la capture335ns. Il ne s’agit pas de retirer les phases : le programme reçu par les DRAM les contient déjà. Les lectures DOUT et leur setup restent appliqués aux dates exactes avant la capture. Les changements de broches antérieurs, la phase en cours, la date du bus et la prochaine échéance physique sont restitués avant une observation ou un retrait. La capture CAS haute reste exécutée par Tms9918VramBus.ApplyOutputs, avec son ordre local avant les entrées de même date.
+
+Le nouveau code retire quatre visites du pilote et du séquenceur par lecture couverte, au lieu de préparer une seconde distribution. Une nouvelle écoute des broches ou des échéances restitue le préfixe puis rétablit les phases futures canoniques. Le reset et la synchronisation externe retirent d’abord cette représentation. Les écritures ne sont pas regroupées par cette règle. Les états sérialisés restent au même format et contiennent les phases/échéances physiques, pas les détails de représentation.
+
+Dix-neuf contrôles composants passent dans les deux configurations. Les contrôles existants couvrent désormais les broches et échéances avant reset à douze frontières, le DOUT livré à CAS haut et l’attachement d’un observateur de broches au milieu d’une lecture. Les six contrôles machine passent aussi par configuration. Les acquisitions alternées et profils sont en cours sous ProjectedVram-20261113, depuis la référence compilée M; aucun gain final n’est encore déclaré.
+
+### Résultats finaux M/N et comparaison des moteurs demandés
+
+Deux blocs ABBA par configuration,8images après2d’échauffement, deux répétitions natives après amorçage, JIT sans tiering. Les compilations sont figées pendant les acquisitions. M est le lot précédent vérifié, pas un candidat ralenti. La référence historique313–335ms/image reste documentée séparément.
+
+| Configuration | Jeu | M ms/image | N ms/image | Réduction de durée |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis | 193,625 | 176,450 | 8,87 % |
+| Debug | Girl’s Garden | 192,058 | 175,499 | 8,62 % |
+| Debug | The Castle | 211,991 | 194,978 | 8,03 % |
+| Release | Champion Tennis | 27,771 | 25,686 | 7,51 % |
+| Release | Girl’s Garden | 29,443 | 29,275 | 0,57 % |
+| Release | The Castle | 31,606 | 30,240 | 4,32 % |
+
+Le petit écart Release Garden n’est pas un gain utile établi : ses deux blocs donnent+8,60 % puis−8,37 %. Castle Release présente aussi une dispersion avec un second bloc défavorable; les captures ne sont pas écartées. Le gain Debug est cohérent dans les deux blocs. Les768observations natives ABBA et96états finaux concordent. Les six scénarios longs120images après30d’échauffement ajoutent720paires vidéo/PCM/observations et six états finaux égaux à M. Ces scénarios longs ne sont pas des acquisitions appariées de vitesse.
+
+Les profils complets sont refaits sur24images après12d’échauffement par ROM/configuration. Le compteur établit66703–67072visites scalaires de phases retirées par image selon le jeu et ses écritures. Le pilote maître conserve123140–125691visites/image, mesurées désormais; ce compteur n’existait pas dans M, aucune différence mesurée M/N n’en est inventée. Les89604positions vidéo, les programmes RAS/CAS reçus par les huit DRAM et les mots DOUT demeurent. Le poids propre VDP Debug est12,96–17,02 %, contre21,60–24,69 % dans M. Le câblage devient26,24–29,01 % propres. Les parts Release sont respectivement7,36–21,80 % et30,32–37,31 %, avec les limites d’inlining et d’échantillonnage déjà expliquées.
+
+Sur Champion Debug, ms propres/inclusives échantillonnées par image : AdvanceMasterClockSourceUntil4,97/53,80; AdvanceMasterHalfEdges5,17/36,84; ProduceRasterPixel4,52/31,03; DistributeGateCauses7,74/14,84; DistributeDirectCauses4,51/10,33; ProjectBusInputs3,89/13,56. Les inclusifs se recouvrent. Les profils .NET complets, volumes et propres/inclusifs par ROM sont sous ProjectedVram-20261113/EventPipe-N-Summary/Debug et Release. Les résultats natifs sont dans ABBA-Summary, les scénarios longs dans Long-N, les preuves de puces sous artifacts/TestsChips/TMS9918A/SG1000/ProjectedVram-20261113. Aucun nouveau WPR/UAC ni nouveau projet de tests.
+
+#### Lecture ciblée de Gearsystem et Genesis Plus GX, 13 novembre2026
+
+Sources primaires de code, branches master consultées à cette date; elles expliquent leur organisation logicielle et ne prouvent aucun comportement matériel :
+
+- [Gearsystem Video.cpp](https://github.com/drhelius/Gearsystem/blob/master/src/Video.cpp) : Tick cumule les cycles, traite des seuils de ligne et appelle ScanLine au seuil de rendu. ScanLine sélectionne ses rendus TMS9918/SMS et réutilise les palettes préparées. La VRAM est directement détenue par Video. Il n’y a pas de preuve de conservation de nos huit DRAM et de leurs états électriques dans ce trajet.
+- [Gearsystem Processor.cpp](https://github.com/drhelius/Gearsystem/blob/master/src/Processor.cpp) : RunFor boucle sur ExecuteOPCode, puis additionne les T-states; il traite aussi interruptions et certaines reprises d’entrée. Le mode HALT peut choisir une progression plus fine. Il ne s’agit donc pas d’un mécanisme générique restituant nos broches et phases de tous les clones Z80. L’organisation évite néanmoins de rappeler un pilote extérieur pour chaque front interne.
+- [Genesis Plus GX system.c](https://github.com/ekeeke/Genesis-Plus-GX/blob/master/core/system.c) : system_frame_sms appelle render_line pour la ligne active non encore rendue et z80_run jusqu’à la fin de ligne. Des frontières plus fines existent pour les interruptions, dont une avance supplémentaire lorsque l’IRQ coïncide avec une frontière d’instruction. Ce n’est donc pas une unique avance aveugle de toute la ligne.
+
+Déduction pour RML : une ligne ne peut pas être rendue d’avance depuis une VRAM future supposée stable. Les octets du pipeline, les chargements aux phases RAM, les collisions et les changements de registre doivent rester aux dates existantes. La séquence admissible est bornée par les vraies dépendances : prochain fetch/chargement affectant les pixels, interaction CPU, synchronisation externe, sortie observée ou IRQ. La fin de ligne constitue une borne supplémentaire, pas une garantie universelle d’indépendance.
+
+Le travail restant doit réunir la progression raster et la production des sorties dans le VDP, jusqu’à ces bornes; calculer les phases de clocks et les paramètres vidéo stables une fois pour la séquence; exposer les sorties datées sans multiplier les appels au pilote. Si un observateur scalaire peut réagir à un pixel, sa date demeure une frontière. Le consommateur graphique passif peut recevoir une séquence native compacte, à condition de remplacer réellement les publications unitaires, sans copier une seconde grille ni rejouer ensuite les anciens callbacks. Cette proposition n’est pas encore implémentée et aucun gain n’en est annoncé.
+
+Pour CPU–logique, le profil confirme que le coût ne se limite pas au pilote CPU : construction des fils, deux parcours de causes, projections et traitement des entrées par les récepteurs dominent ensemble. Le lot H/I rejeté interdisant de recommencer des grilles copiées, la piste admissible est de réduire les constructions aux intervalles utiles des connexions existantes, avec les dernières entrées et leurs dates restituées par leur propriétaire. Aucun accès CPU direct à un tableau de cartouche ou de VRAM n’est introduit.
+
+Ce lot a réduit la granularité des phases VRAM représentées. Il n’a pas encore remplacé les89604productions raster unitaires ni les historiques CPU–logique. Le temps réel et la marge Debug demandée ne sont pas atteints; l’objectif global reste ouvert.
+
+Les copies compilées M-Debug/M-Release et leur parent Runners vide sont supprimés après les dernières comparaisons N. Rapports et profils M conservés. N-Debug/N-Release restent les seules références temporaires utiles à la prochaine comparaison; leur suppression suivra leur dernière utilisation.

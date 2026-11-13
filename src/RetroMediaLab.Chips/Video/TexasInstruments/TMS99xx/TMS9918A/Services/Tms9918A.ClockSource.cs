@@ -13,6 +13,8 @@ public sealed partial class Tms9918A
     private long? _announcedCpuBoundary;
     private long? _irqPrediction;
     private long _framePredictionNumber = -1, _framePredictionTime;
+    private long _masterSourceVisits;
+    public long MasterSourceVisits => _masterSourceVisits;
 
     private void InvalidateClockPredictions()
     {
@@ -120,6 +122,7 @@ public sealed partial class Tms9918A
             while (consumed < int.MaxValue
                 && (_masterInput.NextTime < _masterBoundary || _clockInputBoundary < _masterBoundary))
             {
+                _masterSourceVisits++;
                 if (_clockInputBoundary < _masterBoundary && _clockInputBoundary <= _masterInput.NextTime)
                 {
                     if (ClockInputBoundaryReached is not { } deliver) break;

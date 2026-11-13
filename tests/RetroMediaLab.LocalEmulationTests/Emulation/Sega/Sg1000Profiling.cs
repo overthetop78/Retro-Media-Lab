@@ -32,7 +32,8 @@ internal static class Sg1000Profiling
         long DramOutputNotifications = 0, long VramDataDeliveries = 0, long VramDataGroups = 0,
         long DramReadOutputPrograms = 0, long VramReadProgramWords = 0, long DramReadOutputFallbacks = 0,
         long ClosedDramReadResolutions = 0, long ReadPortProjectedReads = 0,
-        long ReadPortCanonicalReceives = 0, long ReadPortEpochs = 0);
+        long ReadPortCanonicalReceives = 0, long ReadPortEpochs = 0,
+        long VdpProjectedReadCycles = 0, long VdpReadPhaseVisitsEliminated = 0, long VdpMasterSourceVisits = 0);
     internal sealed record Statistics(double MedianMs, double MeanMs, double P95Ms, double MinMs,
         double MaxMs, double HostFps, double NominalPercent, long AllocatedBytes, double GcPauseMs);
     internal sealed record Cost(string Name, double OwnMs, double InclusiveMs, double OwnPercent, double InclusivePercent);
@@ -183,7 +184,8 @@ internal static class Sg1000Profiling
                         board.DramOutputNotifications, board.VramDataDeliveries, board.VramDataGroups,
                         board.DramReadOutputPrograms, board.VramReadProgramWords, board.DramReadOutputFallbacks,
                         board.ClosedDramReadResolutions, board.ReadPortProjectedReads,
-                        board.ReadPortCanonicalReceives, board.ReadPortEpochs);
+                        board.ReadPortCanonicalReceives, board.ReadPortEpochs,
+                        board.Vdp.ProjectedReadCycles, board.Vdp.ReadPhaseVisitsEliminated, board.Vdp.MasterSourceVisits);
                     rows.Add(row); progress.WriteLine(JsonSerializer.Serialize(row)); progress.Flush();
                     if (frame % 15 == 0) log?.Invoke($"{kind}: frame {frame + 1}/{request.Frames}, {row.WallMs:F2}ms, PC={row.Pc:X4}, alloc={bytes}, GC={pauseMs:F3}ms");
                     if (board.Cpu.IsFaulted) throw new InvalidOperationException($"CPU fault at frame{frame},PC={row.Pc:X4}.");
@@ -403,6 +405,7 @@ internal static class Sg1000Profiling
                 text.AppendLine($"VRAM transport counts: DRAM output callbacks={counts.DramOutputNotifications}; VDP data deliveries={counts.VramDataDeliveries}; coincident groups={counts.VramDataGroups}.\n");
                 text.AppendLine($"Represented VRAM outputs: DRAM programs={counts.DramReadOutputPrograms}; shared input words={counts.VramReadProgramWords}; declined read groups={counts.DramReadOutputFallbacks}.\n");
                 text.AppendLine($"Completed closed DRAM reads resolved directly={counts.ClosedDramReadResolutions}. This is software work, not removed physical cycles.\n");
+                text.AppendLine($"VDP projected read cycles={counts.VdpProjectedReadCycles}; scalar phase visits eliminated={counts.VdpReadPhaseVisitsEliminated}; master-source loop visits={counts.VdpMasterSourceVisits}. Physical RAS/CAS and clock edges remain represented.\n");
                 text.AppendLine($"Cumulative software work: bus resolutions={counts.CpuBusResolutions}; held WAIT/control samples={counts.HeldWaitSamples}/{counts.HeldControlSamples}; direct/gate cause visits={counts.DirectCauseVisits}/{counts.GateCauseVisits}; skipped CPU words inspected by the gate filter={counts.GateSkippedCpuWords}; omitted memory response records={counts.MemoryResponseRecordsOmitted}. The filter inspections are work, not eliminated operations.\n");
             }
             foreach (var group in pass.Frames.GroupBy(row => row.Phase))

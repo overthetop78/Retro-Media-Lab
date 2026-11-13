@@ -20,13 +20,20 @@ public sealed partial class Tms9918A
     private long _ramLoadHalfEdge;
     private bool _cpuVramInService;
 
-    public Tms9918VramPins VramPins => _vramBus.Pins;
+    public Tms9918VramPins VramPins
+    {
+        get { MaterializeProjectedReadPins(); return _vramBus.Pins; }
+    }
     private readonly Action<Tms9918VramPins> _vramPinDispatch;
     private Action<Tms9918VramSignal>? _vramPinsObserver, _unrepresentedVramPinsObserver;
     public Action<Tms9918VramSignal>? VramPinsChanged
     {
         get => _vramPinsObserver;
-        set { _vramPinsObserver = value; UpdateVramPinObservation(); }
+        set
+        {
+            if (value is not null) WithdrawProjectedRead();
+            _vramPinsObserver = value; UpdateVramPinObservation();
+        }
     }
     public Action<Tms9918VramSignal>? UnrepresentedVramPinsChanged
     {
@@ -36,6 +43,40 @@ public sealed partial class Tms9918A
     public Tms9918VramReadCycleReceiver? VramReadCycleProduced { get; set; }
     public Action<long>? VramReadCycleCancelled { get; set; }
     private bool _vramReadWaveRouted;
+    private bool _projectedRead;
+    private long _projectedReadCycles, _readPhaseVisitsEliminated;
+    public long ProjectedReadCycles => _projectedReadCycles;
+    public long ReadPhaseVisitsEliminated => _readPhaseVisitsEliminated;
+
+    private int ProjectedReadStep => _time - _vramStarted < V.RasAssert ? 1
+        : _time - _vramStarted < V.CasAssert ? 2
+        : _time - _vramStarted < V.RasRelease ? 6 : 7;
+    private long ObservedVramDue => !_projectedRead ? _vramDue : checked(_vramStarted
+        + (ProjectedReadStep switch { 1 => V.RasAssert, 2 => V.CasAssert, 6 => V.RasRelease, _ => V.CasRelease }));
+
+    private void MaterializeProjectedReadPins()
+    {
+        if (!_projectedRead) return;
+        int step = ProjectedReadStep;
+        int offset = step switch { 1 => 0, 2 => V.RasAssert, 6 => V.CasAssert, _ => V.RasRelease };
+        _vramStep = step;
+        _vramBus.MaterializeReadPrefix(checked(_vramStarted + offset), new(
+            step < 6 ? _vramRow : _vramColumn, _vramAddressKnown,
+            step is 1 or 7, step < 6, true));
+    }
+
+    private void WithdrawProjectedRead()
+    {
+        if (!_projectedRead) return;
+        MaterializeProjectedReadPins();
+        long next = ObservedVramDue;
+        _readPhaseVisitsEliminated += _vramStep switch { 1 => 0, 2 => 1, 6 => 3, _ => 4 };
+        _projectedRead = false;
+        SetVramDeadline(next);
+        // No scalar deadline listener could coexist with this representation.
+        // A newly attached listener starts from the current physical deadline.
+        _announcedDeadline = _nextDue;
+    }
     private readonly Tms9918VramReadInput[] _vramReadInputs = new Tms9918VramReadInput[48];
     private int _vramReadInputCount, _vramReadInputIndex;
     private long _vramReadInputDue = long.MaxValue;
@@ -204,11 +245,24 @@ public sealed partial class Tms9918A
         UpdateVramPinObservation();
         _vramBus.ApplyOutputs(_time, VramPins with
             { AddressData = _vramRow, AddressDataKnown = address.Qualified });
+        if (_vramReadWaveRouted && _vramPinsObserver is null && _deadlineObserver is null)
+        {
+            _projectedRead = true;
+            _projectedReadCycles++;
+            SetVramDeadline(checked(_vramStarted + V.CasRelease));
+        }
         PublishDeadline();
     }
 
     private void AdvanceVramSequence()
     {
+        if (_projectedRead)
+        {
+            MaterializeProjectedReadPins();
+            _readPhaseVisitsEliminated += 4;
+            _projectedRead = false;
+            _vramStep = 7;
+        }
         var pins = VramPins;
         int nextOffset;
         switch (_vramStep++)
@@ -297,6 +351,7 @@ public sealed partial class Tms9918A
 
     private void WithdrawVramReadWave()
     {
+        WithdrawProjectedRead();
         if (_vramReadWaveRouted)
         {
             bool wasPublishing = _publishing;

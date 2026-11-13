@@ -12,11 +12,13 @@ public sealed partial class Tms9918A
         if (_cpuInputTime > _time)
             throw new InvalidOperationException("Synchronize the video domain before observing its complete state.");
         ResolveVramReadInputs(_time);
+        MaterializeProjectedReadPins();
+        long vramDue = ObservedVramDue;
         return new(5, _time, _registers.Capture(), _status.Value, _protocol.Capture(),
             _memory.Capture(), new(_cpuPins, _readMode, _readQualified, _reset, _resetStarted,
                 _qualified, _dataDue < 0 ? null : _dataDue, _dataTargetDriven), _writeBus.Capture(), _statusReadBus.Capture(),
             CpuOutputs, _clock, _raster, VideoSignal, _vramBus.Capture(),
-            new(_vramDue < 0 ? null : _vramDue, _vramWriteEnd < 0 ? null : _vramWriteEnd,
+            new(vramDue < 0 ? null : vramDue, _vramWriteEnd < 0 ? null : _vramWriteEnd,
                 _vramStarted, _vramStartedHalfEdge, _cpuReadyHalfEdge,
                 _vramStep, _vramActive, _vramWrite, _vramAddressKnown, _vramRow, _vramColumn,
                 _vramWriteData, _refreshRow, (int)_vramSlot.Kind, _vramSlot.Index,
@@ -57,6 +59,7 @@ public sealed partial class Tms9918A
         _vramBus.ReadCaptured = null;
         _registers = registers; _status = status; _protocol = protocol; _memory = memory;
         _vramReadWaveRouted = false;
+        _projectedRead = false;
         _writeBus = write; _statusReadBus = read; _vramBus = vram; _background = background;
         _time = state.TimeNanoseconds;
         _cpuInputTime = Math.Max(state.CpuWriteBus.TimeNanoseconds, state.StatusReadBus.TimeNanoseconds);

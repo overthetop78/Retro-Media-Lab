@@ -31,7 +31,15 @@ public sealed partial class Tms9918A : ITms9918A
 
     private long _time;
     public long TimeNanoseconds => _time;
-    public long? NextEventNanoseconds => _nextDue < 0 ? null : _nextDue;
+    public long? NextEventNanoseconds
+    {
+        get
+        {
+            long next = _nextDue;
+            if (_projectedRead) next = next < 0 ? ObservedVramDue : Math.Min(next, ObservedVramDue);
+            return next < 0 ? null : next;
+        }
+    }
     public Tms9918CpuOutputs CpuOutputs { get; private set; }
     public bool IsCpuInterfaceQualified => _qualified && !_writeBus.Capture().QualificationLost;
     public Tms9918ClockState ClockState => _clock;
@@ -42,7 +50,12 @@ public sealed partial class Tms9918A : ITms9918A
     public Action<Tms9918VideoSignal>? VideoSignalProduced { get; set; }
     public Action<long>? FrameStarted { get; set; }
     public Action<Tms9918CpuOutputs>? CpuOutputsChanged { get; set; }
-    public Action<long?>? NextEventNanosecondsChanged { get; set; }
+    private Action<long?>? _deadlineObserver;
+    public Action<long?>? NextEventNanosecondsChanged
+    {
+        get => _deadlineObserver;
+        set { if (value is not null) WithdrawProjectedRead(); _deadlineObserver = value; }
+    }
 
     internal bool HasCpuVramRequest => _memory.HasPendingRequest;
     internal Tms9918CpuVramRequest CpuVramRequest => _memory.CurrentRequest;

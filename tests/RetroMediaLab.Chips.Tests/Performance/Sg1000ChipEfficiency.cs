@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Numerics;
+using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Services;
@@ -921,8 +922,17 @@ public sealed class VdpClockBoundaryTests
                 new(null,0,Tms9918CpuVramOperation.None,false),new(0,true,true,true,true)),Tms9918CpuTiming.SpecifiedMaximum);
             var observed=Make();var represented=Make();
             long row=-1;
-            observed.VramReadCycleProduced=static (in RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts.Tms9918VramReadCycle _) => true;
-            represented.VramReadCycleProduced=(in RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts.Tms9918VramReadCycle cycle) => { if(row<0)row=cycle.RowTime;return true; };
+            observed.VramReadCycleProduced=(in RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts.Tms9918VramReadCycle cycle) =>
+            {
+                observed.ReceiveVramReadProgram([new(cycle.RowTime+165,0xa5,true),new(cycle.CasRise,0,false)]);
+                return true;
+            };
+            represented.VramReadCycleProduced=(in RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts.Tms9918VramReadCycle cycle) =>
+            {
+                if(row<0)row=cycle.RowTime;
+                represented.ReceiveVramReadProgram([new(cycle.RowTime+165,0xa5,true),new(cycle.CasRise,0,false)]);
+                return true;
+            };
             observed.VramPinsChanged=_=>{};
             try
             {
@@ -936,12 +946,27 @@ public sealed class VdpClockBoundaryTests
                 }
                 long time=row+offset;
                 observed.AdvanceMasterClockSourceUntil(time+1);represented.AdvanceMasterClockSourceUntil(time+1);
+                observed.AdvanceTo(time);represented.AdvanceTo(time);
+                Assert.Equal(observed.NextEventNanoseconds,represented.NextEventNanoseconds);
+                Assert.Equal(observed.VramPins,represented.VramPins);
+                Assert.Equal(JsonSerializer.Serialize(observed.CaptureState()),JsonSerializer.Serialize(represented.CaptureState()));
+                if(offset==85)
+                {
+                    var pins=new List<Tms9918VramSignal>();
+                    represented.VramPinsChanged=pins.Add;
+                    observed.AdvanceTo(row+270);represented.AdvanceTo(row+270);
+                    Assert.Single(pins);
+                    Assert.Equal(JsonSerializer.Serialize(observed.CaptureState()),JsonSerializer.Serialize(represented.CaptureState()));
+                    represented.VramPinsChanged=null;
+                    time=row+270;
+                }
                 observed.SetReset(time,true);represented.SetReset(time,true);
                 Assert.Equal(JsonSerializer.Serialize(observed.CaptureState()),JsonSerializer.Serialize(represented.CaptureState()));
             }
             finally
             {
                 observed.VramPinsChanged=null;
+                represented.VramPinsChanged=null;
                 observed.VramReadCycleProduced=null;represented.VramReadCycleProduced=null;
             }
         }

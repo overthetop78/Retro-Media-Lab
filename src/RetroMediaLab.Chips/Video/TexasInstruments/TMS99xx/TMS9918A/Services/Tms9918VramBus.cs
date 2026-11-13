@@ -33,6 +33,19 @@ internal sealed class Tms9918VramBus
     internal Tms9918VramPins Pins => _pins;
     internal Tms9918VramBusState Capture() => new(_time, _pins, _inputData, _inputKnown, _inputChanged, _lastRead);
 
+    // The owning VDP has already delivered these output phases as a complete
+    // read waveform. No pin listener is waiting for their scalar publication.
+    // Restore the exact prefix without replaying phases through the clock
+    // driver. CAS rising, and therefore the data capture, stays in ApplyOutputs.
+    internal void MaterializeReadPrefix(long lastPinDate, Tms9918VramPins pins)
+    {
+        if (PinsChanged is not null || !pins.ReadWriteHigh || !_pins.ReadWriteHigh
+            || !_pins.CasHigh && pins.CasHigh)
+            throw new InvalidOperationException("A represented read prefix cannot discard an observed transition or capture.");
+        _pins = pins;
+        _time = Math.Max(_time, lastPinDate);
+    }
+
     internal void SetInputData(long timeNanoseconds, byte data, bool known, bool intermediateTransition = false)
     {
         ValidateInputTime(timeNanoseconds);
