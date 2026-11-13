@@ -55,6 +55,45 @@ internal struct RationalClockInput
         return (int)Int128.Min(count, int.MaxValue);
     }
 
+    /// <summary>Consume a bounded prefix with one quotient for the last edge.
+    /// Its remainder also locates the following edge: no second date conversion
+    /// or division is needed to commit the cursor. No component state is here.</summary>
+    internal int ConsumeBefore(int maximumCount, long boundaryExclusive, out long lastTime)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumCount);
+        lastTime = NextTime;
+        if (boundaryExclusive <= NextTime) return 0;
+        int count = maximumCount;
+        if (maximumCount - 1 > _fastEdges)
+        {
+            count = Math.Min(maximumCount, EdgesBefore(boundaryExclusive));
+            if (count == 0) return 0;
+            lastTime = TimeAfterEdges(count - 1);
+            Advance(count);
+            return count;
+        }
+        long phase = (long)(count - 1) * _numerator + _fraction;
+        long delta = phase / _denominator;
+        // Compare offsets, not a speculative absolute date which could overflow
+        // even though the prefix strictly before the boundary is representable.
+        if (delta >= boundaryExclusive - NextTime)
+        {
+            count = Math.Min(count, EdgesBefore(boundaryExclusive));
+            if (count == 0) return 0;
+            phase = (long)(count - 1) * _numerator + _fraction;
+            delta = phase / _denominator;
+        }
+        long remainder = phase - delta * _denominator;
+        bool carry = remainder >= _denominator - _remainder;
+        long date = checked(NextTime + delta);
+        long next = checked(date + _whole + (carry ? 1 : 0));
+        _fraction = carry ? remainder - (_denominator - _remainder) : remainder + _remainder;
+        NextTime = next;
+        if ((count & 1) != 0) NextHigh = !NextHigh;
+        lastTime = date;
+        return count;
+    }
+
     internal void Advance(int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);

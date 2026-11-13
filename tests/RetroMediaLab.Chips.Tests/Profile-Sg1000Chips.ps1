@@ -23,7 +23,11 @@ public sealed class Sg1000ChipEfficiencyEntry {
     $configs = if ($Configuration -eq 'Both') { @('Debug','Release') } else { @($Configuration) }
     foreach ($config in $configs) {
         $env:RML_CHIP_EFFICIENCY_OUTPUT=Join-Path $root "artifacts/TestsChips/Sega/SG-1000/Efficiency/$stamp/$config"
-        & dotnet test $project -c $config -p:RmlChipEfficiencyOnly=true --filter 'FullyQualifiedName~Sg1000ChipEfficiencyEntry|FullyQualifiedName~CombinationalTruthTableTests' --logger 'console;verbosity=normal' --logger "trx;LogFileName=efficiency-$config.trx" --results-directory $env:RML_CHIP_EFFICIENCY_OUTPUT
+        # Correctness classes may run in parallel under xUnit. Complete them in
+        # a separate process before the single timed entry point is started.
+        & dotnet test $project -c $config -p:RmlChipEfficiencyOnly=true --filter 'FullyQualifiedName~RetroMediaLab.Chips.Tests.Performance&FullyQualifiedName!~Sg1000ChipEfficiencyEntry' --logger 'console;verbosity=normal' --logger "trx;LogFileName=checks-$config.trx" --results-directory $env:RML_CHIP_EFFICIENCY_OUTPUT
+        if ($LASTEXITCODE -ne 0) { $exitCode=$LASTEXITCODE; continue }
+        & dotnet test $project -c $config -p:RmlChipEfficiencyOnly=true --no-build --filter 'FullyQualifiedName~Sg1000ChipEfficiencyEntry' --logger 'console;verbosity=normal' --logger "trx;LogFileName=efficiency-$config.trx" --results-directory $env:RML_CHIP_EFFICIENCY_OUTPUT
         if ($LASTEXITCODE -ne 0) { $exitCode=$LASTEXITCODE }
         Write-Output "Results: $env:RML_CHIP_EFFICIENCY_OUTPUT"
     }

@@ -1,4 +1,7 @@
 using System.Buffers.Binary;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using H = RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Constants.Sg1000Constants;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services;
@@ -11,6 +14,8 @@ internal sealed partial class EmulatorCore
     public int BufferedAudioFrames => Volatile.Read(ref _bufferedAudioFrames);
     public VideoFrame? LatestVideoFrame { get; private set; }
     public AudioChunk? LatestAudioChunk { get; private set; }
+    internal bool CollectFrameTimings { get; set; }
+    internal (double BoardMs, double PresentationMs, double AudioMs) LastFrameTimings { get; private set; }
 
     // TI MP010A, table2-3: nominal decoded color differences, normalized to black=.47.
     // This is host RGB presentation, not an analog NTSC decoder or a measured television palette.
@@ -36,9 +41,15 @@ internal sealed partial class EmulatorCore
     public void RunFrame()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        long start = CollectFrameTimings ? Stopwatch.GetTimestamp() : 0;
         Board.AdvanceFrame();
+        long videoStart = CollectFrameTimings ? Stopwatch.GetTimestamp() : 0;
         LatestVideoFrame = PresentVideo(++_videoSequence);
+        long audioStart = CollectFrameTimings ? Stopwatch.GetTimestamp() : 0;
         short[] samples = Board.DrainAudio();
+        if (CollectFrameTimings) LastFrameTimings = (Stopwatch.GetElapsedTime(start,videoStart).TotalMilliseconds,
+            Stopwatch.GetElapsedTime(videoStart,audioStart).TotalMilliseconds,
+            Stopwatch.GetElapsedTime(audioStart).TotalMilliseconds);
         if (samples.Length == 0) return;
         LatestAudioChunk = new(samples, SampleRate, samples.Length, ++_audioSequence,
             TimeSpan.FromSeconds((double)_audioFrames / SampleRate), EmulationAudioChannelLayout.Mono);
@@ -53,10 +64,27 @@ internal sealed partial class EmulatorCore
         byte[] pixels = new byte[H.Width * H.Height * 4];
         var indices = Board.ColourIndices.Span;
         var known = Board.PixelKnowledge.Span;
-        for (int i = 0; i < indices.Length; i++)
-            BinaryPrimitives.WriteUInt32LittleEndian(pixels.AsSpan(i * 4), known[i] ? Palette[indices[i] & 15] : 0U);
+        ConvertVideoPixels(indices,known,pixels);
         return new(pixels, H.Width, H.Height, H.Width * 4, EmulationPixelFormat.Xrgb8888, 4f / 3,
             sequence, TimeSpan.FromTicks(Board.TimeNanoseconds / 100));
+    }
+    internal static void ConvertVideoPixels(ReadOnlySpan<byte> indices, ReadOnlySpan<bool> known, Span<byte> pixels)
+    {
+        if (known.Length < indices.Length || indices.Length > pixels.Length / 4)
+            throw new ArgumentException("Incomplete native video buffers.");
+        if (BitConverter.IsLittleEndian)
+        {
+            // Bounds are qualified once for the complete, fixed raster. The
+            // published byte array is still owned by this immutable frame.
+            ref byte source=ref MemoryMarshal.GetReference(indices);
+            ref bool qualification=ref MemoryMarshal.GetReference(known);
+            ref uint destination=ref MemoryMarshal.GetReference(MemoryMarshal.Cast<byte,uint>(pixels));
+            for(int i=0;i<indices.Length;i++)
+                Unsafe.Add(ref destination,i)=Unsafe.Add(ref qualification,i) ? Palette[Unsafe.Add(ref source,i)&15] : 0U;
+        }
+        else
+            for (int i=0;i<indices.Length;i++)
+                BinaryPrimitives.WriteUInt32LittleEndian(pixels.Slice(i*4),known[i] ? Palette[indices[i]&15] : 0U);
     }
     public bool TryDequeueAudio(out AudioChunk? chunk)
     {

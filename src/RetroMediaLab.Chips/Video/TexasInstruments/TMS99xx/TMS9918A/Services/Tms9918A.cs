@@ -29,7 +29,8 @@ public sealed partial class Tms9918A : ITms9918A
     private Tms9918RasterRegisters _raster;
     private bool _deliveringClock;
 
-    public long TimeNanoseconds { get; private set; }
+    private long _time;
+    public long TimeNanoseconds => _time;
     public long? NextEventNanoseconds => _nextDue < 0 ? null : _nextDue;
     public Tms9918CpuOutputs CpuOutputs { get; private set; }
     public bool IsCpuInterfaceQualified => _qualified && !_writeBus.Capture().QualificationLost;
@@ -81,14 +82,14 @@ public sealed partial class Tms9918A : ITms9918A
 
     private bool AdvanceClockEventsTo(long timeNanoseconds)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
-        if (_publishing && timeNanoseconds != TimeNanoseconds)
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
+        if (_publishing && timeNanoseconds != _time)
             throw new InvalidOperationException("Cannot advance TMS9918A time from a pin callback.");
         while (_nextDue >= 0 && _nextDue <= timeNanoseconds)
         {
             long due = _nextDue;
-            if (_drivingMasterSource && due >= _masterBoundary && due > TimeNanoseconds) return false;
-            TimeNanoseconds = due;
+            if (_drivingMasterSource && due >= _masterBoundary && due > _time) return false;
+            _time = due;
             if (_vramWriteEnd == due)
             {
                 _vramWriteEnd = -1;
@@ -109,7 +110,7 @@ public sealed partial class Tms9918A : ITms9918A
             PublishDeadline();
         }
         if (_drivingMasterSource && timeNanoseconds >= _masterBoundary) return false;
-        TimeNanoseconds = timeNanoseconds;
+        _time = timeNanoseconds;
         return true;
     }
 
@@ -117,7 +118,7 @@ public sealed partial class Tms9918A : ITms9918A
     {
         PublishCpuBoundary();
         var previous = CpuOutputs;
-        var next = new Tms9918CpuOutputs(TimeNanoseconds, data ?? previous.Data,
+        var next = new Tms9918CpuOutputs(_time, data ?? previous.Data,
             driven ?? previous.DataDriven, known ?? previous.DataKnown,
             !_status.InterruptAsserted(_registers.InterruptEnabled));
         // Une date seule n'est pas une transition électrique.

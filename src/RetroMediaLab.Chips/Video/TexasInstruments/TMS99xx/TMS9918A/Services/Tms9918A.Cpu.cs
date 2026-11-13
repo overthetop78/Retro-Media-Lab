@@ -12,7 +12,7 @@ public sealed partial class Tms9918A
     {
         if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || !pins.CsrHigh || !pins.CswHigh || _dataDue >= 0)
             return false;
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _cpuInputTime);
         _cpuInputTime = timeNanoseconds;
         _cpuPins = pins;
@@ -27,7 +27,7 @@ public sealed partial class Tms9918A
     public bool TryAdvanceInactiveCpuInterfaceTo(long timeNanoseconds)
     {
         if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || _dataDue >= 0) return false;
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _cpuInputTime);
         _cpuInputTime = timeNanoseconds;
         if (!_reset)

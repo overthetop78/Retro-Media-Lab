@@ -29,7 +29,7 @@ public sealed partial class Tms9918A
     public void SetClockInputBoundary(long? timeNanoseconds)
     {
         if (timeNanoseconds is { } time)
-            ArgumentOutOfRangeException.ThrowIfLessThan(time, TimeNanoseconds);
+            ArgumentOutOfRangeException.ThrowIfLessThan(time, _time);
         _clockInputBoundary = timeNanoseconds ?? long.MaxValue;
     }
     public RationalClockSource? CpuClockSource => !_hasMasterSource ? null
@@ -79,7 +79,7 @@ public sealed partial class Tms9918A
         if (_publishing || _deliveringClock || _drivingMasterSource)
             throw new InvalidOperationException("Recursive master clock source.");
         var input = new RationalClockInput(source);
-        ArgumentOutOfRangeException.ThrowIfLessThan(input.NextTime, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(input.NextTime, _time);
         if (input.NextHigh == _clock.MasterHigh)
             throw new ArgumentException("The first received edge must change the master clock.", nameof(source));
         _ = input.Divide(3, 2 - _clock.HalfEdgePhase % 3, !_clock.CpuClockHigh);
@@ -102,7 +102,7 @@ public sealed partial class Tms9918A
     public void LimitMasterClockSourceBefore(long boundaryExclusive)
     {
         if (!_drivingMasterSource) return;
-        ArgumentOutOfRangeException.ThrowIfLessThan(boundaryExclusive, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(boundaryExclusive, _time);
         _masterBoundary = Math.Min(_masterBoundary, boundaryExclusive);
     }
 
@@ -111,7 +111,7 @@ public sealed partial class Tms9918A
         if (!_hasMasterSource) throw new InvalidOperationException("No master clock source is connected.");
         if (_drivingMasterSource || _publishing || _deliveringClock)
             throw new InvalidOperationException("Recursive master clock advance.");
-        ArgumentOutOfRangeException.ThrowIfLessThan(boundaryExclusive, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(boundaryExclusive, _time);
         int consumed = 0;
         _masterBoundary = boundaryExclusive;
         _drivingMasterSource = true;
@@ -130,26 +130,24 @@ public sealed partial class Tms9918A
                     continue;
                 }
                 long boundary = Math.Min(_masterBoundary, _clockInputBoundary);
+                if (_nextDue >= 0 && _nextDue <= _masterInput.NextTime && _nextDue < boundary)
+                {
+                    if (!AdvanceClockEventsTo(_nextDue)) break;
+                    continue;
+                }
+                if (_nextDue >= 0) boundary = Math.Min(boundary, _nextDue);
                 int count = Math.Min(HalfEdgesToPixel, int.MaxValue - consumed);
                 if (CpuClockChanged is not null) count = Math.Min(count, 3 - _clock.HalfEdgePhase % 3);
                 if (GromClockChanged is not null) count = Math.Min(count, 24 - _clock.GromHalfEdgePhase % 24);
                 if (_ramLoadActive) count = (int)Math.Min(count, Math.Max(1, _ramLoadHalfEdge - _clock.HalfEdges));
-                count = Math.Min(count, _masterInput.EdgesBefore(boundary));
-                long date = _masterInput.TimeAfterEdges(count - 1);
-                if (_nextDue >= 0 && _nextDue <= date)
-                {
-                    long due = _nextDue;
-                    count = Math.Min(count, _masterInput.EdgesBefore(due));
-                    if (count == 0)
-                    {
-                        if (!AdvanceClockEventsTo(due)) break;
-                        continue;
-                    }
-                    date = _masterInput.TimeAfterEdges(count - 1);
-                }
-                if (!AdvanceClockEventsTo(date) || date >= _masterBoundary) break;
+                if (_clock.HalfEdges > long.MaxValue - count)
+                    count = Math.Min(count, _masterInput.EdgesBefore(boundary));
                 _ = checked(_clock.HalfEdges + count);
-                _masterInput.Advance(count);
+                count = _masterInput.ConsumeBefore(count, boundary, out long date);
+                if (count == 0) continue;
+                // All pending outputs and connected inputs bounded the prefix
+                // above. There can be no event to discover between these dates.
+                _time = date;
                 AdvanceMasterHalfEdges(count);
                 consumed += count;
             }

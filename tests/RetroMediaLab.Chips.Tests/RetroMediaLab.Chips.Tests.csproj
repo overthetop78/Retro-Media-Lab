@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(RmlChipEfficiencyOnly)' == 'true'">
     <Compile Remove="**/*.cs" />
-    <Compile Include="Performance/Sg1000ChipEfficiency.cs;Performance/Sg1000ChipEfficiency.Generated.cs;Performance/CombinationalTruthTableTests.cs" />
+    <Compile Include="Performance/*.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

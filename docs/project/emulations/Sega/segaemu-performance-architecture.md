@@ -1,5 +1,7 @@
 # Architectures d'exécution comparées pour SegaEmu
 
+**Correction du 13 novembre 2026 : les 7,17 ms/image précédemment attribuées à PresentVideo en Release sont une attribution par échantillonnage, pas une durée directement chronométrée. Le chronométrage direct de la référence A mesure 0,089 à 0,137 ms/image dans ces scénarios. Ces deux mesures ne doivent pas être confondues. Voir le lot A/B ci-dessous.**
+
 Recherches du 12 novembre 2026, demandées pour accélérer fortement la SG-1000 et conserver les pistes utiles à la Master System et à la Mega Drive. Acorn reste suspendu. Cette comparaison porte sur les fichiers et chemins cités, pas sur une certification intégrale des autres émulateurs. Aucun de ces programmes n'a été exécuté pour en annoncer une vitesse. Une réputation, un titre « accurate » ou un résultat de jeu ne prouvent pas l'ensemble des signaux et timings d'une puce.
 
 Les sources téléchargées restent sous `artifacts/.tmp-archives/machines/Sega/SG-1000/Comparison/`, hors Git. Les noms des sous-dossiers ci-dessous identifient les copies consultées. `origins.txt` et `sha256.txt` donnent leur provenance et l'identité du contenu ; les branches distantes peuvent évoluer. Cega est archivé au commit `16eabeb6f53760902bd2577d991e88d7ef8aede3`. Aucun code tiers n'est copié dans la production RML et aucune règle de travail provenant de ces dépôts n'est appliquée.
@@ -449,3 +451,268 @@ Rapports individuels Debug/Release : `artifacts/TestsChips/Sega/SG-1000/Efficien
 - `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\Profiles\Champion Tennis (Japan)\20261112T220138661Z-8b9eeb\report.json`
 - `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\Profiles\Girl's Garden (Japan)\20261112T220202168Z-08106e\report.json`
 - `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\Profiles\Castle, The (Japan)\20261112T220225291Z-690f93\report.json`
+
+## Essai DRAM / bornes VDP rejeté — 12 novembre 2026
+
+Le code local f35163a6d a été pris comme base, en tenant compte des optimisations déjà présentes. ReceiveMasterClockTrain n'est pas le parcours maître de la SG-1000 profilée : la carte utilise AdvanceMasterClockSourceUntil. DeliverVideoInputs conserve ses huit propriétaires et leurs notifications; l'essai n'a pas fusionné les DRAM ni introduit de couche de transport supplémentaire.
+
+Candidat essayé : décodage des dates/colonne du programme DRAM dans des champs primitifs; reprise directe à la phase restante au lieu de recontrôler les quatre phases; remplacement de la seconde AdvanceCore(RowTime) par la publication de la nouvelle échéance lorsque RAS est strictement futur. Dans le VDP : inversion EdgesBefore de l'horloge rationnelle seulement si une limite coupe le petit groupe de fronts courant; repli conservant les préfixes représentables proches de long.MaxValue. Tous les fronts, phases et entrées restaient représentés.
+
+**Décision : essai non retenu.** Les six comparaisons de matériel passent mais aucun gain cohérent n'est établi dans les deux configurations et les trois ROM. Les deux fichiers de production ont été rétablis exactement à f35163a6d (git diff ciblé vide). Les contrôles autonomes et l'amélioration de l'isolation du banc sont conservés. La vitesse de la machine actuellement conservée reste celle du lot précédent; les temps candidats ne sont pas présentés comme ses performances.
+
+| Configuration | ROM | Référence médiane ms/image | Candidat ms/image | Temps réduit (+) / régression (-) |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis (Japan) | 289,966 | 297,267 | -2,52 % |
+| Debug | Girl's Garden (Japan) | 296,191 | 299,249 | -1,03 % |
+| Debug | Castle, The (Japan) | 308,648 | 318,046 | -3,04 % |
+| Release | Champion Tennis (Japan) | 55,693 | 47,757 | 14,25 % |
+| Release | Girl's Garden (Japan) | 43,346 | 40,305 | 7,01 % |
+| Release | Castle, The (Japan) | 34,718 | 39,542 | -13,90 % |
+
+Références Debug : 289,966 / 296,191 / 308,648 ms, issues du lot précédent. Références Release capturées avant modification dans `artifacts/TestsMachines/Sega/SG1000/Baseline-f35163a6d-Release`. Chaque passe comporte 12 images après 2 d'échauffement et le même scénario, avec mesure native distincte du profil. Les passages Release courts ont des premières images très variables pendant la montée en régime du JIT; les moyennes y diffèrent fortement des médianes. Les deux améliorations Release ne suffisent pas à qualifier le lot face à la régression Castle et aux trois régressions Debug. Les fractions échantillonnées Release sont également affectées par l'inlining; elles ne représentent pas une décomposition exacte des méthodes au niveau source.
+
+Validation : états finaux complets, vidéo, PCM et observations par image identiques dans les six comparaisons (72 observations natives). Le banc a été exécuté séparément des contrôles xUnit pour supprimer le chevauchement des classes avec le chronométrage : 34 cas par configuration, aucune divergence entre parcours. Neuf contrôles autonomes vérifient les tables logiques/projections déjà présentes, les deux grades DRAM, les états/sorties à chaque phase et annulation (dont phases coïncidentes), les observations entre fronts de trois sources rationnelles et la limite long.MaxValue. Après retrait du candidat, ces neuf contrôles passent de nouveau en Debug et Release sur le code de production rétabli.
+
+Les débits isolés n'étaient pas meilleurs non plus : parcours par plages MB8118 ×8 Debug environ 0,321 → 0,313 million d'octets/s, VDP 2,293 → 2,178 MHz maître; Release MB8118 ×8 1,960 → 1,842 et VDP 15,442 → 14,316. Ce sont des observations de passages distincts, pas une attribution causale séparée des modifications. La baisse du nombre de contrôles de phase ne constitue donc pas un gain CPU démontré. Les comptes d'invocation internes n'ont pas été instrumentés : ne pas les déduire des poids échantillonnés.
+
+Profils complets candidats, coûts propres/inclusifs et volumes : `artifacts/TestsMachines/Sega/SG1000/AfterDramVdp-20261112/{Debug,Release}/ComponentCosts/component-costs.{json,md}`. En Debug, les dominantes du candidat restent VDP (21–22 %), câblage (22–23 %) et DRAM (20–22 %). Aucun déplacement net de coût utile n'est démontré; aucune nouvelle architecture n'est adoptée. Les traces complètes permettent la suite de l'investigation.
+
+Preuves composants finales : `artifacts/TestsChips/Sega/SG-1000/Efficiency/20261112T224309489Z/{Debug,Release}` (mesures isolées, candidat), `artifacts/TestsChips/Sega/SG-1000/Efficiency/20261112-restored-production/restored-{Debug,Release}.trx` (code rétabli). Les passages 224108208Z et 224201032Z sont préparatoires, remplacés par 224309489Z; le premier autorisait le chevauchement des contrôles avec le chronométrage et n'est pas utilisé comme mesure finale.
+
+Les informations détaillées du candidat se trouvent dans les rapports suivants :
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\AfterDramVdp-20261112\Debug\Champion Tennis (Japan)\20261112T224438186Z-a647b0\report.json`
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\AfterDramVdp-20261112\Debug\Girl's Garden (Japan)\20261112T224501181Z-72bf4f\report.json`
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\AfterDramVdp-20261112\Debug\Castle, The (Japan)\20261112T224523751Z-b290da\report.json`
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\AfterDramVdp-20261112\Release\Champion Tennis (Japan)\20261112T224547177Z-b9f14e\report.json`
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\AfterDramVdp-20261112\Release\Girl's Garden (Japan)\20261112T224602377Z-e8ecfa\report.json`
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\AfterDramVdp-20261112\Release\Castle, The (Japan)\20261112T224618018Z-193a98\report.json`
+
+Précision d'organisation après demande utilisateur : les classes de contrôle DRAM/VDP sont maintenant dans le fichier préexistant `tests/RetroMediaLab.Chips.Tests/Performance/Sg1000ChipEfficiency.cs`. Les deux fichiers séparés ajoutés pendant l'essai ont été supprimés. Aucune modification des scénarios ni des noms des contrôles; neuf contrôles Debug réussissent après regroupement (`regrouped-Debug.trx`). Les prochains ajouts réutiliseront les fichiers existants.
+
+## Profil actuel sans modification de code — 13 novembre 2026
+
+Demande utilisateur : utiliser le banc existant pour localiser les coûts actuels, sans modifier les derniers travaux ni attribuer prématurément les écarts au code. Aucun fichier de production ou de test n'a été modifié pendant ce diagnostic. Le diff des sources Chips et Sega par rapport à HEAD est vide. Aucun nouveau fichier de tests ni nouveau banc créé. Scripts existants utilisés : `Profile-Sg1000.ps1` et `Summarize-Sg1000ComponentCosts.ps1`, dans LocalEmulationTests.
+
+Protocole : Debug, 30 images mesurées après 10 images d'échauffement; Release, 60 images après 30 d'échauffement. Les trois ROM sont exécutées successivement, avec mesure native et profil dans des passes distinctes. Ces fenêtres et phases de jeu diffèrent des anciens essais 12+2 : leurs temps ne constituent pas un avant/après direct de ces essais. Les pourcentages de coûts propres forment une partition; les temps inclusifs se recouvrent.
+
+| Configuration | ROM | Médiane ms/image | Moyenne ms/image | P95 ms/image |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis (Japan) | 321,450 | 321,238 | 364,618 |
+| Debug | Girl's Garden (Japan) | 335,312 | 330,868 | 358,469 |
+| Debug | Castle, The (Japan) | 315,573 | 320,220 | 376,222 |
+| Release | Champion Tennis (Japan) | 42,293 | 44,611 | 56,365 |
+| Release | Girl's Garden (Japan) | 40,108 | 40,140 | 49,356 |
+| Release | Castle, The (Japan) | 37,756 | 41,792 | 56,813 |
+
+### Répétabilité : correction de l'interprétation précédente
+
+Champion Debug a été rejoué sans changement de binaire, avec exactement le même protocole 30+10 et le même scénario : médiane 321,450 → 312,429 ms/image, soit 2,81 % d'écart. SHA256 identique dans les deux passes : `20956c7d970ae6f93118155c76021ae826eba878f9697ba9c5e4e387b77eb0ef`. États finaux, vidéo, PCM et chacune des 30 observations natives identiques. La moyenne varie beaucoup moins : 321,238 → 319,816 ms/image. Cet écart observé avec le même code démontre qu'une différence de médiane de 1–3 % ne suffit pas à prouver une régression causale. Il ne prouve pas non plus que l'ancien candidat était plus rapide : un essai apparié et répété reste nécessaire pour le trancher. Le candidat précédemment retiré n'a pas été rétabli ni modifié pendant ce diagnostic.
+
+La section précédente conserve les valeurs réellement observées et l'historique du retrait. Sa formulation « régressions » doit être comprise comme des différences entre passages, pas comme une attribution causale démontrée aux deux fichiers modifiés.
+
+### Localisation actuelle en Debug
+
+| Composant | Champion propre % | Girl propre % | Castle propre % |
+|---|---:|---:|---:|
+| DRAM MB8118 | 23,50 | 24,02 | 19,80 |
+| Câblage | 20,12 | 18,99 | 21,43 |
+| VDP | 19,38 | 19,55 | 20,72 |
+| Logique | 13,17 | 14,13 | 10,93 |
+| CPU | 8,45 | 9,27 | 9,83 |
+| Autres mémoires | 10,95 | 8,92 | 11,58 |
+| Backend | 2,20 | 2,43 | 1,94 |
+| PSG | 1,04 | 1,85 | 1,59 |
+
+Sur Champion, les trois méthodes DRAM dominantes représentent 12,60 % propres au total : `AdvanceCore` 5,06 % propres / 24,21 % inclusifs, `PublishDeadline` 4,59 / 7,15 %, `ReceiveReadCycle` 2,95 / 8,69 %. Cela localise le travail et les descendants; la somme des inclusifs serait fausse. Le transport reste réparti : `ReceiveCpuBusRange` 2,60 % propres / 58,90 % inclusifs; `DistributeGateCauses`, `DistributeDirectCauses`, `ProjectBusInputs` représentent ensemble 7,43 % propres. `AdvanceClockEventsTo` du VDP : 2,61 / 7,29 %.
+
+Une seconde partition des mêmes échantillons par genre de méthode montre en Debug 11,39–12,77 % dans les accesseurs get/set, 2,52–3,82 % dans les constructeurs et 0,95–2,12 % dans Equals/op_Equality/op_Inequality. Ces catégories recoupent les composants : ne pas les ajouter aux coûts de la table. Elles indiquent des endroits à examiner dans les parcours chauds; elles ne prouvent pas que ces opérations peuvent toutes être supprimées ni que leur coût correspond intégralement à un appel superflu. Aucun nombre d'invocations internes n'est déduit des poids échantillonnés.
+
+### Distinction Release
+
+Dans ces profils Release plus longs, le VDP pèse 31,02–34,34 % propres, et le backend 14,95–17,00 %. Le coût backend dominant est `EmulatorCore.PresentVideo` : le code convertit les 49152 indices/qualifications en XRGB8888 avec un `WriteUInt32LittleEndian(pixels.AsSpan(i*4), ...)` par pixel et produit un tableau immuable par image. Cette boucle est extérieure aux modèles de puces. C'est une piste distincte à mesurer, pas une optimisation déjà réalisée ni une raison de modifier les puces. Les méthodes inlinées en Release sont attribuées à leurs appelants : les parts source Debug et Release ne doivent pas être comparées naïvement.
+
+Conclusion diagnostique : le coût reste distribué dans les réceptions/progressions/échéances DRAM, les parcours de distribution du bus et les avances VDP; il ne provient pas d'une seule petite méthode. La répétition confirme aussi la nécessité de distinguer variabilité de mesure et régression causée par le code. Aucune accélération n'est annoncée à l'issue de ce profilage seul.
+
+Preuves : `artifacts/TestsMachines/Sega/SG1000/CurrentUnchanged-20261113/{Debug,Release}/ComponentCosts/component-costs.{json,md}`; toutes les méthodes et traces nettrace/speedscope sont dans les sous-dossiers par ROM; `overhead-categories.json` conserve les catégories et premiers contributeurs; la répétition identique est dans `RepeatDebug/Champion Tennis (Japan)` (comparaison des 30 observations, états, vidéo et PCM). Les sorties temporaires xUnit ont été supprimées par le lanceur.
+
+
+## Banc répété et accesseurs identifiés — 13 novembre 2026
+
+Les fichiers de banc existants ont été étendus; aucun nouveau fichier de tests, aucun modèle de puce ni code machine modifié. `Profile-Sg1000.ps1 -Repetitions 5` exécute cinq scénarios natifs sur cinq cœurs recréés, avec échauffement et entrées invitées identiques, puis une passe profilée distincte en mode Both. Le JIT par paliers est désactivé dans le processus de la série et l'environnement restauré dans finally. Cette politique est enregistrée; elle ne doit pas être confondue avec les anciens passages au JIT par défaut.
+
+Une première calibration sans préparation complète révélait encore un premier passage lent : Debug 346,849 puis 298–303 ms/image (CV 6,81 %), Release 58,208 puis 46–48 ms/image (CV 10,32 %). Ces observations ont été conservées. Le banc exécute désormais un passage Prime complet du même scénario avant la série; il est enregistré mais exclu des statistiques a priori. Aucun des cinq passages mesurés n'est supprimé après examen des résultats. Il s'agit d'un traitement de l'effet de premier passage observé, sans attribution certaine de sa cause au seul JIT.
+
+| Calibration Champion | Moyenne des moyennes ms/image | Min–max des moyennes par passage | Écart type ms | CV entre passages |
+|---|---:|---:|---:|---:|
+| Debug | 297,744 | 295,794–303,113 | 3,066 | 1,030 % |
+| Release | 48,121 | 46,676–49,029 | 0,950 | 1,975 % |
+
+Debug : 20 images par passage après 10 images d'échauffement; Release : 60 après 30. Prime, cinq répétitions et profil conservent le même état final et toutes les observations natives, images et PCM. L'empreinte combinée des binaires est identique entre les sept passes de chaque configuration. La baisse de dispersion est observée dans cette calibration, pas garantie pour les autres jeux ou postes; les fenêtres Debug/Release diffèrent et aucun gain de code n'est calculé entre elles.
+
+Le rapport publie toutes les moyennes et médianes de passage, l'écart type inter-passages, le CV, la MAD et les bornes observées. Les images corrélées d'un scénario ne sont pas traitées comme des répétitions indépendantes, et ces statistiques ne sont pas présentées comme un intervalle de confiance. L'identité est enregistrée séparément pour les DLL Sega, Chips et Emulation/SDK, puis combinée; l'empreinte Sega seule ne suffit plus à qualifier deux exécutions de même binaire.
+
+Les comparaisons conservent les différences descriptives historiques et ajoutent les moyennes répétées lorsqu'elles existent. Elles portent une appréciation explicite : politique temporelle différente, identité binaire incomplète, répétitions insuffisantes, contrôle de répétabilité du même binaire ou séries non appariées. Aucune de ces séries séquentielles ne permet au banc de déclarer automatiquement un gain causal. Pour attribuer une petite différence à une modification, la prochaine comparaison devra alterner les deux binaires A/B à protocole identique, avec plusieurs blocs et vérification matérielle. Le pilotage d'une acquisition alternée de deux builds n'est pas implémenté dans ce lot : la protection actuelle empêche précisément de présenter une série non appariée comme cette preuve.
+
+### Accesseurs concrets du profil Debug de calibration
+
+| Méthode | Coût propre machine % | Inclusif % | ms propres par image profilée |
+|---|---:|---:|---:|
+| `retromedialab.chips!RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Services.Mb8118.get_NextResponseTime()` | 1,296 | 1,296 | 3,942 |
+| `retromedialab.chips!RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Services.Mb8118.set_TimeNanoseconds(int64)` | 0,764 | 0,764 | 2,326 |
+| `retromedialab.chips!RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services.Tms9918VramBus.get_Pins()` | 0,712 | 0,712 | 2,167 |
+| `retromedialab.chips!RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Services.Mb8118.get_NextEventNanosecondsChanged()` | 0,646 | 0,646 | 1,964 |
+| `retromedialab.chips!RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services.Tms9918A.get_TimeNanoseconds()` | 0,510 | 0,510 | 1,552 |
+| `retromedialab.chips!RetroMediaLab.Chips.Memory.Common.Contracts.TimedMemoryInput`1[RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2009.Contracts.Tmm2009Pins].get_TimeNanoseconds()` | 0,509 | 0,509 | 1,550 |
+
+Ces coûts sont déjà inclus dans les composants et ne s'y ajoutent pas. Ils identifient les accesseurs à examiner; ils ne démontrent pas que tous leurs contrôles ou mutations peuvent être supprimés. L'absence de feuilles get/set en Release ne prouve pas un coût nul : le JIT peut les intégrer dans les appelants.
+
+### Conversion vidéo précisément attribuée
+
+- Debug : `PresentVideo` 2,395 % propres, 7,288 ms échantillonnées par image profilée.
+- Release : `PresentVideo` 13,944 % propres, 7,170 ms échantillonnées par image profilée.
+
+Le code concerné est `EmulatorCore.Output.cs`, méthode PresentVideo : allocation du tableau immuable, conversion des 49152 indices et qualifications par palette, écritures XRGB8888 avec BinaryPrimitives.WriteUInt32LittleEndian et construction VideoFrame. Le profil attribue du temps à la méthode complète; il ne sépare pas encore causalement allocation, accès palette, création de spans et écriture. Aucun gain ni modification de cette conversion annoncé.
+
+Validation de l'outillage : deux contrôles autonomes ajoutés au fichier existant Sg1000ExecutionValidation.cs vérifient les formules de dispersion, les données invalides et le refus de conclusions causales pour identités/politiques/séries inadéquates; deux réussites Debug et deux Release (`Checks/statistics-final-{Debug,Release}.trx`). Aucun fichier d'entrée xUnit généré conservé.
+
+Commande reproductible :
+```powershell
+pwsh -NoProfile -File tests/RetroMediaLab.LocalEmulationTests/Profile-Sg1000.ps1 -Game "Champion Tennis (Japan).sg" -Configuration Debug -Mode Both -Frames 20 -WarmupFrames 10 -Repetitions 5
+```
+
+Rapports et listes détaillées : `artifacts/TestsMachines/Sega/SG1000/Stability-20261113/{Debug,Release}/ComponentCosts/component-costs.{json,md}`. Séries finales :
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\Stability-20261113\Debug\Champion Tennis (Japan)\20261112T232435956Z-ecff1f\report.json`
+- `F:\GW GUI\artifacts\TestsMachines\Sega\SG1000\Stability-20261113\Release\Champion Tennis (Japan)\20261112T232550518Z-95a023\report.json`
+
+## Présentation et échéances DRAM — acquisition alternée du 13 novembre 2026
+
+Le lot conservé modifie le code de production : conversion XRGB8888 par références typées après validation des bornes, temps interne MB8118 primitif, accès internes directs aux callbacks et cache de la prochaine réponse. Les tableaux vidéo publiés restent nouvellement alloués et immuables, avec palette, pixels inconnus, ordre des octets, dimensions, pitch et métadonnées inchangés. Le chemin little-endian utilise des écritures uint; le repli big-endian conserve les écritures little-endian explicites.
+
+Le cache DRAM est recalculé lors de chaque mutation causale : réception ou annulation du programme de lecture, programmation/résolution de sortie, matérialisation de réponse et restauration. Il est à jour avant les callbacks réentrants. Il reste dérivé et non sérialisé. Les huit instances conservent cellules, phases, qualifications, rétention et délais propres. Aucun changement du modèle physique ni de la séquence des phases. Ce lot ne modifie pas le VDP.
+
+### Protocole et résultats natifs
+
+A est la production de référence avec instrumentation diagnostique commune et extraction de la conversion canonique, avant les optimisations B; ce n'est donc pas le binaire exact du commit f35163a6d. Quatre bancs compilés figés A/B Debug/Release ont permis deux blocs ABBA par configuration, sans reconstruction entre les processus. Chaque processus exécute les trois ROM dans le même ordre. Chaque ROM reçoit un scénario Prime exclu des mesures puis trois répétitions natives sur cœurs recréés, avec deux images d'échauffement et huit images mesurées. Compilation par paliers désactivée, protocole tiering-disabled/primed. Les chronomètres diagnostiques sont désactivés pendant les mesures natives.
+
+| Configuration | ROM | A ms/image | B ms/image | Réduction observée |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis | 298,718 | 286,331 | 4,15 % |
+| Debug | Girl's Garden | 300,170 | 283,959 | 5,40 % |
+| Debug | The Castle | 317,490 | 305,296 | 3,84 % |
+| Release | Champion Tennis | 40,500 | 40,345 | 0,38 % |
+| Release | Girl's Garden | 42,458 | 42,709 | −0,59 % |
+| Release | The Castle | 45,434 | 44,598 | 1,84 % |
+
+Les deux blocs Debug diminuent chacun le temps : respectivement 6,41/1,85 %, 7,53/3,22 % et 5,13/2,55 %. Les signes des écarts Release changent entre blocs pour chacun des trois jeux : aucun gain Release établi. Deux blocs ne suffisent pas à revendiquer une significativité statistique des petits écarts. Le gain Debug reste modeste et celui du lot complet; aucune attribution causale à la DRAM seule. La cible de dépassement large du temps réel en Debug reste non atteinte.
+
+### Chronométrage direct et profils
+
+RunFrame expose en mode diagnostic seulement les durées Board.AdvanceFrame, PresentVideo et Board.DrainAudio. La dernière mesure couvre le drainage, pas la génération PSG déjà incluse dans Board ni les métadonnées de file audio ajoutées ensuite. Les profils sont des acquisitions séparées des mesures natives alternées; leurs temps Board ne permettent pas de conclure à une régression native.
+
+| Configuration | ROM | Présentation A ms/image | Présentation B ms/image |
+|---|---|---:|---:|
+| Debug | Champion Tennis | 0,887 | 0,310 |
+| Debug | Girl's Garden | 0,799 | 0,317 |
+| Debug | The Castle | 0,838 | 0,436 |
+| Release | Champion Tennis | 0,137 | 0,074 |
+| Release | Girl's Garden | 0,102 | 0,102 |
+| Release | The Castle | 0,089 | 0,146 |
+
+Ces durées directes corrigent l'interprétation des 7,29/7,17 ms issues de l'échantillonnage précédent : elles n'étaient pas un chronométrage exact de PresentVideo. L'origine précise de cette différence d'attribution n'est pas établie. Le coût absolu de présentation directement mesuré en Release est faible; aucune accélération significative de la machine Release ne peut être déduite de la conversion seule. La décomposition directe ne sépare pas allocation, palette et écriture des pixels.
+
+Les douze profils complets A/B, trois ROM, Debug/Release, sont conservés sous artifacts/TestsMachines/Sega/SG1000/AB-20261113/Profiles. Chaque ensemble contient trace nettrace, speedscope, coûts propres/inclusifs et rapports par ROM. Les synthèses ComponentCosts acceptent maintenant les profils seuls : aucune estimation de temps natif n'est inventée lorsque la mesure native est absente. Le fichier Summary/direct-timings.json contient les durées exactes. Les profils portent sur douze images après deux d'échauffement et ne remplacent pas l'acquisition native ABBA.
+
+### Vérifications et preuves
+
+Les 1 152 observations natives (144 états finaux, 24 répétitions par ROM/configuration, A et B réunis) concordent pour états complets, vidéo, PCM et champs matériels intermédiaires enregistrés. Géométrie, pitch, format, aspect, cadence/horloges et contrat audio ont aussi été comparés. Cela couvre les scénarios exécutés, pas toutes les interactions possibles de la machine.
+
+Dix contrôles composants ciblés passent en Debug et Release, dont validité du cache pendant callback, annulation et restauration; les 34 cas du banc d'efficacité par configuration ne présentent pas d'écart d'état. Six contrôles machine/statistiques/conversion passent dans chacune des deux configurations. La conversion teste les 256 indices, les pixels connus/inconnus, les octets de sortie et une sentinelle de fin. Les fichiers de tests existants sont réutilisés.
+
+Preuves : artifacts/TestsMachines/Sega/SG1000/AB-20261113/acquisition.json, Summary/abba-results.json, Checks/lot-Debug.trx et lot-Release.trx; banc composants sous artifacts/TestsChips/Sega/SG-1000/Efficiency/20261112T235719419Z. Les empreintes binaires A/B sont distinctes et enregistrées. Les quatre copies temporaires de banc compilé ont été supprimées séparément après acquisition; traces, rapports et empreintes restent conservés. Aucun média utilisateur modifié. Le code B est conservé; ce résultat ne clôt ni l'optimisation SG-1000 ni sa validation matérielle exhaustive.
+
+## Préfixes d'horloge et transport — 13 novembre 2026, second lot
+
+RationalClockInput consomme le préfixe borné avec un quotient pour la dernière date, puis réutilise son reste pour positionner la reprise. Les limites extérieures et de propagation sont réunies avant ce calcul. Les dépassements d'une date spéculative ne rejettent pas un préfixe représentable. Le VDP ne repasse pas par le résolveur général sur un intervalle déjà strictement borné avant toutes ses réponses. Les lectures MB8118 conservent les dates reçues en champs directs et ne retraversent pas AdvanceCore au début d'un programme dont RAS est strictement futur. Les historiques de bus terminés sont fusionnés par spans stables; leur ordre et leurs destinataires restent inchangés.
+
+Deux blocs ABBA par configuration, trois ROM, mêmes conditions que le lot précédent : 3 répétitions après Prime, 8 images après 2 d'échauffement; 1 152 observations natives comparées, états complets/images/PCM/contrats identiques. Moyennes A→B, ms/image : Champion Debug 289,87→272,83 (−5,88 %), Girl's Garden 289,34→272,53 (−5,81 %), Castle 310,03→290,11 (−6,43 %). Release respectivement 40,89→39,20 (−4,12 %), 40,01→39,00 (−2,53 %), 43,96→41,61 (−5,35 %). Chaque bloc diminue le temps pour chaque cas, sans prétendre à une significativité formelle de ces deux blocs.
+
+Onze contrôles composants et 34 cas d'efficacité passent dans chaque configuration; six contrôles machine passent en Debug et Release. Nouveau contrôle autonome : fractions exactes après consommation, bornes coupant les groupes, grands rapports et proximité de long.MaxValue. Preuves : artifacts/TestsMachines/Sega/SG1000/ClockDram-20261113 et artifacts/TestsChips/Sega/SG-1000/Efficiency/20261113T003826701Z. Profils complets B des trois ROM Debug/Release et synthèses propres/inclusives sous Profiles. Après ce lot le câblage et les résolutions VDP/DRAM dominent toujours; la cible temps réel reste largement manquée. Les captures B sont réutilisées comme références figées du lot suivant, pas comme un second moteur de production.
+
+Le premier candidat de préfixes VRAM est mesuré séparément sous artifacts/TestsMachines/Sega/SG1000/VramPrefix-20261113 : états complets et 1 152 observations égaux. Debug A→B : Champion 268,00→263,08, Girl's Garden 267,87→266,90, Castle 289,87→283,33 ms/image (−1,84/0,36/2,25 %); Release 39,08→39,15, 39,52→39,10, 42,37→42,25 (−0,19/+1,05/+0,28 % de réduction). Il ne démontre pas un gain utile cohérent et n'est pas clôturé. La correction C conserve la qualification aux changements de raccordement et la borne CAS constante; les accès internes déjà canoniques ne relancent plus la matérialisation. Mesures C encore requises. La présence de phases représentées ne suffit donc pas à annoncer une accélération.
+
+Correction C, deux blocs ABBA, cette fois deux répétitions natives après Prime au lieu de trois, mêmes huit images et deux d'échauffement : Debug Champion 274,86→263,69 (−4,06 %), Girl's Garden 268,42→262,57 (−2,18 %), Castle 287,17→280,27 (−2,40 %). Release 38,72→39,50 (régression2,03 %), 39,25→37,95 (−3,33 %), 43,07→41,07 (−4,63 %). Les deux blocs Release Champion régressent de2,35 % et1,73 %. États complets, vidéo, PCM, contrats et768observations égaux;12contrôles composants et34cas d'efficacité par configuration,6contrôles machine par configuration réussis. Ces contrôles ne compensent pas le faible gain et la régression. Le lot de représentation VRAM est rejeté et retiré, la production conserve le lot horloge/transport précédent. Les captures A/B/C et profils C sont documentés sous VramPrefix-20261113 et CorrectionC; aucun gain cumulé n'est extrapolé entre acquisitions distinctes.
+
+Limite des profils : les coûts courts se regroupent par poids proches de15,5ms. Sur le thread le plus échantillonné du profil C Debug Castle,386dates distinctes, intervalle médian15,4075ms; les ouvertures/fermetures Speedscope peuvent ajouter des décalages quasi nuls, ce nombre ne représente donc pas386échantillons indépendants. Une passe de12images offre une granularité insuffisante pour départager les petites méthodes. Le runtime prévoit déjà une demande de résolution temporelle pour son échantillonneur (source officielle : https://github.com/dotnet/runtime/blob/main/src/native/eventpipe/ep-sample-profiler.c); aucune seconde couche de demande de timer n'est ajoutée. Les rapports suivants doivent exposer davantage d'observations avant de désigner une petite méthode dominante. Les mesures natives ABBA restent indépendantes de ces poids échantillonnés. Les options de compilation Debug/Release sont inchangées; les rapports natifs Debug enregistrent JitOptimizationsDisabled=true.
+
+## Résolution groupée des données VRAM — essai rejeté, 13 novembre 2026
+
+Le candidat regroupait les notifications des huit DRAM à date identique avant une livraison d'octet au VDP, en conservant son avance précédant la première entrée. Dans les trois scénarios ROM, les compteurs mesurent268288callbacks DOUT par image et33536livraisons d'octets, soit huit fois moins de livraisons. Cela ne donne pas huit fois moins de temps CPU : deux blocs ABBA (deux répétitions après Prime, huit images après deux d'échauffement) donnent Debug Champion271,05→259,40ms (−4,30 %), Girl's Garden268,23→259,48 (−3,26 %), Castle286,43→283,01 (−1,19 %). Release39,90→38,28 (−4,07 %),40,18→38,67 (−3,76 %),42,16→40,62 (−3,67 %). Les768observations, états finaux, vidéo, PCM et contrats de ce corpus concordent. Rapports, profils et compteurs bruts : artifacts/TestsMachines/Sega/SG1000/BusData-20261113.
+
+La conformité générale n'est toutefois pas établie : une excursion inconnu→connu→inconnu à une date unique, avec octet final inchangé, actualise InputDataChanged dans le récepteur. Transmettre uniquement le dernier mot efface cette information. Un cas autonome ajouté au fichier de banc existant démontre200ns avec la séquence, contre0ns avec le seul dernier mot. Ce cas n'est pas annoncé comme reproduit par les trois ROM; il interdit de conclure à l'équivalence générale du regroupement. Le candidat et ses compteurs de production sont retirés; aucun bus ni modèle physique affaibli n'est conservé. Les13contrôles composants passent en Debug et Release après retrait.
+
+Les profils longs de la production retenue (120images après30d'échauffement, trois ROM, Debug/Release) se trouvent sous ClockDram-20261113/LongProfiles. Ils confirment les coûts agrégés du VDP, du câblage et des DRAM; ils ne remplacent pas le chronométrage direct ni les mesures natives ABBA. Le passage après30images d'échauffement représente une autre fenêtre de jeu que les huit images initiales; aucune régression n'est déduite de la différence entre ces fenêtres.
+
+Pour obtenir un profil CPU indépendant de l'échantillonneur .NET, WPR et WPAExporter installés ont été identifiés; aucune session WPR préexistante n'était active. WPR CPU.light refuse de démarrer avec0xc5585011 («Failed to enable the policy to profile system performance»), y compris hors bac à sable. Aucun enregistrement n'a démarré. Une autorisation de lancement avec élévation Windows/UAC a été demandée et reste sans réponse. Le script concret capture-elevated.ps1 est préparé sous ClockDram-20261113/KernelProfile : session nommée, arrêt/cancel de sa seule session dans finally et résultat enregistré. Il n'est pas lancé sans cette réponse. Une référence compilée Debug est conservée pour cette capture, les autres copies de candidats sont supprimées. Ce besoin d'autorisation concerne WPR, pas la validation du lot horloge/transport déjà conservé. L'objectif de performance reste inachevé; la machine n'est pas présentée comme corrigée.
+
+
+## Capture CPU Windows avec piles CLR — 13 novembre 2026
+
+L’autorisation UAC a été accordée. La première capture CPU.light a produit 32,79 secondes CPU, mais ce profil omettait les piles d’appels. Elle ne permettait donc pas le classement des méthodes annoncé. Une seconde élévation unique, expressément autorisée ensuite, a lancé le collecteur CPU.Verbose. Celui-ci conserve une session de travail bornée pour les captures SG-1000 suivantes, puis doit être arrêté et son processus attendu. Chaque capture WPR est arrêtée dans finally. Aucune nouvelle demande Windows/UAC n’est nécessaire pour ces captures.
+
+La capture baseline-debug-01 a terminé avec le code0. Elle porte sur Champion Tennis, Girl’s Garden et The Castle en Debug, douze images d’échauffement puis vingt-quatre images mesurées, une passe Prime et deux passes Measure pour chaque ROM. Les 324 appels RunFrame comprennent les échauffements. Le processus testhost38272 totalise95618,2881ms CPU échantillonnées. La somme de ses lignes de piles retrouve ce total. Les piles contenant RunFrame représentent90438,1828ms. Ces poids servent à répartir les coûts dans cette capture; ils ne remplacent pas les durées murales ABBA.
+
+| Groupe | Coût propre dans RunFrame |
+|---|---:|
+| Câblage | 21,52 % |
+| VDP | 20,08 % |
+| DRAM MB8118 | 18,89 % |
+| Logique | 14,35 % |
+| Autres mémoires | 11,85 % |
+| CPU | 8,87 % |
+| Runtime et autres | 3,54 % |
+| Audio | 0,84 % |
+| Backend | 0,06 % |
+
+Les accesseurs représentent16,19 % du coût propre, déjà inclus dans ces groupes. Le plus coûteux est LogicInputRange.get_Changes avec1,13 %, suivi de Tms9918A.get_TimeNanoseconds avec0,69 %. Les deux méthodes MB8118 AdvanceCore et PublishDeadline représentent respectivement3,47 % et3,21 % propres. ProjectBusInputs représente3,10 %, CombinationalOutputs.ExecuteInputRange3,00 % et AdvanceMasterHalfEdges2,63 %.
+
+En inclusif, ReceiveCpuBusRange représente46,44 %, SynchronizeVideoDomain48,30 %, DeliverVideoInputs20,54 % et Mb8118.AdvanceCore19,56 %. Ces piles se recouvrent. Le coût de CPU.AdvanceBusRangeUntil,55,12 % inclusifs, comprend ses échanges avec la carte et ne mesure donc pas le CPU isolé. Les feuilles natives sans symboles restent attribuées à leur module, sans reporter leur poids arbitrairement sur un appelant géré.
+
+La capture indépendante confirme les quatre postes dominants et précise les accesseurs concernés. Elle ne démontre aucun nouveau gain d’exécution. Les preuves sont sous artifacts/TestsMachines/Sega/SG1000/ClockDram-20261113/KernelProfile/Captures/baseline-debug-01, avec cpu.etl, le CSV WPA, cpu-costs.json et report.md. Le collecteur permet de reprendre exactement ce protocole après un lot conservé.
+
+
+## Relectures internes et plages stables — 13 novembre 2026
+
+La capture CPU Windows attribue16,19 % du coût propre aux accesseurs. Le lot agit sur les parcours déjà identifiés. Les propriétés publiques temporelles du TMS9918A, TMM23256, TMM2009, TMM2016 et CombinationalOutputs sont conservées, et leurs propres opérations utilisent le champ temporel privé. Les boucles des plages logique et mémoire reçoivent une seule fois le span Changes et la borne KnownUntil. Une boucle avec N entrées et R réponses cessant de rappeler Changes à chaque test/indexation supprime ces relectures répétées; les N entrées et R réponses matérielles restent exécutées. Le bus CPU conserve aussi le span et les bornes de sa plage reçue. Les historiques vidéo et son déjà stables sont parcourus par références. Aucun nouveau moteur ou mécanisme de distribution n’est ajouté.
+
+Le lot modifie17fichiers de production. Deux blocs ABBA par configuration, trois ROM, huit images après deux d’échauffement, deux répétitions natives après Prime donnent les résultats suivants.
+
+| Configuration | ROM | A ms/image | B ms/image | Baisse du temps |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis | 270,23 | 259,05 | 4,14 % |
+| Debug | Girl’s Garden | 272,81 | 261,00 | 4,33 % |
+| Debug | The Castle | 289,93 | 276,32 | 4,69 % |
+| Release | Champion Tennis | 38,73 | 38,36 | 0,97 % |
+| Release | Girl’s Garden | 39,80 | 39,01 | 1,99 % |
+| Release | The Castle, passage initial | 42,12 | 43,73 | régression3,83 % |
+
+Les deux blocs Debug diminuent le temps sur chaque jeu, avec une amplitude variable. La première acquisition Release Castle est contradictoire entre ses blocs, le second régressant de9,28 % avec plusieurs images à53–69ms. Aucune cause extérieure précise n’est établie. La confirmation de ce seul cas utilise deux nouveaux blocs ABBA,32images après8d’échauffement,3répétitions après Prime. Elle donne42,14→41,36ms/image, baisse1,85 %, avec3,03 % puis0,64 % dans les deux blocs. La première régression reste conservée dans les preuves. Le lot est retenu pour la diminution répétée en Debug; les petits écarts Release ne justifient aucune affirmation de gain massif.
+
+Les768observations natives et96états finaux du premier ensemble concordent, ainsi que les768observations et24états finaux de la confirmation Castle. États complets, vidéo, PCM, géométrie et contrats audio/horloges sont comparés par le banc existant. Treize contrôles composants ciblés et six contrôles machine passent en Debug et Release. La compilation du projet Chips.Tests complet rencontre une référence manquante à RetroMediaLab.Chips.Tests.CPU.Common.Z80 dans Upd780C1Tests.cs. Le mode existant RmlChipEfficiencyOnly permet de réaliser les contrôles ciblés. La réussite de la suite entière n’est donc pas revendiquée.
+
+Les preuves se trouvent sous artifacts/TestsMachines/Sega/SG1000/Accessor-20261113, avec acquisition.json, Summary/abba-results.json, castle-confirmation.json, CastleConfirmation/Summary et Checks. La capture CPU.Verbose après lot est en cours sous ClockDram-20261113/KernelProfile/Captures/accessor-debug-01. Le résultat reste très loin de la cible temps réel Debug.
+
+
+La capture après lot est terminée. L’agrégat initial accessor-debug-01 a perdu1020180événements, et la première reprise Castle1293850événements. Ces captures sont exclues du classement des méthodes. Les reprises accessor-champion-02, accessor-garden-02 et accessor-castle-03, avec les mêmes24images après12d’échauffement, indiquent zéro événement et zéro buffer perdus dans les en-têtes xperf. Leurs piles RunFrame sont agrégées sur324appels, comme la référence sans perte. Les poids des lignes retrouvent le total de chaque processus.
+
+| Groupe | A propre % | B propre % | A ms CPU échantillonnées/image | B ms CPU échantillonnées/image |
+|---|---:|---:|---:|---:|
+| Câblage | 21,52 | 22,60 | 60,06 | 59,78 |
+| VDP | 20,08 | 20,09 | 56,05 | 53,14 |
+| DRAM | 18,89 | 19,41 | 52,73 | 51,36 |
+| Logique | 14,35 | 13,43 | 40,06 | 35,53 |
+| Autres mémoires | 11,85 | 10,81 | 33,07 | 28,61 |
+| CPU | 8,87 | 9,03 | 24,77 | 23,89 |
+
+La part des accesseurs passe de16,19 % à13,23 %. Les durées échantillonnées proviennent de captures distinctes et ne remplacent pas les mesures natives ABBA. Les postes dominants restent le câblage, le VDP et les DRAM. AdvanceCore et PublishDeadline des MB8118 représentent encore3,51 % et3,34 % propres. La baisse est surtout visible dans les moteurs logique et mémoire du lot. Les rapports complets, avec propres/inclusifs par méthode et par capture, se trouvent dans Accessor-20261113/Summary/windows-cpu-costs.json et windows-cpu-costs.md.
+
+Les compteurs existants donnent11491,29préfixes de bus par image pour Champion/Castle et11492,14pour Girl’s Garden, sur les différences entre images mesurées hors première ligne. Pour ces configurations avec ROM basse raccordée, l’examen des branches du receveur donne une borne inférieure de neuf appels d’accesseurs supprimés par préfixe, soit au moins103422/103429appels par image. Cette borne est calculée à partir du code et des volumes mesurés. Aucun compteur dynamique ne prétend compter directement chaque appel supprimé. Les transactions matérielles et leurs compteurs concordent. Les réductions internes supplémentaires aux composants ne sont pas chiffrées en nombre d’appels. Preuve sous Summary/bus-accessor-volumes.json.

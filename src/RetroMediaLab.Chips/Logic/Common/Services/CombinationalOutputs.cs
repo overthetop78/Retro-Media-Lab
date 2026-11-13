@@ -17,7 +17,8 @@ internal sealed class CombinationalOutputs(int count)
     private long? _announced;
     private bool _publishing, _executingRange;
     private TimedLogicOutput[]? _rangeOutput;
-    public long Time { get; private set; }
+    private long _time;
+    public long Time => _time;
     internal ushort Targets => _targets;
     public long? Next => _pending == 0 ? null : _next;
     public Action<int, LogicPinState>? Changed { get; set; }
@@ -41,7 +42,7 @@ internal sealed class CombinationalOutputs(int count)
             changed &= ~mask;
             if (((targets ^ _outputs) & mask) == 0) continue;
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(delays[pin]);
-            _ = checked(Time + delays[pin]);
+            _ = checked(_time + delays[pin]);
         }
     }
 
@@ -66,7 +67,7 @@ internal sealed class CombinationalOutputs(int count)
             }
             else
             {
-                long due = Time + delays[pin];
+                long due = _time + delays[pin];
                 _due[pin] = due;
                 _pending |= bit;
                 if (due < earliest) earliest = due;
@@ -80,10 +81,10 @@ internal sealed class CombinationalOutputs(int count)
 
     public void AdvanceTo(long time)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(time, Time);
+        ArgumentOutOfRangeException.ThrowIfLessThan(time, _time);
         if (_publishing)
         {
-            if (time != Time) throw new InvalidOperationException("Cannot advance logic from a pin callback.");
+            if (time != _time) throw new InvalidOperationException("Cannot advance logic from a pin callback.");
             return;
         }
         while (_pending != 0 && _next <= time)
@@ -103,12 +104,12 @@ internal sealed class CombinationalOutputs(int count)
             }
             finally { _publishing = false; PublishDeadline(); }
         }
-        Time = time;
+        _time = time;
     }
 
     private byte ResolveOutputsAt(long next)
     {
-        Time = next;
+        _time = next;
         byte changed = 0;
         long following = long.MaxValue;
         uint pending = _pending;
@@ -136,13 +137,15 @@ internal sealed class CombinationalOutputs(int count)
     internal LogicOutputRange ExecuteInputRange(in LogicInputRange range, ulong inputMask,
         ICombinationalRangeModel model)
     {
-        range.Validate(Time, inputMask);
+        range.Validate(_time, inputMask);
+        var changes = range.Changes;
+        long end = range.KnownUntilNanoseconds;
         if (_publishing || _executingRange)
             throw new InvalidOperationException("Cannot recursively execute a logic input range.");
         if (Changed is not null || DeadlineChanged is not null)
             throw new InvalidOperationException("Scalar observers require explicit input delivery, rather than a guaranteed range.");
         _rangeOutput ??= new TimedLogicOutput[(LogicInputRange.MaximumChanges + 1) * count];
-        long start = Time;
+        long start = _time;
         ushort initial = _outputs;
         int inputIndex = 0, outputCount = 0;
         Span<long> delays = stackalloc long[count];
@@ -151,8 +154,8 @@ internal sealed class CombinationalOutputs(int count)
         {
             while (true)
             {
-                bool hasInput = inputIndex < range.Changes.Length;
-                long inputTime = hasInput ? range.Changes[inputIndex].TimeNanoseconds : range.KnownUntilNanoseconds;
+                bool hasInput = inputIndex < changes.Length;
+                long inputTime = hasInput ? changes[inputIndex].TimeNanoseconds : end;
                 if (_pending != 0 && _next <= inputTime)
                 {
                     long due = _next;
@@ -161,15 +164,15 @@ internal sealed class CombinationalOutputs(int count)
                     continue;
                 }
                 if (!hasInput) break;
-                ref readonly var input = ref range.Changes[inputIndex++];
-                Time = input.TimeNanoseconds;
+                ref readonly var input = ref changes[inputIndex++];
+                _time = input.TimeNanoseconds;
                 if (!model.PrepareRangeInput(in input, delays, out ushort targets)) continue;
                 Validate(targets, delays);
                 model.CommitRangeInput(in input);
                 SetTargets(targets, delays);
             }
-            Time = range.KnownUntilNanoseconds;
-            return new(start, Time, initial, _rangeOutput.AsSpan(0, outputCount), Next);
+            _time = end;
+            return new(start, _time, initial, _rangeOutput.AsSpan(0, outputCount), Next);
         }
         finally { _announced = Next; _executingRange = false; }
     }
@@ -212,7 +215,7 @@ internal sealed class CombinationalOutputs(int count)
             pending &= pending - 1;
             due[pin] = _due[pin];
         }
-        return new(1, part, Time, levels, known, _outputs, _targets, due, (long[])timing.Clone());
+        return new(1, part, _time, levels, known, _outputs, _targets, due, (long[])timing.Clone());
     }
 
     public void ValidateRestore(CombinationalState state, string part, ulong inputMask, ushort targets, long[] timing)
@@ -235,7 +238,7 @@ internal sealed class CombinationalOutputs(int count)
 
     public void Restore(CombinationalState state)
     {
-        Time = state.TimeNanoseconds;
+        _time = state.TimeNanoseconds;
         _outputs = state.Outputs; _targets = state.Targets; _pending = 0;
         for (int pin = 0; pin < count; pin++)
         {

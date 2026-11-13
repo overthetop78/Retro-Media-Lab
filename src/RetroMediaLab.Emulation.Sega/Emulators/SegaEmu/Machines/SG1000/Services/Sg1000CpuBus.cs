@@ -48,7 +48,12 @@ internal sealed partial class Sg1000Board
                 | ((ControlKnown & 4) << 1) | ((ControlKnown & 4) << 5) | ((ControlKnown & 8) << 2));
         }
     }
-    private readonly record struct CpuWireChange(long Time, CpuBusWires Wires, uint Recipients);
+    private readonly struct CpuWireChange(long time, CpuBusWires wires, uint recipients)
+    {
+        internal readonly long Time = time;
+        internal readonly CpuBusWires Wires = wires;
+        internal readonly uint Recipients = recipients;
+    }
     private readonly record struct VideoWireChange(long Time, Tms9918CpuPins Pins);
     private readonly record struct SoundWireChange(long Time, byte Data, bool Selected, bool Write);
     private readonly record struct DataWire(byte Data, byte Known, byte Driven);
@@ -225,28 +230,31 @@ internal sealed partial class Sg1000Board
 
     private void ReceiveCpuBusRange(in Z80BusRange source)
     {
+        var changes = source.Changes;
+        long start = source.StartNanoseconds, end = source.EndNanoseconds;
+        var initialPins = source.InitialPins;
         _busRangeDeliveries++;
-        _cpuOutputWords += source.Changes.Length;
+        _cpuOutputWords += changes.Length;
         foreach (var list in _logicInputs) list.Clear();
         foreach (var list in _romInputs) list.Clear();
         _busRamInputs.Clear(); _busCartridgeRamInputs.Clear(); _cpuWireChanges.Clear();
         _videoWireChanges.Clear(); _soundWireChanges.Clear(); _videoObservation = -1;
-        if (!source.Changes.IsEmpty)
+        if (!changes.IsEmpty)
         {
-            long lastOutputDate = source.Changes[^1].TimeNanoseconds;
+            long lastOutputDate = changes[^1].TimeNanoseconds;
             _ramObservation = lastOutputDate;
             _videoObservation = lastOutputDate;
         }
         ushort decoderInitial = _logicOutputWords[0], gateInitial = _logicOutputWords[1];
-        _initialCpuWires = new(source.InitialPins);
+        _initialCpuWires = new(initialPins);
         var previous = _initialCpuWires;
         if (_initializeBusInputs)
         {
             _initializeBusInputs = false;
-            ProjectBusInputs(BusRecipient.Decoder, source.StartNanoseconds, previous, decoderInitial, gateInitial);
-            _cpuWireChanges.Add(new(source.StartNanoseconds, previous, _connectedBusRecipients));
+            ProjectBusInputs(BusRecipient.Decoder, start, previous, decoderInitial, gateInitial);
+            _cpuWireChanges.Add(new(start, previous, _connectedBusRecipients));
         }
-        foreach (var change in source.Changes)
+        foreach (var change in changes)
         {
             var wires = new CpuBusWires(change.Pins);
             uint recipients = ChangedRecipients(previous, wires);
@@ -255,24 +263,24 @@ internal sealed partial class Sg1000Board
                 ProjectBusInputs(BusRecipient.Decoder, change.TimeNanoseconds, wires, decoderInitial, gateInitial);
             previous = wires;
         }
-        ConsumeLogicInputs(0, _busDecoderReceiver!, source.EndNanoseconds, _busDecoderOutputs);
+        ConsumeLogicInputs(0, _busDecoderReceiver!, end, _busDecoderOutputs);
         DistributeDirectCauses(decoderInitial, gateInitial);
-        ConsumeLogicInputs(1, _busGateReceiver!, source.EndNanoseconds, _busGateOutputs);
-        DistributeGateCauses(source.StartNanoseconds, gateInitial);
+        ConsumeLogicInputs(1, _busGateReceiver!, end, _busGateOutputs);
+        DistributeGateCauses(start, gateInitial);
         ConsumeMainRam();
-        if (_cartridgeLow is not null) ConsumeRom(BusRecipient.RomLow, 0, source.EndNanoseconds);
-        if (_cartridgeHigh is not null) ConsumeRom(BusRecipient.RomHigh, 1, source.EndNanoseconds);
-        if (_internalRom is not null) ConsumeRom(BusRecipient.InternalRom, 2, source.EndNanoseconds);
-        if (_cartridgeRam is not null) ConsumeCartridgeRam(source.EndNanoseconds - _cartridgeOrigin);
+        if (_cartridgeLow is not null) ConsumeRom(BusRecipient.RomLow, 0, end);
+        if (_cartridgeHigh is not null) ConsumeRom(BusRecipient.RomHigh, 1, end);
+        if (_internalRom is not null) ConsumeRom(BusRecipient.InternalRom, 2, end);
+        if (_cartridgeRam is not null) ConsumeCartridgeRam(end - _cartridgeOrigin);
         for (int i = 0; i < 2; i++)
         {
             ushort before = _logicOutputWords[i + 2];
-            ushort final = ConsumeLogicInputs(i + 2, _busJoyReceivers[i]!, source.EndNanoseconds, null);
+            ushort final = ConsumeLogicInputs(i + 2, _busJoyReceivers[i]!, end, null);
             if (before != final) SetJoyDriver(i, final);
         }
-        var finalCpu = source.Changes.IsEmpty ? source.InitialPins : source.Changes[^1].Pins;
+        var finalCpu = changes.IsEmpty ? initialPins : changes[^1].Pins;
         if (_busCpuData != finalCpu.Data) { _busCpuData = finalCpu.Data; _cpuBusDirty = true; }
-        foreach (var change in _videoWireChanges)
+        foreach (ref readonly var change in CollectionsMarshal.AsSpan(_videoWireChanges))
         {
             if (!_vdp.TryReceiveInactiveCpuPins(change.Time, change.Pins))
             { SynchronizeVideoDomain(change.Time); _vdp.ReceiveCpuPins(change.Time, change.Pins); }
@@ -283,9 +291,9 @@ internal sealed partial class Sg1000Board
         // ordinary RAM/ROM transactions independent of raster execution.
         // Materialize video before any actual port interaction above, any
         // announced response below, and the caller's observation boundary.
-        if (_videoCpuDue <= source.EndNanoseconds) SynchronizeVideoDomain(source.EndNanoseconds);
-        foreach (var change in _soundWireChanges) _psg.SetBus(change.Time, change.Data, change.Selected, change.Write);
-        _psg.AdvanceTo(source.EndNanoseconds);
+        if (_videoCpuDue <= end) SynchronizeVideoDomain(end);
+        foreach (ref readonly var change in CollectionsMarshal.AsSpan(_soundWireChanges)) _psg.SetBus(change.Time, change.Data, change.Selected, change.Write);
+        _psg.AdvanceTo(end);
         ResolveRangeCpuData();
         if (_executingCpuRange)
         {
@@ -296,8 +304,8 @@ internal sealed partial class Sg1000Board
             const uint io = (1u << (int)Z80BusCycle.IoRead) | (1u << (int)Z80BusCycle.IoWrite)
                 | (1u << (int)Z80BusCycle.InterruptAcknowledge);
             long logicDue = Math.Min(_logicResponseDue[0], _logicResponseDue[1]);
-            long wait = Math.Max(source.EndNanoseconds, Math.Min(_psgReadyDue, logicDue));
-            long control = Math.Max(source.EndNanoseconds, Math.Min(_videoCpuDue, logicDue));
+            long wait = Math.Max(end, Math.Min(_psgReadyDue, logicDue));
+            long control = Math.Max(end, Math.Min(_videoCpuDue, logicDue));
             _cpu.ReceiveBusInputWindow(new(wait, control, io, io));
         }
     }
@@ -328,20 +336,26 @@ internal sealed partial class Sg1000Board
     // changes or redistributes these direct recipients.
     private void DistributeDirectCauses(ushort decoderInitial, ushort gateInitial)
     {
+        // These histories are complete and are not appended to by projection.
+        // Keep their storage views for the entire merge, rather than repeatedly
+        // crossing List<T> indexers and copying the CPU wire bundle.
+        var cpuChanges = CollectionsMarshal.AsSpan(_cpuWireChanges);
+        var decoderOutputs = CollectionsMarshal.AsSpan(_busDecoderOutputs);
         var cpu = _initialCpuWires;
         ushort decoder = decoderInitial;
         int c = 0, d = 0;
-        while (c < _cpuWireChanges.Count || d < _busDecoderOutputs.Count)
+        while (c < cpuChanges.Length || d < decoderOutputs.Length)
         {
             _directCauseVisits++;
-            long ct = c < _cpuWireChanges.Count ? _cpuWireChanges[c].Time : long.MaxValue;
-            long dt = d < _busDecoderOutputs.Count ? _busDecoderOutputs[d].TimeNanoseconds : long.MaxValue;
+            long ct = c < cpuChanges.Length ? cpuChanges[c].Time : long.MaxValue;
+            long dt = d < decoderOutputs.Length ? decoderOutputs[d].TimeNanoseconds : long.MaxValue;
             long time = Math.Min(ct, dt);
             uint recipients = 0;
-            if (d < _busDecoderOutputs.Count && dt <= ct)
+            if (d < decoderOutputs.Length && dt <= ct)
             {
-                byte changed = _busDecoderOutputs[d].ChangedPins;
-                decoder = _busDecoderOutputs[d++].Levels;
+                ref readonly var output = ref decoderOutputs[d++];
+                byte changed = output.ChangedPins;
+                decoder = output.Levels;
                 if ((changed & 192) != 0) recipients |= Bit(BusRecipient.Gates);
                 if ((changed & 8) != 0) { recipients |= Bit(BusRecipient.Ram); _ramObservation = Math.Max(_ramObservation, time); }
                 if ((changed & 4) != 0) recipients |= Bit(BusRecipient.RomHigh) | Bit(BusRecipient.CartridgeRam);
@@ -349,7 +363,7 @@ internal sealed partial class Sg1000Board
             }
             else
             {
-                var change = _cpuWireChanges[c++]; cpu = change.Wires; recipients = change.Recipients;
+                ref readonly var change = ref cpuChanges[c++]; cpu = change.Wires; recipients = change.Recipients;
             }
             recipients &= (DirectConsumers | Bit(BusRecipient.Gates)) & _connectedBusRecipients;
             while (recipients != 0)
@@ -363,6 +377,8 @@ internal sealed partial class Sg1000Board
 
     private void DistributeGateCauses(long start, ushort gateInitial)
     {
+        var cpuChanges = CollectionsMarshal.AsSpan(_cpuWireChanges);
+        var gateOutputs = CollectionsMarshal.AsSpan(_busGateOutputs);
         var cpu = _initialCpuWires;
         ushort gates = gateInitial;
         if (_rangePressed != _pressed)
@@ -374,27 +390,28 @@ internal sealed partial class Sg1000Board
         int c = 0, g = 0;
         while (true)
         {
-            while (c < _cpuWireChanges.Count && (_cpuWireChanges[c].Recipients & GateConsumers) == 0)
+            while (c < cpuChanges.Length && (cpuChanges[c].Recipients & GateConsumers) == 0)
             { _gateSkippedCpuWords++; c++; }
-            if (c == _cpuWireChanges.Count && g == _busGateOutputs.Count) break;
+            if (c == cpuChanges.Length && g == gateOutputs.Length) break;
             _gateCauseVisits++;
-            long ct = c < _cpuWireChanges.Count ? _cpuWireChanges[c].Time : long.MaxValue;
-            long gt = g < _busGateOutputs.Count ? _busGateOutputs[g].TimeNanoseconds : long.MaxValue;
+            long ct = c < cpuChanges.Length ? cpuChanges[c].Time : long.MaxValue;
+            long gt = g < gateOutputs.Length ? gateOutputs[g].TimeNanoseconds : long.MaxValue;
             long time = Math.Min(ct, gt);
             uint recipients;
             // Retain the established tie order: resolved gate outputs before
             // CPU input changes at the same electrical date.
-            if (g < _busGateOutputs.Count && gt <= ct)
+            if (g < gateOutputs.Length && gt <= ct)
             {
-                byte changed = _busGateOutputs[g].ChangedPins;
-                gates = _busGateOutputs[g++].Levels;
+                ref readonly var output = ref gateOutputs[g++];
+                byte changed = output.ChangedPins;
+                gates = output.Levels;
                 recipients = (changed & 1) != 0 ? Bit(BusRecipient.RomLow) : 0;
                 if ((changed & 6) != 0) { recipients |= Bit(BusRecipient.Video); _videoObservation = Math.Max(_videoObservation, time); }
                 if ((changed & 8) != 0) recipients |= Bit(BusRecipient.JoyLow) | Bit(BusRecipient.JoyHigh);
             }
             else
             {
-                var change = _cpuWireChanges[c++]; cpu = change.Wires;
+                ref readonly var change = ref cpuChanges[c++]; cpu = change.Wires;
                 recipients = change.Recipients & GateConsumers;
             }
             recipients &= _connectedBusRecipients;

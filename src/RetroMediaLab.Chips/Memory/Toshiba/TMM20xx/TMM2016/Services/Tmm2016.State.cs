@@ -10,7 +10,7 @@ public sealed partial class Tmm2016
     public Tmm2016State CaptureState()
     {
         if (_publishing) throw new InvalidOperationException("Cannot snapshot a partial SRAM publication.");
-        return new(C.StateVersion,_timing,TimeNanoseconds,(byte[])_cells.Clone(),(byte[])_known.Clone(),
+        return new(C.StateVersion,_timing,_time,(byte[])_cells.Clone(),(byte[])_known.Clone(),
             UnpackPins(_pins),_addressChanged,_dataChanged,_csStarted,_oeStarted,_writeStarted,_writeAddress,
             _writeAddressKnown,_writing,_qualified,_postWriteUnknown,_lastWrite,_lastWriteAddress,
             _lastWriteAddressStarted,_lastWriteAddressKnown,_readData,_readKnown,_targetData,_targetKnown,
@@ -47,7 +47,7 @@ public sealed partial class Tmm2016
             throw new ArgumentException(nameof(state));
         // Unknown bits in cells may retain their last physical value; only Known makes a read meaningful.
         state.Cells.CopyTo(_cells,0); state.Known.CopyTo(_known,0);
-        TimeNanoseconds = state.Time; _pins = PackPins(state.Pins); _addressChanged = state.AddressChanged;
+        _time = state.Time; _pins = PackPins(state.Pins); _addressChanged = state.AddressChanged;
         _dataChanged = state.DataChanged; _csStarted = state.CsStarted; _oeStarted = state.OeStarted;
         _writeStarted = state.WriteStarted; _writeAddress = state.WriteAddress; _writeAddressKnown = state.WriteAddressKnown;
         _writing = state.Writing; _qualified = state.Qualified; _postWriteUnknown = state.PostWriteUnknown;

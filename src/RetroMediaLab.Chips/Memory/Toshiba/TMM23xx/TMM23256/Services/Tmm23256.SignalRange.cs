@@ -10,16 +10,18 @@ public sealed partial class Tmm23256
 
     public MemoryOutputRange<Tmm23256Output> ExecuteInputRange(in MemoryInputRange<Tmm23256Pins> range, bool retainResponseHistory = true)
     {
-        range.Validate(TimeNanoseconds);
+        range.Validate(_time);
+        var changes = range.Changes;
+        long end = range.KnownUntilNanoseconds;
         if (_publishing || _executingRange || OutputChanged is not null || NextEventNanosecondsChanged is not null)
             throw new InvalidOperationException("A guaranteed ROM range requires exclusive range delivery.");
-        foreach (ref readonly var input in range.Changes)
+        foreach (ref readonly var input in changes)
         {
             if (input.Pins.Address >= _busTiming.Capacity) throw new ArgumentOutOfRangeException(nameof(range));
             _ = checked(input.TimeNanoseconds + _busTiming.MaximumDelay);
         }
         if (retainResponseHistory) _rangeOutputs ??= new TimedMemoryOutput<Tmm23256Output>[(MemoryInputRange<Tmm23256Pins>.MaximumChanges + 1) * 2];
-        long start = TimeNanoseconds;
+        long start = _time;
         var initial = Output;
         int index = 0, count = 0;
         _executingRange = true;
@@ -29,26 +31,26 @@ public sealed partial class Tmm23256
             // this package's own engine; no public ReceivePins/AdvanceTo chain.
             while (true)
             {
-                bool hasInput = index < range.Changes.Length;
-                long inputTime = hasInput ? range.Changes[index].TimeNanoseconds : range.KnownUntilNanoseconds;
+                bool hasInput = index < changes.Length;
+                long inputTime = hasInput ? changes[index].TimeNanoseconds : end;
                 InitializeThrough(inputTime);
                 if (_nextDue >= 0 && _nextDue <= inputTime)
                 {
                     if (ResolveOutputAt(_nextDue))
                     {
-                        if (retainResponseHistory) _rangeOutputs![count] = new(TimeNanoseconds, Output);
+                        if (retainResponseHistory) _rangeOutputs![count] = new(_time, Output);
                         count++;
                     }
                     continue;
                 }
                 if (!hasInput) break;
-                ref readonly var input = ref range.Changes[index++];
-                TimeNanoseconds = input.TimeNanoseconds;
+                ref readonly var input = ref changes[index++];
+                _time = input.TimeNanoseconds;
                 var pins = input.Pins;
-                ApplyParallelPins(TimeNanoseconds, pins.Address, pins.AddressKnown, pins.CeHigh, pins.OeHigh);
+                ApplyParallelPins(_time, pins.Address, pins.AddressKnown, pins.CeHigh, pins.OeHigh);
             }
-            TimeNanoseconds = range.KnownUntilNanoseconds;
-            return new(start, TimeNanoseconds, initial,
+            _time = end;
+            return new(start, _time, initial,
                 retainResponseHistory ? _rangeOutputs.AsSpan(0, count) : [], _nextDue < 0 ? null : _nextDue,
                 Output, retainResponseHistory, count);
         }

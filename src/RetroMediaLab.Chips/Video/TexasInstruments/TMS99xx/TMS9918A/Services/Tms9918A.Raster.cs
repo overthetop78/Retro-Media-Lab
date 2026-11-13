@@ -40,7 +40,7 @@ public sealed partial class Tms9918A
             else known &= sprite.Known;
             external = _registers.ExternalVideoEnabled && (blank || (colour == 0 && known));
         }
-        var signal = new Tms9918VideoSignal(TimeNanoseconds, dot, line, current.Frame,
+        var signal = new Tms9918VideoSignal(_time, dot, line, current.Frame,
             active, horizontalSync, verticalSync, blank, burst, colour, known, external,
             external ? ExternalOutputVoltage : null);
         VideoSignal = signal;
@@ -60,7 +60,7 @@ public sealed partial class Tms9918A
         _publishing = true;
         try
         {
-            if (dot == 0 && line == 0) FrameStarted?.Invoke(TimeNanoseconds);
+            if (dot == 0 && line == 0) FrameStarted?.Invoke(_time);
             VideoSignalProduced?.Invoke(signal);
         }
         finally { _publishing = wasPublishing; }

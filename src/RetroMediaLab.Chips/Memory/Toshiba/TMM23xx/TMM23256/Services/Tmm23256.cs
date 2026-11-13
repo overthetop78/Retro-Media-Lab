@@ -38,7 +38,8 @@ public sealed partial class Tmm23256 : ITmm23256
         _accessReady = timing.LatchesAddress ? 0 : timing.Access;
         if (IsOeActive(_oeHigh)) _oeFall = 0;
     }
-    public long TimeNanoseconds { get; private set; }
+    private long _time;
+    public long TimeNanoseconds => _time;
     public long? NextEventNanoseconds => _nextDue < 0 ? null : _nextDue;
     public bool IsInitialized => _initialized;
     public bool IsTimingQualified => _qualified && _timing.ElectricallyCharacterized;
@@ -52,7 +53,7 @@ public sealed partial class Tmm23256 : ITmm23256
     public void ReceiveParallelPins(long timeNanoseconds, ushort address, bool addressKnown, bool ceHigh, bool oeHigh)
     {
         if (address >= _busTiming.Capacity) throw new ArgumentOutOfRangeException(nameof(address));
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
         _ = checked(timeNanoseconds + _busTiming.MaximumDelay);
         AdvanceTo(timeNanoseconds);
         ApplyParallelPins(timeNanoseconds, address, addressKnown, ceHigh, oeHigh);
@@ -132,10 +133,10 @@ public sealed partial class Tmm23256 : ITmm23256
 
     public void AdvanceTo(long timeNanoseconds)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
         if (_publishing)
         {
-            if (timeNanoseconds != TimeNanoseconds) throw new InvalidOperationException("Cannot advance ROM from its output callback.");
+            if (timeNanoseconds != _time) throw new InvalidOperationException("Cannot advance ROM from its output callback.");
             return;
         }
         InitializeThrough(timeNanoseconds);
@@ -150,7 +151,7 @@ public sealed partial class Tmm23256 : ITmm23256
             }
             PublishDeadline();
         }
-        TimeNanoseconds = timeNanoseconds;
+        _time = timeNanoseconds;
     }
 
     private void InitializeThrough(long timeNanoseconds)
@@ -160,7 +161,7 @@ public sealed partial class Tmm23256 : ITmm23256
 
     private bool ResolveOutputAt(long due)
     {
-        TimeNanoseconds = due;
+        _time = due;
         var previous = _output;
         if (_invalidateDue == due)
         {
@@ -195,7 +196,7 @@ public sealed partial class Tmm23256 : ITmm23256
     public Tmm23256State CaptureState()
     {
         if (_publishing) throw new InvalidOperationException("Cannot snapshot a partial ROM publication.");
-        return new(C.StateVersion, _hash, _timing, TimeNanoseconds, new(_address, _addressKnown, _ceHigh, _oeHigh), _latchedAddress,
+        return new(C.StateVersion, _hash, _timing, _time, new(_address, _addressKnown, _ceHigh, _oeHigh), _latchedAddress,
             _latchedKnown, _initialized, _initialCeHigh, _qualified, _ceFall, _ceRise, _oeFall,
             _accessReady, _outputDue < 0 ? null : _outputDue,
             new((byte)_target, (_target & Known) != 0, (_target & Driven) != 0), Output,
@@ -224,7 +225,7 @@ public sealed partial class Tmm23256 : ITmm23256
             || (state.Target.Known && (!state.LatchedKnown || state.Target.Data != _rom[state.LatchedAddress]))
             || state.AccessReady != ExpectedAccessReady(state))
             throw new ArgumentException(nameof(state));
-        TimeNanoseconds = state.Time;
+        _time = state.Time;
         _address = state.Pins.Address; _addressKnown = state.Pins.AddressKnown;
         _ceHigh = state.Pins.CeHigh; _oeHigh = state.Pins.OeHigh; _latchedAddress = state.LatchedAddress;
         _latchedKnown = state.LatchedKnown; _initialized = state.Initialized; _initialCeHigh = state.InitialCeHigh;

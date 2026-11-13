@@ -50,7 +50,7 @@ public sealed partial class Tms9918A
         _publishing = true;
         try
         {
-            var signal = new Tms9918VramSignal(TimeNanoseconds, pins);
+            var signal = new Tms9918VramSignal(_time, pins);
             _vramPinsObserver?.Invoke(signal);
             // The first observer may change subscriptions or withdraw a
             // represented waveform at this date. Read the actual binding now.
@@ -130,24 +130,24 @@ public sealed partial class Tms9918A
         _vramWrite = write;
         _vramWriteData = data;
         _vramActive = true;
-        _vramStarted = TimeNanoseconds;
+        _vramStarted = _time;
         _vramStartedHalfEdge = _clock.HalfEdges;
         _vramStep = 1;
-        SetVramDeadline(checked(TimeNanoseconds + V.RasAssert));
+        SetVramDeadline(checked(_time + V.RasAssert));
         _vramReadWaveRouted = false;
         if (!write && _vramWriteEnd < 0 && VramPins.RasHigh && VramPins.CasHigh && VramPins.ReadWriteHigh
             && VramReadCycleProduced is { } receiver)
         {
-            var cycle = new Tms9918VramReadCycle(TimeNanoseconds, checked(TimeNanoseconds + V.RasAssert),
-                checked(TimeNanoseconds + V.CasAssert), checked(TimeNanoseconds + V.RasRelease),
-                checked(TimeNanoseconds + V.CasRelease), _vramRow, _vramColumn, address.Qualified);
+            var cycle = new Tms9918VramReadCycle(_time, checked(_time + V.RasAssert),
+                checked(_time + V.CasAssert), checked(_time + V.RasRelease),
+                checked(_time + V.CasRelease), _vramRow, _vramColumn, address.Qualified);
             bool wasPublishing = _publishing;
             _publishing = true;
             try { _vramReadWaveRouted = receiver(in cycle); }
             finally { _publishing = wasPublishing; }
         }
         UpdateVramPinObservation();
-        _vramBus.ApplyOutputs(TimeNanoseconds, VramPins with
+        _vramBus.ApplyOutputs(_time, VramPins with
             { AddressData = _vramRow, AddressDataKnown = address.Qualified });
         PublishDeadline();
     }
@@ -198,7 +198,7 @@ public sealed partial class Tms9918A
                     _vramWriteEnd = checked(_vramStarted + V.WriteRelease);
                 }
                 RefreshNextDeadline();
-                _vramBus.ApplyOutputs(TimeNanoseconds, pins with { CasHigh = true });
+                _vramBus.ApplyOutputs(_time, pins with { CasHigh = true });
                 _vramReadWaveRouted = false;
                 UpdateVramPinObservation();
                 _vramActive = false;
@@ -206,7 +206,7 @@ public sealed partial class Tms9918A
             default: throw new InvalidOperationException("Invalid VDP VRAM sequencer phase.");
         }
         SetVramDeadline(checked(_vramStarted + nextOffset));
-        _vramBus.ApplyOutputs(TimeNanoseconds, pins);
+        _vramBus.ApplyOutputs(_time, pins);
     }
 
     private void CaptureVramRead(Tms9918VramRead read)
@@ -246,7 +246,7 @@ public sealed partial class Tms9918A
         {
             bool wasPublishing = _publishing;
             _publishing = true;
-            try { VramReadCycleCancelled?.Invoke(TimeNanoseconds); }
+            try { VramReadCycleCancelled?.Invoke(_time); }
             finally { _publishing = wasPublishing; }
             _vramReadWaveRouted = false;
             UpdateVramPinObservation();
@@ -262,7 +262,7 @@ public sealed partial class Tms9918A
         var state = _background.Capture();
         _background = new(state with { NameKnown = false, PatternKnown = false, ColourKnown = false,
             ActivePatternKnown = false, ActiveColourKnown = false });
-        _vramBus.ApplyOutputs(TimeNanoseconds, VramPins with
+        _vramBus.ApplyOutputs(_time, VramPins with
             { RasHigh = true, CasHigh = true, ReadWriteHigh = true, AddressDataKnown = false });
     }
 }

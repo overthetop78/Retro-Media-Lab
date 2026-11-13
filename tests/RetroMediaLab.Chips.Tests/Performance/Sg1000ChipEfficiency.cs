@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Numerics;
 using RetroMediaLab.Chips.Logic.Common.Contracts;
+using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Services;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Contracts;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Models;
@@ -324,5 +325,232 @@ public static class Sg1000ChipEfficiency
                 c.AdvanceTo(end-1);edge+=2L*n;},()=>new(c.InputClockCount,c.TimeNanoseconds,signals),
             ()=>c.CaptureState(),()=>Require(signals>0,"No audio transitions"),
             ()=>{c.OutputChanged=null;c.ReadyChanged=null;c.NextEventNanosecondsChanged=null;});
+    }
+}
+
+public sealed class Mb8118ReadWaveformTests
+{
+    [Fact]
+    public void DeadlineCacheIsCurrentInsideCallbacksAndAfterCancellationOrRestore()
+    {
+        var chip=Seed(Mb8118Timing.Speed12);
+        const long origin=200_010;
+        bool observed=false;
+        chip.NextEventNanosecondsChanged=next=>Assert.Equal(next,chip.NextEventNanoseconds);
+        chip.OutputChanged=_=>
+        {
+            observed=true;
+            Assert.Equal(origin+385,chip.NextEventNanoseconds);
+            chip.CancelReadCycle(chip.TimeNanoseconds);
+            Assert.Null(chip.NextEventNanoseconds);
+        };
+        try
+        {
+            chip.ReceiveReadCycle(new(origin,origin+45,origin+85,origin+270,origin+335,3,7,true,true,false,true));
+            Assert.Equal(origin+165,chip.NextEventNanoseconds);
+            chip.AdvanceTo(origin+165);
+            Assert.True(observed);Assert.Null(chip.NextEventNanoseconds);
+            var saved=chip.CaptureState();
+            chip.RestoreState(saved);Assert.Null(chip.NextEventNanoseconds);
+        }
+        finally{chip.OutputChanged=null;chip.NextEventNanosecondsChanged=null;}
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EveryPhaseAndCancellationMatchesPhysicalInputs(bool faster)
+    {
+        foreach(int cancellation in new[]{-1,0,44,45,84,85,164,165,269,270,334,335})
+            Compare(faster,cancellation,false);
+        Compare(faster,-1,true);
+    }
+
+    private static Mb8118 Seed(Mb8118Timing timing)
+    {
+        var c=new Mb8118(timing);c.AdvanceTo(200_000);var s=c.CaptureState();
+        for(int i=0;i<s.Cells.Length;i++)s.Cells[i]=(byte)(1+(i&1));
+        Array.Fill(s.Refreshed,200_000L);c.RestoreState(s with {StartupCycles=8});return c;
+    }
+
+    private static void Compare(bool faster,int cancellation,bool coincident)
+    {
+        const long origin=200_010;
+        var timing=faster?Mb8118Timing.Speed10:Mb8118Timing.Speed12;
+        var scalar=Seed(timing);var range=Seed(timing);
+        var a=new List<(long,LogicPinState)>();var b=new List<(long,LogicPinState)>();
+        scalar.OutputChanged=p=>a.Add((scalar.TimeNanoseconds,p));
+        range.OutputChanged=p=>b.Add((range.TimeNanoseconds,p));
+        long[] dates=coincident?[origin,origin,origin,origin,origin]:[origin,origin+45,origin+85,origin+270,origin+335];
+        Mb8118Pins[] pins=[new(3,true,true,true,true,false),new(3,true,false,true,true,false),
+            new(7,true,false,false,true,true),new(7,true,true,false,true,true),new(7,true,true,true,true,true)];
+        int next=0;
+        try
+        {
+            range.ReceiveReadCycle(new(origin,dates[1],dates[2],dates[3],dates[4],3,7,true,true,false,true));
+            long[] offsets=coincident?[0,1,49,50,99,100,119,120,400]:
+                [0,44,45,46,84,85,86,119,120,149,150,164,165,166,269,270,271,334,335,336,384,385,400];
+            foreach(long offset in offsets)
+            {
+                if(cancellation>=0 && offset>cancellation)break;
+                long now=origin+offset;
+                while(next<dates.Length && dates[next]<=now){scalar.ReceivePins(dates[next],pins[next]);next++;}
+                scalar.AdvanceTo(now);range.AdvanceTo(now);
+                Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(range.CaptureState()));
+                Assert.Equal(a,b);
+            }
+            if(cancellation>=0)
+            {
+                long now=origin+cancellation;
+                while(next<dates.Length && dates[next]<=now){scalar.ReceivePins(dates[next],pins[next]);next++;}
+                scalar.AdvanceTo(now);range.CancelReadCycle(now);
+                Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(range.CaptureState()));
+                // Explicit release after cancellation exercises replacement of a partial prefix.
+                var release=new Mb8118Pins(7,true,true,true,true,true);
+                scalar.ReceivePins(now+1,release);range.ReceivePins(now+1,release);
+                scalar.AdvanceTo(now+1000);range.AdvanceTo(now+1000);
+                Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(range.CaptureState()));
+                Assert.Equal(a,b);
+            }
+        }
+        finally{scalar.OutputChanged=null;range.OutputChanged=null;}
+    }
+}
+
+
+public sealed class VdpClockBoundaryTests
+{
+    [Fact]
+    public void SameDateDataKnowledgeExcursionCannotBeReplacedByItsFinalWord()
+    {
+        Tms9918A Make()=>new(new(default,0,default,new(null,0,Tms9918CpuVramOperation.None,false),
+            new(0,true,true,true,true)),Tms9918CpuTiming.SpecifiedMaximum);
+        var transitions=Make();var finalWord=Make();
+        transitions.SetVramReadData(100,0,false);finalWord.SetVramReadData(100,0,false);
+        transitions.SetVramReadData(200,0,true);
+        transitions.SetVramReadData(200,0,false);
+        finalWord.SetVramReadData(200,0,false);
+        Assert.Equal(200,transitions.CaptureState().VramBus.InputDataChanged);
+        Assert.Equal(0,finalWord.CaptureState().VramBus.InputDataChanged);
+    }
+
+    [Fact]
+    public void ClockPrefixConsumesExactlyTheRepresentableEdgesAndRemainder()
+    {
+        var sources = new RationalClockSource[]
+        {
+            new(0, 1_000_000_000, 21_477_270, 1, true),
+            new(19, 1234, 17, 3, false, 12),
+            new(0, 1, 1, 0, true),
+            new(long.MaxValue - 100, 3, 1, 1, true),
+            new(0, long.MaxValue / 2, long.MaxValue / 3, 0, true),
+        };
+        foreach (var source in sources)
+        foreach (int maximum in new[] { 1, 2, 3, 4, 7, 31 })
+        foreach (int offset in new[] { 0, 1, 2, 5, 12, 49 })
+        {
+            var expected = new RetroMediaLab.Chips.Logic.Common.Services.RationalClockInput(source);
+            var actual = expected;
+            long boundary = checked(expected.NextTime + offset);
+            int count = Math.Min(maximum, expected.EdgesBefore(boundary));
+            long last = count == 0 ? expected.NextTime : expected.TimeAfterEdges(count - 1);
+            expected.Advance(count);
+            Assert.Equal(count, actual.ConsumeBefore(maximum, boundary, out long observed));
+            Assert.Equal(last, observed);
+            Assert.Equal(expected.NextTime, actual.NextTime);
+            Assert.Equal(expected.NextHigh, actual.NextHigh);
+            // Equal current dates alone do not establish the fractional phase.
+            for (int following = 0; following < 16; following++)
+                Assert.Equal(expected.TimeAfterEdges(following), actual.TimeAfterEdges(following));
+        }
+    }
+
+    [Fact]
+    public void SpeculativeGroupPastLongMaxDoesNotRejectRepresentablePrefix()
+    {
+        Tms9918A Make()=>new(new(default,0,default,new(null,0,Tms9918CpuVramOperation.None,false),
+            new(0,true,true,true,true)),Tms9918CpuTiming.SpecifiedMaximum);
+        var scalar=Make();var range=Make();scalar.SetReset(0,true);range.SetReset(0,true);
+        const long origin=long.MaxValue-100,boundary=long.MaxValue-2;
+        range.ReceiveMasterClockSource(new(origin,3,1,1,true));
+        long edge=1;
+        while(origin+edge*3<boundary){scalar.ReceiveMasterClock(origin+edge*3,(edge&1)!=0);edge++;}
+        scalar.AdvanceTo(boundary-1);range.AdvanceMasterClockSourceUntil(boundary);range.AdvanceTo(boundary-1);
+        Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(range.CaptureState()));
+    }
+
+    [Theory]
+    [InlineData(1000000000L,21477270L)]
+    [InlineData(1234L,17L)]
+    [InlineData(1L,1L)]
+    public void RationalSourceMatchesEdgesAtIntermediateObservations(long numerator,long denominator)
+    {
+        Tms9918A Make()=>new(new(new(0,0xc0,6,0x80,0,0x7e,7,0xe3),0,default,
+            new(null,0,Tms9918CpuVramOperation.None,false),new(0,true,true,true,true)),Tms9918CpuTiming.SpecifiedMaximum);
+        var scalar=Make();var range=Make();
+        var a=new List<object>();var b=new List<object>();
+        scalar.VramReadCycleProduced=static (in RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts.Tms9918VramReadCycle _) => true;
+        range.VramReadCycleProduced=static (in RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts.Tms9918VramReadCycle _) => true;
+        scalar.VramPinsChanged=_=>{};
+        scalar.VideoSignalProduced=v=>a.Add(v);range.VideoSignalProduced=v=>b.Add(v);
+        long Date(long edge)=>(long)((Int128)edge*numerator/denominator);
+        long next=1;
+        try
+        {
+            range.ReceiveMasterClockSource(new(0,numerator,denominator,1,true));
+            foreach(long edge in new long[]{1,2,3,4,5,9,10,11,13,17,23,24,25,53,97,128,263,1025,4097})
+            {
+                long boundary=Date(edge);
+                while(Date(next)<boundary){scalar.ReceiveMasterClock(Date(next),(next&1)!=0);next++;}
+                scalar.AdvanceTo(boundary-1);range.AdvanceMasterClockSourceUntil(boundary);range.AdvanceTo(boundary-1);
+                Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(range.CaptureState()));
+                Assert.Equal(JsonSerializer.Serialize(a),JsonSerializer.Serialize(b));
+                if(edge==53)range.NextEventNanosecondsChanged=_=>{};
+                if(edge==97)range.NextEventNanosecondsChanged=null;
+                if(edge==128)range.VramPinsChanged=_=>{};
+                if(edge==263)range.VramPinsChanged=null;
+            }
+        }
+        finally
+        {
+            scalar.VideoSignalProduced=null;range.VideoSignalProduced=null;
+            scalar.VramPinsChanged=null;range.VramPinsChanged=null;range.NextEventNanosecondsChanged=null;
+            scalar.VramReadCycleProduced=null;range.VramReadCycleProduced=null;
+        }
+    }
+
+    [Fact]
+    public void RepresentedVramReadResetMatchesObservedPinsAtEveryPhase()
+    {
+        foreach (long offset in new long[] { 0, 44, 45, 84, 85, 164, 165, 269, 270, 334, 335, 385 })
+        {
+            Tms9918A Make()=>new(new(new(0,0xc0,6,0x80,0,0x7e,7,0xe3),0,default,
+                new(null,0,Tms9918CpuVramOperation.None,false),new(0,true,true,true,true)),Tms9918CpuTiming.SpecifiedMaximum);
+            var observed=Make();var represented=Make();
+            long row=-1;
+            observed.VramReadCycleProduced=static (in RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts.Tms9918VramReadCycle _) => true;
+            represented.VramReadCycleProduced=(in RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts.Tms9918VramReadCycle cycle) => { if(row<0)row=cycle.RowTime;return true; };
+            observed.VramPinsChanged=_=>{};
+            try
+            {
+                var source=new RationalClockSource(0,1_000_000_000,21_477_270,1,true);
+                observed.ReceiveMasterClockSource(source);represented.ReceiveMasterClockSource(source);
+                for(long edge=1;row<0;edge++)
+                {
+                    Assert.True(edge<1000,"Expected a physical VRAM read.");
+                    long until=source.EdgeNanoseconds(edge)+1;
+                    observed.AdvanceMasterClockSourceUntil(until);represented.AdvanceMasterClockSourceUntil(until);
+                }
+                long time=row+offset;
+                observed.AdvanceMasterClockSourceUntil(time+1);represented.AdvanceMasterClockSourceUntil(time+1);
+                observed.SetReset(time,true);represented.SetReset(time,true);
+                Assert.Equal(JsonSerializer.Serialize(observed.CaptureState()),JsonSerializer.Serialize(represented.CaptureState()));
+            }
+            finally
+            {
+                observed.VramPinsChanged=null;
+                observed.VramReadCycleProduced=null;represented.VramReadCycleProduced=null;
+            }
+        }
     }
 }

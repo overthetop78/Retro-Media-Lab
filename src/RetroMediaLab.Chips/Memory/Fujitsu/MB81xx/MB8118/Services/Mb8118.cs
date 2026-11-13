@@ -27,12 +27,15 @@ public sealed partial class Mb8118 : IMb8118
         _timing = new(timing);
         Array.Fill(_refreshed, -1);
     }
-    public long TimeNanoseconds { get; private set; }
-    public long? NextEventNanoseconds { get { long next = NextResponseTime; return next < 0 ? null : next; } }
+    private long _time;
+    public long TimeNanoseconds => _time;
+    public long? NextEventNanoseconds => _nextResponseTime < 0 ? null : _nextResponseTime;
     public bool IsTimingQualified => _qualified;
     public LogicPinState Output => _output;
-    public Action<LogicPinState>? OutputChanged { get; set; }
-    public Action<long?>? NextEventNanosecondsChanged { get; set; }
+    private Action<LogicPinState>? _outputChanged;
+    public Action<LogicPinState>? OutputChanged { get => _outputChanged; set => _outputChanged=value; }
+    private Action<long?>? _deadlineChanged;
+    public Action<long?>? NextEventNanosecondsChanged { get => _deadlineChanged; set => _deadlineChanged=value; }
 
     public void ReceivePins(long timeNanoseconds, Mb8118Pins receivedPins)
         => ReceiveLevels(timeNanoseconds, receivedPins);
@@ -46,6 +49,7 @@ public sealed partial class Mb8118 : IMb8118
         if (pins.Address > 127) throw new ArgumentOutOfRangeException(nameof(pins));
         AdvanceCore(timeNanoseconds, false);
         _hasReadCycle = false; // Explicit delivery supersedes promised inputs at this date.
+        RefreshResponseTime();
         ApplyLevels(pins);
         PublishDeadline();
     }
@@ -55,9 +59,9 @@ public sealed partial class Mb8118 : IMb8118
         if (pins.Address == _pins.Address && pins.AddressKnown == _pins.AddressKnown
             && pins.RasHigh == _pins.RasHigh && pins.CasHigh == _pins.CasHigh
             && pins.WriteHigh == _pins.WriteHigh && pins.Data == _pins.Data) return;
-        _ = checked(TimeNanoseconds + _timing.MaximumOutputDelay);
+        _ = checked(_time + _timing.MaximumOutputDelay);
         var old = _pins;
-        long now = TimeNanoseconds;
+        long now = _time;
         ChangeAddressData(now, pins.Address, pins.AddressKnown, pins.Data);
         _pins = pins;
         if (old.RasHigh && !pins.RasHigh) BeginRow(now, pins);
@@ -179,6 +183,7 @@ public sealed partial class Mb8118 : IMb8118
     {
         _target = target;
         _outputDue = target == _output ? -1 : due;
+        RefreshResponseTime();
     }
 
     public void AdvanceTo(long timeNanoseconds) => AdvanceCore(timeNanoseconds, true);
@@ -186,16 +191,16 @@ public sealed partial class Mb8118 : IMb8118
     private void PublishDeadline()
     {
         if (_publishing) return;
-        long next = NextResponseTime;
+        long next = _nextResponseTime;
         if (_announcedDue == next) return;
-        if (NextEventNanosecondsChanged is null) { _announcedDue = next; return; }
+        if (_deadlineChanged is null) { _announcedDue = next; return; }
         while (_announcedDue != next)
         {
             _announcedDue = next;
             _publishing = true;
-            try { NextEventNanosecondsChanged?.Invoke(next < 0 ? null : next); }
+            try { _deadlineChanged?.Invoke(next < 0 ? null : next); }
             finally { _publishing = false; }
-            next = NextResponseTime;
+            next = _nextResponseTime;
         }
     }
 
@@ -203,7 +208,7 @@ public sealed partial class Mb8118 : IMb8118
     {
         if (_publishing) throw new InvalidOperationException("Cannot snapshot during DRAM output publication.");
         return new(1, _timing.Signature, (byte[])_cells.Clone(), (long[])_refreshed.Clone(),
-            TimeNanoseconds, _pins, _row, _column, _rowKnown, _columnKnown, _rowActive,
+            _time, _pins, _row, _column, _rowKnown, _columnKnown, _rowActive,
             _cycleWrite, _readCycle, _qualified, _startupCycles, _rasFall, _casFall,
             _rasRise, _casRise, _addressChanged, _dataChanged, _writeFall, _writeAt,
             _writeHoldUntil, _writeAddress, _outputDue < 0 ? null : _outputDue, _target, _output);
@@ -227,7 +232,7 @@ public sealed partial class Mb8118 : IMb8118
             throw new ArgumentException(nameof(state));
         _hasReadCycle = false;
         state.Cells.CopyTo(_cells, 0); state.Refreshed.CopyTo(_refreshed, 0);
-        TimeNanoseconds = state.Time; _pins = state.Pins; _row = state.Row; _column = state.Column;
+        _time = state.Time; _pins = state.Pins; _row = state.Row; _column = state.Column;
         _rowKnown = state.RowKnown; _columnKnown = state.ColumnKnown; _rowActive = state.RowActive;
         _cycleWrite = state.CycleWrite; _readCycle = state.ReadCycle; _qualified = state.TimingQualified;
         _startupCycles = state.StartupCycles; _rasFall = state.RasFall; _casFall = state.CasFall;
@@ -236,5 +241,6 @@ public sealed partial class Mb8118 : IMb8118
         _writeHoldUntil = state.WriteHoldUntil;
         _writeAddress = state.WriteAddress; _outputDue = _announcedDue = state.OutputDue ?? -1;
         _target = state.OutputTarget; _output = state.Output;
+        RefreshResponseTime();
     }
 }

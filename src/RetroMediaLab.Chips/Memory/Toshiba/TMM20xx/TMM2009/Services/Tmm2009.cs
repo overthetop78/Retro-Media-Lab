@@ -12,7 +12,8 @@ public sealed partial class Tmm2009(bool ce2ActiveHigh) : ITmm2009
     private ushort _writeAddress;
     private byte _writeData, _writeKnown;
     private Tmm2009Output _output;
-    public long TimeNanoseconds { get; private set; }
+    private long _time;
+    public long TimeNanoseconds => _time;
     public bool ElectricalTimingQualified => false;
     public Tmm2009Output Output => _output;
     public Action<Tmm2009Output>? OutputChanged { get; set; }
@@ -20,10 +21,10 @@ public sealed partial class Tmm2009(bool ce2ActiveHigh) : ITmm2009
 
     public void AdvanceTo(long timeNanoseconds)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, TimeNanoseconds);
-        if (_publishing && timeNanoseconds != TimeNanoseconds)
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
+        if (_publishing && timeNanoseconds != _time)
             throw new InvalidOperationException("Cannot advance SRAM during an output callback.");
-        TimeNanoseconds = timeNanoseconds;
+        _time = timeNanoseconds;
     }
 
     public void ReceivePins(long timeNanoseconds, Tmm2009Pins pins)
@@ -79,7 +80,7 @@ public sealed partial class Tmm2009(bool ce2ActiveHigh) : ITmm2009
     public Tmm2009State CaptureState()
     {
         if (_publishing) throw new InvalidOperationException("Cannot capture SRAM during publication.");
-        return new(1, ce2ActiveHigh, TimeNanoseconds, (byte[])_cells.Clone(), (byte[])_known.Clone(),
+        return new(1, ce2ActiveHigh, _time, (byte[])_cells.Clone(), (byte[])_known.Clone(),
             _pins, _writing, _writeAddress, _writeAddressKnown, _writeData, _writeKnown);
     }
     public void RestoreState(Tmm2009State state)
@@ -94,7 +95,7 @@ public sealed partial class Tmm2009(bool ce2ActiveHigh) : ITmm2009
         for (int address = 0; address < 1024; address++)
             if ((state.Cells[address] & ~state.Known[address]) != 0) throw new ArgumentException(nameof(state));
         state.Cells.CopyTo(_cells, 0); state.Known.CopyTo(_known, 0);
-        TimeNanoseconds = state.Time; _pins = state.Pins; _writing = state.Writing;
+        _time = state.Time; _pins = state.Pins; _writing = state.Writing;
         _writeAddress = state.WriteAddress; _writeAddressKnown = state.WriteAddressKnown;
         _writeData = state.WriteData; _writeKnown = state.WriteKnown;
         _output = ResolveOutput();

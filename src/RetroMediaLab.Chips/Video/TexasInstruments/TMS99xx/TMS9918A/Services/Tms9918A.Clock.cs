@@ -26,7 +26,7 @@ public sealed partial class Tms9918A
         long lastIndex = checked(train.FirstEdgeIndex + train.EdgeCount - 1L);
         long lastTime = TrainDate(train, lastIndex);
         long firstTime = TrainDate(train, train.FirstEdgeIndex);
-        ArgumentOutOfRangeException.ThrowIfLessThan(firstTime, TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(firstTime, _time);
         _ = checked(_clock.HalfEdges + train.EdgeCount);
         DetachMasterClockSource();
 
@@ -54,7 +54,7 @@ public sealed partial class Tms9918A
             consumed += count;
         }
         // lastTime est calculé avant mutation pour valider le débordement du train entier.
-        System.Diagnostics.Debug.Assert(TimeNanoseconds == lastTime);
+        System.Diagnostics.Debug.Assert(_time == lastTime);
     }
 
     private static long TrainDate(Tms9918ClockTrain train, long index)
@@ -91,14 +91,14 @@ public sealed partial class Tms9918A
             {
                 bool wasPublishing = _publishing;
                 _publishing = true;
-                try { listener(new(TimeNanoseconds, _clock.CpuClockHigh)); }
+                try { listener(new(_time, _clock.CpuClockHigh)); }
                 finally { _publishing = wasPublishing; }
             }
             if (gromChanged && GromClockChanged is { } gromListener)
             {
                 bool wasPublishing = _publishing;
                 _publishing = true;
-                try { gromListener(new(TimeNanoseconds, _clock.GromClockHigh)); }
+                try { gromListener(new(_time, _clock.GromClockHigh)); }
                 finally { _publishing = wasPublishing; }
             }
         }

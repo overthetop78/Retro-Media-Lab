@@ -17,7 +17,7 @@ public sealed partial class Tms9918A
         if (_externalVideo.VideoVoltage == voltage && _externalVideo.VideoKnown == known) return;
         _externalVideo = _externalVideo with { VideoVoltage = voltage, VideoKnown = known };
         if (!VideoSignal.ExternalVideo) return;
-        VideoSignal = VideoSignal with { TimeNanoseconds = TimeNanoseconds, ExternalOutputVoltage = ExternalOutputVoltage };
+        VideoSignal = VideoSignal with { TimeNanoseconds = _time, ExternalOutputVoltage = ExternalOutputVoltage };
         bool wasPublishing = _publishing;
         _publishing = true;
         try { VideoSignalProduced?.Invoke(VideoSignal); }
@@ -57,12 +57,12 @@ public sealed partial class Tms9918A
             _vramDue = _vramWriteEnd = -1;
             RefreshNextDeadline();
             _vramActive = _ramLoadActive = _cpuVramInService = false;
-            _vramBus.ApplyOutputs(TimeNanoseconds, VramPins with
+            _vramBus.ApplyOutputs(_time, VramPins with
                 { RasHigh = true, CasHigh = true, ReadWriteHigh = true, AddressDataKnown = false });
             PublishDeadline();
         }
         if (!_externalVideo.VerticalSyncRecognized
-            && TimeNanoseconds - _externalVideo.SyncStarted > E.VerticalSyncMinimumNanoseconds)
+            && _time - _externalVideo.SyncStarted > E.VerticalSyncMinimumNanoseconds)
         {
             _externalVideo = _externalVideo with { VerticalSyncRecognized = true };
             _raster = _raster with { Line = T.VerticalSyncStart };

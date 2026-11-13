@@ -9,9 +9,9 @@ public sealed partial class Tms9918A
     public Tms9918AState CaptureState()
     {
         EnsureStateBoundary();
-        if (_cpuInputTime > TimeNanoseconds)
+        if (_cpuInputTime > _time)
             throw new InvalidOperationException("Synchronize the video domain before observing its complete state.");
-        return new(5, TimeNanoseconds, _registers.Capture(), _status.Value, _protocol.Capture(),
+        return new(5, _time, _registers.Capture(), _status.Value, _protocol.Capture(),
             _memory.Capture(), new(_cpuPins, _readMode, _readQualified, _reset, _resetStarted,
                 _qualified, _dataDue < 0 ? null : _dataDue, _dataTargetDriven), _writeBus.Capture(), _statusReadBus.Capture(),
             CpuOutputs, _clock, _raster, VideoSignal, _vramBus.Capture(),
@@ -56,7 +56,7 @@ public sealed partial class Tms9918A
         _registers = registers; _status = status; _protocol = protocol; _memory = memory;
         _vramReadWaveRouted = false;
         _writeBus = write; _statusReadBus = read; _vramBus = vram; _background = background;
-        TimeNanoseconds = state.TimeNanoseconds;
+        _time = state.TimeNanoseconds;
         _cpuInputTime = Math.Max(state.CpuWriteBus.TimeNanoseconds, state.StatusReadBus.TimeNanoseconds);
         CpuOutputs = state.CpuOutputs; _clock = state.Clock; _raster = state.Raster;
         VideoSignal = state.VideoSignal;

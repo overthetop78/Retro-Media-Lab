@@ -36,7 +36,8 @@ public sealed partial class Tmm2016 : ITmm2016
         _readMask = _selectMask | C.OeMask | C.WeMask; _readValue = _selectValue | C.WeMask;
         _controlsMask = C.ControlsMask | (timing.HasSecondChipSelect ? C.Cs2Mask : 0);
     }
-    public long TimeNanoseconds { get; private set; }
+    private long _time;
+    public long TimeNanoseconds => _time;
     public long? NextEventNanoseconds => _next < 0 ? null : _next;
     public bool IsTimingQualified => _qualified;
     public Tmm2016Output Output => _driven ? new((byte)(_readData & _readKnown),_readKnown,true) : default;
@@ -59,7 +60,7 @@ public sealed partial class Tmm2016 : ITmm2016
     private bool IsNormalSupply => _supplyMillivolts >= _timing.MinimumOperatingMillivolts
         && _supplyMillivolts <= _timing.MaximumOperatingMillivolts;
     private bool IsSupplyReady => _timing.MinimumRetentionMillivolts == 0
-        || (IsNormalSupply && TimeNanoseconds >= _supplyRecoveryEnd);
+        || (IsNormalSupply && _time >= _supplyRecoveryEnd);
 
     private void GuardRetention(ulong pins)
     {
@@ -257,10 +258,10 @@ public sealed partial class Tmm2016 : ITmm2016
 
     public void AdvanceTo(long timeNanoseconds)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds,TimeNanoseconds);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds,_time);
         if (_publishing)
         {
-            if (timeNanoseconds != TimeNanoseconds) throw new InvalidOperationException("Cannot advance SRAM from an output callback.");
+            if (timeNanoseconds != _time) throw new InvalidOperationException("Cannot advance SRAM from an output callback.");
             return;
         }
         while (_internalNext >= 0 && _internalNext <= timeNanoseconds)
@@ -274,12 +275,12 @@ public sealed partial class Tmm2016 : ITmm2016
             }
             PublishDeadline();
         }
-        TimeNanoseconds = timeNanoseconds;
+        _time = timeNanoseconds;
     }
 
     private bool ResolveOutputAt(long due)
     {
-        TimeNanoseconds = due;
+        _time = due;
         if (_invalidateDue == due) { _invalidateDue = -1; _readData = _readKnown = 0; }
         if (_dataDue == due) { _dataDue = -1; _readData = _targetData; _readKnown = _targetKnown; }
         if (_writeEnableDue == due)

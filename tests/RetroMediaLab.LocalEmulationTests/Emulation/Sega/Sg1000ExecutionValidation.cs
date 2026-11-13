@@ -7,6 +7,48 @@ namespace RetroMediaLab.Tests.Emulation.Sega;
 public sealed class Sg1000ExecutionValidation
 {
     [Fact]
+    public void NativeVideoConversionPreservesEveryPaletteIndexQualificationAndOutputByte()
+    {
+        var palette=(uint[])typeof(RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services.EmulatorCore)
+            .GetField("Palette",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.GetValue(null)!;
+        var indices=Enumerable.Range(0,256).Select(i=>(byte)i).ToArray();
+        var known=Enumerable.Range(0,256).Select(i=>(i%3)!=0).ToArray();
+        var expected=new byte[indices.Length*4+4];Array.Fill(expected,(byte)0xa5);
+        var actual=(byte[])expected.Clone();
+        for(int i=0;i<indices.Length;i++)System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(
+            expected.AsSpan(i*4),known[i]?palette[indices[i]&15]:0U);
+        RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services.EmulatorCore.ConvertVideoPixels(indices,known,actual);
+        Assert.Equal(expected,actual);
+        RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services.EmulatorCore.ConvertVideoPixels([],[],actual);
+        Assert.Equal(expected,actual);
+    }
+
+    [Fact]
+    public void ProfilingRepeatabilityMeasuresBetweenRunsRatherThanTreatingFramesAsIndependent()
+    {
+        var stable=Sg1000Profiling.SummarizeRepetitions([100,100,100,100,100],[99,100,101,102,98]);
+        Assert.Equal(5,stable.Repetitions);Assert.Equal(0,stable.StandardDeviationMs);
+        Assert.Equal(0,stable.CoefficientVariationPercent);Assert.Equal(0,stable.MedianAbsoluteDeviationMs);
+        Assert.Equal(new double[]{99,100,101,102,98},stable.RunMediansMs);
+        var spread=Sg1000Profiling.SummarizeRepetitions([98,99,100,101,102],[98,99,100,101,102]);
+        Assert.Equal(100,spread.MeanMs);Assert.Equal(98,spread.MinimumRunMeanMs);Assert.Equal(102,spread.MaximumRunMeanMs);
+        Assert.Equal(Math.Sqrt(2.5),spread.StandardDeviationMs,10);Assert.Equal(1,spread.MedianAbsoluteDeviationMs);
+        Assert.Throws<ArgumentException>(()=>Sg1000Profiling.SummarizeRepetitions([],[]));
+        Assert.Throws<ArgumentException>(()=>Sg1000Profiling.SummarizeRepetitions([double.NaN],[1]));
+    }
+
+    [Fact]
+    public void ProfilingComparisonCannotDeclareCausalGainFromSingleRunsOrSameBinary()
+    {
+        var runs=Sg1000Profiling.SummarizeRepetitions([100,100,100,100,100],[100,100,100,100,100]);
+        Assert.Equal("IncomparableTimingPolicy",Sg1000Profiling.AssessPerformance(false,"default-tiering","tiering-disabled",runs,runs));
+        Assert.Equal("SameBinaryRepeatabilityControl",Sg1000Profiling.AssessPerformance(true,"x","x",runs,runs));
+        Assert.Equal("IncompleteBinaryIdentity",Sg1000Profiling.AssessPerformance(true,"x","x",runs,runs,false));
+        Assert.Equal("InsufficientRepetitions",Sg1000Profiling.AssessPerformance(false,"x","x",null,runs));
+        Assert.Equal("UnpairedSeriesNoCausalConclusion",Sg1000Profiling.AssessPerformance(false,"x","x",runs,runs));
+    }
+
+    [Fact]
     public void CpuProgramUsesRealRamVramSoundControllersAndPauseWiring()
     {
         Sg1000Board? board = null;
