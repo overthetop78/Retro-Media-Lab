@@ -39,6 +39,27 @@ using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Models;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Enums;
 
+using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Interfaces;
+using EmuZ80 = RetroMediaLab.Chips.EmuChip.CPU.Zilog.Z80.Z80.Services.EmuZ80;
+using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Interfaces;
+using EmuTms9918A = RetroMediaLab.Chips.EmuChip.Video.TexasInstruments.TMS99xx.TMS9918A.Services.EmuTms9918A;
+using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Interfaces;
+using EmuSn76489 = RetroMediaLab.Chips.EmuChip.Audio.TexasInstruments.SN764xx.SN76489.Services.EmuSn76489;
+using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Interfaces;
+using EmuSn74Ls139 = RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS139.Services.EmuSn74Ls139;
+using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Interfaces;
+using EmuSn74Ls32 = RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS32.Services.EmuSn74Ls32;
+using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Interfaces;
+using EmuSn74Ls257 = RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS257.Services.EmuSn74Ls257;
+using RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Interfaces;
+using EmuMb8118 = RetroMediaLab.Chips.EmuChip.Memory.Fujitsu.MB81xx.MB8118.Services.EmuMb8118;
+using RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2009.Interfaces;
+using EmuTmm2009 = RetroMediaLab.Chips.EmuChip.Memory.Toshiba.TMM20xx.TMM2009.Services.EmuTmm2009;
+using RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2016.Interfaces;
+using EmuTmm2016 = RetroMediaLab.Chips.EmuChip.Memory.Toshiba.TMM20xx.TMM2016.Services.EmuTmm2016;
+using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Interfaces;
+using EmuTmm23256 = RetroMediaLab.Chips.EmuChip.Memory.Toshiba.TMM23xx.TMM23256.Services.EmuTmm23256;
+
 namespace RetroMediaLab.Chips.Tests.Performance;
 
 /// <summary>Explicit manual benchmark, not part of automatic correctness runs.
@@ -143,14 +164,51 @@ public static class Sg1000ChipEfficiency
             $"Benchmark errors={results.Count(r=>r.Error!=null)}; state mismatches={string.Join(',',mismatches)}. See {directory}");
     }
 
+    internal static void VerifyEmuCopies()
+    {
+        foreach (bool grouped in new[] { false, true })
+        {
+            Func<bool,Fixture>[] factories = [
+                emu=>Cpu(false,grouped,emu), emu=>Cpu(true,grouped,emu),
+                emu=>Logic(139,grouped,emu), emu=>Logic(32,grouped,emu), emu=>Logic(257,grouped,emu),
+                emu=>Ram2009(grouped,emu), emu=>Ram2016(Mb8464Profile.Grade15L,grouped,emu),
+                emu=>Ram2016(Upd4016Profile.Grade2,grouped,emu),
+                emu=>Rom(Upd23256AProfile.ActiveLow,grouped,emu),
+                emu=>Dram(1,grouped,emu), emu=>Dram(8,grouped,emu),
+                emu=>Video(grouped,emu), emu=>Audio(grouped,emu)];
+            foreach (var factory in factories)
+            {
+                Fixture? original=null,emulated=null;
+                try
+                {
+                    original=factory(false); emulated=factory(true);
+                    // Reuse the fixture's established activation window before
+                    // applying its signal-presence checks (notably PSG noise).
+                    original.Run(original.Batch*8); emulated.Run(emulated.Batch*8);
+                    foreach(int count in new[]{2048,1024,4096})
+                    {
+                        original.Run(count); emulated.Run(count);
+                        original.Check(); emulated.Check();
+                        Assert.Equal(original.Count(),emulated.Count());
+                        Assert.Equal(JsonSerializer.Serialize(original.State()),JsonSerializer.Serialize(emulated.State()));
+                    }
+                }
+                finally { try { emulated?.Cleanup(); } finally { original?.Cleanup(); } }
+            }
+        }
+    }
+
     private static string Route(bool grouped) => grouped ? "plages/source" : "broches/fronts";
     private static void Require(bool value,string reason) { if (!value) throw new InvalidOperationException(reason); }
     private static long CpuDate(long edge) => (long)((Int128)edge*3_000_000_000/21_477_270);
 
-    private static Fixture Cpu(bool nec,bool grouped)
+    private static Fixture Cpu(bool nec,bool grouped,bool emulated = false)
     {
-        var cpu = new CpuZ80(nec?Upd780C1Profile.Hardware:Z80HardwareProfile.ZilogNmos,
-            nec?Upd780C1Profile.Timing:Z80BusTiming.ZilogZ80AMaximum,new(){SP=0xe000},default,255);
+        ICpuZ80 cpu = emulated
+            ? new EmuZ80(nec?Upd780C1Profile.Hardware:Z80HardwareProfile.ZilogNmos,
+                nec?Upd780C1Profile.Timing:Z80BusTiming.ZilogZ80AMaximum,new(){SP=0xe000},default,255)
+            : new CpuZ80(nec?Upd780C1Profile.Hardware:Z80HardwareProfile.ZilogNmos,
+                nec?Upd780C1Profile.Timing:Z80BusTiming.ZilogZ80AMaximum,new(){SP=0xe000},default,255);
         byte[] memory = new byte[65536];
         byte[] program = [0x21,0,0xc0,0x7e,0xc6,0x17,0x77,0x23,0x7d,0xe6,0x3f,0x20,0xf6,0x18,0xf1];
         program.CopyTo(memory,0);
@@ -181,28 +239,28 @@ public static class Sg1000ChipEfficiency
             ()=>{cpu.PinsChanged=null;cpu.NextEventNanosecondsChanged=null;});
     }
 
-    private static Fixture Logic(int type,bool grouped)
+    private static Fixture Logic(int type,bool grouped,bool emulated = false)
     {
         Action<ushort> set;Action<long> advance;Func<object> state;Action cleanup;LogicRun run;
         long signals=0,words=0,time=0;
         int mask;
         if(type==139)
         {
-            var c=new Sn74Ls139(Sn74Ls139Timing.CharacterizedMaximum);mask=63;
+            ISn74Ls139 c=emulated?new EmuSn74Ls139(Sn74Ls139Timing.CharacterizedMaximum):new Sn74Ls139(Sn74Ls139Timing.CharacterizedMaximum);mask=63;
             set=v=>c.SetInputs((byte)v,63);advance=c.AdvanceTo;state=()=>c.CaptureState();run=c.ExecuteInputRange;
             if(!grouped)c.OutputChanged=(_,_)=>signals++;
             cleanup=()=>{c.OutputChanged=null;c.NextEventNanosecondsChanged=null;};
         }
         else if(type==257)
         {
-            var c=new Sn74Ls257(Sn74Ls257Timing.CharacterizedMaximum);mask=1023;
+            ISn74Ls257 c=emulated?new EmuSn74Ls257(Sn74Ls257Timing.CharacterizedMaximum):new Sn74Ls257(Sn74Ls257Timing.CharacterizedMaximum);mask=1023;
             set=v=>c.SetInputs(v,1023);advance=c.AdvanceTo;state=()=>c.CaptureState();run=c.ExecuteInputRange;
             if(!grouped)c.OutputChanged=(_,_)=>signals++;
             cleanup=()=>{c.OutputChanged=null;c.NextEventNanosecondsChanged=null;};
         }
         else
         {
-            var c=new Sn74Ls32(Sn74Ls32Timing.CharacterizedMaximum);mask=255;
+            ISn74Ls32 c=emulated?new EmuSn74Ls32(Sn74Ls32Timing.CharacterizedMaximum):new Sn74Ls32(Sn74Ls32Timing.CharacterizedMaximum);mask=255;
             set=v=>c.SetInputs((byte)((v&1)|((v>>1)&2)|((v>>2)&4)|((v>>3)&8)),15,
                 (byte)(((v>>1)&1)|((v>>2)&2)|((v>>3)&4)|((v>>4)&8)),15);
             advance=c.AdvanceTo;state=()=>c.CaptureState();run=c.ExecuteInputRange;
@@ -234,9 +292,9 @@ public static class Sg1000ChipEfficiency
             ()=>new(units,time,signals),state,check,cleanup);
     }
 
-    private static Fixture Ram2009(bool grouped)
+    private static Fixture Ram2009(bool grouped,bool emulated = false)
     {
-        var c=new Tmm2009(false);byte last=0;
+        ITmm2009 c=emulated?new EmuTmm2009(false):new Tmm2009(false);byte last=0;
         return Memory<Tmm2009Pins,Tmm2009Output>("TMM2009 non caractérisée",
             "1K; quatre changements par paire écriture/lecture, 1 µs entre phases. 1 paire = 2 accès. Délais électriques inconnus, aucune fréquence matérielle déduite.",grouped,4,4096,
             (i,t,p)=>{last=(byte)i;return new((ushort)(i&1023),true,false,false,p!=3,p!=1,last,255);},
@@ -245,9 +303,9 @@ public static class Sg1000ChipEfficiency
             ()=>c.OutputChanged=null,notify=>c.OutputChanged=_=>notify());
     }
 
-    private static Fixture Ram2016(Tmm2016Timing timing,bool grouped)
+    private static Fixture Ram2016(Tmm2016Timing timing,bool grouped,bool emulated = false)
     {
-        var c=new Tmm2016(timing);byte last=0;
+        ITmm2016 c=emulated?new EmuTmm2016(timing):new Tmm2016(timing);byte last=0;
         return Memory<Tmm2016Pins,Tmm2016Output>($"SRAM {timing.Id}",
             "Profil du montage; cinq phases, 1 µs entre phases, désélection après écriture puis relecture. 1 paire = 2 accès. Sorties comptées.",grouped,5,4096,
             (i,t,p)=>{last=(byte)i;return new((ushort)(i&(timing.Capacity-1)),true,p is 0 or 3,p!=4,p!=2,last,255,true);},
@@ -256,10 +314,10 @@ public static class Sg1000ChipEfficiency
             ()=>{c.OutputChanged=null;c.NextEventNanosecondsChanged=null;},notify=>c.OutputChanged=_=>notify());
     }
 
-    private static Fixture Rom(Tmm23256Timing timing,bool grouped)
+    private static Fixture Rom(Tmm23256Timing timing,bool grouped,bool emulated = false)
     {
         var bytes=Enumerable.Range(0,timing.Capacity).Select(i=>(byte)(i*13)).ToArray();
-        var c=new Tmm23256(bytes,timing);byte last=0;
+        ITmm23256 c=emulated?new EmuTmm23256(bytes,timing):new Tmm23256(bytes,timing);byte last=0;
         return Memory<Tmm23256Pins,Tmm23256Output>($"ROM {timing.Id}",
             "Profil utilisé par le montage; trois phases CE/OE, pas de 1 µs, adresses variables. ROM initialisée hors mesure; sorties comptées. Profils unqualified sans preuve de grade physique.",grouped,3,4096,
             (i,t,p)=>{ushort a=(ushort)(i&(timing.Capacity-1));last=bytes[a];return new(a,true,p==0,p!=2);},
@@ -268,9 +326,9 @@ public static class Sg1000ChipEfficiency
             ()=>{c.OutputChanged=null;c.NextEventNanosecondsChanged=null;},notify=>c.OutputChanged=_=>notify());
     }
 
-    private static Fixture Dram(int owners,bool grouped)
+    private static Fixture Dram(int owners,bool grouped,bool emulated = false)
     {
-        var chips=Enumerable.Range(0,owners).Select(_=>new Mb8118(Mb8118Timing.Speed12)).ToArray();
+        IMb8118[] chips=Enumerable.Range(0,owners).Select(_=>emulated?(IMb8118)new EmuMb8118(Mb8118Timing.Speed12):new Mb8118(Mb8118Timing.Speed12)).ToArray();
         long time=200_010,units=0,signals=0;
         foreach(var c in chips)
         {
@@ -295,10 +353,11 @@ public static class Sg1000ChipEfficiency
             ()=>{foreach(var c in chips){c.OutputChanged=null;c.NextEventNanosecondsChanged=null;}});
     }
 
-    private static Fixture Video(bool grouped)
+    private static Fixture Video(bool grouped,bool emulated = false)
     {
-        var c=new Tms9918A(new(new(0,0xc0,6,0x80,0,0x7e,7,0xe3),0,default,
-            new(null,0,Tms9918CpuVramOperation.None,false),new(0,true,true,true,true)),Tms9918CpuTiming.SpecifiedMaximum);
+        var initial=new Tms9918InitialState(new(0,0xc0,6,0x80,0,0x7e,7,0xe3),0,default,
+            new(null,0,Tms9918CpuVramOperation.None,false),new(0,true,true,true,true));
+        ITms9918A c=emulated?new EmuTms9918A(initial,Tms9918CpuTiming.SpecifiedMaximum):new Tms9918A(initial,Tms9918CpuTiming.SpecifiedMaximum);
         long edge=1,signals=0;ulong pixels=0;
         c.SetVramReadData(0,0,true);c.VideoSignalProduced=v=>{signals++;pixels=unchecked(pixels*31+(ulong)v.GetHashCode());};
         long Date(long e)=>(long)((Int128)e*1_000_000_000/21_477_270);
@@ -312,9 +371,9 @@ public static class Sg1000ChipEfficiency
             ()=>c.VideoSignalProduced=null);
     }
 
-    private static Fixture Audio(bool grouped)
+    private static Fixture Audio(bool grouped,bool emulated = false)
     {
-        var c=new Sn76489(150);long time=0,signals=0;
+        ISn76489 c=emulated?new EmuSn76489(150):new Sn76489(150);long time=0,signals=0;
         c.ReceiveClockSource(new(0,3_000_000_000,21_477_270,1,true));
         foreach(byte command in new byte[]{0x84,0x02,0x90,0xa6,0x01,0xb0,0xc8,0x03,0xd0,0xe4,0xf0})
         {c.SetBus(time,command,true,true);c.AdvanceTo(time+20_000);c.SetBus(time+20_000,command,false,false);c.AdvanceTo(time+22_000);time+=22_000;}
@@ -1002,4 +1061,11 @@ public sealed class VdpClockBoundaryTests
             }
         }
     }
+}
+
+public sealed class EmuChipEquivalenceTests
+{
+    [Fact]
+    public void EverySg1000OwnerPreservesTheOriginalStateAndSignals()
+        => Sg1000ChipEfficiency.VerifyEmuCopies();
 }

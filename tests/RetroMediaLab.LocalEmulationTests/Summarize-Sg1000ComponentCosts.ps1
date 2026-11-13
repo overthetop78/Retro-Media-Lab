@@ -84,7 +84,7 @@ if ($PairedManifest) {
 if(!$Report -and !$WindowsStackCsv){throw 'Report, PairedManifest or WindowsStackCsv is required.'}
 function Component([string]$Name) {
     # Parameter types are not owners: a wiring method can take a CPU contract.
-    $owner=($Name -split '\(',2)[0]
+    $owner=(($Name -split '\(',2)[0]).Replace('Chips.EmuChip.','Chips.')
     if($owner.Contains('Chips.Memory.Fujitsu.MB81xx.MB8118.')) { return 'DRAM MB8118' }
     if($owner.Contains('Chips.CPU.')) { return 'CPU' }
     if($owner.Contains('Chips.Video.')) { return 'VDP' }

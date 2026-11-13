@@ -1024,3 +1024,66 @@ La seule correction indépendante conservée concerne un abonnement CPUCLK/GROMC
 Conséquence pour le prochain lot : une vraie séquence doit calculer les effets de plusieurs positions, et non déplacer la boucle de pixels dans un helper. Le pipeline de fond possède des octets actifs distincts de ses octets en préparation; les sorties sprites lisent quatre lignes actives, avec des sorties préparatoires distinctes après dot310 et des collisions à dater. La représentation doit donc séparer les travaux de préchargement réellement imposés et les sorties calculables depuis ces registres, avec restitution de PixelPosition et des flags à toute observation. Ces pistes ne sont pas encore implémentées et aucun gain n’en est annoncé.
 
 Après retrait,23contrôles composants et6machine passent dans chaque configuration. Captures sous RasterRanges-20261113/AfterRemoval-Machine-Debug et Release, et artifacts/TestsChips/TMS9918A/SG1000/RasterRanges-20261113/AfterRemoval-Debug et Release. Les quatre copies compilées O/O2 et leur parent vide sont supprimés séparément; rapports conservés. Les copies N sont les seules références temporaires encore utiles.
+
+## 13 novembre2026 — Candidat P rejeté après calcul raster vectoriel
+
+P remplaçait effectivement plusieurs calculs de pixels par un calcul de masques : fond, quatre canaux sprites, priorités, connaissances et collisions. Les programmes VRAM et huit DRAM distinctes restaient conservés. Le consommateur vidéo empruntait les plans de sortie, détachés dans finally. Il n'y avait aucun tableau de VRAM de substitution.
+
+Par image :89604échantillons physiques conservés,43324calculs raster,33800groupes,80080pixels groupés, soit46280calculs unitaires retirés. Les groupes ne contenaient en moyenne que2,37pixels; les fetchs et interactions continuaient de les borner. Les visites du pilote maître tombaient d'environ123140à76860. Ces comptes ne prouvent aucun gain de temps.
+
+Deux blocs ABBA par configuration,8images après2d'échauffement et deux répétitions natives amorcées :
+
+| Configuration | Jeu | N ms/image | P ms/image | Réduction de durée |
+|---|---|---:|---:|---:|
+| Debug | Castle, The (Japan) | 196.481 | 187.908 | 4.36 % |
+| Debug | Champion Tennis (Japan) | 172.130 | 169.805 | 1.35 % |
+| Debug | Girl's Garden (Japan) | 172.764 | 173.990 | -0.71 % |
+| Release | Castle, The (Japan) | 28.286 | 27.355 | 3.29 % |
+| Release | Champion Tennis (Japan) | 25.405 | 24.136 | 4.99 % |
+| Release | Girl's Garden (Japan) | 26.041 | 26.981 | -3.61 % |
+
+Aucun gain cohérent sur les trois ROM : Garden régresse dans les deux blocs Debug et Release; Champion Release varie de0,06à9,51 % entre blocs. Les768observations ABBA et96états finaux concordent, avec vidéo et PCM. Cela qualifie les scénarios comparés et ne prouve pas une conformité matérielle exhaustive.
+
+### Coût propre de la préparation et de la production
+
+Le profil complet P est conservé dans EventPipe-P-Summary. Les profils sont24images après12d'échauffement. Pour distinguer les coûts, une décomposition diagnostique supplémentaire a isolé TryPrepareRasterRun (critères, bornes, nombre de pixels) de TryProduceRasterRun (calculs, compteurs, sortie et commit). Elle ne change aucun algorithme, mais change le binaire; ses durées ne servent donc pas à chiffrer le gain natif N/P. Résultats dans EventPipe-Split-Summary et les traces associées.
+
+| Debug | Préparation propre/inclusive ms/image | Production propre/inclusive ms/image |
+|---|---:|---:|
+| Castle, The (Japan) | 1.65 / 2.61 | 3.22 / 8.42 |
+| Champion Tennis (Japan) | 1.94 / 3.88 | 3.95 / 10.42 |
+| Girl's Garden (Japan) | 1.29 / 2.18 | 1.88 / 6.83 |
+
+L'inclusif de production comprend la préparation et d'autres descendants : ne pas additionner les inclusifs. Ce sont des durées échantillonnées de passes profilées, pas des chronométrages natifs séparés. En Release, TryPrepareRasterRun n'apparaît pas comme cadre séparé : l'inlining empêche cette attribution. Son absence ne signifie pas coût nul. La granularité des échantillons et les petits nombres d'occurrences limitent la précision; aucune causalité à une fraction de milliseconde n'est annoncée.
+
+Le poids propre VDP P Debug est14,03–15,99 %. Câblage + logique + autres mémoires représentent58,82–63,13 % du temps échantillonné. Même supprimer tout le coût du VDP n'apporterait donc pas le facteur nécessaire à l'objectif Debug. Le nombre de pixels a baissé, mais la préparation répétée de groupes courts et les coûts ailleurs dans la machine subsistent.
+
+P et la décomposition diagnostique sont intégralement retirés : aucun moteur désactivé, API ou test dépendant conservé. Après retrait,23contrôles composants et6machine passent par configuration. Les quatre copies compilées P et leur parent vide sont supprimés séparément; rapports et profils conservés. Les scénarios longs supplémentaires sont annulés pour ce candidat rejeté. Le code de référence reste ccad94dab; aucune amélioration de vitesse n'est retenue dans P.
+
+
+## 13 novembre2026 — Séparation EmuChip explicitement autorisée
+
+L'utilisateur demande de conserver intégralement les puces existantes et de créer des implémentations Emu distinctes afin de pouvoir refondre leur exécution sans modifier les références. Il autorise également le regroupement de plusieurs puces dans un composant Emu nommé en conséquence, seulement si un gain énorme est démontré. La fusion n'est ni obligatoire ni réalisée à ce stade. Cette décision autorise la coexistence des puces de référence et des implémentations Emu; elle ne réintroduit aucun sélecteur d'ancien moteur dans la machine.
+
+Les62fichiers de services sont copiés sous src/RetroMediaLab.Chips/EmuChip, avec espaces de noms séparés et propriétaires EmuZ80, EmuTms9918A, EmuSn76489, EmuSn74Ls139/32/257, EmuMb8118, EmuTmm2009, EmuTmm2016 et EmuTmm23256. Le port EmuMb8118ReadPort conserve ses huit propriétaires distincts. Les interfaces, contrats, enums, profils matériels et formats d'état existants sont réutilisés. Le NEC conserve son profil dans l'unique moteur EmuZ80 commun aux variantes; aucune particularité NEC n'est déplacée vers le Zilog original. Les aides propres aux services copiés vivent dans leur nouvel espace de noms; les services génériques communs actuellement inchangés restent réutilisés.
+
+Sg1000Board, son raccordement ROM et ses connexions VRAM utilisent les nouveaux propriétaires dans le parcours normal. Les autres machines et les tests de puces historiques conservent leurs composants actuels. Une vérification git diff des arbres CPU/Video/Audio/Logic/Memory originaux confirme qu'aucun fichier original de puce n'est modifié.
+
+Cette étape est une isolation de code, pas une optimisation : EmuZ80 possède encore le même décodeur, le même séquenceur et la même progression temporelle que CpuZ80. La structure similaire est volontaire pour établir une référence de départ; aucun moteur différent ni gain de vitesse n'est annoncé. Les prochaines refontes peuvent changer intégralement l'exécution des seules variantes Emu. Toute fusion devra satisfaire le critère de gain demandé et les comparaisons matérielles avant rétention.
+
+### Vérifications de la séparation
+
+Le banc existant Sg1000ChipEfficiency accepte maintenant les deux propriétaires à travers leurs interfaces communes. Il confronte les CPU Zilog/NEC, les trois composants logiques, les SRAM, ROM, DRAM à un/huit propriétaires, le VDP et le PSG sur les parcours scalaires et groupés. Les mêmes stimuli, états complets capturés et comptes de temps/signaux sont comparés à trois points par scénario, soit78comparaisons. Les deux objets sont libérés/détachés dans finally. Aucun nouveau fichier ou projet de tests.
+
+Vingt-quatre contrôles composants ciblés et six contrôles machine passent dans chaque configuration. Preuves sous artifacts/TestsChips/EmuChip/SG1000/20261113 et artifacts/TestsMachines/Sega/SG1000/EmuChip-20261113. Les six scénarios longs de120images après30d'échauffement confrontent la machine Emu aux rapports N existants :720observations natives/images/PCM égales et six états complets finaux égaux. Les états complets ne sont pas capturés à chaque image de ce banc; les observations intermédiaires comprennent ses champs natifs documentés.
+
+| Configuration | ROM | Durée moyenne descriptive ms/image |
+|---|---|---:|
+| Debug | Castle, The (Japan) | 264.868 |
+| Debug | Champion Tennis (Japan) | 222.580 |
+| Debug | Girl's Garden (Japan) | 220.414 |
+| Release | Castle, The (Japan) | 35.180 |
+| Release | Champion Tennis (Japan) | 29.289 |
+| Release | Girl's Garden (Japan) | 29.445 |
+
+Ces durées ne sont pas une comparaison appariée : aucun gain causal n'en est déduit. La copie ne résout pas la lenteur de la machine; le temps réel Debug reste largement à atteindre. Le profilage conserve les noms exacts EmuChip dans ses méthodes, mais les classe dans les mêmes postes CPU/VDP/DRAM/etc. pour les futures comparaisons.

@@ -326,7 +326,7 @@ internal static class Sg1000Profiling
     private static string Group(string name)
     {
         int signature = name.IndexOf('(');
-        string owner = signature < 0 ? name : name[..signature];
+        string owner = (signature < 0 ? name : name[..signature]).Replace("Chips.EmuChip.", "Chips.", StringComparison.Ordinal);
         return owner.Contains("Chips.CPU.", StringComparison.Ordinal) ? "CPU"
             : owner.Contains("Chips.Video.", StringComparison.Ordinal) ? "VDP"
             : owner.Contains("Chips.Memory.", StringComparison.Ordinal) ? "Memory"

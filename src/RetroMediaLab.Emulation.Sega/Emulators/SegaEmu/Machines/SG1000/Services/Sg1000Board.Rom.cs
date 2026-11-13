@@ -2,10 +2,10 @@ using System.Security.Cryptography;
 using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Contracts;
 using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Enums;
 using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Models;
-using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Services;
+using RetroMediaLab.Chips.EmuChip.Memory.Toshiba.TMM23xx.TMM23256.Services;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Contracts;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Enums;
-using RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2016.Services;
+using RetroMediaLab.Chips.EmuChip.Memory.Toshiba.TMM20xx.TMM2016.Services;
 using RetroMediaLab.Chips.Memory.Fujitsu.MB84xx.MB8464.Models;
 using RetroMediaLab.Chips.Memory.NEC.UPD40xx.UPD4016.Models;
 using RetroMediaLab.Chips.Memory.NEC.UPD23xx.UPD23256A.Models;
@@ -17,8 +17,8 @@ internal sealed partial class Sg1000Board
     private Sg1000RomConfiguration _romConfiguration;
     private readonly byte[] _internalGame, _internalGameHash;
     private byte[] _cartridgeHash;
-    private Tmm23256? _cartridgeLow, _cartridgeHigh, _internalRom;
-    private Tmm2016? _cartridgeRam;
+    private EmuTmm23256? _cartridgeLow, _cartridgeHigh, _internalRom;
+    private EmuTmm2016? _cartridgeRam;
     private int _cartridgeLowMask, _cartridgeHighMask;
     private long _cartridgeOrigin;
 
@@ -30,7 +30,7 @@ internal sealed partial class Sg1000Board
         $"unidentified-static-parallel-ROM-{capacity}",0,0,0,0,0,0,0,0,0,
         Tmm23256OutputEnableMode.ActiveLow,false,capacity:capacity,electricallyCharacterized:false);
 
-    private static Tmm23256 CreateRom(ReadOnlySpan<byte> contents,Tmm23256Timing? profile,bool internalGame = false)
+    private static EmuTmm23256 CreateRom(ReadOnlySpan<byte> contents,Tmm23256Timing? profile,bool internalGame = false)
     {
         var timing = profile ?? LogicalRom(contents.Length);
         if (timing.OeMode != Tmm23256OutputEnableMode.ActiveLow
@@ -39,7 +39,7 @@ internal sealed partial class Sg1000Board
         return new(contents,timing);
     }
 
-    private static (Tmm23256? Low,Tmm23256? High,int LowMask,int HighMask,Tmm2016? Ram) CreateCartridge(
+    private static (EmuTmm23256? Low,EmuTmm23256? High,int LowMask,int HighMask,EmuTmm2016? Ram) CreateCartridge(
         ReadOnlySpan<byte> image,Sg1000RomConfiguration configuration)
     {
         if (!Enum.IsDefined(configuration.CartridgeLayout)) throw new ArgumentException(nameof(configuration));
@@ -65,7 +65,7 @@ internal sealed partial class Sg1000Board
             low = image[..Math.Min(image.Length,32768)];
             high = image.Length == 49152 ? image[32768..] : default;
         }
-        Tmm2016? ram = configuration.CartridgeLayout switch
+        EmuTmm2016? ram = configuration.CartridgeLayout switch
         {
             Sg1000CartridgeLayout.TheCastle => new(Mb8464Profile.Grade15L),
             Sg1000CartridgeLayout.Othello => new(Upd4016Profile.Grade2),

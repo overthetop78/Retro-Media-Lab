@@ -1,7 +1,7 @@
 using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Contracts;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts;
-using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
+using RetroMediaLab.Chips.EmuChip.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Services;
 

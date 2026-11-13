@@ -1,22 +1,22 @@
-using RetroMediaLab.Chips.Audio.TexasInstruments.SN764xx.SN76489.Services;
+using RetroMediaLab.Chips.EmuChip.Audio.TexasInstruments.SN764xx.SN76489.Services;
 using RetroMediaLab.Chips.CPU.NEC.UPD780C.UPD780C1.Models;
-using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Services;
+using RetroMediaLab.Chips.EmuChip.CPU.Zilog.Z80.Z80.Services;
 using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Models;
-using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Services;
+using RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS139.Services;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Models;
-using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Services;
+using RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS257.Services;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Models;
-using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Services;
+using RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS32.Services;
 using RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Models;
-using RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Services;
-using RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2009.Services;
+using RetroMediaLab.Chips.EmuChip.Memory.Fujitsu.MB81xx.MB8118.Services;
+using RetroMediaLab.Chips.EmuChip.Memory.Toshiba.TMM20xx.TMM2009.Services;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Models;
-using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
+using RetroMediaLab.Chips.EmuChip.Video.TexasInstruments.TMS99xx.TMS9918A.Services;
 using C = RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Constants.Sg1000Constants;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Contracts;
-using RetroMediaLab.Chips.Memory.Toshiba.TMM23xx.TMM23256.Services;
+using RetroMediaLab.Chips.EmuChip.Memory.Toshiba.TMM23xx.TMM23256.Services;
 using System.Security.Cryptography;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Services;
@@ -25,27 +25,27 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Service
 internal sealed partial class Sg1000Board : IDisposable
 {
     private byte[] _rom;
-    private readonly CpuZ80 _cpu = new(Upd780C1Profile.Hardware, Upd780C1Profile.Timing,
+    private readonly EmuZ80 _cpu = new(Upd780C1Profile.Hardware, Upd780C1Profile.Timing,
         new() { SP = 0xffff }, default, 0xff);
-    private readonly Tms9918A _vdp = new(new(default, 0, default, new(null, 0,
+    private readonly EmuTms9918A _vdp = new(new(default, 0, default, new(null, 0,
         RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Enums.Tms9918CpuVramOperation.None, false),
         new(0, true, true, true, true)), Tms9918CpuTiming.SpecifiedMaximum);
-    private readonly Sn76489 _psg = new(150);
-    private readonly Sn74Ls139 _decoder = new(Sn74Ls139Timing.CharacterizedMaximum);
-    private readonly Sn74Ls32 _gates = new(Sn74Ls32Timing.CharacterizedMaximum);
-    private readonly Sn74Ls257[] _joy = [new(Sn74Ls257Timing.CharacterizedMaximum), new(Sn74Ls257Timing.CharacterizedMaximum)];
-    private readonly Tmm2009 _ram = new(false);
-    private readonly Mb8118[] _dram = Enumerable.Range(0, 8).Select(_ => new Mb8118(Mb8118Timing.Speed12)).ToArray();
-    private Mb8118ReadPort? _dramReadPort;
+    private readonly EmuSn76489 _psg = new(150);
+    private readonly EmuSn74Ls139 _decoder = new(Sn74Ls139Timing.CharacterizedMaximum);
+    private readonly EmuSn74Ls32 _gates = new(Sn74Ls32Timing.CharacterizedMaximum);
+    private readonly EmuSn74Ls257[] _joy = [new(Sn74Ls257Timing.CharacterizedMaximum), new(Sn74Ls257Timing.CharacterizedMaximum)];
+    private readonly EmuTmm2009 _ram = new(false);
+    private readonly EmuMb8118[] _dram = Enumerable.Range(0, 8).Select(_ => new EmuMb8118(Mb8118Timing.Speed12)).ToArray();
+    private EmuMb8118ReadPort? _dramReadPort;
     private ushort _pressed;
     private byte _muxContactLow = 255, _muxContactHigh = 255;
     private bool _disposed, _pause, _masterHigh;
     private long _nextMasterIndex = 1;
     private bool _vdpReleased, _cpuReleased;
     public long TimeNanoseconds { get; private set; }
-    public CpuZ80 Cpu => _cpu;
-    public Tms9918A Vdp => _vdp;
-    public Sn76489 Psg => _psg;
+    public EmuZ80 Cpu => _cpu;
+    public EmuTms9918A Vdp => _vdp;
+    public EmuSn76489 Psg => _psg;
     public bool DataBusKnown { get; private set; }
 
     public Sg1000Board(ReadOnlySpan<byte> cartridge, bool powerUp = true,
