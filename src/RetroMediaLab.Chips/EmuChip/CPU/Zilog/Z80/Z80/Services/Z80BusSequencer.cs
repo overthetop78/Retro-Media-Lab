@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
 using System.Numerics;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Contracts;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Enums;
@@ -35,11 +36,13 @@ internal sealed class Z80BusSequencer
     private bool _nextDirty;
     private uint _pending;
     private long _executionBoundary = long.MaxValue;
-    private TimedZ80BusPins[]? _rangeChanges;
+    private EmuSignalWord[]? _rangeChanges;
+    private TimedZ80BusPins[]? _compatibleRangeChanges;
+    private EmuSignalRangeHandler? _nativeRangeReceiver;
     private bool _capturingRange;
     private int _rangeChangeCount;
     private long _rangeStart;
-    private Z80BusPins _rangeInitial;
+    private ulong _rangeInitial;
     private Z80BusRangeHandler? _rangeReceiver;
     private bool _rangeDelivered;
     private long _waitStableBefore, _controlStableBefore, _waitOutputsSettled, _controlOutputsSettled;
@@ -130,21 +133,23 @@ internal sealed class Z80BusSequencer
     internal Action<long?>? NextEventNanosecondsChanged { get; set; }
     internal long? PublishedNextEventNanoseconds => _publishedNext == long.MaxValue ? null : _publishedNext;
     internal Z80BusPins Pins => new(_levels);
+    internal ulong PackedPins => _levels;
 
     internal int RangeChangeCount => _rangeChangeCount;
 
-    internal void BeginRangeCapture(Z80BusRangeHandler receiver)
+    internal void BeginRangeCapture(Z80BusRangeHandler? receiver, EmuSignalRangeHandler? nativeReceiver)
     {
         if (_capturingRange || _publishing || PinsChanged is not null || NextEventNanosecondsChanged is not null)
             throw new InvalidOperationException("Range delivery requires exclusive ownership of bus output transport.");
-        _rangeChanges ??= new TimedZ80BusPins[128];
+        _rangeChanges ??= new EmuSignalWord[128];
         _rangeStart = TimeNanoseconds;
-        _rangeInitial = Pins;
+        _rangeInitial = _levels;
         _rangeChangeCount = 0;
         _rangeDelivered = false;
         _waitStableBefore = _controlStableBefore = 0;
         _capturingRange = true;
         _rangeReceiver = receiver;
+        _nativeRangeReceiver = nativeReceiver;
     }
 
     internal void ExchangeRangeInputs()
@@ -152,17 +157,32 @@ internal sealed class Z80BusSequencer
         if (!_capturingRange) return;
         if (_rangeDelivered && _rangeChangeCount == 0 && _rangeStart == TimeNanoseconds) return;
         _rangeDelivered = true;
-        var result = new Z80BusRange(_rangeStart, TimeNanoseconds, _rangeInitial,
-            _rangeChanges.AsSpan(0, _rangeChangeCount));
+        var words = _rangeChanges.AsSpan(0, _rangeChangeCount);
+        long start = _rangeStart;
+        ulong initial = _rangeInitial;
         _rangeStart = TimeNanoseconds;
-        _rangeInitial = Pins;
+        _rangeInitial = _levels;
         _rangeChangeCount = 0;
         _publishing = true;
-        try { _rangeReceiver!(in result); }
+        try
+        {
+            if (_nativeRangeReceiver is { } native)
+            {
+                var range = new EmuSignalRange(start, TimeNanoseconds, initial, words);
+                native(in range);
+            }
+            else
+            {
+                _compatibleRangeChanges ??= new TimedZ80BusPins[128];
+                for (int i=0;i<words.Length;i++) _compatibleRangeChanges[i]=new(words[i].Time,new(words[i].Bits));
+                var range=new Z80BusRange(start,TimeNanoseconds,new(initial),_compatibleRangeChanges.AsSpan(0,words.Length));
+                _rangeReceiver!(in range);
+            }
+        }
         finally { _publishing = false; }
     }
 
-    internal void EndRangeCapture() { _capturingRange = false; _rangeReceiver = null; _rangeChangeCount = 0; }
+    internal void EndRangeCapture() { _capturingRange = false; _rangeReceiver = null; _nativeRangeReceiver = null; _rangeChangeCount = 0; }
 
     internal void SetData(byte data) => _inputData = data;
     internal void SetWait(bool asserted) => _waitAsserted = asserted;
@@ -448,7 +468,7 @@ internal sealed class Z80BusSequencer
             NextEventTimestamp = next;
             _nextDirty = false;
             if (_capturingRange && _levels != previousLevels)
-                _rangeChanges![_rangeChangeCount++] = new(TimeNanoseconds, new(_levels));
+                _rangeChanges![_rangeChangeCount++] = new(TimeNanoseconds, _levels);
             if (_levels != previousLevels && PinsChanged is { } listener)
             {
                 _publishing = true;

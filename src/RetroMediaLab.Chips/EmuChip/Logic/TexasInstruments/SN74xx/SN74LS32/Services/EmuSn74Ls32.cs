@@ -1,7 +1,8 @@
 using RetroMediaLab.Chips.Logic.Common.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Enums;
-using RetroMediaLab.Chips.Logic.Common.Services;
-using RetroMediaLab.Chips.Logic.Common.Interfaces;
+using RetroMediaLab.Chips.EmuChip.Logic.Common.Services;
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
+using RetroMediaLab.Chips.EmuChip.Logic.Common.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Models;
 using System.Numerics;
@@ -9,10 +10,10 @@ using System.Numerics;
 namespace RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS32.Services;
 
 /// <summary>Four independent positive OR gates, with no clock or reset.</summary>
-public sealed class EmuSn74Ls32 : ISn74Ls32, ICombinationalRangeModel
+public sealed class EmuSn74Ls32 : ISn74Ls32, IEmuCombinationalRangeModel
 {
     private const string Part = "SN74LS32";
-    private readonly CombinationalOutputs _pins = new(4);
+    private readonly EmuCombinationalOutputs _pins = new(4);
     private readonly long[] _timing;
     private byte _levels, _known;
     public EmuSn74Ls32(Sn74Ls32Timing timing)
@@ -60,13 +61,14 @@ public sealed class EmuSn74Ls32 : ISn74Ls32, ICombinationalRangeModel
     }
 
     public LogicOutputRange ExecuteInputRange(in LogicInputRange range) => _pins.ExecuteInputRange(in range, 255, this);
+    public EmuLogicResponse ExecuteProgram(in EmuSignalRange range) => _pins.ExecuteProgram(in range, 255, this);
 
-    bool ICombinationalRangeModel.PrepareRangeInput(in TimedLogicInput input, Span<long> delays, out ushort targets)
-        => PrepareInputs((byte)input.Levels, (byte)input.Known, delays, out targets);
+    bool IEmuCombinationalRangeModel.PrepareRangeInput(ulong input, Span<long> delays, out ushort targets)
+        => PrepareInputs((byte)(input & 0xffffffffUL), (byte)(input >> 32), delays, out targets);
 
-    void ICombinationalRangeModel.CommitRangeInput(in TimedLogicInput input)
+    void IEmuCombinationalRangeModel.CommitRangeInput(ulong input)
     {
-        _levels = (byte)(input.Levels & input.Known); _known = (byte)input.Known;
+        _levels = (byte)((input & 0xffffffffUL) & (input >> 32)); _known = (byte)(input >> 32);
     }
 
     private bool PrepareInputs(byte levels, byte known, Span<long> delays, out ushort targets)

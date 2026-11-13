@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
 using System.IO;
 using System.Diagnostics;
 using System.Reflection;
@@ -1068,4 +1069,134 @@ public sealed class EmuChipEquivalenceTests
     [Fact]
     public void EverySg1000OwnerPreservesTheOriginalStateAndSignals()
         => Sg1000ChipEfficiency.VerifyEmuCopies();
+
+    [Fact]
+    public void NativeProgramsRejectInvalidWordsBeforeChangingAnyOwner()
+    {
+        var ram=new EmuTmm2009(false);
+        var timedRam=new EmuTmm2016(Upd4016Profile.Grade2);
+        var rom=new EmuTmm23256(new byte[32768],Upd23256AProfile.ActiveLow);
+        var logic=new EmuSn74Ls257(Sn74Ls257Timing.CharacterizedMaximum);
+        string[] before=[JsonSerializer.Serialize(ram.CaptureState()),JsonSerializer.Serialize(timedRam.CaptureState()),
+            JsonSerializer.Serialize(rom.CaptureState()),JsonSerializer.Serialize(logic.CaptureState())];
+        EmuSignalWord[] backwards=[new(100,0),new(99,0)];
+        Assert.Throws<ArgumentOutOfRangeException>(()=>{var range=new EmuSignalRange(0,200,0,backwards);ram.ExecuteProgram(in range);});
+        Assert.Throws<ArgumentOutOfRangeException>(()=>{var range=new EmuSignalRange(0,200,0,backwards);timedRam.ExecuteProgram(in range);});
+        Assert.Throws<ArgumentOutOfRangeException>(()=>{var range=new EmuSignalRange(0,200,0,backwards);rom.ExecuteProgram(in range);});
+        Assert.Throws<ArgumentOutOfRangeException>(()=>{var range=new EmuSignalRange(0,200,0,backwards);logic.ExecuteProgram(in range);});
+        EmuSignalWord[] badMemory=[new(100,EmuMemoryPins.Encode(0,true,true,true,true,false)),new(100,1UL<<63)];
+        Assert.Throws<ArgumentOutOfRangeException>(()=>{var range=new EmuSignalRange(0,200,0,badMemory);ram.ExecuteProgram(in range);});
+        Assert.Throws<ArgumentOutOfRangeException>(()=>{var range=new EmuSignalRange(0,200,0,badMemory);timedRam.ExecuteProgram(in range);});
+        Assert.Throws<ArgumentOutOfRangeException>(()=>{var range=new EmuSignalRange(0,200,0,badMemory);rom.ExecuteProgram(in range);});
+        EmuSignalWord[] badLogic=[new(100,1023UL<<32),new(100,1UL<<63)];
+        Assert.Throws<ArgumentOutOfRangeException>(()=>{var range=new EmuSignalRange(0,200,0,badLogic);logic.ExecuteProgram(in range);});
+        Assert.Equal(before,new[]{JsonSerializer.Serialize(ram.CaptureState()),JsonSerializer.Serialize(timedRam.CaptureState()),
+            JsonSerializer.Serialize(rom.CaptureState()),JsonSerializer.Serialize(logic.CaptureState())});
+    }
+
+    private delegate LogicOutputRange OriginalLogic(in LogicInputRange range);
+    private delegate EmuLogicResponse NativeLogic(in EmuSignalRange range);
+    private delegate MemoryOutputRange<TOut> OriginalMemory<TIn,TOut>(in MemoryInputRange<TIn> range,bool history) where TIn:struct where TOut:struct;
+    private delegate EmuMemoryResponse NativeMemory(in EmuSignalRange range,bool history);
+
+    [Fact]
+    public void NativeLogicProgramsPreserveAllTernaryInputsAndOverlappingPropagations()
+    {
+        foreach(int spacing in new[]{3,1000})
+        foreach(int bits in new[]{6,8,10})
+        {
+            OriginalLogic original;NativeLogic native;Func<object> originalState,nativeState;
+            if(bits==6)
+            {
+                var a=new Sn74Ls139(Sn74Ls139Timing.CharacterizedMaximum);var b=new EmuSn74Ls139(Sn74Ls139Timing.CharacterizedMaximum);
+                original=a.ExecuteInputRange;native=b.ExecuteProgram;originalState=()=>a.CaptureState();nativeState=()=>b.CaptureState();
+            }
+            else if(bits==8)
+            {
+                var a=new Sn74Ls32(Sn74Ls32Timing.CharacterizedMaximum);var b=new EmuSn74Ls32(Sn74Ls32Timing.CharacterizedMaximum);
+                original=a.ExecuteInputRange;native=b.ExecuteProgram;originalState=()=>a.CaptureState();nativeState=()=>b.CaptureState();
+            }
+            else
+            {
+                var a=new Sn74Ls257(Sn74Ls257Timing.CharacterizedMaximum);var b=new EmuSn74Ls257(Sn74Ls257Timing.CharacterizedMaximum);
+                original=a.ExecuteInputRange;native=b.ExecuteProgram;originalState=()=>a.CaptureState();nativeState=()=>b.CaptureState();
+            }
+            int cases=(int)Math.Pow(3,bits);
+            var oldWords=new TimedLogicInput[128];var words=new EmuSignalWord[128];
+            for(int first=0;first<cases;first+=128)
+            {
+                int count=Math.Min(128,cases-first);
+                for(int i=0;i<count;i++)
+                {
+                    int value=first+i;ulong levels=0,known=0;
+                    for(int bit=0;bit<bits;bit++,value/=3)
+                    {int digit=value%3;if(digit!=0)known|=1UL<<bit;if(digit==2)levels|=1UL<<bit;}
+                    long time=(first+i)*(long)spacing;
+                    oldWords[i]=new(time,levels,known);words[i]=new(time,levels|known<<32);
+                }
+                long end=(first+count)*(long)spacing;
+                var oldRange=new LogicInputRange(oldWords.AsSpan(0,count),end);
+                var range=new EmuSignalRange(first*(long)spacing,end,0,words.AsSpan(0,count));
+                var a=original(in oldRange);var b=native(in range);
+                Assert.Equal(a.InitialLevels,b.Initial);Assert.Equal(a.NextEventNanoseconds,b.Next);Assert.Equal(a.Changes.Length,b.Words.Length);
+                for(int i=0;i<a.Changes.Length;i++)
+                {
+                    Assert.Equal(a.Changes[i].TimeNanoseconds,b.Words[i].Time);
+                    Assert.Equal((ulong)a.Changes[i].Levels|(ulong)a.Changes[i].ChangedPins<<16,b.Words[i].Bits);
+                }
+                Assert.Equal(JsonSerializer.Serialize(originalState()),JsonSerializer.Serialize(nativeState()));
+            }
+        }
+    }
+
+    private static void CompareNativeMemory<TIn,TOut>(Func<int,(TIn Pins,ulong Bits)> pins,
+        OriginalMemory<TIn,TOut> original,NativeMemory native,Func<object> oldState,Func<object> newState,
+        Func<TOut,uint> output,int spacing) where TIn:struct where TOut:struct
+    {
+        var oldWords=new TimedMemoryInput<TIn>[128];var words=new EmuSignalWord[128];
+        for(int first=0;first<2048;first+=128)
+        {
+            for(int i=0;i<128;i++)
+            {
+                var input=pins(first+i);long time=1_000_000+(first+i)/2*(long)spacing;
+                oldWords[i]=new(time,input.Pins);words[i]=new(time,input.Bits);
+            }
+            long start=words[0].Time,end=words[^1].Time+spacing;
+            var oldRange=new MemoryInputRange<TIn>(oldWords,end);var range=new EmuSignalRange(start,end,0,words);
+            var a=original(in oldRange,false);var b=native(in range,false);
+            Assert.Equal(a.ResponseCount,b.Responses);Assert.Equal(output(a.FinalOutput),b.Final);
+            Assert.Equal(a.NextEventNanoseconds,b.Next<0?null:b.Next);
+            Assert.Equal(JsonSerializer.Serialize(oldState()),JsonSerializer.Serialize(newState()));
+        }
+    }
+
+    [Fact]
+    public void NativeMemoryProgramsPreserveUnknownDataCoincidentInputsAndTimingViolations()
+    {
+        foreach(int spacing in new[]{3,1000})
+        {
+            static Tmm2009Pins MainPins(int i)=>new((ushort)(i*37&1023),i%11!=0,i%8 is 0 or 7,false,
+                i%8 is 0 or 1,i%8 is not (3 or 4),(byte)(i*13),(byte)(i%5==0?0:i%7==0?85:255));
+            var a=new Tmm2009(false);var b=new EmuTmm2009(false);a.AdvanceTo(1_000_000);b.AdvanceTo(1_000_000);
+            CompareNativeMemory<Tmm2009Pins,Tmm2009Output>(i=>{var p=MainPins(i);return(p,EmuMemoryPins.Encode(p.Address,p.AddressKnown,p.Ce1High,p.OutputEnableHigh,p.WriteHigh,p.Ce2High,p.Data,p.DataKnown));},
+                a.ExecuteInputRange,b.ExecuteProgram,()=>a.CaptureState(),()=>b.CaptureState(),
+                p=>(uint)p.Data|(uint)p.Known<<8|(p.Driven?0x10000u:0),spacing);
+            foreach(var timing in new[]{Upd4016Profile.Grade2,Mb8464Profile.Grade15L})
+            {
+                var c=new Tmm2016(timing);var d=new EmuTmm2016(timing);c.AdvanceTo(1_000_000);d.AdvanceTo(1_000_000);
+                CompareNativeMemory<Tmm2016Pins,Tmm2016Output>(i=>{var p=MainPins(i);var q=new Tmm2016Pins(p.Address,p.AddressKnown,p.Ce1High,p.OutputEnableHigh,p.WriteHigh,p.Data,p.DataKnown,true);
+                    return(q,EmuMemoryPins.Encode(q.Address,q.AddressKnown,q.CsHigh,q.OeHigh,q.WeHigh,q.Cs2High,q.Data,q.DataKnown));},
+                    c.ExecuteInputRange,d.ExecuteProgram,()=>c.CaptureState(),()=>d.CaptureState(),
+                    p=>(uint)p.Data|(uint)p.Known<<8|(p.Driven?0x10000u:0),spacing);
+            }
+            byte[] contents=Enumerable.Range(0,32768).Select(i=>(byte)(i*13)).ToArray();
+            var e=new Tmm23256(contents,Upd23256AProfile.ActiveLow);var f=new EmuTmm23256(contents,Upd23256AProfile.ActiveLow);
+            e.AdvanceTo(1_000_000);f.AdvanceTo(1_000_000);
+            CompareNativeMemory<Tmm23256Pins,Tmm23256Output>(i=>{var p=MainPins(i);var q=new Tmm23256Pins(p.Address,p.AddressKnown,p.Ce1High,p.OutputEnableHigh);
+                return(q,EmuMemoryPins.Encode(q.Address,q.AddressKnown,q.CeHigh,q.OeHigh,true,false));},
+                e.ExecuteInputRange,f.ExecuteProgram,()=>e.CaptureState(),()=>f.CaptureState(),
+                p=>(uint)p.Data|(p.Known?0xff00u:0)|(p.Driven?0x10000u:0),spacing);
+        }
+    }
+
 }

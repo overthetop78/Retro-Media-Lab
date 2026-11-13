@@ -1,17 +1,18 @@
 using RetroMediaLab.Chips.Logic.Common.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Enums;
-using RetroMediaLab.Chips.Logic.Common.Services;
-using RetroMediaLab.Chips.Logic.Common.Interfaces;
+using RetroMediaLab.Chips.EmuChip.Logic.Common.Services;
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
+using RetroMediaLab.Chips.EmuChip.Logic.Common.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Models;
 
 namespace RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS257.Services;
 
 /// <summary>TI LS257B: four non-inverting 2:1 multiplexers with shared select and output disable.</summary>
-public sealed class EmuSn74Ls257 : ISn74Ls257, ICombinationalRangeModel
+public sealed class EmuSn74Ls257 : ISn74Ls257, IEmuCombinationalRangeModel
 {
     private const string Part = "SN74LS257B";
-    private readonly CombinationalOutputs _pins = new(4);
+    private readonly EmuCombinationalOutputs _pins = new(4);
     private readonly long[] _timing;
     private ushort _levels, _known;
     public EmuSn74Ls257(Sn74Ls257Timing timing)
@@ -45,13 +46,14 @@ public sealed class EmuSn74Ls257 : ISn74Ls257, ICombinationalRangeModel
     }
 
     public LogicOutputRange ExecuteInputRange(in LogicInputRange range) => _pins.ExecuteInputRange(in range, 1023, this);
+    public EmuLogicResponse ExecuteProgram(in EmuSignalRange range) => _pins.ExecuteProgram(in range, 1023, this);
 
-    bool ICombinationalRangeModel.PrepareRangeInput(in TimedLogicInput input, Span<long> delays, out ushort targets)
-        => PrepareInputs((ushort)input.Levels, (ushort)input.Known, delays, out targets);
+    bool IEmuCombinationalRangeModel.PrepareRangeInput(ulong input, Span<long> delays, out ushort targets)
+        => PrepareInputs((ushort)(input & 0xffffffffUL), (ushort)(input >> 32), delays, out targets);
 
-    void ICombinationalRangeModel.CommitRangeInput(in TimedLogicInput input)
+    void IEmuCombinationalRangeModel.CommitRangeInput(ulong input)
     {
-        _levels = (ushort)(input.Levels & input.Known); _known = (ushort)input.Known;
+        _levels = (ushort)((input & 0xffffffffUL) & (input >> 32)); _known = (ushort)(input >> 32);
     }
 
     private bool PrepareInputs(ushort levels, ushort known, Span<long> delays, out ushort targets)

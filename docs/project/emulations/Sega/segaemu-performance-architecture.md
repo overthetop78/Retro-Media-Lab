@@ -1087,3 +1087,63 @@ Vingt-quatre contrôles composants ciblés et six contrôles machine passent dan
 | Release | Girl's Garden (Japan) | 29.445 |
 
 Ces durées ne sont pas une comparaison appariée : aucun gain causal n'en est déduit. La copie ne résout pas la lenteur de la machine; le temps réel Debug reste largement à atteindre. Le profilage conserve les noms exacts EmuChip dans ses méthodes, mais les classe dans les mêmes postes CPU/VDP/DRAM/etc. pour les futures comparaisons.
+
+## 13 novembre2026 — Mots natifs CPU–logique–mémoires, lot Q vérifié
+
+La première refonte des copies Emu remplace les conversions de contrats dans tout le trajet CPU–logique–mémoires. EmuZ80 conserve directement ses niveaux électriques encodés dans son tampon de sorties. ExecuteBusProgramUntil remet ce tampon au raccordement. L'interface ICpuZ80 adapte ces mêmes mots aux anciens contrats seulement pour un consommateur historique; elle n'appelle pas un second moteur. Les programmes de phases et de délais du Z80 restent conservés.
+
+Le raccordement prépare une fois l'adresse, sa connaissance et les données communes par cause CPU. Les mémoires et la logique reçoivent directement des mots readonly Time/Bits de16octets. Leurs propres moteurs consomment les mots, résolvent les propagations locales dans le même ordre et restituent leurs sorties datées; la machine ne convertit plus une structure Pins en une autre représentation dans chaque propriétaire. Les sorties logiques conservent les sorties résolues et le masque des broches changées dans le même mot. Les interfaces historiques adaptent les entrées à ce moteur et produisent les anciennes structures de sortie seulement si demandées.
+
+Les huit DRAM, le VDP, les cellules, les délais électriques, les deux dépendances de logique et les frontières CPU sont conservés. Il n'y a aucune fusion de puces, ni nouvelle grille copiée par destinataire. La SRAM2009 conserve directement son mot de broches et sa sortie encodée; ses captures conservent le format public existant. La SRAM2016 utilise le même codage natif pour éviter le reconditionnement à chaque entrée. Les profils matériels ne changent pas.
+
+Les validations temporelles et de capacités sont effectuées avant toute mutation du programme reçu. Le banc existant compare les interfaces originales et Emu; un contrôle supplémentaire vérifie le rejet de dates décroissantes et de mots hors masque sans mutation des quatre propriétaires.25contrôles composants et6machine passent par configuration. Les768observations ABBA et96états finaux concordent avec la séparation Emu initiale, images et PCM compris. Les scénarios longs et profils complets restent en cours à cet instant; aucun achèvement de l'objectif global n'est déclaré.
+
+### Résultats Q : deux fenêtres appariées, fidélité et limites
+
+Les mesures de démarrage utilisent deux blocs ABBA par configuration,8images après2d'échauffement, avec amorçage et deux répétitions natives par processus. La deuxième acquisition mesure8images après30d'échauffement dans un bloc ABBA par configuration. Il ne s'agit pas d'une comparaison appariée de toutes les120images longues. Les petits écarts et un seul bloc ne permettent pas d'établir leur reproductibilité. Les branches CPU restent les mêmes; les conversions et le transport Emu ont effectivement changé.
+
+| Configuration | ROM | Démarrage A→Q ms/image | Durée réduite | Après30images A→Q ms/image | Durée réduite |
+|---|---|---:|---:|---:|---:|
+| Debug | Castle, The (Japan) | 216.749 → 178.882 | 17.47 % | 216.441 → 170.436 | 21.26 % |
+| Debug | Champion Tennis (Japan) | 192.171 → 174.195 | 9.35 % | 222.685 → 188.878 | 15.18 % |
+| Debug | Girl's Garden (Japan) | 196.253 → 170.288 | 13.23 % | 187.643 → 153.111 | 18.40 % |
+| Release | Castle, The (Japan) | 33.372 → 32.205 | 3.50 % | 31.291 → 31.865 | -1.83 % |
+| Release | Champion Tennis (Japan) | 27.293 → 26.395 | 3.29 % | 39.201 → 33.754 | 13.90 % |
+| Release | Girl's Garden (Japan) | 30.881 → 30.372 | 1.65 % | 31.380 → 30.919 | 1.47 % |
+
+Le gain Debug est présent sur les trois ROM dans les deux fenêtres :9,35–17,47 % au démarrage et15,18–21,26 % après30images. La répartition de cette dernière fenêtre ne vaut pas pour tout le jeu. Release reste variable : Castle après30images donne un écart défavorable de1,83 %, et Garden varie selon les blocs de démarrage. Aucun gain Release général n'est annoncé; les résultats défavorables sont conservés.
+
+Les768observations ABBA de démarrage et384observations de la deuxième fenêtre concordent, avec96et48états complets finaux respectivement. Les six scénarios longs de120images après30d'échauffement ajoutent720paires d'observations natives/images/PCM et six états complets finaux égaux. Les durées longues ne sont pas appariées et ne sont pas utilisées pour attribuer un gain au code. Une deuxième capture diagnostique ajoute720comparaisons égales au même parcours natif Q; ces comparaisons répétées ne sont pas des scénarios matériels indépendants.
+
+Vingt-sept contrôles composants et six contrôles machine passent en Debug et Release. Les contrôles logiques comparent66339combinaisons ternaires, chacune dans deux calendriers (3et1000ns) :132678entrées, avec leurs sorties datées et états de propagations restants, entre références et Emu. Les contrôles mémoire couvrent les données partiellement connues, adresses inconnues, entrées coïncidentes et durées trop courtes sur2009,2016/NEC/Fujitsu et ROM. Les entrées invalides sont rejetées avant toute mutation. Ces résultats prouvent les comparaisons couvertes, pas une nouvelle caractérisation du silicium.
+
+### Volumes logiciels réellement remplacés
+
+Les nombres de transactions, mots CPU, entrées logiques et entrées mémoire restent identiques à la référence. Ils ne sont pas présentés comme des transactions matérielles supprimées. Leur traitement retire les constructions/relectures des contrats typés dans le trajet normal. Les interfaces historiques continuent de les adapter si elles sont explicitement utilisées. Pour les119intervalles observables entre les120captures de la passe native longue Debug :
+
+| ROM | Mots CPU/image | Initialisations de préfixe/image | Entrées logique/image | Entrées mémoire/image | Somme des passages de représentation remplacés/image |
+|---|---:|---:|---:|---:|---:|
+| Castle, The (Japan) | 128651.4 | 13201.4 | 151751.2 | 178895.8 | 472499.8 |
+| Champion Tennis (Japan) | 117154.2 | 14188.8 | 153354.3 | 165843.1 | 450540.4 |
+| Girl's Garden (Japan) | 110644.1 | 12017.3 | 125402.7 | 148493.2 | 396557.3 |
+
+Cette somme décrit les passages de formats évités dans le code exécuté, pas un nombre de callbacks supprimés ni un comptage matériel de getters JIT. Les phases d'horloge, interactions et deux parcours de dépendances restent présents. Le compteur de livraisons CPU ne chute donc pas dans ce lot. La représentation native d'un mot fait16octets et ses champs sont consommés directement; aucune seconde grille préparatoire n'est construite pour les propriétaires.
+
+### Profil complet : résolution insuffisante pour une attribution fine
+
+Les profils complets sur120images après30d'échauffement sont conservés dans Full-Q-Summary, puis dans Resolved-Q-Summary avec les nouveaux compteurs de résolution. Les propres/inclusifs et volumes par ROM sont disponibles dans ces rapports; les inclusifs se recouvrent. Ils constituent des indices, pas des chronométrages exacts par méthode. Le transport Emu est désormais classé séparément du runtime.
+
+Un biais est établi : le profil attribue plusieurs ms/image à PresentVideo alors que son chronométrage direct reste de l'ordre de0,3ms Debug et0,1ms Release. Les intervalles RunFrame capturés atteignent environ15,4ms en médiane Debug. Une demande temporaire de timer Windows1ms n'améliore pas cette résolution et a été retirée; aucune demande de timer ni nouvel appel Winmm ne reste dans le banc. La source officielle [.NET10 EventPipe sample profiler](https://raw.githubusercontent.com/dotnet/runtime/v10.0.0/src/native/eventpipe/ep-sample-profiler.c) demande déjà une période1ms; cela ne garantit pas la fréquence effective observée ici. L'origine précise de l'écart n'est pas établie.
+
+| Configuration | ROM | Intervalles RunFrame | Médiane ms | P95 ms |
+|---|---|---:|---:|---:|
+| Debug | Castle, The (Japan) | 3176 | 15.444 | 15.974 |
+| Debug | Champion Tennis (Japan) | 2715 | 15.410 | 15.718 |
+| Debug | Girl's Garden (Japan) | 2722 | 15.422 | 15.956 |
+| Release | Castle, The (Japan) | 590 | 4.509 | 15.594 |
+| Release | Champion Tennis (Japan) | 631 | 5.030 | 15.563 |
+| Release | Girl's Garden (Japan) | 519 | 4.880 | 15.555 |
+
+L'attribution fine des méthodes reste donc non qualifiée. Une baisse de faible pourcentage dans ces profils ne doit pas guider une optimisation locale; les durées natives appariées et les comptes de traitements restent les preuves de gain du lot. Le classement échantillonné continue d'indiquer des coûts importants dans le câblage et la vidéo, mais la présentation ne constitue pas un goulot de7ms prouvé. La prochaine refonte doit réduire l'expansion de transactions et les synchronisations, sans se fonder sur ces faux coûts précis.
+
+Les puces originales restent inchangées. Les copies compilées N, Emu initial et Q-Profile ont été retirées séparément après leur dernière utilisation; les rapports et preuves sont conservés. Q-Debug/Q-Release sont les seules références natives compilées encore utiles au prochain lot. Le gain de ce lot ne suffit pas : le temps réel Debug et la marge demandée ne sont pas atteints. Aucun composant regroupant plusieurs puces n'a été retenu.

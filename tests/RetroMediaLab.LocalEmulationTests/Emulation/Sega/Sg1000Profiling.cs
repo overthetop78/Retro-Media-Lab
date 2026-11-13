@@ -38,7 +38,8 @@ internal static class Sg1000Profiling
         double MaxMs, double HostFps, double NominalPercent, long AllocatedBytes, double GcPauseMs);
     internal sealed record Cost(string Name, double OwnMs, double InclusiveMs, double OwnPercent, double InclusivePercent);
     internal sealed record CpuProfile(double ScopedSampleMs, double BlockedSampleMs,
-        IReadOnlyList<Cost> Methods, IReadOnlyDictionary<string, double> OwnGroupsMs);
+        IReadOnlyList<Cost> Methods, IReadOnlyDictionary<string, double> OwnGroupsMs,
+        int ScopedIntervals = 0, double MedianSampleIntervalMs = 0, double P95SampleIntervalMs = 0);
     internal sealed record Repeatability(int Repetitions, double[] RunMeansMs, double[] RunMediansMs,
         double MeanMs, double MinimumRunMeanMs, double MaximumRunMeanMs,
         double StandardDeviationMs, double CoefficientVariationPercent, double MedianAbsoluteDeviationMs);
@@ -285,11 +286,13 @@ internal static class Sg1000Profiling
         string[] names = document.GetProperty("shared").GetProperty("frames").EnumerateArray().Select(frame => frame.GetProperty("name").GetString()!).ToArray();
         var own = new Dictionary<string, double>(); var inclusive = new Dictionary<string, double>();
         double total = 0, blocked = 0;
+        var intervals = new List<double>();
         void Add(int[] stack, double weight)
         {
             if (weight <= 0 || !stack.Any(id => names[id].Contains("SegaEmu.Services.EmulatorCore.RunFrame(", StringComparison.Ordinal))) return;
             total += weight;
             if (stack.Any(id => names[id] == "BLOCKED_TIME")) { blocked += weight; return; }
+            intervals.Add(weight);
             var real = stack.Select(id => names[id]).Where(name => name is not ("CPU_TIME" or "UNMANAGED_CODE_TIME" or "BLOCKED_TIME")).ToArray();
             if (real.Length > 0) own[real[^1]] = own.GetValueOrDefault(real[^1]) + weight;
             foreach (string name in real.Distinct()) inclusive[name] = inclusive.GetValueOrDefault(name) + weight;
@@ -321,13 +324,17 @@ internal static class Sg1000Profiling
         foreach (var pair in own) { string group = Group(pair.Key); groups[group] = groups.GetValueOrDefault(group) + pair.Value; }
         var methods = inclusive.Keys.Union(own.Keys).Select(name => new Cost(name, own.GetValueOrDefault(name), inclusive.GetValueOrDefault(name),
             total == 0 ? 0 : own.GetValueOrDefault(name) / total * 100, total == 0 ? 0 : inclusive.GetValueOrDefault(name) / total * 100)).OrderByDescending(cost => cost.OwnMs).ToArray();
-        return new(total, blocked, methods, groups);
+        intervals.Sort();
+        return new(total, blocked, methods, groups, intervals.Count,
+            intervals.Count == 0 ? 0 : intervals[intervals.Count / 2],
+            intervals.Count == 0 ? 0 : intervals[(int)(.95 * (intervals.Count - 1))]);
     }
     private static string Group(string name)
     {
         int signature = name.IndexOf('(');
         string owner = (signature < 0 ? name : name[..signature]).Replace("Chips.EmuChip.", "Chips.", StringComparison.Ordinal);
-        return owner.Contains("Chips.CPU.", StringComparison.Ordinal) ? "CPU"
+        return owner.Contains("Chips.Common.Contracts.Emu", StringComparison.Ordinal) ? "NativeTransport"
+            : owner.Contains("Chips.CPU.", StringComparison.Ordinal) ? "CPU"
             : owner.Contains("Chips.Video.", StringComparison.Ordinal) ? "VDP"
             : owner.Contains("Chips.Memory.", StringComparison.Ordinal) ? "Memory"
             : owner.Contains("Chips.Audio.", StringComparison.Ordinal) ? "PSG"
@@ -413,6 +420,7 @@ internal static class Sg1000Profiling
             if (pass.Cpu is { } cpu)
             {
                 text.AppendLine(FormattableString.Invariant($"\nScoped sampled time: {cpu.ScopedSampleMs:F3}ms; blocked samples: {cpu.BlockedSampleMs:F3}ms.\n"));
+                text.AppendLine(FormattableString.Invariant($"Positive RunFrame intervals: {cpu.ScopedIntervals}; median={cpu.MedianSampleIntervalMs:F3}ms; P95={cpu.P95SampleIntervalMs:F3}ms. Sampling resolution limits method attribution; compare directly timed phases.\n"));
                 text.AppendLine("| Method | Own % | Inclusive % |\n|---|---:|---:|");
                 foreach (var cost in cpu.Methods.Take(40)) text.AppendLine(FormattableString.Invariant($"| `{cost.Name.Replace("|", "\\|")}` | {cost.OwnPercent:F3} | {cost.InclusivePercent:F3} |"));
                 text.AppendLine("\nInclusive costs contain descendants and must not be added. Weights are samples, not invocation counts.\n");
@@ -455,14 +463,24 @@ internal static class Sg1000Profiling
                 Stream events = (Stream)session.GetType().GetProperty("EventStream")!.GetValue(session)!;
                 return new(session, file, events);
             }
-            catch { try { ((IDisposable)session).Dispose(); } finally { file?.Dispose(); } throw; }
+            catch
+            {
+                try { try { session.GetType().GetMethod("Stop",Type.EmptyTypes)!.Invoke(session,null); }
+                    finally { ((IDisposable)session).Dispose(); } }
+                finally { file?.Dispose(); }
+                throw;
+            }
         }
         public async ValueTask DisposeAsync()
         {
             object? session = Interlocked.Exchange(ref _session, null);
             if (session is null) return;
             try { session.GetType().GetMethod("Stop", Type.EmptyTypes)!.Invoke(session, null); await _copy.ConfigureAwait(false); }
-            finally { try { ((IDisposable)session).Dispose(); } finally { await _file.DisposeAsync().ConfigureAwait(false); } }
+            finally
+            {
+                try { ((IDisposable)session).Dispose(); }
+                finally { try { await _copy.ConfigureAwait(false); } finally { await _file.DisposeAsync().ConfigureAwait(false); } }
+            }
         }
     }
 

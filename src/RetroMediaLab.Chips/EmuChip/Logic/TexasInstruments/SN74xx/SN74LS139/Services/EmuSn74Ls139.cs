@@ -1,7 +1,8 @@
 using RetroMediaLab.Chips.Logic.Common.Contracts;
 using RetroMediaLab.Chips.Logic.Common.Enums;
-using RetroMediaLab.Chips.Logic.Common.Services;
-using RetroMediaLab.Chips.Logic.Common.Interfaces;
+using RetroMediaLab.Chips.EmuChip.Logic.Common.Services;
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
+using RetroMediaLab.Chips.EmuChip.Logic.Common.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Interfaces;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Models;
 using System.Numerics;
@@ -9,10 +10,10 @@ using System.Numerics;
 namespace RetroMediaLab.Chips.EmuChip.Logic.TexasInstruments.SN74xx.SN74LS139.Services;
 
 /// <summary>TI LS139A: two independent active-low one-of-four decoders.</summary>
-public sealed class EmuSn74Ls139 : ISn74Ls139, ICombinationalRangeModel
+public sealed class EmuSn74Ls139 : ISn74Ls139, IEmuCombinationalRangeModel
 {
     private const string Part = "SN74LS139A";
-    private readonly CombinationalOutputs _pins = new(8);
+    private readonly EmuCombinationalOutputs _pins = new(8);
     private readonly long[] _timing;
     private byte _levels, _known;
     // Each independent decoder has only three ternary inputs. The complete
@@ -51,13 +52,14 @@ public sealed class EmuSn74Ls139 : ISn74Ls139, ICombinationalRangeModel
     }
 
     public LogicOutputRange ExecuteInputRange(in LogicInputRange range) => _pins.ExecuteInputRange(in range, 63, this);
+    public EmuLogicResponse ExecuteProgram(in EmuSignalRange range) => _pins.ExecuteProgram(in range, 63, this);
 
-    bool ICombinationalRangeModel.PrepareRangeInput(in TimedLogicInput input, Span<long> delays, out ushort targets)
-        => PrepareInputs((byte)input.Levels, (byte)input.Known, delays, out targets);
+    bool IEmuCombinationalRangeModel.PrepareRangeInput(ulong input, Span<long> delays, out ushort targets)
+        => PrepareInputs((byte)(input & 0xffffffffUL), (byte)(input >> 32), delays, out targets);
 
-    void ICombinationalRangeModel.CommitRangeInput(in TimedLogicInput input)
+    void IEmuCombinationalRangeModel.CommitRangeInput(ulong input)
     {
-        _levels = (byte)(input.Levels & input.Known); _known = (byte)input.Known;
+        _levels = (byte)((input & 0xffffffffUL) & (input >> 32)); _known = (byte)(input >> 32);
     }
 
     private bool PrepareInputs(byte levels, byte known, Span<long> delays, out ushort targets)

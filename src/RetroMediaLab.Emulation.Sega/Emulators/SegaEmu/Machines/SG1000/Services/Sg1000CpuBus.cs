@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
 using System.Runtime.InteropServices;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Enums;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Contracts;
@@ -15,7 +16,7 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Service
 
 internal sealed partial class Sg1000Board
 {
-    private delegate LogicOutputRange LogicRangeReceiver(in LogicInputRange input);
+    private delegate EmuLogicResponse LogicRangeReceiver(in EmuSignalRange input);
     private enum BusRecipient { Decoder, Gates, Ram, RomLow, RomHigh, InternalRom, CartridgeRam, JoyLow, JoyHigh, Video, Sound }
     private const uint GateConsumers = (1u << (int)BusRecipient.RomLow) | (1u << (int)BusRecipient.JoyLow)
         | (1u << (int)BusRecipient.JoyHigh) | (1u << (int)BusRecipient.Video);
@@ -27,17 +28,20 @@ internal sealed partial class Sg1000Board
         public readonly byte DataValue, DataKnowledge, DecoderLevels, DecoderKnown, GateCpuLevels, GateCpuKnown;
         public readonly byte Controls, ControlKnown;
         public readonly bool AddressKnown, DataIsKnown;
+        public readonly ulong MemoryBits;
         public bool MemoryInactive => (ControlKnown & 1) == 0 || (Controls & 1) != 0;
         public bool ReadInactive => (ControlKnown & 4) == 0 || (Controls & 4) != 0;
         public bool WriteInactive => (ControlKnown & 8) == 0 || (Controls & 8) != 0;
 
-        public CpuBusWires(Z80BusPins pins)
+        public CpuBusWires(ulong pins)
         {
-            AddressValue = pins.GetAddressOrZero(); AddressKnown = pins.AddressDriven;
-            DataValue = pins.GetDataOrZero(); DataIsKnown = pins.DataDriven;
+            AddressValue = (ushort)pins; AddressKnown = (pins & (1UL<<32)) != 0;
+            DataValue = (byte)(pins>>16); DataIsKnown = (pins & (1UL<<33)) != 0;
             DataKnowledge = DataIsKnown ? (byte)255 : (byte)0;
-            ControlKnown = pins.ControlDriven;
-            Controls = (byte)(pins.ControlLevels & ControlKnown);
+            MemoryBits=(ulong)AddressValue|(AddressKnown?EmuMemoryPins.AddressKnownMask:0)
+                |((ulong)(DataValue&DataKnowledge)<<24)|((ulong)DataKnowledge<<32);
+            ControlKnown = (byte)((pins>>34)&15);
+            Controls = (byte)((pins>>24) & ControlKnown);
             DecoderLevels = (byte)(((AddressValue >> 14) & 3) | ((Controls & 1) << 2)
                 | ((AddressValue >> 3) & 24) | ((Controls & 2) << 4));
             DecoderKnown = (byte)((AddressKnown ? 27 : 0) | ((ControlKnown & 1) << 2)
@@ -60,23 +64,23 @@ internal sealed partial class Sg1000Board
     // Bounded scratch histories for one finite source prefix, never chip state
     // or a pending hardware FIFO. Fixed feed-forward fan-out bounds their size.
     private const int MaximumBusHistory = 16_384;
-    private readonly List<TimedLogicInput>[] _logicInputs = [new(16),new(16),new(16),new(16)];
+    private readonly List<EmuSignalWord>[] _logicInputs = [new(16),new(16),new(16),new(16)];
     private readonly ulong[] _logicLevels = new ulong[4], _logicKnown = new ulong[4];
     private readonly List<CpuWireChange> _cpuWireChanges = new(16);
     private readonly List<VideoWireChange> _videoWireChanges = new(16);
     private readonly List<SoundWireChange> _soundWireChanges = new(16);
-    private readonly List<TimedMemoryInput<Tmm23256Pins>>[] _romInputs = [new(16),new(16),new(16)];
-    private readonly Tmm23256Pins[] _romWirePins = new Tmm23256Pins[3];
-    private Tmm2009Pins _ramWirePins;
-    private Tmm2016Pins _cartridgeRamWirePins;
+    private readonly List<EmuSignalWord>[] _romInputs = [new(16),new(16),new(16)];
+    private readonly ulong[] _romWirePins = new ulong[3];
+    private ulong _ramWirePins;
+    private ulong _cartridgeRamWirePins;
     private long _ramObservation, _videoObservation;
     private ushort _rangePressed;
     private CpuBusWires _initialCpuWires;
     private readonly long[] _logicResponseDue = new long[4], _memoryResponseDue = new long[4];
     private readonly ushort[] _logicOutputWords = new ushort[4];
-    private readonly List<TimedLogicOutput> _busDecoderOutputs = new(32), _busGateOutputs = new(32);
-    private readonly List<TimedMemoryInput<Tmm2009Pins>> _busRamInputs = new(32);
-    private readonly List<TimedMemoryInput<Tmm2016Pins>> _busCartridgeRamInputs = new(32);
+    private readonly List<EmuSignalWord> _busDecoderOutputs = new(32), _busGateOutputs = new(32);
+    private readonly List<EmuSignalWord> _busRamInputs = new(32);
+    private readonly List<EmuSignalWord> _busCartridgeRamInputs = new(32);
 
     private readonly DataWire[] _busMemoryDrivers = new DataWire[5]; // low/high/internal/cart SRAM/main SRAM
     private LogicRangeReceiver? _busDecoderReceiver, _busGateReceiver;
@@ -94,7 +98,7 @@ internal sealed partial class Sg1000Board
     internal long DirectCauseVisits => _directCauseVisits;
     internal long GateCauseVisits => _gateCauseVisits;
     internal long GateSkippedCpuWords => _gateSkippedCpuWords;
-    private Z80BusRangeHandler? _busRangeReceiver;
+    private EmuSignalRangeHandler? _busRangeReceiver;
     private Tms9918CpuPins _busVideoPins;
     private (byte Data, bool Selected, bool Write) _busSoundPins;
     private DataWire _busVideoDriver;
@@ -147,10 +151,10 @@ internal sealed partial class Sg1000Board
         if (_cartridgeHigh is { } high) { high.OutputChanged = null; high.NextEventNanosecondsChanged = null; }
         if (_internalRom is { } rom) { rom.OutputChanged = null; rom.NextEventNanosecondsChanged = null; }
         if (_cartridgeRam is { } ram) { ram.OutputChanged = null; ram.NextEventNanosecondsChanged = null; }
-        _busDecoderReceiver ??= _decoder.ExecuteInputRange;
+        _busDecoderReceiver ??= _decoder.ExecuteProgram;
         _busRangeReceiver ??= ReceiveCpuBusRange;
-        _busGateReceiver ??= _gates.ExecuteInputRange;
-        for (int i = 0; i < 2; i++) _busJoyReceivers[i] ??= _joy[i].ExecuteInputRange;
+        _busGateReceiver ??= _gates.ExecuteProgram;
+        for (int i = 0; i < 2; i++) _busJoyReceivers[i] ??= _joy[i].ExecuteProgram;
         // Rebind transport from canonical package states. Initial physical
         // levels are delivered separately at power-on and slot replacement;
         // restoring a snapshot must not synthesize another input transition.
@@ -174,12 +178,12 @@ internal sealed partial class Sg1000Board
         _memoryResponseDue[1] = _cartridgeHigh?.NextEventNanoseconds ?? long.MaxValue;
         _memoryResponseDue[2] = _internalRom?.NextEventNanoseconds ?? long.MaxValue;
         _memoryResponseDue[3] = _cartridgeRam?.NextEventNanoseconds ?? long.MaxValue;
-        _ramWirePins = _ram.CaptureState().Pins;
+        _ramWirePins = PackMainRam(_ram.CaptureState().Pins);
         _ramObservation = _ram.TimeNanoseconds;
-        _cartridgeRamWirePins = _cartridgeRam?.CaptureState().Pins ?? default;
-        _romWirePins[0] = _cartridgeLow?.CaptureState().Pins ?? default;
-        _romWirePins[1] = _cartridgeHigh?.CaptureState().Pins ?? default;
-        _romWirePins[2] = _internalRom?.CaptureState().Pins ?? default;
+        _cartridgeRamWirePins = PackCartridgeRam(_cartridgeRam?.CaptureState().Pins ?? default);
+        _romWirePins[0] = PackRom(_cartridgeLow?.CaptureState().Pins ?? default);
+        _romWirePins[1] = PackRom(_cartridgeHigh?.CaptureState().Pins ?? default);
+        _romWirePins[2] = PackRom(_internalRom?.CaptureState().Pins ?? default);
         _busVideoPins = _vdp.CaptureState().CpuInterface.Pins;
         var sound = _psg.CaptureState();
         _busSoundPins = (sound.BusData, sound.ChipSelected, sound.WriteEnabled);
@@ -204,14 +208,14 @@ internal sealed partial class Sg1000Board
 
     private void DeliverExternalBusInputs()
     {
-        var boundary = new Z80BusRange(TimeNanoseconds, TimeNanoseconds, _cpu.Pins, []);
+        var boundary = new EmuSignalRange(TimeNanoseconds, TimeNanoseconds, _cpu.PackedPins, []);
         ReceiveCpuBusRange(in boundary);
     }
     private static LogicPinState Logic(ushort word, int pin) => (LogicPinState)((word >> (pin * 2)) & 3);
     private static DataWire RomDriver(Tmm23256Output output)
         => new(output.Data, output.Known ? (byte)255 : (byte)0, output.Driven ? (byte)255 : (byte)0);
 
-    private ushort ConsumeLogicInputs(int node, LogicRangeReceiver receive, long end, List<TimedLogicOutput>? history)
+    private ushort ConsumeLogicInputs(int node, LogicRangeReceiver receive, long end, List<EmuSignalWord>? history)
     {
         var words = _logicInputs[node];
         _logicInputWords += words.Count;
@@ -222,14 +226,14 @@ internal sealed partial class Sg1000Board
         for (int offset = 0; offset < inputs.Length || offset == 0;)
         {
             int count = Math.Min(LogicInputRange.MaximumChanges, inputs.Length - offset);
-            long until = offset + count == inputs.Length ? end : inputs[offset + count - 1].TimeNanoseconds;
-            var input = new LogicInputRange(inputs.Slice(offset, count), until);
+            long until = offset + count == inputs.Length ? end : inputs[offset + count - 1].Time;
+            var input = new EmuSignalRange(inputs.IsEmpty ? end : inputs[offset].Time, until, 0, inputs.Slice(offset, count));
             var output = receive(in input);
-            _logicResponseDue[node] = output.NextEventNanoseconds ?? long.MaxValue;
-            final = output.InitialLevels;
-            foreach (var change in output.Changes)
+            _logicResponseDue[node] = output.Next ?? long.MaxValue;
+            final = output.Initial;
+            foreach (var change in output.Words)
             {
-                final = change.Levels;
+                final = (ushort)change.Bits;
                 if (history is not null) StoreBusWord(history, change);
             }
             offset += count;
@@ -239,11 +243,11 @@ internal sealed partial class Sg1000Board
         return final;
     }
 
-    private void ReceiveCpuBusRange(in Z80BusRange source)
+    private void ReceiveCpuBusRange(in EmuSignalRange source)
     {
-        var changes = source.Changes;
-        long start = source.StartNanoseconds, end = source.EndNanoseconds;
-        var initialPins = source.InitialPins;
+        var changes = source.Words;
+        long start = source.Start, end = source.End;
+        var initialPins = source.Initial;
         _busRangeDeliveries++;
         _cpuOutputWords += changes.Length;
         foreach (var list in _logicInputs) list.Clear();
@@ -252,7 +256,7 @@ internal sealed partial class Sg1000Board
         _videoWireChanges.Clear(); _soundWireChanges.Clear(); _videoObservation = -1;
         if (!changes.IsEmpty)
         {
-            long lastOutputDate = changes[^1].TimeNanoseconds;
+            long lastOutputDate = changes[^1].Time;
             _ramObservation = lastOutputDate;
             _videoObservation = lastOutputDate;
         }
@@ -267,11 +271,11 @@ internal sealed partial class Sg1000Board
         }
         foreach (var change in changes)
         {
-            var wires = new CpuBusWires(change.Pins);
+            var wires = new CpuBusWires(change.Bits);
             uint recipients = ChangedRecipients(previous, wires);
-            if (recipients != 0) _cpuWireChanges.Add(new(change.TimeNanoseconds, wires, recipients));
+            if (recipients != 0) _cpuWireChanges.Add(new(change.Time, wires, recipients));
             if ((recipients & Bit(BusRecipient.Decoder)) != 0)
-                ProjectBusInputs(BusRecipient.Decoder, change.TimeNanoseconds, wires, decoderInitial, gateInitial);
+                ProjectBusInputs(BusRecipient.Decoder, change.Time, wires, decoderInitial, gateInitial);
             previous = wires;
         }
         ConsumeLogicInputs(0, _busDecoderReceiver!, end, _busDecoderOutputs);
@@ -289,8 +293,9 @@ internal sealed partial class Sg1000Board
             ushort final = ConsumeLogicInputs(i + 2, _busJoyReceivers[i]!, end, null);
             if (before != final) SetJoyDriver(i, final);
         }
-        var finalCpu = changes.IsEmpty ? initialPins : changes[^1].Pins;
-        if (_busCpuData != finalCpu.Data) { _busCpuData = finalCpu.Data; _cpuBusDirty = true; }
+        var finalCpu = changes.IsEmpty ? initialPins : changes[^1].Bits;
+        byte? finalData=(finalCpu&(1UL<<33))!=0?(byte)(finalCpu>>16):null;
+        if (_busCpuData != finalData) { _busCpuData = finalData; _cpuBusDirty = true; }
         foreach (ref readonly var change in CollectionsMarshal.AsSpan(_videoWireChanges))
         {
             if (!_vdp.TryReceiveInactiveCpuPins(change.Time, change.Pins))
@@ -359,14 +364,14 @@ internal sealed partial class Sg1000Board
         {
             _directCauseVisits++;
             long ct = c < cpuChanges.Length ? cpuChanges[c].Time : long.MaxValue;
-            long dt = d < decoderOutputs.Length ? decoderOutputs[d].TimeNanoseconds : long.MaxValue;
+            long dt = d < decoderOutputs.Length ? decoderOutputs[d].Time : long.MaxValue;
             long time = Math.Min(ct, dt);
             uint recipients = 0;
             if (d < decoderOutputs.Length && dt <= ct)
             {
                 ref readonly var output = ref decoderOutputs[d++];
-                byte changed = output.ChangedPins;
-                decoder = output.Levels;
+                byte changed = (byte)(output.Bits >> 16);
+                decoder = (ushort)output.Bits;
                 if ((changed & 192) != 0) recipients |= Bit(BusRecipient.Gates);
                 if ((changed & 8) != 0) { recipients |= Bit(BusRecipient.Ram); _ramObservation = Math.Max(_ramObservation, time); }
                 if ((changed & 4) != 0) recipients |= Bit(BusRecipient.RomHigh) | Bit(BusRecipient.CartridgeRam);
@@ -406,7 +411,7 @@ internal sealed partial class Sg1000Board
             if (c == cpuChanges.Length && g == gateOutputs.Length) break;
             _gateCauseVisits++;
             long ct = c < cpuChanges.Length ? cpuChanges[c].Time : long.MaxValue;
-            long gt = g < gateOutputs.Length ? gateOutputs[g].TimeNanoseconds : long.MaxValue;
+            long gt = g < gateOutputs.Length ? gateOutputs[g].Time : long.MaxValue;
             long time = Math.Min(ct, gt);
             uint recipients;
             // Retain the established tie order: resolved gate outputs before
@@ -414,8 +419,8 @@ internal sealed partial class Sg1000Board
             if (g < gateOutputs.Length && gt <= ct)
             {
                 ref readonly var output = ref gateOutputs[g++];
-                byte changed = output.ChangedPins;
-                gates = output.Levels;
+                byte changed = (byte)(output.Bits >> 16);
+                gates = (ushort)output.Bits;
                 recipients = (changed & 1) != 0 ? Bit(BusRecipient.RomLow) : 0;
                 if ((changed & 6) != 0) { recipients |= Bit(BusRecipient.Video); _videoObservation = Math.Max(_videoObservation, time); }
                 if ((changed & 8) != 0) recipients |= Bit(BusRecipient.JoyLow) | Bit(BusRecipient.JoyHigh);
@@ -440,7 +445,7 @@ internal sealed partial class Sg1000Board
         levels &= known;
         if (_logicLevels[node] == levels && _logicKnown[node] == known) return;
         _logicLevels[node] = levels; _logicKnown[node] = known;
-        StoreBusWord(_logicInputs[node], new TimedLogicInput(time, levels, known));
+        StoreBusWord(_logicInputs[node], new EmuSignalWord(time, levels | known << 32));
     }
 
     private static void InputBit(ref ulong levels, ref ulong known, int bit, bool? value)
@@ -471,8 +476,9 @@ internal sealed partial class Sg1000Board
                 StoreLogicInput(1, time, levels, known);
                 break;
             case BusRecipient.Ram:
-                var ramPins = new Tmm2009Pins((ushort)(address & 1023), addressKnown,
-                    Logic(decoder, 3) != LogicPinState.Low, false, cpu.ReadInactive, cpu.WriteInactive, data, dataKnown);
+                ulong ramPins=(cpu.MemoryBits&~EmuMemoryPins.AddressMask)|(uint)(address&1023)
+                    |(Logic(decoder,3)!=LogicPinState.Low?EmuMemoryPins.CsMask:0)
+                    |(cpu.ReadInactive?EmuMemoryPins.OeMask:0)|(cpu.WriteInactive?EmuMemoryPins.WeMask:0);
                 if (ramPins != _ramWirePins) { StoreBusWord(_busRamInputs, new(time, ramPins)); _ramWirePins = ramPins; }
                 break;
             case BusRecipient.RomLow:
@@ -486,14 +492,16 @@ internal sealed partial class Sg1000Board
                 bool oe = internalRom ? cpu.ReadInactive : recipient == BusRecipient.RomLow
                     ? Logic(gates, 0) != LogicPinState.Low : Logic(decoder, 2) != LogicPinState.Low;
                 int romIndex = internalRom ? 2 : recipient == BusRecipient.RomLow ? 0 : 1;
-                var romPins = new Tmm23256Pins((ushort)(address & mask), addressKnown, ce, oe);
+                ulong romPins=(uint)(address&mask)|(addressKnown?EmuMemoryPins.AddressKnownMask:0)
+                    |(ce?EmuMemoryPins.CsMask:0)|(oe?EmuMemoryPins.OeMask:0)|EmuMemoryPins.WeMask;
                 if (romPins != _romWirePins[romIndex])
                 { StoreBusWord(_romInputs[romIndex], new(time - (internalRom ? 0 : _cartridgeOrigin), romPins)); _romWirePins[romIndex] = romPins; }
                 break;
             case BusRecipient.CartridgeRam:
                 int ramMask = _romConfiguration.CartridgeLayout == Sg1000CartridgeLayout.TheCastle ? 8191 : 2047;
-                var cartPins = new Tmm2016Pins((ushort)(address & ramMask), addressKnown, Logic(decoder, 2) != LogicPinState.Low,
-                    cpu.ReadInactive, cpu.WriteInactive, data, dataKnown, true);
+                ulong cartPins=(cpu.MemoryBits&~EmuMemoryPins.AddressMask)|(uint)(address&ramMask)|EmuMemoryPins.Cs2Mask
+                    |(Logic(decoder,2)!=LogicPinState.Low?EmuMemoryPins.CsMask:0)
+                    |(cpu.ReadInactive?EmuMemoryPins.OeMask:0)|(cpu.WriteInactive?EmuMemoryPins.WeMask:0);
                 if (cartPins != _cartridgeRamWirePins)
                 { StoreBusWord(_busCartridgeRamInputs, new(time - _cartridgeOrigin, cartPins)); _cartridgeRamWirePins = cartPins; }
                 break;
@@ -524,66 +532,60 @@ internal sealed partial class Sg1000Board
     private static (byte Data, bool Selected, bool Write) MakeSoundPins(in CpuBusWires cpu, ushort decoder)
         => (cpu.DataValue, Logic(decoder, 5) == LogicPinState.Low, !cpu.WriteInactive);
 
+    private static ulong PackMainRam(Tmm2009Pins p) => EmuMemoryPins.Encode(p.Address,p.AddressKnown,p.Ce1High,p.OutputEnableHigh,p.WriteHigh,p.Ce2High,p.Data,p.DataKnown);
+    private static ulong PackCartridgeRam(Tmm2016Pins p) => EmuMemoryPins.Encode(p.Address,p.AddressKnown,p.CsHigh,p.OeHigh,p.WeHigh,p.Cs2High,p.Data,p.DataKnown);
+    private static ulong PackRom(Tmm23256Pins p) => EmuMemoryPins.Encode(p.Address,p.AddressKnown,p.CeHigh,p.OeHigh,true,false);
     private void ConsumeMainRam()
     {
-        _memoryInputWords += _busRamInputs.Count;
-        var inputs = CollectionsMarshal.AsSpan(_busRamInputs);
-        if (inputs.IsEmpty) { _ram.AdvanceTo(_ramObservation); return; }
-        // This untimed functional SRAM retains the last actual pin-delivery
-        // date. Unlike delayed memories it has no propagation to materialize
-        // at a CPU sampling fence with no incoming cause.
-        long end = _ramObservation;
-        for (int offset = 0; offset < inputs.Length;)
+        _memoryInputWords+=_busRamInputs.Count;
+        var inputs=CollectionsMarshal.AsSpan(_busRamInputs);
+        if(inputs.IsEmpty){_ram.AdvanceTo(_ramObservation);return;}
+        for(int offset=0;offset<inputs.Length;)
         {
-            int count = Math.Min(MemoryInputRange<Tmm2009Pins>.MaximumChanges, inputs.Length - offset);
-            var input = new MemoryInputRange<Tmm2009Pins>(inputs.Slice(offset, count),
-                offset + count == inputs.Length ? end : inputs[offset + count - 1].TimeNanoseconds);
-            var output = _ram.ExecuteInputRange(in input, retainResponseHistory: false);
-            _memoryResponseRecordsOmitted += output.ResponseCount;
-            var final = output.FinalOutput;
-            SetMemoryDriver(4, new(final.Data, final.Known, final.Driven ? (byte)255 : (byte)0));
-            offset += count;
+            int count=Math.Min(128,inputs.Length-offset);
+            long end=offset+count==inputs.Length?_ramObservation:inputs[offset+count-1].Time;
+            var range=new EmuSignalRange(_ram.TimeNanoseconds,end,0,inputs.Slice(offset,count));
+            var response=_ram.ExecuteProgram(in range);
+            _memoryResponseRecordsOmitted+=response.Responses;
+            SetNativeMemoryDriver(4,response.Final);offset+=count;
         }
     }
     private void ConsumeCartridgeRam(long end)
     {
-        _memoryInputWords += _busCartridgeRamInputs.Count;
-        if (_busCartridgeRamInputs.Count == 0 && _memoryResponseDue[3] > end) return;
-        var inputs = CollectionsMarshal.AsSpan(_busCartridgeRamInputs);
-        for (int offset = 0; offset < inputs.Length || offset == 0;)
+        _memoryInputWords+=_busCartridgeRamInputs.Count;
+        if(_busCartridgeRamInputs.Count==0&&_memoryResponseDue[3]>end)return;
+        var inputs=CollectionsMarshal.AsSpan(_busCartridgeRamInputs);
+        for(int offset=0;offset<inputs.Length||offset==0;)
         {
-            int count = Math.Min(MemoryInputRange<Tmm2016Pins>.MaximumChanges, inputs.Length - offset);
-            var input = new MemoryInputRange<Tmm2016Pins>(inputs.Slice(offset, count),
-                offset + count == inputs.Length ? end : inputs[offset + count - 1].TimeNanoseconds);
-            var output = _cartridgeRam!.ExecuteInputRange(in input, retainResponseHistory: false);
-            _memoryResponseRecordsOmitted += output.ResponseCount;
-            _memoryResponseDue[3] = output.NextEventNanoseconds ?? long.MaxValue;
-            var final = output.FinalOutput;
-            SetMemoryDriver(3, new(final.Data, final.Known, final.Driven ? (byte)255 : (byte)0));
-            offset += count;
-            if (count == 0) break;
+            int count=Math.Min(128,inputs.Length-offset);
+            long until=offset+count==inputs.Length?end:inputs[offset+count-1].Time;
+            var range=new EmuSignalRange(_cartridgeRam!.TimeNanoseconds,until,0,inputs.Slice(offset,count));
+            var response=_cartridgeRam.ExecuteProgram(in range);
+            _memoryResponseRecordsOmitted+=response.Responses;
+            _memoryResponseDue[3]=response.Next<0?long.MaxValue:response.Next;
+            SetNativeMemoryDriver(3,response.Final);offset+=count;if(count==0)break;
         }
     }
-    private void ConsumeRom(BusRecipient recipient, int driver, long sourceEnd)
+    private void ConsumeRom(BusRecipient recipient,int driver,long sourceEnd)
     {
-        _memoryInputWords += _romInputs[driver].Count;
-        var chip = recipient == BusRecipient.InternalRom ? _internalRom! : recipient == BusRecipient.RomLow ? _cartridgeLow! : _cartridgeHigh!;
-        long end = sourceEnd - (recipient == BusRecipient.InternalRom ? 0 : _cartridgeOrigin);
-        if (_romInputs[driver].Count == 0 && _memoryResponseDue[driver] > end) return;
-        var inputs = CollectionsMarshal.AsSpan(_romInputs[driver]);
-        for (int offset = 0; offset < inputs.Length || offset == 0;)
+        _memoryInputWords+=_romInputs[driver].Count;
+        var chip=recipient==BusRecipient.InternalRom?_internalRom!:recipient==BusRecipient.RomLow?_cartridgeLow!:_cartridgeHigh!;
+        long end=sourceEnd-(recipient==BusRecipient.InternalRom?0:_cartridgeOrigin);
+        if(_romInputs[driver].Count==0&&_memoryResponseDue[driver]>end)return;
+        var inputs=CollectionsMarshal.AsSpan(_romInputs[driver]);
+        for(int offset=0;offset<inputs.Length||offset==0;)
         {
-            int count = Math.Min(MemoryInputRange<Tmm23256Pins>.MaximumChanges, inputs.Length - offset);
-            var input = new MemoryInputRange<Tmm23256Pins>(inputs.Slice(offset, count),
-                offset + count == inputs.Length ? end : inputs[offset + count - 1].TimeNanoseconds);
-            var output = chip.ExecuteInputRange(in input, retainResponseHistory: false);
-            _memoryResponseRecordsOmitted += output.ResponseCount;
-            _memoryResponseDue[driver] = output.NextEventNanoseconds ?? long.MaxValue;
-            SetMemoryDriver(driver, RomDriver(output.FinalOutput));
-            offset += count;
-            if (count == 0) break;
+            int count=Math.Min(128,inputs.Length-offset);
+            long until=offset+count==inputs.Length?end:inputs[offset+count-1].Time;
+            var range=new EmuSignalRange(chip.TimeNanoseconds,until,0,inputs.Slice(offset,count));
+            var response=chip.ExecuteProgram(in range);
+            _memoryResponseRecordsOmitted+=response.Responses;
+            _memoryResponseDue[driver]=response.Next<0?long.MaxValue:response.Next;
+            SetNativeMemoryDriver(driver,response.Final);offset+=count;if(count==0)break;
         }
     }
+    private void SetNativeMemoryDriver(int index,uint bits)
+        => SetMemoryDriver(index,new((byte)bits,(byte)(bits>>8),(bits&0x10000)!=0?(byte)255:(byte)0));
 
     private void SetMemoryDriver(int index, DataWire driver)
     {
@@ -642,12 +644,12 @@ internal sealed partial class Sg1000Board
                 if (stopAtFrame && _vdp.NextFrameBoundaryNanoseconds is { } frame) target = Math.Min(target, frame);
                 if (!_vdpReleased) target = Math.Min(target, C.VdpReleaseNanoseconds);
                 if (!_cpuReleased) target = Math.Min(target, C.CpuReleaseNanoseconds);
-                _cpu.AdvanceBusRangeUntil(target, _busRangeReceiver!);
+                _cpu.ExecuteBusProgramUntil(target, _busRangeReceiver!);
                 TimeNanoseconds = target;
                 SynchronizeVideoDomain(target);
                 if (!_vdpReleased && target == C.VdpReleaseNanoseconds) { _vdpReleased = true; _vdp.SetReset(target, false); }
                 if (!_cpuReleased && target == C.CpuReleaseNanoseconds) { _cpuReleased = true; _cpu.SetReset(false); }
-                _cpu.AdvanceBusRangeUntil(checked(target + 1), _busRangeReceiver!);
+                _cpu.ExecuteBusProgramUntil(checked(target + 1), _busRangeReceiver!);
             }
         }
         finally { _executingCpuRange = false; }

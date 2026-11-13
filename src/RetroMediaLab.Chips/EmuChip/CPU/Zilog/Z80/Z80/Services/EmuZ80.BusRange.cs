@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Contracts;
 
 namespace RetroMediaLab.Chips.EmuChip.CPU.Zilog.Z80.Z80.Services;
@@ -14,8 +15,16 @@ public sealed partial class EmuZ80
     /// DATA/WAIT/INT, but cannot clock, restore or advance this CPU recursively.
     /// Electrical dates belong to each change, not to callback invocation time.</summary>
     public int AdvanceBusRangeUntil(long boundaryExclusive, Z80BusRangeHandler receiver)
+        => ExecuteBusRangeCore(boundaryExclusive, receiver, null);
+
+    public int ExecuteBusProgramUntil(long boundaryExclusive, EmuSignalRangeHandler receiver)
+        => ExecuteBusRangeCore(boundaryExclusive, null, receiver);
+
+    public ulong PackedPins => _bus.PackedPins;
+
+    private int ExecuteBusRangeCore(long boundaryExclusive, Z80BusRangeHandler? receiver, EmuSignalRangeHandler? nativeReceiver)
     {
-        ArgumentNullException.ThrowIfNull(receiver);
+        if (receiver is null && nativeReceiver is null) throw new ArgumentNullException(nameof(receiver));
         if (!_hasClockSource) throw new InvalidOperationException("No received CPU clock source.");
         if (_faulted || _insideClock || _publishingDeadline || _bus.IsPublishing || _drivingClockSource)
             throw new InvalidOperationException("Cannot recursively execute a CPU bus range.");
@@ -23,7 +32,7 @@ public sealed partial class EmuZ80
             throw new InvalidOperationException("Detach scalar bus observers before range execution.");
         ArgumentOutOfRangeException.ThrowIfLessThan(boundaryExclusive, TimeNanoseconds);
         if (boundaryExclusive == TimeNanoseconds) return 0;
-        _bus.BeginRangeCapture(receiver);
+        _bus.BeginRangeCapture(receiver, nativeReceiver);
         _drivingClockSource = true;
         int consumed = 0;
         try

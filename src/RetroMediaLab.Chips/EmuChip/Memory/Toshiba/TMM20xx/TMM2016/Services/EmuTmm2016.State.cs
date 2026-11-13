@@ -1,5 +1,5 @@
 using RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2016.Contracts;
-using C = RetroMediaLab.Chips.Memory.Toshiba.TMM20xx.TMM2016.Constants.Tmm2016Constants;
+using C = RetroMediaLab.Chips.EmuChip.Common.Contracts.EmuMemoryPins;
 
 namespace RetroMediaLab.Chips.EmuChip.Memory.Toshiba.TMM20xx.TMM2016.Services;
 

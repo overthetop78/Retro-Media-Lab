@@ -73,7 +73,7 @@ if ($PairedManifest) {
     [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath($OutputDirectory)) | Out-Null
     $results | ConvertTo-Json -Depth 9 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'abba-results.json')
     $md=[Text.StringBuilder]::new("# Acquisition alternée ABBA SG-1000`n`n")
-    [void]$md.AppendLine('Moyennes de scénarios natifs complets, préparation et échauffement identiques; aucune reconstruction entre les processus A/B. Chaque bloc suit ABBA. États complets, images, PCM et observations natives vérifiés. Les images et répétitions internes ne sont pas considérées comme des processus indépendants. Deux blocs permettent de vérifier leur cohérence, pas de revendiquer une significativité statistique pour de petits écarts.')
+    [void]$md.AppendLine('Moyennes de scénarios natifs complets, préparation et échauffement identiques; aucune reconstruction entre les processus A/B. Chaque bloc suit ABBA. États complets, images, PCM et observations natives vérifiés. Les images et répétitions internes ne sont pas considérées comme des processus indépendants. Le nombre de blocs figure dans chaque résultat; un seul bloc ne démontre pas leur reproductibilité. Les petits écarts restent soumis au bruit.')
     [void]$md.AppendLine("`n| Configuration | ROM | A ms/image | B ms/image | Temps réduit |`n|---|---|---:|---:|---:|")
     foreach($r in $results){[void]$md.AppendLine(('| {0} | {1} | {2:F3} | {3:F3} | {4:F2} % |' -f $r.Configuration,$r.Game,$r.AMeanMs,$r.BMeanMs,$r.TimeReductionPercent))
         foreach($b in $r.Blocks){[void]$md.AppendLine(('Bloc {0} : A {1:F3}, B {2:F3} ms/image, temps réduit {3:F2} %.' -f $b.Block,$b.AMeanMs,$b.BMeanMs,$b.TimeReductionPercent))}}
@@ -85,6 +85,7 @@ if(!$Report -and !$WindowsStackCsv){throw 'Report, PairedManifest or WindowsStac
 function Component([string]$Name) {
     # Parameter types are not owners: a wiring method can take a CPU contract.
     $owner=(($Name -split '\(',2)[0]).Replace('Chips.EmuChip.','Chips.')
+    if($owner.Contains('Chips.Common.Contracts.Emu')) { return 'Transport natif' }
     if($owner.Contains('Chips.Memory.Fujitsu.MB81xx.MB8118.')) { return 'DRAM MB8118' }
     if($owner.Contains('Chips.CPU.')) { return 'CPU' }
     if($owner.Contains('Chips.Video.')) { return 'VDP' }
@@ -241,6 +242,7 @@ $results=@(foreach($path in $paths) {
         NativeMedianMs=$native.Statistics.MedianMs;NativeMeanMs=$nativeMean;Repeatability=$r.Repeatability;TimingPolicy=$r.TimingPolicy
         ProfileMedianMs=$profile.Statistics.MedianMs;ScopedSampleMs=$cost.ScopedSampleMs
         BlockedSampleMs=$cost.BlockedSampleMs;Components=$components;Volumes=$volumes
+        ScopedIntervals=$cost.ScopedIntervals;MedianSampleIntervalMs=$cost.MedianSampleIntervalMs;P95SampleIntervalMs=$cost.P95SampleIntervalMs
         DirectBoardMeanMs=($frames.BoardWallMs | Measure-Object -Average).Average
         DirectPresentationMeanMs=($frames.PresentationWallMs | Measure-Object -Average).Average
         DirectAudioDrainMeanMs=($frames.AudioWallMs | Measure-Object -Average).Average
@@ -263,6 +265,7 @@ foreach($r in $results) {
     if($r.NativeAvailable){[void]$md.AppendLine(('Natif médiane/moyenne : {0:F3}/{1:F3} ms/image; profilé médiane : {2:F3} ms/image; {3} images. SHA256 module : `{4}`.' -f $r.NativeMedianMs,$r.NativeMeanMs,$r.ProfileMedianMs,$r.Frames,$r.CoreSha256))}
     else{[void]$md.AppendLine(('Profil seul : médiane {0:F3} ms/image; {1} images; aucun temps natif projeté. SHA256 module : `{2}`.' -f $r.ProfileMedianMs,$r.Frames,$r.CoreSha256))}
     [void]$md.AppendLine("Échauffement : $($r.WarmupFrames) images. Médiane native : première passe; moyenne : toutes les répétitions si disponibles. Politique JIT : $($r.TimingPolicy).")
+    if($r.ScopedIntervals -gt 0){[void]$md.AppendLine(('Intervalles positifs RunFrame : {0}; médiane {1:F3} ms; P95 {2:F3} ms. Cette résolution borne la précision des attributions par méthode.' -f $r.ScopedIntervals,$r.MedianSampleIntervalMs,$r.P95SampleIntervalMs))}
     if($null -ne $r.Repeatability){[void]$md.AppendLine(('Répétitions : {0}; CV des moyennes : {1:F3} %; étendue : {2:F3}..{3:F3} ms/image.' -f $r.Repeatability.Repetitions,$r.Repeatability.CoefficientVariationPercent,$r.Repeatability.MinimumRunMeanMs,$r.Repeatability.MaximumRunMeanMs))}
     if($r.DirectPresentationMeanMs -gt 0){[void]$md.AppendLine(('Chronométrage direct dans la passe profilée : carte {0:F4}, présentation {1:F4}, vidange audio {2:F4} ms/image. À distinguer des poids attribués par échantillonnage.' -f $r.DirectBoardMeanMs,$r.DirectPresentationMeanMs,$r.DirectAudioDrainMeanMs))}
     [void]$md.AppendLine("`n| Composant | Coût propre % | ms échantillonnées/image | ms natives estimées/image |`n|---|---:|---:|---:|")
