@@ -111,6 +111,49 @@ public sealed partial class EmuTms9918A
         _activeSpritesKnown = _preparingSpritesKnown && _activeSpriteLine == line;
     }
 
+    private (ulong Colours, byte Known) SpritePixels(int firstDot, int line, int count)
+    {
+        byte all = (byte)((1 << count) - 1);
+        if (!_registers.DisplayEnabled || _registers.UsesTextTiming
+            || _registers.Mode == Tms9918DisplayMode.UndocumentedCombination) return (0, all);
+        bool next = firstDot >= 310;
+        int targetLine = next ? (line + 1) % 262 : line;
+        if (targetLine > 192) return (0, all);
+        var rows = next ? _preparingSprites : _activeSprites;
+        bool selectedKnown = next ? _preparingSpritesKnown && _preparingSpriteLine == targetLine : _activeSpritesKnown;
+        byte known = selectedKnown ? all : (byte)0;
+        int x = next ? firstDot - 342 : firstDot;
+        int size = _registers.LargeSprites ? 16 : 8;
+        int scale = _registers.MagnifiedSprites ? 2 : 1;
+        int required = _registers.LargeSprites ? 63 : 31;
+        byte occupied = 0, chosen = 0, overlap = 0;
+        ulong colours = 0;
+        for (int index = 0; index < 4; index++)
+        {
+            var sprite = rows[index];
+            if (!sprite.Selected) continue;
+            if ((sprite.KnownMask & 10) != 10) { known = 0; continue; }
+            int start = sprite.X - ((sprite.Tag & 128) != 0 ? 32 : 0);
+            int begin = Math.Max(0, start - x), end = Math.Min(count, start + size * scale - x);
+            if (begin >= end) continue;
+            bool channelKnown = (sprite.KnownMask & required) == required;
+            byte candidate = (byte)(sprite.Tag & 15);
+            for (int offset = begin; offset < end; offset++)
+            {
+                byte mask = (byte)(1 << offset);
+                if (!channelKnown) known &= unchecked((byte)~mask);
+                int position = (x + offset - start) / scale;
+                int pattern = position < 8 ? sprite.Left : sprite.Right;
+                if ((pattern & (128 >> (position & 7))) == 0) continue;
+                if (channelKnown) { overlap |= (byte)(occupied & mask); occupied |= mask; }
+                if (candidate != 0 && (chosen & mask) == 0)
+                { colours |= (ulong)candidate << (offset * 8); chosen |= mask; }
+            }
+        }
+        if (selectedKnown && overlap != 0) _status.SpriteCoincidence();
+        return (colours, known);
+    }
+
     private Tms9918Pixel SpritePixel(int dot, int line)
     {
         if (!_registers.DisplayEnabled || _registers.UsesTextTiming

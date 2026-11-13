@@ -93,11 +93,17 @@ public sealed partial class EmuZ80 : ICpuZ80
         finally { _insideClock = false; if (_deadlineListener is not null) PublishDeadline(); }
     }
 
-    // Parcours canonique commun aux niveaux isolés et aux trains reçus.
+    // Control fences shared by scalar inputs and the compiled received phase program.
+    // Quiet phase portions are materialized arithmetically by the same sequencer.
     private void ApplyClockEdge(bool high)
     {
         bool wasActive = _bus.IsActive;
         _bus.AdvanceClockEdge(high);
+        ApplyClockControl(high, wasActive);
+    }
+
+    private void ApplyClockControl(bool high, bool wasActive)
+    {
         if (!high) { FallingControlEdge(); return; }
         _control.ResetSampled = _control.ResetRequested;
         _control.ResetAtOpcodeT2 = _bus.AtOpcodeT2;
@@ -120,18 +126,20 @@ public sealed partial class EmuZ80 : ICpuZ80
         else if (_internalClocksRemaining != 0) AdvanceInternalClock();
         else if (wasActive && !_bus.IsActive)
         {
-            if (!CycleHasInternalExtension() && GrantBus(CpuZ80Continuation.BusCycleCompleted)) return;
-            BusCycleCompleted();
+            if (!CompleteReceivedBusCycle()) return;
         }
-        if (_bus.AtLastClockStart)
-        {
-            SampleControlInputs();
-            if (_flow is CpuZ80Flow.Fetch or CpuZ80Flow.PrefixIndex && _bus.SampledData == 0x76)
-                _control.PendingHalt = true;
-            if (_control.Halted && (_control.SampledNmi ||
-                (_control.SampledInt && _interrupts.Iff1 && _interrupts.CaptureState().EiInhibitRemaining == 0)))
-                _control.PendingHalt = false;
-        }
+        SampleBusCycleControl();
+    }
+
+    private void SampleBusCycleControl()
+    {
+        if (!_bus.AtLastClockStart) return;
+        SampleControlInputs();
+        if (_flow is CpuZ80Flow.Fetch or CpuZ80Flow.PrefixIndex && _bus.SampledData == 0x76)
+            _control.PendingHalt = true;
+        if (_control.Halted && (_control.SampledNmi ||
+            (_control.SampledInt && _interrupts.Iff1 && _interrupts.CaptureState().EiInhibitRemaining == 0)))
+            _control.PendingHalt = false;
     }
 
     private void OnBusDeadlineChanged(long? next)

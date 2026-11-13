@@ -37,6 +37,25 @@ internal sealed class Tms9918CpuWriteBus
         _observationTime = timeNanoseconds;
     }
 
+    internal void ReceiveInactiveProgram(long time, Tms9918CpuPins pins,
+        long firstDataChange, long lastDataChange, long lastModeChange)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(time, _observationTime);
+        if (_publishing || !_state.Pins.CsrHigh || !_state.Pins.CswHigh || !pins.CsrHigh || !pins.CswHigh)
+            throw new InvalidOperationException("An inactive CPU program cannot contain a selected strobe.");
+        bool lost = _state.QualificationLost;
+        if (firstDataChange >= 0 && _state.LastCapture is { } capture && firstDataChange - capture < T.DataHold)
+            lost = true;
+        _state = _state with
+        {
+            TimeNanoseconds = time, Pins = pins,
+            ModeChanged = lastModeChange < 0 ? _state.ModeChanged : lastModeChange,
+            DataChanged = lastDataChange < 0 ? _state.DataChanged : lastDataChange,
+            QualificationLost = lost,
+        };
+        _observationTime = time;
+    }
+
     internal void ReceivePins(long timeNanoseconds, Tms9918CpuPins pins)
     {
         AdvanceInputTime(timeNanoseconds);

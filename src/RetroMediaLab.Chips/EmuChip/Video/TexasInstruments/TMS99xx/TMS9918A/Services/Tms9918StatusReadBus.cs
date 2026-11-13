@@ -37,6 +37,15 @@ internal sealed class Tms9918StatusReadBus
         _observationTime = timeNanoseconds;
     }
 
+    internal void ReceiveInactiveProgram(long time, Tms9918CpuPins pins)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(time, _observationTime);
+        if (_publishing || !_state.Pins.CsrHigh || !_state.Pins.CswHigh || !pins.CsrHigh || !pins.CswHigh)
+            throw new InvalidOperationException("An inactive status program cannot contain a selected strobe.");
+        _state = _state with { TimeNanoseconds = time, Pins = pins, StatusSelected = false };
+        _observationTime = time;
+    }
+
     internal void ReceivePins(long timeNanoseconds, Tms9918CpuPins pins)
     {
         AdvanceInputTime(timeNanoseconds);

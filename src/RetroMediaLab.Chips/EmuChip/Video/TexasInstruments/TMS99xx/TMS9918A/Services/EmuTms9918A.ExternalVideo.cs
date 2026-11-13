@@ -16,11 +16,11 @@ public sealed partial class EmuTms9918A
         AdvanceTo(timeNanoseconds);
         if (_externalVideo.VideoVoltage == voltage && _externalVideo.VideoKnown == known) return;
         _externalVideo = _externalVideo with { VideoVoltage = voltage, VideoKnown = known };
-        if (!VideoSignal.ExternalVideo) return;
-        VideoSignal = VideoSignal with { TimeNanoseconds = _time, ExternalOutputVoltage = ExternalOutputVoltage };
+        if ((_videoFlags & ExternalPixel) == 0) return;
+        _videoTime = _time; _videoVoltage = ExternalOutputVoltage;
         bool wasPublishing = _publishing;
         _publishing = true;
-        try { VideoSignalProduced?.Invoke(VideoSignal); }
+        try { RepublishExternalRasterSignal(); }
         finally { _publishing = wasPublishing; }
     }
 

@@ -16,6 +16,27 @@ internal static class Tms9918VramSchedule
     private static readonly Tms9918VramSlot[] Multicolor = CreateMulticolor();
     private static readonly Tms9918VramSlot[] Refresh = CreateRefresh();
 
+    private static readonly int[] GraphicsQuiet = CreateQuietRuns(Graphics), TextQuiet = CreateQuietRuns(Text),
+        MulticolorQuiet = CreateQuietRuns(Multicolor), RefreshQuiet = CreateQuietRuns(Refresh);
+
+    internal static int QuietPixelsAt(int dot, Tms9918DisplayMode mode, bool refresh)
+        => (refresh ? RefreshQuiet : mode switch
+        {
+            Tms9918DisplayMode.Text or Tms9918DisplayMode.GraphicsIIText
+                or Tms9918DisplayMode.TextMulticolor or Tms9918DisplayMode.GraphicsIITextMulticolor => TextQuiet,
+            Tms9918DisplayMode.Multicolor or Tms9918DisplayMode.GraphicsIIMulticolor => MulticolorQuiet,
+            _ => GraphicsQuiet,
+        })[dot];
+
+    private static int[] CreateQuietRuns(Tms9918VramSlot[] slots)
+    {
+        var runs = new int[342];
+        for (int dot = 340; dot > 0; dot--)
+            if ((dot & 1) != 0 || slots[dot >> 1].Kind == K.Cpu)
+                runs[dot] = 1 + runs[dot + 1];
+        return runs;
+    }
+
     internal static Tms9918VramSlot At(int dot, Tms9918DisplayMode mode, bool refresh)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(dot);

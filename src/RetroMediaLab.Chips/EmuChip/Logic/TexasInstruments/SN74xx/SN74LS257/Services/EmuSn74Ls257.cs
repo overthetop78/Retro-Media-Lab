@@ -47,6 +47,20 @@ public sealed class EmuSn74Ls257 : ISn74Ls257, IEmuCombinationalRangeModel
 
     public LogicOutputRange ExecuteInputRange(in LogicInputRange range) => _pins.ExecuteInputRange(in range, 1023, this);
     public EmuLogicResponse ExecuteProgram(in EmuSignalRange range) => _pins.ExecuteProgram(in range, 1023, this);
+    public void ReceiveWiredInput(long time, ulong word)
+    {
+        if (((word | word >> 32) & 0xffffffffUL & ~1023UL) != 0)
+            throw new ArgumentOutOfRangeException(nameof(word));
+        ushort levels = (ushort)(word & word >> 32), known = (ushort)(word >> 32);
+        Span<long> delays = stackalloc long[4];
+        if (!PrepareInputs(levels, known, delays, out ushort targets)) { _pins.SetWiredTime(time); return; }
+        // The owner prepares its own truth/delays directly. The common output
+        // store receives prepared targets, without interface callbacks into us.
+        _pins.SetWiredTargetsAt(time, targets, delays);
+        _levels = levels; _known = known;
+    }
+    public ulong ResolveWiredOutput() => _pins.ResolveWiredOutput();
+
 
     bool IEmuCombinationalRangeModel.PrepareRangeInput(ulong input, Span<long> delays, out ushort targets)
         => PrepareInputs((ushort)(input & 0xffffffffUL), (ushort)(input >> 32), delays, out targets);

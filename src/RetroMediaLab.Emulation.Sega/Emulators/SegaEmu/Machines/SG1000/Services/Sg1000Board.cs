@@ -93,7 +93,8 @@ internal sealed partial class Sg1000Board : IDisposable
         _vdp.UnrepresentedVramPinsChanged = OnVramPins;
         _vdp.VramReadCycleProduced = ReceiveVramReadCycle;
         _vdp.VramReadCycleCancelled = CancelVramReadCycle;
-        _vdp.VideoSignalProduced = OnVideo;
+        _vdp.SetRasterOutput(_pixels, _pixelKnown);
+        _vdp.RasterCompleted = _ => _completedRaster = true;
         _vdp.FrameStarted = _ => FramesCompleted = _vdp.RasterState.Frame;
         _psg.ReadyChanged = ready => _cpu.SetWait(!ready);
         _psg.OutputChanged = level => { AdvanceAudio(_psg.TimeNanoseconds); _audioLevel = level; };
@@ -165,7 +166,12 @@ internal sealed partial class Sg1000Board : IDisposable
         }
         finally
         {
-            try { _dramReadPort?.Dispose(); }
+            try
+            {
+                // The VDP borrows these buffers; the board remains their owner.
+                _vdp.SetRasterOutput(null, null); _vdp.RasterCompleted = null;
+                _dramReadPort?.Dispose();
+            }
             finally { _disposed = true; }
         }
     }

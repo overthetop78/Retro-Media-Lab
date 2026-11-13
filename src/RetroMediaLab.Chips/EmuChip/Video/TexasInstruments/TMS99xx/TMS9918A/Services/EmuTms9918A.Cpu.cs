@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Enums;
 
@@ -22,6 +23,60 @@ public sealed partial class EmuTms9918A
             _writeBus.ReceivePins(timeNanoseconds, pins);
         }
         return true;
+    }
+
+    private const ulong CpuInputMask = 4095, InactiveCpuStrobes = 3072;
+    private long _inactiveCpuPrograms, _inactiveCpuProgramWords;
+    public long InactiveCpuPrograms => _inactiveCpuPrograms;
+    public long InactiveCpuProgramWords => _inactiveCpuProgramWords;
+
+    // Low byte DATA, then knowledge, MODE, CSR and CSW. The source word is
+    // prepared once by its actual connections, not once per receiver.
+    public static ulong PackCpuInput(Tms9918CpuPins pins)
+        => pins.Data | (pins.DataKnown ? 256UL : 0) | (pins.Mode ? 512UL : 0)
+            | (pins.CsrHigh ? 1024UL : 0) | (pins.CswHigh ? 2048UL : 0);
+
+    private static Tms9918CpuPins UnpackCpuInput(ulong word)
+        => new((byte)word, (word & 256) != 0, (word & 512) != 0, (word & 1024) != 0, (word & 2048) != 0);
+
+    public int TryReceiveInactiveCpuProgram(ReadOnlySpan<EmuSignalWord> inputs)
+    {
+        if (!_cpuPins.CsrHigh || !_cpuPins.CswHigh || _dataDue >= 0 || inputs.IsEmpty) return 0;
+        ulong previous = PackCpuInput(_cpuPins), final = previous;
+        long time = Math.Max(_cpuInputTime, _time), firstData = -1, lastData = -1, lastMode = -1;
+        int count = 0;
+        foreach (ref readonly var input in inputs)
+        {
+            if ((input.Bits & ~CpuInputMask) != 0) throw new ArgumentOutOfRangeException(nameof(inputs));
+            if ((input.Bits & InactiveCpuStrobes) != InactiveCpuStrobes) break;
+            ArgumentOutOfRangeException.ThrowIfLessThan(input.Time, time);
+            time = input.Time;
+            ulong changed = previous ^ input.Bits;
+            if ((changed & 511) != 0)
+            {
+                if (firstData < 0) firstData = time;
+                lastData = time;
+            }
+            if ((changed & 512) != 0) lastMode = time;
+            final = previous = input.Bits;
+            count++;
+        }
+        if (count == 0) return 0;
+        var pins = UnpackCpuInput(final);
+        if (!_reset)
+        {
+            _statusReadBus.ReceiveInactiveProgram(time, pins);
+            _writeBus.ReceiveInactiveProgram(time, pins, firstData, lastData, lastMode);
+        }
+        _cpuInputTime = time; _cpuPins = pins;
+        _inactiveCpuPrograms++; _inactiveCpuProgramWords += count;
+        return count;
+    }
+
+    public void ReceiveCpuInputWord(long time, ulong word)
+    {
+        if ((word & ~CpuInputMask) != 0) throw new ArgumentOutOfRangeException(nameof(word));
+        ReceiveCpuPins(time, UnpackCpuInput(word));
     }
 
     public bool TryAdvanceInactiveCpuInterfaceTo(long timeNanoseconds)

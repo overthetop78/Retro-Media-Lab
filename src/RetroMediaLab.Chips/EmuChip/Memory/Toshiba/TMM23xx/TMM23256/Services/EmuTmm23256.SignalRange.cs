@@ -26,6 +26,47 @@ public sealed partial class EmuTmm23256
             response.Next<0?null:response.Next,Output,retainResponseHistory,response.Responses);
     }
 
+    public EmuMemoryResponse ReceiveWiredPins(long time, ulong pins)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(time, _time);
+        if (_publishing || _executingRange || OutputChanged is not null || NextEventNanosecondsChanged is not null)
+            throw new InvalidOperationException("Exclusive native memory delivery required.");
+        if ((pins & ~EmuMemoryPins.AllMask) != 0 || (pins & EmuMemoryPins.AddressMask) >= (ulong)_busTiming.Capacity)
+            throw new ArgumentOutOfRangeException(nameof(pins));
+        _ = checked(time + _busTiming.MaximumDelay);
+        _executingRange = true;
+        int responses = 0;
+        try
+        {
+            InitializeThrough(time);
+            while (_nextDue >= 0 && _nextDue <= time)
+                if (ResolveOutputAt(_nextDue)) responses++;
+            _time = time;
+            ApplyParallelPins(time, (ushort)pins, (pins & EmuMemoryPins.AddressKnownMask) != 0,
+                (pins & EmuMemoryPins.CsMask) != 0, (pins & EmuMemoryPins.OeMask) != 0);
+            return new(NativeOutput, responses, _nextDue);
+        }
+        finally { _announcedDue = _nextDue; _executingRange = false; }
+    }
+
+    public EmuMemoryResponse AdvanceWiredTime(long time)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(time, _time);
+        if (_publishing || _executingRange || OutputChanged is not null || NextEventNanosecondsChanged is not null)
+            throw new InvalidOperationException("Exclusive native memory delivery required.");
+        _executingRange = true;
+        int responses = 0;
+        try
+        {
+            InitializeThrough(time);
+            while (_nextDue >= 0 && _nextDue <= time)
+                if (ResolveOutputAt(_nextDue)) responses++;
+            _time = time;
+            return new(NativeOutput, responses, _nextDue);
+        }
+        finally { _announcedDue = _nextDue; _executingRange = false; }
+    }
+
     public EmuMemoryResponse ExecuteProgram(in EmuSignalRange range,bool retainHistory=false)
     {
         range.Validate(_time,MemoryInputRange<Tmm23256Pins>.MaximumChanges);

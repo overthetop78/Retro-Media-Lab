@@ -24,6 +24,18 @@ public sealed partial class EmuTmm2009
             response.Next<0?null:response.Next,Output,retainResponseHistory,response.Responses);
     }
 
+    public EmuMemoryResponse ReceiveWiredPins(long time, ulong pins)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(time, _time);
+        if (_publishing || OutputChanged is not null)
+            throw new InvalidOperationException("Exclusive native memory delivery required.");
+        if ((pins & ~EmuMemoryPins.AllMask) != 0 || (pins & EmuMemoryPins.AddressMask) >= 1024)
+            throw new ArgumentOutOfRangeException(nameof(pins));
+        _time = time;
+        int responses = ApplyPackedPins(pins) ? 1 : 0;
+        return new(_outputBits, responses, -1);
+    }
+
     public EmuMemoryResponse ExecuteProgram(in EmuSignalRange range,bool retainHistory=false)
     {
         range.Validate(_time,MemoryInputRange<Tmm2009Pins>.MaximumChanges);

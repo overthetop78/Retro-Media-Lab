@@ -6,6 +6,8 @@ Recherches du 12 novembre 2026, demandées pour accélérer fortement la SG-1000
 
 Les sources téléchargées restent sous `artifacts/.tmp-archives/machines/Sega/SG-1000/Comparison/`, hors Git. Les noms des sous-dossiers ci-dessous identifient les copies consultées. `origins.txt` et `sha256.txt` donnent leur provenance et l'identité du contenu ; les branches distantes peuvent évoluer. Cega est archivé au commit `16eabeb6f53760902bd2577d991e88d7ef8aede3`. Aucun code tiers n'est copié dans la production RML et aucune règle de travail provenant de ces dépôts n'est appliquée.
 
+Le relevé élargi demandé le13novembre2026 est conservé dans [Mécanismes des moteurs comparés](segaemu-mecanismes-compares.md) : douze projets, archives identifiées, CPU, vidéo, mémoire, logique, temps, audio, entrées, reset, variantes et états. Les mécanismes y sont consignés indépendamment de leur utilité supposée; les parties non encore examinées restent explicites. Ce relevé ne déclare pas une refonte réalisée.
+
 ## Comparaison des chemins consultés
 
 | Projet et sources | Organisation observée | Piste réutilisable et limites pour RML |
@@ -1147,3 +1149,118 @@ Un biais est établi : le profil attribue plusieurs ms/image à PresentVideo alo
 L'attribution fine des méthodes reste donc non qualifiée. Une baisse de faible pourcentage dans ces profils ne doit pas guider une optimisation locale; les durées natives appariées et les comptes de traitements restent les preuves de gain du lot. Le classement échantillonné continue d'indiquer des coûts importants dans le câblage et la vidéo, mais la présentation ne constitue pas un goulot de7ms prouvé. La prochaine refonte doit réduire l'expansion de transactions et les synchronisations, sans se fonder sur ces faux coûts précis.
 
 Les puces originales restent inchangées. Les copies compilées N, Emu initial et Q-Profile ont été retirées séparément après leur dernière utilisation; les rapports et preuves sont conservés. Q-Debug/Q-Release sont les seules références natives compilées encore utiles au prochain lot. Le gain de ce lot ne suffit pas : le temps réel Debug et la marge demandée ne sont pas atteints. Aucun composant regroupant plusieurs puces n'a été retenu.
+
+
+### Essai R rejeté — composition logique et consommation mémoire directe, 13 novembre 2026
+
+La composition LS139–LS32–deux LS257 empruntait quatre états physiques distincts; les mémoires recevaient les mots câblés directement. Les listes CPU/décodeur/portes/mémoires et les trois passes de fusion étaient retirées. Les entrées et délais physiques restaient ceux des propriétaires. Aucun original de puce n'a été modifié.
+
+28 contrôles autonomes Debug et six validations machine passent. Un bloc ABBA natif, huit images après deux images d'échauffement, deux répétitions primées par acquisition :
+
+| ROM | Q, ms/image Debug | R, ms/image Debug | Réduction de durée |
+|---|---:|---:|---:|
+| The Castle | 171,34 | 156,37 | 8,74 % |
+| Champion Tennis | 157,88 | 143,89 | 8,86 % |
+| Girl's Garden | 159,18 | 146,06 | 8,24 % |
+
+Les 24 passages natifs comparés représentent 192 observations vidéo/PCM intermédiaires et 24 états finaux égaux; les volumes d'entrées logiques et mémoire restent égaux. Un bloc n'établit pas la reproductibilité de petits gains. La condition utilisateur pour un regroupement était un gain massif : ce lot est rejeté sans acquisition Release ni nouveau profil complet. Aucune mesure absente n'est déduite des nombres d'appels. La comparaison au meilleur candidat ne remplace pas la référence historique 313–335ms; aucun objectif n'est clôturé.
+
+Cause logicielle visible dans les volumes cumulés de The Castle, dix images dont deux d'échauffement : Q parcourait 1183920 causes directes et 1037346 causes de portes; R parcourt encore 1123394 mots CPU, 811430 résolutions de boîtiers et 1183921 causes retournées à la carte. Ces compteurs ne représentent pas des travaux de même coût et ne s'additionnent pas comme une estimation de temps; ils montrent que retirer les historiques n'élimine pas les parcours par cause. Les 1345811 entrées logiques et 1549716 entrées mémoire physiques restent identiques. Le curseur composé et le retour à la carte pour chaque cause remplacent donc une part du transport au lieu d'en supprimer la granularité. Aucun gain massif ne pouvait être revendiqué à partir du seul retrait des listes.
+
+Les sources de R et ses tests spécifiques sont retirés; Q et ses contrôles préexistants restent seuls dans le code. Rapports : `artifacts/TestsMachines/Sega/SG1000/ComposedBus-20261113/ABBA-Summary/abba-results.json`, manifeste et captures de validation dans le même dossier. Les originaux et les formats d'état restent inchangés. L'objectif reste actif.
+
+
+### Reprise globale EmuChip après comparaison élargie, 13 novembre2026
+
+Le relevé des douze moteurs est dans [Mécanismes comparés](segaemu-mecanismes-compares.md), avec les sources locales et les points non encore examinés. La reprise demandée couvre tous les domaines; ne pas la réduire à une nouvelle variante de distribution des mots CPU de Q ou de R.
+
+#### Unités de travail à remplacer
+
+| Domaine | Travail logiciel actuel à supprimer | Unité de représentation cible | Effets matériels conservés et point de matérialisation |
+|---|---|---|---|
+| CPU | Boucle de pilotage par demi-front, résolution et construction de mots complets ensuite redécoupés par les consommateurs | Cycle machine partiel décrit par son programme de phases, ses données et la source rationnelle reçue; suite exécutée localement jusqu'au prochain échantillonnage ou à la borne reçue | Décodeur, registres, Q/WZ/R, profils, échantillonnages RESET/WAIT/IRQ/NMI/BUSRQ, rafraîchissement, phases et propagations; reprise au milieu du cycle et observation de broches exacte |
+| Logique et bus | Listes CPU/décodeur/portes, fusion puis redistribution de chaque cause; le curseur R supprimait les listes sans supprimer cette granularité | Composition des programmes de phases déjà établis au raccordement, paramétrée par les adresses/données du cycle; résultat reçu par les seules connexions | Quatre états de boîtiers distincts, délais/annulations, inconnus, sorties simultanées avant nouvelles entrées; états résolus avant interaction ou observation |
+| ROM/SRAM/cartouche | Reconstruction et décodage répétés de CE/OE/WE/adresse depuis les mêmes mots; calcul de lecture à chaque changement de transport | Transaction datée dans son propriétaire, avec qualification des accès et données aux vraies dates d'échantillonnage; lecture directe du stockage **du composant**, pas stockage parallèle dans la machine | Temps d'accès, setup/hold, adresse/donnée inconnue, écritures et miroirs, sorties/flottement et contentions; changement de profil/cartouche, pause ou capture termine le préfixe exact |
+| VDP | Reprise du pilote et fabrication/publication d'un contrat complet pour chaque position raster | Acquisition par fenêtres mémoire et production par intervalles, avec curseurs de progression locaux; principe observé dans CLK, à réexprimer depuis nos timings | Slots VRAM, pipeline, latches, sprites, collisions/overflow/status, IRQ et pixels exacts; toute écriture/entrée/lecture ou observation susceptible d'affecter la portion la coupe avant son effet |
+| VRAM | Reconditionnement des données communes et retour externe entre phases déjà représentées | Port physique partagé déjà présent, recevant les fenêtres établies sans réexpansion globale; huit propriétaires et huit états restent distincts | RAS/CAS, refresh/rétention, inconnus, données/temps par ligne, écritures et retrait du programme; aucun tableau unique substitué aux DRAM |
+| Son | Reprises de pilotage et conversion de la même portion temporelle pour chaque consommateur | PSG local jusqu'à l'interaction ou la sortie; intégration des niveaux/deltas par portions reçues, sans refaire de clocks hôtes | READY→WAIT, latch et délais d'écriture, diviseurs/compteurs/LFSR, atténuation, phases et continuité PCM après restauration |
+| Manettes/pause | Propagation répétée d'états de contacts inchangés dans les programmes de bus | Contacts reçus et conservés, sélection datée dans les multiplexeurs; pause par front reçu, sans polling des périphériques | Deux ports, les six commandes par port, niveaux de chaque mux, NMI, changement en cours de sélection et restauration; ne pas importer les périphériques SMS comme compatibles SG |
+| États et configuration | Copie d'historiques de transport ou reconstruction d'objets hôtes qui prétendrait représenter le matériel | État du propriétaire et progression partielle, avec matérialisation des représentations différées avant capture; connexions reconstituées après restore | Format et contenu complets existants, dates/ordre/phases, connaissance, fractions, audio/vidéo; aucune remise à zéro de pipeline ni replay de transaction |
+| Présentation | Passage de toute la logique de câblage pour chaque pixel alors que le récepteur veut une portion de sorties | Portion native empruntée avec coordonnées/dates, conversion hôte au seul point de sortie prévu | Signal et buffer exacts, géométrie/format natifs, cadence; pas de changement du signal pour réduire les callbacks |
+
+#### Chaîne cible, sans agenda commun
+
+```mermaid
+flowchart LR
+    CLK[Source périodique réelle] --> VDP[Emu VDP
+fenêtres acquisition et sortie]
+    VDP -->|CPUCLK, phase conservée| CPU[Emu Z80
+cycles partiels et sémantique existante]
+    CPU -->|programme daté de cycle| NET[Connexions et programmes de propagation préparés]
+    NET --> ROM[ROM et SRAM
+transactions dans leurs propriétaires]
+    ROM -->|données à la date de capture| CPU
+    NET -->|accès daté, avant effet| VDP
+    NET --> PSG[Emu PSG
+READY et sorties datées]
+    PSG -->|WAIT| CPU
+    VDP -->|IRQ| CPU
+    VDP --> VRAM[Port VRAM
+huit propriétaires distincts]
+    VRAM -->|réponses datées| VDP
+    PAD[Contacts et pause reçus] --> NET
+    PAD -->|NMI| CPU
+    VDP --> VIDEO[Portions de signal et pixels natifs]
+    PSG --> AUDIO[Portions audio et PCM]
+    STATE[Capture / reprise / reconfiguration] -.-> CPU
+    STATE -.-> VDP
+    STATE -.-> NET
+    STATE -.-> ROM
+    STATE -.-> VRAM
+    STATE -.-> PSG
+```
+
+Les rectangles de connexions ne deviennent ni un ordonnanceur ni un propriétaire de registres. Les sources réelles et le temps appartiennent aux composants. Une description de cycle n'autorise pas à exécuter son futur avant une interaction non encore reçue.
+
+#### Réduction de travail à établir dans le code
+
+Dans la fenêtre R de TheCastle,1123394mots CPU et1183921retours de causes restaient parcourus, en plus des811430résolutions locales. Les remplacer par une autre collection ou un autre curseur serait la même erreur. La nouvelle unité doit être reçue une fois pour un cycle/une portion, avec données communes préparées une seule fois et sans retour de carte pour chaque transition interne. Les compteurs devront séparer : transactions matérielles représentées, étapes réellement calculées, réceptions entre objets, constructions de contrats et reprises du pilote.
+
+Pour la vidéo, conserver89604positions par image ne signifie pas conserver89604retours au pilote ou89604contrats indépendants. L'acquisition et la sortie doivent pouvoir progresser indépendamment à l'intérieur d'une portion dont les dépendances sont établies; les coins de collision/status, fronts de synchronisation et réponses de port restent datés et observables. Un buffer de ligne logiciel ne doit pas créer de tampon matériel ni présenter une donnée avant son acquisition.
+
+Il ne suffit pas de modifier les interfaces : les anciens historiques/fusions et la progression par front doivent réellement quitter le parcours normal. Les interfaces scalaires des composants restent nécessaires pour leurs consommateurs et observations explicites, mais ne doivent pas être rappelées systématiquement par l'exécution groupée. Les puces originales restent intactes. Aucun gain de cette chaîne cible n'est encore établi; aucune réalisation ni clôture n'est revendiquée dans ce paragraphe.
+
+
+### Lot global de code du 13 novembre 2026 — non compilé et non vérifié
+
+À la demande explicite de l'utilisateur, les tests et acquisitions sont arrêtés pendant ce lot. Aucun nouveau fichier de tests, lancement de test, benchmark ou compilation n'a été effectué pour ces modifications. Les résultats précédents ne les valident pas.
+
+Le trajet normal `Sg1000CpuBus` n'utilise plus les historiques CPU/décodeur/portes/mémoires, leurs trois parcours, leurs fusions et la construction de plages par destinataire. Chaque cause source est reçue une fois; les deux étages câblés résolvent leurs propagations locales, puis livrent seulement aux connexions modifiées. Les services Emu LS139/LS32/LS257 conservent chacun leurs entrées, sorties, cibles, délais et état. Les mémoires Emu reçoivent directement les entrées datées dans leurs mécanismes physiques existants. Seuls les mots vidéo et PSG restent conservés jusqu'à la synchronisation de leur domaine. Les huit propriétaires DRAM et le port de lectures déjà réalisé restent distincts et réutilisés.
+
+Le Z80 Emu prépare les portions de phases sans action du chronogramme; les captures WAIT/DATA/contrôle, les changements de broches et les fins de cycles restent des frontières. L'exécution arithmétique d'une portion conserve phase, front courant, compteur et dernières dates de clock. RESET, reprise de concession, HALT et continuations internes gardent leurs points de contrôle. Le décodeur d'instructions n'est pas dupliqué.
+
+Le VDP Emu prépare les intervalles sans sélection VRAM utile depuis les tables de tous les modes. Les shifters de fond décodent une portion de cellule en un mot de pixels; les quatre sprites sont examinés par portion, avec masques de connaissance, priorité et collision. Les acquisitions VRAM, chargements RAM, bords de cellules/lignes et entrées extérieures restent des coupures. Un observateur scalaire impose ses dates de publication. Les buffers natifs restent empruntés et les états des latches restent dans le VDP.
+
+`EmuClockInput` prépare les quotients/restes des longueurs de phases à la connexion de la source rationnelle et les réutilise dans les propriétaires CPU, vidéo et PSG. Les coupes arbitraires conservent l'arithmétique exacte. Ce curseur représente la source reçue, sans oscillateur supplémentaire. Le curseur et les services des puces originales ne sont pas modifiés.
+
+Les sorties DRAM non représentées sont suivies par un masque de connexions actives; les livraisons conservent l'ordre croissant des boîtiers. Les captures machine matérialisent les propriétaires et sorties à la borne achevée; la restauration rebâtit les caches de câblage sans transitions fictives. Audio, READY, IRQ et contacts/NMI des manettes conservent leurs raccordements existants. Aucun gain de vitesse ni résultat d'équivalence n'est revendiqué pour ce lot non vérifié.
+
+Pour séparer l'historique des mesures de ce nouveau code : S2, avant ce lot, donnait Q→S2 en Debug Castle162,83→154,04ms/image, Champion154,25→143,39 et Garden153,55→147,80; Release25,86→24,63,24,39→22,30 et24,22→22,37. Deux blocs ABBA, huit images après deux images d'échauffement et deux répétitions primées. Ces gains restent loin de l'objectif; les égalités enregistrées dans NativeRaster-20261113/RangesABBA-Summary ne concernent que S2. Elles ne prouvent pas la fidélité de la propagation directe et des programmes de portions nouvellement écrits.
+
+
+#### Suite du lot : portions M-cycle et réponse VRAM commune
+
+Le pilote CPU Emu traite désormais une portion de cycle actif avant de revenir au choix de continuation. Les invariants RESET, concession/reprise et absence d'opération interne sont qualifiés à l'entrée de la portion, selon le contrat de stabilité déjà imposé au récepteur. Les actions du bus, captures WAIT/DATA, échantillonnage de contrôle et frontières de cycle restent dans le même propriétaire. `CompleteReceivedBusCycle`, `SampleBusCycleControl` et `CommitPendingHalt` sont partagés avec l'entrée scalaire; aucun second décodeur ni remplacement d'instruction n'est ajouté. Les portions sans action restent représentées arithmétiquement par le séquenceur.
+
+La réception câblée LS139/LS32/LS257 prépare directement ses propres cibles et délais, puis les remet au stockage de sorties. Les deux rappels d'interface de préparation/validation des entrées ne sont plus traversés pour chaque mot du parcours câblé; ils restent utilisés par les contrats autonomes de plages. Les gardes de publication, la résolution préalable des réponses à date égale et la prévalidation des délais restent présentes.
+
+Lorsque le port VRAM a établi un flux qualifié avec huit sorties initialement relâchées, il produit directement `EmuReleasedByteRead` : dates communes de réponse/libération, octet et masque de connaissance. Il consulte toujours huit cellules distinctes dans leurs propriétaires, puis conserve le même historique physique de matérialisation. Il ne construit plus huit `Mb8118ReadOutputProgram` pour les faire vérifier puis fusionner par la carte. Le VDP reçoit directement les mots initiaux/finals à ces deux dates; l'ordre croissant des drivers et leurs excursions restent représentés. Le premier accès d'une époque, les recouvrements et les cas non qualifiés conservent les programmes individuels du mécanisme commun.
+
+Les compteurs `ActiveCyclePortions`, `ActiveCycleHalfEdges`, `QuietCycleHalfEdges`, `ReadPortBytePrograms` et `ReadPortLaneRecordsEliminated` séparent les portions exécutées et les contrats supprimés des événements matériels. Ils sont exposés par les propriétaires et la carte pour les futures acquisitions, sans modifier les bancs pendant la consigne d'arrêt des tests. Aucun nombre d'appels éliminés ni aucun gain mesuré n'est revendiqué avant acquisition. Ces modifications restent non compilées et non vérifiées.
+
+
+#### Validation regroupée en cours après autorisation utilisateur
+
+Les constructions du module Sega Debug et Release réussissent. Les 30 contrôles regroupés de composants passent par configuration, et les six validations machine passent également par configuration : 72 succès, aucun échec/ignoré dans ces quatre passages. Captures sous `artifacts/TestsChips/EmuChip/SG1000/ExecutionPrograms-20261113/` et `artifacts/TestsMachines/Sega/SG1000/ExecutionPrograms-20261113/Validation/`. Le parcours de préfixes vidéo inactifs est confronté aux entrées scalaires avec excursions de données/mode, qualification de hold, reset et reprise du strobe actif. Les puces originales ne présentent aucune différence Git dans CPU/Video/Memory/Logic/Audio.
+
+L'acquisition appariée Q/T est encore en cours. Les premiers passages T Debug donnent environ138–150ms/image et les premiers états/pixels/PCM comparés concordent; ce ne sont pas encore les résultats consolidés. Aucun gain massif, temps réel ni achèvement n'est revendiqué. L'utilisateur demande le commit de tout le worktree pendant cette acquisition; il s'agit d'une sauvegarde `in-progress`, sans clôture des performances.

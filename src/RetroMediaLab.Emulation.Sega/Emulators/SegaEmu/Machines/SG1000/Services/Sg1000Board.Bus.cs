@@ -53,11 +53,21 @@ internal sealed partial class Sg1000Board
         byte row = cycle.Row, column = cycle.Column;
         Span<Mb8118ReadOutputProgram> programs = stackalloc Mb8118ReadOutputProgram[8];
         byte dataKnown = addressKnown ? (byte)255 : (byte)0;
-        bool accepted = _dramReadPort!.ReceiveReadProgram(in prepared, row, dataKnown, column, dataKnown, programs);
+        bool accepted = _dramReadPort!.ReceiveByteReadProgram(in prepared, row, dataKnown, column, dataKnown, programs, out var byteRead);
         if (accepted)
         {
             DramReadOutputPrograms += 8;
-            RepresentVramOutputs(programs);
+            if (byteRead is { } response)
+            {
+                // Initially released, aligned drivers: the producer already
+                // qualified the shared dates. Do not reconstruct eight records
+                // only to discover that they share those same dates again.
+                _vramReadLevels = _vramReadKnown = 0;
+                _vdp.WithdrawVramReadProgram();
+                VramReadProgramWords += _vdp.ReceiveVramReadProgram(in response);
+                _vramOutputsRepresented = true;
+            }
+            else RepresentVramOutputs(programs);
         }
         else
         {

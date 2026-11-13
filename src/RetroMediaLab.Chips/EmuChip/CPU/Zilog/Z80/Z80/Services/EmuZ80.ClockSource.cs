@@ -1,11 +1,11 @@
 using RetroMediaLab.Chips.Logic.Common.Contracts;
-using RetroMediaLab.Chips.Logic.Common.Services;
+using RetroMediaLab.Chips.EmuChip.Common.Services;
 
 namespace RetroMediaLab.Chips.EmuChip.CPU.Zilog.Z80.Z80.Services;
 
 public sealed partial class EmuZ80
 {
-    private RationalClockInput _clockInput;
+    private EmuClockInput _clockInput;
     private bool _hasClockSource, _drivingClockSource;
     private long _clockSourceBoundary;
 
@@ -15,7 +15,7 @@ public sealed partial class EmuZ80
     {
         if (_insideClock || _publishingDeadline || _bus.IsPublishing || _drivingClockSource)
             throw new InvalidOperationException("Cannot replace a CPU clock source during delivery.");
-        var input = new RationalClockInput(source);
+        var input = new EmuClockInput(source);
         _bus.ValidateClockSource(source);
         _clockInput = input;
         _hasClockSource = true;

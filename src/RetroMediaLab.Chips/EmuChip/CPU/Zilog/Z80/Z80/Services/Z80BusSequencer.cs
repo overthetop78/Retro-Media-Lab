@@ -122,6 +122,19 @@ internal sealed class Z80BusSequencer
     internal bool AtCycleStart => IsActive && _phase == 0 && TimeNanoseconds == _lastRisingEdge;
     internal bool HasSample => _hasSample;
     internal int Phase => _phase;
+    internal int QuietPhaseCount => IsActive && !_waiting ? _waveforms.QuietPhases[(int)_cycle][_phase] : 0;
+
+    internal void ExecuteQuietPhases(long first, long last, long lastRising, int count)
+    {
+        // Every intervening physical output deadline is still resolved and
+        // transported. Only empty clock actions are represented arithmetically.
+        if (count <= 0 || count > QuietPhaseCount)
+            throw new ArgumentOutOfRangeException(nameof(count));
+        AdvanceTo(last);
+        AdvanceStableClockEdges(first, last, lastRising, count);
+        _phase += count;
+    }
+
     internal Z80BusCycle Cycle => _cycle;
     internal bool AtLastClockStart => IsActive && !_waiting && _phase ==
         (_cycle == Z80BusCycle.InterruptAcknowledge ? 10

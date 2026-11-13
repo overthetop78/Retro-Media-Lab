@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
 using System.Numerics;
 using RetroMediaLab.Chips.Logic.Common.Enums;
 using RetroMediaLab.Chips.Memory.Fujitsu.MB81xx.MB8118.Contracts;
@@ -20,7 +21,9 @@ public sealed class EmuMb8118ReadPort : IDisposable
     private byte _address, _data, _known;
     private bool _addressKnown;
     private long _addressChanged = -1;
-    private long _projectedReads, _canonicalReceives, _epochs;
+    private long _projectedReads, _canonicalReceives, _epochs, _byteReadPrograms, _laneOutputRecordsEliminated;
+    public long ByteReadPrograms => _byteReadPrograms;
+    public long LaneOutputRecordsEliminated => _laneOutputRecordsEliminated;
     public long ProjectedReads => _projectedReads;
     public long CanonicalReceives => _canonicalReceives;
     public long Epochs => _epochs;
@@ -51,7 +54,18 @@ public sealed class EmuMb8118ReadPort : IDisposable
 
     public bool ReceiveReadProgram(in Mb8118ReadProgram input, byte rowData, byte rowKnown,
         byte columnData, byte columnKnown, Span<Mb8118ReadOutputProgram> outputs)
+        => ReceiveReadCore(in input, rowData, rowKnown, columnData, columnKnown, outputs, false, out _);
+
+    public bool ReceiveByteReadProgram(in Mb8118ReadProgram input, byte rowData, byte rowKnown,
+        byte columnData, byte columnKnown, Span<Mb8118ReadOutputProgram> fallback,
+        out EmuReleasedByteRead? byteRead)
+        => ReceiveReadCore(in input, rowData, rowKnown, columnData, columnKnown, fallback, true, out byteRead);
+
+    private bool ReceiveReadCore(in Mb8118ReadProgram input, byte rowData, byte rowKnown,
+        byte columnData, byte columnKnown, Span<Mb8118ReadOutputProgram> outputs,
+        bool useByteResponse, out EmuReleasedByteRead? byteRead)
     {
+        byteRead = null;
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_withdrawing) throw new InvalidOperationException("Cannot replace a read stream during materialisation.");
         if (outputs.Length < 8 || !ReferenceEquals(input.Profile, _owners[0].ReadTimingIdentity))
@@ -77,12 +91,14 @@ public sealed class EmuMb8118ReadPort : IDisposable
             return accepted;
         }
 
+        bool releasedByte = useByteResponse && _hasCurrent && input.RowTime >= _current.ReleaseTime;
         byte levels = 0, known = 0;
         for (int lane = 0; lane < 8; lane++)
         {
             var value = (LogicPinState)_views[lane].Cells.Span[input.ReadAddress];
             if (value == LogicPinState.High) levels |= (byte)(1 << lane);
             if (value is LogicPinState.Low or LogicPinState.High) known |= (byte)(1 << lane);
+            if (releasedByte) continue;
             LogicPinState initial;
             long release;
             if (_hasCurrent)
@@ -93,6 +109,11 @@ public sealed class EmuMb8118ReadPort : IDisposable
             else { initial = _views[lane].Output; release = _views[lane].Release; }
             outputs[lane] = new(initial, release, LogicPinState.HighImpedance,
                 input.ResponseTime, value, input.ReleaseTime);
+        }
+        if (releasedByte)
+        {
+            byteRead = new EmuReleasedByteRead(input.ResponseTime, input.ReleaseTime, levels, known);
+            _byteReadPrograms++; _laneOutputRecordsEliminated += 8;
         }
         if (_hasCurrent) CommitCurrent();
         _current = input; _currentRowData = rowData; _currentRowKnown = rowKnown;

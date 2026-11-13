@@ -10,6 +10,7 @@ internal sealed partial class Sg1000Board
     private long _videoMemoryDue = long.MaxValue;
     private readonly long[] _videoMemoryDeadlines = new long[8];
     private bool _videoMemoryDueDirty = true;
+    private uint _videoMemoryPending;
 
     private void ConnectClockDomains()
     {
@@ -33,14 +34,21 @@ internal sealed partial class Sg1000Board
         long previous = _videoMemoryDeadlines[bit], due = next ?? long.MaxValue;
         if (previous == due) return;
         _videoMemoryDeadlines[bit] = due;
+        if (next.HasValue) _videoMemoryPending |= 1u << bit;
+        else _videoMemoryPending &= ~(1u << bit);
         if (due < _videoMemoryDue) { _videoMemoryDue = due; _videoMemoryDueDirty = false; }
         else if (previous == _videoMemoryDue) _videoMemoryDueDirty = true;
     }
 
     private void RefreshVideoMemoryBoundaries()
     {
+        _videoMemoryPending = 0;
         for (int bit = 0; bit < 8; bit++)
-            _videoMemoryDeadlines[bit] = _dram[bit].NextUnrepresentedEventNanoseconds ?? long.MaxValue;
+        {
+            var due = _dram[bit].NextUnrepresentedEventNanoseconds;
+            _videoMemoryDeadlines[bit] = due ?? long.MaxValue;
+            if (due.HasValue) _videoMemoryPending |= 1u << bit;
+        }
         _videoMemoryDueDirty = true;
         _psgReadyDue = _psg.NextEventNanoseconds ?? long.MaxValue;
     }
@@ -51,7 +59,13 @@ internal sealed partial class Sg1000Board
         if (_videoMemoryDueDirty)
         {
             long next = long.MaxValue;
-            foreach (long due in _videoMemoryDeadlines) next = Math.Min(next, due);
+            uint pending = _videoMemoryPending;
+            while (pending != 0)
+            {
+                int bit = System.Numerics.BitOperations.TrailingZeroCount(pending);
+                pending &= pending - 1;
+                next = Math.Min(next, _videoMemoryDeadlines[bit]);
+            }
             _videoMemoryDue = next;
             _videoMemoryDueDirty = false;
         }
@@ -67,8 +81,13 @@ internal sealed partial class Sg1000Board
         _coincidentVramTime = time;
         try
         {
-            for (int bit = 0; bit < 8; bit++)
+            uint pending = _videoMemoryPending;
+            while (pending != 0)
+            {
+                int bit = System.Numerics.BitOperations.TrailingZeroCount(pending);
+                pending &= pending - 1;
                 if (_videoMemoryDeadlines[bit] <= time) _dram[bit].AdvanceTo(time);
+            }
         }
         finally
         {

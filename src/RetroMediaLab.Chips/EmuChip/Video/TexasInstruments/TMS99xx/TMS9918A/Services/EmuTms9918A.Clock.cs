@@ -65,7 +65,7 @@ public sealed partial class EmuTms9918A
         return (long)value;
     }
 
-    private void AdvanceMasterHalfEdges(int count)
+    private void AdvanceMasterHalfEdges(int count, int rasterProgramPixels = 0)
     {
         ResolveVramReadInputs(_time);
         bool hadCpuObserver = CpuClockChanged is not null, hadGromObserver = GromClockChanged is not null;
@@ -87,7 +87,8 @@ public sealed partial class EmuTms9918A
         try
         {
             if (_ramLoadActive && _clock.HalfEdges >= _ramLoadHalfEdge) ApplyRamLoad();
-            if (pixelChanged && _clock.PixelClockHigh && !_reset)
+            if (rasterProgramPixels > 1) ProduceRasterProgramPixels(rasterProgramPixels);
+            else if (pixelChanged && _clock.PixelClockHigh && !_reset)
             { ApplyExternalSyncAtPixel(); ProduceRasterPixel(); }
             // A listener attached by the pixel callback did not observe an
             // earlier edge inside this prefix. Only a coincident edge may be

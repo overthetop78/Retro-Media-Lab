@@ -1067,6 +1067,169 @@ public sealed class VdpClockBoundaryTests
 public sealed class EmuChipEquivalenceTests
 {
     [Fact]
+    public void NativeRasterBuffersPreserveEveryModeSignalCutAndRestore()
+    {
+        foreach (bool display in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 8))
+        {
+            var initial = new Tms9918InitialState(new((byte)(1 | ((mode & 1) << 1)),
+                (byte)((display ? 0xc0 : 0x80) | ((mode & 6) << 2)), 6, 0x9f, 1, 0x7e, 7, 0xe3), 0, default,
+                new(null, 0, Tms9918CpuVramOperation.None, false), new(0, true, true, true, true));
+            var reference = new Tms9918A(initial, Tms9918CpuTiming.SpecifiedMaximum);
+            var native = new EmuTms9918A(initial, Tms9918CpuTiming.SpecifiedMaximum);
+            var expected = new byte[256 * 192]; var actual = new byte[expected.Length];
+            var expectedKnown = new bool[expected.Length]; var actualKnown = new bool[expected.Length];
+            bool connected = true;
+            long signals = 0, completions = 0, expectedCompletions = 0;
+            reference.VideoSignalProduced = signal =>
+            {
+                signals++;
+                if (signal.Dot == 341 && signal.Line == 261) expectedCompletions++;
+                if (connected && signal.Dot is >= 0 and < 256 && signal.Line is >= 0 and < 192)
+                {
+                    int offset = signal.Line * 256 + signal.Dot;
+                    expected[offset] = signal.Colour; expectedKnown[offset] = signal.ColourKnown;
+                }
+            };
+            native.RasterCompleted = _ => completions++;
+            native.SetRasterOutput(actual, actualKnown);
+            long index = 1;
+            RationalClockSource Source() => new(0, 1_000_000_000, 21_477_270, index, !reference.ClockState.MasterHigh);
+            try
+            {
+                reference.SetVramReadData(0, 0xa5, true); native.SetVramReadData(0, 0xa5, true);
+                reference.ReceiveMasterClockSource(Source()); native.ReceiveMasterClockSource(Source());
+                foreach (long cut in new long[] { 1, 47, 94, 187, 1_000, 16_535, 44_444, 45_123, 46_813,
+                    47_901, 50_444, 55_000, 60_000, 62_000, 63_696, 320_000,
+                    700_000, 1_500_000, 5_000_000, 10_000_000, 16_690_000, 33_380_000 })
+                {
+                    int a = reference.AdvanceMasterClockSourceUntil(cut), b = native.AdvanceMasterClockSourceUntil(cut);
+                    Assert.Equal(a, b); index += a;
+                    Assert.Equal(expected, actual); Assert.Equal(expectedKnown, actualKnown);
+                    Assert.Equal(signals, native.RasterSamplesProduced);
+                    Assert.Equal(expectedCompletions, completions);
+                    Assert.Equal(reference.VideoSignal, native.VideoSignal);
+                    var state = reference.CaptureState(); var nativeState = native.CaptureState();
+                    Assert.Equal(JsonSerializer.Serialize(state), JsonSerializer.Serialize(nativeState));
+                    if (cut == 320_000)
+                    {
+                        reference.RestoreState(state); native.RestoreState(nativeState);
+                        Assert.Equal(expected, actual); Assert.Equal(expectedKnown, actualKnown);
+                        reference.ReceiveMasterClockSource(Source()); native.ReceiveMasterClockSource(Source());
+                    }
+                    if (cut == 700_000)
+                    {
+                        connected = false; native.SetRasterOutput(null, null);
+                    }
+                    if (cut == 1_500_000)
+                    {
+                        connected = true; native.SetRasterOutput(actual, actualKnown);
+                    }
+                    if (cut == 63_696 || cut == 5_000_000)
+                    {
+                        long time = reference.TimeNanoseconds;
+                        bool known = cut != 63_696;
+                        reference.SetVramReadData(time, 0x3c, known); native.SetVramReadData(time, 0x3c, known);
+                        reference.SetExternalVideoVoltage(time, 3.5, known); native.SetExternalVideoVoltage(time, 3.5, known);
+                        Assert.Equal(reference.VideoSignal, native.VideoSignal);
+                    }
+                }
+                Assert.Equal(0, native.RasterScalarDeliveries);
+                Assert.True(native.RasterDirectWrites > 0);
+                Assert.True(native.VideoSignalMaterializations < 100);
+                if (!display) { Assert.True(native.ConstantRasterRuns > 0); Assert.True(native.ConstantRasterPixels > 0); }
+                else Assert.Equal(0, native.ConstantRasterPixels);
+            }
+            finally
+            {
+                reference.VideoSignalProduced = null;
+                native.VideoSignalProduced = null; native.RasterCompleted = null;
+                native.SetRasterOutput(null, null);
+            }
+        }
+    }
+
+    [Fact]
+    public void NativeRasterRetainsScalarPayloadWhenFrameCallbackMutatesExternalVoltage()
+    {
+        var initial = new Tms9918InitialState(new(1, 0, 0, 0, 0, 0, 0, 0), 0, default,
+            new(null, 0, Tms9918CpuVramOperation.None, false), new(0, true, true, true, true));
+        var reference = new Tms9918A(initial, Tms9918CpuTiming.SpecifiedMaximum);
+        var native = new EmuTms9918A(initial, Tms9918CpuTiming.SpecifiedMaximum);
+        var a = new List<Tms9918VideoSignal>(); var b = new List<Tms9918VideoSignal>();
+        var pixels = new byte[256 * 192]; var known = new bool[pixels.Length];
+        reference.VideoSignalProduced = a.Add;
+        native.VideoSignalProduced = b.Add;
+        reference.FrameStarted = time => reference.SetExternalVideoVoltage(time, 4.2, true);
+        native.FrameStarted = time => native.SetExternalVideoVoltage(time, 4.2, true);
+        native.SetRasterOutput(pixels, known);
+        try
+        {
+            string before = JsonSerializer.Serialize(native.CaptureState());
+            Assert.Throws<ArgumentException>(() => native.SetRasterOutput(new byte[1], new bool[1]));
+            Assert.Throws<ArgumentException>(() => native.SetRasterOutput(null, known));
+            Assert.Equal(before, JsonSerializer.Serialize(native.CaptureState()));
+            reference.SetExternalVideoVoltage(0, 3.0, true); native.SetExternalVideoVoltage(0, 3.0, true);
+            var source = new RationalClockSource(0, 1_000_000_000, 21_477_270, 1, true);
+            reference.ReceiveMasterClockSource(source); native.ReceiveMasterClockSource(source);
+            Assert.Equal(reference.AdvanceMasterClockSourceUntil(1_000), native.AdvanceMasterClockSourceUntil(1_000));
+            Assert.Equal(a, b);
+            Assert.Equal(reference.VideoSignal, native.VideoSignal);
+            Assert.Equal(JsonSerializer.Serialize(reference.CaptureState()), JsonSerializer.Serialize(native.CaptureState()));
+            Assert.Equal(a.Count, native.RasterSamplesProduced);
+            Assert.True(known[0]);
+        }
+        finally
+        {
+            reference.VideoSignalProduced = null; reference.FrameStarted = null;
+            native.VideoSignalProduced = null; native.FrameStarted = null; native.SetRasterOutput(null, null);
+        }
+    }
+
+    [Fact]
+    public void InactiveVideoProgramPreservesExcursionsHoldQualificationResetAndActiveSuffix()
+    {
+        foreach (bool reset in new[] { false, true })
+        {
+            var initial = new Tms9918InitialState(new(1, 0, 0, 0, 0, 0, 0, 0), 0, default,
+                new(null, 0, Tms9918CpuVramOperation.None, false), new(0, true, true, true, true));
+            var reference = new Tms9918A(initial, Tms9918CpuTiming.SpecifiedMaximum);
+            var native = new EmuTms9918A(initial, Tms9918CpuTiming.SpecifiedMaximum);
+            if (reset) { reference.SetReset(0, true); native.SetReset(0, true); }
+            else
+            {
+                var selected = new Tms9918CpuPins(0, true, true, true, false);
+                reference.ReceiveCpuPins(2_000, selected); native.ReceiveCpuPins(2_000, selected);
+                selected = selected with { CswHigh = true };
+                reference.ReceiveCpuPins(4_000, selected); native.ReceiveCpuPins(4_000, selected);
+            }
+            EmuSignalWord[] inputs =
+            [
+                new(4_001, EmuTms9918A.PackCpuInput(new(0x11, false, true, true, true))),
+                new(4_002, EmuTms9918A.PackCpuInput(new(0, true, true, true, true))),
+                new(4_010, EmuTms9918A.PackCpuInput(new(0, true, false, true, true))),
+                new(4_020, EmuTms9918A.PackCpuInput(new(0, true, true, true, true))),
+                new(6_000, EmuTms9918A.PackCpuInput(new(0xa5, true, true, true, true))),
+                new(6_500, EmuTms9918A.PackCpuInput(new(0xa5, true, true, true, false))),
+            ];
+            Assert.Equal(5, native.TryReceiveInactiveCpuProgram(inputs));
+            foreach (var word in inputs.Take(5))
+                reference.ReceiveCpuPins(word.Time, new((byte)word.Bits, (word.Bits & 256) != 0,
+                    (word.Bits & 512) != 0, true, true));
+            native.AdvanceTo(6_000);
+            Assert.Equal(JsonSerializer.Serialize(reference.CaptureState()), JsonSerializer.Serialize(native.CaptureState()));
+            Assert.Equal(5, native.InactiveCpuProgramWords);
+            Assert.Equal(1, native.InactiveCpuPrograms);
+            var active = new Tms9918CpuPins(0xa5, true, true, true, false);
+            reference.ReceiveCpuPins(6_500, active); native.ReceiveCpuInputWord(6_500, inputs[5].Bits);
+            active = active with { CswHigh = true };
+            reference.ReceiveCpuPins(8_000, active); native.ReceiveCpuPins(8_000, active);
+            if (reset) { reference.SetReset(9_000, false); native.SetReset(9_000, false); }
+            Assert.Equal(JsonSerializer.Serialize(reference.CaptureState()), JsonSerializer.Serialize(native.CaptureState()));
+        }
+    }
+
+    [Fact]
     public void EverySg1000OwnerPreservesTheOriginalStateAndSignals()
         => Sg1000ChipEfficiency.VerifyEmuCopies();
 

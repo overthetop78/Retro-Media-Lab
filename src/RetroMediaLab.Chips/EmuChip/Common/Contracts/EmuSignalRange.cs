@@ -62,3 +62,21 @@ public static class EmuMemoryPins
             | (we ? WeMask : 0) | (cs2 ? Cs2Mask : 0)
             | ((ulong)(data & dataKnown) << DataShift) | ((ulong)dataKnown << DataKnownShift);
 }
+
+
+/// <summary>Aligned response from an initially released byte-wide connection.
+/// This describes wires, not storage: each bit remains owned by its package.
+/// The receiver preserves ascending-lane transitions at the two common dates.</summary>
+public readonly struct EmuReleasedByteRead
+{
+    public readonly long ReadTime, ReleaseTime;
+    public readonly byte Data, Known;
+
+    public EmuReleasedByteRead(long readTime, long releaseTime, byte data, byte known)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(readTime);
+        ArgumentOutOfRangeException.ThrowIfLessThan(releaseTime, readTime);
+        if ((data & ~known) != 0) throw new ArgumentOutOfRangeException(nameof(data));
+        ReadTime = readTime; ReleaseTime = releaseTime; Data = data; Known = known;
+    }
+}

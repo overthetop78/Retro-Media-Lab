@@ -1,4 +1,3 @@
-using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts;
 using C = RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Constants.Sg1000Constants;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.SG1000.Services;
@@ -15,16 +14,6 @@ internal sealed partial class Sg1000Board
     public long FramesCompleted { get; private set; }
     public ReadOnlyMemory<byte> ColourIndices => _pixels;
     public ReadOnlyMemory<bool> PixelKnowledge => _pixelKnown;
-
-    private void OnVideo(Tms9918VideoSignal signal)
-    {
-        _nativeVideoSamples++;
-        if (signal.Dot == 341 && signal.Line == 261) _completedRaster = true;
-        if (signal.Dot is < 0 or >= C.Width || signal.Line is < 0 or >= C.Height) return;
-        int offset = signal.Line * C.Width + signal.Dot;
-        _pixels[offset] = signal.Colour;
-        _pixelKnown[offset] = signal.ColourKnown;
-    }
 
     private void AdvanceAudio(long time)
     {
@@ -47,6 +36,9 @@ internal sealed partial class Sg1000Board
     public short[] DrainAudio()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        // Complete the host integration only through the already completed
+        // machine boundary; draining never clocks any chip or advances a frame.
+        AdvanceAudio(TimeNanoseconds);
         var result = _samples.ToArray();
         _samples.Clear();
         return result;

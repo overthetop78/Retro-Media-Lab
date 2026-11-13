@@ -21,6 +21,10 @@ public sealed partial class EmuZ80
         => ExecuteBusRangeCore(boundaryExclusive, null, receiver);
 
     public ulong PackedPins => _bus.PackedPins;
+    private long _activeCyclePortions, _activeCycleHalfEdges, _quietCycleHalfEdges;
+    public long ActiveCyclePortions => _activeCyclePortions;
+    public long ActiveCycleHalfEdges => _activeCycleHalfEdges;
+    public long QuietCycleHalfEdges => _quietCycleHalfEdges;
 
     private int ExecuteBusRangeCore(long boundaryExclusive, Z80BusRangeHandler? receiver, EmuSignalRangeHandler? nativeReceiver)
     {
@@ -39,7 +43,8 @@ public sealed partial class EmuZ80
         {
             while (consumed < int.MaxValue && _clockInput.NextTime < boundaryExclusive)
             {
-                if (AdvanceStableInternalPrefix(boundaryExclusive, ref consumed)) continue;
+                if (ExecuteActiveBusCycle(boundaryExclusive, ref consumed)
+                    || AdvanceStableInternalPrefix(boundaryExclusive, ref consumed)) continue;
                 _bus.AdvanceTo(_clockInput.NextTime);
                 if (_bus.RangeChangeCount >= 96) _bus.ExchangeRangeInputs();
                 _insideClock = true;
@@ -60,4 +65,73 @@ public sealed partial class EmuZ80
             _drivingClockSource = false;
         }
     }
+    private bool ExecuteActiveBusCycle(long boundaryExclusive, ref int consumed)
+    {
+        if (!_bus.IsActive || !_started || _internalClocksRemaining != 0
+            || _control.ResetRequested || _control.ResetSampled || _control.ResetHolding
+            || _control.BusGranted || _control.ResumePending) return false;
+        int firstEdge = consumed;
+        // RESET/NMI/BUSRQ are stable over the received interval by contract.
+        // Hoist these invariants once per M-cycle, not once per half-edge.
+        // The semantic decoder and every input capture remain the same owner.
+        do
+        {
+            if (AdvanceQuietBusPhases(boundaryExclusive, ref consumed)) continue;
+            _bus.AdvanceTo(_clockInput.NextTime);
+            if (_bus.RangeChangeCount >= 96) _bus.ExchangeRangeInputs();
+            bool high = _clockInput.NextHigh;
+            bool completed = false, proceed = true;
+            _insideClock = true;
+            try
+            {
+                _bus.AdvanceClockEdge(high);
+                if (high)
+                {
+                    _control.ResetSampled = false;
+                    _control.ResetAtOpcodeT2 = _bus.AtOpcodeT2;
+                    completed = !_bus.IsActive;
+                    if (completed) proceed = CompleteReceivedBusCycle();
+                    if (proceed) SampleBusCycleControl();
+                }
+                else CommitPendingHalt();
+            }
+            finally { _insideClock = false; }
+            _clockInput.Advance(1);
+            consumed++;
+            if (completed || !proceed) break;
+        }
+        while (consumed < int.MaxValue && _clockInput.NextTime < boundaryExclusive);
+        _activeCyclePortions++;
+        _activeCycleHalfEdges += consumed - firstEdge;
+        return true;
+    }
+
+    private bool AdvanceQuietBusPhases(long boundaryExclusive, ref int consumed)
+    {
+        if (_control.PendingHalt.HasValue) return false;
+        int count = Math.Min(_bus.QuietPhaseCount, int.MaxValue - consumed);
+        if (count == 0) return false;
+        long last = _clockInput.TimeAfterEdges(count - 1);
+        if (last >= boundaryExclusive)
+        {
+            count = Math.Min(count, _clockInput.EdgesBefore(boundaryExclusive));
+            if (count == 0) return false;
+            last = _clockInput.TimeAfterEdges(count - 1);
+        }
+        int rising = (count + (_clockInput.NextHigh ? 1 : 0)) / 2;
+        long lastRising = rising == 0 ? 0
+            : _clockInput.TimeAfterEdges((_clockInput.NextHigh ? 0 : 1) + 2 * (rising - 1));
+        _bus.ExecuteQuietPhases(_clockInput.NextTime, last, lastRising, count);
+        if (rising != 0)
+        {
+            int risingPhase = _bus.Phase - (_bus.ClockHigh ? 0 : 1);
+            _control.ResetAtOpcodeT2 = _bus.Cycle == RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Enums.Z80BusCycle.OpcodeFetch
+                && risingPhase == 2;
+        }
+        _clockInput.Advance(count);
+        consumed += count;
+        _quietCycleHalfEdges += count;
+        return true;
+    }
+
 }

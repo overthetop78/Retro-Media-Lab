@@ -8,6 +8,12 @@ internal sealed partial class Sg1000Board
     public Sg1000BoardState CaptureState()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_executingCpuRange || _synchronizingVideo)
+            throw new InvalidOperationException("A machine snapshot requires a completed external observation boundary.");
+        SynchronizeVideoDomain(TimeNanoseconds);
+        SynchronizeReceivers(TimeNanoseconds);
+        ResolveRangeCpuData();
+        AdvanceAudio(TimeNanoseconds);
         return new(3, (byte[])_cartridgeHash.Clone(), TimeNanoseconds, _nextMasterIndex, _masterHigh,
             _vdpReleased, _cpuReleased, _pressed, _pause, _cpu.CaptureState(), _vdp.CaptureState(),
             _psg.CaptureState(), _decoder.CaptureState(), _gates.CaptureState(),
@@ -84,6 +90,8 @@ internal sealed partial class Sg1000Board
         _vdpReleased = state.VdpReleased; _cpuReleased = state.CpuReleased;
         _pressed = state.Pressed; _pause = state.Pause; FramesCompleted = state.Frames;
         RefreshControllerContacts();
+        // These are the same arrays borrowed by the VDP; restore them in place,
+        // without producing a new pixel, frame notification or duplicate buffer.
         state.Pixels.CopyTo(_pixels, 0); state.PixelKnown.CopyTo(_pixelKnown, 0);
         _samples.Clear(); _samples.AddRange(state.Samples);
         _audioTime = state.AudioTime; _sampleIndex = state.SampleIndex; _sampleStart = state.SampleStart;
@@ -92,7 +100,10 @@ internal sealed partial class Sg1000Board
         _vramWirePins = _vdp.VramPins; _vramWiresInitialized = true;
         for (int bit = 0; bit < 8; bit++) CacheDramOutput(bit, _dram[bit].Output);
         RefreshVideoMemoryBoundaries();
+        _wiredMemoryTouched = _wiredLogicTouched = 0;
+        _initializeBusInputs = false;
         ConnectRangeBus();
+        _wiredCpu = new(_cpu.PackedPins);
         ConnectClockDomains();
         ResolveRangeCpuData();
     }

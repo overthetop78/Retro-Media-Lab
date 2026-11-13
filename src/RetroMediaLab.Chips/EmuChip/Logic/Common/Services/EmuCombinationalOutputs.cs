@@ -201,6 +201,52 @@ internal sealed class EmuCombinationalOutputs(int count)
         finally { _announced = Next; _executingRange = false; }
     }
 
+    // Connected feed-forward execution: one owner resolves one physical
+    // response. The caller follows the fixed wires, not an output history.
+    internal ulong ResolveWiredOutput()
+    {
+        if (_publishing || _executingRange || Changed is not null || DeadlineChanged is not null)
+            throw new InvalidOperationException("Wired delivery requires exclusive output transport.");
+        if (_pending == 0) throw new InvalidOperationException("No pending output.");
+        byte changed = ResolveOutputsAt(_next);
+        _announced = Next;
+        return (ulong)_outputs | (ulong)changed << 16;
+    }
+
+    private void ValidateWiredTime(long time)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(time, _time);
+        if (_publishing || _executingRange || Changed is not null || DeadlineChanged is not null)
+            throw new InvalidOperationException("Wired delivery requires exclusive output transport.");
+        if (_pending != 0 && _next <= time)
+            throw new InvalidOperationException("Resolve pending wired outputs before changing their inputs.");
+    }
+
+    internal void SetWiredTime(long time)
+    {
+        ValidateWiredTime(time);
+        _time = time;
+    }
+
+    internal void SetWiredTargetsAt(long time, ushort targets, ReadOnlySpan<long> delays)
+    {
+        ValidateWiredTime(time);
+        if (delays.Length != count) throw new ArgumentException(nameof(delays));
+        uint changed = (uint)((targets ^ _targets) & _outputMask);
+        while (changed != 0)
+        {
+            int pin = BitOperations.TrailingZeroCount(changed) >> 1;
+            uint mask = 3u << (pin * 2); changed &= ~mask;
+            if (((targets ^ _outputs) & mask) == 0) continue;
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(delays[pin]);
+            _ = checked(time + delays[pin]);
+        }
+        _time = time;
+        _executingRange = true;
+        try { SetTargets(targets, delays); }
+        finally { _executingRange = false; _announced = Next; }
+    }
+
     private void FindNext()
     {
         long next = long.MaxValue;

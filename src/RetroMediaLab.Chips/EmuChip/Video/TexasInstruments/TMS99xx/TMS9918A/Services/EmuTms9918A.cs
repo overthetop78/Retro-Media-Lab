@@ -44,7 +44,29 @@ public sealed partial class EmuTms9918A : ITms9918A
     public bool IsCpuInterfaceQualified => _qualified && !_writeBus.Capture().QualificationLost;
     public Tms9918ClockState ClockState => _clock;
     public Tms9918RasterState RasterState => _raster;
-    public Tms9918VideoSignal VideoSignal { get; private set; }
+    // The complete public contract is an observation, not per-pixel transport.
+    public Tms9918VideoSignal VideoSignal
+    {
+        get
+        {
+            _videoSignalMaterializations++;
+            byte flags = _videoFlags;
+            return new(_videoTime, _videoDot, _videoLine, _videoFrame,
+                (flags & ActivePixel) != 0, (flags & HorizontalSyncPixel) != 0,
+                (flags & VerticalSyncPixel) != 0, (flags & BlankingPixel) != 0,
+                (flags & BurstPixel) != 0, _videoColour, (flags & KnownPixel) != 0,
+                (flags & ExternalPixel) != 0, _videoVoltage);
+        }
+        private set
+        {
+            _videoTime = value.TimeNanoseconds; _videoDot = value.Dot; _videoLine = value.Line;
+            _videoFrame = value.Frame; _videoColour = value.Colour; _videoVoltage = value.ExternalOutputVoltage;
+            _videoFlags = (byte)((value.Active ? ActivePixel : 0)
+                | (value.HorizontalSync ? HorizontalSyncPixel : 0) | (value.VerticalSync ? VerticalSyncPixel : 0)
+                | (value.Blanking ? BlankingPixel : 0) | (value.ColorBurst ? BurstPixel : 0)
+                | (value.ColourKnown ? KnownPixel : 0) | (value.ExternalVideo ? ExternalPixel : 0));
+        }
+    }
     public Action<Tms9918ClockOutput>? CpuClockChanged { get; set; }
     public Action<Tms9918ClockOutput>? GromClockChanged { get; set; }
     public Action<Tms9918VideoSignal>? VideoSignalProduced { get; set; }

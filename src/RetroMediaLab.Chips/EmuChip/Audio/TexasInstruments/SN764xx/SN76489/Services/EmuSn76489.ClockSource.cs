@@ -1,18 +1,18 @@
 using RetroMediaLab.Chips.Logic.Common.Contracts;
-using RetroMediaLab.Chips.Logic.Common.Services;
+using RetroMediaLab.Chips.EmuChip.Common.Services;
 
 namespace RetroMediaLab.Chips.EmuChip.Audio.TexasInstruments.SN764xx.SN76489.Services;
 
 public sealed partial class EmuSn76489
 {
-    private RationalClockInput _clockInput;
+    private EmuClockInput _clockInput;
     private bool _hasClockSource, _advancingClockSource;
 
     public void ReceiveClockSource(RationalClockSource source)
     {
         if (_publishing || _advancingClockSource)
             throw new InvalidOperationException("Cannot replace a PSG clock during delivery.");
-        var input = new RationalClockInput(source);
+        var input = new EmuClockInput(source);
         ArgumentOutOfRangeException.ThrowIfLessThan(input.NextTime, TimeNanoseconds);
         if (input.NextHigh == _clockHigh)
             throw new ArgumentException("The first source edge must change the received clock level.", nameof(source));

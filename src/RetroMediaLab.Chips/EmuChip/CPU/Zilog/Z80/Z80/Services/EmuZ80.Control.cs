@@ -21,6 +21,20 @@ public sealed partial class EmuZ80
         _control.SampledNmi = _interrupts.NmiPending;
     }
 
+    private bool CompleteReceivedBusCycle()
+    {
+        if (!CycleHasInternalExtension() && GrantBus(CpuZ80Continuation.BusCycleCompleted)) return false;
+        BusCycleCompleted();
+        return true;
+    }
+
+    private void CommitPendingHalt()
+    {
+        if (_control.PendingHalt is not { } halted) return;
+        _bus.SetHalt(halted);
+        _control.PendingHalt = null;
+    }
+
     private bool GrantBus(CpuZ80Continuation continuation)
     {
         if (!_control.SampledBusRequest) return false;
@@ -116,11 +130,7 @@ public sealed partial class EmuZ80
             _control.ResetHolding = false;
             BeginInternal(2, CpuZ80Flow.InternalResetRecovery);
         }
-        if (_control.PendingHalt is { } halted)
-        {
-            _bus.SetHalt(halted);
-            _control.PendingHalt = null;
-        }
+        CommitPendingHalt();
         if (_control.BusGranted && _control.BusReleaseSampled)
         {
             _bus.SetBusGranted(false);

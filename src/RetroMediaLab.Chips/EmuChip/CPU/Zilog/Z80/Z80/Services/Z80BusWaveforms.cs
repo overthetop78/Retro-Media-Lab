@@ -11,10 +11,12 @@ namespace RetroMediaLab.Chips.EmuChip.CPU.Zilog.Z80.Z80.Services;
 internal sealed class Z80BusWaveforms
 {
     internal readonly Z80BusStep[][] Cycles;
+    internal readonly byte[][] QuietPhases;
 
     internal Z80BusWaveforms(Z80BusTiming t)
     {
         Cycles = new Z80BusStep[6][];
+        QuietPhases = new byte[6][];
         foreach (var cycle in Enum.GetValues<Z80BusCycle>())
         {
             bool fetch = cycle == Z80BusCycle.OpcodeFetch;
@@ -67,6 +69,18 @@ internal sealed class Z80BusWaveforms
                     steps[6] = write ? Step(A.CompleteWrite, (L.Data, -1, t.DataFloat)) : Step(A.Complete);
                 }
             }
+            // Compile maximal phase portions with no bus action. The CPU's
+            // control-sampling phase is always a fence even if its bus step
+            // has no output. Phase zero and completion remain explicit.
+            var quiet = new byte[steps.Length];
+            int control = ack ? 10 : cycle is Z80BusCycle.MemoryRead or Z80BusCycle.MemoryWrite ? 4 : 6;
+            for (int phase = steps.Length - 2; phase >= 0; phase--)
+            {
+                ref readonly var following = ref steps[phase + 1];
+                if (phase + 1 != control && following.Outputs == 0 && following.Action == A.None)
+                    quiet[phase] = (byte)(1 + quiet[phase + 1]);
+            }
+            QuietPhases[(int)cycle] = quiet;
         }
     }
 

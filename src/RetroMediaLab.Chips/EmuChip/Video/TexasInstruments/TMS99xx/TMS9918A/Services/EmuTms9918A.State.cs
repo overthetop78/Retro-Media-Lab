@@ -64,6 +64,8 @@ public sealed partial class EmuTms9918A
         _time = state.TimeNanoseconds;
         _cpuInputTime = Math.Max(state.CpuWriteBus.TimeNanoseconds, state.StatusReadBus.TimeNanoseconds);
         CpuOutputs = state.CpuOutputs; _clock = state.Clock; _raster = state.Raster;
+        // Restore only the owner's latest sample. Borrowed output buffers stay
+        // connected, and the receiver restores their contents separately.
         VideoSignal = state.VideoSignal;
         _externalVideo = state.ExternalVideo;
         var cpu = state.CpuInterface;

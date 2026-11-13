@@ -1,3 +1,4 @@
+using RetroMediaLab.Chips.EmuChip.Common.Contracts;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Contracts;
 using RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Enums;
 using V = RetroMediaLab.Chips.Video.TexasInstruments.TMS99xx.TMS9918A.Models.Tms9918VramTiming;
@@ -98,6 +99,28 @@ public sealed partial class EmuTms9918A
         _vramReadInputCount = inputs.Length;
         _vramReadInputIndex = 0;
         _vramReadInputDue = inputs.IsEmpty ? long.MaxValue : inputs[0].TimeNanoseconds;
+    }
+
+    /// <summary>Consumes the common two-date wire response directly. No lane
+    /// grid or output-history merge is constructed. First/final input words
+    /// retain the same-date excursions of ascending individual drivers.</summary>
+    public int ReceiveVramReadProgram(in EmuReleasedByteRead response)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(response.ReadTime, _time);
+        ArgumentOutOfRangeException.ThrowIfLessThan(response.ReleaseTime, response.ReadTime);
+        ResolveVramReadInputs(_time);
+        int count = 0;
+        byte first = (byte)(response.Data & 1);
+        _vramReadInputs[count++] = new(response.ReadTime, first, false);
+        bool known = response.Known == 255;
+        if (response.Data != first || known)
+            _vramReadInputs[count++] = new(response.ReadTime, response.Data, known, true);
+        first = (byte)(response.Data & 254);
+        _vramReadInputs[count++] = new(response.ReleaseTime, first, false);
+        if (first != 0) _vramReadInputs[count++] = new(response.ReleaseTime, 0, false, true);
+        _vramReadInputCount = count; _vramReadInputIndex = 0;
+        _vramReadInputDue = response.ReadTime;
+        return count;
     }
 
     public void WithdrawVramReadProgram()

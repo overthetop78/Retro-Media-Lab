@@ -27,9 +27,9 @@ if ($PairedManifest) {
             $reference=$game[0].Report
             $referencePass=@($reference.Passes | Where-Object Kind -eq 'Measure')[0]
             $physicalFrame=$referencePass.Frames
-            $ignore=@('WallMs','ProcessCpuMs','AllocatedBytes','GcPauseMs','Gc0','Gc1','Gc2','BoardWallMs','PresentationWallMs','AudioWallMs',
+            $ignore=@('DirectCauseVisits','GateCauseVisits','GateSkippedCpuWords','CpuBusResolutions','HeldWaitSamples','HeldControlSamples','MemoryResponseRecordsOmitted','BusRangeDeliveries','WallMs','ProcessCpuMs','AllocatedBytes','GcPauseMs','Gc0','Gc1','Gc2','BoardWallMs','PresentationWallMs','AudioWallMs',
                 'DramOutputNotifications','VramDataDeliveries','VramDataGroups',
-                'DramReadOutputPrograms','VramReadProgramWords','DramReadOutputFallbacks','ClosedDramReadResolutions','ReadPortProjectedReads','ReadPortCanonicalReceives','ReadPortEpochs','VdpProjectedReadCycles','VdpReadPhaseVisitsEliminated','VdpMasterSourceVisits')
+                'DramReadOutputPrograms','VramReadProgramWords','DramReadOutputFallbacks','ClosedDramReadResolutions','ReadPortProjectedReads','ReadPortCanonicalReceives','ReadPortEpochs','VdpProjectedReadCycles','VdpReadPhaseVisitsEliminated','VdpMasterSourceVisits','RasterDirectWrites','RasterScalarDeliveries','VideoSignalMaterializations','ConstantRasterRuns','ConstantRasterPixels','ActiveCyclePortions','ActiveCycleHalfEdges','QuietCycleHalfEdges','RasterProgramRuns','RasterProgramPixels','ReadPortBytePrograms','ReadPortLaneRecordsEliminated','InactiveCpuVideoPrograms','InactiveCpuVideoWords')
             $observations=@(foreach($entry in $game) {
                 $r=$entry.Report
                 foreach($field in @('Sha256','Layout','FrameCount','WarmupFrames','Host','Runtime','ScenarioVersion','TimingPolicy')){
@@ -231,7 +231,7 @@ $results=@(foreach($path in $paths) {
         'VramReadWaveDeliveries','DramExplicitPinDeliveries','VideoSynchronizationCalls','NativeVideoSamples',
         'CpuBusResolutions','DirectCauseVisits','GateCauseVisits','GateSkippedCpuWords','MemoryResponseRecordsOmitted',
         'DramOutputNotifications','VramDataDeliveries','VramDataGroups',
-        'DramReadOutputPrograms','VramReadProgramWords','DramReadOutputFallbacks','ClosedDramReadResolutions','ReadPortProjectedReads','ReadPortCanonicalReceives','ReadPortEpochs','VdpProjectedReadCycles','VdpReadPhaseVisitsEliminated','VdpMasterSourceVisits')) {
+        'DramReadOutputPrograms','VramReadProgramWords','DramReadOutputFallbacks','ClosedDramReadResolutions','ReadPortProjectedReads','ReadPortCanonicalReceives','ReadPortEpochs','VdpProjectedReadCycles','VdpReadPhaseVisitsEliminated','VdpMasterSourceVisits','RasterDirectWrites','RasterScalarDeliveries','VideoSignalMaterializations','ConstantRasterRuns','ConstantRasterPixels','ActiveCyclePortions','ActiveCycleHalfEdges','QuietCycleHalfEdges','RasterProgramRuns','RasterProgramPixels','ReadPortBytePrograms','ReadPortLaneRecordsEliminated','InactiveCpuVideoPrograms','InactiveCpuVideoWords')) {
         if($frames.Count -gt 1) {
             [pscustomobject]@{Counter=$counter;AveragePerFrame=($frames[-1].$counter-$frames[0].$counter)/($frames.Count-1)}
         }
