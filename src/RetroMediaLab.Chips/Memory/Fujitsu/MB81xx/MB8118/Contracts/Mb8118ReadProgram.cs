@@ -10,11 +10,11 @@ public readonly struct Mb8118ReadProgram
     internal readonly Mb8118Timing Profile;
     internal readonly long RowTime, RasFall, CasFall, RasRise, CasRise, ResponseTime, ReleaseTime;
     internal readonly byte Row, Column;
-    internal readonly bool RowKnown, ColumnKnown, Predictable, ReadAddressKnown;
+    internal readonly bool RowKnown, ColumnKnown, Predictable, ReadAddressKnown, CompleteReadTimingQualified;
     internal readonly int ReadAddress;
 
     internal Mb8118ReadProgram(Mb8118Timing profile, in Mb8118ReadCycle cycle,
-        long responseTime, long releaseTime, bool predictable, bool readAddressKnown)
+        long responseTime, long releaseTime, bool predictable, bool readAddressKnown, bool completeReadTimingQualified)
     {
         Profile = profile;
         RowTime = cycle.RowTime; RasFall = cycle.RasFall; CasFall = cycle.CasFall;
@@ -23,6 +23,7 @@ public readonly struct Mb8118ReadProgram
         RowKnown = cycle.RowKnown; ColumnKnown = cycle.ColumnKnown;
         ResponseTime = responseTime; ReleaseTime = releaseTime;
         Predictable = predictable; ReadAddressKnown = readAddressKnown;
+        CompleteReadTimingQualified = completeReadTimingQualified;
         ReadAddress = cycle.Row | (cycle.Column << 7);
     }
 }

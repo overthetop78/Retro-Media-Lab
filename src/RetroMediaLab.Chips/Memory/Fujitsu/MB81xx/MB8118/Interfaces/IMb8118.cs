@@ -8,6 +8,7 @@ public interface IMb8118
     long TimeNanoseconds { get; }
     long? NextEventNanoseconds { get; }
     bool IsTimingQualified { get; }
+    long ClosedReadResolutions { get; }
     LogicPinState Output { get; }
     Action<LogicPinState>? OutputChanged { get; set; }
     Action<long?>? NextEventNanosecondsChanged { get; set; }

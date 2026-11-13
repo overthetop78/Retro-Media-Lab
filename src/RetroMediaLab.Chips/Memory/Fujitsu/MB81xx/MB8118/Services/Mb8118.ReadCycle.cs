@@ -20,6 +20,10 @@ public sealed partial class Mb8118
     private long _representedOutputUntil = -1;
     private bool _readInputsPredictable, _readAddressKnown;
     private int _readAddress;
+    private bool _completeReadTimingQualified;
+    private LogicPinState _describedReadValue;
+    private long _closedReadResolutions;
+    public long ClosedReadResolutions => _closedReadResolutions;
 
     /// <summary>Qualifies the pending received read without advancing physical
     /// time or reading cells outside their owner. The consumer must withdraw
@@ -49,6 +53,7 @@ public sealed partial class Mb8118
         long releaseTime = value == LogicPinState.HighImpedance ? -1 : _readReleaseTime;
         program = new(initial, previousTime, atColumn, readTime, value, releaseTime);
         _readOutputsDescribed = true;
+        _describedReadValue = value;
         return true;
     }
 
@@ -104,7 +109,15 @@ public sealed partial class Mb8118
         bool addressChanged = cycle.Row != cycle.Column || cycle.RowKnown != cycle.ColumnKnown;
         return new(_timingProfile, in cycle, response, release,
             response < cycle.CasRise && cycle.RasRise - cycle.RasFall <= MaximumPulse,
-            cycle.RowKnown && cycle.ColumnKnown && (!addressChanged || cycle.CasFall - cycle.RasFall >= 15));
+            cycle.RowKnown && cycle.ColumnKnown && (!addressChanged || cycle.CasFall - cycle.RasFall >= 15),
+            cycle.CasFall - cycle.RasFall >= _timing.RasCasMinimum
+                && cycle.CasRise - cycle.CasFall >= _timing.CasPulse
+                && cycle.CasRise - cycle.CasFall <= MaximumPulse
+                && cycle.CasRise - cycle.RasFall >= _timing.CasHold
+                && cycle.RasRise - cycle.RasFall >= _timing.RasPulse
+                && cycle.RasRise - cycle.RasFall <= MaximumPulse
+                && cycle.RasRise - cycle.CasFall >= _timing.RasHold
+                && response <= cycle.RasRise);
     }
 
     private void ReceiveReadProgramCore(in Mb8118ReadProgram program, bool? rowData, bool? columnData)
@@ -127,6 +140,7 @@ public sealed partial class Mb8118
         _readInputsPredictable = program.Predictable;
         _readAddressKnown = program.ReadAddressKnown;
         _readAddress = program.ReadAddress;
+        _completeReadTimingQualified = program.CompleteReadTimingQualified;
         _readFirstResponseTime = Math.Min(_readResponseTime,_readReleaseTime);
         _readInputStep = 1;
         _hasReadCycle = true;
@@ -192,6 +206,7 @@ public sealed partial class Mb8118
             if (timeNanoseconds != _time) throw new InvalidOperationException("Cannot advance DRAM from an output callback.");
             return;
         }
+        if (TryResolveClosedRead(timeNanoseconds, includeBoundaryInput)) return;
         // No unrepresented observer can run inside this accepted prefix.
         // Resolve its physical phases locally without republishing derived
         // deadlines at each RAS/CAS/output mutation, then expose one canonical
@@ -212,6 +227,51 @@ public sealed partial class Mb8118
             return;
         }
         ResolveReadPrefix(timeNanoseconds, includeBoundaryInput);
+    }
+
+    // A represented DOUT history is already consumed by its wired receiver.
+    // With no internal observation, only the complete canonical result needs
+    // materialising here. Invalid, interrupted or observed prefixes continue
+    // through the same progressive phase resolver below.
+    private bool TryResolveClosedRead(long until, bool inclusive)
+    {
+        if (!_outputsRepresented || !_hasReadCycle || _readInputStep != 1
+            || !_completeReadTimingQualified || !_readAddressKnown || _startupCycles < 8
+            || _outputChanged is not null || _deadlineChanged is not null
+            || _writeHoldUntil > _time || _rowActive
+            || _receivedRasFall < Startup
+            || !Reaches(_receivedCasRise, until, inclusive)) return false;
+        long ras = _receivedRasFall, cas = _receivedCasFall;
+        // Dynamic conditions still belong to each of the eight independent
+        // owners, including refresh expiry and its previous electrical cycle.
+        if ((_rasRise >= 0 && ras - _rasRise < _timing.RasPrecharge)
+            || (_rasFall >= 0 && ras - _rasFall < (_readCycle && _cycleWrite ? _timing.ReadWriteCycle : _timing.Cycle))
+            || (_casRise >= 0 && cas - _casRise < _timing.CasPrecharge)
+            || (_casFall >= ras) || (_casFall >= 0 && cas - _casFall < 15)) return false;
+        int row = _readAddress & 127;
+        long refreshed = _refreshed[row];
+        if (refreshed < 0 || ras - refreshed > Retention) return false;
+
+        LogicPinState atColumn = _outputDue >= 0 && _outputDue <= cas ? _target : _output;
+        _readResponseRepresented |= _describedReadValue != atColumn;
+        if (_pins.Address != _receivedColumn || !_pins.AddressKnown) _addressChanged = cas;
+        if (_pins.Data != _receivedColumnData) _dataChanged = cas;
+        _refreshed[row] = ras;
+        _row = row; _column = _receivedColumn;
+        _rowKnown = _columnKnown = true;
+        _rowActive = _cycleWrite = false; _readCycle = true;
+        _rasFall = ras; _casFall = cas;
+        _rasRise = _receivedRasRise; _casRise = _receivedCasRise;
+        _pins.Address = _receivedColumn; _pins.AddressKnown = true;
+        _pins.RasHigh = _pins.CasHigh = _pins.WriteHigh = true;
+        _pins.Data = _receivedColumnData;
+        _readInputStep = 4; _hasReadCycle = false;
+        _target = LogicPinState.HighImpedance;
+        _output = until >= _readReleaseTime ? LogicPinState.HighImpedance : _describedReadValue;
+        _outputDue = _nextResponseTime = _output == LogicPinState.HighImpedance ? -1 : _readReleaseTime;
+        _time = until; _closedReadResolutions++;
+        PublishDeadline();
+        return true;
     }
 
     private void ResolveReadPrefix(long timeNanoseconds, bool includeBoundaryInput)

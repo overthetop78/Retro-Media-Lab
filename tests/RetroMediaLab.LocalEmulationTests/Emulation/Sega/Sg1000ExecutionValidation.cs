@@ -118,13 +118,15 @@ public sealed class Sg1000ExecutionValidation
             var state = JsonSerializer.Deserialize<Sg1000BoardState>(Snapshot(original))!;
             restored.RestoreState(state);
             Assert.Equal(Snapshot(original), Snapshot(restored));
-            foreach (long time in new long[] { 501_901, 1_000_071, 4_000_003 })
+            foreach (long time in new long[] { 391_238, 391_239, 391_267, 391_333, 501_901, 1_000_071, 4_000_003 })
             {
                 original.AdvanceTo(time); restored.AdvanceTo(time);
                 Assert.Equal(Snapshot(original), Snapshot(restored));
             }
             original.SetController(1, 7); restored.SetController(1, 7);
+            Assert.Equal(Snapshot(original), Snapshot(restored));
             original.SetPause(true); restored.SetPause(true);
+            Assert.Equal(Snapshot(original), Snapshot(restored));
             original.AdvanceTo(5_000_007); restored.AdvanceTo(5_000_007);
             Assert.Equal(Snapshot(original), Snapshot(restored));
             Assert.Equal(original.DrainAudio(), restored.DrainAudio());

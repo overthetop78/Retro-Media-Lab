@@ -330,6 +330,53 @@ public static class Sg1000ChipEfficiency
 
 public sealed class Mb8118ReadWaveformTests
 {
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void CompletedRepresentedReadsPreserveCanonicalStateAndSubsequentCycles(bool faster)
+    {
+        const long origin=200_010;
+        var timing=faster?Mb8118Timing.Speed10:Mb8118Timing.Speed12;
+        foreach(int kind in Enumerable.Range(0,8))
+        foreach(int cut in new[]{-1,44,85,165,270})
+        foreach(int final in new[]{335,336,384,385,450})
+        {
+            var scalar=Seed(timing);var closed=Seed(timing);var state=scalar.CaptureState();
+            if(kind==1)state=state with {StartupCycles=7};
+            if(kind==2)Array.Fill(state.Refreshed,-1);
+            if(kind==3)state=state with {OutputDue=origin+60,OutputTarget=LogicPinState.Low};
+            if(kind==4)state.Cells[3|(7<<7)]=0;
+            if(kind==5)state=state with {RasFall=origin-200,RasRise=origin-20};
+            scalar.RestoreState(state);closed.RestoreState(state);
+            var cycle=new Mb8118ReadCycle(origin,origin+45,origin+85,
+                origin+(kind==7?100:270),origin+335,3,7,kind!=6,true,false,true);
+            var expected=new List<(long,LogicPinState)>();
+            scalar.OutputChanged=value=>expected.Add((scalar.TimeNanoseconds,value));
+            try
+            {
+                scalar.ReceiveReadCycle(cycle);
+                Assert.True(closed.ReceiveReadCycle(in cycle,false,true,out var outputs));
+                if(cut>=0)
+                {
+                    scalar.AdvanceTo(origin+cut);closed.AdvanceTo(origin+cut);
+                    Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(closed.CaptureState()));
+                }
+                scalar.AdvanceTo(origin+final);closed.AdvanceTo(origin+final);
+                Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(closed.CaptureState()));
+                var actual=new List<(long,LogicPinState)>();
+                for(int i=0;i<3;i++)if(outputs.TimeAt(i)>=0 && outputs.TimeAt(i)<=origin+final)actual.Add((outputs.TimeAt(i),outputs.ValueAt(i)));
+                Assert.Equal(expected,actual);
+                if(kind==0 && cut==-1)Assert.Equal(1,closed.ClosedReadResolutions);
+                if(kind is 1 or 2 or 5 or 6 or 7)Assert.Equal(0,closed.ClosedReadResolutions);
+                long next=origin+(final<355?355:500);
+                var followup=new Mb8118ReadCycle(next,next+45,next+85,next+270,next+335,5,9,true,true,true,false);
+                scalar.ReceiveReadCycle(followup);closed.ReceiveReadCycle(in followup,true,false,out _);
+                scalar.AdvanceTo(next+450);closed.AdvanceTo(next+450);
+                Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()),JsonSerializer.Serialize(closed.CaptureState()));
+            }
+            finally {scalar.OutputChanged=null;}
+        }
+    }
+
     [Fact]
     public void OnePreparedGridPreservesEightIndependentMemoriesAndRejectsAnotherTiming()
     {
