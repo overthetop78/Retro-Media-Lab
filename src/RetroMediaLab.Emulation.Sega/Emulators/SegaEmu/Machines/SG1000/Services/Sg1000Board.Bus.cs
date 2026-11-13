@@ -52,11 +52,8 @@ internal sealed partial class Sg1000Board
         bool addressKnown = cycle.AddressKnown;
         byte row = cycle.Row, column = cycle.Column;
         Span<Mb8118ReadOutputProgram> programs = stackalloc Mb8118ReadOutputProgram[8];
-        bool accepted = true;
-        for (int bit = 0; bit < 8; bit++)
-            accepted &= _dram[bit].ReceiveReadProgram(in prepared,
-                addressKnown ? (row & (1 << bit)) != 0 : null,
-                addressKnown ? (column & (1 << bit)) != 0 : null, out programs[bit]);
+        byte dataKnown = addressKnown ? (byte)255 : (byte)0;
+        bool accepted = _dramReadPort!.ReceiveReadProgram(in prepared, row, dataKnown, column, dataKnown, programs);
         if (accepted)
         {
             DramReadOutputPrograms += 8;
@@ -93,7 +90,7 @@ internal sealed partial class Sg1000Board
     private void RepresentVramOutputs(ReadOnlySpan<Mb8118ReadOutputProgram> programs)
     {
         for (int bit = 0; bit < 8; bit++)
-            CacheDramOutput(bit, _dram[bit].Output);
+            CacheDramOutput(bit, programs[bit].Initial);
         _vdp.WithdrawVramReadProgram();
 
         Span<int> positions = stackalloc int[8];

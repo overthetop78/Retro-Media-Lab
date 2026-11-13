@@ -332,6 +332,79 @@ public sealed class Mb8118ReadWaveformTests
 {
     [Theory]
     [InlineData(false)] [InlineData(true)]
+    public void SharedReadTrainsPreserveEveryOwnerAtObservationAndInterruption(bool faster)
+    {
+        var timing = faster ? Mb8118Timing.Speed10 : Mb8118Timing.Speed12;
+        foreach (int cut in new[] { 0,44,45,84,85,165,269,270,334,335,384,385,450 })
+        foreach (int interruption in new[] { 0,1,2,3 })
+        {
+            var reference = Enumerable.Range(0,8).Select(_ => Seed(timing)).ToArray();
+            var projected = Enumerable.Range(0,8).Select(_ => Seed(timing)).ToArray();
+            for (int lane=0;lane<8;lane++)
+            {
+                var state=reference[lane].CaptureState();
+                for(int address=0;address<state.Cells.Length;address++) state.Cells[address]=(byte)((address+lane)%3);
+                reference[lane].RestoreState(state); projected[lane].RestoreState(state);
+            }
+            using var port = new Mb8118ReadPort(projected);
+            var outputs = new Mb8118ReadOutputProgram[8];
+            var expectedOutputs = new Mb8118ReadOutputProgram[8];
+            long origin=0;
+            for(int read=0;read<96;read++)
+            {
+                origin=200_010+read*1_000;
+                byte row=(byte)(read%128),column=(byte)((read*7)%128);
+                var cycle=new Mb8118ReadCycle(origin,origin+45,origin+85,origin+270,origin+335,
+                    row,column,true,true,false,false);
+                var input=projected[0].PrepareReadProgram(in cycle);
+                for(int lane=0;lane<8;lane++) reference[lane].ReceiveReadCycle(in cycle,
+                    (row&(1<<lane))!=0,(column&(1<<lane))!=0,out expectedOutputs[lane]);
+                Assert.True(port.ReceiveReadProgram(in input,row,255,column,255,outputs));
+                Assert.Equal(expectedOutputs,outputs);
+                if (read==40 && interruption==1)
+                {
+                    for(int lane=0;lane<8;lane++)
+                    {
+                        reference[lane].AdvanceTo(origin+165);projected[lane].AdvanceTo(origin+165);
+                        Assert.Equal(JsonSerializer.Serialize(reference[lane].CaptureState()),JsonSerializer.Serialize(projected[lane].CaptureState()));
+                    }
+                }
+                if (read==40 && interruption==2)
+                {
+                    for(int lane=0;lane<8;lane++)
+                    {
+                        reference[lane].CancelReadCycle(origin+335);projected[lane].CancelReadCycle(origin+335);
+                        var pins=new Mb8118Pins(column,true,true,true,true,(column&(1<<lane))!=0);
+                        reference[lane].ReceivePins(origin+450,pins);projected[lane].ReceivePins(origin+450,pins);
+                        var write=pins with { RasHigh=false, WriteHigh=false };
+                        reference[lane].ReceivePins(origin+600,write);projected[lane].ReceivePins(origin+600,write);
+                        write=write with { CasHigh=false };
+                        reference[lane].ReceivePins(origin+685,write);projected[lane].ReceivePins(origin+685,write);
+                        reference[lane].ReceivePins(origin+900,pins);projected[lane].ReceivePins(origin+900,pins);
+                    }
+                }
+                if (read==40 && interruption==3)
+                {
+                    for(int lane=0;lane<8;lane++)
+                    {
+                        reference[lane].AdvanceTo(origin+450);projected[lane].AdvanceTo(origin+450);
+                        var state=reference[lane].CaptureState();Array.Fill(state.Refreshed,-1);
+                        reference[lane].RestoreState(state);projected[lane].RestoreState(state);
+                    }
+                }
+            }
+            for(int lane=0;lane<8;lane++)
+            {
+                reference[lane].AdvanceTo(origin+cut);projected[lane].AdvanceTo(origin+cut);
+                Assert.Equal(JsonSerializer.Serialize(reference[lane].CaptureState()),JsonSerializer.Serialize(projected[lane].CaptureState()));
+            }
+            Assert.True(port.ProjectedReads>32);
+            if(interruption!=3) Assert.True(port.CanonicalReceives<96*8/2);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
     public void CompletedRepresentedReadsPreserveCanonicalStateAndSubsequentCycles(bool faster)
     {
         const long origin=200_010;

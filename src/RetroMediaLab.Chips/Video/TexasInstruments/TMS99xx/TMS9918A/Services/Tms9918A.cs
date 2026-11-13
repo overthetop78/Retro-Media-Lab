@@ -85,11 +85,15 @@ public sealed partial class Tms9918A : ITms9918A
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
         if (_publishing && timeNanoseconds != _time)
             throw new InvalidOperationException("Cannot advance TMS9918A time from a pin callback.");
-        while ((_nextDue >= 0 && _nextDue <= timeNanoseconds)
-            || _vramReadInputIndex < _vramReadInputCount && _vramReadInputDue <= timeNanoseconds)
+        while (_nextDue >= 0 && _nextDue <= timeNanoseconds)
         {
-            long due = _nextDue < 0 ? _vramReadInputDue : Math.Min(_nextDue, _vramReadInputDue);
-            if (_drivingMasterSource && due >= _masterBoundary && due > _time) return false;
+            long due = _nextDue;
+            if (_drivingMasterSource && due >= _masterBoundary && due > _time)
+            {
+                ResolveVramReadInputs(_masterBoundary, inclusive: false);
+                return false;
+            }
+            ResolveVramReadInputs(due, inclusive: false);
             _time = due;
             if (_vramWriteEnd == due)
             {
@@ -112,15 +116,15 @@ public sealed partial class Tms9918A : ITms9918A
             // Explicit DOUT delivery used AdvanceTo(date) before changing the
             // input. Preserve that ordering: local output phases and their
             // observers run first, then the represented inputs at this date.
-            while (_vramReadInputIndex < _vramReadInputCount && _vramReadInputDue == due)
-            {
-                var input = _vramReadInputs[_vramReadInputIndex++];
-                _vramReadInputDue = _vramReadInputIndex < _vramReadInputCount
-                    ? _vramReadInputs[_vramReadInputIndex].TimeNanoseconds : long.MaxValue;
-                _vramBus.SetInputData(due, input.Data, input.Known, input.IntermediateTransition);
-            }
+            ResolveVramReadInputs(due);
         }
-        if (_drivingMasterSource && timeNanoseconds >= _masterBoundary) return false;
+        if (_drivingMasterSource && timeNanoseconds >= _masterBoundary)
+        {
+            if (_masterBoundary > _time) ResolveVramReadInputs(_masterBoundary, inclusive: false);
+            else ResolveVramReadInputs(_time);
+            return false;
+        }
+        ResolveVramReadInputs(timeNanoseconds);
         _time = timeNanoseconds;
         return true;
     }

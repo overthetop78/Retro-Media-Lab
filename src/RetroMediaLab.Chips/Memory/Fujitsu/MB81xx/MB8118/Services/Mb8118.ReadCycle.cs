@@ -30,6 +30,7 @@ public sealed partial class Mb8118
     /// this description before changing the received input waveform.</summary>
     public bool TryDescribeReadOutputs(out Mb8118ReadOutputProgram program)
     {
+        _readPort?.Withdraw();
         program = default;
         if (!_hasReadCycle || _readInputStep != 1 || _outputChanged is not null
             || _deadlineChanged is not null || _writeHoldUntil > _time || !_readInputsPredictable)
@@ -124,8 +125,9 @@ public sealed partial class Mb8118
     {
         if (!ReferenceEquals(program.Profile, _timingProfile))
             throw new ArgumentException("The prepared electrical grid uses another memory timing profile.", nameof(program));
-        ArgumentOutOfRangeException.ThrowIfLessThan(program.RowTime, _time);
+        ArgumentOutOfRangeException.ThrowIfLessThan(program.RowTime, ReadInputTime);
         if (_publishing) throw new InvalidOperationException("Cannot replace a DRAM waveform during publication.");
+        _readPort?.Withdraw();
         if (_hasReadCycle ? _receivedCasRise > program.RowTime : !_pins.RasHigh || !_pins.CasHigh || !_pins.WriteHigh)
             throw new InvalidOperationException("A complete read waveform requires a released RAS/CAS/WE input boundary.");
         AdvanceCore(program.RowTime, true);
@@ -187,8 +189,8 @@ public sealed partial class Mb8118
     /// this date, then withdraws only the remaining future description.</summary>
     public void CancelReadCycle(long timeNanoseconds)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
-        if (_outputsRepresented) WithdrawForScalarObserver();
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, ReadInputTime);
+        if (_readPort is not null || _outputsRepresented) WithdrawForScalarObserver();
         AdvanceCore(timeNanoseconds, true);
         _hasReadCycle = false;
         _outputsRepresented = false;
@@ -199,13 +201,14 @@ public sealed partial class Mb8118
 
     private void AdvanceCore(long timeNanoseconds, bool includeBoundaryInput)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, ReadInputTime);
         _readOutputsDescribed = false;
         if (_publishing)
         {
             if (timeNanoseconds != _time) throw new InvalidOperationException("Cannot advance DRAM from an output callback.");
             return;
         }
+        _readPort?.Withdraw();
         if (TryResolveClosedRead(timeNanoseconds, includeBoundaryInput)) return;
         // No unrepresented observer can run inside this accepted prefix.
         // Resolve its physical phases locally without republishing derived

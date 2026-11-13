@@ -901,3 +901,56 @@ Le profil complet .NET est refait après ce lot sur24images après12d’échauff
 Sur Champion Debug, ms propres/inclusifs échantillonnées par image : TryResolveClosedRead5,52/6,95; ResolveReadPrefix0,06/1,38; ReceiveReadProgramCore4,16/18,55; ProjectBusInputs8,12/15,69; AdvanceMasterClockSourceUntil7,31/100,93; PresentVideo0,74/1,00. Les inclusifs se recouvrent. Ces nombres incluent l’instrumentation et ne remplacent pas les mesures natives. Profils et volumes complets : ClosedDram-20261113/EventPipe-K-Summary/Debug et Release; acquisitions finales : FinalABBA-Summary/abba-results.json; comparaisons longues : Long-K.
 
 La résolution directe est conservée pour ses gains machine et son équivalence. Ce lot ne réalise pas la rupture globale suffisante demandée :213–237ms/image en Debug reste très loin des16,69ms du temps réel et de la marge supplémentaire exigée. L’objectif global reste ouvert. Le transport commun H/I rejeté n’est pas réintroduit; ses surcoûts doivent rester exclus des refontes suivantes.
+
+### Lot L rejeté : mutations causales locales
+
+Les28contrôles composants et6machine par configuration passent, avec768observations et96états finaux égaux dans deux blocs ABBA. Les gains ne justifient pas le lot : Debug Champion213,39→212,88ms (0,24 %), Girl216,61→213,35 (1,50 %), Castle231,03→227,62 (1,48 %); Release31,38→31,22 (0,51 %),32,59→31,81 (2,38 %),34,29→34,63 (-0,99 %).39063–48255entrées logiques sans changement de cible et43369–43655entrées SRAM inactives sont traitées différemment, mais la distribution et presque toutes les causes restent parcourues. Le cumul ROM ne s’applique à aucune adresse de ces scénarios. Code L retiré, sans voie désactivée; sources K rétablies. La nouvelle vérité exhaustive LS257 indépendante est conservée pour la suite. Rapports sous CauseRanges-20261113. Aucun gain L n’est revendiqué.
+
+## 13 novembre 2026 — Lot M : lectures DRAM reçues une fois et entrées vidéo résolues aux dépendances
+
+Les sources locales dépassent désormais ae3e269d6. Le lot L a été retiré faute de gain utile; M réutilise les moteurs existants. Aucun sélecteur ancien/nouveau n'est ajouté.
+
+```mermaid
+flowchart LR
+  V[VDP : sélection et phases matérielles] -->|Une grille datée par lecture| P[Port MB8118 : historique reçu commun]
+  P -->|Huit vues empruntées, cellules distinctes| D[Huit propriétaires MB8118]
+  D -->|Huit valeurs et délais propres| P
+  P -->|Programme DOUT commun| I[Latch d'entrée VRAM du VDP]
+  I -->|Résolution datée avant échantillonnage| V
+  P -->|Observation, écriture, annulation ou changement d'écouteur| R[Matérialisation de chaque état propriétaire]
+```
+
+Le port conserve les entrées déjà reçues, les dernières dates de changement et les RAS de rafraîchissement par ligne. Il n'est ni un agenda commun ni un contrôleur matériel ajouté. Les mémoires conservent leurs cellules, leur rétention et leurs états propres. Le regroupement exige le même profil temporel, des adresses connues, startup acquis, précharges et maintiens admissibles et cellules encore fraîches. Une incompatibilité, écriture, expiration ou observation retire l'emprunt et reprend le récepteur canonique. Le dernier cycle incomplet garde ses phases et sa propagation de sortie.
+
+Sur le trajet accepté, les huit réceptions canoniques par lecture sont remplacées par une réception de grille et huit lectures des vues appartenant aux mémoires. Les effets des cycles précédents sont résumés, puis restitués avant toute observation. La carte compose les mêmes programmes DOUT sans rappeler Output, qui constitue une observation et retirerait le regroupement.
+
+Le VDP ne coupe plus son avance maître pour chacun des mots DOUT d'un programme déjà reçu. Ces mots modifient seulement son latch d'entrée : ils sont appliqués à leur date avant les sorties locales suivantes et les échantillonnages. À date égale, les sorties locales précèdent les entrées, puis le front maître; les captures et retraits résolvent d'abord le préfixe consommé. Les frontières de pixel, phases VRAM, CPUCLK observée et chargements du pipeline demeurent. Ce lot ne prétend donc pas avoir regroupé tout le balayage ni tous les fronts CPU.
+
+Les 23 contrôles composants passent en Debug et Release, les six contrôles machine dans les deux configurations. Le contrôle groupé ajoute des trains de96lectures pour huit mémoires aux données distinctes, les programmes DOUT attendus, treize frontières intermédiaires, une observation en cours de train, une annulation suivie d'écriture et une expiration de rétention. Les captures finales sont confrontées au récepteur canonique.
+
+### Résultats K/M : transport commun et résolution des entrées
+
+Deux blocs ABBA par configuration, trois ROM,8images après2d’échauffement, deux répétitions natives après amorçage et JIT sans tiering. Chaque capture conserve les identités binaires. Le tableau compare K à M dans les mêmes passages; la référence historique313–335ms/image demeure distincte. Les écarts entre blocs sont conservés, particulièrement sur Castle en Release; aucun petit gain n’est présenté comme statistiquement établi.
+
+| Configuration | Jeu | K ms/image | M ms/image | Réduction de durée |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis | 221,806 | 189,820 | 14,42 % |
+| Debug | Girl’s Garden | 223,206 | 199,039 | 10,83 % |
+| Debug | The Castle | 233,778 | 211,931 | 9,35 % |
+| Release | Champion Tennis | 32,010 | 26,658 | 16,72 % |
+| Release | Girl’s Garden | 34,541 | 33,577 | 2,79 % |
+| Release | The Castle | 36,975 | 33,731 | 8,77 % |
+
+Les768observations natives ABBA et96états complets finaux concordent. La comparaison longue réutilise les six rapports K :120images après30d’échauffement dans les deux configurations,720paires d’images/PCM et six états finaux identiques. Ces passages longs uniques contrôlent l’équivalence et ne prouvent pas un gain causal. M y prend en moyenne253,62–289,41ms/image Debug et31,91–44,53ms Release selon le jeu : la courte fenêtre initiale ne mesure pas le jeu entier.
+
+Volumes du profil :16768lectures d’octet par image et134144programmes DOUT individuels restent représentés. La réception canonique passe de134144appels par image à8appels de matérialisation, soit134136réceptions supprimées;16768réceptions de grille commune les remplacent. Une époque par image, cellules et rafraîchissements indépendants. Les33536mots d’entrée et89604échantillons vidéo par image sont conservés. Deux synchronisations CPU–VDP par image dans cette fenêtre restent inchangées : ce lot ne revendique aucune réduction de leur nombre. Le nombre exact de visites d’horloge retirées aux dates DOUT n’est pas instrumenté.
+
+Les profils complets .NET sont refaits séparément sur24images après12d’échauffement par ROM/configuration. En Debug, DRAM2,05–3,94 % propres, contre10,85–12,04 % dans K; VDP21,60–24,69 %, câblage24,34–25,02 %. Sur Champion Debug, ms propres/inclusives échantillonnées par image : port ReceiveReadProgram1,49/3,45; AdvanceMasterClockSourceUntil5,81/62,78; AdvanceMasterHalfEdges4,43/39,25; ProduceRasterPixel5,97/32,61; DistributeDirectCauses5,81/12,96; DistributeGateCauses4,53/9,06; ProjectBusInputs4,55/12,33. Les inclusifs se recouvrent, ils ne s’additionnent pas. Le travail supprimé n’a donc pas réapparu intégralement dans le port commun.
+
+En Release, le câblage reste29,97–35,72 % des échantillons propres. L’attribution des fonctions optimisées/inlinées et les faibles comptes d’échantillons imposent de la prudence : le groupe Backend reçoit25–29 % sur Garden/Castle, alors que le chronomètre direct PresentVideo mesure0,069–0,094ms/image. Ces poids échantillonnés ne prouvent pas que la conversion vidéo consomme6–7ms; son horodatage direct prévaut pour cette durée. Les méthodes et coûts propres/inclusifs complets restent dans EventPipe-M-Summary/Debug et Release. Aucun nouveau WPR ni UAC n’a été lancé.
+
+Réutilisation : conserver un historique reçu commun aux composants réellement reliés par les mêmes fils; laisser chaque propriétaire certifier ses conditions, posséder ses cellules et restituer son état à l’observation; réutiliser des vues empruntées plutôt que recevoir et résoudre les mêmes entrées huit fois. Un programme d’entrée déjà reçu qui ne change qu’un latch ne doit pas réveiller le pilote d’horloge : résoudre ses dates avant les interactions qui le consomment. Ces règles ne permettent pas de sauter un échantillonnage, une contention ou une réaction extérieure.
+
+Le balayage reste produit pixel par pixel et le CPU conserve son séquenceur de fronts. Le CPU regroupe déjà les plages internes stables dans AdvanceStableInternalPrefix; les fronts des cycles actifs, échantillonnages DATA/WAIT/INT et frontières RESET/NMI/BUSRQ ne sont pas absorbés sans représentation exacte de leurs dépendances. Le bus conserve ses historiques CPU/décodeur/portes et projections; le nouveau profil confirme leur coût. Leur suppression et la granularité du VDP restent à traiter. Le temps réel, même en Release, et la marge importante en Debug ne sont pas atteints. L’objectif global reste ouvert.
+
+Preuves : ReadPort-20261113/ABBA-Summary, EventPipe-M-Summary et Long-M.23contrôles composants passent dans chaque configuration; captures TRX sous artifacts/TestsChips/MB8118/SG1000/ReadPort-20261113. Six contrôles machine passent dans les deux configurations. Les anciennes références compilées L/K et leurs parents vides sont supprimés après leur dernière utilisation, rapports conservés. Seuls M-Debug/M-Release restent temporairement utiles à la prochaine comparaison; leur suppression suivra leur dernière utilisation.

@@ -130,12 +130,6 @@ public sealed partial class Tms9918A
                     continue;
                 }
                 long boundary = Math.Min(_masterBoundary, _clockInputBoundary);
-                if (_vramReadInputDue <= _masterInput.NextTime && _vramReadInputDue < boundary)
-                {
-                    if (!AdvanceClockEventsTo(_vramReadInputDue)) break;
-                    continue;
-                }
-                boundary = Math.Min(boundary, _vramReadInputDue);
                 if (_nextDue >= 0 && _nextDue <= _masterInput.NextTime && _nextDue < boundary)
                 {
                     if (!AdvanceClockEventsTo(_nextDue)) break;
@@ -160,6 +154,7 @@ public sealed partial class Tms9918A
         }
         finally
         {
+            ResolveVramReadInputs(_time);
             _drivingMasterSource = false;
             _masterBoundary = long.MaxValue;
         }

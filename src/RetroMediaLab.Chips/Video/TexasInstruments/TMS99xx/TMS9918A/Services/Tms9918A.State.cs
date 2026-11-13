@@ -11,6 +11,7 @@ public sealed partial class Tms9918A
         EnsureStateBoundary();
         if (_cpuInputTime > _time)
             throw new InvalidOperationException("Synchronize the video domain before observing its complete state.");
+        ResolveVramReadInputs(_time);
         return new(5, _time, _registers.Capture(), _status.Value, _protocol.Capture(),
             _memory.Capture(), new(_cpuPins, _readMode, _readQualified, _reset, _resetStarted,
                 _qualified, _dataDue < 0 ? null : _dataDue, _dataTargetDriven), _writeBus.Capture(), _statusReadBus.Capture(),

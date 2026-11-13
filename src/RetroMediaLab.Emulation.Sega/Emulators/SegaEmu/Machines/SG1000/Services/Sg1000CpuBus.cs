@@ -119,6 +119,9 @@ internal sealed partial class Sg1000Board
     internal long VramReadProgramWords { get; private set; }
     internal long DramReadOutputFallbacks { get; private set; }
     internal long ClosedDramReadResolutions => _dram.Sum(chip => chip.ClosedReadResolutions);
+    internal long ReadPortProjectedReads => _dramReadPort?.ProjectedReads ?? 0;
+    internal long ReadPortCanonicalReceives => _dramReadPort?.CanonicalReceives ?? 0;
+    internal long ReadPortEpochs => _dramReadPort?.Epochs ?? 0;
     internal long DramOutputNotifications => _dramOutputNotifications;
     internal long VramDataDeliveries => _vramDataDeliveries;
     internal long VramDataGroups => _vramDataGroups;

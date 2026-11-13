@@ -67,6 +67,7 @@ public sealed partial class Tms9918A
 
     private void AdvanceMasterHalfEdges(int count)
     {
+        ResolveVramReadInputs(_time);
         int phase = (_clock.HalfEdgePhase + count) % 12;
         int cpuTransitions = (_clock.HalfEdgePhase % 3 + count) / 3;
         int pixelTransitions = (_clock.HalfEdgePhase % 2 + count) / 2;

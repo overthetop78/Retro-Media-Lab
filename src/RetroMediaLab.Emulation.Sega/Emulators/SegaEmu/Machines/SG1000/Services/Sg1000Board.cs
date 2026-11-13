@@ -36,6 +36,7 @@ internal sealed partial class Sg1000Board : IDisposable
     private readonly Sn74Ls257[] _joy = [new(Sn74Ls257Timing.CharacterizedMaximum), new(Sn74Ls257Timing.CharacterizedMaximum)];
     private readonly Tmm2009 _ram = new(false);
     private readonly Mb8118[] _dram = Enumerable.Range(0, 8).Select(_ => new Mb8118(Mb8118Timing.Speed12)).ToArray();
+    private Mb8118ReadPort? _dramReadPort;
     private ushort _pressed;
     private byte _muxContactLow = 255, _muxContactHigh = 255;
     private bool _disposed, _pause, _masterHigh;
@@ -63,6 +64,7 @@ internal sealed partial class Sg1000Board : IDisposable
             (_cartridgeLow,_cartridgeHigh,_cartridgeLowMask,_cartridgeHighMask,_cartridgeRam) = CreateCartridge(_rom,_romConfiguration);
             if (_romConfiguration.InternalGameEnabled)
                 _internalRom = CreateRom(_internalGame,_romConfiguration.InternalGameProfile,true);
+            _dramReadPort = new(_dram);
             Connect();
             _cpu.SetReset(true);
             _vdp.SetReset(0, true);
@@ -161,6 +163,10 @@ internal sealed partial class Sg1000Board : IDisposable
                 chip.ReadOutputProgramWithdrawalRequested = null;
             }
         }
-        finally { _disposed = true; }
+        finally
+        {
+            try { _dramReadPort?.Dispose(); }
+            finally { _disposed = true; }
+        }
     }
 }

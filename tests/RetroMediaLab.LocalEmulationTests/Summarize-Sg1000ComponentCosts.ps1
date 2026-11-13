@@ -29,7 +29,7 @@ if ($PairedManifest) {
             $physicalFrame=$referencePass.Frames
             $ignore=@('WallMs','ProcessCpuMs','AllocatedBytes','GcPauseMs','Gc0','Gc1','Gc2','BoardWallMs','PresentationWallMs','AudioWallMs',
                 'DramOutputNotifications','VramDataDeliveries','VramDataGroups',
-                'DramReadOutputPrograms','VramReadProgramWords','DramReadOutputFallbacks','ClosedDramReadResolutions')
+                'DramReadOutputPrograms','VramReadProgramWords','DramReadOutputFallbacks','ClosedDramReadResolutions','ReadPortProjectedReads','ReadPortCanonicalReceives','ReadPortEpochs')
             $observations=@(foreach($entry in $game) {
                 $r=$entry.Report
                 foreach($field in @('Sha256','Layout','FrameCount','WarmupFrames','Host','Runtime','ScenarioVersion','TimingPolicy')){
@@ -230,7 +230,7 @@ $results=@(foreach($path in $paths) {
         'VramReadWaveDeliveries','DramExplicitPinDeliveries','VideoSynchronizationCalls','NativeVideoSamples',
         'CpuBusResolutions','DirectCauseVisits','GateCauseVisits','GateSkippedCpuWords','MemoryResponseRecordsOmitted',
         'DramOutputNotifications','VramDataDeliveries','VramDataGroups',
-        'DramReadOutputPrograms','VramReadProgramWords','DramReadOutputFallbacks','ClosedDramReadResolutions')) {
+        'DramReadOutputPrograms','VramReadProgramWords','DramReadOutputFallbacks','ClosedDramReadResolutions','ReadPortProjectedReads','ReadPortCanonicalReceives','ReadPortEpochs')) {
         if($frames.Count -gt 1) {
             [pscustomobject]@{Counter=$counter;AveragePerFrame=($frames[-1].$counter-$frames[0].$counter)/($frames.Count-1)}
         }

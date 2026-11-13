@@ -4,11 +4,45 @@ using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS139.Models;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Services;
 using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS32.Models;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Z80.Contracts;
+using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Services;
+using RetroMediaLab.Chips.Logic.TexasInstruments.SN74xx.SN74LS257.Models;
 
 namespace RetroMediaLab.Chips.Tests.Performance;
 
 public sealed class CombinationalTruthTableTests
 {
+    [Fact]
+    public void MultiplexerCoversEveryCanonicalUnknownInput()
+    {
+        var chip=new Sn74Ls257(Sn74Ls257Timing.CharacterizedMaximum);long time=0;
+        for(int encoding=0;encoding<59049;encoding++)
+        {
+            int value=encoding;ushort levels=0,known=0;
+            for(int bit=0;bit<10;bit++) {int state=value%3;value/=3;if(state!=0)known|=(ushort)(1<<bit);if(state==2)levels|=(ushort)(1<<bit);}
+            chip.AdvanceTo(time);chip.SetInputs(levels,known);time+=1000;chip.AdvanceTo(time);
+            for(int pin=0;pin<4;pin++)
+            {
+                var expected=LogicPinState.Unknown;
+                if((known&512)!=0)
+                {
+                    if((levels&512)!=0)expected=LogicPinState.HighImpedance;
+                    else if((known&256)!=0)
+                    {
+                        int selected=(levels&256)!=0?pin+4:pin;
+                        if((known&(1<<selected))!=0)expected=(levels&(1<<selected))!=0?LogicPinState.High:LogicPinState.Low;
+                    }
+                    else
+                    {
+                        int mask=17<<pin;
+                        if((known&mask)==mask && ((levels&mask)==0 || (levels&mask)==mask))
+                            expected=(levels&mask)!=0?LogicPinState.High:LogicPinState.Low;
+                    }
+                }
+                Assert.Equal(expected,chip.GetOutput(pin));
+            }
+        }
+    }
+
     [Fact]
     public void DecoderCoversEveryCanonicalUnknownInput()
     {

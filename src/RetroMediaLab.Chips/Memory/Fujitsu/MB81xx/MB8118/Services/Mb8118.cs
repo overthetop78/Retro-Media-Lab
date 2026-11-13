@@ -30,10 +30,10 @@ public sealed partial class Mb8118 : IMb8118
         Array.Fill(_refreshed, -1);
     }
     private long _time;
-    public long TimeNanoseconds => _time;
-    public long? NextEventNanoseconds => _nextResponseTime < 0 ? null : _nextResponseTime;
+    public long TimeNanoseconds { get { _readPort?.Withdraw(); return _time; } }
+    public long? NextEventNanoseconds { get { _readPort?.Withdraw(); return _nextResponseTime < 0 ? null : _nextResponseTime; } }
     public bool IsTimingQualified => _qualified;
-    public LogicPinState Output => _output;
+    public LogicPinState Output { get { _readPort?.Withdraw(); return _output; } }
     private Action<LogicPinState>? _outputChanged;
     public Action<LogicPinState>? OutputChanged
     {
@@ -49,12 +49,13 @@ public sealed partial class Mb8118 : IMb8118
     public Action<LogicPinState>? UnrepresentedOutputChanged { get; set; }
     public Action<long?>? NextUnrepresentedEventNanosecondsChanged { get; set; }
     public Action? ReadOutputProgramWithdrawalRequested { get; set; }
-    public long? NextUnrepresentedEventNanoseconds => _outputsRepresented
+    public long? NextUnrepresentedEventNanoseconds => _readPort is not null ? null : _outputsRepresented
         && _nextResponseTime <= _representedOutputUntil ? null : NextEventNanoseconds;
     private long _announcedUnrepresentedDue = -1;
 
     private void WithdrawForScalarObserver()
     {
+        _readPort?.Withdraw();
         if (!_outputsRepresented) return;
         ReadOutputProgramWithdrawalRequested?.Invoke();
         if (_outputsRepresented) WithdrawReadOutputs(_time);
@@ -249,6 +250,7 @@ public sealed partial class Mb8118 : IMb8118
     public Mb8118State CaptureState()
     {
         if (_publishing) throw new InvalidOperationException("Cannot snapshot during DRAM output publication.");
+        _readPort?.Withdraw();
         return new(1, _timing.Signature, (byte[])_cells.Clone(), (long[])_refreshed.Clone(),
             _time, _pins, _row, _column, _rowKnown, _columnKnown, _rowActive,
             _cycleWrite, _readCycle, _qualified, _startupCycles, _rasFall, _casFall,
@@ -272,6 +274,7 @@ public sealed partial class Mb8118 : IMb8118
             || state.OutputDue.HasValue != (state.Output != state.OutputTarget)
             || state.RowActive == state.Pins.RasHigh)
             throw new ArgumentException(nameof(state));
+        _readPort?.Withdraw();
         if (_outputsRepresented) WithdrawForScalarObserver();
         _hasReadCycle = false;
         _outputsRepresented = false;

@@ -52,6 +52,7 @@ public sealed partial class Tms9918A
             if (input.TimeNanoseconds < previous) throw new ArgumentException("VRAM input dates must be ordered.", nameof(inputs));
             previous = input.TimeNanoseconds;
         }
+        ResolveVramReadInputs(_time);
         inputs.CopyTo(_vramReadInputs);
         _vramReadInputCount = inputs.Length;
         _vramReadInputIndex = 0;
@@ -60,8 +61,25 @@ public sealed partial class Tms9918A
 
     public void WithdrawVramReadProgram()
     {
+        ResolveVramReadInputs(_time);
         _vramReadInputCount = _vramReadInputIndex = 0;
         _vramReadInputDue = long.MaxValue;
+    }
+
+    // Received DOUT words change only the input latch. They do not schedule
+    // another master-clock visit. Resolve their exact dates before sampling,
+    // replacing the received suffix, or observing the component.
+    private void ResolveVramReadInputs(long boundary, bool inclusive = true)
+    {
+        while (_vramReadInputIndex < _vramReadInputCount
+            && (_vramReadInputDue < boundary || inclusive && _vramReadInputDue == boundary))
+        {
+            var input = _vramReadInputs[_vramReadInputIndex++];
+            _vramReadInputDue = _vramReadInputIndex < _vramReadInputCount
+                ? _vramReadInputs[_vramReadInputIndex].TimeNanoseconds : long.MaxValue;
+            if (_time < input.TimeNanoseconds) _time = input.TimeNanoseconds;
+            _vramBus.SetInputData(input.TimeNanoseconds, input.Data, input.Known, input.IntermediateTransition);
+        }
     }
 
     private void UpdateVramPinObservation()

@@ -31,7 +31,8 @@ internal static class Sg1000Profiling
         double BoardWallMs = 0, double PresentationWallMs = 0, double AudioWallMs = 0,
         long DramOutputNotifications = 0, long VramDataDeliveries = 0, long VramDataGroups = 0,
         long DramReadOutputPrograms = 0, long VramReadProgramWords = 0, long DramReadOutputFallbacks = 0,
-        long ClosedDramReadResolutions = 0);
+        long ClosedDramReadResolutions = 0, long ReadPortProjectedReads = 0,
+        long ReadPortCanonicalReceives = 0, long ReadPortEpochs = 0);
     internal sealed record Statistics(double MedianMs, double MeanMs, double P95Ms, double MinMs,
         double MaxMs, double HostFps, double NominalPercent, long AllocatedBytes, double GcPauseMs);
     internal sealed record Cost(string Name, double OwnMs, double InclusiveMs, double OwnPercent, double InclusivePercent);
@@ -181,7 +182,8 @@ internal static class Sg1000Profiling
                         core.LastFrameTimings.BoardMs,core.LastFrameTimings.PresentationMs,core.LastFrameTimings.AudioMs,
                         board.DramOutputNotifications, board.VramDataDeliveries, board.VramDataGroups,
                         board.DramReadOutputPrograms, board.VramReadProgramWords, board.DramReadOutputFallbacks,
-                        board.ClosedDramReadResolutions);
+                        board.ClosedDramReadResolutions, board.ReadPortProjectedReads,
+                        board.ReadPortCanonicalReceives, board.ReadPortEpochs);
                     rows.Add(row); progress.WriteLine(JsonSerializer.Serialize(row)); progress.Flush();
                     if (frame % 15 == 0) log?.Invoke($"{kind}: frame {frame + 1}/{request.Frames}, {row.WallMs:F2}ms, PC={row.Pc:X4}, alloc={bytes}, GC={pauseMs:F3}ms");
                     if (board.Cpu.IsFaulted) throw new InvalidOperationException($"CPU fault at frame{frame},PC={row.Pc:X4}.");
