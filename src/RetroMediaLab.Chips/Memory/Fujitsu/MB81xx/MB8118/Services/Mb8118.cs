@@ -10,6 +10,7 @@ public sealed partial class Mb8118 : IMb8118
 {
     private const long Retention = 2_000_000, Startup = 200_000, MaximumPulse = 10_000;
     private readonly Mb8118LocalTiming _timing;
+    private readonly Mb8118Timing _timingProfile;
     private readonly byte[] _cells = new byte[16384];
     private readonly long[] _refreshed = new long[128];
     private Mb8118InputLevels _pins = new(0, false, true, true, true, null);
@@ -24,6 +25,7 @@ public sealed partial class Mb8118 : IMb8118
     public Mb8118(Mb8118Timing timing)
     {
         ArgumentNullException.ThrowIfNull(timing);
+        _timingProfile = timing;
         _timing = new(timing);
         Array.Fill(_refreshed, -1);
     }
@@ -33,9 +35,44 @@ public sealed partial class Mb8118 : IMb8118
     public bool IsTimingQualified => _qualified;
     public LogicPinState Output => _output;
     private Action<LogicPinState>? _outputChanged;
-    public Action<LogicPinState>? OutputChanged { get => _outputChanged; set => _outputChanged=value; }
+    public Action<LogicPinState>? OutputChanged
+    {
+        get => _outputChanged;
+        set { if (value is not null) WithdrawForScalarObserver(); _outputChanged = value; }
+    }
     private Action<long?>? _deadlineChanged;
-    public Action<long?>? NextEventNanosecondsChanged { get => _deadlineChanged; set => _deadlineChanged=value; }
+    public Action<long?>? NextEventNanosecondsChanged
+    {
+        get => _deadlineChanged;
+        set { if (value is not null) WithdrawForScalarObserver(); _deadlineChanged = value; }
+    }
+    public Action<LogicPinState>? UnrepresentedOutputChanged { get; set; }
+    public Action<long?>? NextUnrepresentedEventNanosecondsChanged { get; set; }
+    public Action? ReadOutputProgramWithdrawalRequested { get; set; }
+    public long? NextUnrepresentedEventNanoseconds => _outputsRepresented
+        && _nextResponseTime <= _representedOutputUntil ? null : NextEventNanoseconds;
+    private long _announcedUnrepresentedDue = -1;
+
+    private void WithdrawForScalarObserver()
+    {
+        if (!_outputsRepresented) return;
+        ReadOutputProgramWithdrawalRequested?.Invoke();
+        if (_outputsRepresented) WithdrawReadOutputs(_time);
+    }
+
+    private void PublishUnrepresentedDeadline()
+    {
+        if (_publishing || _preparingOutputProgram) return;
+        long next = NextUnrepresentedEventNanoseconds ?? -1;
+        while (next != _announcedUnrepresentedDue)
+        {
+            _announcedUnrepresentedDue = next;
+            _publishing = true;
+            try { NextUnrepresentedEventNanosecondsChanged?.Invoke(next < 0 ? null : next); }
+            finally { _publishing = false; }
+            next = NextUnrepresentedEventNanoseconds ?? -1;
+        }
+    }
 
     public void ReceivePins(long timeNanoseconds, Mb8118Pins receivedPins)
         => ReceiveLevels(timeNanoseconds, receivedPins);
@@ -47,8 +84,12 @@ public sealed partial class Mb8118 : IMb8118
     private void ReceiveLevels(long timeNanoseconds, Mb8118InputLevels pins)
     {
         if (pins.Address > 127) throw new ArgumentOutOfRangeException(nameof(pins));
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
+        if (_outputsRepresented) WithdrawForScalarObserver();
         AdvanceCore(timeNanoseconds, false);
         _hasReadCycle = false; // Explicit delivery supersedes promised inputs at this date.
+        _outputsRepresented = false;
+        _representedOutputUntil = -1;
         RefreshResponseTime();
         ApplyLevels(pins);
         PublishDeadline();
@@ -190,7 +231,8 @@ public sealed partial class Mb8118 : IMb8118
 
     private void PublishDeadline()
     {
-        if (_publishing) return;
+        if (_publishing || _resolvingRepresentedPrefix) return;
+        PublishUnrepresentedDeadline();
         long next = _nextResponseTime;
         if (_announcedDue == next) return;
         if (_deadlineChanged is null) { _announcedDue = next; return; }
@@ -230,7 +272,10 @@ public sealed partial class Mb8118 : IMb8118
             || state.OutputDue.HasValue != (state.Output != state.OutputTarget)
             || state.RowActive == state.Pins.RasHigh)
             throw new ArgumentException(nameof(state));
+        if (_outputsRepresented) WithdrawForScalarObserver();
         _hasReadCycle = false;
+        _outputsRepresented = false;
+        _representedOutputUntil = -1;
         state.Cells.CopyTo(_cells, 0); state.Refreshed.CopyTo(_refreshed, 0);
         _time = state.Time; _pins = state.Pins; _row = state.Row; _column = state.Column;
         _rowKnown = state.RowKnown; _columnKnown = state.ColumnKnown; _rowActive = state.RowActive;

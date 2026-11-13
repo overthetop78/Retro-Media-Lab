@@ -36,6 +36,33 @@ public sealed partial class Tms9918A
     public Tms9918VramReadCycleReceiver? VramReadCycleProduced { get; set; }
     public Action<long>? VramReadCycleCancelled { get; set; }
     private bool _vramReadWaveRouted;
+    private readonly Tms9918VramReadInput[] _vramReadInputs = new Tms9918VramReadInput[48];
+    private int _vramReadInputCount, _vramReadInputIndex;
+    private long _vramReadInputDue = long.MaxValue;
+
+    /// <summary>Replaces the unconsumed wire suffix. The connected producer
+    /// owns its validity and must withdraw it before any input that changes
+    /// its predictions. No event list is built inside the raster loop.</summary>
+    public void ReceiveVramReadProgram(ReadOnlySpan<Tms9918VramReadInput> inputs)
+    {
+        if (inputs.Length > _vramReadInputs.Length) throw new ArgumentOutOfRangeException(nameof(inputs));
+        long previous = _time;
+        foreach (ref readonly var input in inputs)
+        {
+            if (input.TimeNanoseconds < previous) throw new ArgumentException("VRAM input dates must be ordered.", nameof(inputs));
+            previous = input.TimeNanoseconds;
+        }
+        inputs.CopyTo(_vramReadInputs);
+        _vramReadInputCount = inputs.Length;
+        _vramReadInputIndex = 0;
+        _vramReadInputDue = inputs.IsEmpty ? long.MaxValue : inputs[0].TimeNanoseconds;
+    }
+
+    public void WithdrawVramReadProgram()
+    {
+        _vramReadInputCount = _vramReadInputIndex = 0;
+        _vramReadInputDue = long.MaxValue;
+    }
 
     private void UpdateVramPinObservation()
     {
@@ -274,5 +301,20 @@ public sealed partial class Tms9918A
             ActivePatternKnown = false, ActiveColourKnown = false });
         _vramBus.ApplyOutputs(_time, VramPins with
             { RasHigh = true, CasHigh = true, ReadWriteHigh = true, AddressDataKnown = false });
+    }
+}
+
+/// <summary>A dated word on the connected VRAM data wires. Intermediate
+/// transitions retain data/knowledge excursions at a single instant.</summary>
+public readonly record struct Tms9918VramReadInput
+{
+    public readonly long TimeNanoseconds;
+    public readonly byte Data;
+    public readonly bool Known, IntermediateTransition;
+
+    public Tms9918VramReadInput(long timeNanoseconds, byte data, bool known, bool intermediateTransition = false)
+    {
+        TimeNanoseconds = timeNanoseconds; Data = data;
+        Known = known; IntermediateTransition = intermediateTransition;
     }
 }

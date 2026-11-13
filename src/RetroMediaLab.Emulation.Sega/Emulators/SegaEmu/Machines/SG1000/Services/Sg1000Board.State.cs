@@ -69,6 +69,7 @@ internal sealed partial class Sg1000Board
 
     private void ApplyState(Sg1000BoardState state)
     {
+        if (_vramOutputsRepresented) WithdrawVramOutputPrograms();
         _cpu.RestoreState(state.Cpu); _vdp.RestoreState(state.Vdp); _psg.RestoreState(state.Psg);
         _decoder.RestoreState(state.Decoder); _gates.RestoreState(state.Gates);
         for (int chip = 0; chip < 2; chip++) _joy[chip].RestoreState(state.Joy[chip]);

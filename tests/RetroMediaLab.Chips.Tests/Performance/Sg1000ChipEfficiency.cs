@@ -331,6 +331,154 @@ public static class Sg1000ChipEfficiency
 public sealed class Mb8118ReadWaveformTests
 {
     [Fact]
+    public void OnePreparedGridPreservesEightIndependentMemoriesAndRejectsAnotherTiming()
+    {
+        const long origin = 200_010;
+        var physical = Enumerable.Range(0, 8).Select(_ => Seed(Mb8118Timing.Speed12)).ToArray();
+        var prepared = Enumerable.Range(0, 8).Select(_ => Seed(Mb8118Timing.Speed12)).ToArray();
+        var expected = Enumerable.Range(0, 8).Select(_ => new List<(long, LogicPinState)>()).ToArray();
+        var cycle = new Mb8118ReadCycle(origin, origin + 45, origin + 85,
+            origin + 270, origin + 335, 3, 7, true, true, false, true);
+        var grid = prepared[0].PrepareReadProgram(in cycle);
+        var outputs = new Mb8118ReadOutputProgram[8];
+        var actual = Enumerable.Range(0, 8).Select(_ => new List<(long, LogicPinState)>()).ToArray();
+        int[] positions = new int[8];
+        try
+        {
+            for (int lane = 0; lane < 8; lane++)
+            {
+                int owner = lane;
+                var state = physical[lane].CaptureState();
+                state.Cells[3 | (7 << 7)] = (byte)(lane % 3);
+                if (lane == 1) state = state with { StartupCycles = 7 };
+                if (lane == 2) Array.Fill(state.Refreshed, -1);
+                if (lane == 3) state = state with { OutputDue = origin + 60, OutputTarget = LogicPinState.Low };
+                physical[lane].RestoreState(state); prepared[lane].RestoreState(state);
+                physical[lane].OutputChanged = value => expected[owner].Add((physical[owner].TimeNanoseconds, value));
+                physical[lane].ReceiveReadCycle(cycle);
+                Assert.True(prepared[lane].ReceiveReadProgram(in grid, false, true, out outputs[lane]));
+            }
+            foreach (int offset in new[] { 0, 44, 45, 60, 84, 85, 119, 120, 149, 150, 165, 269, 270, 334, 335, 384, 385, 450 })
+            for (int lane = 0; lane < 8; lane++)
+            {
+                long time = origin + offset;
+                while (positions[lane] < 3)
+                {
+                    int position = positions[lane];
+                    long date = outputs[lane].TimeAt(position);
+                    if (date > time) break;
+                    if (date >= 0) actual[lane].Add((date, outputs[lane].ValueAt(position)));
+                    positions[lane]++;
+                }
+                physical[lane].AdvanceTo(time); prepared[lane].AdvanceTo(time);
+                Assert.Equal(expected[lane], actual[lane]);
+                Assert.Equal(JsonSerializer.Serialize(physical[lane].CaptureState()), JsonSerializer.Serialize(prepared[lane].CaptureState()));
+            }
+            var otherSpeed = Seed(Mb8118Timing.Speed10);
+            string before = JsonSerializer.Serialize(otherSpeed.CaptureState());
+            Assert.Throws<ArgumentException>(() => otherSpeed.ReceiveReadProgram(in grid, false, true, out _));
+            Assert.Equal(before, JsonSerializer.Serialize(otherSpeed.CaptureState()));
+        }
+        finally { foreach (var chip in physical) chip.OutputChanged = null; }
+    }
+
+    [Fact]
+    public void DescribedOutputsPreserveCellsPhasesCancellationAndScalarObserverWithdrawal()
+    {
+        const long origin = 200_010;
+        foreach (var timing in new[] { Mb8118Timing.Speed10, Mb8118Timing.Speed12 })
+        foreach (int kind in new[] { 0, 1, 2, 3, 4 })
+        foreach (int cancellation in new[] { -1, 44, 84, 85, 164, 165, 270, 335 })
+        {
+            var scalar = Seed(timing);
+            var represented = Seed(timing);
+            var state = scalar.CaptureState();
+            if (kind == 1) state = state with { StartupCycles = 7 };
+            if (kind == 2) Array.Fill(state.Refreshed, -1);
+            if (kind == 3) state.Cells[3 | (7 << 7)] = 0;
+            scalar.RestoreState(state); represented.RestoreState(state);
+            var expected = new List<(long, LogicPinState)>();
+            var actual = new List<(long, LogicPinState)>();
+            scalar.OutputChanged = value => expected.Add((scalar.TimeNanoseconds, value));
+            represented.UnrepresentedOutputChanged = value => actual.Add((represented.TimeNanoseconds, value));
+            try
+            {
+                var cycle = new Mb8118ReadCycle(origin, origin + 45, origin + 85,
+                    origin + 270, origin + 335, 3, 7, kind != 4, true, false, true);
+                scalar.ReceiveReadCycle(cycle);
+                Assert.True(represented.ReceiveReadCycle(in cycle, false, true, out var outputs));
+                Assert.Null(represented.NextUnrepresentedEventNanoseconds);
+                int position = 0;
+                foreach (int offset in new[] { 0, 44, 45, 84, 85, 99, 120, 140, 150, 164, 165, 270, 335, 380, 385, 450 })
+                {
+                    if (cancellation >= 0 && offset > cancellation) break;
+                    long time = origin + offset;
+                    while (position < 3)
+                    {
+                        long due = outputs.TimeAt(position);
+                        if (due > time) break;
+                        if (due >= 0) actual.Add((due, outputs.ValueAt(position)));
+                        position++;
+                    }
+                    scalar.AdvanceTo(time); represented.AdvanceTo(time);
+                    Assert.Equal(expected, actual);
+                    Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()), JsonSerializer.Serialize(represented.CaptureState()));
+                }
+                if (cancellation >= 0)
+                {
+                    long time = origin + cancellation;
+                    scalar.CancelReadCycle(time); represented.CancelReadCycle(time);
+                    scalar.AdvanceTo(origin + 1000); represented.AdvanceTo(origin + 1000);
+                    Assert.Equal(expected, actual);
+                    Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()), JsonSerializer.Serialize(represented.CaptureState()));
+                }
+            }
+            finally { scalar.OutputChanged = null; represented.UnrepresentedOutputChanged = null; }
+        }
+
+        var observed = Seed(Mb8118Timing.Speed12);
+        var waveform = new Mb8118ReadCycle(origin, origin + 45, origin + 85,
+            origin + 270, origin + 335, 3, 7, true, true, false, true);
+        Assert.True(observed.ReceiveReadCycle(in waveform, false, true, out _));
+        bool changed = false;
+        observed.OutputChanged = _ => changed = true;
+        try
+        {
+            Assert.NotNull(observed.NextUnrepresentedEventNanoseconds);
+            observed.AdvanceTo(origin + 165);
+            Assert.True(changed);
+        }
+        finally { observed.OutputChanged = null; }
+
+        // Start a new waveform while the preceding CAS release still has a
+        // latched output-disable propagation. It belongs to the next finite
+        // description unless the new CAS supersedes it first.
+        var pending = Seed(Mb8118Timing.Speed12);
+        var pendingReference = Seed(Mb8118Timing.Speed12);
+        var referenceEvents = new List<(long, LogicPinState)>();
+        pendingReference.OutputChanged = value => referenceEvents.Add((pendingReference.TimeNanoseconds, value));
+        try
+        {
+            pendingReference.ReceiveReadCycle(waveform);
+            pending.ReceiveReadCycle(waveform);
+            pendingReference.AdvanceTo(origin + 360); pending.AdvanceTo(origin + 360);
+            referenceEvents.Clear();
+            var nextWave = waveform with { RowTime = origin + 360, RasFall = origin + 405,
+                CasFall = origin + 445, RasRise = origin + 630, CasRise = origin + 695 };
+            pendingReference.ReceiveReadCycle(nextWave);
+            Assert.True(pending.ReceiveReadCycle(in nextWave, false, true, out var nextOutputs));
+            Assert.Equal(origin + 385, nextOutputs.PreviousTime);
+            var future = new List<(long, LogicPinState)>();
+            for (int i = 0; i < 3; i++)
+                if (nextOutputs.TimeAt(i) >= 0) future.Add((nextOutputs.TimeAt(i), nextOutputs.ValueAt(i)));
+            pendingReference.AdvanceTo(origin + 1000); pending.AdvanceTo(origin + 1000);
+            Assert.Equal(referenceEvents, future);
+            Assert.Equal(JsonSerializer.Serialize(pendingReference.CaptureState()), JsonSerializer.Serialize(pending.CaptureState()));
+        }
+        finally { pendingReference.OutputChanged = null; }
+    }
+
+    [Fact]
     public void DeadlineCacheIsCurrentInsideCallbacksAndAfterCancellationOrRestore()
     {
         var chip=Seed(Mb8118Timing.Speed12);
@@ -354,6 +502,46 @@ public sealed class Mb8118ReadWaveformTests
             chip.RestoreState(saved);Assert.Null(chip.NextEventNanoseconds);
         }
         finally{chip.OutputChanged=null;chip.NextEventNanosecondsChanged=null;}
+
+        var deadlinesOnly = Seed(Mb8118Timing.Speed12);
+        var bothObservers = Seed(Mb8118Timing.Speed12);
+        var left = new List<(long, long?)>(); var right = new List<(long, long?)>();
+        deadlinesOnly.NextEventNanosecondsChanged = value => left.Add((deadlinesOnly.TimeNanoseconds, value));
+        bothObservers.NextEventNanosecondsChanged = value => right.Add((bothObservers.TimeNanoseconds, value));
+        bothObservers.OutputChanged = _ => { };
+        try
+        {
+            var waveform = new Mb8118ReadCycle(origin, origin + 45, origin + 85,
+                origin + 270, origin + 335, 3, 7, true, true, false, true);
+            deadlinesOnly.ReceiveReadCycle(waveform); bothObservers.ReceiveReadCycle(waveform);
+            deadlinesOnly.AdvanceTo(origin + 1000); bothObservers.AdvanceTo(origin + 1000);
+            Assert.Equal(left, right);
+        }
+        finally
+        {
+            deadlinesOnly.NextEventNanosecondsChanged = null;
+            bothObservers.NextEventNanosecondsChanged = null; bothObservers.OutputChanged = null;
+        }
+
+        var withdrawing = Seed(Mb8118Timing.Speed12);
+        var readWave = new Mb8118ReadCycle(origin, origin + 45, origin + 85,
+            origin + 270, origin + 335, 3, 7, true, true, false, true);
+        bool insideDeadline = false;
+        withdrawing.NextUnrepresentedEventNanosecondsChanged = value =>
+        {
+            Assert.False(insideDeadline);
+            insideDeadline = true;
+            try { if (value is null) withdrawing.WithdrawReadOutputs(withdrawing.TimeNanoseconds); }
+            finally { insideDeadline = false; }
+        };
+        try
+        {
+            withdrawing.ReceiveReadCycle(readWave);
+            Assert.True(withdrawing.TryDescribeReadOutputs(out _));
+            withdrawing.RepresentReadOutputs();
+            Assert.Equal(origin + 165, withdrawing.NextUnrepresentedEventNanoseconds);
+        }
+        finally { withdrawing.NextUnrepresentedEventNanosecondsChanged = null; }
     }
 
     [Theory]
@@ -420,6 +608,59 @@ public sealed class Mb8118ReadWaveformTests
 
 public sealed class VdpClockBoundaryTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReceivedVramWordsKeepLocalOutputOrderingAndExactObservationBoundaries(bool source)
+    {
+        Tms9918A Make() => new(new(default, 0, default, new(null, 0, Tms9918CpuVramOperation.None, false),
+            new(0, true, true, true, true)), Tms9918CpuTiming.SpecifiedMaximum);
+        var scalar = Make(); var represented = Make();
+        if (source)
+        {
+            var clock = new RationalClockSource(0, 1_000_000_000, 21_477_270, 1, true);
+            scalar.ReceiveMasterClockSource(clock); represented.ReceiveMasterClockSource(clock);
+        }
+        Tms9918VramReadInput[] words = [new(200, 0, true), new(200, 0, false, true),
+            new(335, 165, true), new(385, 0, false), new(500, 255, true)];
+        represented.ReceiveVramReadProgram(words);
+        int next = 0;
+        foreach (long time in new long[] { 100, 199, 200, 201, 334, 335, 336, 384, 385, 499, 500, 600 })
+        {
+            while (next < words.Length && words[next].TimeNanoseconds <= time)
+            {
+                var word = words[next++];
+                if (source) scalar.AdvanceMasterClockSourceUntil(word.TimeNanoseconds);
+                scalar.SetVramReadData(word.TimeNanoseconds, word.Data, word.Known, word.IntermediateTransition);
+            }
+            if (source)
+            {
+                scalar.AdvanceMasterClockSourceUntil(time + 1);
+                represented.AdvanceMasterClockSourceUntil(time + 1);
+            }
+            scalar.AdvanceTo(time); represented.AdvanceTo(time);
+            Assert.Equal(JsonSerializer.Serialize(scalar.CaptureState()), JsonSerializer.Serialize(represented.CaptureState()));
+        }
+
+        var rejectedRestore = Make(); var expectedAfterRejection = Make();
+        rejectedRestore.ReceiveVramReadProgram([new(1000, 77, true)]);
+        var incompatible = rejectedRestore.CaptureState();
+        Assert.Throws<ArgumentException>(() => rejectedRestore.RestoreState(incompatible with
+            { CpuAccessNanoseconds = incompatible.CpuAccessNanoseconds + 1 }));
+        rejectedRestore.AdvanceTo(1000);
+        expectedAfterRejection.SetVramReadData(1000, 77, true);
+        Assert.Equal(JsonSerializer.Serialize(expectedAfterRejection.CaptureState()), JsonSerializer.Serialize(rejectedRestore.CaptureState()));
+
+        // RESET changes the VDP's output sequencing, not an already latched
+        // external memory propagation after CAS has been released.
+        var resetScalar = Make(); var resetProgram = Make();
+        resetScalar.SetVramReadData(100, 77, true); resetProgram.SetVramReadData(100, 77, true);
+        resetProgram.ReceiveVramReadProgram([new(300, 0, false)]);
+        resetScalar.SetResetSyncVoltage(200, 0, true); resetProgram.SetResetSyncVoltage(200, 0, true);
+        resetScalar.SetVramReadData(300, 0, false); resetProgram.AdvanceTo(300);
+        Assert.Equal(JsonSerializer.Serialize(resetScalar.CaptureState()), JsonSerializer.Serialize(resetProgram.CaptureState()));
+    }
+
     [Fact]
     public void CoincidentVramTransitionSummaryPreservesExcursionsAndLaterObservations()
     {

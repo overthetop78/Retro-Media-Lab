@@ -115,6 +115,9 @@ internal sealed partial class Sg1000Board
     private long _nativeVideoSamples;
     internal long NativeVideoSamples => _nativeVideoSamples;
     private long _dramOutputNotifications, _vramDataDeliveries, _vramDataGroups;
+    internal long DramReadOutputPrograms { get; private set; }
+    internal long VramReadProgramWords { get; private set; }
+    internal long DramReadOutputFallbacks { get; private set; }
     internal long DramOutputNotifications => _dramOutputNotifications;
     internal long VramDataDeliveries => _vramDataDeliveries;
     internal long VramDataGroups => _vramDataGroups;

@@ -46,6 +46,7 @@ public sealed partial class Tms9918A
         var preparing = (Tms9918SpriteChannelState[])state.Sprites.Preparing.Clone();
         var active = (Tms9918SpriteChannelState[])state.Sprites.Active.Clone();
 
+        WithdrawVramReadProgram();
         DetachMasterClockSource();
         _clockInputBoundary = long.MaxValue;
 

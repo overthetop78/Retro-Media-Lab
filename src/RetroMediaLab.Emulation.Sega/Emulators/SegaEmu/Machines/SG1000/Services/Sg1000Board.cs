@@ -99,8 +99,9 @@ internal sealed partial class Sg1000Board : IDisposable
         {
             int chip = index;
             CacheDramOutput(index, _dram[index].Output);
-            _dram[index].NextEventNanosecondsChanged = next => ReceiveVideoMemoryDeadline(chip, next);
-            _dram[index].OutputChanged = value => UpdateVramReadData(_dram[chip].TimeNanoseconds, chip, value);
+            _dram[index].NextUnrepresentedEventNanosecondsChanged = next => ReceiveVideoMemoryDeadline(chip, next);
+            _dram[index].UnrepresentedOutputChanged = value => UpdateVramReadData(_dram[chip].TimeNanoseconds, chip, value);
+            _dram[index].ReadOutputProgramWithdrawalRequested = WithdrawVramOutputPrograms;
         }
         RefreshVideoMemoryBoundaries();
     }
@@ -153,7 +154,12 @@ internal sealed partial class Sg1000Board : IDisposable
             _gates.OutputChanged = null; _gates.NextEventNanosecondsChanged = null;
             _ram.OutputChanged = null;
             foreach (var chip in _joy) { chip.OutputChanged = null; chip.NextEventNanosecondsChanged = null; }
-            foreach (var chip in _dram) { chip.OutputChanged = null; chip.NextEventNanosecondsChanged = null; }
+            foreach (var chip in _dram)
+            {
+                chip.OutputChanged = null; chip.NextEventNanosecondsChanged = null;
+                chip.UnrepresentedOutputChanged = null; chip.NextUnrepresentedEventNanosecondsChanged = null;
+                chip.ReadOutputProgramWithdrawalRequested = null;
+            }
         }
         finally { _disposed = true; }
     }

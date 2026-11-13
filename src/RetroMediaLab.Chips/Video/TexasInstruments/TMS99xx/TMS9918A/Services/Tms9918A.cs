@@ -85,9 +85,10 @@ public sealed partial class Tms9918A : ITms9918A
         ArgumentOutOfRangeException.ThrowIfLessThan(timeNanoseconds, _time);
         if (_publishing && timeNanoseconds != _time)
             throw new InvalidOperationException("Cannot advance TMS9918A time from a pin callback.");
-        while (_nextDue >= 0 && _nextDue <= timeNanoseconds)
+        while ((_nextDue >= 0 && _nextDue <= timeNanoseconds)
+            || _vramReadInputIndex < _vramReadInputCount && _vramReadInputDue <= timeNanoseconds)
         {
-            long due = _nextDue;
+            long due = _nextDue < 0 ? _vramReadInputDue : Math.Min(_nextDue, _vramReadInputDue);
             if (_drivingMasterSource && due >= _masterBoundary && due > _time) return false;
             _time = due;
             if (_vramWriteEnd == due)
@@ -108,6 +109,16 @@ public sealed partial class Tms9918A : ITms9918A
                 else PublishCpuOutputs(CpuOutputs.Data, false, false);
             }
             PublishDeadline();
+            // Explicit DOUT delivery used AdvanceTo(date) before changing the
+            // input. Preserve that ordering: local output phases and their
+            // observers run first, then the represented inputs at this date.
+            while (_vramReadInputIndex < _vramReadInputCount && _vramReadInputDue == due)
+            {
+                var input = _vramReadInputs[_vramReadInputIndex++];
+                _vramReadInputDue = _vramReadInputIndex < _vramReadInputCount
+                    ? _vramReadInputs[_vramReadInputIndex].TimeNanoseconds : long.MaxValue;
+                _vramBus.SetInputData(due, input.Data, input.Known, input.IntermediateTransition);
+            }
         }
         if (_drivingMasterSource && timeNanoseconds >= _masterBoundary) return false;
         _time = timeNanoseconds;

@@ -40,7 +40,7 @@ internal sealed partial class Sg1000Board
     private void RefreshVideoMemoryBoundaries()
     {
         for (int bit = 0; bit < 8; bit++)
-            _videoMemoryDeadlines[bit] = _dram[bit].NextEventNanoseconds ?? long.MaxValue;
+            _videoMemoryDeadlines[bit] = _dram[bit].NextUnrepresentedEventNanoseconds ?? long.MaxValue;
         _videoMemoryDueDirty = true;
         _psgReadyDue = _psg.NextEventNanoseconds ?? long.MaxValue;
     }

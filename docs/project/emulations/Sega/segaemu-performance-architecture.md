@@ -780,3 +780,67 @@ Une collision entre réponse DRAM représentée et échéance locale VDP à la m
 La fermeture de ces périodes concerne aussi le trajet mémoire CPU, où câblage, logique et mémoires restent coûteux. Le principe à réaliser est un programme électrique commun du cycle reçu, arrêté aux vrais points de données et de contrôle, puis projeté par les composants propriétaires. Les dates communes sont préparées une fois. Les latches, propagations et réponses restent calculés dans les puces, avec les mêmes états pendants et les mêmes dates. Un intervalle dont toutes les interactions ne sont pas établies garde la résolution canonique de son préfixe. La validité du programme doit être décidée avant toute mutation qui rendrait son refus impossible.
 
 Cette représentation doit supprimer les listes et fusions de micro-événements répétées pour le décodage, les portes et les mémoires. Le séquenceur Z80 conserve ses actions et son décodeur. Les phases de rafraîchissement, échantillonnages, interruptions, attentes et concessions restent obligatoires. La clôture avant un échantillonnage ne permet pas d’exécuter une action dépendant de la donnée avant sa réception. Les réponses VDP/DRAM et le trajet CPU/mémoires font partie du même lot d’exécution à réaliser, dont les fichiers sont consignés dans le suivi. Les volumes et gains restent à mesurer après réalisation.
+
+### Programme de sorties VRAM réalisé le 13 novembre, validation de performance ouverte
+
+La MB8118 calcule les transitions DOUT du programme RAS/CAS reçu depuis ses cellules, startup, rétention, adresse maintenue et propagation antérieure. Elle refuse la représentation si un observateur scalaire exige ses notifications, si le maintien d’écriture reste actif, si la lecture dépasse CAS ou si une impulsion longue invaliderait le pré-calcul. Les huit puces conservent leurs cellules, leurs phases et leurs états distincts. Le destinataire accepte un transport, pas une lecture directe des cellules par la carte.
+
+Le raccordement prépare la grille des trois dates communes une seule fois, compose les fils dans l’ordre des huit DRAM et conserve le premier mot ainsi que toute excursion intermédiaire à date égale. Le VDP reçoit les mots datés dans un stockage réutilisé. Ses phases locales à cette date sont exécutées avant la modification de ses entrées, comme dans la livraison explicite antérieure. Les fins de préfixes, entrées explicites, annulations et nouveaux observateurs exposent les propagations restantes. Les descriptions externes ne changent pas le format des états physiques sauvegardés.
+
+L’exécution locale du préfixe DRAM accepté conserve BeginRow, ChangeAddressData, BeginColumn, EndRow, EndColumn et les sorties à leurs dates, mais calcule son échéance dérivée une seule fois à la fin. Il n’y a aucune publication intermédiaire à reconstruire pour un destinataire ayant déjà accepté les sorties. Un observateur scalaire conserve les notifications explicites et leur ordre.
+
+Les dix-sept contrôles regroupés couvrent les dates intermédiaires, deux vitesses, données connues/inconnues, startup, rétention, annulations avant/après CAS, sortie antérieure encore en attente et ajout d’observateur. Les six contrôles machine passent en Debug et Release. La première acquisition du programme de données, avant le retrait des publications internes et de la recherche répétée des dates, concorde pour tous les états, pixels et PCM des trois ROM mais reste autour de264–283ms/image. Elle ne prouve aucune accélération. La comparaison ABBA de la version complète est en cours sous ReadOutputs-20261113.
+
+Le trajet CPU conserve Z80BusRange, qui décrit déjà les sorties jusqu’à la barrière de dépendance. Un second contrat de cycle ou un second séquenceur n’est pas nécessaire. Les projections et reconstructions propres aux destinataires restent à réduire; le chantier global et la cible de vitesse ne sont pas clôturés.
+
+#### Acquisition alternée du programme de sorties, résultat négatif
+
+Deux blocs ABBA, trois ROM, huit images mesurées après deux d’échauffement, deux passages natifs après prime. Les768observations et96états finaux concordent avec la référence figée. Le tableau compare les mêmes processus natifs; les durées CPU échantillonnées sont séparées.
+
+| Configuration | Jeu | Référence ms/image | Programme ms/image | Temps réduit |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis |257,653|255,094|0,99 %|
+| Debug | Girl’s Garden |255,755|258,294|−0,99 %|
+| Debug | The Castle |270,375|282,369|−4,44 %|
+| Release | Champion Tennis |38,073|40,024|−5,12 %|
+| Release | Girl’s Garden |38,181|40,690|−6,57 %|
+| Release | The Castle |43,095|42,148|2,20 %|
+
+Le faible écart Champion Debug change de signe entre les blocs. Ce lot ne valide pas l’accélération attendue et reste à corriger. Il représente134144sorties DRAM préparées et33536mots de données partagés par image dans cette fenêtre de démarrage; les268288callbacks DRAM par image de la référence disparaissent, sans aucun refus de représentation. La diminution des appels n’établit donc toujours pas une diminution du temps total.
+
+Une correction ultérieure conserve aussi les notifications d’un observateur d’échéances sans observateur de données, avant les entrées RAS/CAS suivantes dans le même appel. Elle est couverte par les17contrôles composants Debug/Release. Les captures WPR readoutputs-* emploient cette version corrigée D, distincte du binaire C de ce tableau. Aucun gain natif de C n’est attribué à D. Les rapports ABBA et les deux identités sont conservés sous ReadOutputs-20261113.
+
+La préparation répète encore huit fois les validations de la même grille, les calculs des mêmes dates de réponse et les règles communes d’adressage. Les nouveaux contrats transportent aussi leurs données via des accesseurs de record struct en Debug. Le travail suivant supprime précisément ces répétitions: une grille préparée par le composant mémoire, reçue par référence par ses huit propriétaires indépendants, et des mots de transport immuables directement exploitables. Le calcul de cellule, la rétention et les effets propres à chaque mémoire restent dans chaque instance.
+
+### Grille VRAM préparée une fois et résultats finaux du lot
+
+Les validations du programme RAS/CAS, les dates d’accès/libération et la qualification commune de l’adresse sont préparées une fois par le composant mémoire. La même description immuable est reçue par référence par les huit DRAM utilisant ce profil; chaque propriétaire vérifie son état, sa cellule, sa rétention, son startup et ses propagations antérieures. Un autre profil est refusé avant modification. Les mots de transport utilisent des champs immuables directement exploitables. La date de la prochaine entrée VDP est tenue à jour par ses mutations, sans réinterpréter un accesseur à chaque groupe d’horloge.
+
+Lorsque les huit sorties sont initialement libérées, le regroupement construit le premier et le dernier mot depuis un seul parcours des huit valeurs. Les bits de données ne changent qu’une fois par phase et la connaissance complète ne peut apparaître qu’au dernier pilote. Cette propriété conserve les excursions à date égale. Les autres formes gardent leur fusion ordonnée exacte. Aucun front, latch ou état de cellule n’est supprimé. Les anciennes réceptions scalaires restent les entrées génériques des composants; le parcours intégré utilise le programme accepté, sans sélecteur d’un second moteur machine.
+
+Les restaurations retirent les transports seulement après validation; la carte retire les anciens programmes avant de restaurer ses composants. Une restauration incompatible n’annule pas une entrée future encore valide. RESET ne supprime pas une propagation DOUT externe engagée après CAS: le producteur la retire ou conserve sa réponse latched selon les vrais changements de broches. Dix-huit contrôles composants ciblés et six contrôles machine réussissent dans chaque configuration. Le projet Chips.Tests complet reste affecté par le helper CPU.Common.Z80 absent déjà signalé; ces résultats n’en revendiquent pas l’exécution complète.
+
+Deux nouveaux blocs ABBA de la version finale G: trois ROM: Champion8Kio, Girl32Kio et Castle32Kio, huit images après deux d’échauffement, deux mesures natives après prime. A est la référence conservée avant ce lot; G inclut le correctif RESET. Les gains sont relatifs aux acquisitions A du même lot, sans comparer les candidats ralentis C/D comme référence.
+
+| Configuration | Jeu | A ms/image | G ms/image | Temps réduit |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis |259,62|237,48|8,53 %|
+| Debug | Girl’s Garden |257,50|243,28|5,52 %|
+| Debug | The Castle |277,64|256,29|7,69 %|
+| Release | Champion Tennis |39,97|38,09|4,70 %|
+| Release | Girl’s Garden |43,27|41,15|4,88 %|
+| Release | The Castle |45,56|43,38|4,79 %|
+
+Les768observations natives et96états finaux de ces blocs concordent pour états, dates, pixels, PCM et contrats. Les acquisitions simples longues ajoutent720paires d’images après30d’échauffement et6paires d’états finaux, égales dans les deux configurations. Les trois jeux atteignent des écrans multicolores: masques32786 pour Champion,39823 pour Castle et17/32785/32769 pour Girl. Ces passages longs ne servent pas à annoncer un gain causal. Les variations de durée entre les acquisitions restent visibles dans les rapports; les pourcentages ne sont pas une garantie statistique de précision au centième.
+
+Dans la fenêtre native courte,134144programmes DRAM individuels par image conservent les huit états, avec16768grilles communes préparées et33536mots de données reçus dans le VDP. Les268288callbacks DOUT/image de A disparaissent de ce parcours sans refus de représentation. Cela supprime aussi117376préparations répétées de la même grille par image; ce nombre concerne le calcul commun, pas des accès matériels retirés.
+
+Le profil complet final .NET utilise24images après12d’échauffement, séparément du chronométrage natif. Les parts propres restent dominées par le câblage22,14–23,04 %, le VDP20,96–22,48 %, les DRAM17,61–18,55 % et la logique12,80–13,84 %. Les autres mémoires prennent10,47–13,95 %, le CPU10,77–11,09 %. Les coûts propres et inclusifs par méthode sont conservés dans les rapports. Pour Champion, ComposeReleasedVramOutputs représente1,13ms propres/1,34ms inclusifs par image échantillonnée; ReceiveReadProgramCore3,68/41,07ms; TryDescribeReadOutputs3,89/4,77ms; ResolveReadPrefix8,68/28,59ms. Les inclusifs se recouvrent et ne s’additionnent pas. Ces millisecondes échantillonnées incluent l’instrumentation et ne remplacent pas les temps natifs du tableau.
+
+Les six captures WPR readoutputs-*-01/02 ont des pertes d’événements (de46624à1167518) et sont exclues du classement. Leurs journaux et statistiques sont conservés; les ETL inutilisables sont supprimés. Aucun profil WPR sans perte indépendant n’est revendiqué pour ce lot. Le classement complet est issu du banc .NET existant, sous EventPipe-G. Le collecteur élevé autorisé est terminé avec le code0, sa fin effective a été observée et aucune nouvelle demande UAC n’est nécessaire à cette clôture de collecte.
+
+Preuves sous artifacts/TestsMachines/Sega/SG1000/ReadOutputs-20261113: final-acquisition.json, Summary/Final/abba-results.*, final-active-comparisons.json, Summary/EventPipe-G/component-costs.*, Summary/final-selected-methods.json et Checks/reset-program-*.trx. Les captures G ont été composées depuis le lanceur F inchangé et la DLL Chips recompilée, avec empreintes des composants enregistrées par le banc. Les références temporaires restent seulement tant qu’une comparaison ultérieure les nécessite.
+
+Le temps réel en Debug et la marge demandée ne sont pas atteints. Le lot est conservé pour ses gains mesurés et ses comparaisons, sans clôture de la performance SG-1000. La suite reste le chemin global CPU–décodage–portes–mémoires et la réduction du travail local restant dans les domaines vidéo/mémoire.
+
+Réutilisation: préparer une grille électrique commune dans son propriétaire, transmettre les seuls mots nécessaires aux destinataires raccordés, et garder leurs états distincts. Une grande diminution de callbacks n’est pas une preuve d’accélération: mesurer la préparation ajoutée et le coût total. Éviter de reconstruire cette économie en accesseurs, descriptions identiques ou recherches répétées des mêmes dates.
