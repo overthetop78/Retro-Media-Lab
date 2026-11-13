@@ -1,12 +1,18 @@
 # Mécanismes des moteurs comparés — SG-1000, SMS et GG
 
+> **Document historique — arrêt du 13 novembre 2026.** Le code EmuChip et l’implémentation
+> SG-1000 de SegaEmu ont été supprimés à la demande de l’utilisateur, sans restauration d’un
+> autre moteur. Les descriptions d’implémentation, essais, mesures et travaux alors ouverts
+> ci-dessous concernent les versions antérieures à cette suppression. Les références matérielles
+> et recherches sont conservées ; elles n’attestent pas la présence actuelle de cet émulateur.
+
 Relevé du 13 novembre 2026, demandé pour reprendre **l'ensemble** de l'exécution de SegaEmu : CPU, vidéo, mémoires, logique, horloges, bus, son, entrées, états, reset et variantes. Consigner les mécanismes rencontrés même lorsqu'ils paraissent inutiles, moins précis ou incompatibles avec RML. Leur utilisation éventuelle est une décision distincte de ce relevé.
 
 Ce document complète [l'étude et les mesures d'architecture](segaemu-performance-architecture.md). Il conserve les informations de fonctionnement logiciel; ce n'est pas une référence de preuve du silicium. Aucun de ces moteurs n'a été exécuté ici pour mesurer sa vitesse. Aucune conformité intégrale d'un moteur, d'un opcode ou d'un périphérique n'est déduite de sa réputation ou d'une inspection partielle. « Acquis » signifie fichier téléchargé, pas fichier entièrement analysé.
 
 ## Archives et reprise sans nouvelle recherche Web
 
-Racine : `artifacts/.tmp-archives/machines/Sega/SG-1000/Comparison/`. Chaque sous-dossier ci-dessous contient `source-manifest.json` (dépôt, chemins, empreintes Git des fichiers et arbre), `source-sha256.json` et les sources sous `Source/` avec leurs chemins d'origine. Les SHA ci-dessous identifient des **arbres Git**, pas des commits. Les blobs des fichiers acquis ont été vérifiés contre les empreintes de leur manifeste; une URL HEAD seule ne serait pas une identité stable.
+Racine : `artifacts/References/Machines/Sega/SG-1000/Comparison/`. Chaque sous-dossier ci-dessous contient `source-manifest.json` (dépôt, chemins, empreintes Git des fichiers et arbre), `source-sha256.json` et les sources sous `Source/` avec leurs chemins d'origine. Les SHA ci-dessous identifient des **arbres Git**, pas des commits. Les blobs des fichiers acquis ont été vérifiés contre les empreintes de leur manifeste; une URL HEAD seule ne serait pas une identité stable.
 
 Les archives précédentes restent présentes avec leurs origines. Consulter d'abord ce relevé, puis le fichier local correspondant pour une information manquante. Ne retélécharger qu'une source manquante ou une révision expressément nécessaire. Les archives ne sont pas committées; les informations techniques persistantes sont ici.
 

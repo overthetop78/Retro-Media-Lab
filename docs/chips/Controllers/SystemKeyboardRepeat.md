@@ -2,7 +2,7 @@
 
 ## Référence et périmètre
 
-[Acorn System 5 Handbook](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_System5Handbook.pdf), chapitre Keyboard Interface 400,013, §2.3, pages imprimées 3–4. Archive locale : `artifacts/.tmp-archives/machines/Acorn/Acorn System 5/System5Handbook.pdf` et texte adjacent. Cette carte clavier est utilisée par les System ASCII ; la matrice hexadécimale du System 1 n'a pas ce circuit.
+[Acorn System 5 Handbook](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_System5Handbook.pdf), chapitre Keyboard Interface 400,013, §2.3, pages imprimées 3–4. Archive locale : `artifacts/References/Machines/Acorn/Acorn System 5/System5Handbook.pdf` et texte adjacent. Cette carte clavier est utilisée par les System ASCII ; la matrice hexadécimale du System 1 n'a pas ce circuit.
 
 L'entrée AKD indique qu'un caractère est maintenu. Les sept bits ASCII restent valides après son relâchement, jusqu'au caractère suivant. Le circuit RC de répétition forme NSTROBE actif bas à partir de AKD et de REPEAT. Le manuel décrit 0,5 s avant répétition automatique et une oscillation nominale 10 Hz ; REPEAT supprime le retard initial et permet de répéter le dernier code même après relâchement. Le codeur AY-3-4592 et son balayage matriciel sont distincts de ce circuit : l'adaptateur hôte fournit ici les données ASCII décodées et AKD, comme avant cette correction. Cette fiche ne présente pas le circuit de répétition comme une émulation du codeur AY complet.
 

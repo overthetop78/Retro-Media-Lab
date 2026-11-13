@@ -2,7 +2,7 @@
 
 ## Référence et fils réels
 
-[Acorn System 5 Handbook](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_System5Handbook.pdf), §2.4/2.5 et figure 21, page imprimée 23 (PDF 62). Texte, PDF et schéma inspecté sous `artifacts/.tmp-archives/machines/Acorn/Acorn System 5/`. Le schéma précise les fronts et les entrées asynchrones au-delà du résumé textuel. La double bascule est documentée dans [SN74LS74A](../Logic/Sn74Ls74A.md).
+[Acorn System 5 Handbook](https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_System5Handbook.pdf), §2.4/2.5 et figure 21, page imprimée 23 (PDF 62). Texte, PDF et schéma inspecté sous `artifacts/References/Machines/Acorn/Acorn System 5/`. Le schéma précise les fronts et les entrées asynchrones au-delà du résumé textuel. La double bascule est documentée dans [SN74LS74A](../Logic/Sn74Ls74A.md).
 
 | Liaison physique | Prise en compte |
 | --- | --- |
@@ -59,4 +59,4 @@ Production identique àc1a362111 ; aucune modification de ce composant par cet a
 |---|---:|---:|---:|---:|
 |cycle : 2 MHz, CPU et READY raccordés, sans WAIT|13/0|13/0|112,51|12,52|
 Médiane de cinq fenêtres réellement chronométrées de1M unités après10k+3M unités de chauffe non chronométrées, observateurs et boucle inclus ; aucun coût CPU propre déduit. Les profils et délais physiques restent ceux déjà documentés, sans fréquence modifiée.
-Le [bilan détaillé](../../tasks/machines/AcornSystem/system5-performance-audit.md) contient min/max, horloges réelles, unités exactes, limites de fidélité, captures TRX/JSON, avant/après historiques comparables et résultats de la machine entière. Bancs temporaires supprimés et assemblies reconstruites sans diagnostic ; aucune extrapolation de gain isolé à la machine.
+Le [bilan détaillé](<../../project/emulations/Acorn/Acorn System/System 5/validation.md>) contient min/max, horloges réelles, unités exactes, limites de fidélité, captures TRX/JSON, avant/après historiques comparables et résultats de la machine entière. Bancs temporaires supprimés et assemblies reconstruites sans diagnostic ; aucune extrapolation de gain isolé à la machine.

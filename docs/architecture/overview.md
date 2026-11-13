@@ -216,6 +216,5 @@ Les réglages, profils, configurations d’émulation, journaux, matériel et pl
 
 ## Évolution de l’architecture
 
-Ce document décrit le code actuel. Les travaux encore ouverts sont indexés dans
-[`../tasks/README.md`](../tasks/README.md); un nouvel audit général de qualité recevra sa propre
-feuille lorsqu’il sera demandé.
+Ce document décrit le code actuel. Les travaux encore ouverts sont conservés dans
+[`../tasks/`](../tasks/), sans index de tâches à entretenir.

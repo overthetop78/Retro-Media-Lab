@@ -1,12 +1,18 @@
 # SG-1000 — matériel et réalisation SegaEmu
 
+> **Document historique — arrêt du 13 novembre 2026.** Le code EmuChip et l’implémentation
+> SG-1000 de SegaEmu ont été supprimés à la demande de l’utilisateur, sans restauration d’un
+> autre moteur. Les descriptions d’implémentation, essais, mesures et travaux alors ouverts
+> ci-dessous concernent les versions antérieures à cette suppression. Les références matérielles
+> et recherches sont conservées ; elles n’attestent pas la présence actuelle de cet émulateur.
+
 ## Sources et données établies
 
 Source constructeur : [SEGA, fiche SG-1000](https://www.sega.jp/history/hard/sg1000/), consultée le 11 novembre 2026. SEGA indique un Z-80A à 3,58 MHz, 1 Kio de RAM, 16 Kio de VRAM, des cartouches de 8 à 48 Kio, trois voies PSG et une voie bruit. La console accepte deux joysticks et possède un bouton de maintien/pause et un connecteur d'extension. Ces valeurs de présentation ne définissent pas les phases, les miroirs d'adresses ni les références précises de tous les circuits.
 
 ## Relevé de carte récupéré
 
-Le [relevé SG-1000 d'Enri](http://cmpslv3.stars.ne.jp/Sg1000/EnrSG.htm) a été récupéré directement en HTTP après l'échec des anciennes adresses et de la récupération HTTPS par l'outil web. Archive : `artifacts/.tmp-archives/machines/Sega/SG-1000/EnrSG.htm` et ses onze images liées. Il s'agit d'un relevé de matériel, pas d'un schéma constructeur. Les schémas CPU/vidéo/son/décodage/joysticks ont été examinés ; les cinq schémas de cartouches et le connecteur sont archivés et restent à examiner avant leur réalisation.
+Le [relevé SG-1000 d'Enri](http://cmpslv3.stars.ne.jp/Sg1000/EnrSG.htm) a été récupéré directement en HTTP après l'échec des anciennes adresses et de la récupération HTTPS par l'outil web. Archive : `artifacts/References/Machines/Sega/SG-1000/EnrSG.htm` et ses onze images liées. Il s'agit d'un relevé de matériel, pas d'un schéma constructeur. Les schémas CPU/vidéo/son/décodage/joysticks ont été examinés ; les cinq schémas de cartouches et le connecteur sont archivés et restent à examiner avant leur réalisation.
 
 | Schéma archivé | Composants et raccordements lisibles |
 | --- | --- |
@@ -58,7 +64,7 @@ Le dessin `castle.png` confirme le boîtier SRAM28broches de8K×8,CS1bas/CS2haut
 
 ### Identification physique de The Castle retrouvée le12novembre2026
 
-Source primaire : ichigo/ichigobankai,publication du1juillet2015,photos de sa cartouche ouverte dans [Mark III Edge Connector](https://www.smspower.org/forums/15075-MarkIIIEdgeConnector?start=50),pièces jointes [DSC03686 face](https://www.smspower.org/forums/download.php?id=8631) et [DSC03687 dos](https://www.smspower.org/forums/download.php?id=8630). Les JPEG sont acquis sous `artifacts/.tmp-archives/machines/Sega/SG-1000/Castle-Ichigo-20150701-DSC03686-front.jpg` et `Castle-Ichigo-20150701-DSC03687-back.jpg`.
+Source primaire : ichigo/ichigobankai,publication du1juillet2015,photos de sa cartouche ouverte dans [Mark III Edge Connector](https://www.smspower.org/forums/15075-MarkIIIEdgeConnector?start=50),pièces jointes [DSC03686 face](https://www.smspower.org/forums/download.php?id=8631) et [DSC03687 dos](https://www.smspower.org/forums/download.php?id=8630). Les JPEG sont acquis sous `artifacts/References/Machines/Sega/SG-1000/Castle-Ichigo-20150701-DSC03686-front.jpg` et `Castle-Ichigo-20150701-DSC03687-back.jpg`.
 
 Photo face examinée : IC2 **Fujitsu MB8464-15L**,marquages8615/R58/BA ;IC1 **Fujitsu MB83256**,marquage Sega MPR-10152,300/RK,8637/Z08. Cette preuve identifie les composants d’une vraie carte The Castle ;elle ne prouve pas toutes les révisions produites. Le doute précédent sur le fabricant est donc levé pour cette carte,avant tout choix de délais. Il faut maintenant réaliser les profils exacts à partir de leurs fiches,et confronter les deux faces au schéma Enri.
 

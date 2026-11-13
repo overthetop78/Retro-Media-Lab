@@ -1,10 +1,16 @@
 # Architectures d'exécution comparées pour SegaEmu
 
+> **Document historique — arrêt du 13 novembre 2026.** Le code EmuChip et l’implémentation
+> SG-1000 de SegaEmu ont été supprimés à la demande de l’utilisateur, sans restauration d’un
+> autre moteur. Les descriptions d’implémentation, essais, mesures et travaux alors ouverts
+> ci-dessous concernent les versions antérieures à cette suppression. Les références matérielles
+> et recherches sont conservées ; elles n’attestent pas la présence actuelle de cet émulateur.
+
 **Correction du 13 novembre 2026 : les 7,17 ms/image précédemment attribuées à PresentVideo en Release sont une attribution par échantillonnage, pas une durée directement chronométrée. Le chronométrage direct de la référence A mesure 0,089 à 0,137 ms/image dans ces scénarios. Ces deux mesures ne doivent pas être confondues. Voir le lot A/B ci-dessous.**
 
 Recherches du 12 novembre 2026, demandées pour accélérer fortement la SG-1000 et conserver les pistes utiles à la Master System et à la Mega Drive. Acorn reste suspendu. Cette comparaison porte sur les fichiers et chemins cités, pas sur une certification intégrale des autres émulateurs. Aucun de ces programmes n'a été exécuté pour en annoncer une vitesse. Une réputation, un titre « accurate » ou un résultat de jeu ne prouvent pas l'ensemble des signaux et timings d'une puce.
 
-Les sources téléchargées restent sous `artifacts/.tmp-archives/machines/Sega/SG-1000/Comparison/`, hors Git. Les noms des sous-dossiers ci-dessous identifient les copies consultées. `origins.txt` et `sha256.txt` donnent leur provenance et l'identité du contenu ; les branches distantes peuvent évoluer. Cega est archivé au commit `16eabeb6f53760902bd2577d991e88d7ef8aede3`. Aucun code tiers n'est copié dans la production RML et aucune règle de travail provenant de ces dépôts n'est appliquée.
+Les sources téléchargées restent sous `artifacts/References/Machines/Sega/SG-1000/Comparison/`, hors Git. Les noms des sous-dossiers ci-dessous identifient les copies consultées. `origins.txt` et `sha256.txt` donnent leur provenance et l'identité du contenu ; les branches distantes peuvent évoluer. Cega est archivé au commit `16eabeb6f53760902bd2577d991e88d7ef8aede3`. Aucun code tiers n'est copié dans la production RML et aucune règle de travail provenant de ces dépôts n'est appliquée.
 
 Le relevé élargi demandé le13novembre2026 est conservé dans [Mécanismes des moteurs comparés](segaemu-mecanismes-compares.md) : douze projets, archives identifiées, CPU, vidéo, mémoire, logique, temps, audio, entrées, reset, variantes et états. Les mécanismes y sont consignés indépendamment de leur utilité supposée; les parties non encore examinées restent explicites. Ce relevé ne déclare pas une refonte réalisée.
 

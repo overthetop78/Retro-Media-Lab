@@ -10,7 +10,7 @@ Pour les démarrages sur disquette : 80 champs d'initialisation, SHIFT-RESET, 1 
 
 Le fichier temporaire préexistant `RetroMediaLab-80186-boot.img` contient 655 360 octets. SHA-1 `2df6155aecfd4fc9595cd95359b153d158c313a3`, SHA-256 `f8f4a2de37424dda4c327fc5824d1232a24d9a1bd39b604b0aa71da84891b103`.
 
-Son SHA-1 correspond exactement à **DOS Plus Boot v1.2** dans le [catalogue source MAME](https://github.com/mamedev/mame/blob/master/hash/bbc_flop_80186.xml), et non à la 2.1. Une seconde copie récupérée dans [Disc1.zip chez G7JJF](https://www.g7jjf.com/512/Disc1.zip) est identique octet pour octet par son empreinte. Le catalogue et l'archive sont conservés sous `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/`.
+Son SHA-1 correspond exactement à **DOS Plus Boot v1.2** dans le [catalogue source MAME](https://github.com/mamedev/mame/blob/master/hash/bbc_flop_80186.xml), et non à la 2.1. Une seconde copie récupérée dans [Disc1.zip chez G7JJF](https://www.g7jjf.com/512/Disc1.zip) est identique octet pour octet par son empreinte. Le catalogue et l'archive sont conservés sous `artifacts/References/Machines/Acorn/BBC Master 512/`.
 
 Ce rapprochement identifie l'image de référence et écarte une modification locale du fichier comparé ; il ne démontre pas, à lui seul, sa compatibilité avec toutes les ROM ni la fidélité de l'émulation.
 
@@ -65,7 +65,7 @@ Le code précédent lit la taille mémoire depuis la zone BIOS **0040:0013**, la
 
 Ce constat établit les octets et leur effet ; il n'identifie pas l'auteur, la date ni la destination matérielle historique de cette modification. Ne pas présenter une origine Solidisk ou un défaut de copie comme confirmé sans source.
 
-Archives persistantes : `dos12-g7jjf-files/`, `dos12-8bs-files/` et `dos12-file-comparison.json` sous `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/`. SHA-256 de CPM3.SYS initial : `4240dfa09059b9fc0f61e683fd7004b4a89d56c5310529efc9fff1a532d10564` ; image 8BS : `3ec27c29886953ae36b2a22d1a77b2c9ac8a7b2b8da0ac8020724dd556095bc1`. Les images sources n'ont pas été modifiées.
+Archives persistantes : `dos12-g7jjf-files/`, `dos12-8bs-files/` et `dos12-file-comparison.json` sous `artifacts/References/Machines/Acorn/BBC Master 512/`. SHA-256 de CPM3.SYS initial : `4240dfa09059b9fc0f61e683fd7004b4a89d56c5310529efc9fff1a532d10564` ; image 8BS : `3ec27c29886953ae36b2a22d1a77b2c9ac8a7b2b8da0ac8020724dd556095bc1`. Les images sources n'ont pas été modifiées.
 
 ## Premier passage de commandes DOS 2.1
 
@@ -145,7 +145,7 @@ Le code hôte autour de 2A00 lit un octet vers la page haute d'un pointeur, atte
 
 Le premier relevé borné à 120 champs après JOYTEST était trop tôt : l'image était encore active et le programme pas encore chargé. La reprise s'arrête sur huit observations consécutives de l'attente ROM, après fin d'activité disque. Capture distincte `20261108-joystick-0-tube-request-debug.bmp` ; les anciennes captures d'attente sont conservées comme étapes, sans verdict de réussite.
 
-Vérification documentaire complémentaire : chapitre 6 du Master 512 Technical Guide, source https://acorn.huininga.nl/pub/mirrors/8bs.com/othrdnld/manuals/512/512tech/m512tech06.htm , archivé dans `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/m512tech06.htm`. Il décrit explicitement les interruptions 40h–4Ch sous DOS Plus et les paramètres BL/X, BH/Y dans la section OSBYTE ; ne pas classer ces appels comme incompatibles avec DOS sans résoudre l'écart observé. Le texte rappelle également le rôle de l'événement MOS 4 pour la communication DOS. Aucun événement n'a été désactivé par ce banc.
+Vérification documentaire complémentaire : chapitre 6 du Master 512 Technical Guide, source https://acorn.huininga.nl/pub/mirrors/8bs.com/othrdnld/manuals/512/512tech/m512tech06.htm , archivé dans `artifacts/References/Machines/Acorn/BBC Master 512/m512tech06.htm`. Il décrit explicitement les interruptions 40h–4Ch sous DOS Plus et les paramètres BL/X, BH/Y dans la section OSBYTE ; ne pas classer ces appels comme incompatibles avec DOS sans résoudre l'écart observé. Le texte rappelle également le rôle de l'événement MOS 4 pour la communication DOS. Aucun événement n'a été désactivé par ce banc.
 
 ## Deux joysticks depuis le 80186 — DOS Plus 1.2, Debug
 

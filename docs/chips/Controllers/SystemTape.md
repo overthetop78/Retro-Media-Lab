@@ -14,7 +14,7 @@ Les fronts visibles sont visités dans leur ordre pendant AdvanceTo. Les fronts 
 
 Schémas Acorn originaux : [carte clavier/afficheur/cassette](https://theoddys.com/acorn/acorn_system_hardware/keyboard%2C_display_%26_cassette_interface_board/keyboard_display_cassette_interface_board.html), 200.001 issue 2 du 11 juillet 1979 et 100.001 issue 3 du 27 mars 1980. Le scan original montre Q7/NHITONE et les bascules. La [retranscription de la réplique Chris Oddy](https://www.theoddys.com/acorn/acorn_replica_boards/replica_keyboard%2C_display_%26_cassette_interface_board/replica_keyboard_display_and_cassette_interface_board.html), schéma du 25 juin 2025, rend le suivi des nets lisible. Les modifications de connecteurs et les composants non montés de cette réplique ne sont pas des ajouts au modèle numérique. Le montage et les broches sont confrontés au manuel System 2 et aux sources Monitor.ca65 / COS.ca65.
 
-Tous ces documents, leurs rendus complets et les détails de compteur/diviseur restent sous `artifacts/.tmp-archives/machines/Acorn/Acorn System 2/`. Ne pas refaire la recherche avant de consulter ces références.
+Tous ces documents, leurs rendus complets et les détails de compteur/diviseur restent sous `artifacts/References/Machines/Acorn/Acorn System 2/`. Ne pas refaire la recherche avant de consulter ces références.
 
 ## Vérifications du 8 novembre 2026
 

@@ -8,7 +8,7 @@ Correspondances relues : `Cpu6502.Nmos.cs`, phases ResetFirst–ResetVectorHigh 
 
 ## Manuel matériel MOS complémentaire — reprise du 11 novembre
 
-MOS Technology, *MCS6500 Microcomputer Family Hardware Manual*, 6500-10A, seconde édition, janvier1976, révisionA. [Transcription consultée](https://www.kim-1.com/hwman.html), sections1.3.2.5/6,1.4.1.2.9/10, annexeA. Copie locale `artifacts/.tmp-archives/chips/CPU/MOS/MCS6500/6502/MOS-6500-10A-197601-source.html`, SHA256 `04AAE748A110C9978DC9BB225FB4910906FEEBBBF5CCF5A064C3EA318A0A3958`. Il s'agit d'une transcription HTML attribuée au manuel, pas d'une acquisition physique ni du PDF original.
+MOS Technology, *MCS6500 Microcomputer Family Hardware Manual*, 6500-10A, seconde édition, janvier1976, révisionA. [Transcription consultée](https://www.kim-1.com/hwman.html), sections1.3.2.5/6,1.4.1.2.9/10, annexeA. Copie locale `artifacts/References/Chips/CPU/MOS/MCS6500/6502/MOS-6500-10A-197601-source.html`, SHA256 `04AAE748A110C9978DC9BB225FB4910906FEEBBBF5CCF5A064C3EA318A0A3958`. Il s'agit d'une transcription HTML attribuée au manuel, pas d'une acquisition physique ni du PDF original.
 
 Le texte décrit IRQ comme une demande de niveau à maintenir jusqu'à reconnaissance et NMI comme une transition négative réarmable après retour haut. La section1.4.1.2.9 donne deux périodes minimales à l'état bas pour garantir la reconnaissance NMI. Cela ne démontre ni le rejet ni l'acceptation universelle des pulses plus courts. L'annexeA place les instructions implicites, dont CLI/SEI, sur deux cycles et distingue la lecture transitoire du décodage suivant ; elle ne fixe pas à elle seule leur fenêtre exacte d'échantillonnage IRQ.
 

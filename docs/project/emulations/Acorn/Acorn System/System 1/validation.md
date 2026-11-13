@@ -4,7 +4,7 @@
 
 Carte `Keypad6502`, horloge du profil existant **1 008 000 Hz**, RAM CPU de 1 Kio et INS8154 avec ses 128 octets de RAM, moniteur `Acorn System 1 Monitor.bin` de 512 octets (SHA1 `B987354C55BEB5E2CED761970C3339B895A8C09D`), matrice hexadécimale et afficheur multiplexé à huit chiffres, interface de bande. Aucun VIA, VDU, FDC, HDD ou PSG ajouté au montage standard. Les extensions Eurocard et le deuxième 8154 optionnel ne sont pas ajoutés automatiquement par ce passage ; leur réalisation éventuelle reste distincte du montage contrôlé.
 
-Sources réutilisées : [moniteur original désassemblé et commenté](https://theoddys.com/acorn/acorn_system_software/system_1_monitor/monitor.html), archive `artifacts/.tmp-archives/machines/Acorn/Acorn System 1/Monitor.ca65` ; [composition des cartes 6502, 6502A et 6809](https://github.com/mamedev/mame/blob/master/src/mame/acorn/acrnsys.cpp), copie `acrnsys.cpp` au même endroit. Le 8154 statique ne reçoit aucun oscillateur inventé : ses fronts de bus et de handshake sont ceux de sa [fiche et de ses tests existants](../../../../../chips/IO/Ins8154.md).
+Sources réutilisées : [moniteur original désassemblé et commenté](https://theoddys.com/acorn/acorn_system_software/system_1_monitor/monitor.html), archive `artifacts/References/Machines/Acorn/Acorn System 1/Monitor.ca65` ; [composition des cartes 6502, 6502A et 6809](https://github.com/mamedev/mame/blob/master/src/mame/acorn/acrnsys.cpp), copie `acrnsys.cpp` au même endroit. Le 8154 statique ne reçoit aucun oscillateur inventé : ses fronts de bus et de handshake sont ceux de sa [fiche et de ses tests existants](../../../../../chips/IO/Ins8154.md).
 
 ## Défauts de raccordement corrigés
 

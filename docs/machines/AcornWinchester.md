@@ -16,7 +16,7 @@ La classe actuelle `Chips/.../AcornScsi` regroupe l’adaptateur hôte, la cible
 - [Schéma Acorn Host Adapter](https://theoddys.com/acorn/acorn_system_filing_systems/winchester_disks/Acorn%20SCSI%20Host%20Adapter%20Schematic.jpg), examiné directement : le PDF de service conserve le texte mais ses pages de schéma sont vides.
 - [BeebSCSI, hostAdapter.v](https://github.com/simoninns/BeebSCSI/blob/master/BeebSCSI_CPLD/hostAdapter.v) : reconstruction matérielle des bascules et portes du circuit hôte, avec adaptations AIV explicitement séparées ; [MAME scsi.cpp](https://github.com/mamedev/mame/blob/master/src/devices/bus/bbc/1mhzbus/scsi.cpp) distingue également l’adaptateur et la cible SCSI.
 
-Les copies et textes de travail restent temporairement dans `artifacts/.tmp-acorn-winchester/references/`, hors Git.
+Les copies et textes de travail restent temporairement dans `artifacts/References/Machines/Acorn/Acorn Winchester/`, hors Git.
 
 ## Registres et séquences établis par Acorn
 
@@ -523,7 +523,7 @@ Dans chaque format/configuration, la première session lit 45 blocs et en écrit
 
 Les captures Debug et Release de `adfs-native-dat-reopened.png` et `adfs-native-emu-reopened.png` sous `artifacts/TestsChips/Acb4000/BbcMicroModelB/` sont actualisées. Elles montrent le vrai catalogue ADFS après rechargement dans la seconde machine. Ces preuves restent limitées à BBC B et au premier port ; les diagnostics internes, échéances de panne, autres modèles/ports, interfaces App et mesures complètes d'optimisation restent ouverts. Les temps de scénarios ne sont pas annoncés comme une fréquence CPU ou une cadence FPS générale.
 
-Le diagnostic de mesure après cumul est supprimé, ainsi que les six fichiers DAT/DSC/EMU de travail créés par ses passages Debug/Release. Les assemblies de tests sont reconstruites en Debug puis Release pour retirer son code : zéro erreur, trois avertissements préexistants hors Winchester. Aucun média temporaire ne subsiste dans le dossier `artifacts/.tmp-acorn-winchester/native/`. Les captures restent hors Git ; aucun build Debug All livré ou commit de composant terminé n'est revendiqué ici.
+Le diagnostic de mesure après cumul est supprimé, ainsi que les six fichiers DAT/DSC/EMU de travail créés par ses passages Debug/Release. Les assemblies de tests sont reconstruites en Debug puis Release pour retirer son code : zéro erreur, trois avertissements préexistants hors Winchester. Aucun média temporaire ne subsiste dans le dossier `artifacts/References/Machines/Acorn/Acorn Winchester/native/`. Les captures restent hors Git ; aucun build Debug All livré ou commit de composant terminé n'est revendiqué ici.
 
 
 ## Parcours invité après raccordement des échéances et reprises CRC

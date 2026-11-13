@@ -6,7 +6,7 @@
 
 Le montage corrigé conserve toutes les banques du bundle MOS, notamment VIEW 14, et ajoute AMX 2.1 variant 4 en banque d'extension 8, réseau absent. BASIC démarre ; OSWORD 64 donne 640,512 puis 688,544 après déplacement +24/−16. ADVAL donne 0/65520/65520/0, l'allocation parasite de 40 000 octets retrouve 123. Captures natives inspectées `20261107-160207-amx-tube-coordinates.png` et `20261107-160218-analog-tube-values.png` sous TestsMachines/Acorn et TestsChips/TubeUla/BBC Master Turbo. Aucun changement de puce, de fréquence, de ROM ni de configuration utilisateur. Mesure globale Debug sans limite, 60 images avec rendu et drainage PCM : 28,047818 ms/image, 35,6534 images/s, 1,42385 MHz hôte, 71,19 % de 2 MHz. Le fonctionnement des entrées est vérifié, mais le budget de cadence Turbo reste distinct et ouvert.
 
-Référence primaire complémentaire : [Tom Seddon, désassemblage Master MOS, messages des 8 et 25 janvier 2024](https://stardot.org.uk/forums/viewtopic.php?start=30&t=27904) : banque 14, bitmap EDIT BBC4–BD80 et bitmap BASIC BD9F–BFFF. Source de relocation archivée hors Git : `artifacts/.tmp-archives/machines/Acorn/BBC Master Turbo/mos-470dded5.s65`, révision `470dded5a9d1b17308c2537620fdd2733b49ab53`, 426 624 octets, dépôt `tom-seddon/acorn_mos_disassembly`. Conserver cette dépendance du bundle ; ne pas appliquer aveuglément au Master la recommandation de banque haute du guide BBC AMX.
+Référence primaire complémentaire : [Tom Seddon, désassemblage Master MOS, messages des 8 et 25 janvier 2024](https://stardot.org.uk/forums/viewtopic.php?start=30&t=27904) : banque 14, bitmap EDIT BBC4–BD80 et bitmap BASIC BD9F–BFFF. Source de relocation archivée hors Git : `artifacts/References/Machines/Acorn/BBC Master Turbo/mos-470dded5.s65`, révision `470dded5a9d1b17308c2537620fdd2733b49ab53`, 426 624 octets, dépôt `tom-seddon/acorn_mos_disassembly`. Conserver cette dépendance du bundle ; ne pas appliquer aveuglément au Master la recommandation de banque haute du guide BBC AMX.
 
 Les observations suivantes retracent les essais de montage incorrects ; elles ne constituent plus un défaut ouvert de la connexion AMX.
 
@@ -29,7 +29,7 @@ Acorn, *65C102 co-processor user guide*, partie 0443,030, issue 2, avril 1986, p
 - L'écran reste dans la mémoire hôte. Le guide explique explicitement que certains programmes accédant directement à l'écran ne fonctionnent donc pas avec le coprocesseur.
 - BASIC et ses opérateurs d'indirection ne donnent pas un accès direct à la RAM hôte par simple préfixe FFFF ; les appels OSWORD appropriés assurent les accès distants.
 
-Source : https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_65C102CoProUG.pdf . Archive : `artifacts/.tmp-archives/machines/Acorn/BBC Master Turbo/Acorn_65C102CoProUG.pdf` (1 645 906 octets).
+Source : https://chrisacorns.computinghistory.org.uk/docs/Acorn/Manuals/Acorn_65C102CoProUG.pdf . Archive : `artifacts/References/Machines/Acorn/BBC Master Turbo/Acorn_65C102CoProUG.pdf` (1 645 906 octets).
 
 ## SimCity : version effectivement testée le 7 novembre 2026
 

@@ -10,13 +10,13 @@ différées et les seules tâches encore ouvertes.
 - [Décisions produit et explications confirmées](project/decisions.md)
 - [Préparation et publication du wiki](project/wiki.md)
 - [Développement avec .NET et organisation du dépôt](project/development.md)
+- [Procédure de réalisation des modules](project/emulation-module-development.md)
 - [Publication des releases et snapshots](project/release.md)
 - [Tests disponibles et contrôles de release](project/testing.md)
 - [Scripts du dépôt](project/scripts.md)
 - [Organisation et entretien de la documentation](project/documentation.md)
 - [Images de disque dur](project/hard-disk-images.md)
 - [Catalogue des formats de disque dur](project/hard-disk-format-catalog.md)
-- [Fichiers de plus de 500 lignes](project/large-source-files.md)
 - [Intégration du module d’émulation Amstrad](project/amstrad-emulation.md)
 
 ## Architecture actuelle
@@ -37,9 +37,20 @@ différées et les seules tâches encore ouvertes.
 
 - [Machines et composants d’émulation](reference/emulation-machines.md)
 - [Cœurs Atari Libretro](reference/atari-libretro.md)
+- [Catalogue des moteurs et DLL d’émulation](reference/emulation-core-catalog.md)
 - [GameInput](reference/gameinput.md)
 - [Formats de médias et couverture SCP](reference/media-formats.md)
 - [Filtres et technologies vidéo](reference/emulation-video-filters.md)
+
+## Puces, machines et directives
+
+- [Architecture des puces](architecture/chips.md)
+- [Fiches des composants](chips/)
+- [Résultats et références des machines](project/emulations/)
+- [Procédure puces et machines](directives/Emulations/procedure-puces-machines.md)
+- [Développement des émulateurs](directives/emulation-development.md)
+- [Uniformisation des modules](directives/emulation-uniformity.md)
+- [Prompts d’objectifs conservés](directives/objective-prompts.md)
 
 ## Interface
 
@@ -51,7 +62,8 @@ différées et les seules tâches encore ouvertes.
 
 ## Travaux à réaliser
 
-- [Index des tâches](tasks/README.md)
+Les suivis encore ouverts sont dans [`tasks/`](tasks/). Les procédures permanentes et les
+catalogues sont rangés dans leurs dossiers respectifs ; les suivis terminés sont supprimés.
 
 ## Évolutions différées
 

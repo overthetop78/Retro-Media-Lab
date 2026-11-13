@@ -1,6 +1,5 @@
 # Travail restant : nec
 
-
 - [ ] Options NEC complètes, propres à chaque machine et au cœur sélectionné
     - [ ] Corriger le blocage de la fenêtre NEC à l'ouverture
       - [ ] Modifier `src/RetroMediaLab.App/Views/Windows/EmulationModuleOptions/EmulationModuleOptionsWindow.xaml.cs` ou `src/RetroMediaLab.App/Views/Controls/Emulation/Options/ModuleSettings/EmulationModuleSettingsSection.Persistence.cs` : corriger la cause précise du blocage de fermeture une fois son déclencheur identifié, puis compléter le scénario de régression dans `tests/RetroMediaLab.Tests/Interface/SettingsViews/EmulationModuleSettingsNavigationScenarios.cs`.

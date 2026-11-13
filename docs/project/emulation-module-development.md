@@ -838,3 +838,87 @@ Lorsqu une bibliothèque reçoit un périphérique natif, vérifier séparément
 Un contrôle qui résout une clé ne contrôle pas son sens : comparer chaque identifiant natif à son libellé affiché avant de traduire (IR JIT ne doit pas devenir IR Interpreter). Relier les choix techniques aux clés communes de la base App lorsque le résolveur du module les accepte ; conserver JIT, IR JIT et ROM dans 00-Base uniquement et supprimer les anciennes clés locales dans toutes les cultures, avec migration des appelants. Ne jamais traduire un sigle technique isolé comme un mot ni dupliquer son texte dans en-US et les traductions.
 
 Pour les photos, utiliser directement l outil de traitement classique autorisé : conserver les pixels RGB originaux, construire seulement un masque alpha, vérifier les reflets clairs, les ouvertures et le fond enfermé par les câbles sur fonds clair et sombre. Une sélection par couleur qui efface des boutons ou reflets doit être rejetée ; tracer le contour si nécessaire. Avec ImageMagick, rétablir -compose Over après -compose CopyOpacity -composite avant -extent, sinon la toile peut remplacer les couleurs par une silhouette. Relier le modèle exact au registre des profils, au nom de fichier, à l identifiant SDK et au libellé invariant de 00-Base ; mapper uniquement les zones réellement visibles sur la photo vers les commandes existantes, conserver les autres commandes dans le tableau et les sources physiques vides. Tous les masques et aperçus vont dans un GUID sous Temp puis sont supprimés après copie du résultat inspecté, sans script ponctuel dans le dépôt.
+
+## Contraintes de reprise des opérations existantes
+
+### Descriptions des périphériques
+
+- Reprendre les contrats d’entrée existants dans leurs propriétaires d’origine ; conserver les limites des ports, les valeurs par défaut et les types concrets des descripteurs.
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/Contracts/AtariControllerDevice.cs @ b21d84476b026483d1054edc11dbddb49f50aef6
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/Contracts/AtariControllerPort.cs @ b21d84476b026483d1054edc11dbddb49f50aef6
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/Contracts/AtariInputDescriptor.cs @ b21d84476b026483d1054edc11dbddb49f50aef6
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Amiga/Contracts/AmigaControllerDevice.cs @ b21d84476b026483d1054edc11dbddb49f50aef6
+
+### Définition des actions d’entrée
+
+- Réutiliser InputBindingDefinition et les contrats d’entrée existants ; conserver les particularités des machines et leurs consommateurs typés.
+- Propriétaire d’origine : src/RetroMediaLab.Emulation/Contracts/InputBindingDefinition.cs @ 5a7b3a6ce933f7f66d0ed05ac736483867e9f2f1
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Epoch/Common/Contracts/InputContracts.cs @ fcce541254e40721318817eac3c88eb83b5d3c01
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Philips/Common/Contracts/InputContracts.cs @ 22db7823627b22a41caf1b781e7a9e745e3b0ecd
+
+### Validation des cartes SNK
+
+- Reprendre la validation HbMame d’origine : chemin, extensions mcr/neo, taille de 2048 octets et erreur IncompatibleMedia. Conserver la vérification de famille NeoGeoCartridge avant validation et les trois usages de la sélection existante.
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Snk/Emulators/Mame/Functions/MediaRuntimeFunctions.cs @ a1f460542957c7ce1720ca88d44f3efc719936ef
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Snk/Emulators/HbMame/Functions/MediaRuntimeFunctions.cs @ a1f460542957c7ce1720ca88d44f3efc719936ef
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Snk/Emulators/Mame2015/Functions/MediaRuntimeFunctions.cs @ a1f460542957c7ce1720ca88d44f3efc719936ef
+
+### Sélection initiale du contenu SNK
+
+- Reprendre la sélection existante dans son propriétaire initial et conserver l’ordre des validations et des lectures du chemin de contenu.
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Snk/Emulators/Mame2000/Functions/MediaRuntimeFunctions.cs @ a1f460542957c7ce1720ca88d44f3efc719936ef
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Snk/Emulators/FbAlpha/Functions/MediaRuntimeFunctions.cs @ a1f460542957c7ce1720ca88d44f3efc719936ef
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Snk/Emulators/NeoCd/Functions/MediaRuntimeFunctions.cs @ a1f460542957c7ce1720ca88d44f3efc719936ef
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Snk/Emulators/Geolith/Functions/MediaRuntimeFunctions.cs @ a1f460542957c7ce1720ca88d44f3efc719936ef
+
+### Relais des chemins de sauvegarde
+
+- Supprimer uniquement les relais vers le SDK : transmettre directement le chemin et pathBase, sans normalisation supplémentaire. Le SDK conserve les chaînes d’espaces telles quelles ; les sept anciennes méthodes qui les convertissent en null ont un comportement distinct et restent en place.
+- Conserver les schémas des dossiers, l’ordre des champs et les conversions dans les modules. Les 186 appels sont dans leurs 16 fichiers respectifs ; les accès internes et déclarations d’assemblies amies existants suffisent, sans élargissement de l’API publique.
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/AtariConfigurationStoreFunctions.cs @ 9a104458f06aa25a30d35deb1af77efc22b8a7fe
+
+### Écriture atomique des manifestes JSON
+
+- Réutiliser l’implémentation SDK issue du propriétaire Atari antérieur à Amstrad. La généricité reste nécessaire pour les deux types réels : manifeste de diagnostic et installation active ; seuls les relais locaux sans politique propre disparaissent.
+- Conserver ManifestJsonOptions Web/WriteIndented, le suffixe .temporary, la création des dossiers, la sérialisation, le remplacement, le nettoyage finally et l’annulation. Garder le retour direct de Task sans ajouter await ou ConfigureAwait. Les 32 façades typées d’entrée sont traitées dans leur groupe distinct.
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/Functions/AtariCoreReleaseFunctions.cs @ ac7292d86^
+
+### Tampons natifs des sauvegardes d’état
+
+- Utiliser les opérations publiques SerializeState et UnserializeState déjà présentes dans ExternalCoreLifecycleFunctions. Apple et Acorn sont raccordés ; les autres consommateurs doivent rejoindre ces mêmes opérations, sans créer de surcharges CaptureNativeState ou RestoreNativeState parallèles. Garder les capacités réelles, tailles maximales et erreurs propres aux cœurs ; le propriétaire SDK libère chaque allocation native dans finally.
+
+### Instances des catalogues de traduction
+
+- Réutiliser le premier champ fournisseur existant pour chaque module et racine, avec le catalogue SDK et son cache par culture. Raccorder les consommateurs ultérieurs du même assembly à ce champ ; garder les assemblies distincts.
+- GetResourceRoot tronque le suffixe .Resources. : les racines .Resources.Error et .Resources.Emulation de Sega et Sony correspondent donc à la même racine dans chaque assembly. Garder CultureInfo demandée, replis parent/en-US/00-Base, comparaisons ordinales, valeurs immuables, constructeur et préfixe d’origine.
+- Les 55 déclarations sont des constructions possibles, pas 55 allocations garanties. Vérifier dépendances d’initialisation et absence de cycles ; typeof(module).Assembly ne construit pas de module. Garder les interfaces publiques IEmulationModuleLocalization et le contenu des ressources.
+
+### Entrées de contrôle des machines
+
+- Conserver les contrats publics de cycle de vie, exécution et audio, ainsi que les politiques de verrou et de file propres à chaque propriétaire. EmulationMachineCommand possède déjà la mise en file, la complétion et la vidange ; le contrôleur SDK possède la récupération de sortie.
+- Retirer seulement les 48 méthodes audio intermédiaires à appelant unique. Garder les 69 implémentations explicites IEmulationAudio et le champ readonly du contrôleur concret, y compris les sous-classes SNK/Watara et BeforeStart.
+- État actuel à prendre en compte pendant le raccordement : 15 validations sont dans le verrou, tandis qu’Atari et les sept anciennes familles valident avant. Les anciennes pauses/reprises n’inspectent pas leur jeton. Uniformiser ces parcours en conservant la sûreté des transitions et les règles d’annulation attendues ; ne pas assimiler une absence actuelle de raccordement à une fonctionnalité à supprimer.
+- État actuel : 16 pauses utilisent le contrôleur et ReleaseInput ; sept anciennes pauses ne font qu’un vidage local. Le raccordement audio inscrit plus haut doit éliminer cette seconde implémentation et apporter les fonctions communes aux sept familles. Conserver les contrôles nécessaires de suspension des médias et l’ordre sûr des transitions.
+- SetOptionAsync des 16 familles met seulement l’appel cœur en file ; les sept anciennes mettent _currentOptions à jour après sa réussite et conservent le contexte OptionInvalid traduit. Garder FailPendingCommands, adaptateur à deux consommateurs vers l’unique boucle SDK.
+- Le contrôleur commun doit utiliser NormalizeVolume existant, en conservant NaN, infinis, zéro négatif et exceptions. Le raccordement complet des sept familles remplace les anciennes tâches limitées à la seule expression Math.Clamp.
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/AtariAudioOutputController.cs @ 21090588b9eafd2df6f2dcda74452e4faf5da01c
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/AtariAudioOutputFunctions.cs @ 21090588b9eafd2df6f2dcda74452e4faf5da01c
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/AtariAudioOutputConstants.cs @ 21090588b9eafd2df6f2dcda74452e4faf5da01c
+
+### Sous-classes audio vides
+
+- Réutiliser le contrôleur SDK issu d’Atari : remplacer les types et constructions privés de Machine et les trois références directes de tests, puis supprimer les 14 sous-classes limitées à un constructeur transparent.
+- Garder arguments et valeurs par défaut output=null/factory=null, ordre d’évaluation et références empruntées. Aucune de ces sous-classes ne possède de champ, surcharge, initialisation statique, finaliseur ou méthode supplémentaire ; la sortie et sa libération restent au SDK.
+- Conserver les deux sous-classes avec comportement propre : SNK pour BeforeStart, latence, disponibilité et BufferStatus ; Watara pour latence et état. Ne pas déplacer leurs méthodes dans une nouvelle classe commune.
+
+### Primitives des services de téléchargement
+
+- Les 22 GetAvailableAsync sont raccordés à QueryReleaseAsync. Les 16 catalogues utilisent ParseRelease avec date obligatoire et format invariant ; NEC, Nintendo, Sega et Sony utilisent ReadOfficialRelease avec date facultative et culture courante. Amstrad conserve son libellé de fournisseur et Commodore sa version requise ajoutée avant la version officielle facultative, avec IsRequired=false pour celle-ci. Garder ces politiques distinctes ; Microsoft ne déclare pas de CoreReleaseService dans l’état examiné.
+- Retirer les 32 relais typés des manifestes et les 16 copies de l’adaptateur de progression vers les mêmes contrats SDK. Garder les algorithmes HTTP, ZIP, remplacement et manifestes dans leur propriétaire SDK, les constructeurs et méthodes publiques typées ainsi que les callbacks de diagnostic et formatage locaux.
+- Les 16 modules utilisent déjà les mêmes contrats CoreInstallProgress, CoreDiagnosticManifest et CoreActiveInstallation. Garder progress=null ; sinon transmettre les mêmes paires octets écrits/total, y compris zéro et null, sans borner ni intercepter les erreurs Report. Garder les six callbacks natifs à progression fractionnaire avec total>0 et la surcharge Action existante.
+- Conserver WriteJsonAtomicallyAsync générique pour ses deux types réels. Garder les 16 GetActiveInstallationAsync avec lecture du marqueur avant le chemin, les 16 catalogues typés avec date manquante différée et les quatre liaisons aux paramètres SDK.
+- Garder le retour null de GetInstalledVersion quand la bibliothèque manque et les chemins fixes de GetLibraryPath indépendants de la release. Garder les trois fournisseurs différés de diagnostic VerifyWindowsX64Library et le formatage invariant local d’ExtractExpectedLibrary/ReplaceLibraryAtomically.
+- Conserver les gardes, HttpClient emprunté, moment de Path.GetFullPath et affectations des 18 constructeurs. Ne pas libérer le client emprunté. Garder ordre d’installation, activation, progression finale, chemins retournés et nettoyage finally.
+- Ajouter seulement la surcharge SDK DownloadAsync à IProgress<EmulationCoreInstallProgress> : adapter Report(new EmulationCoreInstallProgress(written,total)) vers la surcharge Action existante, sans modifier la profondeur d’appel ni rendre les surcharges ambiguës.
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/Functions/AtariCoreReleaseFunctions.cs @ ac7292d86^
+- Propriétaire d’origine : src/RetroMediaLab.Emulation.Atari/Services/AtariCoreReleaseService.cs @ ac7292d86^

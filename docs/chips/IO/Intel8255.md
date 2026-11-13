@@ -41,7 +41,7 @@ Production inchangée. **30 cas propres au PPI passent en Debug et 30 en Release
 
 Banc isolé actuel, mode 0, commande 8A, C reçu A0, sans observateurs de sortie : 1 million d'accès de chauffe puis cinq fenêtres de 1 million, médiane avec boucle. Lecture C **19,1505 ns Debug / 1,3778 ns Release** ; écriture A changeante **21,5978 / 11,8858 ns**. La boucle de lecture inclut un accumulateur ; l'écriture change les niveaux sans destinataire, donc ne mesure pas le câblage Atom. Paramètres ordinaires .NET 10 ; aucune option Debug modifiée. Données `artifacts/TestsChips/AcornAtomReview/20261111-speed-{Debug,Release}.json`. Pas de mesure actuelle des performances strobed ni de gain avant/après démontré.
 
-Le PPI ne possède pas de Tick ni d'oscillateur : l'avance aux échéances ne doit pas lui en inventer un. Les notifications de niveaux/directions sont déjà conditionnelles ; les captures sur accès bus et handshakes demeurent nécessaires. Les limites électriques ci-dessous restent ouvertes à toute nouvelle conclusion de fidélité. [Bilan de revue](../../tasks/machines/AcornAtom/chip-review.md).
+Le PPI ne possède pas de Tick ni d'oscillateur : l'avance aux échéances ne doit pas lui en inventer un. Les notifications de niveaux/directions sont déjà conditionnelles ; les captures sur accès bus et handshakes demeurent nécessaires. Les limites électriques ci-dessous restent ouvertes à toute nouvelle conclusion de fidélité. [Bilan de revue](<../../project/emulations/Acorn/Acorn Atom/chip-review.md>).
 
 ## Implantation existante et utilisation réelle
 

@@ -12,7 +12,7 @@ Références de l'auteur, consultées le 8 novembre :
 - [Annexe A — sous-fonctions XIOS](https://acorn.huininga.nl/pub/mirrors/8bs.com/othrdnld/manuals/512/512tech/m512techa.htm).
 - [Annexe C — appel BDOS 32h](https://acorn.huininga.nl/pub/mirrors/8bs.com/othrdnld/manuals/512/512tech/m512techc.htm).
 
-Copies HTML dans `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/`, sous ces trois mêmes noms de fichiers. Ne pas refaire cette recherche sans information manquante ou contradictoire.
+Copies HTML dans `artifacts/References/Machines/Acorn/BBC Master 512/`, sous ces trois mêmes noms de fichiers. Ne pas refaire cette recherche sans information manquante ou contradictoire.
 
 ## Comparaison avec STAR sous DOS Plus 2.1
 

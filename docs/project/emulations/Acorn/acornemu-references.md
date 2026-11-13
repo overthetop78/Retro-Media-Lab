@@ -7,8 +7,8 @@ Recherche effectuée le 25 octobre 2026. Ce dossier prépare AcornEmu, le nouvel
 | Portée | Document |
 | --- | --- |
 | AcornEmu, sources transversales et possibilités de partage entre familles | Ce document |
-| Architecture des BBC Micro A/B et composants réutilisables dans cette gamme | [BBC Micro — architecture](BBC%20Micro/bbc-micro-architecture.md) |
-| Équipement, variantes et limites du Model A | [Model A — référence](BBC%20Micro/Model%20A/model-a-reference.md) |
+| Architecture des BBC Micro A/B et composants réutilisables dans cette gamme | [BBC Micro — architecture](<BBC Micro/bbc-micro-architecture.md>) |
+| Équipement, variantes et limites du Model A | [Model A — référence](<BBC Micro/Model A/model-a-reference.md>) |
 
 Les modèles resteront séparés dans AcornEmu. Les rapprochements ci-dessous sont des résultats de recherche et des pistes de partage, pas des choix de code déjà réalisés. Une caractéristique du BBC Micro ne s'applique pas automatiquement à l'Atom, à l'Electron ou aux machines ARM.
 
@@ -28,7 +28,7 @@ Les révisions sont figées pour retrouver exactement les sources consultées. U
 
 Étude ajoutée à la demande de l'utilisateur le 25 octobre 2026. Le dépôt du port est distinct du b2 d'origine ; la comparaison doit se faire sur sa propre révision. La [documentation Libretro](https://docs.libretro.com/library/b2/) décrit des configurations Model B, B+ et Master, sans profil Model A proposé dans sa liste.
 
-Le code du port sépare `src/beeb`, qui contient la machine et ses composants, de `src/libretro`, qui assure les échanges avec le frontal. Il permet donc d'étudier les composants BBC indépendamment des choix d'entrée, de présentation et de chargement de RetroArch. Les détails utiles sont consignés [dans la fiche BBC Micro](BBC%20Micro/bbc-micro-architecture.md#référence-complémentaire--b2-libretro), et les écarts vers le Model A [dans sa fiche](BBC%20Micro/Model%20A/model-a-reference.md#partir-du-model-b-de-b2-libretro).
+Le code du port sépare `src/beeb`, qui contient la machine et ses composants, de `src/libretro`, qui assure les échanges avec le frontal. Il permet donc d'étudier les composants BBC indépendamment des choix d'entrée, de présentation et de chargement de RetroArch. Les détails utiles sont consignés [dans la fiche BBC Micro](<BBC Micro/bbc-micro-architecture.md#référence-complémentaire--b2-libretro>), et les écarts vers le Model A [dans sa fiche](<BBC Micro/Model A/model-a-reference.md#partir-du-model-b-de-b2-libretro>).
 
 Le fichier [src/COPYING du port](https://github.com/zoltanvb/b2-libretro/blob/9793f6a8040c416d147003cada29363b955b54e7/src/COPYING) fournit la GPL version 3. Étudier son fonctionnement ne décide pas d'une reprise de code ni d'une dépendance au cœur b2 dans AcornEmu.
 
@@ -76,7 +76,7 @@ Un nom différent n'implique donc pas une ROM différente. L'identification par 
 - [MOS Reassembly](https://tobylobster.github.io/mos/) : réassemblage commenté du MOS, avec une source assembleur et des explications de ses routines. C'est une référence de fonctionnement, distincte d'un simple fichier binaire.
 - [BBC Micro ROM Library](https://tobylobster.github.io/rom_library/) : catalogue et téléchargements pour identifier les variantes de ROM et les extensions. Une entrée du catalogue ne constitue pas une exigence du Model A.
 
-Le rôle et la mise en mémoire des images BBC sont décrits [dans la fiche de gamme](BBC%20Micro/bbc-micro-architecture.md#fichiers-rom-et-liaisons-avec-la-machine), et le choix des deux ROM du Model A [dans sa fiche](BBC%20Micro/Model%20A/model-a-reference.md#télécharger-les-rom-du-model-a).
+Le rôle et la mise en mémoire des images BBC sont décrits [dans la fiche de gamme](<BBC Micro/bbc-micro-architecture.md#fichiers-rom-et-liaisons-avec-la-machine>), et le choix des deux ROM du Model A [dans sa fiche](<BBC Micro/Model A/model-a-reference.md#télécharger-les-rom-du-model-a>).
 
 ## Médias : ce qui peut être commun
 

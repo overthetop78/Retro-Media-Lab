@@ -2,7 +2,7 @@
 
 ## Parcours à vérifier
 
-Source primaire : Master 512 Technical Guide, annexe G, section Formatting, https://acorn.huininga.nl/pub/mirrors/ftp.nvg.org/pub/bbc/doc/Master%20512%20Technical%20Guide/m512techg.htm ; archive locale `artifacts/.tmp-archives/machines/Acorn/BBC Master 512/m512techg.htm`.
+Source primaire : Master 512 Technical Guide, annexe G, section Formatting, https://acorn.huininga.nl/pub/mirrors/ftp.nvg.org/pub/bbc/doc/Master%20512%20Technical%20Guide/m512techg.htm ; archive locale `artifacts/References/Machines/Acorn/BBC Master 512/m512techg.htm`.
 
 Préparer le disque en ADFS, puis exécuter HDISK depuis la disquette DOS : il crée une partition DOS sous forme de fichier ADFS verrouillé DRIVE_C. Le disque C: reste servi par l'ADFS hôte et le contrôleur Winchester existant ; ne pas ajouter de contrôleur PC ni détourner les appels logiciels. La copie des fichiers système pour le rendre amorçable est proposée séparément. Le système accepte ensuite les copies DOS de disquette vers C:.
 

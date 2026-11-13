@@ -125,9 +125,9 @@ Une notification transporte un changement de signal ; ce n'est pas une instructi
 
 - Lorsqu'un banc ajoute une ROM ou une extension, réutiliser le chargement et les banques déclarées par la machine ; ne pas remplacer arbitrairement une banque occupée pour obtenir une priorité élevée. Conserver les dépendances du bundle, y compris les tables ou services utilisés par une autre ROM. Avant d'attribuer un échec à une puce, comparer le montage ajouté au chargeur fonctionnel et aux données réellement transférées. Consigner la dépendance précise dans la fiche machine, sans imposer son placement aux autres modèles.
 
-- Centraliser les documents techniques récupérés, les informations sources téléchargées et les images extraites des PDF dans `artifacts/.tmp-archives/`. Ne pas les disperser dans des dossiers temporaires successifs.
-- Classer les sources de puces sous `artifacts/.tmp-archives/chips/<Type>/<Fabricant>/<Famille>/<Puce>/`, avec la même hiérarchie que les composants de `RetroMediaLab.Chips`.
-- Classer les sources de machines sous `artifacts/.tmp-archives/machines/<Marque>/<Machine>/`.
+- Centraliser les documents techniques récupérés, les informations sources téléchargées et les images extraites des PDF dans `artifacts/References/`. Ne pas les disperser dans des dossiers temporaires successifs.
+- Classer les sources de puces sous `artifacts/References/Chips/<Type>/<Fabricant>/<Famille>/<Puce>/`, avec la même hiérarchie que les composants de `RetroMediaLab.Chips`.
+- Classer les sources de machines sous `artifacts/References/Machines/<Marque>/<Machine>/`.
 - Garder les extractions avec leur document source ; nommer les images par document et numéro de page pour retrouver immédiatement leur contexte. Conserver l'URL, la référence, la version ou révision, et les pages utiles dans la fiche thématique correspondante.
 - Consigner les informations techniques effectivement trouvées dans `docs/chips/<Type>/<Puce>/`, avec un fichier Markdown par information ou groupe d'informations sur un même sujet : horloges, bus, registres, interruptions ou autre sujet pertinent. Conserver la fiche principale existante et y lier ces fichiers complémentaires ; ne pas créer de trames vides.
 - Consigner les informations propres aux machines dans les dossiers de référence `docs/project/emulations/<marque>/<gamme>/<modèle>/` définis par `emulation-development.md`, et lier les sources archivées utiles.

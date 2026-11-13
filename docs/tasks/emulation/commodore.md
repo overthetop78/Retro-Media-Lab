@@ -1,6 +1,5 @@
 # Travail restant : commodore
 
-
 - [ ] Ajouter les images des 29 nouvelles machines Commodore
   - [ ] Completer les deux variantes a clavier business apres identification fiable
     - [ ] Creer `src/RetroMediaLab.Emulation.Commodore/Assets/Machines/Pet3032B.png` : photographie fiable de cette variante avec fond transparent.

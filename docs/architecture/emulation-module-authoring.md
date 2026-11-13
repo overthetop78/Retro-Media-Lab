@@ -513,3 +513,6 @@ Les bindings suivent le changement de culture existant. Pour compléter les trad
 utiliser `scripts/tools/translate-resx-argos.py --root src/RetroMediaLab.Emulation.<Famille>/Resources` avec
 les options existantes d'Argos. Le [raccordement détaillé](emulation-module-localization.md)
 décrit les consommateurs et les noms des ressources.
+
+Pour la réalisation et l’entretien des modules de ce dépôt, consulter aussi la
+[méthode de réalisation des modules](../project/emulation-module-development.md).

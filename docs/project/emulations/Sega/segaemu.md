@@ -1,12 +1,22 @@
 # SegaEmu — décisions et périmètre
 
+> **Arrêt demandé le 13 novembre 2026.** Les composants ajoutés sous
+> `src/RetroMediaLab.Chips/EmuChip/` et les fichiers de l’implémentation SG-1000 sous
+> `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/` ont été supprimés à la demande de
+> l’utilisateur. Aucun retour aux puces originales ni nouveau câblage n’a été effectué.
+> Les décisions ci-dessous sont conservées pour référence ; elles ne constituent pas un travail
+> en cours ni une autorisation de recréer l’émulateur. Acorn reste suspendu.
+
 Décisions de l’utilisateur du 11 novembre 2026. Le développement Acorn reste suspendu. SegaEmu est le nom retenu pour notre cœur natif SEGA ; les adaptateurs existants à d’autres émulateurs ne constituent pas son implémentation.
 
 ## Organisation du travail
 
 Les tâches décrivent uniquement le code à réaliser. La tenue des documents est obligatoire et intégrée au travail, sans tâche ni case dédiée.
 
-Les actions d’implémentation seront définies dans `docs/tasks/machines/SG1000/implementation.md` et les suivis des composants dans `docs/tasks/chips/<Puce>/`, avec des actions concrètes ordonnées et les chemins concernés. Ne pas créer de trames vides pour les machines suivantes. Les résultats durables vont dans `docs/chips/` et `docs/project/emulations/Sega/<Gamme>/<Modèle>/` ; supprimer les suivis terminés, conserver le dossier `docs/tasks/chips` pour les prochains composants.
+Les anciens suivis SG-1000 et d’optimisation EmuChip sont supprimés avec ce nettoyage.
+Les résultats durables restent dans `docs/chips/` et `docs/project/emulations/Sega/`.
+Le dossier `docs/tasks/chips` est conservé pour les prochains composants. Une éventuelle reprise
+demandera de nouvelles actions correspondant au code alors présent, sans réactiver ces anciens plans.
 
 ## Directives et vitesse de travail
 

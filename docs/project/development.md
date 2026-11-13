@@ -27,3 +27,7 @@ dotnet run --project src/RetroMediaLab.App
 L’organisation et les règles d’entretien de la documentation sont décrites dans
 [`documentation.md`](documentation.md). Une feuille terminée ne sert pas d’archive : son résultat utile est
 transféré dans la documentation durable, puis la feuille est supprimée.
+
+La procédure détaillée de réalisation des modules est conservée dans
+[emulation-module-development.md](emulation-module-development.md) ; les contrats destinés aux auteurs
+externes sont décrits dans le [guide de création d’un module](../architecture/emulation-module-authoring.md).
