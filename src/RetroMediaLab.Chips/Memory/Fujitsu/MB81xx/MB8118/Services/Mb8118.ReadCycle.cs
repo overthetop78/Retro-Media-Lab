@@ -76,49 +76,46 @@ public sealed partial class Mb8118
             if (timeNanoseconds != _time) throw new InvalidOperationException("Cannot advance DRAM from an output callback.");
             return;
         }
-        // The input waveform is already decoded. No event search, synthetic
-        // pin word or generic edge decoder is needed for these four phases.
-        // Output propagation still precedes an input at the same date; a
-        // callback may withdraw this waveform, so recheck ownership afterward.
-        if (_hasReadCycle && _readInputStep == 1 && Reaches(_receivedRasFall, timeNanoseconds, includeBoundaryInput))
+        // The received waveform has ordered phases. Enter at its current
+        // position and stop at the first future input. Output callbacks may
+        // withdraw the waveform, so retain the ownership check at each phase.
+        if (_hasReadCycle)
         {
-            if (_outputDue >= 0 && _outputDue <= _receivedRasFall) ResolveReadOutputTo(_receivedRasFall);
-            if (_hasReadCycle)
+            switch (_readInputStep)
             {
-                _time = _receivedRasFall;
-                _readInputStep = 2; _pins.RasHigh = false;
-                BeginRow(_time, _pins);
-            }
-        }
-        if (_hasReadCycle && _readInputStep == 2 && Reaches(_receivedCasFall, timeNanoseconds, includeBoundaryInput))
-        {
-            if (_outputDue >= 0 && _outputDue <= _receivedCasFall) ResolveReadOutputTo(_receivedCasFall);
-            if (_hasReadCycle)
-            {
-                _time = _receivedCasFall;
-                ChangeAddressData(_time, _receivedColumn, _receivedColumnKnown, _receivedColumnData);
-                _readInputStep = 3; _pins.CasHigh = false;
-                BeginColumn(_time, _pins);
-            }
-        }
-        if (_hasReadCycle && _readInputStep == 3 && Reaches(_receivedRasRise, timeNanoseconds, includeBoundaryInput))
-        {
-            if (_outputDue >= 0 && _outputDue <= _receivedRasRise) ResolveReadOutputTo(_receivedRasRise);
-            if (_hasReadCycle)
-            {
-                _time = _receivedRasRise;
-                _readInputStep = 4; _pins.RasHigh = true;
-                EndRow(_time);
-            }
-        }
-        if (_hasReadCycle && _readInputStep == 4 && Reaches(_receivedCasRise, timeNanoseconds, includeBoundaryInput))
-        {
-            if (_outputDue >= 0 && _outputDue <= _receivedCasRise) ResolveReadOutputTo(_receivedCasRise);
-            if (_hasReadCycle)
-            {
-                _time = _receivedCasRise;
-                _hasReadCycle = false; _pins.CasHigh = true;
-                EndColumn(_time);
+                case 1:
+                    if (!Reaches(_receivedRasFall, timeNanoseconds, includeBoundaryInput)) break;
+                    if (_outputDue >= 0 && _outputDue <= _receivedRasFall) ResolveReadOutputTo(_receivedRasFall);
+                    if (!_hasReadCycle) break;
+                    _time = _receivedRasFall;
+                    _readInputStep = 2; _pins.RasHigh = false;
+                    BeginRow(_time, _pins);
+                    goto case 2;
+                case 2:
+                    if (!Reaches(_receivedCasFall, timeNanoseconds, includeBoundaryInput)) break;
+                    if (_outputDue >= 0 && _outputDue <= _receivedCasFall) ResolveReadOutputTo(_receivedCasFall);
+                    if (!_hasReadCycle) break;
+                    _time = _receivedCasFall;
+                    ChangeAddressData(_time, _receivedColumn, _receivedColumnKnown, _receivedColumnData);
+                    _readInputStep = 3; _pins.CasHigh = false;
+                    BeginColumn(_time, _pins);
+                    goto case 3;
+                case 3:
+                    if (!Reaches(_receivedRasRise, timeNanoseconds, includeBoundaryInput)) break;
+                    if (_outputDue >= 0 && _outputDue <= _receivedRasRise) ResolveReadOutputTo(_receivedRasRise);
+                    if (!_hasReadCycle) break;
+                    _time = _receivedRasRise;
+                    _readInputStep = 4; _pins.RasHigh = true;
+                    EndRow(_time);
+                    goto case 4;
+                case 4:
+                    if (!Reaches(_receivedCasRise, timeNanoseconds, includeBoundaryInput)) break;
+                    if (_outputDue >= 0 && _outputDue <= _receivedCasRise) ResolveReadOutputTo(_receivedCasRise);
+                    if (!_hasReadCycle) break;
+                    _time = _receivedCasRise;
+                    _hasReadCycle = false; _pins.CasHigh = true;
+                    EndColumn(_time);
+                    break;
             }
         }
         if (_outputDue >= 0 && _outputDue <= timeNanoseconds) ResolveReadOutputTo(timeNanoseconds);

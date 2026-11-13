@@ -114,6 +114,10 @@ internal sealed partial class Sg1000Board
     internal long VideoSynchronizationCalls => _videoSynchronizationCalls;
     private long _nativeVideoSamples;
     internal long NativeVideoSamples => _nativeVideoSamples;
+    private long _dramOutputNotifications, _vramDataDeliveries, _vramDataGroups;
+    internal long DramOutputNotifications => _dramOutputNotifications;
+    internal long VramDataDeliveries => _vramDataDeliveries;
+    internal long VramDataGroups => _vramDataGroups;
 
     private static void StoreBusWord<T>(List<T> buffer, T word)
     {

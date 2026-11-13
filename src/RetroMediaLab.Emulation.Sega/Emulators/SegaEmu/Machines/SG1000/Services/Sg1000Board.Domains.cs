@@ -60,9 +60,21 @@ internal sealed partial class Sg1000Board
 
     private void DeliverVideoInputs(long time)
     {
-        // Responses retain physical package order, including nested effects.
-        for (int bit = 0; bit < 8; bit++)
-            if (_videoMemoryDeadlines[bit] <= time) _dram[bit].AdvanceTo(time);
+        // Only DRAM responses occur between these deliveries. The first word
+        // advances the VDP through this boundary. Following coincident changes
+        // can be transported together until the next VDP interaction below.
+        _collectingDramData = true;
+        _coincidentVramTime = time;
+        try
+        {
+            for (int bit = 0; bit < 8; bit++)
+                if (_videoMemoryDeadlines[bit] <= time) _dram[bit].AdvanceTo(time);
+        }
+        finally
+        {
+            _collectingDramData = false;
+            FlushCoincidentVramData();
+        }
         _vdp.AdvanceTo(time);
         PublishVideoInputBoundary();
     }

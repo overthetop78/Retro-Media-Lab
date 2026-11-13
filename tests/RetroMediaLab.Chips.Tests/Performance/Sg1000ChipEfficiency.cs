@@ -421,6 +421,38 @@ public sealed class Mb8118ReadWaveformTests
 public sealed class VdpClockBoundaryTests
 {
     [Fact]
+    public void CoincidentVramTransitionSummaryPreservesExcursionsAndLaterObservations()
+    {
+        Tms9918A Make() => new(new(default, 0, default, new(null, 0, Tms9918CpuVramOperation.None, false),
+            new(0, true, true, true, true)), Tms9918CpuTiming.SpecifiedMaximum);
+        ushort[][] sequences = [[0, 256, 0], [255, 0, 255], [7, 7], [259, 511, 0, 259], [0], [511, 0, 256]];
+        foreach (ushort initial in new ushort[] { 0, 255, 256, 511 })
+        foreach (var words in sequences)
+        {
+            var explicitInputs = Make();
+            var condensedInputs = Make();
+            explicitInputs.SetVramReadData(100, (byte)initial, (initial & 256) != 0);
+            condensedInputs.SetVramReadData(100, (byte)initial, (initial & 256) != 0);
+            ushort previous = words[0];
+            explicitInputs.SetVramReadData(200, (byte)previous, (previous & 256) != 0);
+            condensedInputs.SetVramReadData(200, (byte)previous, (previous & 256) != 0);
+            Assert.Equal(explicitInputs.CaptureState().VramBus, condensedInputs.CaptureState().VramBus);
+            bool transitioned = false;
+            foreach (ushort word in words.AsSpan(1))
+            {
+                explicitInputs.SetVramReadData(200, (byte)word, (word & 256) != 0);
+                transitioned |= word != previous;
+                previous = word;
+            }
+            condensedInputs.SetVramReadData(200, (byte)previous, (previous & 256) != 0, transitioned);
+            Assert.Equal(explicitInputs.CaptureState().VramBus, condensedInputs.CaptureState().VramBus);
+            explicitInputs.SetVramReadData(300, (byte)previous, (previous & 256) != 0);
+            condensedInputs.SetVramReadData(300, (byte)previous, (previous & 256) != 0);
+            Assert.Equal(explicitInputs.CaptureState().VramBus, condensedInputs.CaptureState().VramBus);
+        }
+    }
+
+    [Fact]
     public void SameDateDataKnowledgeExcursionCannotBeReplacedByItsFinalWord()
     {
         Tms9918A Make()=>new(new(default,0,default,new(null,0,Tms9918CpuVramOperation.None,false),

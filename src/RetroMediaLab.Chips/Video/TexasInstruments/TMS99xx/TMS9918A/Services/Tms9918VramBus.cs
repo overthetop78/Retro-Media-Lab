@@ -33,10 +33,10 @@ internal sealed class Tms9918VramBus
     internal Tms9918VramPins Pins => _pins;
     internal Tms9918VramBusState Capture() => new(_time, _pins, _inputData, _inputKnown, _inputChanged, _lastRead);
 
-    internal void SetInputData(long timeNanoseconds, byte data, bool known)
+    internal void SetInputData(long timeNanoseconds, byte data, bool known, bool intermediateTransition = false)
     {
         ValidateInputTime(timeNanoseconds);
-        if (data != _inputData || known != _inputKnown) _inputChanged = timeNanoseconds;
+        if (intermediateTransition || data != _inputData || known != _inputKnown) _inputChanged = timeNanoseconds;
         _time = timeNanoseconds;
         _inputData = data;
         _inputKnown = known;

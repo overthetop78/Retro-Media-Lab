@@ -2,6 +2,8 @@
 param(
     [string[]]$Report,
     [string]$PairedManifest,
+    [string[]]$WindowsStackCsv,
+    [ValidateRange(0,100000000)][int]$ObservedRunFrameCalls = 0,
     [Parameter(Mandatory=$true)][string]$OutputDirectory
 )
 $ErrorActionPreference='Stop'
@@ -25,7 +27,8 @@ if ($PairedManifest) {
             $reference=$game[0].Report
             $referencePass=@($reference.Passes | Where-Object Kind -eq 'Measure')[0]
             $physicalFrame=$referencePass.Frames
-            $ignore=@('WallMs','ProcessCpuMs','AllocatedBytes','GcPauseMs','Gc0','Gc1','Gc2','BoardWallMs','PresentationWallMs','AudioWallMs')
+            $ignore=@('WallMs','ProcessCpuMs','AllocatedBytes','GcPauseMs','Gc0','Gc1','Gc2','BoardWallMs','PresentationWallMs','AudioWallMs',
+                'DramOutputNotifications','VramDataDeliveries','VramDataGroups')
             $observations=@(foreach($entry in $game) {
                 $r=$entry.Report
                 foreach($field in @('Sha256','Layout','FrameCount','WarmupFrames','Host','Runtime','ScenarioVersion','TimingPolicy')){
@@ -77,7 +80,7 @@ if ($PairedManifest) {
     $results | Select-Object Configuration,Game,AMeanMs,BMeanMs,TimeReductionPercent,EveryHardwareObservationEqual | Format-Table -AutoSize
     exit 0
 }
-if(!$Report){throw 'Report or PairedManifest is required.'}
+if(!$Report -and !$WindowsStackCsv){throw 'Report, PairedManifest or WindowsStackCsv is required.'}
 function Component([string]$Name) {
     # Parameter types are not owners: a wiring method can take a CPU contract.
     $owner=($Name -split '\(',2)[0]
@@ -90,6 +93,106 @@ function Component([string]$Name) {
     if($owner.Contains('Sg1000Board')) { return 'Câblage' }
     if($owner.Contains('EmulatorCore')) { return 'Backend' }
     return 'Runtime et autres'
+}
+if ($WindowsStackCsv) {
+    $paths=@($WindowsStackCsv | ForEach-Object { $_ -split '\|' } | ForEach-Object { (Get-Item -LiteralPath $_).FullName })
+    $quality=@(foreach($path in $paths) {
+        $stats=Join-Path (Split-Path -Parent (Split-Path -Parent $path)) 'trace-stats.txt'
+        $lost=$null
+        $lostBuffers=$null
+        if(Test-Path -LiteralPath $stats) {
+            $content=Get-Content -LiteralPath $stats -Raw
+            if($content -match 'Total # Lost Events\s*:\s*(\d+)') { $lost=[long]$Matches[1] }
+            if($content -match 'Total # Lost Buffers\s*:\s*(\d+)') { $lostBuffers=[long]$Matches[1] }
+        }
+        if(($null -ne $lost -and $lost -ne 0) -or ($null -ne $lostBuffers -and $lostBuffers -ne 0)) {
+            throw "Lost events or buffers exclude this capture from method attribution: $path"
+        }
+        [pscustomobject]@{Csv=$path;LostEvents=$lost;LostBuffers=$lostBuffers;
+            LossMetadataAvailable=($null -ne $lost -and $null -ne $lostBuffers)}
+    })
+    $python=(Get-Command python.exe -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
+    $analysis=@'
+import collections,csv,json,math,sys
+own=collections.Counter();inclusive=collections.Counter();scope=0.0;samples=0;process_total=0.0;stack_total=0.0
+for path in json.loads(sys.argv[1]):
+    roots=collections.Counter();stacks=collections.Counter();processes=set()
+    with open(path,encoding='utf-8-sig',newline='') as stream:
+        reader=csv.DictReader(stream)
+        if reader.fieldnames!=['Process','Stack','Weight (in view) (ms)','Count']:
+            raise ValueError('Expected the WPA Process, Stack, Weight and Count columns')
+        for row in reader:
+            process=row['Process'];stack=row['Stack']
+            if not process.lower().startswith('testhost.exe ('):continue
+            weight=float(row['Weight (in view) (ms)'].replace(',','.'))
+            if not math.isfinite(weight) or weight<0:raise ValueError('Invalid CPU weight')
+            if not stack:roots[process]+=weight;continue
+            stacks[process]+=weight
+            if 'SegaEmu.Services.EmulatorCore::RunFrame' not in stack:continue
+            processes.add(process);scope+=weight;samples+=int(row['Count']);frames=stack.split('/')
+            own[frames[-1]]+=weight
+            for frame in set(frames):inclusive[frame]+=weight
+    for process in processes:
+        if process not in roots or abs(roots[process]-stacks[process])>.01:
+            raise ValueError('CPU process weights do not reconcile')
+        process_total+=roots[process];stack_total+=stacks[process]
+if scope<=0:raise ValueError('No SG-1000 RunFrame samples')
+methods=[dict(Name=name,OwnMs=own[name],InclusiveMs=inclusive[name],OwnPercent=100*own[name]/scope,
+              InclusivePercent=100*inclusive[name]/scope) for name in sorted(set(own)|set(inclusive))]
+methods.sort(key=lambda method:-method['OwnMs'])
+print(json.dumps(dict(ScopedSampleMs=scope,SampleCount=samples,ProcessTotalMs=process_total,
+                     StackTotalMs=stack_total,Methods=methods)))
+'@
+    $reader=[Diagnostics.Process]::new()
+    $reader.StartInfo=[Diagnostics.ProcessStartInfo]::new($python)
+    $reader.StartInfo.UseShellExecute=$false
+    $reader.StartInfo.CreateNoWindow=$true
+    $reader.StartInfo.RedirectStandardOutput=$true
+    $reader.StartInfo.RedirectStandardError=$true
+    $reader.StartInfo.ArgumentList.Add('-c')
+    $reader.StartInfo.ArgumentList.Add($analysis)
+    $reader.StartInfo.ArgumentList.Add((ConvertTo-Json -InputObject @($paths) -Compress))
+    $started=$false
+    try {
+        $started=$reader.Start()
+        if(!$started){throw 'CPU stack reader did not start.'}
+        $stdout=$reader.StandardOutput.ReadToEndAsync()
+        $stderr=$reader.StandardError.ReadToEndAsync()
+        $reader.WaitForExit()
+        $raw=$stdout.GetAwaiter().GetResult()
+        $failure=$stderr.GetAwaiter().GetResult()
+        if($reader.ExitCode -ne 0){throw "Windows CPU stack analysis failed. $failure"}
+    }
+    finally {
+        if($started -and !$reader.HasExited){$reader.Kill($true);$reader.WaitForExit()}
+        $reader.Dispose()
+    }
+    $cost=$raw | ConvertFrom-Json
+    $components=@($cost.Methods | Group-Object { Component $_.Name } | ForEach-Object {
+        $own=[double](($_.Group | Measure-Object OwnMs -Sum).Sum)
+        [pscustomobject]@{Component=$_.Name;OwnSampleMs=$own;OwnPercent=100*$own/$cost.ScopedSampleMs;
+            SampledOwnMsPerFrame=if($ObservedRunFrameCalls){$own/$ObservedRunFrameCalls}else{$null}}
+    } | Sort-Object OwnSampleMs -Descending)
+    $accessors=[double](($cost.Methods | Where-Object Name -Match '::(get_|set_)' | Measure-Object OwnMs -Sum).Sum)
+    $result=[pscustomobject]@{Source='WPR CPU sampled';Captures=$quality;ScopedSampleMs=$cost.ScopedSampleMs;
+        SampleCount=$cost.SampleCount;ProcessTotalMs=$cost.ProcessTotalMs;StackTotalMs=$cost.StackTotalMs;
+        ObservedRunFrameCalls=$ObservedRunFrameCalls;AccessorsOwnMs=$accessors;
+        AccessorsOwnPercent=100*$accessors/$cost.ScopedSampleMs;Components=$components;Methods=$cost.Methods}
+    [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath($OutputDirectory)) | Out-Null
+    $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'windows-cpu-costs.json')
+    $md=[Text.StringBuilder]::new("# CPU Windows SG-1000`n`n")
+    [void]$md.AppendLine('Piles RunFrame uniquement. Les coûts propres partitionnent les échantillons. Les coûts inclusifs se recouvrent. Les feuilles natives sans symboles gardent leur module. Les poids CPU échantillonnés ne remplacent pas les durées murales ABBA. Les pertes inconnues restent signalées comme inconnues.')
+    [void]$md.AppendLine(('Temps CPU RunFrame {0:F3} ms, {1} échantillons, {2} appels RunFrame fournis par le scénario. Accesseurs {3:F3} % déjà inclus dans les composants.' -f $cost.ScopedSampleMs,$cost.SampleCount,$ObservedRunFrameCalls,$result.AccessorsOwnPercent))
+    [void]$md.AppendLine("`n| Composant | Propre % | ms CPU échantillonnées/image |`n|---|---:|---:|")
+    foreach($c in $components){[void]$md.AppendLine(('| {0} | {1:F3} | {2:F3} |' -f $c.Component,$c.OwnPercent,$c.SampledOwnMsPerFrame))}
+    foreach($order in @('OwnMs','InclusiveMs')) {
+        [void]$md.AppendLine("`n## $order`n`n| Méthode | Propre % | Inclusif % |`n|---|---:|---:|")
+        foreach($method in $cost.Methods | Sort-Object $order -Descending | Select-Object -First 40){[void]$md.AppendLine(('| `{0}` | {1:F3} | {2:F3} |' -f $method.Name,$method.OwnPercent,$method.InclusivePercent))}
+    }
+    foreach($q in $quality){[void]$md.AppendLine(('Capture `{0}`, contrôle des pertes {1}, événements perdus {2}, buffers perdus {3}.' -f $q.Csv,$q.LossMetadataAvailable,$q.LostEvents,$q.LostBuffers))}
+    $md.ToString() | Set-Content -LiteralPath (Join-Path $OutputDirectory 'windows-cpu-costs.md')
+    $components | Format-Table Component,OwnPercent,SampledOwnMsPerFrame -AutoSize
+    exit 0
 }
 # A pipe-separated list also supports powershell.exe/pwsh -File argument passing.
 $paths=@($Report | ForEach-Object { $_ -split '\|' })
@@ -124,7 +227,8 @@ $results=@(foreach($path in $paths) {
     # cumulative rows give volumes restricted to complete measured images.
     $volumes=@(foreach($counter in @('BusRangeDeliveries','CpuOutputWords','LogicInputWords','MemoryInputWords',
         'VramReadWaveDeliveries','DramExplicitPinDeliveries','VideoSynchronizationCalls','NativeVideoSamples',
-        'CpuBusResolutions','DirectCauseVisits','GateCauseVisits','GateSkippedCpuWords','MemoryResponseRecordsOmitted')) {
+        'CpuBusResolutions','DirectCauseVisits','GateCauseVisits','GateSkippedCpuWords','MemoryResponseRecordsOmitted',
+        'DramOutputNotifications','VramDataDeliveries','VramDataGroups')) {
         if($frames.Count -gt 1) {
             [pscustomobject]@{Counter=$counter;AveragePerFrame=($frames[-1].$counter-$frames[0].$counter)/($frames.Count-1)}
         }

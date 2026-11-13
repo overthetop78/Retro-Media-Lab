@@ -716,3 +716,67 @@ La capture après lot est terminée. L’agrégat initial accessor-debug-01 a pe
 La part des accesseurs passe de16,19 % à13,23 %. Les durées échantillonnées proviennent de captures distinctes et ne remplacent pas les mesures natives ABBA. Les postes dominants restent le câblage, le VDP et les DRAM. AdvanceCore et PublishDeadline des MB8118 représentent encore3,51 % et3,34 % propres. La baisse est surtout visible dans les moteurs logique et mémoire du lot. Les rapports complets, avec propres/inclusifs par méthode et par capture, se trouvent dans Accessor-20261113/Summary/windows-cpu-costs.json et windows-cpu-costs.md.
 
 Les compteurs existants donnent11491,29préfixes de bus par image pour Champion/Castle et11492,14pour Girl’s Garden, sur les différences entre images mesurées hors première ligne. Pour ces configurations avec ROM basse raccordée, l’examen des branches du receveur donne une borne inférieure de neuf appels d’accesseurs supprimés par préfixe, soit au moins103422/103429appels par image. Cette borne est calculée à partir du code et des volumes mesurés. Aucun compteur dynamique ne prétend compter directement chaque appel supprimé. Les transactions matérielles et leurs compteurs concordent. Les réductions internes supplémentaires aux composants ne sont pas chiffrées en nombre d’appels. Preuve sous Summary/bus-accessor-volumes.json.
+
+
+## Entrées VRAM à date unique avec transitions conservées — 13 novembre 2026
+
+Le transport reçoit le premier mot DRAM dans le VDP immédiatement, ce qui résout ses réponses locales à cette date avant la nouvelle entrée. Pendant les autres réponses DRAM du même instant, aucune autre interaction VDP n’intervient. Le câblage conserve le mot final et l’OR des différences entre mots successifs. Le VDP actualise InputDataChanged lorsqu’une transition réelle intermédiaire a eu lieu, même si le mot final retrouve sa valeur initiale. Le résumé est livré avant la prochaine interaction VDP et dans finally après une interruption du groupe. Les réponses aux autres dates suivent leur entrée ordinaire. Les huit états DRAM restent indépendants et leurs notifications gardent l’ordre des composants.
+
+Le précédent essai rejeté ne conservait que le dernier mot. Ce nouveau transport couvre aussi les excursions de données et de connaissance à date identique. Le contrôle autonome CoincidentVramTransitionSummaryPreservesExcursionsAndLaterObservations compare plusieurs séquences explicites, leur premier mot, leur résumé et une observation ultérieure. Le dispatcher MB8118 entre dans la phase reçue et termine à la première phase future, avec propagation avant entrée à égalité et retrait du programme pendant callback conservés.
+
+Quatorze contrôles composants ciblés et six contrôles machine réussissent en Debug et Release. Deux blocs ABBA par configuration, trois ROM, huit images après deux d’échauffement, deux répétitions natives après Prime donnent les résultats suivants.
+
+| Configuration | ROM | A ms/image | B ms/image | Baisse du temps |
+|---|---|---:|---:|---:|
+| Debug | Champion Tennis | 281,91 | 277,15 | 1,69 % |
+| Debug | Girl’s Garden | 282,68 | 281,72 | 0,34 % |
+| Debug | The Castle | 302,31 | 303,71 | régression0,46 % |
+| Release | Champion Tennis | 42,41 | 40,97 | 3,40 % |
+| Release | Girl’s Garden | 45,50 | 43,11 | 5,26 % |
+| Release | The Castle | 48,63 | 46,36 | 4,68 % |
+
+Le gain Debug n’est pas établi de manière utile par ces petits écarts. Les temps de cette acquisition diffèrent de ceux du lot précédent dans la référence comme dans le candidat. Seules les comparaisons au sein de l’acquisition sont utilisées. Le lot est conservé pour le transport réduit et les gains Release mesurés. Il ne clôt pas l’objectif Debug.
+
+Les768observations natives et96états finaux de cette acquisition concordent, avec vidéo, PCM et contrats. La fenêtre courte reste dans le démarrage monochrome. Une comparaison complémentaire par le banc existant utilise48images après30d’échauffement, une passe native par variante et configuration. Elle retrouve les états complets, les288paires d’observations, les images et le PCM des trois ROM. Girl’s Garden présente les masques de couleurs1,17et32785. Champion reste au masque2 et Castle au masque1 dans cette fenêtre, qui ne prouve donc pas le jeu interactif complet de ces deux titres. Ce complément sert à la fidélité et ne constitue pas une acquisition de performance alternée.
+
+La fenêtre courte mesure268288callbacks DOUT et33536livraisons de données au VDP par image, soit234752livraisons évitées,87,5 %. Sur les48images plus tardives, les moyennes hors première ligne donnent environ275343callbacks et68358livraisons pour Champion,278282et47220pour Girl,272750et38474pour Castle. Les données et leur connaissance peuvent donc changer à l’intérieur des groupes. Les volumes sont détaillés dans Summary/active-volumes.json. Les transactions matérielles restent celles du scénario comparé.
+
+Les trois captures CPU.Verbose séparées du lot,24images après12d’échauffement, indiquent zéro événement et zéro buffer perdus. La nouvelle option WindowsStackCsv du script existant Summarize-Sg1000ComponentCosts.ps1 réanalyse les CSV WPA, réconcilie les poids des piles avec leurs processus et conserve uniquement RunFrame. Les feuilles natives sans symboles restent attribuées à leur module. Python déjà installé lit les CSV en flux avec sa bibliothèque standard. Son processus est attendu et libéré dans finally. Aucune dépendance applicative n’est ajoutée. ObservedRunFrameCalls vaut108pour une capture et324pour l’agrégat de ces trois captures, amorçages et Prime inclus.
+
+| Poste | A ms CPU échantillonnées/image | B ms CPU échantillonnées/image |
+|---|---:|---:|
+| Câblage propre | 59,61 | 62,69 |
+| DRAM propre | 51,36 | 50,12 |
+| VDP propre | 53,14 | 49,02 |
+| Logique propre | 35,53 | 35,29 |
+| Autres mémoires propres | 28,61 | 28,66 |
+| CPU propre | 23,89 | 24,02 |
+| SetVramReadData inclusif | 5,85 | 0,87 |
+| UpdateVramReadData propre | 1,05 | 2,99 |
+| AdvanceCore DRAM propre | 9,29 | 9,36 |
+
+Les durées CPU échantillonnées proviennent de captures distinctes et ne remplacent pas les durées natives ABBA. Le trajet dont les appels diminuent représentait seulement5,85ms inclusifs par image dans cette capture. Le nouveau regroupement ajoute environ1,94ms propres dans UpdateVramReadData. Cette répartition explique pourquoi87,5 % de livraisons évitées ne produit pas une forte accélération de la machine. Les calculs internes DRAM et le reste du câblage restent dominants. Le switch des phases ne démontre pas une baisse du coût propre AdvanceCore. Les coûts inclusifs de PublishDeadline agrégés sur plusieurs composants ne sont pas attribués à la seule DRAM.
+
+Les captures et rapports sont sous artifacts/TestsMachines/Sega/SG1000/Coincident-20261113. Summary/WindowsA et WindowsB contiennent les propres/inclusifs complets. WindowsB/Champion, Garden et Castle contiennent l’analyse par ROM. Les ETL sans perte se trouvent dans ClockDram-20261113/KernelProfile/Captures/coincident-*. Les sources de médias sont lues seulement. Les copies compilées anciennes sont retirées après leur dernière utilisation, et B-Debug reste la référence du lot suivant.
+
+### Travail suivant à établir sur le parcours complet
+
+Les données actuelles imposent de cibler le chemin complet des lectures VRAM, dont le coût inclut les phases et publications de chacune des huit DRAM. Réduire encore le seul appel SetVramReadData est borné par son faible coût résiduel. La piste suivante consiste à faire produire aux DRAM une description révocable de leurs sorties futures depuis un programme d’entrée déjà reçu, puis à faire consommer cette description par le VDP. Les états physiques restent dans chaque DRAM et doivent être résolus avant toute entrée, observation ou annulation qui les nécessite. Cette piste est une conception à réaliser et vérifier, aucun gain n’en est acquis.
+
+```mermaid
+flowchart LR
+    CPU[CPU et ports datés] --> VDP[VDP et horloges locales]
+    VDP -->|Programme RAS CAS reçu| DRAM[Huit DRAM et huit états propres]
+    DRAM -->|Sorties futures calculées par leurs propriétaires| Wires[Composition des fils raccordés]
+    Wires -->|Programme de données révocable| VDP
+    VDP -->|Annulation ou nouvelle interaction datée| DRAM
+```
+
+Le pré-calcul doit être qualifié depuis l’état réel de chaque DRAM et ses délais. Une lecture dont les effets restent ambigus suit son moteur canonique. Les entrées de données, les délais de sortie existants, les cellules inconnues, la rétention et le startup font partie du calcul. Toute qualification doit tenir compte d’un ancien DOUT encore en attente, du maintien des données d’une écriture et des phases RAS/CAS déjà commencées. Une annulation après CAS peut conserver la donnée déjà capturée et sa propagation tout en retirant le futur front CAS. Elle ne peut donc pas supprimer aveuglément le programme de sortie entier.
+
+Une collision entre réponse DRAM représentée et échéance locale VDP à la même date exige de retrouver l’ordre du parcours canonique, y compris les effets réentrants. Le VDP doit connaître la borne avant toute avancée qui pourrait traverser cette interaction et interrompre ou retirer exactement le préfixe. Les observateurs ajoutés et les captures d’état exigent aussi la résolution du préfixe nécessaire. Le premier objectif de volume est d’éliminer les deux appels d’avance et notifications de réponse par DRAM et par lecture lorsque leurs sorties ont déjà été représentées, sans supprimer leurs phases ou contrôles matériels. La preuve doit comparer les huit états et les événements à toutes les frontières de ces cas, puis les trois ROM et les temps natifs. Cette représentation locale s’intègre au moteur de machine utilisé.
+
+
+La fermeture de ces périodes concerne aussi le trajet mémoire CPU, où câblage, logique et mémoires restent coûteux. Le principe à réaliser est un programme électrique commun du cycle reçu, arrêté aux vrais points de données et de contrôle, puis projeté par les composants propriétaires. Les dates communes sont préparées une fois. Les latches, propagations et réponses restent calculés dans les puces, avec les mêmes états pendants et les mêmes dates. Un intervalle dont toutes les interactions ne sont pas établies garde la résolution canonique de son préfixe. La validité du programme doit être décidée avant toute mutation qui rendrait son refus impossible.
+
+Cette représentation doit supprimer les listes et fusions de micro-événements répétées pour le décodage, les portes et les mémoires. Le séquenceur Z80 conserve ses actions et son décodeur. Les phases de rafraîchissement, échantillonnages, interruptions, attentes et concessions restent obligatoires. La clôture avant un échantillonnage ne permet pas d’exécuter une action dépendant de la donnée avant sa réception. Les réponses VDP/DRAM et le trajet CPU/mémoires font partie du même lot d’exécution à réaliser, dont les fichiers sont consignés dans le suivi. Les volumes et gains restent à mesurer après réalisation.

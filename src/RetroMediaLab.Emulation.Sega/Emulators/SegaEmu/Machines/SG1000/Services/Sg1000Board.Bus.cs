@@ -9,6 +9,9 @@ internal sealed partial class Sg1000Board
     private bool _vramWiresInitialized;
     private Tms9918VramPins _vramWirePins;
     private byte _vramReadLevels, _vramReadKnown;
+    private bool _collectingDramData, _hasCoincidentVramWord, _coincidentVramTransition;
+    private long _coincidentVramTime;
+    private ushort _coincidentVramWord;
     private static bool? Level(LogicPinState pin) => pin == LogicPinState.High ? true : pin == LogicPinState.Low ? false : null;
 
     private void OnVramPins(Tms9918VramSignal signal)
@@ -63,7 +66,43 @@ internal sealed partial class Sg1000Board
     }
     private void UpdateVramReadData(long time, int bit, LogicPinState value)
     {
+        _dramOutputNotifications++;
         CacheDramOutput(bit, value);
+        ushort word = (ushort)(_vramReadLevels | (_vramReadKnown == 255 ? 256 : 0));
+        if (_collectingDramData && time == _coincidentVramTime)
+        {
+            if (_hasCoincidentVramWord)
+            {
+                _coincidentVramTransition |= word != _coincidentVramWord;
+                _coincidentVramWord = word;
+                return;
+            }
+            // The first delivery drains all VDP responses at this date before
+            // its input changes, exactly as explicit pin delivery does. Capture
+            // the argument before entering the VDP, since nested callbacks may
+            // change the board's wire cache during that advance.
+            _vramDataDeliveries++;
+            _vdp.SetVramReadData(time, (byte)word, (word & 256) != 0);
+            _coincidentVramWord = word;
+            _coincidentVramTransition = false;
+            _hasCoincidentVramWord = true;
+            _vramDataGroups++;
+            return;
+        }
+        FlushCoincidentVramData();
+        _vramDataDeliveries++;
         _vdp.SetVramReadData(time, _vramReadLevels, _vramReadKnown == 255);
+    }
+
+    private void FlushCoincidentVramData()
+    {
+        if (!_hasCoincidentVramWord) return;
+        bool transitioned = _coincidentVramTransition;
+        ushort word = _coincidentVramWord;
+        _hasCoincidentVramWord = false;
+        _coincidentVramTransition = false;
+        if (!transitioned) return;
+        _vramDataDeliveries++;
+        _vdp.SetVramReadData(_coincidentVramTime, (byte)word, (word & 256) != 0, true);
     }
 }

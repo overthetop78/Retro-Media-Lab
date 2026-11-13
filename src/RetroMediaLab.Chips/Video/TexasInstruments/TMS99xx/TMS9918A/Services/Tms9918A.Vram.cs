@@ -65,6 +65,16 @@ public sealed partial class Tms9918A
         _vramBus.SetInputData(timeNanoseconds, data, known);
     }
 
+    /// <summary>Receives the final word of coincident input transitions. The
+    /// producer must retain any real intermediate transition, including an
+    /// excursion returning to the same final data or knowledge. No observation
+    /// or other VDP interaction may occur inside the condensed sequence.</summary>
+    public void SetVramReadData(long timeNanoseconds, byte data, bool known, bool intermediateTransition)
+    {
+        AdvanceTo(timeNanoseconds);
+        _vramBus.SetInputData(timeNanoseconds, data, known, intermediateTransition);
+    }
+
     private void ArmCpuVramRequest() => _cpuReadyHalfEdge = checked(_clock.HalfEdges + V.CpuPreparationHalfEdges);
 
     private void SelectVramSlot(int dot, int line)
