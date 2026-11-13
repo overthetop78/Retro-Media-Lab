@@ -11,6 +11,7 @@ internal static class CoreCatalog
         Emulators.Flycast.Constants.CoreConstants.Definition,
         Emulators.Gearsystem.Constants.CoreConstants.Definition,
         Emulators.GenesisPlusGX.Constants.CoreConstants.Definition,
+        Emulators.GenesisPlusGXCS.Constants.CoreConstants.Definition,
         Emulators.GenesisPlusGXWide.Constants.CoreConstants.Definition,
         Emulators.Kronos.Constants.CoreConstants.Definition,
         Emulators.BeetleSaturn.Constants.CoreConstants.Definition,

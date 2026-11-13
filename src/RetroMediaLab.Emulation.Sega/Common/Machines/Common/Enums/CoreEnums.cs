@@ -21,4 +21,5 @@ public enum Emulator
     Yabause,
     Ymir,
     SegaEmu,
+    GenesisPlusGXCS,
 }

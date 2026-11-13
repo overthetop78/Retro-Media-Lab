@@ -49,7 +49,7 @@ internal abstract class CoreMachineFactory : IEmulatorAdapter, IEmulatorSettings
     private IReadOnlyDictionary<string, CoreRelease> _availableReleases = new Dictionary<string, CoreRelease>(StringComparer.Ordinal);
 
     protected abstract CoreDefinition CoreDefinition { get; }
-    protected CoreReleaseSettings ReleaseSettings => CoreDefinition.ReleaseSettings;
+    protected CoreReleaseSettings ReleaseSettings => CoreDefinition.ReleaseSettings ?? throw new InvalidOperationException("This emulator is included in its module.");
     public IReadOnlyList<FirmwareSlot> GetFirmwareSlots(MachineConfiguration configuration) => CoreDefinition.Firmware.Where(slot => slot.MachineIds is null || slot.MachineIds.Contains(configuration.Model)).ToArray();
     public IReadOnlyList<EmulationSettingsBlock> DescribeSettings(MachineConfiguration configuration, EmulatorManagementContext? context = null) => CoreSettingsFunctions.Blocks(configuration);
     public IReadOnlyList<string> SupportedContentExtensions => CoreDefinition.Extensions;
@@ -59,7 +59,7 @@ internal abstract class CoreMachineFactory : IEmulatorAdapter, IEmulatorSettings
     public string EmulatorKey => EmulatorId;
     public EmulationEmulatorDefinition Definition => CoreDefinition.Emulator;
 
-    public bool TryHandleHostCommand(IReadOnlyList<string> arguments, out int exitCode)
+    public virtual bool TryHandleHostCommand(IReadOnlyList<string> arguments, out int exitCode)
     {
         exitCode = 0;
         if (arguments is not [CoreHostConstants.CommandLineArgument, var pipeName, var videoMapName]) return false;
@@ -68,20 +68,20 @@ internal abstract class CoreMachineFactory : IEmulatorAdapter, IEmulatorSettings
         return true;
     }
 
-    public async ValueTask<EmulationEmulatorInstallation> GetInstallationAsync(EmulatorManagementContext context, CancellationToken cancellationToken)
+    public virtual async ValueTask<EmulationEmulatorInstallation> GetInstallationAsync(EmulatorManagementContext context, CancellationToken cancellationToken)
     {
         var installation = await ReleaseService(context).GetActiveInstallationAsync(Emulator, cancellationToken).ConfigureAwait(false);
         return new EmulationEmulatorInstallation(Definition, installation?.InstalledVersion);
     }
 
-    public async ValueTask<IReadOnlyList<EmulationEmulatorRelease>> FindReleasesAsync(EmulatorManagementContext context, CancellationToken cancellationToken)
+    public virtual async ValueTask<IReadOnlyList<EmulationEmulatorRelease>> FindReleasesAsync(EmulatorManagementContext context, CancellationToken cancellationToken)
     {
         var releases = await ReleaseService(context).GetAvailableAsync(Emulator, cancellationToken).ConfigureAwait(false);
         _availableReleases = releases.ToDictionary(item => item.Id, StringComparer.Ordinal);
         return releases.Select(item => new EmulationEmulatorRelease(item.Id, item.DisplayName ?? item.DeclaredVersion, item.DeclaredVersion, item.IsRequired)).ToArray();
     }
 
-    public async ValueTask<string> InstallAsync(EmulatorManagementContext context, EmulationEmulatorRelease release, IProgress<double>? progress, CancellationToken cancellationToken)
+    public virtual async ValueTask<string> InstallAsync(EmulatorManagementContext context, EmulationEmulatorRelease release, IProgress<double>? progress, CancellationToken cancellationToken)
     {
         var selected = CoreReleaseFunctions.Releases.SelectRelease(_availableReleases, release, selected => selected.Emulator == Emulator);
         var adapter = CoreReleaseFunctions.Releases.CreateInstallProgress<CoreInstallProgress>(progress, static value => value.Fraction);
@@ -89,7 +89,7 @@ internal abstract class CoreMachineFactory : IEmulatorAdapter, IEmulatorSettings
         return installation.LibraryPath;
     }
 
-    public async ValueTask<string?> FindInstalledCorePathAsync(EmulatorManagementContext context, CancellationToken cancellationToken) =>
+    public virtual async ValueTask<string?> FindInstalledCorePathAsync(EmulatorManagementContext context, CancellationToken cancellationToken) =>
         await new CoreProvider(ReleaseService(context), CoreReleaseService.VerifyWindowsX64Library).FindInstalledPathAsync(Emulator, cancellationToken).ConfigureAwait(false);
 
     public IReadOnlyList<EmulationMedia> ResolveConfiguredMedia(MachineConfiguration configuration) => EmulationMediaConversionFunctions.ToCommon(configuration.Media ?? []);

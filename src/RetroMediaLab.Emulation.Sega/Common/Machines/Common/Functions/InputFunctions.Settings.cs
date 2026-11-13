@@ -55,11 +55,7 @@ internal static partial class InputSettingsFunctions
 
     private static IReadOnlyList<InputBindingDefinition> SessionControllerDefinitions(MachineConfiguration configuration, PeripheralCategory type, int port)
     {
-        var definitions = ControllerDefinitions(type);
-        return configuration.EmulatorId == Emulators.SegaEmu.Constants.EmulatorConstants.Id
-            && configuration.Model == ModelConstants.Sg1000 && port == 0
-            ? [.. definitions, new(EmulationControllerCommandIds.Start,
-                Emulators.SegaEmu.Constants.EmulatorConstants.PauseLabel, string.Empty)] : definitions;
+        return ControllerDefinitions(type);
     }
 
     private static IReadOnlyList<InputBindingDefinition> MouseDefinitions() =>
