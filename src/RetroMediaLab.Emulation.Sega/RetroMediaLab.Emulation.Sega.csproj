@@ -15,6 +15,7 @@
     <InternalsVisibleTo Include="RetroMediaLab.LocalEmulationTests" />
     <ProjectReference Include="..\RetroMediaLab.Emulation\RetroMediaLab.Emulation.csproj" />
     <ProjectReference Include="..\RetroMediaLab.Chips\RetroMediaLab.Chips.csproj" />
+    <ProjectReference Include="..\RetroMediaLab.MediaEngine\RetroMediaLab.MediaEngine.csproj" />
   </ItemGroup>
   <ItemGroup>
 

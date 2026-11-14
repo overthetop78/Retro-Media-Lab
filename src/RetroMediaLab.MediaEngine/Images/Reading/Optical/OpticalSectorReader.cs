@@ -5,6 +5,27 @@ namespace RetroMediaLab.MediaEngine.Images.Reading.Optical;
 /// <summary>Reads stored or user-data sectors through a container-independent optical track descriptor.</summary>
 public sealed class OpticalSectorReader
 {
+    /// <summary>Reads a complete stored sector into caller-owned memory, including an available stored INDEX 00 pregap.</summary>
+    public ValueTask ReadStoredSectorAsync(OpticalTrackDescriptor track, long relativeSector, Memory<byte> destination, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(track);
+        if (destination.Length != track.StoredSectorSize)
+            throw new ArgumentException("The destination must contain exactly one stored sector.", nameof(destination));
+        long sourceOffset;
+        if (relativeSector < 0)
+        {
+            if (relativeSector < -track.StoredPregapSectors || track.StoredPregapSourceOffset is not { } pregapOffset)
+                throw new ArgumentOutOfRangeException(nameof(relativeSector), "The sector is outside the stored pregap.");
+            sourceOffset = checked(pregapOffset + (relativeSector + track.StoredPregapSectors) * track.StoredSectorSize);
+        }
+        else
+        {
+            ValidateRelativeSector(track, relativeSector);
+            sourceOffset = checked(track.SourceOffset + relativeSector * track.StoredSectorSize);
+        }
+        return track.DataSource.ReadExactlyAsync(sourceOffset, destination, cancellationToken);
+    }
+
     public async ValueTask<byte[]> ReadStoredSectorAsync(OpticalTrackDescriptor track, long relativeSector, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(track);
