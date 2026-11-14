@@ -140,7 +140,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     IReadOnlySet<string> IEmulationRuntime.SupportedContentExtensions => SupportedContentExtensions;
     IReadOnlyDictionary<EmulationMediaSlot, bool> IEmulationRuntime.MediaActivity => RuntimeStatus.MediaActivity;
     IReadOnlyList<EmulationOption> IEmulationRuntime.AvailableOptions => AvailableOptions
-        .Select(option => option with { Values = option.Values.ToArray(), RequiresRestart = _runtimePolicy?.RequiresOptionRestart(Configuration, option.Key) == true })
+        .Select(option => option with { Values = option.Values.ToArray(), RequiresRestart = option.RequiresRestart || _runtimePolicy?.RequiresOptionRestart(Configuration, option.Key) == true })
         .ToArray();
     VideoFrame? IEmulationVideo.LatestFrame => LatestVideoFrame;
     double IEmulationVideo.FramesPerSecond => _core.FramesPerSecond;

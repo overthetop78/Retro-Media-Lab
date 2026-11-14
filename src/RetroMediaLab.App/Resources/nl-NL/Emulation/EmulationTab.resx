@@ -17,4 +17,5 @@
   <data name="Emulation.Tab.Audio"><value>Geluid</value></data>
   <data name="Emulation.Tab.Ethernet"><value>Netwerk</value></data>
   <data name="Emulation.Tab.Extensions"><value>Hardware-extensies</value></data>
+  <data name="Emulation.Tab.Controllers"><value>Controllers</value></data>
 </root>

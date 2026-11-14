@@ -25,6 +25,9 @@ internal sealed class Psg
     private int _noiseBitMask;
 
     public bool HighQuality { get; set; }
+    private readonly int[] _channelVolumes = [100, 100, 100, 100];
+    /// <summary>Host mixing levels in percent; these do not alter emulated registers.</summary>
+    public Span<int> ChannelVolumes => _channelVolumes;
 
     public Psg(BlipBuffer output, PsgType type)
     {
@@ -155,8 +158,9 @@ internal sealed class Psg
         Synchronize(clocks);
         for (int i = 0; i < 4; i++)
         {
-            _channelAmplification[i * 2] = (int)(preamp * (panning >> (i + 4) & 1));
-            _channelAmplification[i * 2 + 1] = (int)(preamp * (panning >> i & 1));
+            int level = (int)preamp * _channelVolumes[i] / 100;
+            _channelAmplification[i * 2] = level * (int)(panning >> (i + 4) & 1);
+            _channelAmplification[i * 2 + 1] = level * (int)(panning >> i & 1);
             SetVolume(i, _registers[i * 2 + 1], i < 3 ? _polarity[i] > 0 : (_noiseShiftValue & 1) != 0);
         }
     }

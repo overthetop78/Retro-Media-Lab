@@ -20,7 +20,9 @@ internal sealed partial class SystemCore
         {
             _cancellation.ThrowIfCancellationRequested();
             _mediaPath = filename;
-            int size = _cd.Drive.Load(filename, cart.rom);
+            bool noContent = filename.Length == 0 && cartridgeImage.IsEmpty;
+            if (noContent) cart.rom.AsSpan().Fill(0xff);
+            int size = noContent ? 0 : _cd.Drive.Load(filename, cart.rom);
             if (size < 0) return false;
             if (size != 0) system_hw = SystemHardware.MegaCd;
             else
@@ -31,7 +33,7 @@ internal sealed partial class SystemCore
                     size = Math.Min(maximum, cartridgeImage.Length);
                     cartridgeImage[..size].CopyTo(cart.rom);
                 }
-                else
+                else if (!noContent)
                 {
                     Stream? stream = null;
                     try
@@ -50,9 +52,9 @@ internal sealed partial class SystemCore
                 }
                 if (size > 0x800000) system_bios &= unchecked((byte)~0x10);
                 else if (size > 0x400000) system_bios &= unchecked((byte)~0x60);
-                else if (size <= 0) return false;
+                else if (size <= 0 && !noContent) return false;
                 string extension = Path.GetExtension(filename).ToUpperInvariant();
-                system_hw = extension switch
+                system_hw = noContent ? system_hw : extension switch
                 {
                     ".SMS" => SystemHardware.MasterSystemII,
                     ".GG" => SystemHardware.GameGear,
@@ -100,7 +102,7 @@ internal sealed partial class SystemCore
                 if (LoadBios(SystemHardware.MegaCd) == 0) return false;
                 cd_boot = 0;
             }
-            else if (system_hw == SystemHardware.MegaDrive && cart.romsize <= 0x800000 && config.add_on != 3)
+            else if (!noContent && system_hw == SystemHardware.MegaDrive && cart.romsize <= 0x800000 && config.add_on != 3)
             {
                 if (_cd.Drive.Loaded == 0) _cd.Drive.Load(Path.ChangeExtension(filename, ".chd"), _cd.DataController.Ram.Span);
                 if ((rominfo.peripherals & 0x1000) != 0 || rominfo.domestic.Contains("FLUX", StringComparison.Ordinal) ||
@@ -204,6 +206,7 @@ internal sealed partial class SystemCore
         rominfo.consoletype = rominfo.copyright = rominfo.domestic = rominfo.international = rominfo.ROMType = rominfo.product = rominfo.country = "";
         rominfo.checksum = rominfo.realchecksum = rominfo.peripherals = 0;
         rominfo.romstart = rominfo.romend = 0;
+            if (cart.romsize == 0) return;
         if ((system_hw & 0x80) != 0)
         {
             rominfo.consoletype = HeaderText(256, 16); rominfo.copyright = HeaderText(272, 16);

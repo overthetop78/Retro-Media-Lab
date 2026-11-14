@@ -13,6 +13,7 @@ internal sealed partial class CdCartridge : IDisposable
     private byte boot, id, prot;
     private uint mask;
     public byte Boot { get => boot; set => boot = value; }
+    public byte ConfiguredRamId { get; set; } = 6;
     public byte Id => id;
     public byte Protection => prot;
     public uint Mask => mask;

@@ -17,4 +17,5 @@
   <data name="Emulation.Tab.Audio"><value>Audio Audio Audio</value></data>
   <data name="Emulation.Tab.Ethernet"><value>Ağ Ağı Ağı Ağı Ağı Ağı</value></data>
   <data name="Emulation.Tab.Extensions"><value>Donanım uzantıları</value></data>
+  <data name="Emulation.Tab.Controllers"><value>kontrolörler</value></data>
 </root>

@@ -34,7 +34,9 @@ internal abstract partial class SegaBoard
         {
             _cancellation.ThrowIfCancellationRequested();
             _mediaPath = filename;
-            int size = TryMountDiscImage(filename, cart.rom);
+            bool noContent = filename.Length == 0 && cartridgeImage.IsEmpty;
+            if (noContent) cart.rom.AsSpan().Fill(0xff);
+            int size = noContent ? 0 : TryMountDiscImage(filename, cart.rom);
             if (size < 0) return false;
             if (size != 0) system_hw = SystemHardware.MegaCd;
             else
@@ -45,7 +47,7 @@ internal abstract partial class SegaBoard
                     size = Math.Min(maximum, cartridgeImage.Length);
                     cartridgeImage[..size].CopyTo(cart.rom);
                 }
-                else
+                else if (!noContent)
                 {
                     Stream? stream = null;
                     try
@@ -64,9 +66,9 @@ internal abstract partial class SegaBoard
                 }
                 if (size > 0x800000) system_bios &= unchecked((byte)~0x10);
                 else if (size > 0x400000) system_bios &= unchecked((byte)~0x60);
-                else if (size <= 0) return false;
+                else if (size <= 0 && !noContent) return false;
                 string extension = Path.GetExtension(filename).ToUpperInvariant();
-                system_hw = extension switch
+                system_hw = noContent ? system_hw : extension switch
                 {
                     ".SMS" => SystemHardware.MasterSystemII,
                     ".GG" => SystemHardware.GameGear,
@@ -114,7 +116,7 @@ internal abstract partial class SegaBoard
                 if (LoadBios(SystemHardware.MegaCd) == 0) return false;
                 cd_boot = 0;
             }
-            else if (system_hw == SystemHardware.MegaDrive && cart.romsize <= 0x800000 && config.add_on != 3)
+            else if (!noContent && system_hw == SystemHardware.MegaDrive && cart.romsize <= 0x800000 && config.add_on != 3)
             {
                 if (DiscLoaded == 0) TryMountAddonDisc(Path.ChangeExtension(filename, ".chd"));
                 if ((rominfo.peripherals & 0x1000) != 0 || rominfo.domestic.Contains("FLUX", StringComparison.Ordinal) ||
@@ -219,6 +221,7 @@ internal abstract partial class SegaBoard
         rominfo.consoletype = rominfo.copyright = rominfo.domestic = rominfo.international = rominfo.ROMType = rominfo.product = rominfo.country = "";
         rominfo.checksum = rominfo.realchecksum = rominfo.peripherals = 0;
         rominfo.romstart = rominfo.romend = 0;
+        if (cart.romsize == 0) return;
         if ((system_hw & 0x80) != 0)
         {
             rominfo.consoletype = HeaderText(256, 16); rominfo.copyright = HeaderText(272, 16);

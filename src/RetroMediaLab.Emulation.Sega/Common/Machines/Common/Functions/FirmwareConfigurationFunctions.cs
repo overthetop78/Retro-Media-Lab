@@ -1,6 +1,4 @@
-using CommonCoreHostFunctions = RetroMediaLab.Emulation.Sega.Common.Functions.CoreHostFunctions;
 using System.IO;
-using System.Security.Cryptography;
 
 namespace RetroMediaLab.Emulation.Sega.Common.Machines.Common.Functions;
 
@@ -32,21 +30,35 @@ internal static class FirmwareConfigurationFunctions
     /// <param name="cancellationToken">Annulation contrôlée avant la lecture du fichier.</param>
     /// <returns>Tous les candidats reconnus ou possibles, avec leurs identités et destinations.</returns>
     internal static ValueTask<IReadOnlyList<EmulationFirmwareCandidate>> ScanFileAsync(MachineConfiguration configuration, string path, IEmulatorAdapter adapter, CancellationToken cancellationToken) =>
-        ValueTask.FromResult(InspectFile(path, adapter.GetFirmwareSlots(configuration), cancellationToken));
+        ValueTask.FromResult(InspectFile(configuration.Model, path, adapter.GetFirmwareSlots(configuration), cancellationToken));
 
     /// <summary>Réutilise les emplacements déjà obtenus par le parcours de dossier et libère les lectures avant le retour.</summary>
-    private static IReadOnlyList<EmulationFirmwareCandidate> InspectFile(string path, IReadOnlyList<FirmwareSlot> slots, CancellationToken cancellationToken)
+    private static IReadOnlyList<EmulationFirmwareCandidate> InspectFile(string machineId, string path, IReadOnlyList<FirmwareSlot> slots, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var candidates = new List<EmulationFirmwareCandidate>();
-        using var stream = File.OpenRead(path);
-        var digest = CommonCoreHostFunctions.StateFiles.HashStream(stream);
-        var name = Path.GetFileName(path);
-        var exact = slots.Where(slot => Path.GetFileName(slot.FileName).Equals(name, StringComparison.OrdinalIgnoreCase)).ToArray();
-        var targets = exact.Length > 0 ? exact : slots;
-        foreach (var slot in targets)
-            candidates.Add(new EmulationFirmwareCandidate(digest + slot.FieldId, path, slot.FileName + Path.DirectorySeparatorChar + name, null, EmulationFirmwareCompatibility.Unknown, slot.FieldId));
-        return candidates;
+        if (slots.Count == 0) return [];
+        return Candidates(machineId, FirmwareCatalog.Inspect(path, cancellationToken), slots);
+    }
+
+    internal static IReadOnlyList<EmulationFirmwareCandidate> Candidates(string machineId, Firmware firmware, IReadOnlyList<FirmwareSlot> slots)
+    {
+        string name = Path.GetFileName(firmware.Path);
+        if (!firmware.IsKnown)
+            return [new(firmware.Sha256, firmware.Path, name, null, EmulationFirmwareCompatibility.Unknown)];
+
+        bool Matches(string fileName) => firmware.ExpectedFileNames?.Any(expected =>
+            string.Equals(expected.Replace('\\', '/'), fileName.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase)) == true;
+        var targets = firmware.CompatibleModels.Contains(machineId, StringComparer.Ordinal)
+            ? slots.Where(slot => slot.KnownMd5 is { } md5
+                ? string.Equals(md5, firmware.Md5, StringComparison.OrdinalIgnoreCase)
+                : Matches(slot.FileName) || slot.CandidateFileNames?.Any(Matches) == true).ToArray()
+            : [];
+        string displayName = firmware.Name ?? name;
+        if (targets.Length == 0)
+            return [new(firmware.Sha256, firmware.Path, displayName, firmware.Version, EmulationFirmwareCompatibility.Incompatible)];
+        return targets.Select(slot => new EmulationFirmwareCandidate(firmware.Sha256 + slot.FieldId, firmware.Path,
+            displayName, firmware.Version, firmware.IsOfficial ? EmulationFirmwareCompatibility.Official : EmulationFirmwareCompatibility.Compatible,
+            slot.FieldId)).ToArray();
     }
 
 }

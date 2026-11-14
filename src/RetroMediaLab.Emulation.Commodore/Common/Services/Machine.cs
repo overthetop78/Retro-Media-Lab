@@ -154,7 +154,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     IReadOnlySet<string> IEmulationRuntime.SupportedContentExtensions => SupportedContentExtensions;
     IReadOnlyDictionary<EmulationMediaSlot, bool> IEmulationRuntime.MediaActivity => _mediaCapabilities?.MediaActivity(Configuration, _core.LedStates) ?? EmulatorCatalog.CreateAdapter(Configuration.Core).MediaActivity(Configuration, _core.LedStates);
     IReadOnlyList<EmulationOption> IEmulationRuntime.AvailableOptions => AvailableOptions
-        .Select(option => option with { CurrentValue = _currentOptions.GetValueOrDefault(option.Key, option.DefaultValue), Values = option.Values.ToArray(), RequiresRestart = _runtimePolicy?.RequiresOptionRestart(Configuration, option.Key) == true })
+        .Select(option => option with { CurrentValue = _currentOptions.GetValueOrDefault(option.Key, option.DefaultValue), Values = option.Values.ToArray(), RequiresRestart = option.RequiresRestart || _runtimePolicy?.RequiresOptionRestart(Configuration, option.Key) == true })
         .ToArray();
     VideoFrame? IEmulationVideo.LatestFrame => LatestVideoFrame;
     double IEmulationVideo.FramesPerSecond => _core.FramesPerSecond;

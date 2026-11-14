@@ -57,7 +57,21 @@ internal sealed partial class ManagedCore
         if (settings.system == 0) settings.system = HardwareForModel(_configuration!.Model);
         settings.region_detect = GetOption("region_detect") switch { "ntsc-u" => 1, "pal" => 2, "ntsc-j" => 3, _ => 0 };
         settings.vdp_mode = GetOption("vdp_mode") switch { "60hz" => 1, "50hz" => 2, _ => 0 };
-        settings.bios = GetOption("bios") == "enabled" ? (byte)3 : (byte)0;
+        // With an empty cartridge port the physical boot ROM is the only software present.
+        settings.bios = _contentPath.Length == 0 ? (byte)1 : GetOption("bios") == "enabled" ? (byte)3 : (byte)0;
+        if (_contentPath.Length == 0 && settings.region_detect == 0)
+        {
+            string? pattern = _configuration!.Model switch
+            {
+                ModelConstants.MasterSystem => "bios_{0}.sms",
+                ModelConstants.MegaCd => "bios_CD_{0}.bin",
+                _ => null
+            };
+            if (pattern is not null)
+                foreach (var (region, code) in new[] { ("U", 1), ("E", 2), ("J", 3) })
+                    if (File.Exists(Path.Combine(_systemDirectory, string.Format(CultureInfo.InvariantCulture, pattern, region))))
+                    { settings.region_detect = (byte)code; break; }
+        }
         settings.force_dtack = GetOption("force_dtack") == "enabled" ? (byte)1 : (byte)0;
         settings.addr_error = GetOption("addr_error") == "disabled" ? (byte)0 : (byte)1;
         settings.cd_latency = GetOption("cd_latency") == "disabled" ? (byte)0 : (byte)1;
@@ -106,13 +120,14 @@ internal sealed partial class ManagedCore
     };
     public void SetOption(string key, string value)
     {
-        if (!CoreConstants.Definition.Options.Any(option => option.Key == key && option.Values.Any(candidate => candidate.Value == value)))
+        var option = CoreConstants.Definition.Options.SingleOrDefault(candidate => candidate.Key == key);
+        if (option is null || !option.Values.Any(candidate => candidate.Value == value))
             throw new ArgumentException(nameof(value));
+        if (string.Equals(GetOption(key[8..]), value, StringComparison.Ordinal)) return;
+        if (option.RequiresRestart) SavePersistent();
         Dictionary<string, string> options = new(_configuration!.Options ?? new Dictionary<string, string>(), StringComparer.Ordinal) { [key] = value };
         _configuration = _configuration with { Options = options };
-        if (key is "segaemu_sg1000_model" or "segaemu_master_system_model" or "segaemu_bios" or "segaemu_region_detect" or "segaemu_vdp_mode" or
-            "segaemu_lock_on" or "segaemu_ym2612" or "segaemu_ym2413" or "segaemu_ym2413_core" or
-            "segaemu_cart_size" or "segaemu_cd_precache" or "segaemu_add_on") StartSystem();
+        if (option.RequiresRestart) StartSystem(savePrevious: false);
         else { FillSettings(_settings); _system!.RefreshConfiguration(Number("overclock", 100)); }
     }
     private int LoadFirmware(int identifier, Memory<byte> destination)

@@ -4,6 +4,9 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.GenesisPlusGXCS.Sound;
 
 internal sealed partial class Ym3438
 {
+    private readonly int[] _channelVolumes = [100, 100, 100, 100, 100, 100];
+    private static ReadOnlySpan<int> OutputChannelOrder => [1, 5, 3, 0, 4, 2];
+    public Span<int> ChannelVolumes => _channelVolumes;
     public const uint Ym2612Mode = 1, ReadMode = 2;
     private uint chip_type = ReadMode;
     private readonly ym3438_t[] _state = [new()];
@@ -14,7 +17,10 @@ internal sealed partial class Ym3438
     public void Clock(Span<short> stereo)
     {
         if (stereo.Length < 2) throw new ArgumentException("Two output channels are required.", nameof(stereo));
+        int channel = OutputChannelOrder[(int)_state[0].cycles / 4];
         OPN2_Clock(State, new CPointer<short>(stereo));
+        stereo[0] = (short)(stereo[0] * _channelVolumes[channel] / 100);
+        stereo[1] = (short)(stereo[1] * _channelVolumes[channel] / 100);
     }
     public void Write(uint port, byte data) => OPN2_Write(State, port, data);
     public byte Read(uint port) => OPN2_Read(State, port);

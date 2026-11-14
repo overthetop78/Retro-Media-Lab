@@ -167,7 +167,7 @@ internal static class OptionConstants
                 new("Uncorrected", "Emulation.Option.segaemu.segaemu_aspect_ratio.Value.Uncorrected")
             ],
             Tab: EmulationMachineTab.Video,
-            RequiresRestart: true
+            RequiresRestart: false
         ),
         new(
             "segaemu_overscan",
@@ -183,7 +183,7 @@ internal static class OptionConstants
                 new("full", "Emulation.Option.segaemu.segaemu_overscan.Value.full")
             ],
             Tab: EmulationMachineTab.Video,
-            RequiresRestart: true
+            RequiresRestart: false
         ),
         new(
             "segaemu_left_border",
@@ -765,8 +765,8 @@ internal static class OptionConstants
             "Emulation.Option.segaemu.segaemu_overclock",
             "Emulation.Option.segaemu.segaemu_overclock.Description",
             null,
-            "100%",
-            "100%",
+            "100",
+            "100",
             [
                 new("100", "Emulation.Option.segaemu.segaemu_overclock.Value.100"),
                 new("125", "Emulation.Option.segaemu.segaemu_overclock.Value.125"),
@@ -835,7 +835,7 @@ internal static class OptionConstants
             "disabled",
             [new("disabled", "Emulation.Option.segaemu.segaemu_cd_precache.Value.disabled"), new("enabled", "Emulation.Option.segaemu.segaemu_cd_precache.Value.enabled")],
             Tab: EmulationMachineTab.Storage,
-            RequiresRestart: true,
+            RequiresRestart: false,
             MachineIds: OptionMachineConstants.MegaCd
         ),
         new(

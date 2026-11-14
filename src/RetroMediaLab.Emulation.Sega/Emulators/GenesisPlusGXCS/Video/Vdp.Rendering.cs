@@ -1,3 +1,5 @@
+using RetroMediaLab.Emulation.Sega.Emulators.GenesisPlusGXCS.Video;
+
 namespace RetroMediaLab.Emulation.Sega.Emulators.GenesisPlusGXCS.Video;
 
 internal sealed partial class Vdp
@@ -665,7 +667,7 @@ internal sealed partial class Vdp
             byte color = default;
             Span<byte> pattern = stackalloc byte[(int)(2)];
             ushort temp = default;
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * SpriteBufferStride);
             int count = unchecked((int)(object_count[(int)(line)]));
             int width = 8;
             width <<= ((unchecked((int)(reg[(int)(1)])) & 2) >> 1);
@@ -743,7 +745,7 @@ internal sealed partial class Vdp
             CPointer<byte> src = default;
             CPointer<byte> lb = default;
             ushort temp = default;
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * SpriteBufferStride);
             int count = unchecked((int)(object_count[(int)(line)]));
             int width = 8;
             ushort sg_mask = unchecked((ushort)(((~448) ^ (unchecked((int)(reg[(int)(6)])) << 6))));
@@ -832,7 +834,7 @@ internal sealed partial class Vdp
             int width = default;
             int pixelcount = 0;
             int masked = 0;
-            int max_pixels = unchecked((int)(max_sprite_pixels));
+            int max_pixels = config.DisableSpriteLimit ? int.MaxValue : max_sprite_pixels;
             CPointer<byte> src = default;
             CPointer<byte> s = default;
             CPointer<byte> lb = default;
@@ -841,7 +843,7 @@ internal sealed partial class Vdp
             uint attr = default;
             uint name = default;
             uint atex = default;
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * SpriteBufferStride);
             int count = unchecked((int)(object_count[(int)(line)]));
             while (((count--) != 0)) {
             xpos = unchecked((int)(object_info[0].xpos));
@@ -899,7 +901,7 @@ internal sealed partial class Vdp
             int width = default;
             int pixelcount = 0;
             int masked = 0;
-            int max_pixels = unchecked((int)(max_sprite_pixels));
+            int max_pixels = config.DisableSpriteLimit ? int.MaxValue : max_sprite_pixels;
             CPointer<byte> src = default;
             CPointer<byte> s = default;
             CPointer<byte> lb = default;
@@ -908,7 +910,7 @@ internal sealed partial class Vdp
             uint attr = default;
             uint name = default;
             uint atex = default;
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * SpriteBufferStride);
             int count = unchecked((int)(object_count[(int)(line)]));
             memset((new CPointer<byte>(linebuf, (int)(1) * 512) + (int)(0)), 0, unchecked((uint)((bitmap.viewport.w + 64))));
             while (((count--) != 0)) {
@@ -969,7 +971,7 @@ internal sealed partial class Vdp
             int width = default;
             int pixelcount = 0;
             int masked = 0;
-            int max_pixels = unchecked((int)(max_sprite_pixels));
+            int max_pixels = config.DisableSpriteLimit ? int.MaxValue : max_sprite_pixels;
             CPointer<byte> src = default;
             CPointer<byte> s = default;
             CPointer<byte> lb = default;
@@ -978,7 +980,7 @@ internal sealed partial class Vdp
             uint attr = default;
             uint name = default;
             uint atex = default;
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * SpriteBufferStride);
             int count = unchecked((int)(object_count[(int)(line)]));
             while (((count--) != 0)) {
             xpos = unchecked((int)(object_info[0].xpos));
@@ -1036,7 +1038,7 @@ internal sealed partial class Vdp
             int width = default;
             int pixelcount = 0;
             int masked = 0;
-            int max_pixels = unchecked((int)(max_sprite_pixels));
+            int max_pixels = config.DisableSpriteLimit ? int.MaxValue : max_sprite_pixels;
             CPointer<byte> src = default;
             CPointer<byte> s = default;
             CPointer<byte> lb = default;
@@ -1045,7 +1047,7 @@ internal sealed partial class Vdp
             uint attr = default;
             uint name = default;
             uint atex = default;
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(line) * SpriteBufferStride);
             int count = unchecked((int)(object_count[(int)(line)]));
             memset((new CPointer<byte>(linebuf, (int)(1) * 512) + (int)(0)), 0, unchecked((uint)((bitmap.viewport.w + 64))));
             while (((count--) != 0)) {
@@ -1104,7 +1106,7 @@ internal sealed partial class Vdp
             int count = 0;
             if ((!((unchecked((int)(reg[(int)(1)])) & 16) != 0))) {
             int ypos = default;
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(((line + 1) & 1)) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(((line + 1) & 1)) * SpriteBufferStride);
             CPointer<byte> st = new CPointer<byte>(vram, (int)(((unchecked((int)(reg[(int)(5)])) << 7) & 16256)));
             int height = 8;
             height <<= ((unchecked((int)(reg[(int)(1)])) & 2) >> 1);
@@ -1119,7 +1121,7 @@ internal sealed partial class Vdp
             ypos = (line - ypos);
             ypos >>= (unchecked((int)(reg[(int)(1)])) & 1);
             if (((ypos >= 0) && (ypos < height))) {
-            if ((count == 4)) {
+            if (!config.DisableSpriteLimit && count == 4) {
             if ((line < bitmap.viewport.h)) {
             spr_ovr = unchecked((byte)(64));
             }
@@ -1146,7 +1148,7 @@ internal sealed partial class Vdp
             CPointer<byte> st = default;
             int count = 0;
             int ypos = default;
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(((line + 1) & 1)) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(((line + 1) & 1)) * SpriteBufferStride);
             int height = (8 + ((unchecked((int)(reg[(int)(1)])) & 2) << 2));
             ushort st_mask = unchecked((ushort)(((~16256) ^ (unchecked((int)(reg[(int)(5)])) << 7))));
             if ((unchecked((int)(system_hw)) > SYSTEM_SMS)) {
@@ -1166,7 +1168,7 @@ internal sealed partial class Vdp
             ypos >>= (unchecked((int)(reg[(int)(1)])) & 1);
             }
             if (((ypos >= 0) && (ypos < height))) {
-            if ((count == 8)) {
+            if (!config.DisableSpriteLimit && count == 8) {
             if (((line >= 0) && (line < bitmap.viewport.h))) {
             spr_ovr = unchecked((byte)(64));
             }
@@ -1194,11 +1196,11 @@ internal sealed partial class Vdp
             int size = default;
             int link = 0;
             int count = 0;
-            int max = (bitmap.viewport.w >> 4);
+            int max = config.DisableSpriteLimit ? SpriteBufferStride : bitmap.viewport.w >> 4;
             int total = (unchecked((int)(max_sprite_pixels)) >> 2);
             CPointer<ushort> p = new CPointer<byte>(vram, (int)(satb)).Cast<ushort>();
             CPointer<ushort> q = new CPointer<byte>(sat, (int)(0)).Cast<ushort>();
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(((line + 1) & 1)) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(((line + 1) & 1)) * SpriteBufferStride);
             line += 129;
             do {
             ypos = (unchecked((int)(q[(int)(link)])) & 511);
@@ -1234,11 +1236,11 @@ internal sealed partial class Vdp
             int size = default;
             int link = 0;
             int count = 0;
-            int max = (bitmap.viewport.w >> 4);
+            int max = config.DisableSpriteLimit ? SpriteBufferStride : bitmap.viewport.w >> 4;
             int total = (unchecked((int)(max_sprite_pixels)) >> 2);
             CPointer<ushort> p = new CPointer<byte>(vram, (int)(satb)).Cast<ushort>();
             CPointer<ushort> q = new CPointer<byte>(sat, (int)(0)).Cast<ushort>();
-            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(((line + 1) & 1)) * 20);
+            CPointer<ObjectInfo> object_info = new CPointer<ObjectInfo>(obj_info, (int)(((line + 1) & 1)) * SpriteBufferStride);
             line = (((line + 129) << 1) + unchecked((int)(odd_frame)));
             do {
             ypos = (unchecked((int)(q[(int)(link)])) & 1023);

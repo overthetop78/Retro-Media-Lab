@@ -4,6 +4,8 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.GenesisPlusGXCS.Sound;
 
 internal sealed partial class Opll
 {
+    private readonly int[] _channelVolumes = [100, 100, 100, 100, 100, 100, 100, 100, 100];
+    public Span<int> ChannelVolumes => _channelVolumes;
     public const uint Ym2413 = 0, Ds1001 = 1, Ym2413B = 2;
     private readonly opll_t[] _state = [new()];
     private CPointer<opll_t> State => new(_state);

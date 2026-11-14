@@ -21,7 +21,7 @@ internal static class OptionConstants
                 new("mega drive / genesis", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_system_hw.Value.mega drive / genesis")
             ],
             Tab: EmulationMachineTab.General,
-            RequiresRestart: false
+            RequiresRestart: true
         ),
         new(
             "genesis_plus_gx_region_detect",
@@ -37,7 +37,7 @@ internal static class OptionConstants
                 new("ntsc-j", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_region_detect.Value.ntsc-j")
             ],
             Tab: EmulationMachineTab.General,
-            RequiresRestart: false
+            RequiresRestart: true
         ),
         new(
             "genesis_plus_gx_vdp_mode",
@@ -52,7 +52,7 @@ internal static class OptionConstants
                 new("50hz", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_vdp_mode.Value.50hz")
             ],
             Tab: EmulationMachineTab.Video,
-            RequiresRestart: false
+            RequiresRestart: true
         ),
         new(
             "genesis_plus_gx_bios",
@@ -63,7 +63,7 @@ internal static class OptionConstants
             "disabled",
             [new("disabled", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_bios.Value.disabled"), new("enabled", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_bios.Value.enabled")],
             Tab: EmulationMachineTab.Rom,
-            RequiresRestart: false,
+            RequiresRestart: true,
             MachineIds: OptionMachineConstants.BootRomSystems
         ),
         new(
@@ -141,7 +141,7 @@ internal static class OptionConstants
                 new("sonic & knuckles", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_lock_on.Value.sonic & knuckles")
             ],
             Tab: EmulationMachineTab.Rom,
-            RequiresRestart: false,
+            RequiresRestart: true,
             MachineIds: OptionMachineConstants.MegaDrive
         ),
         new(
@@ -300,7 +300,7 @@ internal static class OptionConstants
                 new("enabled", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_ym2413.Value.enabled")
             ],
             Tab: EmulationMachineTab.Audio,
-            RequiresRestart: false,
+            RequiresRestart: true,
             MachineIds: OptionMachineConstants.MasterSystem
         ),
         new(
@@ -312,7 +312,7 @@ internal static class OptionConstants
             "mame",
             [new("mame", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_ym2413_core.Value.mame"), new("nuked", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_ym2413_core.Value.nuked")],
             Tab: EmulationMachineTab.Audio,
-            RequiresRestart: false,
+            RequiresRestart: true,
             MachineIds: OptionMachineConstants.MasterSystem
         ),
         new(
@@ -330,7 +330,7 @@ internal static class OptionConstants
                 new("nuked (ym3438)", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_ym2612.Value.nuked (ym3438)")
             ],
             Tab: EmulationMachineTab.Audio,
-            RequiresRestart: false,
+            RequiresRestart: true,
             MachineIds: OptionMachineConstants.MegaDriveAndCd
         ),
         new(
@@ -757,8 +757,8 @@ internal static class OptionConstants
             "Emulation.Option.genesisplusgxcs.genesis_plus_gx_overclock",
             "Emulation.Option.genesisplusgxcs.genesis_plus_gx_overclock.Description",
             null,
-            "100%",
-            "100%",
+            "100",
+            "100",
             [
                 new("100", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_overclock.Value.100"),
                 new("125", "Emulation.Option.genesisplusgxcs.genesis_plus_gx_overclock.Value.125"),

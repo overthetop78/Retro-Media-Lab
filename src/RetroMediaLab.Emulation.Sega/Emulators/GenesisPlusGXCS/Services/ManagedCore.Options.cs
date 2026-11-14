@@ -47,13 +47,33 @@ internal sealed partial class ManagedCore
         if (settings.system == 0) settings.system = HardwareForModel(_configuration!.Model);
         settings.region_detect = GetOption("region_detect") switch { "ntsc-u" => 1, "pal" => 2, "ntsc-j" => 3, _ => 0 };
         settings.vdp_mode = GetOption("vdp_mode") switch { "60hz" => 1, "50hz" => 2, _ => 0 };
-        settings.bios = GetOption("bios") == "enabled" ? (byte)3 : (byte)0;
+        // With an empty cartridge port the physical boot ROM is the only software present.
+        settings.bios = _contentPath.Length == 0 ? (byte)1 : GetOption("bios") == "enabled" ? (byte)3 : (byte)0;
+        if (_contentPath.Length == 0 && settings.region_detect == 0)
+        {
+            string? pattern = _configuration!.Model switch
+            {
+                ModelConstants.MasterSystem => "bios_{0}.sms",
+                ModelConstants.MegaCd => "bios_CD_{0}.bin",
+                _ => null
+            };
+            if (pattern is not null)
+                foreach (var (region, code) in new[] { ("U", 1), ("E", 2), ("J", 3) })
+                    if (File.Exists(Path.Combine(_systemDirectory, string.Format(CultureInfo.InvariantCulture, pattern, region))))
+                    { settings.region_detect = (byte)code; break; }
+        }
         settings.force_dtack = GetOption("force_dtack") == "enabled" ? (byte)1 : (byte)0;
         settings.addr_error = GetOption("addr_error") == "disabled" ? (byte)0 : (byte)1;
         settings.cd_latency = GetOption("cd_latency") == "disabled" ? (byte)0 : (byte)1;
         settings.add_on = GetOption("add_on") switch { "sega/mega cd" => 1, "megasd" => 2, "none" => 3, _ => 0 };
         settings.lock_on = GetOption("lock_on") switch { "game genie" => 1, "action replay (pro)" => 2, "sonic & knuckles" => 3, _ => 0 };
         settings.cdda_volume = (short)Number("cdda_volume", 100); settings.pcm_volume = (short)Number("pcm_volume", 100);
+        settings.CdCartridgeId = GetOption("cart_size") switch
+        {
+            "disabled" => 0, "128k" => 1, "256k" => 2, "512k" => 3,
+            "1meg" => 4, "2meg" => 5, _ => 6
+        };
+        settings.PrecacheCd = GetOption("cd_precache") == "enabled";
         SoundConfiguration sound = settings.Sound;
         sound.Ym2413Mode = GetOption("ym2413") switch { "enabled" => 1, "disabled" => 0, _ => 2 };
         sound.UseOpll = GetOption("ym2413_core") == "nuked";
@@ -66,7 +86,14 @@ internal sealed partial class ManagedCore
         sound.LowPassRange = (uint)(Number("lowpass_range", 60) * 65536 / 100);
         sound.PsgPreamp = (uint)Number("psg_preamp", 150); sound.FmPreamp = Number("fm_preamp", 100);
         sound.LowGain = Number("audio_eq_low", 100); sound.MidGain = Number("audio_eq_mid", 100); sound.HighGain = Number("audio_eq_high", 100);
+        for (int channel = 0; channel < sound.PsgChannelVolumes.Length; channel++)
+            sound.PsgChannelVolumes[channel] = Number($"psg_channel_{channel}_volume", 100);
+        for (int channel = 0; channel < sound.MdChannelVolumes.Length; channel++)
+            sound.MdChannelVolumes[channel] = Number($"md_channel_{channel}_volume", 100);
+        for (int channel = 0; channel < sound.SmsChannelVolumes.Length; channel++)
+            sound.SmsChannelVolumes[channel] = Number($"sms_fm_channel_{channel}_volume", 100);
         Vdp.Configuration video = settings.Video;
+        video.DisableSpriteLimit = GetOption("no_sprite_limit") == "enabled";
         video.overscan = GetOption("overscan") switch { "top/bottom" => 1, "left/right" => 2, "full" => 3, _ => 0 };
         video.gg_extra = GetOption("gg_extra") == "enabled" ? 1 : 0;
         video.render = GetOption("render") == "single field" ? 0 : 1;
@@ -83,12 +110,14 @@ internal sealed partial class ManagedCore
     };
     public void SetOption(string key, string value)
     {
-        if (!CoreConstants.Definition.Options.Any(option => option.Key == key && option.Values.Any(candidate => candidate.Value == value)))
+        var option = CoreConstants.Definition.Options.SingleOrDefault(candidate => candidate.Key == key);
+        if (option is null || !option.Values.Any(candidate => candidate.Value == value))
             throw new ArgumentException(nameof(value));
+        if (string.Equals(GetOption(key[16..]), value, StringComparison.Ordinal)) return;
+        if (option.RequiresRestart) SavePersistent();
         Dictionary<string, string> options = new(_configuration!.Options ?? new Dictionary<string, string>(), StringComparer.Ordinal) { [key] = value };
         _configuration = _configuration with { Options = options };
-        if (key is "genesis_plus_gx_system_hw" or "genesis_plus_gx_bios" or "genesis_plus_gx_region_detect" or "genesis_plus_gx_vdp_mode" or
-            "genesis_plus_gx_lock_on" or "genesis_plus_gx_ym2612" or "genesis_plus_gx_ym2413" or "genesis_plus_gx_ym2413_core") StartSystem();
+        if (option.RequiresRestart) StartSystem(savePrevious: false);
         else { FillSettings(_settings); _system!.RefreshConfiguration(Number("overclock", 100)); }
     }
     private int LoadFirmware(int identifier, Memory<byte> destination)

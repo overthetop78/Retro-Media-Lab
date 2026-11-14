@@ -17,4 +17,5 @@
   <data name="Emulation.Tab.Audio"><value>オーディオ</value></data>
   <data name="Emulation.Tab.Ethernet"><value>通信ネットワーク</value></data>
   <data name="Emulation.Tab.Extensions"><value>ハードウェアの拡張</value></data>
+  <data name="Emulation.Tab.Controllers"><value>コントローラー</value></data>
 </root>

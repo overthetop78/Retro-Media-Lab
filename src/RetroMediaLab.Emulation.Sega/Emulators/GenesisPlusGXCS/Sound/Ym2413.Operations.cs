@@ -201,7 +201,7 @@ internal sealed partial class Ym2413
             }
             SLOT++;
             env = ((unchecked((int)(SLOT[0].state)) != 0) ? ((unchecked((uint)(SLOT[0].TLL)) + unchecked((uint)(SLOT[0].volume))) + (LFO_AM & SLOT[0].AMmask)) : unchecked((uint)((((11 * 2) * 256) >> 5))));
-            if ((env < unchecked((uint)((((11 * 2) * 256) >> 5))))) output[(int)(1)] += op_calc(SLOT[0].phase, env, phase_modulation, SLOT[0].wavetable);
+            if ((env < unchecked((uint)((((11 * 2) * 256) >> 5))))) output[(int)(1)] += (op_calc(SLOT[0].phase, env, phase_modulation, SLOT[0].wavetable)) * _channelVolumes[6] / 100;
             env = ((unchecked((int)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(7)].SLOT, (int)(0))[0].state)) != 0) ? ((unchecked((uint)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(7)].SLOT, (int)(0))[0].TLL)) + unchecked((uint)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(7)].SLOT, (int)(0))[0].volume))) + (LFO_AM & new CPointer<YM2413_OPLL_SLOT>(CH[(int)(7)].SLOT, (int)(0))[0].AMmask)) : unchecked((uint)((((11 * 2) * 256) >> 5))));
             if ((env < unchecked((uint)((((11 * 2) * 256) >> 5))))) {
             byte bit7 = unchecked((byte)((((CH[(int)(7)].SLOT[(int)(0)].phase >> 16) >> 7) & unchecked((uint)(1)))));
@@ -218,17 +218,17 @@ internal sealed partial class Ym2413
             } else {
             if ((noise != 0)) phase = unchecked((uint)((208 >> 2)));
             }
-            output[(int)(1)] += op_calc((phase << 16), env, 0, CH[(int)(7)].SLOT[(int)(0)].wavetable);
+            output[(int)(1)] += (op_calc((phase << 16), env, 0, CH[(int)(7)].SLOT[(int)(0)].wavetable)) * _channelVolumes[7] / 100;
             }
             env = ((unchecked((int)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(7)].SLOT, (int)(1))[0].state)) != 0) ? ((unchecked((uint)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(7)].SLOT, (int)(1))[0].TLL)) + unchecked((uint)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(7)].SLOT, (int)(1))[0].volume))) + (LFO_AM & new CPointer<YM2413_OPLL_SLOT>(CH[(int)(7)].SLOT, (int)(1))[0].AMmask)) : unchecked((uint)((((11 * 2) * 256) >> 5))));
             if ((env < unchecked((uint)((((11 * 2) * 256) >> 5))))) {
             byte bit8 = unchecked((byte)((((CH[(int)(7)].SLOT[(int)(0)].phase >> 16) >> 8) & unchecked((uint)(1)))));
             uint phase = unchecked((uint)(((bit8 != 0) ? 512 : 256)));
             if ((noise != 0)) phase ^= unchecked((uint)(256));
-            output[(int)(1)] += op_calc((phase << 16), env, 0, CH[(int)(7)].SLOT[(int)(1)].wavetable);
+            output[(int)(1)] += (op_calc((phase << 16), env, 0, CH[(int)(7)].SLOT[(int)(1)].wavetable)) * _channelVolumes[7] / 100;
             }
             env = ((unchecked((int)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(8)].SLOT, (int)(0))[0].state)) != 0) ? ((unchecked((uint)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(8)].SLOT, (int)(0))[0].TLL)) + unchecked((uint)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(8)].SLOT, (int)(0))[0].volume))) + (LFO_AM & new CPointer<YM2413_OPLL_SLOT>(CH[(int)(8)].SLOT, (int)(0))[0].AMmask)) : unchecked((uint)((((11 * 2) * 256) >> 5))));
-            if ((env < unchecked((uint)((((11 * 2) * 256) >> 5))))) output[(int)(1)] += op_calc(CH[(int)(8)].SLOT[(int)(0)].phase, env, 0, CH[(int)(8)].SLOT[(int)(0)].wavetable);
+            if ((env < unchecked((uint)((((11 * 2) * 256) >> 5))))) output[(int)(1)] += (op_calc(CH[(int)(8)].SLOT[(int)(0)].phase, env, 0, CH[(int)(8)].SLOT[(int)(0)].wavetable)) * _channelVolumes[8] / 100;
             env = ((unchecked((int)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(8)].SLOT, (int)(1))[0].state)) != 0) ? ((unchecked((uint)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(8)].SLOT, (int)(1))[0].TLL)) + unchecked((uint)(new CPointer<YM2413_OPLL_SLOT>(CH[(int)(8)].SLOT, (int)(1))[0].volume))) + (LFO_AM & new CPointer<YM2413_OPLL_SLOT>(CH[(int)(8)].SLOT, (int)(1))[0].AMmask)) : unchecked((uint)((((11 * 2) * 256) >> 5))));
             if ((env < unchecked((uint)((((11 * 2) * 256) >> 5))))) {
             byte bit7 = unchecked((byte)((((CH[(int)(7)].SLOT[(int)(0)].phase >> 16) >> 7) & unchecked((uint)(1)))));
@@ -240,7 +240,7 @@ internal sealed partial class Ym2413
             byte bit3e = unchecked((byte)((((CH[(int)(8)].SLOT[(int)(1)].phase >> 16) >> 3) & unchecked((uint)(1)))));
             byte res2 = unchecked((byte)((unchecked((int)(bit3e)) | unchecked((int)(bit5e)))));
             if ((res2 != 0)) phase = unchecked((uint)(768));
-            output[(int)(1)] += op_calc((phase << 16), env, 0, CH[(int)(8)].SLOT[(int)(1)].wavetable);
+            output[(int)(1)] += (op_calc((phase << 16), env, 0, CH[(int)(8)].SLOT[(int)(1)].wavetable)) * _channelVolumes[8] / 100;
             }
         }
     }
@@ -699,16 +699,16 @@ internal sealed partial class Ym2413
             output[(int)(0)] = 0;
             output[(int)(1)] = 0;
             advance_lfo();
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(0)));
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(1)));
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(2)));
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(3)));
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(4)));
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(5)));
+            MixChannel(0);
+            MixChannel(1);
+            MixChannel(2);
+            MixChannel(3);
+            MixChannel(4);
+            MixChannel(5);
             if ((!((unchecked((int)(ym2413.rhythm)) & 32) != 0))) {
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(6)));
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(7)));
-            chan_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(8)));
+            MixChannel(6);
+            MixChannel(7);
+            MixChannel(8);
             } else {
             rhythm_calc(new CPointer<YM2413_OPLL_CH>(ym2413.P_CH, (int)(0)), ((ym2413.noise_rng >> 0) & unchecked((uint)(1))));
             }

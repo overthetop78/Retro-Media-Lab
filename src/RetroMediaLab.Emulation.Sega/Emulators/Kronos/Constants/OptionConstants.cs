@@ -216,8 +216,8 @@ internal static class OptionConstants
             "Emulation.Option.kronos.kronos_language_id",
             "Emulation.Option.kronos.kronos_language_id.Description",
             null,
-            "EU",
-            "EU",
+            "English",
+            "English",
             [
                 new("English", "Emulation.Option.kronos.kronos_language_id.Value.English"),
                 new("German", "Emulation.Option.kronos.kronos_language_id.Value.German"),

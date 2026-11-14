@@ -12,5 +12,9 @@ internal static class FirmwareConstants
         new("configuration.firmware.genesis_plus_gx_wide.5", "bios_U.sms", "Emulation.Firmware.genesis_plus_gx_wide.5", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MasterSystem, ModelConstants.MarkIII }),
         new("configuration.firmware.genesis_plus_gx_wide.6", "bios_J.sms", "Emulation.Firmware.genesis_plus_gx_wide.6", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MasterSystem, ModelConstants.MarkIII }),
         new("configuration.firmware.genesis_plus_gx_wide.7", "bios.gg", "Emulation.Firmware.genesis_plus_gx_wide.7", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.GameGear }),
+        new("configuration.firmware.genesis_plus_gx_wide.8", "sk.bin", "Emulation.Firmware.genesis_plus_gx_wide.8", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MegaDrive }),
+        new("configuration.firmware.genesis_plus_gx_wide.9", "sk2chip.bin", "Emulation.Firmware.genesis_plus_gx_wide.9", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MegaDrive }),
+        new("configuration.firmware.genesis_plus_gx_wide.10", "ggenie.bin", "Emulation.Firmware.genesis_plus_gx_wide.10", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MegaDrive }),
+        new("configuration.firmware.genesis_plus_gx_wide.11", "areplay.bin", "Emulation.Firmware.genesis_plus_gx_wide.11", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MegaDrive }),
     ];
 }

@@ -17,4 +17,5 @@
   <data name="Emulation.Tab.Audio"><value>เสียง</value></data>
   <data name="Emulation.Tab.Ethernet"><value>เครือข่าย</value></data>
   <data name="Emulation.Tab.Extensions"><value>ส่วนขยายฮาร์ดแวร์</value></data>
+  <data name="Emulation.Tab.Controllers"><value>ตัวควบคุม</value></data>
 </root>

@@ -72,7 +72,8 @@ internal sealed partial class SystemCore : IZ80Bus, IM68kBus, IVdpBus, IInputBus
         _sms = new(this, cart, rominfo, _backup, _eeprom, _input, config.Sms, _readMap, _writeMap, work_ram);
         _md = new(this, cart, rominfo, _backup, _addresses, _input, config.Cartridge);
         _cd = new(this, _addresses, _pcmAudio, _cdAudio, openFile, cancellation);
-        _cdCartridge = new(this, _md.Initialize, _backup, _addresses);
+        _cd.Drive.PrecacheImages = config.PrecacheCd;
+        _cdCartridge = new(this, _md.Initialize, _backup, _addresses) { ConfiguredRamId = config.CdCartridgeId };
         _megaSd = new(this, cart, _backup, _addresses);
         _yx5200 = new(_cartridgeAudio, this, cancellation);
     }

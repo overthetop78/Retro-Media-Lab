@@ -21,4 +21,5 @@
   <data name="Emulation.Tab.Cheats"><value>Cheats</value></data>
   <data name="Emulation.Tab.Ethernet"><value>Network</value></data>
   <data name="Emulation.Tab.Extensions"><value>Extensions</value></data>
+  <data name="Emulation.Tab.Controllers"><value>Controllers</value></data>
 </root>

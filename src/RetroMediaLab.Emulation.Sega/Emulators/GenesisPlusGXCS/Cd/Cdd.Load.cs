@@ -9,12 +9,43 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.GenesisPlusGXCS.Cd;
 internal sealed partial class Cdd
 {
     private static bool HasExtension(string name, string extension) => name.EndsWith(extension, StringComparison.Ordinal) || name.EndsWith(extension.ToUpperInvariant(), StringComparison.Ordinal);
+    public bool PrecacheImages { get; set; }
     private Stream? OpenFile(string name)
     {
         _cancellation.ThrowIfCancellationRequested();
-        try { return _openFile(name); }
+        Stream? source = null;
+        MemoryStream? cached = null;
+        bool sourceTransferred = false, cacheTransferred = false;
+        try
+        {
+            source = _openFile(name);
+            if (source is null) return null;
+            if (!PrecacheImages) { sourceTransferred = true; return source; }
+            if (source.CanSeek && source.Length > int.MaxValue)
+                throw new IOException("The CD image exceeds the supported in-memory stream size.");
+            cached = new MemoryStream(source.CanSeek ? checked((int)source.Length) : 0);
+            byte[] buffer = new byte[65536];
+            while (true)
+            {
+                _cancellation.ThrowIfCancellationRequested();
+                int read = source.Read(buffer);
+                if (read == 0) break;
+                cached.Write(buffer, 0, read);
+            }
+            cached.Position = 0;
+            Stream completedSource = source;
+            source = null;
+            completedSource.Dispose();
+            cacheTransferred = true;
+            return cached;
+        }
         catch (FileNotFoundException) { return null; }
         catch (DirectoryNotFoundException) { return null; }
+        finally
+        {
+            try { if (!sourceTransferred) source?.Dispose(); }
+            finally { if (!cacheTransferred) cached?.Dispose(); }
+        }
     }
 
     public int Load(string filename, Span<byte> header)

@@ -22,6 +22,9 @@ internal static class CoreSettingsFunctions
     internal static IReadOnlyList<EmulationSettingsBlock> Blocks(MachineConfiguration configuration)
     {
         var definition = CoreCatalog.Get(configuration.EmulatorId);
+        var advancedAudio = definition.Options.FirstOrDefault(option => option.Key.EndsWith("_show_advanced_audio_settings", StringComparison.Ordinal));
+        bool showAdvancedAudio = advancedAudio is null
+            || (configuration.Options?.GetValueOrDefault(advancedAudio.Key) ?? advancedAudio.DefaultValue) == "enabled";
         var fields = definition.Options.Where(option => option.IsVisible
             && (option.MachineIds is null || option.MachineIds.Contains(configuration.Model))
             && definition.MachineOptions?.GetValueOrDefault(configuration.Model)?.ContainsKey(option.Key) != true).Select(option => new EmulationSettingsField(
@@ -31,7 +34,11 @@ internal static class CoreSettingsFunctions
             AvailableValues(option, configuration.Model).Select(value => new EmulationSettingsChoice(value.Value,
                 value.Label.StartsWith(CoreSettingsConstants.OptionResourcePrefix, StringComparison.Ordinal) ? value.Label : string.Empty,
                 value.Label.StartsWith(CoreSettingsConstants.OptionResourcePrefix, StringComparison.Ordinal) ? null : value.Label)).ToArray(),
-            ExplanationResourceKey: option.Description, RequiresRestart: option.RequiresRestart)).ToArray();
+            IsVisible: showAdvancedAudio || option.Tab != EmulationMachineTab.Audio
+                || !option.Key.Contains("_channel_", StringComparison.Ordinal) || !option.Key.EndsWith("_volume", StringComparison.Ordinal),
+            ExplanationResourceKey: option.Description,
+            RefreshSettingsOnChange: option == advancedAudio,
+            RequiresRestart: option.RequiresRestart)).ToArray();
         return fields.GroupBy(field => field.Tab).Select(group => new EmulationSettingsBlock(
             CoreSettingsConstants.OptionsBlock + group.Key, group.Key,
             CoreSettingsConstants.Sections[group.Key].Title, group.ToArray(),

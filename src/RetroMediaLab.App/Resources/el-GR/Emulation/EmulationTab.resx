@@ -17,4 +17,5 @@
   <data name="Emulation.Tab.Audio"><value>Ήχος</value></data>
   <data name="Emulation.Tab.Ethernet"><value>Δίκτυο</value></data>
   <data name="Emulation.Tab.Extensions"><value>Επεκτάσεις υλικού</value></data>
+  <data name="Emulation.Tab.Controllers"><value>Ελεγκτής</value></data>
 </root>

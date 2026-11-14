@@ -871,8 +871,8 @@ internal static class OptionConstants
             "Emulation.Option.genesis_plus_gx_wide.genesis_plus_gx_wide_overclock",
             "Emulation.Option.genesis_plus_gx_wide.genesis_plus_gx_wide_overclock.Description",
             null,
-            "100%",
-            "100%",
+            "100",
+            "100",
             [
                 new("100", "Emulation.Option.genesis_plus_gx_wide.genesis_plus_gx_wide_overclock.Value.100"),
                 new("125", "Emulation.Option.genesis_plus_gx_wide.genesis_plus_gx_wide_overclock.Value.125"),

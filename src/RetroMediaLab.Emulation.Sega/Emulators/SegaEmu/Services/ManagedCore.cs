@@ -85,8 +85,8 @@ internal sealed partial class ManagedCore : IEmulatorCore
                 else cartridge ??= media;
             }
             _diskIndex = _disks.Count == 0 ? -1 : 0;
-            _contentPath = cartridge?.Path ?? _disks.FirstOrDefault() ?? throw new InvalidOperationException(ErrorMessages.StartWithoutMediaUnsupported());
-            if (CoreConstants.Definition.PrepareContent is { } prepare)
+            _contentPath = cartridge?.Path ?? _disks.FirstOrDefault() ?? string.Empty;
+            if (_contentPath.Length != 0 && CoreConstants.Definition.PrepareContent is { } prepare)
                 _contentPath = prepare(configuration, _contentPath, _contentDirectory);
             StartSystem();
             initialized = true;
@@ -94,10 +94,10 @@ internal sealed partial class ManagedCore : IEmulatorCore
         finally { if (!initialized) Dispose(); }
     }
 
-    private void StartSystem()
+    private void StartSystem(bool savePrevious = true)
     {
         SegaBoard? previous = _system;
-        try { if (previous is not null) SavePersistent(); }
+        try { if (previous is not null && savePrevious) SavePersistent(); }
         finally { try { previous?.Dispose(); } finally { _system = null; } }
         _settings = CreateSettings();
         SegaBoard? next = null;
@@ -180,12 +180,12 @@ internal sealed partial class ManagedCore : IEmulatorCore
             if (index < 0) { index = _disks.Count; _disks.Add(media.Path); }
             _diskIndex = index; _ejected = false; _system!.MountDisc(media.Path);
         }
-        else { _contentPath = media.Path; StartSystem(); }
+        else { SavePersistent(); _contentPath = media.Path; StartSystem(savePrevious: false); }
     }
     public void EjectMedia(EmulationMediaSlot slot)
     {
         if (slot.Category == EmulationMediaCategory.CompactDiscDrive) { _system!.UnmountDisc(); _ejected = true; }
-        else Stop();
+        else { SavePersistent(); _contentPath = string.Empty; StartSystem(savePrevious: false); }
     }
     public void SaveMediaChanges(EmulationMediaSlot slot) => SavePersistent();
     public bool HasUnsavedMediaChanges(EmulationMediaSlot slot) => false;

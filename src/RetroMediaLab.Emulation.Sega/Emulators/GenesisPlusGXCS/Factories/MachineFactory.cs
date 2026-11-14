@@ -6,8 +6,9 @@ using RetroMediaLab.Emulation.Sega.Emulators.GenesisPlusGXCS.Services;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.GenesisPlusGXCS.Factories;
 
-internal sealed class MachineFactory : CoreMachineFactory
+internal sealed class MachineFactory : CoreMachineFactory, IEmulatorCapabilities
 {
+    bool IEmulatorCapabilities.SupportsNoContent => true;
     public override Emulator Emulator => Emulator.GenesisPlusGXCS;
     protected override CoreDefinition CoreDefinition => CoreConstants.Definition;
     public override bool TryHandleHostCommand(IReadOnlyList<string> arguments, out int exitCode) { exitCode = 0; return false; }

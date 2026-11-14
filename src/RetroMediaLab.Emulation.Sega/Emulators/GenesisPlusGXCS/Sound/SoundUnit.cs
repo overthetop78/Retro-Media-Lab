@@ -17,6 +17,9 @@ internal sealed class SoundConfiguration
     public int HighFrequency = 8000;
     public int LowGain = 100, MidGain = 100, HighGain = 100;
     public bool Mono;
+    public readonly int[] PsgChannelVolumes = [100, 100, 100, 100];
+    public readonly int[] MdChannelVolumes = [100, 100, 100, 100, 100, 100];
+    public readonly int[] SmsChannelVolumes = [100, 100, 100, 100, 100, 100, 100, 100, 100];
 }
 
 internal sealed partial class SoundUnit
@@ -40,6 +43,14 @@ internal sealed partial class SoundUnit
     private int _opllSample, _opllCycles, _opllStatus;
     public Psg Psg { get; }
     public BlipBuffer Output => _output;
+    public void ConfigureChannels()
+    {
+        _configuration.PsgChannelVolumes.AsSpan().CopyTo(Psg.ChannelVolumes);
+        if (_ym2612 is not null) _configuration.MdChannelVolumes.AsSpan().CopyTo(_ym2612.ChannelVolumes);
+        if (_ym3438 is not null) _configuration.MdChannelVolumes.AsSpan().CopyTo(_ym3438.ChannelVolumes);
+        if (_ym2413 is not null) _configuration.SmsChannelVolumes.AsSpan().CopyTo(_ym2413.ChannelVolumes);
+        if (_opll is not null) _configuration.SmsChannelVolumes.AsSpan().CopyTo(_opll.ChannelVolumes);
+    }
 
     public SoundUnit(byte hardware, SoundConfiguration configuration, BlipBuffer output)
     {
@@ -76,6 +87,7 @@ internal sealed partial class SoundUnit
         {
             HighQuality = configuration.HighQualityPsg
         };
+        ConfigureChannels();
     }
 
     public void Reset()

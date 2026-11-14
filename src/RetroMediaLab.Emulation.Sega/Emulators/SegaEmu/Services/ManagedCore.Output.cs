@@ -68,6 +68,8 @@ internal sealed partial class ManagedCore
     private float CalculateAspect(SegaBoard system, int width, int height)
     {
         string aspect = GetOption("aspect_ratio");
+        if (aspect == "4:3") return 4f / 3f;
+        if (aspect == "Uncorrected") return (float)width / height;
         if (aspect is not ("NTSC PAR" or "PAL PAR") && system.Hardware is 0x40 or 0x41 && _settings.Video.overscan == 0 && _settings.Video.gg_extra == 0)
             return 1.2f * width / height;
         double dotRate = system.MasterClock / (system.Video.ViewportWidth == 320 ? 8.0 : 10.0);
@@ -76,7 +78,7 @@ internal sealed partial class ManagedCore
     }
     private string PersistentPath(string kind)
     {
-        string identity = Path.GetFileNameWithoutExtension(_contentPath);
+        string identity = _contentPath.Length == 0 ? "system" : Path.GetFileNameWithoutExtension(_contentPath);
         if (kind == "brm" && GetOption("system_bram") == "per bios") identity = "bios-" + _system!.Region.ToString("x2");
         if (kind == "crm" && GetOption("cart_bram") == "per cart") identity = "cd-cartridge";
         return Path.Combine(_saveDirectory, identity + ".segaemu." + kind);

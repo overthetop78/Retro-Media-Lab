@@ -23,7 +23,7 @@ internal static class InputSettingsFunctions
     /// <remarks>La table native existante fournit les touches réellement représentables. Les deux chemins
     /// utilisent ainsi les mêmes identifiants, libellés et associations, sans catalogue parallèle de touches.</remarks>
     private static readonly IReadOnlyList<InputBindingDefinition> KeyboardCommands = Array.AsReadOnly(CommonControllerFunctions.CreateNativeKeyMap().Keys
-        .OrderBy(key => key).Select(key => new InputBindingDefinition(key.ToString(), "Emulation.Keyboard", key.ToString(), key.ToString())).ToArray());
+        .OrderBy(key => key).Select(key => new InputBindingDefinition(key.ToString(), "Emulation.Tab.Keyboard", key.ToString(), key.ToString())).ToArray());
 
     /// <summary>Décrit toutes les touches représentables par le contrat de clavier.</summary>
     /// <param name="configuration">Configuration consultée par les mêmes interfaces que les autres adaptateurs.</param>

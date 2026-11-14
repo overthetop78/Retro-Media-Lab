@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.IO;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.GenesisPlusGXCS.Services;
@@ -30,12 +31,43 @@ internal sealed partial class ManagedCore
         byte[] pixels = new byte[pitch * height];
         for (int line = 0; line < height; line++)
             _bitmap.AsSpan(line * BitmapPitch + left * bytesPerPixel, pitch).CopyTo(pixels.AsSpan(line * pitch));
+        if (GetOption("gun_cursor") == "enabled")
+            DrawGunCursors(system, pixels, width - left - right, height, pitch, bytesPerPixel, left, normalWidth, interlaced);
         LatestVideoFrame = new(pixels, width - left - right, height, pitch,
             bytesPerPixel == 4 ? EmulationPixelFormat.Xrgb8888 : EmulationPixelFormat.Rgb565, aspect, _sequence, _timestamp);
+    }
+    private static void DrawGunCursors(SystemCore system, Span<byte> pixels, int width, int height,
+        int pitch, int bytesPerPixel, int croppedLeft, int normalWidth, bool interlaced)
+    {
+        for (int device = 0; device < system.Input.DeviceTypes.Length; device++)
+        {
+            if (system.Input.DeviceTypes[device] != 4) continue;
+            int inputX = system.Input.AnalogInputs[device * 2], inputY = system.Input.AnalogInputs[device * 2 + 1];
+            if (inputX < 0 || inputY < 0 || inputX >= system.Video.ViewportWidth || inputY >= system.Video.ViewportHeight) continue;
+            int x = (inputX + system.Video.ViewportX) * system.Video.OutputWidth / normalWidth - croppedLeft;
+            int y = (inputY + system.Video.ViewportY) * (interlaced ? 2 : 1);
+            uint color = device == 0 ? 0x000000ffu : 0x00ff0000u;
+            ushort color565 = device == 0 ? (ushort)0x001f : (ushort)0xf800;
+            for (int offset = -5; offset <= 5; offset++)
+            {
+                WriteCursorPixel(pixels, x + offset, y, width, height, pitch, bytesPerPixel, color, color565);
+                WriteCursorPixel(pixels, x, y + offset, width, height, pitch, bytesPerPixel, color, color565);
+            }
+        }
+    }
+    private static void WriteCursorPixel(Span<byte> pixels, int x, int y, int width, int height,
+        int pitch, int bytesPerPixel, uint color, ushort color565)
+    {
+        if ((uint)x >= width || (uint)y >= height) return;
+        Span<byte> pixel = pixels.Slice(y * pitch + x * bytesPerPixel, bytesPerPixel);
+        if (bytesPerPixel == 4) BinaryPrimitives.WriteUInt32LittleEndian(pixel, color);
+        else BinaryPrimitives.WriteUInt16LittleEndian(pixel, color565);
     }
     private float CalculateAspect(SystemCore system, int width, int height)
     {
         string aspect = GetOption("aspect_ratio");
+        if (aspect == "4:3") return 4f / 3f;
+        if (aspect == "Uncorrected") return (float)width / height;
         if (aspect is not ("NTSC PAR" or "PAL PAR") && system.Hardware is 0x40 or 0x41 && _settings.Video.overscan == 0 && _settings.Video.gg_extra == 0)
             return 1.2f * width / height;
         double dotRate = system.MasterClock / (system.Video.ViewportWidth == 320 ? 8.0 : 10.0);
@@ -44,7 +76,7 @@ internal sealed partial class ManagedCore
     }
     private string PersistentPath(string kind)
     {
-        string identity = Path.GetFileNameWithoutExtension(_contentPath);
+        string identity = _contentPath.Length == 0 ? "system" : Path.GetFileNameWithoutExtension(_contentPath);
         if (kind == "brm" && GetOption("system_bram") == "per bios") identity = "bios-" + _system!.Region.ToString("x2");
         if (kind == "crm" && GetOption("cart_bram") == "per cart") identity = "cd-cartridge";
         return Path.Combine(_saveDirectory, identity + ".genesisplusgxcs." + kind);

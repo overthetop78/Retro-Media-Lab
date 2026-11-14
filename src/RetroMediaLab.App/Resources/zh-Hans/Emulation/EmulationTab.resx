@@ -17,4 +17,5 @@
   <data name="Emulation.Tab.Audio"><value>音频</value></data>
   <data name="Emulation.Tab.Ethernet"><value>网络</value></data>
   <data name="Emulation.Tab.Extensions"><value>硬件扩展</value></data>
+  <data name="Emulation.Tab.Controllers"><value>主计长</value></data>
 </root>

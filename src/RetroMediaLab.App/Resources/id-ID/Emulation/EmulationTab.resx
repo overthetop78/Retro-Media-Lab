@@ -17,4 +17,5 @@
   <data name="Emulation.Tab.Audio"><value>Audio</value></data>
   <data name="Emulation.Tab.Ethernet"><value>Jaringan</value></data>
   <data name="Emulation.Tab.Extensions"><value>Ekstensi perangkat keras</value></data>
+  <data name="Emulation.Tab.Controllers"><value>Pengontrol</value></data>
 </root>

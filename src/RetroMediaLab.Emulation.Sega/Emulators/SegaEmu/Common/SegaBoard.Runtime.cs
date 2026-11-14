@@ -29,6 +29,7 @@ internal abstract partial class SegaBoard
             _cdComponent.PcmChip.Volume = config.pcm_volume;
             _cdComponent.Drive.AudioVolume = config.cdda_volume;
             _cdComponent.Drive.LatencyFactor = config.cd_latency;
+            _cdComponent.Drive.PrecacheImages = config.PrecacheCd;
         }
         _sound.ConfigureChannels();
         _sound.Psg.Configure(0, config.Sound.PsgPreamp, SystemHardware.IsSixteenBit(system_hw) ? 0xffu : _input.IoRegisters.Span[6]);

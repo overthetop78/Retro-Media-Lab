@@ -1,11 +1,11 @@
-using CommonCoreHostFunctions = RetroMediaLab.Emulation.Sega.Common.Functions.CoreHostFunctions;
 using System.IO;
 using System.Security.Cryptography;
 
 namespace RetroMediaLab.Emulation.Sega.Common.Machines.Common.Dictionaries;
 
-public sealed class FirmwareCatalog
+public sealed partial class FirmwareCatalog
 {
+    internal sealed record FirmwareIdentity(string Name, string Version, string[] Models, string[] FileNames, bool IsOfficial = true);
     private static readonly HashSet<string> Extensions = new(StringComparer.OrdinalIgnoreCase)
     {
         FirmwareCatalogConstants.RomExtension, FirmwareCatalogConstants.BinaryExtension,
@@ -84,16 +84,52 @@ public sealed class FirmwareCatalog
             .ToArray();
     }
 
-    public static Firmware Inspect(string path)
+    public static Firmware Inspect(string path) => Inspect(path, CancellationToken.None);
+
+    internal static Firmware Inspect(string path, CancellationToken cancellationToken)
     {
         var file = new FileInfo(Path.GetFullPath(path));
         using var stream = file.OpenRead();
-        var md5 = Convert.ToHexString(MD5.HashData(stream));
-        stream.Position = 0;
-        var sha256 = CommonCoreHostFunctions.StateFiles.HashStream(stream);
-        var known = Known.TryGetValue(md5, out var identity);
-        return new Firmware(file.FullName, file.Length, md5, sha256, file.LastWriteTimeUtc, FirmwareType.SystemRom, known, known, known ? identity.Name : null, known ? identity.Version : null, known ? identity.Models : [], known ? identity.FileNames : []);
+        using var md5Hash = IncrementalHash.CreateHash(HashAlgorithmName.MD5);
+        using var sha1Hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+        using var sha256Hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        byte[] buffer = new byte[65536];
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            int count = stream.Read(buffer);
+            if (count == 0) break;
+            md5Hash.AppendData(buffer, 0, count);
+            sha1Hash.AppendData(buffer, 0, count);
+            sha256Hash.AppendData(buffer, 0, count);
+        }
+        var md5 = Convert.ToHexString(md5Hash.GetHashAndReset());
+        var sha1 = Convert.ToHexString(sha1Hash.GetHashAndReset());
+        var sha256 = Convert.ToHexString(sha256Hash.GetHashAndReset());
+        var known = TryIdentify(md5, sha1, out var identity);
+        return new Firmware(file.FullName, file.Length, md5, sha256, file.LastWriteTimeUtc, FirmwareType.SystemRom, known, known && identity!.IsOfficial, identity?.Name, identity?.Version, identity?.Models ?? [], identity?.FileNames ?? []);
     }
 
-    internal static bool TryIdentifyKnown(string md5, out (string Name, string Version, string[] Models, string[] FileNames) identity) => Known.TryGetValue(md5, out identity);
+    internal static bool TryIdentify(string md5, string sha1, out FirmwareIdentity? identity)
+    {
+        if (AdditionalKnown.TryGetValue(md5, out identity) || AdditionalKnown.TryGetValue(sha1, out identity)) return true;
+        if (Known.TryGetValue(md5, out var original))
+        {
+            identity = new(original.Name, original.Version, original.Models, original.FileNames);
+            return true;
+        }
+        identity = null;
+        return false;
+    }
+
+    internal static bool TryIdentifyKnown(string md5, out (string Name, string Version, string[] Models, string[] FileNames) identity)
+    {
+        if (TryIdentify(md5, string.Empty, out var known))
+        {
+            identity = (known!.Name, known.Version, known.Models, known.FileNames);
+            return true;
+        }
+        identity = default;
+        return false;
+    }
 }

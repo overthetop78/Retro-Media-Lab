@@ -17,6 +17,8 @@ internal sealed class SystemConfiguration
     public byte region_detect, vdp_mode, master_clock, force_dtack;
     public byte addr_error = 1, cd_latency = 1;
     public short cdda_volume = 100, pcm_volume = 100;
+    public byte CdCartridgeId = 6;
+    public bool PrecacheCd;
     public readonly byte[] PortSystems = [1, 1];
     public readonly byte[] PadTypes = [3, 3, 3, 3, 3, 3, 3, 3];
     public SystemConfiguration() { Sms = new(Sound); }

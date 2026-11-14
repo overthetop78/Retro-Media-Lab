@@ -17,4 +17,5 @@
   <data name="Emulation.Tab.Audio"><value>שמע</value></data>
   <data name="Emulation.Tab.Ethernet"><value>רשת Network</value></data>
   <data name="Emulation.Tab.Extensions"><value>הרחבות חומרה</value></data>
+  <data name="Emulation.Tab.Controllers"><value>מפקחים</value></data>
 </root>
