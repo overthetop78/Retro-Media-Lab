@@ -273,3 +273,20 @@ La distribution Debug complète est construite avec `scripts/local-building.cmd 
 - [Identités et destinations réelles](../../../../artifacts/Emulation/sega-firmware/selection-results.json), [inventaire et sources](../../../../artifacts/Emulation/sega-firmware/inventory.json), [intégrité des médias](../../../../artifacts/Emulation/sega-firmware/integrity.json).
 - [37 contrôles](../../../../artifacts/Emulation/sega-firmware/final-tests.log) et [construction Debug complète](../../../../artifacts/Emulation/sega-firmware/build-debug.log).
 - [SMS sans cartouche](../../../../artifacts/Emulation/sega-firmware/segaemu-sms-v13.png), [Alex Kidd intégré](../../../../artifacts/Emulation/sega-firmware/segaemu-sms-alex-kidd.png), [Sonic intégré](../../../../artifacts/Emulation/sega-firmware/segaemu-sms-sonic.png), [Mega-CD sans disque](../../../../artifacts/Emulation/sega-firmware/segaemu-cd-europe.png).
+
+## Logo SEGA avant la cartouche — 14 novembre 2026
+
+Le profil SMS observé avait déjà `segaemu_bios=enabled` et sélectionnait le BIOS Hang-On v3.4 dans le champ Europe. Avec Forgotten Worlds Europe et la région automatique, le cœur demandait le nom régional US : seul `bios_E.sms` avait été préparé, le chargement du BIOS renvoyait zéro et le jeu démarrait directement. Le défaut est reproduit dans les deux cœurs C# avant correction : quatre cas échouent, dont les deux cas avec BIOS explicitement activé.
+
+La préparation de session met maintenant un BIOS SMS reconnu à disposition sous ses autres noms régionaux compatibles. Cette affectation réutilise l'identification par contenu et les destinations du catalogue ; elle ne repose jamais sur le nom du fichier source. Les sélections régionales explicites sont copiées d'abord et restent prioritaires. Un BIOS Europe seulement, tel que Sonic, ne devient pas un BIOS US ; un fichier inconnu n'obtient aucun alias. Les médias d'origine et les profils utilisateur ne sont pas modifiés.
+
+Le BIOS est également activé par défaut dans SegaEmu, GenesisPlusGXCS, GenesisPlusGX, GenesisPlusGXWide et Gearsystem ; SMS Plus GX utilise sa valeur native `auto`. Une valeur désactivée déjà enregistrée est conservée. Les libellés et les valeurs de sélection existent dans les traductions actuelles : aucun nouveau texte n'est ajouté. La présence du fichier BIOS reste nécessaire pour afficher son démarrage.
+
+Les 28 contrôles ciblés réussissent en Release. Ils vérifient les valeurs initiales et la désactivation explicite, les alias des quatre ports Genesis Plus GX/SegaEmu et leur priorité, puis 900 trames de démarrage sur chacun des deux cœurs C# avec le BIOS Hang-On et Forgotten Worlds. Le réglage par défaut produit les mêmes images que le réglage activé ; une désactivation explicite saute le BIOS. La cartouche reste réellement insérée et atteint son écran de titre après la séquence SEGA / Master System. Les tests temporaires, leurs sessions et binaires sont supprimés ; les contrôles autonomes et résultats restent conservés.
+
+La distribution Debug complète est reconstruite avec `scripts/local-building.cmd --building=debug --modules=A` ; l'application et les 24 assemblages d'entrée sont présents. Les validations de démarrage natives portent ici sur les valeurs déclarées et la préparation des fichiers, sans exécuter les DLL natives.
+
+- [Logo SEGA, BIOS activé](../../../../artifacts/Emulation/sega-boot-logo/segaemu-enabled-180.png).
+- [Forgotten Worlds après le BIOS](../../../../artifacts/Emulation/sega-boot-logo/segaemu-enabled-900.png).
+- [Reproduction avant correction](../../../../artifacts/Emulation/sega-boot-logo/before.log), [28 contrôles après correction](../../../../artifacts/Emulation/sega-boot-logo/final-tests.log) et [comparaison des réglages](../../../../artifacts/Emulation/sega-boot-logo/comparison.json).
+- [Construction Debug complète](../../../../artifacts/Emulation/sega-boot-logo/build-debug.log).

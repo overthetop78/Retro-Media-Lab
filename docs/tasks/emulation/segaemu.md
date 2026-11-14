@@ -126,3 +126,14 @@
       - [x] Supprimer `artifacts/Emulation/sega-firmware/tests/` après validation, avec les tests dépendant de fichiers et leurs binaires ; conserver les contrôles autonomes, captures et journaux.
     - [x] Actualiser `build/Debug/Retro Media Lab/` avec `scripts/local-building.cmd --building=debug --modules=A` et conserver `artifacts/Emulation/sega-firmware/build-debug.log` ; vérifier application et les 24 modules.
     - [x] Modifier `docs/projects/emulations/Sega/SegaEmu.md` : consigner les BIOS reconnus, les ROM intégrées utilisables, les contraintes par machine et les résultats vérifiés.
+
+- [x] Restaurer le démarrage SEGA avec cartouche sauf désactivation explicite
+  - [x] Reproduire le profil SMS actuel
+    - [x] Créer `artifacts/Emulation/sega-boot-logo/tests/BootLogo.Tests.csproj`, `BootLogoTests.cs` et les résultats sous `artifacts/Emulation/sega-boot-logo/` : utiliser le BIOS Hang-On du champ Europe et Forgotten Worlds Europe pour vérifier région, BIOS chargé et images au démarrage, en conservant les médias source et en libérant les cœurs et sessions dans finally.
+  - [x] Corriger la préparation et le réglage initial
+    - [x] Modifier `src/RetroMediaLab.Emulation.Sega/Emulators/Common/Interop/Functions/FirmwareFunctions.cs` : rendre les BIOS SMS reconnus disponibles sous leurs autres noms régionaux compatibles dans la session, préserver les sélections régionales explicites et refuser toute déduction depuis le seul nom de fichier.
+    - [x] Modifier les `Constants/OptionConstants.cs` de `SegaEmu`, `GenesisPlusGXCS`, `GenesisPlusGX`, `GenesisPlusGXWide`, `Gearsystem` et `SmsPlusGX` : activer le BIOS par défaut avec leurs valeurs natives existantes, conserver une désactivation enregistrée et ne modifier aucun profil utilisateur.
+  - [x] Vérifier et livrer
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/FirmwareIntegrationTests.cs` et le banc temporaire : vérifier la valeur par défaut et la désactivation explicite ; vérifier les images de démarrage avec BIOS activé/désactivé ainsi que la priorité des sélections régionales ; conserver les résultats et supprimer le banc temporaire, ses sessions et binaires après usage.
+    - [x] Actualiser `build/Debug/Retro Media Lab/` avec `scripts/local-building.cmd --building=debug --modules=A`, conserver `artifacts/Emulation/sega-boot-logo/build-debug.log` et vérifier l'application et les 24 modules.
+    - [x] Modifier `docs/projects/emulations/Sega/SegaEmu.md` : expliquer la cause observée, les alias régionaux vérifiés, les réglages conservés et les résultats.

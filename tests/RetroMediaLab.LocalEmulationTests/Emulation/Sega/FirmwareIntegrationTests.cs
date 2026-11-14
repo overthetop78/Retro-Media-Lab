@@ -14,6 +14,21 @@ namespace RetroMediaLab.Tests.Emulation.Sega;
 
 public sealed class FirmwareIntegrationTests
 {
+    [Theory]
+    [InlineData("segaemu", "MasterSystem", "segaemu_bios", "enabled", "disabled")]
+    [InlineData("genesisplusgxcs", "MasterSystem", "genesis_plus_gx_bios", "enabled", "disabled")]
+    [InlineData("genesisplusgx", "MasterSystem", "genesis_plus_gx_bios", "enabled", "disabled")]
+    [InlineData("genesis_plus_gx_wide", "MasterSystem", "genesis_plus_gx_wide_bios", "enabled", "disabled")]
+    [InlineData("gearsystem", "MasterSystem", "gearsystem_bios_sms", "Enabled", "Disabled")]
+    [InlineData("gearsystem", "GameGear", "gearsystem_bios_gg", "Enabled", "Disabled")]
+    [InlineData("smsplus", "MasterSystem", "smsplus_sms_bios", "auto", "disabled")]
+    public void BootRomIsEnabledByDefaultAndAnExplicitDisableIsPreserved(string id, string model, string key, string enabled, string disabled)
+    {
+        Assert.Equal(enabled, CoreSettingsFunctions.Configure(new(model, id)).Options![key]);
+        Assert.Equal(disabled, CoreSettingsFunctions.Configure(new(model, id,
+            Options: new Dictionary<string, string> { [key] = disabled })).Options![key]);
+    }
+
     [Fact]
     public void MultivisionIsNotAdvertisedAsAnSg1000Bios()
     {

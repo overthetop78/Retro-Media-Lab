@@ -7,8 +7,8 @@ internal static class OptionConstants
             "Emulation.Option.smsplus.smsplus_sms_bios",
             "Emulation.Option.smsplus.smsplus_sms_bios.Description",
             null,
-            "disabled",
-            "disabled",
+            "auto",
+            "auto",
             [new("disabled", "Emulation.Option.smsplus.smsplus_sms_bios.Value.disabled"), new("auto", "Emulation.Option.smsplus.smsplus_sms_bios.Value.auto")],
             Tab: EmulationMachineTab.Rom,
             RequiresRestart: true
