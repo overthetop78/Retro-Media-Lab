@@ -137,3 +137,61 @@
     - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/FirmwareIntegrationTests.cs` et le banc temporaire : vérifier la valeur par défaut et la désactivation explicite ; vérifier les images de démarrage avec BIOS activé/désactivé ainsi que la priorité des sélections régionales ; conserver les résultats et supprimer le banc temporaire, ses sessions et binaires après usage.
     - [x] Actualiser `build/Debug/Retro Media Lab/` avec `scripts/local-building.cmd --building=debug --modules=A`, conserver `artifacts/Emulation/sega-boot-logo/build-debug.log` et vérifier l'application et les 24 modules.
     - [x] Modifier `docs/projects/emulations/Sega/SegaEmu.md` : expliquer la cause observée, les alias régionaux vérifiés, les réglages conservés et les résultats.
+
+- [x] Consigner l'audit SegaEmu et les solutions proposées
+  - [x] Rédiger le bilan demandé sans modifier l'émulation
+    - [x] Créer `docs/projects/emulations/Sega/SegaEmu-audit.md` : reprendre chaque constat, les références au code, les actions correctives par fichier, les gains attendus, les risques de ralentissement et le protocole de validation sans perte reproductible, en distinguant vitesse courante, démarrage, mémoire et sauvegardes ; conserver toutes les corrections proposées comme non réalisées.
+
+- [ ] Expérimenter les routes de l'audit SegaEmu, sans commit ni remplacement de l'original
+  - [x] Sélecteur 1 — politique d'exécution du 68000 (arrêt obligatoire après son bilan)
+    - [x] Préparer la référence et le banc
+      - [x] Créer `scripts/emulation/segaemu-cpu-routes.ps1`, `artifacts/Emulation/segaemu-routes/cpu/manifest.json` et le banc temporaire généré : construire une référence Debug/Release avant modification, conserver ses empreintes, préparer des scénarios 16 bits/CD et des témoins 8 bits à médias identiques ; libérer les cœurs et sessions dans finally.
+    - [x] Fabriquer les routes du premier sélecteur uniquement
+      - [x] Créer `src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Contracts/Cpu68000ExecutionProfile.cs` et `Services/Cpu68000.Profile.cs`, modifier `Services/Cpu68000.cs`, `Services/Cpu68000.Instructions.cs` et `Interfaces/ICpu68000Bus.cs` : conserver le chemin original, ajouter une politique générique configurable et une boucle spécialisée, avec horloges, rafraîchissement et TAS définis par le profil.
+      - [x] Créer `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Contracts/CpuRoute.cs` et `Functions/CpuRouteFunctions.cs`, modifier `Common/SystemConfiguration.cs`, `Common/SegaBoard.cs`, `Services/ManagedCore.Options.cs` et `Machines/MegaCd/Hardware/Scd.cs` : sélectionner la route par instance depuis le banc de tests, appliquer les profils Sega aux deux processeurs et laisser les autres solutions sur l'original.
+    - [x] Vérifier puis mesurer chaque route
+      - [x] Modifier `tests/RetroMediaLab.Chips.Tests/SegaEmu/InstructionCpuTests.cs` et créer `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/CpuRouteTests.cs` ainsi que le projet temporaire `.tests/Routes.Tests.csproj` : ajouter les contrôles de programmes, états, route réellement instanciée et témoins 8 bits ; consigner le premier résultat (34 réussites, 2 défauts de raccordement détectés).
+      - [x] Modifier `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/SegaBoard.Buses.cs` : faire respecter le sélecteur par la réinitialisation du 68000 principal qui recréait encore l'original ; créer les journaux de revalidation Debug/Release sous `artifacts/Emulation/segaemu-routes/cpu/`.
+      - [x] Modifier `scripts/emulation/segaemu-cpu-routes.ps1` : fermer et attendre les processus possédés dans finally, conserver leurs journaux et inclure le projet temporaire `.tests` dans le nettoyage.
+      - [x] Créer les résultats Debug/Release sous `artifacts/Emulation/segaemu-routes/cpu/` : exécuter d'abord l'original, puis les candidats isolés avec tous les autres sélecteurs inchangés ; conserver passages, sorties, allocations, temps et incertitudes, sans promouvoir une route en production.
+      - [x] Actualiser les distributions Debug et Release et les journaux sous `artifacts/Emulation/segaemu-routes/cpu/` avec les scripts de construction de tous les modules ; vérifier applications et 24 modules.
+      - [x] Supprimer les projets, tests dépendant des médias, copies de référence binaires et sessions temporaires créés par le banc après exploitation ; conserver le générateur, les tests autonomes, empreintes, mesures et captures utiles.
+      - [x] Créer `docs/projects/emulations/Sega/SegaEmu-routes-tests.md` et modifier `SegaEmu-audit.md` : consigner les routes du premier sélecteur, résultats, gains/pertes et la procédure progressive demandée ; laisser les sélecteurs suivants en attente de l'utilisateur, puis arrêter le travail pour présenter ce bilan.
+
+- [x] Refaire le premier sélecteur 68000 selon le périmètre corrigé, sans commit
+  - [x] Retirer le bilan précédent
+    - [x] Supprimer docs/projects/emulations/Sega/SegaEmu-routes-tests.md et modifier SegaEmu-audit.md pour retirer ses conclusions et son lien.
+  - [x] Préparer les routes et le banc ciblé
+    - [x] Modifier les fichiers Execution/Contracts/Cpu68000ExecutionProfile.cs et Execution/Services/Cpu68000.Profile.cs de src/RetroMediaLab.Chips/CPU/Motorola/M68000, ainsi que SegaEmu/Contracts/CpuRoute.cs et Functions/CpuRouteFunctions.cs : conserver original/profile/specialized et ajouter une route spécialisée générique et une route à accès au contexte optimisé.
+    - [x] Remplacer scripts/emulation/segaemu-cpu-routes.ps1 et créer ses sources temporaires sous artifacts/Emulation/segaemu-routes/cpu-targeted/.work : compiler uniquement les sources CPU/SegaEmu nécessaires avec les dépendances communes existantes ; mesurer le CPU isolé et les machines complètes sur les seuls jeux MD/MCD retenus, avec temps, cycles, appels, allocations, GC et états.
+  - [x] Corriger le chargement des dépendances du banc
+    - [x] Renommer artifacts/Emulation/segaemu-routes/cpu-targeted/results-Release.json et run-Release.log en fichiers invalid-release-mixed-dependencies pour conserver le passage interrompu sans le mélanger aux résultats valides.
+    - [x] Modifier scripts/emulation/segaemu-cpu-routes.ps1 : recopier explicitement les DLL de la configuration demandée après compilation et vérifier leurs SHA-256 avant de lancer le banc ; créer dependencies-Debug.json ou dependencies-Release.json.
+  - [x] Exécuter les comparaisons ciblées
+    - [x] Créer artifacts/Emulation/segaemu-routes/cpu-targeted/initial-debug-before-dependency-check.json : archiver le premier relevé Debug avant de le remplacer par une exécution avec empreintes des dépendances vérifiées.
+    - [x] Créer artifacts/Emulation/segaemu-routes/cpu-targeted/selection.json et les mesures Debug/Release : choisir les scénarios les plus lents de la référence, exécuter original puis les candidates, avec répétitions appariées et vérification du travail réellement exécuté.
+    - [x] Modifier scripts/emulation/segaemu-cpu-routes.ps1 : nettoyer dans finally les répertoires .session-GUID possédés par le banc, y compris après interruption du processus de test.
+    - [x] Supprimer artifacts/Emulation/segaemu-routes/cpu-targeted/.work et ses sessions, projets, sources de tests et binaires temporaires après exploitation ; conserver seulement les résultats et le générateur.
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu-audit.md : noter les routes fabriquées et les nouveaux résultats ciblés avec leurs limites, puis arrêter après le premier sélecteur.
+
+- [ ] Préparer la refonte complète sur refactor-sega-emu
+  - [x] Annuler les prototypes et conserver les documents
+    - [x] Restaurer src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Interfaces/ICpu68000Bus.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Restaurer src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Services/Cpu68000.Instructions.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Restaurer src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Services/Cpu68000.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Restaurer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/SegaBoard.Buses.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Restaurer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/SegaBoard.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Restaurer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/SystemConfiguration.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Restaurer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/MegaCd/Hardware/Scd.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Restaurer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Services/ManagedCore.Options.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Restaurer tests/RetroMediaLab.Chips.Tests/SegaEmu/InstructionCpuTests.cs depuis HEAD : supprimer les changements expérimentaux.
+    - [x] Supprimer scripts/emulation/segaemu-cpu-routes.ps1 : retirer le fichier expérimental non suivi.
+    - [x] Supprimer src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Contracts/Cpu68000ExecutionProfile.cs : retirer le fichier expérimental non suivi.
+    - [x] Supprimer src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Services/Cpu68000.Profile.cs : retirer le fichier expérimental non suivi.
+    - [x] Supprimer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Contracts/CpuRoute.cs : retirer le fichier expérimental non suivi.
+    - [x] Supprimer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Functions/CpuRouteFunctions.cs : retirer le fichier expérimental non suivi.
+    - [x] Supprimer tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/CpuRouteTests.cs : retirer le fichier expérimental non suivi.
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu-audit.md : distinguer les résultats historiques des prototypes retirés et le nouveau chantier de refonte.
+  - [ ] Publier les documents avant de démarrer la branche
+    - [ ] Modifier docs/tasks/emulation/segaemu.md : consigner le nettoyage ; indexer et committer uniquement docs/tasks/emulation/segaemu.md et docs/projects/emulations/Sega/SegaEmu-audit.md, puis pousser main sur origin.
+    - [ ] Créer la référence Git refs/heads/refactor-sega-emu depuis le commit documentaire poussé et la sélectionner ; détailler ensuite les actions de refonte dans docs/tasks/emulation/segaemu.md avant toute modification du code.
