@@ -291,6 +291,7 @@ public static class DiskImageFileExtensions
 
     /// <summary>Extension des fichiers audio MPEG Audio Layer III.</summary>
     public const string Mp3 = ".mp3";
+    public const string Ogg = ".ogg";
     /// <summary>Extension des fichiers audio Free Lossless Audio Codec.</summary>
     public const string Flac = ".flac";
     /// <summary>Extension des fichiers audio Advanced Audio Coding.</summary>

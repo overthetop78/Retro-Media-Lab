@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace RetroMediaLab.Chips.CPU.Motorola.M68000.Execution;
 
@@ -29,6 +30,42 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
     public Span<uint> PreviousData => _previousData;
     public Span<uint> PreviousAddress => _previousAddress;
     public int InstructionCycles => CYC_INSTRUCTION[(int)REG_IR];
+    public static int ContextSize => Unsafe.SizeOf<Cpu68000State>() + (16 + 5 + 8 + 8) * sizeof(uint) + 1;
+
+    public int SaveContext(Span<byte> destination)
+    {
+        if (destination.Length < ContextSize) throw new ArgumentException("The CPU context buffer is too short.", nameof(destination));
+        int offset = 0;
+        CopyContext(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref _state,1)), destination, ref offset);
+        CopyContext(MemoryMarshal.AsBytes(_registers.AsSpan()), destination, ref offset);
+        CopyContext(MemoryMarshal.AsBytes(_stackPointers.AsSpan()), destination, ref offset);
+        CopyContext(MemoryMarshal.AsBytes(_previousData.AsSpan()), destination, ref offset);
+        CopyContext(MemoryMarshal.AsBytes(_previousAddress.AsSpan()), destination, ref offset);
+        destination[offset++] = _irqLatency ? (byte)1 : (byte)0;
+        return offset;
+    }
+
+    public int LoadContext(ReadOnlySpan<byte> source)
+    {
+        if (source.Length < ContextSize) throw new ArgumentException("The CPU context buffer is too short.", nameof(source));
+        int offset = 0;
+        RestoreContext(source, MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref _state,1)), ref offset);
+        RestoreContext(source, MemoryMarshal.AsBytes(_registers.AsSpan()), ref offset);
+        RestoreContext(source, MemoryMarshal.AsBytes(_stackPointers.AsSpan()), ref offset);
+        RestoreContext(source, MemoryMarshal.AsBytes(_previousData.AsSpan()), ref offset);
+        RestoreContext(source, MemoryMarshal.AsBytes(_previousAddress.AsSpan()), ref offset);
+        _irqLatency = source[offset++] != 0;
+        return offset;
+    }
+
+    private static void CopyContext(ReadOnlySpan<byte> source, Span<byte> destination, ref int offset)
+    {
+        source.CopyTo(destination[offset..]); offset += source.Length;
+    }
+    private static void RestoreContext(ReadOnlySpan<byte> source, Span<byte> destination, ref int offset)
+    {
+        source.Slice(offset,destination.Length).CopyTo(destination); offset += destination.Length;
+    }
 
     public Cpu68000(TBus bus, bool subCpu = false, bool subCpuAddressErrors = false)
     {

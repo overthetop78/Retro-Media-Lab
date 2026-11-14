@@ -12,7 +12,7 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MegaCd.Hardwar
 
 internal sealed partial class Scd
 {
-    private const int FixedContextSize = 512 + 14 + Gfx.ContextSize + Cdc.ContextSize + CdDrive.ContextSize + Pcm.ContextSize + 0x80000 + 0x40000 + 24 + 2 + 78 + 12;
+    private static int FixedContextSize => 512 + 14 + Gfx.ContextSize + Cdc.ContextSize + CdDrive.ContextSize + Pcm.ContextSize + 0x80000 + 0x40000 + 24 + 2 + Cpu68000<Scd>.ContextSize;
     public int ContextSize => FixedContextSize + (cd_boot == 0 ? 0 : _host.MdCartridgeContextSize);
     private static void Put32(Span<byte> state, ref int offset, uint value)
     { BinaryPrimitives.WriteUInt32LittleEndian(state[offset..], value); offset += 4; }
@@ -44,10 +44,7 @@ internal sealed partial class Scd
         wordRam.CopyTo(state[offset..]); offset += wordRam.Length;
         SavePolling(state, ref offset, main); SavePolling(state, ref offset, sub);
         Put16(state, ref offset, BinaryPrimitives.ReadUInt16LittleEndian(memory_map[cd_boot].Data.Span[0x72..]));
-        for (int i = 0; i < 16; i++) Put32(state, ref offset, _cpu.GetRegister((Cpu68000Register)i));
-        Put32(state, ref offset, _cpu.GetRegister(Cpu68000Register.PC)); Put16(state, ref offset, (ushort)_cpu.GetRegister(Cpu68000Register.SR));
-        Put32(state, ref offset, _cpu.GetRegister(Cpu68000Register.USP)); Put32(state, ref offset, _cpu.GetRegister(Cpu68000Register.ISP));
-        Put32(state, ref offset, unchecked((uint)sub.cycles)); Put32(state, ref offset, sub.int_level); Put32(state, ref offset, sub.stopped);
+        offset += _cpu.SaveContext(state[offset..]);
         if (cd_boot != 0) offset += _host.SaveMdCartridgeContext(state[offset..]);
         return offset;
     }
@@ -67,10 +64,7 @@ internal sealed partial class Scd
         RestoreMemoryMap();
         LoadPolling(state, ref offset, ref main); LoadPolling(state, ref offset, ref sub);
         BinaryPrimitives.WriteUInt16LittleEndian(memory_map[cd_boot].Data.Span[0x72..], Get16(state, ref offset));
-        for (int i = 0; i < 16; i++) _cpu.SetRegister((Cpu68000Register)i, Get32(state, ref offset));
-        _cpu.SetRegister(Cpu68000Register.PC, Get32(state, ref offset)); _cpu.SetRegister(Cpu68000Register.SR, Get16(state, ref offset));
-        _cpu.SetRegister(Cpu68000Register.USP, Get32(state, ref offset)); _cpu.SetRegister(Cpu68000Register.ISP, Get32(state, ref offset));
-        sub.cycles = unchecked((int)Get32(state, ref offset)); sub.int_level = Get32(state, ref offset); sub.stopped = Get32(state, ref offset);
+        offset += _cpu.LoadContext(state[offset..]);
         if (cd_boot != 0) offset += _host.LoadMdCartridgeContext(state[offset..]);
         return offset;
     }

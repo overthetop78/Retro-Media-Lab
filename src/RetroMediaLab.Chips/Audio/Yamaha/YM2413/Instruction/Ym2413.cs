@@ -4,6 +4,14 @@ namespace RetroMediaLab.Chips.Audio.Yamaha.YM2413.Instruction;
 
 public sealed partial class Ym2413
 {
+    private readonly int[] _channelVolumes = [100, 100, 100, 100, 100, 100, 100, 100, 100];
+    public Span<int> ChannelVolumes => _channelVolumes;
+    private void MixChannel(int channel)
+    {
+        int previous = output[0];
+        chan_calc(new ArrayPointer<YM2413_OPLL_CH>(ym2413.P_CH,channel));
+        output[0] = previous + (output[0] - previous) * _channelVolumes[channel] / 100;
+    }
     private const double M_PI = Math.PI;
     private readonly YM2413 ym2413 = new();
     private readonly int[] tl_tab = new int[11 * 2 * 256];

@@ -46,6 +46,8 @@ public sealed class CueSheetReader
                     case CueSheetConstants.Track:
                         if (currentFile is null) throw new InvalidDataException("TRACK appears before FILE.");
                         currentTrack = ParseTrack(argument);
+                        foreach (var pair in currentFile.PendingRemarks) currentTrack.Metadata[pair.Key] = pair.Value;
+                        currentFile.PendingRemarks.Clear();
                         currentFile.Tracks.Add(currentTrack);
                         break;
                     case CueSheetConstants.Index:
@@ -73,7 +75,11 @@ public sealed class CueSheetReader
                         AddMetadata(currentTrack?.Metadata ?? sheetMetadata, command, ParseText(argument));
                         break;
                     case CueSheetConstants.Rem:
-                        ParseRemark(argument, currentTrack?.Metadata ?? sheetMetadata);
+                        var remarkName = argument.Split([' ', '\t'],2,StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                        var targetMetadata = currentTrack?.Metadata
+                            ?? (currentFile is not null && (remarkName?.Equals("LOOP",StringComparison.OrdinalIgnoreCase)==true || remarkName?.Equals("NOLOOP",StringComparison.OrdinalIgnoreCase)==true)
+                                ? currentFile.PendingRemarks : sheetMetadata);
+                        ParseRemark(argument, targetMetadata);
                         break;
                     default:
                         throw new NotSupportedException($"Unsupported CUE command '{command}'.");
@@ -98,10 +104,12 @@ public sealed class CueSheetReader
         {
             CueSheetConstants.BinaryFile => CueFileKind.Binary,
             CueSheetConstants.WaveFile => CueFileKind.WavePcm,
+            CueSheetConstants.VorbisFile => CueFileKind.Vorbis,
             _ => throw new NotSupportedException($"Unsupported CUE file type '{type}'.")
         };
         var typeOffset = argument.LastIndexOf(tokens[^1], StringComparison.OrdinalIgnoreCase);
         var path = ParseText(argument[..typeOffset].Trim());
+        if (System.IO.Path.GetExtension(path).Equals(DiskImageFileExtensions.Ogg,StringComparison.OrdinalIgnoreCase)) kind = CueFileKind.Vorbis;
         return (RequireValue(path, CueSheetConstants.File), kind);
     }
 
@@ -151,6 +159,13 @@ public sealed class CueSheetReader
     private static void ParseRemark(string argument, IDictionary<string, string> metadata)
     {
         var separator = argument.IndexOfAny([' ', '\t']);
+        var remarkName = (separator < 0 ? argument : argument[..separator]).ToUpperInvariant();
+        if (remarkName is "LOOP" or "NOLOOP")
+        {
+            metadata.Remove("REM:LOOP"); metadata.Remove("REM:NOLOOP");
+            metadata["REM:" + remarkName] = separator < 0 ? string.Empty : ParseText(argument[(separator+1)..].Trim());
+            return;
+        }
         if (separator <= 0) throw new InvalidDataException("REM requires a name and value.");
         var name = argument[..separator].ToUpperInvariant();
         AddMetadata(metadata, $"{CueSheetConstants.Rem}:{name}", ParseText(argument[(separator + 1)..].Trim()));
@@ -221,6 +236,7 @@ public sealed class CueSheetReader
         public string DeclaredPath { get; } = declaredPath;
         public CueFileKind Kind { get; } = kind;
         public List<TrackBuilder> Tracks { get; } = [];
+        public Dictionary<string,string> PendingRemarks { get; } = new(StringComparer.OrdinalIgnoreCase);
 
         public CueFileDescriptor Build() => new(DeclaredPath, Kind, Tracks.Select(track => track.Build()).ToArray());
     }

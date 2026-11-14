@@ -19,9 +19,9 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
 
 internal abstract partial class SegaBoard
 {
-    public const string StateVersion = "SEGAEMU 00000001";
+    public const string StateVersion = "SEGAEMU 00000002";
     private static int Z80ContextSize => IntPtr.Size == 8 ? 88 : 76;
-    public int StateSize => 17 + (SystemHardware.IsSixteenBit(system_hw) ? 0x12000 + 5 + 90 : 0x2000) +
+    public int StateSize => 17 + (SystemHardware.IsSixteenBit(system_hw) ? 0x12000 + 5 + Cpu68000<SegaBoard>.ContextSize : 0x2000) +
         16 + Vdp.ContextSize + _sound.ContextSize + Z80ContextSize +
         (system_hw == SystemHardware.MegaCd ? 4 + _cd.ContextSize : SystemHardware.IsSixteenBit(system_hw) ? _md.ContextSize : _sms.ContextSize);
 
@@ -30,7 +30,7 @@ internal abstract partial class SegaBoard
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (state.Length < StateSize) throw new ArgumentException("State buffer is too short.", nameof(state));
         int offset = 0;
-        WriteStateBytes(state, ref offset, "SEGAEMU 00000001"u8); state[offset++] = system_hw;
+        WriteStateBytes(state, ref offset, "SEGAEMU 00000002"u8); state[offset++] = system_hw;
         bool md = SystemHardware.IsSixteenBit(system_hw);
         WriteStateBytes(state, ref offset, work_ram.AsSpan(0, md ? 65536 : 8192));
         if (md)
@@ -43,13 +43,7 @@ internal abstract partial class SegaBoard
         offset += _sound.SaveContext(state[offset..]);
         if (md)
         {
-            for (int i = 0; i < 16; i++) PutState32(state, ref offset, _mainCpu.GetRegister((Cpu68000Register)i));
-            PutState32(state, ref offset, _mainCpu.GetRegister(Cpu68000Register.PC));
-            BinaryPrimitives.WriteUInt16LittleEndian(state[offset..], (ushort)_mainCpu.GetRegister(Cpu68000Register.SR)); offset += 2;
-            PutState32(state, ref offset, _mainCpu.GetRegister(Cpu68000Register.USP));
-            PutState32(state, ref offset, _mainCpu.GetRegister(Cpu68000Register.ISP));
-            PutState32(state, ref offset, unchecked((uint)main.cycles));
-            PutState32(state, ref offset, main.int_level); PutState32(state, ref offset, main.stopped);
+            offset += _mainCpu.SaveContext(state[offset..]);
         }
         SaveZ80(state.Slice(offset, Z80ContextSize)); offset += Z80ContextSize;
         if (system_hw == SystemHardware.MegaCd)
@@ -64,8 +58,9 @@ internal abstract partial class SegaBoard
     public int LoadState(Span<byte> state)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (state.Length < 17 || !state[..16].SequenceEqual("SEGAEMU 00000001"u8) || state[16] != system_hw) return 0;
+        if (state.Length < StateSize || !state[..16].SequenceEqual("SEGAEMU 00000002"u8) || state[16] != system_hw) return 0;
         string version = Encoding.ASCII.GetString(state[..16]);
+        byte hardwareVersion = _input.IoRegisters.Span[0];
         int offset = 17;
         bool completed = false;
         try
@@ -89,19 +84,13 @@ internal abstract partial class SegaBoard
                 memory_map[0xa0].write16 = zstate == 3 ? z80_write_word : m68k_unused_16_w;
             }
             ReadStateBytes(state, ref offset, _input.IoRegisters.Span);
-            _input.IoRegisters.Span[0] = md ? (byte)(region_code | 0x20 | config.bios & 1) : (byte)(0x80 | region_code >> 1);
+            _input.IoRegisters.Span[0] = hardwareVersion;
             offset += _vdp.LoadContext(state[offset..]);
             offset += _sound.LoadContext(state[offset..]);
             psg_config(0, psg_preamp, md ? 0xffu : _input.IoRegisters.Span[6]);
             if (md)
             {
-                for (int i = 0; i < 16; i++) _mainCpu.SetRegister((Cpu68000Register)i, GetState32(state, ref offset));
-                _mainCpu.SetRegister(Cpu68000Register.PC, GetState32(state, ref offset));
-                _mainCpu.SetRegister(Cpu68000Register.SR, BinaryPrimitives.ReadUInt16LittleEndian(state[offset..])); offset += 2;
-                _mainCpu.SetRegister(Cpu68000Register.USP, GetState32(state, ref offset));
-                _mainCpu.SetRegister(Cpu68000Register.ISP, GetState32(state, ref offset));
-                main.cycles = unchecked((int)GetState32(state, ref offset));
-                main.int_level = GetState32(state, ref offset); main.stopped = GetState32(state, ref offset);
+                offset += _mainCpu.LoadContext(state[offset..]);
             }
             LoadZ80(state.Slice(offset, Z80ContextSize)); offset += Z80ContextSize;
             if (system_hw == SystemHardware.MegaCd)

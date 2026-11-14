@@ -8,6 +8,7 @@ public sealed partial class Vdp
     {
         public int gg_extra, render, lcd, enhanced_vscroll_limit, overscan, bios, enhanced_vscroll, ntsc;
         public int PixelDepth = 32;
+        public bool DisableSpriteLimit;
         public NtscSetup MdNtscSetup = NtscFilter.Composite(true), SmsNtscSetup = NtscFilter.Composite(false);
     }
     private struct Viewport { public int x, y, w, h, ow, oh, changed; }
@@ -41,7 +42,8 @@ public sealed partial class Vdp
     private readonly uint[] pixel_lut = new uint[3 * 0x200];
     private readonly uint[] pixel_lut_m4 = new uint[0x40];
     private readonly byte[] linebuf = new byte[2 * 0x200];
-    private readonly ObjectInfo[] obj_info = new ObjectInfo[2 * 20];
+    private const int SpriteBufferStride = 80;
+    private readonly ObjectInfo[] obj_info = new ObjectInfo[2 * SpriteBufferStride];
     private readonly byte[] object_count = new byte[2];
     private readonly Clip[] clip = new Clip[2];
     private byte spr_ovr;

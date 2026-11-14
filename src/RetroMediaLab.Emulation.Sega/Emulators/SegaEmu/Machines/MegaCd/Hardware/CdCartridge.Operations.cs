@@ -131,7 +131,7 @@ internal sealed partial class CdCartridge
             if ((boot != 0)) {
             id = unchecked((byte)(0));
             } else {
-            id = unchecked((byte)(6));
+            id = ConfiguredRamId;
             }
             if ((id != 0)) {
             ClearBackupMemory();

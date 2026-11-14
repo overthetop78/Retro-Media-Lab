@@ -23,6 +23,7 @@ internal sealed class MediaEngineDisc : ICdDriveMedia, IDisposable
     public IReadOnlyList<CdTrack> Tracks => _driveTracks;
     public int LeadOutLba { get; }
     public bool HasSubchannel => _tracks.Any(track => track.HasSubchannels);
+    public bool HasLoopInformation => _tracks.Any(track => track.LoopMode != 0);
     public string FormatId => _image.FormatId;
 
     private MediaEngineDisc(OpticalDiscSession image, CancellationToken cancellation)
@@ -46,19 +47,20 @@ internal sealed class MediaEngineDisc : ICdDriveMedia, IDisposable
             int end = checked(start + (int)track.SectorCount);
             int type = track.IsAudio ? 0 : track.Mode is OpticalTrackMode.Mode2Raw2352 or OpticalTrackMode.Mode2Data2336 or
                 OpticalTrackMode.Mode2Form1Data2048 or OpticalTrackMode.Mode2Form2Data2324 or OpticalTrackMode.Mode2FormMixData2336 ? 2 : 1;
-            _driveTracks[i] = new(start,end,type);
+            _driveTracks[i] = new(start,end,type,track.LoopMode,track.LoopOffset);
         }
         LeadOutLba = checked(_driveTracks[^1].EndLba + (int)_tracks[^1].PostgapSectors);
         int maximumSector = _tracks.Max(track => track.StoredSectorSize);
         _dataSector = new byte[maximumSector]; _audioSector = new byte[maximumSector];
     }
 
-    public static async Task<MediaEngineDisc> OpenAsync(string path, CancellationToken cancellation)
+    public static async Task<MediaEngineDisc> OpenAsync(string path, CancellationToken cancellation, bool precache = false)
     {
-        OpticalDiscSession image = await OpticalDiscSession.OpenAsync(path,cancellation).ConfigureAwait(false);
+        OpticalDiscSession image = await OpticalDiscSession.OpenAsync(path,cancellation,includeCompanionAudio:true).ConfigureAwait(false);
         bool transferred = false;
         try
         {
+            if (precache) await image.PrecacheAsync(cancellation).ConfigureAwait(false);
             MediaEngineDisc disc = new(image, cancellation); transferred = true; return disc;
         }
         finally { if (!transferred) image.Dispose(); }
@@ -79,13 +81,19 @@ internal sealed class MediaEngineDisc : ICdDriveMedia, IDisposable
         long relative = lba - _driveTracks[index].StartLba;
         ReadSector(index, relative, _dataSector, audio: false);
         int offset = track.UserDataOffset;
+        int available = track.UserDataLength;
         if (!subheader.IsEmpty)
         {
-            int headerOffset = track.StoredSectorSize >= 2352 ? 16 : 0;
-            _dataSector.AsSpan(headerOffset, subheader.Length).CopyTo(subheader);
-            offset = headerOffset + 8;
+            if (_driveTracks[index].Type == 2)
+            {
+                int headerOffset = track.StoredSectorSize >= 2352 ? 16 : 0;
+                _dataSector.AsSpan(headerOffset, subheader.Length).CopyTo(subheader);
+                offset = headerOffset + 8;
+                available = Math.Min(2328,track.StoredSectorSize - offset);
+            }
+            else subheader.Clear();
         }
-        int count = Math.Min(destination.Length, track.StoredSectorSize - offset);
+        int count = Math.Min(destination.Length, available);
         _dataSector.AsSpan(offset, count).CopyTo(destination); destination[count..].Clear();
     }
     public int ReadAudio(int trackIndex, long sampleFrame, Span<short> destination)

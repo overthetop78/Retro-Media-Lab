@@ -57,7 +57,7 @@ public sealed partial class Cdd : IDisposable
             if (source.EndLba < source.StartLba || source.Type is < 0 or > 2) throw new ArgumentException("Invalid CD track.", nameof(media));
             track_t target = cdd.toc.tracks[i];
             target.start = source.StartLba; target.end = source.EndLba; target.type = source.Type;
-            target.loopEnabled = source.LoopEnabled ? 1 : 0; target.loopOffset = source.LoopOffset;
+            target.loopEnabled = source.LoopMode; target.loopOffset = source.LoopOffset;
         }
         cdd.toc.last = media.Tracks.Count; cdd.toc.end = media.LeadOutLba;
         cdd.toc.tracks[cdd.toc.last].start = media.LeadOutLba;

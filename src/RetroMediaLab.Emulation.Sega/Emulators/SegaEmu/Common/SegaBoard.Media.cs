@@ -21,9 +21,10 @@ internal abstract partial class SegaBoard
         MediaEngineDisc? disc = null; bool transferred = false;
         try
         {
-            disc = MediaEngineDisc.OpenAsync(path,_cancellation).GetAwaiter().GetResult();
+            disc = MediaEngineDisc.OpenAsync(path,_cancellation,config.PrecacheCd).GetAwaiter().GetResult();
             disc.ReadHeader(header[..0x210]);
             // A plain cartridge must not instantiate the Mega-CD hardware just to probe its file name.
+            _cd.Drive.PrecacheImages = config.PrecacheCd;
             _cd.Drive.Mount(disc); transferred = true; return 1;
         }
         catch (Exception error) when (error is IOException or NotSupportedException or AggregateException)

@@ -54,7 +54,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, ICpu68000Bus, IVdpBus, I
     private Scd? _cdComponent;
     private Scd _cd => _cdComponent ??= new(this,_addresses,_pcmAudio,_cdAudio,_openFile,_cancellation);
     private CdCartridge? _cdCartridgeComponent;
-    private CdCartridge _cdCartridge => _cdCartridgeComponent ??= new(this,_md.Initialize,_backup,_addresses);
+    private CdCartridge _cdCartridge => _cdCartridgeComponent ??= new(this,_md.Initialize,_backup,_addresses) { ConfiguredRamId = config.CdCartridgeId };
     private MegaSd? _megaSdComponent;
     private MegaSd _megaSd => _megaSdComponent ??= new(this,cart,_backup,_addresses);
     private Yx5200? _yx5200Component;

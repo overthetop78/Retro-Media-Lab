@@ -24,9 +24,13 @@ internal abstract partial class SegaBoard
     public void RefreshConfiguration(int overclockPercent = 100)
     {
         main.aerr_enabled = config.addr_error; if (_cdComponent is not null) sub.aerr_enabled = config.addr_error;
-        _cd.PcmChip.Volume = config.pcm_volume;
-        _cd.Drive.AudioVolume = config.cdda_volume;
-        _cd.Drive.LatencyFactor = config.cd_latency;
+        if (_cdComponent is not null)
+        {
+            _cdComponent.PcmChip.Volume = config.pcm_volume;
+            _cdComponent.Drive.AudioVolume = config.cdda_volume;
+            _cdComponent.Drive.LatencyFactor = config.cd_latency;
+        }
+        _sound.ConfigureChannels();
         _sound.Psg.Configure(0, config.Sound.PsgPreamp, SystemHardware.IsSixteenBit(system_hw) ? 0xffu : _input.IoRegisters.Span[6]);
         _sound.ConfigureEqualizer();
         _vdp.RefreshVideoConfiguration();
@@ -34,7 +38,8 @@ internal abstract partial class SegaBoard
         _vdp.ViewportX = system_hw == SystemHardware.GameGear && config.Video.gg_extra == 0
             ? (config.Video.overscan & 2) != 0 ? 14 : -48 : (config.Video.overscan & 2) * 7;
         if (overclockPercent <= 0) throw new ArgumentOutOfRangeException(nameof(overclockPercent));
-        _mainCpu.SetCycleRatio(SystemHardware.IsSixteenBit(system_hw) ? (100 << 16) / overclockPercent : 1 << 16, 16);
+        if (_mainCpuComponent is not null)
+            _mainCpuComponent.SetCycleRatio(SystemHardware.IsSixteenBit(system_hw) ? (100 << 16) / overclockPercent : 1 << 16, 16);
         _z80.SetCycleRatio(SystemHardware.IsSixteenBit(system_hw) ? 1u << 16 : (uint)((100 << 16) / overclockPercent), 16);
     }
     public void ConfigureInputPort(int port, byte system, byte padType)

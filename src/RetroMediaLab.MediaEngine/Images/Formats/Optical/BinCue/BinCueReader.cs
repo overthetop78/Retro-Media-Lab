@@ -52,6 +52,13 @@ public sealed class BinCueReader : IMediaImageReader
                     if (file.Tracks.Any(track => track.Mode != OpticalTrackMode.Audio)) return false;
                     _ = WavePcmRandomAccessData.Open(path);
                 }
+                else if (file.Kind == CueFileKind.Vorbis)
+                {
+                    if (file.Tracks.Any(track => track.Mode != OpticalTrackMode.Audio)) return false;
+                    VorbisPcmRandomAccessData? probe=null;
+                    try { probe=OpenVorbisAudio(path,cancellationToken); }
+                    finally { probe?.Dispose(); }
+                }
             }
             return true;
         }
@@ -82,16 +89,17 @@ public sealed class BinCueReader : IMediaImageReader
             {
                 CueFileKind.Binary => new FileRandomAccessData(path),
                 CueFileKind.WavePcm => WavePcmRandomAccessData.Open(path),
+                CueFileKind.Vorbis => OpenVorbisAudio(path,cancellationToken),
                 _ => throw new NotSupportedException($"Unsupported CUE source kind '{file.Kind}'.")
             };
-            if (file.Kind == CueFileKind.WavePcm
+            if (file.Kind is CueFileKind.WavePcm or CueFileKind.Vorbis
                 && file.Tracks.Any(track => track.Mode != OpticalTrackMode.Audio))
                 throw new InvalidDataException("WAVE CUE files can contain only AUDIO tracks.");
             var sectorSizes = file.Tracks.Select(track => GetStoredSectorSize(track.Mode)).Distinct().ToArray();
             if (sectorSizes.Length != 1)
                 throw new NotSupportedException("Tracks with different stored sector sizes must use separate CUE files in the initial profile.");
             var sectorSize = sectorSizes[0];
-            if (source.Length == 0 || source.Length % sectorSize != 0)
+            if (source.Length < sectorSize || file.Kind != CueFileKind.Vorbis && source.Length % sectorSize != 0)
                 throw new InvalidDataException($"CUE track file '{file.DeclaredPath}' is not aligned to {sectorSize}-byte sectors.");
             var fileSectorCount = source.Length / sectorSize;
             var starts = file.Tracks.Select(GetIndexOnePosition).ToArray();
@@ -125,14 +133,15 @@ public sealed class BinCueReader : IMediaImageReader
                     sheet.CatalogNumber,
                     declaration.Isrc,
                     storedPregapSectors: storedPregap,
-                    storedPregapSourceOffset: storedPregap > 0 ? checked((start - storedPregap) * sectorSize) : null));
+                    storedPregapSourceOffset: storedPregap > 0 ? checked((start - storedPregap) * sectorSize) : null)
+                    { Metadata = declaration.Metadata });
                 firstSector = checked(firstSector + end - start);
             }
 
             associatedPaths.Add(path);
         }
 
-        var sourceDescriptor = new MediaSourceDescriptor(context.Source.PrimaryPath, associatedPaths, context.Source.KnownLength, context.Source.RequestedFormatId);
+        var sourceDescriptor = context.Source with { AssociatedPaths = associatedPaths };
         var representation = new OpticalMediaImageRepresentation(tracks.Sum(track => checked(track.SectorCount * track.UserDataLength)), tracks, associatedFiles: [context.Source.PrimaryPath, .. associatedPaths]);
         return new MediaImageDocument(
             sourceDescriptor,
@@ -153,6 +162,18 @@ public sealed class BinCueReader : IMediaImageReader
         if (Path.IsPathFullyQualified(declaredPath))
             return Path.GetFullPath(declaredPath);
         return Path.GetFullPath(Path.Combine(cueDirectory, declaredPath));
+    }
+
+    private static VorbisPcmRandomAccessData OpenVorbisAudio(string path,CancellationToken cancellation)
+    {
+        VorbisPcmRandomAccessData? source=null; bool transferred=false;
+        try
+        {
+            source=VorbisPcmRandomAccessData.Open(path,cancellation);
+            if (source.Channels!=2 || source.SampleRate!=44100) throw new InvalidDataException("CD audio requires stereo PCM at 44100 Hz.");
+            transferred=true; return source;
+        }
+        finally { if (!transferred) source?.Dispose(); }
     }
 
     private static long GetIndexOnePosition(CueTrackDeclaration track) => track.Indexes.SingleOrDefault(index => index.Number == 1)?.RelativeSector ?? throw new InvalidDataException($"CUE track {track.Number} does not contain INDEX 01.");

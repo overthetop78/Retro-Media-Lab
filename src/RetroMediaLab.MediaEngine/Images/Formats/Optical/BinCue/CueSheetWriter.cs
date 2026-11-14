@@ -25,6 +25,7 @@ public sealed class CueSheetWriter
             {
                 CueFileKind.Binary => CueSheetConstants.BinaryFile,
                 CueFileKind.WavePcm => CueSheetConstants.WaveFile,
+                CueFileKind.Vorbis => CueSheetConstants.VorbisFile,
                 _ => throw new NotSupportedException($"Unsupported CUE file type '{file.Kind}'.")
             };
             await WriteLineAsync(writer, $"{CueSheetConstants.File} {Quote(file.DeclaredPath)} {type}", cancellationToken).ConfigureAwait(false);
@@ -64,7 +65,8 @@ public sealed class CueSheetWriter
                 and not CueSheetConstants.Songwriter
                 && !command.StartsWith(CueSheetConstants.Rem + " ", StringComparison.Ordinal))
                 throw new NotSupportedException($"Unsupported CUE metadata '{pair.Key}'.");
-            await WriteLineAsync(writer, $"{indent}{command} {Quote(pair.Value)}", cancellationToken).ConfigureAwait(false);
+            string value = pair.Key is "REM:LOOP" or "REM:NOLOOP" ? pair.Value : Quote(pair.Value);
+            await WriteLineAsync(writer, $"{indent}{command} {value}".TrimEnd(), cancellationToken).ConfigureAwait(false);
         }
     }
 

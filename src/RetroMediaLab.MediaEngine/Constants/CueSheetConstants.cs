@@ -21,6 +21,7 @@ public static class CueSheetConstants
     public const string Rem = "REM";
     public const string BinaryFile = "BINARY";
     public const string WaveFile = "WAVE";
+    public const string VorbisFile = "OGG";
     public const string AudioTrack = "AUDIO";
     public const string Mode1Data2048 = "MODE1/2048";
     public const string Mode1Raw2352 = "MODE1/2352";

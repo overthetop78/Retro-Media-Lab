@@ -76,7 +76,7 @@ public sealed class BinCueWriter : IMediaImageWriter
             indexes.Add(new OpticalTrackIndex(0, 0));
         indexes.Add(new OpticalTrackIndex(1, track.StoredPregapSectors));
         indexes.AddRange(track.Indexes.Where(index => index.Number > 1).Select(index => new OpticalTrackIndex(index.Number, checked(track.StoredPregapSectors + index.RelativeSector))));
-        return new CueTrackDeclaration(track.TrackNumber, track.Mode, indexes, track.PregapSectors, track.PostgapSectors, track.Flags, track.Isrc);
+        return new CueTrackDeclaration(track.TrackNumber, track.Mode, indexes, track.PregapSectors, track.PostgapSectors, track.Flags, track.Isrc, track.Metadata);
     }
 
     private static IReadOnlyDictionary<string, string> SelectCueMetadata(IReadOnlyDictionary<string, string> metadata)

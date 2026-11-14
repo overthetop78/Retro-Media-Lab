@@ -1,6 +1,9 @@
 using System.Buffers.Binary;
 using System.Collections.Frozen;
 using System.Globalization;
+using System.IO;
+using RetroMediaLab.MediaEngine.Images.Formats.Common.Chd;
+using IMediaRandomAccessData = RetroMediaLab.MediaFileSystems.Interfaces.IMediaRandomAccessData;
 using RetroMediaLab.MediaEngine.Enums;
 using RetroMediaLab.MediaEngine.Constants;
 using RetroMediaLab.MediaEngine.Contracts;
@@ -12,7 +15,7 @@ using RetroMediaLab.MediaEngine.Images.Models.Optical;
 
 namespace RetroMediaLab.MediaEngine.Images.Formats.Optical.Chd;
 
-/// <summary>Reads autonomous, uncompressed CHD V5 CD and DVD images classified by optical metadata.</summary>
+/// <summary>Reads autonomous CHD optical images, including compressed containers, classified by optical metadata.</summary>
 public sealed class ChdOpticalReader : IMediaImageReader
 {
     private static readonly IReadOnlySet<string> SupportedFormatIds = new[] { OpticalImageFormatIds.Chd }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
@@ -45,10 +48,15 @@ public sealed class ChdOpticalReader : IMediaImageReader
     async Task<MediaImageDocument> IMediaImageReader.ReadAsync(MediaRecognitionContext context, CancellationToken cancellationToken)
     {
         var layout = await ReadLayoutAsync(context, cancellationToken).ConfigureAwait(false);
-        var logicalData = new ChdUncompressedRandomAccessData(new FileRandomAccessData(context.Source.PrimaryPath), layout.LogicalBytes, layout.HunkBytes, layout.StoredHunks);
+        IMediaRandomAccessData logicalData = layout.DecodedHunks
+            ? ChdRandomAccessData.Open(context.Source.PrimaryPath,cancellationToken)
+            : new ChdUncompressedRandomAccessData(new FileRandomAccessData(context.Source.PrimaryPath), layout.LogicalBytes, layout.HunkBytes, layout.StoredHunks);
+        bool transferred = false;
+        try
+        {
         var tracks = layout.IsDvd ? CreateDvdTracks(layout, logicalData) : CreateCdTracks(layout, logicalData);
         var logicalLength = tracks.Sum(track => checked(track.SectorCount * track.UserDataLength));
-        return new MediaImageDocument(
+        var document = new MediaImageDocument(
             context.Source,
             OpticalImageFormatIds.Chd,
             MediaKind.Optical,
@@ -57,16 +65,19 @@ public sealed class ChdOpticalReader : IMediaImageReader
             [],
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["version"] = ChdConstants.Version5.ToString(CultureInfo.InvariantCulture),
-                ["compression"] = "none",
+                ["version"] = layout.Version.ToString(CultureInfo.InvariantCulture),
+                ["compression"] = layout.Compression,
                 ["hunkSize"] = layout.HunkBytes.ToString(CultureInfo.InvariantCulture),
                 ["unitSize"] = layout.UnitBytes.ToString(CultureInfo.InvariantCulture),
                 ["trackCount"] = tracks.Count.ToString(CultureInfo.InvariantCulture),
                 ["mediaProfile"] = layout.IsDvd ? "DVD" : "CD"
             });
+        transferred = true; return document;
+        }
+        finally { if (!transferred && logicalData is IDisposable disposable) disposable.Dispose(); }
     }
 
-    private static IReadOnlyList<OpticalTrackDescriptor> CreateDvdTracks(ChdLayout layout, ChdUncompressedRandomAccessData source)
+    private static IReadOnlyList<OpticalTrackDescriptor> CreateDvdTracks(ChdLayout layout, IMediaRandomAccessData source)
     {
         if (layout.TrackMetadata.Count != 0)
             throw new InvalidDataException("A CHD cannot be classified as both CD and DVD.");
@@ -76,7 +87,7 @@ public sealed class ChdOpticalReader : IMediaImageReader
         return [new OpticalTrackDescriptor(1, 1, OpticalTrackMode.DvdData2048, 0, layout.LogicalBytes / OpticalSectorConstants.Data2048Size, OpticalSectorConstants.Data2048Size, 0, OpticalSectorConstants.Data2048Size, source, 0)];
     }
 
-    private static IReadOnlyList<OpticalTrackDescriptor> CreateCdTracks(ChdLayout layout, ChdUncompressedRandomAccessData source)
+    private static IReadOnlyList<OpticalTrackDescriptor> CreateCdTracks(ChdLayout layout, IMediaRandomAccessData source)
     {
         if (layout.TrackMetadata.Count == 0)
             throw new InvalidDataException("The CHD has no supported optical track metadata.");
@@ -132,6 +143,9 @@ public sealed class ChdOpticalReader : IMediaImageReader
         var header = headerMemory.Span;
         if (!header[..ChdOpticalFormat.Signature.Length].SequenceEqual(ChdOpticalFormat.Signature.Span))
             throw new InvalidDataException("The CHD signature is missing.");
+        uint version = BinaryPrimitives.ReadUInt32BigEndian(header[12..16]);
+        if (version != ChdConstants.Version5 || header[16..32].IndexOfAnyExcept((byte)0) >= 0)
+            return await ReadDecodedLayoutAsync(context,cancellationToken).ConfigureAwait(false);
         if (BinaryPrimitives.ReadUInt32BigEndian(header[8..12]) != ChdConstants.Version5HeaderSize
             || BinaryPrimitives.ReadUInt32BigEndian(header[12..16]) != ChdConstants.Version5)
             throw new NotSupportedException("Only CHD V5 images are supported.");
@@ -162,6 +176,22 @@ public sealed class ChdOpticalReader : IMediaImageReader
 
         var metadata = await ReadOpticalMetadataAsync(context, metadataOffset, cancellationToken).ConfigureAwait(false);
         return new ChdLayout(logicalBytes, hunkBytes, unitBytes, storedHunks, metadata.Tracks, metadata.IsDvd);
+    }
+
+    private static async ValueTask<ChdLayout> ReadDecodedLayoutAsync(MediaRecognitionContext context,CancellationToken cancellationToken)
+    {
+        Stream? stream = null; ChdContainer? container = null;
+        try
+        {
+            stream = new FileStream(context.Source.PrimaryPath,FileMode.Open,FileAccess.Read,FileShare.Read,65536,FileOptions.RandomAccess);
+            container = ChdContainer.Open(stream,leaveOpen:false,cancellationToken);
+            var metadata = await ReadOpticalMetadataAsync(context,container.MetadataOffset,cancellationToken).ConfigureAwait(false);
+            if (metadata.Tracks.Count == 0 && !metadata.IsDvd) throw new InvalidDataException("The CHD has no optical metadata.");
+            int unit = container.Version==5 ? container.UnitBytes : metadata.IsDvd ? OpticalSectorConstants.Data2048Size : ChdConstants.CdFrameSize;
+            return new ChdLayout(container.LogicalBytes,container.HunkBytes,unit,[],metadata.Tracks,metadata.IsDvd,
+                true,container.Version,string.IsNullOrEmpty(container.Compression) ? "none" : container.Compression);
+        }
+        finally { try { container?.Dispose(); } finally { stream?.Dispose(); } }
     }
 
     private static async ValueTask<(IReadOnlyList<ChdOpticalTrackMetadata> Tracks, bool IsDvd)> ReadOpticalMetadataAsync(MediaRecognitionContext context, long firstOffset, CancellationToken cancellationToken)
@@ -288,5 +318,6 @@ public sealed class ChdOpticalReader : IMediaImageReader
         return result;
     }
 
-    private sealed record ChdLayout(long LogicalBytes, int HunkBytes, int UnitBytes, IReadOnlyList<uint> StoredHunks, IReadOnlyList<ChdOpticalTrackMetadata> TrackMetadata, bool IsDvd);
+    private sealed record ChdLayout(long LogicalBytes, int HunkBytes, int UnitBytes, IReadOnlyList<uint> StoredHunks, IReadOnlyList<ChdOpticalTrackMetadata> TrackMetadata, bool IsDvd,
+        bool DecodedHunks = false,int Version = (int)ChdConstants.Version5,string Compression = "none");
 }

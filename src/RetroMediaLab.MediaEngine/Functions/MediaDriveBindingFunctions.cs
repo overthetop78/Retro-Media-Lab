@@ -71,7 +71,7 @@ internal static class MediaDriveBindingFunctions
                 offset => new(0, 0, LogicalBlock: track.FirstSector + (offset - track.SubchannelSourceOffset) / track.SubchannelStride),
                 offset => track.SubchannelStride - (offset - track.SubchannelSourceOffset) % track.SubchannelStride, writing),
             track.SubchannelSourceOffset, track.SubchannelBytesPerSector, track.StoredPregapSectors,
-            track.StoredPregapSourceOffset, track.SubchannelStride)).ToArray();
+            track.StoredPregapSourceOffset, track.SubchannelStride) { Metadata = track.Metadata }).ToArray();
         return new(image.LogicalLength, tracks, image.LayerCount, image.FaceCount, image.AssociatedFiles);
     }
 }

@@ -4,6 +4,8 @@ namespace RetroMediaLab.Chips.Audio.Yamaha.YM2612.Instruction;
 
 public sealed partial class Ym2612
 {
+    private readonly int[] _channelVolumes = [100, 100, 100, 100, 100, 100];
+    public Span<int> ChannelVolumes => _channelVolumes;
     public const int Discrete = 0, Integrated = 1, Enhanced = 2;
     private const int YM2612_DISCRETE = Discrete, YM2612_INTEGRATED = Integrated, YM2612_ENHANCED = Enhanced;
     private const double M_PI = Math.PI;

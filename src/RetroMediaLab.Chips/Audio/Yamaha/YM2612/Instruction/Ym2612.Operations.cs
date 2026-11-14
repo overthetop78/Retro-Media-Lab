@@ -843,29 +843,22 @@ public sealed partial class Ym2612
             if ((out_fm[(int)(3)] > 8191)) out_fm[(int)(3)] = 8191; else if ((out_fm[(int)(3)] < (-8192))) out_fm[(int)(3)] = (-8192);
             if ((out_fm[(int)(4)] > 8191)) out_fm[(int)(4)] = 8191; else if ((out_fm[(int)(4)] < (-8192))) out_fm[(int)(4)] = (-8192);
             if ((out_fm[(int)(5)] > 8191)) out_fm[(int)(5)] = 8191; else if ((out_fm[(int)(5)] < (-8192))) out_fm[(int)(5)] = (-8192);
-            lt = unchecked((int)((unchecked((uint)(out_fm[(int)(0)])) & ym2612.OPN.pan[(int)(0)])));
-            rt = unchecked((int)((unchecked((uint)(out_fm[(int)(0)])) & ym2612.OPN.pan[(int)(1)])));
-            lt += unchecked((int)((unchecked((uint)(out_fm[(int)(1)])) & ym2612.OPN.pan[(int)(2)])));
-            rt += unchecked((int)((unchecked((uint)(out_fm[(int)(1)])) & ym2612.OPN.pan[(int)(3)])));
-            lt += unchecked((int)((unchecked((uint)(out_fm[(int)(2)])) & ym2612.OPN.pan[(int)(4)])));
-            rt += unchecked((int)((unchecked((uint)(out_fm[(int)(2)])) & ym2612.OPN.pan[(int)(5)])));
-            lt += unchecked((int)((unchecked((uint)(out_fm[(int)(3)])) & ym2612.OPN.pan[(int)(6)])));
-            rt += unchecked((int)((unchecked((uint)(out_fm[(int)(3)])) & ym2612.OPN.pan[(int)(7)])));
-            lt += unchecked((int)((unchecked((uint)(out_fm[(int)(4)])) & ym2612.OPN.pan[(int)(8)])));
-            rt += unchecked((int)((unchecked((uint)(out_fm[(int)(4)])) & ym2612.OPN.pan[(int)(9)])));
-            lt += unchecked((int)((unchecked((uint)(out_fm[(int)(5)])) & ym2612.OPN.pan[(int)(10)])));
-            rt += unchecked((int)((unchecked((uint)(out_fm[(int)(5)])) & ym2612.OPN.pan[(int)(11)])));
-            if ((chip_type == YM2612_DISCRETE)) {
-            int i__1 = default;
-            for (i__1 = 0; (i__1 < 6); i__1++) {
-            if ((out_fm[(int)(i__1)] < 0)) {
-            lt -= unchecked((int)(((unchecked((uint)(4)) - (ym2612.OPN.pan[(int)(((2 * i__1) + 0))] & unchecked((uint)(1)))) << 5)));
-            rt -= unchecked((int)(((unchecked((uint)(4)) - (ym2612.OPN.pan[(int)(((2 * i__1) + 1))] & unchecked((uint)(1)))) << 5)));
-            } else {
-            lt += (4 << 5);
-            rt += (4 << 5);
-            }
-            }
+            lt = rt = 0;
+            for (int channel = 0; channel < 6; channel++) {
+                int value = out_fm[channel];
+                int left = (int)((uint)value & ym2612.OPN.pan[channel * 2]);
+                int right = (int)((uint)value & ym2612.OPN.pan[channel * 2 + 1]);
+                if (chip_type == YM2612_DISCRETE) {
+                    if (value < 0) {
+                        left -= (int)((4u - (ym2612.OPN.pan[channel * 2] & 1u)) << 5);
+                        right -= (int)((4u - (ym2612.OPN.pan[channel * 2 + 1] & 1u)) << 5);
+                    } else {
+                        left += 4 << 5;
+                        right += 4 << 5;
+                    }
+                }
+                lt += left * _channelVolumes[channel] / 100;
+                rt += right * _channelVolumes[channel] / 100;
             }
             (buffer++)[0] = lt;
             (buffer++)[0] = rt;

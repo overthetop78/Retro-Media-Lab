@@ -6,6 +6,28 @@ namespace RetroMediaLab.Chips.Tests.SegaEmu;
 
 public sealed class InstructionCpuTests
 {
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void M68000FullContextResumesTheSameInstructionSequence(bool subCpu)
+    {
+        M68000Bus bus = new(); bus.Long(0,0x8000); bus.Long(4,0x100);
+        new byte[] {0x52,0x80,0x60,0xfc}.CopyTo(bus.Memory,0x100);
+        Cpu68000<M68000Bus> cpu = new(bus,subCpu); bus.Cpu = cpu;
+        try
+        {
+            cpu.Reset(); cpu.Run(1000);
+            byte[] saved = new byte[Cpu68000<M68000Bus>.ContextSize]; cpu.SaveContext(saved);
+            uint before = cpu.GetRegister(Cpu68000Register.D0);
+            cpu.Run(2000);
+            Assert.True(cpu.GetRegister(Cpu68000Register.D0) > before);
+            byte[] expected = new byte[saved.Length]; cpu.SaveContext(expected);
+            cpu.LoadContext(saved); cpu.Run(2000);
+            byte[] replay = new byte[saved.Length]; cpu.SaveContext(replay);
+            Assert.Equal(expected,replay);
+        }
+        finally { cpu.Halt(); bus.Cpu = null; }
+    }
+
     [Fact]
     public void M68000ExecutesArithmeticAndAbsoluteMemoryWrite()
     {

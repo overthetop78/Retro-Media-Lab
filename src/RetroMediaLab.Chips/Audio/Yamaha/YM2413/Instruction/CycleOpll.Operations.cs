@@ -728,6 +728,11 @@ public sealed partial class CycleOpll
             }
             if ((!((unchecked((int)(chip[0].rm_enable)) & 128) != 0))) routput = unchecked((short)(0));
             chip[0].ch_out = unchecked((short)(((ismod1 != 0) ? unchecked((int)(routput)) : (unchecked((int)(output)) >> 3))));
+            // The output pipeline is seven channel slots behind the register scan.
+            int outputChannel = ismod1 == 0 ? (int)((chip[0].cycles + 7) % 9) : chip[0].cycles switch {
+                2 or 8 => 7, 3 or 9 => 8, _ => 6
+            };
+            chip[0].ch_out = (short)(chip[0].ch_out * _channelVolumes[outputChannel] / 100);
         }
     }
     private void OPLL_DoRhythm(ArrayPointer<opll_t> chip)

@@ -4,5 +4,6 @@ namespace RetroMediaLab.MediaEngine.Enums;
 public enum CueFileKind
 {
     Binary,
-    WavePcm
+    WavePcm,
+    Vorbis
 }

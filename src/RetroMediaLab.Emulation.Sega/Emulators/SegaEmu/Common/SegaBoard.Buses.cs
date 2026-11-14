@@ -76,7 +76,7 @@ internal abstract partial class SegaBoard
     private void z80_init(int index, Func<int, int> callback) => _z80 = new(this, callback);
     private void m68k_run(uint cycles) => _mainCpu.Run(cycles);
     private void m68k_pulse_reset() => _mainCpu.Reset();
-    private void m68k_pulse_halt() => _mainCpu.Halt();
+    private void m68k_pulse_halt() => _mainCpuComponent?.Halt();
     private uint m68k_cycles() => unchecked((uint)_mainCpu.InstructionCycles);
     private void m68k_update_irq(uint mask) => _mainCpu.UpdateIrq(mask);
     private void m68k_set_irq(uint level) => _mainCpu.SetIrq(level);

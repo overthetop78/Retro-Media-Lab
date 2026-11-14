@@ -12,8 +12,9 @@ internal sealed class CdDrive : IDisposable
     private readonly CancellationToken _cancellation;
     private MediaEngineDisc? _media;
     private bool _disposed;
+    public bool PrecacheImages { get; set; }
     public uint Cycles { get => _controller.Cycles; set => _controller.Cycles = value; }
-    public int Loaded => _controller.Loaded;
+    public int Loaded => _controller.Loaded == 0 ? 0 : _media?.HasLoopInformation == true ? 2 : 1;
     public int Index { get => _controller.Index; set => _controller.Index = value; }
     public int Lba { get => _controller.Lba; set => _controller.Lba = value; }
     public byte Status { get => _controller.Status; set => _controller.Status = value; }
@@ -35,7 +36,7 @@ internal sealed class CdDrive : IDisposable
         MediaEngineDisc? next = null; bool transferred = false;
         try
         {
-            next = MediaEngineDisc.OpenAsync(path,_cancellation).GetAwaiter().GetResult();
+            next = MediaEngineDisc.OpenAsync(path,_cancellation,PrecacheImages).GetAwaiter().GetResult();
             next.ReadHeader(header[..0x210]);
             Unload(); _controller.Mount(next); _media = next; transferred = true; return 1;
         }

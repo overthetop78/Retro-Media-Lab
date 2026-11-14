@@ -20,6 +20,7 @@ public sealed class AudioTapeReader : IMediaImageReader
     private static readonly IReadOnlySet<string> SupportedExtensions = new[]
     {
         DiskImageFileExtensions.Mp3,
+        DiskImageFileExtensions.Ogg,
         DiskImageFileExtensions.Flac,
         DiskImageFileExtensions.Aac,
         DiskImageFileExtensions.M4a,
@@ -45,6 +46,17 @@ public sealed class AudioTapeReader : IMediaImageReader
     Task<MediaImageDocument> IMediaImageReader.ReadAsync(MediaRecognitionContext context, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (context.Extension.Equals(".ogg",StringComparison.OrdinalIgnoreCase))
+        {
+            VorbisPcmRandomAccessData? source=null; bool transferred=false;
+            try
+            {
+                source=VorbisPcmRandomAccessData.Open(context.Source.PrimaryPath,cancellationToken);
+                MediaImageDocument document=CreatePcmDocument(context,source,source.Length,source.Channels,source.SampleRate);
+                transferred=true; return Task.FromResult(document);
+            }
+            finally { if (!transferred) source?.Dispose(); }
+        }
         using var reader = new AudioFileReader(context.Source.PrimaryPath);
         var channels = reader.WaveFormat.Channels;
         var sampleRate = reader.WaveFormat.SampleRate;
@@ -69,11 +81,21 @@ public sealed class AudioTapeReader : IMediaImageReader
             }
 
             var data = pcm.ToArray();
+            return Task.FromResult(CreatePcmDocument(context,new MemoryRandomAccessData(data),data.Length,channels,sampleRate));
+        }
+        finally
+        {
+            pcm.Dispose();
+        }
+    }
+
+    private static MediaImageDocument CreatePcmDocument(MediaRecognitionContext context,
+        RetroMediaLab.MediaFileSystems.Interfaces.IMediaRandomAccessData source,long length,int channels,int sampleRate)
+    {
             var blockAlign = checked((ushort)(channels * sizeof(short)));
-            if (data.Length % blockAlign != 0) throw new InvalidDataException("The decoded audio ends inside a PCM frame.");
-            var frames = data.Length / blockAlign;
+            if (length % blockAlign != 0) throw new InvalidDataException("The decoded audio ends inside a PCM frame.");
+            var frames = length / blockAlign;
             var duration = TimeSpan.FromSeconds(frames / (double)sampleRate);
-            var source = new MemoryRandomAccessData(data);
             var segments = Enumerable.Range(0, channels).Select(channel => new SequentialMediaSegment(
                 0,
                 SequentialSegmentKind.Samples,
@@ -82,18 +104,18 @@ public sealed class AudioTapeReader : IMediaImageReader
                 duration,
                 channelNumber: channel,
                 direction: SequentialTravelDirection.Forward,
-                dataRange: new MediaDataRange(0, data.Length, MediaDataRangeKind.Stored, source, 0),
+                dataRange: new MediaDataRange(0, length, MediaDataRangeKind.Stored, source, 0),
                 metadata: new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     ["channel"] = channel.ToString(CultureInfo.InvariantCulture),
                     ["interleaved"] = bool.TrueString,
                     ["blockAlign"] = blockAlign.ToString(CultureInfo.InvariantCulture)
                 })).ToArray();
-            var document = new MediaImageDocument(
+            return new MediaImageDocument(
                 context.Source,
                 TapeImageFormatIds.Audio,
                 MediaKind.Tape,
-                new SequentialMediaImageRepresentation(data.Length, duration, segments),
+                new SequentialMediaImageRepresentation(length, duration, segments),
                 [],
                 [],
                 new Dictionary<string, string>(StringComparer.Ordinal)
@@ -104,11 +126,5 @@ public sealed class AudioTapeReader : IMediaImageReader
                     ["blockAlign"] = blockAlign.ToString(CultureInfo.InvariantCulture),
                     ["sourceExtension"] = context.Extension
                 });
-            return Task.FromResult(document);
-        }
-        finally
-        {
-            pcm.Dispose();
-        }
     }
 }

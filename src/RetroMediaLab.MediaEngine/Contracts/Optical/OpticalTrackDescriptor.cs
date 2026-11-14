@@ -108,6 +108,13 @@ public sealed class OpticalTrackDescriptor : IMediaOpticalTrack
     public long PregapSectors { get; }
     public long PostgapSectors { get; }
     public IReadOnlyList<string> Flags { get; }
+    private static readonly IReadOnlyDictionary<string,string> EmptyMetadata = new ReadOnlyDictionary<string,string>(new Dictionary<string,string>());
+    private IReadOnlyDictionary<string,string> _metadata = EmptyMetadata;
+    public IReadOnlyDictionary<string,string> Metadata
+    {
+        get => _metadata;
+        init => _metadata = new ReadOnlyDictionary<string,string>(new Dictionary<string,string>(value ?? EmptyMetadata,StringComparer.OrdinalIgnoreCase));
+    }
     public string? CatalogNumber { get; }
     public string? Isrc { get; }
     public IMediaRandomAccessData? SubchannelSource { get; }
