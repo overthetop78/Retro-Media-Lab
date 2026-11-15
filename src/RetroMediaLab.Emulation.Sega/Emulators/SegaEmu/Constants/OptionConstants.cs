@@ -2,6 +2,7 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
 internal static class OptionConstants
 {
     internal static IReadOnlyList<CoreOption> All { get; } = [
+        ..PointerConstants.Options,
         new(
             "segaemu_sg1000_model",
             "Emulation.Option.segaemu.segaemu_sg1000_model",

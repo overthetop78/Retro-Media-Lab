@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standardi ROM ulkoasu</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Kaksi 8 KiB ROM-levyä osoitepeileillä</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Konsolitaukopainike</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Hiiren herkkyys</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Hiirien liikenopeus. Oletusarvo on 2.00. Jokainen osoitin-laiteportti voi käyttää tätä asetusta automaattisesti tai omalla nopeudellaan. Muutokset koskevat konsolia uudelleenkäynnistämättä.</value></data>
 </root>

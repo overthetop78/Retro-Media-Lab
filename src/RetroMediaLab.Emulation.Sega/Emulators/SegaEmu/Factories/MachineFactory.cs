@@ -11,6 +11,14 @@ internal sealed class MachineFactory : CoreMachineFactory, IEmulatorCapabilities
     bool IEmulatorCapabilities.SupportsNoContent => true;
     public override Emulator Emulator => Emulator.SegaEmu;
     protected override CoreDefinition CoreDefinition => CoreConstants.Definition;
+    public override IReadOnlyList<EmulationSettingsBlock> DescribeSettings(MachineConfiguration configuration, EmulatorManagementContext? context = null) =>
+        base.DescribeSettings(configuration, context).Select(block => block with
+        {
+            Fields = block.Fields.Select(field => field.Id == PointerConstants.PortKey(0) || field.Id == PointerConstants.PortKey(1)
+                ? field with { ControllerPortNumber = field.Id == PointerConstants.PortKey(0) ? 1 : 2,
+                    AppliesToControllerIds = PointerConstants.ControllerIds, AutomaticValue = PointerConstants.Automatic }
+                : field).ToArray()
+        }).ToArray();
     public override bool TryHandleHostCommand(IReadOnlyList<string> arguments, out int exitCode) { exitCode = 0; return false; }
     public override ValueTask<EmulationEmulatorInstallation> GetInstallationAsync(EmulatorManagementContext context, CancellationToken cancellationToken)
     {

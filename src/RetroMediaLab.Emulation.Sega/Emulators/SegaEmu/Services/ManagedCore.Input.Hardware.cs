@@ -72,15 +72,15 @@ internal sealed partial class ManagedCore
             ret = ReadHostInput(unchecked((uint)(player)), unchecked((uint)(1)), unchecked((uint)(0)), unchecked((uint)(256)));
             break;
             case 5:
-            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)(((unchecked((int)(ReadHostInput(unchecked((uint)(player)), unchecked((uint)(5)), unchecked((uint)(0)), unchecked((uint)(0))))) + 32768) >> 8)));
+            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)(((unchecked((int)(ReadPointingAxis(player, 0u))) + 32768) >> 8)));
             if (((unchecked((int)(ret)) & (1 << 0)) != 0)) temp |= unchecked((uint)(16));
             if (((unchecked((int)(ret)) & (1 << 3)) != 0)) temp |= unchecked((uint)(128));
             player++;
             ret = ReadHostInput(unchecked((uint)(player)), unchecked((uint)(1)), unchecked((uint)(0)), unchecked((uint)(256)));
             break;
             case 6:
-            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)(((unchecked((int)(ReadHostInput(unchecked((uint)(player)), unchecked((uint)(5)), unchecked((uint)(0)), unchecked((uint)(0))))) + 32768) >> 8)));
-            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(1)] = unchecked((short)(((unchecked((int)(ReadHostInput(unchecked((uint)(player)), unchecked((uint)(5)), unchecked((uint)(0)), unchecked((uint)(1))))) + 32768) >> 8)));
+            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)(((unchecked((int)(ReadPointingAxis(player, 0u))) + 32768) >> 8)));
+            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(1)] = unchecked((short)(((unchecked((int)(ReadPointingAxis(player, 1u))) + 32768) >> 8)));
             if (((unchecked((int)(ret)) & (1 << 0)) != 0)) temp |= unchecked((uint)(16));
             if (((unchecked((int)(ret)) & (1 << 8)) != 0)) temp |= unchecked((uint)(32));
             if (((unchecked((int)(ret)) & (1 << 3)) != 0)) temp |= unchecked((uint)(128));

@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>スタンダード ROM レイアウト</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>アドレスミラーが付いている2つの8 KiB ROMs</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>コンソール マウス ボタン</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>マウスの感受性</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>マウスの移動速度。デフォルトは2.00です。各ポインティングデバイスポートは、この設定を自動的にまたは独自の速度で使用できます。変更はコンソールを再起動せずに適用します。</value></data>
 </root>

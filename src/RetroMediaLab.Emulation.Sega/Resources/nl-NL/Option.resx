@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standaard ROM indeling</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Twee 8 KiB ROM's met adresspiegels</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Console-pauzeknop</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Muisgevoeligheid</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Muisbewegingssnelheid. Standaard is het 2.00. Elke punt-apparaatpoort kan deze instelling automatisch of zijn eigen snelheid gebruiken. Wijzigingen zijn van toepassing zonder de console opnieuw te starten.</value></data>
 </root>

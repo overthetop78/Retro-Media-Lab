@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Szabvány ROM elrendezése</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Két 8 KiB ROM címtükrökkel</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Konzol Szünet gomb</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Egérérzékenység</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Az egérmozgás sebessége. Az alapértelmezett 2.00. Minden egyes beállítási eszköz port automatikusan vagy saját sebességével használhatja ezt a beállítást. A módosítások a konzol újraindítása nélkül érvényesek.</value></data>
 </root>

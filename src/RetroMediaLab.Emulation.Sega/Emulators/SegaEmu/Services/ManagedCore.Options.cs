@@ -121,7 +121,7 @@ internal sealed partial class ManagedCore
     public void SetOption(string key, string value)
     {
         var option = CoreConstants.Definition.Options.SingleOrDefault(candidate => candidate.Key == key);
-        if (option is null || !option.Values.Any(candidate => candidate.Value == value))
+        if (option is null || !Emulators.Common.Interop.Functions.CoreSettingsFunctions.IsValidValue(option, value, _configuration?.Model))
             throw new ArgumentException(nameof(value));
         if (string.Equals(GetOption(key[8..]), value, StringComparison.Ordinal)) return;
         if (option.RequiresRestart) SavePersistent();

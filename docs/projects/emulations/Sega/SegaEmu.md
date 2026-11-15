@@ -344,3 +344,15 @@ Les DLL/PDB Sega et Chips construites sont copiées et vérifiées dans les dist
 La case de la capture appartient aux paramètres généraux Mega Drive. La clé configuration.megaDrive32x intervient notamment dans l’autorisation des cartouches .32x ; elle ne crée pas de matériel 32X dans SegaEmu.
 
 SegaEmu ne déclare pas la machine ThirtyTwoX et ne contient pas ses deux SH-2, son VDP ou son PWM. PicoDrive la déclare dans son catalogue et la décrit dans sa [documentation officielle](https://github.com/notaz/picodrive/blob/master/platform/base_readme.txt). La présence de la case générique ne constitue donc pas une preuve de prise en charge par le cœur sélectionné.
+
+## Sensibilite des peripheriques de pointage SegaEmu
+
+Le reglage Sensibilite de la souris est disponible dans Souris, sous forme de champ numerique avec boutons et curseur. Plage : 0,10 a 8,00 ; valeur initiale : 2,00, soit deux fois le deplacement precedent. Les boutons et touches haut/bas avancent de 0,10 ; la saisie et le glissement du curseur permettent les centiemes. La virgule de la langue courante est acceptee. Le reglage logiciel ne modifie pas les DPI physiques de la souris.
+
+Dans Manettes, chaque port affiche son propre reglage uniquement pour Mega Mouse, Light Phaser, Menacer, Sports Pad ou Paddle Control. Automatique reprend le reglage Souris ; sa desactivation permet une valeur propre au port. Le Magic Pen integre de Pico utilise le reglage Souris. Les autres chemins de tablettes/dessin du coeur reprennent egalement ce reglage. Les manettes ordinaires ne recoivent aucun champ de sensibilite de pointage.
+
+Les deltas relatifs et coordonnees integrees conservent leurs fractions, sont bornes sans debordement et ne sont consommes qu'une fois. Les positions et restes sont independants par port. Sports Pad et Paddle Control utilisent la souris apres son mouvement, puis retrouvent leurs axes analogiques lorsqu'une manette est actionnee. Les changements de sensibilite ne recreent pas le coeur et ne remettent pas le pointeur ou la page Pico a zero.
+
+Validation : 44 tests d'integration en Debug et en Release (programmes synthetiques en memoire, tests Pico et sensibilite), plus 5 tests UI dans chaque configuration. Ces derniers verifient saisie avec virgule, boutons, curseur, liaisons et liberation sur Orbit, Windows 3.1, Windows 95 et Windows XP. Les tests UI temporaires sont executes sur threads STA avec arret du Dispatcher et attente de fin du thread dans finally. Les journaux restent sous artifacts/Emulation/segaemu-pointer ; les bancs temporaires et leurs binaires sont supprimes. Les 30 catalogues Option.resx contiennent les deux cles de traduction uniques ; les anciens choix de multiplicateur sont retires.
+
+Les projets SDK, Sega et application sont construits separement en Debug/Release sans reconstruire leurs references. Les distributions build/Debug/Retro Media Lab et build/Release/Retro Media Lab sont mises a jour avec les DLL/PDB correspondantes de l'application, du SDK et du module Sega. Il s'agit de tests fonctionnels des entrees et de l'interface ; aucune nouvelle mesure de FPS des ROM n'est revendiquee pour ce changement.

@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Estándar ROM diseño</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dos 8 ROMs con espejos de dirección</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Consola botón de pausa</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Sensibilidad de ratón</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Velocidad de movimiento de ratón. El predeterminado es de 2,00. Cada puerto de dispositivo de puntero puede utilizar este ajuste automáticamente o su propia velocidad. Los cambios se aplican sin reiniciar la consola.</value></data>
 </root>

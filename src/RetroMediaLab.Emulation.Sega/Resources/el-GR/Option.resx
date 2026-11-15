@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Τυπικό ROM διάταξη</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Δύο 8 KiB ROM με καθρέπτες διευθύνσεων</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Κουμπί παύσης κονσόλας</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Ευαισθησία στο ποντίκι</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Ταχύτητα κίνησης ποντικιού. Η προκαθορισμένη είναι 2.00. Κάθε θύρα-δείκτης μπορεί να χρησιμοποιήσει αυτή τη ρύθμιση αυτόματα ή τη δική της ταχύτητα. Οι αλλαγές ισχύουν χωρίς επανεκκίνηση της κονσόλας.</value></data>
 </root>

@@ -45,6 +45,7 @@ internal sealed class SettingsFieldView : UserControl, IDisposable
 
     private FrameworkElement Create(FrameworkElement source) => source switch
     {
+        FrameworkElement editable when field.NumericRange?.ShowNumericInput == true => bindings.EditableRange(field, editable, commit),
         TextBox input => Text(input),
         TextBlock information => Information(information),
         CheckBox toggle => Toggle(toggle),

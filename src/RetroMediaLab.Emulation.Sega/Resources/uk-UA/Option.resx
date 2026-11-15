@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Стандарти ROM верстка</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Два 8 КОБ ROMs з адресними дзеркалами</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Консоль Пауза кнопка</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Чутливість миші</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Швидкість руху миші. За замовчуванням 2.00. Кожен порт точок-розробки може використовувати цю установку автоматично або власну швидкість. Зміни застосовуються без перезавантаження консолі.</value></data>
 </root>

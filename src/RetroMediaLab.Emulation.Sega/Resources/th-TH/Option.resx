@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>มาตรฐาน ROM การจัดวาง</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>2 กิโลไบต์</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>ปุ่มหยุดคอนโซล</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>ความไวของเมาส์</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>ความเร็วการเคลื่อนไหวของเมาส์ ค่าปริยายคือ 2.00 พอร์ตสําหรับชี้แต่ละพอร์ตสามารถใช้ค่านี้ได้โดยอัตโนมัติ หรือความเร็วของมัน การเปลี่ยนแปลงจะมีผลโดยไม่ต้องเริ่มการทํางานของคอนโซลใหม่อีกครั้ง</value></data>
 </root>

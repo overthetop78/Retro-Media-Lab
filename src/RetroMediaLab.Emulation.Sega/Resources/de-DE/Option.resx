@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard ROM Layout</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Zwei 8 KiB ROMs mit Adressspiegeln</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Konsolenpausen-Taste</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Empfindlichkeit der Maus</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Bewegungsgeschwindigkeit der Maus. Standardmäßig ist 2,00. Jeder Pointing-Device-Port kann diese Einstellung automatisch oder seine eigene Geschwindigkeit verwenden. Änderungen gelten, ohne die Konsole neu zu starten.</value></data>
 </root>

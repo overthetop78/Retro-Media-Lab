@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standardowy ROM układ</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dwa 8 ROM KiB z lusterkami adresowymi</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Przycisk Pause Console</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Wrażliwość myszy</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Prędkość ruchu myszy. Domyślnie wynosi 2.00. Każdy port wskaźnikowy może używać tego ustawienia automatycznie lub jego własnej prędkości. Zmiany obowiązują bez ponownego uruchamiania konsoli.</value></data>
 </root>

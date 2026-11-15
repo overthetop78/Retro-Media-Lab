@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Стандартный стандарт ROM планировка</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Две 8-кибовые ПЗУ с адресными зеркалами</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Кнопка Console Pause</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Чувствительность мыши</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Скорость движения мыши. По умолчанию 2.00. Каждый порт устройства-указателя может использовать эту настройку автоматически или собственную скорость. Изменения применяются без перезапуска консоли.</value></data>
 </root>

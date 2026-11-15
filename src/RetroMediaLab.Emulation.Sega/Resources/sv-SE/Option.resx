@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard Standard ROM layout</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Två 8 KiB ROM med adressspeglar</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Console Pause knapp</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Muskänslighet</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Mus rörelsehastighet. Standarden är 2.00. Varje port som pekar på enheten kan använda denna inställning automatiskt eller sin egen hastighet. Förändringar gäller utan att starta om konsolen.</value></data>
 </root>

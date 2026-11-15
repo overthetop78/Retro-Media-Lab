@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standardní ROM Rozvržení</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dva 8 kiB ROM s adresovými zrcadly</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Tlačítko Konzole Pauza</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Citlivost na myši</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Rychlost pohybu myši. Výchozí je 2.00. Každý port point-device může toto nastavení použít automaticky nebo svou vlastní rychlostí. Změny platí bez restartování konzole.</value></data>
 </root>

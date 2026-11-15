@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard ROM layout</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>To 8 KiB-ROMer med adressespeil</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Konsollpause-knappen</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Musfølsomhet</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Mouse bevegelseshastighet. Standard er 2.00. Hver punkteringsport kan bruke denne innstillingen automatisk eller sin egen hastighet. Endringer gjelder uten å starte konsollen på nytt.</value></data>
 </root>

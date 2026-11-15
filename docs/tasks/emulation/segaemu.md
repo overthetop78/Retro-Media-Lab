@@ -275,3 +275,26 @@
   - [x] Conserver le bilan et nettoyer
     - [x] Modifier docs/projects/emulations/Sega/SegaEmu.md et SegaEmu-audit.md : noter les ROM, captures, vitesses, limites et la difference entre option generale 32X et support du coeur.
     - [x] Supprimer artifacts/Emulation/segaemu-pico/.work et ses sources, projets, binaires et sessions temporaires ; conserver mesures et captures.
+
+- [x] Regler la sensibilite des peripheriques de pointage SegaEmu
+  - [x] Raccorder le multiplicateur dans les entrees et les options
+    - [x] Modifier src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Services/ManagedCore.Input.cs : appliquer un gain reglable aux deltas relatifs et au pointeur integre, conserver les fractions et consommer chaque mouvement une seule fois.
+    - [x] Modifier src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Constants/OptionConstants.cs : proposer x0.25 a x8, x2 par defaut, dans Manettes sans redemarrage.
+  - [x] Traduire le reglage
+    - [x] Modifier src/RetroMediaLab.Emulation.Sega/Resources/*/Option.resx : ajouter titre et description traduits avec Argos ; conserver les multiplicateurs invariants dans 00-Base seulement.
+  - [x] Adapter la presentation demandee pendant le travail
+    - [x] Modifier src/RetroMediaLab.Emulation/Contracts/EmulationSettingsNumericRange.cs et App/Theme/Base/Functions/Views/Emulation/Settings/EmulationSettingsFieldControlFunctions.cs : ajouter une saisie numerique avec boutons par pas de 0.10, precision de 0.01 et curseur reglable au centieme, sans changer les autres champs.
+    - [x] Modifier Sega/Emulators/SegaEmu/Constants/OptionConstants.cs et creer Constants/PointerConstants.cs : remplacer la liste initiale par une plage numerique, dans Souris et par port avec heritage du reglage Souris.
+    - [x] Modifier Sega/Emulators/Common/Interop/Functions/CoreSettingsFunctions.cs, Factories/CoreMachineFactory.cs et SegaEmu/Factories/MachineFactory.cs : valider les plages et decrire les champs propres a chaque port de pointage seulement.
+    - [x] Modifier SegaEmu/Services/ManagedCore.Input.cs et ManagedCore.Options.cs : accepter les valeurs au centieme, appliquer le reglage global ou celui du port, conserver positions et fractions independantes par port.
+    - [x] Modifier Sega/Resources/*/Option.resx : ajuster titre et aide traduits, retirer les anciens libelles de choix devenus inutiles.
+  - [x] Raccorder le nouveau controle aux themes existants
+    - [x] Modifier src/RetroMediaLab.App/Theme/Common/ThemeBindingScope.cs et les quatre Theme/*/SettingsFieldView.cs : reconstruire une vue numerique independante, relier les valeurs et liberer les liaisons existantes a la fermeture.
+  - [x] Completer les peripheriques analogiques de pointage
+    - [x] Modifier SegaEmu/Constants/PointerConstants.cs, Services/ManagedCore.Input.cs et ManagedCore.Input.Hardware.cs : inclure Paddle Control et Sports Pad dans les champs par port, raccorder leur mouvement de souris regle sans supprimer leurs axes de manette existants.
+    - [x] Modifier tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/PointerSensitivityTests.cs : verifier les deux peripheriques et le retour aux axes de manette apres leur mouvement.
+  - [x] Valider et livrer
+    - [x] Modifier tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/PointerSensitivityTests.cs : verifier centiemes, gain, fractions, bornes, peripheriques, ports independants, metadonnees et changement a chaud.
+    - [x] Modifier artifacts/Emulation/segaemu-pointer/.work/PointerTests.csproj et creer les tests UI temporaires necessaires : executer uniquement les tests utiles et conserver les journaux Debug/Release.
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu.md : documenter sensibilite, perimetre et validation ; construire les sorties locales necessaires a la livraison et les verifier.
+    - [x] Supprimer artifacts/Emulation/segaemu-pointer/.work : retirer sources, projets temporaires, binaires et caches apres verification ; terminer les cases realisees.

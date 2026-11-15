@@ -39,4 +39,6 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>Console Pause button</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.TheCastle"><value>The Castle (32 KiB ROM + 8 KiB RAM)</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Othello"><value>Othello (32 KiB ROM + 2 KiB RAM)</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Mouse sensitivity</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Mouse movement speed. The default is 2.00. Each pointing-device port can use this setting automatically or its own speed. Changes apply without restarting the console.</value></data>
 </root>

@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>标准 ROM 版式</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>2个8个带地址镜的KiB ROM</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>暂停控制台按钮</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>鼠标敏感度</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>鼠标移动速度。 默认为 2. 00。 每个指向设备端口可以自动使用此设置或使用它自己的速度。 更改不重新启动控制台。</value></data>
 </root>

@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>المعيار ROM مخطط</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>قرصان من طراز كيب بذاكرة قراءة فقط مع مرايا عناوين</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>زر وقف إطلاق النار</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>حساسية الفم</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>سرعة حركة الفئران، التخلف عن الدفع هو 2.00، ويمكن لكل ميناء منفذ أن يستخدم هذا الموقع تلقائياً أو سرعته الخاصة، وتطبق التغييرات دون إعادة تشغيل الضمادة.</value></data>
 </root>
