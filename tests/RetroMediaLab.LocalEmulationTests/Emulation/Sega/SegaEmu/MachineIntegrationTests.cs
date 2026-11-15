@@ -1,11 +1,11 @@
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Contracts;
 using System.Buffers.Binary;
-using System.IO;
 using System.Reflection;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Instruction;
 using RetroMediaLab.Emulation.Sega.Common.Machines.Common.Constants;
 using RetroMediaLab.Emulation.Sega.Common.Machines.Common.Contracts;
 using RetroMediaLab.Emulation.Sega.Emulators.Common.Interop.Functions;
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Factories;
 

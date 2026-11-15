@@ -133,7 +133,7 @@ public sealed class FirmwareIntegrationTests
             int Load(int _, Memory<byte> destination) { bios.AsMemory().CopyTo(destination); return bios.Length; }
             if (segaEmu)
             {
-                var settings = new SE.Common.SystemConfiguration { system = 0x21, bios = 1 };
+                var settings = new SE.Contracts.SystemConfiguration { system = 0x21, bios = 1 };
                 var system = SE.Factories.BoardFactory.Create("MasterSystem", new(settings, framebuffer, 1024, 626, 4096, 44100,
                     _ => throw new InvalidOperationException("No cartridge file may be requested."), Load, CancellationToken.None));
                 board = system; Assert.True(system.Load(string.Empty)); system.RunFrame(new short[9600]);
@@ -147,7 +147,7 @@ public sealed class FirmwareIntegrationTests
             }
             var cart = Read(board, "cart");
             Assert.Equal(0u, Read(cart, "romsize"));
-            var sms = Read(board, "_sms");
+            var sms = Read(board, segaEmu ? "_smsComponent" : "_sms");
             Assert.Equal((ushort)0, Read(Read(sms, "cart_rom"), "pages"));
             Assert.Equal((ushort)8, Read(Read(sms, "bios_rom"), "pages"));
             Assert.NotEqual((byte)0, ((byte[])Read(board, "work_ram"))[0]);

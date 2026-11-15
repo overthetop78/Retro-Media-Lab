@@ -9,15 +9,23 @@ public sealed partial class CpuZ80<TBus> where TBus : class, ICpuZ80Bus
     private readonly Memory<byte>[] _readMap;
     private CpuZ80State _state;
     private int EA;
-    private uint _cycleRatio = 1;
+    private ulong _cycleRatio = 1;
     private int _cycleShift;
+    public int ClockMultiplier { get; }
     public byte LastFetch { get; private set; }
     public uint Cycles { get => _state.cycles; set => _state.cycles = value; }
     public CpuZ80State Context { get => _state; set => _state = value; }
     public ref CpuZ80State State => ref _state;
 
-    public CpuZ80(TBus bus, Func<int, int> irqCallback, object? daisy = null)
+    public CpuZ80(TBus bus, Func<int, int> irqCallback, object? daisy = null, int clockMultiplier = 1)
     {
+        ArgumentNullException.ThrowIfNull(bus);
+        ArgumentOutOfRangeException.ThrowIfLessThan(clockMultiplier, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(clockMultiplier, ushort.MaxValue);
+        ClockMultiplier = clockMultiplier;
+        var cycles = GetCycleTables(clockMultiplier);
+        cc_op = cycles.Op; cc_cb = cycles.Cb; cc_ed = cycles.Ed;
+        cc_xy = cycles.Xy; cc_xycb = cycles.XyCb; cc_ex = cycles.Ex;
         _bus = bus;
         _readMap = bus.ReadMap;
         _state.irq_callback = irqCallback;
@@ -66,7 +74,7 @@ public sealed partial class CpuZ80<TBus> where TBus : class, ICpuZ80Bus
             PUSH(ref _state.pc);
             PCD = 0x66;
             WZ = PCD;
-            USE_CYCLES(11 * 15);
+            USE_CYCLES(11 * ClockMultiplier);
         }
         _state.nmi_state = unchecked((byte)state);
     }
@@ -116,7 +124,7 @@ public sealed partial class CpuZ80<TBus> where TBus : class, ICpuZ80Bus
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void USE_CYCLES(int value) => _state.cycles = unchecked(_state.cycles + ((uint)value * _cycleRatio >> _cycleShift));
+    private void USE_CYCLES(int value) => _state.cycles = unchecked(_state.cycles + (uint)((uint)value * _cycleRatio >> _cycleShift));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int RM(int address) => _bus.ReadMemory(address);

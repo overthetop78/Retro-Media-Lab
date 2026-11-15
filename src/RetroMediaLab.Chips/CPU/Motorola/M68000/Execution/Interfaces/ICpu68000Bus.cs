@@ -9,7 +9,6 @@ public interface ICpu68000Bus
     uint ReadMapped8(uint address);
     uint ReadMapped16(uint address);
     void AcknowledgeInterrupt(uint level);
-    int MainCycles { get; }
-    int MainRefreshCycles { get; }
+    bool IsRefreshWindowElapsed(int cycles, int deadline) => cycles >= deadline;
 }
 

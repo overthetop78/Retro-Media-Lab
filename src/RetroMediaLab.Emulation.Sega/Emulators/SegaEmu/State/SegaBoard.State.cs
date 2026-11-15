@@ -1,27 +1,23 @@
-using System.IO;
-using RetroMediaLab.Chips.Common.Memory;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Buses;
+
 using RetroMediaLab.Chips.CPU.Motorola.M68000.Execution;
 using RetroMediaLab.Chips.CPU.Zilog.Z80.Instruction;
-using RetroMediaLab.Chips.Controllers.Audio.YX5200;
+
 using RetroMediaLab.Chips.Controllers.Sega.Input;
 using RetroMediaLab.Chips.Video.Sega.VDP;
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common.Audio;
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MegaCd.Hardware;
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Media;
-using BlipBuffer = RetroMediaLab.Chips.Audio.Common.Resampling.BandLimitedBuffer;
-using Cdd = RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Media.CdDrive;
-using Pcm = RetroMediaLab.Chips.Audio.Ricoh.RF5C164.Rf5c164;
+
 using System.Buffers.Binary;
 using System.Text;
 
-namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
+namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 
 internal abstract partial class SegaBoard
 {
-    public const string StateVersion = "SEGAEMU 00000002";
+    public const string StateVersion = "SEGAEMU 00000003";
     private static int Z80ContextSize => IntPtr.Size == 8 ? 88 : 76;
-    public int StateSize => 17 + (SystemHardware.IsSixteenBit(system_hw) ? 0x12000 + 5 + Cpu68000<SegaBoard>.ContextSize : 0x2000) +
+    public int StateSize => LegacyStateSize + InputHardware.ContextSize;
+    private int LegacyStateSize => 17 + (SystemHardware.IsSixteenBit(system_hw) ? 0x12000 + 5 + Cpu68000<MegaDriveCpuBus>.ContextSize : 0x2000) +
         16 + Vdp.ContextSize + _sound.ContextSize + Z80ContextSize +
         (system_hw == SystemHardware.MegaCd ? 4 + _cd.ContextSize : SystemHardware.IsSixteenBit(system_hw) ? _md.ContextSize : _sms.ContextSize);
 
@@ -30,7 +26,7 @@ internal abstract partial class SegaBoard
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (state.Length < StateSize) throw new ArgumentException("State buffer is too short.", nameof(state));
         int offset = 0;
-        WriteStateBytes(state, ref offset, "SEGAEMU 00000002"u8); state[offset++] = system_hw;
+        WriteStateBytes(state, ref offset, "SEGAEMU 00000003"u8); state[offset++] = system_hw;
         bool md = SystemHardware.IsSixteenBit(system_hw);
         WriteStateBytes(state, ref offset, work_ram.AsSpan(0, md ? 65536 : 8192));
         if (md)
@@ -52,13 +48,28 @@ internal abstract partial class SegaBoard
             offset += _cd.SaveContext(state[offset..]);
         }
         else offset += md ? _md.SaveContext(state[offset..]) : _sms.SaveContext(state[offset..]);
+        offset += _input.SaveContext(state[offset..]);
         return offset;
     }
 
     public int LoadState(Span<byte> state)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (state.Length < StateSize || !state[..16].SequenceEqual("SEGAEMU 00000002"u8) || state[16] != system_hw) return 0;
+        if (state.Length < 17 || state[16] != system_hw) return 0;
+        bool withInput = state[..16].SequenceEqual("SEGAEMU 00000003"u8);
+        if (!withInput && !state[..16].SequenceEqual("SEGAEMU 00000002"u8)) return 0;
+        int legacyLength = LegacyStateSize;
+        if (state.Length < legacyLength + (withInput ? InputHardware.ContextSize : 0)) return 0;
+        bool md = SystemHardware.IsSixteenBit(system_hw);
+        int soundOffset = 17 + (md ? 0x12000 + 5 : 0x2000) + 16 + Vdp.ContextSize;
+        if (!_sound.CanLoadContext(state[soundOffset..])) return 0;
+        if (system_hw == SystemHardware.MegaCd)
+        {
+            int marker = soundOffset + _sound.ContextSize + Cpu68000<MegaDriveCpuBus>.ContextSize + Z80ContextSize;
+            if (!state.Slice(marker, 4).SequenceEqual("SCD!"u8) ||
+                !_cd.CanLoadContext(state.Slice(marker + 4, legacyLength - marker - 4))) return 0;
+        }
+        if (withInput && (!InputHardware.CanLoadContext(state[legacyLength..]) || state[legacyLength + 1] != system_hw)) return 0;
         string version = Encoding.ASCII.GetString(state[..16]);
         byte hardwareVersion = _input.IoRegisters.Span[0];
         int offset = 17;
@@ -66,13 +77,14 @@ internal abstract partial class SegaBoard
         try
         {
             Reset();
-            for (int i = 0xc0; i < 0xe0; i += 8)
+            if (withInput) _input.LoadContext(state[legacyLength..]);
+            for (int i = 0xc0; md && i < 0xe0; i += 8)
             {
                 memory_map[i].read8 = vdp_read_byte; memory_map[i].read16 = vdp_read_word;
                 memory_map[i].write8 = vdp_write_byte; memory_map[i].write16 = vdp_write_word;
                 zbank_memory_map[i].read = zbank_read_vdp; zbank_memory_map[i].write = zbank_write_vdp;
             }
-            bool md = SystemHardware.IsSixteenBit(system_hw);
+
             ReadStateBytes(state, ref offset, work_ram.AsSpan(0, md ? 65536 : 8192));
             if (md)
             {
@@ -95,7 +107,7 @@ internal abstract partial class SegaBoard
             LoadZ80(state.Slice(offset, Z80ContextSize)); offset += Z80ContextSize;
             if (system_hw == SystemHardware.MegaCd)
             {
-                if (!state.Slice(offset, 4).SequenceEqual("SCD!"u8)) { completed = true; return 0; }
+                // The complete block boundary and marker were checked before Reset.
                 offset += 4;
                 offset += _cd.LoadContext(state[offset..], version);
             }
@@ -106,7 +118,7 @@ internal abstract partial class SegaBoard
                 _sms.Switch(unchecked((byte)~_input.IoRegisters.Span[14]));
             }
             completed = true;
-            return offset;
+            return offset + (withInput ? InputHardware.ContextSize : 0);
         }
         finally { if (!completed) Dispose(); }
     }

@@ -8,10 +8,10 @@ public sealed partial class InputHardware
         public Func<byte> data_r = null!;
     }
     private readonly IoPort[] port = [new(), new(), new()];
-    private byte bios_configuration => _bus.BiosConfiguration;
-    private uint psg_preamp => _bus.PsgPreamp;
+    private byte versionPins => _bus.VersionPins;
+
     private bool IsBiosMapped() => _bus.BootRomMapped;
-    private void psg_config(uint cycles, uint preamp, uint panning) => _bus.ConfigurePsg(cycles, preamp, panning);
+
     private void sms_cart_switch(byte mode) => _bus.SwitchSmsCartridge(mode);
     public void InitializeIo() => io_init();
     public void ResetIo() => io_reset();

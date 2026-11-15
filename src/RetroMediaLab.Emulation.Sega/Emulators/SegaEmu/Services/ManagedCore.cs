@@ -1,5 +1,6 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
-using RetroMediaLab.Chips.Common.Memory;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Contracts;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
+
 using System.IO;
 using System.Security.Cryptography;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
@@ -130,10 +131,11 @@ internal sealed partial class ManagedCore : IEmulatorCore
         bool completed = false;
         try
         {
-            int count = system.RunFrame(_samples, ShouldSkipFrame());
+            bool skipVideo = ShouldSkipFrame();
+            int count = system.RunFrame(_samples, skipVideo);
             _timestamp += TimeSpan.FromSeconds(1 / system.NominalFrameRate);
             _sequence++;
-            PublishVideo(system);
+            if (!skipVideo || LatestVideoFrame is null) PublishVideo(system);
             short[] samples = _samples.AsSpan(0, count * 2).ToArray();
             AudioChunk chunk = new(samples, SampleRate, count, _sequence, _timestamp);
             LatestAudioChunk = chunk;

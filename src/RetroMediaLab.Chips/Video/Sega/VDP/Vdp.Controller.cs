@@ -132,7 +132,7 @@ public sealed partial class Vdp
             }
             }
             reg[(int)(10)] = unchecked((byte)(255));
-            if ((((unchecked((int)(system_hw)) & SYSTEM_SMS) != 0) && ((!((config.bios & 1) != 0)) || (!((unchecked((int)(system_bios)) & SYSTEM_SMS) != 0))))) {
+            if (_resetPreset == VdpResetPreset.Mode4) {
             vdp_reg_w(unchecked((uint)(0)), unchecked((uint)(54)), unchecked((uint)(0)));
             vdp_reg_w(unchecked((uint)(1)), unchecked((uint)(128)), unchecked((uint)(0)));
             vdp_reg_w(unchecked((uint)(2)), unchecked((uint)(255)), unchecked((uint)(0)));
@@ -149,7 +149,7 @@ public sealed partial class Vdp
             vdp_reg_w(unchecked((uint)(4)), unchecked((uint)(255)), unchecked((uint)(0)));
             vdp_reg_w(unchecked((uint)(5)), unchecked((uint)(255)), unchecked((uint)(0)));
             vdp_reg_w(unchecked((uint)(6)), unchecked((uint)(255)), unchecked((uint)(0)));
-            } else if (((((unchecked((int)(system_hw)) == SYSTEM_MD) || (unchecked((int)(system_hw)) == SYSTEM_MCD)) && ((config.bios & 1) != 0)) && (!((unchecked((int)(system_bios)) & SYSTEM_MD) != 0)))) {
+            } else if (_resetPreset == VdpResetPreset.Mode5) {
             vdp_reg_w(unchecked((uint)(0)), unchecked((uint)(4)), unchecked((uint)(0)));
             vdp_reg_w(unchecked((uint)(1)), unchecked((uint)(4)), unchecked((uint)(0)));
             vdp_reg_w(unchecked((uint)(12)), unchecked((uint)(129)), unchecked((uint)(0)));
@@ -263,7 +263,7 @@ public sealed partial class Vdp
             dma_length = unchecked((uint)(65536));
             }
             dma_src = unchecked((ushort)(((unchecked((int)(reg[(int)(22)])) << 8) | unchecked((int)(reg[(int)(21)])))));
-            if ((((unchecked((int)(system_hw)) == SYSTEM_MCD) && (unchecked((uint)((unchecked((int)(reg[(int)(23)])) & 112))) == ((CdBootBank >> 1) + unchecked((uint)(16))))) || (HasSvp && (!((unchecked((int)(reg[(int)(23)])) & 96) != 0))))) {
+            if (_bus.SkipFirstDmaWord(reg[23])) {
             addr += unchecked((ushort)(reg[(int)(15)]));
             dma_length--;
             }
@@ -491,7 +491,7 @@ public sealed partial class Vdp
             status |= unchecked((ushort)(128));
             } else {
             int line = ((unchecked((int)(v_counter)) + 1) % unchecked((int)(lines_per_frame)));
-            if (((line < bitmap.viewport.h) && (!(((unchecked((uint)(work_ram[(int)(8187)])) & CartridgeSpecial) & unchecked((uint)(HW_3D_GLASSES))) != 0)))) {
+            if (line < bitmap.viewport.h && !_bus.SuppressScanlineRendering) {
             v_counter = unchecked((ushort)(line));
             render_line(line);
             }
@@ -830,7 +830,7 @@ public sealed partial class Vdp
             }
             if (((cycles - mcycles_vdp) >= unchecked((uint)(MCYCLES_PER_LINE)))) {
             int line = ((unchecked((int)(v_counter)) + 1) % unchecked((int)(lines_per_frame)));
-            if (((line < bitmap.viewport.h) && (!(((unchecked((uint)(work_ram[(int)(8187)])) & CartridgeSpecial) & unchecked((uint)(HW_3D_GLASSES))) != 0)))) {
+            if (line < bitmap.viewport.h && !_bus.SuppressScanlineRendering) {
             v_counter = unchecked((ushort)(line));
             render_line(line);
             }
@@ -1288,7 +1288,7 @@ public sealed partial class Vdp
             int index = default;
             if (((Z80CpuCycles - mcycles_vdp) >= unchecked((uint)(MCYCLES_PER_LINE)))) {
             int line = ((unchecked((int)(v_counter)) + 1) % unchecked((int)(lines_per_frame)));
-            if (((line < bitmap.viewport.h) && (!(((unchecked((uint)(work_ram[(int)(8187)])) & CartridgeSpecial) & unchecked((uint)(HW_3D_GLASSES))) != 0)))) {
+            if (line < bitmap.viewport.h && !_bus.SuppressScanlineRendering) {
             v_counter = unchecked((ushort)(line));
             render_line(line);
             }
@@ -1330,7 +1330,7 @@ public sealed partial class Vdp
             int index = default;
             if (((Z80CpuCycles - mcycles_vdp) >= unchecked((uint)(MCYCLES_PER_LINE)))) {
             int line = ((unchecked((int)(v_counter)) + 1) % unchecked((int)(lines_per_frame)));
-            if (((line < bitmap.viewport.h) && (!(((unchecked((uint)(work_ram[(int)(8187)])) & CartridgeSpecial) & unchecked((uint)(HW_3D_GLASSES))) != 0)))) {
+            if (line < bitmap.viewport.h && !_bus.SuppressScanlineRendering) {
             v_counter = unchecked((ushort)(line));
             render_line(line);
             }
@@ -1380,40 +1380,29 @@ public sealed partial class Vdp
     }
     private void vdp_dma_68k_ram(uint length)
     {
-        unchecked
+        uint high = (uint)reg[23] << 17;
+        uint source = high | (uint)dma_src << 1;
+        ReadOnlySpan<byte> window = _bus.DmaReadWindow.Span;
+        do
         {
-            ushort data = default;
-            uint source = unchecked((uint)(((unchecked((int)(reg[(int)(23)])) << 17) | (unchecked((int)(dma_src)) << 1))));
-            do {
-            data = (new ArrayPointer<byte>(work_ram) + unchecked((int)((source & unchecked((uint)(65535)))))).Cast<ushort>()[0];
-            source += unchecked((uint)(2));
-            source = (unchecked((uint)((unchecked((int)(reg[(int)(23)])) << 17))) | (source & unchecked((uint)(131071))));
-            vdp_bus_w(unchecked((uint)(data)));
-            } while (((--length) != 0));
-            dma_src = unchecked((ushort)(((source >> 1) & unchecked((uint)(65535)))));
-        }
+            ushort data = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(window[(int)(source & 0xfffe)..]);
+            source = high | ((source + 2) & 0x1ffff);
+            vdp_bus_w(data);
+        } while (--length != 0);
+        dma_src = (ushort)((source >> 1) & 0xffff);
     }
+
     private void vdp_dma_68k_io(uint length)
     {
-        unchecked
+        uint high = (uint)reg[23] << 17;
+        uint source = high | (uint)dma_src << 1;
+        do
         {
-            ushort data = default;
-            uint source = unchecked((uint)(((unchecked((int)(reg[(int)(23)])) << 17) | (unchecked((int)(dma_src)) << 1))));
-            do {
-            if ((source <= unchecked((uint)(10551295)))) {
-            data = unchecked((ushort)((((unchecked((int)(zstate)) ^ 3) != 0) ? unchecked((int)((new ArrayPointer<byte>(work_ram) + unchecked((int)((source & unchecked((uint)(65535)))))).Cast<ushort>()[0])) : 65535)));
-            } else if ((source <= unchecked((uint)(10551327)))) {
-            data = unchecked((ushort)(io_68k_read(((source >> 1) & unchecked((uint)(15))))));
-            data = unchecked((ushort)(((unchecked((int)(data)) << 8) | unchecked((int)(data)))));
-            } else {
-            data = (new ArrayPointer<byte>(work_ram) + unchecked((int)((source & unchecked((uint)(65535)))))).Cast<ushort>()[0];
-            }
-            source += unchecked((uint)(2));
-            source = (unchecked((uint)((unchecked((int)(reg[(int)(23)])) << 17))) | (source & unchecked((uint)(131071))));
-            vdp_bus_w(unchecked((uint)(data)));
-            } while (((--length) != 0));
-            dma_src = unchecked((ushort)(((source >> 1) & unchecked((uint)(65535)))));
-        }
+            ushort data = _bus.ReadDmaIoWord(source);
+            source = high | ((source + 2) & 0x1ffff);
+            vdp_bus_w(data);
+        } while (--length != 0);
+        dma_src = (ushort)((source >> 1) & 0xffff);
     }
     private void vdp_dma_copy(uint length)
     {

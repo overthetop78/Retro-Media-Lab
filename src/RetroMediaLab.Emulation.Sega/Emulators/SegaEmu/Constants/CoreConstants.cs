@@ -1,5 +1,3 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
-using RetroMediaLab.Chips.Common.Memory;
 using RetroMediaLab.Emulation.Sega.Emulators.Common.Interop.Contracts;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;

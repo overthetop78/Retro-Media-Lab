@@ -1,5 +1,6 @@
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Contracts;
 using RetroMediaLab.Chips.Controllers.Sega.Input;
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common.Audio;
+
 using RetroMediaLab.Chips.Common.Memory;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;

@@ -18,11 +18,12 @@ public sealed partial class InputHardware
             return unchecked((byte)(127));
         }
     }
-    public void io_init()
+    public void io_init() { input_init(); BindIoPorts(); }
+    private void BindIoPorts()
     {
         unchecked
         {
-            input_init();
+
             switch (input.system[(int)(0)]) {
             case 1:
             {
@@ -204,7 +205,7 @@ public sealed partial class InputHardware
         unchecked
         {
             if (((unchecked((int)(system_hw)) & 129) == 128)) {
-            io_reg[(int)(0)] = unchecked((byte)((unchecked((int)(region_code)) | (unchecked((int)(bios_configuration)) & 1))));
+            io_reg[(int)(0)] = unchecked((byte)((unchecked((int)(region_code)) | (unchecked((int)(versionPins)) & 1))));
             io_reg[(int)(1)] = unchecked((byte)(0));
             io_reg[(int)(2)] = unchecked((byte)(0));
             io_reg[(int)(3)] = unchecked((byte)(0));
@@ -383,7 +384,7 @@ public sealed partial class InputHardware
             return;
             case 6:
             io_reg[(int)(6)] = unchecked((byte)(data));
-            psg_config(z80Cycles, psg_preamp, data);
+            _bus.SetPsgPanning(z80Cycles, data);
             return;
             default:
             return;

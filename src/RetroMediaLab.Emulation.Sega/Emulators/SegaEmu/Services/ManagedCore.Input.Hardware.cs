@@ -1,6 +1,4 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
 using RetroMediaLab.Chips.Common.Memory;
-using RetroMediaLab.Chips.Video.Sega.VDP;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services;
 

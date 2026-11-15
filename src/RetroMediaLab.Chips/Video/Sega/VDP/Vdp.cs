@@ -6,7 +6,7 @@ public sealed partial class Vdp
 {
     public sealed class Configuration
     {
-        public int gg_extra, render, lcd, enhanced_vscroll_limit, overscan, bios, enhanced_vscroll, ntsc;
+        public int gg_extra, render, lcd, enhanced_vscroll_limit, overscan, enhanced_vscroll, ntsc;
         public int PixelDepth = 32;
         public bool DisableSpriteLimit;
         public NtscSetup MdNtscSetup = NtscFilter.Composite(true), SmsNtscSetup = NtscFilter.Composite(false);
@@ -76,11 +76,11 @@ public sealed partial class Vdp
     private byte Z80IrqState { get => _bus.Z80IrqState; set => _bus.Z80IrqState = value; }
     private byte zstate { get => _bus.Z80BusState; set => _bus.Z80BusState = value; }
     private uint mcycles_vdp => _bus.VideoCycles;
-    private byte system_bios => _bus.SystemBios;
-    private uint CdBootBank => _bus.CdBootBank;
-    private uint CartridgeSpecial => _bus.CartridgeSpecial;
-    private bool HasSvp => _bus.HasSvp;
-    private byte[] work_ram => _bus.WorkRam;
+
+
+
+
+
 
     private struct ObjectInfo { public ushort ypos, xpos, attr, size; }
     private struct Clip { public byte left, right, enable; }
@@ -105,7 +105,8 @@ public sealed partial class Vdp
     }
 
     public void Initialize(byte pal) { vdp_pal = pal; vdp_init(); }
-    public void Reset() { render_reset(); Array.Clear(_palette16); vdp_reset(); }
+    private VdpResetPreset _resetPreset;
+    public void Reset(VdpResetPreset preset = VdpResetPreset.None) { _resetPreset = preset; render_reset(); Array.Clear(_palette16); vdp_reset(); }
     public void RenderLine(int line) => render_line(line);
     public void BlankLine(int line, int offset, int width) => blank_line(line, offset, width);
     public void ParseSprites(int line) => parse_satb(line);
@@ -143,7 +144,7 @@ public sealed partial class Vdp
     private void m68k_set_irq_delay(uint level) => _bus.SetMainIrqDelay(level);
     private void z80_set_irq_line(uint level) => _bus.SetZ80Irq(level);
     private int m68k_cycles() => _bus.MainInstructionCycles;
-    private uint io_68k_read(uint register) => _bus.ReadIo(register);
+
 
     private void vdp_dma_68k_ext(uint length)
     {

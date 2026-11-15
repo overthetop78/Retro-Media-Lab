@@ -174,7 +174,7 @@
     - [x] Supprimer artifacts/Emulation/segaemu-routes/cpu-targeted/.work et ses sessions, projets, sources de tests et binaires temporaires après exploitation ; conserver seulement les résultats et le générateur.
     - [x] Modifier docs/projects/emulations/Sega/SegaEmu-audit.md : noter les routes fabriquées et les nouveaux résultats ciblés avec leurs limites, puis arrêter après le premier sélecteur.
 
-- [ ] Préparer la refonte complète sur refactor-sega-emu
+- [x] Préparer la refonte complète sur refactor-sega-emu
   - [x] Annuler les prototypes et conserver les documents
     - [x] Restaurer src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Interfaces/ICpu68000Bus.cs depuis HEAD : supprimer les changements expérimentaux.
     - [x] Restaurer src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Services/Cpu68000.Instructions.cs depuis HEAD : supprimer les changements expérimentaux.
@@ -192,6 +192,60 @@
     - [x] Supprimer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Functions/CpuRouteFunctions.cs : retirer le fichier expérimental non suivi.
     - [x] Supprimer tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/CpuRouteTests.cs : retirer le fichier expérimental non suivi.
     - [x] Modifier docs/projects/emulations/Sega/SegaEmu-audit.md : distinguer les résultats historiques des prototypes retirés et le nouveau chantier de refonte.
-  - [ ] Publier les documents avant de démarrer la branche
-    - [ ] Modifier docs/tasks/emulation/segaemu.md : consigner le nettoyage ; indexer et committer uniquement docs/tasks/emulation/segaemu.md et docs/projects/emulations/Sega/SegaEmu-audit.md, puis pousser main sur origin.
-    - [ ] Créer la référence Git refs/heads/refactor-sega-emu depuis le commit documentaire poussé et la sélectionner ; détailler ensuite les actions de refonte dans docs/tasks/emulation/segaemu.md avant toute modification du code.
+  - [x] Publier les documents avant de démarrer la branche
+    - [x] Modifier docs/tasks/emulation/segaemu.md : consigner le nettoyage ; indexer et committer uniquement docs/tasks/emulation/segaemu.md et docs/projects/emulations/Sega/SegaEmu-audit.md, puis pousser main sur origin.
+    - [x] Créer la référence Git refs/heads/refactor-sega-emu depuis le commit documentaire poussé et la sélectionner ; détailler ensuite les actions de refonte dans docs/tasks/emulation/segaemu.md avant toute modification du code.
+
+- [x] Refondre SegaEmu et les puces utilisées, sur refactor-sega-emu
+  - [x] Conserver une référence fonctionnelle avant réécriture
+    - [x] Créer artifacts/Emulation/segaemu-refactor/.work et son banc temporaire : compiler les seules sources SegaEmu et puces concernées, réutiliser les dépendances communes, capturer images/audio et états bruts de référence en Debug et Release, avec libération des cœurs et sessions dans finally.
+  - [x] Rendre le 68000 indépendant des règles de carte
+    - [x] Créer src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Contracts/Cpu68000Configuration.cs et Services/Cpu68000.Timing.cs ; modifier Cpu68000.cs, Cpu68000.Instructions.cs, Cpu68000.Tables.cs et ICpu68000Bus.cs : une configuration neutre, une table canonique de cycles, une boucle commune, aucune sélection implicite MD/CD ni agrégation d'IRQ de carte.
+    - [x] Créer SegaEmu/Functions/CpuConfigurationFunctions.cs et SegaEmu/Buses/{MappedCpuBus,MegaDriveCpuBus,MegaCdCpuBus}.cs ; modifier Common/SegaBoard*.cs, State/SegaBoard.State.cs et Machines/MegaCd/Hardware/Scd*.cs : appliquer explicitement les politiques Sega, isoler les bus, garder les accès directs et déplacer les masques d'IRQ dans la carte.
+  - [x] Séparer le VDP et le PCM du câblage de la console
+    - [x] Créer src/RetroMediaLab.Chips/Video/Sega/VDP/Contracts/VdpResetPreset.cs ; modifier IVdpBus.cs, Vdp.cs, Vdp.Controller.cs et le contrat de configuration vidéo : remplacer BIOS/cartouche/SVP/WorkRam par des signaux et fenêtres DMA, avec registres initiaux fournis par la carte.
+    - [x] Modifier SegaEmu/Common/SegaBoard.Buses.cs, Common/SegaBoard.cs et Common/SystemConfiguration.cs : porter les décisions de firmware, lunettes 3D et premier mot DMA sur la carte, avec accès par bloc à la mémoire DMA.
+    - [x] Modifier src/RetroMediaLab.Chips/Audio/Ricoh/RF5C164/Rf5c164.cs et SegaEmu/Machines/MegaCd/Hardware/Scd.cs : fournir une primitive de chargement de RAM PCM, déplacer les registres, masques et rebouclages du transfert CD vers son contrôleur.
+  - [x] Retirer les multiplicateurs de carte des autres puces
+    - [x] Modifier Chips/CPU/Zilog/Z80/Instruction/Services/CpuZ80.cs et CpuZ80.Tables.cs : exprimer les tables en T-states et recevoir explicitement le multiplicateur d'horloge, neutre par défaut.
+    - [x] Modifier Chips/Audio/TexasInstruments/SN76489/Instruction/Sn76489.cs et Chips/Audio/Ricoh/RF5C164/Rf5c164.cs : fournir les unités d'horloge au constructeur, sans facteur Sega implicite.
+    - [x] Créer SegaEmu/Constants/MachineClockRatios.cs ; modifier Functions/CpuConfigurationFunctions.cs, Common/SegaBoard*.cs, Common/Audio/SoundUnit.cs et Machines/MegaCd/Hardware/Scd.cs : fournir les facteurs Sega aux puces, et ajouter leurs sources aux contrôles ciblés dans artifacts/Emulation/segaemu-refactor/.work/run.ps1.
+  - [x] Fiabiliser les contextes des périphériques et le chargement d'état
+    - [x] Créer Chips/Controllers/Sega/Input/Contracts/InputDeviceConfiguration.cs et SegaEmu/Functions/InputConfigurationFunctions.cs ; modifier InputHardware.cs, InputHardware.Input.cs, InputHardware.Io.cs et IoController.cs : sortir les métadonnées ROM et le gain PSG du contrôleur, séparer la liaison des callbacks de la remise à zéro.
+    - [x] Créer src/RetroMediaLab.Chips/Controllers/Sega/Input/InputHardware.Context.cs et modifier ses contrats nécessaires : capturer les phases, compteurs et temporisations des périphériques, sans conserver de callbacks dans l'état.
+    - [x] Modifier SegaEmu/State/SegaBoard.State.cs et Machines/MegaCd/Hardware/Scd.Context.cs : contrôler tailles et marqueur interne avant Reset, ajouter le contexte d'entrée dans une version de sauvegarde explicite, conserver la lecture du format précédent.
+  - [x] Répartir les responsabilités dans SegaEmu
+    - [x] Déplacer Common/{MachineResources,SystemConfiguration}.cs vers Contracts/, SystemHardware.cs vers Constants/ et Common/Audio/SoundUnit*.cs vers Audio/ ; extraire SoundConfiguration.cs dans Contracts/ ; modifier les références SegaEmu et tests concernés.
+    - [x] Créer artifacts/Emulation/segaemu-refactor/.work/extract-schedulers.ps1 : extraire les méthodes avec Roslyn en qualifiant les accès à la carte, sans changer leurs expressions ; supprimer cet outil avec .work après validation.
+    - [x] Créer les composants Scheduling/{MegaDriveFrameScheduler,MegaCdFrameScheduler,EightBitFrameScheduler}.cs à partir des ordonnanceurs existants ; modifier SegaBoard.cs et Machines/*/*Machine.cs pour choisir le routage une fois à l'initialisation et conserver les mêmes algorithmes.
+    - [x] Déplacer les fichiers partiels d'intégration SegaBoard vers Boards/ et Buses/ selon leur responsabilité, les chargeurs LoadRom vers Media/Loading/, supprimer imports et vides redondants, garder les protocoles matériels et la compatibilité SC-3000 existants sans inventer un clavier absent.
+  - [x] Réduire les ressources et copies inutiles sans modifier les contrats partagés
+    - [x] Modifier SegaEmu/Audio/SoundUnit.cs et SoundUnit.Context.cs : créer la FM et son buffer à la première utilisation nécessaire, préserver la compatibilité de contexte et le comportement des ports.
+    - [x] Modifier SegaBoard.cs, Cartridge/CartridgeAddressSpace.cs et Media/Loading/LoadRom.cs : créer les buffers annexes et tables d'adressage à leur utilisation, dimensionner la ROM 8 bits avec ses réserves de firmware et croissance contrôlée.
+    - [x] Modifier Services/ManagedCore.cs et ManagedCore.Output.cs, créer Services/ManagedCore.Persistence.cs : isoler les accès aux sauvegardes persistantes, conserver la dernière image quand le rendu est sauté, regrouper les copies contiguës, préserver la propriété et la durée de vie des tableaux publiés.
+  - [x] Corriger les erreurs de compilation de la refonte
+    - [x] Modifier Chips/Audio/TexasInstruments/SN76489/Instruction/Sn76489.cs, Controllers/Sega/Input/InputHardware.cs et InputHardware.Context.cs, CPU/Motorola/M68000/Execution/Services/Cpu68000.cs : terminer le parametre horloge, declarer configuration et spans, restaurer la primitive abs.
+  - [x] Corriger la reserve des cartouches 8 bits
+    - [x] Modifier SegaEmu/Boards/SegaBoard.cs : inclure les pages non mappees a 0x510000 dans la capacite initiale.
+  - [x] Corriger la taille retournee des etats v3
+    - [x] Modifier SegaEmu/State/SegaBoard.State.cs : compter le contexte des entrees deja recharge dans la taille retournee.
+  - [x] Vérifier les contrats, les machines et les coûts de la refonte
+    - [x] Modifier les tests autonomes existants et créer tests/RetroMediaLab.Chips.Tests/SegaEmu/ReusableChipTests.cs : vérifier CPU neutre et configurable, DMA PCM et reprise effective des protocoles d'entrée.
+    - [x] Créer les relevés sous artifacts/Emulation/segaemu-refactor/ : vérifier les machines affectées sur programmes en mémoire, les états anciens/nouveaux et invalides, puis comparer les deux jeux MD/MCD ciblés en Debug et Release, sans compiler l'application ni les autres émulateurs.
+    - [x] Modifier le banc temporaire .work/run.ps1 et Program.cs, créer .work/reference-source depuis 476fc8779 : étendre la référence et les campagnes à toutes les machines et à plusieurs ROM déjà utilisées, sans réintroduire les anciens prototypes ; conserver par jeu les écarts, problèmes, corrections et retests.
+    - [x] Creer artifacts/Emulation/segaemu-refactor/.work/ChipsTests.csproj : compiler seulement les tests SegaEmu autonomes, journaliser Debug et Release ; contourner uniquement la compilation du test NEC etranger au perimetre, sans le modifier.
+    - [x] Modifier tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/OptionIntegrationTests.cs et Emulation/Sega/FirmwareIntegrationTests.cs : corriger les references qualifiees SE.Common vers Contracts et Audio ainsi que le champ paresseux _smsComponent ; creer .work/integration-tests/IntegrationTests.csproj pour les controles SegaEmu de reprise et ressources en Debug et Release.
+    - [x] Modifier .work/run.ps1 : isoler les caches de compilation par configuration et etape ; creer invalid-after-Release.json et relancer Release apres reconstruction ciblee de Chips pour aligner sa version attendue.
+    - [x] Modifier SegaEmu/Boards/SegaBoard.cs : conserver 8 Mio pour les fenetres BIOS historiques de 4 Mio a partir de 0x400000, corriger les erreurs des cinq tests options avec BIOS actif ; creer les retests 8 bits Debug et Release apres correction.
+    - [x] Modifier SegaEmu/Constants/SystemHardware.cs et les fichiers SegaEmu qui le referencent : aligner son espace de noms sur Constants ; creer .work/clean-usings.ps1 pour retirer seulement les imports signales inutiles par Roslyn, puis creer les journaux de compilation du module Sega en Debug et Release et des tests finaux.
+    - [x] Modifier .work/run.ps1 et .work/integration-tests/IntegrationTests.csproj : apres construction du module reel, utiliser directement ses DLL et Chips plutot que recompilation de copies source homonymes ; creer les campagnes finales completes Debug et Release, sans ambiguite de types anciens dans les caches du banc.
+    - [x] Creer .work/reference-module depuis 476fc8779 et .work/build-reference.ps1 : construire Chips puis le module Sega de reference, avec leurs frontieres assemblees reelles et les seules dependances communes deja construites ; creer une nouvelle reference Debug et Release comparable aux DLL finales, en verifiant les empreintes de sorties precedentes.
+    - [x] Modifier Chips/Audio/TexasInstruments/SN76489/Instruction/Sn76489.cs, CPU/Motorola/M68000/Execution/Services/{Cpu68000,Cpu68000.Tables}.cs, CPU/Zilog/Z80/Instruction/Services/CpuZ80.Tables.cs, Controllers/Sega/Input/InputHardware.cs et les tests SegaEmu modifies : retirer les espaces de fin de ligne et lignes finales surnumeraires signales par git diff --check.
+    - [x] Modifier tests/RetroMediaLab.Chips.Tests/SegaEmu/ReusableChipTests.cs : ajouter une reprise de paquet souris au milieu du delai de reponse et des mouvements signes ; creer les journaux finaux des tests puces Debug et Release.
+    - [x] Modifier Chips/CPU/Zilog/Z80/Instruction/Services/CpuZ80.cs et CpuZ80.Tables.cs, tests/RetroMediaLab.Chips.Tests/SegaEmu/InstructionCpuTests.cs : precalculer et partager les six tables selon le multiplicateur neutre fourni, conserver le ratio dynamique independant ; couvrir les horloges 1 et 15, archiver les premiers releves, reconstruire Chips seulement et retester toutes les machines dans les deux configurations.
+    - [x] Supprimer artifacts/Emulation/segaemu-refactor/.work avec ses tests externes, binaires, états de référence et sessions, ainsi que compiler-command.txt, compiler-diagnostic.log, compiler-references.json et reference-resolution.json ; conserver journaux et mesures utiles.
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu.md et SegaEmu-audit.md : documenter l'architecture effective, les contrats réutilisables, la compatibilité, les mesures et limites ; terminer les cases réellement réalisées.
+
+- [x] Preparer le commit global demande
+  - [x] Actualiser le statut documentaire
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu-audit.md : remplacer le statut temporaire non commite par la validation de la refonte sur refactor-sega-emu.

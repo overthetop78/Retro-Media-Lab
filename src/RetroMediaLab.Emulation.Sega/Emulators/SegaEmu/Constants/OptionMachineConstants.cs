@@ -1,5 +1,3 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
-using RetroMediaLab.Chips.Common.Memory;
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
 
 internal static class OptionMachineConstants

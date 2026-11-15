@@ -1,6 +1,6 @@
-# Audit SegaEmu et Chips — solutions et effets sur la vitesse
+# Audit SegaEmu et Chips — solutions et bilan de refonte
 
-État du 14 novembre 2026, après le commit `d53ae1cf1`.
+Constats initiaux du 14 novembre 2026. Le bilan final de refactor-sega-emu figure en fin de document ; sa référence est le code du commit 476fc8779.
 
 **Statut après annulation des prototypes — 14 novembre 2026.** Les modifications expérimentales du code, des tests et du générateur ont été annulées. Les routes et mesures décrites dans ce document sont un historique ; elles ne sont plus présentes dans le code de main. Les cases cochées des essais décrivent ce travail passé.
 
@@ -8,7 +8,7 @@
 
 Périmètre : `RetroMediaLab.Emulation.Sega/Emulators/SegaEmu` et les composants de `RetroMediaLab.Chips` utilisés par ce cœur. Les autres émulateurs Sega ne sont pas à modifier. Atari, Amiga et Amstrad servent de comparaison pour l'organisation et l'intégration aux services communs.
 
-Ce document consigne l'audit et les essais du premier sélecteur. Cinq routes du 68000 sont disponibles, avec l'original conservé par défaut. Le précédent document de résultats a été supprimé ; les résultats ciblés de remplacement figurent à la fin de cet audit. Les autres points restent à réaliser.
+Les sections historiques décrivent les propositions et les cinq anciennes routes expérimentales, retirées avant la refonte. Le bilan final ci-dessous décrit le code effectivement conservé et ses mesures.
 
 ## Objectif et règle de décision
 
@@ -100,7 +100,7 @@ Références : [IVdpBus.cs](../../../../src/RetroMediaLab.Chips/Video/Sega/VDP/I
 
 **Constat.** La classe partielle représente environ 3 989 lignes réparties en 15 fichiers. Elle regroupe composition, bus, accès mémoire, réinitialisation, sauvegardes et ordonnanceurs de plusieurs machines. Les petites classes sous `Machines/` délèguent largement à cette base. Les dossiers séparent les fichiers davantage que les responsabilités.
 
-Références : [SegaBoard.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/SegaBoard.cs), [SegaBoard.FrameSchedulers.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/SegaBoard.FrameSchedulers.cs) et [MegaDriveMachine.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/MegaDrive/MegaDriveMachine.cs).
+Références : [SegaBoard.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Boards/SegaBoard.cs), [SegaBoard.FrameSchedulers.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Scheduling/SegaBoard.Schedulers.cs) et [MegaDriveMachine.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/MegaDrive/MegaDriveMachine.cs).
 
 **Solutions à faire progressivement :**
 
@@ -135,7 +135,7 @@ Référence : [SegaBoard.State.cs](../../../../src/RetroMediaLab.Emulation.Sega/
 
 **Constat.** `CartridgeState` réserve 10 Mio de ROM pour chaque machine. La base crée des tampons audio pour plusieurs sources. `SoundUnit` réserve son tampon FM et instancie un YM2413 même lorsque la FM n'est pas activée. L'instanciation différée existe déjà pour le 68000 et des composants Mega-CD ; elle reste partielle.
 
-Références : [CartridgeAddressSpace.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Cartridge/CartridgeAddressSpace.cs), [SegaBoard.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/SegaBoard.cs) et [SoundUnit.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/Audio/SoundUnit.cs).
+Références : [CartridgeAddressSpace.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Cartridge/CartridgeAddressSpace.cs), [SegaBoard.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Boards/SegaBoard.cs) et [SoundUnit.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Audio/SoundUnit.cs).
 
 **Solutions à faire en première approche :**
 
@@ -153,7 +153,7 @@ Références : [CartridgeAddressSpace.cs](../../../../src/RetroMediaLab.Emulatio
 
 **Constat.** L'intégration suit déjà les services communs, mais le code matériel garde beaucoup de noms hérités du C, de conversions répétitives, d'imports inutiles et de contrats définis au milieu des implémentations. Les adaptateurs Atari, Amiga et Amstrad constituent surtout une comparaison des couches d'intégration : leurs wrappers natifs ne prouvent pas la qualité interne d'un cœur C#.
 
-Références : [SystemConfiguration.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/SystemConfiguration.cs), [MachineResources.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/MachineResources.cs), [StellaMachineFactory.cs](../../../../src/RetroMediaLab.Emulation.Atari/Emulators/Stella/Factories/StellaMachineFactory.cs), [AmigaMachineFactory.cs](../../../../src/RetroMediaLab.Emulation.Commodore/Emulators/UAE/Common/Interop/Factories/AmigaMachineFactory.cs) et [Caprice32MachineFactory.cs](../../../../src/RetroMediaLab.Emulation.Amstrad/Emulators/Caprice32/Factories/Caprice32MachineFactory.cs).
+Références : [SystemConfiguration.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Contracts/SystemConfiguration.cs), [MachineResources.cs](../../../../src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Common/MachineResources.cs), [StellaMachineFactory.cs](../../../../src/RetroMediaLab.Emulation.Atari/Emulators/Stella/Factories/StellaMachineFactory.cs), [AmigaMachineFactory.cs](../../../../src/RetroMediaLab.Emulation.Commodore/Emulators/UAE/Common/Interop/Factories/AmigaMachineFactory.cs) et [Caprice32MachineFactory.cs](../../../../src/RetroMediaLab.Emulation.Amstrad/Emulators/Caprice32/Factories/Caprice32MachineFactory.cs).
 
 **Solutions de rangement possibles :**
 
@@ -334,3 +334,122 @@ Relevés détaillés conservés dans artifacts/Emulation/segaemu-routes/cpu-targ
 Le précédent document SegaEmu-routes-tests.md reste supprimé. Les sources C# du banc, projets, DLL temporaires et sessions ont été supprimés ; le générateur scripts/emulation/segaemu-cpu-routes.ps1 reste disponible. Son nettoyage couvre aussi la session laissée par l'interruption du passage invalide.
 
 **Arrêt après le premier sélecteur. Aucun commit.**
+
+## Bilan de la refonte — 15 novembre 2026
+
+Les prototypes ont été annulés. Les documents ont été commités et poussés sur main dans 476fc8779, puis la branche refactor-sega-emu a été créée. La refonte a été validée pour son enregistrement sur refactor-sega-emu.
+
+### Solutions effectivement réalisées
+
+| Point | Solution conservée | Effet et limite |
+| --- | --- | --- |
+| 68000 | Cpu68000Configuration neutre, table canonique, cycles partagés par multiplicateur, boucle commune ; politiques Sega dans CpuConfigurationFunctions, bus MegaDriveCpuBus et MegaCdCpuBus. | Plus de sélection implicite de sous-CPU Sega, de règle TAS Sega ou de masque d’IRQ de carte dans la puce ; accès mémoire directs conservés. |
+| Entrées | InputDeviceConfiguration résout le matériel ; métadonnées ROM dans InputConfigurationFunctions. Contexte explicite de 221 octets : phases, compteurs, délais, entrées et registres. | Reprise vérifiée pendant un échange six boutons et pendant un acquittement souris avec mouvements signés ; les callbacks sont reliés sans réinitialiser le protocole restauré. |
+| SC-3000 | Classe et compatibilité cartouche SG-1000 conservées. | Le clavier/BASIC spécifique absent avant refonte reste une limite ; aucune nouvelle fonction n’est simulée. |
+| VDP | Préréglage de reset fourni par la carte ; signaux de rendu, fenêtre mémoire DMA et lecture du port DMA exposés par IVdpBus. | BIOS, cartouche et SVP ne sont plus des données possédées par le VDP. |
+| PCM | WriteWaveRam écrit dans la fenêtre de RAM sélectionnée ; registres et rebouclages du transfert portés par le contrôleur CD. | RF5C164 ne connaît plus le CDC ; franchissement de fenêtre testé. |
+| Carte | Boards : composition et cycle de vie ; Buses : adaptateurs et accès mémoire ; Scheduling : trois composants choisis à l’initialisation ; Contracts : paramètres et ressources empruntées. Audio, Media et State regroupent leurs traitements. | La carte reste propriétaire du câblage et des mappers ; les ordonnanceurs restent internes à SegaEmu. Le choix de famille ne se répète plus à chaque trame. |
+| États | Format SEGAEMU 00000003 ; taille, machine, moteur audio, marqueur SCD et bloc d’entrée contrôlés avant Reset. Lecture v2 conservée. | Marqueur CD corrompu refusé sans mutation. Les phases absentes d’un ancien fichier v2 ne peuvent pas être reconstituées : elles gardent le comportement antérieur de remise à zéro. |
+| Ressources | Tables d’adressage, buffers audio annexes et FM créés à leur utilisation ; ROM 8 bits de 8 Mio au lieu de 10 Mio, croissance contrôlée. | Fenêtre BIOS historique de 4 Mio à partir de 0x400000 préservée. Sauver un état peut créer la FM inactive pour conserver le format audio antérieur. |
+| Publication | Présentation mise en cache, copie contiguë lorsque possible, dernière image conservée quand le rendu est sauté ; persistance séparée dans ManagedCore.Persistence.cs. | Chaque image publiée conserve son propre tableau. Les mesures désactivent le frameskip. |
+| Horloges | Multiplicateurs Z80, PSG et PCM fournis explicitement par MachineClockRatios ; six tables Z80 préparées et partagées à l’initialisation. | Bases de cycles neutres, ratio dynamique indépendant. Un autre utilisateur doit fournir ses rapports d’horloge et adapter les contrats de bus. |
+
+Aucun appel ni accès aux constantes, contrats ou données d’un autre émulateur n’a été relevé dans SegaEmu. Les services communs Sega, Emulation, Chips et les adaptations MediaEngine existantes restent utilisés. Aucun texte d’option ni traduction n’a été ajouté.
+
+### Défauts trouvés, corrections et retests
+
+1. La réduction initiale de ROM 8 bits omettait les pages non mappées à 0x510000. Les tests d’options avec BIOS actif ont ensuite révélé la fenêtre BIOS plus grande. La capacité finale est de 8 Mio, avec croissance jusqu’à la limite existante de 10 Mio. Tests d’options, démarrage SMS sans cartouche et campagne complète relancés avec succès.
+2. Le chargement v3 ne comptait pas le contexte d’entrée dans la taille retournée. Retour corrigé ; lecture ancienne/nouvelle et reprise d’état vérifiées.
+3. Les premières mesures avec les DLL réelles relevaient des pertes Debug 8 bits. Le précalcul des six tables Z80 a été ajouté, puis toutes les machines ont été retestées. Champion Tennis SG-1000 passe notamment de 147,3 à 212,6 FPS Debug entre les deux versions refactorisées ; la référence avant refonte est à 188,4 FPS.
+4. Les lancements avec mauvaise version de DLL ou type ancien provenant des copies du banc sont exclus. La comparaison finale utilise des assemblages séparés réels : référence reconstruite depuis 476fc8779, version finale du dépôt et dépendances de la configuration demandée, avec empreintes vérifiées. Les premiers relevés avec sources regroupées dans le banc restent des essais intermédiaires.
+
+### Périmètre et protocole
+
+- Huit modèles couverts : SG-1000, SC-3000, Mark III, Master System, Game Gear, Mega Drive, Mega-CD et Pico.
+- 22 cas de jeux, 18 médias distincts déjà utilisés ; sept modèles sur médias réels. Pico : programme en mémoire seulement. SC-3000 : deux cartouches SG-1000 compatibles ; Mark III : deux cartouches SMS.
+- Même média, BIOS et options avant/après. BIOS cartouche désactivé pour reproduire les scénarios précédents ; BIOS CD fournis pour Mega-CD. Frameskip désactivé, sans fenêtre ni limiteur.
+- Trois passages par jeu et version ; 60 trames de chauffe, puis 60 trames mesurées en Debug ou 900 en Release.
+- Adaptateur : machine complète avec publication des images et blocs audio. Machine seule : CPU, VDP, audio, bus, cartouches et CD lorsque présents, avec génération audio/vidéo, sans publication par l’adaptateur. Cette seconde mesure repart du même état brut v2.
+- FPS des tableaux : médianes de trois passages. JSON : chaque passage, durées, trames, min/max, allocations du thread mesuré, fréquence nominale et pourcentage de vitesse réelle.
+- Contrôles : dernière image et dernier bloc audio identiques à la référence pour chaque passage ; lecture d’états anciens ; sauvegarde/reprise des nouveaux ; refus non destructif d’un marqueur CD invalide.
+- 24 tests autonomes de puces et 18 tests ciblés d’intégration réussissent dans chaque configuration : 42 par configuration, 84 exécutions. Module Sega et Chips compilés en Debug/Release ; application et autres modules non reconstruits.
+- Le projet global Chips.Tests conserve l’import NEC préexistant en erreur. Les tests du périmètre passent dans un projet temporaire ciblé ; le test NEC n’a pas été modifié.
+
+Ces contrôles portent sur les séquences automatisées de démarrage/attract et les programmes en mémoire. Ils ne démontrent pas une partie complète, tous les périphériques/réglages ou une compatibilité commerciale Pico. Cette comparaison SegaEmu avant/après ne réévalue pas l’ancienne différence audio avec GenesisPlusGXCS sur Final Fight CD.
+
+### Mesures finales
+
+Les FPS avec publication et ceux de la machine seule restent séparés ; chaque écart concerne le même cas.
+
+#### Debug
+
+| Machine | Jeu | FPS publication avant → après | Écart | FPS machine seule avant → après | Vitesse nominale après |
+| --- | --- | ---: | ---: | ---: | ---: |
+| GameGear | Columns (USA, Europe) | 245,8 → 251,0 | +2,1 % | 217,9 → 257,1 | 418,8 % |
+| GameGear | Shinobi (USA, Europe) | 218,8 → 244,7 | +11,9 % | 198,6 → 251,2 | 408,4 % |
+| GameGear | Sonic The Hedgehog (World) (Rev 1) | 206,6 → 192,6 | -6,8 % | 166,6 → 171,0 | 321,5 % |
+| MarkIII | Alex Kidd in Miracle World (USA, Europe) | 176,0 → 165,3 | -6,1 % | 147,0 → 167,5 | 275,9 % |
+| MarkIII | Sonic The Hedgehog (USA, Europe) | 162,9 → 165,5 | +1,6 % | 139,6 → 166,1 | 276,2 % |
+| MasterSystem | Alex Kidd in Miracle World (USA, Europe) | 168,4 → 194,7 | +15,6 % | 142,1 → 185,2 | 324,9 % |
+| MasterSystem | Sonic The Hedgehog (USA, Europe) | 169,4 → 143,3 | -15,4 % | 141,3 → 148,5 | 239,1 % |
+| MasterSystem | Wonder Boy III - The Dragon's Trap (USA, Europe) | 90,6 → 92,8 | +2,5 % | 84,2 → 94,7 | 154,9 % |
+| MegaCd | Batman Returns (Europe) | 30,7 → 33,2 | +8,2 % | 23,9 → 27,0 | 66,8 % |
+| MegaCd | Dragon's Lair (Japan) (En,Ja,Fr,De,It) | 46,7 → 49,1 | +5,2 % | 33,1 → 35,4 | 81,9 % |
+| MegaCd | Final Fight CD (Europe) | 31,3 → 33,1 | +5,6 % | 25,2 → 27,4 | 66,5 % |
+| MegaDrive | Aladdin (Europe) | 29,6 → 28,4 | -4,0 % | 30,5 → 29,0 | 57,1 % |
+| MegaDrive | Golden Axe (World) | 31,5 → 26,6 | -15,4 % | 33,0 → 26,7 | 44,4 % |
+| MegaDrive | Gunstar Heroes (USA) | 49,0 → 47,2 | -3,7 % | 57,4 → 50,9 | 78,7 % |
+| MegaDrive | Sonic The Hedgehog (USA, Europe) | 40,7 → 34,3 | -15,7 % | 34,1 → 27,6 | 57,2 % |
+| MegaDrive | Streets of Rage 2 (USA) | 54,9 → 50,4 | -8,1 % | 45,3 → 41,4 | 84,1 % |
+| MegaDrive | Thunder Force III (Japan, USA) | 31,4 → 30,8 | -2,0 % | 31,7 → 30,4 | 51,4 % |
+| Sc3000 | 007 James Bond (Japan) (v2.7) (Othello Multivision) | 147,6 → 171,6 | +16,2 % | 126,2 → 162,8 | 286,4 % |
+| Sc3000 | Champion Tennis (Japan) | 186,0 → 179,6 | -3,4 % | 162,8 → 188,5 | 299,8 % |
+| Sg1000 | 007 James Bond (Japan) (v2.7) (Othello Multivision) | 174,5 → 180,3 | +3,3 % | 133,3 → 173,9 | 300,9 % |
+| Sg1000 | Champion Tennis (Japan) | 188,4 → 212,6 | +12,9 % | 162,1 → 214,1 | 354,8 % |
+| Sg1000 | Congo Bongo (Japan) | 163,7 → 165,8 | +1,3 % | 138,8 → 167,0 | 276,7 % |
+
+#### Release
+
+| Machine | Jeu | FPS publication avant → après | Écart | FPS machine seule avant → après | Vitesse nominale après |
+| --- | --- | ---: | ---: | ---: | ---: |
+| GameGear | Columns (USA, Europe) | 4509,5 → 4792,6 | +6,3 % | 4959,1 → 4999,6 | 7997,9 % |
+| GameGear | Shinobi (USA, Europe) | 3565,9 → 4324,4 | +21,3 % | 4062,6 → 4735,6 | 7216,7 % |
+| GameGear | Sonic The Hedgehog (World) (Rev 1) | 3503,3 → 3456,6 | -1,3 % | 4650,1 → 4691,2 | 5768,4 % |
+| MarkIII | Alex Kidd in Miracle World (USA, Europe) | 3431,6 → 3634,7 | +5,9 % | 3593,8 → 3984,4 | 6065,6 % |
+| MarkIII | Sonic The Hedgehog (USA, Europe) | 3515,9 → 3709,8 | +5,5 % | 3620,2 → 3850,0 | 6190,9 % |
+| MasterSystem | Alex Kidd in Miracle World (USA, Europe) | 3002,6 → 3573,9 | +19,0 % | 3806,7 → 3876,6 | 5964,2 % |
+| MasterSystem | Sonic The Hedgehog (USA, Europe) | 3552,8 → 3822,3 | +7,6 % | 3617,7 → 3828,6 | 6378,8 % |
+| MasterSystem | Wonder Boy III - The Dragon's Trap (USA, Europe) | 2461,7 → 2590,1 | +5,2 % | 2185,4 → 2300,1 | 4322,4 % |
+| MegaCd | Batman Returns (Europe) | 663,2 → 692,7 | +4,5 % | 683,4 → 724,2 | 1393,8 % |
+| MegaCd | Dragon's Lair (Japan) (En,Ja,Fr,De,It) | 726,2 → 796,2 | +9,6 % | 700,7 → 754,9 | 1328,7 % |
+| MegaCd | Final Fight CD (Europe) | 682,5 → 707,2 | +3,6 % | 611,7 → 654,0 | 1422,9 % |
+| MegaDrive | Aladdin (Europe) | 704,0 → 709,2 | +0,7 % | 643,0 → 615,6 | 1426,8 % |
+| MegaDrive | Golden Axe (World) | 864,5 → 898,3 | +3,9 % | 734,8 → 746,7 | 1499,1 % |
+| MegaDrive | Gunstar Heroes (USA) | 1074,9 → 1098,7 | +2,2 % | 771,7 → 809,1 | 1833,6 % |
+| MegaDrive | Sonic The Hedgehog (USA, Europe) | 837,2 → 864,1 | +3,2 % | 688,7 → 730,9 | 1442,0 % |
+| MegaDrive | Streets of Rage 2 (USA) | 994,7 → 1008,2 | +1,4 % | 807,1 → 833,9 | 1682,5 % |
+| MegaDrive | Thunder Force III (Japan, USA) | 705,9 → 712,6 | +0,9 % | 673,4 → 685,2 | 1189,1 % |
+| Sc3000 | 007 James Bond (Japan) (v2.7) (Othello Multivision) | 3959,5 → 4163,9 | +5,2 % | 4542,1 → 4751,2 | 6948,8 % |
+| Sc3000 | Champion Tennis (Japan) | 3805,0 → 3740,0 | -1,7 % | 4033,1 → 4099,2 | 6241,3 % |
+| Sg1000 | 007 James Bond (Japan) (v2.7) (Othello Multivision) | 3864,3 → 3689,8 | -4,5 % | 4444,3 → 4445,2 | 6157,6 % |
+| Sg1000 | Champion Tennis (Japan) | 3657,1 → 4006,4 | +9,6 % | 4196,1 → 4185,5 | 6686,0 % |
+| Sg1000 | Congo Bongo (Japan) | 3452,1 → 3831,6 | +11,0 % | 3927,1 → 4475,5 | 6394,2 % |
+
+### Décisions et améliorations restantes
+
+Les 22 médianes Release restent au-dessus de 100 FPS et conservent plus de la moitié de la référence. Elles vont de 692,7 à 4 792,6 FPS avec publication. Les écarts Release vont d’environ −4,5 % à +21,3 %. Les petits écarts ne suffisent pas à attribuer un gain précis à un composant.
+
+Les pertes Debug restent visibles : Sonic Master System −15,4 %, Golden Axe Mega Drive −15,4 % et Sonic Mega Drive −15,7 % dans cette campagne. Les autres cas figurent dans le tableau, gains compris. Le précalcul Z80 améliore plusieurs cas 8 bits par rapport à la première refonte, sans supprimer toutes les pertes de la comparaison complète.
+
+La séparation des puces, des bus et des services est conservée ; aucun retour à l’assemblage monolithique n’est retenu avec les seuils Release demandés. La prochaine amélioration de vitesse doit cibler ces trois cas Debug, distinguer machine et publication, puis vérifier une modification à la fois. Aucun gain d’un composant isolé n’est annoncé à partir de ces FPS de machine.
+
+Les défauts fonctionnels révélés pendant la refonte sont corrigés et retestés. Les limites SC-3000/Pico restent explicites.
+
+### Relevés conservés
+
+- [Comparaison finale détaillée](../../../../artifacts/Emulation/segaemu-refactor/comparison.json)
+- [Référence Debug](../../../../artifacts/Emulation/segaemu-refactor/baseline-Debug.json) et [version finale Debug](../../../../artifacts/Emulation/segaemu-refactor/after-Debug.json)
+- [Référence Release](../../../../artifacts/Emulation/segaemu-refactor/baseline-Release.json) et [version finale Release](../../../../artifacts/Emulation/segaemu-refactor/after-Release.json)
+- [Sélection](../../../../artifacts/Emulation/segaemu-refactor/selection.json), [empreintes des médias](../../../../artifacts/Emulation/segaemu-refactor/media-sha256.json), [sources modifiées](../../../../artifacts/Emulation/segaemu-refactor/source-sha256.json) et [assemblages finaux vérifiés](../../../../artifacts/Emulation/segaemu-refactor/assemblies-final.json)
+- Journaux de compilation/exécution sous artifacts/Emulation/segaemu-refactor. Les empreintes CUE identifient les descripteurs, pas chaque piste binaire.
+- Projets, sources de banc, copies de référence, binaires de test, états et sessions temporaires supprimés. Les tests autonomes utiles restent dans tests/.

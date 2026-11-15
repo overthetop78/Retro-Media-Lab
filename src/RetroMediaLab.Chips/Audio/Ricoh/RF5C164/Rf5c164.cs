@@ -7,13 +7,18 @@ namespace RetroMediaLab.Chips.Audio.Ricoh.RF5C164;
 
 public sealed partial class Rf5c164
 {
-    private const uint ClockRatio = 384 * 4;
+    private readonly uint ClockRatio;
     public const int ContextSize = ChannelContextSize * 8 + 4 + 4 + 0x10000;
     private readonly BandLimitedBuffer _output;
     private int pcm_volume = 100;
     public int Volume { get => pcm_volume; set => pcm_volume = value; }
     public Memory<byte> WaveRam => pcm.ram;
-    public Rf5c164(BandLimitedBuffer output) { _output = output; }
+    public Rf5c164(BandLimitedBuffer output, int clockMultiplier = 1)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(clockMultiplier, 1);
+        ClockRatio = checked(384u * (uint)clockMultiplier);
+        _output = output;
+    }
     public void Initialize(double clock, int sampleRate) => _output.SetRates(clock / ClockRatio, sampleRate);
     public void Reset()
     {
@@ -38,20 +43,19 @@ public sealed partial class Rf5c164
     private void EndFrame(uint clocks) => _output.EndFrame(clocks);
     private uint ClocksNeeded(uint samples) => unchecked((uint)_output.ClocksNeeded((int)samples));
 
-    public void DmaWrite(uint length, ref Register16 sourceAddress, ref Register16 destinationAddress, ReadOnlySpan<byte> cdcRam)
+    /// <summary>Copies into the selected 4 KiB wave-RAM window, wrapping at its boundary.</summary>
+    public void WriteWaveRam(int offset, ReadOnlySpan<byte> samples)
     {
-        ushort source = (ushort)(sourceAddress.Word & 0x3fff);
-        ushort destination = (ushort)((destinationAddress.Word << 2) & 0xfff);
-        destinationAddress.Word = unchecked((ushort)(destinationAddress.Word + (length >> 2)));
-        sourceAddress.Word = unchecked((ushort)(sourceAddress.Word + length));
-        while (length-- != 0)
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(offset, 0x1000);
+        while (!samples.IsEmpty)
         {
-            pcm.ram[pcm.BankOffset + destination] = cdcRam[source];
-            source = (ushort)((source + 1) & 0x3fff);
-            destination = (ushort)((destination + 1) & 0xfff);
+            int count = Math.Min(0x1000 - offset, samples.Length);
+            samples[..count].CopyTo(pcm.ram.AsSpan(pcm.BankOffset + offset, count));
+            samples = samples[count..];
+            offset = (offset + count) & 0xfff;
         }
     }
-
     public int SaveContext(Span<byte> state)
     {
         if (state.Length < ContextSize) throw new ArgumentException("PCM context buffer is too short.", nameof(state));

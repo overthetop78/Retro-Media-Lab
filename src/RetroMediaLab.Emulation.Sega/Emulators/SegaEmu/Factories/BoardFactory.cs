@@ -1,4 +1,5 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Contracts;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.GameGear;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MarkIII;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MasterSystem;

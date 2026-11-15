@@ -1,22 +1,24 @@
 # SegaEmu
 
+Refonte sur refactor-sega-emu : [architecture, corrections et campagne finale Debug/Release](SegaEmu-audit.md#bilan-de-la-refonte--15-novembre-2026). Les paragraphes et comparaisons de reconstruction ci-dessous constituent l’historique ; les nouveaux résultats comparent exclusivement SegaEmu à sa référence 476fc8779.
+
 État du 14 novembre 2026. SegaEmu 1.0.0 est une reconstruction indépendante à partir des sources locales de GenesisPlusGXCS 1.7.6+2499cd3. À la fin de cette reconstruction, les 963 empreintes de départ de GenesisPlusGXCS et des composants Chips préexistants étaient identiques. L'audit des options demandé ensuite modifie aussi GenesisPlusGXCS ; ses corrections sont détaillées en fin de document. Les composants Chips ne sont pas modifiés par cet audit.
 
 La comparaison A/B contemporaine en Debug et Release, détaillée en fin de document, relève des pertes de vitesse et une divergence audio reproductible sur Final Fight CD. Cette divergence reste à corriger ; la présence d'audio et les captures identiques des premiers essais ne prouvaient pas son égalité PCM.
 
 ## Architecture et intégration
 
-Le code propre à l'émulateur se trouve dans `src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/`. Chaque machine possède une classe sous `Machines/` : SG-1000, SC-3000, Mark III, Master System, Game Gear, Mega Drive, Mega-CD et Pico. La fabrique choisit une composition ; chaque classe définit son initialisation, son câblage et sa boucle de trame. La base abstraite partage bus, cartouches, mémoires et services nécessaires aux cartes. Les composants optionnels Mega Drive/Mega-CD ne sont pas créés sur les machines 8 bits.
+Le code propre reste sous Emulators/SegaEmu. Machines choisit les huit cartes ; Boards porte leur composition commune et leur cycle de vie ; Buses porte le câblage et les accès mémoire ; Scheduling contient les trois ordonnanceurs choisis à l’initialisation. Contracts regroupe les paramètres et ressources empruntées ; Audio, Media, Cartridge et State conservent leurs responsabilités. Les puces réutilisables restent dans Chips et reçoivent explicitement les politiques de carte et rapports d’horloge. Les ressources optionnelles sont créées à leur utilisation.
 
 Les 126 nouveaux fichiers de composants réutilisables appartiennent à Chips : M68000, Z80, SSP1601, VDP, entrées Sega, PSG et FM, RF5C164, CDC/CDD, accélérateur graphique CD, EEPROM, flash et contrôleur YX5200. Leurs contrats de bus, mémoires et médias sont indépendants de l'émulateur. Les mappers, bases de cartouches et assemblages de cartes restent dans SegaEmu.
 
 MediaEngine assure la lecture des images optiques, secteurs, sous-canaux et pistes audio. SegaEmu adapte ces données au contrat du lecteur CDD. Les lecteurs MediaEngine conservent CUE/BIN, ISO et CHD, y compris les décodeurs CHD compressés transférés dans MediaEngine. La lecture Ogg, les pistes WAV/Ogg associées, leurs pregaps et les métadonnées LOOP/NOLOOP passent également par MediaEngine. Le précache est optionnel. La signature publique préexistante du constructeur optique à 22 paramètres est préservée.
 
-SegaEmu est enregistré séparément dans le catalogue commun. Sa fabrique et son adaptateur utilisent les services existants de session, vidéo, audio, clavier, manettes, pointeurs, firmware, disques, sauvegardes persistantes et états. Les constantes, options, BIOS et préparations de contenu lui appartiennent ; aucune référence à un autre émulateur n'a été relevée dans ses 87 fichiers source. Les ressources communes de Sega et les contrats Emulation restent partagés.
+SegaEmu est enregistré séparément dans le catalogue commun. Sa fabrique et son adaptateur utilisent les services existants de session, vidéo, audio, clavier, manettes, pointeurs, firmware, disques, sauvegardes persistantes et états. Les constantes, options, BIOS et préparations de contenu lui appartiennent ; aucune référence à un autre émulateur n'a été relevée dans son code. Les ressources communes de Sega et les contrats Emulation restent partagés.
 
 Les options comprennent variantes matérielles, région et fréquence, BIOS, cartouches et extensions, overclock, rendu, filtres, limite de sprites, curseurs, mixage et volumes par canal, RAM Mega-CD et précache. Les variantes restent éditables ; les options exigeant une reconstruction de la machine sont signalées. Les 693 clés propres comprennent 184 textes localisés dans les 29 cultures et 509 valeurs invariantes dans la base commune. Les nouvelles traductions utilisent Argos. Les autres ressources préexistantes sont inchangées.
 
-Le format d'état propre est `SEGAEMU 00000002`. Il contient le contexte complet des deux M68000 lorsque présents. Les états ne sont pas interchangeables avec GenesisPlusGXCS. Le contrôle réel a révélé un registre d'identification reconstruit comme pour une Mega Drive au chargement d'un état Mega-CD : la correction conserve l'identification matérielle de la machine active.
+Le format courant est SEGAEMU 00000003, avec 221 octets de contexte des périphériques d’entrée. La lecture de SEGAEMU 00000002 est conservée ; les phases absentes de ces anciens fichiers ne peuvent pas être retrouvées. Les blocs sont contrôlés avant réinitialisation et l’identification de la machine active est conservée. Les états restent propres à SegaEmu.
 
 ## Validation
 

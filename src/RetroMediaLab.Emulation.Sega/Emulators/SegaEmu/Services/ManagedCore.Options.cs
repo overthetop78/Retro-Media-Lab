@@ -1,11 +1,11 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
-using RetroMediaLab.Chips.Common.Memory;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Contracts;
+
 using Ym2612 = RetroMediaLab.Chips.Audio.Yamaha.YM2612.Instruction.Ym2612;
 using Ym3438 = RetroMediaLab.Chips.Audio.Yamaha.YM3438.Instruction.Ym3438;
 using System.Globalization;
 using System.IO;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common.Audio;
+
 using RetroMediaLab.Chips.Video.Sega.VDP;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services;
