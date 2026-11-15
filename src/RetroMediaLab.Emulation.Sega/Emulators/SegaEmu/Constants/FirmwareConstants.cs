@@ -4,6 +4,9 @@ internal static class FirmwareConstants
 {
     internal static IReadOnlyList<FirmwareSlot> All { get; } =
     [
+        new("configuration.firmware.segaemu.12", "32X_G_BIOS.BIN", "Emulation.Firmware.segaemu.12", false, OptionMachineConstants.MegaDriveAndCd),
+        new("configuration.firmware.segaemu.13", "32X_M_BIOS.BIN", "Emulation.Firmware.segaemu.13", false, OptionMachineConstants.MegaDriveAndCd),
+        new("configuration.firmware.segaemu.14", "32X_S_BIOS.BIN", "Emulation.Firmware.segaemu.14", false, OptionMachineConstants.MegaDriveAndCd),
         new("configuration.firmware.segaemu.0", "bios_MD.bin", "Emulation.Firmware.segaemu.0", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MegaDrive }),
         new("configuration.firmware.segaemu.1", "bios_CD_E.bin", "Emulation.Firmware.segaemu.1", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MegaCd, ModelConstants.MegaDrive }),
         new("configuration.firmware.segaemu.2", "bios_CD_U.bin", "Emulation.Firmware.segaemu.2", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.MegaCd, ModelConstants.MegaDrive }),

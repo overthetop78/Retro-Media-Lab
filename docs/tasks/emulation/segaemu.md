@@ -298,3 +298,247 @@
     - [x] Modifier artifacts/Emulation/segaemu-pointer/.work/PointerTests.csproj et creer les tests UI temporaires necessaires : executer uniquement les tests utiles et conserver les journaux Debug/Release.
     - [x] Modifier docs/projects/emulations/Sega/SegaEmu.md : documenter sensibilite, perimetre et validation ; construire les sorties locales necessaires a la livraison et les verifier.
     - [x] Supprimer artifacts/Emulation/segaemu-pointer/.work : retirer sources, projets temporaires, binaires et caches apres verification ; terminer les cases realisees.
+
+- [x] Rassembler les references 32X pour une future implementation SegaEmu
+  - [x] Constituer les sources techniques verifiees
+    - [x] Creer artifacts/References/Machines/Sega/32X/source-index.json : enregistrer depots, revisions fixes, chemins locaux, URL et empreintes des references selectionnees.
+    - [x] Creer artifacts/References/Machines/Sega/32X/PicoDrive/ : conserver les sources pertinentes des SH-2, bus, synchronisation, video et PWM depuis le depot amont.
+    - [x] Creer artifacts/References/Machines/Sega/32X/ares/ : conserver les composants SH-2 et 32X utiles comme seconde implementation independante.
+    - [x] Creer artifacts/References/Machines/Sega/32X/jgenesis/ : conserver les composants SH-2 et 32X et leurs notes techniques.
+    - [x] Creer artifacts/References/Machines/Sega/32X/MAME/ : conserver les composants 32X/SH-2 utiles et les drapeaux effectifs du pilote.
+    - [x] Creer artifacts/References/Machines/Sega/32X/manuals/ : conserver les manuels techniques Sega/Hitachi accessibles et leurs URL originales, sans BIOS ni ROM.
+    - [x] Creer artifacts/References/Machines/Sega/32X/BlastEm/ : conserver les sources SH-2/32X de la release 1.0.0 et identifier sa revision Mercurial, car la FAQ historique est depassee.
+    - [x] Creer artifacts/References/Machines/Sega/32X/manuals/32x-hardware-manual-supplement-2.md et indexer ses sources : conserver les corrections de synchronisation/interruptions a confronter aux scans Sega.
+    - [x] Completer artifacts/References/Machines/Sega/32X/BlastEm/sh7095.c et sh7095.h : conserver le modele SoC utilise par BlastEm et distinguer SH7095/SH7604 dans le dossier.
+    - [x] Completer artifacts/References/Machines/Sega/32X/source-index.json et MAME/src/mame/sega/mdconsole.cpp : ajouter les preuves des variantes, les limites et les liens de tests materiels existants.
+    - [x] Supprimer artifacts/References/Machines/Sega/32X/BlastEm/blastem-1.0.0-source.tar.gz et manuals/32X-Hardware-Manual-Rev8.pdf (page HTML du miroir public, pas un PDF), apres extraction selective : conserver les quatorze sources utiles, les empreintes et la revision complete, sans conserver le reste du depot.
+  - [x] Preparer le dossier de conception sans modifier l'emulateur
+    - [x] Creer docs/projects/emulations/Sega/SegaEmu-32X-recherche.md : lister les emulateurs confirmes, distinguer coeurs et interfaces, cartographier les registres/composants/horloges et les raccordements au SegaEmu actuel ; indiquer les points a verifier et un ordre de fabrication/test.
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu.md : ajouter le lien vers ce dossier de recherche ; finaliser source-index.json avec les empreintes et verifier les fichiers telecharges et les liens locaux.
+
+- [ ] Implementer le 32X dans SegaEmu et ses puces reutilisables
+  - [x] Fabriquer et valider le processeur SH-2
+    - [x] Creer artifacts/Emulation/segaemu-32x/.work/GenerateSh2.py : adapter les instructions et le decodeur de reference inspectes ; verifier chaque conversion avant compilation.
+    - [x] Creer src/RetroMediaLab.Chips/CPU/Hitachi/SH2/Contracts/ISh2Bus.cs, Sh2.cs, Sh2.Instructions.cs, Sh2.Decoder.cs et Sh2.Context.cs : instructions, exceptions, delay slots, horloge, interruptions et contexte sans dependance Sega.
+    - [x] Creer tests/RetroMediaLab.Chips.Tests/CPU/Hitachi/Sh2Tests.cs et artifacts/Emulation/segaemu-32x/.work/ChipsTests.csproj : valider instructions, branches, exceptions, interruptions et contexte sur bus en memoire ; conserver les journaux.
+  - [x] Fabriquer les peripheriques et circuits du 32X
+    - [x] Creer src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.cs et Sh7095.Context.cs : bus/cache, registres internes, FRT, watchdog, division, SCI, DMA et contexte du SoC autour du SH-2.
+    - [x] Creer src/RetroMediaLab.Chips/Video/Sega/VDP32X/Vdp32X.cs et Vdp32X.Context.cs : framebuffer, palette, table de lignes, trois modes, overwrite, autofill, IRQ et contexte.
+    - [x] Creer src/RetroMediaLab.Chips/Audio/Sega/PWM32X/Pwm32X.cs et Pwm32X.Context.cs : FIFO, cadence, routage, interruption/DREQ et audio horodate avec contexte.
+    - [x] Creer tests/RetroMediaLab.Chips.Tests/SegaEmu/Mega32XChipTests.cs : valider les circuits et peripheriques sur memoire synthetique avant essais machine.
+  - [x] Raccorder la machine et les reglages existants
+    - [x] Modifier Chips/Video/Sega/VDP/Vdp.Output.cs : exposer un callback de ligne rendue et les indices de couleur empruntes, sans changer le rendu des machines sans extension.
+    - [x] Creer src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.cs et ses fichiers Bus, Registers, Scheduling, State, Boot : posseder les deux SoC, la SDRAM, les BIOS, les registres et la synchronisation avec la Mega Drive.
+    - [x] Creer SegaEmu/Boards/SegaBoard.32X.cs : posseder un adaptateur optionnel, relier les bus, composer les lignes et detacher les callbacks dans Dispose.
+    - [x] Creer SegaEmu/Machines/ThirtyTwoX/ThirtyTwoXMachine.cs ; modifier Boards/SegaBoard.cs, SegaBoard.Initialization.cs, Buses et Scheduling : raccorder cartouche, activation/reset, fenetres 68000/Z80, video composee, PWM et ordonnanceur ; conserver le chemin sans extension pour les autres machines et preparer la composition Mega-CD.
+    - [x] Modifier SegaEmu/Constants/{CoreConstants,FirmwareConstants,OptionMachineConstants}.cs, Factories/BoardFactory.cs, Media/Loading et Services/ManagedCore : declarer le 32X, reconnaitre le contenu, charger les BIOS dedies et conserver manettes/clavier/souris par les services existants.
+    - [x] Modifier SegaEmu/State/SegaBoard.State.cs et les ressources concernees dans Resources/* : versionner les etats 32X, cabler les reglages et traduire toutes les nouvelles chaines avec Argos.
+    - [x] Creer tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/Mega32XIntegrationTests.cs : verifier registres, demarrage, entrees et reprise d'etat par les raccordements publics du coeur.
+  - [ ] Valider sur les ROM et livrer
+    - [x] Creer artifacts/Emulation/segaemu-32x/.work/Runner.cs et son projet : executer plusieurs ROM 32X en Debug et Release, capturer video/audio, FPS et etats, liberer les coeurs et fichiers dans finally ; conserver les resultats et captures.
+    - [x] Modifier SegaEmu/Cartridge/CartridgeAddressSpace.cs, Buses/MappedCpuBus.cs et Boards/SegaBoard.32X.cs : faire suivre aux lectures instructions les banques 32X superposees ; conserver les lectures directes des autres banques.
+    - [x] Creer artifacts/Emulation/segaemu-32x/profile-before.nettrace, profile-before.speedscope.json et profile-before-top.txt : profiler Chaotix avec dotnet-trace et relever les couts propres/cumules avant toute optimisation supplementaire.
+    - [ ] Modifier Chips/Controllers/Hitachi/SH7095/Sh7095.cs et Sh7095.Context.cs : remplacer les recalculs par pas CPU par une horloge de peripheriques a echeances, synchroniser les acces registres, recalculer les IRQ seulement sur changement et rendre DREQ explicite ; adapter Mega32X.cs et Mega32XChipTests.cs.
+    - [ ] Modifier SegaEmu/Boards/SegaBoard.32X.cs : composer les pixels en place de droite a gauche, sans copie ni remise a zero de 4096 octets par ligne.
+    - [ ] Modifier SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.cs et Mega32XIntegrationTests.cs : initialiser aussi GBR sans cartouche et verifier les fetchs 68000 superposes ainsi que le reset des deux SH-2.
+    - [ ] Modifier SegaEmu/Boards/SegaBoard.32X.cs et Machines/ThirtyTwoX/Hardware/Mega32X.cs : distinguer le demarrage sur disque sans cartouche et conserver le VBR de reset pour le bootstrap CD.
+    - [ ] Modifier artifacts/Emulation/segaemu-32x/.work/Runner.cs : fournir le BIOS Mega-CD local, ouvrir Corpse Killer Mega-CD 32X, capturer video/audio et verifier le contexte dans les deux configurations.
+    - [ ] Creer artifacts/Emulation/segaemu-32x/.work/PredecodeSh2.py, Chips/CPU/Hitachi/SH2/Sh2.OpcodeTable.cs et modifier Sh2.Decoder.cs : precalculer les 65536 classes d instructions dans une table constante et utiliser un seul dispatch, comme Cpu68000.Tables.cs ; conserver les semantiques testees et verifier les sorties ROM.
+    - [ ] Modifier Chips/CPU/Hitachi/SH2/Sh2.cs et creer SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Polling.cs : adapter la detection des attentes actives de PicoDrive memory.c (lectures repetees, suspension, reveil sur ecriture/IRQ/video), conserver les horloges de peripheriques et les metadonnees de reprise ; raccorder Bus, Registers, Scheduling et State puis verifier les jeux.
+    - [ ] Modifier SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Bus.cs et Boards/SegaBoard.32X.cs : lire directement les mots/longs SDRAM et ROM empruntee comme les banques du 68000, sans decomposition en multiples callbacks octet.
+    - [ ] Modifier Chips/CPU/Hitachi/SH2/{Sh2.cs,Sh2.Instructions.cs,Sh2.Context.cs,Contracts/ISh2Bus.cs}, Controllers/Hitachi/SH7095/Sh7095.cs, Mega32X.Polling.cs et Mega32X.State.cs : reprendre les accelerations DT/BF et BRA/NOP de PicoDrive, borner le saut par les echeances, inhiber la detection de polling apres DT ; ajouter les comparaisons accelere/original dans Sh2Tests.cs.
+    - [ ] Modifier SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Bus.cs et Mega32XIntegrationTests.cs : conserver les vecteurs et fenetres natives Mega-CD sans cartouche, comme PicoDrive, au lieu de superposer le BIOS 68000 de cartouche.
+    - [ ] Modifier Chips/CPU/Hitachi/SH2/{Sh2.cs,Contracts/ISh2Bus.cs} et Controllers/Hitachi/SH7095/Sh7095.cs : fusionner le fetch et son attente en un appel, lire directement les mots du cache et de sa RAM executable, sans double lecture octet ni try/finally sur le chemin courant ; verifier les memes tests et ROM.
+    - [ ] Creer Chips/CPU/Hitachi/SH2/Sh2.Blocks.cs et Sh2.BlockDecoder.cs avec artifacts/Emulation/segaemu-32x/.work/GenerateBlocks.py ; modifier Sh2.cs, Sh2.Context.cs et ISh2Bus.cs : compiler les blocs SH-2 en IL natif, conserver l interpreteur, arreter aux branches/ecritures, invalider le code modifie et comparer les deux executions.
+    - [ ] Modifier Controllers/Hitachi/SH7095/Sh7095.cs, Sh7095.Context.cs, Mega32X.cs, Mega32X.Bus.cs et Sh2Tests.cs : fournir les versions des pages de code et du cache, activer les blocs pour le SoC, les liberer au reset/chargement, verifier auto-modification, IRQ, contexte et ROM avant mesures Debug/Release.
+    - [ ] Creer artifacts/References/Machines/Sega/32X/Gens/{sh2a.asm,sh2_io.asm,sh2.c,cpu_sh2.c,mem_sh2.asm,mem_m68k_32x.asm,g_32x.cpp,gens.txt,source-index.json} : conserver les sources Gens/GS, leurs blobs et empreintes ; confronter boucle SH-2, bus et ordonnanceur aux references PicoDrive, ares, jgenesis, BlastEm et MAME deja presentes.
+    - [ ] Modifier docs/projects/emulations/Sega/SegaEmu-32X-recherche.md : noter les choix verifies de chaque implementation, les fonctions pertinentes et les ecarts du portage actuel, sans classer les sources par date.
+    - [ ] Modifier Chips/CPU/Hitachi/SH2/{Sh2.cs,Sh2.Blocks.cs,Sh2.Context.cs,Contracts/ISh2Bus.cs} et Controllers/Hitachi/SH7095/{Sh7095.cs,Sh7095.Context.cs} : reprendre le budget CPU local de Gens, cumuler les horloges sans callback par instruction et synchroniser aux echeances, acces registres et sortie de tranche ; comparer les contextes aux tests et ROM.
+    - [ ] Modifier Chips/CPU/Hitachi/SH2/Sh2.Blocks.cs : detecter une sortie de bloc sans avance des cycles, relever PC/budget/IRQ ; creer artifacts/Emulation/segaemu-32x/.work/StopHung.ps1 pour terminer le seul processus de test bloque dans finally et attendre sa destruction avant de reprendre.
+    - [ ] Modifier Sh2.cs et Mega32X.Scheduling.cs temporairement : borner les iterations de diagnostic et relever cycles, PC et cibles si le backend ne rend pas la main ; retirer ces gardes temporaires apres correction.
+    - [ ] Modifier Sh2.Blocks.cs, SH7095/Sh7095.cs et Mega32X.{cs,Bus.cs} : suivre les invalidations par ligne de 16 octets et seulement sur changement de contenu ; compter les compilations pour distinguer un blocage d une recompilation repetitive.
+    - [ ] Modifier Sh2.Blocks.cs : conserver les mots instructions de chaque bloc et reutiliser le delegate si une modification de page ne touche pas ces mots ; verifier les recompilations observees a C00001E0/C00001E8 sur Chaotix.
+    - [ ] Creer Chips/CPU/Hitachi/SH2/Sh2.BlockInliner.cs et modifier Sh2.Blocks.cs, Sh2.BlockDecoder.cs et GenerateBlocks.py : incorporer les corps IL des instructions et aides CPU dans les blocs natifs, avec resolution des generiques, locaux et branches, afin de supprimer les appels C# par instruction et de conserver un backend optimise en Debug ; comparer les routes.
+    - [ ] Modifier Sh2.cs, Sh2.Blocks.cs et Sh2.BlockInliner.cs : compiler aussi la boucle de dispatch native et specialiser le bus externe emprunte par un cast verifie, pour supprimer les appels Debug restants ; modifier SH7095.Read16/Read32 pour les mots directs du cache-RAM ; verifier equivalence, traces et vrais binaires Debug/Release.
+    - [ ] Creer Chips/CPU/Hitachi/SH2/Sh2.NativeRuntime.cs ; rendre Execute virtuel et Sh2 extensible ; adapter SH7095 et Sh2Tests.cs : copier une fois les methodes de l interpreteur et du bus dans un runtime IL optimise, avec dispatch natif et meme objet d etat, comme le chemin direct Gens ; desactiver les petits blocs par defaut et verifier les deux routes en Debug/Release.
+    - [ ] Modifier Chips/CPU/Motorola/M68000/Execution/Services/Cpu68000.Tables.cs et Video/Sega/VDP/{Vdp.Tables.cs,Vdp.cs}, CPU/Hitachi/SH2/Sh2.OpcodeTable.cs ; creer artifacts/Emulation/segaemu-32x/table-values.json : remplacer les vues constantes recreees a chaque acces par des tableaux statiques readonly initialises une fois, sans changer les valeurs ; comparer les empreintes des tables, les machines et le profil Debug.
+    - [ ] Modifier les fichiers SH-2/SH7095 et ordonnanceur identifies par ce profil, en inscrivant chaque chemin et changement avant son execution ; comparer etats, images et temps sur les memes sequences, sans ignorer les pertes.
+    - [ ] Modifier artifacts/Emulation/segaemu-32x/.work/Runner.cs : tester Start apres le demarrage, la reprise exacte video/audio/etat et les configurations Debug/Release ; conserver les captures intermediaires et les empreintes des DLL et ROM.
+    - [ ] Modifier Chips/Controllers/Hitachi/SH7095/Sh7095.cs et Sh7095.Context.cs : specialiser le bus CPU par un proxy struct autour du SoC, sans changer ses registres, et mesurer le cout sur les memes ROM.
+    - [ ] Modifier les fichiers des composants concernes par les defauts observes, en ajoutant d'abord chaque correction necessaire a cette liste ; retester les scenarios affectes et les machines SegaEmu preexistantes.
+    - [ ] Modifier docs/projects/emulations/Sega/SegaEmu.md et SegaEmu-32X-recherche.md : noter implementation effective, tests, mesures et limites constatees ; construire les distributions locales necessaires et verifier les sorties.
+    - [ ] Supprimer artifacts/Emulation/segaemu-32x/.work : retirer generateur, bancs externes, projets, binaires et sessions temporaires apres validation ; conserver sources de production, tests autonomes et resultats utiles.
+
+- [x] Stabiliser les modifications apres les regressions de performance 32X
+  - [x] Retirer les changements communs sans gain mesure
+    - [x] Modifier src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Services/Cpu68000.Tables.cs, src/RetroMediaLab.Chips/Video/Sega/VDP/Vdp.Tables.cs et Vdp.cs : restaurer exactement leur contenu HEAD ; ces changements de tables n'ont apporte aucun gain mesure.
+  - [x] Verifier le retour aux tables initiales
+    - [x] Creer artifacts/Emulation/segaemu-32x/stabilisation-tests-Debug.log : compiler uniquement Chips et les bancs existants, puis consigner les tests puces et machine 32X en Debug.
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu-32X-recherche.md : consigner les changements retires et le resultat effectif des verifications, sans annoncer de gain non mesure.
+
+- [x] Aligner le chemin SH-2 et la synchronisation 32X sur les sources deja collectees
+  - [x] Corriger ensemble les acces et la cadence de travail
+    - [x] Creer artifacts/Emulation/segaemu-32x/.work/before-source-alignment : sauvegarder les fichiers touches pour pouvoir retirer exactement cet ensemble si la comparaison regresse.
+    - [x] Creer artifacts/Emulation/segaemu-32x/source-alignment-before-Debug.json et son journal avec le banc existant : conserver les 600 trames du meme jeu avant modification.
+    - [x] Modifier src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.cs : factoriser le remplissage des lignes ; lire les mots et longs du cache directement ; separer les transferts DMA de la mise a jour courante pour conserver leur finally sans imposer ce chemin a tous les acces ; ne synchroniser les lectures IO temporelles qu'une fois par mot/long.
+    - [x] Modifier src/RetroMediaLab.Emulation.Sega/Emulators/SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Scheduling.cs : reprendre les portions de 84 cycles 68000 de Gens (588 horloges maitre), borner aux transitions de ligne/HBlank et conserver les reveils et echeances ; retirer la garde temporaire de diagnostic.
+    - [x] Modifier Chips/CPU/Hitachi/SH2/Contracts/ISh2Bus.cs, SH7095/Sh7095.cs et SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Bus.cs : distinguer le remplissage du cache d'une lecture applicative pour ne pas declencher la detection de polling lors du fetch ; conserver les lectures longues du cache de la source ares.
+  - [x] Verifier l'ensemble en Debug puis Release
+    - [x] Modifier tests/RetroMediaLab.Chips.Tests/SegaEmu/Mega32XChipTests.cs : verifier acces cache croisant une ligne, mots/longs IO et coherence du runtime natif avec l'interpreteur.
+    - [x] Creer artifacts/Emulation/segaemu-32x/source-alignment-after-Debug.json et source-alignment-after-Release.json avec leurs journaux : compiler les seuls projets utiles, executer une fois les suites existantes par configuration et comparer le meme passage de 600 trames, video/audio/etat compris.
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu-32X-recherche.md : relier chaque changement aux fonctions des sources, consigner resultats Debug puis Release et les limites observees ; retirer l'ensemble si les mesures ou le fonctionnement regressent.
+
+- [x] Porter les plages de fetch directes de Gens sans retirer le cache
+  - [x] Modifier Chips/CPU/Hitachi/SH2/{Contracts/ISh2Bus.cs,Sh2.cs}, Controllers/Hitachi/SH7095/{Sh7095.cs,Sh7095.Context.cs} et SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Bus.cs : emprunter des plages de code directement lisibles, conserver les attentes et invalider les plages lors des remplissages/purges/changements de controle ou de contexte.
+  - [x] Creer artifacts/Emulation/segaemu-32x/mapped-fetch-Debug.json et mapped-fetch-Release.json avec les journaux de tests existants : valider les configurations dans cet ordre sur les memes 600 trames ; retirer le changement si le fonctionnement ou les mesures regressent.
+  - [x] Modifier docs/projects/emulations/Sega/SegaEmu-32X-recherche.md : consigner les resultats effectifs et le perimetre encore non valide.
+
+- [x] Comparer les variantes Gens sans les exclure par leur origine
+  - [x] Creer artifacts/References/Machines/Sega/32X/GensVariants/ : conserver les seuls fichiers SH-2, bus, ordonnanceur et historiques utiles de Gens Rerecording et des autres variantes dont les sources sont identifiees ; relever les revisions et fichiers absents.
+  - [x] Modifier docs/projects/emulations/Sega/SegaEmu-32X-recherche.md : comparer les contenus avec Gens/GS deja collecte, distinguer identites, changements fonctionnels et changements de vitesse seulement etablis par le code ou les mesures.
+
+- [x] Evaluer les corrections paralleles demandees par l'utilisateur
+  - [x] Modifier tests/RetroMediaLab.Chips.Tests/CPU/Hitachi/Sh2Tests.cs : verifier le changement de mapping et le code automodifie sans sortir de la tranche CPU, avec interpreteur et runtime natif ; retirer les cas endian de la variante rejetee.
+  - [x] Creer artifacts/Emulation/segaemu-32x/parallel-{Debug,Release}.* et leurs journaux : compiler uniquement Chips, Sega et les bancs existants apres la fin des deux agents ; valider les tests une fois puis les memes passages ROM en Debug et Release, avec contexte et image.
+  - [x] Modifier docs/projects/emulations/Sega/SegaEmu-32X-recherche.md : consigner les modifications integrees et leurs limites, conserver les mesures et captures utiles.
+  - [x] Creer artifacts/Emulation/segaemu-32x/mapped-fetch-retained.png depuis la capture deja mesuree ; supprimer les fichiers temporaires *.bgra, *.sdram et *.state produits par source-alignment-*, mapped-fetch-* et parallel-* apres conservation des resultats JSON/journaux ; supprimer artifacts/Emulation/segaemu-32x/.work apres verification du chemin absolu et la fin des bancs.
+
+- [ ] Controler en Debug les machines utilisant les puces modifiees
+  - [x] Preparer les mesures ciblees
+    - [x] Modifier `artifacts/Emulation/segaemu-32x/.work/Runner.cs` : accepter MegaDrive et MegaCd sans adaptateur 32X et conserver la liberation en finally ; aucune modification de production.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/check-current-*-Debug.json` et journaux : mesurer les memes jeux 32X, Aladdin MD et Batman Returns MCD, avec les DLL Debug actuelles, conserver FPS, empreintes, reprise et protocole exact.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/check-baseline-*-Debug.json` et journaux : reprendre les memes scenarios avec les DLL Debug conservees avant les nouvelles routes.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/check-isolate-*-Debug.json` et journaux : isoler la regression Virtua Racing par deux assemblages temporaires Chips/Sega avant-apres, restaurer les DLL actuelles dans finally ; ne pas presenter ces montages comme une livraison.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/.work/Sh2-before-clock-inline.cs` : conserver exactement le CPU avant retrait du nouvel inlining global.
+    - [x] Modifier `src/RetroMediaLab.Chips/CPU/Hitachi/SH2/Sh2.cs` : retirer seulement AggressiveInlining de step pour retrouver le comportement de la reference sur le chemin Switch.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/check-clock-inline-virtua-Debug.json` et journal : remesurer les memes 600 trames ; restaurer le fichier sauvegarde si cette modification ne corrige pas la regression.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/check-clock-inline-tests-Debug.log` et `check-clock-inline-{chaotix,doom}-Debug.json` : verifier les tests autonomes existants et les deux autres scenarios SH-2 apres retrait de cet attribut ; ne pas repeter MD/MCD dont le CPU modifie nest pas utilise.
+    - [x] Modifier `docs/projects/emulations/Sega/SegaEmu-32X-recherche.md` : comparer valeurs documentees et remesures par scenario, identifier pertes et limites, sans assimiler tests unitaires et non-regression de vitesse.
+  - [ ] Completer le controle Release demande
+    - [x] Creer `artifacts/Emulation/segaemu-32x/check-release-build.log` et `check-{current,baseline}-{md,mcd}-Release.json` avec journaux : construire seulement Chips, Sega et le banc Release ; mesurer 900 trames apres 60 de chauffe avec les deux ensembles de DLL, restaurer les DLL du banc dans finally.
+    - [x] Modifier `src/RetroMediaLab.Chips/CPU/Motorola/M68000/Execution/Services/Cpu68000.Tables.cs` et `src/RetroMediaLab.Chips/Video/Sega/VDP/Vdp.Tables.cs` : remettre les sauvegardes table-before dont les blobs Git ont ete verifies identiques a HEAD, pour retirer le candidat de stockage des constantes.
+    - [ ] Creer `artifacts/Emulation/segaemu-32x/check-retained-{md,mcd}-{Debug,Release}.json` et journaux : reconstruire Chips et recopier sa DLL dans le banc de chaque configuration, puis mesurer les memes cas sans changer Sega ni les scenarios.
+    - [ ] Modifier `docs/projects/emulations/Sega/SegaEmu-32X-recherche.md` : ajouter valeurs historiques Release, comparaison exacte et conclusion separee Debug/Release sans extrapoler a tous les jeux.
+  - [ ] Nettoyer les sorties de controle
+    - [ ] Supprimer `artifacts/Emulation/segaemu-32x/check-*.bgra` et `check-*.state` apres conservation des empreintes JSON et captures utiles ; supprimer le banc temporaire avec le nettoyage final deja prevu.
+
+- [ ] Poursuivre la reparation avec les routes de dispatch des sources et la validation CD32X
+  - [ ] Preparer le banc compare sans modifier le travail demande aux agents
+    - [ ] Creer artifacts/Emulation/segaemu-32x/.work/baseline/{Debug,Release} : conserver les DLL actuellement validees avant les nouvelles compilations.
+    - [ ] Creer artifacts/Emulation/segaemu-32x/.work/{Directory.Build.props,Runner.cs,Runner.csproj,ChipsTests.csproj,MachineTests.csproj} : banc commun selectionnant les trois routes SH-2 sur le meme etat, captures et metriques CD32X, schemas de tests cibles ; liberer les coeurs dans finally.
+  - [ ] Valider les corrections integrees
+    - [ ] Modifier tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/Mega32XIntegrationTests.cs : verifier retrait et reactivation independants des deux demandes IRQ CMD sans perdre les autres interruptions.
+    - [ ] Modifier tests/RetroMediaLab.Chips.Tests/CPU/Hitachi/Sh2Tests.cs : comparer instructions, branchements, IRQ et reprise des trois dispatchs aux memes etats de reference.
+    - [ ] Modifier tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/Mega32XIntegrationTests.cs et tests/RetroMediaLab.Chips.Tests/CPU/Hitachi/Sh2Tests.cs : verifier la detection de polling sur deux mots adjacents avec reveil par ecriture et la boucle NOP/BRA -3/NOP sur budgets irreguliers apres les corrections des agents.
+    - [ ] Modifier tests/RetroMediaLab.Chips.Tests/SegaEmu/Mega32XChipTests.cs : verifier l'invalidation des blocs quand un octet de code P0 en cache change et lors de son eviction/remplissage, tout en conservant l'ancien contenu cache tant qu'il est valide.
+    - [ ] Modifier tests/RetroMediaLab.Chips.Tests/CPU/Hitachi/Sh2Tests.cs : verifier les suites arithmetiques fusionnees sur un bus a horloge differee, avec et sans interruption a l'interieur du budget.
+    - [ ] Modifier tests/RetroMediaLab.Chips.Tests/SegaEmu/Mega32XChipTests.cs et CPU/Hitachi/Sh2Tests.cs : verifier conservation des deux modeles memoire, horloges P0/P1 et cache-RAM avant comparaison des routes GensDirect.
+    - [ ] Modifier tests/RetroMediaLab.Chips.Tests/CPU/Hitachi/Sh2Tests.cs : verifier que la barriere SMC interrompt un bloc lorsqu'une lecture modifie l'instruction suivante.
+    - [ ] Modifier tests/RetroMediaLab.Chips.Tests/CPU/Hitachi/Sh2Tests.cs : comparer les liaisons de blocs avec des attentes de fetch non nulles sur des budgets courts et longs.
+    - [ ] Creer artifacts/Emulation/segaemu-32x/dispatch-* et cd32x-* : relever la comparaison des routes en Debug puis Release, conserver la route gagnante et verifier plusieurs jeux ainsi que le CD32X avec captures.
+    - [ ] Modifier temporairement SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Scheduling.cs et .work/Runner.cs : mesurer le temps racine CPU+bus sans compter deux fois les appels imbriques ; consigner cpu-cost-Debug.json puis restaurer le fichier ordonnanceur sauvegarde pour ne pas conserver l'instrumentation.
+  - [ ] Livrer l'etat mesure et nettoyer les bancs
+    - [ ] Modifier docs/projects/emulations/Sega/SegaEmu-32X-recherche.md : consigner comportement corrige, routes comparees, mesures et limites reelles.
+    - [ ] Supprimer artifacts/Emulation/segaemu-32x/.work et les donnees brutes temporaires produites apres conservation des journaux/JSON/captures et verification des chemins.
+
+Arret demande par l’utilisateur : tables 68000/VDP restaurees et verifiees identiques aux blobs d’origine ; aucune nouvelle optimisation ou mesure autorisee. Les validations restantes ne sont pas declarees terminees.
+
+
+- [x] Retester les deux versions sur MD, MCD et 32X en Debug puis Release
+  - [x] Executer le banc existant sans changement de production
+    - [x] Creer `artifacts/Emulation/segaemu-32x/.work/Retest.ps1` : comparer pour chaque jeu les DLL conservees aux DLL actuelles de src/bin, verifier les empreintes chargees, attendre et liberer chaque processus dans finally, restaurer les DLL du banc dans finally.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/retest-force-build-{Debug,Release}.log` : forcer la reconstruction de Chips avec --no-incremental apres restauration de sources portant des dates anciennes, verifier les nouveaux SHA256 et remettre les DLL actuelles dans les deux bancs ; archiver les premiers releves retest-* sous invalid-incremental-retest-* avant relance.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/retest-{baseline,current}-{md,mcd,chaotix,doom,virtua}-{Debug,Release}.json` et journaux ainsi que `retest-executions.json` : mesurer sequentiellement les cinq jeux, 60 trames apres 60 de chauffe en Debug MD/MCD, 900 apres 60 en Release MD/MCD et 600 depuis demarrage pour les jeux 32X dans les deux configurations.
+    - [x] Modifier `docs/projects/emulations/Sega/SegaEmu-32X-recherche.md` : consigner le tableau Debug/Release avant-apres, les ecarts et les controles video/etat sur ce retest, sans attribuer de cause non mesuree.
+  - [x] Nettoyer les fichiers temporaires du retest
+    - [x] Supprimer `artifacts/Emulation/segaemu-32x/.work/Retest.ps1`, les `retest-*.bgra`, `retest-*.state`, `invalid-incremental-retest-*.bgra` et `invalid-incremental-retest-*.state` apres conservation des empreintes SHA256 dans les JSON ; conserver JSON/journaux et le banc encore necessaire aux travaux 32X non termines.
+
+
+- [ ] Ameliorer le raccordement de Vdp.Output sans changer le rendu
+  - [ ] Simplifier le chemin de sortie 32 bits
+    - [x] Creer `artifacts/Emulation/segaemu-32x/.work/video-before/{Debug,Release}` : conserver les DLL Chips actuelles effectivement reconstruites et les deux fichiers Vdp.Output.cs/Vdp.Rendering.cs avant modification.
+    - [x] Modifier `src/RetroMediaLab.Chips/Video/Sega/VDP/Vdp.Output.cs` et `Vdp.Rendering.cs` : supprimer le renvoi RemapLineCore sur le chemin 32 bits, regrouper la conversion 32 bits avec les autres sorties et remplacer les ArrayPointer par des spans de ligne ; conserver les calculs LCD, geometrie et notification 32X.
+  - [ ] Verifier le resultat en Debug puis Release
+    - [x] Creer `tests/RetroMediaLab.Chips.Tests/SegaEmu/VdpOutputTests.cs` : verifier couleurs fixes et LCD, bords, entrelacement et ordre du callback sur des tampons en memoire ; inclure ce fichier dans le banc temporaire ChipsTests.csproj.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/.work/VideoCompare.ps1` : lancer chaque processus de mesure sequentiellement, verifier les SHA256 et fermer le processus dans finally ; restaurer les DLL du banc dans finally.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/video-output-*-{Debug,Release}.json` et journaux : reconstruire Chips avec --no-incremental, executer les tests autonomes existants et compares les machines MD/MCD/32X avant-apres sur Aladdin, Batman Returns et Chaotix ; conserver FPS et empreintes, pas de modification du code pendant les mesures.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/video-output-reverse-{before,after}-mcd-Release.json` et journaux : verifier uniquement la perte Release MCD observee en inversant l’ordre actuel puis anterieur, sans reconstruire ni relancer les autres tests.
+    - [x] Modifier `src/RetroMediaLab.Chips/Video/Sega/VDP/Vdp.Output.cs` et `Vdp.Rendering.cs` : retirer le candidat Span 32 bits dont la perte MCD Release se repete, restaurer la boucle 32 bits sauvegardee et garder uniquement le dispatch simplifie remap_line/RemapPackedLine.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/video-output-retained-*-{Debug,Release}.log` et `video-output-retained-{before,after}-mcd-{Debug,Release}.json` : reconstruire Chips, verifier les 55 tests puces et 28 tests machine par configuration, remesurer uniquement le cas MCD ayant fait rejeter le candidat.
+    - [x] Modifier `src/RetroMediaLab.Chips/Video/Sega/VDP/Vdp.Output.cs` et `Vdp.Rendering.cs` : restaurer exactement les sauvegardes video-before ; abandonner les deux variantes video mesurees plus lentes en MCD Release, sans lancer de troisieme variante.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/video-output-restored-build-{Debug,Release}.log` : reconstruire uniquement Chips pour aligner DLL et PDB avec les sources restaurees, sans nouvelle mesure ni nouvelle optimisation.
+    - [x] Modifier `docs/projects/emulations/Sega/SegaEmu-32X-recherche.md` : consigner changement, resultats et limites, sans annoncer un gain non mesure.
+  - [x] Nettoyer les artefacts temporaires de ce controle
+    - [x] Supprimer `artifacts/Emulation/segaemu-32x/video-output-*.bgra` et `video-output-*.state` apres conservation des empreintes ; supprimer `.work/VideoCompare.ps1`, les sources sauvegardees temporaires et DLL video-before apres validation, garder les tests autonomes.
+
+Tentative Vdp.Output abandonnee : les variantes mesurees plus lentes ont toutes ete retirees. La tache principale d’amelioration ne peut pas etre cochee comme reussie. Les tests autonomes et les releves restent.
+
+
+- [x] Conserver un journal des essais pour eviter leur repetition
+  - [x] Consigner les decisions et leurs preuves
+    - [x] Creer `docs/projects/emulations/Sega/SegaEmu-essais-deja-realises.md` : index court des candidats testes, perimetre, configurations, resultats, statut retire/experimental et fichiers de preuves ; distinguer hypotheses, mesures invalides et etat actuel.
+    - [x] Modifier `docs/projects/emulations/Sega/SegaEmu.md` : ajouter un lien visible vers ce journal avant de nouveaux essais.
+    - [x] Creer `C:/Users/overt/.codex/memories/extensions/ad_hoc/notes/20261115-193358-segaemu-essais-rejetes.md` : enregistrer le rappel demande par l’utilisateur et le chemin du journal, sans modifier les autres fichiers memoire.
+
+
+- [ ] Reparer les surcouts restants a partir des mesures courantes
+  - [ ] Localiser les couts sur le code effectivement utilise
+    - [x] Creer `artifacts/Emulation/segaemu-32x/.work/MeasureFix.ps1` : profiler uniquement Doom actuel en Debug puis Release avec dotnet-trace, verifier les DLL du banc contre src/bin, attendre et liberer les processus dans finally ; aucune modification de production pendant le diagnostic.
+    - [x] Renommer `artifacts/Emulation/segaemu-32x/fix-doom-Debug` en `fix-doom-Debug.nettrace` et modifier `.work/MeasureFix.ps1` : parentheser le nom de sortie dans ArgumentList pour corriger son suffixe, reutiliser la trace Debug deja collectee sans la rejouer.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/fix-doom-{Debug,Release}.nettrace`, `.json`, journaux et rapports top : relever les piles chaudes sur 600 trames et separer le profil des mesures de vitesse sans instrumentation.
+  - [ ] Corriger la synchronisation inutile des lectures cartouche 32X
+    - [x] Creer `artifacts/Emulation/segaemu-32x/.work/rom-sync-before/{Debug,Release}` et les sauvegardes Mega32X.Bus.cs/Mega32X.Scheduling.cs : conserver les deux DLL Chips/Sega effectivement chargees avant modification pour une comparaison commune.
+    - [x] Modifier `SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Bus.cs` : lire directement les fenetres cartouche 0x880000-0x9fffff sans synchronisation peripherique comme les tables ROM Gens, avec banque et comportement ADEN inchanges ; conserver les synchronisations des autres plages.
+    - [x] Modifier `SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Scheduling.cs` : retourner aussi lorsque la cible egale la derniere horloge, sans entrer dans le bloc de synchronisation vide.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/Mega32XIntegrationTests.cs` : verifier les quatre banques, les lectures directes sans avancer les SH-2 et la synchronisation maintenue lors des acces registres, avec destruction de la carte dans finally.
+    - [ ] Creer `.work/RomSyncCompare.ps1`, `artifacts/Emulation/segaemu-32x/rom-sync-*-{Debug,Release}.json` et journaux : compiler seulement Sega, verifier les tests existants, comparer Doom/Chaotix/Virtua sur 600 trames en Debug puis Release, SHA256 des deux DLL verifies et processus liberes dans finally.
+    - [x] Creer `artifacts/Emulation/segaemu-32x/rom-sync-{before,after}-chaotix-Debug.png` : convertir les captures existantes pour examiner la difference de sortie avant de retenir ou retirer la modification ; ne pas relancer la campagne tant que ce point est ouvert.
+    - [x] Modifier `SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Bus.cs` : retirer le bypass ROM qui decale l’animation de Chaotix et remettre le fichier sauvegarde ; conserver seulement le retour sans travail si l’horloge est identique.
+    - [x] Creer `.work/peripheral-before-Sh7095.cs` puis modifier `src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.cs` : materialiser uniquement le compteur FRT avant l’echeance quand WDT/SCI/DMA sont inactifs, conserver la prochaine echeance absolue et le chemin complet pour tout evenement/peripherique actif ; ne changer ni registres, ni cycles, ni format d’etat.
+    - [x] Modifier `tests/RetroMediaLab.Chips.Tests/SegaEmu/Mega32XChipTests.cs` : verifier lectures FRT juste avant l’echeance, comparaison/IRQ au cycle exact, mode remise a zero et sauvegarde/reprise de la fraction de cycle.
+    - [ ] Creer `.work/PeripheralCompare.ps1` et `artifacts/Emulation/segaemu-32x/peripheral-*-{Debug,Release}.json` et journaux : recompiler Chips/Sega, verifier les tests puces et machines, comparer les trois jeux a la meme reference en exigeant les memes images ; ne pas reprendre le bypass ROM retire.
+    - [x] Creer `.work/cache-lookup-before-Sh7095.cs` puis modifier `src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.cs` : reutiliser le dernier resultat de recherche de ligne pour la meme adresse de ligne et la meme version de mapping, sans modifier le cache simule ; tous les changements de tags/validite/CCR invalidant deja cette version.
+    - [x] Modifier `tests/RetroMediaLab.Chips.Tests/SegaEmu/Mega32XChipTests.cs` : verifier invalidation du resultat hote apres purge, ecriture du tableau de tags, changement deux/quatre voies et rechargement d’etat.
+    - [x] Creer `.work/lookup-before/{Debug,Release}/retromedialab.chips.dll` : conserver les DLL precedant la memoisation et verifier leurs SHA256 contre peripheral-after-doom-*.json.
+    - [ ] Creer `.work/CoreLookup.cs`, `.work/CoreLookup.csproj` et `artifacts/Emulation/segaemu-32x/cache-core-*-{Debug,Release}.json` : comparer un vrai programme SH-2 de lectures cachees en coeur seul, memes cycles/registres et temps separe du chargement, puis seulement lancer les jeux si le resultat justifie la suite ; liberer les ressources dans finally.
+    - [ ] Creer `.work/CoreMeasure.ps1` : comparer le coeur seul avant/apres sur deux passages par configuration et ordre inverse au second, DLL verifiees, processus attendus/liberes et DLL restauree dans finally.
+    - [ ] Modifier `src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.cs` : integrer la recherche de ligne dans FindLine sans appel LookupLine ajoute ; archiver les premiers releves cache-core-* sous cache-core-first-* et comparer cette forme sur le meme programme coeur seul avant tout test machine.
+    - [x] Modifier `src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.cs` : restaurer peripheral-before-Sh7095.cs, retirer les chemins FRT/lookup sans gain global ; garder les tests de comportement utiles.
+    - [x] Modifier `SegaEmu/Boards/SegaBoard.32X.cs` : preparer au chargement une vue ROM SH-2 big-endian de 4 Mio avec miroirs identiques aux callbacks, seulement pour une taille paire non nulle ; garder le chemin actuel pour les autres cas.
+    - [x] Modifier `SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.cs` et `Mega32X.Bus.cs` : recevoir cette vue, l’exposer au mapping de fetch existant, lire directement les octets/mots/longs alignes ; conserver attentes, acces frontieres, callbacks de repli et horloges.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/Mega32XIntegrationTests.cs` : verifier les octets/mots/longs, les miroirs d’une ROM de 3 Mio, la frontiere 4 Mio et les attentes de fetch sur la vue preparee.
+    - [ ] Modifier `.work/Runner.cs` : relever separement duree et allocations de creation/chargement afin de rendre visible le cout de la vue ROM, sans inclure ces operations dans les FPS ; reconstruire le banc Debug/Release.
+    - [ ] Creer `.work/RomViewCompare.ps1` et `artifacts/Emulation/segaemu-32x/rom-view-*-{Debug,Release}.json` et journaux : reconstruire Chips/Sega restaures, verifier les suites ciblees puis les trois jeux sur les memes 600 trames ; arreter si les images different.
+    - [ ] Modifier `.work/CoreLookup.cs` pour un mode --il et creer `artifacts/Emulation/segaemu-32x/rom-view-il-sizes.json` : relever sans execution de jeu les tailles IL des methodes Sh2Bus avant/apres afin de verifier l’impact sur le chemin SDRAM et le seuil d’inlining existant.
+    - [ ] Creer `artifacts/Emulation/segaemu-32x/fix-doom-{Debug,Release}.speedscope.json`, `.work/AnalyzeTrace.py` et `fix-doom-callers.json` : attribuer les echantillons CreateSpan a leurs appelants et signaler les noms dynamiques ambigus au lieu de deduire une cause du seul top global.
+    - [ ] Modifier `.work/CoreLookup.cs` pour un mode --literal et creer `literal-access-probe-Debug.json` et `literal-access-probe-Debug.asm` : verifier sur les tables existantes qu’un accesseur IL minuscule compile une fois peut lire le meme blob sans appel RuntimeHelpers par acces, sans modifier le stockage ni la production ; mesurer checksum identique et inspecter le code natif avant de proposer une correction.
+  - [x] Corriger les acces aux constantes identifies dans le profil Debug
+    - [x] Modifier `SegaEmu/Machines/ThirtyTwoX/Hardware/Mega32X.Bus.cs` : remettre les methodes de donnees et Fetch32 anterieures, garder uniquement la vue ROM dans TryMapFetch apres les chemins SDRAM/BIOS, pour ne pas alourdir leurs acces frequents.
+    - [x] Creer `src/RetroMediaLab.Chips/Common/Runtime/NativeLiteralAccessor.cs` en DEBUG seulement : compiler un accesseur pur vers le meme champ RVA immutable, verifier toutes les valeurs une fois et conserver un repli sur le getter original si la plateforme ou la forme IL ne convient pas ; aucun tableau copie.
+    - [x] Creer `CPU/Motorola/M68000/Execution/Services/Cpu68000.DebugLiteralAccess.cs` et `Video/Sega/VDP/Vdp.DebugLiteralAccess.cs` en DEBUG seulement ; modifier uniquement les declarations d’accesseurs InstructionMap et atex_table dans leurs Tables.cs pour utiliser cet acces, garder les litteraux et les chemins Release identiques.
+    - [x] Creer `tests/RetroMediaLab.Chips.Tests/SegaEmu/LiteralAccessTests.cs` : comparer la totalite des valeurs des accesseurs originaux/actifs et verifier que le raccourci est effectivement cree quand le JIT est disponible ; inclure ces tests dans le banc temporaire.
+    - [x] Creer `.work/LiteralCompare.ps1`, `literal-*-{Debug,Release}.json`, journaux et `literal-native-Debug.asm` : reconstruire Chips/Sega, verifier les suites et comparer MD/MCD/32X sur les memes scenarios avant/apres, avec empreintes de DLL, images et etats ; relever le code natif reel du raccourci.
+    - [x] Modifier `docs/projects/emulations/Sega/SegaEmu-essais-deja-realises.md` : consigner diagnostic et correction retenue ou rejetee avec ses preuves, avant toute repetition du candidat.
+  - [x] Comparer temporairement sans vue ROM avant la decision utilisateur
+    - [x] Modifier `SegaBoard.32X.cs` et `Mega32X.cs` : supprimer la copie ROM, son champ et son initialisation ; restaurer `Mega32X.Bus.cs` et `Mega32X.Scheduling.cs` depuis les sauvegardes avant essai pour isoler les seuls accesseurs Debug.
+    - [x] Modifier `tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/Mega32XIntegrationTests.cs` : garder le controle des lectures et miroirs via le chemin original, retirer les assertions liees au mapping retire.
+    - [x] Creer `.work/LiteralOnlyCompare.ps1` et `literal-only-*-{Debug,Release}.json` : reconstruire Chips/Sega, controler les suites ciblees, comparer les trois jeux 32X et MD/MCD aux memes references, sans la vue ROM ; recueillir le desassemblage de l’accesseur Debug dans `literal-native-Debug.asm`.
+    - [x] Modifier `SegaEmu-essais-deja-realises.md` : consigner le retrait et les valeurs du controle isole, sans attribuer les variations des machines sans 32X au mapping ROM inactif.
+  - [ ] Nettoyer le diagnostic temporaire
+    - [ ] Supprimer `.work/MeasureFix.ps1` et les donnees brutes fix-doom-*.bgra/fix-doom-*.state apres conservation des empreintes ; garder traces, rapports et JSON ; supprimer aussi `.work/RomSyncCompare.ps1`, les sauvegardes rom-sync-before et les donnees rom-sync-*.bgra/rom-sync-*.state, peripheral-*.bgra/peripheral-*.state, `.work/PeripheralCompare.ps1` et `.work/peripheral-before-Sh7095.cs` apres validation et conservation des empreintes ; supprimer aussi `.work/CoreLookup.cs`, `.work/CoreLookup.csproj` et `.work/cache-lookup-before-Sh7095.cs` ainsi que `.work/CoreMeasure.ps1`, `.work/lookup-before` et leurs bin/obj temporaires apres usage ; supprimer `.work/RomViewCompare.ps1` et les donnees brutes rom-view-* apres conservation des preuves ; supprimer `.work/LiteralCompare.ps1`, `.work/AnalyzeTrace.py` et literal-*.bgra/literal-*.state apres conservation des empreintes.
+
+- [x] Etudier la vue ROM separement selon la demande utilisateur
+  - [x] Isoler le cout de la variante
+    - [x] Creer `.work/rom-view-candidate/{Debug,Release}` : conserver les DLL deja mesurees avec vue ROM avant toute reconstruction sans vue.
+    - [x] Modifier `.work/Runner.cs` : permettre de vider uniquement le champ ROM via reflection avant la premiere trame, sans changer les DLL comparees, et relever la taille effectivement active dans le JSON.
+    - [x] Creer `.work/RomViewIsolated.ps1` et `rom-view-isolated-*.json` : comparer Virtua Racing avec et sans vue en gardant la meme DLL Chips, ordre inverse entre deux passages, puis profiler uniquement si la perte se repete ; attendre et liberer chaque processus dans finally.
+    - [x] Modifier `.work/CoreLookup.cs` et creer `literal-release-il-comparison.json` : comparer signatures et corps IL Release avant/apres, distinguer les changements executables des variations de mesure.
+    - [x] Modifier `SegaEmu-essais-deja-realises.md` : separer les mesures des accesseurs Debug de celles du mapping ROM et consigner le verdict seulement apres cette isolation.
+    - [x] Modifier `SegaBoard.32X.cs`, `Mega32X.cs`, `Mega32X.Bus.cs`, `Mega32X.Scheduling.cs` et `Mega32XIntegrationTests.cs` : remettre la variante de vue ROM et son controle de mapping apres comparaison isolee, garder les callbacks originaux ; reconstruire les deux configurations et verifier les suites ciblees, comparer les corps IL Release au candidat conserve.
+    - [x] Creer `literal-native-Debug.asm` : recueillir seulement le desassemblage des deux accesseurs durant les deux tests de valeurs, sans melanger ce processus a une mesure FPS.
+    - [x] Creer `literal-comparisons.json` : conserver les trois campagnes et les empreintes des etats/captures avant nettoyage, avec les controles de sortie et la distinction des variantes.
+    - [x] Supprimer `.work/RomViewIsolated.ps1`, `.work/rom-view-candidate` et les fichiers bruts temporaires apres conservation des mesures et empreintes.
+- [x] Clore les preuves et retirer les outils temporaires de cette passe
+  - [x] Conserver les conclusions et empreintes
+    - [x] Modifier `docs/projects/emulations/Sega/SegaEmu-essais-deja-realises.md` : consigner profils, trois campagnes, contre-exemples et limites de causalite ; conserver `literal-comparisons.json` et les rapports IL/desassemblage.
+    - [x] Supprimer les fichiers temporaires `.work/MeasureFix.ps1`, `RomSyncCompare.ps1`, `PeripheralCompare.ps1`, `CoreMeasure.ps1`, `RomViewCompare.ps1`, `LiteralCompare.ps1`, `LiteralOnlyCompare.ps1`, `RomViewIsolated.ps1`, `AnalyzeTrace.py`, `CoreLookup.cs`, `CoreLookup.csproj`, `peripheral-before-Sh7095.cs`, `cache-lookup-before-Sh7095.cs`, les repertoires `.work/rom-sync-before`, `lookup-before`, `rom-view-candidate`, `bin/CoreLookup`, `obj/CoreLookup`, et les bruts fix-doom-/rom-sync-/peripheral-/rom-view-/literal- en .bgra ou .state apres verification de leurs empreintes dans literal-comparisons.json ; ne pas supprimer le banc preexistant ni les tests autonomes.

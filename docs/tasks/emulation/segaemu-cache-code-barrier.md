@@ -1,0 +1,12 @@
+- [x] Raccorder les mots compiles du cache SH7095 a la barriere SMC
+  - [x] Creer artifacts/Emulation/segaemu-32x/.work/Sh7095-before-cache-code-barrier.cs : sauvegarder le fichier avant ajout des metadonnees de code.
+  - [x] Modifier src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.cs : ajouter un masque de 2048 bits pour les mots de cache compiles et une epoque SMC ; propager MarkCode vers C0, la ligne physique P0 active ou le bus externe ; combiner epoque SMC et epoque de mapping dans CodeEpoch des regions cachees.
+  - [x] Modifier src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.cs : incrementer l'epoque SMC uniquement sur changement reel d'un octet marque de code, conserver les compteurs CodeVersion existants et purges/remplissages/CCR ; effacer les metadonnees au reset et preparer ResetCodeTracking pour la restauration.
+  - [x] Modifier src/RetroMediaLab.Chips/Controllers/Hitachi/SH7095/Sh7095.Context.cs : appeler ResetCodeTracking apres validation du contexte et sans changer le format serialise.
+  - [x] Modifier docs/tasks/emulation/segaemu-cache-code-barrier.md : consigner perimetre, references et absence de mesures avant validation groupee.
+
+Modele de reference : PicoDrive pico/32x/memory.c, sh2_write16_ram/sh2_write32_ram et sh2_write16_da/sh2_write32_da : masques de code avant les appels sh2_drc_wcheck_ram/sh2_drc_wcheck_da. Le SoC conserve un octet par ligne physique de 16 octets (huit mots compiles possibles), soit 256 octets pour 4096 octets de cache. MarkCode marque tous les mots intersectant les octets annonces, y compris une frontiere de ligne ; le masque est interne et ne remplace aucun etat materiel.
+
+CodeEpoch cache combine l'epoque de mapping en partie haute et le compteur des modifications de code en partie basse, avec une valeur non nulle. Les ecritures byte C0/P0 et UpdateCached utilise par les ecritures word/long ne changent le compteur SMC que si la valeur change et que le mot a ete marque. Les compteurs CodeVersion existants gardent leurs conditions precedentes. Remplissage, purge et CCR continuent d'invalider globalement le mapping ; le reset et le chargement effacent les masques et avancent l'epoque. Le format ContextSize et les octets sauvegardes ne changent pas.
+
+Le contrat MarkCode et les appels apres compilation/reutilisation sont fournis par l'agent du coeur ; le marquage externe est fourni par l'agent du bus. Aucun build/test concurrent ni gain FPS presume dans cette feuille ; validation groupee par le parent.

@@ -248,7 +248,19 @@ public sealed partial class Vdp
     [
         352, 820, 948, 1076, 1332, 1460, 1588, 1844, 1972, 2100, 2356, 2484, 2612, 2868, 2996, 3124, 3364, 3380, 3772, 4240, 4368, 4496, 4752, 4880, 5008, 5264, 5392, 5520, 5776, 5904,
     ];
+#if DEBUG
+    private static ReadOnlySpan<uint> atex_table
+    {
+        get
+        {
+            var accessor = VdpLiteralAccess.AttributeTable;
+            return accessor is null ? DebugOriginalAttributeTable : accessor();
+        }
+    }
+    private static ReadOnlySpan<uint> DebugOriginalAttributeTable =>
+#else
     private static ReadOnlySpan<uint> atex_table =>
+#endif
     [
         0, 269488144, 538976288, 808464432, 1077952576, 1347440720, 1616928864, 1886417008,
     ];

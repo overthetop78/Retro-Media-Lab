@@ -15,12 +15,12 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 internal abstract partial class SegaBoard
 {
     public const string StateVersion = "SEGAEMU 00000003";
-    protected virtual ReadOnlySpan<byte> StateSignature => "SEGAEMU 00000003"u8;
-    protected virtual int MachineContextSize => 0;
-    protected virtual void SaveMachineContext(Span<byte> state) { }
-    protected virtual bool CanLoadMachineContext(ReadOnlySpan<byte> state) => state.IsEmpty;
-    protected virtual void LoadMachineContext(ReadOnlySpan<byte> state) { }
-    protected virtual void ResetMachineContext() { }
+    protected virtual ReadOnlySpan<byte> StateSignature => _mega32X is null ? "SEGAEMU 00000003"u8 : "SEGAEMU 00000004"u8;
+    protected virtual int MachineContextSize => _mega32X is null ? 0 : Machines.ThirtyTwoX.Hardware.Mega32X.ContextSize;
+    protected virtual void SaveMachineContext(Span<byte> state) { _mega32X?.SaveContext(state); }
+    protected virtual bool CanLoadMachineContext(ReadOnlySpan<byte> state) => _mega32X is null ? state.IsEmpty : Machines.ThirtyTwoX.Hardware.Mega32X.CanLoadContext(state);
+    protected virtual void LoadMachineContext(ReadOnlySpan<byte> state) { _mega32X?.LoadContext(state); }
+    protected virtual void ResetMachineContext() { _mega32X?.Reset(); }
     private static int Z80ContextSize => IntPtr.Size == 8 ? 88 : 76;
     public int StateSize => LegacyStateSize + InputHardware.ContextSize + MachineContextSize;
     private int LegacyStateSize => 17 + (SystemHardware.IsSixteenBit(system_hw) ? 0x12000 + 5 + Cpu68000<MegaDriveCpuBus>.ContextSize : 0x2000) +

@@ -4,6 +4,7 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;
 
 internal sealed class CartridgeMemoryBank
 {
+    public bool MappedReadsUseHandlers;
     internal Memory<byte> Data;
     internal ArrayPointer<byte> @base { get => new(Data); set => Data = value.IsNull ? default : value.Memory; }
     internal Func<uint, uint>? read8, read16;

@@ -83,13 +83,13 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     public double NominalFrameRate => (double)system_clock / (3420 * _vdp.lines_per_frame);
     protected BlipBuffer MachineAudioBuffer => _mainAudio;
     protected uint MachineCpuCycles => unchecked((uint)main.cycles);
-    protected virtual Action<uint>? MachineAudioSynchronizer => null;
+    protected virtual Action<uint>? MachineAudioSynchronizer => _mega32X is null ? null : _mega32X.Synchronize;
     protected virtual Func<uint, bool>? MachineInterruptAcknowledger => null;
     protected virtual uint AuxiliaryInterruptLevel => 0;
     protected virtual uint MapVideoInterruptLevel(uint level) => level;
     protected virtual void ConfigureMachineAudio(int sampleRate, double frameRate) { }
-    protected virtual void ResetMachineDevices() { }
-    protected virtual void FinishMachineAudioFrame(uint cycles) { }
+    protected virtual void ResetMachineDevices() { _mega32X?.Reset(); }
+    protected virtual void FinishMachineAudioFrame(uint cycles) { _mega32X?.EndFrame(cycles); }
     protected void RefreshMachineInterrupt()
     {
         uint video = (_vdp.reg[1] & _vdp.vint_pending) != 0 ? 6u : (_vdp.reg[0] & _vdp.hint_pending) != 0 ? 4u : 0u;
@@ -101,6 +101,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
         Func<int, Memory<byte>, int> loadFirmware, CancellationToken cancellation)
     {
         config = configuration; system_hw = hardware; _sampleRate = sampleRate;
+        _machineBitmap = framebuffer; _machinePitch = pitch;
         cart = new(SystemHardware.IsSixteenBit(hardware) ? CartridgeState.MaximumRomCapacity : 0x800000);
         if (config.system == 0) config.system = hardware;
         _openFile = openFile; _loadFirmware = loadFirmware; _cancellation = cancellation;
@@ -116,6 +117,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     {
         config.PadTypes.CopyTo(_input.ConfiguredPadTypes);
         InitializeMachineBus();
+        Configure32X();
         _executeFrame = CreateFrameScheduler();
         _input.Configure(system_hw, Functions.InputConfigurationFunctions.Create(system_hw, romtype, rominfo.peripherals, cart.special));
         _input.InitializeIo();
@@ -131,7 +133,9 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         _cancellation.ThrowIfCancellationRequested();
+        Unmap32XBanks();
         gen_reset(hard ? 1 : 0);
+        if (_mega32X is not null) Map32XBanks();
         if (hard)
         {
             _input.ResetIo(); _vdp.Reset(GetVideoResetPreset()); _sound.Reset(); _sound.ResetOutput();
@@ -200,6 +204,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
                         _mainCpuComponent?.Halt(); _z80.State.irq_callback = null; _z80.State.daisy = null;
                         _z80.Cycles = uint.MaxValue; zstate = 0;
                         if (_sound is not null) { _sound.AttachCdAudio(null,null,null,null); _sound.AttachCartridgeAudio(null,null); }
+                        _vdp.LineRendered = null; _vdp.ExternalOutputWidth = 0; _mega32X = null; _unmap32X.Clear(); _mapped32XPages.Clear();
                         _addresses.Clear();
                         Array.Clear(_readMap); Array.Clear(_writeMap);
                         z80_readport = z80_readmem = null!; z80_writeport = z80_writemem = null!;

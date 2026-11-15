@@ -42,6 +42,8 @@ internal sealed partial class ManagedCore
     }
     private void FillSettings(SystemConfiguration settings)
     {
+        settings.Enable32X = _configuration!.Model == ModelConstants.ThirtyTwoX
+            || _configuration.Options?.GetValueOrDefault("configuration.megaDrive32x") == "enabled";
         string hardware = _configuration!.Model switch
         {
             ModelConstants.Sg1000 or ModelConstants.Sc3000 => GetOption("sg1000_model"),
@@ -135,6 +137,7 @@ internal sealed partial class ManagedCore
         byte hardware = (byte)identifier, region = (byte)(identifier >> 8);
         string filename = identifier switch
         {
+            0x3200 => "32X_G_BIOS.BIN", 0x3201 => "32X_M_BIOS.BIN", 0x3202 => "32X_S_BIOS.BIN",
             0 => "sk.bin", 1 => "sk2chip.bin", 2 => "ggenie.bin", 3 => "areplay.bin",
             _ => hardware switch
             {

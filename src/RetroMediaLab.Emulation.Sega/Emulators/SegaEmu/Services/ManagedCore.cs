@@ -42,7 +42,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
     public IReadOnlyList<string> Diagnostics => [];
     public IReadOnlyDictionary<int, bool> LedStates => _leds;
     public EmulationVideoStandard? Region => _system is null ? null : _system.Video.vdp_pal != 0 ? EmulationVideoStandard.Pal : EmulationVideoStandard.Ntsc;
-    public long? ProcessorClockHz => _system is null ? null : _system.MasterClock / (SystemHardware.IsSixteenBit(_system.Hardware) ? 7 : 15);
+    public long? ProcessorClockHz => _system is null ? null : _system.Has32X ? _system.MasterClock * 3L / 7 : _system.MasterClock / (SystemHardware.IsSixteenBit(_system.Hardware) ? 7 : 15);
     public int BufferedAudioFrames => _bufferedAudioFrames;
     public long AudioOverrunCount => _overruns;
     public long AudioUnderrunCount => _underruns;

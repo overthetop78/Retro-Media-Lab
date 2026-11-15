@@ -29,8 +29,8 @@ internal abstract class MappedCpuBus(CartridgeMemoryBank[] banks) : ICpu68000Bus
         if (bank.write16 is { } write) write(address, value);
         else BinaryPrimitives.WriteUInt16LittleEndian(bank.Data.Span[(int)(address & 65534)..], (ushort)value);
     }
-    public uint ReadMapped8(uint address) => banks[(address >> 16) & 255].Data.Span[(int)((address & 65535) ^ 1)];
-    public uint ReadMapped16(uint address) => BinaryPrimitives.ReadUInt16LittleEndian(banks[(address >> 16) & 255].Data.Span[(int)(address & 65534)..]);
+    public uint ReadMapped8(uint address) => banks[(address >> 16) & 255].MappedReadsUseHandlers ? Read8(address) : banks[(address >> 16) & 255].Data.Span[(int)((address & 65535) ^ 1)];
+    public uint ReadMapped16(uint address) => banks[(address >> 16) & 255].MappedReadsUseHandlers ? Read16(address) : BinaryPrimitives.ReadUInt16LittleEndian(banks[(address >> 16) & 255].Data.Span[(int)(address & 65534)..]);
     public abstract void AcknowledgeInterrupt(uint level);
     public virtual bool IsRefreshWindowElapsed(int cycles, int deadline) => cycles >= deadline;
 }

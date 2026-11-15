@@ -101,6 +101,8 @@ internal abstract partial class SegaBoard
             cart.romsize = checked((uint)size);
             GetRomInformation();
             bool swapCartridgeWords = system_hw == SystemHardware.MegaDrive;
+            if (swapCartridgeWords && (Path.GetExtension(filename).Equals(".32x", StringComparison.OrdinalIgnoreCase)
+                || rominfo.consoletype.Contains("32X", StringComparison.OrdinalIgnoreCase))) config.Enable32X = true;
             if (rominfo.consoletype.Contains("SEGA PICO", StringComparison.Ordinal)) system_hw = SystemHardware.Pico;
             GetRegion(true);
             if (swapCartridgeWords) SwapWords(cart.rom.AsSpan(0, (size + 1) & ~1));

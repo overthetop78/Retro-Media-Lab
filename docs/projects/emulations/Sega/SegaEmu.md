@@ -1,5 +1,9 @@
 # SegaEmu
 
+Essais déjà réalisés : [journal des variantes testées, rejets et mesures invalides](SegaEmu-essais-deja-realises.md).
+
+32X : [émulateurs confirmés, sources collectées et préparation de l'implémentation](SegaEmu-32X-recherche.md). Recherche du 15 novembre 2026 ; aucun matériel 32X n'est ajouté par ce dossier.
+
 Pico : les nouvelles ROM réelles ont permis de corriger la région, les interruptions, le circuit ADPCM et les états du livre. Voir le [bilan Pico, captures et vitesses](#pico--rom-réelles-et-correctifs).
 
 Refonte sur refactor-sega-emu : [architecture, corrections et campagne finale Debug/Release](SegaEmu-audit.md#bilan-de-la-refonte--15-novembre-2026). Les paragraphes et comparaisons de reconstruction ci-dessous constituent l’historique ; les nouveaux résultats comparent exclusivement SegaEmu à sa référence 476fc8779.

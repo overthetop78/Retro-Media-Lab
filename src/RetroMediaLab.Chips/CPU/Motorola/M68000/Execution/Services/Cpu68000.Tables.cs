@@ -1709,7 +1709,19 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
             case 1700: m68k_op_1111(); break;
         }
     }
+#if DEBUG
+    private static ReadOnlySpan<ushort> InstructionMap
+    {
+        get
+        {
+            var accessor = Cpu68000LiteralAccess.InstructionMap;
+            return accessor is null ? DebugOriginalInstructionMap : accessor();
+        }
+    }
+    private static ReadOnlySpan<ushort> DebugOriginalInstructionMap =>
+#else
     private static ReadOnlySpan<ushort> InstructionMap =>
+#endif
     [
         0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4,
         5, 5, 5, 5, 5, 5, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 9, 10, 1, 1, 11, 1, 1, 1,

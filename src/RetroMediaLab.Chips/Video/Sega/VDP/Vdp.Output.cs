@@ -11,11 +11,20 @@ public sealed partial class Vdp
     private NtscFilter? _mdNtsc, _smsNtsc;
     private bool _ntscRgb555;
     private int _paletteDepth;
+    public Action<int>? LineRendered { get; set; }
+    public ReadOnlySpan<byte> CurrentLineIndices => linebuf.AsSpan(0x20, bitmap.viewport.w);
+    public int ExternalOutputWidth { get; set; }
+    public int OutputLineIndex(int line)
+    {
+        line = (line + bitmap.viewport.y) % lines_per_frame;
+        return interlaced != 0 && config.render != 0 ? line * 2 + odd_frame : line;
+    }
     public int EffectivePixelDepth => config.ntsc != 0 ? (config.PixelDepth == 15 ? 15 : 16) : config.PixelDepth;
     public int OutputWidth
     {
         get
         {
+            if (ExternalOutputWidth > 0) return ExternalOutputWidth;
             int width = bitmap.viewport.w + 2 * bitmap.viewport.x;
             if (config.ntsc == 0) return width;
             return (reg[12] & 1) != 0 ? (width - 3) / 4 * 8 + 8 : (width / 3 + 1) * 7;
@@ -55,7 +64,8 @@ public sealed partial class Vdp
         }
     }
 
-    private void remap_line(int line)
+    private void remap_line(int line) { RemapLineCore(line); LineRendered?.Invoke(line); }
+    private void RemapLineCore(int line)
     {
         int depth = EffectivePixelDepth;
         if (_paletteDepth != depth || config.ntsc != 0 && (_mdNtsc is null || _smsNtsc is null)) RefreshVideoConfiguration();

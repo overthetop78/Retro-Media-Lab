@@ -23,6 +23,7 @@ internal static class BoardFactory
         ModelConstants.MegaDrive => new MegaDriveMachine(resources),
         ModelConstants.MegaCd => new MegaCdMachine(resources),
         ModelConstants.Pico => new PicoMachine(resources),
+        ModelConstants.ThirtyTwoX => new Machines.ThirtyTwoX.ThirtyTwoXMachine(resources),
         _ => throw new ArgumentOutOfRangeException(nameof(model), model, "Unsupported SegaEmu machine.")
     };
 }
