@@ -15,8 +15,14 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 internal abstract partial class SegaBoard
 {
     public const string StateVersion = "SEGAEMU 00000003";
+    protected virtual ReadOnlySpan<byte> StateSignature => "SEGAEMU 00000003"u8;
+    protected virtual int MachineContextSize => 0;
+    protected virtual void SaveMachineContext(Span<byte> state) { }
+    protected virtual bool CanLoadMachineContext(ReadOnlySpan<byte> state) => state.IsEmpty;
+    protected virtual void LoadMachineContext(ReadOnlySpan<byte> state) { }
+    protected virtual void ResetMachineContext() { }
     private static int Z80ContextSize => IntPtr.Size == 8 ? 88 : 76;
-    public int StateSize => LegacyStateSize + InputHardware.ContextSize;
+    public int StateSize => LegacyStateSize + InputHardware.ContextSize + MachineContextSize;
     private int LegacyStateSize => 17 + (SystemHardware.IsSixteenBit(system_hw) ? 0x12000 + 5 + Cpu68000<MegaDriveCpuBus>.ContextSize : 0x2000) +
         16 + Vdp.ContextSize + _sound.ContextSize + Z80ContextSize +
         (system_hw == SystemHardware.MegaCd ? 4 + _cd.ContextSize : SystemHardware.IsSixteenBit(system_hw) ? _md.ContextSize : _sms.ContextSize);
@@ -26,7 +32,7 @@ internal abstract partial class SegaBoard
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (state.Length < StateSize) throw new ArgumentException("State buffer is too short.", nameof(state));
         int offset = 0;
-        WriteStateBytes(state, ref offset, "SEGAEMU 00000003"u8); state[offset++] = system_hw;
+        WriteStateBytes(state, ref offset, StateSignature); state[offset++] = system_hw;
         bool md = SystemHardware.IsSixteenBit(system_hw);
         WriteStateBytes(state, ref offset, work_ram.AsSpan(0, md ? 65536 : 8192));
         if (md)
@@ -49,6 +55,7 @@ internal abstract partial class SegaBoard
         }
         else offset += md ? _md.SaveContext(state[offset..]) : _sms.SaveContext(state[offset..]);
         offset += _input.SaveContext(state[offset..]);
+        SaveMachineContext(state.Slice(offset, MachineContextSize)); offset += MachineContextSize;
         return offset;
     }
 
@@ -56,10 +63,14 @@ internal abstract partial class SegaBoard
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (state.Length < 17 || state[16] != system_hw) return 0;
-        bool withInput = state[..16].SequenceEqual("SEGAEMU 00000003"u8);
+        bool withMachine = state[..16].SequenceEqual("SEGAEMU 00000004"u8);
+        if (withMachine && MachineContextSize == 0) return 0;
+        bool withInput = withMachine || state[..16].SequenceEqual("SEGAEMU 00000003"u8);
         if (!withInput && !state[..16].SequenceEqual("SEGAEMU 00000002"u8)) return 0;
         int legacyLength = LegacyStateSize;
-        if (state.Length < legacyLength + (withInput ? InputHardware.ContextSize : 0)) return 0;
+        int machineOffset = legacyLength + (withInput ? InputHardware.ContextSize : 0);
+        if (state.Length < machineOffset + (withMachine ? MachineContextSize : 0)) return 0;
+        if (withMachine && !CanLoadMachineContext(state.Slice(machineOffset, MachineContextSize))) return 0;
         bool md = SystemHardware.IsSixteenBit(system_hw);
         int soundOffset = 17 + (md ? 0x12000 + 5 : 0x2000) + 16 + Vdp.ContextSize;
         if (!_sound.CanLoadContext(state[soundOffset..])) return 0;
@@ -78,6 +89,8 @@ internal abstract partial class SegaBoard
         {
             Reset();
             if (withInput) _input.LoadContext(state[legacyLength..]);
+            if (withMachine) LoadMachineContext(state.Slice(machineOffset, MachineContextSize));
+            else ResetMachineContext();
             for (int i = 0xc0; md && i < 0xe0; i += 8)
             {
                 memory_map[i].read8 = vdp_read_byte; memory_map[i].read16 = vdp_read_word;
@@ -118,7 +131,7 @@ internal abstract partial class SegaBoard
                 _sms.Switch(unchecked((byte)~_input.IoRegisters.Span[14]));
             }
             completed = true;
-            return offset + (withInput ? InputHardware.ContextSize : 0);
+            return offset + (withInput ? InputHardware.ContextSize : 0) + (withMachine ? MachineContextSize : 0);
         }
         finally { if (!completed) Dispose(); }
     }

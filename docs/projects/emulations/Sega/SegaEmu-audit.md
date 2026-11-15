@@ -453,3 +453,9 @@ Les défauts fonctionnels révélés pendant la refonte sont corrigés et retest
 - [Sélection](../../../../artifacts/Emulation/segaemu-refactor/selection.json), [empreintes des médias](../../../../artifacts/Emulation/segaemu-refactor/media-sha256.json), [sources modifiées](../../../../artifacts/Emulation/segaemu-refactor/source-sha256.json) et [assemblages finaux vérifiés](../../../../artifacts/Emulation/segaemu-refactor/assemblies-final.json)
 - Journaux de compilation/exécution sous artifacts/Emulation/segaemu-refactor. Les empreintes CUE identifient les descripteurs, pas chaque piste binaire.
 - Projets, sources de banc, copies de référence, binaires de test, états et sessions temporaires supprimés. Les tests autonomes utiles restent dans tests/.
+
+## Complément Pico sur ROM réelles
+
+Les ROM ajoutées après le commit 7583d72ad ont révélé des défauts que le programme synthétique ne pouvait pas montrer : choix régional effectué avant l’identification Pico, bits du registre de version, HINT au mauvais niveau, circuit ADPCM absent et page non sauvegardée. Ces points sont corrigés et les cinq jeux ont été retestés en Debug/Release, avec captures, audio, stylet, pages et non-régression MD/MCD.
+
+Le format Pico devient v4 pour sa page et son contexte audio ; les autres machines gardent v3. Le [bilan Pico détaillé](SegaEmu.md#pico--rom-réelles-et-correctifs) contient les mesures et les limites. La case générale 32X ne signifie pas que SegaEmu implémente cet accessoire ; PicoDrive le déclare séparément.

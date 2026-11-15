@@ -48,7 +48,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     private readonly CancellationToken _cancellation;
 
     private Cpu68000<MegaDriveCpuBus>? _mainCpuComponent;
-    private Cpu68000<MegaDriveCpuBus> _mainCpu => _mainCpuComponent ??= Functions.CpuConfigurationFunctions.CreateMain(new(_addresses.Main, _vdp));
+    private Cpu68000<MegaDriveCpuBus> _mainCpu => _mainCpuComponent ??= Functions.CpuConfigurationFunctions.CreateMain(new(_addresses.Main, _vdp, MachineInterruptAcknowledger));
     private MdCartridge? _mdComponent;
     private MdCartridge _md => _mdComponent ??= new(this,cart,rominfo,_backup,_addresses,_input,config.Cartridge);
     private Scd? _cdComponent;
@@ -65,7 +65,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     private bool _cdAudioAttached, _cartridgeAudioAttached, _disposed;
     private string _mediaPath = "";
     private uint zbank, mcycles_vdp;
-    private byte zstate, pico_current, pause_b, system_hw, system_bios, region_code;
+    private byte zstate, pause_b, system_hw, system_bios, region_code;
     private uint system_clock = SystemHardware.NtscClock;
     private short SVP_cycles = 800;
     private int _sampleRate;
@@ -81,6 +81,20 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     public uint MasterClock => system_clock;
     public uint FrameCycles => mcycles_vdp;
     public double NominalFrameRate => (double)system_clock / (3420 * _vdp.lines_per_frame);
+    protected BlipBuffer MachineAudioBuffer => _mainAudio;
+    protected uint MachineCpuCycles => unchecked((uint)main.cycles);
+    protected virtual Action<uint>? MachineAudioSynchronizer => null;
+    protected virtual Func<uint, bool>? MachineInterruptAcknowledger => null;
+    protected virtual uint AuxiliaryInterruptLevel => 0;
+    protected virtual uint MapVideoInterruptLevel(uint level) => level;
+    protected virtual void ConfigureMachineAudio(int sampleRate, double frameRate) { }
+    protected virtual void ResetMachineDevices() { }
+    protected virtual void FinishMachineAudioFrame(uint cycles) { }
+    protected void RefreshMachineInterrupt()
+    {
+        uint video = (_vdp.reg[1] & _vdp.vint_pending) != 0 ? 6u : (_vdp.reg[0] & _vdp.hint_pending) != 0 ? 4u : 0u;
+        _mainCpu.SetIrq(Math.Max(MapVideoInterruptLevel(video), AuxiliaryInterruptLevel));
+    }
 
     protected SegaBoard(byte hardware, SystemConfiguration configuration, byte[] framebuffer,
         int width, int height, int pitch, int sampleRate, Func<string, Stream?> openFile,
@@ -122,6 +136,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
         {
             _input.ResetIo(); _vdp.Reset(GetVideoResetPreset()); _sound.Reset(); _sound.ResetOutput();
         }
+        ResetMachineDevices();
     }
 
     public int RunFrame(Span<short> audio, bool skipVideo = false)
@@ -132,6 +147,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
         try
         {
             _executeFrame(skipVideo ? 1 : 0);
+            FinishMachineAudioFrame(mcycles_vdp);
             int count = _sound.UpdateAudio(mcycles_vdp, audio);
             completed = true;
             return count;
@@ -143,6 +159,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     {
         _sampleRate = sampleRate; _frameRate = frameRate;
         _sound.SetOutputRate(sampleRate, frameRate, system_clock, vdp_pal != 0);
+        ConfigureMachineAudio(sampleRate, frameRate);
         if (_cdAudioAttached)
         {
             double clock = frameRate != 0 ? 3420 * (vdp_pal != 0 ? 313 : 262) * frameRate : system_clock;

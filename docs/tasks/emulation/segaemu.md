@@ -249,3 +249,29 @@
 - [x] Preparer le commit global demande
   - [x] Actualiser le statut documentaire
     - [x] Modifier docs/projects/emulations/Sega/SegaEmu-audit.md : remplacer le statut temporaire non commite par la validation de la refonte sur refactor-sega-emu.
+
+- [x] Valider Pico sur les nouvelles ROM et verifier le perimetre 32X
+  - [x] Tester le materiel existant
+    - [x] Creer artifacts/Emulation/segaemu-pico/.work/Program.cs et Run.ps1 : utiliser les DLL SegaEmu/Chips Debug et Release, executer cinq ROM Pico, mesurer les FPS, capturer des images et verifier stylet, bouton et pages, avec destruction des coeurs et sessions dans finally.
+  - [x] Corriger les defauts constates
+    - [x] Modifier SegaEmu/Buses/SegaBoard.MainMemory.cs : retourner les bits regionaux Pico JP/PAL/US/EU corrects.
+    - [x] Modifier SegaEmu/State/SegaBoard.State.cs et Machines/Pico/PicoMachine.cs : ajouter un contexte de carte specialise et versionne pour sauvegarder/restaurer la page, en conservant la lecture v2/v3 et le format des autres machines.
+    - [x] Creer tests/RetroMediaLab.LocalEmulationTests/Emulation/Sega/SegaEmu/PicoIntegrationTests.cs : verifier les quatre codes regionaux, le contexte de page et le rejet avant mutation ; creer les releves de retest Debug/Release.
+    - [x] Creer artifacts/References/Machines/Sega/PicoDrive-Pico/source-index.json : identifier les fichiers audio Pico amont manquants localement, avant de definir leur raccordement eventuel.
+    - [x] Creer artifacts/References/Machines/Sega/PicoDrive-Pico/{pico.c,memory.c,xpcm.c} : conserver les sources audio et registres amont utiles au diagnostic.
+    - [x] Creer src/RetroMediaLab.Chips/Audio/Sega/PicoAdpcm/PicoAdpcm.cs et PicoAdpcm.Context.cs : decoder autonome ADPCM esclave, FIFO 64 octets, gain, filtre, interruption et contexte, adapte des sources amont conservees.
+    - [x] Modifier SegaEmu/Machines/Pico/PicoMachine.cs et creer PicoMachine.Audio.cs : posseder les registres Pico, brancher le decoder, son contexte, les acquittements IRQ et les ecritures audio ; retirer les anciens registres factices de Buses/SegaBoard.MainMemory.cs.
+    - [x] Modifier SegaEmu/Boards/SegaBoard.cs, Boards/SegaBoard.Configuration.cs, Boards/SegaBoard.Initialization.cs, Buses/SegaBoard.ChipWiring.cs, Buses/MegaDriveCpuBus.cs et Scheduling/MegaDriveFrameScheduler.cs : ajouter les points de synchronisation audio et priorite IRQ facultatifs, conserver les chemins des autres machines.
+    - [x] Creer tests/RetroMediaLab.Chips.Tests/SegaEmu/PicoAdpcmTests.cs ; etendre PicoIntegrationTests.cs pour FIFO, filtre, son et reprise de contexte, puis conserver les retests des ROM et les captures Debug/Release.
+    - [x] Modifier SegaEmu/Media/Loading/LoadRom.cs et LoadRom.Region.cs : identifier Pico avant la detection regionale en conservant le changement de boutisme, appliquer la priorite PAL declaree par les en-tetes Pico (EF, 8F), verifier la region effective sans se fonder sur le nom du fichier ; etendre PicoIntegrationTests.cs et retester les captures.
+    - [x] Modifier SegaEmu/Boards/SegaBoard.cs, Buses/SegaBoard.ChipWiring.cs et Machines/Pico/PicoMachine.Audio.cs : cabler HINT sur le niveau 5 propre a Pico au lieu du niveau 4 Mega Drive ; verifier ce signal dans PicoIntegrationTests.cs.
+    - [x] Modifier SegaEmu/Services/ManagedCore.Input.Hardware.cs : permettre le stylet sur la zone livre en maintenant le bouton central, conserver clic gauche/contact et clic droit/bouton rouge ; verifier les coordonnees et pages via PicoIntegrationTests.cs sans media externe.
+    - [x] Creer artifacts/Emulation/segaemu-pico/.work/Regression.cs et son projet : comparer Aladdin MD et Batman Returns MCD aux empreintes precedentes, verifier les etats en Debug et Release ; noter les releves et supprimer ce banc avec .work.
+    - [x] Modifier Chips/Audio/Sega/PicoAdpcm/PicoAdpcm.Context.cs et PicoAdpcm.cs, tests/RetroMediaLab.Chips.Tests/SegaEmu/PicoAdpcmTests.cs : rejeter les horloges et compteurs de contexte corrompus avant mutation ; aligner les bornes du taux audio et retester les contrats.
+    - [x] Modifier Chips/Audio/Sega/PicoAdpcm/PicoAdpcm.cs et Boards/SegaBoard.Initialization.cs : presenter la table du decoder en lignes et retirer les espaces de fin de ligne ; creer les empreintes des sources et medias testes.
+    - [x] Copier les DLL et PDB Sega/Chips construites dans build/Debug/Retro Media Lab/Modules/sega et lib, puis les emplacements Release correspondants ; conserver src/RetroMediaLab.Emulation.Sega/module.json dans chaque module et verifier les empreintes.
+    - [x] Creer artifacts/References/Machines/Sega/PicoDrive-Pico/common/pico.c : conserver la reference du cablage HINT et de la detection regionale utilisee pour la correction.
+    - [x] Modifier artifacts/Emulation/segaemu-pico/.work/Program.cs et Run.ps1 : prolonger seulement Le Roi Lion en Debug a 900 trames par passage, car la fenetre courte ne couvre pas son demarrage audio ; conserver extended-results-Debug.json et les captures/audio correspondantes.
+  - [x] Conserver le bilan et nettoyer
+    - [x] Modifier docs/projects/emulations/Sega/SegaEmu.md et SegaEmu-audit.md : noter les ROM, captures, vitesses, limites et la difference entre option generale 32X et support du coeur.
+    - [x] Supprimer artifacts/Emulation/segaemu-pico/.work et ses sources, projets, binaires et sessions temporaires ; conserver mesures et captures.

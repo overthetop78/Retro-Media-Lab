@@ -5,7 +5,7 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 
 internal abstract partial class SegaBoard
 {
-    public byte PicoPage { get => pico_current; set => pico_current = value; }
+    public virtual byte PicoPage { get => 0; set { } }
     public Memory<byte> CdBackupRam => _cd.BackupRam;
     public Memory<byte> CdCartridgeRam => _cdCartridge.Ram;
     public void RefreshConfiguration(int overclockPercent = 100)

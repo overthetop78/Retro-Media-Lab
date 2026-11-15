@@ -4,6 +4,7 @@ internal abstract partial class SegaBoard
     private sealed class MegaDriveFrameScheduler(SegaBoard board)
     {
         private readonly SegaBoard _board = board;
+        private readonly Action<uint>? _audioSynchronizer = board.MachineAudioSynchronizer;
         public void Execute(int do_skip)
         {
             unchecked
@@ -95,6 +96,7 @@ internal abstract partial class SegaBoard
                 {
                     _board.v_counter = unchecked((ushort)(_board.viewport_h));
                     _board.m68k_run(_board.vint_cycle);
+                    _audioSynchronizer?.Invoke(unchecked((uint)_board.main.cycles));
                     if ((unchecked((int)(_board.zstate)) == 1))
                     {
                         _board.z80_run(_board.vint_cycle);
@@ -111,6 +113,7 @@ internal abstract partial class SegaBoard
                 }
 
                 _board.m68k_run(unchecked((uint)(3420)));
+                _audioSynchronizer?.Invoke(unchecked((uint)_board.main.cycles));
                 if ((unchecked((int)(_board.zstate)) == 1))
                 {
                     _board.z80_run(unchecked((uint)(3420)));
@@ -136,6 +139,7 @@ internal abstract partial class SegaBoard
 
                     _board.input_refresh();
                     _board.m68k_run((_board.mcycles_vdp + unchecked((uint)(3420))));
+                    _audioSynchronizer?.Invoke(unchecked((uint)_board.main.cycles));
                     if ((unchecked((int)(_board.zstate)) == 1))
                     {
                         _board.z80_run((_board.mcycles_vdp + unchecked((uint)(3420))));
@@ -169,6 +173,7 @@ internal abstract partial class SegaBoard
 
                 _board.input_refresh();
                 _board.m68k_run((_board.mcycles_vdp + unchecked((uint)(3420))));
+                _audioSynchronizer?.Invoke(unchecked((uint)_board.main.cycles));
                 if ((unchecked((int)(_board.zstate)) == 1))
                 {
                     _board.z80_run((_board.mcycles_vdp + unchecked((uint)(3420))));
@@ -210,6 +215,7 @@ internal abstract partial class SegaBoard
                     }
 
                     _board.m68k_run((_board.mcycles_vdp + unchecked((uint)(3420))));
+                    _audioSynchronizer?.Invoke(unchecked((uint)_board.main.cycles));
                     if ((unchecked((int)(_board.zstate)) == 1))
                     {
                         _board.z80_run((_board.mcycles_vdp + unchecked((uint)(3420))));

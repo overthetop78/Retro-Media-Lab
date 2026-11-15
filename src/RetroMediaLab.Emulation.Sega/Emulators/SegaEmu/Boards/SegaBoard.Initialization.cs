@@ -5,7 +5,7 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 internal abstract partial class SegaBoard
 {
     protected void InitializeEightBitMapping() { z80_init(0,z80_irq_callback); sms_cart_init(); ConfigureZ80Ports(); }
-    protected void InitializeMegaDriveMapping() { unchecked { int i = default; z80_init(0,z80_irq_callback); 
+    protected void InitializeMegaDriveMapping() { unchecked { int i = default; z80_init(0,z80_irq_callback);
             m68k_init();
             main.aerr_enabled = unchecked((uint)(config.addr_error));
             for (i = 128; (i < 224); i++) {
@@ -39,7 +39,7 @@ internal abstract partial class SegaBoard
              } }
     protected virtual void ConfigureSixteenBitIo() => ConfigureMegaDriveIo();
     protected virtual void InitializeSixteenBitDevices() => md_cart_init();
-    protected void ConfigureMegaDriveIo() { unchecked { int i = default; 
+    protected void ConfigureMegaDriveIo() { unchecked { int i = default;
             memory_map[(int)(161)].read8 = ctrl_io_read_byte;
             memory_map[(int)(161)].read16 = ctrl_io_read_word;
             memory_map[(int)(161)].write8 = ctrl_io_write_byte;
@@ -54,18 +54,17 @@ internal abstract partial class SegaBoard
             z80_writeport = z80_unused_port_w;
             z80_readport = z80_unused_port_r;
              } }
-    protected void ConfigurePicoIo() { unchecked { 
-            memory_map[(int)(128)].read8 = pico_read_byte;
-            memory_map[(int)(128)].read16 = pico_read_word;
-            memory_map[(int)(128)].write8 = m68k_unused_8_w;
-            memory_map[(int)(128)].write16 = m68k_unused_16_w;
+    protected void ConfigurePicoIo(Func<uint,uint> readByte, Func<uint,uint> readWord, Action<uint,uint> writeByte, Action<uint,uint> writeWord) { unchecked {
+            memory_map[(int)(128)].read8 = readByte;
+            memory_map[(int)(128)].read16 = readWord;
+            memory_map[(int)(128)].write8 = writeByte;
+            memory_map[(int)(128)].write16 = writeWord;
             memory_map[(int)(161)].read8 = m68k_read_bus_8;
             memory_map[(int)(161)].read16 = m68k_read_bus_16;
             memory_map[(int)(161)].write8 = m68k_unused_8_w;
             memory_map[(int)(161)].write16 = m68k_unused_16_w;
-            pico_current = unchecked((byte)(0));
              } }
-    protected void InitializeMegaCdDevices() { unchecked { 
+    protected void InitializeMegaCdDevices() { unchecked {
             s68k_init();
             sub.aerr_enabled = unchecked((uint)(config.addr_error));
             scd_init();

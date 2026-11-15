@@ -1,5 +1,7 @@
 # SegaEmu
 
+Pico : les nouvelles ROM réelles ont permis de corriger la région, les interruptions, le circuit ADPCM et les états du livre. Voir le [bilan Pico, captures et vitesses](#pico--rom-réelles-et-correctifs).
+
 Refonte sur refactor-sega-emu : [architecture, corrections et campagne finale Debug/Release](SegaEmu-audit.md#bilan-de-la-refonte--15-novembre-2026). Les paragraphes et comparaisons de reconstruction ci-dessous constituent l’historique ; les nouveaux résultats comparent exclusivement SegaEmu à sa référence 476fc8779.
 
 État du 14 novembre 2026. SegaEmu 1.0.0 est une reconstruction indépendante à partir des sources locales de GenesisPlusGXCS 1.7.6+2499cd3. À la fin de cette reconstruction, les 963 empreintes de départ de GenesisPlusGXCS et des composants Chips préexistants étaient identiques. L'audit des options demandé ensuite modifie aussi GenesisPlusGXCS ; ses corrections sont détaillées en fin de document. Les composants Chips ne sont pas modifiés par cet audit.
@@ -18,7 +20,7 @@ SegaEmu est enregistré séparément dans le catalogue commun. Sa fabrique et so
 
 Les options comprennent variantes matérielles, région et fréquence, BIOS, cartouches et extensions, overclock, rendu, filtres, limite de sprites, curseurs, mixage et volumes par canal, RAM Mega-CD et précache. Les variantes restent éditables ; les options exigeant une reconstruction de la machine sont signalées. Les 693 clés propres comprennent 184 textes localisés dans les 29 cultures et 509 valeurs invariantes dans la base commune. Les nouvelles traductions utilisent Argos. Les autres ressources préexistantes sont inchangées.
 
-Le format courant est SEGAEMU 00000003, avec 221 octets de contexte des périphériques d’entrée. La lecture de SEGAEMU 00000002 est conservée ; les phases absentes de ces anciens fichiers ne peuvent pas être retrouvées. Les blocs sont contrôlés avant réinitialisation et l’identification de la machine active est conservée. Les états restent propres à SegaEmu.
+Les états restent au format SEGAEMU 00000003 pour les autres machines. Pico utilise SEGAEMU 00000004 pour ajouter sa page et son contexte ADPCM ; les versions 2/3 restent lisibles. Les données absentes de ces anciennes sauvegardes ne peuvent pas être reconstituées. Les blocs sont contrôlés avant réinitialisation.
 
 ## Validation
 
@@ -60,7 +62,7 @@ Les JSON contiennent, par ROM, FPS nominaux et effectifs, pourcentage de temps r
 | Options indépendantes | Définitions et préparation propres, variantes éditables, gains réellement câblés, ressources de toutes les cultures |
 | Préservation lors de la reconstruction | 963 empreintes identiques, aucune ressource étrangère modifiée, aucune référence à un autre émulateur dans SegaEmu ; l'audit ultérieur des options a son propre périmètre ci-dessous |
 
-Pico est vérifié avec un programme en mémoire, sans ROM commerciale disponible dans le corpus fourni. SC-3000 utilise une cartouche SG-1000 compatible : cet essai ne démontre pas le fonctionnement complet du clavier ou des logiciels BASIC. Les séquences automatisées et captures ne prouvent pas la compatibilité intégrale des jeux ou de chaque périphérique. Certaines captures correspondent à un écran noir ou à une transition déjà présente dans les références. Les profils CHD testés ne couvrent pas toutes les combinaisons de codecs ; l'essai Ogg synthétique silencieux ne constitue pas une validation exhaustive du décodeur. Les CHD nécessitant une image parente restent hors des formats acceptés. Le 32X n'appartient pas aux machines proposées par GenesisPlusGXCS et n'est pas ajouté.
+Cette première campagne Pico utilisait un programme en mémoire ; elle est complétée par les cinq ROM réelles décrites ci-dessous. SC-3000 utilise une cartouche SG-1000 compatible : cet essai ne démontre pas le fonctionnement complet du clavier ou des logiciels BASIC. Les séquences automatisées et captures ne prouvent pas la compatibilité intégrale des jeux ou de chaque périphérique. Certaines captures correspondent à un écran noir ou à une transition déjà présente dans les références. Les profils CHD testés ne couvrent pas toutes les combinaisons de codecs ; l'essai Ogg synthétique silencieux ne constitue pas une validation exhaustive du décodeur. Les CHD nécessitant une image parente restent hors des formats acceptés. Le 32X n'appartient pas aux machines proposées par GenesisPlusGXCS et n'est pas ajouté.
 
 Le projet global Chips.Tests conserve une erreur préexistante d'import `CPU.Common.Z80` dans les tests UPD780C1 ; les nouveaux tests ont été exécutés dans un projet ciblé temporaire, sans modifier ces tests existants. Une tentative de build s'est heurtée à une compilation concurrente de tests ; la reprise séquentielle Debug puis Release réussit.
 
@@ -292,3 +294,53 @@ La distribution Debug complète est reconstruite avec `scripts/local-building.cm
 - [Forgotten Worlds après le BIOS](../../../../artifacts/Emulation/sega-boot-logo/segaemu-enabled-900.png).
 - [Reproduction avant correction](../../../../artifacts/Emulation/sega-boot-logo/before.log), [28 contrôles après correction](../../../../artifacts/Emulation/sega-boot-logo/final-tests.log) et [comparaison des réglages](../../../../artifacts/Emulation/sega-boot-logo/comparison.json).
 - [Construction Debug complète](../../../../artifacts/Emulation/sega-boot-logo/build-debug.log).
+
+## Pico — ROM réelles et correctifs
+
+Cinq ROM ont été testées dans SegaEmu en Debug et Release : Sonic Gameworld USA, Ecco Jr. France, Le Roi Lion France, Winnie USA et les 101 Dalmatiens Japon.
+
+### Corrections réalisées
+
+- Identification de Pico avant la détection régionale, sans perdre le changement de boutisme du chargement. Les en-têtes EF/8F sélectionnent maintenant le PAL en automatique ; les réglages régionaux explicites restent prioritaires. Le registre de version renvoie les valeurs Pico JP/JP PAL/US/EU correctes.
+- Interruption horizontale câblée au niveau 5 pour Pico ; interruption audio au niveau 3, avec priorité des interruptions vidéo et acquittement indépendant.
+- Nouveau circuit autonome Chips/Audio/Sega/PicoAdpcm : FIFO de 64 octets, décodage ADPCM esclave, gain programmable, filtre, signal de remplissage et contexte sauvegardable. Les écritures PCM ne sont plus ignorées et les registres ne renvoient plus des valeurs fixes. Le circuit partage le tampon de mixage de la machine et suit son horloge, sans dépendance à un autre émulateur.
+- Registres et contrôle du matériel dans Machines/Pico/PicoMachine.Audio.cs. Le code de référence conservé est celui des [registres Pico](https://github.com/notaz/picodrive/blob/master/pico/pico/memory.c), du [décodeur ADPCM](https://github.com/notaz/picodrive/blob/master/pico/pico/xpcm.c) et du [câblage/détecteur régional](https://github.com/notaz/picodrive/blob/master/pico/pico.c) de PicoDrive ; ces sources sont adaptées en C#.
+- Contexte de carte Pico de 193 octets : page puis décodeur/FIFO/horloge/filtre/interruption. Les anciens états Pico restent lisibles avec remise à zéro des données qu’ils ne contenaient pas. Le format des autres machines reste inchangé.
+
+### Commandes vérifiées
+
+- Clic gauche : contact du stylet.
+- Clic droit : bouton rouge.
+- Molette : changement de page ; chaque événement est consommé une seule fois.
+- Bouton central maintenu : stylet sur la surface du livre ; sans lui, surface du pavé. Les deux plages de coordonnées sont contrôlées.
+
+La restauration d’état conserve la page. Les contrôles couvrent aussi les registres régionaux, le niveau HINT, la reprise d’un paquet ADPCM, la FIFO et le refus de contextes corrompus avant mutation.
+
+### Résultats
+
+Chaque jeu a trois passages par configuration, avec 120 trames de chauffe puis 120 trames chronométrées en Debug ou 900 en Release. Le Roi Lion a été prolongé à 900 trames par passage en Debug pour couvrir son démarrage audio, absent de la fenêtre courte ; sa ligne utilise ces relevés prolongés. Le cœur complet publie vidéo et audio, sans fenêtre ni limiteur. Les captures PNG et WAV sont écrites en dehors du chronométrage ; la collecte audio en mémoire et le contrôle de signal font partie du banc. Les FPS ci-dessous sont les médianes.
+| Jeu | Debug FPS | Release FPS | Fréquence nominale |
+| --- | ---: | ---: | ---: |
+| Sonic The Hedgehog's Gameworld (USA) | 36,6 | 940,6 | 59,9 Hz |
+| Ecco Jr. et la Chasse au Tresor Sous-Marine! (France) | 27,0 | 948,0 | 49,7 Hz |
+| Les Aventures du Roi Lion (France) | 28,7 | 925,5 | 49,7 Hz |
+| A Year at Pooh Corner (USA) | 33,9 | 1052,3 | 59,9 Hz |
+| 101-piki Wan-chan - Wan-chan Daikoushin! (Japan) | 33,7 | 1057,1 | 59,9 Hz |
+
+Les cinq jeux affichent des écrans de jeu/titre et produisent un signal audio non nul. Stylet, surface livre, bouton, pages et restauration sont vérifiés sur chacun. Les essais sont des séquences de démarrage/attract et des interactions ciblées, pas des parties complètes ni une validation de tout le catalogue Pico. Aucun affichage des scans des pages papier n’est ajouté.
+
+27 tests de puces et 23 tests d’intégration passent dans chaque configuration : 50 par configuration. Aladdin Mega Drive et Batman Returns Mega-CD conservent leurs empreintes vidéo/audio de la campagne précédente en Debug et Release. Leur reprise a été contrôlée après deux chargements identiques, selon le protocole de cette campagne ; aucun comportement nouveau des autres machines n’est revendiqué.
+
+Les DLL/PDB Sega et Chips construites sont copiées et vérifiées dans les distributions locales build/Debug/Retro Media Lab et build/Release/Retro Media Lab. L’application et les autres modules n’ont pas été recompilés.
+
+- [Résultats Debug](../../../../artifacts/Emulation/segaemu-pico/results-Debug.json) et [Release](../../../../artifacts/Emulation/segaemu-pico/results-Release.json)
+- [Non-régression Debug](../../../../artifacts/Emulation/segaemu-pico/regression-Debug.json) et [Release](../../../../artifacts/Emulation/segaemu-pico/regression-Release.json)
+- [Ecco France](../../../../artifacts/Emulation/segaemu-pico/Release-AF9B51796A-running.png), [Le Roi Lion France](../../../../artifacts/Emulation/segaemu-pico/Release-E312FD12A4-running.png), [Sonic Gameworld](../../../../artifacts/Emulation/segaemu-pico/Release-E6393B069A-running.png), [Winnie](../../../../artifacts/Emulation/segaemu-pico/Release-DB9F0FEF97-running.png), [101 Dalmatiens](../../../../artifacts/Emulation/segaemu-pico/Release-75420989DF-running.png)
+- Captures de démarrage/interactions et extraits WAV d’environ six secondes pour chaque jeu et configuration sous artifacts/Emulation/segaemu-pico.
+- Les sources de référence restent sous artifacts/References/Machines/Sega/PicoDrive-Pico ; le banc, ses binaires et ses sessions sont supprimés après exploitation.
+
+### Case « Activer 32X »
+
+La case de la capture appartient aux paramètres généraux Mega Drive. La clé configuration.megaDrive32x intervient notamment dans l’autorisation des cartouches .32x ; elle ne crée pas de matériel 32X dans SegaEmu.
+
+SegaEmu ne déclare pas la machine ThirtyTwoX et ne contient pas ses deux SH-2, son VDP ou son PWM. PicoDrive la déclare dans son catalogue et la décrit dans sa [documentation officielle](https://github.com/notaz/picodrive/blob/master/platform/base_readme.txt). La présence de la case générique ne constitue donc pas une preuve de prise en charge par le cœur sélectionné.

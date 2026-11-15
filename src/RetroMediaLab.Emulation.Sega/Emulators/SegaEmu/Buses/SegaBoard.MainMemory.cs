@@ -1,3 +1,4 @@
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 
 internal abstract partial class SegaBoard
@@ -998,62 +999,6 @@ internal abstract partial class SegaBoard
             return;
             }
             }
-        }
-    }
-    private uint pico_read_byte(uint address)
-    {
-        unchecked
-        {
-            switch ((address & unchecked((uint)(255)))) {
-            case 1:
-            {
-            return unchecked((uint)((unchecked((int)(region_code)) >> 1)));
-            }
-            case 3:
-            {
-            return unchecked((uint)((~unchecked((int)(input_pad[(int)(0)])))));
-            }
-            case 5:
-            {
-            return unchecked((uint)((unchecked((int)(input_analog[(int)(0)])) >> 8)));
-            }
-            case 7:
-            {
-            return unchecked((uint)((unchecked((int)(input_analog[(int)(0)])) & 255)));
-            }
-            case 9:
-            {
-            return unchecked((uint)((unchecked((int)(input_analog[(int)(1)])) >> 8)));
-            }
-            case 11:
-            {
-            return unchecked((uint)((unchecked((int)(input_analog[(int)(1)])) & 255)));
-            }
-            case 13:
-            {
-            return unchecked((uint)(((1 << unchecked((int)(pico_current))) - 1)));
-            }
-            case 16:
-            case 17:
-            {
-            return unchecked((uint)(255));
-            }
-            case 18:
-            {
-            return unchecked((uint)(128));
-            }
-            default:
-            {
-            return m68k_read_bus_8(address);
-            }
-            }
-        }
-    }
-    private uint pico_read_word(uint address)
-    {
-        unchecked
-        {
-            return (pico_read_byte((address | unchecked((uint)(1)))) | (pico_read_byte(address) << 8));
         }
     }
 }

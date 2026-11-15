@@ -66,7 +66,7 @@ internal abstract partial class SegaBoard
     private int overscan => config.Video.overscan;
     private int gg_extra => config.Video.gg_extra;
 
-    private void m68k_init() { _mainCpuComponent?.Halt(); _mainCpuComponent = Functions.CpuConfigurationFunctions.CreateMain(new(_addresses.Main, _vdp)); }
+    private void m68k_init() { _mainCpuComponent?.Halt(); _mainCpuComponent = Functions.CpuConfigurationFunctions.CreateMain(new(_addresses.Main, _vdp, MachineInterruptAcknowledger)); }
     private void s68k_init() => _cd.Cpu.State = default;
     private void z80_init(int index, Func<int, int> callback) => _z80 = Functions.CpuConfigurationFunctions.CreateZ80(this, callback);
     private void m68k_run(uint cycles) => _mainCpu.Run(cycles);
@@ -74,7 +74,7 @@ internal abstract partial class SegaBoard
     private void m68k_pulse_halt() => _mainCpuComponent?.Halt();
     private uint m68k_cycles() => unchecked((uint)_mainCpu.InstructionCycles);
     private void m68k_update_irq(uint mask) => _mainCpu.SetIrq((_mainCpu.State.int_level >> 8) | mask);
-    private void m68k_set_irq(uint level) => _mainCpu.SetIrq(level);
+    private void m68k_set_irq(uint level) => _mainCpu.SetIrq(Math.Max(MapVideoInterruptLevel(level), AuxiliaryInterruptLevel));
     private void s68k_run(uint cycles) => _cd.Cpu.Run(cycles);
     private void s68k_pulse_reset() => _cd.Cpu.Reset();
     private void s68k_pulse_halt() => _cd.Cpu.Halt();
@@ -173,8 +173,8 @@ internal abstract partial class SegaBoard
             return VdpResetPreset.Mode5;
         return VdpResetPreset.None;
     }
-    void IVdpBus.SetMainIrq(uint level) => _mainCpu.SetIrq(level);
-    void IVdpBus.SetMainIrqDelay(uint level) => _mainCpu.SetIrqDelay(level);
+    void IVdpBus.SetMainIrq(uint level) => m68k_set_irq(level);
+    void IVdpBus.SetMainIrqDelay(uint level) => _mainCpu.SetIrqDelay(Math.Max(MapVideoInterruptLevel(level), AuxiliaryInterruptLevel));
     void IVdpBus.SetZ80Irq(uint level) => _z80.SetIrqLine(level);
 
     uint IVdpBus.ReadDmaWord(uint address) => BinaryPrimitives.ReadUInt16LittleEndian(memory_map[(address >> 16) & 255].Data.Span[(int)(address & 65534)..]);

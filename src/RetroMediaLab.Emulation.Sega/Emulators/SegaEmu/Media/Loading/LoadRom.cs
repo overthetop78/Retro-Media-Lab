@@ -100,9 +100,10 @@ internal abstract partial class SegaBoard
             }
             cart.romsize = checked((uint)size);
             GetRomInformation();
-            GetRegion(true);
-            if (system_hw == SystemHardware.MegaDrive) SwapWords(cart.rom.AsSpan(0, (size + 1) & ~1));
+            bool swapCartridgeWords = system_hw == SystemHardware.MegaDrive;
             if (rominfo.consoletype.Contains("SEGA PICO", StringComparison.Ordinal)) system_hw = SystemHardware.Pico;
+            GetRegion(true);
+            if (swapCartridgeWords) SwapWords(cart.rom.AsSpan(0, (size + 1) & ~1));
             romtype = system_hw;
             if (system_hw == SystemHardware.MegaCd)
             {

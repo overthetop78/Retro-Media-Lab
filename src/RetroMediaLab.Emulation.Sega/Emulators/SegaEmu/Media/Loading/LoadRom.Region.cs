@@ -29,7 +29,9 @@ internal abstract partial class SegaBoard
                         else if (value is >= 'A' and <= 'F') country |= value - 'A' + 10;
                     }
                 }
-                region_code = (country & 4) != 0 ? SystemHardware.Usa : (country & 1) != 0 ? SystemHardware.JapanNtsc :
+                // Pico's multi-region headers include EF/8F on PAL storyware.
+                region_code = system_hw == SystemHardware.Pico && (country & 8) != 0 ? SystemHardware.Europe :
+                    (country & 4) != 0 ? SystemHardware.Usa : (country & 1) != 0 ? SystemHardware.JapanNtsc :
                     (country & 8) != 0 ? SystemHardware.Europe : (country & 2) != 0 ? SystemHardware.JapanPal : SystemHardware.Usa;
                 string product = rominfo.product;
                 if (product.Contains("T-45033", StringComparison.Ordinal) && rominfo.checksum == 0x0f81 ||

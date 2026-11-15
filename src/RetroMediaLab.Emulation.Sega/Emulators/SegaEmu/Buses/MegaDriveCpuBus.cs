@@ -3,7 +3,10 @@ using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Buses;
 
-internal sealed class MegaDriveCpuBus(CartridgeMemoryBank[] banks, Vdp video) : MappedCpuBus(banks)
+internal sealed class MegaDriveCpuBus(CartridgeMemoryBank[] banks, Vdp video, Func<uint, bool>? acknowledge = null) : MappedCpuBus(banks)
 {
-    public override void AcknowledgeInterrupt(uint level) => video.AcknowledgeInterrupt((int)level);
+    public override void AcknowledgeInterrupt(uint level)
+    {
+        if (acknowledge?.Invoke(level) != true) video.AcknowledgeInterrupt((int)level);
+    }
 }
