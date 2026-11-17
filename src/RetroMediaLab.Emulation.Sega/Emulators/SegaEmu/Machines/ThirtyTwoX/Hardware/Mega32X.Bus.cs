@@ -40,8 +40,15 @@ internal sealed partial class Mega32X
         else if (address is >= 0xa15180 and <= 0xa1518b) Video.WriteRegister((int)address, (ushort)((Video.ReadRegister((int)address) & ~mask) | (value & mask)));
         else if (address is >= 0xa15200 and <= 0xa153ff) Video.WritePalette(address, (ushort)((Video.ReadPalette(address) & ~mask) | (value & mask)));
     }
-    private sealed class Sh2Bus(Mega32X owner, int cpu) : ISh2Bus
+    private sealed class Sh2Bus(Mega32X owner, int cpu) : ISh2Bus, ISh2NativeIdleBus
     {
+        public bool TryGetNativeIdleClocks(uint firstAddress, int words, out int clocks)
+        {
+            clocks = 0;
+            if (words is < 2 or > 3 || !TryMapFetch(firstAddress, out var memory, out uint start, out int wait)
+                || firstAddress < start || (ulong)(firstAddress - start) + (uint)(words * 2) > (ulong)memory.Length) return false;
+            clocks = words + 1 + words * wait; return true;
+        }
         public long CodeVersion(uint address) => address < 0x4000 || address is >= 0x02000000 and < 0x04000000 ? 0
             : address is >= 0x06000000 and < 0x06040000 ? owner._sdramVersions[(address & 0x3ffff) >> 4] : -1;
         public ulong CodeEpoch(uint address) => address < 0x4000 || address is >= 0x02000000 and < 0x04000000 ? 1

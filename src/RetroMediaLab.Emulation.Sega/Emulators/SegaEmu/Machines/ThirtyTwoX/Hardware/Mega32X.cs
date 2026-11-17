@@ -7,7 +7,7 @@ using RetroMediaLab.Chips.Audio.Common.Resampling;
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.ThirtyTwoX.Hardware;
 
 /// <summary>Machine-owned 32X adapter. Borrows the Mega Drive ROM, clock and audio sink.</summary>
-internal sealed partial class Mega32X
+internal sealed partial class Mega32X : IDisposable
 {
     private readonly Func<uint, byte> _rom;
     private readonly Func<uint, ushort> _romWord;
@@ -32,6 +32,15 @@ internal sealed partial class Mega32X
     public Pwm32X Pwm { get; }
     public Sh7095 Master => _cpus[0]!;
     public Sh7095 Slave => _cpus[1]!;
+    public void Dispose()
+    {
+        CodeMappingChanged = null;
+        if (_cpus[0] is { } master) master.SerialTransmitted = null;
+        if (_cpus[1] is { } slave) slave.SerialTransmitted = null;
+        Pwm.InterruptChanged = null;
+        try { _cpus[0]?.Cpu.ClearCodeCache(); }
+        finally { _cpus[1]?.Cpu.ClearCodeCache(); }
+    }
     public bool Enabled => (_control & 1) != 0;
     public bool Released => (_control & 2) != 0;
     public void SetCartridgeView(ReadOnlyMemory<byte> view)
@@ -40,13 +49,24 @@ internal sealed partial class Mega32X
         _cartridgeView = view;
         Master.Cpu.ClearCodeCache(); Slave.Cpu.ClearCodeCache();
     }
-    public Mega32X(Func<uint, byte> rom, Func<uint, ushort> romWord, Func<uint> mainCycles, BandLimitedBuffer output, Func<int, Memory<byte>, int> firmware, bool cartridgePresent, bool pal)
+    public Mega32X(Func<uint, byte> rom, Func<uint, ushort> romWord, Func<uint> mainCycles, BandLimitedBuffer output, Func<int, Memory<byte>, int> firmware, bool cartridgePresent, bool pal, bool dynamicBlocks = false, bool nativeBlocks = false)
     {
         _rom = rom; _romWord = romWord; _mainCycles = mainCycles; _cartridgePresent = cartridgePresent; Video.Pal = pal;
         Pwm = new(output); PrepareBootRoms(firmware);
-        _cpus[0] = new Sh7095(new Sh2Bus(this, 0)); _cpus[1] = new Sh7095(new Sh2Bus(this, 1));
-        Master.SerialTransmitted = Slave.ReceiveSerial; Slave.SerialTransmitted = Master.ReceiveSerial;
-        Pwm.InterruptChanged = UpdateInterrupts;
+        bool initialized = false;
+        try
+        {
+            _cpus[0] = new Sh7095(new Sh2Bus(this, 0)); _cpus[1] = new Sh7095(new Sh2Bus(this, 1));
+            Master.Cpu.UseCompiledBlocks = Slave.Cpu.UseCompiledBlocks = dynamicBlocks || nativeBlocks;
+            Master.Cpu.UseX64RegisterBlocks = Slave.Cpu.UseX64RegisterBlocks = nativeBlocks;
+            // Doom visits 9778 code addresses; 4096 entries caused 22643 redundant JIT builds.
+            if (nativeBlocks) Master.Cpu.CompiledBlockCacheCapacity = Slave.Cpu.CompiledBlockCacheCapacity = 16384;
+            Master.UseCoalescedLatchedTimerEvents = Slave.UseCoalescedLatchedTimerEvents = true;
+            Master.SerialTransmitted = Slave.ReceiveSerial; Slave.SerialTransmitted = Master.ReceiveSerial;
+            Pwm.InterruptChanged = UpdateInterrupts;
+            initialized = true;
+        }
+        finally { if (!initialized) Dispose(); }
     }
     public void Reset()
     {
@@ -55,6 +75,7 @@ internal sealed partial class Mega32X
         _epoch = _lastMaster = 0; _booted = _syncing = false; Array.Clear(_running); Array.Clear(_mask); Array.Clear(_pending);
         ResetPolling(); _sdramEpoch++; Array.Clear(_sdramVersions); Array.Clear(_sdram); Array.Clear(_communication); Array.Clear(_fifo); Video.Reset(); Pwm.Reset(); Master.Reset(); Slave.Reset();
         Array.Clear(_sdramCodeWords);
+        CodeMappingChanged?.Invoke();
     }
     private uint Rom32(uint address) => (uint)_rom(address) << 24 | (uint)_rom(address + 1) << 16 | (uint)_rom(address + 2) << 8 | _rom(address + 3);
     private void StartProcessors()

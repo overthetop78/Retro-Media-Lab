@@ -13,8 +13,8 @@ internal static class CpuConfigurationFunctions
     internal static Cpu68000Configuration Secondary { get; } = new(ClockMultiplier: MachineClockRatios.SecondaryCpu,
         Prefetch: false, RefreshSkipAdvance: 512, ResetRefreshAdvance: 512, PrefetchResetAddress: null);
 
-    internal static Cpu68000<MegaDriveCpuBus> CreateMain(MegaDriveCpuBus bus) => new(bus, Main);
+    internal static Cpu68000<MegaDriveCpuBus> CreateMain(MegaDriveCpuBus bus, bool dynamicBlocks = false) => new(bus, Main) { UseDynamicBlocks = dynamicBlocks };
     internal static Cpu68000<MegaCdCpuBus> CreateSecondary(MegaCdCpuBus bus) => new(bus, Secondary);
-    internal static CpuZ80<TBus> CreateZ80<TBus>(TBus bus, Func<int, int> interrupt) where TBus : class, ICpuZ80Bus =>
-        new(bus, interrupt, clockMultiplier: MachineClockRatios.Z80);
+    internal static CpuZ80<TBus> CreateZ80<TBus>(TBus bus, Func<int, int> interrupt, bool dynamicBlocks = false) where TBus : class, ICpuZ80Bus =>
+        new(bus, interrupt, clockMultiplier: MachineClockRatios.Z80) { UseDynamicBlocks = dynamicBlocks };
 }

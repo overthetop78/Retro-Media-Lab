@@ -54,7 +54,7 @@ public partial class Sh2<TBus> where TBus : Contracts.ISh2Bus
             if (_granted.Add(assembly)) _assembly.SetCustomAttribute(new(_ignoreAccess, [assembly.GetName().Name!]));
         }
         private bool CanCopy(MethodInfo method) => !method.ContainsGenericParameters && !method.Name.StartsWith("Emit", StringComparison.Ordinal)
-            && !method.Name.StartsWith("Compile", StringComparison.Ordinal) && method.Name is not (nameof(ExecuteNativeLoop) or nameof(ClearCodeCache))
+            && !method.Name.StartsWith("Compile", StringComparison.Ordinal) && method.Name is not (nameof(ExecuteNativeLoop) or nameof(ClearCodeCache) or nameof(InvokeLeasedNativePayload))
             && (method.Module == _cpu.Module || method.DeclaringType == _externalType)
             && method.GetMethodBody() is { ExceptionHandlingClauses.Count: 0 };
         private MethodInfo Copy(MethodInfo method)
@@ -90,6 +90,13 @@ public partial class Sh2<TBus> where TBus : Contracts.ISh2Bus
             MethodInfo synchronize = Copy(_cpu.GetMethod(nameof(SynchronizeBusClock))!);
             MethodInfo cycles = Copy(_cpu.GetProperty(nameof(Cycles))!.GetMethod!);
             MethodInfo loop = Copy(_cpu.GetMethod(nameof(ExecuteLoop), BindingFlags.Instance | BindingFlags.NonPublic)!);
+            Copy(_cpu.GetMethod(nameof(RunFullX64LoopCore), BindingFlags.Instance | BindingFlags.NonPublic)!);
+            Copy(_cpu.GetMethod(nameof(AccessX64MemoryCore), BindingFlags.Instance | BindingFlags.NonPublic)!);
+            Copy(_cpu.GetMethod(nameof(RunLiveX64LoopCore), BindingFlags.Instance | BindingFlags.NonPublic)!);
+            Copy(_cpu.GetMethod(nameof(AccessLiveX64MemoryCore), BindingFlags.Instance | BindingFlags.NonPublic)!);
+            MethodInfo nativeLoop = _cpu.GetMethod(nameof(ExecuteFullX64Loop), BindingFlags.Instance | BindingFlags.NonPublic)!;
+            MethodInfo compiledEnabled = Copy(_cpu.GetProperty(nameof(UseCompiledBlocks))!.GetMethod!);
+            MethodInfo nativeEnabled = Copy(_cpu.GetProperty(nameof(UseFullX64Blocks))!.GetMethod!);
             FieldInfo deadline = _cpu.GetField(nameof(_executionEnd), BindingFlags.Instance | BindingFlags.NonPublic)!;
             MethodBuilder execute = _type.DefineMethod(nameof(Execute), MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig, typeof(int), [typeof(int)]);
             _type.DefineMethodOverride(execute, _cpu.GetMethod(nameof(Execute))!);
@@ -98,7 +105,12 @@ public partial class Sh2<TBus> where TBus : Contracts.ISh2Bus
             il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, synchronize);
             il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, cycles); il.Emit(OpCodes.Stloc, start);
             il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Ldloc, start); il.Emit(OpCodes.Ldarg_1); il.Emit(OpCodes.Conv_U8); il.Emit(OpCodes.Add); il.Emit(OpCodes.Stfld, deadline);
-            il.BeginExceptionBlock(); il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, loop);
+            il.BeginExceptionBlock();
+            Label legacyLoop = il.DefineLabel(), afterLoop = il.DefineLabel();
+            il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, compiledEnabled); il.Emit(OpCodes.Brfalse, legacyLoop);
+            il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, nativeEnabled); il.Emit(OpCodes.Brfalse, legacyLoop);
+            il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, nativeLoop); il.Emit(OpCodes.Br, afterLoop);
+            il.MarkLabel(legacyLoop); il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, loop); il.MarkLabel(afterLoop);
             il.BeginFinallyBlock(); il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, synchronize); il.EndExceptionBlock();
             il.Emit(OpCodes.Ldarg_0); il.Emit(OpCodes.Call, cycles); il.Emit(OpCodes.Ldloc, start); il.Emit(OpCodes.Sub); il.Emit(OpCodes.Conv_Ovf_I4_Un); il.Emit(OpCodes.Ret);
             Type nativeType = _type.CreateType()!;
@@ -181,7 +193,12 @@ public partial class Sh2<TBus> where TBus : Contracts.ISh2Bus
                         for (int i = 0; i < count; i++) targets[i] = At(origin + Read32()); il.Emit(code, targets); break;
                     }
                     case OperandType.InlineString: il.Emit(code, source.Module.ResolveString(Read32())); break;
-                    case OperandType.InlineField: il.Emit(code, source.Module.ResolveField(Read32(), types, methods)!); break;
+                    case OperandType.InlineField:
+                    {
+                        FieldInfo field = source.Module.ResolveField(Read32(), types, methods)!;
+                        il.Emit(code, field);
+                        break;
+                    }
                     case OperandType.InlineType:
                     {
                         Type type = source.Module.ResolveType(Read32(), types, methods);

@@ -62,5 +62,6 @@ internal sealed partial class Mega32X
         Array.Clear(_sdramCodeWords);
         Video.LoadContext(data.Slice(offset, Vdp32X.ContextSize)); offset += Vdp32X.ContextSize; Pwm.LoadContext(data.Slice(offset, Pwm32X.ContextSize));
         _syncing = false; Array.Clear(_running); UpdateInterrupts();
+        CodeMappingChanged?.Invoke();
     }
 }

@@ -173,5 +173,49 @@ public sealed class Mega32XIntegrationTests
         }
         finally { board?.Dispose(); }
     }
+
+    [Theory, InlineData(false), InlineData(true)]
+    public void CompiledSdramOpcodesStayCachedWhenUnchangedAndRefreshWhenWritten(bool byteWrite)
+    {
+        SegaBoard? board = null;
+        try
+        {
+            board = BoardFactory.Create("ThirtyTwoX", MachineIntegrationTests.Resources());
+            Assert.True(board.Load("synthetic.32x", Program()));
+            Bus(board).Write16(0xa15100, 3);
+            var master = board.Adapter32X!.Master;
+            master.MemoryMode = RetroMediaLab.Chips.Controllers.Hitachi.SH7095.Sh7095MemoryMode.DirectMapped;
+            master.Cpu.UseCompiledBlocks = true;
+            Assert.Equal(0xe011, master.Read16(0x06000200));
+
+            void ExecuteFirstOpcode()
+            {
+                master.Cpu.ProgramCounter = 0x06000200;
+                master.Cpu.R[0] = 0;
+                master.Execute(1);
+            }
+            void WriteOpcode(byte lowByte)
+            {
+                if (byteWrite) master.Write8(0x06000201, lowByte);
+                else master.Write16(0x06000200, (ushort)(0xe000 | lowByte));
+            }
+
+            ExecuteFirstOpcode();
+            Assert.Equal(17u, master.Cpu.R[0]);
+            long compiledBlocks = master.Cpu.CompiledBlockBuildCount;
+            Assert.True(compiledBlocks > 0);
+
+            WriteOpcode(0x11);
+            ExecuteFirstOpcode();
+            Assert.Equal(17u, master.Cpu.R[0]);
+            Assert.Equal(compiledBlocks, master.Cpu.CompiledBlockBuildCount);
+
+            WriteOpcode(0x2a);
+            ExecuteFirstOpcode();
+            Assert.Equal(42u, master.Cpu.R[0]);
+            Assert.True(master.Cpu.CompiledBlockBuildCount > compiledBlocks);
+        }
+        finally { board?.Dispose(); }
+    }
 }
 

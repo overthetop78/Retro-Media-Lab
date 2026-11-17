@@ -11,6 +11,7 @@ using RetroMediaLab.Chips.Video.Sega.VDP;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Audio;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MegaCd.Hardware;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services;
 
 using BlipBuffer = RetroMediaLab.Chips.Audio.Common.Resampling.BandLimitedBuffer;
 
@@ -31,12 +32,16 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     private readonly BackupRam _backup = new();
     private readonly CartridgeAddressSpace _addresses = new();
     private readonly Memory<byte>[] _readMap = new Memory<byte>[64], _writeMap = new Memory<byte>[64];
+    private long _nativeZ80MappingVersion;
+    private void NativeZ80MappingChanged() => _nativeZ80MappingVersion = unchecked(_nativeZ80MappingVersion + 1);
+    private readonly Func<uint, byte> _nativeZ80RamRead;
+    private readonly Action<uint, byte> _nativeZ80RamWrite;
     private readonly BytePageMap z80_readmap;
     private readonly byte[] work_ram = new byte[65536], zram = new byte[8192], boot_rom = new byte[65536], tmss = new byte[4];
     private readonly InputHardware _input;
     private readonly Vdp _vdp;
     private SmsCartridge? _smsComponent;
-    private SmsCartridge _sms => _smsComponent ??= new(this, cart, rominfo, _backup, new(_backup), _input, config.Sms, _readMap, _writeMap, work_ram);
+    private SmsCartridge _sms => _smsComponent ??= new(this, cart, rominfo, _backup, new(_backup), _input, config.Sms, _readMap, _writeMap, work_ram, NativeZ80MappingChanged);
 
     private readonly BlipBuffer _mainAudio;
     private BlipBuffer? _pcmAudioBuffer, _cdAudioBuffer, _cartridgeAudioBuffer;
@@ -46,13 +51,28 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     private readonly Func<string, Stream?> _openFile;
     private readonly Func<int, Memory<byte>, int> _loadFirmware;
     private readonly CancellationToken _cancellation;
+    private readonly Gpu32XFrameComposer? _gpu32XComposer;
+    private readonly bool _useDynamicCpuBlocks;
+    private readonly bool _useNative68000Blocks;
 
     private Cpu68000<MegaDriveCpuBus>? _mainCpuComponent;
-    private Cpu68000<MegaDriveCpuBus> _mainCpu => _mainCpuComponent ??= Functions.CpuConfigurationFunctions.CreateMain(new(_addresses.Main, _vdp, MachineInterruptAcknowledger));
+    private Cpu68000<MegaDriveCpuBus> _mainCpu => _mainCpuComponent ??= Functions.CpuConfigurationFunctions.CreateMain(new(_addresses.Main, _vdp, MachineInterruptAcknowledger), _useDynamicCpuBlocks);
     private MdCartridge? _mdComponent;
     private MdCartridge _md => _mdComponent ??= new(this,cart,rominfo,_backup,_addresses,_input,config.Cartridge);
     private Scd? _cdComponent;
-    private Scd _cd => _cdComponent ??= new(this,_addresses,_pcmAudio,_cdAudio,_openFile,_cancellation);
+    private Scd _cd
+    {
+        get
+        {
+            if (_cdComponent is null)
+            {
+                _cdComponent = new(this,_addresses,_pcmAudio,_cdAudio,_openFile,_cancellation);
+                _cdComponent.Cpu.UseDynamicBlocks = _useDynamicCpuBlocks;
+                _cdComponent.UseNative68000Blocks = _useNative68000Blocks;
+            }
+            return _cdComponent;
+        }
+    }
     private CdCartridge? _cdCartridgeComponent;
     private CdCartridge _cdCartridge => _cdCartridgeComponent ??= new(this,_md.Initialize,_backup,_addresses) { ConfiguredRamId = config.CdCartridgeId };
     private MegaSd? _megaSdComponent;
@@ -98,16 +118,21 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
 
     protected SegaBoard(byte hardware, SystemConfiguration configuration, byte[] framebuffer,
         int width, int height, int pitch, int sampleRate, Func<string, Stream?> openFile,
-        Func<int, Memory<byte>, int> loadFirmware, CancellationToken cancellation)
+        Func<int, Memory<byte>, int> loadFirmware, CancellationToken cancellation,
+        Gpu32XFrameComposer? gpu32XComposer = null, bool useDynamicCpuBlocks = false, bool useNative68000Blocks = false)
     {
         config = configuration; system_hw = hardware; _sampleRate = sampleRate;
+        _nativeZ80RamRead = z80_memory_r; _nativeZ80RamWrite = z80_memory_w;
         _machineBitmap = framebuffer; _machinePitch = pitch;
+        _gpu32XComposer = gpu32XComposer;
+        _useDynamicCpuBlocks = useDynamicCpuBlocks;
+        _useNative68000Blocks = useNative68000Blocks;
         cart = new(SystemHardware.IsSixteenBit(hardware) ? CartridgeState.MaximumRomCapacity : 0x800000);
         if (config.system == 0) config.system = hardware;
         _openFile = openFile; _loadFirmware = loadFirmware; _cancellation = cancellation;
-        z80_readmap = new(_readMap);
+        z80_readmap = new(_readMap, NativeZ80MappingChanged);
         _mainAudio = new(sampleRate / 10);
-        _z80 = Functions.CpuConfigurationFunctions.CreateZ80(this, z80_irq_callback);
+        _z80 = Functions.CpuConfigurationFunctions.CreateZ80(this, z80_irq_callback, _useDynamicCpuBlocks);
         _input = new(this);
         _vdp = new(hardware, this, config.Video, framebuffer, width, height, pitch);
 
@@ -150,7 +175,9 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
         bool completed = false;
         try
         {
+            _gpu32XComposer?.BeginFrame();
             _executeFrame(skipVideo ? 1 : 0);
+            _gpu32XComposer?.FinishFrame();
             FinishMachineAudioFrame(mcycles_vdp);
             int count = _sound.UpdateAudio(mcycles_vdp, audio);
             completed = true;
@@ -201,14 +228,27 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
                     try { _mdComponent?.Dispose(); }
                     finally
                     {
-                        _mainCpuComponent?.Halt(); _z80.State.irq_callback = null; _z80.State.daisy = null;
+                        try { _mega32X?.Dispose(); }
+                        finally
+                        {
+                        _mainCpuComponent?.Halt();
+                        try { _mainCpuComponent?.Dispose(); }
+                        finally
+                        {
+                        try { _z80.Dispose(); }
+                        finally
+                        {
+                        _z80.State.irq_callback = null; _z80.State.daisy = null;
                         _z80.Cycles = uint.MaxValue; zstate = 0;
                         if (_sound is not null) { _sound.AttachCdAudio(null,null,null,null); _sound.AttachCartridgeAudio(null,null); }
-                        _vdp.LineRendered = null; _vdp.ExternalOutputWidth = 0; _mega32X = null; _unmap32X.Clear(); _mapped32XPages.Clear();
+                        _vdp.LineRendered = null; _vdp.ExternalOutputWidth = 0; _mega32X = null; _unmap32X.Clear(); _mapped32XPages.Clear(); _32XCodeWindows?.Clear();
                         _addresses.Clear();
                         Array.Clear(_readMap); Array.Clear(_writeMap);
                         z80_readport = z80_readmem = null!; z80_writeport = z80_writemem = null!;
                         _mainAudio.Clear(); _pcmAudioBuffer?.Clear(); _cdAudioBuffer?.Clear(); _cartridgeAudioBuffer?.Clear(); PollInput = null; _executeFrame = null!;
+                        }
+                        }
+                        }
                     }
                 }
             }

@@ -11,7 +11,7 @@ using System.Buffers.Binary;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 
-internal abstract partial class SegaBoard
+internal abstract partial class SegaBoard : ICpuZ80NativeMemoryBus
 {
     private ref Cpu68000State main { get { if (_mainCpuComponent is not null) return ref _mainCpuComponent.State; return ref _eightBitMainTiming; } }
     private ref Cpu68000State sub => ref _cd.Cpu.State;
@@ -66,22 +66,33 @@ internal abstract partial class SegaBoard
     private int overscan => config.Video.overscan;
     private int gg_extra => config.Video.gg_extra;
 
-    private void m68k_init() { _mainCpuComponent?.Halt(); _mainCpuComponent = Functions.CpuConfigurationFunctions.CreateMain(new(_addresses.Main, _vdp, MachineInterruptAcknowledger)); }
+    private void m68k_init()
+    {
+        _mainCpuComponent?.Halt();
+        try { _mainCpuComponent?.Dispose(); }
+        finally { _mainCpuComponent = null; }
+        _mainCpuComponent = Functions.CpuConfigurationFunctions.CreateMain(new(_addresses.Main, _vdp, MachineInterruptAcknowledger), _useDynamicCpuBlocks);
+    }
     private void s68k_init() => _cd.Cpu.State = default;
-    private void z80_init(int index, Func<int, int> callback) => _z80 = Functions.CpuConfigurationFunctions.CreateZ80(this, callback);
-    private void m68k_run(uint cycles) => _mainCpu.Run(cycles);
+    private void z80_init(int index, Func<int, int> callback)
+    {
+        var previous = _z80;
+        try { _z80 = Functions.CpuConfigurationFunctions.CreateZ80(this, callback, _useDynamicCpuBlocks); }
+        finally { previous?.Dispose(); }
+    }
+    private void m68k_run(uint cycles) { if (_useNative68000Blocks) _mainCpu.RunNative(cycles); else if (_useDynamicCpuBlocks) _mainCpu.RunDynamic(cycles); else _mainCpu.Run(cycles); }
     private void m68k_pulse_reset() => _mainCpu.Reset();
     private void m68k_pulse_halt() => _mainCpuComponent?.Halt();
     private uint m68k_cycles() => unchecked((uint)_mainCpu.InstructionCycles);
     private void m68k_update_irq(uint mask) => _mainCpu.SetIrq((_mainCpu.State.int_level >> 8) | mask);
     private void m68k_set_irq(uint level) => _mainCpu.SetIrq(Math.Max(MapVideoInterruptLevel(level), AuxiliaryInterruptLevel));
-    private void s68k_run(uint cycles) => _cd.Cpu.Run(cycles);
+    private void s68k_run(uint cycles) { if (_useNative68000Blocks) _cd.Cpu.RunNative(cycles); else if (_useDynamicCpuBlocks) _cd.Cpu.RunDynamic(cycles); else _cd.Cpu.Run(cycles); }
     private void s68k_pulse_reset() => _cd.Cpu.Reset();
     private void s68k_pulse_halt() => _cd.Cpu.Halt();
     private void s68k_clear_halt() => _cd.Cpu.ClearHalt();
     private void s68k_clear_wait() => _cd.Cpu.ClearWait();
     private void s68k_update_irq(uint mask) => _cd.UpdateSubIrq(mask);
-    private void z80_run(uint cycles) => _z80.Run(cycles);
+    private void z80_run(uint cycles) { if (UseNativeZ80) _z80.RunNative(cycles); else if (_useDynamicCpuBlocks) _z80.RunDynamic(cycles); else _z80.Run(cycles); }
     private void z80_reset() => _z80.Reset();
     private void z80_set_nmi_line(uint state) => _z80.SetNmiLine(state);
     private void md_cart_init() => _md.Initialize();
@@ -142,6 +153,23 @@ internal abstract partial class SegaBoard
     void ICpuZ80Bus.WriteMemory(int address, byte value) => z80_writemem((uint)address, value);
     byte ICpuZ80Bus.ReadPort(int port) => z80_readport((uint)port);
     void ICpuZ80Bus.WritePort(int port, byte value) => z80_writeport((uint)port, value);
+    private bool NativeZ80RamMapped => z80_readmem == _nativeZ80RamRead && z80_writemem == _nativeZ80RamWrite;
+    bool ICpuZ80NativeMemoryBus.TryGetNativeMemoryVersion(out long version)
+    {
+        bool ram = NativeZ80RamMapped;
+        bool eightBit = !SystemHardware.IsSixteenBit(system_hw) && _smsComponent is not null;
+        int policy = ram ? 15 : eightBit ? _smsComponent!.NativeMemoryPolicy : 0;
+        version = unchecked((_nativeZ80MappingVersion << 12) | ((long)system_hw << 4) | (uint)policy);
+        return ram || eightBit;
+    }
+    void ICpuZ80NativeMemoryBus.GetNativeMemory(int page, out ReadOnlyMemory<byte> read, out Memory<byte> write)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(page); ArgumentOutOfRangeException.ThrowIfGreaterThan(page, 63);
+        if (NativeZ80RamMapped && page < 16) { write = zram.AsMemory((page & 7) << 10, 1024); read = write; }
+        else if (!SystemHardware.IsSixteenBit(system_hw) && _smsComponent is not null)
+            _smsComponent.GetNativeMemory(page, out read, out write);
+        else { read = default; write = default; }
+    }
     int IVdpBus.MainCycles { get => main.cycles; set => main.cycles = value; }
     int IVdpBus.MainInstructionCycles => _mainCpuComponent?.InstructionCycles ?? 0;
     uint IVdpBus.Z80Cycles { get => z80.cycles; set => z80.cycles = value; }
@@ -174,7 +202,12 @@ internal abstract partial class SegaBoard
         return VdpResetPreset.None;
     }
     void IVdpBus.SetMainIrq(uint level) => m68k_set_irq(level);
-    void IVdpBus.SetMainIrqDelay(uint level) => _mainCpu.SetIrqDelay(Math.Max(MapVideoInterruptLevel(level), AuxiliaryInterruptLevel));
+    void IVdpBus.SetMainIrqDelay(uint level)
+    {
+        uint mapped = Math.Max(MapVideoInterruptLevel(level), AuxiliaryInterruptLevel);
+        if (_useNative68000Blocks) _mainCpu.SetIrqDelayNative(mapped);
+        else _mainCpu.SetIrqDelay(mapped);
+    }
     void IVdpBus.SetZ80Irq(uint level) => _z80.SetIrqLine(level);
 
     uint IVdpBus.ReadDmaWord(uint address) => BinaryPrimitives.ReadUInt16LittleEndian(memory_map[(address >> 16) & 255].Data.Span[(int)(address & 65534)..]);

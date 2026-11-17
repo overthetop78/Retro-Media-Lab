@@ -17,7 +17,13 @@ internal sealed class FlashCfi : IFlashCfiBus
     {
         _backup = backup; _cartridge = cartridge; _banks = addresses.Main; _unused = unused16; _chip = new(this);
     }
-    public void Initialize(int type, ReadOnlySpan<ushort> otpData) => _chip.Initialize(type,otpData);
+    public bool UsesWritableRom { get; private set; }
+    public void Initialize(int type, ReadOnlySpan<ushort> otpData)
+    {
+        UsesWritableRom = true;
+        _cartridge.NativeRomCodeReadOnly = false;
+        _chip.Initialize(type,otpData);
+    }
     public void Write(uint address, uint data) => _chip.Write(address,data);
     public uint Read(uint address) => _chip.Read(address);
     public int SaveContext(Span<byte> state) => _chip.SaveContext(state);

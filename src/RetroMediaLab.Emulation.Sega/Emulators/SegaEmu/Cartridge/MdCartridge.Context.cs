@@ -17,6 +17,7 @@ internal sealed partial class MdCartridge
     public int LoadContext(Span<byte> state)
     {
         if (state.Length < ContextSize) throw new ArgumentException("MD cartridge context buffer is too short.", nameof(state));
+        cart.NotifyRomCodeContentChanged();
         return md_cart_context_load(new ArrayPointer<byte>(state));
     }
     private static int SaveChunk(ArrayPointer<byte> destination, ArrayPointer<byte> source, int length)

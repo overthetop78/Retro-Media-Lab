@@ -16,6 +16,8 @@ public interface ISh2Bus
     void Write8(uint address, byte value);
     void Write16(uint address, ushort value);
     void Write32(uint address, uint value);
+    /// <summary>Called after the vector and interrupt mask have been installed. Default buses keep their level asserted.</summary>
+    void AcknowledgeInterrupt(int level, int vector) { }
     int WaitStates(uint address, bool write) => 0;
     /// <summary>Upper bound for one opcode fetch or data access; negative disables prevalidated payloads.</summary>
     int MaximumWaitStates => -1;

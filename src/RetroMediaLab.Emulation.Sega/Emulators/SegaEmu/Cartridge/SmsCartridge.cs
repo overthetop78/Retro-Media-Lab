@@ -36,6 +36,8 @@ internal sealed partial class SmsCartridge
     private readonly byte[] work_ram;
     private Func<uint, byte> z80_readmem = null!;
     private Action<uint, byte> z80_writemem = null!;
+    private readonly Func<uint, byte> _nativeDirectRead, _nativeOpenBusRead;
+    private readonly Action<uint, byte> _nativeDirectWrite, _nativeSegaWrite;
     private byte system_hw { get => _bus.Hardware; set => _bus.Hardware = value; }
     private byte system_bios { get => _bus.BootRomFlags; set => _bus.BootRomFlags = value; }
     private byte region_code { get => _bus.Region; set => _bus.Region = value; }
@@ -49,11 +51,26 @@ internal sealed partial class SmsCartridge
 
     public SmsCartridge(ISmsCartridgeBus bus, CartridgeState cartridge, RomInformation information,
         BackupRam backup, Eeprom93c eeprom, InputHardware input, SmsCartridgeConfiguration configuration,
-        Memory<byte>[] readMap, Memory<byte>[] writeMap, byte[] workRam)
+        Memory<byte>[] readMap, Memory<byte>[] writeMap, byte[] workRam, Action? mappingChanged = null)
     {
         _bus = bus; cart = cartridge; _information = information; sram = backup; _eeprom = eeprom;
         _input = input; config = configuration; work_ram = workRam;
-        z80_readmap = new(readMap); z80_writemap = new(writeMap);
+        z80_readmap = new(readMap, mappingChanged); z80_writemap = new(writeMap, mappingChanged);
+        _nativeDirectRead = read_mapper_default; _nativeOpenBusRead = read_mapper_none;
+        _nativeDirectWrite = write_mapper_none; _nativeSegaWrite = write_mapper_sega;
+    }
+
+    // A policy change must invalidate native data windows even when the mapper
+    // happens to retain the same backing pages (e.g. cartridge disabled/enabled).
+    internal int NativeMemoryPolicy => (z80_readmem == _nativeDirectRead ? 1 : z80_readmem == _nativeOpenBusRead ? 2 : 0)
+        | (z80_writemem == _nativeDirectWrite ? 4 : z80_writemem == _nativeSegaWrite ? 8 : 0);
+    internal void GetNativeMemory(int page, out ReadOnlyMemory<byte> read, out Memory<byte> write)
+    {
+        int policy = NativeMemoryPolicy;
+        read = (policy & 1) != 0 || (policy & 2) != 0 && page >= 48 ? z80_readmap.Pages[page] : default;
+        // Sega's FFFC..FFFF control registers share page 63 with work RAM.
+        // Keep that whole page behind the handler; other mappers keep all stores.
+        write = (policy & 4) != 0 || (policy & 8) != 0 && page != 63 ? z80_writemap.Pages[page] : default;
     }
 
     public void Initialize() => sms_cart_init();

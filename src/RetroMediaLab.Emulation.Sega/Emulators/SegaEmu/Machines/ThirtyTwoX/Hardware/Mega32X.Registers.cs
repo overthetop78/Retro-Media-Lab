@@ -41,6 +41,7 @@ internal sealed partial class Mega32X
             if (cpu < 0)
             {
                 bool oldRelease = Released, oldEnabled = Enabled; _control = (ushort)(Merge(_control) & 0x83);
+                if (oldEnabled != Enabled) CodeMappingChanged?.Invoke();
                 if (Enabled && Released && (!_booted || !oldRelease || !oldEnabled)) StartProcessors();
                 if (!Released) _booted = false;
             }
@@ -54,7 +55,15 @@ internal sealed partial class Mega32X
             for (int c = 0; c < 2; c++)
                 _pending[c] = (byte)((_pending[c] & ~2) | ((merged & (1 << c)) != 0 ? 2 : 0));
         }
-        else if (offset == 4) { if (cpu < 0) _romBank = Merge((ushort)_romBank) & 3; else { _hintPeriod = Merge((ushort)_hintPeriod) & 255; _hintCounter = 0; } }
+        else if (offset == 4)
+        {
+            if (cpu < 0)
+            {
+                int next = Merge((ushort)_romBank) & 3;
+                if (next != _romBank) { _romBank = next; CodeMappingChanged?.Invoke(); }
+            }
+            else { _hintPeriod = Merge((ushort)_hintPeriod) & 255; _hintCounter = 0; }
+        }
         else if (offset == 6 && cpu < 0) { _dreqControl = (ushort)(Merge(_dreqControl) & 7); if ((_dreqControl & 4) == 0) _fifoHead = _fifoCount = 0; }
         else if (offset == 8) _source = (_source & 65535) | (uint)(Merge((ushort)(_source >> 16)) & 255) << 16;
         else if (offset == 10) _source = (_source & 0xff0000) | (uint)(Merge((ushort)_source) & 65534);

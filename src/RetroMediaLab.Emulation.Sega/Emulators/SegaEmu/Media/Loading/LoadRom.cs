@@ -129,7 +129,9 @@ internal abstract partial class SegaBoard
                 {
                     system_hw = SystemHardware.MegaCd; cd_boot = 0;
                     DetectCdHardware(rominfo.domestic);
+                    using var biosWrite = CartridgeRomCode.BeginFirmwareWrite(_cd.BootRom);
                     cart.rom.AsSpan(0, _cd.BootRom.Length).CopyTo(_cd.BootRom.Span);
+                    biosWrite.Complete();
                     system_bios = (byte)((system_bios | 0x10) & 0xf0 | region_code >> 4);
                 }
             }
@@ -145,11 +147,13 @@ internal abstract partial class SegaBoard
             if (!AcceptsHardware(system_hw)) return false;
             if ((config.bios & 1) != 0 && system_hw == SystemHardware.MegaDrive)
             {
+                using var biosWrite = CartridgeRomCode.BeginFirmwareWrite(boot_rom);
                 int bytes = _loadFirmware(FirmwareId(SystemHardware.MegaDrive, region_code), boot_rom);
                 if (bytes > 0)
                 {
                     SwapWords(boot_rom.AsSpan(0, (bytes + 1) & ~1));
                     for (int i = bytes; i < boot_rom.Length; i++) boot_rom[i] = boot_rom[i % bytes];
+                    biosWrite.Complete();
                     system_bios |= SystemHardware.MegaDrive;
                 }
             }
@@ -171,11 +175,13 @@ internal abstract partial class SegaBoard
         if (hardware == SystemHardware.MegaCd)
         {
             if ((system_bios & 0x10) != 0 && (system_bios & 0x0c) == region_code >> 4) return -1;
+            using var biosWrite = CartridgeRomCode.BeginFirmwareWrite(_cd.BootRom);
             int size = _loadFirmware(FirmwareId((byte)hardware, region_code), _cd.BootRom);
             if (size > 0)
             {
                 DetectCdHardware(Encoding.Latin1.GetString(_cd.BootRom.Span.Slice(0x120, 16)));
                 SwapWords(_cd.BootRom.Span[..((size + 1) & ~1)]);
+                biosWrite.Complete();
                 system_bios = (byte)((system_bios | 0x10) & 0xf0 | region_code >> 4);
             }
             return size;

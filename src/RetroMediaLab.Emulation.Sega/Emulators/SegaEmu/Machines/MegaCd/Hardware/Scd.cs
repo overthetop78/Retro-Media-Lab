@@ -95,7 +95,8 @@ internal sealed partial class Scd : ICdcBus, ICddBus, IGfxBus, IDisposable
         for (int i = 0; i < sub_memory_map.Length; i++) sub_memory_map[i] = new();
         _wordPages = [_wordRam1M.AsMemory(0, 0x20000), _wordRam1M.AsMemory(0x20000, 0x20000)];
         word_ram = new(_wordPages);
-        _cpu = Functions.CpuConfigurationFunctions.CreateSecondary(new(sub_memory_map, _host, level => scd_68k_irq_ack((int)level)));
+        InitializeNativeMemoryDelegates();
+        _cpu = Functions.CpuConfigurationFunctions.CreateSecondary(new(sub_memory_map, _host, level => scd_68k_irq_ack((int)level), this));
         _pcm = new(pcmOutput, MachineClockRatios.Pcm); _cdc = new(this); _gfx = new(this);
         _cdd = new(this, cdOutput, cancellation);
     }
@@ -106,7 +107,8 @@ internal sealed partial class Scd : ICdcBus, ICddBus, IGfxBus, IDisposable
     public void SwitchWordRam(byte mode) => word_ram_switch(mode);
 
     private void m68k_run(uint cycles) => _host.RunMain(cycles);
-    private void s68k_run(uint cycles) => _cpu.Run(cycles);
+    internal bool UseNative68000Blocks { get; set; }
+    private void s68k_run(uint cycles) { if (UseNative68000Blocks) _cpu.RunNative(cycles); else if (_cpu.UseDynamicBlocks) _cpu.RunDynamic(cycles); else _cpu.Run(cycles); }
     private void s68k_pulse_wait(uint address, uint write) => _cpu.PulseWait(address, write != 0);
     private void s68k_pulse_reset() => _cpu.Reset();
     private void s68k_pulse_halt() => _cpu.Halt();
@@ -195,6 +197,9 @@ internal sealed partial class Scd : ICdcBus, ICddBus, IGfxBus, IDisposable
         finally
         {
             _cpu.Halt(); sub.cycle_end = 0;
+            try { _cpu.Dispose(); }
+            finally
+            {
             foreach (CartridgeMemoryBank bank in sub_memory_map)
             { bank.Data = default; bank.read8 = bank.read16 = null; bank.write8 = bank.write16 = null; }
             foreach (CartridgeMemoryBank bank in memory_map)
@@ -211,6 +216,7 @@ internal sealed partial class Scd : ICdcBus, ICddBus, IGfxBus, IDisposable
             {
                 if (ReferenceEquals(bank.read?.Target, this)) bank.read = null;
                 if (ReferenceEquals(bank.write?.Target, this)) bank.write = null;
+            }
             }
         }
     }

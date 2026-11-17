@@ -123,7 +123,12 @@ public partial class Sh2<TBus> where TBus : ISh2Bus
     private void delaySlot(long address) { PPC = unchecked((uint)address); _branch = 1; step(1); }
     private void jump(uint address) { PC = address; _branch = 0; }
     private void push(uint data) { SP = unchecked(SP - 4); writeLong(SP, data); }
-    private void interrupt(uint level, uint vector) { push(SR); push(unchecked(PC - 4)); jump(unchecked(readLong(VBR + vector * 4) + 4)); SR.I = Math.Min(level, 15); }
+    private void interrupt(uint level, uint vector)
+    {
+        push(SR); push(unchecked(PC - 4)); jump(unchecked(readLong(VBR + vector * 4) + 4));
+        SR.I = Math.Min(level, 15);
+        _bus.AcknowledgeInterrupt((int)level, (int)vector);
+    }
     private void addressErrorCPU() { SP &= 0xfffffffc; push(SR); push(unchecked(PC - 4)); jump(unchecked(readLong(VBR + 36) + 4)); }
     private void illegalInstruction() { if (inDelaySlot()) { illegalSlotInstruction(); return; } push(SR); push(unchecked(PC - 4)); PC = unchecked(readLong(VBR + 16) + 4); _branch = 2; PPC = PC; }
     private void illegalSlotInstruction() { push(SR); push(unchecked(PPC - 4)); PPC = unchecked(readLong(VBR + 24) + 4); _branch = 2; }

@@ -86,8 +86,21 @@ internal sealed partial class MdCartridge : IDisposable
         rom_database = CreateDatabase();
     }
 
-    public void Initialize() => md_cart_init();
-    public void Reset(bool hard) => md_cart_reset(hard ? 1 : 0);
+    public void Initialize()
+    {
+        cart.NativeRomCodeReadOnly = false;
+        cart.NotifyRomCodeContentChanged();
+        md_cart_init();
+        // These configurations can alter backing ROM outside the ordinary
+        // mapper copy path. Their native blocks keep the complete byte guards.
+        cart.NativeRomCodeReadOnly = cart.romsize != 0 && config.lock_on == 0
+            && _svp is null && !_flash.UsesWritableRom && (cart.special & 0x38) == 0;
+    }
+    public void Reset(bool hard)
+    {
+        cart.NotifyRomCodeContentChanged();
+        md_cart_reset(hard ? 1 : 0);
+    }
     private static int strstr(string text, string value) => text.Contains(value, StringComparison.Ordinal) ? 1 : 0;
     private static int memcmp(ArrayPointer<byte> data, string text, int length)
     {
@@ -98,8 +111,16 @@ internal sealed partial class MdCartridge : IDisposable
         }
         return 0;
     }
-    private static void CopyMemory(ArrayPointer<byte> destination, ArrayPointer<byte> source, int length) => source.Bytes(length).CopyTo(destination.Bytes(length));
-    private static void FillMemory(ArrayPointer<byte> memory, int value, int length) => memory.Bytes(length).Fill(unchecked((byte)value));
+    private static void CopyMemory(ArrayPointer<byte> destination, ArrayPointer<byte> source, int length)
+    {
+        if (length > 0) CartridgeRomCode.NotifyContentChanged(destination.Memory);
+        source.Bytes(length).CopyTo(destination.Bytes(length));
+    }
+    private static void FillMemory(ArrayPointer<byte> memory, int value, int length)
+    {
+        if (length > 0) CartridgeRomCode.NotifyContentChanged(memory.Memory);
+        memory.Bytes(length).Fill(unchecked((byte)value));
+    }
     private void m68k_pulse_reset() => _bus.ResetMainCpu();
     private void ctrl_io_write_byte(uint address, uint data) => _bus.WriteControlIoByte(address, data);
     private void EnsureYxAudio() => _bus.EnsureCartridgeAudio();

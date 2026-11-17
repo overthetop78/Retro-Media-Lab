@@ -6,11 +6,150 @@ namespace RetroMediaLab.Chips.Tests.CPU.Hitachi;
 
 public sealed class Sh2Tests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SharedBodiesKeepRelocatedPcBranchesTimingAndCodeChanges(bool pcRelativeRead)
+    {
+        var a = new TimingMapBus(); var b = new TimingMapBus();
+        var reference = new Sh2<TimingMapBus>(a);
+        var compiled = Sh2<TimingMapBus>.CreateNative(b);
+        ushort[] code = pcRelativeRead ? [0xd101, 0x0009, 0xaffc, 0x0009] : [0xe105, 0x7103, 0xaffc, 0x0009];
+        foreach (uint address in new uint[] { 0x100, 0x200, 0x300 })
+            foreach (var bus in new[] { a, b })
+            {
+                for (int i = 0; i < code.Length; i++) bus.Write16(address + (uint)(i * 2), code[i]);
+                bus.Write32(address + 8, 0x12340000 + address);
+            }
+        reference.Reset(); compiled.Reset();
+        compiled.UseCompiledBlocks = compiled.UseSharedCompiledBodies = compiled.UseX64RegisterBlocks = true;
+        reference.AccelerateIdleLoops = compiled.AccelerateIdleLoops = false;
+        void Compare(int budget)
+        {
+            reference.Execute(budget); compiled.Execute(budget);
+            byte[] expected = new byte[Sh2<TimingMapBus>.ContextSize], actual = new byte[expected.Length];
+            reference.SaveContext(expected); compiled.SaveContext(actual);
+            Assert.Equal(expected, actual); Assert.Equal(a.Clocks, b.Clocks);
+        }
+        try
+        {
+            foreach (int wait in new[] { 2, 0, 2 })
+            {
+                a.SetFetchWaits(wait); b.SetFetchWaits(wait);
+                foreach (uint address in new uint[] { 0x100, 0x200, 0x300 })
+                {
+                    reference.ProgramCounter = compiled.ProgramCounter = address;
+                    foreach (int budget in new[] { 37, 1, 5, 17 }) Compare(budget);
+                }
+            }
+            Assert.True(compiled.SharedCompiledBodyReuseCount > 0);
+            Assert.True(compiled.CompiledBodyBuildCount < compiled.CompiledBlockBuildCount);
+            a.Write16(0x100, 0xe10b); b.Write16(0x100, 0xe10b);
+            a.SetFetchWaits(1); b.SetFetchWaits(1);
+            reference.ProgramCounter = compiled.ProgramCounter = 0x100;
+            Compare(47);
+            long before = compiled.CompiledBodyBuildCount;
+            compiled.ClearCodeCache();
+            reference.ProgramCounter = compiled.ProgramCounter = 0x100;
+            Compare(47);
+            Assert.True(compiled.CompiledBodyBuildCount > before);
+        }
+        finally { try { compiled.ClearCodeCache(); } finally { reference.ClearCodeCache(); } }
+    }
+
+    [Theory]
+    [InlineData(2, 8)]
+    [InlineData(8, 4)]
+    public void CompiledCacheCapacityControlsEvictionWithoutChangingExecution(int capacity, int builds)
+    {
+        var reference = new MemoryBus().Program(0xe001, 0xe002, 0xe003, 0xe004);
+        var compiled = new MemoryBus().Program(0xe001, 0xe002, 0xe003, 0xe004);
+        compiled.UseCompiledBlocks = true;
+        compiled.CompiledBlockCacheCapacity = capacity;
+        try
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => compiled.CompiledBlockCacheCapacity = 0);
+            for (int pass = 0; pass < 2; pass++)
+                for (uint index = 0; index < 4; index++)
+                {
+                    reference.ProgramCounter = compiled.ProgramCounter = 0x100 + index * 2;
+                    reference.Execute(1); compiled.Execute(1);
+                    byte[] expected = new byte[Sh2<MemoryBus>.ContextSize], actual = new byte[expected.Length];
+                    reference.SaveContext(expected); compiled.SaveContext(actual);
+                    Assert.Equal(expected, actual);
+                }
+            Assert.Equal(builds, compiled.CompiledBlockBuildCount);
+            compiled.CompiledBlockCacheCapacity = capacity; // Same value keeps cached code.
+            long before = compiled.CompiledBlockBuildCount;
+            compiled.ProgramCounter = 0x106; compiled.Execute(1);
+            Assert.Equal(before, compiled.CompiledBlockBuildCount);
+            compiled.CompiledBlockCacheCapacity = capacity + 1; // Changing capacity releases all links/code.
+            compiled.ProgramCounter = 0x106; compiled.Execute(1);
+            Assert.Equal(before + 1, compiled.CompiledBlockBuildCount);
+        }
+        finally { try { compiled.ClearCodeCache(); } finally { reference.ClearCodeCache(); } }
+    }
+
+    [Fact]
+    public void CompiledBlocksRevalidateFetchTimingsWhenCodeBytesStayIdentical()
+    {
+        var a = new TimingMapBus(); var b = new TimingMapBus();
+        var reference = new Sh2<TimingMapBus>(a); var compiled = Sh2<TimingMapBus>.CreateNative(b);
+        reference.Reset(); compiled.Reset(); compiled.UseCompiledBlocks = true;
+        reference.AccelerateIdleLoops = compiled.AccelerateIdleLoops = false;
+        try
+        {
+            foreach (int waits in new[] { 2, 0, 2, 1, 0 })
+            {
+                a.SetFetchWaits(waits); b.SetFetchWaits(waits);
+                foreach (int budget in new[] { 47, 3, 8, 1, 17, 31, 5, 127 })
+                {
+                    reference.Execute(budget); compiled.Execute(budget);
+                    byte[] expected = new byte[Sh2<TimingMapBus>.ContextSize], actual = new byte[expected.Length];
+                    reference.SaveContext(expected); compiled.SaveContext(actual);
+                    Assert.Equal(expected, actual); Assert.Equal(a.Clocks, b.Clocks);
+                }
+            }
+            Assert.True(compiled.CompiledBlockBuildCount > 0);
+        }
+        finally { try { compiled.ClearCodeCache(); } finally { reference.ClearCodeCache(); } }
+    }
+
+    private sealed class TimingMapBus : ISh2Bus
+    {
+        private readonly byte[] _memory = new byte[65536];
+        private int _waits;
+        private uint _version;
+        public int Clocks;
+        public TimingMapBus()
+        {
+            Write32(0, 0x100); Write32(4, 0x8000);
+            ushort[] code = [0xe101, 0x7101, 0x7201, 0xaffb, 0x0009];
+            for (int i = 0; i < code.Length; i++) Write16((uint)(0x100 + i * 2), code[i]);
+        }
+        public void SetFetchWaits(int waits) { _waits = waits; _version++; }
+        public uint FetchMapVersion => _version;
+        public long CodeVersion(uint address) => _version;
+        public ulong CodeEpoch(uint address) => (ulong)_version + 1;
+        public bool DeferClockUpdates => true;
+        public int MaximumWaitStates => 2;
+        public int WaitStates(uint address, bool write) => write ? 0 : _waits;
+        public bool TryMapFetch(uint address, out ReadOnlyMemory<byte> memory, out uint start, out int waitStates)
+        { memory = _memory; start = 0; waitStates = _waits; return address < _memory.Length - 1; }
+        public byte Read8(uint address) => _memory[address & 65535];
+        public ushort Read16(uint address) => (ushort)(Read8(address) << 8 | Read8(address + 1));
+        public uint Read32(uint address) => (uint)Read16(address) << 16 | Read16(address + 2);
+        public void Write8(uint address, byte value) => _memory[address & 65535] = value;
+        public void Write16(uint address, ushort value) { Write8(address, (byte)(value >> 8)); Write8(address + 1, (byte)value); }
+        public void Write32(uint address, uint value) { Write16(address, (ushort)(value >> 16)); Write16(address + 2, (ushort)value); }
+        public void AdvanceCycles(int cycles) => Clocks += cycles;
+    }
+
     [Theory, InlineData(0), InlineData(2), InlineData(5)]
     public void LinkedBlocksKeepFetchWaitsAcrossBudgets(int waits)
     {
         var a = new MemoryBus { ReadWaitStates = waits, DeferClockUpdates = true };
-        var b = new MemoryBus { ReadWaitStates = waits, DeferClockUpdates = true, TrackCodeEpoch = true };
+        var b = new MemoryBus { ReadWaitStates = waits, MaximumWaitStates = waits, DeferClockUpdates = true, TrackCodeEpoch = true };
         var reference = a.Program(0xe001, 0x7101, 0xaffd, 9); b.Program(0xe001, 0x7101, 0xaffd, 9);
         var compiled = Sh2<MemoryBus>.CreateNative(b); compiled.Reset(); compiled.UseCompiledBlocks = true;
         foreach (int budget in new[] { 1, 3, 7, 19, 252, 997 })
@@ -20,6 +159,80 @@ public sealed class Sh2Tests
             reference.SaveContext(expected); compiled.SaveContext(actual); Assert.Equal(expected, actual); Assert.Equal(a.Clocks, b.Clocks);
         }
     }
+
+    [Fact]
+    public void FastPayloadStopsAtShortenedMmioDeadline()
+    {
+        var a = new MemoryBus { ReadWaitStates = 2, DeferClockUpdates = true, NextEventCycle = ulong.MaxValue };
+        var b = new MemoryBus { ReadWaitStates = 2, MaximumWaitStates = 6, DeferClockUpdates = true, NextEventCycle = ulong.MaxValue, TrackCodeEpoch = true };
+        var reference = a.Program(0x6012, 0x7001, 0xaffe, 0x0009);
+        var compiled = b.Program(0x6012, 0x7001, 0xaffe, 0x0009);
+        compiled.UseCompiledBlocks = true;
+        foreach (MemoryBus memory in new[] { a, b })
+        {
+            memory.Write32(0x50 * 4, 0x200);
+            memory.Write16(0x200, 0xe22a);
+            memory.Write16(0x202, 0x0009);
+            memory.Write32(0x500, 0x12345678);
+        }
+        reference.R[1] = compiled.R[1] = 0x500;
+        reference.StatusRegister = compiled.StatusRegister = 0;
+        int referenceEvents = 0, compiledEvents = 0;
+        a.BeforeRead16 = address => { if (address == 0x500) a.NextEventCycle = (ulong)a.Clocks + 1; };
+        b.BeforeRead16 = address => { if (address == 0x500) b.NextEventCycle = (ulong)b.Clocks + 1; };
+        a.EventReached = () => { referenceEvents++; reference.SetInterrupt(6, 0x50); a.NextEventCycle = ulong.MaxValue; };
+        b.EventReached = () => { compiledEvents++; compiled.SetInterrupt(6, 0x50); b.NextEventCycle = ulong.MaxValue; };
+
+        reference.Execute(96);
+        compiled.Execute(96);
+
+        byte[] expected = new byte[Sh2<MemoryBus>.ContextSize], actual = new byte[expected.Length];
+        reference.SaveContext(expected); compiled.SaveContext(actual);
+        Assert.Equal(expected, actual);
+        Assert.Equal(a.Bytes, b.Bytes);
+        Assert.Equal(a.Clocks, b.Clocks);
+        Assert.Equal(1, referenceEvents);
+        Assert.Equal(referenceEvents, compiledEvents);
+        Assert.Equal(42u, compiled.R[2]);
+    }
+
+    [Fact]
+    public void CompiledBlockReadsUpdatedDataOutsideItsCodeRangeWithoutRebuild()
+    {
+        var a = new MemoryBus { TrackCodeEpoch = true };
+        var b = new MemoryBus { TrackCodeEpoch = true };
+        var reference = a.Program(0x6012, 0xaffe, 0x0009);
+        var compiled = b.Program(0x6012, 0xaffe, 0x0009);
+        compiled.UseCompiledBlocks = true;
+        a.Write32(0x110, 0x11223344); b.Write32(0x110, 0x11223344);
+        reference.R[1] = compiled.R[1] = 0x110;
+
+        reference.Execute(1);
+        compiled.Execute(1);
+        Assert.Equal(0x11223344u, compiled.R[0]);
+        long builtBlocks = compiled.CompiledBlockBuildCount;
+        Assert.True(builtBlocks > 0);
+        long codeVersion = b.CodeVersion(0x100);
+        ulong codeEpoch = b.CodeEpoch(0x100);
+
+        a.Write32(0x110, 0x55667788);
+        b.Write32(0x110, 0x55667788);
+        Assert.NotEqual(codeVersion, b.CodeVersion(0x100));
+        Assert.Equal(codeEpoch, b.CodeEpoch(0x100));
+        reference.ProgramCounter = compiled.ProgramCounter = 0x100;
+        reference.R[0] = compiled.R[0] = 0;
+        reference.Execute(1);
+        compiled.Execute(1);
+
+        byte[] expected = new byte[Sh2<MemoryBus>.ContextSize], actual = new byte[expected.Length];
+        reference.SaveContext(expected); compiled.SaveContext(actual);
+        Assert.Equal(expected, actual);
+        Assert.Equal(a.Bytes, b.Bytes);
+        Assert.Equal(a.Clocks, b.Clocks);
+        Assert.Equal(0x55667788u, compiled.R[0]);
+        Assert.Equal(builtBlocks, compiled.CompiledBlockBuildCount);
+    }
+
     [Fact]
     public void CodeWriteBarrierStopsBlockAfterReadThatChangesNextInstruction()
     {
@@ -169,6 +382,8 @@ public sealed class Sh2Tests
         public byte[] Bytes { get; } = new byte[65536];
         public int Clocks;
         public int ReadWaitStates;
+        public int MaximumWaitStates { get; set; } = -1;
+        int ISh2Bus.MaximumWaitStates => MaximumWaitStates;
         public int WaitStates(uint address, bool write) => write ? 0 : ReadWaitStates;
         public bool TrackCodeEpoch;
         private ulong _codeEpoch;

@@ -8,9 +8,10 @@ namespace RetroMediaLab.Chips.Controllers.Hitachi.SH7095;
 public enum Sh7095MemoryMode { Cached, DirectMapped }
 
 /// <summary>SH-2 SoC peripherals and cache. External bus and serial receiver are borrowed.</summary>
-public sealed partial class Sh7095 : ISh2Bus
+public sealed partial class Sh7095 : ISh2Bus, ISh2NativeMappedBus
 {
     private readonly ISh2Bus _external;
+    private readonly bool? _busSlave;
     private readonly byte[] _io = new byte[512], _cache = new byte[4096], _valid = new byte[256], _lru = new byte[64];
     private readonly uint[] _tags = new uint[256];
     private ushort _ocra = 0xffff, _ocrb = 0xffff;
@@ -24,6 +25,7 @@ public sealed partial class Sh7095 : ISh2Bus
     private uint _codeEpochCounter;
     private uint _fetchMapVersion;
     private Sh7095MemoryMode _memoryMode;
+    private readonly byte[] _nativeReadPolicy = [1];
     public Sh2<CpuBus> Cpu { get; }
     /// <summary>Cached preserves the cache model; DirectMapped uses the Gens/PicoDrive external maps.</summary>
     public Sh7095MemoryMode MemoryMode
@@ -34,15 +36,34 @@ public sealed partial class Sh7095 : ISh2Bus
             if ((uint)value > (uint)Sh7095MemoryMode.DirectMapped) throw new ArgumentOutOfRangeException(nameof(value));
             if (_memoryMode == value) return;
             Cpu.ClearCodeCache(); _fetchMapVersion++; _memoryMode = value;
+            _nativeReadPolicy[0] = value == Sh7095MemoryMode.Cached ? (byte)1 : (byte)0;
         }
     }
     public ReadOnlySpan<bool> Dreq => _dreq;
     public ulong Ticks { get; private set; }
     public Action<byte>? SerialTransmitted { get; set; }
-    public Sh7095(ISh2Bus external) { _external = external; Cpu = Sh2<CpuBus>.CreateNative(new CpuBus(this), external.GetType()); Reset(); }
+    public Sh7095(ISh2Bus external) : this(external, null) { }
+    public Sh7095(ISh2Bus external, bool? busSlave) { _external = external; _busSlave = busSlave; Cpu = Sh2<CpuBus>.CreateNative(new CpuBus(this), external.GetType()); Reset(); }
     /// <summary>Value-type bus lets the JIT specialize the interpreter for this SoC.</summary>
-    public readonly struct CpuBus(Sh7095 owner) : ISh2Bus
+    public readonly struct CpuBus(Sh7095 owner) : ISh2Bus, ISh2NativeReadCacheBus, ISh2NativeIdleBus, ISh2NativeMappedBus
     {
+        public Sh2NativeReadMap GetNativeReadMap() => owner.GetNativeReadMap();
+        public bool TryGetNativeIdleClocks(uint firstAddress, int words, out int clocks)
+        {
+            clocks = 0;
+            if (words is < 2 or > 3 || owner._memoryMode != Sh7095MemoryMode.Cached
+                // Instruction-inhibited cached aliases may still get zero
+                // data waits from an existing line. Keep that case in the helper.
+                || firstAddress < 0x20000000 && (owner._io[0x92] & 3) == 3
+                || !owner.TryMapFetch(firstAddress, out var memory, out uint start, out _)
+                || firstAddress < start || (ulong)(firstAddress - start) + (uint)(words * 2) > (ulong)memory.Length) return false;
+            if ((firstAddress >> 29) == 6
+                || firstAddress < 0x20000000 && (owner._io[0x92] & 3) == 1)
+            { clocks = words + 1; return true; }
+            return owner._external is ISh2NativeIdleBus provider
+                && provider.TryGetNativeIdleClocks(firstAddress & 0x1fffffff, words, out clocks);
+        }
+        public Sh2NativeReadCache GetNativeReadCache() => new(owner._cache, owner._tags, owner._valid, owner._io, owner._nativeReadPolicy);
         public byte Read8(uint address) => owner.Read8(address);
         public ushort Read16(uint address) => owner.Read16(address);
         public uint Read32(uint address) => owner.Read32(address);
@@ -90,6 +111,13 @@ public sealed partial class Sh7095 : ISh2Bus
             return !(address < 0x40000000 && (physical < 0x4000 || physical is >= 0x02000000 and < 0x06040000));
         }
         public void AdvanceCycles(int clocks) => owner.AdvanceCycles(clocks);
+        public void AcknowledgeInterrupt(int level, int vector)
+        {
+            // On-chip interrupt flags are level-sensitive and cleared by software.
+            // Only the external interrupt controller owns an external acknowledge.
+            if (level == owner._externalLevel && vector == owner._externalVector)
+                owner._external.AcknowledgeInterrupt(level, vector);
+        }
         public uint FetchMapVersion => owner._fetchMapVersion;
         public bool TryMapFetch(uint address, out ReadOnlyMemory<byte> memory, out uint start, out int waitStates)
             => owner.TryMapFetch(address, out memory, out start, out waitStates);
@@ -100,6 +128,7 @@ public sealed partial class Sh7095 : ISh2Bus
         _fetchMapVersion++;
         Array.Clear(_io); Array.Clear(_valid); Array.Clear(_cache); Array.Clear(_lru); Array.Clear(_tags); Array.Clear(_dreq); Array.Clear(_codeVersions);
         _io[4] = 0x84; _io[1] = 0xff; _io[0x10] = 1; _io[0x17] = 0xe0;
+        _io[0x1e2] = _busSlave == true ? (byte)0x80 : (byte)0;
         _ocra = _ocrb = 0xffff; _frtRemainder = _wdtRemainder = _dmaBudget = _externalLevel = _externalVector = 0;
         Ticks = _serialReady = _peripheralTicks = 0; _nextPeripheralEvent = ulong.MaxValue;
         _inDma = false; Cpu.Reset(warm); SchedulePeripheralEvent(); Cpu.SynchronizeBusClock();
@@ -114,6 +143,13 @@ public sealed partial class Sh7095 : ISh2Bus
         if (_dreq[channel] == asserted) return;
         SynchronizePeripherals(); _dreq[channel] = asserted; SchedulePeripheralEvent();
     }
+    /// <summary>Latch the free-running counter on the board's input-capture strobe.</summary>
+    public void CaptureTimerInput()
+    {
+        Cpu.SynchronizeBusClock(); SynchronizePeripherals();
+        _io[0x18] = _io[0x12]; _io[0x19] = _io[0x13]; _io[0x11] |= 0x80;
+        UpdateInterrupt(); SchedulePeripheralEvent();
+    }
     public void ReceiveSerial(byte data)
     {
         if ((_io[2] & 0x10) == 0) return;
@@ -121,6 +157,11 @@ public sealed partial class Sh7095 : ISh2Bus
         _io[5] = data; _io[4] |= 0x40; UpdateInterrupt();
     }
     public int Execute(int clocks) => Cpu.Execute(clocks);
+    public Sh2NativeReadMap GetNativeReadMap()
+    {
+        Sh2NativeReadMap map = _external is ISh2NativeMappedBus provider ? provider.GetNativeReadMap() : default;
+        return map.Pages.IsEmpty ? default : new(map.Pages, _io, _nativeReadPolicy);
+    }
     private ulong CacheCodeEpoch => (((ulong)_fetchMapVersion << 32) | _codeEpochCounter) + 1;
     private void ResetCodeTracking()
     {
@@ -392,6 +433,7 @@ public sealed partial class Sh7095 : ISh2Bus
     private void SetIo32(int offset, uint value) => BinaryPrimitives.WriteUInt32BigEndian(_io.AsSpan(offset, 4), value);
     private void WriteInternalByte(int offset, byte value)
     {
+        if (offset == 0x1e2 && _busSlave is bool slave) value = (byte)((value & 0x7f) | (slave ? 0x80 : 0));
         if (offset is 0x92 or 0x93)
         {
             _fetchMapVersion++;
@@ -430,6 +472,19 @@ public sealed partial class Sh7095 : ISh2Bus
     {
         Ticks += (uint)cycles;
         if (Ticks >= _nextPeripheralEvent) SynchronizePeripherals();
+    }
+    private bool _useCoalescedLatchedTimerEvents;
+    /// <summary>Skip FRT wakeups that cannot change a latched flag. Select on the owner outside Execute.</summary>
+    public bool UseCoalescedLatchedTimerEvents
+    {
+        get => _useCoalescedLatchedTimerEvents;
+        set
+        {
+            if (value == _useCoalescedLatchedTimerEvents) return;
+            Cpu.SynchronizeBusClock(); SynchronizePeripherals();
+            _useCoalescedLatchedTimerEvents = value;
+            SchedulePeripheralEvent(); Cpu.SynchronizeBusClock();
+        }
     }
     private void SynchronizePeripherals()
     {
@@ -497,6 +552,11 @@ public sealed partial class Sh7095 : ISh2Bus
             int counter = _io[0x12] << 8 | _io[0x13];
             int a = (_ocra - counter) & 65535, b = (_ocrb - counter) & 65535;
             int steps = Math.Min(65536 - counter, Math.Min(a == 0 ? 65536 : a, b == 0 ? 65536 : b));
+            // No flag transition or interrupt update can result while all three
+            // periodic flags remain latched. Register reads/writes and state
+            // capture materialize the counter. Keep one full-period checkpoint
+            // so deferred elapsed-clock arithmetic stays bounded.
+            if (_useCoalescedLatchedTimerEvents && (_io[0x11] & 0x0e) == 0x0e) steps = 65536;
             next = Ticks + (ulong)(steps * divisor - _frtRemainder);
         }
         if ((_io[0x80] & 0x20) != 0) next = Math.Min(next, Ticks + (ulong)((256 - _io[0x81]) * (2 << ((_io[0x80] & 7) * 2)) - _wdtRemainder));
@@ -534,7 +594,9 @@ public sealed partial class Sh7095 : ISh2Bus
     {
         int level = _externalLevel, vector = _externalVector;
         void Consider(int candidate, int irqVector) { if (candidate > level) { level = candidate; vector = irqVector & 127; } }
-        if ((_io[0x11] & _io[0x10] & 0x8e) != 0) Consider(_io[0x60] & 15, (_io[0x11] & 0x80) != 0 ? _io[0x65] : (_io[0x11] & 0x0c) != 0 ? _io[0x66] : _io[0x67]);
+        // VCRC high = capture, VCRC low = compare A/B, VCRD high = overflow.
+        // 0x65 is the SCI transmit-end vector, not an FRT vector.
+        if ((_io[0x11] & _io[0x10] & 0x8e) != 0) Consider(_io[0x60] & 15, (_io[0x11] & 0x80) != 0 ? _io[0x66] : (_io[0x11] & 0x0c) != 0 ? _io[0x67] : _io[0x68]);
         for (int channel = 0; channel < 2; channel++) if ((Io32(0x18c + channel * 16) & 6) == 6) Consider(_io[0xe2] & 15, (int)Io32(0x1a0 + channel * 8));
         if ((_io[0x80] & 0x80) != 0) Consider(_io[0xe3] >> 4, _io[0xe4]);
         if ((_io[4] & _io[2] & 0xc0) != 0) Consider(_io[0x60] >> 4, (_io[4] & 0x40) != 0 ? _io[0x63] : _io[0x64]);
