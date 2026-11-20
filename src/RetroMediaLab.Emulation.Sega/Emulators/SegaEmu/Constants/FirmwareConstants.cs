@@ -2,8 +2,15 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
 
 internal static class FirmwareConstants
 {
+    internal const string SaturnBiosFileName = global::RetroMediaLab.Emulation.Sega.Common.Machines.Common.Constants.FirmwareConstants.SaturnBiosFileName;
+    internal const string SaturnSh1RomFileName = "saturn_sh1.bin";
+    internal const string SaturnMpegRomFileName = "saturn_mpeg.bin";
+
     internal static IReadOnlyList<FirmwareSlot> All { get; } =
     [
+        new("configuration.firmware.segaemu.saturn", SaturnBiosFileName, "Emulation.Firmware.yabause.0", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }),
+        new("configuration.firmware.segaemu.saturn.sh1", SaturnSh1RomFileName, "Emulation.Firmware.SaturnSh1", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }),
+        new("configuration.firmware.segaemu.saturn.mpeg", SaturnMpegRomFileName, "Emulation.Firmware.SaturnMpeg", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }),
         new("configuration.firmware.segaemu.12", "32X_G_BIOS.BIN", "Emulation.Firmware.segaemu.12", false, OptionMachineConstants.MegaDriveAndCd),
         new("configuration.firmware.segaemu.13", "32X_M_BIOS.BIN", "Emulation.Firmware.segaemu.13", false, OptionMachineConstants.MegaDriveAndCd),
         new("configuration.firmware.segaemu.14", "32X_S_BIOS.BIN", "Emulation.Firmware.segaemu.14", false, OptionMachineConstants.MegaDriveAndCd),

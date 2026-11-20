@@ -60,6 +60,17 @@ internal sealed partial class ManagedCore
     }
     private void SavePersistent()
     {
+        if (_saturn is { } saturn)
+        {
+            FileStream? backup = null;
+            try
+            {
+                backup = File.Create(SaturnBackupPath);
+                saturn.SaveBackupRam(backup);
+            }
+            finally { backup?.Dispose(); }
+            return;
+        }
         if (_system is null || string.IsNullOrEmpty(_saveDirectory)) return;
         if (_system.Backup.Enabled) File.WriteAllBytes(PersistentPath("srm"), _system.Backup.Data);
         if (_system.Hardware == SystemHardware.MegaCd)

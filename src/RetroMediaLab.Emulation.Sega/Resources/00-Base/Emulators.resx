@@ -1919,6 +1919,8 @@
   <data name="Emulation.Option.yabause.yabause_numthreads.Value.16"><value>16</value></data>
   <data name="Emulation.Option.yabause.yabause_numthreads.Value.32"><value>32</value></data>
   <data name="Emulation.Firmware.yabause.0"><value>saturn_bios.bin (Saturn BIOS)</value></data>
+  <data name="Emulation.Firmware.SaturnSh1"><value>saturn_sh1.bin (SH-1 ROM)</value></data>
+  <data name="Emulation.Firmware.SaturnMpeg"><value>saturn_mpeg.bin (MPEG ROM)</value></data>
   <data name="Emulation.Emulator.ymir"><value>Ymir / Emir</value></data>
   <data name="Emulation.Option.ymir.ymir_sh2_clock.Value.25"><value>25%</value></data>
   <data name="Emulation.Option.ymir.ymir_sh2_clock.Value.50"><value>50%</value></data>

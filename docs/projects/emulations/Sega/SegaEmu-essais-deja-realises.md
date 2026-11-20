@@ -1067,3 +1067,978 @@ Diagnostic distinct Release, 60 trames actives : Doom zero hit natif de cache da
 Decision : retirer uniquement le prototype SIMD ajoute dans cette passe, son index derive et son test autonome. Conserver interpreteur, cache scalaire, contexte direct, attentes x64 et fenetre 68000 precedents. Sources et DLL prototype archives sous prototype/ avec SHA. Restauration depuis les fichiers archives avant cette passe, puis builds Chips/Sega Debug/Release et 128 controles existants passes dans chaque configuration. Aucun nouveau FPS apres restauration : l utilisateur demande de passer maintenant a la machine Saturn ; ne pas poursuivre une campagne 32X supplementaire.
 
 A ne pas refaire sans nouvelle preuve : remplacer la recherche scalaire par cet index SIMD ou activer globalement cache+contexte direct en supposant leurs gains additifs. Le cache natif garde un interet sur Night Trap et penalise Doom dans ces scenarios. Les millions de retours entre blocs et les couts hors payload restent ouverts ; aucune reparation globale annoncee. Aucun commit/push. Banc temporaire/bin/obj supprimes apres fermeture des proprietaires et fin des processus.
+
+## Saturn — réveil et attente du rendu logiciel, 20 novembre 2026
+
+Sega Rally Championship Europe dans l’interpréteur SegaEmu, cache SH‑2 désactivé. Un processus neuf par passage, 120 trames PAL hors mesure (2,4 secondes émulées), puis 120 secondes réelles. Les empreintes vidéo et PCM prises aux mêmes trames concordent.
+
+### Debug
+
+| Variante | FPS à 60 s | FPS à 120 s |
+| --- | ---: | ---: |
+| Réveils collectifs, attente bloquante | 21,22 | 17,24 |
+| Réveils individuels, attente bloquante | 20,34 | 17,00 |
+| Réveils individuels, attente active de Yabause | 19,68 | 16,25 |
+
+### Release
+
+| Variante | FPS à 60 s | FPS à 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: |
+| Réveils collectifs, attente bloquante | 75,67 | 68,24 | 34/60 |
+| Réveils individuels, attente bloquante | 78,08 | 74,04 | 12/60 |
+| Réveils individuels, attente active de Yabause | 67,79 | 59,92 | 50/60 |
+
+L’attente active a été transcrite depuis vidsoft.c et titan.c. Elle ralentit ce scénario. Les attentes du VDP1, des plans VDP2 et de Titan changent ensemble. Chaque variante a été mesurée une fois par configuration. La version à réveils individuels et attente bloquante fournit le témoin de performance. Le banc temporaire a été supprimé après la fin des processus.
+
+## Saturn — signal individuel du VDP1, 20 novembre 2026
+
+Le fil VDP1 dort sur un événement à réinitialisation automatique, comme dans thr-windows.c. Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu. Deux secondes réelles de chauffe par passage. Builds Debug et Release à zéro erreur et zéro avertissement.
+
+| Configuration | Cache SH‑2 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Désactivé | 25,97 | 30,69 | 26,95 | 19,34 | 14,91 | 60/60 |
+| Debug | Activé | 16,96 | 16,38 | 15,82 | 13,81 | 11,42 | 60/60 |
+| Release | Désactivé | 99,76 | 72,05 | 61,69 | 51,40 | 51,27 | 55/60 |
+| Release | Activé | 74,48 | 62,44 | 57,73 | 52,64 | 51,74 | 59/60 |
+
+Les empreintes sans cache concordent avec celles du passage précédent aux mêmes trames. Le cache modifie les empreintes, et aucune équivalence entre réglages n’est établie. Le protocole précédent utilisait 120 trames de chauffe. La comparaison des deux campagnes ne mesure pas le coût propre du signal VDP1. Le banc a été supprimé après la fin des processus.
+
+## Saturn — tableaux imbriqués pour le cache SH‑2, 20 novembre 2026
+
+Comparaison de la représentation précédente et d’une transcription à tableaux en ligne imbriqués de sh2cache.h. Sega Rally Championship Europe, interpréteur SegaEmu, cache activé. Processus séparés, 120 trames de chauffe et 120 secondes réelles ou 1 200 trames si ce seuil prend plus longtemps.
+
+| Configuration | Version | 10 s | 20 s | 30 s | 60 s | Fin | Durée finale |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 16,03 | 16,32 | 16,46 | 13,80 | 11,80 | 120,036 s |
+| Debug | Tableaux imbriqués | 5,52 | 5,42 | 5,41 | 5,46 | 4,11 | 291,918 s |
+| Release | Témoin | 75,51 | 62,75 | 58,34 | 53,46 | 54,42 | 120,006 s |
+| Release | Tableaux imbriqués | 85,39 | 70,24 | 63,29 | 56,15 | 51,92 | 120,025 s |
+
+Entre 60 et 120 secondes, le témoin Release passe 51 secondes sous 60 FPS, contre 57 pour les tableaux imbriqués. Les empreintes aux mêmes trames concordent entre les deux builds. Ne pas réutiliser ces indexations InlineArray imbriquées telles quelles. Le profil de leur coût précis reste à établir. Prototype retiré, compilations restaurées à zéro avertissement et zéro erreur, DLL Chips identiques aux témoins par SHA-256 dans les deux configurations. Banc temporaire supprimé après la fin des processus.
+
+## Mega Drive + 32X — comparaison avant et après intégration Saturn, 20 novembre 2026
+
+Doom (JU), trois BIOS 32X réels, même banc sur la carte SegaEmu sans publication vidéo ou audio de ManagedCore. Témoin c5b0120b8 compilé depuis une archive du dépôt, comparé au worktree. L’interpréteur utilise les réglages par défaut. Le mode dynarec utilise UseNative68000Blocks avec les blocs SH‑2 que la carte sélectionne par défaut pour ce mode. Passages séparés, 120 trames de chauffe, puis au moins 120 secondes et 1 200 trames. Les registres PC des SH‑2, la vidéo et le PCM concordent aux trames mesurées 600 et 1 200.
+
+| Configuration | Mode | Témoin FPS | Worktree FPS | Durée témoin | Durée worktree |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Debug | Interpréteur | 18,11 | 18,49 | 120,028 s | 120,052 s |
+| Debug | Dynarec existant | 9,72 | 8,48 | 123,501 s | 141,520 s |
+| Release | Interpréteur | 68,14 | 65,10 | 120,005 s | 120,015 s |
+| Release | Dynarec existant | 25,77 | 23,02 | 120,015 s | 120,001 s |
+
+De 60 à 120 s, l’interpréteur Release tombe sous 60 FPS 2 secondes sur le témoin et 11 sur le worktree. Le dynarec Release est sous le seuil les 60 secondes dans les deux versions. Un passage FPS par combinaison. Ce test ne couvre qu’une cartouche et n’explique pas encore l’écart entre commits.
+
+Diagnostic Release séparé sur 820 trames après chauffe. À la trame 678, le témoin passe 6 712,2 ms sur 6 742,6 ms à construire 2 301 blocs SH‑2. Le worktree passe 6 621,1 ms sur 6 650,3 ms à construire les mêmes 2 301 blocs. Sur la fenêtre entière, les deux versions construisent 11 869 blocs, avec zéro repli compté par ce compteur SH‑2. Ce résultat établit la cause des longues pauses communes aux deux versions. Il ne donne pas la cause de la différence de débit sur 120 secondes, ni le nombre de replis 68000. Le banc et l’archive temporaires ont été supprimés après la fin des processus. Aucun changement du code de production.
+
+## Mega Drive + 32X — pauses de compilation hybride et voie SH‑2 x64, 20 novembre 2026
+
+Doom (JU), mêmes trois BIOS 32X et même scénario sans entrée que la comparaison précédente. SegaEmu worktree, carte 32X mesurée sans publication audio/vidéo. Processus séparés, 120 trames de chauffe, puis au moins 120 secondes et 1 200 trames. La voie x64 active Full+Multi et les attentes natives SH‑2 existantes en gardant la sélection 68000/Z80 du dynarec hybride. Les PC SH‑2, images et PCM concordent aux trames mesurées 600 et 1 200 pour les six passages. Builds à zéro erreur et zéro avertissement.
+
+| Configuration | Mode | FPS finaux | Durée | Trame la plus lente | Corps CIL | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Debug | Interpréteur | 17,86 | 120,017 s | 87,35 ms | 0 | 60/60 |
+| Debug | Hybride CIL/x64 | 9,60 | 125,002 s | 6 291,89 ms | 15 261 | 60/60 |
+| Debug | SH‑2 x64 | 13,00 | 120,049 s | 183,37 ms | 0 | 60/60 |
+| Release | Interpréteur | 77,38 | 120,007 s | 26,92 ms | 0 | 0/60 |
+| Release | Hybride CIL/x64 | 28,21 | 120,009 s | 6 838,78 ms | 18 798 | 60/60 |
+| Release | SH‑2 x64 | 35,27 | 120,041 s | 108,35 ms | 0 | 60/60 |
+
+La voie SH‑2 x64 supprime les pauses de plusieurs secondes observées dans l’hybride, et reste plus lente que l’interpréteur. La trame la plus lente des voies compilées est la 678. En Release, le x64 exécute 641 666 975 appels de blocs natifs, chauffe comprise. Le témoin interprété a varié de 65,10 à 77,38 FPS sur le même worktree entre deux campagnes. Les variations entre séries ne permettent pas d’attribuer la baisse avant/après Saturn à un changement de code précis.
+
+Le premier passage x64 Release a terminé les 120 secondes mais le banc a confondu le compteur commun de blocs compilés avec celui des corps CIL. L’assertion a été corrigée et les six résultats ci-dessus proviennent du banc corrigé. Aucun réglage de production changé. Banc supprimé après la fin des processus.
+
+## Saturn — option de build YAB_OPTIMIZED_DMA, 20 novembre 2026
+
+L’option du CMake de Yabause est raccordée dans RetroMediaLab.Chips.csproj avec la valeur par défaut désactivée. Le build avec -p:YAB_OPTIMIZED_DMA=true compile la branche OPTIMIZED_DMA du port de scu.c. Les deux variantes compilent en Debug et Release sans erreur ni avertissement. La présence de la table DmaMemoryType a confirmé la sélection de chaque DLL.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, cache SH‑2 désactivé, 120 trames de chauffe avant une mesure de 120 secondes. Les PC et empreintes vidéo/PCM concordent aux points contrôlés dans chaque configuration.
+
+| Configuration | DMA optimisé | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Désactivé | 28,75 | 30,21 | 26,25 | 19,52 | 15,92 | 60/60 |
+| Debug | Activé | 28,86 | 30,34 | 26,49 | 18,82 | 14,72 | 60/60 |
+| Release | Désactivé | 104,87 | 75,14 | 64,36 | 53,08 | 46,21 | 58/60 |
+| Release | Activé | 104,40 | 75,20 | 64,58 | 53,32 | 47,07 | 59/60 |
+
+L’option reste désactivée par défaut, comme dans Yabause. Un passage par combinaison ne permet pas d’établir un gain général. Le banc vérifie la compilation de la branche et les sorties du scénario. Il ne compte pas les transferts qui prennent la copie optimisée. Banc temporaire supprimé après les quatre passages.
+
+## Saturn — raccordement du SCSP2, 20 novembre 2026
+
+Le projet Sega reprend l’option de compilation YAB_USE_SCSP2 de Yabause, désactivée par défaut. L’option active scsp2.c transcrit dans Chips. SegaEmu utilise son mode audio cadencé et protège le transfert PCM du fil SCSP2 vers les trames hôtes. Le banc confirme que le fil audio est actif dans les deux builds SCSP2.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, cache SH‑2 désactivé, 120 trames de chauffe et 120 secondes mesurées. Un passage par moteur et configuration. Les builds passent sans erreur ni avertissement.
+
+| Configuration | Moteur audio | FPS à 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | SCSP | 29,44 | 30,49 | 26,47 | 18,76 | 14,65 | 60/60 |
+| Debug | SCSP2 | 28,44 | 30,08 | 26,19 | 19,59 | 16,03 | 60/60 |
+| Release | SCSP | 105,03 | 74,91 | 64,22 | 54,16 | 54,14 | 54/60 |
+| Release | SCSP2 | 109,00 | 87,06 | 77,54 | 71,84 | 64,18 | 27/60 |
+
+Les PC et empreintes vidéo concordent aux mêmes trames. Les empreintes PCM diffèrent. Sur 1 200 trames mesurées, le SCSP publie 1 058 400 échantillons par canal dans les deux configurations, le SCSP2 1 059 182 en Debug et 1 059 168 en Release. La comparaison porte sur la sortie produite et la cadence. Elle ne valide pas la qualité du son à l’écoute. Conserver le build optionnel SCSP2 pour poursuivre la validation. Le seuil de 60 FPS stables reste à atteindre. Le banc temporaire a été supprimé après la fin des processus.
+
+## Saturn — réveil du fil SCSP2 selon Yabause, 20 novembre 2026
+
+Transcription de la séquence de scsp2.c et du signal individuel de thr-windows.c. Le fil principal publie son horloge cible, réveille le fil SCSP2 et lui cède la main lorsque le retard dépasse la borne de la source. Le fil SCSP2 traite les écritures puis avance l’horloge avant de céder la main ou de dormir. Le signal est libéré après attente de l’arrêt du fil.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, cache SH‑2 désactivé, option YAB_USE_SCSP2=true dans les deux builds. 120 trames de chauffe, 120 secondes mesurées et un processus par mesure. Les quatre builds passent sans erreur ni avertissement.
+
+| Configuration | Synchronisation | FPS à 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Moniteur | 28,38 | 30,18 | 26,34 | 19,67 | 16,09 | 60/60 |
+| Debug | Signal individuel | 28,37 | 30,22 | 26,30 | 19,61 | 15,96 | 60/60 |
+| Release | Moniteur | 108,48 | 86,06 | 76,64 | 61,78 | 50,81 | 59/60 |
+| Release | Signal individuel | 109,13 | 84,10 | 73,93 | 64,75 | 59,86 | 47/60 |
+
+PC et empreintes vidéo identiques aux trames contrôlées. En Release, de 60 à 120 s, le débit passe de 39,84 à 54,96 FPS environ. Un passage par combinaison. Les blocs PCM remis à chaque trame diffèrent. Sur 1 200 trames mesurées, le moniteur remet 1 059 154 échantillons par canal en Debug et 1 059 152 en Release, contre 1 059 210 et 1 059 230 avec le signal individuel. La qualité à l’écoute et l’équivalence du PCM en flux continu restent à vérifier. Banc temporaire supprimé après la fin des processus.
+
+## Saturn — pointeur de fonction pour les lignes VDP1, 20 novembre 2026
+
+Capture Release avec SCSP2 pendant 18 secondes à partir de la trame 3 600. Le profil échantillonne le temps mural de tous les fils, y compris les attentes. Dans ce rapport, IterateOverLine reçoit 3,66 % des échantillons exclusifs et DrawLineCallback 2,64 %. Les méthodes de boucle des fils VDP2 et Titan incluent du temps d’attente et leurs pourcentages ne doivent pas être lus comme du temps CPU de dessin.
+
+SaturnVideoSoftware.cs reprend l’appel par pointeur de fonction de iterateOverLine dans vidsoft.c avec un pointeur managé et le même parcours de pixels. Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP2 actif, cache SH‑2 désactivé. 120 trames de chauffe, 120 secondes mesurées, un processus par passage. Les quatre builds passent sans erreur ni avertissement.
+
+| Configuration | Appel du tracé | FPS à 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Délégué | 27,99 | 29,74 | 25,91 | 19,50 | 15,96 | 60/60 |
+| Debug | Pointeur managé | 29,15 | 30,65 | 26,60 | 19,58 | 15,76 | 60/60 |
+| Release | Délégué | 109,43 | 83,77 | 73,65 | 60,19 | 49,51 | 59/60 |
+| Release | Pointeur managé | 108,78 | 81,99 | 71,55 | 61,61 | 56,84 | 51/60 |
+
+PC et empreintes vidéo identiques aux trames contrôlées. Pendant la dernière minute Release, le débit passe de 38,84 à 52,06 FPS environ. Les blocs PCM du SCSP2 restent découpés différemment d’un passage à l’autre. Le résultat de vitesse provient d’un seul passage par combinaison. Le banc et la trace temporaires ont été supprimés après la fin des processus.
+
+## Mega-CD + 32X — Night Trap et amorçage de Fahrenheit, 20 novembre 2026
+
+Night Trap Europe disque 1, BIOS Mega-CD régional et trois BIOS 32X. Bande de test directe sur la carte SegaEmu, 120 trames de chauffe, puis 120 secondes mesurées. Start pendant cinq trames tous les 120 à partir de la trame 120. La voie SH‑2 x64 sélectionne Full+Multi et les attentes natives, comme dans la campagne Doom. Le 68000 et le Z80 ont la même sélection dans les deux variantes compilées. Builds Debug et Release sans erreur ni avertissement.
+
+| Configuration | Mode | FPS à 60 s | FPS à 120 s | Trame la plus lente | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Debug | Interpréteur | 20,72 | 19,40 | 81,17 ms | 60/60 |
+| Debug | Hybride CIL/x64 | 18,39 | 17,30 | 2 299,37 ms | 60/60 |
+| Debug | SH‑2 x64 | 15,63 | 14,82 | 364,73 ms | 60/60 |
+| Release | Interpréteur | 82,29 | 80,58 | 47,19 ms | 0/60 |
+| Release | Hybride CIL/x64 | 52,47 | 51,40 | 2 506,32 ms | 60/60 |
+| Release | SH‑2 x64 | 43,43 | 38,99 | 110,57 ms | 60/60 |
+
+Le 32X est actif et les deux SH‑2 exécutent du code en SDRAM aux points contrôlés. Leurs PC, la vidéo et le PCM concordent entre modes aux trames communes. Ce sont les trames 600 et 1 200 en Debug, et 600, 1 200, 1 800 et 3 000 en Release. Le SH‑2 x64 n’émet aucun corps CIL et évite la pause de plusieurs secondes. Il réduit la moyenne par rapport à l’hybride sur Night Trap, contrairement à Doom. La même sélection ne résout donc pas les vitesses des deux machines.
+
+Fahrenheit USA a été amorcé avec le disque clé et échangé contre le disque 32X à la trame 600. Le 32X reste inactif et les deux PC restent à 00000140 aux trames 1 200 et 1 800 dans les deux configurations. Ce scénario ne permet pas de mesurer Fahrenheit en jeu. Aucun réglage de production changé. Banc temporaire supprimé après la fin des processus.
+
+## Mega Drive + 32X — contre-mesure de la régression sur Doom
+
+Doom (JU), trois BIOS 32X, aucun bouton, même banc sur la carte SegaEmu. Témoin c5b0120b8 compilé depuis une archive locale, comparé au worktree. Un processus à la fois, 120 trames de chauffe, puis 120 secondes réelles avec au moins 1 200 trames. L’ordre des versions est inversé à la seconde paire Release. Le Debug cible le dynarec hybride, qui avait le plus baissé dans le premier relevé.
+
+| Configuration | Mode | Paire | Témoin FPS | Worktree FPS | Trame la plus lente témoin / worktree |
+| --- | --- | ---: | ---: | ---: | --- |
+| Release | Interpréteur | 1 | 70,42 | 76,41 | 44,37 / 29,47 ms |
+| Release | Interpréteur | 2 | 76,43 | 76,54 | 27,47 / 27,64 ms |
+| Release | Dynarec hybride | 1 | 28,23 | 27,55 | 6 635,87 / 6 806,00 ms |
+| Release | Dynarec hybride | 2 | 28,13 | 28,08 | 6 779,29 / 6 811,39 ms |
+| Debug | Dynarec hybride | 1 | 9,78 | 9,75 | 6 088,02 / 6 897,57 ms |
+
+PC des deux SH‑2, empreintes vidéo et empreintes PCM concordants aux trames communes. La baisse initiale de l’interpréteur Release (68,14 à 65,10 FPS) ne se reproduit pas, et celle du dynarec est bien plus faible dans cette série (au plus 0,68 FPS en Release et 0,03 FPS en Debug). Ces mesures ne suffisent pas à attribuer le petit écart restant à une modification particulière.
+
+La trame 678 reste la plus lente dans les six passages dynarec. En Debug, les deux versions émettent exactement 15 261 corps CIL à 1 200 trames. Le profil antérieur attribue l’essentiel de cette trame à la compilation des blocs SH‑2 dans les deux versions. Le dynarec reste sous 60 FPS chaque seconde entre 60 et 120 s. Le worktree compile sans avertissement ni erreur en Debug et Release. Aucun changement du code de production.
+
+Le diff avec `c5b0120b8` ne montre aucune modification de la carte `Machines/ThirtyTwoX` ni des fichiers du moteur `Sh2*.cs` utilisé par le 32X. Côté bus partagé avec la Mega Drive, les changements portent sur les délégués du mapper de cartouche et de la fenêtre mémoire du Z80. Leur coût propre n’a pas été isolé. Les contre-mesures sur Doom ne justifient pas de retirer ces changements pour retrouver les FPS. Le coût confirmé dans le dynarec hybride reste la compilation en cours de jeu, observée sur les deux versions.
+
+## Saturn — pointeur de fonction pour le rappel couleur VDP2
+
+SaturnVideoSharedTypes.cs et SaturnVideoSoftware.cs reprennent le pointeur PostPixelFetchCalc de vidshared.h et ses appels dans vidsoft.c. Les fonctions DoNothing et DoColorOffset et leurs neuf sites d’appel gardent leur logique. Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP2 actif, cache SH‑2 désactivé, 120 trames de chauffe puis 120 secondes par passage.
+
+| Configuration | Rappel couleur | Paire | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Délégué | 1 | 28,87 | 30,64 | 26,58 | 19,91 | 16,16 | 60/60 |
+| Debug | Pointeur | 1 | 29,93 | 31,44 | 27,05 | 18,61 | 14,12 | 60/60 |
+| Debug | Délégué | 2 | 28,96 | 30,50 | 26,52 | 18,76 | 14,54 | 60/60 |
+| Debug | Pointeur | 2 | 29,44 | 31,04 | 26,80 | 20,21 | 16,32 | 60/60 |
+| Release | Délégué | 1 | 104,39 | 79,97 | 70,45 | 63,22 | 59,73 | 38/60 |
+| Release | Pointeur | 1 | 106,34 | 80,92 | 71,27 | 63,53 | 60,71 | 39/60 |
+
+Les empreintes vidéo concordent aux trames communes. En Debug, l’écart change de signe quand l’ordre des deux passages est inversé. En Release, le seul passage par variante donne +0,98 FPS à 120 s et une seconde de plus sous 60 FPS entre 60 et 120 s. Le pointeur est conservé pour reprendre la forme de la source C. Le gain stable reste à établir. Les quatre builds passent à zéro erreur et zéro avertissement.
+
+## Saturn — paramètres de ligne et table de mosaïque VDP2
+
+SaturnVideoSharedTypes.cs et SaturnVideoSoftware.cs reprennent les pointeurs PlaneAddr et LoadLineParams du contexte de dessin de vidshared.h. Le parcours des plans sélectionne deux lignes de la table de mosaïque avant le rendu, comme dans vidsoft.c. Les fonctions d’adresse des deux paramètres rotatifs conservent la sélection par numéro déjà présente. Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP2 actif, cache SH‑2 désactivé, 120 trames de chauffe puis 120 secondes par passage.
+
+| Configuration | Version | Paire | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 1 | 28,18 | 29,90 | 26,01 | 20,00 | 16,51 | 60/60 |
+| Debug | Pointeurs et mosaïque | 1 | 28,28 | 29,59 | 25,44 | 18,96 | 15,41 | 60/60 |
+| Release | Témoin | 1 | 109,39 | 82,58 | 72,64 | 64,82 | 60,18 | 38/60 |
+| Release | Pointeurs et mosaïque | 1 | 107,80 | 81,79 | 71,95 | 59,12 | 47,88 | 59/60 |
+| Release | Témoin | 2 | 108,59 | 82,22 | 72,00 | 63,78 | 59,92 | 42/60 |
+| Release | Pointeurs et mosaïque | 2 | 106,86 | 81,49 | 71,67 | 63,70 | 60,22 | 46/60 |
+
+Les empreintes vidéo concordent aux trames communes. La baisse Release du premier passage ne se reproduit pas lors de la paire inversée. Le Debug repose sur une seule paire. Aucun gain stable n’est établi. La transcription est conservée pour sa correspondance avec les sources. Les quatre builds passent à zéro erreur et zéro avertissement. La comparaison porte sur les deux changements réunis et ne mesure pas leur coût individuel.
+
+## Saturn — pointeurs dans les tables de l’interpréteur SH‑2, essai retiré
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur de SegaEmu, SCSP2 actif et cache SH‑2 désactivé. Un processus par passage, 120 trames de chauffe puis 120 secondes. Le candidat transcrit les pointeurs des tables de lecture d’instructions et de sélection des gestionnaires de sh2int.c dans le port C#. Les gestionnaires et le décodage restent les mêmes. Les PC des deux SH‑2 et les empreintes vidéo concordent aux trames communes.
+
+| Configuration | Tables | Paire | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Délégués | 1 | 29,78 | 30,98 | 26,70 | 19,63 | 15,77 | 60/60 |
+| Debug | Pointeurs | 1 | 30,38 | 31,46 | 27,14 | 19,85 | 15,93 | 60/60 |
+| Release | Délégués | 1 | 106,63 | 81,29 | 71,42 | 63,67 | 60,83 | 42/60 |
+| Release | Pointeurs | 1 | 111,80 | 84,53 | 73,57 | 59,88 | 48,83 | 58/60 |
+| Release | Délégués | 2 | 108,62 | 82,56 | 72,41 | 64,24 | 60,68 | 43/60 |
+| Release | Pointeurs | 2 | 111,19 | 83,80 | 73,35 | 59,35 | 48,29 | 59/60 |
+
+La baisse Release se répète quand l’ordre des variantes est inversé. La moyenne baisse de 60,83 à 48,83 puis de 60,68 à 48,29 FPS. La paire Debug donne +0,16 FPS. Les mesures concernent les deux tables ensemble. Elles ne permettent pas d’attribuer la baisse à une table ni à un mécanisme du JIT. Les deux fichiers ont été restaurés depuis le témoin. Les builds du témoin, du candidat et de la version restaurée donnent zéro erreur et zéro avertissement. Les DLL Chips et Sega restaurées ont les mêmes SHA‑256 que le témoin dans les deux configurations.
+
+## Saturn — débordements de l’unité de division SH‑2
+
+SaturnSh2Core.cs reprend les cas INT32_MIN / −1 et INT64_MIN / −1 de Mednafen, src/ss/sh7095.inc. Ces deux divisions signées peuvent lever OverflowException dans le code C# antérieur. Les autres opérations de cette unité conservent la transcription de sh2core.c. Les deux builds vérifient les écritures via le bus, les résultats, les miroirs et le drapeau de débordement. Le 32 bits donne 0x80000000 et un reste nul sans lever le drapeau. Le 64 bits lève le drapeau, donne 0x7FFFFFFF si le signal est désactivé, ou le résultat partiel 0x00000004 et l’interruption attendue si le signal est activé. Le registre supérieur vaut 0x0000000A dans les deux contrôles 64 bits.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP par défaut et cache SH‑2 désactivé. 120 trames de chauffe puis 120 secondes, sans limiteur. Les images et les PC des SH‑2 concordent aux trames communes aux deux configurations.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 30,06 | 31,09 | 26,60 | 19,82 | 16,07 | 60/60 |
+| Release | 109,50 | 83,17 | 72,89 | 64,63 | 60,32 | 38/60 |
+
+Cette passe corrige deux cas de calcul. Les relevés décrivent le build corrigé et ne constituent pas une comparaison de vitesse avant/après. Les deux builds passent sans erreur ni avertissement.
+
+## Saturn — coordonnées signées des tables de rotation VDP2
+
+SaturnVideoShared.cs utilise le masque 0xFFFFC000 pour étendre le signe des coordonnées Px, Py, Pz, Cx, Cy et Cz avant la conversion 16.16. Le chemin flottant de Kronos et Yaba Sanshiro applique ce masque, et Mednafen vdp2.cpp lit ces six champs avec une extension de signe sur 14 bits. Le masque 0xFFF80000 du chemin fixe de Yabause perdait le signe après le décalage. Le contrôle couvre les six champs de chacun des paramètres A et B, les bornes négative et positive et le masquage des bits 14 et 15.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP par défaut et cache SH‑2 désactivé. 120 trames de chauffe, puis 120 secondes. Images et PC des SH‑2 concordants entre configurations aux trames communes. Les deux builds passent à zéro erreur et zéro avertissement.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 28,19 | 29,98 | 26,09 | 19,43 | 15,82 | 60/60 |
+| Release | 108,88 | 82,58 | 71,97 | 63,67 | 60,39 | 43/60 |
+
+Les FPS décrivent le code corrigé. Le contrôle des paramètres vérifie le décodage des coordonnées négatives. La campagne Sega Rally ne valide pas tous les modes de rotation.
+
+## Saturn — motif hors carte des plans rotatifs VDP2
+
+Le mode 1 utilise OVPNRA ou OVPNRB pour les coordonnées hors carte d’un plan en tuiles, d’après TileFetch::Fetch dans Mednafen vdp2_render.cpp. Le motif est décodé sur un mot, même si les entrées ordinaires de la carte occupent deux mots. Le changement est raccordé à la rotation avec coefficients, à la rotation simple et au parcours sans rotation qui réutilise le défilement. Le test ciblé vérifie le décodage et la limite de la carte, les deux motifs, leurs palettes et leurs retournements. Il n’est pas une capture d’un jeu employant ce mode.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP par défaut, cache SH‑2 désactivé. 120 trames de chauffe, 120 secondes par passage. Les images et les PC des deux SH‑2 concordent aux trames communes. Les deux builds passent sans erreur ni avertissement.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 32,72 | 31,54 | 26,52 | 19,69 | 16,05 | 60/60 |
+| Release | 108,58 | 82,45 | 72,37 | 63,95 | 60,07 | 41/60 |
+
+
+## Saturn — limites des plans rotatifs VDP2 en modes 2 et 3
+
+SaturnVideoSoftware.cs applique les masques de Mednafen vdp2_render.cpp aux parcours avec coefficients, sans coefficients et au défilement utilisé en l’absence de rotation effective. Le mode 2 coupe aux limites de la carte ou du bitmap. Le mode 3 coupe au-delà de 511 sur chacun des axes. La coordonnée est ensuite ramenée aux dimensions du bitmap ou de la carte pour la lecture. Le contrôle ciblé des bornes passe dans les deux configurations. Il vérifie les coordonnées et ne couvre pas toutes les branches de rendu.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP par défaut, cache SH‑2 désactivé. 120 trames de chauffe puis 120 secondes sans limiteur. Les images et compteurs ordinaux des deux SH‑2 concordent aux trames 600 et 1 200. Les builds passent sans erreur ni avertissement.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 29,30 | 29,87 | 26,16 | 18,74 | 14,67 | 60/60 |
+| Release | 109,11 | 82,69 | 72,37 | 64,08 | 60,96 | 41/60 |
+
+Les FPS décrivent le code actuel. Cette mesure seule n’isole pas le coût du changement. En Release, les 3 470 trames des 60 dernières secondes donnent 57,84 FPS.
+
+
+## Saturn — état des tuiles des paramètres rotatifs A et B
+
+Mednafen conserve un TileFetcher par paramètre rotatif dans vdp2_render.cpp. Dans SaturnVideoSoftware.cs, les deux caches de coordonnées pouvaient retrouver la même tuile chacun à leur tour, alors que le dernier décodage avait écrasé les informations communes de palette, de caractère et de retournement. Le parcours en tuiles maintient désormais son état par paramètre et lit la taille du plan secondaire dans le champ PLSZ correspondant. Cette passe conserve le chemin bitmap existant.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, 120 trames de chauffe puis 120 secondes sans limiteur. Images et PC des deux SH‑2 concordants entre configurations aux trames 600, 1 200 et 1 800. Les deux compilations passent à zéro erreur et zéro avertissement, avec la vérification de vulnérabilité NuGet désactivée pour la restauration du banc local après l’échec de son accès réseau.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 26,89 | 29,89 | 26,29 | 19,49 | 15,64 | 60/60 |
+| Release | 103,89 | 73,19 | 62,02 | 50,72 | 54,18 | 44/60 |
+
+Le relevé Release est inférieur à celui de la passe précédente (60,96 FPS). La mesure compare des passages distincts et n’isole pas le coût du changement. L’alternance des tuiles A et B n’a pas été vérifiée directement dans une image dédiée.
+
+
+### Comparaison directe du rendu A et B sur Sega Rally
+
+Les quatre builds utilisent le même worktree. MSBuild substitue uniquement une copie de SaturnVideoSoftware.cs où la séparation des états A et B est annulée pour le témoin. Chacun des quatre builds compile sans erreur ni avertissement. La restauration du banc temporaire utilise les paquets locaux avec l’audit NuGet désactivé. Un processus à la fois. Scénario, BIOS et durée identiques à la mesure précédente. Les empreintes vidéo et les PC des SH‑2 concordent dans chaque paire, aux trames 600 et 1 200 en Debug et jusqu’à 4 800 en Release.
+
+| Configuration | Variante | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 26,38 | 28,82 | 25,36 | 18,38 | 14,32 | 60/60 |
+| Debug | Correction | 28,85 | 30,25 | 26,34 | 18,80 | 14,70 | 60/60 |
+| Release | Témoin | 103,34 | 72,64 | 61,49 | 50,04 | 43,85 | 58/60 |
+| Release | Correction | 103,25 | 73,45 | 62,13 | 50,58 | 44,37 | 58/60 |
+
+La baisse Release signalée entre campagnes ne se reproduit pas dans cette paire. Les deux variantes restent sous la cible, et le faible écart d’une seule paire par configuration ne suffit pas à établir un gain stable. L’alternance des tuiles A et B reste à vérifier sur une scène qui l’exerce explicitement.
+
+
+## Saturn — profil des attentes vidéo après la trame 3 600
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP par défaut, cache SH‑2 désactivé. Deux captures EventPipe dotnet-sampled-thread-time de 18 secondes, une par configuration, déclenchées après la trame 3 600. Les deux builds passent à zéro erreur et zéro avertissement. Le tableau répartit le temps mural échantillonné sur les piles ManagedCore.RunFrame, environ 17 993 ms par configuration. Les catégories sont exclusives. Les temps des travailleurs s’exécutent en parallèle et ne sont pas additionnés à ceux du fil d’émulation.
+
+| Circuit du fil d’émulation | Debug (ms) | Debug (%) | Release (ms) | Release (%) |
+| --- | ---: | ---: | ---: | ---: |
+| Attente active du VDP1 identifiée dans sa propre méthode | 13 496,4 | 75,01 | — | — |
+| Attente active des plans VDP2 identifiée dans sa propre méthode | 1 381,5 | 7,68 | — | — |
+| Attente active de Titan identifiée dans sa propre méthode | 154,5 | 0,86 | — | — |
+| VDP1 lancement et attente intégrée | 47,1 | 0,26 | 6 133,9 | 34,14 |
+| HBlank/VBlank et appels intégrés | 192,1 | 1,07 | 7 647,3 | 42,56 |
+| VDP2 et Titan, dessin attribué aux méthodes visibles | 803,7 | 4,47 | 830,9 | 4,62 |
+| SH‑2 et bus sur les piles visibles | 648,5 | 3,60 | 800,5 | 4,46 |
+| SCSP et C68K | 612,2 | 3,40 | 472,1 | 2,63 |
+| SCU et interruptions | 234,9 | 1,31 | 469,8 | 2,61 |
+| Bloc CD et SMPC | 110,6 | 0,61 | 93,5 | 0,52 |
+
+Les tirets en Release indiquent que les piles ne séparent pas la méthode d’attente de son appelant. Les chiffres Release du VDP1 et de HBlank/VBlank ne distinguent donc pas précisément attente, copies et rendu. En Debug, VidsoftWaitForVdp1Thread représente à lui seul 75,01 % du temps mural du fil d’émulation. La boucle vide de cette méthode est celle de vidsoft.c. La comparaison antérieure des réveils et attentes avait changé VDP1, VDP2 et Titan ensemble. Ce profil identifie le VDP1 en premier pour isoler la différence entre attente active et attente bloquante. Aucune modification du moteur et aucun relevé FPS sous instrumentation.
+
+
+## Saturn — attente bloquante de fin de dessin du VDP1
+
+SaturnVideoSoftware.cs adapte au VDP1 l’attente sur condition du fil SCSP de Kronos. Le fil de dessin signale la fin sous verrou, y compris si le dessin a échoué. Le fil d’émulation bloque uniquement si le dessin est encore en cours, avec le même contrôle de fin et aux mêmes endroits. Il s’agit d’une adaptation de la synchronisation hôte. Le code vidsoft.c de Yabause utilise une attente active à cet endroit.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, SCSP par défaut, cache SH‑2 désactivé. Même worktree pour les quatre builds et seule l’attente VDP1 varie. Une paire par configuration, ordre inversé entre Debug et Release. 120 trames de chauffe, puis 120 secondes sans limiteur. Empreintes vidéo et PC des deux SH‑2 concordants aux trames communes, jusqu’à 1 200 en Debug et 6 000 en Release. Les quatre builds passent à zéro avertissement et zéro erreur. L’audit NuGet a été désactivé pour la restauration du banc temporaire à partir des paquets locaux.
+
+| Configuration | VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Attente active | 28,56 | 30,22 | 26,28 | 18,66 | 14,50 | 60/60 |
+| Debug | Attente bloquante | 28,59 | 30,09 | 26,29 | 20,27 | 16,59 | 60/60 |
+| Release | Attente active | 103,23 | 72,97 | 61,73 | 50,23 | 50,39 | 57/60 |
+| Release | Attente bloquante | 110,55 | 86,61 | 77,03 | 69,29 | 63,74 | 42/60 |
+
+L’attente bloquante est conservée. La moyenne Release entre 60 et 120 s passe de 50,55 à 58,20 FPS. La campagne ne valide pas encore une cadence stable de 60 FPS et ne couvre ni le PCM ni d’autres jeux.
+
+
+## Saturn — attente bloquante des plans VDP2
+
+SaturnVideoSoftware.cs applique aux plans VDP2 le mécanisme d’attente sur condition repris du SCSP de Kronos. Chaque travailleur signale la fin de son dessin sous le verrou existant, lors d’une fin normale, d’une exception ou du chemin d’arrêt. Le fil principal attend le même indicateur aux mêmes points et relâche le verrou pendant l’attente. Le témoin et la variante utilisent déjà l’attente bloquante du VDP1. La synchronisation Titan reste identique dans les deux builds.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, cache SH‑2 désactivé, SCSP par défaut. Une paire par configuration, ordre inversé entre Debug et Release, 120 trames de chauffe puis 120 secondes sans limiteur. Les quatre builds compilent à zéro erreur et zéro avertissement. Les images, les PC des deux SH‑2 et l’empreinte cumulée du PCM concordent à chaque point contrôlé, jusqu’aux trames 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Attente VDP2 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Active | 29,18 | 30,33 | 26,40 | 20,19 | 16,46 | 60/60 |
+| Debug | Bloquante | 30,23 | 31,23 | 26,83 | 20,36 | 16,56 | 60/60 |
+| Release | Active | 111,75 | 87,17 | 77,65 | 69,37 | 64,11 | 40/60 |
+| Release | Bloquante | 111,62 | 87,08 | 77,19 | 70,82 | 68,07 | 24/60 |
+
+Variante conservée pour le gain Release observé, environ 6 %. La moyenne des 60 dernières secondes passe de 58,85 à 65,33 FPS et la cadence descend encore sous 60 FPS pendant 24 secondes. Le petit écart Debug ne démontre pas un gain reproductible. L’audit NuGet a été désactivé pour la restauration du banc temporaire avec les paquets locaux.
+
+
+## Saturn — attente bloquante du compositeur Titan
+
+SaturnTitan.cs applique aux bandes de composition le mécanisme d’attente sur condition du SCSP de Kronos. Les travailleurs publient la fin sous le verrou existant et réveillent les attentes, y compris en cas d’erreur ou d’arrêt. Les points de synchronisation et les bandes rendues sont les mêmes. Le témoin et la variante utilisent tous deux l’attente bloquante pour le VDP1 et les plans VDP2.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, SCSP par défaut, cache SH‑2 désactivé. 120 trames de chauffe puis 120 secondes sans limiteur, une paire par configuration et ordre inversé entre Debug et Release. Les quatre builds finaux passent à zéro erreur et zéro avertissement. Les images, le PCM cumulé et les PC des SH‑2 concordent aux trames contrôlées, jusqu’à 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Attente Titan | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Active | 29,33 | 30,38 | 26,50 | 20,20 | 16,47 | 60/60 |
+| Debug | Bloquante | 28,65 | 30,16 | 26,23 | 20,00 | 16,38 | 60/60 |
+| Release | Active | 111,98 | 87,14 | 77,60 | 69,73 | 65,01 | 33/60 |
+| Release | Bloquante | 109,86 | 85,98 | 76,55 | 70,59 | 68,20 | 19/60 |
+
+Variante conservée pour la meilleure cadence Release en jeu. La moyenne des 60 dernières secondes passe de 60,29 à 65,80 FPS. Le recul Debug de 0,09 FPS provient d’une seule paire, insuffisante pour confirmer une régression reproductible. Il reste 19 secondes sous 60 FPS en Release sur cette fenêtre. Le premier build du banc a échoué sur un contrôle de rotation hérité et retiré avant les mesures. La restauration du banc a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — coefficients de rotation en RAM couleur
+
+SaturnVideoSoftware.cs sélectionne la RAM couleur lorsque RAMCTL.CRKTE (bit 15) est actif. Comme dans GetCoeffAddr, ReadCoeff et SetupRotVars de Mednafen vdp2_render.cpp, la lecture est alignée et limitée aux 2 derniers Kio de CRAM et ce mode autorise la lecture par pixel. SaturnVideoShared.cs et SaturnVideoSharedTypes.cs conservent les quatre modes de coefficients, avec le format de mots déjà utilisé par les accès CRAM du VDP2. Le contrôle ciblé vérifie une lecture VRAM, deux formats CRAM, le retour d’adresse, le signe, le bit de transparence et l’indice de couleur de ligne.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, 120 trames de chauffe puis 120 secondes sans limiteur. Les compilations Debug et Release passent à zéro erreur et zéro avertissement, avec l’audit NuGet désactivé pour la restauration temporaire depuis les paquets locaux. Les images et PC des SH‑2 concordent aux trames communes 600, 1 200 et 1 800.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 27,27 | 30,02 | 26,26 | 19,88 | 16,21 | 60/60 |
+| Release | 109,88 | 86,11 | 76,82 | 69,13 | 63,79 | 38/60 |
+
+Les FPS décrivent cette version. Une mesure par configuration sans témoin simultané ne permet pas d’attribuer la variation au changement. Le contrôle des coefficients ne valide pas l’ensemble du rendu d’une scène utilisant CRKTE.
+
+
+## Saturn — coût CPU du dessin VDP1 après les corrections d’attente
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, cache SH‑2 désactivé et SCSP par défaut. Les attentes de VDP1, VDP2 et Titan sont bloquantes dans les deux builds. Les deux builds passent à zéro avertissement et zéro erreur. Deux captures séparées de 18 secondes après la trame 3 600. Les temps CPU viennent des compteurs Windows par identifiant de fil, sur 18 803 ms murales en Debug et 18 858 ms en Release. L’association aux composants utilise les signatures des boucles de travail dans les piles EventPipe. Les pourcentages CPU ont pour dénominateur la somme des temps CPU du processus. Les quatre lignes ci-dessous laissent de côté 62,5 ms et 78,1 ms CPU pour les autres fils.
+
+| Fil ou groupe de fils | Debug CPU (ms) | Debug (%) | Release CPU (ms) | Release (%) |
+| --- | ---: | ---: | ---: | ---: |
+| Travailleur VDP1 | 18 203,1 | 56,33 | 16 125,0 | 46,11 |
+| Travailleurs VDP2 | 7 734,4 | 23,94 | 7 421,9 | 21,22 |
+| Travailleurs Titan | 3 109,4 | 9,62 | 5 750,0 | 16,44 |
+| Fil d’émulation | 3 203,1 | 9,91 | 5 593,8 | 16,00 |
+
+Dans la trace Debug, le fil d’émulation passe environ 13 192 ms murales (73,22 %) à attendre le VDP1. Le fil est bloqué à cet endroit. Le dessin reste sur le chemin critique. Sur les piles de dessin du travailleur VDP1 en Release, DrawLineCallback (7 600 ms échantillonnées) et IterateOverLine (7 156 ms) cumulent 90,50 % du temps mural attribué aux méthodes visibles sous DrawCommands. En Debug, GetPixel (4 218 ms), DrawLineCallback (3 924 ms), PutPixel (2 696 ms) et IterateOverLine (2 360 ms) dominent cette même répartition. Ces chiffres par méthode incluent les fonctions intégrées et les interruptions du fil.
+
+Le changement d’attente a réduit le travail du fil principal, et le coût du dessin reste concentré dans la rasterisation. La référence Mednafen sépare dans vdp1_common.h le tracé texturé, le tracé sans texture et les modes de dessin par instanciation de DrawLine. Le pointeur de fonction par pixel porté de Yabause a déjà été mesuré. Le prochain essai doit isoler le coût de cette boucle spécialisée sans modifier les réglages d’attente. Aucun FPS sous instrumentation.
+
+## Saturn — spécialisation de l’appel par pixel du VDP1, essai écarté
+
+Une copie temporaire de SaturnVideoSoftware.cs instancie le tracé Yabause pour trois opérations statiques C# : dessin, mémorisation de bord et comptage. L’essai isole le remplacement du rappel indirect, sur le principe des instanciations de DrawLine dans vdp1_common.h de Mednafen. Les calculs et l’ordre des pixels restent identiques.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, cache SH‑2 désactivé, SCSP par défaut, 120 trames de chauffe et 120 secondes sans limiteur. Une paire par configuration, ordre inversé entre Debug et Release. Les quatre compilations passent sans avertissement ni erreur. Images, PCM cumulé et PC des deux SH‑2 concordent aux trames communes, jusqu’à 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Tracé VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Pointeur managé | 29,68 | 30,11 | 26,40 | 20,21 | 16,49 | 60/60 |
+| Debug | Opération statique | 30,05 | 31,20 | 26,90 | 20,05 | 16,08 | 60/60 |
+| Release | Pointeur managé | 109,32 | 85,08 | 75,62 | 67,75 | 62,71 | 43/60 |
+| Release | Opération statique | 108,08 | 86,40 | 77,67 | 70,35 | 64,29 | 41/60 |
+
+Variante écartée. La moyenne Release de la dernière minute passe de 57,66 à 58,24 FPS et le Debug perd 0,41 FPS sur 120 secondes. Le fichier de production conserve le pointeur managé issu de Yabause. Mednafen spécialise aussi les modes texture, transparence, Gouraud et mélange avant la boucle. Cette partie n’était pas incluse dans l’essai. La restauration du banc a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — tracé sans texture du VDP1
+
+SaturnVideoSoftware.cs reprend la séparation Textured de Mednafen vdp1_common.h. Pour les commandes sans texture, le dessinateur prend CMDCOLR directement et conserve le masque de visibilité de Yabause. Le parcours texturé conserve ses lectures et ses codes de fin. Un polygone sans texture ni Gouraud évite aussi le comptage intermédiaire de pixels, qui ne servait alors à aucune interpolation. Les appels d’écriture conservent les règles existantes de clipping, transparence, mélange, et le pas de couleur du mode Gouraud.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, cache SH‑2 désactivé et SCSP par défaut. Une paire par configuration, ordre inversé entre configurations, 120 trames de chauffe puis 120 secondes sans limiteur. Les quatre builds passent à zéro erreur et zéro avertissement. Images, PCM cumulé et PC des deux SH‑2 concordent aux trames communes, jusqu’à 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Tracé VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 28,88 | 30,23 | 26,35 | 20,13 | 16,46 | 60/60 |
+| Debug | Sans lecture de texture pour les aplats | 28,33 | 30,21 | 26,35 | 20,28 | 16,60 | 60/60 |
+| Release | Témoin | 109,30 | 85,56 | 76,27 | 68,44 | 63,36 | 40/60 |
+| Release | Sans lecture de texture pour les aplats | 110,55 | 86,87 | 77,57 | 70,46 | 65,34 | 36/60 |
+
+Variante conservée. La moyenne Release de la dernière minute passe de 58,28 à 60,23 FPS. Il reste 36 secondes sous 60 FPS dans cette fenêtre. Une seule paire par configuration sur un seul jeu. La restauration du banc temporaire a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — formats des lignes texturées du VDP1
+
+SaturnVideoSoftware.cs sélectionne le lecteur par format avant le tracé de la ligne, comme le fait TexFetchTab de Mednafen. La version C# spécialise le rappel par format et prépare l’adresse de ligne et le retournement dans son contexte. Les décodages, codes de fin et écritures de pixels du parcours SegaEmu restent les mêmes. Cet essai se distingue du remplacement isolé du rappel par une opération statique, écarté plus haut.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, SCSP par défaut et cache SH‑2 désactivé. Une paire par configuration, ordre inversé entre configurations. 120 trames de chauffe puis 120 secondes sans limiteur. Les quatre builds passent sans erreur ni avertissement. Images, PCM cumulé et PC des SH‑2 concordent aux trames communes, jusqu’à 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Lecture de texture | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Sélection par pixel | 28,65 | 30,18 | 26,35 | 20,25 | 16,69 | 60/60 |
+| Debug | Sélection par ligne | 28,59 | 30,17 | 26,33 | 20,58 | 16,99 | 60/60 |
+| Release | Sélection par pixel | 109,23 | 86,15 | 76,92 | 71,46 | 70,17 | 9/60 |
+| Release | Sélection par ligne | 114,74 | 94,65 | 85,76 | 80,47 | 80,01 | 3/60 |
+
+Variante conservée. La moyenne Release de la dernière minute passe de 68,88 à 79,56 FPS. La cadence reste sous 60 FPS pendant trois secondes dans cette fenêtre. Une seule paire par configuration sur un seul jeu. Les formats peu utilisés par ce scénario demandent une validation séparée. La restauration du banc temporaire a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — réutilisation du dernier texel VDP1, essai écarté
+
+Le banc reprend la conservation du texel dans la boucle DrawLine de Mednafen vdp1_common.h. Le candidat conserve la dernière couleur décodée et son code de fin quand la coordonnée de texture ne change pas. La sélection se fait par ligne agrandie. Les deux versions utilisent déjà la sélection du format par ligne. La variante est restée dans une copie temporaire de SaturnVideoSoftware.cs.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, cache SH‑2 désactivé et SCSP par défaut. 120 trames de chauffe puis 120 secondes sans limiteur. Une paire par configuration, ordre inversé en Release. Les quatre builds passent sans erreur ni avertissement. Images, PCM cumulé et PC des SH‑2 concordent aux trames contrôlées, jusqu’à 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Lecture du texel | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Par pixel | 29,85 | 30,88 | 26,74 | 20,76 | 17,06 | 60/60 |
+| Debug | Réutilisation | 28,34 | 30,01 | 26,28 | 21,10 | 17,88 | 60/60 |
+| Release | Par pixel | 114,17 | 93,86 | 85,26 | 79,26 | 78,75 | 3/60 |
+| Release | Réutilisation | 112,19 | 93,29 | 85,43 | 79,95 | 77,25 | 3/60 |
+
+Variante écartée pour l’instant. Le Debug gagne 0,82 FPS, le Release perd 1,50 FPS et le nombre de secondes sous 60 FPS reste identique dans chaque paire. Une seule paire par configuration. Ne pas refaire cette réutilisation à l’identique sans nouvelle preuve. La restauration a utilisé les paquets locaux avec l’audit NuGet désactivé pour le banc temporaire.
+
+
+## Saturn — codes de fin des textures VDP1 64 et 128 couleurs
+
+SaturnVideoSoftware.cs détecte 0xFF sur l’octet brut avant de masquer la couleur, comme dans TexFetch de Mednafen vdp1.cpp. Le parcours précédent assimilait 0x3F au code de fin en 64 couleurs et cherchait un 0xFF inaccessible après le masque en 128 couleurs. Le contrôle de dessin passe dans les deux configurations sur deux lignes dans chaque mode. Il vérifie les couleurs valides 0x3F et 0x7F, le premier code ignoré, l’arrêt au second code, la reprise à la ligne suivante et l’option ECD qui désactive les codes.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, SCSP par défaut, cache SH‑2 désactivé. 120 trames de chauffe depuis le BIOS puis 120 secondes sans limiteur. Les images et PC des deux SH‑2 concordent entre Debug et Release aux trames 600, 1 200 et 1 800. Les deux builds passent à zéro erreur et zéro avertissement. Restauration du banc depuis les paquets locaux avec l’audit NuGet désactivé.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 26,34 | 29,80 | 26,28 | 20,72 | 17,10 | 60/60 |
+| Release | 114,62 | 94,93 | 86,43 | 85,86 | 87,09 | 0/60 |
+
+Release atteint 88,32 FPS de moyenne entre 60 et 120 secondes. La campagne mesure une fois le code actuel dans chaque configuration. Elle n’isole pas l’effet de la correction sur les FPS et ne suffit pas à généraliser la stabilité au-delà du scénario et de la fenêtre mesurée.
+
+
+## Saturn — préparation du découpage des lignes VDP1
+
+SaturnVideoSoftware.cs prépare les bornes de découpage et la parité d’entrelacement avant le tracé de la ligne, selon le principe de DrawLine dans vdp1_common.h de Mednafen. La version C# conserve les comparaisons et les modes de découpage de SegaEmu. Pour la fenêtre utilisateur intérieure, le rectangle préparé est l’intersection de cette fenêtre et de la fenêtre système. Pour la fenêtre extérieure, le contrôle du rectangle à exclure reste appliqué par pixel. Les formats 8 et 16 bits conservent leur ordre de filtrage et d’écriture.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur et cache SH‑2 désactivé. 120 trames de chauffe puis 120 secondes sans limiteur. Une paire par configuration, ordre inversé entre configurations. Les quatre builds passent à zéro erreur et zéro avertissement. Images, PCM cumulé et PC des deux SH‑2 concordent aux trames communes, jusqu’à 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Découpage VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Préparé par pixel | 27,86 | 29,89 | 26,08 | 20,43 | 16,93 | 60/60 |
+| Debug | Préparé par ligne | 28,40 | 29,90 | 26,25 | 21,22 | 17,75 | 60/60 |
+| Release | Préparé par pixel | 112,96 | 93,61 | 85,51 | 80,08 | 76,30 | 4/60 |
+| Release | Préparé par ligne | 114,48 | 97,55 | 89,93 | 85,73 | 82,85 | 1/60 |
+
+Variante conservée. La moyenne de la dernière minute en Release passe de 72,53 à 79,98 FPS. Une seconde reste sous 60 FPS dans cette fenêtre. Le test couvre un seul jeu et les empreintes ne valident pas toutes les combinaisons de rectangles et de modes d’entrelacement. La restauration du banc temporaire a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — mélange VDP1 à 50 % en RGB555
+
+SaturnVideoSoftware.cs reprend les masques de PlotPixel dans vdp1_common.h de Mednafen pour la luminosité du fond divisée par deux et le mélange à 50 %. Les deux opérandes sont ramenés à RGB555 avant la moyenne et l’appelant conserve la gestion du bit 15. Les 68 608 comparaisons du mélange avec le calcul indépendant par canal passent dans chaque configuration, dont toutes les valeurs de chaque canal isolé et des couleurs mixtes avec des bits au-delà de RGB555.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, SCSP par défaut, cache SH‑2 désactivé. 120 trames de chauffe depuis le BIOS puis 120 secondes sans limiteur. Les images et PC des deux SH‑2 concordent entre Debug et Release aux trames 600, 1 200 et 1 800. Les deux builds passent à zéro erreur et zéro avertissement. Restauration du banc depuis les paquets locaux avec l’audit NuGet désactivé.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 25,78 | 29,53 | 26,05 | 20,98 | 17,58 | 60/60 |
+| Release | 114,35 | 97,01 | 89,09 | 84,75 | 81,92 | 1/60 |
+
+La dernière minute Release est à 79,08 FPS de moyenne. Cette campagne mesure la version actuelle et ne permet pas d’isoler l’effet du changement sur la cadence.
+
+
+## Saturn — comptage direct de la longueur des lignes VDP1
+
+Dans le parcours greedy de iterateOverLine (Yabause, vidsoft.c), chaque pas sur l’axe principal ajoute un pixel, et chaque avance sur l’autre axe ajoute un pixel intermédiaire. Le point final ajoute un pixel. SaturnVideoSoftware.cs utilise donc |dx| + |dy| + 1 pour les appels de comptage qui ne dessinent rien et conserve la limite de 999 par axe. Les appels de dessin gardent leur ordre et peuvent encore s’arrêter sur les codes de fin. Ils disposent désormais tous d’un rappel. Le calcul reproduit le comptage de l’existant sur 8 273 lignes par configuration, dont les diagonales, une longueur nulle et les valeurs 999 et 1 000.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, cache SH‑2 désactivé et SCSP par défaut. Une paire par configuration, ordre inversé entre configurations. 120 trames de chauffe puis 120 secondes sans limiteur. Les quatre builds passent à zéro erreur et zéro avertissement. Images, PCM cumulé et PC des SH‑2 concordent aux trames communes, jusqu’à 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Longueur VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Parcours de comptage | 29,53 | 30,46 | 26,53 | 21,40 | 17,92 | 60/60 |
+| Debug | Calcul direct | 27,35 | 29,64 | 25,96 | 21,39 | 18,23 | 60/60 |
+| Release | Parcours de comptage | 115,36 | 97,06 | 89,02 | 84,58 | 86,45 | 1/60 |
+| Release | Calcul direct | 116,81 | 99,74 | 92,18 | 95,33 | 92,33 | 0/60 |
+
+Variante conservée. En Release, la dernière minute passe de 88,32 à 89,32 FPS de moyenne. Une paire de mesures par configuration et un seul jeu. Restauration du banc depuis les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — amplitude des pas dans le tracé VDP1, essai écarté
+
+Le candidat prépare les amplitudes sur les deux axes comme le fait SetupDrawLine de Mednafen. L’accumulateur de la boucle Yabause reste positif et les appels de dessin conservent leur ordre et leurs conditions. Les deux versions recopiées dans le banc donnent exactement les mêmes coordonnées, indices et tailles sur 1 352 scénarios par configuration, avec et sans pixel intermédiaire et avec différents points d’arrêt.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, SCSP par défaut et cache SH‑2 désactivé. Une paire par configuration, ordre inversé entre configurations. 120 trames de chauffe puis 120 secondes sans limiteur. Les quatre builds passent sans erreur ni avertissement. Images, PCM cumulé et PC des SH‑2 concordent aux points communs, jusqu’à 1 800 trames en Debug et 6 000 en Release.
+
+| Configuration | Accumulateur VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Signé | 29,75 | 30,68 | 26,51 | 21,65 | 18,35 | 60/60 |
+| Debug | Positif | 29,30 | 30,55 | 26,65 | 21,73 | 18,37 | 60/60 |
+| Release | Signé | 115,32 | 98,73 | 91,43 | 94,66 | 92,04 | 0/60 |
+| Release | Positif | 115,29 | 99,88 | 92,66 | 88,35 | 86,10 | 0/60 |
+
+Variante écartée. Le gain Debug est de 0,02 FPS et le passage Release perd 5,94 FPS. Une seule paire ne permet pas d’établir une régression reproductible, mais ne justifie pas le changement. Le moteur de production n’a pas été modifié. Restauration du banc temporaire avec les paquets locaux et l’audit NuGet désactivé.
+
+
+## Saturn — Sega Rally Championship sur Desert avec accélération
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, SCSP par défaut et cache SH‑2 désactivé. Les entrées du port 1 passent par ManagedCore. Impulsions de Start de 12 trames à partir des trames 610, 1 010, 1 310, 1 510, 1 910, 2 210 et 2 530. Le bouton B est maintenu à partir de la trame 1 540, hors impulsions de Start. Les captures montrent la voiture en mouvement à la trame 3 300 (environ 85 km/h), encore en course à la trame 6 000 et hors temps à la trame 6 500. Le chronomètre mural démarre à la trame 3 300. Aucun changement au moteur.
+
+| Configuration | Fenêtre de course | Temps mural | FPS | Secondes complètes sous 60 FPS |
+| --- | ---: | ---: | ---: | ---: |
+| Debug | 2 700 trames | 147,696 s | 18,28 | 147/147 |
+| Release | 2 700 trames | 23,998 s | 112,51 | 0/23 |
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 17,52 | 17,28 | 17,58 | 17,25 | 18,17 | 60/60 |
+| Release | 107,35 | 112,24 | 110,07 | 121,71 | 112,88 | 0/60 |
+
+Les paliers sont cumulatifs. En Release, le passage de 120 secondes inclut la fin du temps réglementaire et les scènes suivantes. Seule la fenêtre de 2 700 trames compare exactement la même portion de course. Les images de départ sont identiques et les empreintes vidéo et PCM cumulé concordent aux trames mesurées 120, 600, 1 200 et 1 800. Les builds passent sans erreur ni avertissement. La restauration du banc temporaire utilisait les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — codes de fin des textures VDP1 en couleur directe
+
+SaturnVideoSoftware.cs reprend TexFetch de Mednafen vdp1.cpp pour les formats 5 à 7. La texture RGB555 reconnaît comme marqueurs de fin les mots dont les deux bits de poids fort valent 01. Lorsque ECD désactive les codes de fin, ces mots restent dessinables. SPD contrôle le dessin des mots sous 0x4000. Les formats réservés 6 et 7 lisent le premier mot de VRAM et appliquent les mêmes règles de fin et de transparence. Des sprites de deux lignes vérifient ces cas dans les deux configurations.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, SCSP par défaut, cache SH‑2 désactivé. 120 trames de chauffe depuis le BIOS, puis 120 secondes sans limiteur. Les images et PC des deux SH‑2 concordent entre configurations aux trames 600, 1 200 et 1 800. Les deux builds passent sans erreur ni avertissement. Restauration du banc depuis les paquets locaux avec l’audit NuGet désactivé.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 25,55 | 28,93 | 25,76 | 21,06 | 17,95 | 60/60 |
+| Release | 117,18 | 99,48 | 91,99 | 95,38 | 92,39 | 0/60 |
+
+La dernière minute Release atteint 89,40 FPS de moyenne. Cette campagne mesure une fois le code corrigé dans chaque configuration. Elle n’isole pas le coût de la correction.
+
+
+## Mega Drive + 32X — Doom via ManagedCore
+
+Doom (JU), trois BIOS 32X configurés, absence d’entrée, 120 trames de chauffe et même point de départ. ManagedCore publie la vidéo et le PCM par ses contrats habituels. Les mesures précédentes sur la carte seules n’incluaient pas ce travail de publication. Le témoin utilise le module courant. Une copie de compilation de ManagedCore choisit UseNative68000Blocks pour exercer le dynarec hybride existant. Les deux SH‑2 utilisent les blocs compilés avec la voie x64 de registres. Aucun changement du moteur et aucune option publique ajoutée.
+
+Un processus à la fois, sans limiteur, au moins 120 secondes et 1 200 trames. Les paliers indiquent la première trame terminée après leur échéance. Les quatre builds compilent sans erreur ni avertissement. Les images, le PCM cumulé et les compteurs ordinaux des SH‑2 concordent entre modes aux trames communes, jusqu’à 1 200 en Debug et 3 000 en Release.
+
+| Configuration | Moteur | 10 s | 20 s | 30 s | 60 s | Fin | Durée finale | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Interpréteur | 20,82 | 20,37 | 20,21 | 19,44 | 18,58 | 120,045 s | 60/60 |
+| Debug | Dynarec hybride | 14,40 | 14,20 | 14,16 | 10,88 | 9,45 | 126,990 s | 60/60 |
+| Release | Interpréteur | 79,71 | 75,60 | 74,20 | 71,82 | 73,22 | 120,001 s | 0/60 |
+| Release | Dynarec hybride | 63,71 | 25,76 | 21,74 | 19,02 | 26,72 | 120,007 s | 60/60 |
+
+Le relevé hybride Release du palier 20 s survient après 26,318 s à la trame mesurée 678. La version Debug de la même voie dépasse 120 secondes pour terminer les 1 200 trames. Les nombres de blocs SH‑2 construits (maître/esclave) sont 15 091/213 en Debug et 18 447/222 en Release, à des durées et nombres de trames différents. Ils restent à zéro en interpréteur. Cette campagne confirme le coût de la voie hybride via le module complet. Elle ne mesure ni la voie SH‑2 x64 intégrale ni Mega-CD + 32X. Restauration du banc temporaire depuis les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Mega-CD + 32X — Night Trap via ManagedCore
+
+Night Trap Europe, disque 1, BIOS Mega-CD régionaux et trois BIOS 32X. Les trois modes sont exercés via ManagedCore, une copie de compilation réservée au banc sélectionnant les options internes. La voie SH‑2 x64 sélectionne Full, Multi et les attentes natives. La sélection 68000/Z80 reste celle du dynarec hybride pour les deux modes compilés. Le banc publie vidéo et PCM via le module et confirme que le 32X est actif. Les deux builds compilent sans erreur ni avertissement. Aucun changement du moteur de production.
+
+120 trames de chauffe sans entrée, puis au moins 120 secondes et 1 200 trames, sans limiteur. Start est maintenu pendant les cinq premières trames de chaque groupe de 120. Images, PCM cumulé et PC des SH‑2 identiques aux trames communes, jusqu’à 1 800 en Debug et au moins 3 600 en Release. Les captures séparées montrent le logo à la trame mesurée 600, le générique à 1 200 et l’écran du plan des caméras à 1 800. Le plan reste identique aux contrôles vidéo ultérieurs. Les FPS représentent la séquence mesurée, dont le plan fixe, et ne constituent pas un relevé de surveillance continue sur une caméra vidéo.
+
+| Configuration | Moteur | 10 s | 20 s | 30 s | 60 s | 120 s | Trame la plus lente | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Interpréteur | 28,50 | 27,18 | 24,05 | 21,23 | 19,69 | 81,32 ms | 60/60 |
+| Debug | Dynarec hybride | 29,60 | 26,94 | 20,78 | 18,81 | 17,57 | 2 185,90 ms | 60/60 |
+| Debug | SH‑2 x64 | 29,15 | 27,08 | 22,56 | 18,55 | 16,00 | 303,37 ms | 60/60 |
+| Release | Interpréteur | 99,00 | 87,07 | 83,94 | 81,92 | 80,82 | 49,57 ms | 0/60 |
+| Release | Dynarec hybride | 60,38 | 57,72 | 55,81 | 53,74 | 52,86 | 2 536,56 ms | 60/60 |
+| Release | SH‑2 x64 | 79,38 | 58,54 | 51,66 | 43,67 | 39,53 | 141,63 ms | 60/60 |
+
+La trame mesurée 560 est la plus lente en hybride dans les deux configurations. Le x64 évite une pause de plusieurs secondes et régresse en débit sur ce scénario. En Release, les deux SH‑2 x64 cumulent 668 248 988 entrées de blocs, chauffe comprise. Ce compteur ne ventile pas le coût des sorties ou des accès au bus. Restauration du banc depuis les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Mega-CD + 32X — réutilisation de la fenêtre de lecture du SH‑2 x64
+
+Night Trap Europe, disque 1, via ManagedCore. Même sélection Full+Multi et attentes natives, mêmes BIOS et mêmes entrées que la campagne précédente. Modification limitée à deux copies de compilation des boucles x64. Elles réutilisent la fenêtre d’instructions tant que ses bornes et la version du bus restent valides. La voie live a été compilée, et le scénario chronométré sélectionne la voie x64 existante sans contexte live.
+
+| Configuration | Route | 10 s | 20 s | 30 s | 60 s | 120 s | Trame la plus lente |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin x64 | 28,99 | 27,01 | 22,35 | 18,35 | 15,85 | 341,61 ms |
+| Debug | Fenêtre de lecture réutilisée | 28,19 | 26,76 | 22,18 | 18,03 | 15,75 | 312,03 ms |
+| Release | Témoin x64 | 80,95 | 57,64 | 50,81 | 43,12 | 39,29 | 111,84 ms |
+| Release | Fenêtre de lecture réutilisée | 80,50 | 58,00 | 50,49 | 42,20 | 38,58 | 112,83 ms |
+
+Images, PCM cumulé et compteurs ordinaux des SH‑2 concordent aux trames communes (600, 1200, 1800 en Debug et 600, 1200, 1800, 2400, 3000, 3600 en Release). Les deux SH‑2 utilisent bien le code x64. Les valeurs décrivent la séquence jusqu’au plan des caméras, qui reste fixe aux points contrôlés.
+
+Variante écartée. La moyenne Release à 120 secondes baisse et chaque route reste sous 60 FPS pendant la dernière minute. Aucun changement de production. Le banc a restauré ses dépendances depuis les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — alignement des liens ASSIGN et CALL du VDP1
+
+SaturnVdp1.cs applique le masque de la boucle de commandes de Mednafen vdp1.cpp. Les deux bits de poids faible de CMDLINK sont ignorés avant de former l’adresse. Les parcours de dessin et de mise à jour des registres suivent la même règle et conservent leur gestion du retour. Ce comportement vient de Mednafen. Le vdp1.c de Yabause multiplie le lien brut par huit.
+
+Les 16 cas couvrant ASSIGN, CALL et RETURN associé, les deux parcours et les quatre combinaisons des bits ignorés passent dans chaque configuration. Les deux compilations du banc et du module Sega se terminent sans erreur ni avertissement. La restauration a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+Sega Rally Championship Europe, BIOS EUR, 120 trames de chauffe depuis le BIOS, aucune entrée, puis 120 secondes sans limiteur via l’interpréteur SegaEmu. Vidéo et PCM cumulé concordent entre Debug et Release aux trames mesurées 600, 1 200 et 1 800.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 25,65 | 28,69 | 25,48 | 20,86 | 17,85 | 60/60 |
+| Release | 115,79 | 98,97 | 91,58 | 94,54 | 91,77 | 0/60 |
+
+La mesure de jeu porte sur la version corrigée et ne mesure pas isolément le coût du masque. Les cas ciblés exercent les commandes mal alignées.
+
+
+## Saturn — table Gouraud des lignes et polylignes VDP1
+
+SaturnVideoSoftware.cs charge les couleurs de la commande avant de les transmettre au premier segment, selon l’ordre de Mednafen vdp1_line.cpp. Le port de Yabause évaluait les paramètres de couleur avant de charger la table dans la routine appelée. Le premier segment pouvait donc hériter de la commande précédente. Avec Gouraud désactivé, le tracé passe directement au dessin. Avec Gouraud activé, la table est lue une fois pour la ligne ou la polyligne. Le tracé et l’interpolation existants sont conservés.
+
+Six contrôles ciblent le premier segment d’une ligne et d’une polyligne. Ils vérifient le passage immédiat entre deux tables successives et le dessin à couleur unie. Les contrôles passent dans chaque configuration. Les deux builds du banc et du module Sega passent sans erreur ni avertissement. La restauration du banc a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+Sega Rally Championship Europe, BIOS EUR, 120 trames de chauffe depuis le BIOS, aucune entrée, puis 120 secondes sans limiteur via l’interpréteur SegaEmu. Vidéo et PCM cumulé concordent entre Debug et Release aux trames mesurées 600, 1 200 et 1 800.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 26,54 | 29,80 | 26,12 | 21,49 | 18,18 | 60/60 |
+| Release | 119,59 | 100,17 | 92,28 | 86,72 | 83,95 | 0/60 |
+
+Le passage précédent, exécuté séparément, atteignait 17,85 FPS en Debug et 91,77 en Release. Ces deux campagnes n’isolent pas l’effet du changement sur le débit. La correction est conservée pour le résultat des cas Gouraud ciblés.
+
+
+## Saturn — sélection Gouraud avant le tracé VDP1, essai écarté
+
+Le candidat spécialise les rappels de dessin texturé et uni selon CMDPMOD.Gouraud, comme DrawLine dans Mednafen vdp1_common.h. La voie sans Gouraud évite les trois additions d’interpolation par pixel. Les deux copies conservent la correction de chargement de la table du passage précédent et la même géométrie. Les six contrôles ciblés passent dans les quatre builds. Compilation à zéro avertissement et zéro erreur.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, 120 trames de chauffe depuis le BIOS et 120 secondes sans limiteur. Processus séparés. Le témoin précède le candidat en Debug, ordre inversé en Release. Les empreintes vidéo et PCM cumulé concordent jusqu’à la trame mesurée 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Tracé VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 29,14 | 30,18 | 26,24 | 21,35 | 17,98 | 60/60 |
+| Debug | Gouraud spécialisé | 28,77 | 30,18 | 26,21 | 21,14 | 17,73 | 60/60 |
+| Release | Témoin | 116,26 | 99,53 | 91,98 | 95,08 | 92,32 | 0/60 |
+| Release | Gouraud spécialisé | 118,79 | 101,17 | 94,33 | 89,42 | 87,64 | 0/60 |
+
+Variante écartée sur cette comparaison. La moyenne à 120 secondes baisse de 17,98 à 17,73 en Debug et de 92,32 à 87,64 en Release. Le débit Release reste supérieur à 60 FPS chaque seconde de la dernière minute dans les deux passages. Une paire par configuration ne permet pas d’attribuer l’écart à un mécanisme du JIT. Le fichier de production conserve ses rappels. Restauration du banc depuis les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — mode MSB du framebuffer VDP1 en 8 bits
+
+SaturnVideoSoftware.cs reprend la lecture du mot de framebuffer dans PlotPixel de Mednafen vdp1_common.h et l’applique au rangement linéaire de SegaEmu. En mode MSB, l’octet pair reçoit son bit 7 et l’octet impair est repris sans modification. En mode rotatif, la lecture vient de la moitié basse et l’écriture vise la ligne demandée. Le masquage du texel, le découpage, la parité et la transparence du parcours SegaEmu restent appliqués avant l’écriture. Le putpixel8 de Yabause ne traite pas le mode MSB.
+
+Douze contrôles vérifient les deux octets en mode normal, en rotation sous la ligne 256 et dans la moitié haute, pour le mode MSB, la couleur ordinaire et les deux réglages de transparence. Les contrôles passent dans les deux configurations. Le premier build du banc a échoué sur deux variables foreach en lecture seule. Le banc corrigé et le module Sega compilent sans erreur ni avertissement. La restauration a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, 120 trames de chauffe puis 120 secondes sans limiteur, sans entrée. Les empreintes vidéo et PCM cumulé concordent entre Debug et Release aux trames 600, 1 200 et 1 800.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | 28,64 | 30,11 | 26,25 | 21,48 | 18,24 | 60/60 |
+| Release | 117,78 | 100,17 | 93,00 | 87,59 | 92,32 | 0/60 |
+
+Ce relevé de la version corrigée ne mesure pas la fréquence du mode MSB 8 bits dans Sega Rally ni le coût de la correction.
+
+
+## Saturn — pré-découpage des segments VDP1
+
+SaturnVideoSoftware.cs reprend la réduction du segment à son premier point de SetupDrawLine dans Mednafen vdp1.cpp. La sélection choisit la fenêtre utilisateur en mode intérieur et la fenêtre système sinon. La commande peut désactiver cette réduction par CMDPMOD.PCD. Le port conserve la représentation des coordonnées et le parcours de pixels de SegaEmu. Neuf contrôles vérifient la longueur du tracé et ses pixels, avec les quatre bords, les deux modes de fenêtre utilisateur, la désactivation et le franchissement d’un bord.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, 120 trames de chauffe puis 120 secondes sans limiteur, sans entrée. Le témoin est compilé à partir du même worktree en retirant uniquement le pré-découpage. Les deux passages corrigés précèdent les deux témoins. Les empreintes vidéo et PCM cumulé concordent dans chaque paire, aux trames 600, 1 200 et 1 800 en Debug, puis aussi à 3 000, 4 800 et 6 000 en Release.
+
+| Configuration | Tracé VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 28,96 | 30,12 | 26,20 | 21,16 | 17,91 | 60/60 |
+| Debug | Avec pré-découpage | 29,45 | 30,64 | 26,59 | 24,23 | 22,83 | 60/60 |
+| Release | Témoin | 115,90 | 98,54 | 90,84 | 86,58 | 84,48 | 0/60 |
+| Release | Avec pré-découpage | 126,56 | 115,80 | 116,55 | 122,41 | 113,58 | 0/60 |
+
+Correction conservée. Sur cette comparaison, la moyenne à 120 secondes augmente d’environ 27 % en Debug et 34 % en Release. Les quatre builds mesurés compilent sans avertissement ni erreur. Le premier build témoin a pris la copie de SaturnVideoSoftware.cs dans les sources du banc lui-même. Le projet temporaire corrigé inclut uniquement Program.cs. La restauration du banc a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — arrêt des segments VDP1 après la fenêtre
+
+SaturnVideoSoftware.cs reprend le drapeau drawn_ac du tracé Mednafen vdp1_common.h. Une ligne continue tant que ses pixels restent avant la fenêtre. Après la première entrée, la sortie de la fenêtre termine le segment. Les limites déjà préparées dans SegaEmu restent utilisées. Le mode utilisateur extérieur rejette encore les pixels dans le rectangle à exclure et reprend ensuite le dessin. Le tracé texturé lit les codes de fin avant d’entrer dans la fenêtre. Le pré-découpage des segments entièrement hors champ est actif dans les deux builds.
+
+Quatorze contrôles ciblés passent dans chaque build. Ils vérifient les deux directions du tracé, les fenêtres système et utilisateur, le trou d’une fenêtre extérieure et la fin de texture hors champ. Les quatre builds compilent sans erreur ni avertissement. Les empreintes vidéo et PCM cumulé concordent aux trames mesurées 600, 1 200 et 1 800 en Debug et aussi à 3 000, 4 800 et 6 000 en Release.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, 120 trames de chauffe depuis le BIOS, sans entrée, puis 120 secondes sans limiteur. Un processus à la fois. Le témoin précède la variante en Debug, ordre inversé en Release.
+
+| Configuration | Tracé VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 28,66 | 29,79 | 26,12 | 23,82 | 22,54 | 60/60 |
+| Debug | Arrêt après la fenêtre | 29,67 | 30,41 | 26,45 | 24,57 | 23,73 | 60/60 |
+| Release | Témoin | 126,48 | 115,18 | 111,81 | 109,76 | 107,53 | 0/60 |
+| Release | Arrêt après la fenêtre | 129,41 | 120,22 | 123,03 | 127,23 | 121,53 | 0/60 |
+
+Variante conservée. La moyenne à 120 secondes monte de 5,3 % en Debug et de 13,0 % en Release dans cette paire par configuration. La copie testée a été reportée dans le fichier de production après comparaison avec le témoin. Le banc a été restauré depuis les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — parcours direct des rectangles VDP1, essai écarté
+
+La copie candidate calcule les extrémités de chaque ligne d’un rectangle à bords verticaux au moment de la dessiner, selon le principe d’EdgeStepper dans Mednafen vdp1_common.h et vdp1_sprite.cpp. Pour ces rectangles, le parcours ne remplit plus les quatre tableaux de coordonnées. Le candidat conserve le parcours des autres quadrilatères et les règles de texture, de découpage et de Gouraud du témoin. Les neuf empreintes de dessins ciblés concordent dans les deux configurations, y compris les bords inversés, les textures retournées et les limites de longueur.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, 120 trames de chauffe à partir du BIOS, puis 120 secondes sans limiteur et sans entrée. Le témoin précède la variante en Debug, ordre inversé en Release. Vidéo et PCM cumulé concordent aux trames mesurées 600, 1 200 et 1 800 en Debug, et aussi à 3 000, 4 800 et 6 000 en Release. Les quatre builds passent sans erreur ni avertissement.
+
+| Configuration | Bords VDP1 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 27,29 | 29,14 | 25,63 | 23,83 | 23,34 | 60/60 |
+| Debug | Bords verticaux directs | 28,79 | 29,99 | 26,15 | 24,24 | 23,56 | 60/60 |
+| Release | Témoin | 130,77 | 121,02 | 120,36 | 118,26 | 116,07 | 0/60 |
+| Release | Bords verticaux directs | 127,98 | 119,11 | 117,36 | 113,38 | 113,49 | 0/60 |
+
+Variante écartée. Dans cette paire par configuration, le Debug gagne 0,22 FPS à 120 secondes et le Release perd 2,58 FPS. Ces passages ne permettent pas d’établir un gain général ni d’attribuer l’écart à une routine. Le fichier de production conserve les tableaux de coordonnées. La restauration du banc a utilisé les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — profil de Desert après les corrections de découpage du VDP1
+
+Sega Rally Championship Europe, BIOS EUR et interpréteur SegaEmu. Les entrées rejouent le scénario sur Desert avec accélération. Les deux captures couvrent les mêmes trames 3 601 à 4 800. Les empreintes vidéo de départ et de fin concordent en Debug et Release. Les deux builds passent sans erreur ni avertissement. Restauration du banc avec les paquets locaux et l’audit NuGet désactivé.
+
+Le tableau rapporte les différences des compteurs CPU Windows par fil, regroupées à partir des piles EventPipe. Durées murales avec la capture active de 54,17 s en Debug et 9,03 s en Release. Les parts sont rapportées au CPU total du processus. Le CPU des fils de rendu s’additionne même lorsqu’ils travaillent en parallèle.
+
+| Fil ou groupe | Debug CPU | Release CPU |
+| --- | ---: | ---: |
+| VDP1 | 50 125,0 ms (27,5 %) | 6 484,4 ms (20,8 %) |
+| VDP2 | 71 968,8 ms (39,4 %) | 11 250,0 ms (36,1 %) |
+| Titan | 22 015,6 ms (12,1 %) | 6 687,5 ms (21,5 %) |
+| Fil d’émulation | 37 609,4 ms (20,6 %) | 6 578,1 ms (21,1 %) |
+| Autres | 796,9 ms (0,4 %) | 125,0 ms (0,4 %) |
+
+Les durées ci-dessous sont échantillonnées sur les piles actives des travailleurs VDP2. Elles sont attribuées à la méthode gérée la plus profonde visible, qui peut inclure du code intégré par le JIT.
+
+| Méthode VDP2 | Debug échantillonné (ms) | Release échantillonné (ms) |
+| --- | ---: | ---: |
+| Vdp2DrawScroll | 16 672,9 | 7 442,3 |
+| TestBothWindow | 12 165,2 | 1 160,0 |
+| TestWindow | 6 758,6 | 0,0 |
+| VidsoftDrawSprite | 5 992,2 | 1 840,5 |
+| Vdp2MapCalcXY | 5 480,1 | 233,7 |
+| Vdp2FetchPixel | 5 162,9 | 44,7 |
+
+Le VDP2 utilise le plus de CPU cumulé. Le VDP1 reste le travailleur individuel le plus coûteux en Debug. Sur les piles échantillonnées du fil d’émulation en Debug, le SH‑2 et son bus représentent 22 410,6 ms sur 54 179,1 ms, l’attente explicite VDP2 7 907,8 ms et l’attente explicite VDP1 7 276,5 ms. Les attentes intégrées peuvent remonter sous leurs appelants. Sur le fil VDP1, la durée échantillonnée reste concentrée dans DrawLineCallback, GetPixel et PutPixel en Debug, et dans IterateOverLine en Release.
+
+Mednafen vdp2_render.cpp découpe la ligne aux bornes WinPieces, où les résultats des fenêtres rectangulaires changent. Cela cible les vérifications répétées de TestBothWindow et TestWindow. Le test de fenêtre sprite reste individuel là où il peut changer la décision. Les fenêtres de couleur, de rotation et de visibilité restent distinctes. Aucun changement de production ni relevé FPS de référence sous instrumentation.
+
+
+## Saturn — fenêtres VDP2 par portions de ligne
+
+SaturnVideoSoftware.cs applique le découpage WinPieces de Mednafen vdp2_render.cpp au parcours Vdp2DrawScroll. La visibilité et le calcul couleur sont évalués séparément aux bornes des fenêtres rectangulaires. Une portion invisible est sautée. Le masque sprite est relu par pixel uniquement si les décisions diffèrent lorsque le test sprite passe ou échoue. Les combinaisons et particularités des fenêtres SegaEmu sont conservées. Les parcours des sprites et de sélection des paramètres rotatifs conservent le test individuel.
+
+Les 1 966 080 décisions synthétiques concordent dans chaque configuration avec le test par pixel. Les cas couvrent les 256 valeurs de contrôle, des bornes inversées ou dépassant la ligne et deux jeux de fenêtres sur chaque portion. Les quatre builds compilent sans erreur ni avertissement.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur. Le banc reproduit les entrées sur Desert, puis chronomètre 120 secondes sans limiteur à partir de la trame 3 300. La mesure inclut les scènes atteintes après la course. Le témoin précède la variante en Debug, ordre inversé en Release. Images de départ, vidéo et PCM cumulé concordent aux points comparés jusqu’à la trame mesurée 1 800 en Debug et 6 000 en Release.
+
+| Configuration | Fenêtres VDP2 | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 23,44 | 24,33 | 24,70 | 24,72 | 24,95 | 60/60 |
+| Debug | Fenêtres par portions | 22,91 | 24,17 | 24,70 | 24,66 | 25,18 | 60/60 |
+| Release | Témoin | 110,67 | 111,72 | 111,14 | 123,52 | 122,99 | 0/60 |
+| Release | Fenêtres par portions | 141,61 | 142,21 | 149,69 | 145,19 | 143,66 | 0/60 |
+
+Variante conservée. Dans cette paire par configuration, le gain à 120 secondes est de 0,23 FPS en Debug et de 20,67 FPS en Release. Le faible écart Debug ne permet pas de conclure à un gain reproductible dans cette configuration. La copie mesurée a été reportée dans le fichier de production. Le banc a été restauré depuis les paquets locaux avec l’audit NuGet désactivé.
+
+
+## Saturn — fenêtres du mélange des sprites VDP2 par portions
+
+SaturnVideoSoftware.cs applique les portions d’ApplyWin de Mednafen vdp2_render.cpp au mélange des sprites. Les règles de visibilité et du calcul couleur partagent les bornes préparées. Les pixels qui doivent produire le masque sprite sont encore examinés avant le contrôle de visibilité tardif. Les contrôles qui dépendent du masque lisent sa valeur au même point qu’auparavant. Le découpage des plans de fond est actif dans les deux versions.
+
+Les empreintes de l’image et du masque concordent entre témoin et candidat sur 60 cas synthétiques par configuration, avec framebuffers 8 et 16 bits, mode rotatif, haute résolution et différentes combinaisons de fenêtres. Les quatre builds mesurés passent sans erreur ni avertissement. La première préparation du banc a échoué à la substitution du texte puis à la sélection d’une vue mutable du framebuffer dans le contrôle synthétique. Ces erreurs ont été corrigées dans le banc.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur. Mesure sur 120 secondes sans limiteur à partir de la trame 3 300 en course sur Desert. Le témoin précède la variante en Debug, ordre inversé en Release. Les images de départ, la vidéo et le PCM cumulé concordent jusqu’à la trame mesurée 3 000 en Debug et 6 000 en Release. Le passage de 120 secondes se poursuit dans les scènes atteintes après la course.
+
+| Configuration | Fenêtres sprite | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 23,75 | 24,83 | 25,09 | 25,17 | 25,65 | 60/60 |
+| Debug | Fenêtres sprite par portions | 23,89 | 25,23 | 25,43 | 25,58 | 26,06 | 60/60 |
+| Release | Témoin | 130,28 | 133,68 | 136,62 | 141,56 | 142,78 | 0/60 |
+| Release | Fenêtres sprite par portions | 143,67 | 144,19 | 152,02 | 149,69 | 148,91 | 0/60 |
+
+Variante conservée. Le gain observé à 120 secondes est de 0,41 FPS en Debug et 6,13 FPS en Release, avec une paire par configuration. La copie mesurée a été reportée dans le fichier de production. Le banc a utilisé les paquets locaux et l’audit NuGet était désactivé pour sa restauration.
+
+
+## Saturn — calcul couleur Gouraud 16 bits du VDP1
+
+Dans SaturnVideoSoftware.cs, le traitement commun hérité du cas par défaut de vidsoft.c est remplacé pour les modes 5, 6 et 7 par les opérations de PlotPixel dans Mednafen src/ss/vdp1_common.h. Le mode 5 écrit zéro pour le pixel visible. Le mode 6 applique Gouraud puis divise la luminance de la source par deux en préservant son bit 15. Le mode 7 applique Gouraud et utilise le bit 15 du fond pour sélectionner le mélange à demi-transparence.
+
+Le contrôle du premier pixel d'une ligne couvre ces trois modes avec les quatre combinaisons des bits 15 de la source et du fond. Les douze résultats attendus concordent dans chaque configuration. Builds Debug et Release sans erreur ni avertissement.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, sans limiteur ni entrée, depuis le démarrage avec 120 trames de chauffe hors chronomètre. FPS cumulés de l'unique passage par configuration après modification.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Durée finale | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| Debug | 29,05 | 30,60 | 26,49 | 26,24 | 26,70 | 120,039 s | 60/60 |
+| Release | 134,40 | 137,00 | 138,57 | 136,04 | 138,85 | 120,002 s | 0/60 |
+
+La vidéo et le PCM concordent entre builds aux trames mesurées 600, 1 200, 1 800 et 3 000. Ce passage vise la fidélité du rendu et ne mesure aucun gain avant/après. Le banc a été restauré depuis les paquets locaux avec l'audit NuGet désactivé.
+
+
+## Saturn — table de saturation Gouraud du VDP1, essai écarté
+
+Une copie de SaturnVideoSoftware.cs reprend les 64 entrées de gouraud_lut dans Mednafen src/ss/vdp1.cpp. Elle conserve le bornage arithmétique pour les sommes hors table afin de préserver les résultats de l'interpolateur existant. Les 3 072 combinaisons de composante et de coefficient contrôlées concordent. Les quatre compilations passent sans erreur ni avertissement.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, même scénario sur Desert après 3 300 trames hors chronomètre. Passages séparés de 120 secondes sans limiteur. Témoin puis table en Debug, ordre inverse en Release. Images de départ et empreintes vidéo et PCM concordantes aux trames contrôlées, jusqu'à 3 000 en Debug et 6 000 en Release.
+
+| Configuration | Saturation Gouraud | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 24,19 | 25,48 | 25,76 | 26,05 | 26,35 | 60/60 |
+| Debug | Table | 23,69 | 24,95 | 25,22 | 25,27 | 25,76 | 60/60 |
+| Release | Témoin | 136,99 | 137,48 | 141,03 | 141,30 | 141,64 | 0/60 |
+| Release | Table | 140,60 | 140,83 | 147,78 | 146,86 | 143,80 | 0/60 |
+
+Variante écartée pour cette implémentation. À 120 secondes elle perd 0,59 FPS en Debug et gagne 2,16 FPS en Release dans la paire mesurée. Le VDP1 de production garde le bornage arithmétique. Le banc a utilisé les paquets locaux avec l'audit NuGet désactivé.
+
+
+## Saturn — damier entrelacé du VDP1
+
+SaturnVideoSoftware.cs utilise la coordonnée verticale de dessin pour calculer la parité du damier, comme PlotPixel dans Mednafen src/ss/vdp1_common.h. La division par deux sert à l'adressage du framebuffer en double entrelacement. La logique précédente, issue de Yabause vidsoft.c, utilisait la ligne du framebuffer pour le damier.
+
+Les 48 pixels contrôlés concordent dans chaque configuration. Le contrôle couvre deux lignes de framebuffer, les deux champs et les trois formats concernés, 16 bits, 8 bits et 8 bits avec rotation. Builds Debug et Release à zéro erreur et avertissement.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, sans limiteur ni entrée, depuis le démarrage avec 120 trames de chauffe hors chronomètre.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Durée finale | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| Debug | 27,99 | 29,86 | 25,79 | 25,00 | 25,44 | 120,026 s | 60/60 |
+| Release | 122,95 | 126,49 | 130,65 | 132,33 | 136,80 | 120,002 s | 0/60 |
+
+Aux trames 600, 1 200, 1 800 et 3 000, les empreintes vidéo et PCM concordent entre builds et avec le relevé précédent effectué selon le même scénario. Il s'agit d'une correction de rendu, avec un passage par configuration. Ce relevé ne quantifie pas l'effet de la correction sur la vitesse. Le banc a utilisé les paquets locaux avec l'audit NuGet désactivé.
+
+
+## Saturn — transparence du mode MSB 16 bits du VDP1
+
+SaturnVideoSoftware.cs applique le contrôle de visibilité avant d'écrire dans le framebuffer 16 bits, comme PlotPixel dans Mednafen src/ss/vdp1_common.h. Un texel visible en mode MSB conserve la couleur du framebuffer et force le bit 15. Cette règle s'applique aussi au texel zéro lorsque SPD autorise son dessin. Le code précédent reprenait le test currentPixel de Yabause vidsoft.c, qui laissait ce cas tomber dans le calcul couleur ordinaire.
+
+Les 16 combinaisons contrôlées concordent en Debug et Release. Elles couvrent des sprites à palette, le texel zéro et un texel visible, deux palettes, SPD actif ou non, et le mode MSB ou le remplacement standard. Builds à zéro erreur et avertissement.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur, sans limiteur ni entrée, depuis le démarrage avec 120 trames de chauffe hors chronomètre.
+
+| Configuration | 10 s | 20 s | 30 s | 60 s | 120 s | Durée finale | Secondes sous 60 FPS entre 60 et 120 s |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| Debug | 33,69 | 31,96 | 27,46 | 26,78 | 26,69 | 120,018 s | 60/60 |
+| Release | 134,54 | 138,46 | 139,55 | 135,29 | 137,33 | 120,003 s | 0/60 |
+
+Les images et le PCM concordent entre builds aux trames 600, 1 200, 1 800 et 3 000 et avec le relevé précédent sur ce scénario. Ce passage ne compare pas la vitesse avant et après la correction. Le banc a utilisé les paquets locaux avec l'audit NuGet désactivé.
+
+
+## Saturn — vue 16 bits du tampon de dessin VDP1
+
+SaturnVideoSoftware.cs prépare une vue Span<ushort> avant le tracé de la ligne, sur le principe du tampon typé de PlotPixel dans Mednafen src/ss/vdp1_common.h. La vue est transmise au tracé plein et texturé, avec les mêmes bornes et la même règle d'adressage que la conversion par pixel. Le stockage reste commun avec le mode 8 bits. Les 16 combinaisons ciblées de transparence et de mode MSB passent en Debug et Release. Les quatre builds compilent sans avertissement ni erreur.
+
+Sega Rally Championship Europe, BIOS EUR, interpréteur SegaEmu, Desert à la trame 3 300, sans limiteur. Une paire de 120 secondes par configuration, témoin puis variante en Debug, ordre inverse en Release. Même image de départ et empreintes vidéo et PCM cumulées identiques aux trames mesurées communes jusqu'à 3 000 en Debug et 6 000 en Release.
+
+| Configuration | Vue du framebuffer | 10 s | 20 s | 30 s | 60 s | 120 s | Secondes sous 60 FPS de 60 à 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Debug | Par pixel | 23,03 | 24,13 | 24,73 | 24,73 | 25,25 | 60/60 |
+| Debug | Par ligne | 24,84 | 26,04 | 26,63 | 26,88 | 26,98 | 60/60 |
+| Release | Par pixel | 133,10 | 134,89 | 136,49 | 138,02 | 138,83 | 0/60 |
+| Release | Par ligne | 137,67 | 138,86 | 143,39 | 142,95 | 143,12 | 0/60 |
+
+Variante conservée. Gains observés à 120 secondes de 1,73 FPS en Debug et 4,29 FPS en Release. Le fichier de production correspond à la variante mesurée. Restauration du banc depuis les paquets locaux avec l'audit NuGet désactivé.
+
+
+## SG-1000 — campagne SegaEmu Debug sur cinq jeux
+
+Mesure de la carte SegaEmu via BoardFactory, avec VDP et audio actifs et sans limiteur ni présentation hôte. Cartouches locales, nouvelle machine à chaque passage, 120 trames de chauffe et entrées déterministes identiques entre modes. Les paliers indiquent les FPS cumulés. CIL sélectionne UseDynamicCpuBlocks et x64 sélectionne la voie native Z80. Les compteurs confirment l’exécution de ces voies. Compilation Debug sans erreur ni avertissement.
+
+| Machine | Jeu | Interpréteur 10 s | Interpréteur 30 s | Interpréteur 60 s | Interpréteur 120 s | CIL 10 s | CIL 30 s | CIL 60 s | CIL 120 s | x64 10 s | x64 30 s | x64 60 s | x64 120 s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| SG-1000 | Choplifter | 147,60 | 149,98 | 149,15 | 149,90 | 160,67 | 158,29 | 158,56 | 157,98 | 259,24 | 257,34 | 260,09 | 259,47 |
+| SG-1000 | Zaxxon | 159,90 | 158,44 | 158,66 | 158,65 | 156,63 | 157,39 | 157,96 | 158,55 | 200,73 | 199,77 | 199,37 | 199,35 |
+| SG-1000 | Star Jacker | 152,26 | 151,26 | 150,64 | 150,22 | 149,19 | 153,42 | 154,47 | 154,92 | 232,29 | 233,53 | 233,83 | 233,38 |
+| SG-1000 | Girl’s Garden | 147,00 | 146,04 | 145,35 | 144,57 | 164,57 | 165,51 | 165,60 | 164,75 | 198,46 | 199,26 | 197,99 | 197,92 |
+| SG-1000 | Champion Boxing | 149,55 | 149,11 | 149,06 | 149,43 | 156,52 | 156,81 | 156,90 | 157,59 | 249,21 | 250,14 | 249,02 | 249,97 |
+
+Chaque passage retenu atteint au moins 60 FPS par seconde entre 60 et 120 s. Les empreintes vidéo et audio concordent entre les trois modes aux trames mesurées 120, 600 et 1 200. Les deux captures par mode sont produites hors chronométrage aux trames absolues 720 et 1 320. Les PNG concordent entre modes pour un même jeu et une même trame.
+
+Gulkave est conservé dans les données brutes. Ses captures aux deux points retenus montrent l’écran des scores. Il a été remplacé dans le tableau par Champion Boxing, dont les captures montrent le combat. Aucune modification du code d’émulation.
+
+Le banc, les relevés et les captures sont conservés sous `artifacts/.segaemu-sg1000-debug/`. Le projet de capture utilise l’encodeur PNG de WPF hors chronométrage. Restauration depuis les paquets locaux avec l’audit NuGet désactivé.
+
+[Relevés bruts](../../../../artifacts/.segaemu-sg1000-debug/results.txt) · [Captures](../../../../artifacts/.segaemu-sg1000-debug/screenshots/)
+
+
+## SG-1000 — campagne SegaEmu Release sur cinq jeux
+
+Mêmes cartouches, entrées et point d’entrée que la série Debug. Carte SegaEmu via BoardFactory avec VDP et audio actifs, sans limiteur ni présentation hôte. Nouvelle machine par passage, 120 trames de chauffe, puis 120 secondes réelles. FPS cumulés. Build Release avec zéro erreur et zéro avertissement.
+
+### Interpréteur
+
+| Machine | Jeu | 10 s | 30 s | 60 s | 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| SG-1000 | Choplifter | 3436,14 | 3724,55 | 3760,85 | 3696,68 |
+| SG-1000 | Zaxxon | 3172,60 | 3186,10 | 3202,61 | 3478,00 |
+| SG-1000 | Star Jacker | 4110,39 | 4242,23 | 4272,97 | 4054,23 |
+| SG-1000 | Girl’s Garden | 3916,63 | 3929,97 | 3970,40 | 4009,13 |
+| SG-1000 | Champion Boxing | 4164,66 | 4233,85 | 4241,46 | 3828,07 |
+
+### Dynarec CIL
+
+| Machine | Jeu | 10 s | 30 s | 60 s | 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| SG-1000 | Choplifter | 1972,98 | 2698,15 | 2875,69 | 2905,65 |
+| SG-1000 | Zaxxon | 274,10 | 1860,95 | 2406,95 | 2694,57 |
+| SG-1000 | Star Jacker | 271,39 | 1602,03 | 2264,05 | 2599,36 |
+| SG-1000 | Girl’s Garden | 50,80 | 763,46 | 683,81 | 715,62 |
+| SG-1000 | Champion Boxing | 371,20 | 1459,76 | 2071,35 | 2424,70 |
+
+### Dynarec x64
+
+| Machine | Jeu | 10 s | 30 s | 60 s | 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| SG-1000 | Choplifter | 4124,65 | 4185,29 | 4218,99 | 4216,03 |
+| SG-1000 | Zaxxon | 3882,75 | 3993,29 | 4036,97 | 4054,73 |
+| SG-1000 | Star Jacker | 4158,04 | 4233,65 | 4225,44 | 4222,79 |
+| SG-1000 | Girl’s Garden | 3336,50 | 3492,52 | 3553,61 | 3615,21 |
+| SG-1000 | Champion Boxing | 3606,79 | 3750,59 | 3814,89 | 3818,37 |
+
+Le x64 est en tête sur Choplifter, Zaxxon et Star Jacker. L’interpréteur est en tête sur Girl’s Garden et Champion Boxing. Le CIL reste derrière sur les cinq jeux à 120 secondes.
+
+Girl’s Garden en CIL passe 18 secondes sous 60 FPS entre 60 et 120 s. Le second passage donne 63,09 FPS à 10 s, 785,03 FPS à 30 s, 721,70 FPS à 60 s, 720,00 FPS à 120 s et 20 secondes sous 60 FPS sur la dernière minute. Les autres passages restent à 60 FPS ou plus chaque seconde sur cette fenêtre. La récurrence est établie sur ce scénario, et la cause des baisses reste à identifier.
+
+Les empreintes vidéo et audio concordent aux trois trames contrôlées. Les 30 PNG reproduits hors chronométrage concordent entre modes pour chaque jeu et chaque trame.
+
+[Relevés](../../../../artifacts/.segaemu-sg1000-debug/results-release.txt) · [Répétition Girl’s Garden](../../../../artifacts/.segaemu-sg1000-debug/results-release-girls-garden-cil-repeat.txt) · [Captures](../../../../artifacts/.segaemu-sg1000-debug/screenshots-release/)
+
+
+## SG-1000 — part des puces et des échanges de ports
+
+Girl’s Garden, 120 trames de chauffe puis 4 800 trames identiques par passage. Dans une copie temporaire du module, chronomètres autour du Z80, du rendu et de la sélection de sprites, des ports SG-1000, des appels aux puces et de la sortie audio. Les mesures inclusives sont soustraites pour éviter de compter deux fois les appels imbriqués. Les quatre passages effectuent 936 417 accès ports et concordent en vidéo et audio aux quatre trames contrôlées. Builds Debug et Release à zéro erreur et avertissement.
+
+| Poste | Debug interpréteur | Debug x64 | Release interpréteur | Release x64 |
+| --- | ---: | ---: | ---: | ---: |
+| Z80 hors gestionnaires de ports | 8 598,6 ms (26,89 %) | 1 264,7 ms (5,13 %) | 513,1 ms (32,68 %) | 633,8 ms (38,42 %) |
+| VDP, dessin et traitement de ses ports | 22 942,2 ms (71,75 %) | 22 993,0 ms (93,28 %) | 927,0 ms (59,04 %) | 868,0 ms (52,61 %) |
+| PSG et sortie audio | 224,8 ms (0,70 %) | 197,5 ms (0,80 %) | 40,4 ms (2,57 %) | 49,6 ms (3,01 %) |
+| Routage des ports hors travail des puces | 49,1 ms (0,15 %) | 48,0 ms (0,19 %) | 37,5 ms (2,39 %) | 39,2 ms (2,37 %) |
+| Lecture des entrées | 2,1 ms (0,01 %) | 1,8 ms (0,01 %) | 0,3 ms (0,02 %) | 0,5 ms (0,03 %) |
+| Autres, dont séquenceur résiduel | 156,7 ms (0,49 %) | 144,9 ms (0,59 %) | 51,8 ms (3,30 %) | 58,8 ms (3,56 %) |
+
+Les chiffres incluent le coût des chronomètres. Les lectures mémoire directes et les rappels d’accès qui ne passent pas par les gestionnaires de ports SG-1000 restent dans le poste Z80. Le profil EventPipe a servi à repérer le remappage des lignes vidéo et présente de longs intervalles sans attribution fiable côté x64. Le tableau utilise les compteurs directs. Aucune accusation de boucle inutile ni de coût global de tous les bus à partir de ces seuls résultats.
+
+Le choix CIL est désactivé dans la construction de la machine SG-1000. Le banc réutilisable propose Interpreter et x64 et conserve les relevés historiques. Aucun changement de mode pour les autres machines et aucun thread de puce ajouté.
+
+
+## SG-1000 — expansion des lignes de tuiles TMS par groupes de huit
+
+Vdp.Background.Tms.cs développe les huit indices couleur d'une ligne de tuile en un mot, à partir d'une table de 256 masques. Le texte à six pixels conserve sa boucle. La variante intervient dans le dessin du fond, distinctement du remappage final déjà évalué. Les 65 536 couples motif/couleurs ont produit les mêmes huit indices que la boucle témoin. Builds Debug et Release sans erreur ni avertissement.
+
+Girl’s Garden, interpréteur SegaEmu, mêmes entrées et 120 trames de chauffe. Une paire de passages de 120 secondes par configuration, témoin en premier en Debug et en dernier en Release. Images et audio concordent aux trames mesurées 120, 600 et 1 200. Les quatre passages tiennent au moins 60 FPS chaque seconde sur la dernière minute.
+
+| Configuration | Variante | 10 s | 30 s | 60 s | 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Debug | Témoin | 161,82 | 161,51 | 161,64 | 165,57 |
+| Debug | Masques TMS | 187,91 | 187,86 | 182,43 | 177,10 |
+| Release | Témoin | 3 481,15 | 3 411,18 | 3 438,89 | 3 380,85 |
+| Release | Masques TMS | 4 036,67 | 3 950,77 | 3 924,06 | 3 910,00 |
+
+Variante conservée. Le débit de la machine mesurée augmente de 7,0 % en Debug et de 15,7 % en Release à 120 secondes. Une seule paire par configuration. Le gain propre au rendu et celui du mode x64 restent à mesurer. Aucun changement du séquenceur ni nouveau thread.

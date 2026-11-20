@@ -130,7 +130,7 @@ internal sealed partial class ManagedCore
         Dictionary<string, string> options = new(_configuration!.Options ?? new Dictionary<string, string>(), StringComparer.Ordinal) { [key] = value };
         _configuration = _configuration with { Options = options };
         if (option.RequiresRestart) StartSystem(savePrevious: false);
-        else { FillSettings(_settings); _system!.RefreshConfiguration(Number("overclock", 100)); }
+        else if (_system is { } system) { FillSettings(_settings); system.RefreshConfiguration(Number("overclock", 100)); }
     }
     private int LoadFirmware(int identifier, Memory<byte> destination)
     {

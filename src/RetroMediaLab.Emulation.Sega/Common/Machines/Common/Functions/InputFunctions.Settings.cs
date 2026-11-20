@@ -140,6 +140,22 @@ internal static partial class InputSettingsFunctions
                 Definition(EmulationControllerCommandIds.Select, string.Empty, string.Empty, "SELECT"),
                 Definition(EmulationControllerCommandIds.Start, string.Empty, string.Empty, "START")
             ],
+            PeripheralCategory.SegaSaturnTwinStick =>
+            [
+                Definition(EmulationControllerCommandIds.Up, string.Empty, string.Empty, "L ↑"),
+                Definition(EmulationControllerCommandIds.Right, string.Empty, string.Empty, "L →"),
+                Definition(EmulationControllerCommandIds.Down, string.Empty, string.Empty, "L ↓"),
+                Definition(EmulationControllerCommandIds.Left, string.Empty, string.Empty, "L ←"),
+                Definition(EmulationControllerCommandIds.R2, string.Empty, string.Empty, "L"),
+                Definition(EmulationControllerCommandIds.L2, InputSettingsFunctionsConstants.TriggerLeft, string.Empty),
+                Definition(EmulationControllerCommandIds.Start, InputSettingsFunctionsConstants.ButtonStart, string.Empty),
+                Definition(EmulationControllerCommandIds.B, InputSettingsFunctionsConstants.TriggerRight, string.Empty),
+                Definition(EmulationControllerCommandIds.A, string.Empty, string.Empty, "R ↓"),
+                Definition(EmulationControllerCommandIds.R, string.Empty, string.Empty, "R"),
+                Definition(EmulationControllerCommandIds.Y, string.Empty, string.Empty, "R ←"),
+                Definition(EmulationControllerCommandIds.X, string.Empty, string.Empty, "R ↑"),
+                Definition(EmulationControllerCommandIds.L, string.Empty, string.Empty, "R →")
+            ],
             PeripheralCategory.SegaSaturnController or PeripheralCategory.SegaSaturnThreeDControlPad
                 or PeripheralCategory.SegaSaturnVirtuaStick =>
             [

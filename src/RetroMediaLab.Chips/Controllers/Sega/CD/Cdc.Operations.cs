@@ -122,12 +122,15 @@ public sealed partial class Cdc
     }
     private void cdc_dma_update(uint cycles)
     {
+        if (cdc.dma_w is not { } writeDma)
+            return;
+
         unchecked
         {
             int dma_bytes = unchecked((int)(((((cycles - unchecked((uint)(cdc.cycles[(int)(0)]))) + unchecked((uint)(16))) - unchecked((uint)(1))) / unchecked((uint)(16)))));
             dma_bytes = ((dma_bytes / 8) * 8);
             if ((unchecked((int)(cdc.dbc.Word)) < dma_bytes)) {
-            cdc.dma_w(unchecked((uint)((unchecked((int)(cdc.dbc.Word)) + 1))));
+            writeDma(unchecked((uint)((unchecked((int)(cdc.dbc.Word)) + 1))));
             cdc.cycles[(int)(0)] += ((unchecked((int)(cdc.dbc.Word)) + 1) * 16);
             cdc.dbc.Word = unchecked((ushort)(65535));
             cdc.ifstat |= unchecked((byte)((8 | 2)));
@@ -152,7 +155,7 @@ public sealed partial class Cdc
             }
             cdc.dma_w = (cdc.halted_dma_w = null);
             } else if ((dma_bytes > 0)) {
-            cdc.dma_w(unchecked((uint)(dma_bytes)));
+            writeDma(unchecked((uint)(dma_bytes)));
             cdc.dbc.Word -= unchecked((ushort)(dma_bytes));
             cdc.cycles[(int)(0)] += (dma_bytes * 16);
             }

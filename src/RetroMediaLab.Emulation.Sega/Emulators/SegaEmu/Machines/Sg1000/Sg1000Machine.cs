@@ -4,7 +4,8 @@ using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.Sg1000;
 
-internal sealed class Sg1000Machine(MachineResources resources) : SegaBoard(SystemHardware.Sg1000,resources)
+internal sealed class Sg1000Machine(MachineResources resources)
+    : SegaBoard(SystemHardware.Sg1000, resources with { UseDynamicCpuBlocks = false })
 {
     protected override void InitializeMachineBus() => InitializeEightBitMapping();
     protected override void ConfigureZ80Ports() => UseSg1000Ports();

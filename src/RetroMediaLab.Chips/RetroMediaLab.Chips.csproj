@@ -6,6 +6,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>retromedialab.chips</AssemblyName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(YAB_OPTIMIZED_DMA)' == 'true'">
+    <DefineConstants>$(DefineConstants);OPTIMIZED_DMA</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="RetroMediaLab.Chips.Tests" />
   </ItemGroup>

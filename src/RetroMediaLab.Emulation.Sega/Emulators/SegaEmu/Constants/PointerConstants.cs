@@ -13,7 +13,8 @@ internal static class PointerConstants
     internal static string PortKey(int port) => $"segaemu_pointer_port{port + 1}_speed";
     internal static readonly IReadOnlyList<string> ControllerIds =
     [nameof(PeripheralCategory.SegaMegaMouse), nameof(PeripheralCategory.SegaMenacer), nameof(PeripheralCategory.SegaLightPhaser),
-        nameof(PeripheralCategory.SegaSportsPad), nameof(PeripheralCategory.SegaPaddleControl)];
+        nameof(PeripheralCategory.SegaSportsPad), nameof(PeripheralCategory.SegaPaddleControl),
+        nameof(PeripheralCategory.SegaSaturnShuttleMouse), nameof(PeripheralCategory.SegaSaturnVirtuaGun)];
     internal static IReadOnlyList<CoreOption> Options { get; } =
     [
         new(SpeedKey, Label, Description, null, "2.00", "2.00", [],

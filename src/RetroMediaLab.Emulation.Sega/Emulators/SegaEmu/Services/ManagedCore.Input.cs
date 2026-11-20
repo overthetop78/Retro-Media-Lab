@@ -96,6 +96,11 @@ internal sealed partial class ManagedCore
     public void SetControllerPortDevice(int port, PeripheralCategory peripheral)
     {
         if ((uint)port >= 8) throw new ArgumentOutOfRangeException(nameof(port));
+        if (_saturn is not null)
+        {
+            SetSaturnController(port, peripheral);
+            return;
+        }
         (byte system, byte type) = ControllerType(peripheral);
         _settings.PadTypes[port] = type;
         if (port < 2) _settings.PortSystems[port] = system;

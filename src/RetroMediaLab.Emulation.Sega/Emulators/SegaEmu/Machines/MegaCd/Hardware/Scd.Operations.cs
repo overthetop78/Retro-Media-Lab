@@ -109,8 +109,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(3)))));
-            if ((zbank_memory_map[(int)(offset)].read != null)) {
-            return zbank_memory_map[(int)(offset)].read(address);
+            if (zbank_memory_map[(int)(offset)].read is { } handler) {
+            return handler(address);
             }
             return unchecked((uint)(memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))]));
         }
@@ -120,8 +120,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(3)))));
-            if ((zbank_memory_map[(int)(offset)].write != null)) {
-            zbank_memory_map[(int)(offset)].write(address, data);
+            if (zbank_memory_map[(int)(offset)].write is { } handler) {
+            handler(address, data);
             } else {
             memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))] = unchecked((byte)((data & unchecked((uint)(255)))));
             }
@@ -132,8 +132,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(3)))));
-            if ((memory_map[(int)(offset)].read8 != null)) {
-            return memory_map[(int)(offset)].read8(address);
+            if (memory_map[(int)(offset)].read8 is { } handler) {
+            return handler(address);
             }
             return unchecked((uint)(memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))]));
         }
@@ -143,8 +143,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(3)))));
-            if ((memory_map[(int)(offset)].read16 != null)) {
-            return memory_map[(int)(offset)].read16(address);
+            if (memory_map[(int)(offset)].read16 is { } handler) {
+            return handler(address);
             }
             return unchecked((uint)((memory_map[(int)(offset)].@base + unchecked((int)((address & unchecked((uint)(65534)))))).Cast<ushort>()[0]));
         }
@@ -154,8 +154,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(3)))));
-            if ((memory_map[(int)(offset)].write8 != null)) {
-            memory_map[(int)(offset)].write8(address, data);
+            if (memory_map[(int)(offset)].write8 is { } handler) {
+            handler(address, data);
             } else {
             memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))] = unchecked((byte)((data & unchecked((uint)(255)))));
             }
@@ -166,8 +166,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(3)))));
-            if ((memory_map[(int)(offset)].write16 != null)) {
-            memory_map[(int)(offset)].write16(address, data);
+            if (memory_map[(int)(offset)].write16 is { } handler) {
+            handler(address, data);
             } else {
             (memory_map[(int)(offset)].@base + unchecked((int)((address & unchecked((uint)(65534)))))).Cast<ushort>()[0] = unchecked((ushort)(data));
             }
@@ -178,8 +178,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(35)))));
-            if ((zbank_memory_map[(int)(offset)].read != null)) {
-            return zbank_memory_map[(int)(offset)].read(address);
+            if (zbank_memory_map[(int)(offset)].read is { } handler) {
+            return handler(address);
             }
             return unchecked((uint)(memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))]));
         }
@@ -189,8 +189,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(35)))));
-            if ((zbank_memory_map[(int)(offset)].write != null)) {
-            zbank_memory_map[(int)(offset)].write(address, data);
+            if (zbank_memory_map[(int)(offset)].write is { } handler) {
+            handler(address, data);
             } else {
             memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))] = unchecked((byte)((data & unchecked((uint)(255)))));
             }
@@ -201,8 +201,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(35)))));
-            if ((memory_map[(int)(offset)].read8 != null)) {
-            return memory_map[(int)(offset)].read8(address);
+            if (memory_map[(int)(offset)].read8 is { } handler) {
+            return handler(address);
             }
             return unchecked((uint)(memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))]));
         }
@@ -212,8 +212,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(35)))));
-            if ((memory_map[(int)(offset)].read16 != null)) {
-            return memory_map[(int)(offset)].read16(address);
+            if (memory_map[(int)(offset)].read16 is { } handler) {
+            return handler(address);
             }
             return unchecked((uint)((memory_map[(int)(offset)].@base + unchecked((int)((address & unchecked((uint)(65534)))))).Cast<ushort>()[0]));
         }
@@ -223,8 +223,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(35)))));
-            if ((memory_map[(int)(offset)].write8 != null)) {
-            memory_map[(int)(offset)].write8(address, data);
+            if (memory_map[(int)(offset)].write8 is { } handler) {
+            handler(address, data);
             } else {
             memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))] = unchecked((byte)((data & unchecked((uint)(255)))));
             }
@@ -235,8 +235,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(35)))));
-            if ((memory_map[(int)(offset)].write16 != null)) {
-            memory_map[(int)(offset)].write16(address, data);
+            if (memory_map[(int)(offset)].write16 is { } handler) {
+            handler(address, data);
             } else {
             (memory_map[(int)(offset)].@base + unchecked((int)((address & unchecked((uint)(65534)))))).Cast<ushort>()[0] = unchecked((ushort)(data));
             }
@@ -247,8 +247,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(15)))));
-            if ((sub_memory_map[(int)(offset)].read8 != null)) {
-            return sub_memory_map[(int)(offset)].read8(address);
+            if (sub_memory_map[(int)(offset)].read8 is { } handler) {
+            return handler(address);
             }
             return unchecked((uint)(sub_memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))]));
         }
@@ -258,8 +258,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(15)))));
-            if ((sub_memory_map[(int)(offset)].read16 != null)) {
-            return sub_memory_map[(int)(offset)].read16(address);
+            if (sub_memory_map[(int)(offset)].read16 is { } handler) {
+            return handler(address);
             }
             return unchecked((uint)((sub_memory_map[(int)(offset)].@base + unchecked((int)((address & unchecked((uint)(65534)))))).Cast<ushort>()[0]));
         }
@@ -269,8 +269,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(15)))));
-            if ((sub_memory_map[(int)(offset)].write8 != null)) {
-            sub_memory_map[(int)(offset)].write8(address, data);
+            if (sub_memory_map[(int)(offset)].write8 is { } handler) {
+            handler(address, data);
             } else {
             sub_memory_map[(int)(offset)].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))] = unchecked((byte)((data & unchecked((uint)(255)))));
             }
@@ -281,8 +281,8 @@ internal sealed partial class Scd
         unchecked
         {
             int offset = unchecked((int)(((address >> 16) & unchecked((uint)(15)))));
-            if ((sub_memory_map[(int)(offset)].write16 != null)) {
-            sub_memory_map[(int)(offset)].write16(address, data);
+            if (sub_memory_map[(int)(offset)].write16 is { } handler) {
+            handler(address, data);
             } else {
             (sub_memory_map[(int)(offset)].@base + unchecked((int)((address & unchecked((uint)(65534)))))).Cast<ushort>()[0] = unchecked((ushort)(data));
             }

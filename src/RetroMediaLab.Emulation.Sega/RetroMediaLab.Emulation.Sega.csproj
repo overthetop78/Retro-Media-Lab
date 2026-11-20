@@ -7,6 +7,9 @@
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(YAB_USE_SCSP2)' == 'true'">
+    <DefineConstants>$(DefineConstants);USE_SCSP2</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Content Include="Assets\**\*" TargetPath="Assets\Emulation\sega\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 

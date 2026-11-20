@@ -4,6 +4,32 @@ internal static class OptionConstants
     internal static IReadOnlyList<CoreOption> All { get; } = [
         ..PointerConstants.Options,
         new(
+            "segaemu_sh2_cache",
+            "Emulation.Option.ymir.ymir_sh2_cache",
+            "Emulation.Option.ymir.ymir_sh2_cache.Description",
+            null, "disabled", "disabled",
+            [
+                new("disabled", "Emulation.Option.ymir.ymir_sh2_cache.Value.disabled"),
+                new("enabled", "Emulation.Option.ymir.ymir_sh2_cache.Value.enabled")
+            ],
+            Tab: EmulationMachineTab.Cpu,
+            RequiresRestart: true,
+            MachineIds: new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }
+        ),
+        new(
+            "segaemu_cdblock_lle",
+            "Emulation.Option.ymir.ymir_cdblock_lle",
+            "Emulation.Option.ymir.ymir_cdblock_lle.Description",
+            null, "disabled", "disabled",
+            [
+                new("disabled", "Emulation.Option.ymir.ymir_cdblock_lle.Value.disabled"),
+                new("enabled", "Emulation.Option.ymir.ymir_cdblock_lle.Value.enabled")
+            ],
+            Tab: EmulationMachineTab.Storage,
+            RequiresRestart: true,
+            MachineIds: new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }
+        ),
+        new(
             "segaemu_sg1000_model",
             "Emulation.Option.segaemu.segaemu_sg1000_model",
             "Emulation.Option.segaemu.segaemu_sg1000_model.Description",

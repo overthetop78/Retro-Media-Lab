@@ -783,9 +783,9 @@ internal sealed partial class Mp3FrameDecoder
         {
             int i = default;
             int j = default;
+            Span<float> si = stackalloc float[(int)(9)];
             for (j = 0; (j < nbands); j++, grbuf += 18, overlap += 9) {
             CPointer<float> co = default;
-            Span<float> si = stackalloc float[(int)(9)];
             co[(int)(0)] = (-grbuf[(int)(0)]);
             si[(int)(0)] = grbuf[(int)(17)];
             for (i = 0; (i < 4); i++) {
@@ -845,8 +845,8 @@ internal sealed partial class Mp3FrameDecoder
     {
         unchecked
         {
-            for (; (nbands > 0); nbands--, overlap += 9, grbuf += 18) {
             Span<float> tmp = stackalloc float[(int)(18)];
+            for (; (nbands > 0); nbands--, overlap += 9, grbuf += 18) {
             CopyFloats(new CPointer<float>(tmp), grbuf, 18);
             CopyFloats(grbuf, overlap, 6);
             L3_imdct12(new CPointer<float>(tmp), (grbuf + 6), (overlap + 6));
@@ -940,8 +940,8 @@ internal sealed partial class Mp3FrameDecoder
         {
             int i = default;
             int k = 0;
-            for (; (k < n); k++) {
             Span<float> t = stackalloc float[(int)(32)];
+            for (; (k < n); k++) {
             scoped CPointer<float> x = default;
             CPointer<float> y = (grbuf + k);
             x = new CPointer<float>(t);
@@ -1073,9 +1073,9 @@ internal sealed partial class Mp3FrameDecoder
             mp3d_synth_pair((dstr + (32 * nch)), nch, (((lins + (4 * 15)) + 64) + 1));
             mp3d_synth_pair(dstl, nch, (lins + (4 * 15)));
             mp3d_synth_pair((dstl + (32 * nch)), nch, ((lins + (4 * 15)) + 64));
+            Span<float> b = stackalloc float[(int)(4)];
             for (i = 14; (i >= 0); i--) {
             CPointer<float> a = default;
-            Span<float> b = stackalloc float[(int)(4)];
             zlin[(int)((4 * i))] = xl[(int)((18 * (31 - i)))];
             zlin[(int)(((4 * i) + 1))] = xr[(int)((18 * (31 - i)))];
             zlin[(int)(((4 * i) + 2))] = xl[(int)((1 + (18 * (31 - i))))];

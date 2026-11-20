@@ -35,7 +35,6 @@ public sealed partial class Cdd
         public readonly ushort[] fader = new ushort[2];
         public byte status;
         public byte pending;
-        public ushort sectorSize;
         public readonly toc_t toc = new();
         public readonly short[] audio = new short[2];
     }

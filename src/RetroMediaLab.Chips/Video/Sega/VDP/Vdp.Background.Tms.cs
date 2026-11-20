@@ -1,4 +1,4 @@
-using RetroMediaLab.Chips.Common.Memory;
+using System.Buffers.Binary;
 
 namespace RetroMediaLab.Chips.Video.Sega.VDP;
 
@@ -92,8 +92,39 @@ public sealed partial class Vdp
         linebuf.AsSpan(output, 8).Fill(0x40);
     }
 
+    private static readonly ulong[] s_tmsPatternMasks = CreateTmsPatternMasks();
+
+    private static ulong[] CreateTmsPatternMasks()
+    {
+        var masks = new ulong[256];
+        for (int pattern = 0; pattern < masks.Length; pattern++)
+        {
+            ulong mask = 0;
+            for (int pixel = 0; pixel < 8; pixel++)
+                if ((pattern & (0x80 >> pixel)) != 0)
+                    mask |= 0xFFUL << (pixel * 8);
+            masks[pattern] = mask;
+        }
+        return masks;
+    }
+
+    private static ulong ExpandTmsPattern(int pattern, int color)
+    {
+        const ulong repeatByte = 0x0101010101010101;
+        ulong foreground = (ulong)(0x10 | (color >> 4)) * repeatByte;
+        ulong background = (ulong)(0x10 | (color & 15)) * repeatByte;
+        return background ^ ((foreground ^ background) & s_tmsPatternMasks[pattern]);
+    }
+
     private void DrawTmsPattern(ref int output, int pattern, int color, int width)
     {
+        if (width == 8)
+        {
+            BinaryPrimitives.WriteUInt64LittleEndian(linebuf.AsSpan(output, 8), ExpandTmsPattern(pattern, color));
+            output += 8;
+            return;
+        }
+
         for (int x = 0; x < width; x++)
             linebuf[output++] = (byte)(0x10 | ((color >> (((pattern >> (7 - x)) & 1) << 2)) & 15));
     }
