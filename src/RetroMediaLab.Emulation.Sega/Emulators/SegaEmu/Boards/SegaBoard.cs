@@ -109,6 +109,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     protected virtual uint MapVideoInterruptLevel(uint level) => level;
     protected virtual void ConfigureMachineAudio(int sampleRate, double frameRate) { }
     protected virtual void ResetMachineDevices() { _mega32X?.Reset(); }
+    protected virtual void DisposeMachineDevices() { }
     protected virtual void FinishMachineAudioFrame(uint cycles) { _mega32X?.EndFrame(cycles); }
     protected void RefreshMachineInterrupt()
     {
@@ -216,7 +217,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
     {
         if (_disposed) return;
         _disposed = true;
-        try { _yx5200Component?.Dispose(); }
+        try { try { _yx5200Component?.Dispose(); } finally { DisposeMachineDevices(); } }
         finally
         {
             try { _cdComponent?.Dispose(); }

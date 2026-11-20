@@ -5,9 +5,11 @@ internal static class FirmwareConstants
     internal const string SaturnBiosFileName = global::RetroMediaLab.Emulation.Sega.Common.Machines.Common.Constants.FirmwareConstants.SaturnBiosFileName;
     internal const string SaturnSh1RomFileName = "saturn_sh1.bin";
     internal const string SaturnMpegRomFileName = "saturn_mpeg.bin";
+    internal const string Sf7000Ipl = "sf7000.rom";
 
     internal static IReadOnlyList<FirmwareSlot> All { get; } =
     [
+        new("configuration.firmware.bluemsx.0", Sf7000Ipl, "Emulation.Firmware.bluemsx.0", true, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Sf7000 }),
         new("configuration.firmware.segaemu.saturn", SaturnBiosFileName, "Emulation.Firmware.yabause.0", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }),
         new("configuration.firmware.segaemu.saturn.sh1", SaturnSh1RomFileName, "Emulation.Firmware.SaturnSh1", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }),
         new("configuration.firmware.segaemu.saturn.mpeg", SaturnMpegRomFileName, "Emulation.Firmware.SaturnMpeg", false, new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }),

@@ -10,6 +10,10 @@ using RetroMediaLab.Chips.Controllers.Sega.CD;
 using RetroMediaLab.Chips.CPU.Hitachi.SH2;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.Saturn;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.Sc3000;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.Sf7000;
+using RetroMediaLab.MediaEngine;
+using RetroMediaLab.MediaEngine.Contracts;
 using SegaEmuFirmware = RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants.FirmwareConstants;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services;
@@ -27,6 +31,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
     private MachineConfiguration? _configuration;
     private SystemConfiguration _settings = new();
     private SegaBoard? _system;
+    private MediaTapeSignal? _sc3000Tape;
     private SaturnMachine? _saturn;
     private readonly SaturnPeripheral _saturnPeripheral = new();
     private readonly Memory<byte>?[] _saturnDevices = new Memory<byte>?[2];
@@ -48,7 +53,18 @@ internal sealed partial class ManagedCore : IEmulatorCore
     public string CoreSha256 { get; private set; } = "";
     public IReadOnlySet<string> SupportedContentExtensions { get; } = CoreConstants.Definition.Extensions.ToHashSet(StringComparer.OrdinalIgnoreCase);
     public bool SupportsPointerCapture => true;
-    public bool SupportsSaveStates => _system is not null;
+    public bool SupportsSaveStates => _system is not null and not Sf7000Machine
+        && _system is not Sc3000Machine { HasBasicCartridge: true } && _sc3000Tape is null;
+    internal EmulationTapeState TapeState => (_system as Sc3000Machine)?.Cassette.State ?? EmulationTapeState.Empty;
+    internal IReadOnlySet<EmulationTapeCommand> TapeCommands =>
+        (_system as Sc3000Machine)?.Cassette.Commands ?? Sc3000Cassette.EmptyCommands;
+
+    internal void ExecuteTape(EmulationTapeCommand command)
+    {
+        if (_system is not Sc3000Machine machine)
+            throw new InvalidOperationException();
+        machine.Cassette.Execute(command, machine.MasterClock);
+    }
     public bool ShutdownRequested => _lifetime.IsCancellationRequested;
     public VideoFrame? LatestVideoFrame { get; private set; }
     public AudioChunk? LatestAudioChunk { get; private set; }
@@ -90,7 +106,16 @@ internal sealed partial class ManagedCore : IEmulatorCore
             foreach (MediaConfiguration media in (configuration.Media ?? []).Where(media => media.IsInserted).OrderBy(media => media.MountOrder))
             {
                 string path = Path.GetFullPath(media.Path);
-                if (Path.GetExtension(path).Equals(".m3u", StringComparison.OrdinalIgnoreCase))
+                if (configuration.Model == ModelConstants.Sc3000 && media.Category == MediaCategory.Tape)
+                {
+                    _sc3000Tape ??= ReadSc3000Tape(path);
+                }
+                else if (configuration.Model == ModelConstants.Sf7000
+                    && (media.Category == MediaCategory.Floppy || IsSf7000Disk(path)))
+                {
+                    _disks.Add(path);
+                }
+                else if (Path.GetExtension(path).Equals(".m3u", StringComparison.OrdinalIgnoreCase))
                 {
                     foreach (string line in File.ReadLines(path))
                     {
@@ -134,7 +159,16 @@ internal sealed partial class ManagedCore : IEmulatorCore
                 new(_settings, _bitmap, BitmapWidth, BitmapHeight, BitmapPitch,
                     SampleRate, OpenMedia, LoadFirmware, _lifetime.Token));
             _system = next;
-            if (!next.Load(_contentPath)) throw new InvalidDataException(ErrorMessages.ContentRefused());
+            if (next is Sf7000Machine sf7000)
+            {
+                sf7000.LoadIpl(LoadFirmware);
+                sf7000.SetDisk(!_ejected && _diskIndex >= 0 ? _disks[_diskIndex] : null);
+                if (!next.Load(string.Empty)) throw new InvalidDataException(ErrorMessages.ContentRefused());
+                sf7000.ConnectPrinter(_configuration.Options?.GetValueOrDefault(Sf7000PrintFile.DirectoryOption));
+            }
+            else if (!next.Load(_contentPath)) throw new InvalidDataException(ErrorMessages.ContentRefused());
+            if (next is Sc3000Machine computer && _sc3000Tape is { } tape)
+                computer.Cassette.Insert(tape);
             next.RefreshConfiguration(Number("overclock", 100));
             next.PollInput = PollInputs;
             LoadPersistent();
@@ -146,6 +180,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
 
     private static bool IsDisc(string path) => Path.GetExtension(path).ToLowerInvariant() is ".cue" or ".iso" or ".chd";
     private static bool IsSaturnDisc(string path) => Path.GetExtension(path).ToLowerInvariant() is ".cue" or ".iso" or ".bin" or ".mds" or ".ccd";
+    private static bool IsSf7000Disk(string path) => Path.GetExtension(path).ToLowerInvariant() is ".sf" or ".sf7";
 
     private string SaturnBackupPath => Path.Combine(_saveDirectory, "saturn.segaemu.brm");
 
@@ -487,7 +522,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
     }
     public byte[] SaveState()
     {
-        if (_saturn is not null) throw new NotSupportedException();
+        if (!SupportsSaveStates) throw new NotSupportedException();
         byte[] bytes = new byte[_system!.StateSize];
         int length = _system.SaveState(bytes);
         if (length != bytes.Length) Array.Resize(ref bytes, length);
@@ -495,7 +530,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
     }
     public void LoadState(ReadOnlySpan<byte> state)
     {
-        if (_saturn is not null) throw new NotSupportedException();
+        if (!SupportsSaveStates) throw new NotSupportedException();
         if (_system!.LoadState(state.ToArray()) == 0) throw MachineExceptions.SavedStateIncompatible();
         ClearAudio();
     }
@@ -509,7 +544,8 @@ internal sealed partial class ManagedCore : IEmulatorCore
     }
     private void MountDisc(string path)
     {
-        if (_saturn is { } saturn)
+        if (_system is Sf7000Machine sf7000) sf7000.SetDisk(path);
+        else if (_saturn is { } saturn)
         {
             if (!IsSaturnDisc(path)) throw new InvalidDataException(ErrorMessages.ContentRefused());
             saturn.ChangeDisc(path);
@@ -518,7 +554,14 @@ internal sealed partial class ManagedCore : IEmulatorCore
     }
     public void InsertMedia(MediaConfiguration media)
     {
-        if (IsDisc(media.Path) || (_saturn is not null && IsSaturnDisc(media.Path)))
+        if (_system is Sc3000Machine computer && media.Category == MediaCategory.Tape)
+        {
+            MediaTapeSignal tape = ReadSc3000Tape(media.Path);
+            computer.Cassette.Insert(tape);
+            _sc3000Tape = tape;
+        }
+        else if (IsDisc(media.Path) || (_saturn is not null && IsSaturnDisc(media.Path))
+            || (_system is Sf7000Machine && (media.Category == MediaCategory.Floppy || IsSf7000Disk(media.Path))))
         {
             int index = _disks.IndexOf(media.Path);
             if (index < 0) { index = _disks.Count; _disks.Add(media.Path); }
@@ -529,7 +572,17 @@ internal sealed partial class ManagedCore : IEmulatorCore
     }
     public void EjectMedia(EmulationMediaSlot slot)
     {
-        if (slot.Category == EmulationMediaCategory.CompactDiscDrive)
+        if (_system is Sc3000Machine computer && slot == EmulationMediaSlot.Tape0)
+        {
+            computer.Cassette.Eject();
+            _sc3000Tape = null;
+        }
+        else if (_system is Sf7000Machine sf7000 && slot == EmulationMediaSlot.Floppy0)
+        {
+            sf7000.SetDisk(null);
+            _ejected = true;
+        }
+        else if (slot.Category == EmulationMediaCategory.CompactDiscDrive)
         {
             if (_saturn is { } saturn) saturn.ChangeDisc(null);
             else _system!.UnmountDisc();
@@ -537,6 +590,15 @@ internal sealed partial class ManagedCore : IEmulatorCore
         }
         else { SavePersistent(); _contentPath = string.Empty; StartSystem(savePrevious: false); }
     }
+    private MediaTapeSignal ReadSc3000Tape(string path)
+    {
+        if (!Path.GetExtension(path).Equals(".wav", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException(ErrorMessages.ContentRefused());
+        return MediaEngineComposition.RuntimePreparation.ReadTapeAsync(path, _lifetime.Token)
+            .GetAwaiter().GetResult();
+    }
+
+
     public void SaveMediaChanges(EmulationMediaSlot slot) => SavePersistent();
     public bool HasUnsavedMediaChanges(EmulationMediaSlot slot) => _saturn?.BackupRamWritten == true;
     public void Stop()
@@ -548,7 +610,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
             finally
             {
                 try { _system?.Dispose(); }
-                finally { _system = null; ClearAudio(); LatestVideoFrame = null; }
+                finally { _system = null; _sc3000Tape = null; ClearAudio(); LatestVideoFrame = null; }
             }
         }
     }

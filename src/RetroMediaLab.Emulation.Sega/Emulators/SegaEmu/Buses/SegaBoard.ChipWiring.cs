@@ -158,12 +158,18 @@ internal abstract partial class SegaBoard : ICpuZ80NativeMemoryBus
     {
         bool ram = NativeZ80RamMapped;
         bool eightBit = !SystemHardware.IsSixteenBit(system_hw) && _smsComponent is not null;
-        int policy = ram ? 15 : eightBit ? _smsComponent!.NativeMemoryPolicy : 0;
+        int policy = ram || _flatZ80Memory ? 15 : eightBit ? _smsComponent!.NativeMemoryPolicy : 0;
         version = unchecked((_nativeZ80MappingVersion << 12) | ((long)system_hw << 4) | (uint)policy);
-        return ram || eightBit;
+        return ram || _flatZ80Memory || eightBit;
     }
     void ICpuZ80NativeMemoryBus.GetNativeMemory(int page, out ReadOnlyMemory<byte> read, out Memory<byte> write)
     {
+        if (_flatZ80Memory)
+        {
+            read = _readMap[page];
+            write = _writeMap[page];
+            return;
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(page); ArgumentOutOfRangeException.ThrowIfGreaterThan(page, 63);
         if (NativeZ80RamMapped && page < 16) { write = zram.AsMemory((page & 7) << 10, 1024); read = write; }
         else if (!SystemHardware.IsSixteenBit(system_hw) && _smsComponent is not null)

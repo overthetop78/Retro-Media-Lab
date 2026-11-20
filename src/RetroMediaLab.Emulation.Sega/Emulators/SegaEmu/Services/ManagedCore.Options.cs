@@ -14,7 +14,7 @@ internal sealed partial class ManagedCore
 {
     private static byte HardwareForModel(string model) => model switch
     {
-        ModelConstants.Sg1000 or ModelConstants.Sc3000 => SystemHardware.Sg1000,
+        ModelConstants.Sg1000 or ModelConstants.Sc3000 or ModelConstants.Sf7000 => SystemHardware.Sg1000,
         ModelConstants.MarkIII => SystemHardware.MarkIII, ModelConstants.MasterSystem => SystemHardware.MasterSystemII,
         ModelConstants.GameGear => SystemHardware.GameGear, ModelConstants.Pico => SystemHardware.Pico,
         ModelConstants.MegaCd => SystemHardware.MegaCd, _ => SystemHardware.MegaDrive
@@ -122,6 +122,18 @@ internal sealed partial class ManagedCore
     };
     public void SetOption(string key, string value)
     {
+        if (_system is Machines.Sf7000.Sf7000Machine sf7000 && key == Machines.Sf7000.Sf7000PrintFile.DirectoryOption)
+        {
+            sf7000.ConnectPrinter(value);
+            _configuration = _configuration! with
+            {
+                Options = new Dictionary<string, string>(_configuration.Options ?? new Dictionary<string, string>(), StringComparer.Ordinal)
+                {
+                    [key] = value
+                }
+            };
+            return;
+        }
         var option = CoreConstants.Definition.Options.SingleOrDefault(candidate => candidate.Key == key);
         if (option is null || !Emulators.Common.Interop.Functions.CoreSettingsFunctions.IsValidValue(option, value, _configuration?.Model))
             throw new ArgumentException(nameof(value));
@@ -137,6 +149,7 @@ internal sealed partial class ManagedCore
         byte hardware = (byte)identifier, region = (byte)(identifier >> 8);
         string filename = identifier switch
         {
+            Machines.Sf7000.Sf7000Machine.IplFirmwareId => Constants.FirmwareConstants.Sf7000Ipl,
             0x3200 => "32X_G_BIOS.BIN", 0x3201 => "32X_M_BIOS.BIN", 0x3202 => "32X_S_BIOS.BIN",
             0 => "sk.bin", 1 => "sk2chip.bin", 2 => "ggenie.bin", 3 => "areplay.bin",
             _ => hardware switch

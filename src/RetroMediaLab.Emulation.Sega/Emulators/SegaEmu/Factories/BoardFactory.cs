@@ -7,6 +7,7 @@ using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MegaCd;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MegaDrive;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.Pico;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.Sc3000;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.Sf7000;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.Sg1000;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Factories;
@@ -17,6 +18,7 @@ internal static class BoardFactory
     {
         ModelConstants.Sg1000 => new Sg1000Machine(resources),
         ModelConstants.Sc3000 => new Sc3000Machine(resources),
+        ModelConstants.Sf7000 => new Sf7000Machine(resources),
         ModelConstants.MarkIII => new MarkIIIMachine(resources),
         ModelConstants.MasterSystem => new MasterSystemMachine(resources),
         ModelConstants.GameGear => new GameGearMachine(resources),

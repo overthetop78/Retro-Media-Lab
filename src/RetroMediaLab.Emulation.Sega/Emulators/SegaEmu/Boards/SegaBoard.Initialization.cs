@@ -70,6 +70,43 @@ internal abstract partial class SegaBoard
             scd_init();
              } }
     protected void UseSg1000Ports() { z80_writeport = z80_sg_port_w; z80_readport = z80_sg_port_r; }
+    protected void SetZ80Ports(Func<uint, byte> read, Action<uint, byte> write)
+    {
+        z80_readport = read;
+        z80_writeport = write;
+    }
+    protected byte ReadSg1000Port(uint port) => z80_sg_port_r(port);
+    protected void WriteSg1000Port(uint port, byte value) => z80_sg_port_w(port, value);
+    protected uint MachineZ80Cycles => z80.cycles;
+    private bool _flatZ80Memory;
+    protected void MapFlatZ80Memory(byte[]? lowRom, int romWindow = 0x4000, int ramStart = 0)
+    {
+        _flatZ80Memory = true;
+        for (int page = 0; page < _readMap.Length; page++)
+        {
+            int offset = page * 1024;
+            _writeMap[page] = offset >= ramStart ? work_ram.AsMemory(offset, 1024) : default;
+            z80_readmap[page] = lowRom is not null && offset < romWindow
+                ? new ArrayPointer<byte>(lowRom, offset % lowRom.Length)
+                : new ArrayPointer<byte>(work_ram, offset);
+        }
+        z80_readmem = ReadFlatZ80Memory;
+        z80_writemem = WriteFlatZ80Memory;
+    }
+    private byte ReadFlatZ80Memory(uint address) => _readMap[(address & 0xffff) >> 10].Span[(int)(address & 1023)];
+    private void WriteFlatZ80Memory(uint address, byte value)
+    {
+        Span<byte> page = _writeMap[(address & 0xffff) >> 10].Span;
+        if (!page.IsEmpty) page[(int)(address & 1023)] = value;
+    }
+    protected byte[]? ReadBasicCartridge()
+    {
+        if (cart.romsize != 0x8000) return null;
+        var rom = cart.rom.AsSpan(0, 0x8000);
+        return Cartridge.Checksums.Crc32(0, rom) is 0xf691f9c7 or 0x5d9f11ca or 0xa46e3c73 or 0x78a37cbc
+            ? cart.rom
+            : null;
+    }
     protected void UseMarkIIIPorts() { z80_writeport = z80_m3_port_w; z80_readport = z80_m3_port_r; }
     protected void UseMasterSystemPorts() { z80_writeport = z80_ms_port_w; z80_readport = z80_ms_port_r; }
     protected void UseGameGearPorts() { z80_writeport = z80_gg_port_w; z80_readport = z80_gg_port_r; }

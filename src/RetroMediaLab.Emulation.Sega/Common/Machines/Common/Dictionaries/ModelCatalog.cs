@@ -7,7 +7,7 @@ public static class ModelCatalog
         new(ModelConstants.Sg1000, ModelConstants.Sg1000DisplayName, ModelConstants.BackendSg1000, (int)RamCapacity._1KB, false, ModelConstants.NoDrive, ModelConstants.NoDrive, false, false, true, true,
             MouseButtonCount: ModelConstants.NoMouseButton, CpuModels: [ModelConstants.CpuZ80A], VideoChip: ModelConstants.VideoTms9918A,
             AudioChip: ModelConstants.AudioSn76489, CpuFrequency: ModelConstants.FrequencyZ80),
-        new(ModelConstants.Sc3000, ModelConstants.Sc3000DisplayName, ModelConstants.BackendSc3000, (int)RamCapacity._2KB, true, ModelConstants.NoDrive, ModelConstants.NoDrive, false, false, true, true,
+        new(ModelConstants.Sc3000, ModelConstants.Sc3000DisplayName, ModelConstants.BackendSc3000, (int)RamCapacity._2KB, true, ModelConstants.NoDrive, ModelConstants.NoDrive, false, true, true, true,
             MouseButtonCount: ModelConstants.NoMouseButton, CpuModels: [ModelConstants.CpuZ80A], VideoChip: ModelConstants.VideoTms9918A,
             AudioChip: ModelConstants.AudioSn76489, CpuFrequency: ModelConstants.FrequencyZ80),
         new(ModelConstants.MarkIII, ModelConstants.MarkIIIDisplayName, ModelConstants.BackendMarkIII, (int)RamCapacity._8KB, false, ModelConstants.NoDrive, ModelConstants.NoDrive, false, false, true, true,

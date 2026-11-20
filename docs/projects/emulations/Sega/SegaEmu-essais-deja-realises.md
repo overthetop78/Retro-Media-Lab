@@ -2042,3 +2042,58 @@ Girl’s Garden, interpréteur SegaEmu, mêmes entrées et 120 trames de chauffe
 | Release | Masques TMS | 4 036,67 | 3 950,77 | 3 924,06 | 3 910,00 |
 
 Variante conservée. Le débit de la machine mesurée augmente de 7,0 % en Debug et de 15,7 % en Release à 120 secondes. Une seule paire par configuration. Le gain propre au rendu et celui du mode x64 restent à mesurer. Aucun changement du séquenceur ni nouveau thread.
+
+
+## SC-3000 — campagne SegaEmu Debug et Release sur cinq jeux
+
+Le banc crée Sc3000Machine via BoardFactory et contrôle son identifiant matériel 0x01. Les cinq cartouches SG compatibles sont les mêmes que dans la campagne SG-1000. Le rendu et l'audio sont actifs, avec 120 trames de chauffe et 120 secondes réelles par passage sans limiteur. FPS cumulés. Deux modes comparés, interpréteur et Z80 x64. Le chemin expérimental CIL n'a pas été mesuré et aucun code d'émulation n'a été modifié. Les builds Debug et Release compilent sans erreur ni avertissement.
+
+### Debug
+
+#### Interpréteur
+
+| Machine | Jeu | 10 s | 30 s | 60 s | 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| SC-3000 | Choplifter | 179,38 | 183,53 | 185,90 | 193,25 |
+| SC-3000 | Zaxxon | 188,25 | 189,12 | 190,25 | 191,23 |
+| SC-3000 | Star Jacker | 172,62 | 166,20 | 164,22 | 164,56 |
+| SC-3000 | Girl’s Garden | 179,63 | 178,60 | 175,64 | 174,04 |
+| SC-3000 | Champion Boxing | 192,43 | 190,53 | 189,55 | 189,98 |
+
+#### Dynarec x64
+
+| Machine | Jeu | 10 s | 30 s | 60 s | 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| SC-3000 | Choplifter | 282,51 | 284,31 | 280,31 | 275,92 |
+| SC-3000 | Zaxxon | 265,07 | 263,29 | 262,23 | 258,68 |
+| SC-3000 | Star Jacker | 197,17 | 200,16 | 201,62 | 202,67 |
+| SC-3000 | Girl’s Garden | 252,69 | 253,65 | 253,46 | 252,84 |
+| SC-3000 | Champion Boxing | 215,33 | 212,68 | 212,57 | 212,87 |
+
+### Release
+
+#### Interpréteur
+
+| Machine | Jeu | 10 s | 30 s | 60 s | 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| SC-3000 | Choplifter | 5142,97 | 5215,78 | 5244,34 | 5252,80 |
+| SC-3000 | Zaxxon | 4657,68 | 4661,69 | 4690,73 | 4637,56 |
+| SC-3000 | Star Jacker | 5021,02 | 5190,75 | 4992,16 | 4990,46 |
+| SC-3000 | Girl’s Garden | 4808,29 | 4885,99 | 4863,60 | 4887,36 |
+| SC-3000 | Champion Boxing | 4996,34 | 5205,31 | 5240,29 | 5244,01 |
+
+#### Dynarec x64
+
+| Machine | Jeu | 10 s | 30 s | 60 s | 120 s |
+| --- | --- | ---: | ---: | ---: | ---: |
+| SC-3000 | Choplifter | 5307,12 | 5328,42 | 5316,39 | 5360,95 |
+| SC-3000 | Zaxxon | 4681,05 | 4775,30 | 4780,90 | 4756,85 |
+| SC-3000 | Star Jacker | 4722,57 | 4780,30 | 4775,95 | 4778,86 |
+| SC-3000 | Girl’s Garden | 4107,60 | 4371,18 | 4415,43 | 4458,88 |
+| SC-3000 | Champion Boxing | 4414,08 | 4663,60 | 4773,93 | 4761,50 |
+
+Les vingt passages restent à au moins 60 FPS chaque seconde sur la dernière minute. À 120 secondes, le x64 est devant sur les cinq jeux en Debug et sur Choplifter et Zaxxon en Release. L'interpréteur est devant en Release sur Star Jacker, Girl’s Garden et Champion Boxing. Le PCM et les images concordent aux trois trames contrôlées. Les 40 PNG reproduits hors chronométrage concordent entre modes et configurations pour chaque jeu et chaque trame.
+
+Le contrôle de révision exécuté séparément a confirmé 0x01 en SG-1000 par défaut pour les cinq mêmes cartouches. Choplifter démarre aussi sous 0x02 et 0x03. Les mesures SC-3000 couvrent la lecture de cartouches compatibles et ne valident pas les périphériques spécifiques de l'ordinateur.
+
+[Relevés Debug](../../../../artifacts/.segaemu-sc3000/results-Debug.txt) · [Relevés Release](../../../../artifacts/.segaemu-sc3000/results-Release.txt) · [Captures Debug](../../../../artifacts/.segaemu-sc3000/screenshots-Debug/) · [Captures Release](../../../../artifacts/.segaemu-sc3000/screenshots-Release/)

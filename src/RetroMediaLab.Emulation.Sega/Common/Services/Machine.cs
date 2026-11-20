@@ -1,12 +1,14 @@
 using CommonControllerFunctions = RetroMediaLab.Emulation.Sega.Common.Functions.ControllerFunctions;
 using RetroMediaLab.Emulation;
+using SegaEmuCore = RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services.ManagedCore;
 using System.Collections.Concurrent;
 using System.IO;
 
 namespace RetroMediaLab.Emulation.Sega.Common.Services;
 
 internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, IEmulationInput,
-    IEmulationMedia, IEmulationVideo, IEmulationAudio, IEmulationSavedStates, IEmulationRuntime, IEmulationControllerFeedbackSource
+    IEmulationMedia, IEmulationVideo, IEmulationAudio, IEmulationSavedStates, IEmulationRuntime, IEmulationControllerFeedbackSource,
+    IEmulationTapeTransport
 {
     /// <summary>Standard vidéo annoncé par le cœur courant, ou null si inconnu.</summary>
     public EmulationVideoStandard? Region => _core.Region;
@@ -18,6 +20,12 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     public long AudioUnderrunCount => _core.AudioUnderrunCount;
     /// <summary>Capacité de sauvegarde du cœur sous les restrictions déjà déclarées par son profil.</summary>
     public bool SupportsSaveStates => _core.SupportsSaveStates;
+    public IEmulationTapeTransport? TapeTransport => _core is SegaEmuCore &&
+        Configuration.Model == ModelConstants.Sc3000 ? this : null;
+    EmulationTapeState IEmulationTapeTransport.State => ((SegaEmuCore)_core).TapeState;
+    IReadOnlySet<EmulationTapeCommand> IEmulationTapeTransport.AvailableCommands => ((SegaEmuCore)_core).TapeCommands;
+    ValueTask IEmulationTapeTransport.ExecuteAsync(EmulationTapeCommand command, CancellationToken cancellationToken) =>
+        QueueCommand(() => ((SegaEmuCore)_core).ExecuteTape(command), cancellationToken);
 
     /// <summary>Entrées actuelles de session, empruntées au propriétaire de la configuration.</summary>
     private InputConfiguration? CurrentInputConfiguration => Configuration.Input;
