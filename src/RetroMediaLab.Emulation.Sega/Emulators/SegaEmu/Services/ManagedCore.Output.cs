@@ -91,7 +91,7 @@ internal sealed partial class ManagedCore
     }
     private float CalculateAspect(SegaBoard system, int width, int height)
     {
-        string aspect = GetOption("aspect_ratio");
+        string aspect = _configuration?.Model == ModelConstants.Sg1000 ? "auto" : GetOption("aspect_ratio");
         if (aspect == "4:3") return 4f / 3f;
         if (aspect == "Uncorrected") return (float)width / height;
         if (aspect is not ("NTSC PAR" or "PAL PAR") && system.Hardware is 0x40 or 0x41 && _settings.Video.overscan == 0 && _settings.Video.gg_extra == 0)

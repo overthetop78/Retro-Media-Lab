@@ -478,7 +478,9 @@ public sealed class MachineIntegrationTests
         var expansion = fields.SingleOrDefault(field => field.Id == MachineConfiguration.Sg1000RamExtensionOption);
         Assert.Equal(model != "sg-1000", expansion is not null);
         Assert.Equal(extensionBytes, expansion?.Value == "enabled" ? expansion.NumericValue : 0);
-        Assert.DoesNotContain(fields, field => field.Id is "segaemu_vdp_mode" or "segaemu_left_border" or "segaemu_render" or "segaemu_sound_output");
+        Assert.DoesNotContain(fields, field => field.Id is "segaemu_vdp_mode" or "segaemu_left_border" or "segaemu_render"
+            or "segaemu_blargg_ntsc_filter" or "segaemu_aspect_ratio" or "segaemu_overscan" or "segaemu_sound_output");
+        Assert.Contains(fields, field => field.Id == "segaemu_frameskip");
         var resources = Resources();
         resources.Configuration.system = configuration.HasSg1000RamExtension ? SystemHardware.Sg1000IIExtendedRam
             : configuration.IsSg1000II ? SystemHardware.Sg1000II : SystemHardware.Sg1000;

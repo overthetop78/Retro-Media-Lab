@@ -187,7 +187,8 @@ internal static partial class SettingsDescriptionFunctions
                 {
                     Fields = coreBlock.Fields.Where(field => field.Id is not
                         (MachineConfiguration.Sg1000ModelOption or "segaemu_vdp_mode" or "segaemu_left_border"
-                        or "segaemu_render" or "segaemu_sound_output")).Select(field => field.Id switch
+                        or "segaemu_render" or "segaemu_blargg_ntsc_filter" or "segaemu_aspect_ratio"
+                        or "segaemu_overscan" or "segaemu_sound_output")).Select(field => field.Id switch
                         {
                             "segaemu_frameskip" => field with { RefreshSettingsOnChange = true },
                             "segaemu_frameskip_threshold" => field with { IsVisible = options.GetValueOrDefault("segaemu_frameskip") == "manual" },

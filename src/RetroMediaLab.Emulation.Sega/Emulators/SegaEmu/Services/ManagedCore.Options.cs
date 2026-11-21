@@ -167,13 +167,15 @@ internal sealed partial class ManagedCore
             sound.SmsChannelVolumes[channel] = Number($"sms_fm_channel_{channel}_volume", 100);
         Vdp.Configuration video = settings.Video;
         video.DisableSpriteLimit = GetOption("no_sprite_limit") == "enabled";
-        video.overscan = GetOption("overscan") switch { "top/bottom" => 1, "left/right" => 2, "full" => 3, _ => 0 };
+        video.overscan = model == ModelConstants.Sg1000 ? 0
+            : GetOption("overscan") switch { "top/bottom" => 1, "left/right" => 2, "full" => 3, _ => 0 };
         video.gg_extra = GetOption("gg_extra") == "enabled" ? 1 : 0;
         video.render = model == ModelConstants.Sg1000 || GetOption("render") == "single field" ? 0 : 1;
         video.lcd = GetOption("lcd_filter") == "enabled" ? 204 : 0;
         video.enhanced_vscroll = GetOption("enhanced_vscroll") == "enabled" ? 1 : 0;
         video.enhanced_vscroll_limit = Number("enhanced_vscroll_limit", 8);
-        string ntsc = GetOption("blargg_ntsc_filter"); video.ntsc = ntsc is "" or "disabled" ? 0 : 1;
+        string ntsc = model == ModelConstants.Sg1000 ? "disabled" : GetOption("blargg_ntsc_filter");
+        video.ntsc = ntsc is "" or "disabled" ? 0 : 1;
         video.MdNtscSetup = NtscPreset(ntsc, true); video.SmsNtscSetup = NtscPreset(ntsc, false);
     }
     private static NtscSetup NtscPreset(string option, bool md) => option switch
