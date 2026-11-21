@@ -4,7 +4,13 @@ namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 
 internal abstract partial class SegaBoard
 {
-    protected void InitializeEightBitMapping() { z80_init(0,z80_irq_callback); sms_cart_init(); ConfigureZ80Ports(); }
+    protected void InitializeEightBitMapping(bool sg1000Console = false)
+    {
+        config.Sms.Sg1000Console = sg1000Console;
+        z80_init(0, z80_irq_callback);
+        sms_cart_init();
+        ConfigureZ80Ports();
+    }
     protected void InitializeMegaDriveMapping() { unchecked { int i = default; z80_init(0,z80_irq_callback);
             m68k_init();
             main.aerr_enabled = unchecked((uint)(config.addr_error));

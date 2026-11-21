@@ -20,6 +20,7 @@ public sealed class CompactDiscDriveConfigurationDialog : Window
     internal IReadOnlyList<EmulationSettingsField> PresentationFields { get; }
     internal IReadOnlyDictionary<string, FrameworkElement> PresentationControls => _options;
     internal string? PresentationModule { get; }
+    internal IReadOnlyList<EmulationSettingsBlock> PresentationBlocks { get; }
 
     public EmulationCompactDiscDriveSettings Settings => new(
         (_speed.SelectedItem as StorageDialogChoice)?.Value
@@ -31,7 +32,8 @@ public sealed class CompactDiscDriveConfigurationDialog : Window
         string modelName,
         EmulationCompactDiscDriveSettings settings, IReadOnlyList<string>? speeds,
         string? cacheLabel, string? ignoreErrorsLabel, string? moduleId = null,
-        IReadOnlyList<EmulationSettingsField>? configurationFields = null, string? deviceName = null)
+        IReadOnlyList<EmulationSettingsField>? configurationFields = null, string? deviceName = null,
+        IReadOnlyList<EmulationSettingsBlock>? configurationBlocks = null)
     {
         Title = $"{LocExtension.Get(EmulationResourceKeys.StorageDeviceConfigure)} {identifier}";
         deviceName ??= LocExtension.Get(EmulationResourceKeys.CompactDiscDevice);
@@ -58,38 +60,65 @@ public sealed class CompactDiscDriveConfigurationDialog : Window
         PresentationEntries = entries.ToArray();
         PresentationModule = moduleId;
         PresentationFields = configurationFields ?? [];
+        PresentationBlocks = configurationBlocks ?? [];
         var fields = StorageDialogUi.TwoColumnFields(entries.ToArray());
         var body = new StackPanel();
-        body.Children.Add(fields);
-        var optionsPanel = new Grid();
-        optionsPanel.ColumnDefinitions.Add(new ColumnDefinition());
-        optionsPanel.ColumnDefinitions.Add(new ColumnDefinition());
-        var optionFields = (configurationFields ?? []).OrderBy(field => field.Editor == EmulationSettingsEditor.Toggle ? 0 : 1).ToArray();
-        var cell = 0;
-        var previousWasToggle = true;
-        foreach (var field in optionFields)
+        var hint = StorageDialogUi.Info(LocExtension.Get(EmulationResourceKeys.StorageRuntimeHint));
+        if (PresentationBlocks.Count == 0)
         {
-            var isToggle = field.Editor == EmulationSettingsEditor.Toggle;
-            if (previousWasToggle && !isToggle && cell % 2 != 0) cell++;
-            previousWasToggle = isToggle;
-            while (optionsPanel.RowDefinitions.Count <= cell / 2)
-                optionsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            var control = StorageConfigurationFieldFunctions.Create(field, moduleId, settings.Options);
-            _options[field.Id] = control;
-            var presentation = StorageConfigurationFieldFunctions.Present(field, control, moduleId);
-            presentation.Margin = new Thickness(cell % 2 == 0 ? 0 : 14, isToggle ? 4 : 14, cell % 2 == 0 ? 14 : 0, 8);
-            Grid.SetRow(presentation, cell / 2);
-            Grid.SetColumn(presentation, cell % 2);
-            optionsPanel.Children.Add(presentation);
-            cell++;
+            body.Children.Add(fields);
+            body.Children.Add(CreateOptionGrid(PresentationFields, 2));
         }
-        body.Children.Add(optionsPanel);
-        body.Children.Add(StorageDialogUi.Info(LocExtension.Get(EmulationResourceKeys.StorageRuntimeHint)));
+        else
+        {
+            for (var index = 0; index < PresentationBlocks.Count; index++)
+            {
+                var block = PresentationBlocks[index];
+                var section = new StackPanel();
+                if (index == 0) section.Children.Add(fields);
+                section.Children.Add(CreateOptionGrid(block.Fields, 1));
+                var card = StorageDialogUi.Card(LocExtension.GetForModule(moduleId ?? string.Empty, block.TitleResourceKey), section);
+                card.Margin = new Thickness(0, 0, 0, 12);
+                body.Children.Add(card);
+            }
+        }
+        body.Children.Add(hint);
+        var scroll = new ScrollViewer
+        {
+            Content = body, MaxHeight = SystemParameters.WorkArea.Height * 0.65,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
+        };
         Content = StorageDialogUi.DialogLayout(
             StorageDialogUi.DialogHeader(IconGlyphs.OpticalDisc, Title, $"{deviceName} · {machineName}"),
-            StorageDialogUi.Card(deviceName,
-                new ScrollViewer { Content = body, MaxHeight = SystemParameters.WorkArea.Height * 0.65, VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                    HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled }),
+            PresentationBlocks.Count == 0 ? StorageDialogUi.Card(deviceName, scroll) : scroll,
             StorageDialogUi.Footer(this, LocExtension.Get(EmulationResourceKeys.CommonSave)));
+
+        Grid CreateOptionGrid(IReadOnlyList<EmulationSettingsField> definitions, int columns)
+        {
+            var optionsPanel = new Grid();
+            for (var column = 0; column < columns; column++)
+                optionsPanel.ColumnDefinitions.Add(new ColumnDefinition());
+            var optionFields = definitions.OrderBy(field => field.Editor == EmulationSettingsEditor.Toggle ? 0 : 1).ToArray();
+            var cell = 0;
+            var previousWasToggle = true;
+            foreach (var field in optionFields)
+            {
+                var isToggle = field.Editor == EmulationSettingsEditor.Toggle;
+                if (previousWasToggle && !isToggle && cell % columns != 0) cell++;
+                previousWasToggle = isToggle;
+                while (optionsPanel.RowDefinitions.Count <= cell / columns)
+                    optionsPanel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                var control = StorageConfigurationFieldFunctions.Create(field, moduleId, settings.Options);
+                _options[field.Id] = control;
+                var presentation = StorageConfigurationFieldFunctions.Present(field, control, moduleId);
+                presentation.Margin = new Thickness(cell % columns == 0 ? 0 : 14, isToggle ? 4 : 14, columns == 2 && cell % columns == 0 ? 14 : 0, 8);
+                Grid.SetRow(presentation, cell / columns);
+                Grid.SetColumn(presentation, cell % columns);
+                optionsPanel.Children.Add(presentation);
+                cell++;
+            }
+            return optionsPanel;
+        }
     }
 }

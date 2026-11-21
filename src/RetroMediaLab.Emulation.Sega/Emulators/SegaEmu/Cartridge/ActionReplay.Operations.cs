@@ -22,7 +22,7 @@ internal sealed partial class ActionReplay
             Clear_old();
             Clear_data();
             Clear_addr();
-            memory_map[(int)(0)].@base = new ArrayPointer<byte>(cart.lockrom);
+            memory_map[(int)(0)].@base = new ArrayPointer<byte>(Firmware);
             if ((hard != 0)) {
             FillMemory(new ArrayPointer<byte>(action_replay.ram), 255, 65536);
             }
@@ -106,7 +106,7 @@ internal sealed partial class ActionReplay
             areplay_set_status(0);
             areplay_set_status(1);
             }
-            memory_map[(int)(0)].@base = new ArrayPointer<byte>(cart.rom);
+            if (PassThrough?.Invoke() != true) memory_map[(int)(0)].@base = new ArrayPointer<byte>(cart.rom);
             }
         }
     }
@@ -115,7 +115,7 @@ internal sealed partial class ActionReplay
         unchecked
         {
             if ((((address & unchecked((uint)(255))) == unchecked((uint)(120))) && (data == unchecked((uint)(65535))))) {
-            memory_map[(int)(0)].@base = new ArrayPointer<byte>(cart.rom);
+            if (PassThrough?.Invoke() != true) memory_map[(int)(0)].@base = new ArrayPointer<byte>(cart.rom);
             }
         }
     }

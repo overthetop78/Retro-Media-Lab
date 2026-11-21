@@ -8,6 +8,8 @@ public sealed record EmulationEmulatorInstallation(EmulationEmulatorDefinition E
     {
     }
 
+    public bool CanSearchReleases { get; init; } = true;
+
     public string EmulatorId => Emulator.Id;
     public string DisplayName => Emulator.DisplayName;
     public string DescriptionResourceKey => Emulator.DescriptionResourceKey;

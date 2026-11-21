@@ -108,6 +108,49 @@ internal static class EmulationModuleSettingsNavigationScenarios
         finally { module.Cleanup(); }
     }
 
+    internal static async Task FixedBundledEmulatorShowsTheCreationCard()
+    {
+        IEmulationConfiguration configuration = new MachineConfigurationScenarios.Configuration("synthetic", Guid.NewGuid(), "machine-a", "bundled");
+        var bundled = new EmulationEmulatorInstallation("bundled", "1.0.0") { CanSearchReleases = false };
+        IReadOnlyList<EmulationEmulatorInstallation> available = [bundled];
+        bool saved = false;
+        var manager = ControlledDependencies.Simulate<IEmulationEmulatorManager>((method, _) => method.Name switch
+        {
+            "GetEmulatorInstallationAsync" => ValueTask.FromResult(bundled),
+            "GetEmulatorInstallationsAsync" => ValueTask.FromResult(available),
+            _ => throw new NotSupportedException(method.Name)
+        });
+        var controller = new EmulationEmulatorManagementController(manager, () => configuration, value => configuration = value, () => saved);
+        var create = new Button();
+        var panel = Assert.IsType<EmulationCoreManagementPanel>(controller.CreateView(create));
+        try
+        {
+            await controller.RefreshAsync();
+            Assert.Equal(Visibility.Visible, panel.ManagementCard.Visibility);
+            Assert.IsType<Grid>(create.Parent);
+            Assert.Equal(Visibility.Collapsed, panel.Search.Visibility);
+            Assert.False(panel.Emulators.IsEnabled);
+            await controller.EnsureEmulatorSelectedAsync();
+
+            available = [bundled, new EmulationEmulatorInstallation("external", null)];
+            await controller.RefreshAsync();
+            Assert.Equal(Visibility.Visible, panel.ManagementCard.Visibility);
+            Assert.True(panel.Emulators.IsEnabled);
+            Assert.IsType<Grid>(create.Parent);
+
+            saved = true;
+            create.Visibility = Visibility.Collapsed;
+            await controller.RefreshAsync();
+            Assert.Equal(Visibility.Visible, panel.ManagementCard.Visibility);
+            Assert.IsType<Grid>(create.Parent);
+            Assert.Equal("bundled", panel.Emulators.SelectedValue);
+            Assert.Contains("1.0.0", panel.Installed.Text);
+            Assert.Equal(Visibility.Collapsed, panel.Search.Visibility);
+            Assert.False(panel.Emulators.IsEnabled);
+        }
+        finally { await controller.DisposeAsync(); }
+    }
+
     internal static async Task UnsavedMachineChoosesExactlyOneEmulator()
     {
         IEmulationConfiguration configuration = new MachineConfigurationScenarios.Configuration("synthetic", Guid.NewGuid(), "machine-a", "emulator-a");

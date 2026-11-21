@@ -19,6 +19,7 @@ internal sealed class SmsCartridgeConfiguration
 {
     private readonly SoundConfiguration _sound;
     public byte system, bios;
+    public bool Sg1000Console;
     public int ym2413 { get => _sound.Ym2413Mode; set => _sound.Ym2413Mode = value; }
     public SmsCartridgeConfiguration(SoundConfiguration sound) { _sound = sound; }
 }

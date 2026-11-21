@@ -4,12 +4,21 @@ namespace RetroMediaLab.Emulation.Sega.Common.Machines.Common.Functions;
 
 internal static partial class InputSettingsFunctions
 {
+    private const string TerebiStylusAction = "TerebiStylusPress";
+    internal static bool SupportsTerebiStylus(MachineConfiguration configuration) =>
+        configuration.Model == ModelConstants.Sg1000 && configuration.EmulatorId == Emulators.SegaEmu.Constants.CoreConstants.Id;
+
     internal static EmulationInputSettings Describe(MachineConfiguration configuration)
     {
         var model = ModelCatalog.Get(configuration.Model);
         var input = configuration.Input ?? new InputConfiguration();
         var keyboard = model.HasKeyboard ? new EmulationInputBindingSet((new Engine().SelectedAdapter(configuration)?.GetKeyboardDefinitions(configuration) ?? KeyboardDefinitions(model)), input.KeyboardBindings ?? EmulationSdk.InputProcessing.ToStrings(input.KeyboardMappings), EmulationInputSource.Keyboard | EmulationInputSource.Mouse | EmulationInputSource.Controller) : null;
         var mouse = model.MouseButtonCount > 0 ? new EmulationInputBindingSet(MouseDefinitions(), EmulationSdk.InputProcessing.MouseBindings(input.MouseButtonMappings, MouseAction.None), EmulationInputSource.Mouse | EmulationInputSource.Keyboard | EmulationInputSource.Controller, true) : null;
+        if (SupportsTerebiStylus(configuration))
+            mouse = new EmulationInputBindingSet(
+                [new InputBindingDefinition(TerebiStylusAction, string.Empty, InputSettingsFunctionsConstants.MouseLeft, "Terebi Oekaki")],
+                new Dictionary<string, string> { [TerebiStylusAction] = input.TerebiStylusBinding ?? InputSettingsFunctionsConstants.MouseLeft },
+                EmulationInputSource.Mouse | EmulationInputSource.Keyboard | EmulationInputSource.Controller, true);
         var configured = input.Controllers ?? [];
         var ports = Enumerable.Range(0, CommonControllerFunctions.PortCount(configuration)).Select(index =>
         {
@@ -44,7 +53,10 @@ internal static partial class InputSettingsFunctions
             {
                 KeyboardBindings = keyboard,
                 KeyboardMappings = EmulationSdk.InputProcessing.ToKeys(keyboard),
-                MouseButtonMappings = mouse,
+                MouseButtonMappings = SupportsTerebiStylus(configuration) ? current.MouseButtonMappings : mouse,
+                TerebiStylusBinding = SupportsTerebiStylus(configuration)
+                    ? settings.Mouse?.Values.GetValueOrDefault(TerebiStylusAction) ?? current.TerebiStylusBinding
+                    : current.TerebiStylusBinding,
                 Controllers = controllers
             }
         };

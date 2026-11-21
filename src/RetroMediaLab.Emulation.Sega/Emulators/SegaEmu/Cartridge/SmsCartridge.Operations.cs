@@ -1,4 +1,5 @@
 using RetroMediaLab.Chips.Common.Memory;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;
 
@@ -307,7 +308,7 @@ internal sealed partial class SmsCartridge
         unchecked
         {
             int i = default;
-            if ((unchecked((int)(system_hw)) == 1)) {
+            if (system_hw == SystemHardware.Sg1000 || config.Sg1000Console && system_hw == SystemHardware.Sg1000II) {
             for (i = 48; (i < 64); i++) {
             z80_readmap[(int)(i)] = (z80_writemap[(int)(i)] = new ArrayPointer<byte>(work_ram, (int)(0)));
             }

@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System รุ่น</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>กระจก 3 มิติ</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>เปิดใช้งาน</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>ปิดการใช้งาน</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive รุ่น</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>ปุ่มหยุดคอนโซล</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>ความไวของเมาส์</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>ความเร็วการเคลื่อนไหวของเมาส์ ค่าปริยายคือ 2.00 พอร์ตสําหรับชี้แต่ละพอร์ตสามารถใช้ค่านี้ได้โดยอัตโนมัติ หรือความเร็วของมัน การเปลี่ยนแปลงจะมีผลโดยไม่ต้องเริ่มการทํางานของคอนโซลใหม่อีกครั้ง</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>แก้ไขฮาร์ดแวร์</value></data>
 </root>

@@ -26,10 +26,10 @@ internal sealed partial class GameGenie
             Clear_data();
             Clear_addr();
             }
-            memory_map[(int)(0)].@base = new ArrayPointer<byte>(cart.lockrom);
+            memory_map[(int)(0)].@base = new ArrayPointer<byte>(Firmware);
             memory_map[(int)(0)].write8 = ggenie_write_byte;
             memory_map[(int)(0)].write16 = ggenie_write_word;
-            memory_map[(int)(0)].read16 = null;
+            memory_map[(int)(0)].read8 = memory_map[(int)(0)].read16 = null;
             }
         }
     }
@@ -37,8 +37,11 @@ internal sealed partial class GameGenie
     {
         unchecked
         {
+            bool apply = enable != 0;
+            if (_patchesApplied == apply) return;
+            _patchesApplied = apply;
             int i = default;
-            if ((enable != 0)) {
+            if (apply) {
             for (i = 0; (i < 6); i++) {
             if (((unchecked((int)(ggenie.regs[(int)(0)])) & (1 << i)) != 0)) {
             ggenie.old[(int)(i)] = (new ArrayPointer<byte>(cart.rom) + unchecked((int)(ggenie.addr[(int)(i)]))).Cast<ushort>()[0];
@@ -94,14 +97,16 @@ internal sealed partial class GameGenie
     {
         unchecked
         {
+            bool passThrough = false;
             ggenie.regs[(int)(offset)] = unchecked((ushort)(data));
             if ((offset == unchecked((uint)(0)))) {
             if (((data & unchecked((uint)(1024))) != 0)) {
+            passThrough = true;
             memory_map[(int)(0)].@base = new ArrayPointer<byte>(cart.rom);
             memory_map[(int)(0)].read8 = null;
             memory_map[(int)(0)].read16 = null;
             } else {
-            memory_map[(int)(0)].@base = new ArrayPointer<byte>(cart.lockrom);
+            memory_map[(int)(0)].@base = new ArrayPointer<byte>(Firmware);
             memory_map[(int)(0)].read8 = null;
             memory_map[(int)(0)].read16 = null;
             if (((data & unchecked((uint)(512))) != 0)) {
@@ -132,6 +137,7 @@ internal sealed partial class GameGenie
             } else if ((offset == unchecked((uint)(1)))) {
             ggenie.regs[(int)(1)] |= unchecked((ushort)(1));
             }
+            if (passThrough) PassThrough?.Invoke();
         }
     }
 }

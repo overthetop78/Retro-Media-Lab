@@ -1951,8 +1951,11 @@
   <data name="Emulation.Option.bluemsx.bluemsx_cartmapper.Value.0x4000"><value>0x4000</value></data>
   <data name="Emulation.Firmware.bluemsx.0"><value>SF-7000 BIOS</value></data>
   <data name="Emulation.Sega.Model.Sf7000"><value>SF-7000</value></data>
-  <data name="Emulation.Sega.Model.MegaCd"><value>Mega-CD / Sega CD</value></data>
-  <data name="Emulation.Sega.Model.ThirtyTwoX"><value>32X</value></data>
+  <data name="Emulation.Sega.Model.MegaCd"><value>Sega CD</value></data>
+  <data name="Emulation.Sega.Model.ThirtyTwoX"><value>Mega Drive + 32X</value></data>
+  <data name="Emulation.Firmware.segaemu.Tmss"><value>TMSS ROM</value></data>
+  <data name="Emulation.Firmware.segaemu.MegaCd"><value>Mega-CD BIOS</value></data>
+  <data name="Emulation.Sega.Model.MegaCdThirtyTwoX"><value>Mega Drive + Mega-CD + 32X</value></data>
   <data name="Emulation.Sega.Model.SystemSp"><value>System SP</value></data>
   <data name="Emulation.Sega.Model.StV"><value>ST-V</value></data>
   <data name="Emulation.Sega.Model.Model3"><value>Model 3</value></data>
@@ -5399,9 +5402,10 @@ The 'All VMUs' setting creates up to 8 unique VMU files (A1/A2/B1/B2/C1/C2/D1/D2
   <data name="Emulation.Firmware.segaemu.11"><value>areplay.bin (Action Replay ROM)</value></data>
   <data name="Emulation.Firmware.segaemu.2"><value>bios_CD_U.bin (SegaCD US BIOS)</value></data>
   <data name="Emulation.Firmware.segaemu.3"><value>bios_CD_J.bin (MegaCD JP BIOS)</value></data>
-  <data name="Emulation.Firmware.segaemu.4"><value>bios_E.sms (MasterSystem EU BIOS)</value></data>
-  <data name="Emulation.Firmware.segaemu.5"><value>bios_U.sms (MasterSystem US BIOS)</value></data>
-  <data name="Emulation.Firmware.segaemu.6"><value>bios_J.sms (MasterSystem JP BIOS)</value></data>
+  <data name="Emulation.Firmware.segaemu.4"><value>BIOS EUR</value></data>
+  <data name="Emulation.Firmware.segaemu.5"><value>BIOS USA</value></data>
+  <data name="Emulation.Firmware.segaemu.6"><value>BIOS JAP</value></data>
+  <data name="Emulation.Firmware.segaemu.MasterSystem"><value>BIOS</value></data>
   <data name="Emulation.Firmware.segaemu.7"><value>bios.gg (GameGear BIOS)</value></data>
   <data name="Emulation.Firmware.segaemu.8"><value>sk.bin (Sonic &amp; Knuckles ROM)</value></data>
   <data name="Emulation.Firmware.segaemu.9"><value>sk2chip.bin (Sonic &amp; Knuckles UPMEM ROM)</value></data>

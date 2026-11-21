@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System model modelleme modeli</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3D Gözlük</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Etkin</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Devre dışı</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive modeli</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>Konsol Pause düğmesine</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>Mouse</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Mouse hareketi hızı. Varsayılan olan 2.00. Her işaretli liman bu ayarı otomatik veya kendi hızı kullanabilir. Değişiklikler konsolu yeniden başlatmadan uygulanır.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Donanım revizyonu</value></data>
 </root>

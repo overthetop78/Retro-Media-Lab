@@ -9,8 +9,11 @@
   <data name="Emulation.Sega.Model.Sg1000"><value>SG-1000</value></data>
   <data name="Emulation.Sega.Model.Sc3000"><value>SC-3000</value></data>
   <data name="Emulation.Sega.Model.MarkIII"><value>Mark III</value></data>
-  <data name="Emulation.Sega.Model.MasterSystem"><value>Master System</value></data>
-  <data name="Emulation.Sega.Model.MegaDrive"><value>Mega Drive / Genesis</value></data>
+  <data name="Emulation.Sega.Model.MasterSystem"><value>Master System I</value></data>
+  <data name="Emulation.Sega.Model.MasterSystemII"><value>Master System II</value></data>
+  <data name="Emulation.Sega.Model.MegaDriveII"><value>Mega Drive II</value></data>
+  <data name="Emulation.Sega.Model.MegaCdII"><value>Mega-CD II</value></data>
+  <data name="Emulation.Sega.Model.MegaDrive"><value>Mega Drive</value></data>
   <data name="Emulation.Sega.Model.Pico"><value>Pico</value></data>
   <data name="Emulation.Sega.Model.GameGear"><value>Game Gear</value></data>
   <data name="Emulation.Sega.Model.Saturn"><value>Saturn</value></data>

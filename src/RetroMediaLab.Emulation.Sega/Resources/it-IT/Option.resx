@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Modello Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>Bicchieri 3D</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Attivato</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Disattivato</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive modello</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>Console pulsante Pausa</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>Sensibilità del mouse</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Velocità di movimento del mouse. Il default è 2.00. Ogni porta di punta-dispositivo può utilizzare questa impostazione automaticamente o la propria velocità. Le modifiche si applicano senza riavviare la console.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Revisione hardware</value></data>
 </root>

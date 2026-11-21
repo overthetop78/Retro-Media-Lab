@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System malli</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D-lasit</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Käytössä</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Ei käytössä</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive -malli</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>Konsolitaukopainike</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>Hiiren herkkyys</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Hiirien liikenopeus. Oletusarvo on 2.00. Jokainen osoitin-laiteportti voi käyttää tätä asetusta automaattisesti tai omalla nopeudellaan. Muutokset koskevat konsolia uudelleenkäynnistämättä.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Laitteiston tarkistus</value></data>
 </root>

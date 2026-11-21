@@ -85,6 +85,9 @@ internal static partial class EmulationSettingsLayout
         }
         settings.Children.Add(mouse);
 
+        if (editor.Rows.Count == 0 && unavailable is null)
+            return ScrollPage(settings);
+
         var bindings = InputBindings(editor, LocExtension.Get("Emulation.Mouse.Actions"), LocExtension.Get("Emulation.Input.Capture.Hint"));
         var mapping = new Grid { Margin = new Thickness(0, 10, 0, 0) };
         mapping.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) });

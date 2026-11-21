@@ -153,14 +153,34 @@ internal static partial class EmulationSettingsFieldControlFunctions
             VerticalAlignment = VerticalAlignment.Center, MinWidth = 100
         };
         var input = CreateNumber(field with { Value = slider.Value.ToString("0.00", CultureInfo.InvariantCulture) });
+        input.Text = slider.Value.ToString("0.00", CultureInfo.CurrentCulture);
         input.MinWidth = 64; input.Width = 80; input.Margin = new Thickness(8, 0, 0, 0);
         var decrement = new Button { Content = "−", MinWidth = 28, Margin = new Thickness(4, 0, 0, 0) };
         var increment = new Button { Content = "+", MinWidth = 28, Margin = new Thickness(4, 0, 0, 0) };
         var row = new Grid();
-        row.ColumnDefinitions.Add(new ColumnDefinition());
-        for (int i = 0; i < 3; i++) row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        bool mouse = field.Tab == EmulationMachineTab.Mouse;
+        if (mouse)
+        {
+            slider.MaxWidth = 260;
+            row.HorizontalAlignment = HorizontalAlignment.Left;
+        }
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = mouse ? GridLength.Auto : new GridLength(1, GridUnitType.Star) });
+        for (int i = 0; i < (mouse ? 2 : 3); i++) row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.Children.Add(slider); Grid.SetColumn(input, 1); row.Children.Add(input);
-        Grid.SetColumn(decrement, 2); row.Children.Add(decrement); Grid.SetColumn(increment, 3); row.Children.Add(increment);
+        if (mouse)
+        {
+            slider.Width = 260;
+            increment.MinHeight = decrement.MinHeight = 0;
+            increment.Padding = decrement.Padding = new Thickness(6, 0, 6, 0);
+            var buttons = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { increment, decrement } };
+            Grid.SetColumn(buttons, 2);
+            row.Children.Add(buttons);
+        }
+        else
+        {
+            Grid.SetColumn(decrement, 2); row.Children.Add(decrement);
+            Grid.SetColumn(increment, 3); row.Children.Add(increment);
+        }
         bool updating = false;
         double saved = slider.Value;
         row.Tag = (Func<string>)(() => slider.Value.ToString("0.00", CultureInfo.InvariantCulture));

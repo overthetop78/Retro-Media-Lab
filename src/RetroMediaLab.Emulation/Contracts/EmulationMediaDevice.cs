@@ -31,4 +31,6 @@ public sealed record EmulationMediaDevice(
 {
     /// <summary>Modèle de lecteur configuré, pour présenter son support physique sans déduire son format du nom de la machine.</summary>
     public FloppyDriveModelChoice? FloppyModel { get; init; }
+
+    public Func<IReadOnlyDictionary<string, string>, IReadOnlyList<EmulationSettingsField>>? DescribeCartridgeOptions { get; init; }
 }

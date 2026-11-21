@@ -16,8 +16,8 @@ internal static class EmulationMachineTabConstants
     [
         new(EmulationMachineTab.General, IconGlyphs.Settings, "Emulation.Tab.General"),
         new(EmulationMachineTab.Cpu, IconGlyphs.Processor, "Emulation.Tab.Cpu"),
-        new(EmulationMachineTab.Ram, IconGlyphs.Memory, "Emulation.Tab.Ram"),
         new(EmulationMachineTab.Rom, IconGlyphs.File, "Emulation.Tab.Rom"),
+        new(EmulationMachineTab.Ram, IconGlyphs.Memory, "Emulation.Tab.Ram"),
         new(EmulationMachineTab.Video, IconGlyphs.Display, "Emulation.Tab.Video"),
         new(EmulationMachineTab.Audio, IconGlyphs.Audio, "Emulation.Tab.Audio"),
         new(EmulationMachineTab.Extensions, IconGlyphs.Connection, "Emulation.Tab.Extensions"),

@@ -63,7 +63,7 @@ internal abstract partial class SegaBoard
                 string extension = Path.GetExtension(filename).ToUpperInvariant();
                 system_hw = noContent ? system_hw : extension switch
                 {
-                    ".SMS" => SystemHardware.MasterSystemII,
+                    ".SMS" or ".MV" => SystemHardware.MasterSystemII,
                     ".GG" => SystemHardware.GameGear,
                     ".SG" => SystemHardware.Sg1000,
                     _ => SystemHardware.MegaDrive
@@ -102,7 +102,11 @@ internal abstract partial class SegaBoard
             GetRomInformation();
             bool swapCartridgeWords = system_hw == SystemHardware.MegaDrive;
             if (swapCartridgeWords && (Path.GetExtension(filename).Equals(".32x", StringComparison.OrdinalIgnoreCase)
-                || rominfo.consoletype.Contains("32X", StringComparison.OrdinalIgnoreCase))) config.Enable32X = true;
+                || rominfo.consoletype.Contains("32X", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (!config.Enable32X && !config.AllowAutomatic32X) return false;
+                config.Enable32X = true;
+            }
             if (rominfo.consoletype.Contains("SEGA PICO", StringComparison.Ordinal)) system_hw = SystemHardware.Pico;
             GetRegion(true);
             if (swapCartridgeWords) SwapWords(cart.rom.AsSpan(0, (size + 1) & ~1));
@@ -123,7 +127,11 @@ internal abstract partial class SegaBoard
                         if (DiscLoaded == 0) TryMountAddonDisc(Path.ChangeExtension(filename, ".iso"));
                         system_hw = SystemHardware.MegaCd; cd_boot = 0x40;
                     }
-                    else _cd.Drive.Unload();
+                    else
+                    {
+                        if (config.system == SystemHardware.MegaCd) return false;
+                        _cd.Drive.Unload();
+                    }
                 }
                 else if (rominfo.ROMType.Contains("BR", StringComparison.Ordinal))
                 {
@@ -137,7 +145,7 @@ internal abstract partial class SegaBoard
             }
             if (config.system == SystemHardware.MegaDrive)
             {
-                if ((system_hw & 0x80) == 0) system_hw = SystemHardware.PowerBaseConverter;
+                if ((system_hw & 0x80) == 0 || noContent && config.UsePowerBaseConverter) system_hw = SystemHardware.PowerBaseConverter;
             }
             else if (config.system == SystemHardware.GameGear)
             {

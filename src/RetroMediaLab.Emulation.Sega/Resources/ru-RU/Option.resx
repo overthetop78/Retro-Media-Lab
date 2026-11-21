@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Модель Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3D очки</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Включено</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Отключено</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Модель Mega Drive</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>Кнопка Console Pause</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>Чувствительность мыши</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Скорость движения мыши. По умолчанию 2.00. Каждый порт устройства-указателя может использовать эту настройку автоматически или собственную скорость. Изменения применяются без перезапуска консоли.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Редактирование аппаратного обеспечения</value></data>
 </root>

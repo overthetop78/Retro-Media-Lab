@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System modell</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D-glasögon</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Aktiverad</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Inaktiverad</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive modell</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>Console Pause knapp</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>Muskänslighet</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Mus rörelsehastighet. Standarden är 2.00. Varje port som pekar på enheten kan använda denna inställning automatiskt eller sin egen hastighet. Förändringar gäller utan att starta om konsolen.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Hardware revision</value></data>
 </root>

@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System型号</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>三维眼镜</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>已启用</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>已禁用</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive型号</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>暂停控制台按钮</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>鼠标敏感度</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>鼠标移动速度。 默认为 2. 00。 每个指向设备端口可以自动使用此设置或使用它自己的速度。 更改不重新启动控制台。</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>硬件修订</value></data>
 </root>

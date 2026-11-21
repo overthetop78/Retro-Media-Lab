@@ -134,7 +134,7 @@ internal abstract partial class SegaBoard : ICpuZ80Bus, IVdpBus, IInputBus,
         z80_readmap = new(_readMap, NativeZ80MappingChanged);
         _mainAudio = new(sampleRate / 10);
         _z80 = Functions.CpuConfigurationFunctions.CreateZ80(this, z80_irq_callback, _useDynamicCpuBlocks);
-        _input = new(this);
+        _input = new(this) { HasExtensionPort = config.HasExtensionPort };
         _vdp = new(hardware, this, config.Video, framebuffer, width, height, pitch);
 
     }

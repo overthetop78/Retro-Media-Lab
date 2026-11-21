@@ -6,6 +6,7 @@ internal sealed partial class MdCartridge
 {
     private void md_cart_init()
     {
+        _cartridgeBank = null;
         unchecked
         {
             int i = default;
@@ -365,6 +366,8 @@ internal sealed partial class MdCartridge
             break;
             }
             }
+            if (config.CheatAdapters.Contains((byte)1)) ggenie_init();
+            if (config.CheatAdapters.Contains((byte)2)) areplay_init();
             if ((((cart.romsize <= unchecked((uint)(8388608))) && (unchecked((int)(system_hw)) == 128)) && ((unchecked((int)(config.add_on)) == 2) || ((unchecked((int)(config.add_on)) | disc_loaded) == 2)))) {
             cart.special |= unchecked((byte)(16));
             }
@@ -373,10 +376,74 @@ internal sealed partial class MdCartridge
             }
         }
     }
+    private static void CopyBank(CartridgeMemoryBank target, CartridgeMemoryBank source)
+    {
+        target.Data = source.Data;
+        target.read8 = source.read8;
+        target.read16 = source.read16;
+        target.write8 = source.write8;
+        target.write16 = source.write16;
+        target.CodeFetchObserver = source.CodeFetchObserver;
+        target.CodeWindow = source.CodeWindow;
+        target.MappedReadsUseHandlers = source.MappedReadsUseHandlers;
+    }
+
+    private void ResetCheatAdapters(bool hard)
+    {
+        if (config.CheatAdapters.Length == 0) return;
+        _cartridgeBank ??= new();
+        CopyBank(_cartridgeBank, memory_map[0]);
+        for (int i = config.CheatAdapters.Length - 1; i >= 0; i--)
+            if (config.CheatAdapters[i] == 1) _gameGenie.Switch(false);
+            else _actionReplay.Status = ActionReplay.Off;
+        ggenie_reset(hard ? 1 : 0);
+        areplay_reset(hard ? 1 : 0);
+        _activeCheat = -1;
+        AdvanceCheat();
+    }
+
+    private bool ReleaseCheat(byte adapter)
+    {
+        if (_cartridgeBank is null) return false;
+        if (_activeCheat < config.CheatAdapters.Length && config.CheatAdapters[_activeCheat] == adapter)
+            AdvanceCheat();
+        return true;
+    }
+
+    private bool AdvanceCheat()
+    {
+        if (_cartridgeBank is null) return false;
+        CopyBank(memory_map[0], _cartridgeBank);
+        while (++_activeCheat < config.CheatAdapters.Length)
+        {
+            if (config.CheatAdapters[_activeCheat] == 1 && _gameGenie.Enabled)
+            {
+                ClearCheatCodeWindow();
+                ggenie_reset(0);
+                return true;
+            }
+            if (config.CheatAdapters[_activeCheat] == 2 && _actionReplay.Enabled)
+            {
+                ClearCheatCodeWindow();
+                _actionReplay.MapFirmware();
+                return true;
+            }
+        }
+        return true;
+    }
+    private void ClearCheatCodeWindow()
+    {
+        memory_map[0].CodeWindow = null;
+        memory_map[0].CodeFetchObserver = null;
+        memory_map[0].MappedReadsUseHandlers = false;
+    }
+
     private void md_cart_reset(int hard_reset)
     {
         unchecked
         {
+            if (_cartridgeBank is not null)
+                CopyBank(memory_map[0], _cartridgeBank);
             int i = default;
             if ((cart.hw.realtec != 0)) {
             for (i = 0; (i < 64); i++) {
@@ -424,6 +491,7 @@ internal sealed partial class MdCartridge
             break;
             }
             }
+            ResetCheatAdapters(hard_reset != 0);
         }
     }
     private int md_cart_context_save(ArrayPointer<byte> state)

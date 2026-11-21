@@ -89,7 +89,6 @@ internal sealed class CartridgeState
             CartridgeMemoryBank.NotifyCodeContentChanged();
         }
     }
-    internal readonly byte[] lockrom = new byte[0x10000];
     internal readonly CartridgeHardware hw = new();
     internal Memory<byte> Base;
     internal ArrayPointer<byte> @base { get => new(Base); set => Base = value.IsNull ? default : value.Memory; }

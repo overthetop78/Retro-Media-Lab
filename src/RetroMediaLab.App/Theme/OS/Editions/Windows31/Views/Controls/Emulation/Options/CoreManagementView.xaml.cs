@@ -19,6 +19,7 @@ internal partial class CoreManagementView : UserControl, IDisposable
         try
         {
             InitializeComponent();
+            bindings.OneWay(source.ManagementCard, VisibilityProperty, this, VisibilityProperty);
             Choice(source.Emulators, Emulators);
             Choice(source.Versions, Versions);
             foreach (var pair in new[] { (source.Installed, Installed), (source.Description, Description), (source.Status, Status) })

@@ -4,6 +4,22 @@ namespace RetroMediaLab.Chips.Controllers.Sega.Input;
 
 public sealed partial class InputHardware
 {
+    private Func<byte>? _extensionRead;
+    private Action<byte, byte>? _extensionWrite;
+
+    public bool HasExtensionPort { get; init; }
+
+    public void ConnectExtensionPort(Func<byte>? read, Action<byte, byte>? write)
+    {
+        if (!HasExtensionPort)
+            throw new InvalidOperationException("The extension port is unavailable on this model.");
+
+        _extensionRead = read;
+        _extensionWrite = write;
+        port[2].data_r = read ?? dummy_read;
+        port[2].data_w = write ?? dummy_write;
+    }
+
     public void dummy_write(byte data, byte mask)
     {
         unchecked
@@ -196,8 +212,8 @@ public sealed partial class InputHardware
             break;
             }
             }
-            port[(int)(2)].data_w = dummy_write;
-            port[(int)(2)].data_r = dummy_read;
+            port[2].data_w = _extensionWrite ?? dummy_write;
+            port[2].data_r = _extensionRead ?? dummy_read;
         }
     }
     public void io_reset()

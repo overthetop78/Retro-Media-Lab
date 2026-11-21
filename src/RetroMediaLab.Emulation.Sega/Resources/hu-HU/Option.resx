@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System modell</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D szemüveg</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Engedélyezett</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Letiltva</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive modell</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>Konzol Szünet gomb</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>Egérérzékenység</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Az egérmozgás sebessége. Az alapértelmezett 2.00. Minden egyes beállítási eszköz port automatikusan vagy saját sebességével használhatja ezt a beállítást. A módosítások a konzol újraindítása nélkül érvényesek.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>A hardver felülvizsgálata</value></data>
 </root>

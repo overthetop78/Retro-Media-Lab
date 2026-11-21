@@ -7,10 +7,11 @@ using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Factories;
 
-internal sealed class MachineFactory : CoreMachineFactory, IEmulatorCapabilities
+internal sealed class MachineFactory : CoreMachineFactory, IEmulatorCapabilities, IEmulatorMachineDefaults
 {
     bool IEmulatorCapabilities.SupportsNoContent => true;
     public override Emulator Emulator => Emulator.SegaEmu;
+    public bool IsDefaultFor(string machineId) => machineId is ModelConstants.MasterSystemII or ModelConstants.MegaDriveII or ModelConstants.MegaCdSecond;
     protected override CoreDefinition CoreDefinition => CoreConstants.Definition;
     public override IReadOnlyList<EmulationSettingsBlock> DescribeSettings(MachineConfiguration configuration, EmulatorManagementContext? context = null) =>
         base.DescribeSettings(configuration, context).Select(block => block with
@@ -35,7 +36,7 @@ internal sealed class MachineFactory : CoreMachineFactory, IEmulatorCapabilities
     public override ValueTask<EmulationEmulatorInstallation> GetInstallationAsync(EmulatorManagementContext context, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return ValueTask.FromResult(new EmulationEmulatorInstallation(Definition, CoreConstants.Version));
+        return ValueTask.FromResult(new EmulationEmulatorInstallation(Definition, CoreConstants.Version) { CanSearchReleases = false });
     }
     public override ValueTask<IReadOnlyList<EmulationEmulatorRelease>> FindReleasesAsync(EmulatorManagementContext context, CancellationToken cancellationToken)
     {

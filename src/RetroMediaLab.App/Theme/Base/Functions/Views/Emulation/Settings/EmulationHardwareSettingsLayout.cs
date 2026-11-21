@@ -15,12 +15,13 @@ internal static partial class EmulationSettingsLayout
 
     private static Grid SettingsFieldGrid(params EmulationSettingsControlField[] fields) => SettingsFieldGrid(1, fields);
 
-    private static Grid SettingsFieldGrid(int columns, params EmulationSettingsControlField[] fields)
+    private static Grid SettingsFieldGrid(int columns, EmulationSettingsControlField[] fields, bool memoryPresentation = false)
     {
         var grid = new Grid { Margin = new Thickness(12, 6, 12, 10) };
         for (var column = 0; column < columns; column++)
         {
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(EmulationHardwareSettingsConstants.FieldLabelWidth) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = memoryPresentation
+                ? GridLength.Auto : new GridLength(EmulationHardwareSettingsConstants.FieldLabelWidth) });
             grid.ColumnDefinitions.Add(new ColumnDefinition());
         }
         var rowCount = (int)Math.Ceiling(fields.Length / (double)columns);
@@ -44,12 +45,28 @@ internal static partial class EmulationSettingsLayout
             Grid.SetColumn(label, column);
             grid.Children.Add(label);
             var control = field.Control;
-            control.MinWidth = control is CheckBox ? 0 : EmulationHardwareSettingsConstants.FieldControlMinimumWidth;
-            control.Margin = new Thickness(0, 4, 0, 4);
-            control.VerticalAlignment = VerticalAlignment.Center;
-            Grid.SetRow(control, row);
-            Grid.SetColumn(control, column + 1);
-            grid.Children.Add(control);
+            FrameworkElement value = control;
+            if (memoryPresentation && control is TextBlock)
+            {
+                var frame = new Border
+                {
+                    Child = control, BorderThickness = new Thickness(1),
+                    Padding = new Thickness(10, 5, 10, 5), HorizontalAlignment = HorizontalAlignment.Left
+                };
+                frame.SetResourceReference(Border.BorderBrushProperty, "BorderBrush");
+                frame.SetResourceReference(Border.BackgroundProperty, "WindowBrush");
+                frame.SetBinding(UIElement.VisibilityProperty, new Binding(nameof(UIElement.Visibility)) { Source = control });
+                value = frame;
+            }
+            else
+            {
+                control.MinWidth = control is CheckBox ? 0 : EmulationHardwareSettingsConstants.FieldControlMinimumWidth;
+            }
+            value.Margin = new Thickness(0, 4, 0, 4);
+            value.VerticalAlignment = VerticalAlignment.Center;
+            Grid.SetRow(value, row);
+            Grid.SetColumn(value, column + 1);
+            grid.Children.Add(value);
         }
         return grid;
     }

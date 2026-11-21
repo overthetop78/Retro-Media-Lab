@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Model Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D Kacamata</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Diaktifkan</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Dinonaktifkan</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Model Mega Drive</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>Tombol Jeda Konsol</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>Sensitivitas tetikus</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Kecepatan pergerakan tetikus. Baku adalah 2.00. Tiap port perangkat titik dapat memakai pengaturan ini secara otomatis atau kecepatan sendiri. Perubahan berlaku tanpa memulai ulang konsol.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Revisi perangkat keras</value></data>
 </root>

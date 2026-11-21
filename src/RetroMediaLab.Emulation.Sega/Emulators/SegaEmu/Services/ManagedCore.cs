@@ -32,6 +32,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
     private SystemConfiguration _settings = new();
     private SegaBoard? _system;
     private MediaTapeSignal? _sc3000Tape;
+    private string? _masterSystemCartridge, _masterSystemSegaCard;
     private SaturnMachine? _saturn;
     private readonly SaturnPeripheral _saturnPeripheral = new();
     private readonly Memory<byte>?[] _saturnDevices = new Memory<byte>?[2];
@@ -99,6 +100,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
             _saveDirectory = saveDirectory ?? Path.Combine(sessionDirectory, "saves");
             Directory.CreateDirectory(_contentDirectory); Directory.CreateDirectory(_systemDirectory); Directory.CreateDirectory(_saveDirectory);
             Emulators.Common.Interop.Functions.FirmwareFunctions.Prepare(configuration, _systemDirectory);
+            _megaCdBiosRegion = PrepareMegaCdBios(configuration);
             Stream? assembly = null;
             try { assembly = File.OpenRead(typeof(ManagedCore).Assembly.Location); CoreSha256 = Convert.ToHexString(SHA256.HashData(assembly)); }
             finally { assembly?.Dispose(); }
@@ -106,7 +108,13 @@ internal sealed partial class ManagedCore : IEmulatorCore
             foreach (MediaConfiguration media in (configuration.Media ?? []).Where(media => media.IsInserted).OrderBy(media => media.MountOrder))
             {
                 string path = Path.GetFullPath(media.Path);
-                if (configuration.Model == ModelConstants.Sc3000 && media.Category == MediaCategory.Tape)
+                if (UsesMasterSystemMedia())
+                {
+                    ValidateMasterSystemMedia(media);
+                    if (IsMasterSystemSegaCard(media)) _masterSystemSegaCard ??= GetMasterSystemSegaCard(path);
+                    else _masterSystemCartridge ??= path;
+                }
+                else if (configuration.Model == ModelConstants.Sc3000 && media.Category == MediaCategory.Tape)
                 {
                     _sc3000Tape ??= ReadSc3000Tape(path);
                 }
@@ -126,8 +134,12 @@ internal sealed partial class ManagedCore : IEmulatorCore
                 else if (IsDisc(path) || (configuration.Model == ModelConstants.Saturn && IsSaturnDisc(path))) _disks.Add(path);
                 else cartridge ??= media;
             }
+            if (_disks.Count != 0 && ModelConstants.IsMegaDriveFamily(configuration.Model)
+                && !ModelConstants.HasMegaCd(configuration.Model)
+                && !(configuration.Model == ModelConstants.MegaDrive && configuration.MegaCdEnabled))
+                throw new InvalidDataException(ErrorMessages.MediaRefused());
             _diskIndex = _disks.Count == 0 ? -1 : 0;
-            _contentPath = cartridge?.Path ?? _disks.FirstOrDefault() ?? string.Empty;
+            _contentPath = _masterSystemCartridge ?? _masterSystemSegaCard ?? cartridge?.Path ?? _disks.FirstOrDefault() ?? string.Empty;
             if (_contentPath.Length != 0 && CoreConstants.Definition.PrepareContent is { } prepare)
                 _contentPath = prepare(configuration, _contentPath, _contentDirectory);
             StartSystem();
@@ -552,9 +564,55 @@ internal sealed partial class ManagedCore : IEmulatorCore
         }
         else _system!.MountDisc(path);
     }
+    private string? GetSelectedMasterSystemConverter() => _configuration is { } config
+        ? ModelConstants.GetMasterSystemConverter(config.Model, config.Options) : null;
+
+    private bool UsesMasterSystemMedia() => _configuration?.Model is ModelConstants.MasterSystem or ModelConstants.MasterSystemII
+        || GetSelectedMasterSystemConverter() is not null;
+
+    private bool HasSegaCardSlot() => _configuration?.Model == ModelConstants.MasterSystem
+        || GetSelectedMasterSystemConverter() == ModelConstants.MasterSystemConverterI;
+
+    private void ValidateMasterSystemMedia(MediaConfiguration media)
+    {
+        if (media.Category != MediaCategory.Cartridge
+            || media.Slot != default && media.Slot != EmulationMediaSlot.Cartridge0 && media.Slot != EmulationMediaSlot.Cartridge1)
+            throw new InvalidDataException(ErrorMessages.ContentRefused());
+        if (GetSelectedMasterSystemConverter() is not null &&
+            ConfigurationValidationFunctions.IsIncompatibleMedia(ModelCatalog.Get(ModelConstants.MegaDrive), media, _configuration!.Options))
+            throw new InvalidDataException(ErrorMessages.MediaRefused());
+    }
+
+    private static bool IsMasterSystemSegaCard(MediaConfiguration media) => media.Slot == EmulationMediaSlot.Cartridge1
+        || Path.GetExtension(media.Path).Equals(".mv", StringComparison.OrdinalIgnoreCase);
+
+    private string GetMasterSystemSegaCard(string path) => HasSegaCardSlot()
+        ? path : throw new InvalidDataException(ErrorMessages.ContentRefused());
+
+    private void SetMasterSystemMedia(string? cartridge, string? card)
+    {
+        string next = cartridge ?? card ?? string.Empty;
+        if (!StringComparer.OrdinalIgnoreCase.Equals(_contentPath, next))
+        {
+            SavePersistent();
+            _contentPath = next;
+            StartSystem(savePrevious: false);
+        }
+        _masterSystemCartridge = cartridge;
+        _masterSystemSegaCard = card;
+    }
+
     public void InsertMedia(MediaConfiguration media)
     {
-        if (_system is Sc3000Machine computer && media.Category == MediaCategory.Tape)
+        if (UsesMasterSystemMedia())
+        {
+            ValidateMasterSystemMedia(media);
+            if (IsMasterSystemSegaCard(media))
+                SetMasterSystemMedia(_masterSystemCartridge, GetMasterSystemSegaCard(media.Path));
+            else
+                SetMasterSystemMedia(media.Path, _masterSystemSegaCard);
+        }
+        else if (_system is Sc3000Machine computer && media.Category == MediaCategory.Tape)
         {
             MediaTapeSignal tape = ReadSc3000Tape(media.Path);
             computer.Cassette.Insert(tape);
@@ -572,7 +630,14 @@ internal sealed partial class ManagedCore : IEmulatorCore
     }
     public void EjectMedia(EmulationMediaSlot slot)
     {
-        if (_system is Sc3000Machine computer && slot == EmulationMediaSlot.Tape0)
+        if (UsesMasterSystemMedia())
+        {
+            if (slot == EmulationMediaSlot.Cartridge0) SetMasterSystemMedia(null, _masterSystemSegaCard);
+            else if (slot == EmulationMediaSlot.Cartridge1 && HasSegaCardSlot())
+                SetMasterSystemMedia(_masterSystemCartridge, null);
+            else throw new InvalidDataException(ErrorMessages.ContentRefused());
+        }
+        else if (_system is Sc3000Machine computer && slot == EmulationMediaSlot.Tape0)
         {
             computer.Cassette.Eject();
             _sc3000Tape = null;
@@ -610,7 +675,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
             finally
             {
                 try { _system?.Dispose(); }
-                finally { _system = null; _sc3000Tape = null; ClearAudio(); LatestVideoFrame = null; }
+                finally { _system = null; _sc3000Tape = null; _masterSystemCartridge = _masterSystemSegaCard = null; ClearAudio(); LatestVideoFrame = null; }
             }
         }
     }

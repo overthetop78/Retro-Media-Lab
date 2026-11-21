@@ -14,8 +14,11 @@ internal static class SettingsConstants
     internal const string AudioChip = "configuration.audioChip";
     internal const string MasterSystemVariant = "configuration.masterSystemVariant";
     internal const string MasterSystemThreeDGlasses = "configuration.masterSystemThreeDGlasses";
+    internal const string MegaDriveRevision = "configuration.megaDriveRevision";
+    internal const string MasterSystemConverter = "configuration.masterSystemConverter";
     internal const string MegaDriveModel = "configuration.megaDriveModel";
     internal const string MegaCdEnabled = "configuration.megaCdEnabled";
+    internal const string MegaCdRegionFree = "configuration.megaCdRegionFree";
     internal const string MegaCdModel = "configuration.megaCdModel";
     internal const string MegaDriveThirtyTwoX = "configuration.megaDrive32x";
     internal const string MegaDriveRegion = "configuration.megaDriveRegion";

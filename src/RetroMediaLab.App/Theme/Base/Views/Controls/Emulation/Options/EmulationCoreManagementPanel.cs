@@ -13,6 +13,8 @@ internal sealed class EmulationCoreManagementPanel : UserControl
         nameof(StatusIsError), typeof(bool), typeof(EmulationCoreManagementPanel), new PropertyMetadata(false));
     public bool StatusIsError => (bool)GetValue(StatusIsErrorProperty);
 
+    internal Border ManagementCard { get; }
+
     internal ComboBox Emulators { get; } = new() { MinWidth = 300 };
     internal Button Search { get; } = new() { MinWidth = 150 };
     internal ComboBox Versions { get; } = new() { MinWidth = 320, Visibility = Visibility.Collapsed };
@@ -108,9 +110,9 @@ internal sealed class EmulationCoreManagementPanel : UserControl
         Grid.SetColumnSpan(Progress, 4);
         content.Children.Add(Progress);
 
-        var card = new Border { Child = content };
-        card.SetResourceReference(FrameworkElement.StyleProperty, "Card");
-        Content = card;
+        ManagementCard = new Border { Child = content };
+        ManagementCard.SetResourceReference(FrameworkElement.StyleProperty, "Card");
+        Content = new StackPanel { Children = { ManagementCard } };
     }
 
     internal void SetDescription(string text) => Description.Text = text;

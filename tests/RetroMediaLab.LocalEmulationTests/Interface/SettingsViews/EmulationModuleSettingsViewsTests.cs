@@ -60,6 +60,7 @@ public sealed class EmulationModuleSettingsViewsTests(StaExecutionScenarios sta)
     });
     [Fact] public Task ModuleMachinesUseVerticalNavigationAndPreserveExistingTabs() => sta.RunAsync(EmulationModuleSettingsNavigationScenarios.VerticalMachinesPreserveConfigurationStateAndTabs);
     [Fact] public Task UnsavedModuleMachineChoosesExactlyOneEmulator() => sta.RunAsync(EmulationModuleSettingsNavigationScenarios.UnsavedMachineChoosesExactlyOneEmulator);
+    [Fact] public Task FixedBundledEmulatorShowsTheCreationCard() => sta.RunAsync(EmulationModuleSettingsNavigationScenarios.FixedBundledEmulatorShowsTheCreationCard);
     [Fact] public Task EmptyEmulatorCatalogKeepsOptionsOpenAndBlocksCreation() => sta.RunAsync(EmulationModuleSettingsNavigationScenarios.EmptyEmulatorCatalogKeepsOptionsOpenAndBlocksCreation);
     [Fact] public Task EmulatorControllerDisposalCancelsAndDetaches() => sta.RunAsync(EmulationModuleSettingsNavigationScenarios.EmulatorControllerDisposalCancelsAndDetaches);
     [Fact] public Task EmulatorDescriptionUsesModuleLocalization() => sta.RunAsync(EmulationModuleSettingsNavigationScenarios.EmulatorDescriptionUsesModuleLocalization);

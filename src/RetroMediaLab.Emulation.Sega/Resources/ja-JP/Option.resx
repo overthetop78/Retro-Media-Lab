@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master Systemモデル</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D メガネ</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>有効</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>無効</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Driveモデル</value></data>
@@ -27,4 +27,5 @@
   <data name="Emulation.SegaEmu.ConsolePause"><value>コンソール マウス ボタン</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed"><value>マウスの感受性</value></data>
   <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>マウスの移動速度。デフォルトは2.00です。各ポインティングデバイスポートは、この設定を自動的にまたは独自の速度で使用できます。変更はコンソールを再起動せずに適用します。</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>ハードウェアのリビジョン</value></data>
 </root>

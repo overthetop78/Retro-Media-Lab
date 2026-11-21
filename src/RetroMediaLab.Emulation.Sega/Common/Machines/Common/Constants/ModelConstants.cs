@@ -6,7 +6,10 @@ internal static class ModelConstants
     internal const string Sc3000 = "Sc3000";
     internal const string MarkIII = "MarkIII";
     internal const string MasterSystem = "MasterSystem";
+    internal const string MasterSystemII = "MasterSystemII";
     internal const string MegaDrive = "MegaDrive";
+    internal const string MegaDriveII = "MegaDriveII";
+    internal const string MegaCdSecond = "MegaCdII";
     internal const string Pico = "Pico";
     internal const string GameGear = "GameGear";
     internal const int GameGearControllerPortCount = 1;
@@ -52,6 +55,31 @@ internal static class ModelConstants
     internal const string MasterSystemSmsIi = "sms-ii";
     internal const string MegaDriveModelI = "model-i";
     internal const string MegaDriveModelII = "model-ii";
+    internal const string MasterSystemConverterI = "converter-i";
+    internal const string MasterSystemConverterII = "converter-ii";
+
+    internal static string? GetMasterSystemConverter(string model, IReadOnlyDictionary<string, string>? options)
+    {
+        if (model is not (MegaDrive or MegaDriveII)) return null;
+        if (options?.GetValueOrDefault(SettingsConstants.MegaCdEnabled) is "enabled" or "true" or "True"
+            || options?.GetValueOrDefault(SettingsConstants.MegaDriveThirtyTwoX) is "enabled" or "true" or "True")
+            return null;
+        return options?.GetValueOrDefault(SettingsConstants.MasterSystemConverter) switch
+        {
+            MasterSystemConverterI when model != MegaDriveII && options?.GetValueOrDefault(SettingsConstants.MegaDriveModel) != MegaDriveModelII => MasterSystemConverterI,
+            MasterSystemConverterII => MasterSystemConverterII,
+            _ => null
+        };
+    }
+    internal const string MegaDriveVa5Tmss = "VA5 (TMSS)";
+    internal const string MegaDriveVa6 = "VA6";
+    internal const string MegaDriveVa65 = "VA6.5";
+    internal const string MegaDriveVa68 = "VA6.8";
+    internal const string MegaDriveVa7 = "VA7";
+    internal static IReadOnlyList<string> MegaDriveModelIRevisions { get; } =
+        ["VA0", "VA1", "VA2", "VA3", "VA4", "VA5", MegaDriveVa5Tmss, MegaDriveVa6, MegaDriveVa65, MegaDriveVa68, MegaDriveVa7];
+    internal static IReadOnlyList<string> MegaDriveModelIIRevisions { get; } =
+        ["VA0", "VA1", "VA1.8", "VA2", "VA2.3", "VA3", "VA4"];
     internal const string MegaCdI = "mega-cd-i";
     internal const string MegaCdII = "mega-cd-ii";
     internal const string RegionAutomatic = "automatic";
@@ -65,6 +93,11 @@ internal static class ModelConstants
     internal const string Sf7000 = "Sf7000";
     internal const string MegaCd = "MegaCd";
     internal const string ThirtyTwoX = "ThirtyTwoX";
+    internal const string MegaCdThirtyTwoX = "MegaCdThirtyTwoX";
+
+    internal static bool IsMegaDriveFamily(string model) => model is MegaDrive or MegaDriveII or MegaCd or MegaCdSecond or ThirtyTwoX or MegaCdThirtyTwoX;
+    internal static bool HasMegaCd(string model) => model is MegaCd or MegaCdSecond or MegaCdThirtyTwoX;
+    internal static bool HasThirtyTwoX(string model) => model is ThirtyTwoX or MegaCdThirtyTwoX;
     internal const string SystemSp = "SystemSp";
     internal const string StV = "StV";
     internal const string Model3 = "Model3";
@@ -102,8 +135,9 @@ internal static class ModelConstants
     internal const string Sc3000DisplayName = "SC-3000";
     internal const string Sf7000DisplayName = "SF-7000";
     internal const string MarkIIIDisplayName = "Mark III";
-    internal const string MasterSystemDisplayName = "Master System";
-    internal const string MegaDriveDisplayName = "Mega Drive / Genesis";
+    internal const string MasterSystemDisplayName = "Master System I";
+    internal const string MasterSystemIIDisplayName = "Master System II";
+    internal const string MegaDriveDisplayName = "Mega Drive";
     internal const string PicoDisplayName = "Pico";
     internal const string GameGearDisplayName = "Game Gear";
     internal const string SaturnDisplayName = "Saturn";
@@ -111,8 +145,9 @@ internal static class ModelConstants
     internal const string NaomiDisplayName = "NAOMI";
     internal const string Naomi2DisplayName = "NAOMI 2";
     internal const string AtomiswaveDisplayName = "Atomiswave";
-    internal const string MegaCdDisplayName = "Mega-CD / Sega CD";
-    internal const string ThirtyTwoXDisplayName = "32X";
+    internal const string MegaCdDisplayName = "Mega Drive + Mega-CD";
+    internal const string ThirtyTwoXDisplayName = "Mega Drive + 32X";
+    internal const string MegaCdThirtyTwoXDisplayName = "Mega Drive + Mega-CD + 32X";
     internal const string SystemSpDisplayName = "System SP";
     internal const string StVDisplayName = "ST-V";
     internal const string Model3DisplayName = "Model 3";
