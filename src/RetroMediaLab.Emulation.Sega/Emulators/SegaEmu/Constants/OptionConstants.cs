@@ -1,9 +1,34 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
-using RetroMediaLab.Chips.Common.Memory;
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
 internal static class OptionConstants
 {
     internal static IReadOnlyList<CoreOption> All { get; } = [
+        ..PointerConstants.Options,
+        new(
+            "segaemu_sh2_cache",
+            "Emulation.Option.ymir.ymir_sh2_cache",
+            "Emulation.Option.ymir.ymir_sh2_cache.Description",
+            null, "disabled", "disabled",
+            [
+                new("disabled", "Emulation.Option.ymir.ymir_sh2_cache.Value.disabled"),
+                new("enabled", "Emulation.Option.ymir.ymir_sh2_cache.Value.enabled")
+            ],
+            Tab: EmulationMachineTab.Cpu,
+            RequiresRestart: true,
+            MachineIds: new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }
+        ),
+        new(
+            "segaemu_cdblock_lle",
+            "Emulation.Option.ymir.ymir_cdblock_lle",
+            "Emulation.Option.ymir.ymir_cdblock_lle.Description",
+            null, "disabled", "disabled",
+            [
+                new("disabled", "Emulation.Option.ymir.ymir_cdblock_lle.Value.disabled"),
+                new("enabled", "Emulation.Option.ymir.ymir_cdblock_lle.Value.enabled")
+            ],
+            Tab: EmulationMachineTab.Storage,
+            RequiresRestart: true,
+            MachineIds: new HashSet<string>(StringComparer.Ordinal) { ModelConstants.Saturn }
+        ),
         new(
             "segaemu_sg1000_model",
             "Emulation.Option.segaemu.segaemu_sg1000_model",
@@ -19,19 +44,6 @@ internal static class OptionConstants
             MachineIds: OptionMachineConstants.Sg1000
         ),
         new(
-            "segaemu_master_system_model",
-            "Emulation.Option.segaemu.segaemu_master_system_model",
-            "Emulation.Option.segaemu.segaemu_master_system_model.Description",
-            null, "master system", "master system",
-            [
-                new("master system", "Emulation.Option.segaemu.segaemu_master_system_model.Value.master system"),
-                new("master system II", "Emulation.Option.segaemu.segaemu_master_system_model.Value.master system II")
-            ],
-            Tab: EmulationMachineTab.General,
-            RequiresRestart: true,
-            MachineIds: OptionMachineConstants.MasterSystemOnly
-        ),
-        new(
             "segaemu_region_detect",
             "Emulation.Option.segaemu.segaemu_region_detect",
             "Emulation.Option.segaemu.segaemu_region_detect.Description",
@@ -40,11 +52,11 @@ internal static class OptionConstants
             "auto",
             [
                 new("auto", "Emulation.Option.segaemu.segaemu_region_detect.Value.auto"),
-                new("ntsc-u", "Emulation.Option.segaemu.segaemu_region_detect.Value.ntsc-u"),
-                new("pal", "Emulation.Option.segaemu.segaemu_region_detect.Value.pal"),
-                new("ntsc-j", "Emulation.Option.segaemu.segaemu_region_detect.Value.ntsc-j")
+                new("ntsc-u", "USA"),
+                new("pal", "EUR"),
+                new("ntsc-j", "JAP")
             ],
-            Tab: EmulationMachineTab.General,
+            Tab: EmulationMachineTab.Cpu,
             RequiresRestart: true
         ),
         new(
@@ -103,8 +115,8 @@ internal static class OptionConstants
             "Emulation.Option.segaemu.segaemu_cart_size",
             "Emulation.Option.segaemu.segaemu_cart_size.Description",
             null,
-            "4meg",
-            "4meg",
+            "disabled",
+            "disabled",
             [
                 new("disabled", "Emulation.Option.segaemu.segaemu_cart_size.Value.disabled"),
                 new("128k", "Emulation.Option.segaemu.segaemu_cart_size.Value.128k"),
@@ -114,7 +126,7 @@ internal static class OptionConstants
                 new("2meg", "Emulation.Option.segaemu.segaemu_cart_size.Value.2meg"),
                 new("4meg", "Emulation.Option.segaemu.segaemu_cart_size.Value.4meg")
             ],
-            Tab: EmulationMachineTab.Ram,
+            Tab: EmulationMachineTab.Storage,
             RequiresRestart: true,
             MachineIds: OptionMachineConstants.MegaCd
         ),
@@ -150,7 +162,7 @@ internal static class OptionConstants
             ],
             Tab: EmulationMachineTab.Rom,
             RequiresRestart: true,
-            MachineIds: OptionMachineConstants.MegaDrive
+            MachineIds: OptionMachineConstants.LockOn
         ),
         new(
             "segaemu_aspect_ratio",

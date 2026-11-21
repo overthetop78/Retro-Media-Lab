@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System model</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D Glasses</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Enabled</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Disabled</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive model</value></data>
@@ -25,4 +25,6 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard ROM layout</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Two 8 KiB ROMs with address mirrors</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Console Pause button</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Mouse sensitivity</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Mouse movement speed. The default is 2.00. Each pointing-device port can use this setting automatically or its own speed. Changes apply without restarting the console.</value></data>
 </root>

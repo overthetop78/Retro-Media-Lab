@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System модель</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D окуляри</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Увімкнено</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Вимкнено</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Модель Mega Drive</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Стандарти ROM верстка</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Два 8 КОБ ROMs з адресними дзеркалами</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Консоль Пауза кнопка</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Чутливість миші</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Швидкість руху миші. За замовчуванням 2.00. Кожен порт точок-розробки може використовувати цю установку автоматично або власну швидкість. Зміни застосовуються без перезавантаження консолі.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Обладнання для ревізійної роботи</value></data>
 </root>

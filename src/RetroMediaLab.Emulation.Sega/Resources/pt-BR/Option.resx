@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Modelo Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>Óculos 3-D</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Activado</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Desactivado</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Modelo Mega Drive</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Padrão ROM disposição</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dois 8 ROMs KiB com espelhos de endereço</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Botão de Pausa da Consola</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Sensibilidade do rato</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Velocidade de movimento do mouse. O padrão é 2.00. Cada porta de ponteiros pode usar esta configuração automaticamente ou sua própria velocidade. Alterações se aplicam sem reiniciar a consola.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Revisão do hardware</value></data>
 </root>

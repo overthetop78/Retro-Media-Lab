@@ -86,6 +86,8 @@ internal sealed class EmulationEmulatorManagementController : IAsyncDisposable
             }
             finally
             {
+                view.Search.Visibility = Visibility.Collapsed;
+                view.Status.Visibility = Visibility.Visible;
                 _loading = false;
                 SetBusy(_busy);
             }
@@ -113,7 +115,10 @@ internal sealed class EmulationEmulatorManagementController : IAsyncDisposable
             _selectedInstallation = selected;
             view.SetInstalledVersion(selected.InstalledVersion is null ? LocExtension.Get(EmulationCoreManagementConstants.NotInstalledResource) : LocExtension.Get(EmulationCoreManagementConstants.InstalledResource, selected.InstalledVersion));
             view.ShowReleases(false);
-            view.SetStatus(LocExtension.Get(EmulationCoreManagementConstants.SearchPromptResource));
+            view.Search.Visibility = selected.CanSearchReleases ? Visibility.Visible : Visibility.Collapsed;
+            view.Status.Visibility = view.Search.Visibility;
+            view.SetStatus(selected.CanSearchReleases
+                ? LocExtension.Get(EmulationCoreManagementConstants.SearchPromptResource) : string.Empty);
         }
         finally
         {
@@ -254,7 +259,7 @@ internal sealed class EmulationEmulatorManagementController : IAsyncDisposable
         _busy = busy;
         if (_disposed || _view is not { } view) return;
         view.Emulators.IsEnabled = !busy && !_hasSavedConfiguration() && _emulatorCount > 1;
-        view.Search.IsEnabled = !busy && _emulatorCount > 0;
+        view.Search.IsEnabled = !busy && _emulatorCount > 0 && _selectedInstallation?.CanSearchReleases == true;
         view.Download.IsEnabled = !busy && view.Versions.SelectedItem is not null;
         view.Cancel.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         view.Progress.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;

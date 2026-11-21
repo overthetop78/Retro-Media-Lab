@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>מודל Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3D משקפיים</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>המונחים</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>מוגבלות</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive מודל</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>תקן Standard ROM פריסת פריסה</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>2 8KB ROMs עם מראות</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>כפתור Puse</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>רגישות עכברים</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>מהירות תנועת העכברים.ה ברירת המחדל היא 2.00.כל נמל מצביע יכול להשתמש בהגדרה זו באופן אוטומטי או במהירות שלו.שינויים חלים ללא הפעלת הקונסולה.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>עדכון חומרה</value></data>
 </root>

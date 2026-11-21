@@ -10,14 +10,12 @@ public interface IVdpBus
     byte Z80IrqState { get; set; }
     byte Z80BusState { get; set; }
     uint VideoCycles { get; }
-    byte SystemBios { get; }
-    uint CdBootBank { get; }
-    uint CartridgeSpecial { get; }
-    bool HasSvp { get; }
-    byte[] WorkRam { get; }
+    bool SuppressScanlineRendering { get; }
+    bool SkipFirstDmaWord(byte sourceHigh);
+    ReadOnlyMemory<byte> DmaReadWindow { get; }
     void SetMainIrq(uint level);
     void SetMainIrqDelay(uint level);
     void SetZ80Irq(uint level);
-    uint ReadIo(uint register);
+    ushort ReadDmaIoWord(uint address);
     uint ReadDmaWord(uint address);
 }

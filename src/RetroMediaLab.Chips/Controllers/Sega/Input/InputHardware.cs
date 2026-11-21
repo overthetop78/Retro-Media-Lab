@@ -9,10 +9,10 @@ public interface IInputBus
     int ViewportHeight { get; }
     ushort VerticalCounter { get; }
     uint HvcLatch { get; set; }
-    byte BiosConfiguration { get; }
-    uint PsgPreamp { get; }
+    byte VersionPins { get; }
+
     bool BootRomMapped { get; }
-    void ConfigurePsg(uint cycles, uint preamp, uint panning);
+    void SetPsgPanning(uint cycles, uint panning);
     void SwitchSmsCartridge(byte mode);
     ReadOnlyMemory<byte> VdpRegisters { get; }
     ReadOnlyMemory<byte> HorizontalCounterTable { get; }
@@ -23,9 +23,8 @@ public sealed partial class InputHardware
 {
     private readonly IInputBus _bus;
     private readonly byte[] configuredPadTypes = new byte[8];
-    private byte system_hw, romtype;
-    private uint cart_special;
-    private ushort rom_peripherals;
+    private byte system_hw;
+    private InputDeviceConfiguration _deviceConfiguration = new();
     private uint mainCycles => _bus.MainCycles;
     private uint z80Cycles => _bus.Z80Cycles;
     private byte region_code => _bus.Region;
@@ -55,17 +54,16 @@ public sealed partial class InputHardware
         Array.Fill(configuredPadTypes, (byte)3);
     }
 
-    public void Initialize(byte hardware, byte cartridgeType, ushort peripherals, uint special)
+    public void Initialize(byte hardware, InputDeviceConfiguration configuration)
     {
-        SetMachineContext(hardware, cartridgeType, peripherals, special);
+        Configure(hardware, configuration);
         input_init();
     }
-    public void SetMachineContext(byte hardware, byte cartridgeType, ushort peripherals, uint special)
+    public void Configure(byte hardware, InputDeviceConfiguration configuration)
     {
+        ArgumentNullException.ThrowIfNull(configuration);
         system_hw = hardware;
-        romtype = cartridgeType;
-        rom_peripherals = peripherals;
-        cart_special = special;
+        _deviceConfiguration = configuration;
     }
     public void Reset() => input_reset();
     public void Refresh() => input_refresh();

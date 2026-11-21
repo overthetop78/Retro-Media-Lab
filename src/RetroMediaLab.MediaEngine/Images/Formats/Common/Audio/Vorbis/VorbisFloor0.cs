@@ -30,7 +30,7 @@ internal sealed partial class VorbisFloor0 : VorbisFloor
         _lspLook = new int[_barkSize];
         unchecked { for (int i = 0; i < _barkSize; i++) _lspLook[i] = vorbis_coslook2_i(0x10000 * i / _barkSize); }
     }
-    public static VorbisFloor0 Unpack(VorbisBits bits, VorbisCodebook[] books, int[] blockSizes) => new(bits, books, blockSizes);
+    public new static VorbisFloor0 Unpack(VorbisBits bits, VorbisCodebook[] books, int[] blockSizes) => new(bits, books, blockSizes);
     private int[] BuildMap(int count)
     {
         int[] result = new int[count + 1];

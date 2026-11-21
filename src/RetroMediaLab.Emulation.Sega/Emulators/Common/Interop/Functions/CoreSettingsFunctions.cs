@@ -12,7 +12,7 @@ internal static class CoreSettingsFunctions
         foreach (var option in CoreCatalog.Get(configuration.EmulatorId).Options)
         {
             var selected = option.IsVisible && (option.MachineIds is null || option.MachineIds.Contains(configuration.Model)) ? configuration.Options?.GetValueOrDefault(option.Key) ?? option.DefaultValue : option.DefaultValue;
-            options[option.Key] = AvailableValues(option, configuration.Model).Any(value => value.Value == selected) ? selected : option.DefaultValue;
+            options[option.Key] = IsValidValue(option, selected, configuration.Model) ? selected : option.DefaultValue;
         }
         if (CoreCatalog.Get(configuration.EmulatorId).MachineOptions?.GetValueOrDefault(configuration.Model) is { } forced)
             foreach (var option in forced) options[option.Key] = option.Value;
@@ -29,7 +29,7 @@ internal static class CoreSettingsFunctions
             && (option.MachineIds is null || option.MachineIds.Contains(configuration.Model))
             && definition.MachineOptions?.GetValueOrDefault(configuration.Model)?.ContainsKey(option.Key) != true).Select(option => new EmulationSettingsField(
             option.Key, option.Tab, CoreSettingsConstants.OptionsBlock + option.Tab,
-            option.Name, EmulationSettingsEditor.Selection,
+            option.Name, option.NumericRange is null ? EmulationSettingsEditor.Selection : EmulationSettingsEditor.Slider,
             configuration.Options?.GetValueOrDefault(option.Key) ?? option.DefaultValue,
             AvailableValues(option, configuration.Model).Select(value => new EmulationSettingsChoice(value.Value,
                 value.Label.StartsWith(CoreSettingsConstants.OptionResourcePrefix, StringComparison.Ordinal) ? value.Label : string.Empty,
@@ -38,7 +38,7 @@ internal static class CoreSettingsFunctions
                 || !option.Key.Contains("_channel_", StringComparison.Ordinal) || !option.Key.EndsWith("_volume", StringComparison.Ordinal),
             ExplanationResourceKey: option.Description,
             RefreshSettingsOnChange: option == advancedAudio,
-            RequiresRestart: option.RequiresRestart)).ToArray();
+            RequiresRestart: option.RequiresRestart, NumericRange: option.NumericRange)).ToArray();
         return fields.GroupBy(field => field.Tab).Select(group => new EmulationSettingsBlock(
             CoreSettingsConstants.OptionsBlock + group.Key, group.Key,
             CoreSettingsConstants.Sections[group.Key].Title, group.ToArray(),
@@ -46,4 +46,15 @@ internal static class CoreSettingsFunctions
     }
 
     private static IEnumerable<CoreOptionValue> AvailableValues(CoreOption option, string machineId) => option.Values.Where(value => value.MachineIds is null || value.MachineIds.Contains(machineId));
+
+    internal static bool IsValidValue(CoreOption option, string value, string? machineId = null)
+    {
+        if (option.Values.Any(candidate => candidate.Value == value
+            && (machineId is null || candidate.MachineIds is null || candidate.MachineIds.Contains(machineId)))) return true;
+        if (option.NumericRange is not { } range || !double.TryParse(value,
+            System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out var number)
+            || !double.IsFinite(number) || number < range.Minimum || number > range.Maximum) return false;
+        double steps = (number - range.Minimum) / (range.FineStep ?? range.Step);
+        return Math.Abs(steps - Math.Round(steps)) < 0.0000001;
+    }
 }

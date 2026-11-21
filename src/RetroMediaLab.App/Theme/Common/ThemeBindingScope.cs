@@ -21,6 +21,33 @@ internal sealed class ThemeBindingScope : IDisposable
     internal void TwoWay(DependencyObject source, DependencyProperty sourceProperty,
         DependencyObject target, DependencyProperty targetProperty) => Bind(source, sourceProperty, target, targetProperty, true);
 
+    internal FrameworkElement EditableRange(RetroMediaLab.Emulation.Contracts.EmulationSettingsField field,
+        FrameworkElement source, Func<Task> commit)
+    {
+        var view = RetroMediaLab.App.Functions.Views.Emulation.Settings.EmulationSettingsFieldControlFunctions.CreateSlider(
+            field with { Value = RetroMediaLab.App.Functions.Views.Emulation.Settings.EmulationSettingsFieldControlFunctions.Read(source) },
+            _ => string.Empty, commit);
+        var original = Descendants(source).OfType<Slider>().Single();
+        var target = Descendants(view).OfType<Slider>().Single();
+        TwoWay(original, RangeBase.ValueProperty, target, RangeBase.ValueProperty);
+        var originalAutomatic = Descendants(source).OfType<CheckBox>().FirstOrDefault();
+        var targetAutomatic = Descendants(view).OfType<CheckBox>().FirstOrDefault();
+        if (originalAutomatic is not null && targetAutomatic is not null)
+        {
+            TwoWay(originalAutomatic, ToggleButton.IsCheckedProperty, targetAutomatic, ToggleButton.IsCheckedProperty);
+            OneWay(original, UIElement.IsEnabledProperty, target, UIElement.IsEnabledProperty);
+        }
+        return view;
+
+        static IEnumerable<FrameworkElement> Descendants(FrameworkElement element)
+        {
+            yield return element;
+            if (element is not Panel panel) yield break;
+            foreach (var child in panel.Children.OfType<FrameworkElement>())
+                foreach (var descendant in Descendants(child)) yield return descendant;
+        }
+    }
+
     private void Bind(DependencyObject source, DependencyProperty sourceProperty,
         DependencyObject target, DependencyProperty targetProperty, bool twoWay)
     {

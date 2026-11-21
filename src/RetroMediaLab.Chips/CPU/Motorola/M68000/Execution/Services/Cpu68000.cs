@@ -6,7 +6,9 @@ namespace RetroMediaLab.Chips.CPU.Motorola.M68000.Execution;
 public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
 {
     private readonly TBus _bus;
-    private readonly bool _subCpu;
+    private readonly bool _prefetch;
+    private readonly ushort[] _instructionCycles;
+    public Cpu68000Configuration Configuration { get; }
     private readonly bool _addressErrors;
     private readonly uint[] _registers = new uint[16];
     private readonly uint[] _stackPointers = new uint[5];
@@ -20,7 +22,7 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
     private int _cycleShift;
     private int MUL { get; }
     private const uint CPU_ADDRESS_MASK = 0x00ffffff;
-    private ReadOnlySpan<byte> CYC_INSTRUCTION => _subCpu ? SubCycles : MainCycles;
+    private ReadOnlySpan<ushort> CYC_INSTRUCTION => _instructionCycles;
     private ReadOnlySpan<ushort> CYC_EXCEPTION => _exceptionCycles;
     private ReadOnlySpan<uint> m68ki_cycle_interrupts => _interruptCycles;
     private uint[] REG_SP_BASE => _stackPointers;
@@ -67,18 +69,27 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
         source.Slice(offset,destination.Length).CopyTo(destination); offset += destination.Length;
     }
 
-    public Cpu68000(TBus bus, bool subCpu = false, bool subCpuAddressErrors = false)
+    public Cpu68000(TBus bus, Cpu68000Configuration? configuration = null)
     {
+        ArgumentNullException.ThrowIfNull(bus);
+        Configuration = configuration ?? new();
+        ArgumentOutOfRangeException.ThrowIfLessThan(Configuration.ClockMultiplier, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(Configuration.RefreshPeriod);
+        ArgumentOutOfRangeException.ThrowIfNegative(Configuration.RefreshStall);
+        ArgumentOutOfRangeException.ThrowIfNegative(Configuration.RefreshSkipAdvance);
+        ArgumentOutOfRangeException.ThrowIfNegative(Configuration.ResetRefreshAdvance);
+        if (Configuration.RefreshPeriod == 0 && Configuration.RefreshStall != 0)
+            throw new ArgumentException("A refresh stall requires a refresh period.", nameof(configuration));
         _bus = bus;
-        _subCpu = subCpu;
-        _addressErrors = !subCpu || subCpuAddressErrors;
-        MUL = subCpu ? 4 : 7;
+        _prefetch = Configuration.Prefetch;
+        _addressErrors = Configuration.AddressErrors;
+        MUL = Configuration.ClockMultiplier;
+        _instructionCycles = Cpu68000Timing.GetInstructionCycles(MUL, InstructionClockCycles);
         var exceptions = m68ki_exception_cycle_table_base;
-        for (int i = 0; i < exceptions.Length; i++) _exceptionCycles[i] = (ushort)(exceptions[i] * MUL);
+        for (int i = 0; i < exceptions.Length; i++) _exceptionCycles[i] = checked((ushort)(exceptions[i] * MUL));
         var interrupts = m68ki_cycle_interrupts_base;
-        for (int i = 0; i < interrupts.Length; i++) _interruptCycles[i] = interrupts[i] * (uint)MUL;
+        for (int i = 0; i < interrupts.Length; i++) _interruptCycles[i] = checked(interrupts[i] * (uint)MUL);
     }
-
     public void SetCycleRatio(int ratio, int shift)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(shift);
@@ -121,12 +132,6 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
         }
     }
 
-    public void UpdateIrq(uint mask)
-    {
-        if (_subCpu) CPU_INT_LEVEL = (uint)(mask == 0 ? 0 : 32 - System.Numerics.BitOperations.LeadingZeroCount(mask & 63)) << 8;
-        else CPU_INT_LEVEL |= mask << 8;
-    }
-
     public void SetIrq(uint level) => CPU_INT_LEVEL = level << 8;
 
     public void SetIrqDelay(uint level)
@@ -152,6 +157,9 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
         if (CPU_STOPPED != 0) { _state.cycles = unchecked((int)cycles); return; }
         _state.cycle_end = cycles;
         bool addressFault = false;
+        bool track = Configuration.TrackInstructionAddress;
+        int period = Configuration.RefreshPeriod, stall = Configuration.RefreshStall;
+        ReadOnlySpan<ushort> instructionCycles = _instructionCycles;
         try
         {
             while (true)
@@ -161,15 +169,15 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
                     if (addressFault) { addressFault = false; m68ki_exception_address_error(); }
                     while (unchecked((uint)_state.cycles) < cycles)
                     {
-                        if (_subCpu) _state.prev_pc = REG_PC;
+                        if (track) _state.prev_pc = REG_PC;
                         REG_IR = m68ki_read_imm_16();
-                        if (!_subCpu && _state.cycles >= _state.refresh_cycles)
+                        if (period > 0 && _state.cycles >= _state.refresh_cycles)
                         {
-                            _state.refresh_cycles = unchecked(_state.cycles + 128 * 7);
-                            _state.cycles = unchecked(_state.cycles + 2 * 7);
+                            _state.refresh_cycles = unchecked(_state.cycles + period);
+                            _state.cycles = unchecked(_state.cycles + stall);
                         }
                         ExecuteInstruction();
-                        USE_CYCLES(CYC_INSTRUCTION[(int)REG_IR]);
+                        USE_CYCLES(instructionCycles[(int)REG_IR]);
                     }
                     break;
                 }
@@ -188,14 +196,14 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
         CPU_INT_LEVEL = 0;
         _irqLatency = false;
         m68ki_set_s_flag(SFLAG_SET);
-        if (!_subCpu) CPU_PREF_ADDR = 0x1000;
+        if (Configuration.PrefetchResetAddress is uint resetAddress) CPU_PREF_ADDR = resetAddress;
         m68ki_jump(0);
         REG_SP = m68ki_read_imm_32();
         REG_PC = m68ki_read_imm_32();
         m68ki_jump(REG_PC);
         if (_addressErrors) CPU_RUN_MODE = RUN_MODE_NORMAL;
         USE_CYCLES(CYC_EXCEPTION[(int)EXCEPTION_RESET]);
-        if (!_subCpu) _state.refresh_cycles = unchecked(_state.cycles / (128 * 7) * (128 * 7) + 128 * 7);
+        if (Configuration.RefreshPeriod is > 0 and var refresh) _state.refresh_cycles = unchecked(_state.cycles / refresh * refresh + refresh);
     }
 
     public void Halt() => CPU_STOPPED |= STOP_LEVEL_HALT;
@@ -207,28 +215,28 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
         unchecked
         {
             int increment = (int)value;
-            _state.cycles += increment * _cycleRatio >> _cycleShift;
+            _state.cycles += (int)((long)increment * _cycleRatio >> _cycleShift);
         }
     }
     private void SET_CYCLES(uint value) => _state.cycles = unchecked((int)value);
     private void SKIP_BUS_REFRESH()
     {
-        int cycles = _subCpu ? _bus.MainCycles : _state.cycles;
-        int refresh = _subCpu ? _bus.MainRefreshCycles : _state.refresh_cycles;
-        if (cycles >= refresh) _state.refresh_cycles = unchecked(_state.refresh_cycles + 128 * MUL);
+        int advance = Configuration.RefreshSkipAdvance;
+        if (advance != 0 && _bus.IsRefreshWindowElapsed(_state.cycles, _state.refresh_cycles))
+            _state.refresh_cycles = unchecked(_state.refresh_cycles + advance);
     }
     private static int abs(int value) => value < 0 ? unchecked(-value) : value;
     private static int MAKE_INT_8(uint value) => unchecked((sbyte)value);
     private static int MAKE_INT_16(uint value) => unchecked((short)value);
     private static int MAKE_INT_32(uint value) => unchecked((int)value);
-    private uint m68ki_tas_callback() => _subCpu ? 1u : 0u;
+    private uint m68ki_tas_callback() => Configuration.WriteTasMemory ? 1u : 0u;
     private void m68ki_int_ack(uint level) => _bus.AcknowledgeInterrupt(level);
 
     private uint m68ki_read_imm_16()
     {
         unchecked
         {
-            if (_subCpu) { uint pc = REG_PC; REG_PC += 2; return m68k_read_immediate_16(pc); }
+            if (!_prefetch) { uint pc = REG_PC; REG_PC += 2; return m68k_read_immediate_16(pc); }
             if (REG_PC != CPU_PREF_ADDR) { CPU_PREF_ADDR = REG_PC; CPU_PREF_DATA = m68k_read_immediate_16(REG_PC); }
             uint value = CPU_PREF_DATA;
             REG_PC += 2;
@@ -241,7 +249,7 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
     {
         unchecked
         {
-            if (_subCpu) { uint pc = REG_PC; REG_PC += 4; return m68k_read_immediate_32(pc); }
+            if (!_prefetch) { uint pc = REG_PC; REG_PC += 4; return m68k_read_immediate_32(pc); }
             if (REG_PC != CPU_PREF_ADDR) { CPU_PREF_ADDR = REG_PC; CPU_PREF_DATA = m68k_read_immediate_16(REG_PC); }
             uint value = CPU_PREF_DATA;
             REG_PC += 2;

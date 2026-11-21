@@ -1,3 +1,4 @@
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -163,9 +164,9 @@ public sealed class OptionIntegrationTests
             Assert.Same(board,Read(fixture.Core,"_system"));
             if(id=="segaemu")
             {
-                var settings=(SE.Common.SystemConfiguration)Read(fixture.Core,"_settings")!;
+                var settings=(SE.Contracts.SystemConfiguration)Read(fixture.Core,"_settings")!;
                 Assert.True(settings.PrecacheCd);Assert.True(settings.Video.DisableSpriteLimit);
-                Assert.Equal(0,((SE.Common.Audio.SoundUnit)Read(board,"_sound")!).Psg.ChannelVolumes[0]);
+                Assert.Equal(0,((SE.Audio.SoundUnit)Read(board,"_sound")!).Psg.ChannelVolumes[0]);
             }
             else
             {
@@ -263,7 +264,7 @@ public sealed class OptionIntegrationTests
             string name=model=="GameGear" ? "synthetic.gg" : "synthetic.sms";
             if(id=="segaemu")
             {
-                var machine=SE.Factories.BoardFactory.Create(model,new((SE.Common.SystemConfiguration)settings,bitmap,1024,626,4096,44100,_=>null,(_,_)=>0,CancellationToken.None));
+                var machine=SE.Factories.BoardFactory.Create(model,new((SE.Contracts.SystemConfiguration)settings,bitmap,1024,626,4096,44100,_=>null,(_,_)=>0,CancellationToken.None));
                 board=machine;Assert.True(machine.Load(name,rom));machine.RefreshConfiguration();
             }
             else

@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System 모델</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3D 안경</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>사용</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>사용 안 함</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive 모델</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 ROM 의 특징</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>주소 거울 2 8 KiB ROMs</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>콘솔 일시 버튼</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>쥐 감도</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>마우스 운동 속도. 기본은 2.00입니다. 각 포인팅 장치 포트는이 설정을 자동으로 사용하거나 자체 속도를 사용할 수 있습니다. 변경은 콘솔을 다시 시작하지 않고 적용.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>하드웨어 개정</value></data>
 </root>

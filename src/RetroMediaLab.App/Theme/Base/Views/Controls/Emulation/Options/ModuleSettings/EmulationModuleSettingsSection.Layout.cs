@@ -108,7 +108,23 @@ internal sealed partial class EmulationModuleSettingsSection
         fields = fields.Where(field => field.VideoSection == EmulationVideoSettingsSection.Display).ToArray();
         FrameworkElement? nativeSettings = null;
         FrameworkElement display;
-        if (blocks.Any(block => block.IsCompact))
+        bool useFramedDisplay = blocks.Length > 1 && blocks.All(block => block.IsCompact && !block.IsCollapsible);
+        if (useFramedDisplay)
+        {
+            var panel = new StackPanel();
+            foreach (var block in blocks)
+            {
+                var blockFields = block.Fields.Where(field => field.IsVisible && field.LabelResourceKey != rendererResourceKey)
+                    .Select(CreateVideoSettingsField).ToArray();
+                if (blockFields.Length == 0) continue;
+                var card = EmulationVideoProcessingSettingsSection.FramedGroup(block.TitleResourceKey,
+                    EmulationSettingsLayout.VideoSettingsFields(blockFields));
+                if (panel.Children.Count != 0) card.Margin = new Thickness(0, 12, 0, 0);
+                panel.Children.Add(card);
+            }
+            display = panel;
+        }
+        else if (blocks.Any(block => block.IsCompact))
         {
             display = EmulationSettingsLayout.VideoSettingsFields(blocks.Where(block => !block.IsCollapsible).SelectMany(block => block.Fields).Where(field => field.IsVisible && field.LabelResourceKey != rendererResourceKey).Select(CreateVideoSettingsField).ToArray());
             var groups = CreateRenderingGroups(blocks.Where(block => block.IsCollapsible));
@@ -157,7 +173,7 @@ internal sealed partial class EmulationModuleSettingsSection
         });
         var rendererChoice = EmulationSettingsLayout.VideoSettingsChoice(
             new EmulationVideoSettingsField(LocExtension.Get(rendererResourceKey), renderer, Explanation: LocExtension.Get("Emulation.Help.Video.Rendering.Short"), DetailedExplanation: LocExtension.Get("Emulation.Help.Video.Rendering.Detailed")));
-        _videoProcessing.SetConfiguration(profile.Processing, display, rendererChoice, nativeSettings: nativeSettings,
+        _videoProcessing.SetConfiguration(profile.Processing, display, rendererChoice, displayOwnsFrames: useFramedDisplay, nativeSettings: nativeSettings,
             imageSettings: imageSettings, effectSettings: effectSettings);
         _videoProcessing.SetShaderLoading(EmulationVideoShaderLoadingStatus.IsLoading(_module.Id, _configuration.Id));
         ApplySettingsRules(settings);
@@ -211,10 +227,19 @@ internal sealed partial class EmulationModuleSettingsSection
         {
             var blocks = settings.Blocks.Where(block => block.Tab == tab && block.IsVisible && block.Fields.Any(IsDisplayed))
                 .OrderBy(block => block.TitleResourceKey == "Emulation.Firmware" ? 0 : 1).ToArray();
-            var cards = blocks.SelectMany(block => block.Fields.Where(IsDisplayed).Select(field =>
+            var cards = blocks.SelectMany(block => block.IsCompact
+                ? [(FrameworkElement)EmulationSettingsLayout.IconCard(
+                    EmulationSettingsLayout.BoundedForm(1, block.Fields.Where(IsDisplayed).Select(CreateControlField).ToArray()),
+                    LocExtension.GetForModule(_module, block.TitleResourceKey), block.Icon ?? IconGlyphs.Settings)]
+                : block.Fields.Where(IsDisplayed).Select(field =>
                 (FrameworkElement)EmulationSettingsLayout.IconCard(
                     new Border { Child = CreateField(field), Padding = new Thickness(10) },
                     LocExtension.GetForModule(_module, field.LabelResourceKey), block.Icon ?? IconGlyphs.Settings))).ToArray();
+            if (cards.Length == 1)
+            {
+                panel.Children.Add(cards[0]);
+                return;
+            }
             var layout = EmulationSettingsLayout.CompactCards(cards);
             layout.Margin = new Thickness(0);
             panel.Children.Add(layout);
@@ -230,7 +255,18 @@ internal sealed partial class EmulationModuleSettingsSection
                 EmulationSettingsLayout.BoundedForm(1, block.Fields.Where(IsDisplayed).Select(CreateControlField).ToArray()),
                 LocExtension.GetForModule(_module, block.TitleResourceKey), block.Icon ?? IconGlyphs.Audio)).ToList();
             if (mixer.Length != 0) cards.Add(BuildAudioMixer(mixer));
-            var layout = EmulationSettingsLayout.CompactCards(cards);
+            var host = Array.FindIndex(blocks, block => block.IsCompact
+                && block.Fields.Any(field => field.ChoiceSource == EmulationSettingsChoiceSource.AudioOutputDevices));
+            var hostCard = host >= 0 ? cards[host] : null;
+            if (hostCard is not null && cards.Count > 1)
+            {
+                cards.RemoveAt(host);
+                cards.Insert(1, hostCard);
+            }
+            var layout = hostCard is not null
+                ? EmulationSettingsLayout.CompactCards(cards,
+                    card => ReferenceEquals(card, hostCard) ? 1 : cards.IndexOf(card) % 2, keepColumns: true)
+                : EmulationSettingsLayout.CompactCards(cards);
             layout.Margin = new Thickness(0);
             panel.Children.Add(layout);
             return;

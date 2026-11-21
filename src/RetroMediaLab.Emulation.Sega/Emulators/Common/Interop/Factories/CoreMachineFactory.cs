@@ -50,8 +50,8 @@ internal abstract class CoreMachineFactory : IEmulatorAdapter, IEmulatorSettings
 
     protected abstract CoreDefinition CoreDefinition { get; }
     protected CoreReleaseSettings ReleaseSettings => CoreDefinition.ReleaseSettings ?? throw new InvalidOperationException("This emulator is included in its module.");
-    public IReadOnlyList<FirmwareSlot> GetFirmwareSlots(MachineConfiguration configuration) => CoreDefinition.Firmware.Where(slot => slot.MachineIds is null || slot.MachineIds.Contains(configuration.Model)).ToArray();
-    public IReadOnlyList<EmulationSettingsBlock> DescribeSettings(MachineConfiguration configuration, EmulatorManagementContext? context = null) => CoreSettingsFunctions.Blocks(configuration);
+    public IReadOnlyList<FirmwareSlot> GetFirmwareSlots(MachineConfiguration configuration) => Functions.FirmwareFunctions.Slots(configuration, CoreDefinition.Firmware);
+    public virtual IReadOnlyList<EmulationSettingsBlock> DescribeSettings(MachineConfiguration configuration, EmulatorManagementContext? context = null) => CoreSettingsFunctions.Blocks(configuration);
     public IReadOnlyList<string> SupportedContentExtensions => CoreDefinition.Extensions;
     public string EmulatorId => CoreDefinition.Id;
     /// <summary>Identité de cœur fournie par le backend au contrat de publication Common.</summary>

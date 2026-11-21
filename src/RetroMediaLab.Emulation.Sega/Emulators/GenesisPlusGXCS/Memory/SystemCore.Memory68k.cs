@@ -599,7 +599,7 @@ internal sealed partial class SystemCore
             }
             case 48:
             {
-            cart.hw.time_w(address, data);
+            cart.hw.time_w?.Invoke(address, data);
             return;
             }
             case 65:
@@ -805,7 +805,7 @@ internal sealed partial class SystemCore
             }
             case 48:
             {
-            cart.hw.time_w(address, data);
+            cart.hw.time_w?.Invoke(address, data);
             return;
             }
             case 64:

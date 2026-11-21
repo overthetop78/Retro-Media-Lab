@@ -100,7 +100,6 @@ internal sealed partial class EmulationModuleSettingsSection
         var mainControls = mainFields.Select(CreateControlField).ToArray();
         var extensionControls = extensionFields.Select(CreateControlField).ToArray();
         var fields = mainFields.Concat(extensionFields).ToArray();
-        var machineName = (_machines.SelectedItem as EmulationMachineChoice)?.DisplayName ?? settings.MachineId;
         var total = new TextBlock();
         presentationMemoryTotal = total;
         foreach (var control in mainControls.Concat(extensionControls).Select(field => field.Control))
@@ -108,9 +107,7 @@ internal sealed partial class EmulationModuleSettingsSection
         UpdateMemoryTotal(fields, total);
         var page = EmulationSettingsLayout.MemorySettingsPage(new EmulationMemorySettingsContent(
             mainControls,
-            new TextBlock { Text = LocExtension.Get("Emulation.Memory.CompatibleWithModel", machineName) },
             extensionControls,
-            new TextBlock { Text = LocExtension.Get("Emulation.Memory.ExtensionsCompatibleWithModel", machineName) },
             total));
         ApplySettingsRules(settings);
         return EmulationSettingsLayout.ScrollPage(page);

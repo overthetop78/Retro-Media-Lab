@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Model Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>Ochelari 3-D</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Activat</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Dezactivat</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Model Mega Drive</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standard ROM aspect</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Două 8 ROM KiB cu oglinzi cu adrese</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Buton de pauza Console</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Sensibilitate la şoarece</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Viteza de miscare a soricelului. Neplata este de 2.00. Fiecare port de asezare poate folosi automat acest set sau viteza proprie. Modificările se aplică fără repornirea consolei.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Revizuire hardware</value></data>
 </root>

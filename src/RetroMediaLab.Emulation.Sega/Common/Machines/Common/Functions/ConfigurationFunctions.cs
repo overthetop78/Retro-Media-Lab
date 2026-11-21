@@ -33,14 +33,28 @@ internal static class ConfigurationValidationFunctions
             if (!Supports(model, media.Category, media.Slot, configuration.Options)
                 || IsIncompatibleMedia(model, media, configuration.Options)
                 || media.Slot == EmulationMediaSlot.Cartridge1
-                && IsSegaCardLocked(model, configuration.Options))
+                && (model.SupportsThreeDGlasses || ModelConstants.GetMasterSystemConverter(model.Id, configuration.Options) == ModelConstants.MasterSystemConverterI)
+                && IsEnabled(configuration.Options, SettingsConstants.MasterSystemThreeDGlasses))
                 throw new InvalidDataException($"{model.Id}:{media.Category}");
         }
     }
 
     internal static bool IsIncompatibleMedia(Model model, MediaConfiguration media, IReadOnlyDictionary<string, string>? options)
     {
-        if (model.Id != ModelConstants.MegaDrive || media.Category != MediaCategory.Cartridge)
+        if (model.Id == ModelConstants.MasterSystemII && Path.GetExtension(media.Path)
+            .Equals(StorageSettingsFunctionsConstants.Mv, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (media.Category == MediaCategory.Cartridge && ModelConstants.GetMasterSystemConverter(model.Id, options) is not null)
+        {
+            var extension = Path.GetExtension(media.Path);
+            return media.Slot == EmulationMediaSlot.Cartridge1
+                ? !extension.Equals(StorageSettingsFunctionsConstants.Mv, StringComparison.OrdinalIgnoreCase)
+                : !extension.Equals(".sms", StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (!ModelConstants.IsMegaDriveFamily(model.Id) || ModelConstants.HasThirtyTwoX(model.Id)
+            || media.Category != MediaCategory.Cartridge)
             return false;
         var isThirtyTwoX = Path.GetExtension(media.Path).Equals(StorageSettingsFunctionsConstants.ThirtyTwoX, StringComparison.OrdinalIgnoreCase);
         return isThirtyTwoX && !IsEnabled(options, SettingsConstants.MegaDriveThirtyTwoX);
@@ -55,16 +69,11 @@ internal static class ConfigurationValidationFunctions
         && (bool.TryParse(value, out var parsed) && parsed
             || value.Equals(SettingsDescriptionFunctionsConstants.Enabled, StringComparison.OrdinalIgnoreCase));
 
-    private static bool IsSegaCardLocked(Model model, IReadOnlyDictionary<string, string>? options) =>
-        IsEnabled(options, SettingsConstants.MasterSystemThreeDGlasses)
-        || model.Id == ModelConstants.MasterSystem
-        && options?.GetValueOrDefault(SettingsConstants.MasterSystemVariant, ModelConstants.MasterSystemSmsI).Equals(ModelConstants.MasterSystemSmsIi, StringComparison.Ordinal) == true;
-
     internal static bool Supports(Model model, MediaCategory category, EmulationMediaSlot slot, IReadOnlyDictionary<string, string>? options = null) => category switch
     {
         MediaCategory.Floppy => model.MaximumFloppyDriveCount > 0,
         MediaCategory.Tape => model.SupportsTapeDrive,
-        MediaCategory.Cartridge => slot.Category != EmulationMediaCategory.CartridgeSlot || slot.Index == 0 ? model.SupportsCartridgeSlot : slot.Index == 1 && model.SupportsSegaCardSlot,
+        MediaCategory.Cartridge => slot.Category != EmulationMediaCategory.CartridgeSlot || slot.Index == 0 ? model.SupportsCartridgeSlot : slot.Index == 1 && (model.SupportsSegaCardSlot || ModelConstants.GetMasterSystemConverter(model.Id, options) == ModelConstants.MasterSystemConverterI),
         MediaCategory.CompactDisc => model.SupportsCompactDiscDrive || IsMegaCdEnabled(model, options),
         MediaCategory.Snapshot => true,
         _ => false

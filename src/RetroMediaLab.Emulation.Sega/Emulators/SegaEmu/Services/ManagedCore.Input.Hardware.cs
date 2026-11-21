@@ -1,6 +1,4 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
 using RetroMediaLab.Chips.Common.Memory;
-using RetroMediaLab.Chips.Video.Sega.VDP;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Services;
 
@@ -74,15 +72,15 @@ internal sealed partial class ManagedCore
             ret = ReadHostInput(unchecked((uint)(player)), unchecked((uint)(1)), unchecked((uint)(0)), unchecked((uint)(256)));
             break;
             case 5:
-            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)(((unchecked((int)(ReadHostInput(unchecked((uint)(player)), unchecked((uint)(5)), unchecked((uint)(0)), unchecked((uint)(0))))) + 32768) >> 8)));
+            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)(((unchecked((int)(ReadPointingAxis(player, 0u))) + 32768) >> 8)));
             if (((unchecked((int)(ret)) & (1 << 0)) != 0)) temp |= unchecked((uint)(16));
             if (((unchecked((int)(ret)) & (1 << 3)) != 0)) temp |= unchecked((uint)(128));
             player++;
             ret = ReadHostInput(unchecked((uint)(player)), unchecked((uint)(1)), unchecked((uint)(0)), unchecked((uint)(256)));
             break;
             case 6:
-            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)(((unchecked((int)(ReadHostInput(unchecked((uint)(player)), unchecked((uint)(5)), unchecked((uint)(0)), unchecked((uint)(0))))) + 32768) >> 8)));
-            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(1)] = unchecked((short)(((unchecked((int)(ReadHostInput(unchecked((uint)(player)), unchecked((uint)(5)), unchecked((uint)(0)), unchecked((uint)(1))))) + 32768) >> 8)));
+            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)(((unchecked((int)(ReadPointingAxis(player, 0u))) + 32768) >> 8)));
+            new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(1)] = unchecked((short)(((unchecked((int)(ReadPointingAxis(player, 1u))) + 32768) >> 8)));
             if (((unchecked((int)(ret)) & (1 << 0)) != 0)) temp |= unchecked((uint)(16));
             if (((unchecked((int)(ret)) & (1 << 8)) != 0)) temp |= unchecked((uint)(32));
             if (((unchecked((int)(ret)) & (1 << 3)) != 0)) temp |= unchecked((uint)(128));
@@ -92,6 +90,8 @@ internal sealed partial class ManagedCore
             case 8:
             new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(0)] = unchecked((short)((60 + (((unchecked((int)(ReadHostInput(unchecked((uint)(player)), unchecked((uint)(6)), unchecked((uint)(0)), unchecked((uint)(0))))) + 32767) * (380 - 60)) / 65534))));
             new ArrayPointer<short>(input_analog, (int)(i) * 2)[(int)(1)] = unchecked((short)((508 + (((unchecked((int)(ReadHostInput(unchecked((uint)(player)), unchecked((uint)(6)), unchecked((uint)(0)), unchecked((uint)(1))))) + 32767) * (759 - 508)) / 65534))));
+            // Hold the middle mouse button to use the storyware surface above the pad.
+            if (ReadHostInput((uint)player, 2, 0, 6) != 0) input_analog[i * 2 + 1] += 252;
             if ((ReadHostInput(unchecked((uint)(player)), unchecked((uint)(2)), unchecked((uint)(0)), unchecked((uint)(2))) != 0)) temp |= unchecked((uint)(128));
             if ((ReadHostInput(unchecked((uint)(player)), unchecked((uint)(2)), unchecked((uint)(0)), unchecked((uint)(3))) != 0)) temp |= unchecked((uint)(16));
             if ((ReadHostInput(unchecked((uint)(player)), unchecked((uint)(2)), unchecked((uint)(0)), unchecked((uint)(4))) != 0)) pico_current = unchecked((byte)(((unchecked((int)(pico_current)) - 1) & 7)));

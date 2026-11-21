@@ -73,7 +73,7 @@ internal sealed partial class SystemCore
             {
             if (((address >> 8) == unchecked((uint)(127)))) {
             z80_request_68k_bus_access();
-            return unchecked((byte)(zbank_memory_map[(int)(192)].read(address)));
+            return unchecked((byte)((zbank_memory_map[192].read ?? zbank_read_vdp)(address)));
             }
             return z80_unused_r(address);
             }
@@ -81,8 +81,8 @@ internal sealed partial class SystemCore
             {
             z80_request_68k_bus_access();
             address = (zbank | (address & unchecked((uint)(32767))));
-            if ((zbank_memory_map[(int)((address >> 16))].read != null)) {
-            return unchecked((byte)(zbank_memory_map[(int)((address >> 16))].read(address)));
+            if (zbank_memory_map[(int)((address >> 16))].read is { } handler) {
+            return unchecked((byte)(handler(address)));
             }
             return memory_map[(int)((address >> 16))].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))];
             }
@@ -116,7 +116,7 @@ internal sealed partial class SystemCore
             case 127:
             {
             z80_request_68k_bus_access();
-            zbank_memory_map[(int)(192)].write(address, unchecked((uint)(data)));
+            (zbank_memory_map[192].write ?? zbank_write_vdp)(address, unchecked((uint)(data)));
             return;
             }
             default:
@@ -130,8 +130,8 @@ internal sealed partial class SystemCore
             {
             z80_request_68k_bus_access();
             address = (zbank | (address & unchecked((uint)(32767))));
-            if ((zbank_memory_map[(int)((address >> 16))].write != null)) {
-            zbank_memory_map[(int)((address >> 16))].write(address, unchecked((uint)(data)));
+            if (zbank_memory_map[(int)((address >> 16))].write is { } handler) {
+            handler(address, unchecked((uint)(data)));
             return;
             }
             memory_map[(int)((address >> 16))].@base[(int)(((address & unchecked((uint)(65535))) ^ unchecked((uint)(1))))] = unchecked((byte)((unchecked((int)(data)) & 255)));

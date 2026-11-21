@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Model Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D-brillen</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Ingeschakeld</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Uitgeschakeld</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive model</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standaard ROM indeling</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Twee 8 KiB ROM's met adresspiegels</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Console-pauzeknop</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Muisgevoeligheid</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Muisbewegingssnelheid. Standaard is het 2.00. Elke punt-apparaatpoort kan deze instelling automatisch of zijn eigen snelheid gebruiken. Wijzigingen zijn van toepassing zonder de console opnieuw te starten.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Hardware-revisie</value></data>
 </root>

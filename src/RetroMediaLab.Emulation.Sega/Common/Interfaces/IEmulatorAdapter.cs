@@ -206,7 +206,8 @@ internal interface IEmulatorAdapter : IEmulatorControllerFeedbackAdapter, IEmula
     bool IEmulatorPointerCapabilities.SupportsPointer(MachineConfiguration configuration) => false;
 
     /// <summary>Réutilise les associations Common ; la machine ajoute ensuite sa touche de bascule de session.</summary>
-    EmulationInputSnapshot IEmulatorInputMapper.MapInput(EmulationInputSnapshot snapshot, MachineConfiguration configuration) => InputSnapshotFunctions.Apply(snapshot, configuration.Input, false);
+    EmulationInputSnapshot IEmulatorInputMapper.MapInput(EmulationInputSnapshot snapshot, MachineConfiguration configuration) =>
+        InputSnapshotFunctions.Apply(snapshot, configuration.Input, false, InputSettingsFunctions.SupportsTerebiStylus(configuration));
 
     /// <summary>Projette les réglages validés du module vers les valeurs textuelles attendues pendant l’exécution.</summary>
     /// <param name="configuration">Configuration de machine, conservée immuable par le module.</param>

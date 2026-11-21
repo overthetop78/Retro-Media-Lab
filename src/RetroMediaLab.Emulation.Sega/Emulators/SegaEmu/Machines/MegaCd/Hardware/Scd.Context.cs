@@ -1,18 +1,16 @@
-using System.IO;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Buses;
 using RetroMediaLab.Chips.Common.Memory;
 using RetroMediaLab.Chips.CPU.Motorola.M68000.Execution;
 using RetroMediaLab.Chips.Controllers.Sega.CD;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Media;
 using Pcm = RetroMediaLab.Chips.Audio.Ricoh.RF5C164.Rf5c164;
-using BlipBuffer = RetroMediaLab.Chips.Audio.Common.Resampling.BandLimitedBuffer;
 using System.Buffers.Binary;
-
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MegaCd.Hardware;
 
 internal sealed partial class Scd
 {
-    private static int FixedContextSize => 512 + 14 + Gfx.ContextSize + Cdc.ContextSize + CdDrive.ContextSize + Pcm.ContextSize + 0x80000 + 0x40000 + 24 + 2 + Cpu68000<Scd>.ContextSize;
+    private static int FixedContextSize => 512 + 14 + Gfx.ContextSize + Cdc.ContextSize + CdDrive.ContextSize + Pcm.ContextSize + 0x80000 + 0x40000 + 24 + 2 + Cpu68000<MegaCdCpuBus>.ContextSize;
     public int ContextSize => FixedContextSize + (cd_boot == 0 ? 0 : _host.MdCartridgeContextSize);
     private static void Put32(Span<byte> state, ref int offset, uint value)
     { BinaryPrimitives.WriteUInt32LittleEndian(state[offset..], value); offset += 4; }
@@ -48,6 +46,8 @@ internal sealed partial class Scd
         if (cd_boot != 0) offset += _host.SaveMdCartridgeContext(state[offset..]);
         return offset;
     }
+    internal bool CanLoadContext(ReadOnlySpan<byte> state) => state.Length >= ContextSize;
+
     public int LoadContext(ReadOnlySpan<byte> state, string version)
     {
         bool previous = version.Length > 15 && version[11] == '1' && version[13] == '7' && version[15] == '5';

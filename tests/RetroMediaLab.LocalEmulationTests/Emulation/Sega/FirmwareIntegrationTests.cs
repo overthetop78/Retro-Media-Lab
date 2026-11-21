@@ -69,6 +69,15 @@ public sealed class FirmwareIntegrationTests
         var candidate = Assert.Single(candidates);
         Assert.Equal(EmulationFirmwareCompatibility.Unknown, candidate.Compatibility);
         Assert.Null(candidate.DestinationFieldId);
+        foreach (string path in new[] { "dc_nvmem.bin", "font.bin", "naomi_boot.bin",
+            "Mega CD - M2 V2.00.bin", "Mega CD - M2 V2.00w.bin", "sc3000.rom", "sc3000-variant.rom",
+            "Sega Saturn BIOS v1.01 (1995)(Sega)(JP)(M6)[h].bin", "sf7000.rom" })
+        {
+            var result = Assert.Single(FirmwareConfigurationFunctions.Candidates("MasterSystem", unknown with { Path = path },
+                FirmwareFunctions.Slots(new("MasterSystem", "segaemu"))));
+            Assert.Equal(EmulationFirmwareCompatibility.Incompatible, result.Compatibility);
+            Assert.Null(result.DestinationFieldId);
+        }
     }
 
     [Fact]
@@ -85,6 +94,50 @@ public sealed class FirmwareIntegrationTests
             if (slots.Any(slot => slot.FileName == "bios_E.sms")) Assert.Single(accepted);
         }
         Assert.Contains("Sonic", sonic.Name);
+    }
+
+    [Theory]
+    [InlineData("MasterSystem", "segaemu", "sf7000.rom")]
+    [InlineData("GameGear", "segaemu", "bios_E.sms")]
+    [InlineData("Sf7000", "segaemu", "bios.gg")]
+    [InlineData("MegaCd", "segaemu", "Sega Saturn BIOS v1.01 (1995)(Sega)(JP)(M6)[h].bin")]
+    [InlineData("Saturn", "segaemu", "Mega CD - M2 V2.00w.bin")]
+    [InlineData("Dreamcast", "flycast", "naomi.zip")]
+    [InlineData("Naomi", "flycast", "dc_boot.bin")]
+    public void FirmwareIntendedForAnotherMachineIsClassifiedBeforeFiltering(string model, string emulator, string file)
+    {
+        var slots = FirmwareFunctions.Slots(new(model, emulator));
+        Assert.NotEmpty(slots);
+        string fieldId = slots[0].FieldId;
+        Firmware firmware = new(file, 0, "unknown", file, DateTime.UnixEpoch,
+            RetroMediaLab.Emulation.Sega.Common.Machines.Common.Enums.FirmwareType.SystemRom, false, false, null, null, []);
+        var candidates = FirmwareConfigurationFunctions.Candidates(model, firmware, slots);
+        var incompatible = Assert.Single(candidates);
+        Assert.Equal(EmulationFirmwareCompatibility.Incompatible, incompatible.Compatibility);
+        Assert.Null(incompatible.DestinationFieldId);
+        Assert.Empty(RetroMediaLab.App.Controllers.Emulation.Firmware.EmulationFirmwareManagementController
+            .CandidatesForField(candidates, fieldId));
+
+        var local = Assert.Single(FirmwareConfigurationFunctions.Candidates(model,
+            firmware with { Path = slots[0].FileName }, slots));
+        Assert.Equal(EmulationFirmwareCompatibility.Unknown, local.Compatibility);
+    }
+
+    [Theory]
+    [InlineData("MegaCd", "configuration.megaDriveRegion", "310a9081d2edf2d316ab38813136725e", "pal", "ntsc-u")]
+    [InlineData("Saturn", "segaemu_region_detect", "85ec9ca47d8f6807718151cbcca8b964", "pal", "ntsc-j")]
+    [InlineData("Saturn", "segaemu_region_detect", "3240872c70984b6cbfda1586cab68dbe", "ntsc-j", "pal")]
+    public void OfficialFirmwareRequiresAMatchingConsoleRegion(string model, string option, string hash, string foreign, string local)
+    {
+        Firmware firmware = Identified(hash, "renamed.bin");
+        foreach (var (region, expected) in new[] { (foreign, EmulationFirmwareCompatibility.Incompatible),
+            (local, EmulationFirmwareCompatibility.Official), ("auto", EmulationFirmwareCompatibility.Official) })
+        {
+            var configuration = new MachineConfiguration(model, "segaemu", new Dictionary<string, string> { [option] = region });
+            var slots = FirmwareFunctions.Slots(configuration);
+            var candidate = Assert.Single(FirmwareConfigurationFunctions.Candidates(model, firmware, slots, configuration));
+            Assert.Equal(expected, candidate.Compatibility);
+        }
     }
 
     [Theory]
@@ -133,7 +186,7 @@ public sealed class FirmwareIntegrationTests
             int Load(int _, Memory<byte> destination) { bios.AsMemory().CopyTo(destination); return bios.Length; }
             if (segaEmu)
             {
-                var settings = new SE.Common.SystemConfiguration { system = 0x21, bios = 1 };
+                var settings = new SE.Contracts.SystemConfiguration { system = SE.Constants.SystemHardware.MasterSystem, bios = 1 };
                 var system = SE.Factories.BoardFactory.Create("MasterSystem", new(settings, framebuffer, 1024, 626, 4096, 44100,
                     _ => throw new InvalidOperationException("No cartridge file may be requested."), Load, CancellationToken.None));
                 board = system; Assert.True(system.Load(string.Empty)); system.RunFrame(new short[9600]);
@@ -147,7 +200,7 @@ public sealed class FirmwareIntegrationTests
             }
             var cart = Read(board, "cart");
             Assert.Equal(0u, Read(cart, "romsize"));
-            var sms = Read(board, "_sms");
+            var sms = Read(board, segaEmu ? "_smsComponent" : "_sms");
             Assert.Equal((ushort)0, Read(Read(sms, "cart_rom"), "pages"));
             Assert.Equal((ushort)8, Read(Read(sms, "bios_rom"), "pages"));
             Assert.NotEqual((byte)0, ((byte[])Read(board, "work_ram"))[0]);

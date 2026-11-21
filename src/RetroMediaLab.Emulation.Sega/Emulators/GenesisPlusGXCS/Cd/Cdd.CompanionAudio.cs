@@ -21,6 +21,7 @@ internal sealed partial class Cdd
             file = OpenFile(currentName);
             if (file is not null) { selectedFormat = format; break; }
         }
+        Span<byte> probe = stackalloc byte[4];
         while (file is not null)
         {
             track_t track = cdd.toc.tracks[cdd.toc.last];
@@ -46,7 +47,6 @@ internal sealed partial class Cdd
                 track.offset = track.start * 588;
                 track.Vorbis.SeekPcm(100 * 588);
             }
-            Span<byte> probe = stackalloc byte[4];
             BinaryPrimitives.WriteUInt32LittleEndian(probe, firstWord);
             if (track.Vorbis is null)
             {

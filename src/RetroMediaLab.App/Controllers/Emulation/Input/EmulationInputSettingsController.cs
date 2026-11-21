@@ -29,7 +29,7 @@ internal sealed class EmulationInputSettingsController
     private InputBindingEditor? _mouse;
     private ControllerVisualizer? _mouseDrawing;
     private IReadOnlyList<EmulationControllerPortEditor> _ports = [];
-    private IReadOnlyDictionary<int, EmulationControllerPort> _portDefinitions = new Dictionary<int, EmulationControllerPort>();
+    private Dictionary<int, EmulationControllerPort> _portDefinitions = new();
     private EmulationInputSettings _settings = new(null, null, []);
     private string? _moduleId;
     private string? _machineId;
@@ -135,8 +135,8 @@ internal sealed class EmulationInputSettingsController
 
     private UIElement CreateControllersView(IReadOnlyList<EmulationSettingsControlField> fields)
     {
-        _ports = _settings.ControllerPorts.Select(CreatePort).ToArray();
         _portDefinitions = _settings.ControllerPorts.ToDictionary(port => port.Number);
+        _ports = _settings.ControllerPorts.Select(CreatePort).ToArray();
         var section = new EmulationControllerSettingsSection();
         var view = fields.Count == 0 ? section.Build(_ports.Select(port => port.Settings).ToArray()) : section.Build(_ports.Select(port => port.Settings).ToArray(), fields, LocExtension.Get("Emulation.Input.Behavior"), ControlVisualConstants.GameControllerGlyph);
         return view;
@@ -189,7 +189,7 @@ internal sealed class EmulationInputSettingsController
         editor.Bindings.SetReservedBindings(_reservedBindings);
         editor.DeadZonePercent = port.DeadZonePercent;
         editor.Bindings.SetRows(port.Bindings.Definitions, port.Bindings.Values, _moduleId);
-        UpdateControllerBindings(editor, port.VisualId, preserveCurrentBindings: true, preferredControllerId: port.SelectedControllerId);
+        UpdateControllerBindings(editor, port.VisualId, preferredControllerId: port.SelectedControllerId);
         var updatingSelection = false;
         void UpdateSelection(Action update)
         {
@@ -203,26 +203,25 @@ internal sealed class EmulationInputSettingsController
         {
             if (!updatingSelection) SettingsChanged?.Invoke(this, EventArgs.Empty);
         }
-        editor.Type.SelectionChanged += (_, _) => UpdateSelection(() => UpdateControllerBindings(editor, preserveCurrentBindings: false));
+        editor.Type.SelectionChanged += (_, _) => UpdateSelection(() => UpdateControllerBindings(editor));
         editor.Visual.SelectionChanged += (_, _) => UpdateSelection(() => UpdateControllerVisualProfile(editor));
         editor.Bindings.BindingsChanged += NotifyBindingsChanged;
         editor.Outputs.BindingsChanged += NotifyBindingsChanged;
         return editor;
     }
 
-    private void UpdateControllerBindings(EmulationControllerPortEditor editor, string? preferredVisualId = null, bool preserveCurrentBindings = true, string? preferredControllerId = null)
+    private void UpdateControllerBindings(EmulationControllerPortEditor editor, string? preferredVisualId = null, string? preferredControllerId = null)
     {
+        var current = CapturePortBindings(editor);
         if (editor.Type.SelectedItem is EmulationControllerCategoryChoiceView)
         {
-            if (!preserveCurrentBindings) editor.Bindings.SetRows([], null, _moduleId);
+            editor.Bindings.SetRows([], null, _moduleId);
             UpdateControllerVisuals(editor, preferredVisualId, preferredControllerId);
             UpdateControllerVisualProfile(editor);
             return;
         }
-        if (editor.Type.SelectedItem is not EmulationControllerChoiceView selected
-            || selected.Choice.BindingDefinitions is null) return;
-        var current = preserveCurrentBindings ? editor.Bindings.Rows.ToDictionary(row => row.Id, row => row.Binding, StringComparer.Ordinal) : new Dictionary<string, string>(StringComparer.Ordinal);
-        var definitions = selected.Choice.BindingDefinitions;
+        if (editor.Type.SelectedItem is not EmulationControllerChoiceView selected) return;
+        var definitions = selected.Choice.BindingDefinitions ?? [];
         var visualId = preferredVisualId ?? editor.SelectedVisualId ?? selected.Choice.DefaultVisualId;
         if (visualId is not null && selected.Choice.VisualBindingDefinitions?.TryGetValue(visualId, out var visualDefinitions) == true)
             definitions = visualDefinitions;
@@ -282,6 +281,7 @@ internal sealed class EmulationInputSettingsController
 
     private void UpdateControllerVisualProfile(EmulationControllerPortEditor editor)
     {
+        var current = CapturePortBindings(editor);
         var selectedChoice = editor.SelectedControllerChoice;
         var separateTab = editor.IsUsb && selectedChoice?.Id is "Keyboard" or "Mouse" or "NetPlayController";
         var availability = new List<string>();
@@ -296,7 +296,6 @@ internal sealed class EmulationInputSettingsController
         if (editor.Type.SelectedItem is EmulationControllerCategoryChoiceView && selectedChoice?.BindingDefinitions is { } bindings)
         {
             if (editor.SelectedVisualId is { } selectedVisual && selectedChoice.VisualBindingDefinitions?.TryGetValue(selectedVisual, out var visualBindings) == true) bindings = visualBindings;
-            var current = editor.Bindings.Rows.ToDictionary(row => row.Id, row => row.Binding, StringComparer.Ordinal);
             editor.Bindings.SetRows(bindings, current, _moduleId);
         }
         if (editor.SelectedVisualId is { } visualId
@@ -304,7 +303,6 @@ internal sealed class EmulationInputSettingsController
         {
             if (editor.Type.SelectedItem is not EmulationControllerCategoryChoiceView && selectedChoice?.VisualBindingDefinitions?.TryGetValue(visualId, out var definitions) == true)
             {
-                var current = editor.Bindings.Rows.ToDictionary(row => row.Id, row => row.Binding, StringComparer.Ordinal);
                 editor.Bindings.SetRows(definitions, current, _moduleId);
             }
             editor.SetVisualProfile(profile, selectedChoice?.VisualCommandIds);
@@ -350,6 +348,16 @@ internal sealed class EmulationInputSettingsController
         return normalized.Length == 0 ? string.Empty : "Keyboard:" + normalized;
     }));
 
+    private IReadOnlyDictionary<string, string> CapturePortBindings(EmulationControllerPortEditor editor)
+    {
+        var port = _portDefinitions[editor.Number];
+        var values = new Dictionary<string, string>(port.Bindings.Values, StringComparer.Ordinal);
+        foreach (var row in editor.Bindings.Rows)
+            values[row.Id] = NormalizeSourceBinding(row.Binding);
+        _portDefinitions[editor.Number] = port with { Bindings = port.Bindings with { Values = values } };
+        return values;
+    }
+
     private EmulationControllerPort ReadPort(EmulationControllerPortEditor editor)
     {
         var original = _portDefinitions[editor.Number];
@@ -359,7 +367,7 @@ internal sealed class EmulationInputSettingsController
         {
             Definitions = editor.SelectedVisualId is { } visualId && selected?.VisualBindingDefinitions?.TryGetValue(visualId, out var definitions) == true
                 ? definitions : selected?.BindingDefinitions ?? original.Bindings.Definitions,
-            Values = editor.Bindings.Rows.ToDictionary(row => row.Id, row => NormalizeSourceBinding(row.Binding), StringComparer.Ordinal)
+            Values = CapturePortBindings(editor)
         };
         return original with
         {

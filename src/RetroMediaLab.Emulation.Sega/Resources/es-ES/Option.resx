@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>modelo Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>Vidrios 3-D</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Activado</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Desactivado</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mega Drive modelo</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Estándar ROM diseño</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dos 8 ROMs con espejos de dirección</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Consola botón de pausa</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Sensibilidad de ratón</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Velocidad de movimiento de ratón. El predeterminado es de 2,00. Cada puerto de dispositivo de puntero puede utilizar este ajuste automáticamente o su propia velocidad. Los cambios se aplican sin reiniciar la consola.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Revisión de hardware</value></data>
 </root>

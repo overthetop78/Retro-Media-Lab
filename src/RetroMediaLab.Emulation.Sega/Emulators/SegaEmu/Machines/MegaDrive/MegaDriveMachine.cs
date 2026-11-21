@@ -1,4 +1,6 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Contracts;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MegaDrive;
 
@@ -13,11 +15,11 @@ internal sealed class MegaDriveMachine(MachineResources resources) : SegaBoard(S
     {
         if (Hardware == SystemHardware.MegaCd) InitializeMegaCdDevices(); else base.InitializeSixteenBitDevices();
     }
-    protected override void ExecuteMachineFrame(int skip)
+    protected override Action<int> CreateFrameScheduler()
     {
-        if (Hardware == SystemHardware.PowerBaseConverter) ExecuteEightBitFrame(skip);
-        else if (Hardware == SystemHardware.MegaCd) ExecuteMegaCdFrame(skip);
-        else ExecuteMegaDriveFrame(skip);
+        if (Hardware == SystemHardware.PowerBaseConverter) return CreateEightBitFrameScheduler();
+        else if (Hardware == SystemHardware.MegaCd) return CreateMegaCdFrameScheduler();
+        else return CreateMegaDriveFrameScheduler();
     }
     protected override bool AcceptsHardware(byte hardware) => hardware is SystemHardware.MegaDrive or SystemHardware.PowerBaseConverter or SystemHardware.MegaCd;
 }

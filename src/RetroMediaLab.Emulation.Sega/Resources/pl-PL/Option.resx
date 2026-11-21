@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System model</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3- D Okulary</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Włączone</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Wyłączone</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Model Mega Drive</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standardowy ROM układ</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dwa 8 ROM KiB z lusterkami adresowymi</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Przycisk Pause Console</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Wrażliwość myszy</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Prędkość ruchu myszy. Domyślnie wynosi 2.00. Każdy port wskaźnikowy może używać tego ustawienia automatycznie lub jego własnej prędkości. Zmiany obowiązują bez ponownego uruchamiania konsoli.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Przegląd sprzętu</value></data>
 </root>

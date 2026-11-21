@@ -18029,7 +18029,7 @@ public sealed partial class Cpu68000<TBus> where TBus : class, ICpu68000Bus
         {
             if ((FLAG_S != 0)) {
             USE_CYCLES(unchecked((long)(CYC_RESET)));
-            _state.refresh_cycles += (128 * MUL);
+            _state.refresh_cycles += Configuration.ResetRefreshAdvance;
             return;
             }
             m68ki_exception_privilege_violation();

@@ -22,8 +22,6 @@ internal partial class EmulationOpenGlHardwareRenderContext : IEmulationHardware
     private const int GlReadBufferCommand = 0x0C02;
     private const int GlBack = 0x0405;
     internal const int OpenGlContextType = ExternalCoreApiConstants.OpenGlContextType;
-    private const int OpenGlVersionMajor = 3;
-    private const int OpenGlVersionMinor = 0;
     private const int ContextWidth = 1;
     private const int ContextHeight = 1;
     private const int ColorBits = 32;
@@ -42,6 +40,8 @@ internal partial class EmulationOpenGlHardwareRenderContext : IEmulationHardware
     private bool _disposed;
     private readonly bool _bottomLeftOrigin;
     private readonly Func<string> _configurationInvalid;
+    private uint _versionMajor, _versionMinor;
+    private int _contextType = OpenGlContextType;
 
     internal EmulationOpenGlHardwareRenderContext(ExternalCoreApi.HardwareRenderCallback callback, Func<string> configurationInvalid)
     {
@@ -54,6 +54,7 @@ internal partial class EmulationOpenGlHardwareRenderContext : IEmulationHardware
         {
             CreateContext();
             ConfigureContext(callback);
+            ReadContextCapabilities();
             EnsureFramebuffer(InitialFramebufferSize, InitialFramebufferSize);
             initialized = true;
         }
@@ -66,9 +67,23 @@ internal partial class EmulationOpenGlHardwareRenderContext : IEmulationHardware
     public nint CurrentFramebufferCallback => Marshal.GetFunctionPointerForDelegate(_framebufferCallback);
     public nint ProcAddressCallback => Marshal.GetFunctionPointerForDelegate(_procAddressCallback);
 
-    public int ContextType => OpenGlContextType;
-    public uint VersionMajor => OpenGlVersionMajor;
-    public uint VersionMinor => OpenGlVersionMinor;
+    public int ContextType => _contextType;
+    public uint VersionMajor => _versionMajor;
+    public uint VersionMinor => _versionMinor;
+
+    private void ReadContextCapabilities()
+    {
+        string? text = Marshal.PtrToStringAnsi(GlGetString(0x1F02)); // GL_VERSION
+        if (text is null || !Version.TryParse(text.Split(' ')[0], out var version))
+            throw new InvalidOperationException(_configurationInvalid());
+        _versionMajor = checked((uint)version.Major);
+        _versionMinor = checked((uint)version.Minor);
+        if (_versionMajor > 3 || _versionMajor == 3 && _versionMinor >= 2)
+        {
+            GlGetInteger(0x9126, out int profile); // GL_CONTEXT_PROFILE_MASK
+            _contextType = (profile & 1) != 0 ? OpenGlCoreContextType : OpenGlContextType;
+        }
+    }
 
     public bool TryReadFramebuffer(int width, int height, out byte[] pixels)
     {
@@ -233,6 +248,8 @@ internal partial class EmulationOpenGlHardwareRenderContext : IEmulationHardware
     [DllImport(OpenGlLibrary, EntryPoint = "glPixelStorei")] private static extern void GlPixelStorei(uint name, int value);
     [DllImport(OpenGlLibrary, EntryPoint = "glReadPixels")] private static extern void GlReadPixels(int x, int y, int width, int height, uint format, uint type, IntPtr pixels);
     [DllImport(OpenGlLibrary, EntryPoint = "glFinish")] private static extern void GlFinish();
+    [DllImport(OpenGlLibrary, EntryPoint = "glGetString")] private static extern nint GlGetString(uint name);
+    [DllImport(OpenGlLibrary, EntryPoint = "glGetIntegerv")] private static extern void GlGetInteger(uint name, out int value);
     [DllImport(Kernel32Library)] private static extern IntPtr GetProcAddress(IntPtr module, string name);
 
     private const string Kernel32Library = "kernel32.dll";

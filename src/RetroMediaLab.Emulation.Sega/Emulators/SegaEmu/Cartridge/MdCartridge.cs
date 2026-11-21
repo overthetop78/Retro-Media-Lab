@@ -39,6 +39,7 @@ internal interface IMdCartridgeBus
 internal sealed class MdCartridgeConfiguration
 {
     public byte lock_on, add_on;
+    public byte[] CheatAdapters = [];
 }
 
 internal sealed partial class MdCartridge : IDisposable
@@ -56,6 +57,8 @@ internal sealed partial class MdCartridge : IDisposable
     private readonly FlashCfi _flash;
     private readonly GameGenie _gameGenie;
     private readonly ActionReplay _actionReplay;
+    private int _activeCheat;
+    private CartridgeMemoryBank? _cartridgeBank;
     private readonly MdEntry[] rom_database;
     private readonly Func<uint, uint> m68k_read_bus_8, m68k_read_bus_16, zbank_unused_r;
     private readonly Action<uint, uint> m68k_unused_8_w, m68k_unused_16_w, zbank_unused_w;
@@ -83,11 +86,26 @@ internal sealed partial class MdCartridge : IDisposable
         _i2c = new(backup, cartridge, addresses, m68k_read_bus_8, m68k_unused_8_w, m68k_unused_16_w, input.jcart_read, input.jcart_write);
         _gameGenie = new(cartridge, addresses, m68k_unused_8_w, m68k_unused_16_w);
         _actionReplay = new(cartridge, addresses, m68k_unused_16_w);
+        _gameGenie.PassThrough = () => ReleaseCheat(1);
+        _actionReplay.PassThrough = () => ReleaseCheat(2);
         rom_database = CreateDatabase();
     }
 
-    public void Initialize() => md_cart_init();
-    public void Reset(bool hard) => md_cart_reset(hard ? 1 : 0);
+    public void Initialize()
+    {
+        cart.NativeRomCodeReadOnly = false;
+        cart.NotifyRomCodeContentChanged();
+        md_cart_init();
+        // These configurations can alter backing ROM outside the ordinary
+        // mapper copy path. Their native blocks keep the complete byte guards.
+        cart.NativeRomCodeReadOnly = cart.romsize != 0 && config.lock_on == 0 && config.CheatAdapters.Length == 0
+            && _svp is null && !_flash.UsesWritableRom && (cart.special & 0x38) == 0;
+    }
+    public void Reset(bool hard)
+    {
+        cart.NotifyRomCodeContentChanged();
+        md_cart_reset(hard ? 1 : 0);
+    }
     private static int strstr(string text, string value) => text.Contains(value, StringComparison.Ordinal) ? 1 : 0;
     private static int memcmp(ArrayPointer<byte> data, string text, int length)
     {
@@ -98,8 +116,16 @@ internal sealed partial class MdCartridge : IDisposable
         }
         return 0;
     }
-    private static void CopyMemory(ArrayPointer<byte> destination, ArrayPointer<byte> source, int length) => source.Bytes(length).CopyTo(destination.Bytes(length));
-    private static void FillMemory(ArrayPointer<byte> memory, int value, int length) => memory.Bytes(length).Fill(unchecked((byte)value));
+    private static void CopyMemory(ArrayPointer<byte> destination, ArrayPointer<byte> source, int length)
+    {
+        if (length > 0) CartridgeRomCode.NotifyContentChanged(destination.Memory);
+        source.Bytes(length).CopyTo(destination.Bytes(length));
+    }
+    private static void FillMemory(ArrayPointer<byte> memory, int value, int length)
+    {
+        if (length > 0) CartridgeRomCode.NotifyContentChanged(memory.Memory);
+        memory.Bytes(length).Fill(unchecked((byte)value));
+    }
     private void m68k_pulse_reset() => _bus.ResetMainCpu();
     private void ctrl_io_write_byte(uint address, uint data) => _bus.WriteControlIoByte(address, data);
     private void EnsureYxAudio() => _bus.EnsureCartridgeAudio();
@@ -129,13 +155,13 @@ internal sealed partial class MdCartridge : IDisposable
     private void areplay_reset(int hard) => _actionReplay.Reset(hard != 0);
     private void ggenie_init()
     {
-        int length = _bus.LoadLockOnRom(2, cart.lockrom.AsSpan(0, 0x8000));
-        _gameGenie.Initialize(length > 0 ? cart.lockrom.AsSpan(0, Math.Min(length, 0x8000)) : []);
+        int length = _bus.LoadLockOnRom(2, _gameGenie.Firmware.AsSpan(0, 0x8000));
+        _gameGenie.Initialize(length > 0 ? _gameGenie.Firmware.AsSpan(0, Math.Min(length, 0x8000)) : []);
     }
     private void areplay_init()
     {
-        int length = _bus.LoadLockOnRom(3, cart.lockrom);
-        _actionReplay.Initialize(length > 0 ? cart.lockrom.AsSpan(0, Math.Min(length, 0x10000)) : []);
+        int length = _bus.LoadLockOnRom(3, _actionReplay.Firmware);
+        _actionReplay.Initialize(length > 0 ? _actionReplay.Firmware.AsSpan(0, Math.Min(length, 0x10000)) : []);
     }
     private int load_archive(int kind, ArrayPointer<byte> destination, int maximum, ArrayPointer<byte> extension) => _bus.LoadLockOnRom(kind, destination.Bytes(maximum));
 

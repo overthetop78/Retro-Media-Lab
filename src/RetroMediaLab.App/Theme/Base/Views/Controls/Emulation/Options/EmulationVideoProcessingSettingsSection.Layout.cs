@@ -23,18 +23,15 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         var selectors = CreateSelectors();
         if (_displaySettings is null)
             return FramedGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing, selectors);
-        if (_displayOwnsFrames)
-        {
-            return SideBySideGroups(_displaySettings, FramedGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing, selectors));
-        }
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var display = FramedGroup(EmulationResourceKeys.VideoDisplaySettings, _displaySettings);
+        var display = _displayOwnsFrames ? _displaySettings : FramedGroup(EmulationResourceKeys.VideoDisplaySettings, _displaySettings);
         display.Margin = new Thickness(0, 0, 9, 0);
         grid.Children.Add(display);
         var processing = FramedGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing, selectors);
         processing.Margin = new Thickness(9, 0, 0, 0);
+        if (_displayOwnsFrames) processing.VerticalAlignment = VerticalAlignment.Top;
         Grid.SetColumn(processing, 1);
         grid.Children.Add(processing);
         return grid;
@@ -214,7 +211,7 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         return frame;
     }
 
-    private static Border FramedGroup(string titleResourceKey, FrameworkElement content, bool compact = false)
+    internal static Border FramedGroup(string titleResourceKey, FrameworkElement content, bool compact = false)
     {
         var panel = new StackPanel();
         panel.Children.Add(new TextBlock

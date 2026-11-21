@@ -15,19 +15,12 @@ public sealed partial class InputHardware
             input.dev[(int)(i)] = unchecked((byte)(255));
             input.pad[(int)(i)] = unchecked((ushort)(0));
             }
-            if ((unchecked((int)(system_hw)) == 130)) {
-            input.dev[(int)(0)] = unchecked((byte)(8));
-            return;
+            if (_deviceConfiguration.PrimaryDevice != byte.MaxValue)
+            {
+                input.dev[0] = _deviceConfiguration.PrimaryDevice;
+                return;
             }
-            if (((cart_special & unchecked((uint)(2))) != 0)) {
-            input.dev[(int)(0)] = unchecked((byte)(9));
-            return;
-            }
-            if (((unchecked((int)(romtype)) & 128) != 0)) {
-            padtype = (((unchecked((int)(rom_peripherals)) & 2) != 0) ? 1 : 0);
-            } else {
-            padtype = 2;
-            }
+            padtype = _deviceConfiguration.AutomaticPadType;
             switch (input.system[(int)(0)]) {
             case 1:
             {
@@ -231,7 +224,7 @@ public sealed partial class InputHardware
             break;
             }
             }
-            if (((cart_special & unchecked((uint)(4))) != 0)) {
+            if (_deviceConfiguration.AdditionalPads) {
             for (i = 5; (i < 7); i++) {
             if ((player < 8)) {
             if ((unchecked((int)(configuredPadTypes[(int)(player)])) != ((2 | 0) | 1))) {

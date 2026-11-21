@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Mô hình Master System</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>Kính 3 chiều</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Đã bật</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Đã tắt</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Mô hình Mega Drive</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Chuẩn ROM bố trí</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>2 0 KB ROMs với các địa chỉ gương</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Nút Tạm Dừng điều khiển</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Độ nhạy chuột</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Tốc độ di chuyển của chuột. Mặc định là 2.00. Mỗi cổng chỉ có thể dùng thiết lập này tự động hay tốc độ riêng. Thay đổi được áp dụng mà không khởi chạy lại bảng điều khiển.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Sửa đổi phần cứng</value></data>
 </root>

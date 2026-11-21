@@ -103,6 +103,49 @@ public sealed class ControllerNoneSelectionTests(StaExecutionScenarios sta, ITes
     });
 
     [Fact]
+    public Task Sg1000BindingsSurviveSwitchingControllerAndReloading() => sta.RunAsync(() =>
+    {
+        using var http = new HttpClient();
+        var module = new RetroMediaLab.Emulation.Sega.Modules.SegaEmulationModule(Path.GetTempPath(), Path.GetTempPath(), http, Path.GetTempPath());
+        const string joystick = "SegaSg1000Joystick";
+        const string joypad = "SegaSg1000IiJoypad";
+        var initial = new RetroMediaLab.Emulation.Sega.Common.Machines.Common.Contracts.MachineConfiguration("Sg1000", "segaemu");
+        var settings = module.DescribeInputSettings(initial);
+        var port = settings.ControllerPorts[0];
+        string action = port.ControllerChoices.Single(choice => choice.Id == joypad).BindingDefinitions!.First().Id;
+        var configuration = module.ApplyInputSettings(initial, settings with
+        {
+            ControllerPorts = [port with { SelectedControllerId = joypad, Bindings = port.Bindings with
+                { Values = new Dictionary<string, string> { [action] = "Keyboard:Up" } } }, .. settings.ControllerPorts.Skip(1)]
+        });
+        var controller = new EmulationInputSettingsController(module);
+        var root = controller.CreateContent(EmulationMachineTab.Controllers, configuration, []);
+        UIElement? reloaded = null;
+        try
+        {
+            var first = controller.PresentationPorts[0];
+            first.Type.SelectedItem = first.Type.Items.OfType<EmulationControllerCategoryChoiceView>()
+                .Single(category => category.Choices.Any(choice => choice.Id == joystick));
+            Assert.Equal("Keyboard:Up", first.Bindings.Rows.Single(row => row.Id == action).Binding);
+            var saved = Assert.IsType<RetroMediaLab.Emulation.Sega.Common.Machines.Common.Contracts.MachineConfiguration>(controller.Apply(configuration));
+            var json = System.Text.Json.JsonSerializer.Serialize(saved);
+            var restored = System.Text.Json.JsonSerializer.Deserialize<RetroMediaLab.Emulation.Sega.Common.Machines.Common.Contracts.MachineConfiguration>(json)!;
+            reloaded = controller.CreateContent(EmulationMachineTab.Controllers, restored, []);
+            first = controller.PresentationPorts[0];
+            first.Type.SelectedItem = first.Type.Items.OfType<EmulationControllerCategoryChoiceView>()
+                .Single(category => category.Choices.Any(choice => choice.Id == joypad));
+            Assert.Equal("Keyboard:Up", first.Bindings.Rows.Single(row => row.Id == action).Binding);
+        }
+        finally
+        {
+            foreach (var view in new[] { root, reloaded }.OfType<UIElement>())
+                foreach (var control in Descendants(view).OfType<FrameworkElement>().Where(control => control is InputBindingEditor or ControllerVisualizer))
+                    control.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent));
+        }
+        return Task.CompletedTask;
+    });
+
+    [Fact]
     public Task SonyUsbKeyboardMouseAndNoneUpdateTabsAndSurviveMachineSwitch() => sta.RunAsync(() =>
     {
         using var http = new HttpClient();

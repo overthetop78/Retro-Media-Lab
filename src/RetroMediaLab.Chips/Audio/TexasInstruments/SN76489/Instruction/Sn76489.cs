@@ -8,7 +8,7 @@ public enum Sn76489Type { Discrete, Integrated }
 
 public sealed class Sn76489
 {
-    private const int ClockRatio = 15 * 16;
+    private readonly int _clockRatio;
     public const int ContextSize = 31 * sizeof(int);
     private readonly BandLimitedBuffer _output;
     private readonly int[] _registers = new int[8];
@@ -30,8 +30,10 @@ public sealed class Sn76489
     /// <summary>Host mixing levels in percent; these do not alter emulated registers.</summary>
     public Span<int> ChannelVolumes => _channelVolumes;
 
-    public Sn76489(BandLimitedBuffer output, Sn76489Type type)
+    public Sn76489(BandLimitedBuffer output, Sn76489Type type, int clockMultiplier = 1)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(clockMultiplier, 1);
+        _clockRatio = checked(16 * clockMultiplier);
         _output = output;
         Initialize(type);
     }
@@ -39,7 +41,7 @@ public sealed class Sn76489
     public void Initialize(Sn76489Type type)
     {
         Array.Fill(_channelAmplification, 100);
-        _zeroFrequencyIncrement = (type == Sn76489Type.Discrete ? 0x400 : 1) * ClockRatio;
+        _zeroFrequencyIncrement = (type == Sn76489Type.Discrete ? 0x400 : 1) * _clockRatio;
         _noiseShiftWidth = type == Sn76489Type.Discrete ? 14 : 15;
         _noiseBitMask = type == Sn76489Type.Discrete ? 6 : 9;
     }
@@ -52,7 +54,7 @@ public sealed class Sn76489
         Array.Clear(_channelOutput);
         for (int i = 0; i < 4; i++)
         {
-            _frequencyIncrement[i] = i < 3 ? _zeroFrequencyIncrement : 16 * ClockRatio;
+            _frequencyIncrement[i] = i < 3 ? _zeroFrequencyIncrement : 16 * _clockRatio;
             _polarity[i] = -1;
         }
         _latch = 3;
@@ -126,7 +128,7 @@ public sealed class Sn76489
                 data = (data & 0x80) != 0
                     ? (uint)(_registers[index] & 0x3f0) | (data & 15)
                     : (uint)(_registers[index] & 15) | ((data & 0x3f) << 4);
-                _frequencyIncrement[index >> 1] = data != 0 ? (int)data * ClockRatio : _zeroFrequencyIncrement;
+                _frequencyIncrement[index >> 1] = data != 0 ? (int)data * _clockRatio : _zeroFrequencyIncrement;
                 if (index == 4 && (_registers[6] & 3) == 3)
                     _frequencyIncrement[3] = _frequencyIncrement[2];
                 break;
@@ -137,7 +139,7 @@ public sealed class Sn76489
                     _frequencyIncrement[3] = _frequencyIncrement[2];
                     _frequencyCounter[3] = _frequencyCounter[2];
                 }
-                else _frequencyIncrement[3] = (0x10 << frequency) * ClockRatio;
+                else _frequencyIncrement[3] = (0x10 << frequency) * _clockRatio;
                 if ((_noiseShiftValue & 1) != 0)
                 {
                     _channelDelta[6] -= _channelOutput[6];
@@ -178,7 +180,7 @@ public sealed class Sn76489
     {
         if (clocks <= (uint)_clocks) return;
         Update(clocks);
-        _clocks = unchecked(_clocks + (int)((clocks - (uint)_clocks + ClockRatio - 1) / ClockRatio) * ClockRatio);
+        _clocks = unchecked(_clocks + (int)((clocks - (uint)_clocks + _clockRatio - 1) / _clockRatio) * _clockRatio);
     }
 
     private void SetVolume(int channel, int volume, bool high)

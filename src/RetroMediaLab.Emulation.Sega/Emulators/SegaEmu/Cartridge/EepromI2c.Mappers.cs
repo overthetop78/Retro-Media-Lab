@@ -1,4 +1,3 @@
-using RetroMediaLab.Chips.Common.Memory;
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;
 internal sealed partial class EepromI2c
 {

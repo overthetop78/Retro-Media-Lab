@@ -1,6 +1,3 @@
-using System.Buffers.Binary;
-using RetroMediaLab.Chips.Common.Memory;
-
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;
 
 internal sealed partial class GameGenie

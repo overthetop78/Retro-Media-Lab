@@ -5,7 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.MasterSystem.Variant"><value>Master System model</value></data>
-  <data name="Emulation.Sega.MasterSystem.ThreeDGlasses"><value>3-D Brýle</value></data>
+
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Enabled"><value>Povoleno</value></data>
   <data name="Emulation.Sega.MasterSystem.ThreeDGlasses.Disabled"><value>Zakázáno</value></data>
   <data name="Emulation.Sega.MegaDrive.Model"><value>Model Mega Drive</value></data>
@@ -25,4 +25,7 @@
   <data name="Emulation.SegaEmu.CartridgeLayout.Standard"><value>Standardní ROM Rozvržení</value></data>
   <data name="Emulation.SegaEmu.CartridgeLayout.Two8K"><value>Dva 8 kiB ROM s adresovými zrcadly</value></data>
   <data name="Emulation.SegaEmu.ConsolePause"><value>Tlačítko Konzole Pauza</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed"><value>Citlivost na myši</value></data>
+  <data name="Emulation.Option.segaemu.PointerSpeed.Description"><value>Rychlost pohybu myši. Výchozí je 2.00. Každý port point-device může toto nastavení použít automaticky nebo svou vlastní rychlostí. Změny platí bez restartování konzole.</value></data>
+  <data name="Emulation.Sega.MegaDrive.Revision"><value>Revize hardwaru</value></data>
 </root>

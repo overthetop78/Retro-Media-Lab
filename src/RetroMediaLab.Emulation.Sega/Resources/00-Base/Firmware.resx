@@ -5,4 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
   <data name="Emulation.Sega.Firmware.Integrated"><value>System ROM</value></data>
+  <data name="Emulation.Firmware.segaemu.12"><value>32X_G_BIOS.BIN (68000)</value></data>
+  <data name="Emulation.Firmware.segaemu.13"><value>32X_M_BIOS.BIN (SH-2 M)</value></data>
+  <data name="Emulation.Firmware.segaemu.14"><value>32X_S_BIOS.BIN (SH-2 S)</value></data>
 </root>

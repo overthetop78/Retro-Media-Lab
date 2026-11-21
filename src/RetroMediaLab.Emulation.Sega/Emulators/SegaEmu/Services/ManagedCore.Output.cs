@@ -1,5 +1,5 @@
-using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Common;
-using RetroMediaLab.Chips.Common.Memory;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Boards;
+
 using System.IO;
 using System.Buffers.Binary;
 
@@ -17,26 +17,50 @@ internal sealed partial class ManagedCore
         if (skip && _skippedFrames < 30) { _skippedFrames++; return true; }
         _skippedFrames = 0; return false;
     }
+    private sealed record VideoPresentation(VideoLayoutKey Key, int Width, int Height, int Pitch,
+        int BytesPerPixel, int Left, int NormalWidth, bool Interlaced, bool Cursor, float Aspect);
+    private readonly record struct VideoLayoutKey(int OutputWidth, int ViewportWidth, int ViewportHeight,
+        int X, int Y, bool Interlaced, int Depth, byte Hardware, int Register0,
+        uint MasterClock, byte Pal, int Overscan, int Extra, object? Options);
+    private VideoPresentation? _presentation;
+
+    private VideoPresentation Presentation(SegaBoard system)
+    {
+        bool interlaced = system.Video.interlaced != 0 && _settings.Video.render != 0;
+        var key = new VideoLayoutKey(system.Video.OutputWidth, system.Video.ViewportWidth,
+            system.Video.ViewportHeight, system.Video.ViewportX, system.Video.ViewportY,
+            interlaced, system.Video.EffectivePixelDepth, system.Hardware, system.Video.reg[0] & 0x20,
+            system.MasterClock, system.Video.vdp_pal, _settings.Video.overscan, _settings.Video.gg_extra, _configuration?.Options);
+        if (_presentation is { } cached && cached.Key == key) return cached;
+        int height = (key.ViewportHeight + key.Y * 2) * (interlaced ? 2 : 1);
+        int normalWidth = key.ViewportWidth + key.X * 2;
+        string border = GetOption("left_border");
+        int left = border is "left border" or "left & right borders" ? 8 : 0;
+        int right = border == "left & right borders" ? 8 : 0;
+        if (key.X != 0 || key.Register0 == 0 || key.Hardware is not (0x10 or 0x20 or 0x21 or 0x81)) left = right = 0;
+        int bytesPerPixel = key.Depth == 32 ? 4 : 2;
+        int width = key.OutputWidth - left - right;
+        return _presentation = new(key, width, height, width * bytesPerPixel, bytesPerPixel, left,
+            normalWidth, interlaced, GetOption("gun_cursor") == "enabled", CalculateAspect(system, normalWidth, height));
+    }
+
     private void PublishVideo(SegaBoard system)
     {
-        int width = system.Video.OutputWidth;
-        int height = system.Video.ViewportHeight + system.Video.ViewportY * 2;
-        int normalWidth = system.Video.ViewportWidth + system.Video.ViewportX * 2;
-        bool interlaced = system.Video.interlaced != 0 && _settings.Video.render != 0;
-        float aspect = CalculateAspect(system, normalWidth, height);
-        if (interlaced) height *= 2;
-        int bytesPerPixel = system.Video.EffectivePixelDepth == 32 ? 4 : 2;
-        int left = GetOption("left_border") switch { "left border" => 8, "left & right borders" => 8, _ => 0 };
-        int right = GetOption("left_border") == "left & right borders" ? 8 : 0;
-        if (system.Video.ViewportX != 0 || (system.Video.reg[0] & 0x20) == 0 || system.Hardware is not (0x10 or 0x20 or 0x21 or 0x81)) left = right = 0;
-        int pitch = (width - left - right) * bytesPerPixel;
-        byte[] pixels = new byte[pitch * height];
-        for (int line = 0; line < height; line++)
-            _bitmap.AsSpan(line * BitmapPitch + left * bytesPerPixel, pitch).CopyTo(pixels.AsSpan(line * pitch));
-        if (GetOption("gun_cursor") == "enabled")
-            DrawGunCursors(system, pixels, width - left - right, height, pitch, bytesPerPixel, left, normalWidth, interlaced);
-        LatestVideoFrame = new(pixels, width - left - right, height, pitch,
-            bytesPerPixel == 4 ? EmulationPixelFormat.Xrgb8888 : EmulationPixelFormat.Rgb565, aspect, _sequence, _timestamp);
+        VideoPresentation layout = Presentation(system);
+        // Published arrays are immutable for consumers; no buffer is recycled here.
+        byte[] pixels = new byte[layout.Pitch * layout.Height];
+        int sourceOffset = layout.Left * layout.BytesPerPixel;
+        if (layout.Pitch == BitmapPitch)
+            _bitmap.AsSpan(sourceOffset, pixels.Length).CopyTo(pixels);
+        else
+            for (int line = 0; line < layout.Height; line++)
+                _bitmap.AsSpan(line * BitmapPitch + sourceOffset, layout.Pitch).CopyTo(pixels.AsSpan(line * layout.Pitch));
+        if (layout.Cursor)
+            DrawGunCursors(system, pixels, layout.Width, layout.Height, layout.Pitch,
+                layout.BytesPerPixel, layout.Left, layout.NormalWidth, layout.Interlaced);
+        LatestVideoFrame = new(pixels, layout.Width, layout.Height, layout.Pitch,
+            layout.BytesPerPixel == 4 ? EmulationPixelFormat.Xrgb8888 : EmulationPixelFormat.Rgb565,
+            layout.Aspect, _sequence, _timestamp);
     }
     private static void DrawGunCursors(SegaBoard system, Span<byte> pixels, int width, int height,
         int pitch, int bytesPerPixel, int croppedLeft, int normalWidth, bool interlaced)
@@ -67,7 +91,7 @@ internal sealed partial class ManagedCore
     }
     private float CalculateAspect(SegaBoard system, int width, int height)
     {
-        string aspect = GetOption("aspect_ratio");
+        string aspect = _configuration?.Model == ModelConstants.Sg1000 ? "auto" : GetOption("aspect_ratio");
         if (aspect == "4:3") return 4f / 3f;
         if (aspect == "Uncorrected") return (float)width / height;
         if (aspect is not ("NTSC PAR" or "PAL PAR") && system.Hardware is 0x40 or 0x41 && _settings.Video.overscan == 0 && _settings.Video.gg_extra == 0)
@@ -75,68 +99,5 @@ internal sealed partial class ManagedCore
         double dotRate = system.MasterClock / (system.Video.ViewportWidth == 320 ? 8.0 : 10.0);
         double sampleRate = aspect == "NTSC PAR" ? 135000000.0 / 11 : aspect == "PAL PAR" ? 14750000 : system.Video.vdp_pal != 0 ? 14750000 : 135000000.0 / 11;
         return (float)(sampleRate / dotRate * width / (height * 2.0));
-    }
-    private string PersistentPath(string kind)
-    {
-        string identity = _contentPath.Length == 0 ? "system" : Path.GetFileNameWithoutExtension(_contentPath);
-        if (kind == "brm" && GetOption("system_bram") == "per bios") identity = "bios-" + _system!.Region.ToString("x2");
-        if (kind == "crm" && GetOption("cart_bram") == "per cart") identity = "cd-cartridge";
-        return Path.Combine(_saveDirectory, identity + ".segaemu." + kind);
-    }
-    private void LoadPersistent()
-    {
-        ReadPersistent(PersistentPath("srm"), _system!.Backup.Data);
-        if (_system.Hardware == SystemHardware.MegaCd)
-        {
-            ReadPersistent(PersistentPath("brm"), _system.CdBackupRam.Span);
-            FormatCdBackup(_system.CdBackupRam.Span, internalRam: true);
-            if (!_system.CdCartridgeRam.IsEmpty)
-            {
-                ReadPersistent(PersistentPath("crm"), _system.CdCartridgeRam.Span);
-                FormatCdBackup(_system.CdCartridgeRam.Span, internalRam: false);
-            }
-        }
-    }
-    private static void ReadPersistent(string path, Span<byte> destination)
-    {
-        if (!File.Exists(path)) return;
-        Stream? stream = null;
-        try
-        {
-            stream = File.OpenRead(path);
-            while (!destination.IsEmpty)
-            {
-                int read = stream.Read(destination);
-                if (read == 0) break;
-                destination = destination[read..];
-            }
-        }
-        finally { stream?.Dispose(); }
-    }
-    private static ReadOnlySpan<byte> BackupFormat =>
-    [
-        0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0x5f,0,0,0,0,0x40,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0x53,0x45,0x47,0x41,0x5f,0x43,0x44,0x5f,0x52,0x4f,0x4d,0,1,0,0,0,
-        0x52,0x41,0x4d,0x5f,0x43,0x41,0x52,0x54,0x52,0x49,0x44,0x47,0x45,0x5f,0x5f,0x5f
-    ];
-    private static void FormatCdBackup(Span<byte> ram, bool internalRam)
-    {
-        if (ram[^32..].SequenceEqual(BackupFormat[32..])) return;
-        ram[..^64].Clear(); BackupFormat.CopyTo(ram[^64..]);
-        Span<byte> format = ram[^64..];
-        int blocks = ram.Length / 64 - 3;
-        for (int index = 0x10; index <= 0x16; index += 2)
-        { format[index] = internalRam ? (byte)0 : (byte)(blocks >> 8); format[index + 1] = (byte)blocks; }
-    }
-    private void SavePersistent()
-    {
-        if (_system is null || string.IsNullOrEmpty(_saveDirectory)) return;
-        if (_system.Backup.Enabled) File.WriteAllBytes(PersistentPath("srm"), _system.Backup.Data);
-        if (_system.Hardware == SystemHardware.MegaCd)
-        {
-            if (_system.CdBackupRam.Span[^32..].SequenceEqual(BackupFormat[32..])) File.WriteAllBytes(PersistentPath("brm"), _system.CdBackupRam.Span);
-            if (!_system.CdCartridgeRam.IsEmpty && _system.CdCartridgeRam.Span[^32..].SequenceEqual(BackupFormat[32..])) File.WriteAllBytes(PersistentPath("crm"), _system.CdCartridgeRam.Span);
-        }
     }
 }

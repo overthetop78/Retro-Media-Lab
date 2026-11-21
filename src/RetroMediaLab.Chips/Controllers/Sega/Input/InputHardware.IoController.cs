@@ -4,6 +4,22 @@ namespace RetroMediaLab.Chips.Controllers.Sega.Input;
 
 public sealed partial class InputHardware
 {
+    private Func<byte>? _extensionRead;
+    private Action<byte, byte>? _extensionWrite;
+
+    public bool HasExtensionPort { get; init; }
+
+    public void ConnectExtensionPort(Func<byte>? read, Action<byte, byte>? write)
+    {
+        if (!HasExtensionPort)
+            throw new InvalidOperationException("The extension port is unavailable on this model.");
+
+        _extensionRead = read;
+        _extensionWrite = write;
+        port[2].data_r = read ?? dummy_read;
+        port[2].data_w = write ?? dummy_write;
+    }
+
     public void dummy_write(byte data, byte mask)
     {
         unchecked
@@ -18,11 +34,12 @@ public sealed partial class InputHardware
             return unchecked((byte)(127));
         }
     }
-    public void io_init()
+    public void io_init() { input_init(); BindIoPorts(); }
+    private void BindIoPorts()
     {
         unchecked
         {
-            input_init();
+
             switch (input.system[(int)(0)]) {
             case 1:
             {
@@ -195,8 +212,8 @@ public sealed partial class InputHardware
             break;
             }
             }
-            port[(int)(2)].data_w = dummy_write;
-            port[(int)(2)].data_r = dummy_read;
+            port[2].data_w = _extensionWrite ?? dummy_write;
+            port[2].data_r = _extensionRead ?? dummy_read;
         }
     }
     public void io_reset()
@@ -204,7 +221,7 @@ public sealed partial class InputHardware
         unchecked
         {
             if (((unchecked((int)(system_hw)) & 129) == 128)) {
-            io_reg[(int)(0)] = unchecked((byte)((unchecked((int)(region_code)) | (unchecked((int)(bios_configuration)) & 1))));
+            io_reg[(int)(0)] = unchecked((byte)((unchecked((int)(region_code)) | (unchecked((int)(versionPins)) & 1))));
             io_reg[(int)(1)] = unchecked((byte)(0));
             io_reg[(int)(2)] = unchecked((byte)(0));
             io_reg[(int)(3)] = unchecked((byte)(0));
@@ -383,7 +400,7 @@ public sealed partial class InputHardware
             return;
             case 6:
             io_reg[(int)(6)] = unchecked((byte)(data));
-            psg_config(z80Cycles, psg_preamp, data);
+            _bus.SetPsgPanning(z80Cycles, data);
             return;
             default:
             return;

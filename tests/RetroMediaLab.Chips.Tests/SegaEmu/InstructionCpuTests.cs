@@ -12,7 +12,7 @@ public sealed class InstructionCpuTests
     {
         M68000Bus bus = new(); bus.Long(0,0x8000); bus.Long(4,0x100);
         new byte[] {0x52,0x80,0x60,0xfc}.CopyTo(bus.Memory,0x100);
-        Cpu68000<M68000Bus> cpu = new(bus,subCpu); bus.Cpu = cpu;
+        Cpu68000<M68000Bus> cpu = new(bus, new(ClockMultiplier: subCpu ? 4 : 7, Prefetch: !subCpu, TrackInstructionAddress: subCpu, WriteTasMemory: subCpu)); bus.Cpu = cpu;
         try
         {
             cpu.Reset(); cpu.Run(1000);
@@ -65,23 +65,24 @@ public sealed class InstructionCpuTests
         finally { cpu.Halt(); bus.Cpu = null; }
     }
 
-    [Fact]
-    public void Z80ResumesSnapshotAndPerformsMappedFetchesAndBusWrites()
+    [Theory]
+    [InlineData(1)] [InlineData(15)]
+    public void Z80ResumesSnapshotAndPerformsMappedFetchesAndBusWrites(int clockMultiplier)
     {
         Z80Bus bus = new();
         new byte[] {0x3e,7,0x32,0,0x20,0x3c,0x76}.CopyTo(bus.Memory, 0);
-        CpuZ80<Z80Bus> cpu = new(bus, static _ => 0xff);
+        CpuZ80<Z80Bus> cpu = new(bus, static _ => 0xff, clockMultiplier: clockMultiplier);
         CpuZ80<Z80Bus>? restored = null;
         try
         {
-            cpu.Reset(); cpu.Run(7 * 15);
+            cpu.Reset(); cpu.Run((uint)(7 * clockMultiplier));
             CpuZ80State saved = cpu.Context;
             Assert.Equal(7, saved.af.High);
             cpu.Run(2000);
             Assert.Equal(7, bus.Memory[0x2000]); Assert.Equal(8, cpu.Context.af.High);
             Assert.NotEqual(0, cpu.Context.halt);
             bus.Memory[0x2000] = 0;
-            restored = new(bus, static _ => 0xff) { Context = saved };
+            restored = new(bus, static _ => 0xff, clockMultiplier: clockMultiplier) { Context = saved };
             restored.Run(2000);
             Assert.Equal(7, bus.Memory[0x2000]); Assert.Equal(cpu.Context.af.Word, restored.Context.af.Word);
             Assert.Equal(cpu.Context.pc.Word, restored.Context.pc.Word);

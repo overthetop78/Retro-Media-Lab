@@ -14,23 +14,33 @@ internal static class InputSnapshotFunctions
     /// ni la configuration. Cette opération ne crée aucun cœur et ne possède aucune ressource native.</remarks>
     internal static EmulationInputSnapshot Apply(EmulationInputSnapshot snapshot, MachineConfiguration configuration, IEmulatorInputMapper? mapper = null, bool controllerPointerSwitchPressed = false)
     {
-        var mapped = mapper?.MapInput(snapshot, configuration) ?? InputSnapshotFunctions.Apply(snapshot, configuration.Input, false);
+        var mapped = mapper?.MapInput(snapshot, configuration) ?? InputSnapshotFunctions.Apply(snapshot, configuration.Input, false,
+            InputSettingsFunctions.SupportsTerebiStylus(configuration));
         return controllerPointerSwitchPressed ? mapped with { Keys = new HashSet<EmulationKey>(mapped.Keys) { EmulationKey.RightControl } } : mapped;
     }
 
 
-    internal static EmulationInputSnapshot Apply(EmulationInputSnapshot snapshot, InputConfiguration? configuration, bool controllerPointerSwitchPressed)
+    internal static EmulationInputSnapshot Apply(EmulationInputSnapshot snapshot, InputConfiguration? configuration, bool controllerPointerSwitchPressed,
+        bool mapTerebiStylus = false)
     {
         configuration ??= new InputConfiguration();
         var hostKeys = snapshot.Keys;
         var physicalMouse = PhysicalMouse(snapshot.Pointer);
+        var pointer = MapPointer(snapshot.Pointer, snapshot.Controllers, hostKeys, physicalMouse, configuration.MouseButtonMappings);
+        if (mapTerebiStylus)
+        {
+            string binding = configuration.TerebiStylusBinding ?? InputSnapshotFunctionsConstants.MouseLeft;
+            var fallback = snapshot.Controllers.FirstOrDefault() ?? EmulationControllerState.Empty;
+            pointer = pointer with { Left = IsSourcePressed(binding,
+                ControllerForSource(binding, snapshot.Controllers, fallback), hostKeys, physicalMouse) };
+        }
         var mappedKeys = EmulationSdk.InputProcessing.MapKeyboard(snapshot, configuration.KeyboardBindings ?? configuration.KeyboardMappings?.ToDictionary(item => item.Key, item => item.Value.ToString(), StringComparer.Ordinal));
         if (controllerPointerSwitchPressed)
             mappedKeys = new HashSet<EmulationKey>(mappedKeys) { EmulationKey.RightControl };
         return snapshot with
         {
             Keys = mappedKeys,
-            Pointer = MapPointer(snapshot.Pointer, snapshot.Controllers, hostKeys, physicalMouse, configuration.MouseButtonMappings),
+            Pointer = pointer,
             Controllers = MapControllers(snapshot.Controllers, hostKeys, physicalMouse, configuration.Controllers)
         };
     }

@@ -74,19 +74,20 @@ internal sealed class Engine
     {
         var current = configuration as MachineConfiguration ?? (MachineConfiguration)CreateConfiguration(machineId);
         var model = ModelCatalog.Get(current.Model);
-        var adapter = this.Adapter(current);
-        var optionTabs = adapter.GetMachineSettingsBlocks(current).Select(block => block.Tab).ToHashSet();
+        var blocks = SettingsDescriptionFunctions.Create(current);
+        var optionTabs = blocks.Where(block => block.IsVisible && block.Fields.Any(field => field.IsVisible))
+            .Select(block => block.Tab).ToHashSet();
         var tabs = DefaultVisibility.Tabs.ToDictionary(item => item.Key, item => optionTabs.Contains(item.Key) || (item.Key switch
         {
             EmulationMachineTab.Keyboard => model.HasKeyboard,
-            EmulationMachineTab.Rom => adapter.GetFirmwareSlots(current).Count > 0,
+            EmulationMachineTab.Rom => false,
             EmulationMachineTab.Mouse => model.MouseButtonCount > 0,
             EmulationMachineTab.Storage => model.MaximumFloppyDriveCount > 0
                 || model.SupportsTapeDrive || model.SupportsCartridgeSlot
                 || model.SupportsSegaCardSlot || model.SupportsCompactDiscDrive,
             _ => item.Value
         }));
-        EmulationMachineSettings result = new EmulationMachineSettings(model.Id, new EmulationSettingsVisibility(tabs), SettingsDescriptionFunctions.Create(current));
+        EmulationMachineSettings result = new EmulationMachineSettings(model.Id, new EmulationSettingsVisibility(tabs), blocks);
         if (SelectedAdapter(current)?.SupportsVideoSettings == false && !result.Blocks.Any(block => block.Tab == EmulationMachineTab.Video))
         {
             var adjustedTabs = result.Visibility.Tabs.ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -166,6 +167,8 @@ internal sealed class Engine
     {
         var sega = RequireConfiguration(configuration);
         var options = new Dictionary<string, string>(sega.Options ?? new Dictionary<string, string>(), StringComparer.Ordinal);
+        if (sega.Model == ModelConstants.Sg1000 && sega.HasSg1000RamExtension)
+            options.TryAdd(MachineConfiguration.Sg1000RamExtensionOption, SettingsDescriptionFunctionsConstants.Enabled);
         CommonCoreHostFunctions.OptionProcessing.ApplyValues(options, values,
             optionKey => optionKey is SettingsConstants.Model or SettingsConstants.Emulator
                 or SettingsConstants.AudioEnabled or SettingsConstants.AudioOutput

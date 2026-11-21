@@ -1,3 +1,5 @@
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Constants;
+using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Buses;
 using System.IO;
 using RetroMediaLab.Chips.Common.Memory;
 using RetroMediaLab.Chips.CPU.Motorola.M68000.Execution;
@@ -5,13 +7,9 @@ using RetroMediaLab.Chips.Controllers.Sega.CD;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Media;
 using Pcm = RetroMediaLab.Chips.Audio.Ricoh.RF5C164.Rf5c164;
 using BlipBuffer = RetroMediaLab.Chips.Audio.Common.Resampling.BandLimitedBuffer;
-using System.Buffers.Binary;
-using System.IO;
+
 using System.Runtime.InteropServices;
 using RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Cartridge;
-
-
-
 
 namespace RetroMediaLab.Emulation.Sega.Emulators.SegaEmu.Machines.MegaCd.Hardware;
 
@@ -34,11 +32,11 @@ internal interface IScdHost
     void UpdateMegaSdCdda(uint samples);
 }
 
-internal sealed partial class Scd : ICpu68000Bus, ICdcBus, ICddBus, IGfxBus, IDisposable
+internal sealed partial class Scd : ICdcBus, ICddBus, IGfxBus, IDisposable
 {
     public const uint MasterClock = 50_000_000;
     private readonly IScdHost _host;
-    private readonly Cpu68000<Scd> _cpu;
+    private readonly Cpu68000<MegaCdCpuBus> _cpu;
     private readonly Cdc _cdc;
     private readonly Gfx _gfx;
     private readonly Pcm _pcm;
@@ -66,7 +64,7 @@ internal sealed partial class Scd : ICpu68000Bus, ICdcBus, ICddBus, IGfxBus, IDi
     private ArrayPointer<ushort> drive_fader => new(_cdd.Fader);
     private uint gfx_cycles { get => _gfx.Cycles; set => _gfx.Cycles = value; }
 
-    public Cpu68000<Scd> Cpu => _cpu;
+    public Cpu68000<MegaCdCpuBus> Cpu => _cpu;
     public Cdc DataController => _cdc;
     public CdDrive Drive => _cdd;
     public Gfx Graphics => _gfx;
@@ -97,8 +95,9 @@ internal sealed partial class Scd : ICpu68000Bus, ICdcBus, ICddBus, IGfxBus, IDi
         for (int i = 0; i < sub_memory_map.Length; i++) sub_memory_map[i] = new();
         _wordPages = [_wordRam1M.AsMemory(0, 0x20000), _wordRam1M.AsMemory(0x20000, 0x20000)];
         word_ram = new(_wordPages);
-        _cpu = new(this, subCpu: true, subCpuAddressErrors: true);
-        _pcm = new(pcmOutput); _cdc = new(this); _gfx = new(this);
+        InitializeNativeMemoryDelegates();
+        _cpu = Functions.CpuConfigurationFunctions.CreateSecondary(new(sub_memory_map, _host, level => scd_68k_irq_ack((int)level), this));
+        _pcm = new(pcmOutput, MachineClockRatios.Pcm); _cdc = new(this); _gfx = new(this);
         _cdd = new(this, cdOutput, cancellation);
     }
     public void Initialize() => scd_init();
@@ -108,11 +107,12 @@ internal sealed partial class Scd : ICpu68000Bus, ICdcBus, ICddBus, IGfxBus, IDi
     public void SwitchWordRam(byte mode) => word_ram_switch(mode);
 
     private void m68k_run(uint cycles) => _host.RunMain(cycles);
-    private void s68k_run(uint cycles) => _cpu.Run(cycles);
+    internal bool UseNative68000Blocks { get; set; }
+    private void s68k_run(uint cycles) { if (UseNative68000Blocks) _cpu.RunNative(cycles); else if (_cpu.UseDynamicBlocks) _cpu.RunDynamic(cycles); else _cpu.Run(cycles); }
     private void s68k_pulse_wait(uint address, uint write) => _cpu.PulseWait(address, write != 0);
     private void s68k_pulse_reset() => _cpu.Reset();
     private void s68k_pulse_halt() => _cpu.Halt();
-    private void s68k_update_irq(uint mask) => _cpu.UpdateIrq(mask);
+    private void s68k_update_irq(uint mask) => _cpu.SetIrq(mask == 0 ? 0u : (uint)(32 - System.Numerics.BitOperations.LeadingZeroCount(mask & 63)));
     private uint m68k_read_bus_8(uint address) => _host.ReadMainBus8(address);
     private uint m68k_read_bus_16(uint address) => _host.ReadMainBus16(address);
     private void m68k_unused_8_w(uint address, uint data) => _host.WriteMainUnused8(address, data);
@@ -163,35 +163,24 @@ internal sealed partial class Scd : ICpu68000Bus, ICdcBus, ICddBus, IGfxBus, IDi
     private void ClearMainPolling() { main.poll_pc = main.poll_cycle = main.poll_detected = 0; }
     private void ClearSubPolling() { sub.poll_pc = sub.poll_cycle = sub.poll_detected = 0; }
 
-    uint ICpu68000Bus.Read8(uint address)
-    {
-        CartridgeMemoryBank bank = sub_memory_map[(address >> 16) & 255];
-        return bank.read8 is { } read ? read(address) : bank.Data.Span[(int)((address & 65535) ^ 1)];
-    }
-    uint ICpu68000Bus.Read16(uint address)
-    {
-        CartridgeMemoryBank bank = sub_memory_map[(address >> 16) & 255];
-        return bank.read16 is { } read ? read(address) : BinaryPrimitives.ReadUInt16LittleEndian(bank.Data.Span[(int)(address & 65534)..]);
-    }
-    void ICpu68000Bus.Write8(uint address, uint value)
-    {
-        CartridgeMemoryBank bank = sub_memory_map[(address >> 16) & 255];
-        if (bank.write8 is { } write) write(address, value); else bank.Data.Span[(int)((address & 65535) ^ 1)] = (byte)value;
-    }
-    void ICpu68000Bus.Write16(uint address, uint value)
-    {
-        CartridgeMemoryBank bank = sub_memory_map[(address >> 16) & 255];
-        if (bank.write16 is { } write) write(address, value); else BinaryPrimitives.WriteUInt16LittleEndian(bank.Data.Span[(int)(address & 65534)..], (ushort)value);
-    }
-    uint ICpu68000Bus.ReadMapped8(uint address) => sub_memory_map[(address >> 16) & 255].Data.Span[(int)((address & 65535) ^ 1)];
-    uint ICpu68000Bus.ReadMapped16(uint address) => BinaryPrimitives.ReadUInt16LittleEndian(sub_memory_map[(address >> 16) & 255].Data.Span[(int)(address & 65534)..]);
-    void ICpu68000Bus.AcknowledgeInterrupt(uint level) => scd_68k_irq_ack((int)level);
-    int ICpu68000Bus.MainCycles => main.cycles;
-    int ICpu68000Bus.MainRefreshCycles => main.refresh_cycles;
     public int SubCycles { get => sub.cycles; set => sub.cycles = value; }
     public uint SubStopped { get => sub.stopped; set => sub.stopped = value; }
-    public void UpdateSubIrq(uint mask) => _cpu.UpdateIrq(mask);
-    public void DmaPcm(uint length) => _pcm.DmaWrite(length, ref _cdc.DataAddress, ref scd_regs[0x0a >> 1], _cdc.Ram.Span);
+    public void UpdateSubIrq(uint mask) => _cpu.SetIrq(mask == 0 ? 0u : (uint)(32 - System.Numerics.BitOperations.LeadingZeroCount(mask & 63)));
+    public void DmaPcm(uint length)
+    {
+        int source = _cdc.DataAddress.Word & 0x3fff;
+        int destination = (scd_regs[0x0a >> 1].Word << 2) & 0xfff;
+        scd_regs[0x0a >> 1].Word = unchecked((ushort)(scd_regs[0x0a >> 1].Word + (length >> 2)));
+        _cdc.DataAddress.Word = unchecked((ushort)(_cdc.DataAddress.Word + length));
+        while (length != 0)
+        {
+            int count = (int)Math.Min(length, (uint)(0x4000 - source));
+            _pcm.WriteWaveRam(destination, _cdc.Ram.Span.Slice(source, count));
+            destination = (destination + count) & 0xfff;
+            source = 0;
+            length -= (uint)count;
+        }
+    }
     public void DmaProgramRam(uint length) => prg_ram_dma_w(length);
     public void DmaWordRam0(uint length) => _gfx.DmaWordRam0(length);
     public void DmaWordRam1(uint length) => _gfx.DmaWordRam1(length);
@@ -208,6 +197,9 @@ internal sealed partial class Scd : ICpu68000Bus, ICdcBus, ICddBus, IGfxBus, IDi
         finally
         {
             _cpu.Halt(); sub.cycle_end = 0;
+            try { _cpu.Dispose(); }
+            finally
+            {
             foreach (CartridgeMemoryBank bank in sub_memory_map)
             { bank.Data = default; bank.read8 = bank.read16 = null; bank.write8 = bank.write16 = null; }
             foreach (CartridgeMemoryBank bank in memory_map)
@@ -224,6 +216,7 @@ internal sealed partial class Scd : ICpu68000Bus, ICdcBus, ICddBus, IGfxBus, IDi
             {
                 if (ReferenceEquals(bank.read?.Target, this)) bank.read = null;
                 if (ReferenceEquals(bank.write?.Target, this)) bank.write = null;
+            }
             }
         }
     }

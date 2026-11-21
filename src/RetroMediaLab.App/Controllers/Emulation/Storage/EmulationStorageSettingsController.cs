@@ -220,7 +220,8 @@ internal sealed class EmulationStorageSettingsController
             _configuration?.MachineId ?? string.Empty,
             DeviceModel(device, device.Slot), current,
             device.CompactDiscSpeeds, cacheLabel, ignoreErrorsLabel, _moduleId, device.ConfigurationFields,
-            device.TypeResourceKey is { } typeKey ? LocExtension.GetForModule(_moduleId, typeKey) : null);
+            device.TypeResourceKey is { } typeKey ? LocExtension.GetForModule(_moduleId, typeKey) : null,
+            device.ConfigurationBlocks);
         EmulationCompactDiscDriveSettings selected;
         try
         {
@@ -244,7 +245,7 @@ internal sealed class EmulationStorageSettingsController
         var current = (_settings.DeviceSettings ?? []).FirstOrDefault(item => item.Slot == device.Slot) ?.Cartridge ?? new CartridgeSlotSettings();
         var label = string.IsNullOrWhiteSpace(device.ConfigurationOptionResourceKey) ? string.Empty : LocExtension.GetForModule(_moduleId, device.ConfigurationOptionResourceKey);
         var hint = string.IsNullOrWhiteSpace(device.ConfigurationOptionDetailedResourceKey) ? null : LocExtension.GetForModule(_moduleId, device.ConfigurationOptionDetailedResourceKey);
-        var dialog = new CartridgeSlotConfigurationDialog(device.DisplayLabel ?? device.Slot.ToString(), MachineDisplayName, current, label, hint, _moduleId, device.ConfigurationFields);
+        var dialog = new CartridgeSlotConfigurationDialog(device.DisplayLabel ?? device.Slot.ToString(), MachineDisplayName, current, label, hint, _moduleId, device.ConfigurationFields, device.DescribeCartridgeOptions);
         CartridgeSlotSettings selected;
         try
         {

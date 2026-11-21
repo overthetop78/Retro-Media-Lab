@@ -108,7 +108,7 @@ internal static partial class EmulationSettingsLayout
         return form;
     }
 
-    internal static Grid CompactCards(IEnumerable<FrameworkElement> cards, Func<FrameworkElement, int>? preferredColumn = null)
+    internal static Grid CompactCards(IEnumerable<FrameworkElement> cards, Func<FrameworkElement, int>? preferredColumn = null, bool keepColumns = false)
     {
         var page = new Grid { Margin = new Thickness(12) };
         page.ColumnDefinitions.Add(new ColumnDefinition());
@@ -122,7 +122,7 @@ internal static partial class EmulationSettingsLayout
         var columnCount = 0;
         void ArrangeCards()
         {
-            var count = page.ActualWidth >= 760 ? 2 : 1;
+            var count = keepColumns || page.ActualWidth >= 760 ? 2 : 1;
             if (count == columnCount) return;
             columnCount = count;
             foreach (var column in columns) column.Children.Clear();

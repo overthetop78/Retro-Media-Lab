@@ -11,17 +11,12 @@ public static class ControllerCatalog
                 PeripheralCategory.SegaSg1000Joystick, PeripheralCategory.SegaSg1000IiJoypad
             },
             ModelConstants.Sc3000 or ModelConstants.Sf7000 => new[] { PeripheralCategory.SegaSc3000Keyboard },
-            ModelConstants.MarkIII => new[]
+            ModelConstants.MarkIII or ModelConstants.MasterSystem or ModelConstants.MasterSystemII => new[]
             {
                 PeripheralCategory.SegaMasterSystemController, PeripheralCategory.SegaControlStick,
                 PeripheralCategory.SegaLightPhaser
             },
-            ModelConstants.MasterSystem => new[]
-            {
-                PeripheralCategory.SegaMasterSystemController, PeripheralCategory.SegaControlStick,
-                PeripheralCategory.SegaLightPhaser
-            },
-            ModelConstants.MegaDrive or ModelConstants.MegaCd or ModelConstants.ThirtyTwoX => new[]
+            _ when ModelConstants.IsMegaDriveFamily(model.Id) => new[]
             {
                 PeripheralCategory.SegaMegaDriveThreeButton, PeripheralCategory.SegaMegaDriveSixButton,
                 PeripheralCategory.SegaMegaMouse, PeripheralCategory.SegaMenacer,

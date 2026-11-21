@@ -26,7 +26,8 @@ public sealed class CartridgeSlotConfigurationDialog : Window
 
     public CartridgeSlotConfigurationDialog(string identifier, string machineName,
         CartridgeSlotSettings settings, string optionLabel, string? optionHint,
-        string? moduleId = null, IReadOnlyList<EmulationSettingsField>? configurationFields = null)
+        string? moduleId = null, IReadOnlyList<EmulationSettingsField>? configurationFields = null,
+        Func<IReadOnlyDictionary<string, string>, IReadOnlyList<EmulationSettingsField>>? describeOptions = null)
     {
         Title = $"{LocExtension.Get(EmulationResourceKeys.StorageDeviceConfigure)} {identifier}";
         Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(window => window.IsActive);
@@ -45,16 +46,39 @@ public sealed class CartridgeSlotConfigurationDialog : Window
         var body = new StackPanel();
         if (!string.IsNullOrWhiteSpace(optionLabel)) body.Children.Add(_option);
         if (!string.IsNullOrWhiteSpace(optionHint)) body.Children.Add(StorageDialogUi.Info(optionHint));
-        foreach (var field in configurationFields ?? [])
+        var selections = new StackPanel();
+        body.Children.Add(selections);
+        var values = new Dictionary<string, string>(settings.Options ?? new Dictionary<string, string>(), StringComparer.Ordinal);
+        ShowFields();
+        void ShowFields()
+        {
+            selections.Children.Clear();
+            _options.Clear();
+            var fields = describeOptions?.Invoke(values) ?? configurationFields ?? [];
+            foreach (var field in fields)
+                AddField(selections, field);
+            foreach (var id in values.Keys.Where(id => !_options.ContainsKey(id)).ToArray())
+                values.Remove(id);
+        }
+
+        void AddField(Panel parent, EmulationSettingsField field)
         {
             if (field.Editor != EmulationSettingsEditor.Selection || field.Choices is not { Count: > 0 })
                 throw new ArgumentException(nameof(configurationFields));
             var choices = field.Choices.Select(choice => new EmulationSettingsChoiceView(choice, choice.InvariantDisplayValue ?? LocExtension.GetForModule(moduleId ?? string.Empty, choice.DisplayResourceKey))).ToArray();
-            var value = settings.Options?.TryGetValue(field.Id, out var selectedValue) == true ? selectedValue : field.Value;
+            var value = values.TryGetValue(field.Id, out var configured) ? configured : field.Value;
             var control = new ComboBox { ItemsSource = choices,
                 SelectedItem = choices.FirstOrDefault(choice => choice.Choice.Id == value) ?? choices[0] };
             _options[field.Id] = control;
-            body.Children.Add(EmulationSettingsLayout.BoundedForm(1, new EmulationSettingsControlField(
+            if (describeOptions is not null)
+                control.SelectionChanged += (_, _) =>
+                {
+                    if (control.SelectedItem is not EmulationSettingsChoiceView selected) return;
+                    values[field.Id] = selected.Choice.Id;
+                    ShowFields();
+                    if (_options.TryGetValue(field.Id, out var replacement)) replacement.Focus();
+                };
+            parent.Children.Add(EmulationSettingsLayout.BoundedForm(1, new EmulationSettingsControlField(
                 LocExtension.GetForModule(moduleId ?? string.Empty, field.LabelResourceKey), control,
                 field.ExplanationResourceKey is null ? null : LocExtension.GetForModule(moduleId ?? string.Empty, field.ExplanationResourceKey),
                 field.DetailedExplanationResourceKey is null ? null : LocExtension.GetForModule(moduleId ?? string.Empty, field.DetailedExplanationResourceKey))));

@@ -21,7 +21,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
     private string _contentPath = "", _contentDirectory = "", _systemDirectory = "", _saveDirectory = "";
     private int _diskIndex = -1, _bufferedAudioFrames;
     private bool _ejected, _disposed;
-    private long _sequence, _overruns, _underruns;
+    private long _sequence, _overruns;
     private TimeSpan _timestamp;
     private AudioOutputBufferStatus? _audioStatus;
 
@@ -42,7 +42,7 @@ internal sealed partial class ManagedCore : IEmulatorCore
     public long? ProcessorClockHz => _system is null ? null : _system.MasterClock / (SystemHardware.IsSixteenBit(_system.Hardware) ? 7 : 15);
     public int BufferedAudioFrames => _bufferedAudioFrames;
     public long AudioOverrunCount => _overruns;
-    public long AudioUnderrunCount => _underruns;
+    public long AudioUnderrunCount => 0;
     public HostProcessState HostProcessState => HostProcessState.InProcess;
     public int? HostProcessId => null;
     public double FramesPerSecond => _system?.NominalFrameRate ?? 60;
