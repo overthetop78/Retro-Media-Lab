@@ -16,8 +16,7 @@ public partial class OptionsControllersSection : UserControl
     private readonly DispatcherTimer _timer;
     private readonly IGameInputControllerSource _source;
     private readonly Action<Exception, string> _errorLogger;
-    private readonly ObservableCollection<ControllerInputRow> _controlRows = [];
-    private readonly Dictionary<(GameInputControlType Type, int Index), ControllerInputRow> _controlRowsByKey = [];
+    private readonly ControllerInputRows _controlRows = new();
     private readonly Dictionary<string, ControllerVisualModel> _visualOverrides;
     private readonly IControllerProfileStore _profiles;
     private readonly Func<int, Task> _delay;
@@ -42,7 +41,7 @@ public partial class OptionsControllersSection : UserControl
         _visualOverrides = _profiles.GetModels().ToDictionary(item => item.Key, item => item.Value, StringComparer.OrdinalIgnoreCase);
         _errorLogger = errorLogger ?? ((exception, context) => ErrorLog.Write(exception, context));
         InitializeComponent();
-        ControlsGrid.ItemsSource = _controlRows;
+        ControlsGrid.ItemsSource = _controlRows.Items;
         _timer = new DispatcherTimer(DispatcherPriority.Render)
         {
             Interval = TimeSpan.FromMilliseconds(33)

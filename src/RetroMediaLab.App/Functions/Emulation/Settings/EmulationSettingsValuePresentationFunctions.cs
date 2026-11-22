@@ -8,6 +8,23 @@ namespace RetroMediaLab.App.Functions.Emulation.Settings;
 
 internal static class EmulationSettingsValuePresentationFunctions
 {
+    internal sealed record CoreOptionChoice(string Value, string Label)
+    {
+        public override string ToString() => Label;
+    }
+
+    internal static EmulationOption[] VisibleCoreOptions(IEnumerable<EmulationOption> options) =>
+        options.Where(option => option.IsVisible).ToArray();
+
+    internal static (CoreOptionChoice[] Choices, CoreOptionChoice? Selected) CoreOptionChoices(EmulationOption option, string? moduleId)
+    {
+        var choices = option.Values.Select(value => new CoreOptionChoice(value.Value, CoreOptionLabel(value.Label, moduleId))).ToArray();
+        var selected = choices.FirstOrDefault(value => value.Value == option.CurrentValue)
+            ?? choices.FirstOrDefault(value => value.Value == option.DefaultValue)
+            ?? choices.FirstOrDefault();
+        return (choices, selected);
+    }
+
     internal static string CoreOptionLabel(string text, string? moduleId)
     {
         var value = text.StartsWith("Emulation.", StringComparison.Ordinal) ? LocExtension.GetForModule(moduleId, text) : text;

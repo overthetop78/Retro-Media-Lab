@@ -63,7 +63,7 @@ public partial class OptionsControllersSection
 
     private void ApplyDevices(IReadOnlyList<GameInputDeviceDescriptor> devices, bool force)
     {
-        devices = devices.Select(ApplyStoredProfile).ToArray();
+        devices = devices.Select(device => ControllerVisualProfileStore.ApplyProfile(device, _profiles)).ToArray();
         if (!force && _devices.Select(device => device.Id).SequenceEqual(devices.Select(device => device.Id), StringComparer.OrdinalIgnoreCase))
         {
             UpdateDetectionStatus();
@@ -78,17 +78,6 @@ public partial class OptionsControllersSection
         _updatingSelectors = false;
         SelectDevice(DeviceSelector.SelectedItem as GameInputDeviceDescriptor);
         UpdateDetectionStatus();
-    }
-
-    private GameInputDeviceDescriptor ApplyStoredProfile(GameInputDeviceDescriptor device)
-    {
-        if (_profiles.GetVisual(device.Id) is not { } profile) return device;
-        return device with
-        {
-            ProductName = ControllerVisualProfileStore.DisplayName(profile.Model, profile.DisplayName),
-            SuggestedVisualModel = profile.Model,
-            IsExactVisualModelMatch = false
-        };
     }
 
     private void DeviceSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)

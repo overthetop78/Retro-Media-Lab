@@ -3,12 +3,12 @@ using RetroMediaLab.App.Constants.Controls.Visual;
 using RetroMediaLab.App.Constants.Emulation.Errors;
 using RetroMediaLab.App.Contracts.Emulation.Configurations;
 using RetroMediaLab.App.Presenters.Common;
+using RetroMediaLab.App.Services.Emulation;
 using RetroMediaLab.App.Services.Windows;
 using RetroMediaLab.App.Views.Windows.EmulationModuleOptions;
 using System.Windows;
 using System.Windows.Controls;
 using RetroMediaLab.Emulation;
-using System.Runtime.ExceptionServices;
 
 
 namespace RetroMediaLab.App.Views.Controls.Emulation.Machine;
@@ -70,16 +70,15 @@ public sealed partial class EmulationSection
 
     public async Task StopAllAsync()
     {
-        Exception? failure = null;
         var tabs = _openMachines.Values.ToArray();
-        foreach (var tab in tabs)
+        var stops = tabs.Select(tab => tab.Content).OfType<MachineController>()
+            .Select(machine => (Func<Task>)machine.StopAsync).ToArray();
+        try { await EmulationMachineRuntimeService.StopAllAsync(stops); }
+        finally
         {
-            try { if (tab.Content is MachineController machine) await machine.StopAsync(); }
-            catch (Exception error) { failure ??= error; }
+            _openMachines.Clear();
+            foreach (var tab in tabs) _machines.Items.Remove(tab);
+            RefreshSelector();
         }
-        _openMachines.Clear();
-        foreach (var tab in tabs) _machines.Items.Remove(tab);
-        RefreshSelector();
-        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
     }
 }

@@ -26,37 +26,17 @@ public partial class OptionsControllersSection
 
     internal async Task TestRumbleAsync(GameInputRumbleMotors motor)
     {
-        const int pulseDurationMilliseconds = 250;
-
         var device = _selectedDevice;
-        var motorBits = (uint)motor;
-        if (device is null || motorBits == 0 || (motorBits & (motorBits - 1)) != 0 ||
-            !device.RumbleMotors.HasFlag(motor)) return;
-
-        var intensity = (float)(RumbleStrengthSlider.Value / 100d);
-        var values = motor switch
-        {
-            GameInputRumbleMotors.LowFrequency => (intensity, 0f, 0f, 0f),
-            GameInputRumbleMotors.HighFrequency => (0f, intensity, 0f, 0f),
-            GameInputRumbleMotors.LeftTrigger => (0f, 0f, intensity, 0f),
-            GameInputRumbleMotors.RightTrigger => (0f, 0f, 0f, intensity),
-            _ => (0f, 0f, 0f, 0f)
-        };
+        if (device is null || !GameInputRumbleTest.Supports(device, motor)) return;
 
         _testingRumble = true;
         UpdateRumbleControls();
         TestStatusText.Text = LocExtension.Get("Controllers.TestRunning");
-        var started = false;
         try
         {
-            started = _source.SetRumble(device.Id, values.Item1, values.Item2, values.Item3, values.Item4);
-            if (!started)
-            {
-                TestStatusText.Text = LocExtension.Get("Controllers.TestFailed");
-                return;
-            }
-            await _delay(pulseDurationMilliseconds);
-            TestStatusText.Text = LocExtension.Get("Controllers.TestCompleted");
+            var completed = await GameInputRumbleTest.PulseAsync(
+                _source, device.Id, motor, RumbleStrengthSlider.Value, _delay, ReportRumbleStopFailure);
+            TestStatusText.Text = LocExtension.Get(completed ? "Controllers.TestCompleted" : "Controllers.TestFailed");
         }
         catch (Exception exception)
         {
@@ -65,11 +45,6 @@ public partial class OptionsControllersSection
         }
         finally
         {
-            if (started)
-            {
-                try { _source.SetRumble(device.Id, 0f, 0f, 0f, 0f); }
-                catch (Exception exception) { LogOnce(exception, "Stopping GameInput rumble"); }
-            }
             _testingRumble = false;
             UpdateRumbleControls();
         }
@@ -79,9 +54,10 @@ public partial class OptionsControllersSection
     {
         var device = _selectedDevice;
         if (device is null || device.RumbleMotors == GameInputRumbleMotors.None) return;
-        try { _source.SetRumble(device.Id, 0f, 0f, 0f, 0f); }
-        catch (Exception exception) { LogOnce(exception, "Stopping GameInput rumble"); }
+        GameInputRumbleTest.Stop(_source, device.Id, ReportRumbleStopFailure);
     }
+
+    private void ReportRumbleStopFailure(Exception exception) => LogOnce(exception, "Stopping GameInput rumble");
 
     private void UpdateRumbleControls()
     {

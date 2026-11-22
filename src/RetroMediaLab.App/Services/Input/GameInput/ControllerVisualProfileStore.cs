@@ -27,6 +27,17 @@ internal static class ControllerVisualProfileStore
             return Profiles().ToDictionary(item => item.Key, item => item.Value.Model, StringComparer.OrdinalIgnoreCase);
     }
 
+    internal static GameInputDeviceDescriptor ApplyProfile(GameInputDeviceDescriptor device, IControllerProfileStore profiles)
+    {
+        if (profiles.GetVisual(device.Id) is not { } profile) return device;
+        return device with
+        {
+            ProductName = DisplayName(profile.Model, profile.DisplayName),
+            SuggestedVisualModel = profile.Model,
+            IsExactVisualModelMatch = false
+        };
+    }
+
     internal static bool TryGet(string deviceId, out ControllerVisualProfile profile)
     {
         lock (Sync) return Profiles().TryGetValue(deviceId, out profile!);

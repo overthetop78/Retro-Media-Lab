@@ -4,11 +4,23 @@ using RetroMediaLab.App.Functions.Emulation.Storage;
 using RetroMediaLab.App.Services.Audio;
 using RetroMediaLab.Emulation;
 using System.IO;
+using System.Runtime.ExceptionServices;
 
 namespace RetroMediaLab.App.Services.Emulation;
 
 internal static class EmulationMachineRuntimeService
 {
+    internal static async Task StopAllAsync(IEnumerable<Func<Task>> stopMachines)
+    {
+        ExceptionDispatchInfo? failure = null;
+        foreach (var stop in stopMachines)
+        {
+            try { await stop(); }
+            catch (Exception error) { failure ??= ExceptionDispatchInfo.Capture(error); }
+        }
+        failure?.Throw();
+    }
+
     internal static async ValueTask<EmulationMachineRuntime> CreateAsync(string storageFolder, IEmulationModule module, IEmulationConfiguration configuration, CancellationToken cancellationToken = default)
     {
         configuration = EmulationVideoConfigurationFunctions.Apply(module, configuration,

@@ -5,6 +5,7 @@ using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.Emulation;
 using System.Windows;
 using System.Windows.Controls;
+using CoreOptionChoice = RetroMediaLab.App.Functions.Emulation.Settings.EmulationSettingsValuePresentationFunctions.CoreOptionChoice;
 
 namespace RetroMediaLab.App.Views.Dialogs.Emulation;
 
@@ -22,7 +23,7 @@ public sealed class CoreOptionsDialog : Window
 
     public CoreOptionsDialog(string emulatorName, string emulatorVersion, IReadOnlyList<EmulationOption> options, string? moduleId = null)
     {
-        _options = options.Where(option => option.IsVisible).ToArray();
+        _options = EmulationSettingsValuePresentationFunctions.VisibleCoreOptions(options);
         _moduleId = moduleId;
         Title = LocExtension.Get("Emulation.Core.NameOptions");
         Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(window => window.IsActive);
@@ -54,13 +55,11 @@ public sealed class CoreOptionsDialog : Window
         }
         else
         {
-            var choices = option.Values.Select(value => new CoreOptionChoice(value.Value, Resolve(value.Label))).ToArray();
+            var (choices, selected) = EmulationSettingsValuePresentationFunctions.CoreOptionChoices(option, _moduleId);
             control = new ComboBox
             {
                 ItemsSource = choices,
-                SelectedItem = choices.FirstOrDefault(value => value.Value == option.CurrentValue)
-                    ?? choices.FirstOrDefault(value => value.Value == option.DefaultValue)
-                    ?? choices.FirstOrDefault()
+                SelectedItem = selected
             };
         }
         _controls[option.Key] = control;
@@ -78,8 +77,4 @@ public sealed class CoreOptionsDialog : Window
         _ => string.Empty
     };
 
-    private sealed record CoreOptionChoice(string Value, string Label)
-    {
-        public override string ToString() => Label;
-    }
 }
