@@ -11,13 +11,15 @@ public sealed partial class FullscreenOsdWindow
 
     public sealed record Entry(string Label, Func<Task>? Command = null, IReadOnlyList<Entry>? Children = null,
         Func<bool>? IsEnabled = null, Setting? Value = null, Func<string>? Status = null,
-        string? Glyph = null, bool SeparatorBefore = false, bool FullHeight = false, Func<bool>? IsVisible = null);
+        string? Glyph = null, bool SeparatorBefore = false, bool FullHeight = false, Func<bool>? IsVisible = null,
+        string? Section = null);
 
     public sealed record Setting(Func<int> Read, Func<int, string> Format, Func<int, int, int> Step,
-        Action<int>? Preview, Func<int, Task> Save, Func<Action>? CaptureRestore = null);
+        Action<int>? Preview, Func<int, Task> Save, (int Minimum, int Maximum)? Range = null);
 
-    public sealed record FooterHints(IReadOnlyList<string> DirectionKeys, string NavigateLabel,
-        string? ConfirmKey, string ConfirmLabel, string? BackKey, string BackLabel);
+    public sealed record FooterHints(IReadOnlyList<string> VerticalKeys, IReadOnlyList<string> HorizontalKeys,
+        IReadOnlyList<string> ConfirmKeys, IReadOnlyList<string> BackKeys, string NavigateLabel,
+        string AdjustLabel, string ConfirmLabel, string BackLabel);
 
     private sealed class Level
     {
@@ -36,6 +38,20 @@ public sealed partial class FullscreenOsdWindow
         internal StackPanel Rows { get; } = new();
         internal Border? Panel { get; set; }
 
+        internal Brush? ActiveSectionBackground()
+        {
+            if (Selected >= Entries.Count || Entries[Selected].Section is null) return null;
+            int group = -1;
+            string? previous = null;
+            for (int index = 0; index <= Selected; index++)
+            {
+                var section = Entries[index].Section;
+                if (section is not null && section != previous) group++;
+                previous = section;
+            }
+            return SectionBackgrounds[group % SectionBackgrounds.Length];
+        }
+
         internal void RefreshVisibility()
         {
             if (!_entries.Any(entry => entry.IsVisible is not null)) return;
@@ -49,6 +65,32 @@ public sealed partial class FullscreenOsdWindow
 
     private readonly List<Level> _levels = [];
     private readonly StackPanel _mainRows = new();
+    private static readonly Brush[] SectionBackgrounds =
+    [
+        SectionBackground(18, 38, 72),
+        SectionBackground(13, 56, 57),
+        SectionBackground(47, 30, 74),
+        SectionBackground(64, 43, 24),
+        SectionBackground(61, 29, 53),
+        SectionBackground(34, 56, 35)
+    ];
+    private static readonly Brush DefaultSubmenuBackground = SectionBackground(11, 25, 52);
+    private static readonly Brush DefaultEditorBackground = CreateDefaultEditorBackground();
+
+    private static Brush SectionBackground(byte red, byte green, byte blue)
+    {
+        var brush = new SolidColorBrush(Color.FromArgb(247, red, green, blue));
+        brush.Freeze();
+        return brush;
+    }
+
+    private static Brush CreateDefaultEditorBackground()
+    {
+        var brush = new LinearGradientBrush(Color.FromArgb(249, 11, 28, 64), Color.FromArgb(249, 15, 42, 65), 90);
+        brush.Freeze();
+        return brush;
+    }
+
     private const double SubmenuWidth = 310;
     private readonly Decorator _submenu = new()
     {
@@ -56,24 +98,63 @@ public sealed partial class FullscreenOsdWindow
         Margin = new Thickness(PanelWidth, 0, 0, 0)
     };
     private readonly Border _shaderLoading;
-
-    internal static Border CreateShaderLoadingBadge(string label, Thickness margin) => new()
+    private readonly Border _editBar = new()
     {
         Visibility = Visibility.Collapsed,
-        HorizontalAlignment = HorizontalAlignment.Right,
-        VerticalAlignment = VerticalAlignment.Top,
-        IsHitTestVisible = false,
-        Margin = margin,
-        Padding = new Thickness(14, 8, 14, 8),
-        Background = new SolidColorBrush(Color.FromArgb(237, 12, 30, 58)),
-        CornerRadius = new CornerRadius(6),
-        Child = new TextBlock { Text = label, Foreground = Brushes.White }
+        VerticalAlignment = VerticalAlignment.Bottom,
+        HorizontalAlignment = HorizontalAlignment.Center,
+        Margin = new Thickness(16, 0, 16, 28),
+        Padding = new Thickness(24, 16, 24, 14),
+        Background = DefaultEditorBackground,
+        BorderBrush = new SolidColorBrush(Color.FromRgb(91, 187, 232)),
+        BorderThickness = new Thickness(1),
+        CornerRadius = new CornerRadius(12)
     };
+    private TextBlock? _editValue;
+    private Slider? _editSlider;
+
+    internal static Border CreateShaderLoadingBadge(string label)
+    {
+        var content = new StackPanel();
+        content.Children.Add(new TextBlock
+        {
+            Text = label,
+            TextAlignment = TextAlignment.Center,
+            TextWrapping = TextWrapping.Wrap,
+            FontSize = 22,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = Brushes.White
+        });
+        content.Children.Add(new ProgressBar
+        {
+            Height = 4,
+            Margin = new Thickness(0, 16, 0, 0),
+            IsIndeterminate = true,
+            Foreground = new SolidColorBrush(Color.FromRgb(27, 176, 248)),
+            Background = new SolidColorBrush(Color.FromRgb(24, 56, 91)),
+            BorderThickness = new Thickness(0)
+        });
+        return new Border
+        {
+            Visibility = Visibility.Collapsed,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            IsHitTestVisible = false,
+            MaxWidth = 420,
+            Padding = new Thickness(34, 24, 34, 24),
+            Background = new LinearGradientBrush(Color.FromRgb(11, 28, 64), Color.FromRgb(15, 42, 65), 90),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(77, 169, 219)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(10),
+            Child = content
+        };
+    }
     private Action<Exception>? _showError;
     private Setting? _editing;
-    private Action? _restorePreview;
     private int _original;
     private int _draft;
+    private int? _pendingValue;
+    private Task _settingSave = Task.CompletedTask;
     private bool _commandRunning;
     private bool _closed;
 
@@ -90,6 +171,9 @@ public sealed partial class FullscreenOsdWindow
     public void SetShaderLoading(bool loading) =>
         _shaderLoading.Visibility = loading ? Visibility.Visible : Visibility.Collapsed;
 
+    public bool IsEditing => _editing is not null;
+    public Task PendingSettingSave => _settingSave;
+
     public async Task NavigateAsync(Navigation action)
     {
         if (_closed || _commandRunning) return;
@@ -99,8 +183,10 @@ public sealed partial class FullscreenOsdWindow
             {
                 case Navigation.Left: ChangeValue(-1); break;
                 case Navigation.Right: ChangeValue(1); break;
-                case Navigation.Confirm: await ActivateAsync(Current, Current.Selected); break;
-                case Navigation.Cancel: CancelEdit(); RefreshMenu(); break;
+                case Navigation.Up or Navigation.Down:
+                    await EditAdjacentSettingAsync(action == Navigation.Up ? -1 : 1);
+                    break;
+                case Navigation.Confirm or Navigation.Cancel: await LeaveEditAsync(); break;
             }
             return;
         }
@@ -141,19 +227,70 @@ public sealed partial class FullscreenOsdWindow
     private void ChangeValue(int direction)
     {
         if (_editing is not { } setting) return;
-        _draft = setting.Step(_draft, direction);
-        setting.Preview?.Invoke(_draft);
+        SetDraft(setting.Step(_draft, direction));
+    }
+
+    private async Task EditAdjacentSettingAsync(int direction)
+    {
+        await _settingSave;
+        if (_closed || _commandRunning || _editing is null) return;
+        var level = Current;
+        for (var index = level.Selected + direction; index >= 0 && index < level.Entries.Count; index += direction)
+        {
+            var entry = level.Entries[index];
+            if (entry.Value is null || entry.IsEnabled?.Invoke() == false) continue;
+            await ActivateAsync(level, index);
+            return;
+        }
+    }
+
+    private void SetDraft(int value)
+    {
+        if (_closed || _commandRunning || _editing is not { } setting || _draft == value) return;
+        _draft = value;
+        _pendingValue = value;
+        if (_settingSave.IsCompleted) _settingSave = SaveChangesAsync(setting);
+        setting.Preview?.Invoke(value);
         RefreshMenu();
     }
 
-    private void CancelEdit()
+    private async Task SaveChangesAsync(Setting setting)
     {
-        var setting = _editing;
-        _editing = null;
-        var restore = _restorePreview;
-        _restorePreview = null;
-        if (restore is not null) restore();
-        else setting?.Preview?.Invoke(_original);
+        await Task.Yield();
+        while (_pendingValue is int value)
+        {
+            _pendingValue = null;
+            try
+            {
+                await setting.Save(value);
+                _original = value;
+            }
+            catch (Exception error)
+            {
+                if (!_pendingValue.HasValue)
+                {
+                    _draft = _original;
+                    setting.Preview?.Invoke(_original);
+                }
+                _showError?.Invoke(error);
+            }
+        }
+        if (!_closed) RefreshMenu();
+    }
+
+    private async Task LeaveEditAsync()
+    {
+        _commandRunning = true;
+        try
+        {
+            await _settingSave;
+            _editing = null;
+        }
+        finally
+        {
+            _commandRunning = false;
+            if (!_closed) RefreshMenu();
+        }
     }
 
     private async Task ActivateAsync(Level level, int index)
@@ -164,37 +301,12 @@ public sealed partial class FullscreenOsdWindow
         _commandRunning = true;
         try
         {
+            await _settingSave;
+            if (_closed || !ReferenceEquals(level.Entries.ElementAtOrDefault(index), item)) return;
             if (_editing is not null)
             {
-                if (ReferenceEquals(level, Current) && index == level.Selected)
-                {
-                    if (_draft == _original)
-                    {
-                        CancelEdit();
-                        return;
-                    }
-                    var setting = _editing;
-                    var restore = _restorePreview;
-                    _restorePreview = null;
-                    _editing = null;
-                    try { await setting.Save(_draft); }
-                    catch
-                    {
-                        if (_closed)
-                        {
-                            if (restore is not null) restore();
-                            else setting.Preview?.Invoke(_original);
-                        }
-                        else
-                        {
-                            _editing = setting;
-                            _restorePreview = restore;
-                        }
-                        throw;
-                    }
-                    return;
-                }
-                CancelEdit();
+                _editing = null;
+                ClearEditBar();
             }
 
             var levelIndex = _levels.IndexOf(level);
@@ -205,7 +317,6 @@ public sealed partial class FullscreenOsdWindow
             else if (item.Value is { } setting)
             {
                 _original = _draft = setting.Read();
-                _restorePreview = setting.CaptureRestore?.Invoke();
                 _editing = setting;
             }
             else if (item.Command is { } command) await command();
@@ -230,8 +341,18 @@ public sealed partial class FullscreenOsdWindow
             _levels.RemoveRange(index + 1, _levels.Count - index - 1);
         }
         if (editedEntry is not null && (!ReferenceEquals(previousLevel, Current) || !Current.Entries.Contains(editedEntry)))
-            CancelEdit();
+            _editing = null;
         if (_closed) return;
+        if (_editing is { } setting)
+        {
+            _mainPanel.Visibility = Visibility.Hidden;
+            _submenu.Visibility = Visibility.Hidden;
+            ShowEditBar(Current.Entries[Current.Selected], setting);
+            return;
+        }
+        ClearEditBar();
+        _mainPanel.Visibility = Visibility.Visible;
+        _submenu.Visibility = Visibility.Visible;
         _mainRows.Children.Clear();
         var parentRow = AppendRows(_mainRows, _levels[0]);
 
@@ -259,6 +380,7 @@ public sealed partial class FullscreenOsdWindow
 
         if (!ReferenceEquals(_submenu.Child, current.Panel))
             _submenu.Child = current.Panel;
+        current.Panel.Background = current.ActiveSectionBackground() ?? DefaultSubmenuBackground;
         current.Rows.Children.Clear();
         AppendRows(current.Rows, current)?.BringIntoView();
     }
@@ -270,6 +392,114 @@ public sealed partial class FullscreenOsdWindow
         _mainPanel.Width = PanelWidth * scale;
         _submenu.Margin = new Thickness(_mainPanel.Width, 0, 0, 0);
         _submenu.Width = _levels.Count > 1 ? SubmenuWidth * scale : 0;
+        _editBar.Width = double.IsFinite(Width) ? Math.Clamp(Width - 32, 0, 680) : 680;
+    }
+
+    private void ShowEditBar(Entry item, Setting setting)
+    {
+        _editBar.Background = Current.ActiveSectionBackground() ?? DefaultEditorBackground;
+        if (_editValue is null)
+        {
+            var content = new StackPanel();
+            var header = new DockPanel();
+            _editValue = new TextBlock
+            {
+                Foreground = new SolidColorBrush(Color.FromRgb(171, 233, 255)),
+                FontSize = 17, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap,
+                TextAlignment = TextAlignment.Center
+            };
+            var valueBadge = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(18, 65, 106)),
+                CornerRadius = new CornerRadius(6), Padding = new Thickness(12, 4, 12, 4),
+                Margin = new Thickness(16, 0, 0, 0), MinWidth = 70, Child = _editValue
+            };
+            DockPanel.SetDock(valueBadge, Dock.Right);
+            header.Children.Add(valueBadge);
+            header.Children.Add(new TextBlock
+            {
+                Text = item.Label, Foreground = Brushes.White, FontSize = 19, FontWeight = FontWeights.SemiBold,
+                VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap
+            });
+            content.Children.Add(header);
+            if (setting.Range is { } range)
+            {
+                _editSlider = new Slider
+                {
+                    Minimum = range.Minimum, Maximum = range.Maximum, Value = _draft,
+                    TickFrequency = 1, IsSnapToTickEnabled = true, IsMoveToPointEnabled = true,
+                    Focusable = false, Margin = new Thickness(0, 12, 0, 0)
+                };
+                _editSlider.ValueChanged += EditSliderValueChanged;
+                content.Children.Add(_editSlider);
+            }
+            content.MouseWheel += (_, args) =>
+            {
+                args.Handled = true;
+                try { ChangeValue(Math.Sign(args.Delta)); }
+                catch (Exception error) { _showError?.Invoke(error); }
+            };
+            if (_hints is { } hints)
+            {
+                content.Children.Add(CreateSeparator(new Thickness(0, 11, 0, 8)));
+                var actions = new WrapPanel
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                AddEditHint(actions, hints.HorizontalKeys, hints.AdjustLabel);
+                if (Current.Entries.Count(entry => entry.Value is not null && entry.IsEnabled?.Invoke() != false) > 1)
+                    AddEditHint(actions, hints.VerticalKeys, hints.NavigateLabel);
+                AddEditAction(actions, hints.ConfirmKeys.Concat(hints.BackKeys).Distinct().ToArray(), hints.BackLabel,
+                    Navigation.Cancel);
+                content.Children.Add(actions);
+            }
+            _editBar.Child = content;
+        }
+        _editValue.Text = setting.Format(_draft);
+        if (_editSlider is not null) _editSlider.Value = _draft;
+        _editBar.Visibility = Visibility.Visible;
+    }
+
+    private void EditSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> args)
+    {
+        try { SetDraft((int)args.NewValue); }
+        catch (Exception error) { _showError?.Invoke(error); }
+    }
+
+    private static void AddEditHint(Panel actions, IReadOnlyList<string> keys, string label)
+    {
+        if (keys.Count > 0) actions.Children.Add(CreateEditHint(keys, label));
+    }
+
+    private static WrapPanel CreateEditHint(IReadOnlyList<string> keys, string label)
+    {
+        var hint = new WrapPanel { VerticalAlignment = VerticalAlignment.Center };
+        foreach (var key in keys) AddShortcutKey(hint, key);
+        AddHint(hint, label);
+        hint.Margin = new Thickness(4, 3, 4, 3);
+        return hint;
+    }
+
+    private void AddEditAction(Panel actions, IReadOnlyList<string> keys, string label, Navigation navigation)
+    {
+        var button = CreateMenuButton(label, selected: false, enabled: true);
+        button.Padding = new Thickness(3, 0, 3, 0);
+        button.Content = CreateEditHint(keys, label);
+        button.Click += async (_, _) =>
+        {
+            try { await NavigateAsync(navigation); }
+            catch (Exception error) { _showError?.Invoke(error); }
+        };
+        actions.Children.Add(button);
+    }
+
+    private void ClearEditBar()
+    {
+        if (_editSlider is not null) _editSlider.ValueChanged -= EditSliderValueChanged;
+        _editSlider = null;
+        _editValue = null;
+        _editBar.Child = null;
+        _editBar.Visibility = Visibility.Collapsed;
     }
 
     private Border CreateSubmenu(Level level, double top)
@@ -282,7 +512,7 @@ public sealed partial class FullscreenOsdWindow
         {
             Text = parent.Label,
             Foreground = Brushes.White,
-            FontSize = 17,
+            FontSize = 19,
             FontWeight = FontWeights.SemiBold,
             TextWrapping = TextWrapping.Wrap
         });
@@ -294,7 +524,6 @@ public sealed partial class FullscreenOsdWindow
             Margin = new Thickness(0, top, 0, 0),
             Padding = parent.FullHeight ? new Thickness(16, 24, 16, 14) : new Thickness(10, 12, 10, 10),
             VerticalAlignment = parent.FullHeight ? VerticalAlignment.Stretch : VerticalAlignment.Top,
-            Background = new SolidColorBrush(Color.FromArgb(237, 12, 30, 58)),
             BorderBrush = new SolidColorBrush(Color.FromArgb(150, 77, 169, 219)),
             BorderThickness = new Thickness(0, 0, 1, parent.FullHeight ? 0 : 1),
             CornerRadius = parent.FullHeight ? new CornerRadius(0) : new CornerRadius(0, 7, 7, 0),
@@ -314,10 +543,10 @@ public sealed partial class FullscreenOsdWindow
         {
             var itemIndex = index;
             var item = level.Entries[index];
-            if (item.SeparatorBefore) rows.Children.Add(CreateSeparator(new Thickness(16, 5, 16, 5)));
+            if (item.SeparatorBefore || index > 0 && item.Section != level.Entries[index - 1].Section)
+                rows.Children.Add(CreateSeparator(new Thickness(16, 5, 16, 5)));
             var enabled = item.IsEnabled?.Invoke() != false;
-            var editing = ReferenceEquals(level, Current) && level.Selected == index && _editing is not null;
-            var value = item.Value is { } setting ? setting.Format(editing ? _draft : setting.Read()) : item.Status?.Invoke();
+            var value = item.Value is { } setting ? setting.Format(setting.Read()) : item.Status?.Invoke();
             var label = new DockPanel { LastChildFill = true };
             AddGlyph(label, item.Glyph, new Thickness(0, 0, 12, 0));
             var caption = new TextBlock
@@ -382,30 +611,9 @@ public sealed partial class FullscreenOsdWindow
                 catch (Exception error) { _showError?.Invoke(error); }
             };
             if (level.Selected == index) selectedRow = button;
-            if (!editing) rows.Children.Add(button);
-            else
-            {
-                var editRow = new DockPanel();
-                AddAdjustmentButton(editRow, "‹", Dock.Left, -1);
-                AddAdjustmentButton(editRow, "›", Dock.Right, 1);
-                editRow.Children.Add(button);
-                rows.Children.Add(editRow);
-            }
+            rows.Children.Add(button);
         }
         return selectedRow;
-    }
-
-    private void AddAdjustmentButton(DockPanel row, string text, Dock dock, int direction)
-    {
-        var button = CreateMenuButton(new TextBlock { Text = text, Foreground = Brushes.White }, true, true);
-        button.Padding = new Thickness(8, 6, 8, 6);
-        DockPanel.SetDock(button, dock);
-        button.Click += (_, _) =>
-        {
-            try { ChangeValue(direction); }
-            catch (Exception error) { _showError?.Invoke(error); }
-        };
-        row.Children.Add(button);
     }
 
     private static Button CreateMenuButton(object content, bool selected, bool enabled)
@@ -416,13 +624,13 @@ public sealed partial class FullscreenOsdWindow
             Template = MenuButtonTemplate,
             Focusable = false,
             IsEnabled = enabled,
-            FontSize = 14,
+            FontSize = 16,
             Foreground = enabled ? Brushes.White : new SolidColorBrush(Color.FromRgb(161, 174, 197)),
-            Background = selected ? new LinearGradientBrush(Color.FromRgb(7, 99, 232), Color.FromRgb(5, 66, 181), 90) : Brushes.Transparent,
-            BorderBrush = selected ? new SolidColorBrush(Color.FromRgb(27, 176, 248)) : Brushes.Transparent,
+            Background = selected ? new LinearGradientBrush(Color.FromRgb(9, 110, 238), Color.FromRgb(5, 69, 184), 90) : Brushes.Transparent,
+            BorderBrush = selected ? new SolidColorBrush(Color.FromRgb(61, 204, 250)) : Brushes.Transparent,
             BorderThickness = new Thickness(1),
-            Padding = new Thickness(18, 6, 12, 6),
-            MinHeight = 35,
+            Padding = new Thickness(15, 7, 10, 7),
+            MinHeight = 40,
             Margin = new Thickness(1, 1, 1, 1)
         };
         return button;
@@ -453,7 +661,7 @@ public sealed partial class FullscreenOsdWindow
         {
             Text = glyph,
             FontFamily = new FontFamily("Segoe MDL2 Assets"),
-            FontSize = 15,
+            FontSize = 16,
             Foreground = Brushes.White,
             Width = 16,
             VerticalAlignment = VerticalAlignment.Center,
@@ -466,7 +674,7 @@ public sealed partial class FullscreenOsdWindow
     private static Border CreateSeparator(Thickness margin) => new()
     {
         Height = 1,
-        Background = new SolidColorBrush(Color.FromArgb(155, 99, 189, 230)),
+        Background = new SolidColorBrush(Color.FromArgb(204, 99, 189, 230)),
         Margin = margin
     };
 
@@ -476,7 +684,7 @@ public sealed partial class FullscreenOsdWindow
         footer.Children.Add(CreateSeparator(new Thickness(0, 0, 0, 7)));
         if (hints is null) return footer;
         var directions = new WrapPanel { Margin = new Thickness(0, 0, 0, 5) };
-        foreach (var key in hints.DirectionKeys)
+        foreach (var key in hints.VerticalKeys.Concat(hints.HorizontalKeys))
             AddShortcutKey(directions, key);
         if (directions.Children.Count > 0)
         {
@@ -484,16 +692,19 @@ public sealed partial class FullscreenOsdWindow
             footer.Children.Add(directions);
         }
         var commands = new WrapPanel();
-        if (AddShortcutKey(commands, hints.ConfirmKey))
+        foreach (var key in hints.ConfirmKeys) AddShortcutKey(commands, key);
+        if (hints.ConfirmKeys.Count > 0)
             AddHint(commands, hints.ConfirmLabel);
-        if (AddShortcutKey(commands, hints.BackKey))
+        foreach (var key in hints.BackKeys) AddShortcutKey(commands, key);
+        if (hints.BackKeys.Count > 0)
             AddHint(commands, hints.BackLabel);
         if (commands.Children.Count > 0) footer.Children.Add(commands);
         return footer;
 
-        static bool AddShortcutKey(Panel row, string? cap)
-        {
-            if (cap is null) return false;
+    }
+
+    private static void AddShortcutKey(Panel row, string cap)
+    {
             row.Children.Add(new Border
             {
                 BorderBrush = new SolidColorBrush(Color.FromRgb(155, 176, 211)),
@@ -501,18 +712,17 @@ public sealed partial class FullscreenOsdWindow
                 CornerRadius = new CornerRadius(2),
                 Padding = new Thickness(3, 0, 3, 0),
                 Margin = new Thickness(0, 0, 3, 0),
-                Child = new TextBlock { Text = cap, FontSize = 10, Foreground = Brushes.White }
+                Child = new TextBlock { Text = cap, FontSize = 12, Foreground = Brushes.White, TextWrapping = TextWrapping.Wrap }
             });
-            return true;
-        }
+    }
 
-        static void AddHint(Panel row, string label) => row.Children.Add(new TextBlock
+    private static void AddHint(Panel row, string label) => row.Children.Add(new TextBlock
         {
             Text = label,
-            FontSize = 10,
+            FontSize = 12,
             Foreground = Brushes.White,
             Margin = new Thickness(1, 0, 9, 0),
-            VerticalAlignment = VerticalAlignment.Center
+            VerticalAlignment = VerticalAlignment.Center,
+            TextWrapping = TextWrapping.Wrap
         });
-    }
 }

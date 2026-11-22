@@ -6,6 +6,7 @@ using RetroMediaLab.App.Dictionaries.Video;
 using RetroMediaLab.App.Functions.Emulation.Machine;
 using RetroMediaLab.App.Services.Emulation;
 using RetroMediaLab.Emulation;
+using RetroMediaLab.VideoPresentation.Services;
 using RetroMediaLab.VideoPresentation.Windows.Osd;
 using Entry = RetroMediaLab.VideoPresentation.Windows.Osd.FullscreenOsdWindow.Entry;
 
@@ -14,21 +15,9 @@ namespace RetroMediaLab.App.Controllers.Emulation.Machine;
 internal sealed partial class MachineController
 {
     private Entry OsdVideoSettings() =>
-        new(LocExtension.Get("Emulation.Shortcut.OsdVideoSettings"), Children:
+        new(LocExtension.Get("Emulation.Shortcut.OsdVideoSettings"), Children: EditableVideoRows(
         [
-            VideoGroup(EmulationResourceKeys.VideoTabDisplay,
-            [
-                VideoGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing,
-                    OsdRendererChoice(),
-                    VideoChoice(EmulationResourceKeys.VideoSampling, EmulationVideoProcessingCatalog.SamplingResourceKeys,
-                        settings => settings.Sampling, (settings, value) => settings with { Sampling = value }),
-                    VideoChoice(EmulationResourceKeys.VideoTechnology, EmulationVideoProcessingCatalog.DisplayTechnologyResourceKeys,
-                        settings => settings.DisplayTechnology, (settings, value) => settings with { DisplayTechnology = value })),
-                .. OsdModuleGroups(EmulationMachineTab.Video, EmulationVideoSettingsSection.Display)
-            ]),
-            VideoGroup(EmulationResourceKeys.VideoTabImage,
-            [
-                VideoGroup(EmulationResourceKeys.VideoGeneralSettings,
+            VideoGroup(EmulationResourceKeys.VideoGeneralSettings,
                     Adjustment(EmulationResourceKeys.VideoParameterBrightness, value => value.Brightness,
                         (value, draft) => value with { Brightness = draft }),
                     Adjustment(EmulationResourceKeys.VideoParameterContrast, value => value.Contrast,
@@ -39,7 +28,24 @@ internal sealed partial class MachineController
                         (value, draft) => value with { Saturation = draft }),
                     Adjustment(EmulationResourceKeys.VideoParameterSharpness, value => value.Sharpness,
                         (value, draft) => value with { Sharpness = draft })),
-                VideoGroup(EmulationResourceKeys.VideoRestorationSettings,
+            VideoGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing,
+                VideoChoice(EmulationResourceKeys.VideoSampling, EmulationVideoProcessingCatalog.SamplingResourceKeys,
+                    settings => settings.Sampling, (settings, value) => settings with { Sampling = value }),
+                OsdRendererChoice(),
+                VideoChoice(EmulationResourceKeys.VideoTechnology, EmulationVideoProcessingCatalog.DisplayTechnologyResourceKeys,
+                    settings => settings.DisplayTechnology, (settings, value) => settings with { DisplayTechnology = value })),
+            OsdCrtSettings(),
+            OsdFixedPixelSettings(),
+            OsdPlasmaSettings(),
+            OsdVectorSettings(),
+            OsdVfdSettings(),
+            OsdLedMatrixSettings(),
+            OsdDotMatrixSettings(),
+            OsdSegmentDisplaySettings(),
+            OsdEPaperSettings(),
+            OsdProjectionSettings(),
+            .. OsdModuleGroups(EmulationMachineTab.Video, EmulationVideoSettingsSection.Display),
+            VideoGroup(EmulationResourceKeys.VideoRestorationSettings,
                     VideoChoice(EmulationResourceKeys.VideoParameterDedithering, VideoRestorationChoices.Dedithering,
                         settings => VideoRestorationChoices.NearestDeditheringValue(settings.Restoration.Dedithering),
                         (settings, draft) => settings with { Restoration = settings.Restoration with { Dedithering = draft } }),
@@ -52,20 +58,32 @@ internal sealed partial class MachineController
                     VideoChoice(EmulationResourceKeys.VideoParameterDeinterlacing, EmulationVideoProcessingCatalog.DeinterlacingResourceKeys,
                         settings => settings.Restoration.Deinterlacing,
                         (settings, draft) => settings with { Restoration = settings.Restoration with { Deinterlacing = draft } })),
-                .. OsdModuleGroups(EmulationMachineTab.Video, EmulationVideoSettingsSection.Image)
-            ]),
-            OsdVideoEffectsSettings(),
-            OsdCrtSettings(),
-            OsdFixedPixelSettings(),
-            OsdPlasmaSettings(),
-            OsdVectorSettings(),
-            OsdVfdSettings(),
-            OsdLedMatrixSettings(),
-            OsdDotMatrixSettings(),
-            OsdSegmentDisplaySettings(),
-            OsdEPaperSettings(),
-            OsdProjectionSettings()
-        ], Glyph: MachineCommandGlyphConstants.Renderer, SeparatorBefore: true, FullHeight: true);
+            .. OsdModuleGroups(EmulationMachineTab.Video, EmulationVideoSettingsSection.Image),
+            OsdVideoEffectsSettings()
+        ]), Glyph: MachineCommandGlyphConstants.Renderer, SeparatorBefore: true, FullHeight: true);
+
+    internal static Entry[] EditableVideoRows(IReadOnlyList<Entry> groups)
+    {
+        var rows = new List<Entry>();
+        AddRows(groups, null, null);
+        return rows.ToArray();
+
+        void AddRows(IReadOnlyList<Entry> entries, Entry? section, Func<bool>? parentVisible)
+        {
+            foreach (var entry in entries)
+            {
+                bool Visible() => parentVisible?.Invoke() != false && entry.IsVisible?.Invoke() != false;
+                if (entry.Children is { } children)
+                    AddRows(children, entry, Visible);
+                else if (entry.Value is not null)
+                    rows.Add(entry with
+                    {
+                        Section = section?.Label,
+                        IsVisible = () => Visible() && entry.IsEnabled?.Invoke() != false
+                    });
+            }
+        }
+    }
 
     private static Entry VideoGroup(string resourceKey, params Entry[] children) =>
         new(LocExtension.Get(resourceKey), Children: children, FullHeight: true);
@@ -86,12 +104,11 @@ internal sealed partial class MachineController
             value => value.ToString(signed ? "+0;-0;0" : "0", CultureInfo.CurrentCulture),
             (value, direction) => Math.Clamp(value + direction, minimum, maximum),
             value => _video.SetVideoProcessing(WithValue(value)),
-            value => SaveOsdVideoAsync(WithValue(value)),
-            CaptureRestore: () =>
+            value => SaveOsdVideoProfileAsync(profile => profile with
             {
-                var original = _video.VideoProcessing;
-                return () => _video.SetVideoProcessing(original);
-            }));
+                Processing = update(profile.Processing ?? new EmulationVideoProcessingConfiguration(), value)
+            }),
+            Range: (minimum, maximum)));
     }
 
     private Entry Adjustment(string label, Func<EmulationImageAdjustments, int> read,
@@ -144,17 +161,20 @@ internal sealed partial class MachineController
         }
     }
 
-    private async Task SaveOsdVideoProfileAsync(Func<EmulationVideoPresentationProfile, EmulationVideoPresentationProfile> update)
+    private Task SaveOsdVideoProfileAsync(Func<EmulationVideoPresentationProfile, EmulationVideoPresentationProfile> update) =>
+        SaveOsdVideoProfileAsync(EmulationVideoPresentationProfiles.Store, _options.ModuleId, _options.ConfigurationId, update);
+
+    internal static async Task SaveOsdVideoProfileAsync(VideoPresentationProfileStore store, string moduleId,
+        Guid configurationId, Func<EmulationVideoPresentationProfile, EmulationVideoPresentationProfile> update)
     {
-        var store = EmulationVideoPresentationProfiles.Store;
-        var previous = store.Get(_options.ModuleId, _options.ConfigurationId);
+        var previous = store.Get(moduleId, configurationId);
         var next = update(previous);
         if (next == previous) return;
-        store.Set(_options.ModuleId, _options.ConfigurationId, next);
-        try { await store.SaveAsync(_options.ModuleId, _options.ConfigurationId); }
+        store.Set(moduleId, configurationId, next);
+        try { await store.SaveAsync(moduleId, configurationId); }
         catch
         {
-            store.Set(_options.ModuleId, _options.ConfigurationId, previous);
+            store.Set(moduleId, configurationId, previous);
             throw;
         }
     }

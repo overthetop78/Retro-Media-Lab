@@ -12,11 +12,13 @@ public sealed partial class FullscreenOsdWindow : Window
     private readonly FrameworkElement _displayHost;
     private readonly TextBlock _game;
     private readonly Border _mainPanel;
+    private readonly FooterHints? _hints;
 
     public FullscreenOsdWindow(Window owner, FrameworkElement displayHost, string machineName, string? gameName,
         IReadOnlyList<Entry> entries, Action<Exception> showError, string shaderLoadingLabel, FooterHints? hints = null)
     {
         _displayHost = displayHost;
+        _hints = hints;
         _owner = owner;
         Owner = owner;
         ShowInTaskbar = false;
@@ -26,18 +28,18 @@ public sealed partial class FullscreenOsdWindow : Window
         Background = Brushes.Transparent;
         Focusable = true;
 
-        var text = new StackPanel { Margin = new Thickness(22, 24, 16, 12) };
+        var text = new StackPanel { Margin = new Thickness(20, 26, 16, 16) };
         text.Children.Add(new TextBlock
         {
             Text = machineName,
-            FontSize = 20,
+            FontSize = 21,
             FontWeight = FontWeights.SemiBold,
             Foreground = Brushes.White,
             TextWrapping = TextWrapping.Wrap
         });
         _game = new TextBlock
         {
-            FontSize = 14,
+            FontSize = 15,
             Foreground = new SolidColorBrush(Color.FromRgb(213, 226, 246)),
             Margin = new Thickness(0, 3, 0, 0),
             TextWrapping = TextWrapping.Wrap
@@ -65,13 +67,14 @@ public sealed partial class FullscreenOsdWindow : Window
             Width = PanelWidth,
             HorizontalAlignment = HorizontalAlignment.Left,
             BorderThickness = new Thickness(0, 0, 1, 0),
-            BorderBrush = new SolidColorBrush(Color.FromArgb(142, 77, 169, 219)),
-            Background = new LinearGradientBrush(Color.FromArgb(234, 11, 28, 64), Color.FromArgb(226, 15, 42, 65), 90),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(166, 84, 159, 211)),
+            Background = new LinearGradientBrush(Color.FromArgb(248, 8, 18, 46), Color.FromArgb(242, 11, 27, 52), 90),
             Child = main
         };
         // Nearly transparent pixels still receive mouse input on a layered window.
-        _shaderLoading = CreateShaderLoadingBadge(shaderLoadingLabel, new Thickness(18));
-        Content = new Grid { Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)), Children = { _mainPanel, _submenu, _shaderLoading } };
+        _shaderLoading = CreateShaderLoadingBadge(shaderLoadingLabel);
+        Content = new Grid { Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)), Children = { _mainPanel, _submenu, _shaderLoading, _editBar } };
+        Panel.SetZIndex(_shaderLoading, 1);
         FitDisplayHost();
         InitializeMenu(entries, showError);
         displayHost.SizeChanged += DisplayHostSizeChanged;
@@ -97,10 +100,11 @@ public sealed partial class FullscreenOsdWindow : Window
             _displayHost.SizeChanged -= DisplayHostSizeChanged;
             _owner.LocationChanged -= OwnerLocationChanged;
             _closed = true;
-            CancelEdit();
+            _editing = null;
         }
         finally
         {
+            ClearEditBar();
             _submenu.Child = null;
             _levels.Clear();
             _mainRows.Children.Clear();

@@ -10,14 +10,12 @@ public sealed class FullscreenOsdIndicator : IDisposable
 
     public FullscreenOsdIndicator(FrameworkElement host, string label)
     {
-        var badge = FullscreenOsdWindow.CreateShaderLoadingBadge(label, new Thickness(0));
+        var badge = FullscreenOsdWindow.CreateShaderLoadingBadge(label);
         badge.Visibility = Visibility.Visible;
         _popup = new Popup
         {
             PlacementTarget = host,
-            Placement = PlacementMode.Custom,
-            CustomPopupPlacementCallback = static (popup, target, _) =>
-                [new CustomPopupPlacement(new Point(target.Width - popup.Width - 18, 18), PopupPrimaryAxis.Horizontal)],
+            Placement = PlacementMode.Center,
             AllowsTransparency = true,
             Focusable = false,
             IsHitTestVisible = false,

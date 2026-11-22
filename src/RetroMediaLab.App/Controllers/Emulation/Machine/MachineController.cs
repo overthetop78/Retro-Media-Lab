@@ -61,8 +61,7 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
     private FullscreenOsdIndicator? _fullscreenShaderLoading;
     private FullscreenOsdWindow? _osd;
     private bool _osdPausedEmulation;
-    private bool _osdTransition;
-    private bool _osdResuming;
+    private readonly SemaphoreSlim _osdToggleGate = new(1);
     private Task _osdPauseTask = Task.CompletedTask;
     private Task _osdCloseTask = Task.CompletedTask;
     private bool _audioMuted;
@@ -112,7 +111,7 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
             _input = new MachineInputController(_view, _video.InputView, _video.InputHandle, () => _session.Machine, options.GlobalShortcuts, ExecuteShortcutAsync,
                 () => PresentationActivation?.Invoke() ?? options.IsActive(), inputHandleProvider: () => _video.InputHandle,
                 osdShortcuts: EmulationShortcutMap.OsdShortcuts(options.ShortcutSettings), isFullscreen: () => IsFullscreen,
-                readShortcutSettings: options.ReadShortcutSettings);
+                readShortcutSettings: options.ReadShortcutSettings, isOsdEditing: () => _osd?.IsEditing == true);
             _commands = new MachineCommandBar(_view.Toolbar, CreateActions(), options.GlobalShortcuts, options.ShowError, _input.RestoreFocus);
             _commands.Presentation.StatusAboveDisplay = MachinePresentationFunctions.StatusAboveDisplay(options.ModuleId, options.MachineId);
             _view.AttachCommands(_commands.Presentation);
@@ -461,10 +460,12 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
 
     private async Task ToggleOsdAsync(bool pause)
     {
-        if (_disposed || _osdTransition || _osdResuming || _fullscreenWindow is not { } owner || _fullscreenHost is not { } host) return;
-        _osdTransition = true;
+        if (_disposed || _fullscreenWindow is not { } owner || _fullscreenHost is not { } host) return;
+        await _osdToggleGate.WaitAsync();
         try
         {
+            await _osdCloseTask;
+            if (_disposed || !ReferenceEquals(owner, _fullscreenWindow)) return;
             if (_osd is not null)
             {
                 CloseOsd();
@@ -496,7 +497,7 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
                 if (!opened) CloseOsd();
             }
         }
-        finally { _osdTransition = false; }
+        finally { _osdToggleGate.Release(); }
     }
 
     private void CloseOsd()
@@ -516,14 +517,16 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         osd.PreviewKeyDown -= OsdKeyDown;
         osd.PreviewKeyUp -= OsdKeyUp;
         osd.Closed -= OsdClosed;
-        _osdResuming = true;
-        _osdCloseTask = RestoreAfterOsdAsync();
+        try { _input.SetOsdFocus(false); }
+        finally { _osdCloseTask = RestoreAfterOsdAsync(osd.PendingSettingSave); }
     }
 
-    private async Task RestoreAfterOsdAsync()
+    private async Task RestoreAfterOsdAsync(Task pendingSettingSave)
     {
         try
         {
+            try { await pendingSettingSave; }
+            catch (Exception error) { _options.ShowError(error); }
             if (_osdPausedEmulation)
             {
                 await _osdPauseTask;
@@ -535,12 +538,7 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         {
             _osdPausedEmulation = false;
             _osdPauseTask = Task.CompletedTask;
-            _osdResuming = false;
-            try { _input.SetOsdFocus(false); }
-            finally
-            {
-                if (!_disposed) VideoShaderLoadingChanged(_video.IsShaderLoading);
-            }
+            if (!_disposed) VideoShaderLoadingChanged(_video.IsShaderLoading);
         }
     }
 
@@ -590,16 +588,28 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
 
     private FullscreenOsdWindow.FooterHints CreateOsdFooterHints()
     {
-        var directions = new[] { EmulationShortcutDefaults.OsdUp, EmulationShortcutDefaults.OsdDown,
-            EmulationShortcutDefaults.OsdLeft, EmulationShortcutDefaults.OsdRight };
-        return new(directions.Select(Keycap).OfType<string>().ToArray(), LocExtension.Get("Emulation.Shortcut.OsdNavigateHint"),
-            Keycap(EmulationShortcutDefaults.OsdConfirm), LocExtension.Get("Emulation.Shortcut.OsdConfirmHint"),
-            Keycap(EmulationShortcutDefaults.OsdCancel), LocExtension.Get("Emulation.Shortcut.OsdBackHint"));
+        return new(
+            Keycaps(EmulationShortcutDefaults.OsdUp, EmulationShortcutDefaults.OsdDown),
+            Keycaps(EmulationShortcutDefaults.OsdLeft, EmulationShortcutDefaults.OsdRight),
+            Keycaps(EmulationShortcutDefaults.OsdConfirm),
+            Keycaps(EmulationShortcutDefaults.OsdCancel),
+            LocExtension.Get("Emulation.Shortcut.OsdNavigateHint"),
+            LocExtension.Get("Common.Modify"),
+            LocExtension.Get("Emulation.Shortcut.OsdConfirmHint"),
+            LocExtension.Get("Emulation.Shortcut.OsdBackHint"));
 
-        string? Keycap(string action)
+        string[] Keycaps(params string[] actions) => actions
+            .SelectMany(action => _input.OsdShortcuts
+                .Where(binding => EmulationShortcutMap.OsdPrimaryAction(binding.Action) == action)
+                .Select(Keycap))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        static string Keycap(GlobalShortcutBinding binding)
         {
-            var binding = _input.OsdShortcuts.FirstOrDefault(shortcut => shortcut.Action == action);
-            if (binding is null || binding.SourceBinding is not null) return null;
+            if (binding.SourceBinding is { } source)
+                return string.Join(" + ", source.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                    .Select(RetroMediaLab.App.ViewModels.Input.InputBindingRow.DisplayPart));
             var chord = binding.Chord;
             if (chord.Keys.Count != 1 || chord.Modifiers != ModifierKeys.None)
                 return KeyboardChordFunctions.Format(chord.Modifiers, chord.Keys);

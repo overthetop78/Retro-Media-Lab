@@ -9,12 +9,19 @@ namespace RetroMediaLab.App.Functions.Emulation.Shortcuts;
 
 internal static class EmulationShortcutFunctions
 {
-    internal static EmulationShortcutMatch ResolveGlobal(IReadOnlyList<GlobalShortcutBinding> bindings, ModifierKeys modifiers, IReadOnlySet<Key> pressedKeys, Key source, IReadOnlySet<string> activeActions)
+    internal static EmulationShortcutMatch ResolveGlobal(IReadOnlyList<GlobalShortcutBinding> bindings, ModifierKeys modifiers,
+        IReadOnlySet<Key> pressedKeys, Key source)
     {
         var exact = bindings.FirstOrDefault(binding => binding.SourceBinding is null && KeyboardChordFunctions.Matches(binding.Chord, modifiers, pressedKeys));
-        if (exact is not null)
-            return new EmulationShortcutMatch(EmulationShortcutMatchCategory.Global, exact.Action, !activeActions.Contains(exact.Action));
+        if (exact is not null) return new(EmulationShortcutMatchCategory.Global, exact);
         return bindings.Any(binding => binding.SourceBinding is null && binding.Chord.Modifiers == modifiers && KeyboardChordFunctions.Contains(binding.Chord, source)) ? new EmulationShortcutMatch(EmulationShortcutMatchCategory.ReservedForGlobal) : new EmulationShortcutMatch(EmulationShortcutMatchCategory.None);
+    }
+
+    internal static bool UsesKey(KeyboardChord chord, Key key)
+    {
+        var modifier = KeyboardChordFunctions.ModifierForKey(key);
+        return KeyboardChordFunctions.Contains(chord, key)
+            || (modifier != ModifierKeys.None && chord.Modifiers.HasFlag(modifier));
     }
 
     internal static void ReleaseInactive(ISet<string> activeActions, IReadOnlyList<GlobalShortcutBinding> bindings, ModifierKeys modifiers, IReadOnlySet<Key> pressedKeys)

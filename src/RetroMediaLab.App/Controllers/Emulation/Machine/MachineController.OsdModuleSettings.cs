@@ -155,7 +155,8 @@ internal sealed partial class MachineController
                     : Number(index).ToString(CultureInfo.CurrentCulture) + " " + range.UnitSuffix,
             (index, direction) => Math.Clamp(index + direction, supportsAutomatic ? -1 : 0, last),
             Preview: null,
-            Save: index => save(index < 0 ? field.AutomaticValue! : Number(index).ToString(CultureInfo.InvariantCulture)));
+            Save: index => save(index < 0 ? field.AutomaticValue! : Number(index).ToString(CultureInfo.InvariantCulture)),
+            Range: (supportsAutomatic ? -1 : 0, last));
     }
 
     private async Task SaveOsdModuleSettingAsync(IEmulationModule module, EmulationSettingsField field, string value)

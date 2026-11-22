@@ -79,7 +79,7 @@ public sealed class InputBindingRow(string id, string label, string binding, str
         OnPropertyChanged(nameof(StateIcon));
     }
 
-    private static string DisplayPart(string part)
+    internal static string DisplayPart(string part)
     {
         if (InputBindingSyntax.TryRemovePrefix(part, InputBindingSyntaxConstants.KeyboardPrefix, out var keyboardSource)) part = keyboardSource;
         if (InputBindingSyntax.TryRemovePrefix(part, InputBindingSyntaxConstants.ControllerPrefix, out var controllerSource))
