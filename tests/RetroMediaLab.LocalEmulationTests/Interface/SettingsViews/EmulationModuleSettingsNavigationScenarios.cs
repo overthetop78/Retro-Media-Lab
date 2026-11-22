@@ -23,37 +23,29 @@ internal static class EmulationModuleSettingsNavigationScenarios
     internal static void NativeVideoOptionsPreserveTheProcessingPosition()
     {
         var section = new EmulationVideoProcessingSettingsSection();
-        var display = new TextBlock { Text = "Display" };
+        var display = new TextBlock { Text = "Video chip" };
         var renderer = new ComboBox();
-        var image = new ComboBox();
-        var effects = new ComboBox();
         var native = new StackPanel();
         native.Children.Add(new Expander { Header = "PGXP", Content = new CheckBox() });
         try
         {
-            section.SetConfiguration(new(), display, renderer, nativeSettings: native, imageSettings: image, effectSettings: effects);
+            section.SetConfiguration(new(), display, renderer, nativeSettings: native, emulatorName: "SegaEmu");
             for (var pass = 0; pass < 2; pass++)
             {
                 var tabs = Assert.IsType<TabControl>(section.Content);
-                Assert.Equal(4, tabs.Items.Count);
-                Assert.Contains(image, MachineConfigurationScenarios.Controls<ComboBox>((DependencyObject)((TabItem)tabs.Items[1]).Content));
-                Assert.Contains(effects, MachineConfigurationScenarios.Controls<ComboBox>((DependencyObject)((TabItem)tabs.Items[2]).Content));
-                Assert.DoesNotContain(image, MachineConfigurationScenarios.Controls<ComboBox>((DependencyObject)((TabItem)tabs.Items[0]).Content));
-                Assert.Contains(MachineConfigurationScenarios.Controls<Expander>((DependencyObject)((TabItem)tabs.Items[3]).Content), item => Equals(item.Header, "PGXP"));
-                FrameworkElement current = renderer;
-                while (current.Parent is FrameworkElement parent)
-                {
-                    if (parent is Grid grid && grid.ColumnDefinitions.Count == 2 && current is Border)
-                    {
-                        Assert.Equal(1, Grid.GetColumn(current));
-                        break;
-                    }
-                    current = parent;
-                }
-                Assert.IsType<Grid>(current.Parent);
-                tabs.SelectedIndex = 3;
+                Assert.Equal(3, tabs.Items.Count);
+                var displayTab = (TabItem)tabs.Items[0];
+                var nativeTab = (TabItem)tabs.Items[2];
+                Assert.Equal("SegaEmu", nativeTab.Header);
+                Assert.Contains(renderer, MachineConfigurationScenarios.Controls<ComboBox>((DependencyObject)displayTab.Content));
+                Assert.Contains(display, MachineConfigurationScenarios.Controls<TextBlock>((DependencyObject)displayTab.Content));
+                Assert.Contains(MachineConfigurationScenarios.Controls<Expander>((DependencyObject)nativeTab.Content),
+                    item => Equals(item.Header, "PGXP"));
+                Assert.Equal(0, Grid.GetColumn(OuterCard(renderer)));
+                Assert.Equal(1, Grid.GetColumn(OuterCard(display)));
+                tabs.SelectedIndex = 2;
                 section.RefreshLocalizedContent();
-                Assert.Equal(3, Assert.IsType<TabControl>(section.Content).SelectedIndex);
+                Assert.Equal(2, Assert.IsType<TabControl>(section.Content).SelectedIndex);
             }
         }
         finally
@@ -61,10 +53,16 @@ internal static class EmulationModuleSettingsNavigationScenarios
             EmulationSettingsLayout.DetachReusableElement(display);
             EmulationSettingsLayout.DetachReusableElement(renderer);
             EmulationSettingsLayout.DetachReusableElement(native);
-            EmulationSettingsLayout.DetachReusableElement(image);
-            EmulationSettingsLayout.DetachReusableElement(effects);
             section.Content = null;
         }
+    }
+
+    private static Border OuterCard(FrameworkElement element)
+    {
+        for (var current = element; current.Parent is FrameworkElement parent; current = parent)
+            if (current is Border frame && parent is Grid grid && grid.ColumnDefinitions.Count == 2)
+                return frame;
+        throw new InvalidOperationException("The video setting has no card.");
     }
 
     internal static void VideoFieldsKeepTheirHelpContent()

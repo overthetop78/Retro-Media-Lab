@@ -17,6 +17,8 @@ internal interface IEmulationVideoSurface : IDisposable
     EmulationVideoProcessingConfiguration VideoProcessing => EmulationVideoProcessingConfigurationFunctions.Normalize(null);
     void SetVideoProcessing(EmulationVideoProcessingConfiguration configuration);
     void Present(VideoFrame frame);
+    // The compose buffer is only valid until the next presentation. Asynchronous consumers retain their own copy.
+    void PresentTransient(VideoFrame frame, VideoFrame source) => Present(frame);
     void ResetHistory() { }
     void SuspendPresentation() { }
 }

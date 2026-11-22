@@ -13,4 +13,5 @@ public sealed record EmulationFixedPixelVideoConfiguration(
     int? BacklightIntensity = null,
     int? BlackDepth = null,
     EmulationMonochromePalette MonochromePalette = EmulationMonochromePalette.Green,
-    int BacklightBleedIntensity = 25);
+    int BacklightBleedIntensity = 25,
+    int OledEmissionIntensity = 100);

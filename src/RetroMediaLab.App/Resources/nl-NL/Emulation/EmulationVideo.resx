@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Weergave</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Renderen</value></data>
   <data name="Emulation.Video.Sampling"><value>Steekproef</value></data>
-  <data name="Emulation.Video.Technology"><value>Weergavetechnologie</value></data>
+  <data name="Emulation.Video.Technology"><value>Type weergave</value></data>
   <data name="Emulation.Video.Settings.General"><value>Algemene afbeeldingsaanpassingen</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab videobewerking</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normaal</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Vectorweergave</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Afbeeldingsherstel</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Dithering verwijderen</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Bekennen</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Verbindingsreductie</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Detailherstel</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Ontkoppeling</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Uitgeschakeld</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - gelijkmatige lijnen</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - oneven lijnen</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Verticaal mengen</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Blauw</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Groen</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Rendermodus</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hardwarematige rendering gebruikt de voor de toepassing gekozen grafische API, als de emulator deze ondersteunt.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Oorspronkelijk (geen correctie)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Hostdisplay (geen simulatie)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (kathodestraalbuis)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Vectorweergave</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (vacuum fluorescerend display)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Segmentweergave</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Paper (elektronisch papier)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED emissieintensiteit</value></data>
+  <data name="Emulation.Video.Hardware"><value>Videohardware</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Oorspronkelijk</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Bewegingsadaptief</value></data>
 </root>

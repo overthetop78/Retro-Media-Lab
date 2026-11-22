@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>表示</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>レンダリング</value></data>
   <data name="Emulation.Video.Sampling"><value>サンプリング</value></data>
-  <data name="Emulation.Video.Technology"><value>ディスプレイ技術</value></data>
+  <data name="Emulation.Video.Technology"><value>ディスプレイタイプ</value></data>
   <data name="Emulation.Video.Settings.General"><value>一般的な画像調整</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Labのビデオ処理</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>ノーマル</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>ベクトル表示</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>画像修復</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>ディザリング除去</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>インフォメーション</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>バンディング削減</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>詳細回復</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>デインターレース</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>無効</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>ボブ - でもライン</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>ボブ - オッズライン</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>縦のブレンド</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>ブルージュ</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>グリーン</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>レンダリングモード</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>ハードウェアレンダリングでは、エミュレーターが対応していれば、アプリケーションで選択したグラフィックス API を使用します。</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>オリジナル(修正なし)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>ホスト表示(シミュレーションなし)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (カトデレイチューブ)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>ベクトル表示</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (真空蛍光表示)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>セグメント表示</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>Eペーパー(電子用紙)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED 排出の強度</value></data>
+  <data name="Emulation.Video.Hardware"><value>ビデオ ハードウェア</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>オリジナル</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>動き適応</value></data>
 </root>

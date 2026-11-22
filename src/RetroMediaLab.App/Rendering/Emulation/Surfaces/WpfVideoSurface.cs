@@ -43,7 +43,11 @@ internal sealed class WpfVideoSurface : IEmulationVideoSurface
         Interlocked.Increment(ref _configurationVersion);
     }
 
-    public void Present(VideoFrame frame)
+    public void Present(VideoFrame frame) => PresentCore(frame, null);
+
+    public void PresentTransient(VideoFrame frame, VideoFrame source) => PresentCore(frame, source);
+
+    private void PresentCore(VideoFrame frame, VideoFrame? transientSource)
     {
         var outputSize = new EmulationVideoProcessingSize(_image.ActualWidth > 0 ? (int)Math.Round(_image.ActualWidth) : frame.Width, _image.ActualHeight > 0 ? (int)Math.Round(_image.ActualHeight) : frame.Height);
         var configuration = _videoProcessing;
@@ -63,7 +67,7 @@ internal sealed class WpfVideoSurface : IEmulationVideoSurface
                 if (_disposed || result.ConfigurationVersion != Interlocked.Read(ref _configurationVersion)) return;
                 UpdateBitmap(result.ProcessedFrame, result.Bgra32Pixels);
             }, System.Windows.Threading.DispatcherPriority.Render);
-        });
+        }, transientSource);
     }
 
     public void ResetHistory()

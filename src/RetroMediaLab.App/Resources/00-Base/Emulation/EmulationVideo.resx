@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Display</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Rendering</value></data>
   <data name="Emulation.Video.Sampling"><value>Sampling</value></data>
-  <data name="Emulation.Video.Technology"><value>Display technology</value></data>
+  <data name="Emulation.Video.Technology"><value>Display type</value></data>
   <data name="Emulation.Video.Settings.General"><value>General image adjustments</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab video processing</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normal</value></data>
@@ -133,13 +133,10 @@
   <data name="Emulation.Video.Sampling.Sabr"><value>SABR</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Image restoration</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Dedithering</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Denoising</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Banding reduction</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Detail recovery</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Deinterlacing</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Off</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - even lines</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - odd lines</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Vertical blend</value></data>
   <data name="Emulation.Video.Technology.Vfd"><value>VFD</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Blue</value></data>
@@ -341,4 +338,17 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Rendering mode</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hardware rendering uses the graphics API selected for the application when the emulator supports it.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Original (no correction)</value></data>
+  <data name="Emulation.Video.Screen.LedBacklitLcd"><value>LCD-LED</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Host display (no simulation)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (cathode-ray tube)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Vector display</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (vacuum fluorescent display)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Segment display</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Paper (electronic paper)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED emission intensity</value></data>
+  <data name="Emulation.Video.Hardware"><value>Video hardware</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Original</value></data>
+  <data name="Emulation.Video.Deinterlacing.Bob"><value>Bob</value></data>
+  <data name="Emulation.Video.Deinterlacing.Weave"><value>Weave</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Motion adaptive</value></data>
 </root>

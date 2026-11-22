@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Tampilan</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Perenderan</value></data>
   <data name="Emulation.Video.Sampling"><value>Sampling</value></data>
-  <data name="Emulation.Video.Technology"><value>Tampilkan teknologi</value></data>
+  <data name="Emulation.Video.Technology"><value>Tipe tampilan</value></data>
   <data name="Emulation.Video.Settings.General"><value>Penyesuaian gambar umum</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Pemrosesan video Retro Media Lab</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normal</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Tampilan Vektor</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Pemulihan gambar</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Penghapusan dithering</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Penolakan</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Penurunan banding</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Pemulihan detail</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Deinterlacing</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Dinonaktifkan</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - bahkan garis</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - baris aneh</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Campuran vertikal</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Biru</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Hijau</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Mode rendering</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Rendering perangkat keras menggunakan API grafis yang dipilih untuk aplikasi jika didukung oleh emulator.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Asli (tidak ada koreksi)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Tampilan host (tidak ada simulasi)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (kathode- tabung ray)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Tampilan Vektor</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (Delicane fluorescent display)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Tampilan segmen</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Paper (kertas elektronik)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED intensitas emisi</value></data>
+  <data name="Emulation.Video.Hardware"><value>Perangkat keras video</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Asli</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Adaptif terhadap gerakan</value></data>
 </root>

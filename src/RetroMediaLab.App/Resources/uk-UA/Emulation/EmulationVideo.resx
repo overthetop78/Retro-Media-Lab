@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Відображення</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Рендеринг</value></data>
   <data name="Emulation.Video.Sampling"><value>Стирання</value></data>
-  <data name="Emulation.Video.Technology"><value>Технологія відображення</value></data>
+  <data name="Emulation.Video.Technology"><value>Тип відображення</value></data>
   <data name="Emulation.Video.Settings.General"><value>Загальні налаштування зображень</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Обробка відео Retro Media Lab</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Нормативно</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Векторний дисплей</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Відновлення зображень</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Усунення дизерингу</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Денонс</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Зниження смуги</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Відновлення деталей</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Демонтаж</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Вимкнено</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Боб - навіть лінії</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Боб - непарні лінії</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Вертикальне поєднання</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Синій</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Зелений</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Режим рендерингу</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Апаратний рендеринг використовує графічний API, вибраний для програми, якщо емулятор його підтримує.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Оригінальна (не корекція)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Хост дисплей (не моделювання)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (променева труба)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Векторний дисплей</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (Флуоресцентний дисплей вакуумів)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Сегмент дисплей</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>Е-Папер (електронний папір)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED інтенсивність випромінювання</value></data>
+  <data name="Emulation.Video.Hardware"><value>Відеообладнання</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Оригінальний</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Адаптивний до руху</value></data>
 </root>

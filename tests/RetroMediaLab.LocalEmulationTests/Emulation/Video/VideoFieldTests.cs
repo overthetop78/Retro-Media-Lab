@@ -1,3 +1,4 @@
+using RetroMediaLab.VideoPresentation.Enums;
 using RetroMediaLab.App.Functions.Rendering.Emulation;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
@@ -10,23 +11,23 @@ public sealed class VideoFieldTests
     [InlineData(EmulationPixelFormat.Xrgb8888)]
     [InlineData(EmulationPixelFormat.Rgb565)]
     [InlineData(EmulationPixelFormat.Rgb1555)]
-    public void RetainsBothParitiesBeforeRenderingAndOwnsComposedSnapshots(EmulationPixelFormat format)
+    public void RetainsBothParitiesBeforeRenderingAndReusesTheComposeBuffer(EmulationPixelFormat format)
     {
         var display = new EmulationVideoFieldComposer();
         var even = Field(EmulationVideoScanMode.InterlacedEvenField, 1, 11, format);
         var odd = Field(EmulationVideoScanMode.InterlacedOddField, 2, 47, format);
         display.Receive(even);
-        var first = display.Compose()!;
+        var first = display.Compose(EmulationDeinterlacingMode.Weave)!;
         Assert.Equal(4, first.Height);
         Assert.Equal(EmulationVideoScanMode.Progressive, first.ScanMode);
         CheckRows(first, even, null);
         display.Receive(odd);
         var nextEven = Field(EmulationVideoScanMode.InterlacedEvenField, 3, 83, format);
         display.Receive(nextEven); // L'affichage n'a pas présenté le champ impair intermédiaire.
-        var combined = display.Compose()!;
+        var combined = display.Compose(EmulationDeinterlacingMode.Weave)!;
         CheckRows(combined, nextEven, odd);
-        CheckRows(first, even, null);
-        Assert.Same(combined, display.Compose());
+        Assert.Equal(first.Pixels, combined.Pixels);
+        Assert.Same(combined, display.Compose(EmulationDeinterlacingMode.Weave));
         Assert.Equal(nextEven.Timestamp, combined.Timestamp);
         Assert.Equal(nextEven.Sequence, combined.Sequence);
         Assert.Equal(nextEven.AspectRatio, combined.AspectRatio);
@@ -55,7 +56,7 @@ public sealed class VideoFieldTests
             _ => next with { Height = 1, Pixels = next.Pixels[..next.Pitch] }
         };
         display.Receive(next);
-        CheckRows(display.Compose()!, next, null);
+        CheckRows(display.Compose(EmulationDeinterlacingMode.Weave)!, next, null);
     }
 
     [Fact]
@@ -65,15 +66,15 @@ public sealed class VideoFieldTests
         display.Receive(Field(EmulationVideoScanMode.InterlacedOddField, 1, 25));
         var progressive = Field(EmulationVideoScanMode.Progressive, 2, 75);
         display.Receive(progressive);
-        Assert.Same(progressive, display.Compose());
+        Assert.Same(progressive, display.Compose(EmulationDeinterlacingMode.Weave));
         var even = Field(EmulationVideoScanMode.InterlacedEvenField, 3, 95);
         display.Receive(even);
-        CheckRows(display.Compose()!, even, null);
+        CheckRows(display.Compose(EmulationDeinterlacingMode.Weave)!, even, null);
         display.Reset();
-        Assert.Null(display.Compose());
+        Assert.Null(display.Compose(EmulationDeinterlacingMode.Weave));
         var odd = Field(EmulationVideoScanMode.InterlacedOddField, 4, 35);
         display.Receive(odd);
-        CheckRows(display.Compose()!, null, odd);
+        CheckRows(display.Compose(EmulationDeinterlacingMode.Weave)!, null, odd);
     }
 
     private static VideoFrame Field(EmulationVideoScanMode mode, long sequence, byte value,
@@ -90,8 +91,8 @@ public sealed class VideoFieldTests
         for (var row = 0; row < frame.Height; row++)
         {
             var source = (row & 1) == 0 ? even : odd;
-            var expected = source is null ? new byte[frame.Pitch]
-                : source.Pixels.Slice(row / 2 * source.Pitch, source.Pitch).ToArray();
+            if (source is null) continue;
+            var expected = source.Pixels.Slice(row / 2 * source.Pitch, source.Pitch).ToArray();
             Assert.Equal(expected, frame.Pixels.Slice(row * frame.Pitch, frame.Pitch).ToArray());
         }
     }

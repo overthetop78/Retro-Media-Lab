@@ -42,6 +42,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private uint _swapchainWidth;
     private uint _swapchainHeight;
     private bool _hasHistory;
+    private byte[]? _deditheringWorkspace;
     private TimeSpan _historyTimestamp;
     private long _historySequence;
     private WriteableBitmap? _snapshot;
@@ -70,7 +71,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     public void SetVideoProcessing(EmulationVideoProcessingConfiguration configuration)
     {
         var displayTechnologyChanged = _videoProcessing.DisplayTechnology != configuration.DisplayTechnology;
-        _videoProcessing = EmulationVideoProcessingConfigurationFunctions.Normalize(configuration);
+        _videoProcessing = EmulationVideoProcessingConfigurationFunctions.ForRendering(configuration);
         if (displayTechnologyChanged)
         {
             _hasHistory = false;
@@ -125,6 +126,9 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             convertedPixels = EmulationVideoPixelFunctions.ToBgra32(frame);
             pixels = convertedPixels;
         }
+        var prepared = EmulationImageRestorationFunctions.ApplyDedithering(pixels, frame.Width, frame.Height,
+            _videoProcessing.Restoration.Dedithering, ref _deditheringWorkspace);
+        if (prepared is not null) pixels = prepared.AsSpan(0, pixels.Length);
         EnsureDevice();
         EnsureFrameResources(processed.Width, processed.Height);
         EnsurePipeline(_videoProcessing.Sampling, _videoProcessing.DisplayTechnology);
@@ -469,7 +473,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             segmentDisplay.Geometry, segmentDisplay.Shape, segmentDisplay.Emission,
             segmentDisplay.Optical, segmentDisplay.Temporal,
             new Vector4((float)configuration.DisplayTechnology, hasHistory ? 1f : 0f, sequence % 4096, (float)elapsedMilliseconds),
-            new Vector4(configuration.Restoration.Dedithering / 100f, configuration.Restoration.Denoising / 100f, configuration.Restoration.Debanding / 100f, (float)configuration.Restoration.Deinterlacing),
+            new Vector4(0f, 0f, configuration.Restoration.Debanding / 100f, 0f),
             new Vector4(configuration.Temporal.GeneralPersistence / 100f, configuration.Temporal.MotionBlur / 100f, configuration.Temporal.Flicker / 100f, configuration.Temporal.Interlacing > 0 ? 1f : 0f),
             new Vector4((float)configuration.SignalSimulation.Connection, configuration.SignalSimulation.ConnectionIntensity / 100f, (float)configuration.SignalSimulation.Standard, configuration.SignalSimulation.StandardIntensity / 100f),
             new Vector4(0f, configuration.Temporal.BlackFrameInsertion ? 1f : 0f, configuration.Temporal.InterlacingVisibility / 100f, 0f),

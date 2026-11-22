@@ -447,17 +447,32 @@ internal sealed partial class ManagedCore : IEmulatorCore
     private void PublishSaturnVideo(SaturnVideoSoftware video)
     {
         const int bytesPerPixel = 4;
-        int pitch = video.DisplayWidth * bytesPerPixel;
+        int width = video.DisplayWidth;
+        int pitch = width * bytesPerPixel;
+        int? parity = video.DisplayFieldParity;
+        int height = parity.HasValue ? video.DisplayHeight / 2 : video.DisplayHeight;
         ReadOnlySpan<uint> source = video.DisplayBuffer;
-        byte[] pixels = new byte[source.Length * bytesPerPixel];
-        for (int index = 0; index < source.Length; index++)
+        byte[] pixels = new byte[checked(pitch * height)];
+        for (int y = 0; y < height; y++)
         {
-            uint rgb = BitConverter.IsLittleEndian ? source[index] : BinaryPrimitives.ReverseEndianness(source[index]);
-            uint xrgb = ((rgb & 0xFF) << 16) | (rgb & 0xFF00) | ((rgb >> 16) & 0xFF);
-            BinaryPrimitives.WriteUInt32LittleEndian(pixels.AsSpan(index * bytesPerPixel), xrgb);
+            int sourceRow = parity is { } field ? y * 2 + field : y;
+            var row = source.Slice(sourceRow * width, width);
+            for (int x = 0; x < width; x++)
+            {
+                uint rgb = BitConverter.IsLittleEndian ? row[x] : BinaryPrimitives.ReverseEndianness(row[x]);
+                uint xrgb = ((rgb & 0xFF) << 16) | (rgb & 0xFF00) | ((rgb >> 16) & 0xFF);
+                BinaryPrimitives.WriteUInt32LittleEndian(pixels.AsSpan(y * pitch + x * bytesPerPixel), xrgb);
+            }
         }
-        LatestVideoFrame = new(pixels, video.DisplayWidth, video.DisplayHeight, pitch,
-            EmulationPixelFormat.Xrgb8888, 4f / 3f, _sequence, _timestamp);
+        LatestVideoFrame = new(pixels, width, height, pitch, EmulationPixelFormat.Xrgb8888, 4f / 3f, _sequence, _timestamp)
+        {
+            ScanMode = parity switch
+            {
+                0 => EmulationVideoScanMode.InterlacedEvenField,
+                1 => EmulationVideoScanMode.InterlacedOddField,
+                _ => EmulationVideoScanMode.Progressive
+            }
+        };
     }
     private Stream? OpenMedia(string path)
     {

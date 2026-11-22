@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Hiển thị</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Kết xuất</value></data>
   <data name="Emulation.Video.Sampling"><value>Sampling</value></data>
-  <data name="Emulation.Video.Technology"><value>Hiển thị công nghệ</value></data>
+  <data name="Emulation.Video.Technology"><value>Hiện kiểu</value></data>
   <data name="Emulation.Video.Settings.General"><value>Điều chỉnh ảnh</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Xử lý video Retro Media Lab</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Chuẩn</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Hiển thị véc- tơ</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Phục hồi ảnh</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Khử hòa sắc</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Giao ước</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Giảm dây</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Phục hồi chi tiết</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Ngắt kết nối</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Đã tắt</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - ngay cả dòng</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Lật dọc</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Xanh nước biển</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Lục</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Chế độ kết xuất</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Kết xuất bằng phần cứng sử dụng API đồ họa đã chọn cho ứng dụng nếu trình giả lập hỗ trợ.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Gốc (không sửa)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Hiển thị máy (không mô phỏng)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (Cái ống chụp tuyến yên)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Hiển thị véc- tơ</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (bộ trình bày huỳnh quang vacuum)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Hiển thị đoạn</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Paper ( Giấy điện tử)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED Phát cường độ</value></data>
+  <data name="Emulation.Video.Hardware"><value>Phần cứng video</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Gốc</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Thích ứng theo chuyển động</value></data>
 </root>

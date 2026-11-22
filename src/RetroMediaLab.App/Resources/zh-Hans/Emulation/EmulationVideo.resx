@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>显示</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>渲染</value></data>
   <data name="Emulation.Video.Sampling"><value>取样</value></data>
-  <data name="Emulation.Video.Technology"><value>显示技术</value></data>
+  <data name="Emulation.Video.Technology"><value>显示类型</value></data>
   <data name="Emulation.Video.Settings.General"><value>一般图像调整</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab 视频处理</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>常规</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>矢量显示</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>图像恢复</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>去除色阶抖动</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>贬低</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>减少宽幅工资</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>详细回收</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>解开连接</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>已禁用</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>鲍勃,连线</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - 奇数行</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>垂直组合</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>蓝色</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>绿色</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>渲染模式</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>硬件渲染使用应用程序所选的图形 API，前提是模拟器支持该 API。</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>原件(无更正)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>主机显示( 无模拟)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (血清射线管)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>矢量显示</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (真空荧光显示)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>分节显示</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>电子纸张(电子纸张)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED 排放强度</value></data>
+  <data name="Emulation.Video.Hardware"><value>视频硬件</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>原始</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>运动自适应</value></data>
 </root>

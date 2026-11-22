@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Näyttö</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Renderöinti</value></data>
   <data name="Emulation.Video.Sampling"><value>Näytteenotto</value></data>
-  <data name="Emulation.Video.Technology"><value>Näyttötekniikka</value></data>
+  <data name="Emulation.Video.Technology"><value>Näytön tyyppi</value></data>
   <data name="Emulation.Video.Settings.General"><value>Kuvan yleiset muutokset</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab-videon käsittely</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normaali</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Vektorinäyttö</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Kuvan restaurointi</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Rasteroinnin poisto</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Denoaminen</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Siteiden vähentäminen</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Yksityiskohtainen takaisinperintä</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Rinnakkaistaminen</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Ei käytössä</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - tasan</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - oudot viivat</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Pystysuuntainen sekoitus</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Sininen</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Vihreä</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Renderöintitila</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Laitteistokiihdytetty renderöinti käyttää sovellukselle valittua grafiikkarajapintaa (API), jos emulaattori tukee sitä.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Alkuperäinen (ei korjausta)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Isäntänäyttö (ei simulaatiota)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (katodisädeputki)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Vektorinäyttö</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (vacuum loisteputkinäyttö)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Segmenttinäyttö</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>Sähköpaperi (sähköinen paperi)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED Päästöintensiteetti</value></data>
+  <data name="Emulation.Video.Hardware"><value>Videolaitteet</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Alkuperäinen</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Liikkeeseen mukautuva</value></data>
 </root>

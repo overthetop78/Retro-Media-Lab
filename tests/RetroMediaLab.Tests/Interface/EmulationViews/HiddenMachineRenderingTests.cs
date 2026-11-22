@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Rendering.Emulation.Processing;
 using System.Collections.Concurrent;
 using System.Windows;
 using System.Windows.Controls;
@@ -81,20 +82,26 @@ public sealed class HiddenMachineRenderingTests(StaExecutionScenarios sta)
     {
         var pipeline = new BlockingPipeline();
         using var worker = new RetroMediaLab.App.Rendering.Emulation.Processing.SoftwareVideoFrameProcessingWorker(pipeline);
-        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completed = new TaskCompletionSource<CpuVideoFrameProcessingResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         try
         {
             worker.Submit(new(), Frame(1), new(1, 1), 0, _ => { });
             await Until(() => pipeline.Entered.IsSet);
-            worker.Submit(new(), Frame(2), new(1, 1), 0, _ => { });
+            var dropped = Frame(2);
+            worker.Submit(new(), dropped, new(1, 1), 0, _ => { }, dropped);
             worker.Suspend();
-            worker.Submit(new(), Frame(3), new(1, 1), 1, result =>
+            var field = Frame(3);
+            byte[] reused = [54, 123, 200, 255];
+            worker.Submit(new(), field with { Pixels = reused }, new(1, 1), 1, result =>
             {
                 if (result.Error is not null) completed.TrySetException(result.Error);
-                else completed.TrySetResult();
-            });
+                else completed.TrySetResult(result);
+            }, field);
+            reused.AsSpan().Fill(0);
             pipeline.Release.Set();
-            await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            var result = await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.Same(field, result.SourceFrame);
+            Assert.Equal(new byte[] { 54, 123, 200, 255 }, result.ProcessedFrame!.Pixels.ToArray());
             Assert.Equal(new[] { (1L, 0), (3L, 1) }, pipeline.Processed.ToArray());
         }
         finally { pipeline.Release.Set(); }

@@ -11,7 +11,6 @@ internal sealed partial class MachineController
     private Entry OsdFixedPixelSettings() =>
         VideoGroup(EmulationResourceKeys.VideoTechnologyFixedPixel,
             VideoGroup(EmulationResourceKeys.VideoDisplaySettings,
-                FixedPixelChoice(Catalog.FixedPixelTechnology, Catalog.FixedPixelTechnologyResourceKeys, c => c.Technology, (c, v) => c with { Technology = v }),
                 FixedPixelChoice(Catalog.FixedPixelSubpixels, Catalog.SubpixelLayoutResourceKeys, c => c.Subpixels, (c, v) => c with { Subpixels = v }),
                 FixedPixelChoice(Catalog.FixedPixelMonochromeColor, Catalog.MonochromePaletteResourceKeys, c => c.MonochromePalette, (c, v) => c with { MonochromePalette = v })
                     with { IsVisible = () => _video.VideoProcessing.FixedPixel.Subpixels == EmulationSubpixelLayout.Monochrome }),
@@ -23,6 +22,8 @@ internal sealed partial class MachineController
                     (c, v) => c with { BacklightIntensity = v }) with { IsVisible = FixedPixelHasBacklight },
                 FixedPixelNumber(Catalog.FixedPixelBacklightBleed, c => c.BacklightBleedIntensity,
                     (c, v) => c with { BacklightBleedIntensity = v }) with { IsVisible = FixedPixelHasBacklight },
+                FixedPixelNumber(Catalog.FixedPixelOledEmission, c => c.OledEmissionIntensity,
+                    (c, v) => c with { OledEmissionIntensity = v }) with { IsVisible = () => !FixedPixelHasBacklight() },
                 FixedPixelNumber(Catalog.FixedPixelBlackDepth, FixedPixelSettingsValues.BlackDepth, (c, v) => c with { BlackDepth = v })),
             VideoGroup(EmulationResourceKeys.VideoTemporalSettings,
                 FixedPixelNumber(Catalog.FixedPixelResponseTime, c => c.ResponseTimeMilliseconds,

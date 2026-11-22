@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Visning</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Rendering</value></data>
   <data name="Emulation.Video.Sampling"><value>Sampling</value></data>
-  <data name="Emulation.Video.Technology"><value>Visa teknik</value></data>
+  <data name="Emulation.Video.Technology"><value>Display typ</value></data>
   <data name="Emulation.Video.Settings.General"><value>Allmän bildjusteringar</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab video bearbetning</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normal</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Vector display</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Bild restaurering</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Ta bort dithering</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Denoising</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Bandreducering</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Detalj återhämtning</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Deinterlacing</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Inaktiverad</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - även linjer</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - udda linjer</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Vertikal blandning</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Blå</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Grönt grönt</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Renderingsläge</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hårdvarurendering använder det grafik-API som valts för programmet, om emulatorn stöder det.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Ursprunglig (ingen korrigering)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Värd display (ingen simulering)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (cathode-ray tube)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Vector display</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (vakuum fluorescerande display)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Segment display</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-papper (elektroniskt papper)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED Utsläppsintensitet</value></data>
+  <data name="Emulation.Video.Hardware"><value>Videohårdvara</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Original</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Rörelseadaptiv</value></data>
 </root>

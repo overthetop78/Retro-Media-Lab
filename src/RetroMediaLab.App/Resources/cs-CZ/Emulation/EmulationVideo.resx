@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Zobrazení</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Vykreslování</value></data>
   <data name="Emulation.Video.Sampling"><value>Výběr vzorku</value></data>
-  <data name="Emulation.Video.Technology"><value>Technologie zobrazení</value></data>
+  <data name="Emulation.Video.Technology"><value>Typ zobrazení</value></data>
   <data name="Emulation.Video.Settings.General"><value>Obecné úpravy obrazu</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Zpracování videa Retro Media Lab</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normální</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Vektorové zobrazení</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Obnova obrázků</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Odstranění ditheringu</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Denoizace</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Redukce při vykládce</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Obnovení detailů</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Deinterlacing</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Zakázáno</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - i řádky</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - liché řádky</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Vertikální směs</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Modrá</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Zelená</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Režim vykreslování</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hardwarové vykreslování používá grafické API zvolené pro aplikaci, pokud je emulátor podporuje.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Původní (bez opravy)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Displej hostitele (bez simulace)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (katode- ray trubka)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Vektorové zobrazení</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (vakuové fluorescenční zobrazení)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Zobrazení segmentů</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E- papír (elektronický papír)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED Intenzita emisí</value></data>
+  <data name="Emulation.Video.Hardware"><value>Grafický hardware</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Původní</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Adaptivní podle pohybu</value></data>
 </root>

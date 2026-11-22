@@ -8,6 +8,21 @@ public static partial class EmulationVideoProcessingCatalog
     public static IReadOnlyDictionary<EmulationVideoDisplayTechnology, string> DisplayTechnologyResourceKeys { get; }
         = ResourceKeys("Technology", Enum.GetValues<EmulationVideoDisplayTechnology>());
 
+    public static IReadOnlyDictionary<EmulationVideoScreenType, string> ScreenTypeResourceKeys { get; }
+        = Enum.GetValues<EmulationVideoScreenType>().ToDictionary(screen => screen, screen => screen switch
+        {
+            EmulationVideoScreenType.Host => "Emulation.Video.Screen.Host",
+            EmulationVideoScreenType.Crt => "Emulation.Video.Screen.Crt",
+            EmulationVideoScreenType.Lcd => "Emulation.Video.FixedPixel.Technology.Lcd",
+            EmulationVideoScreenType.LedBacklitLcd => "Emulation.Video.Screen.LedBacklitLcd",
+            EmulationVideoScreenType.Oled => "Emulation.Video.FixedPixel.Technology.Oled",
+            EmulationVideoScreenType.Vector => "Emulation.Video.Screen.Vector",
+            EmulationVideoScreenType.Vfd => "Emulation.Video.Screen.Vfd",
+            EmulationVideoScreenType.SegmentDisplay => "Emulation.Video.Screen.SegmentDisplay",
+            EmulationVideoScreenType.EPaper => "Emulation.Video.Screen.EPaper",
+            _ => $"Emulation.Video.Technology.{screen}"
+        });
+
     public static IReadOnlyDictionary<EmulationVideoSampling, string> SamplingResourceKeys { get; }
         = ResourceKeys("Sampling",
         [
@@ -32,7 +47,8 @@ public static partial class EmulationVideoProcessingCatalog
         ]);
 
     public static IReadOnlyDictionary<EmulationDeinterlacingMode, string> DeinterlacingResourceKeys { get; }
-        = ResourceKeys("Deinterlacing", Enum.GetValues<EmulationDeinterlacingMode>());
+        = ResourceKeys("Deinterlacing", new[] { EmulationDeinterlacingMode.Off, EmulationDeinterlacingMode.Bob,
+            EmulationDeinterlacingMode.Blend, EmulationDeinterlacingMode.Weave, EmulationDeinterlacingMode.Adaptive });
 
     public static IReadOnlyDictionary<EmulationCrtColorMode, string> CrtColorModeResourceKeys { get; }
         = ResourceKeys("Crt.Color", Enum.GetValues<EmulationCrtColorMode>());
@@ -115,7 +131,7 @@ public static partial class EmulationVideoProcessingCatalog
         new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             [Brightness] = 0, [Contrast] = 0, [Gamma] = 0, [Saturation] = 0, [Sharpness] = 0,
-            [Dedithering] = 0, [Denoising] = 0, [Debanding] = 0, [DetailRecovery] = 0,
+            [Dedithering] = 0, [Debanding] = 0, [DetailRecovery] = 0,
             [Deinterlacing] = EmulationDeinterlacingMode.Off,
             [GeneralPersistence] = 0,
             [MotionBlur] = 0,
@@ -147,7 +163,7 @@ public static partial class EmulationVideoProcessingCatalog
             [FixedPixelTechnology] = EmulationFixedPixelTechnology.Lcd,
             [FixedPixelSubpixels] = EmulationSubpixelLayout.Rgb, [FixedPixelMonochromeColor] = EmulationMonochromePalette.Green,
             [FixedPixelGridIntensity] = 0, [FixedPixelPixelGap] = 0, [FixedPixelResponseTime] = 0,
-            [FixedPixelPersistence] = 0, [FixedPixelBacklight] = null, [FixedPixelBacklightBleed] = 25, [FixedPixelBlackDepth] = null,
+            [FixedPixelPersistence] = 0, [FixedPixelBacklight] = null, [FixedPixelBacklightBleed] = 25, [FixedPixelOledEmission] = 100, [FixedPixelBlackDepth] = null,
             [PlasmaCellStructure] = 0, [PlasmaDiffusion] = 0, [PlasmaTemporalDithering] = 0,
             [PlasmaPersistence] = 0, [VectorLineThreshold] = 0, [VectorLineIntensity] = 0,
             [VectorBeamWidth] = 0, [VectorBeamFocus] = 100,

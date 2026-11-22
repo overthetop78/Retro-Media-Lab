@@ -155,6 +155,15 @@ internal static partial class SettingsDescriptionFunctions
                     megaDrive ? MegaDriveAudioChip(configuration) : model.AudioChip ?? SettingsDescriptionFunctionsConstants.Unknown))
         ];
         var result = blocks.Where(block => block.Fields.Count > 0).ToList();
+        if (model.Id is ModelConstants.Sg1000 or ModelConstants.Sc3000 or ModelConstants.Sf7000
+            or ModelConstants.MarkIII or ModelConstants.MasterSystem or ModelConstants.MasterSystemII or ModelConstants.GameGear)
+        {
+            const string videoMemory = "Emulation.Memory.Video";
+            result.Add(Block(videoMemory, EmulationMachineTab.Video, videoMemory,
+                SettingsDescriptionFunctionsConstants.IconMemory, 1,
+                Information("configuration.videoMemory", EmulationMachineTab.Video, videoMemory, videoMemory,
+                    "16 KiB")));
+        }
         if (sg1000 && configuration.IsSg1000II)
         {
             const string extensions = "Emulation.Memory.Extensions";

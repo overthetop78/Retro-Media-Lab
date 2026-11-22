@@ -25,13 +25,6 @@ internal static class EmulationFixedPixelSettingsBlock
         groups.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         var screen = new StackPanel();
-        screen.Children.Add(Choice(EmulationVideoProcessingCatalog.FixedPixelTechnology,
-            EmulationVideoProcessingCatalog.FixedPixelTechnologyResourceKeys, value.Technology,
-            technology =>
-            {
-                changed(current => current with { Technology = technology });
-                rebuild();
-            }));
         screen.Children.Add(Choice(EmulationVideoProcessingCatalog.FixedPixelSubpixels,
             EmulationVideoProcessingCatalog.SubpixelLayoutResourceKeys, value.Subpixels,
             subpixels =>
@@ -58,6 +51,11 @@ internal static class EmulationFixedPixelSettingsBlock
                 FixedPixelSettingsValues.Backlight(value),
                 0, 100, number => changed(current => current with { BacklightIntensity = number })));
             light.Children.Add(Slider(EmulationVideoProcessingCatalog.FixedPixelBacklightBleed, value.BacklightBleedIntensity, 0, 100, number => changed(current => current with { BacklightBleedIntensity = number })));
+        }
+        else
+        {
+            light.Children.Add(Slider(EmulationVideoProcessingCatalog.FixedPixelOledEmission,
+                value.OledEmissionIntensity, 0, 100, number => changed(current => current with { OledEmissionIntensity = number })));
         }
         light.Children.Add(Slider(EmulationVideoProcessingCatalog.FixedPixelBlackDepth,
             FixedPixelSettingsValues.BlackDepth(value), 0, 100, number => changed(current => current with { BlackDepth = number })));

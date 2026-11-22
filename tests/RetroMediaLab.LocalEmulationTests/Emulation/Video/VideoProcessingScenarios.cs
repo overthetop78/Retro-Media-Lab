@@ -39,7 +39,9 @@ internal static class VideoProcessingScenarios
         var view = new RetroMediaLab.App.Views.Controls.Emulation.Machine.MachineView();
         var surface = new Surface(EmulationVideoRenderer.Wpf);
         using var presenter = new RetroMediaLab.App.Presenters.Emulation.Machine.MachineVideoPresenter(
-            view, source.Machine, EmulationVideoRenderer.Wpf, createSurface: _ => surface);
+            view, source.Machine, EmulationVideoRenderer.Wpf,
+            videoProcessing: new() { Restoration = new(Deinterlacing: EmulationDeinterlacingMode.Weave) },
+            createSurface: _ => surface);
         var host = new System.Windows.Window
         {
             Content = view, Width = 320, Height = 240, ShowActivated = false, ShowInTaskbar = false, Opacity = 0
@@ -65,13 +67,126 @@ internal static class VideoProcessingScenarios
             presenter.SetMachine(replacement.Machine);
             replacement.Send(odd with { Sequence = 1, Timestamp = TimeSpan.FromMilliseconds(20) });
             await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ContextIdle);
-            Assert.Equal(new byte[4].Concat(odd.Pixels.ToArray()), surface.Frames[^1].Pixels.ToArray());
+            Assert.Equal(odd.Pixels.ToArray().Concat(odd.Pixels.ToArray()), surface.Frames[^1].Pixels.ToArray());
         }
         finally
         {
             try { presenter.Dispose(); }
             finally { host.Close(); host.Content = null; }
             await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+    }
+
+    public static void NativeFieldDeinterlacing()
+    {
+        var composer = new EmulationVideoFieldComposer();
+        var progressive = Field(1, true, (_, _) => 44) with { ScanMode = EmulationVideoScanMode.Progressive };
+        composer.Receive(progressive, 50);
+        foreach (var mode in Enum.GetValues<EmulationDeinterlacingMode>())
+            Assert.Same(progressive, composer.Compose(mode));
+
+        var diagonal = Field(1, true, (x, y) => x == 2 + y * 2 ? (byte)240 : (byte)0);
+        composer.Receive(diagonal, 50);
+        Assert.Same(diagonal, composer.Compose(EmulationDeinterlacingMode.Off));
+        var bob = composer.Compose(EmulationDeinterlacingMode.Bob)!;
+        Assert.Equal((byte)240, Pixel(bob, 3, 1));
+        Assert.Equal(diagonal.Pixels.Span[..diagonal.Pitch].ToArray(), bob.Pixels.Span[..bob.Pitch].ToArray());
+        Assert.Equal(EmulationVideoScanMode.Progressive, bob.ScanMode);
+
+        var dark = Field(1, true, (_, _) => 0);
+        var bright = Field(2, false, (_, _) => 240);
+        composer.Reset();
+        composer.Receive(dark, 50);
+        composer.Receive(bright, 50);
+        var woven = composer.Compose(EmulationDeinterlacingMode.Weave)!;
+        for (var y = 0; y < woven.Height; y++)
+        {
+            var original = (y & 1) == 0 ? dark : bright;
+            Assert.Equal(original.Pixels.Span.Slice(y / 2 * original.Pitch, original.Pitch).ToArray(),
+                woven.Pixels.Span.Slice(y * woven.Pitch, woven.Pitch).ToArray());
+        }
+        var blended = composer.Compose(EmulationDeinterlacingMode.Blend)!;
+        Assert.Equal((byte)120, Pixel(blended, 3, 1));
+        Assert.Equal((byte)120, Pixel(blended, 3, 2));
+        composer.Reset();
+        composer.Receive(Field(1, true, (_, row) => row == 0 ? (byte)0 : (byte)240));
+        composer.Receive(Field(2, false, (_, row) => row == 0 ? (byte)0 : (byte)240));
+        blended = composer.Compose(EmulationDeinterlacingMode.Blend)!;
+        Assert.Equal((byte)0, Pixel(blended, 3, 1));
+        Assert.Equal((byte)240, Pixel(blended, 3, 2));
+
+        composer.Reset();
+        composer.Receive(dark);
+        composer.Receive(bright);
+        composer.Receive(dark with { Sequence = 3, Timestamp = TimeSpan.FromMilliseconds(60) });
+        var adaptive = composer.Compose(EmulationDeinterlacingMode.Adaptive)!;
+        Assert.Equal((byte)240, Pixel(adaptive, 2, 1));
+        composer.Receive(bright with { Sequence = 4, Timestamp = TimeSpan.FromMilliseconds(80) });
+        composer.Receive(Field(5, true, (x, _) => x < 4 ? (byte)240 : (byte)0));
+        adaptive = composer.Compose(EmulationDeinterlacingMode.Adaptive)!;
+        Assert.Equal((byte)240, Pixel(adaptive, 2, 1));
+        Assert.Equal((byte)240, Pixel(adaptive, 6, 1)); // The unchanged tile keeps its actual odd line.
+        composer.Receive(Field(6, false, (x, _) => x < 4 ? (byte)0 : (byte)240));
+        adaptive = composer.Compose(EmulationDeinterlacingMode.Adaptive)!;
+        Assert.Equal((byte)0, Pixel(adaptive, 2, 0));
+
+        composer.Reset();
+        composer.Receive(Field(1, true, (x, _) => x is 1 or 2 ? (byte)240 : (byte)0));
+        composer.Receive(Field(2, false, (x, _) => x is 2 or 3 ? (byte)240 : (byte)0));
+        composer.Receive(Field(3, true, (x, _) => x is 3 or 4 ? (byte)240 : (byte)0));
+        var movingBar = composer.Compose(EmulationDeinterlacingMode.Adaptive)!;
+        Assert.Equal((byte)0, Pixel(movingBar, 2, 1));
+        Assert.Equal((byte)240, Pixel(movingBar, 3, 1));
+
+        composer.Reset();
+        composer.Receive(dark);
+        composer.Receive(Field(2, false, (x, row) => row == 1 && x is 1 or 5 ? (byte)235 : (byte)0));
+        composer.Receive(dark with { Sequence = 3, Timestamp = TimeSpan.FromMilliseconds(60) });
+        var thinText = composer.Compose(EmulationDeinterlacingMode.Adaptive)!;
+        Assert.Equal((byte)235, Pixel(thinText, 1, 3));
+        Assert.Equal((byte)0, Pixel(thinText, 1, 2));
+        Assert.Equal((byte)0, Pixel(thinText, 2, 3));
+        composer.Receive(Field(4, false, (_, _) => 215));
+
+        var afterGap = Field(5, true, (_, _) => 62) with { Timestamp = TimeSpan.FromSeconds(1) };
+        composer.Receive(afterGap, 50);
+        Assert.Equal((byte)62, Pixel(composer.Compose(EmulationDeinterlacingMode.Weave)!, 3, 1));
+        var resized = Field(6, false, (_, _) => 77, width: 10) with { Timestamp = TimeSpan.FromMilliseconds(1020) };
+        composer.Receive(resized, 50);
+        Assert.Equal((byte)77, Pixel(composer.Compose(EmulationDeinterlacingMode.Weave)!, 3, 0));
+        composer.Receive(progressive);
+        Assert.Same(progressive, composer.Compose(EmulationDeinterlacingMode.Adaptive));
+
+        var migrated = EmulationVideoProcessingConfigurationFunctions.Normalize(new()
+        {
+            Restoration = new(Deinterlacing: EmulationDeinterlacingMode.BobOddLines)
+        });
+        Assert.Equal(EmulationDeinterlacingMode.Bob, migrated.Restoration.Deinterlacing);
+        var crt = EmulationVideoProcessingConfigurationFunctions.WithScreenType(migrated, EmulationVideoScreenType.Crt);
+        Assert.Equal(EmulationDeinterlacingMode.Off, EmulationVideoProcessingConfigurationFunctions.DeinterlacingForDisplay(crt));
+
+        static byte Pixel(VideoFrame frame, int x, int y) => frame.Pixels.Span[y * frame.Pitch + x * 4];
+
+        static VideoFrame Field(int sequence, bool even, Func<int, int, byte> color, int width = 8)
+        {
+            const int height = 3;
+            var pitch = width * 4 + 4;
+            var data = new byte[pitch * height];
+            for (var y = 0; y < height; y++)
+            {
+                data[y * pitch + width * 4] = (byte)(even ? 17 : 231);
+                for (var x = 0; x < width; x++)
+                {
+                    var offset = y * pitch + x * 4;
+                    data.AsSpan(offset, 3).Fill(color(x, y));
+                    data[offset + 3] = 255;
+                }
+            }
+            return new VideoFrame(data, width, height, pitch, EmulationPixelFormat.Xrgb8888, 4f / 3f,
+                sequence, TimeSpan.FromMilliseconds(sequence * 20))
+            {
+                ScanMode = even ? EmulationVideoScanMode.InterlacedEvenField : EmulationVideoScanMode.InterlacedOddField
+            };
         }
     }
 

@@ -20,26 +20,52 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 {
     private FrameworkElement CreateDisplayAndRendering()
     {
-        var selectors = CreateSelectors();
-        if (_displaySettings is null)
-            return FramedGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing, selectors);
+        var processing = FramedGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing, CreateSelectors());
+        if (_displaySettings is null) return processing;
+
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var display = _displayOwnsFrames ? _displaySettings : FramedGroup(EmulationResourceKeys.VideoDisplaySettings, _displaySettings);
-        display.Margin = new Thickness(0, 0, 9, 0);
-        grid.Children.Add(display);
-        var processing = FramedGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing, selectors);
-        processing.Margin = new Thickness(9, 0, 0, 0);
-        if (_displayOwnsFrames) processing.VerticalAlignment = VerticalAlignment.Top;
-        Grid.SetColumn(processing, 1);
+        processing.Margin = new Thickness(0, 0, 9, 0);
+        processing.VerticalAlignment = VerticalAlignment.Top;
         grid.Children.Add(processing);
+        var hardware = FramedGroup("Emulation.Video.Hardware", _displaySettings);
+        hardware.Margin = new Thickness(9, 0, 0, 0);
+        hardware.VerticalAlignment = VerticalAlignment.Top;
+        Grid.SetColumn(hardware, 1);
+        grid.Children.Add(hardware);
         return grid;
     }
 
-    private FrameworkElement CreateImageGroups() => SideBySideGroups(
-        FramedSection(EmulationImageParametersSettingsBlock.Create(_configuration.Adjustments, update => SetAdjustments(update(_configuration.Adjustments)), _imageSettings)),
-        FramedSection(EmulationImageRestorationSettingsBlock.Create(_configuration.Restoration, update => SetRestoration(update(_configuration.Restoration)))));
+    private FrameworkElement CreateImageTab()
+    {
+        var panel = new StackPanel();
+        var technology = CreateTechnologyPanel();
+        panel.Children.Add(CreateImageGroups());
+        if (technology is not null)
+        {
+            AutomationProperties.SetAutomationId(technology, EmulationVideoSettingsLayoutConstants.VideoTechnologyParametersAutomationId);
+            technology.Margin = new Thickness(0, 12, 0, 0);
+            panel.Children.Add(technology);
+        }
+        var effects = CreateEffectGroups();
+        effects.Margin = new Thickness(0, 12, 0, 0);
+        panel.Children.Add(effects);
+        return panel;
+    }
+
+    private FrameworkElement CreateImageGroups()
+    {
+        var screen = EmulationVideoProcessingConfigurationFunctions.ScreenType(_configuration);
+        var adjustments = EmulationVideoProcessingConfigurationFunctions.ImageAdjustments(_configuration, screen);
+        return FramedSection(EmulationImageParametersSettingsBlock.Create(
+            adjustments, EmulationVideoProcessingConfigurationFunctions.AdjustmentControls(_configuration),
+            update => SetAdjustments(screen, update), _configuration.Restoration,
+            EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_configuration),
+            EmulationVideoProcessingConfigurationFunctions.SupportsDedithering(_configuration),
+            EmulationVideoProcessingConfigurationFunctions.SupportsDeinterlacing(_configuration),
+            update => SetRestoration(update(_configuration.Restoration))));
+    }
 
     private FrameworkElement CreateEffectGroups()
     {
@@ -51,7 +77,7 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         {
             FramedSection(EmulationTemporalEffectsSettingsBlock.Create(_configuration.Temporal, update => SetTemporal(update(_configuration.Temporal)))),
             FramedSection(CreateSignalSimulation()),
-            FramedSection(AppendModuleSettings(CreateStylistic(), _effectSettings))
+            FramedSection(CreateStylistic())
         };
         for (var index = 0; index < groups.Length; index++)
         {
@@ -75,29 +101,40 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         return grid;
     }
 
-    private static FrameworkElement AppendModuleSettings(FrameworkElement common, FrameworkElement? additional)
-    {
-        if (additional is null) return common;
-        var panel = new StackPanel();
-        panel.Children.Add(common);
-        panel.Children.Add(additional);
-        return panel;
-    }
-
     private FrameworkElement CreateSelectors()
     {
         var panel = new StackPanel();
         _shaderLoadingIndicator = CreateShaderLoadingIndicator();
         panel.Children.Add(_shaderLoadingIndicator);
-        if (_rendererChoice is not null) panel.Children.Add(_rendererChoice);
-        panel.Children.Add(ChoiceField(EmulationResourceKeys.VideoSampling, EmulationVideoProcessingCatalog.SamplingResourceKeys, _configuration.Sampling, value => Update(configuration => configuration with { Sampling = value })));
-        panel.Children.Add(ChoiceField(EmulationResourceKeys.VideoTechnology,
-            EmulationVideoProcessingCatalog.DisplayTechnologyResourceKeys,
-            _configuration.DisplayTechnology, value =>
+
+        var render = new StackPanel();
+        if (_rendererChoice is not null) render.Children.Add(_rendererChoice);
+        if (EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_configuration))
+            render.Children.Add(ChoiceField(EmulationResourceKeys.VideoSampling,
+                EmulationVideoProcessingCatalog.SamplingResourceKeys, _configuration.Sampling,
+                value => Update(configuration => configuration with { Sampling = value })));
+
+        var screen = new StackPanel();
+        screen.Children.Add(ChoiceField(EmulationResourceKeys.VideoTechnology,
+            EmulationVideoProcessingCatalog.ScreenTypeResourceKeys,
+            EmulationVideoProcessingConfigurationFunctions.ScreenType(_configuration), value =>
             {
-                Update(configuration => configuration with { DisplayTechnology = value });
+                Update(configuration => EmulationVideoProcessingConfigurationFunctions.WithScreenType(configuration, value));
                 RebuildContent();
             }));
+        var aspectRatios = EmulationVideoProcessingConfigurationFunctions.AspectRatioChoices(
+            EmulationVideoProcessingConfigurationFunctions.ScreenType(_configuration));
+        var aspectRatioLabels = aspectRatios.ToDictionary(value => value, value =>
+        {
+            if (value == EmulationVideoAspectRatio.Original) return LocExtension.Get("Emulation.Video.AspectRatio.Original");
+            var (width, height) = EmulationVideoProcessingConfigurationFunctions.AspectRatioDimensions(value);
+            return FormattableString.Invariant($"{width}/{height}");
+        });
+        screen.Children.Add(ChoiceField("Emulation.Video.AspectRatio", aspectRatioLabels,
+            EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(_configuration),
+            value => Update(configuration => configuration with { AspectRatio = value }),
+            translateChoices: false));
+        panel.Children.Add(SideBySideGroups(render, screen));
         return panel;
     }
 

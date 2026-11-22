@@ -40,80 +40,36 @@ internal static partial class VeldridVideoProcessingShaders
             value=clamp(value,0.0,1.0);
             return value<=.0031308 ? value*12.92 : 1.055*pow(value,1.0/2.4)-.055;
         }
-        vec3 adjust(vec3 color)
+        vec3 restorationLinear(vec3 color)
         {
-            vec3 linear=vec3(srgbToLinear(color.r),srgbToLinear(color.g),srgbToLinear(color.b));
+            return vec3(srgbToLinear(color.r), srgbToLinear(color.g), srgbToLinear(color.b));
+        }
+        vec3 restorationPoint(vec2 uv)
+        {
+            ivec2 size = textureSize(sampler2D(Source, PointSampler), 0);
+            ivec2 coordinate = clamp(ivec2(floor(uv * vec2(size))), ivec2(0), size - 1);
+            return restorationLinear(texelFetch(sampler2D(Source, PointSampler), coordinate, 0).rgb);
+        }
+        """ + VideoImageRestorationShader.Source + """
+        vec3 adjustLinear(vec3 linear)
+        {
             linear=videoContrastParameter(linear,Parameters.Adjustments.y);
             linear=videoBrightnessParameter(linear,Parameters.Adjustments.x);
             linear=videoGammaParameter(linear,Parameters.Adjustments.z);
             return videoSaturationParameter(linear,Parameters.Adjustments.w);
         }
-        vec3 detail(vec2 uv)
-        {
-            vec3 center=adjust(sourceColor(uv));
-            float strength=Parameters.Restoration.x;
-            if(strength<=0.0) return center;
-            vec2 stepSize=1.0/max(Parameters.Output.xy,vec2(1.0));
-            vec3 sum=vec3(0.0),minimum=center,maximum=center;
-            float localContrast=0.0;
-            for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++)
-            {
-                if(x==0&&y==0) continue;
-                vec3 sampleColor=adjust(sourceColor(uv+vec2(x,y)*stepSize));
-                sum+=sampleColor; minimum=min(minimum,sampleColor); maximum=max(maximum,sampleColor);
-                localContrast=max(localContrast,length(center-sampleColor));
-            }
-            if(localContrast<=.001) return center;
-            float amount=strength*clamp((.35-localContrast)/.30,0.0,1.0);
-            float extension=localContrast*.25*strength;
-            return clamp(center+(center-sum/8.0)*amount,minimum-vec3(extension),maximum+vec3(extension));
-        }
+        vec3 adjust(vec3 color) { return adjustLinear(restorationLinear(color)); }
         float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233))+Parameters.General.z)*43758.5453);}
         vec3 raw(vec2 uv){return adjust(sourceColor(uv));}
-        float restorationDistance(vec3 a,vec3 b){return length(a-b);}
-        float restorationLuminance(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
         vec3 restored(vec2 uv)
         {
-            vec2 s=1.0/max(Parameters.Output.xy,vec2(1.0));
-            int mode=int(Parameters.Restoration2.w+.5);
-            if((mode==1||mode==2)&&mod(floor(uv.y*Parameters.Output.y),2.0)!=(mode==1?0.0:1.0))uv.y-=s.y;
-            vec3 c=raw(uv),l=raw(uv-vec2(s.x,0)),r=raw(uv+vec2(s.x,0));
-            vec3 u=raw(uv-vec2(0,s.y)),d=raw(uv+vec2(0,s.y));
-            vec3 ul=raw(uv-s),ur=raw(uv+vec2(s.x,-s.y));
-            vec3 dl=raw(uv+vec2(-s.x,s.y)),dr=raw(uv+s),axial=(l+r+u+d)*.25;
-            float dedither=Parameters.Restoration2.x;
-            if(dedither>0.0)
-            {
-                int dm=0;if(restorationDistance(c,ul)<=.025)dm++;if(restorationDistance(c,ur)<=.025)dm++;if(restorationDistance(c,dl)<=.025)dm++;if(restorationDistance(c,dr)<=.025)dm++;
-                int am=0;if(restorationDistance(axial,l)<=.025)am++;if(restorationDistance(axial,r)<=.025)am++;if(restorationDistance(axial,u)<=.025)am++;if(restorationDistance(axial,d)<=.025)am++;
-                float pc=restorationDistance(c,axial);if(dm>=3&&am>=3&&pc>=.015&&pc<=.45)c=mix(c,(c+axial)*.5,dedither);
-            }
-            float denoise=Parameters.Restoration2.y;
-            if(denoise>0.0)
-            {
-                float sigma=.02+.16*denoise,iv=1.0/(2.0*sigma*sigma);
-                float wl=2.0*exp(-dot(c-l,c-l)*iv),wr=2.0*exp(-dot(c-r,c-r)*iv),wu=2.0*exp(-dot(c-u,c-u)*iv),wd=2.0*exp(-dot(c-d,c-d)*iv);
-                float wul=exp(-dot(c-ul,c-ul)*iv),wur=exp(-dot(c-ur,c-ur)*iv),wdl=exp(-dot(c-dl,c-dl)*iv),wdr=exp(-dot(c-dr,c-dr)*iv);
-                float weight=4.0+wl+wr+wu+wd+wul+wur+wdl+wdr;
-                c=mix(c,(c*4.0+l*wl+r*wr+u*wu+d*wd+ul*wul+ur*wur+dl*wdl+dr*wdr)/weight,denoise);
-            }
-            float deband=Parameters.Restoration2.z;
-            if(deband>0.0)
-            {
-                float threshold=.01+.05*deband,hs=max(restorationDistance(l,c),restorationDistance(r,c)),vs=max(restorationDistance(u,c),restorationDistance(d,c));
-                bool hv=hs>.0005&&hs<=threshold&&(restorationLuminance(l)-restorationLuminance(c))*(restorationLuminance(r)-restorationLuminance(c))<=.000001;
-                bool vv=vs>.0005&&vs<=threshold&&(restorationLuminance(u)-restorationLuminance(c))*(restorationLuminance(d)-restorationLuminance(c))<=.000001;
-                if(hv||vv)c=mix(c,hv&&(!vv||hs<=vs)?(l+c+r)/3.0:(u+c+d)/3.0,deband);
-            }
-            float details=Parameters.Restoration.x;
-            if(details>0.0)
-            {
-                vec3 average=(l+r+u+d+ul+ur+dl+dr)/8.0;
-                float lc=max(max(max(restorationDistance(c,l),restorationDistance(c,r)),max(restorationDistance(c,u),restorationDistance(c,d))),max(max(restorationDistance(c,ul),restorationDistance(c,ur)),max(restorationDistance(c,dl),restorationDistance(c,dr))));
-                float amount=details*clamp((.35-lc)/.30,0.0,1.0);vec3 minimum=min(c,min(min(l,r),min(u,d))),maximum=max(c,max(max(l,r),max(u,d))),extension=vec3(lc*.25*details);
-                c=clamp(c+(c-average)*amount,minimum-extension,maximum+extension);
-            }
-            if(mode==3)c=mix(c,(u+d)*.5,.5);
+            vec3 source = restorationLinear(sourceColor(uv));
+        #if DISPLAY_TECHNOLOGY == 0
+            float recover = Parameters.Processing.y > .5 && any(notEqual(Parameters.Output.xy, Parameters.Processing.zw))
+                ? Parameters.Restoration.x : 0.0;
+            source = restoreHostSource(source, uv, Parameters.Processing.zw, Parameters.Restoration2.z, recover);
+        #endif
+            vec3 c = adjustLinear(source);
             if(abs(Parameters.Processing.x)>0.0001)
             {
                 vec2 stepSize=1.0/max(Parameters.Output.xy,vec2(1.0));
@@ -357,7 +313,7 @@ internal static partial class VeldridVideoProcessingShaders
                         ?filterLcdDisplay(c,Parameters.FixedTechnology.x,Parameters.FixedTechnology.y,Parameters.FixedTechnology.z,light)
                         :filterLedBacklitLcdDisplay(c,Parameters.FixedTechnology.x,Parameters.FixedTechnology.y,Parameters.FixedTechnology.z,light);
                 }
-                else c=filterOledDisplay(c,Parameters.FixedTechnology.y);
+                else c=filterOledDisplay(c,Parameters.FixedTechnology.y,Parameters.FixedTechnology.w);
             }
         #endif
         #if DISPLAY_TECHNOLOGY == 3

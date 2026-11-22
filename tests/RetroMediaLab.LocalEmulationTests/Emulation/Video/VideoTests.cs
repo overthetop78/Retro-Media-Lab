@@ -7,6 +7,9 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
         sta.RunAsync(VideoProcessingScenarios.FieldPresentation);
 
     [Fact]
+    public void NativeFieldsUseTheirParityAndRejectStaleHistory() => VideoProcessingScenarios.NativeFieldDeinterlacing();
+
+    [Fact]
     public void EveryVideoParameterLabelResolvesInFrench()
     {
         var localization = RetroMediaLab.App.Localization.Sources.LocalizationSource.Instance;
@@ -31,6 +34,8 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
     }
 
     [Fact] public void VideoProcessingNormalizesEnumsIntensitiesAndPalette() => VideoGeometryScenarios.ProcessingLimits();
+    [Fact] public void DeditheringRecognizesSourcePatterns() => VideoGeometryScenarios.DeditheringRecognizesSourcePatterns();
+    [Fact] public void VideoRestorationUsesTheSourceAndProtectsEdges() => VideoGeometryScenarios.RestorationUsesTheSourceAndProtectsEdges();
     [Fact] public void VideoProcessingCombinesLowContrastWithGlobalBrightness() => VideoGeometryScenarios.ProcessingOrder();
     [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)]
     public Task PresentationRoutesFramesSettingsAndRendererFailures(int failure) => sta.RunAsync(() => VideoProcessingScenarios.Presentation(failure));
@@ -57,6 +62,7 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
     [InlineData(1886,-1f)]
     public void GammaSelectsAStandardCurve(int gamma, float expected) =>
         VideoGeometryScenarios.Gamma(gamma, expected);
+    [Fact] public void VideoScreenTypesPreserveProfilesAndUseOnlyTheirOwnControls() => VideoGeometryScenarios.ScreenTypeProfiles();
     [Fact] public void ImageAdjustmentEndpointsChangeTheExpectedSignal() => VideoGeometryScenarios.AdjustmentEndpoints();
     [Fact] public void GammaSelectsLuminanceCurveAndSharpnessAffectsOutputPixels() => VideoGeometryScenarios.GammaAndSharpnessPixels();
     [Fact] public void PaletteSelectionIgnoresAlpha()=>VideoProcessingScenarios.Palettes();

@@ -1,11 +1,204 @@
 using RetroMediaLab.VideoPresentation.Constants;
 using RetroMediaLab.VideoPresentation.Contracts;
 using RetroMediaLab.VideoPresentation.Enums;
+using static RetroMediaLab.VideoPresentation.Enums.EmulationImageAdjustmentControls;
 
 namespace RetroMediaLab.VideoPresentation.Functions;
 
 public static class EmulationVideoProcessingConfigurationFunctions
 {
+    private static readonly IReadOnlyList<EmulationVideoAspectRatio> OriginalAspectRatios =
+        [EmulationVideoAspectRatio.Original];
+    private static readonly IReadOnlyList<EmulationVideoAspectRatio> VectorAspectRatios =
+        [EmulationVideoAspectRatio.Original, EmulationVideoAspectRatio.FourThree];
+    private static readonly IReadOnlyList<EmulationVideoAspectRatio> MatrixAspectRatios =
+        [EmulationVideoAspectRatio.Original, EmulationVideoAspectRatio.Square];
+    private static readonly IReadOnlyList<EmulationVideoAspectRatio> PaperAspectRatios =
+        [EmulationVideoAspectRatio.Original, EmulationVideoAspectRatio.FourThree, EmulationVideoAspectRatio.SixteenNine];
+    private static readonly IReadOnlyList<EmulationVideoAspectRatio> StandardAspectRatios =
+        [EmulationVideoAspectRatio.Original, EmulationVideoAspectRatio.FourThree, EmulationVideoAspectRatio.FiveFour,
+         EmulationVideoAspectRatio.SixteenNine, EmulationVideoAspectRatio.FourteenNine, EmulationVideoAspectRatio.TwentyOneNine];
+
+    public static IReadOnlyList<EmulationVideoAspectRatio> AspectRatioChoices(EmulationVideoScreenType screen) => screen switch
+    {
+        EmulationVideoScreenType.Vector => VectorAspectRatios,
+        EmulationVideoScreenType.LedMatrix or EmulationVideoScreenType.DotMatrix => MatrixAspectRatios,
+        EmulationVideoScreenType.Vfd or EmulationVideoScreenType.SegmentDisplay => OriginalAspectRatios,
+        EmulationVideoScreenType.EPaper => PaperAspectRatios,
+        _ => StandardAspectRatios
+    };
+
+    public static EmulationVideoAspectRatio EffectiveAspectRatio(EmulationVideoProcessingConfiguration configuration) =>
+        AspectRatioChoices(ScreenType(configuration)).Contains(configuration.AspectRatio)
+            ? configuration.AspectRatio : EmulationVideoAspectRatio.Original;
+
+    public static (int Width, int Height) AspectRatioDimensions(EmulationVideoAspectRatio ratio) => ratio switch
+    {
+        EmulationVideoAspectRatio.Square => (1, 1),
+        EmulationVideoAspectRatio.FourThree => (4, 3),
+        EmulationVideoAspectRatio.FiveFour => (5, 4),
+        EmulationVideoAspectRatio.SixteenNine => (16, 9),
+        EmulationVideoAspectRatio.FourteenNine => (14, 9),
+        EmulationVideoAspectRatio.TwentyOneNine => (21, 9),
+        _ => (0, 0)
+    };
+
+    public static bool UsesHostDisplay(EmulationVideoProcessingConfiguration configuration) =>
+        configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Normal;
+
+    public static EmulationVideoSampling SamplingForDisplay(EmulationVideoProcessingConfiguration configuration) =>
+        UsesHostDisplay(configuration) ? configuration.Sampling : EmulationVideoSampling.Nearest;
+
+    public static bool SupportsDeinterlacing(EmulationVideoProcessingConfiguration configuration) =>
+        ScreenType(configuration) is EmulationVideoScreenType.Host or EmulationVideoScreenType.Lcd
+            or EmulationVideoScreenType.LedBacklitLcd or EmulationVideoScreenType.Oled
+            or EmulationVideoScreenType.Plasma or EmulationVideoScreenType.Projection;
+
+    public static EmulationDeinterlacingMode DeinterlacingForDisplay(EmulationVideoProcessingConfiguration configuration) =>
+        SupportsDeinterlacing(configuration) ? configuration.Restoration.Deinterlacing : EmulationDeinterlacingMode.Off;
+
+    public static bool SupportsDedithering(EmulationVideoProcessingConfiguration configuration) =>
+        ScreenType(configuration) is EmulationVideoScreenType.Host or EmulationVideoScreenType.Crt
+            or EmulationVideoScreenType.Lcd or EmulationVideoScreenType.LedBacklitLcd
+            or EmulationVideoScreenType.Oled or EmulationVideoScreenType.Plasma or EmulationVideoScreenType.Projection;
+
+    public static EmulationVideoProcessingConfiguration ForRendering(EmulationVideoProcessingConfiguration? configuration)
+    {
+        var normalized = Normalize(configuration);
+        if (UsesHostDisplay(normalized)) return normalized;
+        var analogCrt = ScreenType(normalized) == EmulationVideoScreenType.Crt
+            && normalized.SignalSimulation.ConnectionIntensity > 0
+            && normalized.SignalSimulation.Connection is EmulationSignalConnection.Composite or EmulationSignalConnection.Rf;
+        var controls = AdjustmentControls(normalized);
+        var adjustments = ImageAdjustments(normalized, ScreenType(normalized));
+        return normalized with
+        {
+            Sampling = SamplingForDisplay(normalized),
+            Restoration = normalized.Restoration with
+            {
+                Dedithering = SupportsDedithering(normalized) && !analogCrt ? normalized.Restoration.Dedithering : 0,
+                Debanding = 0,
+                DetailRecovery = 0
+            },
+            Adjustments = new(
+                controls.HasFlag(Brightness) ? adjustments.Brightness : 0,
+                controls.HasFlag(Contrast) ? adjustments.Contrast : 0,
+                controls.HasFlag(Gamma) ? adjustments.Gamma : EmulationImageAdjustmentFunctions.OriginalGamma,
+                controls.HasFlag(Saturation) ? adjustments.Saturation : 0,
+                controls.HasFlag(Sharpness) ? adjustments.Sharpness : 0)
+        };
+    }
+
+    public static EmulationImageAdjustmentControls AdjustmentControls(EmulationVideoProcessingConfiguration configuration) =>
+        ScreenType(configuration) switch
+        {
+            EmulationVideoScreenType.Vector or EmulationVideoScreenType.Vfd => Brightness,
+            EmulationVideoScreenType.LedMatrix => Brightness | Contrast | Gamma
+                | (configuration.LedMatrix?.Color == EmulationLedMatrixColor.Rgb ? Saturation : None),
+            EmulationVideoScreenType.DotMatrix => Brightness | Contrast | (configuration.DotMatrix?.Palette switch
+            {
+                EmulationDotMatrixPalette.Rgb => Gamma | Saturation,
+                EmulationDotMatrixPalette.Gray => Gamma,
+                _ => None
+            }),
+            EmulationVideoScreenType.SegmentDisplay => Brightness | Contrast,
+            EmulationVideoScreenType.EPaper => Contrast,
+            _ => All
+        };
+
+    public static EmulationImageAdjustments ImageAdjustments(EmulationVideoProcessingConfiguration configuration,
+        EmulationVideoScreenType screen)
+    {
+        var adjustments = screen == EmulationVideoScreenType.Host
+            ? configuration.Adjustments
+            : configuration.ScreenAdjustments?.GetValueOrDefault(screen);
+        return EmulationImageAdjustmentFunctions.Normalize(adjustments);
+    }
+
+    public static EmulationVideoProcessingConfiguration WithImageAdjustments(EmulationVideoProcessingConfiguration configuration,
+        EmulationVideoScreenType screen, Func<EmulationImageAdjustments, EmulationImageAdjustments> update)
+    {
+        var current = ImageAdjustments(configuration, screen);
+        var next = EmulationImageAdjustmentFunctions.Normalize(update(current));
+        if (current == next) return configuration;
+        if (screen == EmulationVideoScreenType.Host) return configuration with { Adjustments = next };
+
+        var profiles = configuration.ScreenAdjustments is { } stored
+            ? new Dictionary<EmulationVideoScreenType, EmulationImageAdjustments>(stored)
+            : new Dictionary<EmulationVideoScreenType, EmulationImageAdjustments>();
+        profiles[screen] = next;
+        return configuration with { ScreenAdjustments = profiles };
+    }
+
+    public static EmulationVideoScreenType ScreenType(EmulationVideoProcessingConfiguration configuration) =>
+        configuration.DisplayTechnology switch
+        {
+            EmulationVideoDisplayTechnology.Crt => EmulationVideoScreenType.Crt,
+            EmulationVideoDisplayTechnology.FixedPixel => configuration.FixedPixel?.Technology switch
+            {
+                EmulationFixedPixelTechnology.LedBacklitLcd => EmulationVideoScreenType.LedBacklitLcd,
+                EmulationFixedPixelTechnology.Oled => EmulationVideoScreenType.Oled,
+                _ => EmulationVideoScreenType.Lcd
+            },
+            EmulationVideoDisplayTechnology.Plasma => EmulationVideoScreenType.Plasma,
+            EmulationVideoDisplayTechnology.Projection => EmulationVideoScreenType.Projection,
+            EmulationVideoDisplayTechnology.Vector => EmulationVideoScreenType.Vector,
+            EmulationVideoDisplayTechnology.LedMatrix => EmulationVideoScreenType.LedMatrix,
+            EmulationVideoDisplayTechnology.DotMatrix => EmulationVideoScreenType.DotMatrix,
+            EmulationVideoDisplayTechnology.Vfd => EmulationVideoScreenType.Vfd,
+            EmulationVideoDisplayTechnology.SegmentDisplay => EmulationVideoScreenType.SegmentDisplay,
+            EmulationVideoDisplayTechnology.EPaper => EmulationVideoScreenType.EPaper,
+            _ => EmulationVideoScreenType.Host
+        };
+
+    public static EmulationVideoProcessingConfiguration WithScreenType(EmulationVideoProcessingConfiguration configuration,
+        EmulationVideoScreenType screen) => screen switch
+    {
+        EmulationVideoScreenType.Host => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.Normal },
+        EmulationVideoScreenType.Crt => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.Crt },
+        EmulationVideoScreenType.Lcd => WithFixedPixelType(configuration, EmulationFixedPixelTechnology.Lcd),
+        EmulationVideoScreenType.LedBacklitLcd => WithFixedPixelType(configuration, EmulationFixedPixelTechnology.LedBacklitLcd),
+        EmulationVideoScreenType.Oled => WithFixedPixelType(configuration, EmulationFixedPixelTechnology.Oled),
+        EmulationVideoScreenType.Plasma => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.Plasma },
+        EmulationVideoScreenType.Projection => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.Projection },
+        EmulationVideoScreenType.Vector => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.Vector },
+        EmulationVideoScreenType.LedMatrix => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.LedMatrix },
+        EmulationVideoScreenType.DotMatrix => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.DotMatrix },
+        EmulationVideoScreenType.Vfd => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.Vfd },
+        EmulationVideoScreenType.SegmentDisplay => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.SegmentDisplay },
+        EmulationVideoScreenType.EPaper => configuration with { DisplayTechnology = EmulationVideoDisplayTechnology.EPaper },
+        _ => throw new ArgumentOutOfRangeException(nameof(screen), screen, null)
+    };
+
+    private static EmulationVideoProcessingConfiguration WithFixedPixelType(EmulationVideoProcessingConfiguration configuration,
+        EmulationFixedPixelTechnology technology)
+    {
+        var current = configuration.FixedPixel ?? new();
+        if (current.Technology != technology)
+        {
+            configuration = current.Technology switch
+            {
+                EmulationFixedPixelTechnology.Lcd => configuration with { LcdProfile = current },
+                EmulationFixedPixelTechnology.LedBacklitLcd => configuration with { LedBacklitLcdProfile = current },
+                EmulationFixedPixelTechnology.Oled => configuration with { OledProfile = current },
+                _ => configuration
+            };
+            current = technology switch
+            {
+                EmulationFixedPixelTechnology.Lcd => configuration.LcdProfile,
+                EmulationFixedPixelTechnology.LedBacklitLcd => configuration.LedBacklitLcdProfile,
+                EmulationFixedPixelTechnology.Oled => configuration.OledProfile,
+                _ => null
+            } ?? new(Technology: technology);
+        }
+
+        return configuration with
+        {
+            DisplayTechnology = EmulationVideoDisplayTechnology.FixedPixel,
+            FixedPixel = current with { Technology = technology }
+        };
+    }
+
     public static EmulationVideoProcessingConfiguration Normalize(EmulationVideoProcessingConfiguration? configuration)
     {
         configuration ??= new EmulationVideoProcessingConfiguration();
@@ -31,10 +224,10 @@ public static class EmulationVideoProcessingConfigurationFunctions
             Restoration = restoration with
             {
                 Dedithering = Intensity(restoration.Dedithering),
-                Denoising = Intensity(restoration.Denoising),
                 Debanding = Intensity(restoration.Debanding),
                 DetailRecovery = Intensity(restoration.DetailRecovery),
-                Deinterlacing = DefinedOrDefault(restoration.Deinterlacing, EmulationDeinterlacingMode.Off)
+                Deinterlacing = restoration.Deinterlacing is EmulationDeinterlacingMode.BobEvenLines or EmulationDeinterlacingMode.BobOddLines
+                    ? EmulationDeinterlacingMode.Bob : DefinedOrDefault(restoration.Deinterlacing, EmulationDeinterlacingMode.Off)
             },
             Temporal = temporal with
             {
@@ -94,7 +287,8 @@ public static class EmulationVideoProcessingConfigurationFunctions
                 PersistenceIntensity = Intensity(fixedPixel.PersistenceIntensity),
                 BacklightIntensity = OptionalIntensity(fixedPixel.BacklightIntensity),
                 BlackDepth = OptionalIntensity(fixedPixel.BlackDepth),
-                BacklightBleedIntensity = Intensity(fixedPixel.BacklightBleedIntensity)
+                BacklightBleedIntensity = Intensity(fixedPixel.BacklightBleedIntensity),
+                OledEmissionIntensity = Intensity(fixedPixel.OledEmissionIntensity)
             },
             Plasma = plasma with
             {

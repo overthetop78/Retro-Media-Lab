@@ -8,6 +8,7 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulationVideoProcessingPipeline
 {
+    private byte[]? _deditheringWorkspace;
     private float[]? _fixedPixelHistory;
     private int _historyWidth;
     private int _historyHeight;
@@ -40,11 +41,11 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
 
     public VideoFrame Process(EmulationVideoProcessingConfiguration configuration, VideoFrame frame, EmulationVideoProcessingSize sourceSize, EmulationVideoProcessingSize outputSize)
     {
-        var normalized = EmulationVideoProcessingConfigurationFunctions.Normalize(configuration);
+        var normalized = EmulationVideoProcessingConfigurationFunctions.ForRendering(configuration);
         Validate(frame, sourceSize, outputSize);
         var sameSize = sourceSize == outputSize;
         if (sameSize && normalized.Adjustments == new EmulationImageAdjustments()
-            && normalized.Restoration == new EmulationImageRestorationConfiguration()
+            && (normalized.Restoration with { Deinterlacing = EmulationDeinterlacingMode.Off }) == new EmulationImageRestorationConfiguration()
             && normalized.Temporal == new EmulationTemporalVideoConfiguration()
             && normalized.SignalSimulation == new EmulationSignalSimulationConfiguration()
             && normalized.Stylistic == new EmulationStylisticVideoConfiguration()
@@ -63,17 +64,20 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         }
 
         var pixels = EmulationVideoPixelFunctions.ToBgra32(frame);
-        var linear = ToLinear(pixels, frame.Width, frame.Height);
-        EmulationImageRestorationFunctions.ApplyDeinterlacing(linear, frame.Width, frame.Height, normalized.Restoration.Deinterlacing);
-        EmulationImageRestorationFunctions.ApplyDedithering(linear, frame.Width, frame.Height, normalized.Restoration.Dedithering);
-        EmulationImageRestorationFunctions.ApplyDenoising(linear, frame.Width, frame.Height, normalized.Restoration.Denoising);
+        var prepared = EmulationImageRestorationFunctions.ApplyDedithering(pixels, frame.Width, frame.Height,
+            normalized.Restoration.Dedithering, ref _deditheringWorkspace);
+        var linear = ToLinear(prepared ?? pixels, frame.Width, frame.Height);
+        var reference = normalized.Restoration.DetailRecovery > 0 && !sameSize
+            && normalized.Sampling != EmulationVideoSampling.Nearest ? linear.ToArray() : null;
         EmulationImageRestorationFunctions.ApplyDebanding(linear, frame.Width, frame.Height, normalized.Restoration.Debanding);
-        EmulationImageRestorationFunctions.ApplyDetailRecovery(linear, frame.Width, frame.Height, normalized.Restoration.DetailRecovery);
         _interlacing.ApplyFieldWeave(linear, frame.Width, frame.Height, frame.Sequence, normalized.Temporal.Interlacing > 0, normalized.Temporal.InterlacingVisibility);
         var signalStandard = ResolveSignalStandard(frame, normalized.SignalSimulation.Standard);
         ApplySignalConnection(linear, frame.Width, frame.Height, frame.Sequence, normalized.SignalSimulation, signalStandard);
         ApplySignalStandard(linear, frame.Width, frame.Height, normalized.SignalSimulation, signalStandard);
         linear = Resample(linear, frame.Width, frame.Height, outputSize.Width, outputSize.Height, normalized.Sampling);
+        if (reference is not null)
+            EmulationImageRestorationFunctions.ApplyDetailRecovery(reference, frame.Width, frame.Height,
+                linear, outputSize.Width, outputSize.Height, normalized.Restoration.DetailRecovery);
         VideoContrastParameterFunctions.Apply(linear, normalized.Adjustments.Contrast);
         VideoBrightnessParameterFunctions.Apply(linear, normalized.Adjustments.Brightness);
         VideoGammaParameterFunctions.Apply(linear, normalized.Adjustments.Gamma);

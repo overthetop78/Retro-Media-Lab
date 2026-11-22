@@ -117,7 +117,6 @@ public static class EmulationResourceKeys
     public const string VideoParameterSaturation = "Emulation.Video.Parameter.Saturation";
     public const string VideoParameterSharpness = "Emulation.Video.Parameter.Sharpness";
     public const string VideoParameterDedithering = "Emulation.Video.Parameter.Dedithering";
-    public const string VideoParameterDenoising = "Emulation.Video.Parameter.Denoising";
     public const string VideoParameterDebanding = "Emulation.Video.Parameter.Debanding";
     public const string VideoParameterDetailRecovery = "Emulation.Video.Parameter.DetailRecovery";
     public const string VideoParameterFineDetails = "Emulation.Video.Parameter.FineDetails";
@@ -243,8 +242,6 @@ public static class EmulationResourceKeys
     public const string VideoProjectionGroupOptics = "Emulation.Video.Projection.Group.Optics";
     public const string VideoProjectionGroupScreen = "Emulation.Video.Projection.Group.Screen";
     public const string VideoDeinterlacingOff = "Emulation.Video.Deinterlacing.Off";
-    public const string VideoDeinterlacingBobEvenLines = "Emulation.Video.Deinterlacing.BobEvenLines";
-    public const string VideoDeinterlacingBobOddLines = "Emulation.Video.Deinterlacing.BobOddLines";
     public const string VideoDeinterlacingBlend = "Emulation.Video.Deinterlacing.Blend";
     public const string VideoParameterCrtColorMode = "Emulation.Video.Parameter.CrtColorMode";
     public const string VideoParameterCrtBeamWidth = "Emulation.Video.Parameter.CrtBeamWidth";

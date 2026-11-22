@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>การแสดงผล</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>การเรนเดอร์</value></data>
   <data name="Emulation.Video.Sampling"><value>การขยายเสียง</value></data>
-  <data name="Emulation.Video.Technology"><value>เทคโนโลยีการแสดงผล</value></data>
+  <data name="Emulation.Video.Technology"><value>ชนิดของการแสดงผล</value></data>
   <data name="Emulation.Video.Settings.General"><value>ปรับแก้ค่าทั่วไปของภาพ</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>การประมวลผลวิดีโอ Retro Media Lab</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>ปกติ</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>แสดงเวกเตอร์</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>ซ่อมแซมรูปภาพ</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>ลดลายดิเทอร์</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>กําลังปรับเทียบข้อมูล</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>การลดแถบกระดาษ</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>การ กู้ ข้อมูล</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>การไล่ระดับสี</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>ปิดการใช้งาน</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>บ็อบ - แม้แต่เส้น</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>บ็อบ - เส้นคี่</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>ไล่ระดับสีในแนวตั้ง</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>น้ําเงิน</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>เขียว</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>โหมดการเรนเดอร์</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>การเรนเดอร์ด้วยฮาร์ดแวร์ใช้ API กราฟิกที่เลือกไว้สำหรับแอปพลิเคชัน หากอีมูเลเตอร์รองรับ</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>ต้นฉบับ (ไม่มีการแก้ไข)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>แสดงเครื่องโฮสต์ (ไม่มีการจําลอง)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (ท่อหมุน)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>แสดงเวกเตอร์</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (การแสดงความฟลอเรนซ์ของวาคิวบัส)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>แสดงค่าช่องสี</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Parper (กระดาษอิเลคโทรนิค)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED ความเข้มสีการปล่อยข้อมูล</value></data>
+  <data name="Emulation.Video.Hardware"><value>ฮาร์ดแวร์วิดีโอ</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>ดั้งเดิม</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>ปรับตามการเคลื่อนไหว</value></data>
 </root>

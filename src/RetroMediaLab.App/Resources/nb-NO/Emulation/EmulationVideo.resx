@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Visning</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Gjengivelse</value></data>
   <data name="Emulation.Video.Sampling"><value>Sampling</value></data>
-  <data name="Emulation.Video.Technology"><value>Vis teknologi</value></data>
+  <data name="Emulation.Video.Technology"><value>Vis type</value></data>
   <data name="Emulation.Video.Settings.General"><value>Generelle bildejusteringer</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab videobehandling</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normal</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Vektorvisning</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Bilde restaurering</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Fjern rastrering</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Denoising</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Bandingsreduksjon</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Detalj recovery</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Avslapping</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Deaktivert</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - jevne linjer</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - rare linjer</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Vertikal blanding</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Blå</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Grønn</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Gjengivelsesmodus</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Maskinvaregjengivelse bruker grafikk-API-et som er valgt for programmet, hvis emulatoren støtter det.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Opprinnelig (ingen rettelse)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Vertsvisning (ingen simulering)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (katode-stråle tube)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Vektorvisning</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (vakuumfluorescerende skjerm)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Segmentvisning</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-paper (elektronisk papir)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED Emissionsintensitet</value></data>
+  <data name="Emulation.Video.Hardware"><value>Videomaskinvare</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Original</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Bevegelsestilpasset</value></data>
 </root>

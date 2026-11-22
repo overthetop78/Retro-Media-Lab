@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Megjelenítés</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Renderelés</value></data>
   <data name="Emulation.Video.Sampling"><value>Mintavétel</value></data>
-  <data name="Emulation.Video.Technology"><value>Kijelző technológia</value></data>
+  <data name="Emulation.Video.Technology"><value>Kijelző típusa</value></data>
   <data name="Emulation.Video.Settings.General"><value>Általános képbeállítások</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab videofeldolgozás</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normál</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Vektorkijelző</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Képhelyreállítás</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Színzaj eltávolítása</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Címkézés</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>A horgonyzás csökkentése</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Részlet visszanyerése</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Dezinterlacing</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Letiltva</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - egyenletes vonalak</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - páratlan vonalak</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Függőleges keverék</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Kék</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Zöld</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Renderelési mód</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>A hardveres renderelés az alkalmazáshoz kiválasztott grafikus API-t használja, ha az emulátor támogatja.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Eredeti (nincs korrekció)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>A kiszolgáló kijelzője (nincs szimuláció)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (katódsugárcső)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Vektorkijelző</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (vákuumfluoreszkáló kijelző)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Szekciókijelző</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-papír (elektronikus papír)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED Kibocsátási intenzitás</value></data>
+  <data name="Emulation.Video.Hardware"><value>Videohardver</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Eredeti</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Mozgásadaptív</value></data>
 </root>

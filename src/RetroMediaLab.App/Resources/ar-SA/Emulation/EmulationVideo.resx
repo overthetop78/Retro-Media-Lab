@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>العرض</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>التصيير</value></data>
   <data name="Emulation.Video.Sampling"><value>أخذ العينات</value></data>
-  <data name="Emulation.Video.Technology"><value>تسخير التكنولوجيا</value></data>
+  <data name="Emulation.Video.Technology"><value>نوع التلاعب</value></data>
   <data name="Emulation.Video.Settings.General"><value>تسويات الصور العامة</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab processing video</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>المعيار</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>عرض ناقلات</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>ترميم الصور</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>إزالة التنقيط</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>إعلان</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>تخفيض الحظر</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>استرداد التفاصيل</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>إزالة التداخل</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>المعوقين</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>(بوب) حتى الخطوط</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>(بوب) خطوط غريبة</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>الخلل الرأسي</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>الأزرق</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>الأخضر</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>وضع التصيير</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>يستخدم التصيير العتادي واجهة الرسوميات (API) المحددة للتطبيق إذا كان المحاكي يدعمها.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>الأصل (لا تصويب)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>عرض مضيف (لا محاكاة)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (أنبوب الأشعة الكاثودية)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>عرض ناقلات</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (عرض الفلوروست الغامض)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>عرض الجزء</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Paper (الورقة الإلكترونية)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED كثافة الانبعاثات</value></data>
+  <data name="Emulation.Video.Hardware"><value>عتاد الفيديو</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>الأصلي</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>متكيف مع الحركة</value></data>
 </root>

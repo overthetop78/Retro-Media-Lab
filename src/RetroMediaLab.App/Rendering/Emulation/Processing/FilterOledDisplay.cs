@@ -5,10 +5,10 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 internal static class FilterOledDisplay
 {
     internal const string Shader = """
-        vec3 filterOledDisplay(vec3 color,float blackDepth)
+        vec3 filterOledDisplay(vec3 color,float blackDepth,float emission)
         {
             float blackFloor=(1.0-blackDepth)*.18;
-            return vec3(blackFloor)+(color*color*(3.0-2.0*color))*1.08*(1.0-blackFloor);
+            return vec3(blackFloor)+(color*color*(3.0-2.0*color))*1.08*emission*(1.0-blackFloor);
         }
         """;
 
@@ -16,6 +16,6 @@ internal static class FilterOledDisplay
     {
         var blackDepth = (configuration.BlackDepth ?? 100) / 100f;
         var floor = (1f - blackDepth) * 0.18f;
-        FilterFixedPixelLight.ApplyEmissive(colors, floor, 1.08f);
+        FilterFixedPixelLight.ApplyEmissive(colors, floor, 1.08f * configuration.OledEmissionIntensity / 100f);
     }
 }

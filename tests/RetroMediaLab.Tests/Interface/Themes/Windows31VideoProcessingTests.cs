@@ -1,4 +1,7 @@
 using System.Windows;
+using System.Windows.Automation;
+using RetroMediaLab.VideoPresentation.Dictionaries;
+using RetroMediaLab.VideoPresentation.Functions;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -8,6 +11,7 @@ using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Enums;
 using RetroMediaLab.VideoPresentation.Contracts;
 using RetroMediaLab.VideoPresentation.Enums;
+using ImageControls = RetroMediaLab.VideoPresentation.Enums.EmulationImageAdjustmentControls;
 using RetroMediaLab.Tests.Application.TestInfrastructure;
 
 namespace RetroMediaLab.Tests.Interface.Themes;
@@ -24,10 +28,32 @@ public sealed class Windows31VideoProcessingTests(StaExecutionScenarios sta)
         var source = new EmulationVideoProcessingSettingsSection();
         using var view = new VideoProcessingView(source, NoModuleFields, _ => throw new InvalidOperationException(), () => Task.CompletedTask);
         var pages = (ComboBox)view.FindName("Pages");
-        foreach (var technology in Enum.GetValues<EmulationVideoDisplayTechnology>())
+        foreach (var screen in Enum.GetValues<EmulationVideoScreenType>())
         {
-            source.SetConfiguration(new EmulationVideoProcessingConfiguration { DisplayTechnology = technology });
+            source.SetConfiguration(EmulationVideoProcessingConfigurationFunctions.WithScreenType(new(), screen));
             Assert.Equal(source.PresentationPages.Count, pages.Items.Count);
+            var display = source.PresentationPages[0];
+            var choices = EmulationVideoProcessingSettingsSection.PresentationLeaves(display.Content, NoModuleFields)
+                .OfType<ComboBox>().Select(AutomationProperties.GetAutomationId).ToArray();
+            Assert.Equal(2, source.PresentationPages.Count);
+            Assert.Contains(nameof(EmulationVideoScreenType), choices);
+            Assert.Contains(nameof(EmulationVideoAspectRatio), choices);
+            Assert.Equal(screen == EmulationVideoScreenType.Host, choices.Contains(nameof(EmulationVideoSampling)));
+            var image = source.PresentationPages.Single(page => page.Id == "Image");
+            var imageFields = EmulationVideoProcessingSettingsSection.PresentationLeaves(image.Content, NoModuleFields)
+                .Select(AutomationProperties.GetAutomationId).ToHashSet();
+            Assert.Equal(screen == EmulationVideoScreenType.Host, imageFields.Contains(EmulationVideoProcessingCatalog.Debanding));
+            Assert.Equal(screen == EmulationVideoScreenType.Host, imageFields.Contains(EmulationVideoProcessingCatalog.DetailRecovery));
+            Assert.Equal(EmulationVideoProcessingConfigurationFunctions.SupportsDedithering(source.Configuration),
+                imageFields.Contains(EmulationVideoProcessingCatalog.Dedithering));
+            Assert.Equal(EmulationVideoProcessingConfigurationFunctions.SupportsDeinterlacing(source.Configuration),
+                imageFields.Contains(EmulationVideoProcessingCatalog.Deinterlacing));
+            var controls = EmulationVideoProcessingConfigurationFunctions.AdjustmentControls(source.Configuration);
+            Assert.Equal(controls.HasFlag(ImageControls.Brightness), imageFields.Contains(EmulationVideoProcessingCatalog.Brightness));
+            Assert.Equal(controls.HasFlag(ImageControls.Contrast), imageFields.Contains(EmulationVideoProcessingCatalog.Contrast));
+            Assert.Equal(controls.HasFlag(ImageControls.Gamma), imageFields.Contains(EmulationVideoProcessingCatalog.Gamma));
+            Assert.Equal(controls.HasFlag(ImageControls.Saturation), imageFields.Contains(EmulationVideoProcessingCatalog.Saturation));
+            Assert.Equal(controls.HasFlag(ImageControls.Sharpness), imageFields.Contains(EmulationVideoProcessingCatalog.Sharpness));
             foreach (var page in source.PresentationPages)
             {
                 pages.SelectedItem = pages.Items.Cast<EmulationVideoProcessingSettingsSection.PresentationPage>().Single(item => item.Id == page.Id);
@@ -55,7 +81,8 @@ public sealed class Windows31VideoProcessingTests(StaExecutionScenarios sta)
         using var view = new VideoProcessingView(source, NoModuleFields, _ => throw new InvalidOperationException(), () => Task.CompletedTask);
         var pages = (ComboBox)view.FindName("Pages");
         Arrange(view);
-        var sampling = Descendants(view).OfType<ComboBox>().First(combo => !ReferenceEquals(combo, pages));
+        var sampling = Descendants(view).OfType<ComboBox>().Single(combo =>
+            combo.Items.Count == EmulationVideoProcessingCatalog.SamplingResourceKeys.Count);
         var previous = source.Configuration.Sampling;
         sampling.SelectedIndex = (sampling.SelectedIndex + 1) % sampling.Items.Count;
         Assert.NotEqual(previous, source.Configuration.Sampling);

@@ -17,46 +17,39 @@ internal static class EmulationImageRestorationSettingsBlock
 {
     private static readonly int[] DeditheringValues = VideoRestorationChoices.Dedithering.Keys.ToArray();
 
-    internal static FrameworkElement Create(EmulationImageRestorationConfiguration restoration, Action<Func<EmulationImageRestorationConfiguration, EmulationImageRestorationConfiguration>> changed)
+    internal static void AddIntensityControls(Panel controls, EmulationImageRestorationConfiguration restoration,
+        Action<Func<EmulationImageRestorationConfiguration, EmulationImageRestorationConfiguration>> changed)
     {
-        var block = new StackPanel { Margin = new Thickness(0, 0, 0, 12) };
-        block.Children.Add(new TextBlock
+        controls.Children.Add(VerticalIntensity(EmulationVideoProcessingCatalog.Debanding, restoration.Debanding,
+            value => changed(current => current with { Debanding = value })));
+        controls.Children.Add(VerticalIntensity(EmulationVideoProcessingCatalog.DetailRecovery, restoration.DetailRecovery,
+            value => changed(current => current with { DetailRecovery = value }), EmulationResourceKeys.VideoParameterFineDetails));
+    }
+
+    internal static void AddChoices(Panel choices, EmulationImageRestorationConfiguration restoration, bool supportsDedithering, bool supportsDeinterlacing,
+        Action<Func<EmulationImageRestorationConfiguration, EmulationImageRestorationConfiguration>> changed)
+    {
+        if (supportsDedithering)
         {
-            Text = LocExtension.Get(EmulationResourceKeys.VideoRestorationSettings),
-            FontWeight = FontWeights.SemiBold,
-            Margin = new Thickness(0, 0, 0, 12)
-        });
-
-        var continuous = new UniformGrid { Columns = 3 };
-        continuous.Children.Add(VerticalIntensity(EmulationVideoProcessingCatalog.Denoising, restoration.Denoising, value => changed(current => current with { Denoising = value })));
-        continuous.Children.Add(VerticalIntensity(EmulationVideoProcessingCatalog.Debanding, restoration.Debanding, value => changed(current => current with { Debanding = value })));
-        continuous.Children.Add(VerticalIntensity(EmulationVideoProcessingCatalog.DetailRecovery,
-            restoration.DetailRecovery, value => changed(current => current with { DetailRecovery = value }),
-            EmulationResourceKeys.VideoParameterFineDetails));
-        block.Children.Add(continuous);
-
-        var choices = new Grid { Margin = new Thickness(0, 14, 0, 0) };
-        choices.ColumnDefinitions.Add(new ColumnDefinition());
-        choices.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var dedithering = Dedithering(restoration.Dedithering, value => changed(current => current with { Dedithering = value }));
-        dedithering.Margin = new Thickness(0, 0, 18, 0);
-        choices.Children.Add(dedithering);
-        var deinterlacing = Deinterlacing(restoration.Deinterlacing, value => changed(current => current with { Deinterlacing = value }));
-        Grid.SetColumn(deinterlacing, 1);
-        choices.Children.Add(deinterlacing);
-        block.Children.Add(choices);
-        return block;
-
+            var dedithering = Dedithering(restoration.Dedithering, value => changed(current => current with { Dedithering = value }));
+            dedithering.Margin = new Thickness(0, 0, 18, 0);
+            choices.Children.Add(dedithering);
+        }
+        if (supportsDeinterlacing)
+            choices.Children.Add(Deinterlacing(restoration.Deinterlacing, value => changed(current => current with { Deinterlacing = value })));
     }
 
     private static FrameworkElement VerticalIntensity(string id, int value, Action<int> changed, string? labelResourceKey = null)
     {
         var column = new StackPanel
         {
-            HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(6, 0, 6, 0)
         };
-        column.Children.Add(Label(labelResourceKey ?? EmulationVideoProcessingCatalog.ParameterResourceKeys[id]));
+        var label = Label(labelResourceKey ?? EmulationVideoProcessingCatalog.ParameterResourceKeys[id]);
+        label.HorizontalAlignment = HorizontalAlignment.Stretch;
+        label.TextWrapping = TextWrapping.Wrap;
+        label.MinHeight = 40;
+        column.Children.Add(label);
         var slider = new Slider
         {
             Orientation = Orientation.Vertical,
@@ -65,7 +58,7 @@ internal static class EmulationImageRestorationSettingsBlock
             Value = value,
             TickFrequency = 1,
             IsSnapToTickEnabled = true,
-            Height = 150,
+            Height = 220,
             HorizontalAlignment = HorizontalAlignment.Center
         };
         AutomationProperties.SetAutomationId(slider, id);
@@ -148,15 +141,14 @@ internal static class EmulationImageRestorationSettingsBlock
 
     private static FrameworkElement Deinterlacing(EmulationDeinterlacingMode selected, Action<EmulationDeinterlacingMode> changed)
     {
-        var column = new StackPanel { Width = 220 };
+        var column = new StackPanel();
         column.Children.Add(Label(EmulationResourceKeys.VideoParameterDeinterlacing, HorizontalAlignment.Left));
         var choices = EmulationVideoProcessingCatalog.DeinterlacingResourceKeys.Select(choice => new Choice<EmulationDeinterlacingMode>(choice.Key, LocExtension.Get(choice.Value))).ToArray();
         var selector = new ComboBox
         {
             ItemsSource = choices,
             DisplayMemberPath = nameof(Choice<EmulationDeinterlacingMode>.DisplayName),
-            SelectedItem = choices.First(choice => choice.Value == selected),
-            Width = 220
+            SelectedItem = choices.First(choice => choice.Value == selected)
         };
         AutomationProperties.SetAutomationId(selector, EmulationVideoProcessingCatalog.Deinterlacing);
         selector.SelectionChanged += (_, _) =>

@@ -24,6 +24,7 @@ internal sealed class EmulationEmulatorManagementController : IAsyncDisposable
     private bool _disposed;
     private int _emulatorCount;
     private EmulationEmulatorInstallation? _selectedInstallation;
+    internal string? SelectedEmulatorName => _selectedInstallation?.DisplayName;
 
     internal EmulationEmulatorManagementController(IEmulationEmulatorManager manager,
         Func<IEmulationConfiguration> getConfiguration,

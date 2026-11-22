@@ -103,14 +103,20 @@ internal static class OpenGlVideoShaderSource
                 : 1.055 * pow(value, 1.0 / 2.4) - 0.055;
         }
 
-        vec3 adjustColor(vec3 color)
+        vec3 restorationLinear(vec3 color)
         {
-            vec3 linear = vec3(srgbToLinear(color.r), srgbToLinear(color.g), srgbToLinear(color.b));
+            return vec3(srgbToLinear(color.r), srgbToLinear(color.g), srgbToLinear(color.b));
+        }
+        vec3 restorationPoint(vec2 uv) { return restorationLinear(pointSample(uv).rgb); }
+        """ + VideoImageRestorationShader.Source + """
+        vec3 adjustLinear(vec3 linear)
+        {
             linear = videoContrastParameter(linear, Adjustments.y);
             linear = videoBrightnessParameter(linear, Adjustments.x);
             linear = videoGammaParameter(linear, Adjustments.z);
             return videoSaturationParameter(linear, Adjustments.w);
         }
+        vec3 adjustColor(vec3 color) { return adjustLinear(restorationLinear(color)); }
 
         vec3 crtPalette(vec3 color)
         {
@@ -176,7 +182,7 @@ internal static class OpenGlVideoShaderSource
                     ?filterLcdDisplay(color,FixedTechnology.x,FixedTechnology.y,FixedTechnology.z,light)
                     :filterLedBacklitLcdDisplay(color,FixedTechnology.x,FixedTechnology.y,FixedTechnology.z,light);
             }
-            else color=filterOledDisplay(color,FixedTechnology.y);
+            else color=filterOledDisplay(color,FixedTechnology.y,FixedTechnology.w);
             return clamp(color,0.0,1.0);
         }
 
@@ -298,7 +304,12 @@ internal static class OpenGlVideoShaderSource
         {
             if (CrtDisplay.x < 0.5)
             {
-                vec3 color = adjustColor(sampleConfigured(originalUv).rgb);
+                vec3 source = restorationLinear(sampleConfigured(originalUv).rgb);
+        #if DISPLAY_TECHNOLOGY == 0
+                float recover = Processing.y > .5 && any(notEqual(Output.xy, Processing.zw)) ? Stylistic2.z : 0.0;
+                source = restoreHostSource(source, originalUv, Processing.zw, Restoration.z, recover);
+        #endif
+                vec3 color = adjustLinear(source);
         #if DISPLAY_TECHNOLOGY == 2
                 if (FixedDisplay.x > 0.5) return fixedPixelWithHistory(color, originalUv);
         #endif
@@ -377,70 +388,8 @@ internal static class OpenGlVideoShaderSource
 
         float extraHash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233))+General.z)*43758.5453);}
         vec3 extraRaw(vec2 uv){return adjustColor(sampleConfigured(uv).rgb);}
-        float restorationDistance(vec3 a,vec3 b){vec3 d=a-b;return length(d);}
-        float restorationLuminance(vec3 c){return dot(c,vec3(.2126,.7152,.0722));}
         vec3 restoreColor(vec3 color,vec2 uv)
         {
-            vec2 s=1.0/max(Output.xy,vec2(1.0));
-            vec3 l=extraRaw(uv-vec2(s.x,0.0)),r=extraRaw(uv+vec2(s.x,0.0));
-            vec3 u=extraRaw(uv-vec2(0.0,s.y)),d=extraRaw(uv+vec2(0.0,s.y));
-            vec3 ul=extraRaw(uv-s),ur=extraRaw(uv+vec2(s.x,-s.y));
-            vec3 dl=extraRaw(uv+vec2(-s.x,s.y)),dr=extraRaw(uv+s);
-            vec3 axial=(l+r+u+d)*.25;
-
-            float dedither=Restoration.x;
-            if(dedither>0.0)
-            {
-                int diagonalMatches=0;
-                if(restorationDistance(color,ul)<=.025)diagonalMatches++;
-                if(restorationDistance(color,ur)<=.025)diagonalMatches++;
-                if(restorationDistance(color,dl)<=.025)diagonalMatches++;
-                if(restorationDistance(color,dr)<=.025)diagonalMatches++;
-                int axialMatches=0;
-                if(restorationDistance(axial,l)<=.025)axialMatches++;
-                if(restorationDistance(axial,r)<=.025)axialMatches++;
-                if(restorationDistance(axial,u)<=.025)axialMatches++;
-                if(restorationDistance(axial,d)<=.025)axialMatches++;
-                float patternContrast=restorationDistance(color,axial);
-                if(diagonalMatches>=3&&axialMatches>=3&&patternContrast>=.015&&patternContrast<=.45)
-                    color=mix(color,(color+axial)*.5,dedither);
-            }
-
-            float denoise=Restoration.y;
-            if(denoise>0.0)
-            {
-                float sigma=.02+.16*denoise,iv=1.0/(2.0*sigma*sigma);
-                float wl=2.0*exp(-dot(color-l,color-l)*iv),wr=2.0*exp(-dot(color-r,color-r)*iv);
-                float wu=2.0*exp(-dot(color-u,color-u)*iv),wd=2.0*exp(-dot(color-d,color-d)*iv);
-                float wul=exp(-dot(color-ul,color-ul)*iv),wur=exp(-dot(color-ur,color-ur)*iv);
-                float wdl=exp(-dot(color-dl,color-dl)*iv),wdr=exp(-dot(color-dr,color-dr)*iv);
-                float weight=4.0+wl+wr+wu+wd+wul+wur+wdl+wdr;
-                vec3 filtered=(color*4.0+l*wl+r*wr+u*wu+d*wd+ul*wul+ur*wur+dl*wdl+dr*wdr)/weight;
-                color=mix(color,filtered,denoise);
-            }
-
-            float deband=Restoration.z;
-            if(deband>0.0)
-            {
-                float threshold=.01+.05*deband;
-                float hs=max(restorationDistance(l,color),restorationDistance(r,color));
-                float vs=max(restorationDistance(u,color),restorationDistance(d,color));
-                bool hv=hs>.0005&&hs<=threshold&&(restorationLuminance(l)-restorationLuminance(color))*(restorationLuminance(r)-restorationLuminance(color))<=.000001;
-                bool vv=vs>.0005&&vs<=threshold&&(restorationLuminance(u)-restorationLuminance(color))*(restorationLuminance(d)-restorationLuminance(color))<=.000001;
-                if(hv||vv) color=mix(color,hv&&(!vv||hs<=vs)?(l+color+r)/3.0:(u+color+d)/3.0,deband);
-            }
-
-            float details=Stylistic2.z;
-            if(details>0.0)
-            {
-                vec3 average=(l+r+u+d+ul+ur+dl+dr)/8.0;
-                float localContrast=max(max(max(restorationDistance(color,l),restorationDistance(color,r)),max(restorationDistance(color,u),restorationDistance(color,d))),max(max(restorationDistance(color,ul),restorationDistance(color,ur)),max(restorationDistance(color,dl),restorationDistance(color,dr))));
-                float amount=details*clamp((.35-localContrast)/.30,0.0,1.0);
-                vec3 minimum=min(color,min(min(l,r),min(u,d))),maximum=max(color,max(max(l,r),max(u,d)));
-                vec3 extension=vec3(localContrast*.25*details);
-                color=clamp(color+(color-average)*amount,minimum-extension,maximum+extension);
-            }
-            if(int(Restoration.w+.5)==3)color=mix(color,(u+d)*.5,.5);
             if(abs(Processing.x)>0.0001)
             {
                 vec2 stepSize=1.0/max(Output.xy,vec2(1.0));

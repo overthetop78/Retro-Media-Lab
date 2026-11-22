@@ -12,6 +12,8 @@ internal static class EmulationVideoSnapshotFunctions
     internal static Task<BitmapSource?> CreateAsync(VideoFrame? frame, EmulationVideoProcessingConfiguration configuration, EmulationVideoProcessingSize outputSize)
     {
         if (frame is null) return Task.FromResult<BitmapSource?>(null);
+        // Snapshot work can outlive the render gate and the reused field composition buffer.
+        frame = frame with { Pixels = frame.Pixels.ToArray() };
         return Task.Run<BitmapSource?>(() =>
         {
             using var pipeline = new SoftwareEmulationVideoProcessingPipeline();

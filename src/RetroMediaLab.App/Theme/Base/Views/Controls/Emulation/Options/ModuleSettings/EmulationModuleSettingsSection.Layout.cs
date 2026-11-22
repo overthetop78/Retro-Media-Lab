@@ -65,7 +65,14 @@ internal sealed partial class EmulationModuleSettingsSection
     private UIElement BuildTab(EmulationMachineSettings settings, EmulationMachineTab tab)
     {
         if (tab == EmulationMachineTab.Cpu) return BuildCpuSettingsTab(settings);
-        if (tab == EmulationMachineTab.Ram) return BuildMemorySettingsTab(settings);
+        if (tab == EmulationMachineTab.Ram)
+        {
+            if (settings.Visibility.Tabs.GetValueOrDefault(EmulationMachineTab.Video))
+                settings = settings with { Blocks = settings.Blocks.Select(block => block.Tab == EmulationMachineTab.Ram
+                    ? block with { Fields = block.Fields.Where(field => !EmulationVideoConfigurationFunctions.IsVideoHardwareField(field)).ToArray() }
+                    : block).ToArray() };
+            return BuildMemorySettingsTab(settings);
+        }
         if (tab == EmulationMachineTab.Video) return BuildVideoSettingsTab(settings);
         if (tab is (EmulationMachineTab.Keyboard or EmulationMachineTab.Mouse
             or EmulationMachineTab.Controllers) && _inputSettings is not null)
@@ -100,55 +107,18 @@ internal sealed partial class EmulationModuleSettingsSection
     private UIElement BuildVideoSettingsTab(EmulationMachineSettings settings)
     {
         const string rendererResourceKey = EmulationResourceKeys.VideoRenderingSettings;
-        var fields = settings.Blocks.Where(block => block.Tab == EmulationMachineTab.Video && block.IsVisible).SelectMany(block => block.Fields).Where(field => field.IsVisible).ToArray();
-        var imageSettings = EmulationSettingsLayout.VideoSettingsFields(fields.Where(field => field.VideoSection == EmulationVideoSettingsSection.Image).Select(CreateVideoSettingsField).ToArray());
-        var effectSettings = EmulationSettingsLayout.VideoSettingsFields(fields.Where(field => field.VideoSection == EmulationVideoSettingsSection.Effects).Select(CreateVideoSettingsField).ToArray());
-        var blocks = settings.Blocks.Where(block => block.Tab == EmulationMachineTab.Video && block.IsVisible)
-            .Select(block => block with { Fields = block.Fields.Where(field => field.VideoSection == EmulationVideoSettingsSection.Display).ToArray() }).ToArray();
-        fields = fields.Where(field => field.VideoSection == EmulationVideoSettingsSection.Display).ToArray();
-        FrameworkElement? nativeSettings = null;
-        FrameworkElement display;
-        bool useFramedDisplay = blocks.Length > 1 && blocks.All(block => block.IsCompact && !block.IsCollapsible);
-        if (useFramedDisplay)
+        var videoBlocks = settings.Blocks.Where(block => block.Tab == EmulationMachineTab.Video && block.IsVisible).ToArray();
+        var hardware = settings.Blocks.Where(block => block.IsVisible)
+            .SelectMany(block => block.Fields).Where(field => field.IsVisible && EmulationVideoConfigurationFunctions.IsVideoHardwareField(field))
+            .ToArray();
+        var nativeSettings = CreateRenderingGroups(videoBlocks.Select(block => block with
         {
-            var panel = new StackPanel();
-            foreach (var block in blocks)
-            {
-                var blockFields = block.Fields.Where(field => field.IsVisible && field.LabelResourceKey != rendererResourceKey)
-                    .Select(CreateVideoSettingsField).ToArray();
-                if (blockFields.Length == 0) continue;
-                var card = EmulationVideoProcessingSettingsSection.FramedGroup(block.TitleResourceKey,
-                    EmulationSettingsLayout.VideoSettingsFields(blockFields));
-                if (panel.Children.Count != 0) card.Margin = new Thickness(0, 12, 0, 0);
-                panel.Children.Add(card);
-            }
-            display = panel;
-        }
-        else if (blocks.Any(block => block.IsCompact))
-        {
-            display = EmulationSettingsLayout.VideoSettingsFields(blocks.Where(block => !block.IsCollapsible).SelectMany(block => block.Fields).Where(field => field.IsVisible && field.LabelResourceKey != rendererResourceKey).Select(CreateVideoSettingsField).ToArray());
-            var groups = CreateRenderingGroups(blocks.Where(block => block.IsCollapsible));
-            if (groups.Children.Count > 0) nativeSettings = groups;
-        }
-        else if (!blocks.Any(block => block.IsCollapsible))
-            display = EmulationSettingsLayout.VideoSettingsFields(fields.Where(field => field.LabelResourceKey != rendererResourceKey).Select(CreateVideoSettingsField).ToArray());
-        else
-        {
-            var panel = new StackPanel();
-            foreach (var block in blocks)
-            {
-                var blockFields = block.Fields.Where(field => field.IsVisible && field.LabelResourceKey != rendererResourceKey).Select(CreateVideoSettingsField).ToArray();
-                if (blockFields.Length == 0) continue;
-                var content = EmulationSettingsLayout.VideoSettingsFields(blockFields);
-                panel.Children.Add(block.IsCollapsible ? new Expander
-                {
-                    Header = LocExtension.GetForModule(_module, block.TitleResourceKey),
-                    Content = content,
-                    Margin = new Thickness(0, 0, 0, 12)
-                } : content);
-            }
-            display = panel;
-        }
+            Fields = block.Fields.Where(field => !EmulationVideoConfigurationFunctions.IsVideoHardwareField(field)).ToArray()
+        }));
+        var emulatorName = settings.Blocks.Where(block => block.Tab == EmulationMachineTab.General && block.IsVisible)
+            .SelectMany(block => block.Fields)
+            .FirstOrDefault(field => field.LabelResourceKey == "Emulation.Core.Emulator")?.Value
+            ?? _emulatorManagement?.SelectedEmulatorName;
         var profile = _session.GetVideoProfile(_configuration.Id);
         var renderer = new ComboBox
         {
@@ -172,8 +142,9 @@ internal sealed partial class EmulationModuleSettingsSection
         });
         var rendererChoice = EmulationSettingsLayout.VideoSettingsChoice(
             new EmulationVideoSettingsField(LocExtension.Get(rendererResourceKey), renderer, Explanation: LocExtension.Get("Emulation.Help.Video.Rendering.Short"), DetailedExplanation: LocExtension.Get("Emulation.Help.Video.Rendering.Detailed")));
-        _videoProcessing.SetConfiguration(profile.Processing, display, rendererChoice, displayOwnsFrames: useFramedDisplay, nativeSettings: nativeSettings,
-            imageSettings: imageSettings, effectSettings: effectSettings);
+        _videoProcessing.SetConfiguration(profile.Processing,
+            hardware.Length == 0 ? null : EmulationSettingsLayout.VideoSettingsFields(1, hardware.Select(CreateVideoSettingsField).ToArray()),
+            rendererChoice, nativeSettings.Children.Count == 0 ? null : nativeSettings, emulatorName);
         _videoProcessing.SetShaderLoading(EmulationVideoShaderLoadingStatus.IsLoading(_module.Id, _configuration.Id));
         ApplySettingsRules(settings);
         return EmulationSettingsLayout.VideoSettingsPage(_videoProcessing);
@@ -190,7 +161,7 @@ internal sealed partial class EmulationModuleSettingsSection
         var groups = new StackPanel();
         var visible = blocks.Select(block => block with
         {
-            Fields = block.Fields.Where(field => field.IsVisible && field.LabelResourceKey != EmulationResourceKeys.VideoRenderingSettings).ToArray()
+            Fields = block.Fields.Where(field => field.IsVisible).ToArray()
         }).Where(block => block.Fields.Count > 0).ToArray();
         bool IsScan(EmulationSettingsBlock block) => block.Fields.All(field => field.NumericRange?.IsVertical == true);
         FrameworkElement Card(EmulationSettingsBlock block, bool paired)

@@ -177,6 +177,7 @@ public sealed unsafe class SaturnVideoSoftware : ISaturnVdp1Video, IDisposable
     public ReadOnlySpan<uint> DisplayBuffer => _displayBuffer.AsSpan(0, _vdp2Width * _vdp2Height);
     public int DisplayWidth => _vdp2Width;
     public int DisplayHeight => _vdp2Height;
+    public int? DisplayFieldParity { get; private set; }
 
     internal static void GetInterlaceInfo(bool interlace, bool oddFrame, out int startLine, out int lineIncrement)
     {
@@ -2364,7 +2365,9 @@ public sealed unsafe class SaturnVideoSoftware : ISaturnVdp1Video, IDisposable
             WaitForLayerThread(SaturnTitanLayer.Sprite);
             _layerThreadFailure?.Throw();
         }
-        _titan.Render(_displayBuffer, vdp2.Registers, _vdp2Interlace, vdp2.OddFrame);
+        var oddFrame = vdp2.OddFrame;
+        _titan.Render(_displayBuffer, vdp2.Registers, _vdp2Interlace, oddFrame);
+        DisplayFieldParity = _vdp2Interlace ? (oddFrame ? 1 : 0) : null;
         SwapFrameBuffer(vdp1);
     }
 

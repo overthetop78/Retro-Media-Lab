@@ -18,7 +18,9 @@ namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
 
 internal sealed partial class EmulationVideoProcessingSettingsSection : UserControl
 {
-    private void SetAdjustments(EmulationImageAdjustments value) => Update(configuration => configuration with { Adjustments = value });
+    private void SetAdjustments(EmulationVideoScreenType screen,
+        Func<EmulationImageAdjustments, EmulationImageAdjustments> update) =>
+        Update(configuration => EmulationVideoProcessingConfigurationFunctions.WithImageAdjustments(configuration, screen, update));
 
     private void SetRestoration(EmulationImageRestorationConfiguration value) => Update(configuration => configuration with { Restoration = value });
 
@@ -38,15 +40,23 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
     private void SetVfd(EmulationVfdVideoConfiguration value) => Update(configuration => configuration with { Vfd = value });
 
-    private void SetLedMatrix(EmulationLedMatrixVideoConfiguration value) => Update(configuration => configuration with { LedMatrix = value });
+    private void SetLedMatrix(EmulationLedMatrixVideoConfiguration value) => UpdateScreenControls(configuration => configuration with { LedMatrix = value });
 
-    private void SetDotMatrix(EmulationDotMatrixVideoConfiguration value) => Update(configuration => configuration with { DotMatrix = value });
+    private void SetDotMatrix(EmulationDotMatrixVideoConfiguration value) => UpdateScreenControls(configuration => configuration with { DotMatrix = value });
 
     private void SetSegmentDisplay(EmulationSegmentDisplayVideoConfiguration value) => Update(configuration => configuration with { SegmentDisplay = value });
 
     private void SetEPaper(EmulationEPaperVideoConfiguration value) => Update(configuration => configuration with { EPaper = value });
 
     private void SetProjection(EmulationProjectionVideoConfiguration value) => Update(configuration => configuration with { Projection = value });
+
+    private void UpdateScreenControls(Func<EmulationVideoProcessingConfiguration, EmulationVideoProcessingConfiguration> update)
+    {
+        var previousControls = EmulationVideoProcessingConfigurationFunctions.AdjustmentControls(_configuration);
+        Update(update);
+        if (previousControls != EmulationVideoProcessingConfigurationFunctions.AdjustmentControls(_configuration))
+            RebuildContent();
+    }
 
     private void Update(Func<EmulationVideoProcessingConfiguration, EmulationVideoProcessingConfiguration> update)
     {

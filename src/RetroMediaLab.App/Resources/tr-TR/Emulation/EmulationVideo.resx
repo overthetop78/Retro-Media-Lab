@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Görüntü</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>İşleme</value></data>
   <data name="Emulation.Video.Sampling"><value>Sampling</value></data>
-  <data name="Emulation.Video.Technology"><value>Ekran teknolojisi</value></data>
+  <data name="Emulation.Video.Technology"><value>Ekran türü</value></data>
   <data name="Emulation.Video.Settings.General"><value>Genel görüntü ayarlamaları</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab video işleme</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normal Normal Normal Normal</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Vector display</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Resim restorasyonu</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Dithering kaldırma</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Denoising</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Banding azaltımı</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>kurtarma</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Deinterlacing</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Devre dışı</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - hatta çizgiler</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - garip çizgiler</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Dikey karışım</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Blue Blue Blue Blue</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Yeşil Yeşil Yeşil</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>İşleme modu</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Donanımsal işleme, emülatör destekliyorsa uygulama için seçilen grafik API’sini kullanır.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Orijinal (g düzeltme)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Host display (no Simülasyon)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (cathode-ray tüpü)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Vector display</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (vacuum flororescent display)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Segment display</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Paper (elektronik kağıt)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED emisyon yoğunluğu</value></data>
+  <data name="Emulation.Video.Hardware"><value>Video donanımı</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Orijinal</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Harekete uyarlanabilir</value></data>
 </root>

@@ -8,6 +8,7 @@ using RetroMediaLab.App.Services.Emulation;
 using RetroMediaLab.Emulation;
 using RetroMediaLab.VideoPresentation.Services;
 using RetroMediaLab.VideoPresentation.Windows.Osd;
+using ImageControls = RetroMediaLab.VideoPresentation.Enums.EmulationImageAdjustmentControls;
 using Entry = RetroMediaLab.VideoPresentation.Windows.Osd.FullscreenOsdWindow.Entry;
 
 namespace RetroMediaLab.App.Controllers.Emulation.Machine;
@@ -17,22 +18,15 @@ internal sealed partial class MachineController
     private Entry OsdVideoSettings() =>
         new(LocExtension.Get("Emulation.Shortcut.OsdVideoSettings"), Children: EditableVideoRows(
         [
-            VideoGroup(EmulationResourceKeys.VideoGeneralSettings,
-                    Adjustment(EmulationResourceKeys.VideoParameterBrightness, value => value.Brightness,
-                        (value, draft) => value with { Brightness = draft }),
-                    Adjustment(EmulationResourceKeys.VideoParameterContrast, value => value.Contrast,
-                        (value, draft) => value with { Contrast = draft }),
-                    OsdGamma(),
-                    Adjustment(EmulationResourceKeys.VideoParameterSaturation, value => value.Saturation,
-                        (value, draft) => value with { Saturation = draft }, EmulationImageAdjustmentFunctions.FormatSaturation),
-                    Adjustment(EmulationResourceKeys.VideoParameterSharpness, value => value.Sharpness,
-                        (value, draft) => value with { Sharpness = draft })),
             VideoGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing,
-                VideoChoice(EmulationResourceKeys.VideoSampling, EmulationVideoProcessingCatalog.SamplingResourceKeys,
-                    settings => settings.Sampling, (settings, value) => settings with { Sampling = value }),
+                VideoChoice(EmulationResourceKeys.VideoTechnology, EmulationVideoProcessingCatalog.ScreenTypeResourceKeys,
+                    EmulationVideoProcessingConfigurationFunctions.ScreenType,
+                    EmulationVideoProcessingConfigurationFunctions.WithScreenType),
                 OsdRendererChoice(),
-                VideoChoice(EmulationResourceKeys.VideoTechnology, EmulationVideoProcessingCatalog.DisplayTechnologyResourceKeys,
-                    settings => settings.DisplayTechnology, (settings, value) => settings with { DisplayTechnology = value })),
+                VideoChoice(EmulationResourceKeys.VideoSampling, EmulationVideoProcessingCatalog.SamplingResourceKeys,
+                    settings => settings.Sampling, (settings, value) => settings with { Sampling = value })
+                    with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_video.VideoProcessing) }),
+            .. Enum.GetValues<EmulationVideoScreenType>().Select(OsdScreenAdjustments),
             OsdCrtSettings(),
             OsdFixedPixelSettings(),
             OsdPlasmaSettings(),
@@ -47,16 +41,18 @@ internal sealed partial class MachineController
             VideoGroup(EmulationResourceKeys.VideoRestorationSettings,
                     VideoChoice(EmulationResourceKeys.VideoParameterDedithering, VideoRestorationChoices.Dedithering,
                         settings => VideoRestorationChoices.NearestDeditheringValue(settings.Restoration.Dedithering),
-                        (settings, draft) => settings with { Restoration = settings.Restoration with { Dedithering = draft } }),
-                    RestorationIntensity(EmulationResourceKeys.VideoParameterDenoising, value => value.Denoising,
-                        (value, draft) => value with { Denoising = draft }),
+                        (settings, draft) => settings with { Restoration = settings.Restoration with { Dedithering = draft } })
+                        with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.SupportsDedithering(_video.VideoProcessing) },
                     RestorationIntensity(EmulationResourceKeys.VideoParameterDebanding, value => value.Debanding,
-                        (value, draft) => value with { Debanding = draft }),
+                        (value, draft) => value with { Debanding = draft })
+                        with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_video.VideoProcessing) },
                     RestorationIntensity(EmulationResourceKeys.VideoParameterFineDetails, value => value.DetailRecovery,
-                        (value, draft) => value with { DetailRecovery = draft }),
+                        (value, draft) => value with { DetailRecovery = draft })
+                        with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_video.VideoProcessing) },
                     VideoChoice(EmulationResourceKeys.VideoParameterDeinterlacing, EmulationVideoProcessingCatalog.DeinterlacingResourceKeys,
                         settings => settings.Restoration.Deinterlacing,
-                        (settings, draft) => settings with { Restoration = settings.Restoration with { Deinterlacing = draft } })),
+                        (settings, draft) => settings with { Restoration = settings.Restoration with { Deinterlacing = draft } })
+                        with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.SupportsDeinterlacing(_video.VideoProcessing) }),
             .. OsdModuleGroups(EmulationMachineTab.Video, EmulationVideoSettingsSection.Image),
             OsdVideoEffectsSettings()
         ]), Glyph: MachineCommandGlyphConstants.Renderer, SeparatorBefore: true, FullHeight: true);
@@ -110,23 +106,44 @@ internal sealed partial class MachineController
             Range: showSlider ? (minimum, maximum) : null));
     }
 
-    private Entry OsdGamma()
+    private Entry OsdScreenAdjustments(EmulationVideoScreenType screen) =>
+        VideoGroup(EmulationVideoProcessingCatalog.ScreenTypeResourceKeys[screen],
+            Adjustment(screen, ImageControls.Brightness, EmulationResourceKeys.VideoParameterBrightness, value => value.Brightness,
+                (value, draft) => value with { Brightness = draft }),
+            Adjustment(screen, ImageControls.Contrast, EmulationResourceKeys.VideoParameterContrast, value => value.Contrast,
+                (value, draft) => value with { Contrast = draft }),
+            OsdGamma(screen),
+            Adjustment(screen, ImageControls.Saturation, EmulationResourceKeys.VideoParameterSaturation, value => value.Saturation,
+                (value, draft) => value with { Saturation = draft }, EmulationImageAdjustmentFunctions.FormatSaturation),
+            Adjustment(screen, ImageControls.Sharpness, EmulationResourceKeys.VideoParameterSharpness, value => value.Sharpness,
+                (value, draft) => value with { Sharpness = draft }))
+        with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.ScreenType(_video.VideoProcessing) == screen };
+
+    private Entry OsdGamma(EmulationVideoScreenType screen)
     {
         var curves = EmulationImageAdjustmentFunctions.GammaCurves.ToArray();
         var original = LocExtension.Get(EmulationResourceKeys.VideoGammaOriginal);
         return VideoNumber(EmulationResourceKeys.VideoParameterGamma,
-            settings => Math.Max(0, Array.IndexOf(curves, settings.Adjustments.Gamma)),
-            (settings, index) => settings with { Adjustments = settings.Adjustments with { Gamma = curves[index] } },
+            settings => Math.Max(0, Array.IndexOf(curves,
+                EmulationVideoProcessingConfigurationFunctions.ImageAdjustments(settings, screen).Gamma)),
+            (settings, index) => EmulationVideoProcessingConfigurationFunctions.WithImageAdjustments(settings, screen,
+                adjustments => adjustments with { Gamma = curves[index] }),
             0, curves.Length - 1,
-            format: index => EmulationImageAdjustmentFunctions.FormatGamma(curves[index], original), showSlider: false);
+            format: index => EmulationImageAdjustmentFunctions.FormatGamma(curves[index], original), showSlider: false)
+            with { IsVisible = () => ShowsImageControl(ImageControls.Gamma) };
     }
 
-    private Entry Adjustment(string label, Func<EmulationImageAdjustments, int> read,
+    private Entry Adjustment(EmulationVideoScreenType screen, ImageControls control, string label, Func<EmulationImageAdjustments, int> read,
         Func<EmulationImageAdjustments, int, EmulationImageAdjustments> update, Func<int, string>? format = null) =>
-        VideoNumber(label, settings => read(settings.Adjustments),
-            (settings, value) => settings with { Adjustments = update(settings.Adjustments, value) },
+        VideoNumber(label, settings => read(EmulationVideoProcessingConfigurationFunctions.ImageAdjustments(settings, screen)),
+            (settings, value) => EmulationVideoProcessingConfigurationFunctions.WithImageAdjustments(settings, screen,
+                adjustments => update(adjustments, value)),
             EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum,
-            format: format ?? EmulationImageAdjustmentFunctions.FormatSigned);
+            format: format ?? EmulationImageAdjustmentFunctions.FormatSigned)
+            with { IsVisible = () => ShowsImageControl(control) };
+
+    private bool ShowsImageControl(ImageControls control) =>
+        EmulationVideoProcessingConfigurationFunctions.AdjustmentControls(_video.VideoProcessing).HasFlag(control);
 
     private FullscreenOsdWindow.Entry VideoChoice<T>(string label, IReadOnlyDictionary<T, string> keys,
         Func<EmulationVideoProcessingConfiguration, T> read, Func<EmulationVideoProcessingConfiguration, T, EmulationVideoProcessingConfiguration> update)

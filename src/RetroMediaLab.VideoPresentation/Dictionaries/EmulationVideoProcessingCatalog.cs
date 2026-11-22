@@ -19,7 +19,6 @@ public static partial class EmulationVideoProcessingCatalog
     public const string Saturation = nameof(Saturation);
     public const string Sharpness = nameof(Sharpness);
     public const string Dedithering = nameof(Dedithering);
-    public const string Denoising = nameof(Denoising);
     public const string Debanding = nameof(Debanding);
     public const string DetailRecovery = nameof(DetailRecovery);
     public const string Deinterlacing = nameof(Deinterlacing);
@@ -70,6 +69,7 @@ public static partial class EmulationVideoProcessingCatalog
     public const string FixedPixelPersistence = nameof(FixedPixelPersistence);
     public const string FixedPixelBacklight = nameof(FixedPixelBacklight);
     public const string FixedPixelBacklightBleed = nameof(FixedPixelBacklightBleed);
+    public const string FixedPixelOledEmission = nameof(FixedPixelOledEmission);
     public const string FixedPixelBlackDepth = nameof(FixedPixelBlackDepth);
     public const string PlasmaCellStructure = nameof(PlasmaCellStructure);
     public const string PlasmaDiffusion = nameof(PlasmaDiffusion);
@@ -158,7 +158,7 @@ public static partial class EmulationVideoProcessingCatalog
 
     private static readonly string[] ParameterIds =
     [
-        Brightness, Contrast, Gamma, Saturation, Sharpness, Dedithering, Denoising, Debanding,
+        Brightness, Contrast, Gamma, Saturation, Sharpness, Dedithering, Debanding,
         DetailRecovery,
         Deinterlacing, GeneralPersistence, MotionBlur, Flicker, Interlacing,
         InterlacingVisibility, BlackFrameInsertion,
@@ -176,7 +176,7 @@ public static partial class EmulationVideoProcessingCatalog
         CrtPatternFrequency, CrtPatternPhase, CrtPatternIntensity,
         FixedPixelTechnology, FixedPixelSubpixels, FixedPixelMonochromeColor,
         FixedPixelGridIntensity, FixedPixelPixelGap, FixedPixelResponseTime,
-        FixedPixelPersistence, FixedPixelBacklight, FixedPixelBacklightBleed, FixedPixelBlackDepth,
+        FixedPixelPersistence, FixedPixelBacklight, FixedPixelBacklightBleed, FixedPixelOledEmission, FixedPixelBlackDepth,
         PlasmaCellStructure, PlasmaDiffusion, PlasmaTemporalDithering, PlasmaPersistence,
         PlasmaBlackDepth, PlasmaPhosphorIntensity, PlasmaGammaResponse,
         PlasmaAutomaticBrightnessLimiter,

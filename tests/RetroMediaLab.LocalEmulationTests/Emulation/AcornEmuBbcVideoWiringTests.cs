@@ -1,3 +1,4 @@
+using RetroMediaLab.VideoPresentation.Enums;
 using BbcVideo = RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMicro.Common.Services.Video;
 using RetroMediaLab.Chips.Video.Motorola.M6845.Chip6845.Services;
 using System.Reflection;
@@ -37,7 +38,7 @@ public sealed class AcornEmuBbcVideoWiringTests
             Assert.Equal(redParity == 0 ? EmulationVideoScanMode.InterlacedEvenField : EmulationVideoScanMode.InterlacedOddField, video.ScanMode);
             Assert.Equal(255, red[2]);
             display.Receive(Field(red, 2));
-            Assert.Equal(0, display.Compose()!.Pixels.Span[(redParity ^ 1) * 640 * 4 + 2]);
+            Assert.Equal(255, display.Compose(EmulationDeinterlacingMode.Weave)!.Pixels.Span[(redParity ^ 1) * 640 * 4 + 2]);
 
             video.WriteUla(1, 0xf3);
             FinishFrame(video, 3);
@@ -46,7 +47,7 @@ public sealed class AcornEmuBbcVideoWiringTests
             Assert.Equal(255, native[0]);
             Assert.Equal(0, native[2]);
             display.Receive(Field(native, 3));
-            var woven = display.Compose()!.Pixels.ToArray();
+            var woven = display.Compose(EmulationDeinterlacingMode.Weave)!.Pixels.ToArray();
             Assert.Equal(255, woven[redParity * 640 * 4 + 2]);
             Assert.Equal(0, woven[redParity * 640 * 4]);
             Assert.Equal(255, woven[(redParity ^ 1) * 640 * 4]);
@@ -68,9 +69,10 @@ public sealed class AcornEmuBbcVideoWiringTests
             FinishFrame(video, 7);
             FinishFrame(video, 8);
             var freshParity = crtc.RasterAddress & 1 ^ 1;
-            display.Receive(Field(video.Render(), 8));
-            var fresh = display.Compose()!.Pixels.ToArray();
-            Assert.Equal(0, fresh[(freshParity ^ 1) * 640 * 4]);
+            var lastField = video.Render();
+            display.Receive(Field(lastField, 8));
+            var fresh = display.Compose(EmulationDeinterlacingMode.Weave)!.Pixels.ToArray();
+            Assert.Equal(lastField[0], fresh[(freshParity ^ 1) * 640 * 4]);
             video.Reset();
             Assert.Equal(height, video.OutputHeight);
             Assert.All(video.Render(), value => Assert.Equal(0, value));

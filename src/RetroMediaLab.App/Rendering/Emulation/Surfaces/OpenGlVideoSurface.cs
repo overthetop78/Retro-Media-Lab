@@ -36,6 +36,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     private uint _historyTexture;
     private ActiveTextureDelegate? _activeTexture;
     private bool _hasHistory;
+    private byte[]? _deditheringWorkspace;
     private int _historyWidth;
     private int _historyHeight;
     private TimeSpan _historyTimestamp;
@@ -57,7 +58,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     public void SetVideoProcessing(EmulationVideoProcessingConfiguration configuration)
     {
         var displayTechnologyChanged = _videoProcessing.DisplayTechnology != configuration.DisplayTechnology;
-        _videoProcessing = EmulationVideoProcessingConfigurationFunctions.Normalize(configuration);
+        _videoProcessing = EmulationVideoProcessingConfigurationFunctions.ForRendering(configuration);
         if (displayTechnologyChanged) ResetHistory();
         _snapshot = null;
     }
@@ -182,6 +183,14 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             pixelOffset = sourceSegment.Offset;
         }
         else pixels = EmulationVideoPixelFunctions.ToBgra32(frame);
+        var prepared = EmulationImageRestorationFunctions.ApplyDedithering(
+            pixels.AsSpan(pixelOffset, checked(frame.Width * frame.Height * 4)), frame.Width, frame.Height,
+            _videoProcessing.Restoration.Dedithering, ref _deditheringWorkspace);
+        if (prepared is not null)
+        {
+            pixels = prepared;
+            pixelOffset = 0;
+        }
         if (!WglMakeCurrent(_dc, _context))
             throw new InvalidOperationException("OpenGL could not activate its rendering context.");
         try

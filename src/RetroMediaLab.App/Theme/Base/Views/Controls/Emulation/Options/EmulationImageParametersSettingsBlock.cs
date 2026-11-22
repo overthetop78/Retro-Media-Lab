@@ -4,6 +4,7 @@ using RetroMediaLab.Emulation.Constants;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Dictionaries;
 using System.Windows;
+using ImageControls = RetroMediaLab.VideoPresentation.Enums.EmulationImageAdjustmentControls;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -12,7 +13,9 @@ namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
 
 internal static class EmulationImageParametersSettingsBlock
 {
-    internal static FrameworkElement Create(EmulationImageAdjustments adjustments, Action<Func<EmulationImageAdjustments, EmulationImageAdjustments>> changed, FrameworkElement? additionalSettings = null)
+    internal static FrameworkElement Create(EmulationImageAdjustments adjustments, ImageControls controls, Action<Func<EmulationImageAdjustments, EmulationImageAdjustments>> changed,
+        EmulationImageRestorationConfiguration restoration, bool host, bool supportsDedithering, bool supportsDeinterlacing,
+        Action<Func<EmulationImageRestorationConfiguration, EmulationImageRestorationConfiguration>> restorationChanged)
     {
         var block = new StackPanel { Margin = new Thickness(0, 0, 0, 12) };
         block.Children.Add(new TextBlock
@@ -21,15 +24,25 @@ internal static class EmulationImageParametersSettingsBlock
             FontWeight = FontWeights.SemiBold,
             Margin = new Thickness(0, 0, 0, 12)
         });
-        var sliders = new UniformGrid { Columns = 5, HorizontalAlignment = HorizontalAlignment.Stretch };
-        sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Brightness, adjustments.Brightness, value => changed(current => current with { Brightness = value })));
-        sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Contrast, adjustments.Contrast, value => changed(current => current with { Contrast = value })));
-        sliders.Children.Add(GammaChoice(adjustments.Gamma, value => changed(current => current with { Gamma = value })));
-        sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Saturation, adjustments.Saturation,
-            value => changed(current => current with { Saturation = value }), EmulationImageAdjustmentFunctions.FormatSaturation));
-        sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Sharpness, adjustments.Sharpness, value => changed(current => current with { Sharpness = value })));
-        block.Children.Add(sliders);
-        if (additionalSettings is not null) block.Children.Add(additionalSettings);
+        var sliders = new UniformGrid { Rows = 1, HorizontalAlignment = HorizontalAlignment.Stretch };
+        if (controls.HasFlag(ImageControls.Brightness))
+            sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Brightness, adjustments.Brightness, value => changed(current => current with { Brightness = value })));
+        if (controls.HasFlag(ImageControls.Contrast))
+            sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Contrast, adjustments.Contrast, value => changed(current => current with { Contrast = value })));
+        if (controls.HasFlag(ImageControls.Saturation))
+            sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Saturation, adjustments.Saturation,
+                value => changed(current => current with { Saturation = value }), EmulationImageAdjustmentFunctions.FormatSaturation));
+        if (controls.HasFlag(ImageControls.Sharpness))
+            sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Sharpness, adjustments.Sharpness, value => changed(current => current with { Sharpness = value })));
+        if (host)
+            EmulationImageRestorationSettingsBlock.AddIntensityControls(sliders, restoration, restorationChanged);
+        if (sliders.Children.Count > 0) block.Children.Add(sliders);
+
+        var choices = new UniformGrid { Rows = 1, Margin = new Thickness(0, 16, 0, 0) };
+        if (controls.HasFlag(ImageControls.Gamma))
+            choices.Children.Add(GammaChoice(adjustments.Gamma, value => changed(current => current with { Gamma = value })));
+        EmulationImageRestorationSettingsBlock.AddChoices(choices, restoration, supportsDedithering, supportsDeinterlacing, restorationChanged);
+        if (choices.Children.Count > 0) block.Children.Add(choices);
         return block;
 
     }
@@ -37,13 +50,12 @@ internal static class EmulationImageParametersSettingsBlock
     private static FrameworkElement GammaChoice(int setting, Action<int> changed)
     {
         var original = LocExtension.Get(EmulationResourceKeys.VideoGammaOriginal);
-        var column = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(8, 0, 8, 0) };
+        var column = new StackPanel { Margin = new Thickness(0, 0, 18, 0) };
         var label = LocExtension.Get(EmulationResourceKeys.VideoParameterGamma);
         column.Children.Add(new TextBlock
         {
             Text = label,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Margin = new Thickness(0, 0, 0, 8)
+            Margin = new Thickness(0, 0, 0, 6)
         });
         var choice = new ComboBox
         {
@@ -71,15 +83,15 @@ internal static class EmulationImageParametersSettingsBlock
         format ??= EmulationImageAdjustmentFunctions.FormatSigned;
         var column = new StackPanel
         {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Margin = new Thickness(8, 0, 8, 0)
+            Margin = new Thickness(6, 0, 6, 0)
         };
         column.Children.Add(new TextBlock
         {
             Text = LocExtension.Get(EmulationVideoProcessingCatalog.ParameterResourceKeys[id]),
-            HorizontalAlignment = HorizontalAlignment.Center,
             TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 0, 0, 8)
+            TextWrapping = TextWrapping.Wrap,
+            MinHeight = 40,
+            Margin = new Thickness(0, 0, 0, 6)
         });
         var slider = new Slider
         {

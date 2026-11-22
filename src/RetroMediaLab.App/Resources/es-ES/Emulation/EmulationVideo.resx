@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Pantalla</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Renderizado</value></data>
   <data name="Emulation.Video.Sampling"><value>muestreo</value></data>
-  <data name="Emulation.Video.Technology"><value>Tecnología de visualización</value></data>
+  <data name="Emulation.Video.Technology"><value>Tipo de pantalla</value></data>
   <data name="Emulation.Video.Settings.General"><value>Ajustes de imagen generales</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab procesamiento de vídeo</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normal</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Pantalla vectorial</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Restauración de imágenes</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Eliminación de tramado</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Denoising</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Reducción de la banda</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Recuperación de datos</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Deinterlacing</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Desactivado</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - incluso líneas</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - líneas extrañas</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Combinación vertical</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Azul</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Verde</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Modo de renderizado</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>El renderizado por hardware utiliza la API gráfica seleccionada para la aplicación si el emulador la admite.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Original (no corrección)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Pantalla de host (sin simulación)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (tubo de rayos de gato)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Pantalla vectorial</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (Válculo fluorescente de vacío)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Pantalla de segmento</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Paper (documento electrónico)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED intensidad de las emisiones</value></data>
+  <data name="Emulation.Video.Hardware"><value>Hardware de vídeo</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Original</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Adaptativo al movimiento</value></data>
 </root>

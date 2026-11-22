@@ -47,23 +47,34 @@ internal sealed partial class ManagedCore
     private void PublishVideo(SegaBoard system)
     {
         VideoPresentation layout = Presentation(system);
-        // Published arrays are immutable for consumers; no buffer is recycled here.
-        byte[] pixels = new byte[layout.Pitch * layout.Height];
+        // The VDP writes the current parity into alternating rows in double-field mode.
+        var field = layout.Interlaced || (system.Video.interlaced != 0
+            && (_configuration is { } config && ModelConstants.IsMegaDriveFamily(config.Model)));
+        int parity = system.Video.odd_frame & 1;
+        int rows = layout.Interlaced ? layout.Height / 2 : layout.Height;
+        byte[] pixels = new byte[checked(layout.Pitch * rows)];
         int sourceOffset = layout.Left * layout.BytesPerPixel;
-        if (layout.Pitch == BitmapPitch)
+        if (!layout.Interlaced && layout.Pitch == BitmapPitch)
             _bitmap.AsSpan(sourceOffset, pixels.Length).CopyTo(pixels);
         else
-            for (int line = 0; line < layout.Height; line++)
-                _bitmap.AsSpan(line * BitmapPitch + sourceOffset, layout.Pitch).CopyTo(pixels.AsSpan(line * layout.Pitch));
+            for (int line = 0; line < rows; line++)
+            {
+                var sourceLine = layout.Interlaced ? line * 2 + parity : line;
+                _bitmap.AsSpan(sourceLine * BitmapPitch + sourceOffset, layout.Pitch).CopyTo(pixels.AsSpan(line * layout.Pitch));
+            }
         if (layout.Cursor)
-            DrawGunCursors(system, pixels, layout.Width, layout.Height, layout.Pitch,
-                layout.BytesPerPixel, layout.Left, layout.NormalWidth, layout.Interlaced);
-        LatestVideoFrame = new(pixels, layout.Width, layout.Height, layout.Pitch,
+            DrawGunCursors(system, pixels, layout.Width, rows, layout.Pitch,
+                layout.BytesPerPixel, layout.Left, layout.NormalWidth);
+        LatestVideoFrame = new(pixels, layout.Width, rows, layout.Pitch,
             layout.BytesPerPixel == 4 ? EmulationPixelFormat.Xrgb8888 : EmulationPixelFormat.Rgb565,
-            layout.Aspect, _sequence, _timestamp);
+            layout.Aspect, _sequence, _timestamp)
+        {
+            ScanMode = !field ? EmulationVideoScanMode.Progressive
+                : parity == 0 ? EmulationVideoScanMode.InterlacedEvenField : EmulationVideoScanMode.InterlacedOddField
+        };
     }
     private static void DrawGunCursors(SegaBoard system, Span<byte> pixels, int width, int height,
-        int pitch, int bytesPerPixel, int croppedLeft, int normalWidth, bool interlaced)
+        int pitch, int bytesPerPixel, int croppedLeft, int normalWidth)
     {
         for (int device = 0; device < system.Input.DeviceTypes.Length; device++)
         {
@@ -71,7 +82,7 @@ internal sealed partial class ManagedCore
             int inputX = system.Input.AnalogInputs[device * 2], inputY = system.Input.AnalogInputs[device * 2 + 1];
             if (inputX < 0 || inputY < 0 || inputX >= system.Video.ViewportWidth || inputY >= system.Video.ViewportHeight) continue;
             int x = (inputX + system.Video.ViewportX) * system.Video.OutputWidth / normalWidth - croppedLeft;
-            int y = (inputY + system.Video.ViewportY) * (interlaced ? 2 : 1);
+            int y = inputY + system.Video.ViewportY;
             uint color = device == 0 ? 0x000000ffu : 0x00ff0000u;
             ushort color565 = device == 0 ? (ushort)0x001f : (ushort)0xf800;
             for (int offset = -5; offset <= 5; offset++)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using RetroMediaLab.App.Functions.Emulation.Machine;
 using RetroMediaLab.Emulation.Contracts;
+using RetroMediaLab.Emulation.Enums;
 using RetroMediaLab.Emulation.Sega.Common.Interfaces;
 using RetroMediaLab.Emulation.Sega.Common.Machines.Common.Contracts;
 using RetroMediaLab.Emulation.Sega.Emulators.Common.Interop.Functions;
@@ -248,6 +249,27 @@ public sealed class OptionIntegrationTests
     private sealed record Fixture(IEmulatorCore Core,MachineConfiguration Configuration) : IDisposable
     { public void Dispose()=>Core.Dispose(); }
 
+    [Fact]
+    public void MegaDrivePublishesNativeFieldParity()
+    {
+        using var fixture = Create("segaemu", "MegaDrive");
+        var board = (SE.Boards.SegaBoard)Read(fixture.Core, "_system")!;
+        fixture.Core.RunFrame();
+        var progressive = fixture.Core.LatestVideoFrame!;
+        Assert.Equal(EmulationVideoScanMode.Progressive, progressive.ScanMode);
+        board.Video.reg[12] |= 6;
+        board.Video.ViewportChanged |= 2;
+        fixture.Core.RunFrame();
+        var first = fixture.Core.LatestVideoFrame!;
+        fixture.Core.RunFrame();
+        var second = fixture.Core.LatestVideoFrame!;
+        Assert.Equal(EmulationVideoScanMode.InterlacedEvenField, first.ScanMode);
+        Assert.Equal(EmulationVideoScanMode.InterlacedOddField, second.ScanMode);
+        Assert.Equal(progressive.Height, first.Height);
+        Assert.Equal(first.Height * 2, first.ImageHeight);
+        Assert.True(second.Timestamp > first.Timestamp);
+    }
+
     private static Fixture Create(string id,string model)
     {
         IEmulatorCore core=id=="segaemu" ? new SE.Services.ManagedCore() : new GX.Services.ManagedCore();
@@ -259,9 +281,10 @@ public sealed class OptionIntegrationTests
             object settings=core.GetType().GetMethod("CreateSettings",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(core,null)!;
             Write(core,"_settings",settings);
             byte[] bitmap=(byte[])Read(core,"_bitmap")!;
-            byte[] rom=new byte[0x8000];new byte[]{0x21,0x00,0xc0,0x34,0xc3,0x03,0x00}.CopyTo(rom,0);
+            byte[] rom = model == "MegaDrive" ? MachineIntegrationTests.Program(0x80) : new byte[0x8000];
+            if (model != "MegaDrive") new byte[]{0x21,0x00,0xc0,0x34,0xc3,0x03,0x00}.CopyTo(rom,0);
             byte hardware=model=="GameGear" ? (byte)0x40 : (byte)0x21;
-            string name=model=="GameGear" ? "synthetic.gg" : "synthetic.sms";
+            string name = model switch { "GameGear" => "synthetic.gg", "MegaDrive" => "synthetic.md", _ => "synthetic.sms" };
             if(id=="segaemu")
             {
                 var machine=SE.Factories.BoardFactory.Create(model,new((SE.Contracts.SystemConfiguration)settings,bitmap,1024,626,4096,44100,_=>null,(_,_)=>0,CancellationToken.None));

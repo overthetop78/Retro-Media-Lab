@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>디스플레이</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>렌더링</value></data>
   <data name="Emulation.Video.Sampling"><value>샘플링</value></data>
-  <data name="Emulation.Video.Technology"><value>디스플레이 기술</value></data>
+  <data name="Emulation.Video.Technology"><value>전시 유형</value></data>
   <data name="Emulation.Video.Settings.General"><value>일반 이미지 조정</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Retro Media Lab 비디오 처리</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>·</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>벡터 디스플레이</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>이미지 복원</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>디더링 제거</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>관련 상품</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>공급 업체</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>옵션 복구</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>메뉴 닫기</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>사용 안 함</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>밥 - 심지어 선</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - 이상한 선</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>수직 혼합</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>파란색</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>(주)그린</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>렌더링 모드</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>하드웨어 렌더링은 에뮬레이터가 지원하는 경우 애플리케이션에서 선택한 그래픽 API를 사용합니다.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Original (보정 없음)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>호스트 디스플레이 (노트 없음)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (카도트레이 튜브)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>벡터 디스플레이</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (진공 형광 디스플레이)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Segment 전시</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-Paper (전자 용지)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED 배출 강도</value></data>
+  <data name="Emulation.Video.Hardware"><value>영상 하드웨어</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>원본</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>동작 적응형</value></data>
 </root>

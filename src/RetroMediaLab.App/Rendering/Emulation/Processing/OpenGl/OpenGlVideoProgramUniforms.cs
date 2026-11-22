@@ -149,10 +149,10 @@ internal sealed class OpenGlVideoProgramUniforms
 
         Set(_general, new((float)configuration.DisplayTechnology, hasHistory ? 1f : 0f, sequence % OpenGlVideoConstants.ShaderSequenceCycle, (float)elapsedMilliseconds));
         Set(_restoration, new(
-            configuration.Restoration.Dedithering / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Restoration.Denoising / OpenGlVideoConstants.PercentageDivisor,
+            0f,
+            0f,
             configuration.Restoration.Debanding / OpenGlVideoConstants.PercentageDivisor,
-            (float)configuration.Restoration.Deinterlacing));
+            0f));
         Set(_temporal, new(
             configuration.Temporal.GeneralPersistence / OpenGlVideoConstants.PercentageDivisor,
             configuration.Temporal.MotionBlur / OpenGlVideoConstants.PercentageDivisor,

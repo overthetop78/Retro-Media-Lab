@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Afișare</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Randare</value></data>
   <data name="Emulation.Video.Sampling"><value>Eșantionarea</value></data>
-  <data name="Emulation.Video.Technology"><value>Tehnologia de afișare</value></data>
+  <data name="Emulation.Video.Technology"><value>Tip de afișare</value></data>
   <data name="Emulation.Video.Settings.General"><value>Ajustări generale ale imaginii</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Procesarea video Retro Media Lab</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Normal</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Afișare vector</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Restaurarea imaginii</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Eliminare dithering</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Denoarea</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Reducerea bandajelor</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Recuperarea detaliilor</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Deinterconectare</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Dezactivat</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - chiar linii</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - linii ciudate</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Amestec vertical</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Albastru</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Verde</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Mod de randare</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Randarea hardware folosește API-ul grafic selectat pentru aplicație, dacă emulatorul îl acceptă.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Original (fără corecție)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Afișaj gazdă (fără simulare)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (tub de catodă-ray)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Afișare vectorială</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (Afișare fluorescentă cu vid)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Afișare segment</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>E-paper (hârtie electronică)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED intensitatea emisiilor</value></data>
+  <data name="Emulation.Video.Hardware"><value>hardware video</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Original</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Adaptiv la mișcare</value></data>
 </root>

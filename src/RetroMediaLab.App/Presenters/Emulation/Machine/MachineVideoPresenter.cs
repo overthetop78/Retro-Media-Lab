@@ -84,9 +84,21 @@ internal sealed class MachineVideoPresenter : IDisposable
     internal IntPtr InputHandle => _surface.InputHandle;
     internal EmulationVideoRenderer Renderer => _surface.Renderer;
     internal EmulationVideoProcessingConfiguration VideoProcessing => _videoProcessing;
-    internal System.Windows.Media.Imaging.BitmapSource? Snapshot => _surface.Snapshot;
-    internal Task<System.Windows.Media.Imaging.BitmapSource?> CaptureSnapshotAsync() =>
-        _presentationEnabled ? _surface.CaptureSnapshotAsync() : EmulationVideoSnapshotFunctions.CreateAsync(PresentationFrame(), _videoProcessing, new EmulationVideoProcessingSize(Math.Max(1, (int)_view.Screen.ActualWidth), Math.Max(1, (int)_view.Screen.ActualHeight)));
+    internal System.Windows.Media.Imaging.BitmapSource? Snapshot
+    {
+        get { lock (_surfaceGate) return _surface.Snapshot; }
+    }
+
+    internal Task<System.Windows.Media.Imaging.BitmapSource?> CaptureSnapshotAsync()
+    {
+        lock (_surfaceGate)
+        {
+            if (_presentationEnabled) return _surface.CaptureSnapshotAsync();
+            var (frame, _) = PresentationFrame();
+            return EmulationVideoSnapshotFunctions.CreateAsync(frame, _videoProcessing, new EmulationVideoProcessingSize(
+                Math.Max(1, (int)_view.Screen.ActualWidth), Math.Max(1, (int)_view.Screen.ActualHeight)));
+        }
+    }
     internal double MeasuredFramesPerSecond => _measuredFramesPerSecond;
     internal EmulationExecutionRate? ExecutionRate { get { lock (_frameRateGate) return _executionRate; } }
     internal bool IsShaderLoading => _shaderLoading;
@@ -175,7 +187,10 @@ internal sealed class MachineVideoPresenter : IDisposable
     {
         var normalized = EmulationVideoProcessingConfigurationFunctions.Normalize(configuration);
         if (_videoProcessing == normalized) return;
-        var rebuildsShader = _surface.Renderer != EmulationVideoRenderer.Wpf && (_videoProcessing.Sampling != normalized.Sampling || _videoProcessing.DisplayTechnology != normalized.DisplayTechnology);
+        var rebuildsShader = _surface.Renderer != EmulationVideoRenderer.Wpf
+            && (EmulationVideoProcessingConfigurationFunctions.SamplingForDisplay(_videoProcessing)
+                != EmulationVideoProcessingConfigurationFunctions.SamplingForDisplay(normalized)
+                || _videoProcessing.DisplayTechnology != normalized.DisplayTechnology);
         _videoProcessing = normalized;
         lock (_surfaceGate)
         {
@@ -186,6 +201,7 @@ internal sealed class MachineVideoPresenter : IDisposable
                 _shaderPrepared = false;
             }
         }
+        if (_presentationEnabled) FitScreen();
         RequestCurrentFrame();
     }
 
@@ -205,6 +221,9 @@ internal sealed class MachineVideoPresenter : IDisposable
     {
         var frame = _machine.Video.LatestFrame;
         var ratio = aspectRatio ?? (frame is { Width: > 0, Height: > 0 } ? FrameAspectRatio(frame) : MachinePresentationConstants.DefaultAspectRatio);
+        var (width, height) = EmulationVideoProcessingConfigurationFunctions.AspectRatioDimensions(
+            EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(_videoProcessing));
+        if (height > 0) ratio = (double)width / height;
         var fitted = EmulationVideoLayoutFunctions.Fit(_displayHost.ActualWidth, _displayHost.ActualHeight, (float)ratio);
         if (fitted.IsEmpty) return;
         if (double.IsNaN(_view.Screen.Width) || Math.Abs(_view.Screen.Width - fitted.Width) >= 0.5d)
@@ -315,7 +334,7 @@ internal sealed class MachineVideoPresenter : IDisposable
         lock (_fieldGate)
         {
             if (_disposed) return;
-            _fields.Receive(frame);
+            _fields.Receive(frame, _machine.Video.FramesPerSecond);
         }
         if (!_presentationEnabled)
         {
@@ -325,18 +344,27 @@ internal sealed class MachineVideoPresenter : IDisposable
         QueueFrame(frame);
     }
 
-    private VideoFrame? PresentationFrame()
+    private (VideoFrame? Output, VideoFrame? Source) PresentationFrame()
     {
         lock (_fieldGate)
         {
-            if (_disposed) return null;
-            var prepared = _fields.Compose();
-            if (prepared is not null) return prepared;
-            if (_machine.Video.LatestFrame is not { } frame) return null;
-            _fields.Receive(frame);
-            return _fields.Compose();
+            if (_disposed) return (null, null);
+            if (_fields.Latest is null && _machine.Video.LatestFrame is { } frame)
+                _fields.Receive(frame, _machine.Video.FramesPerSecond);
+            return (_fields.Compose(EmulationVideoProcessingConfigurationFunctions.DeinterlacingForDisplay(_videoProcessing)), _fields.Latest);
         }
     }
+
+    private VideoFrame PresentFrame(VideoFrame fallback)
+    {
+        var (output, source) = PresentationFrame();
+        if (output is not null && source is not null && !ReferenceEquals(output, source))
+            _surface.PresentTransient(output, source);
+        else
+            _surface.Present(output ?? fallback);
+        return source ?? fallback;
+    }
+
     private void QueueFrame(VideoFrame frame)
     {
         if (_disposed || !_presentationEnabled) return;
@@ -346,7 +374,7 @@ internal sealed class MachineVideoPresenter : IDisposable
                 != MachinePresentationConstants.InactiveFramePending) return;
             _view.Dispatcher.BeginInvoke(() =>
             {
-                try { PresentOnUi(PresentationFrame() ?? frame); }
+                try { PresentOnUi(frame); }
                 finally { Interlocked.Exchange(ref _framePending, MachinePresentationConstants.InactiveFramePending); }
             });
             return;
@@ -378,7 +406,6 @@ internal sealed class MachineVideoPresenter : IDisposable
                     _pendingGpuFrame = null;
                 }
                 if (frame is null) break;
-                frame = PresentationFrame() ?? frame;
                 Exception? error = null;
                 long generation = 0;
                 try
@@ -388,7 +415,7 @@ internal sealed class MachineVideoPresenter : IDisposable
                         if (_disposed || !_presentationEnabled
                             || presentationGeneration != Volatile.Read(ref _presentationGeneration)) continue;
                         PrepareHistory(presentationGeneration);
-                        _surface.Present(frame);
+                        frame = PresentFrame(frame);
                         generation = Volatile.Read(ref _shaderLoadGeneration);
                         _shaderPrepared = true;
                     }
@@ -417,7 +444,7 @@ internal sealed class MachineVideoPresenter : IDisposable
         lock (_surfaceGate)
         {
             PrepareHistory(Volatile.Read(ref _presentationGeneration));
-            _surface.Present(frame);
+            frame = PresentFrame(frame);
         }
         CompleteShaderLoading(Volatile.Read(ref _shaderLoadGeneration));
         NotifyFrameCompleted(frame);

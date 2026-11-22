@@ -29,7 +29,7 @@
   <data name="Emulation.Video.Settings.Display"><value>Προβολή</value></data>
   <data name="Emulation.Video.Settings.Rendering"><value>Απόδοση</value></data>
   <data name="Emulation.Video.Sampling"><value>Δειγματοληψία</value></data>
-  <data name="Emulation.Video.Technology"><value>Τεχνολογία απεικόνισης</value></data>
+  <data name="Emulation.Video.Technology"><value>Τύπος εμφάνισης</value></data>
   <data name="Emulation.Video.Settings.General"><value>Γενικές προσαρμογές εικόνας</value></data>
   <data name="Emulation.Video.Settings.RetroMediaLabProcessing"><value>Επεξεργασία βίντεο Retro Media Lab</value></data>
   <data name="Emulation.Video.Technology.Normal"><value>Κανονικό</value></data>
@@ -121,13 +121,10 @@
   <data name="Emulation.Video.Preset.Vector"><value>Εμφάνιση διανυσμάτων</value></data>
   <data name="Emulation.Video.Settings.Restoration"><value>Αποκατάσταση εικόνας</value></data>
   <data name="Emulation.Video.Parameter.Dedithering"><value>Αφαίρεση dithering</value></data>
-  <data name="Emulation.Video.Parameter.Denoising"><value>Αποκωδικοποίηση</value></data>
   <data name="Emulation.Video.Parameter.Debanding"><value>Μείωση λίπανσης</value></data>
   <data name="Emulation.Video.Parameter.DetailRecovery"><value>Λεπτομέρεια ανάκτησης</value></data>
   <data name="Emulation.Video.Parameter.Deinterlacing"><value>Αποπλήρωση</value></data>
   <data name="Emulation.Video.Deinterlacing.Off"><value>Απενεργοποίηση</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobEvenLines"><value>Bob - ακόμα και γραμμές</value></data>
-  <data name="Emulation.Video.Deinterlacing.BobOddLines"><value>Bob - παράξενες γραμμές</value></data>
   <data name="Emulation.Video.Deinterlacing.Blend"><value>Κατακόρυφο μείγμα</value></data>
   <data name="Emulation.Video.Vfd.Color.Blue"><value>Μπλε</value></data>
   <data name="Emulation.Video.Vfd.Color.Green"><value>Πράσινο</value></data>
@@ -303,4 +300,14 @@
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Λειτουργία απόδοσης</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Η απόδοση μέσω υλικού χρησιμοποιεί το API γραφικών που έχει επιλεγεί για την εφαρμογή, εφόσον το υποστηρίζει ο εξομοιωτής.</value></data>
   <data name="Emulation.Video.Gamma.Original"><value>Αρχικό (χωρίς διόρθωση)</value></data>
+  <data name="Emulation.Video.Screen.Host"><value>Εμφάνιση υπολογιστή (χωρίς προσομοίωση)</value></data>
+  <data name="Emulation.Video.Screen.Crt"><value>CRT (σωλήνας με καθοδική λυχνία)</value></data>
+  <data name="Emulation.Video.Screen.Vector"><value>Εμφάνιση διανυσμάτων</value></data>
+  <data name="Emulation.Video.Screen.Vfd"><value>VFD (Εκπομπή φθορισμού κενού)</value></data>
+  <data name="Emulation.Video.Screen.SegmentDisplay"><value>Εμφάνιση τμήματος</value></data>
+  <data name="Emulation.Video.Screen.EPaper"><value>Ηλεκτρονικά χαρτιά (ηλεκτρονικά)</value></data>
+  <data name="Emulation.Video.Parameter.FixedPixelOledEmission"><value>OLED ένταση εκπομπών</value></data>
+  <data name="Emulation.Video.Hardware"><value>Υλικό βίντεο</value></data>
+  <data name="Emulation.Video.AspectRatio.Original"><value>Αρχικό</value></data>
+  <data name="Emulation.Video.Deinterlacing.Adaptive"><value>Προσαρμογή στην κίνηση</value></data>
 </root>
