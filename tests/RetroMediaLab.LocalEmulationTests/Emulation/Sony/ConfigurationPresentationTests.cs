@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Functions.Emulation.Settings;
 using System.IO;
 using System.Net.Http;
 using RetroMediaLab.App.Functions.Emulation.Machine;

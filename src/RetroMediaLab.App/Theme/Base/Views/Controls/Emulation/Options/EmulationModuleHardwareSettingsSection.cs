@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Functions.Emulation.Settings;
 using RetroMediaLab.App.Contracts.Emulation.Machine;
 using RetroMediaLab.App.Contracts.Emulation.Memory;
 using RetroMediaLab.App.Contracts.Emulation.Settings;
@@ -137,8 +138,7 @@ internal sealed partial class EmulationModuleSettingsSection
     {
         var sourceValue = ReadValue(source);
         var targetValue = ReadValue(target);
-        if (rule.Category == EmulationSettingsRuleCategory.MutuallyExclusive
-            && sourceValue != rule.ComparedValue && targetValue != rule.ComparedValue)
+        if (EmulationSettingsRuleFunctions.Conflicts(rule, sourceValue, targetValue))
         {
             var wasApplyingRule = _applyingSettingsRule;
             _applyingSettingsRule = true;
@@ -146,7 +146,7 @@ internal sealed partial class EmulationModuleSettingsSection
             finally { _applyingSettingsRule = wasApplyingRule; }
         }
         if (rule.Category == EmulationSettingsRuleCategory.VisibleWhenSourceDiffers)
-            target.Visibility = sourceValue == rule.ComparedValue ? Visibility.Collapsed : Visibility.Visible;
+            target.Visibility = EmulationSettingsRuleFunctions.HidesTarget(rule, sourceValue) ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void AttachUserChangeHandlers()

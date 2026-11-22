@@ -32,7 +32,6 @@ namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
 internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsyncDisposable
 {
     private readonly IEmulationModule _module;
-    private readonly RetroMediaLab.VideoPresentation.Services.VideoPresentationProfileStore _profiles;
     private readonly Action<Exception> _showError;
     private readonly ListBox _machines = new()
     {
@@ -48,19 +47,18 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
     private readonly EmulationFirmwareManagementController? _firmwareManagement;
     private readonly EmulationInputSettingsController? _inputSettings;
     private readonly EmulationStorageSettingsController? _storageSettings;
-    private IReadOnlyList<IEmulationConfiguration> _saved = [];
+    private readonly EmulationModuleConfigurationSession _session;
     private IEmulationConfiguration _configuration;
     private bool _loading;
     private bool _disposed;
     private Task? _initialLoad;
-    private readonly SemaphoreSlim _saveInputGate = new(1, 1);
     private EmulationMachineTab _selectedTab = EmulationMachineTab.General;
 
     internal EmulationModuleSettingsSection(IEmulationModule module, RetroMediaLab.VideoPresentation.Services.VideoPresentationProfileStore? profiles = null, Action<Exception>? showError = null, IEnumerable<string>? reservedBindings = null)
     {
         FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         _module = module;
-        _profiles = profiles ?? EmulationVideoPresentationProfiles.Store;
+        _session = new EmulationModuleConfigurationSession(module, profiles ?? EmulationVideoPresentationProfiles.Store);
         _showError = showError ?? (error => ControlErrorPresenter.ShowEmulation(this, error, ControlErrorContexts.EmulationConfigurationManagement, LocExtension.GetForModule(_module, _module.DisplayResourceKey)));
         _machines.ItemContainerStyle = EmulationMachineChoiceLayout.CreateListItemContainerStyle();
         _machines.ItemTemplate = EmulationMachineChoiceLayout.CreateTemplate();
@@ -70,7 +68,7 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
         _configuration = module.CreateConfiguration(choices[0].Definition.Id);
         if (module is IEmulationEmulatorManager manager)
         {
-            _emulatorManagement = new EmulationEmulatorManagementController(manager, () => _configuration, SetConfiguration, () => _saved.Any(configuration => configuration.MachineId == _configuration.MachineId), module as IEmulationModuleLocalization);
+            _emulatorManagement = new EmulationEmulatorManagementController(manager, () => _configuration, SetConfiguration, () => _session.HasSavedMachine(_configuration.MachineId), module as IEmulationModuleLocalization);
             _emulatorManagement.ConfigurationChanged += EmulatorConfigurationChanged;
         }
         if (module is IEmulationFirmwareManager firmwareManager)
@@ -101,10 +99,7 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
         _machines.SelectionChanged += MachineChanged;
         _videoProcessing.ConfigurationChanged += async (_, _) =>
         {
-            var profile = _profiles.Get(_module.Id, _configuration.Id);
-            _profiles.Set(_module.Id, _configuration.Id, profile with { Processing = _videoProcessing.Configuration });
-            if (!_saved.Any(item => item.Id == _configuration.Id))
-                EmulationConfigurationDraftStore.Set(_module.Id, _configuration);
+            _session.SetVideoProcessing(_configuration, _videoProcessing.Configuration);
             VideoConfigurationChanged?.Invoke(this, new EmulationConfigurationSavedEventArgs(_configuration));
             await ExecuteAsync(SaveVideoProfileAsync);
         };
@@ -132,14 +127,14 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
     internal async Task ReloadAfterConfigurationDeletedAsync(Guid configurationId, string machineId)
     {
         if (_configuration.Id == configurationId)
-            EmulationConfigurationDraftStore.Remove(_module.Id, machineId);
+            _session.RemoveDraft(machineId);
 
         await ReloadAsync();
     }
 
     internal async Task EditConfigurationAsync(IEmulationConfiguration configuration)
     {
-        _saved = await _module.LoadConfigurationsAsync();
+        await _session.LoadAsync();
         _configuration = configuration;
         SelectMachine(configuration.MachineId);
         _selectedTab = EmulationMachineTab.General;
@@ -150,14 +145,13 @@ internal sealed partial class EmulationModuleSettingsSection : UserControl, IAsy
     }
 
     private EmulationMachineChoice CreateMachineChoice(EmulationMachineDefinition machine) =>
-        new(machine, LocExtension.GetForModule(_module, machine.DisplayResourceKey), _saved.Any(configuration => configuration.MachineId == machine.Id), EmulationAssetFunctions.Load(machine.ImagePath));
+        new(machine, LocExtension.GetForModule(_module, machine.DisplayResourceKey), _session.HasSavedMachine(machine.Id), EmulationAssetFunctions.Load(machine.ImagePath));
 
     private async Task ReloadAsync()
     {
-        _saved = await _module.LoadConfigurationsAsync();
+        await _session.LoadAsync();
         var machineId = _configuration.MachineId;
-        var selected = _saved.FirstOrDefault(item => item.Id == _configuration.Id) ?? _saved.FirstOrDefault(item => item.MachineId == machineId);
-        _configuration = selected ?? (EmulationConfigurationDraftStore.TryGet(_module.Id, machineId, out var draft) ? draft : _module.CreateConfiguration(machineId));
+        _configuration = _session.SelectForEditing(machineId, _configuration.Id);
         var choices = _module.Machines.Select(CreateMachineChoice).ToArray();
         _machines.ItemsSource = choices;
         SelectMachine(machineId);

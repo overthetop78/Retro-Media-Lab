@@ -86,6 +86,13 @@ internal sealed class ConversionTabController(
 
     internal void RefreshProfiles(string? selectedId = null) => profileController.Refresh(ProfileCombo, OperationKind.Convert, selectedId);
 
+    internal void RefreshSourceFormats(string source)
+    {
+        var extension = string.IsNullOrWhiteSpace(source) ? null : Path.GetExtension(source);
+        var detection = File.Exists(source) ? formatDetector().Detect(source, new FileInfo(source).Length) : null;
+        BuildFormats(extension, detection);
+    }
+
     internal void BuildFormats(string? extension, DetectedImageFormat? detection = null)
     {
         sourceExtension = extension; sourceDetection = detection;

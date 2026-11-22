@@ -1,12 +1,9 @@
-using RetroMediaLab.Infrastructure.Settings.Emulation;
 using RetroMediaLab.App.Constants.Controls.Visual;
 using RetroMediaLab.App.Contracts.Input;
-using RetroMediaLab.App.Functions.Input.Bindings;
 using RetroMediaLab.App.Localization.Extensions;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 
 namespace RetroMediaLab.App.Functions.Emulation.Shortcuts;
@@ -41,7 +38,7 @@ internal static class EmulationShortcutViewFunctions
 
     private static UIElement CreateHint(IReadOnlyList<GlobalShortcutBinding> configuredShortcuts, (string Action, string ResourceKey) shortcut)
     {
-        var shortcutText = ResolveShortcutText(configuredShortcuts, shortcut.Action);
+        var shortcutText = EmulationShortcutMap.ResolveShortcutText(configuredShortcuts, shortcut.Action);
         var label = LocExtension.Get(shortcut.ResourceKey);
         var panel = new StackPanel
         {
@@ -68,15 +65,5 @@ internal static class EmulationShortcutViewFunctions
         panel.Children.Add(key);
         AutomationProperties.SetName(panel, $"{label} {shortcutText}");
         return panel;
-    }
-
-    internal static string ResolveShortcutText(IReadOnlyList<GlobalShortcutBinding> configuredShortcuts, string action)
-    {
-        var configured = configuredShortcuts.FirstOrDefault(item => item.Action == action);
-        if (configured?.SourceBinding is { } sourceBinding) return sourceBinding;
-        var binding = configured?.Chord;
-        if (binding is null && EmulationShortcutDefaults.Values.TryGetValue(action, out var fallback))
-            KeyboardChordFunctions.TryParse(fallback, out binding);
-        return binding is null ? string.Empty : KeyboardChordFunctions.Format(binding.Modifiers, binding.Keys);
     }
 }

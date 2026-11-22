@@ -1,10 +1,10 @@
+using RetroMediaLab.App.Functions.Emulation.Shortcuts;
+using RetroMediaLab.App.Controllers.Emulation;
 using RetroMediaLab.Infrastructure.Settings;
 using RetroMediaLab.App.Contracts.Emulation.Configurations;
 using RetroMediaLab.App.Contracts.Emulation.Machine;
 using RetroMediaLab.App.Localization.Extensions;
-using RetroMediaLab.App.Presenters.Emulation.Configurations;
 using RetroMediaLab.App.Services.Emulation;
-using RetroMediaLab.App.Services.Storage;
 using RetroMediaLab.App.Views.Controls.Emulation.Input;
 using RetroMediaLab.App.Views.Controls.Emulation.Machine;
 using RetroMediaLab.App.Views.Controls.Common;
@@ -18,37 +18,28 @@ namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
 
 public sealed partial class EmulationPreferencesSection : UserControl
 {
-    public static event EventHandler<EmulationConfigurationSavedEventArgs>? ConfigurationSaved;
-    public static event EventHandler<EmulationConfigurationSavedEventArgs>? VideoConfigurationChanged;
-    internal static event Func<Task>? ConfigurationDeleted;
     internal event Func<IEmulationModule, IEmulationConfiguration, Task>? EditConfigurationRequested;
 
-    private readonly IReadOnlyList<IEmulationModule> _modules;
+    private readonly EmulationPreferencesConfigurations _configurationCatalog;
     private readonly EmulationConfigurationSelector _configurationSelector = new();
-    private string? _selectedConfigurationMachineId;
-    private IEmulationModule? _selectedConfigurationModule;
-    private IReadOnlyList<EmulationConfigurationTableRow> _configurationRows = [];
     private readonly EmulationConfigurationTable _configurationTable = new();
     private readonly RetroMediaLab.App.Views.Controls.Emulation.Network.EmulationNetworkSection _network = new();
     private readonly InputBindingEditor _shortcuts = new();
     private readonly TextBox _storageFolder = new();
     private readonly TextBox _captureFolder = new();
     private readonly TextBox _stateFolder = new();
-    private AppSettings? _settings;
-    private Func<Task>? _persistSettings;
+    private readonly EmulationPreferencesSettings _preferencesSettings = new();
     private readonly TabControl _tabs;
     private readonly TabItem _generalTab;
     private readonly TabItem _shortcutsTab;
     private readonly List<(TabItem Tab, string ResourceKey)> _localizedTabs = [];
-    private bool _configurationsLoaded;
-    private bool _loadingConfigurations;
-    private Task? _configurationLoadTask;
 
     public EmulationPreferencesSection() : this(EmulationModuleRegistry.Modules) { }
 
     internal EmulationPreferencesSection(IReadOnlyList<IEmulationModule> modules)
     {
-        _modules = modules;
+        _configurationCatalog = new(modules);
+        _configurationCatalog.Changed += RefreshConfigurationControls;
         _shortcuts.ConfigureCaptureSources(RetroMediaLab.App.Enums.Input.InputCaptureSources.Keyboard | RetroMediaLab.App.Enums.Input.InputCaptureSources.Mouse | RetroMediaLab.App.Enums.Input.InputCaptureSources.Controller, true);
         _tabs = new TabControl
         {
@@ -59,7 +50,7 @@ public sealed partial class EmulationPreferencesSection : UserControl
         _shortcuts.BindingsChanged += async (_, _) => await SaveShortcutsAsync();
         _configurationSelector.BrandSelected += SelectModule;
         _configurationSelector.MachineSelected += (_, machine) =>
-            SelectMachine(_selectedConfigurationMachineId == machine.Id ? null : machine.Id);
+            SelectMachine(SelectedMachineId == machine.Id ? null : machine.Id);
         _configurationTable.EditRequested += async row => await EditConfigurationAsync(row);
         _configurationTable.DeleteRequested += async row => await DeleteConfigurationAsync(row);
         _storageFolder.LostKeyboardFocus += async (_, _) => await SaveFoldersAsync();
@@ -78,9 +69,9 @@ public sealed partial class EmulationPreferencesSection : UserControl
     internal TextBox CaptureFolder => _captureFolder;
     internal TextBox StateFolder => _stateFolder;
     internal InputBindingEditor ShortcutEditor => _shortcuts;
-    internal IReadOnlyList<EmulationConfigurationTableRow> ConfigurationRows => _configurationRows;
-    internal IEmulationModule? SelectedModule => _selectedConfigurationModule;
-    internal string? SelectedMachineId => _selectedConfigurationMachineId;
+    internal IReadOnlyList<EmulationConfigurationTableRow> ConfigurationRows => _configurationCatalog.Rows;
+    internal IEmulationModule? SelectedModule => _configurationCatalog.SelectedModule;
+    internal string? SelectedMachineId => _configurationCatalog.SelectedMachineId;
     internal event EventHandler? PresentationChanged;
 
     internal Task RequestSaveFoldersAsync() => SaveFoldersAsync();
@@ -88,52 +79,21 @@ public sealed partial class EmulationPreferencesSection : UserControl
     internal Task RequestEditConfigurationAsync(EmulationConfigurationTableRow row) => EditConfigurationAsync(row);
     internal Task RequestDeleteConfigurationAsync(EmulationConfigurationTableRow row) => DeleteConfigurationAsync(row);
 
-    internal Task EnsureConfigurationsAsync()
-    {
-        if (_configurationsLoaded) return Task.CompletedTask;
-        if (_loadingConfigurations) return _configurationLoadTask ?? Task.CompletedTask;
-        return _configurationLoadTask = LoadInitialConfigurationsAsync();
-    }
+    internal Task EnsureConfigurationsAsync() => _configurationCatalog.EnsureLoadedAsync();
 
-    internal Task WaitForConfigurationsAsync() => _configurationLoadTask ?? Task.CompletedTask;
+    internal Task WaitForConfigurationsAsync() => _configurationCatalog.WaitForInitialLoadAsync();
 
-    private async Task LoadInitialConfigurationsAsync()
-    {
-        _loadingConfigurations = true;
-        try
-        {
-            await ReloadConfigurationsAsync();
-            _configurationsLoaded = true;
-        }
-        finally { _loadingConfigurations = false; }
-    }
+    internal void SelectModule(IEmulationModule module) => _configurationCatalog.SelectModule(module);
 
-    internal void SelectModule(IEmulationModule module)
-    {
-        _selectedConfigurationModule = module;
-        _selectedConfigurationMachineId = null;
-        RebuildConfigurationBrands();
-        FilterConfigurationTable();
-    }
-
-    internal void SelectMachine(string? machineId)
-    {
-        _selectedConfigurationMachineId = machineId;
-        RebuildConfigurationBrands();
-        FilterConfigurationTable();
-    }
+    internal void SelectMachine(string? machineId) => _configurationCatalog.SelectMachine(machineId);
 
     public void Configure(AppSettings settings, Func<Task> persistSettings)
     {
-        _settings = settings;
-        _persistSettings = persistSettings;
         _storageFolder.Text = settings.EmulationStorageFolder;
         _captureFolder.Text = settings.EmulationCaptureFolder;
         _stateFolder.Text = settings.EmulationStateFolder;
-        _shortcuts.SetRows(GlobalShortcutDefinitions(), settings.EmulationShortcuts);
-        StoragePaths.ConfigureEmulationStorageDirectory(settings.EmulationStorageFolder);
-        StoragePaths.ConfigureEmulationCaptureDirectory(settings.EmulationCaptureFolder);
-        StoragePaths.ConfigureEmulationStateDirectory(settings.EmulationStateFolder);
+        _shortcuts.SetRows(EmulationShortcutMap.GlobalShortcutDefinitions(), settings.EmulationShortcuts);
+        _preferencesSettings.Configure(settings, persistSettings);
     }
 
     internal Task ReloadConfigurationsForWindowAsync() => ReloadConfigurationsAsync();
@@ -143,10 +103,6 @@ public sealed partial class EmulationPreferencesSection : UserControl
         if (IsLoaded && IsVisible) await EnsureConfigurationsAsync();
     }
 
-    internal static void RaiseConfigurationSaved(object sender, EmulationConfigurationSavedEventArgs args) => ConfigurationSaved?.Invoke(sender, args);
-
-    internal static void RaiseVideoConfigurationChanged(object sender, EmulationConfigurationSavedEventArgs args) => VideoConfigurationChanged?.Invoke(sender, args);
-
     internal void RefreshLocalizedContent()
     {
         var shortcutValues = _shortcuts.Rows.ToDictionary(row => row.Id, row => row.Binding, StringComparer.Ordinal);
@@ -155,15 +111,13 @@ public sealed partial class EmulationPreferencesSection : UserControl
             var text = LocExtension.Get(resourceKey);
             if (tab.Header is MainTabHeader header) header.Text = text;
         }
-        _shortcuts.SetRows(GlobalShortcutDefinitions(), shortcutValues);
+        _shortcuts.SetRows(EmulationShortcutMap.GlobalShortcutDefinitions(), shortcutValues);
         _shortcuts.ConfigurePresentation(LocExtension.Get("Emulation.Input.Actions"), LocExtension.Get("Emulation.Input.Binding.Search"));
         _configurationTable.RefreshLocalizedContent();
         _network.RefreshLocalizedContent();
-        if (_configurationsLoaded)
+        if (_configurationCatalog.Loaded)
         {
-            _configurationRows = EmulationConfigurationTablePresenter.CreateRows(_configurationRows.Select(row => (row.Module, row.Configuration)));
-            RebuildConfigurationBrands();
-            FilterConfigurationTable();
+            _configurationCatalog.RefreshLocalizedRows();
             _ = ReloadConfigurationsAsync();
         }
     }

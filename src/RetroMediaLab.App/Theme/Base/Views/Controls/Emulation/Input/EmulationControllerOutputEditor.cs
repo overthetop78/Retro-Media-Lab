@@ -1,10 +1,10 @@
+using OutputChoice = RetroMediaLab.App.Functions.Emulation.Controllers.ControllerOutputChoices.OutputChoice;
+using RumbleDeviceChoice = RetroMediaLab.App.Functions.Emulation.Controllers.ControllerOutputChoices.RumbleDeviceChoice;
 using RetroMediaLab.App.Functions.Emulation.Controllers;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Input.GameInput;
-using RetroMediaLab.App.Views.Controls.Options.ControllerPresentation;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Constants;
-using RetroMediaLab.Emulation.Enums;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -79,14 +79,7 @@ internal sealed class EmulationControllerOutputEditor : StackPanel
     {
         var selectedDevice = _definitions.Select(definition => _bindings.GetValueOrDefault(definition.Id)?.DeviceId)
             .FirstOrDefault(id => !string.IsNullOrWhiteSpace(id));
-        void Assign(string? deviceId)
-        {
-            foreach (var definition in _definitions)
-                if (deviceId is null) _bindings.Remove(definition.Id);
-                else _bindings[definition.Id] = new(deviceId, definition.Id == EmulationControllerFeedbackCommands.Strong
-                    ? EmulationControllerMotor.LowFrequency : EmulationControllerMotor.HighFrequency);
-        }
-        Assign(selectedDevice);
+        ControllerOutputChoices.AssignRumbleDevice(selectedDevice, _definitions, _bindings);
         var row = new Grid { Margin = new Thickness(0, 4, 0, 4) };
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(180) });
         row.ColumnDefinitions.Add(new ColumnDefinition());
@@ -99,14 +92,7 @@ internal sealed class EmulationControllerOutputEditor : StackPanel
             populating = true;
             try
             {
-                _source.StartMonitoring();
-                var choices = new List<RumbleDeviceChoice> { new(null, LocExtension.Get("Controllers.None")) };
-                var devices = _source.GetConnectedDevices();
-                for (var index = 0; index < devices.Count; index++)
-                    if ((devices[index].RumbleMotors & (GameInputRumbleMotors.LowFrequency | GameInputRumbleMotors.HighFrequency)) != 0)
-                        choices.Add(new(devices[index].Id, devices[index].GameInputDisplayName + " #" + (index + 1)));
-                if (selectedDevice is not null && choices.All(choice => choice.DeviceId != selectedDevice))
-                    choices.Add(new(selectedDevice, selectedDevice));
+                var choices = ControllerOutputChoices.RumbleDevices(_source, selectedDevice);
                 selector.ItemsSource = choices;
                 selector.SelectedItem = choices.First(choice => choice.DeviceId == selectedDevice);
             }
@@ -118,7 +104,7 @@ internal sealed class EmulationControllerOutputEditor : StackPanel
         {
             if (populating || selector.SelectedItem is not RumbleDeviceChoice choice) return;
             selectedDevice = choice.DeviceId;
-            Assign(selectedDevice);
+            ControllerOutputChoices.AssignRumbleDevice(selectedDevice, _definitions, _bindings);
             BindingsChanged?.Invoke(this, EventArgs.Empty);
         };
         Grid.SetColumn(selector, 1);
@@ -127,26 +113,11 @@ internal sealed class EmulationControllerOutputEditor : StackPanel
         _presentationRows.Add(new(((TextBlock)row.Children[0]).Text, selector, PopulateDevices));
     }
 
-    private sealed record RumbleDeviceChoice(string? DeviceId, string Label);
-
     private void Populate(ComboBox selector, string commandId)
     {
-        _source.StartMonitoring();
         _bindings.TryGetValue(commandId, out var selected);
-        var choices = new List<OutputChoice> { new(null, LocExtension.Get("Controllers.None")) };
-        var devices = _source.GetConnectedDevices();
-        for (var index = 0; index < devices.Count; index++)
-        {
-            var device = devices[index];
-            foreach (var motor in Enum.GetValues<EmulationControllerMotor>())
-                if (device.RumbleMotors.HasFlag(ControllerFeedbackFunctions.PhysicalMotor(motor)))
-                    choices.Add(new(new(device.Id, motor), $"{device.GameInputDisplayName} #{index + 1} · {GameInputDisplayFormatter.EnumValue(ControllerFeedbackFunctions.PhysicalMotor(motor))}"));
-        }
-        if (selected is not null && !choices.Any(choice => choice.Binding == selected))
-            choices.Add(new(selected, $"{selected.DeviceId} · {GameInputDisplayFormatter.EnumValue(ControllerFeedbackFunctions.PhysicalMotor(selected.Motor))}"));
+        var choices = ControllerOutputChoices.Motors(_source, selected);
         selector.ItemsSource = choices;
         selector.SelectedItem = choices.FirstOrDefault(choice => choice.Binding == selected) ?? choices[0];
     }
-
-    private sealed record OutputChoice(EmulationControllerOutputBinding? Binding, string Label);
 }

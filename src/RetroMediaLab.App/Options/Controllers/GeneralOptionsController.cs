@@ -43,9 +43,7 @@ internal sealed class GeneralOptionsController
         _selectImagesFolder = selectImagesFolder ?? SelectImagesFolder;
 
         section.ImagesFolder.Text = settings.DefaultImagesFolder;
-        StoragePaths.ConfigureEmulationStorageDirectory(settings.EmulationStorageFolder);
-        StoragePaths.ConfigureEmulationStateDirectory(settings.EmulationStateFolder);
-        StoragePaths.ConfigureEmulationCaptureDirectory(settings.EmulationCaptureFolder);
+        StoragePaths.ConfigureEmulationDirectories(settings);
         section.Languages.ItemsSource = UiLanguageCatalog.Available;
         section.Languages.SelectedItem = UiLanguageCatalog.Available.FirstOrDefault(language => string.Equals(language.Code, settings.Language, StringComparison.OrdinalIgnoreCase)) ?? UiLanguageCatalog.Fallback;
 
@@ -57,9 +55,7 @@ internal sealed class GeneralOptionsController
     public void ApplyTo(AppSettings settings)
     {
         settings.DefaultImagesFolder = _section.ImagesFolder.Text.Trim();
-        StoragePaths.ConfigureEmulationStorageDirectory(settings.EmulationStorageFolder);
-        StoragePaths.ConfigureEmulationStateDirectory(settings.EmulationStateFolder);
-        StoragePaths.ConfigureEmulationCaptureDirectory(settings.EmulationCaptureFolder);
+        StoragePaths.ConfigureEmulationDirectories(settings);
         if (_section.Languages.SelectedItem is UiLanguage language) settings.Language = language.Code;
     }
 

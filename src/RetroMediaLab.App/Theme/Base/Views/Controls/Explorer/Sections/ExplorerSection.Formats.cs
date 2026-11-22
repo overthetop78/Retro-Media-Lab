@@ -23,30 +23,13 @@ namespace RetroMediaLab.App.Views.Controls.Explorer;
 
 public partial class ExplorerSection
 {
-    private static IReadOnlyList<string> ReportedFormats(ExploredDiskImage document)
-    {
-        return document.FormatsDetectes.Select(format => format.FormatId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-    }
+    private static IReadOnlyList<string> ReportedFormats(ExploredDiskImage document) => ExplorerMediaChoicesPresenter.ReportedFormats(document);
 
-    private string DetectedFormatsSummary()
-    {
-        if (_detectedFormatIds.Contains(TapeImageFormatIds.AtariCas, StringComparer.OrdinalIgnoreCase))
-            return LocExtension.Get("Explorer.DetectedFormats", $"{LocExtension.Get("System.atari-8bit")} (Atari CAS)");
-
-        var catalog = new DiskClassificationCatalog(_formats);
-        var recognized = _detectedFormatIds.Select(id => catalog.ResolveFormat(id)).Where(format => format is not null).Cast<DiskFormat>().DistinctBy(format => format.Id, StringComparer.OrdinalIgnoreCase)
-            .Select(format => $"{format.Family} ({format.DisplayName})")
-            .ToArray();
-        var value = recognized.Length == 0 ? ControlVisualConstants.EmptyValue : string.Join(ControlVisualConstants.DetailSeparator, recognized);
-        return LocExtension.Get("Explorer.DetectedFormats", value);
-    }
+    private string DetectedFormatsSummary() => ExplorerMediaChoicesPresenter.DetectedFormatsSummary(_detectedFormatIds, _formats);
 
     private void UpdateDetectedFormatSelector(string? selectedId)
     {
-        var catalog = new DiskClassificationCatalog(_formats);
-        var choices = _detectedFormatIds.Select(id => catalog.ResolveFormat(id)).Where(format => format is not null).Cast<DiskFormat>().DistinctBy(format => format.Id, StringComparer.OrdinalIgnoreCase)
-            .Select(format => new ExplorerFormatChoice(format.Id, $"{format.Family}{ControlVisualConstants.DetailSeparator}{format.DisplayName}"))
-            .ToArray();
+        var choices = ExplorerMediaChoicesPresenter.DetectedFormats(_detectedFormatIds, _formats);
         _updatingDetectedFormatSelector = true;
         DetectedFormatSelector.ItemsSource = choices;
         DetectedFormatSelector.SelectedItem = choices.FirstOrDefault(choice => string.Equals(choice.Id, selectedId, StringComparison.OrdinalIgnoreCase)) ?? choices.FirstOrDefault();
@@ -67,35 +50,14 @@ public partial class ExplorerSection
 
     private CustomPopupPlacement[] ManualOptionsPopup_Place(Size popupSize, Size targetSize, Point offset) => [new(new Point(targetSize.Width - popupSize.Width, targetSize.Height), PopupPrimaryAxis.Horizontal)];
 
-    private string CurrentSystem(ExploredDiskImage document)
-    {
-        var format = new DiskClassificationCatalog(_formats).ResolveFormat(document.PrimaryFormatId);
-        return format?.Family ?? Classification.SelectedMachine ?? ExplorerMetadataPresenter.Systems(document.Metadata);
-    }
+    private string CurrentSystem(ExploredDiskImage document) =>
+        ExplorerMediaChoicesPresenter.CurrentSystem(document, _formats, Classification.SelectedMachine);
 
-    private string CurrentSystem(ExploredMediaImage document)
-    {
-        if (document.Document.FormatId.Equals(TapeImageFormatIds.AtariCas, StringComparison.OrdinalIgnoreCase)
-            && document.Document.Metadata.TryGetValue(ExplorerMediaMetadataConstants.SystemId, out var tapeSystemId)
-            && tapeSystemId == DiskSystemIds.Atari8Bit)
-            return LocExtension.Get("System.atari-8bit");
-        if (Classification.SelectedMachine is { } selectedMachine) return selectedMachine;
-        var format = new DiskClassificationCatalog(_formats).ResolveFormat(document.Document.FormatId);
-        return format?.Family
-            ?? (document.Document.Metadata.TryGetValue(ExplorerMediaMetadataConstants.SystemId, out var systemId) && systemId == DiskSystemIds.Atari8Bit ? LocExtension.Get("System.atari-8bit") : null)
-            ?? document.Document.MediaKind.ToString();
-    }
+    private string CurrentSystem(ExploredMediaImage document) =>
+        ExplorerMediaChoicesPresenter.CurrentSystem(document, _formats, Classification.SelectedMachine);
 
-    private string TapeDescription(ExploredMediaImage document)
-    {
-        var tape = LocExtension.Get("Explorer.Tape");
-        var system = CurrentSystem(document);
-        if (!string.IsNullOrWhiteSpace(system)
-            && !system.Equals(document.Document.MediaKind.ToString(), StringComparison.OrdinalIgnoreCase))
-            return $"{tape} {system}";
-        var format = FormatForIdentity(document.Document.FormatId);
-        return format is null ? tape : $"{tape} {format.DisplayName}";
-    }
+    private string TapeDescription(ExploredMediaImage document) =>
+        ExplorerMediaChoicesPresenter.TapeDescription(document, _formats, Classification.SelectedMachine);
 
     private void ResetSummaryLabels()
     {

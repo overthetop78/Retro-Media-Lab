@@ -1,10 +1,14 @@
 using RetroMediaLab.App.Services.Dialogs;
 using RetroMediaLab.Infrastructure.Settings.Emulation;
 using RetroMediaLab.App.Constants.Emulation;
+using RetroMediaLab.App.Constants.Localization;
 using RetroMediaLab.App.Constants.Machine;
 using RetroMediaLab.App.Contracts.Machine;
-using RetroMediaLab.App.Controllers.Emulation.Machine;
+using RetroMediaLab.App.Contracts.Input;
+using RetroMediaLab.App.Views.Controls.Emulation.Machine;
 using RetroMediaLab.App.Functions.Machine;
+using RetroMediaLab.App.Functions.Emulation.Shortcuts;
+using RetroMediaLab.App.Functions.Input.Bindings;
 using RetroMediaLab.App.Functions.Emulation.Storage;
 using RetroMediaLab.App.Functions.Emulation.Machine;
 using RetroMediaLab.App.Functions.Rendering.Emulation;
@@ -15,6 +19,7 @@ using RetroMediaLab.App.Services.Input.GameInput;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using RetroMediaLab.Emulation;
 using RetroMediaLab.App.Views.Dialogs.Emulation;
@@ -23,10 +28,11 @@ using RetroMediaLab.App.Views.Dialogs.Emulation.Storage;
 using RetroMediaLab.App.Services.Storage;
 using RetroMediaLab.App.Services.Windows;
 using RetroMediaLab.App.Theme.Common;
+using RetroMediaLab.VideoPresentation.Windows.Osd;
 
-namespace RetroMediaLab.App.Views.Controls.Emulation.Machine;
+namespace RetroMediaLab.App.Controllers.Emulation.Machine;
 
-internal sealed class MachineController : UserControl, IAsyncDisposable
+internal sealed partial class MachineController : UserControl, IAsyncDisposable
 {
     internal static readonly EmulationTapeCommand[] TapeCommandOrder =
     [
@@ -52,6 +58,13 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     private readonly Dictionary<EmulationMediaSlot, DateTime> _mediaActivityUntil = [];
     private Window? _fullscreenWindow;
     private Grid? _fullscreenHost;
+    private FullscreenOsdIndicator? _fullscreenShaderLoading;
+    private FullscreenOsdWindow? _osd;
+    private bool _osdPausedEmulation;
+    private bool _osdTransition;
+    private bool _osdResuming;
+    private Task _osdPauseTask = Task.CompletedTask;
+    private Task _osdCloseTask = Task.CompletedTask;
     private bool _audioMuted;
     private bool _disposed;
 
@@ -79,9 +92,10 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     private MachineController(MachineControllerOptions options, MachineSession session)
     {
         _options = options;
+        _osdConfiguration = options.Configuration;
         _session = session;
         _presentationHost = this;
-        _presentationFactory = options.CreatePresentation ?? CreateBasePresentation;
+        _presentationFactory = options.CreatePresentation;
         var initialized = false;
         try
         {
@@ -96,7 +110,9 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
             VideoShaderLoadingChanged(_video.IsShaderLoading);
             _session.MachineChanged += MachineChanged;
             _input = new MachineInputController(_view, _video.InputView, _video.InputHandle, () => _session.Machine, options.GlobalShortcuts, ExecuteShortcutAsync,
-                () => PresentationActivation?.Invoke() ?? options.IsActive(), inputHandleProvider: () => _video.InputHandle);
+                () => PresentationActivation?.Invoke() ?? options.IsActive(), inputHandleProvider: () => _video.InputHandle,
+                osdShortcuts: EmulationShortcutMap.OsdShortcuts(options.ShortcutSettings), isFullscreen: () => IsFullscreen,
+                readShortcutSettings: options.ReadShortcutSettings);
             _commands = new MachineCommandBar(_view.Toolbar, CreateActions(), options.GlobalShortcuts, options.ShowError, _input.RestoreFocus);
             _commands.Presentation.StatusAboveDisplay = MachinePresentationFunctions.StatusAboveDisplay(options.ModuleId, options.MachineId);
             _view.AttachCommands(_commands.Presentation);
@@ -133,8 +149,6 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     internal Func<EmulationMachinePresentation> PresentationFactory => _presentationFactory;
     internal Func<bool>? PresentationActivation { get; set; }
     internal bool IsStopped => _disposed;
-
-    private static EmulationMachinePresentation CreateBasePresentation() => new MachineView();
 
     internal void MovePresentationTo(ContentControl host)
     {
@@ -210,7 +224,11 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        try { ExitFullscreen(); }
+        try
+        {
+            try { ExitFullscreen(); }
+            finally { await _osdCloseTask; }
+        }
         finally
         {
             _video.FramePresented -= FramePresented;
@@ -270,14 +288,20 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         _prepareMediaAsync = runtime.PrepareMediaAsync;
         await _session.UpdateMachineFactoryAsync(runtime.CreateMachine, runtime.MediaDevices, runtime.MountedMedia);
         RebuildMediaDevices();
+        _osdConfiguration = configuration;
+        if (_osd is not null)
+            RefreshOsdModuleBlocks();
     }
 
     public async ValueTask DisposeAsync() => await StopAsync();
 
     private void VideoShaderLoadingChanged(bool isLoading)
     {
-        _view.SetShaderLoading(isLoading);
-        EmulationVideoShaderLoadingStatus.Set(_options.ModuleId, _options.ConfigurationId, isLoading);
+        var windowedLoading = isLoading && !IsFullscreen;
+        _view.SetShaderLoading(windowedLoading);
+        _osd?.SetShaderLoading(isLoading);
+        _fullscreenShaderLoading?.SetVisible(isLoading && _osd is null);
+        EmulationVideoShaderLoadingStatus.Set(_options.ModuleId, _options.ConfigurationId, windowedLoading);
     }
 
     private MachineCommandActions CreateActions() => new(
@@ -327,10 +351,15 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
 
     private Task ToggleAudioAsync()
     {
-        _audioMuted = !_audioMuted;
-        _session.Machine.Audio.SetMuted(_audioMuted);
-        _commands.SetMuted(_audioMuted);
+        SetAudioMuted(!_audioMuted);
         return Task.CompletedTask;
+    }
+
+    private void SetAudioMuted(bool muted)
+    {
+        _session.Machine.Audio.SetMuted(muted);
+        _audioMuted = muted;
+        _commands.SetMuted(muted);
     }
 
     private async Task QuickSaveAsync()
@@ -370,6 +399,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
             VerticalAlignment = VerticalAlignment.Stretch
         };
         _fullscreenHost.Children.Add(_view.Screen);
+        _fullscreenShaderLoading = new FullscreenOsdIndicator(_fullscreenHost, LocExtension.Get(EmulationResourceKeys.VideoShaderLoading));
         _video.SetDisplayHost(_fullscreenHost);
         _fullscreenWindow = new Window
         {
@@ -383,6 +413,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         _fullscreenWindow.ContentRendered += FullscreenContentRendered;
         _fullscreenWindow.Show();
         _fullscreenWindow.Activate();
+        VideoShaderLoadingChanged(_video.IsShaderLoading);
         _input.CompleteHostTransition();
     }
 
@@ -397,10 +428,27 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
         window.Content = null;
         _fullscreenHost = null;
         _fullscreenWindow = null;
-        _view.DisplayHost.Children.Add(_view.Screen);
-        _video.SetDisplayHost(_view.DisplayHost);
-        if (closeWindow) window.Close();
-        _input.CompleteHostTransition();
+        var shaderPopup = _fullscreenShaderLoading;
+        _fullscreenShaderLoading = null;
+        try { shaderPopup?.Dispose(); }
+        finally
+        {
+            try { CloseOsd(); }
+            finally
+            {
+                try
+                {
+                    try
+                    {
+                        _view.DisplayHost.Children.Add(_view.Screen);
+                        _video.SetDisplayHost(_view.DisplayHost);
+                    }
+                    finally { if (closeWindow) window.Close(); }
+                    VideoShaderLoadingChanged(_video.IsShaderLoading);
+                }
+                finally { _input.CompleteHostTransition(); }
+            }
+        }
     }
 
     private void FullscreenWindowClosed(object? sender, EventArgs args) => ExitFullscreen(closeWindow: false);
@@ -409,6 +457,158 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     {
         _video.FitScreen();
         _input.RestoreFocus();
+    }
+
+    private async Task ToggleOsdAsync(bool pause)
+    {
+        if (_disposed || _osdTransition || _osdResuming || _fullscreenWindow is not { } owner || _fullscreenHost is not { } host) return;
+        _osdTransition = true;
+        try
+        {
+            if (_osd is not null)
+            {
+                CloseOsd();
+                return;
+            }
+
+            var osd = new FullscreenOsdWindow(owner, host, _options.WindowTitle, OsdGameName(), CreateOsdEntries(),
+                _options.ShowError, LocExtension.Get(EmulationResourceKeys.VideoShaderLoading), CreateOsdFooterHints());
+            _osd = osd;
+            var opened = false;
+            try
+            {
+                osd.PreviewKeyDown += OsdKeyDown;
+                osd.PreviewKeyUp += OsdKeyUp;
+                osd.Closed += OsdClosed;
+                _input.SetOsdFocus(true);
+                VideoShaderLoadingChanged(_video.IsShaderLoading);
+                osd.Show();
+                if (pause && _session.Machine.State == EmulationMachineState.Running)
+                {
+                    _osdPausedEmulation = true;
+                    _osdPauseTask = TogglePauseAsync();
+                    await _osdPauseTask;
+                }
+                opened = true;
+            }
+            finally
+            {
+                if (!opened) CloseOsd();
+            }
+        }
+        finally { _osdTransition = false; }
+    }
+
+    private void CloseOsd()
+    {
+        if (_osd is not { } osd) return;
+        try { osd.Close(); }
+        finally
+        {
+            if (ReferenceEquals(_osd, osd)) OsdClosed(osd, EventArgs.Empty);
+        }
+    }
+
+    private void OsdClosed(object? sender, EventArgs args)
+    {
+        if (sender is not FullscreenOsdWindow osd || !ReferenceEquals(_osd, osd)) return;
+        _osd = null;
+        osd.PreviewKeyDown -= OsdKeyDown;
+        osd.PreviewKeyUp -= OsdKeyUp;
+        osd.Closed -= OsdClosed;
+        _osdResuming = true;
+        _osdCloseTask = RestoreAfterOsdAsync();
+    }
+
+    private async Task RestoreAfterOsdAsync()
+    {
+        try
+        {
+            if (_osdPausedEmulation)
+            {
+                await _osdPauseTask;
+                if (!_disposed && _session.Machine.State == EmulationMachineState.Paused) await TogglePauseAsync();
+            }
+        }
+        catch (Exception error) { _options.ShowError(error); }
+        finally
+        {
+            _osdPausedEmulation = false;
+            _osdPauseTask = Task.CompletedTask;
+            _osdResuming = false;
+            try { _input.SetOsdFocus(false); }
+            finally
+            {
+                if (!_disposed) VideoShaderLoadingChanged(_video.IsShaderLoading);
+            }
+        }
+    }
+
+    private void OsdKeyDown(object sender, KeyEventArgs args)
+    {
+        args.Handled = true;
+        if (!args.IsRepeat) _input.HandleKeyDown(args.Key == Key.System ? args.SystemKey : args.Key, Keyboard.Modifiers, args.Timestamp);
+    }
+
+    private void OsdKeyUp(object sender, KeyEventArgs args)
+    {
+        args.Handled = true;
+        _input.HandleKeyUp(args.Key == Key.System ? args.SystemKey : args.Key, Keyboard.Modifiers);
+    }
+
+    private string? OsdGameName()
+    {
+        if (!_session.IsPowered) return null;
+        var media = _session.MountedMedia.FirstOrDefault(item => item.IsInserted && item.Type is EmulationMediaType.Cartridge or EmulationMediaType.CompactDisc)
+            ?? _session.MountedMedia.FirstOrDefault(item => item.IsInserted && item.Type != EmulationMediaType.MemoryCard);
+        return Path.GetFileNameWithoutExtension(media?.Path);
+    }
+
+    private IReadOnlyList<FullscreenOsdWindow.Entry> CreateOsdEntries()
+    {
+        RefreshOsdModuleBlocks();
+        bool IsPowered() => _session.IsPowered;
+        return
+        [
+            new(LocExtension.Get("Emulation.Shortcut.OsdResume"), () => { CloseOsd(); return Task.CompletedTask; },
+                Glyph: MachineCommandGlyphConstants.Continue),
+            new(LocExtension.Get("Emulation.Shortcut.OsdSavedStates"), Children:
+            [
+                new(LocExtension.Get(EmulationResourceKeys.QuickSave), QuickSaveAsync, IsEnabled: () => IsPowered() && _quickStates.IsSupported,
+                    Glyph: MachineCommandGlyphConstants.QuickSave),
+                new(LocExtension.Get(EmulationResourceKeys.QuickLoad), QuickLoadAsync, IsEnabled: () => IsPowered() && _quickStates.IsAvailable,
+                    Glyph: MachineCommandGlyphConstants.QuickLoad)
+            ], Glyph: MachineCommandGlyphConstants.QuickSave),
+            OsdVideoSettings(),
+            OsdAudioSettings(),
+            OsdControlsSettings(),
+            OsdMachineSettings(),
+            new(LocExtension.Get("Emulation.Shortcut.OsdExitFullscreen"), ToggleFullscreenAsync,
+                Glyph: MachineCommandGlyphConstants.Power, SeparatorBefore: true)
+        ];
+    }
+
+    private FullscreenOsdWindow.FooterHints CreateOsdFooterHints()
+    {
+        var directions = new[] { EmulationShortcutDefaults.OsdUp, EmulationShortcutDefaults.OsdDown,
+            EmulationShortcutDefaults.OsdLeft, EmulationShortcutDefaults.OsdRight };
+        return new(directions.Select(Keycap).OfType<string>().ToArray(), LocExtension.Get("Emulation.Shortcut.OsdNavigateHint"),
+            Keycap(EmulationShortcutDefaults.OsdConfirm), LocExtension.Get("Emulation.Shortcut.OsdConfirmHint"),
+            Keycap(EmulationShortcutDefaults.OsdCancel), LocExtension.Get("Emulation.Shortcut.OsdBackHint"));
+
+        string? Keycap(string action)
+        {
+            var binding = _input.OsdShortcuts.FirstOrDefault(shortcut => shortcut.Action == action);
+            if (binding is null || binding.SourceBinding is not null) return null;
+            var chord = binding.Chord;
+            if (chord.Keys.Count != 1 || chord.Modifiers != ModifierKeys.None)
+                return KeyboardChordFunctions.Format(chord.Modifiers, chord.Keys);
+            return chord.Keys[0] switch
+            {
+                Key.Up => "↑", Key.Down => "↓", Key.Left => "←", Key.Right => "→",
+                Key.Return => "↵", Key.Escape => "Esc", var key => key.ToString()
+            };
+        }
     }
 
     private void MachineChanged(object? sender, IEmulatedMachine machine)
@@ -423,6 +623,7 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
 
     private void RebuildMediaDevices()
     {
+        _osd?.SetGameName(OsdGameName());
         _view.SetDevices(_mediaDevices.Select(device =>
         {
             var canOpenMedia = device.IsRemovable && (device.MediaType != EmulationMediaType.MemoryCard
@@ -602,8 +803,28 @@ internal sealed class MachineController : UserControl, IAsyncDisposable
     {
         try
         {
-            switch (action)
+            var primaryAction = EmulationShortcutMap.OsdPrimaryAction(action);
+            switch (primaryAction)
             {
+                case EmulationShortcutDefaults.OsdWithPause:
+                    await ToggleOsdAsync(true);
+                    break;
+                case EmulationShortcutDefaults.OsdWithoutPause:
+                    await ToggleOsdAsync(false);
+                    break;
+                case EmulationShortcutDefaults.OsdUp or EmulationShortcutDefaults.OsdDown
+                    or EmulationShortcutDefaults.OsdLeft or EmulationShortcutDefaults.OsdRight
+                    or EmulationShortcutDefaults.OsdConfirm or EmulationShortcutDefaults.OsdCancel:
+                    if (_osd is { } osd) await osd.NavigateAsync(primaryAction switch
+                    {
+                        EmulationShortcutDefaults.OsdUp => FullscreenOsdWindow.Navigation.Up,
+                        EmulationShortcutDefaults.OsdDown => FullscreenOsdWindow.Navigation.Down,
+                        EmulationShortcutDefaults.OsdLeft => FullscreenOsdWindow.Navigation.Left,
+                        EmulationShortcutDefaults.OsdRight => FullscreenOsdWindow.Navigation.Right,
+                        EmulationShortcutDefaults.OsdConfirm => FullscreenOsdWindow.Navigation.Confirm,
+                        _ => FullscreenOsdWindow.Navigation.Cancel
+                    });
+                    break;
                 case EmulationShortcutDefaults.OpenSettings:
                     if (_options.OpenSettings is not null) await _options.OpenSettings();
                     break;

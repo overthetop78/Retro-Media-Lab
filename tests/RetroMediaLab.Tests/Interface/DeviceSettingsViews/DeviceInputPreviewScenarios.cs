@@ -1,6 +1,6 @@
+using RetroMediaLab.App.ViewModels.Input;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Input.GameInput;
-using RetroMediaLab.App.Views.Controls.Options.ControllerPresentation;
 namespace RetroMediaLab.Tests.Interface.DeviceSettingsViews;
 internal static class DeviceInputPreviewScenarios
 {

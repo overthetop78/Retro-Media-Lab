@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Dictionaries.Video;
 using RetroMediaLab.App.Constants.Localization;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.Emulation.Constants;
@@ -14,7 +15,7 @@ namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
 
 internal static class EmulationImageRestorationSettingsBlock
 {
-    private static readonly int[] DeditheringValues = [0, 33, 67, 100];
+    private static readonly int[] DeditheringValues = VideoRestorationChoices.Dedithering.Keys.ToArray();
 
     internal static FrameworkElement Create(EmulationImageRestorationConfiguration restoration, Action<Func<EmulationImageRestorationConfiguration, EmulationImageRestorationConfiguration>> changed)
     {
@@ -100,7 +101,7 @@ internal static class EmulationImageRestorationSettingsBlock
         {
             Minimum = 0,
             Maximum = DeditheringValues.Length - 1,
-            Value = ClosestDeditheringStep(value),
+            Value = VideoRestorationChoices.DeditheringIndex(value),
             TickFrequency = 1,
             TickPlacement = TickPlacement.BottomRight,
             IsSnapToTickEnabled = true,
@@ -123,13 +124,7 @@ internal static class EmulationImageRestorationSettingsBlock
         var levels = new Grid { ClipToBounds = true };
         for (var index = 0; index < DeditheringValues.Length; index++)
             levels.ColumnDefinitions.Add(new ColumnDefinition());
-        var resourceKeys = new[]
-        {
-            EmulationResourceKeys.VideoRestorationLevelNone,
-            EmulationResourceKeys.VideoRestorationLevelLight,
-            EmulationResourceKeys.VideoRestorationLevelMedium,
-            EmulationResourceKeys.VideoRestorationLevelStrong
-        };
+        var resourceKeys = VideoRestorationChoices.Dedithering.Values.ToArray();
         for (var index = 0; index < resourceKeys.Length; index++)
         {
             var label = new TextBlock
@@ -180,8 +175,6 @@ internal static class EmulationImageRestorationSettingsBlock
         TextAlignment = TextAlignment.Center,
         Margin = new Thickness(0, 0, 0, 6)
     };
-
-    private static int ClosestDeditheringStep(int value) => Math.Clamp((int)Math.Round(value / 100d * (DeditheringValues.Length - 1)), 0, DeditheringValues.Length - 1);
 
     private sealed record Choice<T>(T Value, string DisplayName) where T : struct, Enum;
 }

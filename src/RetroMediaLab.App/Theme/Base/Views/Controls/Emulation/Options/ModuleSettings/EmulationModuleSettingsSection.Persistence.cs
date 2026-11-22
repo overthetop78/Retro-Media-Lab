@@ -6,7 +6,6 @@ using RetroMediaLab.App.Functions.Views.Emulation.Settings;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Emulation;
 using RetroMediaLab.App.Constants.Views.Emulation;
-using RetroMediaLab.App.Functions.Emulation.Machine;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,11 +20,8 @@ internal sealed partial class EmulationModuleSettingsSection
         await ExecuteAsync(async () =>
         {
             CaptureEditorValues();
-            var previous = _configuration;
-            var wasSaved = _saved.Any(item => item.Id == previous.Id);
-            if (!wasSaved) EmulationConfigurationDraftStore.Set(_module.Id, previous);
-            if (wasSaved) await PersistCapturedConfigurationAsync(previous, true);
-            _configuration = _saved.FirstOrDefault(item => item.MachineId == selected.Definition.Id) ?? (EmulationConfigurationDraftStore.TryGet(_module.Id, selected.Definition.Id, out var draft) ? draft : _module.CreateConfiguration(selected.Definition.Id));
+            await _session.SaveBeforeSwitchingAsync(_configuration, NotifyConfigurationSaved);
+            _configuration = _session.SelectForEditing(selected.Definition.Id);
             RebuildEditor();
             NotifyEditingContextChanged();
         });
@@ -42,50 +38,29 @@ internal sealed partial class EmulationModuleSettingsSection
     private async Task ApplyUserChangeAsync()
     {
         if (_inputSettings?.HasErrors == true) return;
-        _profiles.Get(_module.Id, _configuration.Id);
+        _session.GetVideoProfile(_configuration.Id);
         CaptureEditorValues();
-        var configuration = _configuration;
-        await PersistCapturedConfigurationAsync(configuration, _saved.Any(item => item.Id == configuration.Id));
+        await _session.PersistAsync(_configuration, NotifyConfigurationSaved);
     }
 
-    private async Task PersistCapturedConfigurationAsync(IEmulationConfiguration configuration, bool hasSavedConfiguration)
-    {
-        await _saveInputGate.WaitAsync();
-        try
-        {
-            if (await EmulationConfigurationPersistenceFunctions.PersistAsync(_module, configuration, hasSavedConfiguration, profiles: _profiles))
-            {
-                _saved = _saved.Select(item => item.Id == configuration.Id ? configuration : item).ToArray();
-                ConfigurationSaved?.Invoke(this, new EmulationConfigurationSavedEventArgs(configuration));
-            }
-        }
-        finally { _saveInputGate.Release(); }
-    }
+    private void NotifyConfigurationSaved(IEmulationConfiguration configuration) =>
+        ConfigurationSaved?.Invoke(this, new EmulationConfigurationSavedEventArgs(configuration));
 
     private async Task SaveAsync()
     {
         if (_inputSettings?.HasErrors == true) return;
-        _profiles.Get(_module.Id, _configuration.Id);
-        var values = _fieldControls.ToDictionary(item => item.Key, item => ReadValue(item.Value), StringComparer.Ordinal);
-        _configuration = _module.ApplySettings(_configuration, values);
-        if (_inputSettings is not null) _configuration = _inputSettings.Apply(_configuration);
-        if (_storageSettings is not null) _configuration = _storageSettings.Apply(_configuration);
+        _session.GetVideoProfile(_configuration.Id);
+        ApplyEditorValues(includeEmptyFields: true);
         if (_emulatorManagement is not null)
             await _emulatorManagement.EnsureEmulatorSelectedAsync();
-        _configuration = EmulationVideoConfigurationFunctions.Apply(_module, _configuration, _profiles.Get(_module.Id, _configuration.Id).Renderer);
+        _configuration = _session.ApplyVideoRenderer(_configuration);
         var configuration = _configuration;
-        await _profiles.SaveAsync(_module.Id, configuration.Id);
-        await _module.SaveConfigurationAsync(configuration);
-        EmulationConfigurationDraftStore.Remove(_module.Id, configuration.MachineId);
-        ConfigurationSaved?.Invoke(this, new EmulationConfigurationSavedEventArgs(configuration));
+        await _session.SaveAsync(configuration);
+        NotifyConfigurationSaved(configuration);
         await ReloadAsync();
     }
 
-    private Task SaveVideoProfileAsync()
-    {
-        var id = _configuration.Id;
-        return _saved.Any(item => item.Id == id) ? _profiles.SaveAsync(_module.Id, id) : Task.CompletedTask;
-    }
+    private Task SaveVideoProfileAsync() => _session.SaveVideoProfileAsync(_configuration.Id);
 
     private static string? ReadValue(FrameworkElement control) => control switch
     {
@@ -150,10 +125,17 @@ internal sealed partial class EmulationModuleSettingsSection
 
     private void CaptureEditorValues()
     {
-        if (_fieldControls.Count != 0)
-            _configuration = _module.ApplySettings(_configuration, _fieldControls.ToDictionary(item => item.Key, item => ReadValue(item.Value), StringComparer.Ordinal));
-        if (_inputSettings is not null) _configuration = _inputSettings.Apply(_configuration);
-        if (_storageSettings is not null) _configuration = _storageSettings.Apply(_configuration);
-        _configuration = EmulationVideoConfigurationFunctions.Apply(_module, _configuration, _profiles.Get(_module.Id, _configuration.Id).Renderer);
+        ApplyEditorValues(includeEmptyFields: false);
+        _configuration = _session.ApplyVideoRenderer(_configuration);
+    }
+
+    private void ApplyEditorValues(bool includeEmptyFields)
+    {
+        var values = includeEmptyFields || _fieldControls.Count != 0
+            ? _fieldControls.ToDictionary(item => item.Key, item => ReadValue(item.Value), StringComparer.Ordinal)
+            : null;
+        EmulationConfigurationPersistenceFunctions.ApplyEditorValues(_module, ref _configuration, values,
+            _inputSettings is null ? null : _inputSettings.Apply,
+            _storageSettings is null ? null : _storageSettings.Apply);
     }
 }

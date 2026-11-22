@@ -2,8 +2,6 @@ namespace RetroMediaLab.App.Constants.Views.Shell;
 
 internal static class MainWindowConstants
 {
-    internal const string LogsDirectoryName = "Logs";
-    internal const string SettingsFileName = "settings.json";
     internal const string RawFormatFamily = "Raw";
     internal const string OptionsMenuItemName = "OptionsMenuItem";
     internal const string EmulationMenuItemName = "EmulationMenuItem";

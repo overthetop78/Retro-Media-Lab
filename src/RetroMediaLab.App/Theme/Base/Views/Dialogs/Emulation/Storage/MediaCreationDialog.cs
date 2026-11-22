@@ -1,5 +1,5 @@
 using RetroMediaLab.App.Services.Dialogs;
-using System.IO;
+using RetroMediaLab.App.Services.Storage;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -15,7 +15,6 @@ namespace RetroMediaLab.App.Views.Dialogs.Emulation.Storage;
 internal sealed class MediaCreationDialog : Window
 {
     private bool _busy;
-    private bool _created;
     private bool _closeRequested;
     private Task _creationTask = Task.CompletedTask;
     internal FrameworkElement PresentationConfiguration { get; }
@@ -35,7 +34,8 @@ internal sealed class MediaCreationDialog : Window
     private readonly TextBlock _status = new() { TextWrapping = TextWrapping.Wrap };
 
     /// <summary>Fichier effectivement créé, conservé lorsque la configuration est ensuite verrouillée.</summary>
-    internal string? CreatedPath { get; private set; }
+    internal string? CreatedPath => _creation.CreatedPath;
+    private readonly MediaCreationSession _creation;
 
     internal MediaCreationDialog(Window? owner, string title, string path, Func<Task> create)
         : this(owner, title, new TextBox { Text = path, IsReadOnly = true, TextWrapping = TextWrapping.Wrap }, () => path, create)
@@ -44,6 +44,7 @@ internal sealed class MediaCreationDialog : Window
 
     internal MediaCreationDialog(Window? owner, string title, FrameworkElement configuration, Func<string> destinationPath, Func<Task> create, Func<bool>? canCreate = null)
     {
+        _creation = new MediaCreationSession(destinationPath, create);
         Owner = owner?.IsVisible == true ? owner : null;
         PresentationConfiguration = configuration;
         Title = title;
@@ -91,12 +92,15 @@ internal sealed class MediaCreationDialog : Window
         void RefreshCommands()
         {
             var ready = canCreate?.Invoke() ?? true;
-            mount.IsEnabled = !_busy && (_created || ready);
-            onlyCreate.IsEnabled = !_busy && !_created && ready;
+            mount.IsEnabled = !_busy && (CreatedPath is not null || ready);
+            onlyCreate.IsEnabled = !_busy && CreatedPath is null && ready;
         }
-        configuration.AddHandler(Selector.SelectionChangedEvent, new SelectionChangedEventHandler((_, _) => RefreshCommands()));
-        configuration.AddHandler(TextBox.TextChangedEvent, new TextChangedEventHandler((_, _) => RefreshCommands()));
+        SelectionChangedEventHandler selectionChanged = (_, _) => RefreshCommands();
+        TextChangedEventHandler textChanged = (_, _) => RefreshCommands();
+        configuration.AddHandler(Selector.SelectionChangedEvent, selectionChanged);
+        configuration.AddHandler(TextBox.TextChangedEvent, textChanged);
         RefreshCommands();
+        Closed += OnClosed;
         Closing += (_, args) =>
         {
             if (!_busy) return;
@@ -109,6 +113,18 @@ internal sealed class MediaCreationDialog : Window
         root.RowDefinitions[1].Height = new GridLength(1, GridUnitType.Star);
         Content = root;
 
+        void OnClosed(object? sender, EventArgs args)
+        {
+            Closed -= OnClosed;
+            try
+            {
+                configuration.RemoveHandler(Selector.SelectionChangedEvent, selectionChanged);
+                configuration.RemoveHandler(TextBox.TextChangedEvent, textChanged);
+                body.Children.Remove(configuration);
+            }
+            finally { Content = null; }
+        }
+
         async Task CreateAsync(bool mountAfterCreation)
         {
             _busy = true;
@@ -116,14 +132,9 @@ internal sealed class MediaCreationDialog : Window
             var completed = false;
             try
             {
-                if (!_created)
+                if (CreatedPath is null)
                 {
-                    var path = destinationPath();
-                    if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException(LocExtension.Get(MediaCreationConstants.PathRequired));
-                    if (File.Exists(path)) throw new IOException(LocExtension.Get(MediaCreationConstants.AlreadyExists, path));
-                    await create();
-                    _created = true;
-                    CreatedPath = path;
+                    var path = await _creation.CreateAsync();
                     configuration.IsEnabled = false;
                     onlyCreate.IsEnabled = false;
                     cancel.Content = LocExtension.Get("Common.Close");

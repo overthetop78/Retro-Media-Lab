@@ -10,9 +10,12 @@ namespace RetroMediaLab.App.Theme.OS.Editions.Windows95.Views;
 internal sealed class CartridgeSettingsView : BusinessDialogView
 {
     private readonly StorageFieldsView form = new();
+    private readonly ContentControl optionFields = new() { HorizontalContentAlignment = HorizontalAlignment.Stretch };
+    private readonly CartridgeSlotConfigurationDialog source;
 
     internal CartridgeSettingsView(CartridgeSlotConfigurationDialog source) : base(source)
     {
+        this.source = source;
         try
         {
             var commands = ThemeDialogCompletion.CommandButtons(source);
@@ -25,13 +28,36 @@ internal sealed class CartridgeSettingsView : BusinessDialogView
             if (!string.IsNullOrWhiteSpace(source.PresentationHint))
                 form.Children.Add(new TextBlock { Text = source.PresentationHint, TextWrapping = TextWrapping.Wrap,
                     Margin = new Thickness(0, 4, 0, 8) });
-            foreach (var field in source.PresentationFields)
-                if (source.PresentationControls.TryGetValue(field.Id, out var endpoint))
-                    form.AddField(field, endpoint, LocExtension.GetForModule(source.PresentationModule ?? string.Empty, field.LabelResourceKey));
+            form.Children.Add(optionFields);
+            source.PresentationFieldsChanged += RefreshOptions;
+            RefreshOptions(source, EventArgs.Empty);
             Children.Add(new ScrollViewer { Content = form, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
         }
         catch { Dispose(); throw; }
     }
 
-    protected override void Detach() => form.Dispose();
+    private void RefreshOptions(object? sender, EventArgs args)
+    {
+        var updated = new StorageFieldsView();
+        try
+        {
+            foreach (var field in source.PresentationFields)
+                if (source.PresentationControls.TryGetValue(field.Id, out var endpoint))
+                    updated.AddField(field, endpoint, LocExtension.GetForModule(source.PresentationModule ?? string.Empty, field.LabelResourceKey));
+            if (optionFields.Content is StorageFieldsView previous) previous.Dispose();
+            optionFields.Content = updated;
+        }
+        catch { updated.Dispose(); throw; }
+    }
+
+    protected override void Detach()
+    {
+        source.PresentationFieldsChanged -= RefreshOptions;
+        try { (optionFields.Content as StorageFieldsView)?.Dispose(); }
+        finally
+        {
+            optionFields.Content = null;
+            form.Dispose();
+        }
+    }
 }

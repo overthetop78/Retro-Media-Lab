@@ -177,20 +177,7 @@ internal sealed class MachineCommandBar
 
     private Button Command(MachineCommandId id, string glyph, string tooltipResource, Func<Task> action, Action<Exception> showError, bool requiresPower = true)
     {
-        var shortcut = id switch
-        {
-            MachineCommandId.Power => EmulationShortcutDefaults.Power,
-            MachineCommandId.PauseResume => EmulationShortcutDefaults.PauseResume,
-            MachineCommandId.SoftReset => EmulationShortcutDefaults.SoftReset,
-            MachineCommandId.HardReset => EmulationShortcutDefaults.HardReset,
-            MachineCommandId.QuickSave => EmulationShortcutDefaults.QuickSave,
-            MachineCommandId.QuickLoad => EmulationShortcutDefaults.QuickLoad,
-            MachineCommandId.CaptureScreen => EmulationShortcutDefaults.Screenshot,
-            MachineCommandId.Fullscreen => EmulationShortcutDefaults.ToggleFullscreen,
-            MachineCommandId.Audio => EmulationShortcutDefaults.ToggleMute,
-            MachineCommandId.CoreOptions => EmulationShortcutDefaults.OpenSettings,
-            _ => null
-        };
+        var shortcut = EmulationShortcutMap.CommandShortcut(id);
         var button = MachineView.CreateCommandButton(glyph, Tooltip(tooltipResource, shortcut));
         button.Tag = false;
         _commandsById.Add(id, button);
@@ -202,7 +189,7 @@ internal sealed class MachineCommandBar
     private string Tooltip(string resource, string? shortcut)
     {
         var label = LocExtension.Get(resource);
-        var binding = shortcut is null ? string.Empty : EmulationShortcutViewFunctions.ResolveShortcutText(_shortcuts, shortcut);
+        var binding = shortcut is null ? string.Empty : EmulationShortcutMap.ResolveShortcutText(_shortcuts, shortcut);
         return string.IsNullOrEmpty(binding) ? label : string.Concat(label, Environment.NewLine, binding);
     }
 

@@ -1,7 +1,8 @@
+using RetroMediaLab.App.Functions.Input.Controllers;
 using RetroMediaLab.App.ViewModels;
 using RetroMediaLab.App.Services.Input.GameInput;
 
-namespace RetroMediaLab.App.Views.Controls.Options.ControllerPresentation;
+namespace RetroMediaLab.App.ViewModels.Input;
 
 internal sealed class ControllerInputRow(GameInputControlValue control) : ObservableObject
 {

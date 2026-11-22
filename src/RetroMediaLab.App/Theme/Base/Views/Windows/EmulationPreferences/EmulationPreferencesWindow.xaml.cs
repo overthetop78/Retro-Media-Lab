@@ -1,13 +1,14 @@
+using RetroMediaLab.App.Services.Settings;
 using RetroMediaLab.App.Services.Dialogs;
 using RetroMediaLab.App.Views.Controls.Emulation.Options;
 using RetroMediaLab.App.Contracts.Emulation.Machine;
 using RetroMediaLab.App.Functions.Localization;
+using RetroMediaLab.App.Functions.Emulation.Shortcuts;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Logging;
 using RetroMediaLab.App.Services.Storage;
 using RetroMediaLab.Infrastructure.Settings;
 using System.ComponentModel;
-using System.IO;
 using System.Windows;
 using RetroMediaLab.App.Views.Windows.EmulationModuleOptions;
 using RetroMediaLab.Emulation;
@@ -23,8 +24,7 @@ public partial class EmulationPreferencesWindow : Window
     }
 
     private readonly AppSettings _settings;
-    private readonly ISettingsStore _settingsStore;
-    private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private readonly SettingsSaveQueue _settingsSaves;
     private readonly Action<Exception> _reportSaveError;
     private bool _initializing = true;
     private bool _closingAfterSave;
@@ -33,12 +33,12 @@ public partial class EmulationPreferencesWindow : Window
     {
         InitializeComponent();
         _settings = settings;
-        var directory = dataDirectory ?? StoragePaths.DataDirectory;
-        _settingsStore = settingsStore ?? new JsonSettingsStore(Path.Combine(directory, "settings.json"));
+        _settingsSaves = new SettingsSaveQueue(settingsStore ?? StoragePaths.OpenSettingsStore(dataDirectory ?? StoragePaths.DataDirectory));
         _reportSaveError = reportSaveError ?? (error => ShowLoggedError(error, "Saving Emulation options"));
         EmulationSection.EditConfigurationRequested += async (module, configuration) =>
         {
-            var window = new EmulationModuleOptionsWindow(module, configuration, reservedBindings: _settings.EmulationShortcuts.Values);
+            var window = new EmulationModuleOptionsWindow(module, configuration,
+                reservedBindings: EmulationShortcutMap.GlobalBindingValues(_settings.EmulationShortcuts));
             RetroMediaLab.App.Services.Windows.WpfWindowNavigationService.ShowOwnedDialog(this, window);
             await EmulationSection.ReloadConfigurationsForWindowAsync();
         };
@@ -56,9 +56,7 @@ public partial class EmulationPreferencesWindow : Window
     internal async Task PersistSettingsAsync()
     {
         if (_initializing) return;
-        await _saveLock.WaitAsync().ConfigureAwait(false);
-        try { await _settingsStore.SaveAsync(_settings).ConfigureAwait(false); }
-        finally { _saveLock.Release(); }
+        await _settingsSaves.SaveAsync(_settings).ConfigureAwait(false);
     }
 
     internal async Task SaveFromEditorAsync()

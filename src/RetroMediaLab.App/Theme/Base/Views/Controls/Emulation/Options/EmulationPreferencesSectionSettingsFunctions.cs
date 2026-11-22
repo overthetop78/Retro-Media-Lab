@@ -1,9 +1,6 @@
 using System.Windows;
 using RetroMediaLab.App.Services.Dialogs;
-using RetroMediaLab.Infrastructure.Settings.Emulation;
-using RetroMediaLab.App.Services.Storage;
 using System.Windows.Controls;
-using RetroMediaLab.Emulation;
 using Microsoft.Win32;
 
 namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
@@ -18,40 +15,9 @@ public sealed partial class EmulationPreferencesSection
         await SaveFoldersAsync();
     }
 
-    private async Task SaveFoldersAsync()
-    {
-        if (_settings is null) return;
-        _settings.EmulationStorageFolder = _storageFolder.Text;
-        _settings.EmulationCaptureFolder = _captureFolder.Text;
-        _settings.EmulationStateFolder = _stateFolder.Text;
-        StoragePaths.ConfigureEmulationStorageDirectory(_settings.EmulationStorageFolder);
-        StoragePaths.ConfigureEmulationCaptureDirectory(_settings.EmulationCaptureFolder);
-        StoragePaths.ConfigureEmulationStateDirectory(_settings.EmulationStateFolder);
-        if (_persistSettings is not null) await _persistSettings();
-    }
+    private Task SaveFoldersAsync() =>
+        _preferencesSettings.SaveFoldersAsync(_storageFolder.Text, _captureFolder.Text, _stateFolder.Text);
 
-    private async Task SaveShortcutsAsync()
-    {
-        if (_settings is null || _shortcuts.HasErrors) return;
-        _settings.EmulationShortcuts = _shortcuts.Rows.ToDictionary(item => item.Id, item => item.Binding, StringComparer.Ordinal);
-        if (_persistSettings is not null) await _persistSettings();
-    }
-
-    private static IReadOnlyList<InputBindingDefinition> GlobalShortcutDefinitions() =>
-    [
-        Shortcut(EmulationShortcutDefaults.OpenSettings, RetroMediaLab.App.Constants.Localization.EmulationResourceKeys.MachineSettings),
-        Shortcut(EmulationShortcutDefaults.ReleaseMouse, "Emulation.Shortcut.ReleaseMouse"),
-        Shortcut(EmulationShortcutDefaults.PauseResume, "Emulation.Shortcut.PauseResume"),
-        Shortcut(EmulationShortcutDefaults.ToggleFullscreen, "Emulation.Shortcut.Fullscreen"),
-        Shortcut(EmulationShortcutDefaults.Power, "Emulation.Shortcut.Power"),
-        Shortcut(EmulationShortcutDefaults.SoftReset, "Emulation.Shortcut.SoftReset"),
-        Shortcut(EmulationShortcutDefaults.HardReset, "Emulation.Shortcut.HardReset"),
-        Shortcut(EmulationShortcutDefaults.QuickSave, "Emulation.Shortcut.QuickSave"),
-        Shortcut(EmulationShortcutDefaults.QuickLoad, "Emulation.Shortcut.QuickLoad"),
-        Shortcut(EmulationShortcutDefaults.Screenshot, "Emulation.Shortcut.Screenshot"),
-        Shortcut(EmulationShortcutDefaults.ToggleMute, "Emulation.Shortcut.Mute")
-    ];
-
-    private static InputBindingDefinition Shortcut(string id, string resourceKey) => new(id, resourceKey, EmulationShortcutDefaults.Values[id]);
+    private Task SaveShortcutsAsync() => _preferencesSettings.SaveShortcutsAsync(_shortcuts.Rows, _shortcuts.HasErrors);
 }
 

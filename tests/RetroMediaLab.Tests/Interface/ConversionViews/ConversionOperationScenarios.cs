@@ -1,3 +1,4 @@
+using RetroMediaLab.App.ViewModels.Conversion;
 using RetroMediaLab.App.Controllers.MainWindow;
 using RetroMediaLab.App.Contracts.Services.Dialogs;
 using RetroMediaLab.App.Interfaces.Services.Dialogs;

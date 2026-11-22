@@ -1,8 +1,9 @@
+using RetroMediaLab.App.Functions.Input.Controllers;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Input.GameInput;
 using System.Globalization;
 
-namespace RetroMediaLab.App.Views.Controls.Options.ControllerPresentation;
+namespace RetroMediaLab.App.Presenters.Input;
 
 internal sealed record ControllerDetailRow(string Label, string Value);
 internal sealed record ControllerAnalogRow(string Label, string Value);

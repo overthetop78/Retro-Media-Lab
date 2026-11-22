@@ -5,6 +5,7 @@ using RetroMediaLab.App.Enums.Input;
 using RetroMediaLab.App.Functions.Input.Bindings;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Input.GameInput;
+using RetroMediaLab.App.Services.Input.Midi;
 using RetroMediaLab.Emulation;
 using System.Windows;
 using System.Windows.Media;
@@ -40,7 +41,7 @@ public sealed class InputBindingRow(string id, string label, string binding, str
         {
             var deviceId = EmulationSdk.InputProcessing.ParseControllerDeviceId(_binding);
             if (string.IsNullOrWhiteSpace(deviceId)) return string.Empty;
-            return GameInputControllerReader.GetControllerName(deviceId) ?? deviceId;
+            return MidiShortcutInput.DeviceName(deviceId) ?? GameInputControllerReader.GetControllerName(deviceId) ?? deviceId;
         }
     }
     public Visibility ControllerDeviceNameVisibility => string.IsNullOrWhiteSpace(ControllerDeviceName) ? Visibility.Collapsed : Visibility.Visible;

@@ -1,4 +1,6 @@
 using RetroMediaLab.Infrastructure.Settings;
+using RetroMediaLab.Infrastructure.HostTools;
+using RetroMediaLab.MediaEngine.Images.Formats;
 using RetroMediaLab.App.Contracts.Services.Hardware;
 using RetroMediaLab.App.Enums.Services.Dialogs;
 using RetroMediaLab.App.Enums.Services.Navigation;
@@ -32,7 +34,7 @@ internal sealed class MainWindowLifecycleController(
     DiskImageWorkspaceController diskImageWorkspace,
     Action<AppSettings> configureEmulation,
     Func<Task> stopEmulation,
-    Func<Task> loadCapabilities,
+    ImageFormatWorkspace formatWorkspace,
     Action initializeWorkspace,
     Action initializeSelectors,
     Action buildConversionFormats,
@@ -68,7 +70,9 @@ internal sealed class MainWindowLifecycleController(
     {
         if (!settingsProvidedAtStartup) replaceSettings(await settingsStore.LoadAsync());
         configureEmulation(settings());
-        await loadCapabilities();
+        var executable = settings().GwExecutablePath;
+        if (!string.IsNullOrWhiteSpace(executable))
+            formatWorkspace.SetCapabilities(await new GwFormatCapabilityReader().ReadAsync(executable));
         initializeWorkspace();
         loadProfiles();
         if (!settingsProvidedAtStartup) { restoreWindow(); constrainWindow(); }

@@ -25,7 +25,6 @@ namespace RetroMediaLab.App.Views.Controls.Explorer;
 
 public partial class ExplorerSection : UserControl
 {
-    private static readonly IReadOnlyList<DiskFormat> BuiltInFormats = new BuiltInImageFormatCatalog().Formats;
     private ExplorerFolderItem? _rootFolder;
     private ExploredDiskImage? _document;
     private ExploredMediaImage? _mediaDocument;

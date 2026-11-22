@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using RetroMediaLab.App.Presenters.Emulation.Storage;
 using RetroMediaLab.App.Theme.Common;
 using RetroMediaLab.App.Views.Controls.Emulation.Storage;
 
@@ -30,7 +31,7 @@ internal partial class ModuleStorageView : UserControl, IDisposable
     private void SourceChanged(object? sender, EventArgs args) { if (!disposed) Rebuild(); }
     private void Rebuild()
     {
-        var selected = (Devices.SelectedItem as EmulationStorageDeviceList.PresentationRow)?.Device.Slot;
+        var selected = (Devices.SelectedItem as EmulationStorageDeviceRow)?.Device.Slot;
         Devices.ItemsSource = source.PresentationRows;
         Devices.SelectedItem = source.PresentationRows.FirstOrDefault(row => row.Device.Slot == selected) ?? source.PresentationRows.FirstOrDefault();
         UpdateActions();
@@ -38,17 +39,17 @@ internal partial class ModuleStorageView : UserControl, IDisposable
     private void SelectionChanged(object sender, SelectionChangedEventArgs args) { if (!disposed) UpdateActions(); }
     private void UpdateActions()
     {
-        var device = (Devices.SelectedItem as EmulationStorageDeviceList.PresentationRow)?.Device;
+        var device = (Devices.SelectedItem as EmulationStorageDeviceRow)?.Device;
         Configure.IsEnabled = device?.CanConfigure == true;
         Remove.IsEnabled = device?.CanRemove == true;
     }
     private void ConfigureClicked(object sender, RoutedEventArgs args)
     {
-        if (!disposed && Devices.SelectedItem is EmulationStorageDeviceList.PresentationRow row) source.RequestPresentationConfigure(row.Device);
+        if (!disposed && Devices.SelectedItem is EmulationStorageDeviceRow row) source.RequestPresentationConfigure(row.Device);
     }
     private void RemoveClicked(object sender, RoutedEventArgs args)
     {
-        if (!disposed && Devices.SelectedItem is EmulationStorageDeviceList.PresentationRow row) source.RequestPresentationRemove(row.Device);
+        if (!disposed && Devices.SelectedItem is EmulationStorageDeviceRow row) source.RequestPresentationRemove(row.Device);
     }
     public void Dispose()
     {

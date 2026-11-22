@@ -53,9 +53,9 @@ public partial class EmulationModuleOptionsWindow : Window
         await _section.EditConfigurationAsync(_initialConfiguration);
     }
 
-    private static void ConfigurationSaved(object? sender, EmulationConfigurationSavedEventArgs args) => EmulationPreferencesSection.RaiseConfigurationSaved(sender ?? typeof(EmulationModuleOptionsWindow), args);
+    private static void ConfigurationSaved(object? sender, EmulationConfigurationSavedEventArgs args) => EmulationConfigurationNotifications.NotifySaved(sender ?? typeof(EmulationModuleOptionsWindow), args);
 
-    private static void VideoConfigurationChanged(object? sender, EmulationConfigurationSavedEventArgs args) => EmulationPreferencesSection.RaiseVideoConfigurationChanged(sender ?? typeof(EmulationModuleOptionsWindow), args);
+    private static void VideoConfigurationChanged(object? sender, EmulationConfigurationSavedEventArgs args) => EmulationConfigurationNotifications.NotifyVideoChanged(sender ?? typeof(EmulationModuleOptionsWindow), args);
 
     private void VideoShaderLoadingChanged(object? sender, EmulationVideoShaderLoadingChangedEventArgs args) => _section.SetVideoShaderLoading(args.ModuleId, args.ConfigurationId, args.IsLoading);
 

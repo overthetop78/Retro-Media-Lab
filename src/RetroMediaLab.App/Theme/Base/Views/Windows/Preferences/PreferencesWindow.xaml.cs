@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Services.Settings;
 using RetroMediaLab.App.Services.Dialogs;
 using RetroMediaLab.Infrastructure.Hardware;
 using RetroMediaLab.Infrastructure.HostTools;
@@ -16,7 +17,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
+using RetroMediaLab.App.Services.HostTools;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -69,8 +70,7 @@ public partial class PreferencesWindow : Window
     private readonly HostToolsOptionsController _hostToolsOptionsController;
     private readonly IHardwareRegistry _hardwareRegistry;
     private bool _initializing = true;
-    private readonly ISettingsStore _settingsStore;
-    private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private readonly SettingsSaveQueue _settingsSaves;
     private readonly Action<Exception> _reportSaveError;
     private bool _closingAfterSave;
     private bool _closeInProgress;
@@ -107,11 +107,10 @@ public partial class PreferencesWindow : Window
             SaveFromEditorAsync,
             key => LocExtension.Get(key),
             exception => ShowLoggedError(exception, "Opening Logs folder", "Error.Title", MessageBoxImage.Warning),
-            Path.Combine(directory, "Logs")
+            StoragePaths.LogsDirectoryFor(directory)
         );
-        _settingsStore = settingsStore ?? new JsonSettingsStore(Path.Combine(directory, "settings.json"));
-        var managedRoot = Path.Combine(directory, "Greaseweazle");
-        var hostToolsManager = hostTools ?? new GwInstallationManager(new HttpClient(), managedRoot);
+        _settingsSaves = new SettingsSaveQueue(settingsStore ?? StoragePaths.OpenSettingsStore(directory));
+        var hostToolsManager = hostTools ?? HostToolsInstallationService.Create(directory);
         _hostToolsOptionsController = new HostToolsOptionsController(
             this,
             HardwareSection,
@@ -230,15 +229,7 @@ public partial class PreferencesWindow : Window
         if (_initializing)
             return;
         ApplyControlsToSettings();
-        await _saveLock.WaitAsync().ConfigureAwait(false);
-        try
-        {
-            await _settingsStore.SaveAsync(_settings).ConfigureAwait(false);
-        }
-        finally
-        {
-            _saveLock.Release();
-        }
+        await _settingsSaves.SaveAsync(_settings).ConfigureAwait(false);
     }
 
     private async Task<bool> SaveThemeAsync(AppThemeDesign selected, AppTheme variant, ThemeEditionSettings edition)

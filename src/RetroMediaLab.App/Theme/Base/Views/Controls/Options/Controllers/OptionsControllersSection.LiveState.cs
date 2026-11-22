@@ -1,7 +1,8 @@
+using RetroMediaLab.App.ViewModels.Input;
+using RetroMediaLab.App.Presenters.Input;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Input.GameInput;
 using RetroMediaLab.App.Services.Logging;
-using RetroMediaLab.App.Views.Controls.Options.ControllerPresentation;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;

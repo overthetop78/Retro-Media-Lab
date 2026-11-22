@@ -3,7 +3,7 @@ using RetroMediaLab.App.Services.Input.GameInput;
 using System.Globalization;
 using System.Text;
 
-namespace RetroMediaLab.App.Views.Controls.Options.ControllerPresentation;
+namespace RetroMediaLab.App.Functions.Input.Controllers;
 
 internal static class GameInputDisplayFormatter
 {

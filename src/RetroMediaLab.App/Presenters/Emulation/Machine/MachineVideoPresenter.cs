@@ -177,11 +177,14 @@ internal sealed class MachineVideoPresenter : IDisposable
         if (_videoProcessing == normalized) return;
         var rebuildsShader = _surface.Renderer != EmulationVideoRenderer.Wpf && (_videoProcessing.Sampling != normalized.Sampling || _videoProcessing.DisplayTechnology != normalized.DisplayTechnology);
         _videoProcessing = normalized;
-        lock (_surfaceGate) _surface.SetVideoProcessing(normalized);
-        if (rebuildsShader)
+        lock (_surfaceGate)
         {
-            _shaderPrepared = false;
-            if (_shaderLoading) Interlocked.Increment(ref _shaderLoadGeneration);
+            _surface.SetVideoProcessing(normalized);
+            if (rebuildsShader)
+            {
+                Interlocked.Increment(ref _shaderLoadGeneration);
+                _shaderPrepared = false;
+            }
         }
         RequestCurrentFrame();
     }
@@ -387,6 +390,7 @@ internal sealed class MachineVideoPresenter : IDisposable
                         PrepareHistory(presentationGeneration);
                         _surface.Present(frame);
                         generation = Volatile.Read(ref _shaderLoadGeneration);
+                        _shaderPrepared = true;
                     }
                 }
                 catch (Exception exception) { error = exception; }
@@ -401,7 +405,6 @@ internal sealed class MachineVideoPresenter : IDisposable
                     break;
                 }
                 if (presentationGeneration != Volatile.Read(ref _presentationGeneration)) continue;
-                _shaderPrepared = true;
                 CompleteShaderLoading(generation);
                 NotifyFrameCompleted(frame);
             }
@@ -429,11 +432,13 @@ internal sealed class MachineVideoPresenter : IDisposable
 
     private void SetShaderLoading(bool loading)
     {
-        if (loading) Interlocked.Increment(ref _shaderLoadGeneration);
         if (_shaderLoading == loading) return;
         _shaderLoading = loading;
         if (_view.Dispatcher.CheckAccess()) ShaderLoadingChanged?.Invoke(loading);
-        else _view.Dispatcher.BeginInvoke(() => ShaderLoadingChanged?.Invoke(loading));
+        else _view.Dispatcher.BeginInvoke(() =>
+        {
+            if (!_disposed && _shaderLoading == loading) ShaderLoadingChanged?.Invoke(loading);
+        });
     }
 
     private void CompleteShaderLoading(long generation)

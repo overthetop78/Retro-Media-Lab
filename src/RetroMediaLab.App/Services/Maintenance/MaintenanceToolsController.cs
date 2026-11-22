@@ -5,6 +5,8 @@ using EnabledOption = RetroMediaLab.MediaEngine.Contracts.Options.EnabledOption;
 using GwOptionValidator = RetroMediaLab.Infrastructure.Commands.Options.GwOptionValidator;
 using RetroMediaLab.Infrastructure.Maintenance;
 using RetroMediaLab.Infrastructure.Settings;
+using RetroMediaLab.App.Contracts.Services.Navigation;
+using RetroMediaLab.App.Enums.Services.Dialogs;
 using RetroMediaLab.App.Interfaces.Services.Dialogs;
 using RetroMediaLab.App.Services.Logging;
 using RetroMediaLab.App.Services.Operations;
@@ -88,6 +90,25 @@ public sealed class MaintenanceToolsController(
 
     public Task ExecuteEraseAsync() => ExecuteAsync(BuildErase, tools.EraseExecuteButton);
     public Task ExecuteCleanAsync() => ExecuteAsync(BuildClean, tools.CleanExecuteButton);
+
+    internal void OpenTool(string verb, string logsDirectory, Action<GwToolWindowRequest> showTool)
+    {
+        if (runner is null || dialogs is null || ensureHardware is null) return;
+        if (runner.IsRunning)
+        {
+            dialogs.Show(localize("Operation.Busy", []), localize("App.Title", []), icon: UserDialogIcon.Information);
+            return;
+        }
+        if (!ensureHardware()) return;
+        var current = settings();
+        var executable = current.GwExecutablePath;
+        if (string.IsNullOrWhiteSpace(executable) || !exists(executable))
+        {
+            dialogs.Show(localize("App.GwNotConfigured", []), localize("App.Title", []), icon: UserDialogIcon.Information);
+            return;
+        }
+        showTool(new(executable, verb, deviceArgument(), driveArgument(), logsDirectory, current.Logging));
+    }
 
     private async Task ExecuteAsync(Func<GwCommand> buildCommand, Button button)
     {

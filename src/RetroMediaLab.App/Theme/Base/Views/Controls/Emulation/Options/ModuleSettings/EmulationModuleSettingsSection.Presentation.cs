@@ -22,7 +22,7 @@ internal sealed partial class EmulationModuleSettingsSection
     internal IReadOnlyDictionary<string, FrameworkElement> PresentationFields => _fieldControls;
     internal ListBox PresentationMachines => _machines;
     internal EmulationMachineTab PresentationTab => _selectedTab;
-    internal bool CanCreateConfiguration => !_saved.Any(configuration => configuration.MachineId == _configuration.MachineId);
+    internal bool CanCreateConfiguration => !_session.HasSavedMachine(_configuration.MachineId);
     internal event EventHandler? PresentationChanged;
     internal Task RequestPresentationCommitAsync() => ExecuteUserChangeAsync();
     internal Task RequestCreateConfigurationAsync() => ExecuteAsync(SaveAsync);

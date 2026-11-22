@@ -119,7 +119,7 @@ public static class SettingsMigrator
         settings.EmulationMediaFolders = settings.EmulationMediaFolders.Where(item => !string.IsNullOrWhiteSpace(item.ModuleId) && !string.IsNullOrWhiteSpace(item.MachineId) && !string.IsNullOrWhiteSpace(item.Folder))
             .GroupBy(item => (Module: item.ModuleId.Trim(), Machine: item.MachineId.Trim(), item.Category))
             .Select(group => group.Last()).ToList();
-        foreach (var shortcut in EmulationShortcutDefaults.Values)
+        foreach (var shortcut in EmulationShortcutDefaults.Values.Concat(EmulationShortcutDefaults.OsdValues))
             if (!settings.EmulationShortcuts.ContainsKey(shortcut.Key)) settings.EmulationShortcuts[shortcut.Key] = shortcut.Value;
         settings.LastDiskImageFolder = string.IsNullOrWhiteSpace(settings.LastDiskImageFolder) ? null : settings.LastDiskImageFolder.Trim();
         settings.LastVisualizerImageFolder = string.IsNullOrWhiteSpace(settings.LastVisualizerImageFolder) ? settings.LastDiskImageFolder : settings.LastVisualizerImageFolder.Trim();

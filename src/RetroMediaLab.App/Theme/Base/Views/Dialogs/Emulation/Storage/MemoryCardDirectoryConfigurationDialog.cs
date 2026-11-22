@@ -1,4 +1,5 @@
 using RetroMediaLab.App.Services.Dialogs;
+using RetroMediaLab.App.Services.Storage;
 using RetroMediaLab.App.Constants.Controls.Visual;
 using RetroMediaLab.App.Constants.Localization;
 using RetroMediaLab.App.Functions.Views.Emulation.Storage;
@@ -40,9 +41,7 @@ internal sealed class MemoryCardDirectoryConfigurationDialog : Window
         {
             try
             {
-                var path = Path.GetFullPath(_path.Text);
-                Directory.CreateDirectory(path);
-                SupportPath = path;
+                SupportPath = StoragePaths.PrepareMemoryCardDirectory(_path.Text);
                 ThemeDialogCompletion.Complete(this, true);
             }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException or ArgumentException)

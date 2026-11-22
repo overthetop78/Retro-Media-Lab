@@ -1,5 +1,6 @@
 using RetroMediaLab.MediaEngine.Images.Formats;
 using RetroMediaLab.App.Contracts.Storage;
+using RetroMediaLab.App.Functions.DiskImages;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -68,9 +69,9 @@ public partial class DiskClassificationSelector : UserControl
 
     public void ApplyDetection(string? detectedFormatId, string? detectedProtectionId, IEnumerable<string> detectedFormatIds)
     {
-        var resolved = detectedFormatIds.Select(_catalog.ResolveFormat).Where(format => format is not null).Cast<DiskFormat>().DistinctBy(format => format.Id, StringComparer.OrdinalIgnoreCase).ToArray();
-        _detectedFormatIds = resolved.Select(format => format.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        _detectedFormatByMachine = resolved.GroupBy(format => format.Family, StringComparer.OrdinalIgnoreCase).ToDictionary(group => group.Key, group => group.First().Id, StringComparer.OrdinalIgnoreCase);
+        var detected = DiskClassificationDetection.Resolve(_catalog, detectedFormatId, detectedFormatIds);
+        _detectedFormatIds = detected.FormatIds;
+        _detectedFormatByMachine = detected.FormatByMachine;
         if (!AutomaticDetection)
         {
             _updating = true;
@@ -80,7 +81,7 @@ public partial class DiskClassificationSelector : UserControl
             return;
         }
 
-        var format = _catalog.ResolveFormat(detectedFormatId) ?? resolved.FirstOrDefault();
+        var format = detected.PreferredFormat;
         _updating = true;
         RefreshMachines(format?.Family);
         if (format is null)

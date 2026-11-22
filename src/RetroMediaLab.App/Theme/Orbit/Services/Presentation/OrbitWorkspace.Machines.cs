@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Controllers.Emulation.Machine;
 using System.Windows;
 using System.Windows.Controls;
 using RetroMediaLab.App.Contracts.Emulation.Configurations;

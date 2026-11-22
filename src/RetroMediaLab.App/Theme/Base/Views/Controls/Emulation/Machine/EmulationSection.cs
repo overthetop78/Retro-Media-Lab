@@ -1,9 +1,9 @@
 using RetroMediaLab.Infrastructure.Settings;
 using RetroMediaLab.App.Constants.Controls.Visual;
+using RetroMediaLab.App.Controllers.Emulation.Machine;
 using RetroMediaLab.App.Contracts.Emulation.Configurations;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.App.Services.Emulation;
-using RetroMediaLab.App.Views.Controls.Emulation.Options;
 using RetroMediaLab.App.Views.Controls.Common;
 using System.Windows;
 using System.Windows.Automation;
@@ -24,11 +24,8 @@ public sealed partial class EmulationSection : UserControl
     private readonly MainTabHeader _welcomeHeader = new();
     private readonly TextBlock _welcomeText = new();
     private readonly IReadOnlyList<IEmulationModule> _modules;
-    private IReadOnlyList<EmulationConfigurationListItem> _configurations = [];
+    private readonly EmulationConfigurationSelection _selection;
     private readonly Dictionary<(string ModuleId, Guid Id), TabItem> _openMachines = [];
-    private IEmulationModule? _selectedModule;
-    private string? _selectedMachineId;
-    private Guid? _selectedConfigurationId;
     private bool _selectorExpanded = true;
     private bool _selectorRendering;
     private AppSettings _settings = new();
@@ -42,6 +39,7 @@ public sealed partial class EmulationSection : UserControl
     internal EmulationSection(IReadOnlyList<IEmulationModule> modules)
     {
         _modules = modules;
+        _selection = new(modules);
         AutomationProperties.SetName(_open, LocExtension.Get(ControlVisualConstants.OpenMachineResource));
         AutomationProperties.SetName(_machines, LocExtension.Get(ControlVisualConstants.MachinesResource));
         _open.Content = LocExtension.Get(ControlVisualConstants.OpenMachineResource);
@@ -50,11 +48,9 @@ public sealed partial class EmulationSection : UserControl
         _selectorRows.MachineSelected += SelectMachine;
         _selectorRows.MachineOpened += (module, definition) =>
         {
-            var selected = FindConfiguration(module.Id, definition.Id);
+            var selected = _selection.Find(module.Id, definition.Id);
             if (selected is null) return;
-            _selectedModule = module;
-            _selectedMachineId = definition.Id;
-            _selectedConfigurationId = selected.Configuration.Id;
+            _selection.Select(module, definition.Id, selected.Configuration.Id);
             RefreshSelector();
             OpenSelectedMachine(_selectorRows, new RoutedEventArgs());
         };
@@ -69,9 +65,9 @@ public sealed partial class EmulationSection : UserControl
         Loaded += async (_, _) =>
         {
             DetachConfigurationEvents();
-            EmulationPreferencesSection.ConfigurationSaved += ConfigurationSaved;
-            EmulationPreferencesSection.VideoConfigurationChanged += VideoConfigurationChanged;
-            EmulationPreferencesSection.ConfigurationDeleted += ReloadConfigurationsAsync;
+            EmulationConfigurationNotifications.ConfigurationSaved += ConfigurationSaved;
+            EmulationConfigurationNotifications.VideoConfigurationChanged += VideoConfigurationChanged;
+            EmulationConfigurationNotifications.ConfigurationDeleted += ReloadConfigurationsAsync;
             await ReloadConfigurationsAsync();
         };
         Unloaded += (_, _) => DetachConfigurationEvents();
@@ -79,9 +75,9 @@ public sealed partial class EmulationSection : UserControl
 
     private void DetachConfigurationEvents()
     {
-        EmulationPreferencesSection.ConfigurationSaved -= ConfigurationSaved;
-        EmulationPreferencesSection.VideoConfigurationChanged -= VideoConfigurationChanged;
-        EmulationPreferencesSection.ConfigurationDeleted -= ReloadConfigurationsAsync;
+        EmulationConfigurationNotifications.ConfigurationSaved -= ConfigurationSaved;
+        EmulationConfigurationNotifications.VideoConfigurationChanged -= VideoConfigurationChanged;
+        EmulationConfigurationNotifications.ConfigurationDeleted -= ReloadConfigurationsAsync;
     }
 
     public void Configure(AppSettings settings) => _settings = settings;

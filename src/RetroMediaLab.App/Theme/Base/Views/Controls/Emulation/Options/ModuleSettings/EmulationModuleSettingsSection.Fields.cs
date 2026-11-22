@@ -1,13 +1,11 @@
+using RetroMediaLab.App.Functions.Emulation.Settings;
 using RetroMediaLab.App.Services.Dialogs;
 using RetroMediaLab.App.Constants.Controls.Visual;
-using RetroMediaLab.App.Constants.Storage;
 using RetroMediaLab.App.Contracts.Emulation.Settings;
 using RetroMediaLab.App.Functions.Views.Emulation.Settings;
 using RetroMediaLab.App.Localization.Extensions;
-using RetroMediaLab.App.Services.Audio;
 using RetroMediaLab.App.Services.Storage;
 using Microsoft.Win32;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -84,14 +82,8 @@ internal sealed partial class EmulationModuleSettingsSection
         return selection;
     }
 
-    private IReadOnlyList<EmulationSettingsChoiceView> SelectionChoices(EmulationSettingsField field)
-    {
-        var declared = field.Choices?.Select(choice => ChoiceView(choice, field.ValueUnitResourceKey)) ?? Enumerable.Empty<EmulationSettingsChoiceView>();
-        if (field.ChoiceSource != EmulationSettingsChoiceSource.AudioOutputDevices)
-            return declared.ToArray();
-        var devices = WasapiAudioOutput.GetOutputDevices().Select(device => new EmulationSettingsChoiceView(new EmulationSettingsChoice(device.Id, string.Empty, device.Name), device.Name));
-        return declared.Concat(devices).DistinctBy(choice => choice.Choice.Id).ToArray();
-    }
+    private IReadOnlyList<EmulationSettingsChoiceView> SelectionChoices(EmulationSettingsField field) =>
+        EmulationSettingsChoiceFunctions.GetChoices(field).Select(choice => ChoiceView(choice, field.ValueUnitResourceKey)).ToArray();
 
     private EmulationSettingsChoiceView ChoiceView(EmulationSettingsChoice choice, string? unitResourceKey = null) => new(choice,
         EmulationSettingsValuePresentationFunctions.WithUnit(choice.InvariantDisplayValue ?? LocExtension.GetForModule(_module, choice.DisplayResourceKey), unitResourceKey));
@@ -122,11 +114,11 @@ internal sealed partial class EmulationModuleSettingsSection
         var browse = new Button { Content = LocExtension.Get(ControlVisualConstants.BrowseResource), MinWidth = 90 };
         browse.Click += async (_, _) =>
         {
-            var currentDirectory = File.Exists(path.Text) ? Path.GetDirectoryName(path.Text) : Directory.Exists(path.Text) ? path.Text : null;
+            var initial = FileSelectionFiles.InitialLocation(path.Text);
             var dialog = new OpenFileDialog
             {
-                InitialDirectory = currentDirectory ?? DefaultFolder(field.DefaultFolderCategory),
-                FileName = File.Exists(path.Text) ? Path.GetFileName(path.Text) : string.Empty
+                InitialDirectory = initial.Directory ?? DefaultFolder(field.DefaultFolderCategory),
+                FileName = initial.FileName
             };
             if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) == true)
             {
@@ -176,7 +168,7 @@ internal sealed partial class EmulationModuleSettingsSection
     private FrameworkElement CreateOpenDirectory(EmulationSettingsField field)
     {
         var directory = DefaultFolder(field.DefaultFolderCategory);
-        Directory.CreateDirectory(directory);
+        StoragePaths.EnsureDirectory(directory);
         var open = new Button
         {
             Content = LocExtension.Get("Common.OpenFolder"), Tag = directory,
@@ -184,17 +176,7 @@ internal sealed partial class EmulationModuleSettingsSection
         };
         open.Click += async (_, _) => await ExecuteAsync(() =>
         {
-            System.Diagnostics.Process? shellRequest = null;
-            try
-            {
-                Directory.CreateDirectory(directory);
-                shellRequest = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(directory) { UseShellExecute = true });
-            }
-            finally
-            {
-                // Explorer belongs to the desktop shell; release only our request handle.
-                shellRequest?.Dispose();
-            }
+            StoragePaths.OpenDirectoryInExplorer(directory);
             return Task.CompletedTask;
         });
         return open;
@@ -211,22 +193,7 @@ internal sealed partial class EmulationModuleSettingsSection
         return row;
     }
 
-    private string DefaultFolder(EmulationDefaultFolderCategory? category)
-    {
-        var moduleFolder = _module.Id.Length == 0 ? _module.Id : char.ToUpperInvariant(_module.Id[0]) + _module.Id[1..];
-        return category switch
-        {
-            EmulationDefaultFolderCategory.Floppy => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.FloppiesDirectory, moduleFolder),
-            EmulationDefaultFolderCategory.CompactDisc => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.CompactDiscsDirectory, moduleFolder),
-            EmulationDefaultFolderCategory.HardDisk => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.HardDisksDirectory, moduleFolder),
-            EmulationDefaultFolderCategory.Cartridge => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.CartridgesDirectory, moduleFolder),
-            EmulationDefaultFolderCategory.Tape => Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.TapesDirectory, moduleFolder),
-            EmulationDefaultFolderCategory.State => Path.Combine(StoragePaths.EmulationStateDirectory, moduleFolder),
-            EmulationDefaultFolderCategory.Capture => Path.Combine(StoragePaths.EmulationCaptureDirectory, moduleFolder),
-            EmulationDefaultFolderCategory.Cheats => Path.Combine(StoragePaths.EmulationStorageDirectory, "Cheats", moduleFolder, _configuration.MachineId),
-            EmulationDefaultFolderCategory.Firmware => _firmwareManagement?.GetFirmwareDirectory()
-                ?? Path.Combine(StoragePaths.EmulationStorageDirectory, StoragePathConstants.RomsDirectory, moduleFolder),
-            _ => StoragePaths.EmulationStorageDirectory
-        };
-    }
+    private string DefaultFolder(EmulationDefaultFolderCategory? category) =>
+        StoragePaths.EmulationModuleDirectory(_module.Id, _configuration.MachineId, category,
+            category == EmulationDefaultFolderCategory.Firmware ? _firmwareManagement?.GetFirmwareDirectory() : null);
 }

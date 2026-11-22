@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Functions.Emulation.Settings;
 using RetroMediaLab.App.Contracts.Emulation.Configurations;
 using RetroMediaLab.App.Constants.Emulation;
 using RetroMediaLab.App.Constants.Machine;

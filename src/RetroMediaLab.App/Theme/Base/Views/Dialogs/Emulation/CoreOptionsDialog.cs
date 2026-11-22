@@ -1,8 +1,8 @@
 using RetroMediaLab.App.Constants.Controls.Visual;
+using RetroMediaLab.App.Functions.Emulation.Settings;
 using RetroMediaLab.App.Functions.Views.Emulation.Storage;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.Emulation;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -69,18 +69,7 @@ public sealed class CoreOptionsDialog : Window
         return (Resolve(option.Name), control);
     }
 
-    private string Resolve(string text)
-    {
-        var value = text.StartsWith("Emulation.", StringComparison.Ordinal) ? LocExtension.GetForModule(_moduleId, text) : text;
-        value = Regex.Replace(value, @"\s*[\(\[](?=[^()\[\]]*\b(?:restart|reboot)\b)[^()\[\]]*[\)\]]", string.Empty, RegexOptions.IgnoreCase);
-        return Regex.Replace(value, @"(^|(?<=[.!?])\s+)(?<sentence>.*?)(?=(?<=[.!?])\s+|$)", match =>
-        {
-            var sentence = match.Groups["sentence"].Value;
-            var notice = Regex.IsMatch(sentence, @"\b(?:restart|reboot)\w*\b", RegexOptions.IgnoreCase)
-                && Regex.IsMatch(sentence, @"\b(?:require\w*|need\w*|must|recommended)\b|after changing|take\w* effect|to apply", RegexOptions.IgnoreCase);
-            return notice ? string.Empty : match.Value;
-        }, RegexOptions.Singleline).Trim();
-    }
+    private string Resolve(string text) => EmulationSettingsValuePresentationFunctions.CoreOptionLabel(text, _moduleId);
 
     private static string ReadValue(FrameworkElement control) => control switch
     {

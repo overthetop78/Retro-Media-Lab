@@ -22,16 +22,13 @@ namespace RetroMediaLab.App.Views.Controls.Explorer;
 
 public partial class ExplorerSection
 {
-    private DiskFormat? FormatForIdentity(string? formatId)
-    {
-        if (string.IsNullOrWhiteSpace(formatId)) return null;
-        return _formats.FirstOrDefault(format => string.Equals(format.Id, formatId, StringComparison.OrdinalIgnoreCase)) ?? BuiltInFormats.FirstOrDefault(format => string.Equals(format.Id, formatId, StringComparison.OrdinalIgnoreCase));
-    }
+    private DiskFormat? FormatForIdentity(string? formatId) => ExplorerMediaChoicesPresenter.FormatForIdentity(_formats, formatId);
 
     private void ConfigureSessions(int? preferredSession)
     {
         _updatingSessionSelector = true;
-        if (_mediaDocument?.Document.Representation is not OpticalMediaImageRepresentation { Tracks: { } tracks })
+        var choices = ExplorerMediaChoicesPresenter.Sessions(_mediaDocument);
+        if (choices is null)
         {
             SessionSelector.ItemsSource = null;
             SessionSelector.Visibility = Visibility.Collapsed;
@@ -39,7 +36,6 @@ public partial class ExplorerSection
             _updatingSessionSelector = false;
             return;
         }
-        var choices = tracks.Select(track => track.SessionNumber).Distinct().Order().Select(number => new ExplorerOpticalSessionChoice(number, $"{LocExtension.Get("Explorer.Session")} {number}")).ToArray();
         SessionSelector.ItemsSource = choices;
         SessionControl.Visibility = choices.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         SessionSelector.Visibility = choices.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
@@ -51,19 +47,14 @@ public partial class ExplorerSection
     {
         if (_mediaDocument is null) return;
         var session = (SessionSelector.SelectedItem as ExplorerOpticalSessionChoice)?.SessionNumber;
-        var volumes = _mediaDocument.Volumes.Where(volume => session is null || volume.Descriptor.SessionNumber is null || volume.Descriptor.SessionNumber == session).ToArray();
-        var choices = volumes.Select((volume, index) => new ExplorerMediaVolumeChoice(volume, VolumeChoiceName(volume, index))).ToArray();
-        var selectedVolume = preferredVolume is not null && volumes.Contains(preferredVolume) ? preferredVolume : volumes.FirstOrDefault(volume => volume.FileSystem is not null) ?? volumes.FirstOrDefault();
+        var (choices, selectedVolume) = ExplorerMediaChoicesPresenter.Volumes(_mediaDocument, session, preferredVolume);
         _updatingVolumeSelector = true;
         VolumeSelector.ItemsSource = choices;
         VolumeSelector.Visibility = choices.Length > 1 ? Visibility.Visible : Visibility.Collapsed;
         VolumeSelector.SelectedItem = choices.FirstOrDefault(choice => ReferenceEquals(choice.Volume, selectedVolume));
         _updatingVolumeSelector = false;
 
-        var audioTracks = (_mediaDocument.Document.Representation as OpticalMediaImageRepresentation)?.Tracks?
-            .Where(track => track.IsAudio && (session is null || track.SessionNumber == session))
-            .Select(track => new ExplorerOpticalTrackChoice(track, $"{LocExtension.Get("Explorer.Track")} {track.TrackNumber} \u00b7 {LocExtension.Get("Explorer.Audio")}"))
-            .ToArray() ?? [];
+        var audioTracks = ExplorerMediaChoicesPresenter.AudioTracks(_mediaDocument, session);
         AudioTrackList.ItemsSource = audioTracks;
         AudioTrackList.SelectedItem = null;
         OpticalTracksSection.Visibility = audioTracks.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
@@ -114,15 +105,6 @@ public partial class ExplorerSection
         var issues = _mediaVolume is null ? _mediaDocument.Diagnostics : ExplorerIssueBuilder.Build(_mediaDocument, _mediaVolume);
         WarningsButton.Visibility = issues.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
         WarningsText.Text = $"{LocExtension.Get("Explorer.Warnings")} : {issues.Count}";
-    }
-
-    private static string VolumeChoiceName(ExploredMediaVolume volume, int index)
-    {
-        var name = volume.FileSystem?.Name ?? volume.Descriptor.Name;
-        var prefix = string.IsNullOrWhiteSpace(name) ? $"{LocExtension.Get("Explorer.Volume")} {index + 1}" : name;
-        var partition = volume.Descriptor.PartitionNumber is { } number ? $"{ControlVisualConstants.DetailSeparator}#{number}" : string.Empty;
-        var track = volume.Descriptor.TrackNumber is { } trackNumber ? $" \u00b7 {LocExtension.Get("Explorer.Track")} {trackNumber}" : string.Empty;
-        return $"{prefix}{partition}{track} \u00b7 {StorageSizeFormatter.FormatBytes(volume.Descriptor.Length)}";
     }
 
     private void SessionSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)

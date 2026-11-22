@@ -1,3 +1,5 @@
+using RetroMediaLab.App.Functions.Emulation.Storage;
+using RetroMediaLab.App.Services.Storage;
 using RetroMediaLab.App.Services.Dialogs;
 using RetroMediaLab.App.Constants.Emulation;
 using RetroMediaLab.App.Functions.Views.Emulation.Settings;
@@ -130,13 +132,10 @@ public sealed class FloppyDriveConfigurationDialog : Window
     private void CreateBlankFloppy(FloppyDriveModelChoice model)
     {
         var configuration = new FloppyCreationSettingsView(model, _options, _clientGuid);
-        Task CreateImage()
-        {
-            var selected = configuration.SelectedFormat ?? throw new InvalidOperationException(LocExtension.Get("Emulation.Hdd.InvalidFormat"));
-            return EmulationSdk.MediaProcessing.CreateBlankDiskAsync(configuration.DestinationPath, selected.FormatId);
-        }
         var creation = new MediaCreationDialog(this, LocExtension.Get("Emulation.Storage.Floppy.CreateBlank"), configuration,
-            () => configuration.DestinationPath, CreateImage, () => configuration.IsComplete);
+            () => configuration.DestinationPath,
+            () => BlankFloppyImage.CreateAsync(configuration.DestinationPath, configuration.SelectedFormat),
+            () => configuration.IsComplete);
         try
         {
             if (WpfWindowNavigationService.ShowOwnedDialog(this, creation) == true)
@@ -163,25 +162,13 @@ public sealed class FloppyDriveConfigurationDialog : Window
             Filter = formats?.Count > 0 ? string.Join("|", formats.Keys.Select(suffix => $"{suffix.TrimStart('.').ToUpperInvariant()}|*{suffix}")) : _options.ImageFilter,
             DefaultExt = extension,
             AddExtension = true,
-            InitialDirectory = Directory.Exists(_options.ImageDirectory) ? _options.ImageDirectory : string.Empty,
+            InitialDirectory = FileSelectionFiles.ExistingDirectoryOrEmpty(_options.ImageDirectory),
             ClientGuid = _clientGuid,
             FileName = $"blank{extension}"
         };
         if (WpfFileDialogService.ShowFileDialog(dialog, this) != true) return;
-        var creation = new MediaCreationDialog(this, LocExtension.Get("Emulation.Storage.Floppy.CreateBlank"), dialog.FileName, async () =>
-        {
-            if (formats?.Count > 0)
-            {
-                var choice = formats.FirstOrDefault(format => format.Key.Equals(Path.GetExtension(dialog.FileName), StringComparison.OrdinalIgnoreCase));
-                if (choice.Value is null) throw new ArgumentException(LocExtension.Get("Emulation.Hdd.InvalidFormat"));
-                await EmulationSdk.MediaProcessing.CreateBlankDiskAsync(dialog.FileName, choice.Value);
-            }
-            else
-            {
-                using var stream = new FileStream(dialog.FileName, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-                if (model?.BlankImageSize is > 0) stream.SetLength(model.BlankImageSize);
-            }
-        });
+        var creation = new MediaCreationDialog(this, LocExtension.Get("Emulation.Storage.Floppy.CreateBlank"), dialog.FileName,
+            () => BlankFloppyImage.CreateForDriveAsync(dialog.FileName, model));
         try
         {
             if (WpfWindowNavigationService.ShowOwnedDialog(this, creation) == true)

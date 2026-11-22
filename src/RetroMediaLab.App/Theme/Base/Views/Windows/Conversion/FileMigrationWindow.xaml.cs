@@ -127,7 +127,8 @@ public partial class FileMigrationWindow : Window
     private void BrowseOutput_Click(object sender, RoutedEventArgs e)
     {
         if (SelectedTarget is null) return;
-        var path = _fileDialogs.SaveFile(new($"{SelectedTarget.Label}|*{SelectedTarget.Target.Extension}", SuggestedOutputName(), SelectedTarget.Target.Extension));
+        var path = _fileDialogs.SaveFile(new($"{SelectedTarget.Label}|*{SelectedTarget.Target.Extension}",
+            FileMigrationCoordinator.SuggestedOutputName(SourcePathTextBox.Text, SelectedTarget.Target), SelectedTarget.Target.Extension));
         if (path is not null) OutputPathTextBox.Text = path;
         RefreshValidation();
     }
@@ -136,7 +137,8 @@ public partial class FileMigrationWindow : Window
     {
         SelectedTarget = TargetComboBox.SelectedItem as FileMigrationTargetOption;
         AcceptLossesCheckBox.IsChecked = false;
-        if (_source is not null) OutputPathTextBox.Text = SuggestedOutputPath();
+        if (_source is not null)
+            OutputPathTextBox.Text = FileMigrationCoordinator.SuggestedOutputPath(SourcePathTextBox.Text, SelectedTarget?.Target);
         RefreshValidation();
     }
 
@@ -147,12 +149,14 @@ public partial class FileMigrationWindow : Window
     private async Task ExecuteMigrationAsync()
     {
         if (_source is null || SelectedTarget is null || _report?.CanExecute != true || string.IsNullOrWhiteSpace(OutputPathTextBox.Text)) return;
-        if (Path.GetFullPath(SourcePathTextBox.Text).Equals(Path.GetFullPath(OutputPathTextBox.Text), StringComparison.OrdinalIgnoreCase))
+        var destination = FileMigrationCoordinator.CheckDestination(SourcePathTextBox.Text, OutputPathTextBox.Text);
+        if (destination == FileMigrationCoordinator.DestinationStatus.SameAsSource)
         {
             _dialogs.Show(LocExtension.Get("Migration.SourceDestinationSame"), LocExtension.Get("Migration.Title"), icon: UserDialogIcon.Warning);
             return;
         }
-        if (File.Exists(OutputPathTextBox.Text) && _dialogs.Show(LocExtension.Get("Migration.OverwriteConfirm", OutputPathTextBox.Text), LocExtension.Get("Migration.Title"), UserDialogButtons.YesNo, UserDialogIcon.Warning) != UserDialogResult.Yes) return;
+        if (destination == FileMigrationCoordinator.DestinationStatus.Existing &&
+            _dialogs.Show(LocExtension.Get("Migration.OverwriteConfirm", OutputPathTextBox.Text), LocExtension.Get("Migration.Title"), UserDialogButtons.YesNo, UserDialogIcon.Warning) != UserDialogResult.Yes) return;
         try
         {
             SetBusy(true);
@@ -180,7 +184,7 @@ public partial class FileMigrationWindow : Window
             if (_closeRequested) return;
             SourcePathTextBox.Text = path;
             SourceSummaryText.Text = LocExtension.Get("Migration.SourceSummary", _source.Name, _source.FileSystemId, _source.Entries.Count);
-            OutputPathTextBox.Text = SuggestedOutputPath();
+            OutputPathTextBox.Text = FileMigrationCoordinator.SuggestedOutputPath(SourcePathTextBox.Text, SelectedTarget?.Target);
             RefreshValidation();
         }
         catch (OperationCanceledException) when (_closeRequested) { }
@@ -221,18 +225,6 @@ public partial class FileMigrationWindow : Window
             CompatibilityText.Text = LoggedErrorText(exception, "Validating file migration", "Migration.SourceFailed");
         }
         UpdateExecuteState();
-    }
-
-    private string SuggestedOutputPath()
-    {
-        if (SelectedTarget is null || string.IsNullOrWhiteSpace(SourcePathTextBox.Text)) return string.Empty;
-        return Path.Combine(Path.GetDirectoryName(SourcePathTextBox.Text) ?? string.Empty, SuggestedOutputName());
-    }
-
-    private string SuggestedOutputName()
-    {
-        if (SelectedTarget is null) return string.Empty;
-        return $"{Path.GetFileNameWithoutExtension(SourcePathTextBox.Text)}-migrated{SelectedTarget.Target.Extension}";
     }
 
     private void SetBusy(bool busy)

@@ -2,13 +2,11 @@ using RetroMediaLab.App.Constants.Controls.Visual;
 using RetroMediaLab.App.Constants.Emulation;
 using RetroMediaLab.App.Constants.Localization;
 using RetroMediaLab.App.Contracts.Emulation.Storage;
-using RetroMediaLab.App.Functions.Storage;
 using RetroMediaLab.App.Localization.Extensions;
-using System.IO;
+using RetroMediaLab.App.Presenters.Emulation.Storage;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using RetroMediaLab.Emulation;
 
 
 namespace RetroMediaLab.App.Views.Controls.Emulation.Storage;
@@ -19,8 +17,7 @@ namespace RetroMediaLab.App.Views.Controls.Emulation.Storage;
 /// </summary>
 public sealed class EmulationStorageDeviceList : UserControl
 {
-    internal sealed record PresentationRow(EmulationStorageDeviceItem Device, string Type, string Support);
-    internal IReadOnlyList<PresentationRow> PresentationRows { get; private set; } = [];
+    internal IReadOnlyList<EmulationStorageDeviceRow> PresentationRows { get; private set; } = [];
     internal Button PresentationAdd => _add;
     internal event EventHandler? PresentationChanged;
     private readonly StackPanel _rows = new();
@@ -102,9 +99,7 @@ public sealed class EmulationStorageDeviceList : UserControl
     private void RebuildRows()
     {
         _rows.Children.Clear();
-        PresentationRows = _devices.Select(device => new PresentationRow(device, device.TypeDisplayName ?? TypeLabel(device.Type),
-            device.SupportDisplayName ?? (string.IsNullOrWhiteSpace(device.SupportPath)
-                ? LocExtension.Get(EmulationResourceKeys.NotUsed) : SupportSummary(device.SupportPath)))).ToArray();
+        PresentationRows = _devices.Select(EmulationStorageDevicePresenter.Present).ToArray();
         foreach (var presentation in PresentationRows)
         {
             var device = presentation.Device;
@@ -198,22 +193,4 @@ public sealed class EmulationStorageDeviceList : UserControl
         Margin = new Thickness(8, 8, 8, 8)
     };
 
-    private static string TypeLabel(EmulationMediaType type) => type switch
-    {
-        EmulationMediaType.Floppy => LocExtension.Get(EmulationResourceKeys.FloppyDevice),
-        EmulationMediaType.HardDisk => LocExtension.Get(EmulationResourceKeys.HardDiskDevice),
-        EmulationMediaType.CompactDisc => LocExtension.Get(EmulationResourceKeys.CompactDiscDevice),
-        EmulationMediaType.MemoryCard => LocExtension.Get(EmulationResourceKeys.MemoryCardDevice),
-        EmulationMediaType.Tape => LocExtension.Get(EmulationResourceKeys.TapeDevice),
-        EmulationMediaType.Cartridge => LocExtension.Get(EmulationResourceKeys.CartridgeDevice),
-        _ => type.ToString()
-    };
-
-    private static string SupportSummary(string path)
-    {
-        if (!File.Exists(path)) return Path.GetFileName(path);
-        var size = new FileInfo(path).Length;
-        var value = StorageSizeFormatter.FormatCapacity(size);
-        return $"{Path.GetFileName(path)}{ControlVisualConstants.DetailSeparator}{value}";
-    }
 }

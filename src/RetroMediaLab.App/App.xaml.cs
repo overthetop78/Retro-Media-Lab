@@ -53,7 +53,7 @@ public partial class App : Application
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
         var directory = StoragePaths.DataDirectory;
         Directory.CreateDirectory(StoragePaths.LogsDirectory);
-        var settingsStore = new JsonSettingsStore(Path.Combine(directory, "settings.json"));
+        var settingsStore = StoragePaths.OpenSettingsStore(directory);
         var settings = Task.Run(() => settingsStore.LoadAsync()).GetAwaiter().GetResult();
         var previousGwPath = settings.GwExecutablePath;
         var previousFallbackPath = settings.PreviousGwExecutablePath;

@@ -1,4 +1,4 @@
-namespace RetroMediaLab.App.Functions.Views.Emulation.Settings;
+namespace RetroMediaLab.App.Services.Emulation;
 
 internal sealed class EmulationConfigurationSaveDebouncer : IDisposable
 {

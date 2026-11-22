@@ -28,7 +28,7 @@ public partial class LogHistoryWindow : Window
         InitializeComponent();
         _fileDialogs = fileDialogs ?? new WpfFileDialogService(this);
         Closing += WindowClosing;
-        FilesList.ItemsSource = Directory.Exists(directory) ? new DirectoryInfo(directory).GetFiles("*.log").Where(file => !file.Name.StartsWith("errors-", StringComparison.OrdinalIgnoreCase)).OrderByDescending(file => file.LastWriteTimeUtc).ToArray() : Array.Empty<FileInfo>();
+        FilesList.ItemsSource = LogHistoryFiles.List(directory);
         FilesList.SelectedIndex = FilesList.Items.Count > 0 ? 0 : -1;
     }
 
@@ -59,17 +59,21 @@ public partial class LogHistoryWindow : Window
         try
         {
             string content;
-            var canExport = false;
-            try { content = await File.ReadAllTextAsync(file.FullName, cancellation.Token); canExport = true; }
-            catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { return; }
-            catch (IOException exception)
+            IOException? error;
+            try
             {
-                ErrorLog.Write(exception, "Reading log history");
-                var detail = ExceptionDescriptionFunctions.Describe(exception);
+                var result = await LogHistoryFiles.ReadAsync(file, cancellation.Token);
+                error = result.Error;
+                content = result.Content ?? string.Empty;
+            }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { return; }
+            if (error is not null)
+            {
+                var detail = ExceptionDescriptionFunctions.Describe(error);
                 content = LocExtension.Get("Error.Unexpected", detail);
             }
             if (_closeRequested || cancellation.IsCancellationRequested) return;
-            if (Equals(FilesList.SelectedItem, file)) { ContentText.Text = content; ExportButton.IsEnabled = canExport; }
+            if (Equals(FilesList.SelectedItem, file)) { ContentText.Text = content; ExportButton.IsEnabled = error is null; }
         }
         finally
         {
@@ -86,7 +90,7 @@ public partial class LogHistoryWindow : Window
         if (_closeRequested) return;
         if (FilesList.SelectedItem is not FileInfo file) return;
         var path = _fileDialogs.SaveFile(new SaveFileRequest(LocExtension.Get("Logs.ExportFilter"), Path.ChangeExtension(file.Name, ".txt"), ".txt"));
-        if (path is not null) await File.WriteAllTextAsync(path, ContentText.Text);
+        if (path is not null) await LogHistoryFiles.ExportAsync(path, ContentText.Text);
     }
 
     internal void RequestPresentationClose()

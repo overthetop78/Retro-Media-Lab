@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Controllers.Emulation.Machine;
 using RetroMediaLab.App.Contracts.Emulation.Configurations;
 using RetroMediaLab.Emulation;
 
@@ -8,7 +9,7 @@ public sealed partial class EmulationSection
     internal event EventHandler? PresentationChanged;
     internal event Action<MachineController>? MachineSelected;
 
-    internal IReadOnlyList<EmulationConfigurationListItem> Configurations => _configurations;
+    internal IReadOnlyList<EmulationConfigurationListItem> Configurations => _selection.Items;
 
     internal IReadOnlyList<(EmulationConfigurationListItem Configuration, MachineController Controller)> OpenedMachines
     {
@@ -18,7 +19,7 @@ public sealed partial class EmulationSection
             foreach (var (key, tab) in _openMachines)
             {
                 if (tab.Content is not MachineController controller) continue;
-                var configuration = _configurations.FirstOrDefault(item => item.Module.Id == key.ModuleId && item.Configuration.Id == key.Id);
+                var configuration = _selection.Find(key.ModuleId, key.Id);
                 if (configuration is null && tab.Tag is EmulationMachineRuntime runtime
                     && _modules.FirstOrDefault(candidate => candidate.Id == key.ModuleId) is { } module)
                     configuration = new(module, runtime.Configuration, RuntimeDisplayName(runtime));
@@ -47,12 +48,9 @@ public sealed partial class EmulationSection
 
     internal Task RequestOpenAsync(EmulationConfigurationListItem configuration)
     {
-        var current = _configurations.FirstOrDefault(item =>
-            item.Module.Id == configuration.Module.Id && item.Configuration.Id == configuration.Configuration.Id);
+        var current = _selection.Find(configuration.Module.Id, configuration.Configuration.Id);
         if (current is null) return Task.CompletedTask;
-        _selectedModule = current.Module;
-        _selectedMachineId = current.Configuration.MachineId;
-        _selectedConfigurationId = current.Configuration.Id;
+        _selection.Select(current.Module, current.Configuration.MachineId, current.Configuration.Id);
         return OpenSelectedConfigurationAsync();
     }
 }

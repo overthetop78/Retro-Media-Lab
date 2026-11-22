@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using RetroMediaLab.App.Contracts.Emulation.Storage;
 using RetroMediaLab.App.Controllers.Emulation.Storage;
+using RetroMediaLab.App.Presenters.Emulation.Storage;
 using RetroMediaLab.App.Theme.OS.Editions.Windows31.Views;
 using RetroMediaLab.App.Views.Controls.Emulation.Storage;
 using RetroMediaLab.Emulation.Contracts;
@@ -46,7 +47,7 @@ public sealed class Windows31ModuleStorageTests(StaExecutionScenarios sta)
         configure.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Assert.Single(configured);
         source.SetDevices([permanent, optional with { Model = "Changed" }]);
-        Assert.Equal(EmulationMediaSlot.Floppy0, ((EmulationStorageDeviceList.PresentationRow)devices.SelectedItem).Device.Slot);
+        Assert.Equal(EmulationMediaSlot.Floppy0, ((EmulationStorageDeviceRow)devices.SelectedItem).Device.Slot);
         remove.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Assert.Equal("Changed", Assert.Single(removed).Model);
         source.SetCanAdd(false);

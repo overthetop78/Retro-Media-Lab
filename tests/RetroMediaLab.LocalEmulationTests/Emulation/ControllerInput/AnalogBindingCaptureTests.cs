@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Functions.Input.Bindings;
 using RetroMediaLab.App.Enums.Input;
 using RetroMediaLab.App.Views.Controls.Emulation.Input;
 using RetroMediaLab.Emulation.Contracts;
@@ -15,10 +16,10 @@ public sealed class AnalogBindingCaptureTests(StaExecutionScenarios sta)
         foreach (var position in new[] { .55f, .65f, .75f })
         {
             var current = baseline with { Controls = new(new Dictionary<string, float> { ["Axis0"] = position }) };
-            Assert.Null(InputBindingEditor.NewlyMovedGenericAxis(current, baseline));
+            Assert.Null(ControllerBindingCaptureFunctions.NewlyMovedGenericAxis(current, baseline));
         }
         var moved = baseline with { Controls = new(new Dictionary<string, float> { ["Axis0"] = .9f }) };
-        Assert.Equal("Axis0Positive", InputBindingEditor.NewlyMovedGenericAxis(moved, baseline));
+        Assert.Equal("Axis0Positive", ControllerBindingCaptureFunctions.NewlyMovedGenericAxis(moved, baseline));
     }
 
     [Theory]

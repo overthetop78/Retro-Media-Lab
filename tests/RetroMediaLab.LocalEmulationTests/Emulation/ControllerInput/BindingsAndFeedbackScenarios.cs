@@ -19,13 +19,13 @@ internal static class BindingsAndFeedbackScenarios
                 new(RetroMediaLab.App.Services.Input.GameInput.GameInputControlType.Button, 1, default, 1f)
             ]
         };
-        Assert.Equal(new[] { "Button1", "Button2" }, RetroMediaLab.App.Views.Controls.Emulation.Input.InputBindingEditor.NewlyActivatedDetailedControls(detailed, RetroMediaLab.App.Services.Input.GameInput.GameInputLiveState.Empty(detailed.DeviceId)));
+        Assert.Equal(new[] { "Button1", "Button2" }, ControllerBindingCaptureFunctions.NewlyActivatedDetailedControls(detailed, RetroMediaLab.App.Services.Input.GameInput.GameInputLiveState.Empty(detailed.DeviceId)));
         var dualView = EmulationControllerState.Empty with { Controls = new EmulationControllerControls(new Dictionary<string, float> { ["Button0"] = 1f, ["Axis0"] = .75f, ["Switch0"] = 1f }) };
-        Assert.False(RetroMediaLab.App.Views.Controls.Emulation.Input.InputBindingEditor.ShouldCaptureStandardControl(dualView, "ButtonA"));
-        Assert.False(RetroMediaLab.App.Views.Controls.Emulation.Input.InputBindingEditor.ShouldCaptureStandardControl(dualView, "LeftStickRight"));
-        Assert.False(RetroMediaLab.App.Views.Controls.Emulation.Input.InputBindingEditor.ShouldCaptureStandardControl(dualView, "DPadUp"));
-        Assert.True(RetroMediaLab.App.Views.Controls.Emulation.Input.InputBindingEditor.ShouldCaptureStandardControl(dualView, "XboxButton"));
-        Assert.True(RetroMediaLab.App.Views.Controls.Emulation.Input.InputBindingEditor.ShouldCaptureStandardControl(EmulationControllerState.Empty, "ButtonA"));
+        Assert.False(ControllerBindingCaptureFunctions.ShouldCaptureStandardControl(dualView, "ButtonA"));
+        Assert.False(ControllerBindingCaptureFunctions.ShouldCaptureStandardControl(dualView, "LeftStickRight"));
+        Assert.False(ControllerBindingCaptureFunctions.ShouldCaptureStandardControl(dualView, "DPadUp"));
+        Assert.True(ControllerBindingCaptureFunctions.ShouldCaptureStandardControl(dualView, "XboxButton"));
+        Assert.True(ControllerBindingCaptureFunctions.ShouldCaptureStandardControl(EmulationControllerState.Empty, "ButtonA"));
         var analogState = EmulationControllerState.Empty with { DeviceId = "axis", Controls = new EmulationControllerControls(new Dictionary<string, float> { ["Axis0"] = .55f }) };
         var analogSnapshot = EmulationInputSnapshot.Empty with { Keys = new HashSet<EmulationKey> { EmulationKey.LeftControl }, Controllers = [analogState] };
         const string analogBinding = "Keyboard:LeftControl+Controller:axis:Axis0Positive";

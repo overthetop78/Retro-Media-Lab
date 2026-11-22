@@ -1,6 +1,28 @@
+using RetroMediaLab.App.Functions.Emulation.Shortcuts;
+using RetroMediaLab.Infrastructure.Settings;
+using RetroMediaLab.Infrastructure.Settings.Emulation;
+
 namespace RetroMediaLab.Tests.Application.SettingsStorage;
 public class SettingsStorageTests
 {
+    [Fact]
+    public void OsdDefaultsFillMissingBindingsWithoutRegisteringGlobalShortcuts()
+    {
+        var settings = new AppSettings();
+        settings.EmulationShortcuts.Remove(EmulationShortcutDefaults.OsdWithPause);
+        settings.EmulationShortcuts[EmulationShortcutDefaults.OsdConfirm] = "Space";
+
+        SettingsMigrator.Migrate(settings);
+
+        Assert.Equal("Ctrl+Shift+Divide", settings.EmulationShortcuts[EmulationShortcutDefaults.OsdWithPause]);
+        Assert.Equal("Ctrl+Shift+Multiply", settings.EmulationShortcuts[EmulationShortcutDefaults.OsdWithoutPause]);
+        Assert.Equal("Space", settings.EmulationShortcuts[EmulationShortcutDefaults.OsdConfirm]);
+        Assert.Empty(settings.EmulationShortcuts[EmulationShortcutDefaults.OsdConfirm + EmulationShortcutDefaults.AlternativeSuffix]);
+        var globalShortcuts = EmulationShortcutMap.GlobalShortcuts(settings.EmulationShortcuts);
+        Assert.Contains(globalShortcuts, binding => binding.Action == EmulationShortcutDefaults.PauseResume);
+        Assert.DoesNotContain(globalShortcuts, binding => EmulationShortcutDefaults.OsdValues.ContainsKey(binding.Action));
+    }
+
     [Fact]
     public void EmulatorShortcutsMigrateOnceToTheRequestedControlShiftLayout()
     {

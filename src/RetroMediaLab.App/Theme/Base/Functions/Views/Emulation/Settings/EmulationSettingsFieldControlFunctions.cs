@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Functions.Emulation.Settings;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -55,7 +56,7 @@ internal static partial class EmulationSettingsFieldControlFunctions
     {
         var range = field.NumericRange ?? throw new ArgumentException(nameof(field));
         if (range.ShowNumericInput) return CreateEditableSlider(field, changed);
-        var value = double.TryParse(field.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) ? parsed : range.Minimum;
+        var value = EmulationSettingsValuePresentationFunctions.ReadNumericValue(field.Value, range.Minimum);
         var slider = new Slider
         {
             Minimum = range.Minimum,
@@ -127,9 +128,8 @@ internal static partial class EmulationSettingsFieldControlFunctions
 
         void UpdateLabel()
         {
-            var choice = field.UseChoiceLabelsForSlider ? field.Choices?.FirstOrDefault(item => item.Id == slider.Value.ToString(EmulationSliderConstants.NumericFormat, CultureInfo.InvariantCulture)) : null;
-            label.Text = choice is not null ? choiceLabel(choice)
-                : EmulationSettingsValuePresentationFunctions.WithUnit(slider.Value.ToString(EmulationSliderConstants.NumericFormat, CultureInfo.InvariantCulture), field.ValueUnitResourceKey) + range.UnitSuffix;
+            var valueText = slider.Value.ToString(EmulationSliderConstants.NumericFormat, CultureInfo.InvariantCulture);
+            label.Text = EmulationSettingsValuePresentationFunctions.SliderLabel(field, valueText, choiceLabel);
         }
 
         async Task SaveValueAsync()
@@ -143,7 +143,7 @@ internal static partial class EmulationSettingsFieldControlFunctions
     {
         var range = field.NumericRange!;
         double fineStep = range.FineStep ?? range.Step;
-        double Normalize(double value) => Math.Clamp(Math.Round(value / fineStep) * fineStep, range.Minimum, range.Maximum);
+        double Normalize(double value) => EmulationSettingsValuePresentationFunctions.NormalizeEditableSlider(value, range);
         var slider = new Slider
         {
             Minimum = range.Minimum, Maximum = range.Maximum, TickFrequency = fineStep,

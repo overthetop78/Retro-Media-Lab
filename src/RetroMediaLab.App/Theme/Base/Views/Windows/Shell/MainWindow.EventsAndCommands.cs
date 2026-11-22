@@ -42,7 +42,6 @@ using RetroMediaLab.App.Views.Dialogs.Common;
 using RetroMediaLab.MediaEngine.Images.Visualization;
 using System.ComponentModel;
 using RetroMediaLab.MediaEngine.Contracts.Explorer;
-using System.IO;
 using System.Net.Http;
 using System.Diagnostics;
 using System.Windows;
@@ -195,10 +194,7 @@ public partial class MainWindow : Window
             WriteFormatCombo.SelectedItem = writableFormats.FirstOrDefault(format => format.Id == selectedWriteId);
         }
 
-        DetectedImageFormat? detection = null;
-        var sourceExtension = string.IsNullOrWhiteSpace(ConvertSourceText.Text) ? null : Path.GetExtension(ConvertSourceText.Text);
-        if (File.Exists(ConvertSourceText.Text)) detection = _formatDetector.Detect(ConvertSourceText.Text, new FileInfo(ConvertSourceText.Text).Length);
-        BuildConversionFormats(sourceExtension, detection);
+        _conversionTab.RefreshSourceFormats(ConvertSourceText.Text);
     }
 
     private async void ExecuteRead_Click(object sender, RoutedEventArgs e) => await _readTab.ExecuteAsync();
@@ -333,18 +329,7 @@ public partial class MainWindow : Window
     private static string DecoderName(string id) => LocExtension.Get("Visual.DecoderName." + id);
     private void ToolCommand_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not MenuItem { Tag: string verb }) return;
-        if (_runner.IsRunning)
-        {
-            _dialogs.Show(LocExtension.Get("Operation.Busy"), LocExtension.Get("App.Title"), icon: UserDialogIcon.Information);
-            return;
-        }
-        if (!EnsureSelectedHardwareAvailable()) return;
-        if (string.IsNullOrWhiteSpace(_settings.GwExecutablePath) || !File.Exists(_settings.GwExecutablePath))
-        {
-            _dialogs.Show(LocExtension.Get("App.GwNotConfigured"), LocExtension.Get("App.Title"), icon: UserDialogIcon.Information);
-            return;
-        }
-        _navigation.ShowGwTool(new(_settings.GwExecutablePath, verb, SelectedDeviceArgument(), SelectedDriveArgument(), _logsDirectory, _settings.Logging));
+        if (sender is MenuItem { Tag: string verb })
+            _maintenanceTools.OpenTool(verb, _logsDirectory, _navigation.ShowGwTool);
     }
 }

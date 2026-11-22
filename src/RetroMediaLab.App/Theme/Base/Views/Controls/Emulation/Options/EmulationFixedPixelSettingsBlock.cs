@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Functions.Emulation.Settings;
 using RetroMediaLab.App.Functions.Views.Emulation.Settings;
 using System.Globalization;
 using System.Windows;
@@ -54,17 +55,12 @@ internal static class EmulationFixedPixelSettingsBlock
         if (value.Technology != EmulationFixedPixelTechnology.Oled)
         {
             light.Children.Add(Slider(EmulationVideoProcessingCatalog.FixedPixelBacklight,
-                value.BacklightIntensity ?? (value.Technology == EmulationFixedPixelTechnology.Lcd ? 65 : 80),
+                FixedPixelSettingsValues.Backlight(value),
                 0, 100, number => changed(current => current with { BacklightIntensity = number })));
             light.Children.Add(Slider(EmulationVideoProcessingCatalog.FixedPixelBacklightBleed, value.BacklightBleedIntensity, 0, 100, number => changed(current => current with { BacklightBleedIntensity = number })));
         }
         light.Children.Add(Slider(EmulationVideoProcessingCatalog.FixedPixelBlackDepth,
-            value.BlackDepth ?? value.Technology switch
-            {
-                EmulationFixedPixelTechnology.Lcd => 35,
-                EmulationFixedPixelTechnology.LedBacklitLcd => 55,
-                _ => 100
-            }, 0, 100, number => changed(current => current with { BlackDepth = number })));
+            FixedPixelSettingsValues.BlackDepth(value), 0, 100, number => changed(current => current with { BlackDepth = number })));
         AddGroup(groups, light, 1, 0);
 
         var temporal = new StackPanel();

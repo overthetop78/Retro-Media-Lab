@@ -17,6 +17,8 @@ namespace RetroMediaLab.App.Rendering.Emulation.Surfaces;
 
 internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
 {
+    private const int PipelineCacheCapacity = 8;
+
     private readonly GraphicsBackend _backend;
     private readonly object _deviceGate = new();
     private IntPtr _hwnd;
@@ -31,11 +33,12 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private ResourceSet? _set;
     private Pipeline? _pipeline;
     private CommandList? _commands;
-    private Shader[]? _shaders;
+    private readonly Dictionary<(EmulationVideoSampling, EmulationVideoDisplayTechnology), (Pipeline Pipeline, Shader[] Shaders)> _pipelines = new();
+    private readonly Queue<(EmulationVideoSampling, EmulationVideoDisplayTechnology)> _pipelineOrder = new();
     private int _width;
     private int _height;
-    private RetroMediaLab.VideoPresentation.Enums.EmulationVideoSampling _sampling;
-    private RetroMediaLab.VideoPresentation.Enums.EmulationVideoDisplayTechnology _displayTechnology;
+    private EmulationVideoSampling _sampling;
+    private EmulationVideoDisplayTechnology _displayTechnology;
     private uint _swapchainWidth;
     private uint _swapchainHeight;
     private bool _hasHistory;
@@ -122,7 +125,9 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             convertedPixels = EmulationVideoPixelFunctions.ToBgra32(frame);
             pixels = convertedPixels;
         }
-        EnsureDevice(processed.Width, processed.Height, _videoProcessing.Sampling, _videoProcessing.DisplayTechnology);
+        EnsureDevice();
+        EnsureFrameResources(processed.Width, processed.Height);
+        EnsurePipeline(_videoProcessing.Sampling, _videoProcessing.DisplayTechnology);
         // Le worker possède le redimensionnement GPU ; le thread WPF ne doit jamais attendre sa porte.
         ResizeSwapchainToClient();
         _device!.UpdateTexture(_texture!, pixels, 0, 0, 0, (uint)processed.Width, (uint)processed.Height, 1, 0, 0);
@@ -174,7 +179,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         _snapshot = null;
     }
 
-    private void EnsureDevice(int width, int height, RetroMediaLab.VideoPresentation.Enums.EmulationVideoSampling sampling, RetroMediaLab.VideoPresentation.Enums.EmulationVideoDisplayTechnology displayTechnology)
+    private void EnsureDevice()
     {
         if (_device is null)
         {
@@ -186,20 +191,26 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             var swapchain = new SwapchainDescription(source, _swapchainWidth, _swapchainHeight, null, false, true);
             _device = _backend == GraphicsBackend.Vulkan ? GraphicsDevice.CreateVulkan(options, swapchain) : GraphicsDevice.CreateD3D11(options, swapchain);
             _commands = _device.ResourceFactory.CreateCommandList();
+            _layout = _device.ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(
+                new ResourceLayoutElementDescription("VideoParameters", ResourceKind.UniformBuffer, ShaderStages.Fragment),
+                new ResourceLayoutElementDescription("Source", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                new ResourceLayoutElementDescription("History", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                new ResourceLayoutElementDescription("PointSampler", ResourceKind.Sampler, ShaderStages.Fragment),
+                new ResourceLayoutElementDescription("LinearSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
         }
-        if (_texture is not null && _width == width && _height == height
-            && _sampling == sampling && _displayTechnology == displayTechnology) return;
-        var factory = _device.ResourceFactory;
+    }
+
+    private void EnsureFrameResources(int width, int height)
+    {
+        if (_texture is not null && _width == width && _height == height) return;
+        var factory = _device!.ResourceFactory;
         Texture? texture = null;
         TextureView? textureView = null;
         Texture? historyTexture = null;
         TextureView? historyTextureView = null;
         DeviceBuffer? parameterBuffer = null;
-        ResourceLayout? layout = null;
         ResourceSet? set = null;
         DeviceBuffer? vertexBuffer = null;
-        Shader[]? shaders = null;
-        Pipeline? pipeline = null;
         try
         {
             texture = factory.CreateTexture(TextureDescription.Texture2D((uint)width, (uint)height, 1, 1, Veldrid.PixelFormat.B8_G8_R8_A8_UNorm, TextureUsage.Sampled));
@@ -207,13 +218,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             historyTexture = factory.CreateTexture(TextureDescription.Texture2D((uint)width, (uint)height, 1, 1, Veldrid.PixelFormat.B8_G8_R8_A8_UNorm, TextureUsage.Sampled));
             historyTextureView = factory.CreateTextureView(historyTexture);
             parameterBuffer = factory.CreateBuffer(new BufferDescription((uint)Marshal.SizeOf<VideoParameters>(), BufferUsage.UniformBuffer));
-            layout = factory.CreateResourceLayout(new ResourceLayoutDescription(
-                new ResourceLayoutElementDescription("VideoParameters", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                new ResourceLayoutElementDescription("Source", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                new ResourceLayoutElementDescription("History", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                new ResourceLayoutElementDescription("PointSampler", ResourceKind.Sampler, ShaderStages.Fragment),
-                new ResourceLayoutElementDescription("LinearSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
-            set = factory.CreateResourceSet(new ResourceSetDescription(layout, parameterBuffer, textureView, historyTextureView, _device.PointSampler, _device.LinearSampler));
+            set = factory.CreateResourceSet(new ResourceSetDescription(_layout!, parameterBuffer, textureView, historyTextureView, _device.PointSampler, _device.LinearSampler));
             var vertices = new[]
             {
                 new Vertex(-1, -1, 0, 1), new Vertex(-1, 1, 0, 0),
@@ -221,6 +226,52 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             };
             vertexBuffer = factory.CreateBuffer(new BufferDescription((uint)(vertices.Length * Marshal.SizeOf<Vertex>()), BufferUsage.VertexBuffer));
             _device.UpdateBuffer(vertexBuffer, 0, vertices);
+            DisposeFrameResources();
+            _texture = texture; texture = null;
+            _textureView = textureView; textureView = null;
+            _historyTexture = historyTexture; historyTexture = null;
+            _historyTextureView = historyTextureView; historyTextureView = null;
+            _parameterBuffer = parameterBuffer; parameterBuffer = null;
+            _set = set; set = null;
+            _vertexBuffer = vertexBuffer; vertexBuffer = null;
+            _width = width;
+            _height = height;
+            _hasHistory = false;
+            _historyTimestamp = TimeSpan.Zero;
+            _historySequence = 0;
+        }
+        finally
+        {
+            EmulationVideoCleanupFunctions.DisposeAll(new IDisposable?[]
+            {
+                set, parameterBuffer, textureView, texture, historyTextureView, historyTexture, vertexBuffer
+            });
+        }
+    }
+
+    private void EnsurePipeline(EmulationVideoSampling sampling, EmulationVideoDisplayTechnology displayTechnology)
+    {
+        if (_pipeline is not null && _sampling == sampling && _displayTechnology == displayTechnology) return;
+
+        var key = (sampling, displayTechnology);
+        if (!_pipelines.TryGetValue(key, out var cached))
+            cached = CreatePipeline(sampling, displayTechnology);
+
+        _pipeline = cached.Pipeline;
+        _sampling = sampling;
+        _displayTechnology = displayTechnology;
+        _hasHistory = false;
+        _historyTimestamp = TimeSpan.Zero;
+        _historySequence = 0;
+    }
+
+    private (Pipeline Pipeline, Shader[] Shaders) CreatePipeline(EmulationVideoSampling sampling, EmulationVideoDisplayTechnology displayTechnology)
+    {
+        var factory = _device!.ResourceFactory;
+        Shader[]? shaders = null;
+        Pipeline? pipeline = null;
+        try
+        {
             shaders = factory.CreateFromSpirv(
                 new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(VeldridVideoProcessingShaders.Vertex), "main"),
                 new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(VeldridVideoProcessingShaders.Fragment(sampling, displayTechnology)), "main"));
@@ -231,31 +282,43 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             pipeline = factory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
                 BlendStateDescription.SingleOverrideBlend, DepthStencilStateDescription.Disabled,
                 RasterizerStateDescription.CullNone, PrimitiveTopology.TriangleStrip, shaderSet,
-                [layout], _device.MainSwapchain.Framebuffer.OutputDescription));
+                [_layout!], _device.MainSwapchain.Framebuffer.OutputDescription));
 
-            DisposeFrameResources();
-            _texture = texture; texture = null;
-            _textureView = textureView; textureView = null;
-            _historyTexture = historyTexture; historyTexture = null;
-            _historyTextureView = historyTextureView; historyTextureView = null;
-            _parameterBuffer = parameterBuffer; parameterBuffer = null;
-            _layout = layout; layout = null;
-            _set = set; set = null;
-            _vertexBuffer = vertexBuffer; vertexBuffer = null;
-            _shaders = shaders; shaders = null;
-            _pipeline = pipeline; pipeline = null;
-            _width = width; _height = height; _sampling = sampling;
-            _displayTechnology = displayTechnology;
-            _hasHistory = false;
-            _historyTimestamp = TimeSpan.Zero;
-            _historySequence = 0;
+            if (_pipelines.Count == PipelineCacheCapacity)
+            {
+                var oldest = _pipelineOrder.Dequeue();
+                var retired = _pipelines[oldest];
+                _pipelines.Remove(oldest);
+                _device.DisposeWhenIdle(retired.Pipeline);
+                foreach (var shader in retired.Shaders) _device.DisposeWhenIdle(shader);
+            }
+
+            var key = (sampling, displayTechnology);
+            var result = (Pipeline: pipeline, Shaders: shaders);
+            _pipelines.Add(key, result);
+            _pipelineOrder.Enqueue(key);
+            pipeline = null;
+            shaders = null;
+            return result;
         }
         finally
         {
-            EmulationVideoCleanupFunctions.DisposeAll(new IDisposable?[]
-            {
-                pipeline, set, layout, parameterBuffer, textureView, texture, historyTextureView, historyTexture, vertexBuffer
-            }.Concat(shaders ?? Array.Empty<Shader>()));
+            EmulationVideoCleanupFunctions.DisposeAll(new IDisposable?[] { pipeline }.Concat(shaders ?? Array.Empty<Shader>()));
+        }
+    }
+
+    private void DisposePipelines()
+    {
+        try
+        {
+            EmulationVideoCleanupFunctions.DisposeAll(_pipelines.Values.SelectMany(
+                entry => new IDisposable[] { entry.Pipeline }.Concat(entry.Shaders)));
+        }
+        finally
+        {
+            _pipelines.Clear();
+            _pipelineOrder.Clear();
+            _pipeline = null;
         }
     }
 
@@ -276,18 +339,15 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     {
         var resources = new IDisposable?[]
         {
-            _pipeline, _set, _layout, _parameterBuffer, _textureView, _texture, _historyTextureView, _historyTexture, _vertexBuffer
-        }.Concat(_shaders ?? Array.Empty<Shader>()).ToArray();
-        _pipeline = null;
+            _set, _parameterBuffer, _textureView, _texture, _historyTextureView, _historyTexture, _vertexBuffer
+        };
         _set = null;
-        _layout = null;
         _parameterBuffer = null;
         _textureView = null;
         _texture = null;
         _historyTextureView = null;
         _historyTexture = null;
         _vertexBuffer = null;
-        _shaders = null;
         _hasHistory = false;
         _historyTimestamp = TimeSpan.Zero;
         _historySequence = 0;
@@ -305,7 +365,9 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
                 try { _device?.WaitForIdle(); }
                 finally
                 {
-                    EmulationVideoCleanupFunctions.RunAll(DisposeFrameResources, () => _commands?.Dispose(), () => _device?.Dispose());
+                    EmulationVideoCleanupFunctions.RunAll(
+                        DisposeFrameResources, DisposePipelines, () => _layout?.Dispose(),
+                        () => _commands?.Dispose(), () => _device?.Dispose());
                 }
             }
         }
@@ -314,6 +376,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             _snapshot = null;
             _snapshotSourceFrame = null;
             _commands = null;
+            _layout = null;
             _device = null;
             EmulationVideoCleanupFunctions.RunAll(() => base.Dispose(), _videoProcessingPipeline.Dispose, _snapshotPipeline.Dispose);
         }

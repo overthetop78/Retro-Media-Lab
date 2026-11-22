@@ -1,4 +1,5 @@
 using RetroMediaLab.Infrastructure.Commands.Building;
+using RetroMediaLab.App.Functions.Emulation.Shortcuts;
 using RetroMediaLab.Infrastructure.Commands.Execution;
 using RetroMediaLab.Infrastructure.HostTools;
 using RetroMediaLab.Infrastructure.Settings;
@@ -49,7 +50,7 @@ public sealed class WpfWindowNavigationService : IWindowNavigationService
         _emulationModuleOptions = (settings, moduleId) =>
         {
             var module = EmulationModuleRegistry.Modules.FirstOrDefault(candidate => string.Equals(candidate.Id, moduleId, StringComparison.OrdinalIgnoreCase)) ?? throw new InvalidOperationException($"Emulation module '{moduleId}' is not loaded.");
-            return new EmulationModuleOptionsWindow(module, reservedBindings: settings.EmulationShortcuts.Values);
+            return new EmulationModuleOptionsWindow(module, reservedBindings: EmulationShortcutMap.GlobalBindingValues(settings.EmulationShortcuts));
         };
         _updates = () => new UpdatesWindow(pendingInstallations);
         _logs = directory => new LogHistoryWindow(directory);

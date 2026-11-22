@@ -1,30 +1,31 @@
+using RetroMediaLab.Infrastructure.Settings;
 using RetroMediaLab.Infrastructure.Settings.Emulation;
 using RetroMediaLab.App.Contracts.Emulation.Configurations;
 using RetroMediaLab.Emulation;
 
-namespace RetroMediaLab.App.Views.Controls.Emulation.Machine;
+namespace RetroMediaLab.App.Functions.Emulation.Storage;
 
-public sealed partial class EmulationSection
+internal static class EmulationMediaFolderFunctions
 {
-    private string? InitialMediaDirectory(EmulationConfigurationListItem selected, EmulationMediaDevice device)
+    internal static string? InitialMediaDirectory(AppSettings settings, EmulationConfigurationListItem selected, EmulationMediaDevice device)
     {
         var category = MediaFolderCategory(device.MediaType);
-        return _settings.EmulationMediaFolders.FirstOrDefault(item =>
+        return settings.EmulationMediaFolders.FirstOrDefault(item =>
             string.Equals(item.ModuleId, selected.Module.Id, StringComparison.Ordinal)
             && string.Equals(item.MachineId, selected.Configuration.MachineId, StringComparison.Ordinal)
             && item.Category == category)?.Folder;
     }
 
-    private void RememberMediaDirectory(EmulationConfigurationListItem selected, EmulationMediaDevice device, string directory)
+    internal static void RememberMediaDirectory(AppSettings settings, EmulationConfigurationListItem selected, EmulationMediaDevice device, string directory)
     {
         var category = MediaFolderCategory(device.MediaType);
-        var existing = _settings.EmulationMediaFolders.FirstOrDefault(item =>
+        var existing = settings.EmulationMediaFolders.FirstOrDefault(item =>
             string.Equals(item.ModuleId, selected.Module.Id, StringComparison.Ordinal)
             && string.Equals(item.MachineId, selected.Configuration.MachineId, StringComparison.Ordinal)
             && item.Category == category);
         if (existing is null)
         {
-            _settings.EmulationMediaFolders.Add(new EmulationMediaFolderSettings
+            settings.EmulationMediaFolders.Add(new EmulationMediaFolderSettings
             {
                 ModuleId = selected.Module.Id,
                 MachineId = selected.Configuration.MachineId,

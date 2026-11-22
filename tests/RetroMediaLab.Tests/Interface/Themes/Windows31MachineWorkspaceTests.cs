@@ -1,4 +1,5 @@
-﻿using System.Windows;
+using RetroMediaLab.App.Controllers.Emulation.Machine;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -379,6 +380,6 @@ public sealed class Windows31MachineWorkspaceTests(StaExecutionScenarios sta)
         internal Task<MachineController> CreateAsync() => MachineController.CreateAsync(new MachineControllerOptions(
             "module", "machine", Guid.NewGuid(), Machine, _ => Machine,
             (_, _) => throw new InvalidOperationException("No runtime may start"), [], [], EmulationVideoRenderer.Wpf,
-            new(), [], "unused-state", "unused-capture", "test", error => throw error, false, _ => null, (_, _) => { }, () => false));
+            new(), [], "unused-state", "unused-capture", "test", error => throw error, false, _ => null, (_, _) => { }, () => false, () => new MachineView()));
     }
 }

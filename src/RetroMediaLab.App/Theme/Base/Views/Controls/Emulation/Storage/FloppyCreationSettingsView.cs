@@ -1,5 +1,5 @@
+using RetroMediaLab.App.Functions.Emulation.Storage;
 using RetroMediaLab.App.Services.Dialogs;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -32,8 +32,8 @@ internal sealed class FloppyCreationSettingsView : Border
     {
         SetResourceReference(StyleProperty, "Card");
         Padding = new Thickness(16);
-        _groups = model.CreationFormats.GroupBy(format => (format.DisplayName, format.Tracks, format.Sides, format.DoubleDensity, format.Capacity))
-            .ToDictionary(group => group.First().FormatId, group => group.ToArray(), StringComparer.Ordinal);
+        var (groups, initial) = FloppyChoicePresentation.CreationFormats(model);
+        _groups = groups;
         _disk.ItemsSource = _groups.Values.Select(group => new StorageDialogChoice(group[0].FormatId, FloppyChoicePresentation.DiskFormat(group[0]))).ToArray();
         StorageDialogUi.WrapChoices(_disk, nameof(StorageDialogChoice.Text));
         StorageDialogUi.WrapChoices(_image, nameof(FloppyCreationFormatChoice.DisplayName));
@@ -55,9 +55,6 @@ internal sealed class FloppyCreationSettingsView : Border
 
         _disk.SelectionChanged += (_, _) => RefreshImages();
         _image.SelectionChanged += (_, _) => RefreshExtension();
-        var initial = _groups.Values.Select(group => group[0]).FirstOrDefault(format =>
-            format.Tracks == model.Tracks && format.Sides == model.Sides && format.DoubleDensity == model.DoubleDensity)
-            ?? model.CreationFormats.OrderByDescending(format => format.Capacity).First();
         _disk.SelectedItem = _disk.Items.Cast<StorageDialogChoice>().Single(choice => choice.Value == initial.FormatId);
 
         void AddField(string resource, FrameworkElement editor, bool last = false)
@@ -70,16 +67,16 @@ internal sealed class FloppyCreationSettingsView : Border
         void Browse()
         {
             var selected = SelectedFormat;
-            var formats = selected is not null ? [selected] : _image.Items.Cast<FloppyCreationFormatChoice>().ToArray();
-            var extensions = formats.Select(format => format.Extension).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            var (filter, fileName) = FloppyChoicePresentation.DestinationDialog(
+                _image.Items.Cast<FloppyCreationFormatChoice>(), selected, DestinationPath);
             var dialog = new SaveFileDialog
             {
-                Filter = string.Join("|", extensions.Select(extension => $"{extension.TrimStart('.').ToUpperInvariant()} (*{extension})|*{extension}")),
+                Filter = filter,
                 DefaultExt = selected?.Extension ?? string.Empty,
                 AddExtension = selected is not null,
-                InitialDirectory = Directory.Exists(options.ImageDirectory) ? options.ImageDirectory : string.Empty,
+                InitialDirectory = FileSelectionFiles.ExistingDirectoryOrEmpty(options.ImageDirectory),
                 ClientGuid = clientGuid,
-                FileName = string.IsNullOrWhiteSpace(DestinationPath) ? MediaCreationConstants.BlankFileName + selected?.Extension : Path.GetFileName(DestinationPath)
+                FileName = fileName
             };
             if (WpfFileDialogService.ShowFileDialog(dialog, Window.GetWindow(this)) == true) _path.Text = dialog.FileName;
         }
@@ -89,15 +86,12 @@ internal sealed class FloppyCreationSettingsView : Border
     {
         var previous = SelectedFormat;
         var formats = _disk.SelectedItem is StorageDialogChoice disk ? _groups[disk.Value] : [];
-        _image.ItemsSource = formats.Select(FloppyChoicePresentation.ImageFormat).ToArray();
-        _image.SelectedItem = _image.Items.Cast<FloppyCreationFormatChoice>().FirstOrDefault(format => format.Extension == previous?.Extension)
-            ?? (_image.Items.Count == 1 ? _image.Items[0] : null);
+        var choices = formats.Select(FloppyChoicePresentation.ImageFormat).ToArray();
+        _image.ItemsSource = choices;
+        _image.SelectedItem = FloppyChoicePresentation.SelectedImageFormat(choices, previous);
         RefreshExtension();
     }
 
-    private void RefreshExtension()
-    {
-        if (SelectedFormat is { } format && !string.IsNullOrWhiteSpace(DestinationPath))
-            _path.Text = Path.ChangeExtension(DestinationPath, format.Extension);
-    }
+    private void RefreshExtension() =>
+        _path.Text = FloppyChoicePresentation.DestinationForFormat(DestinationPath, SelectedFormat);
 }

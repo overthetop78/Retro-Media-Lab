@@ -3,21 +3,13 @@ using RetroMediaLab.App.Constants.Emulation.Errors;
 using RetroMediaLab.App.Presenters.Common;
 using RetroMediaLab.App.Contracts.Emulation.Configurations;
 using RetroMediaLab.App.Localization.Extensions;
-using RetroMediaLab.App.Presenters.Emulation.Configurations;
 using System.Windows;
 
 namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
 
 public sealed partial class EmulationPreferencesSection
 {
-    private async Task ReloadConfigurationsAsync()
-    {
-        var loaded = await Task.WhenAll(_modules.Select(async module => (Module: module, Configurations: await Task.Run(async () => await module.LoadConfigurationsAsync()))));
-        foreach (var item in loaded) RetroMediaLab.Emulation.EmulationSdk.Networks.SetConfigurations(item.Module, item.Configurations);
-        _configurationRows = EmulationConfigurationTablePresenter.CreateRows(loaded.SelectMany(item => item.Configurations.Select(configuration => (item.Module, Configuration: configuration))));
-        RebuildConfigurationBrands();
-        FilterConfigurationTable();
-    }
+    private Task ReloadConfigurationsAsync() => _configurationCatalog.ReloadAsync();
 
     private async Task DeleteConfigurationAsync(EmulationConfigurationTableRow row)
     {
@@ -31,11 +23,7 @@ public sealed partial class EmulationPreferencesSection
 
         try
         {
-            await row.Module.DeleteConfigurationAsync(row.Configuration.Id);
-            RetroMediaLab.App.Services.Emulation.EmulationVideoPresentationProfiles.Store.Delete(row.Module.Id, row.Configuration.Id);
-            await ReloadConfigurationsAsync();
-            foreach (Func<Task> refresh in ConfigurationDeleted?.GetInvocationList() ?? [])
-                await refresh();
+            await _configurationCatalog.DeleteAsync(row);
         }
         catch (Exception error)
         {
@@ -49,26 +37,12 @@ public sealed partial class EmulationPreferencesSection
             await edit(row.Module, row.Configuration);
     }
 
-    private void FilterConfigurationTable()
+    private void RefreshConfigurationControls()
     {
-        var selectedModule = _selectedConfigurationModule;
-        _configurationTable.SetRows(selectedModule is null ? [] : _configurationRows.Where(row => row.Module.Id == selectedModule.Id
-            && (_selectedConfigurationMachineId is null || row.Configuration.MachineId == _selectedConfigurationMachineId)).ToArray());
+        _configurationSelector.SetItems(_configurationCatalog.ConfiguredModules, SelectedModule,
+            _configurationCatalog.VisibleMachines, SelectedMachineId);
+        _configurationTable.SetRows(_configurationCatalog.VisibleRows);
         PresentationChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void RebuildConfigurationBrands()
-    {
-        var configuredModules = _modules.Where(module => _configurationRows.Any(row => row.Module.Id == module.Id)).ToArray();
-        _selectedConfigurationModule = configuredModules.FirstOrDefault(module => module.Id == _selectedConfigurationModule?.Id)
-            ?? configuredModules.FirstOrDefault();
-        var machineIds = _configurationRows.Where(row => row.Module.Id == _selectedConfigurationModule?.Id)
-            .Select(row => row.Configuration.MachineId).ToHashSet(StringComparer.Ordinal);
-        if (_selectedConfigurationMachineId is not null && !machineIds.Contains(_selectedConfigurationMachineId))
-            _selectedConfigurationMachineId = null;
-        _configurationSelector.SetItems(configuredModules, _selectedConfigurationModule,
-            _selectedConfigurationModule?.Machines.Where(machine => machineIds.Contains(machine.Id)).ToArray() ?? [],
-            _selectedConfigurationMachineId);
     }
 
 }

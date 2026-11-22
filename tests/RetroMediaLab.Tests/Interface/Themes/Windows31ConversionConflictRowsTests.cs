@@ -1,3 +1,4 @@
+using RetroMediaLab.App.ViewModels.Conversion;
 using RetroMediaLab.App.Views.Dialogs.Conversion;
 using RetroMediaLab.MediaEngine.Images.Conversion;
 

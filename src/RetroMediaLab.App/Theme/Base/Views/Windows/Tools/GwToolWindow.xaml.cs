@@ -1,28 +1,21 @@
+using RetroMediaLab.App.Dictionaries.Tools;
 using RetroMediaLab.App.Services.Dialogs;
 using RetroMediaLab.Infrastructure.Commands;
 using RetroMediaLab.Infrastructure.Commands.Building;
 using RetroMediaLab.Infrastructure.Commands.Execution;
-using RetroMediaLab.Infrastructure.Hardware.Parsing;
 using RetroMediaLab.App.Localization.Extensions;
-using RetroMediaLab.App.Functions.Localization;
 using RetroMediaLab.App.Services.Logging;
+using RetroMediaLab.App.Services.Maintenance;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using RetroMediaLab.Infrastructure.Processes;
-using System.Windows.Threading;
 
 namespace RetroMediaLab.App.Views.Windows.Tools;
 public partial class GwToolWindow : Window
 {
-    private readonly string _executable;
     private readonly string _verb;
-    private readonly string? _device;
-    private readonly string? _drive;
-    private readonly IGreaseweazleRunner _runner;
-    private readonly IGwCommandBuilder _commandBuilder;
-    private readonly ConsoleLogSession? _consoleLog;
-    private CancellationTokenSource? _cancellation;
+    private readonly GwToolSession _session;
     private readonly Dictionary<string, TextBox> _fields = [];
     private readonly Dictionary<string, CheckBox> _checks = [];
     private Task _operation = Task.CompletedTask;
@@ -30,7 +23,6 @@ public partial class GwToolWindow : Window
     private bool _closeRequested;
     private bool _allowClose;
     private readonly Func<string, string, bool> _confirm;
-    private readonly Action<Exception, string> _logError;
     internal IReadOnlyDictionary<string, TextBox> PresentationFields => _fields;
     internal IReadOnlyDictionary<string, CheckBox> PresentationChecks => _checks;
     internal TextBlock PresentationSummary => Summary;
@@ -51,15 +43,11 @@ public partial class GwToolWindow : Window
     )
     {
         InitializeComponent();
-        _executable = executable;
         _verb = verb;
-        _device = device;
-        _drive = drive;
-        _runner = runner ?? new GreaseweazleRunner();
-        _commandBuilder = commandBuilder ?? new GwCommandBuilder();
-        _consoleLog = consoleLog;
+        _session = new GwToolSession(executable, verb, device, drive, runner ?? new GreaseweazleRunner(),
+            commandBuilder ?? new GwCommandBuilder(), consoleLog,
+            logError ?? ((exception, context) => ErrorLog.Write(exception, context)));
         _confirm = confirm ?? ((message, title) => WpfMessageDialogService.ShowMessage(this, message, title, MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes);
-        _logError = logError ?? ((exception, context) => ErrorLog.Write(exception, context));
         Heading.Text = Title = TitleFor(verb);
         CreateParameters();
         UpdateCommand();
@@ -80,7 +68,7 @@ public partial class GwToolWindow : Window
     {
         if (_closeRequested) return;
         _closeRequested = true;
-        _cancellation?.Cancel();
+        _session.Cancel();
         _closing = CloseAfterOperationAsync();
     }
 
@@ -96,49 +84,21 @@ public partial class GwToolWindow : Window
 
     private void CreateParameters()
     {
-        switch (_verb)
+        foreach (var parameter in GwToolParameterCatalog.For(_verb))
         {
-            case "rpm":
-                AddField("nr", L("Tool.Field.Measurements"), "1");
-                break;
-            case "seek":
-                AddField("cylinder", L("Tool.Field.Cylinder"), "0");
-                AddCheck("force", L("Tool.Field.Extreme"));
-                AddCheck("motor-on", L("Tool.Field.MotorOn"));
-                break;
-            case "pin":
-                AddField("pin", L("Tool.Field.Pin"), "26");
-                AddCheck("set", L("Tool.Field.SetPin"));
-                AddCheck("high", L("Tool.Field.High"));
-                break;
-            case "delays":
-                AddOptionalField("select", L("Tool.Field.Select"), "10");
-                AddOptionalField("step", L("Tool.Field.Step"), "3000");
-                AddOptionalField("settle", L("Tool.Field.Settle"), "15");
-                AddOptionalField("motor", L("Tool.Field.Motor"), "750");
-                AddOptionalField("watchdog", L("Tool.Field.Watchdog"), "10000");
-                AddOptionalField("pre-write", L("Tool.Field.PreWrite"), "15");
-                AddOptionalField("post-write", L("Tool.Field.PostWrite"), "15");
-                AddOptionalField("index-mask", L("Tool.Field.IndexMask"), "15");
-                break;
-            case "align":
-                AddField("tracks", L("Tool.Field.AlignTracks"), "c=40:h=0-1");
-                AddField("revs", L("Read.Revolutions"), "3");
-                AddField("reads", L("Tool.Field.AlignReads"), "10");
-                AddOptionalField("format", L("Tool.Field.AlignFormat"), "ibm.720");
-                AddOptionalField("diskdefs", L("Advanced.DiskDefs"), "diskdefs.cfg");
-                AddCheck("raw", L("Tool.Field.AlignRaw"));
-                AddOptionalField("fake-index", L("Advanced.FakeIndex"), "300rpm");
-                AddCheck("hard-sectors", L("Advanced.HardSectors"));
-                AddOptionalField("adjust-speed", L("Advanced.AdjustSpeed"), "300rpm");
-                AddOptionalField("pll", L("Advanced.Pll"), "period=5:phase=60");
-                AddOptionalField("densel", L("Advanced.DensityPin"), "H");
-                AddCheck("gen-tg43", L("Advanced.Tg43"));
-                AddCheck("reverse", L("Advanced.Reverse"));
-                break;
-            case "update":
-                AddCheck("bootloader", L("Tool.Field.Bootloader"));
-                break;
+            var label = L(parameter.LabelResourceKey);
+            switch (parameter.Kind)
+            {
+                case GwToolParameterCatalog.ParameterKind.Required:
+                    AddField(parameter.Key, label, parameter.DefaultValue);
+                    break;
+                case GwToolParameterCatalog.ParameterKind.Optional:
+                    AddOptionalField(parameter.Key, label, parameter.DefaultValue);
+                    break;
+                case GwToolParameterCatalog.ParameterKind.Check:
+                    AddCheck(parameter.Key, label);
+                    break;
+            }
         }
     }
 
@@ -200,10 +160,8 @@ public partial class GwToolWindow : Window
         _checks[key] = check;
     }
 
-    private GwCommand BuildCommand()
-    {
-        return _commandBuilder.BuildTool(new(_executable, _verb, _fields.ToDictionary(x => x.Key, x => x.Value.Text), _checks.Where(x => x.Value.IsChecked == true).Select(x => x.Key).ToHashSet(), _device, _drive));
-    }
+    private GwCommand BuildCommand() => _session.BuildCommand(_fields.ToDictionary(x => x.Key, x => x.Value.Text),
+        _checks.Where(x => x.Value.IsChecked == true).Select(x => x.Key).ToHashSet());
 
     private bool Checked(string key) => _checks.GetValueOrDefault(key)?.IsChecked == true;
     private void UpdateCommand()
@@ -228,10 +186,10 @@ public partial class GwToolWindow : Window
     internal Task ExecuteAsync()
     {
         if (_closeRequested) return Task.CompletedTask;
-        if (_cancellation is not null || _runner.IsRunning)
+        if (_session.IsRunning)
         {
             if (_confirm(LocExtension.Get("Operation.StopConfirm"), LocExtension.Get("Operation.StopTitle")))
-                _cancellation?.Cancel();
+                _session.Cancel();
             return Task.CompletedTask;
         }
 
@@ -248,71 +206,18 @@ public partial class GwToolWindow : Window
 
     private async Task RunToolAsync()
     {
-        _cancellation = new CancellationTokenSource();
         ExecuteButton.Content = LocExtension.Get("Common.Stop");
         RawOutput.Clear();
         Summary.Text = L("Tool.Running");
-        var progress = new ToolProgress(Dispatcher, async line =>
-        {
-            RawOutput.AppendText(line.Text + Environment.NewLine);
-            RawOutput.ScrollToEnd();
-            if (_consoleLog is not null)
-                await _consoleLog.AppendAsync(line.Text);
-        });
         try
         {
-            if (_verb == "update" && Checked("bootloader") && !_confirm(L("Tool.BootloaderWarning"), L("Tool.BootloaderTitle")))
-                return;
-            var command = BuildCommand();
-            if (_consoleLog is not null)
-                await _consoleLog.BeginAsync(_verb, command.ToDisplayString());
-            var result = await _runner.RunAsync(command, progress, _cancellation.Token);
-            await progress.CompleteAsync();
-            if (_verb == "info")
-            {
-                var info = GwInfoParser.Parse(string.Join(Environment.NewLine, result.Output.Select(x => x.Text)));
-                Summary.Text = $"{info.Model ?? L("Tool.ControllerFallback")} · {info.FirmwareVersion ?? L("Tool.FirmwareUnknown")} · {info.Port ?? L("Tool.PortUnknown")}" + (info.HasNetworkWarning ? "\n" + L("Tool.NetworkWarning") : "");
-            }
-            else
-                Summary.Text = result.IsSuccess ? L("Operation.Succeeded") : result.WasCancelled ? L("Operation.Cancelled") : LocExtension.Get("Operation.ExitCode", result.ExitCode);
-            if (_consoleLog is not null)
-                await _consoleLog.AppendAsync(Summary.Text);
+            await _session.ExecuteAsync(BuildCommand,
+                () => !Checked("bootloader") || _confirm(L("Tool.BootloaderWarning"), L("Tool.BootloaderTitle")),
+                publish => Dispatcher.CheckAccess() ? publish() : Dispatcher.InvokeAsync(publish).Task.Unwrap(),
+                line => { RawOutput.AppendText(line + Environment.NewLine); RawOutput.ScrollToEnd(); },
+                summary => Summary.Text = summary);
         }
-        catch (Exception exception)
-        {
-            _logError(exception, $"Running GW tool '{_verb}'");
-            var detail = ExceptionDescriptionFunctions.Describe(exception);
-            Summary.Text = LocExtension.Get("Error.Unexpected", detail);
-            if (_consoleLog is not null)
-                await _consoleLog.AppendAsync(Summary.Text);
-        }
-        finally
-        {
-            try { await progress.CompleteAsync(); }
-            finally
-            {
-                ExecuteButton.Content = LocExtension.Get("Common.Execute");
-                _cancellation.Dispose();
-                _cancellation = null;
-            }
-        }
-    }
-
-    private sealed class ToolProgress(Dispatcher dispatcher, Func<GwOutputLine, Task> publish) : IProgress<GwOutputLine>
-    {
-        private readonly List<Task> pending = [];
-        private readonly object gate = new();
-
-        public void Report(GwOutputLine line)
-        {
-            var task = dispatcher.CheckAccess() ? publish(line) : dispatcher.InvokeAsync(() => publish(line)).Task.Unwrap();
-            lock (gate) pending.Add(task);
-        }
-
-        internal Task CompleteAsync()
-        {
-            lock (gate) return Task.WhenAll(pending);
-        }
+        finally { ExecuteButton.Content = LocExtension.Get("Common.Execute"); }
     }
 
     private static string L(string key) => LocExtension.Get(key);

@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Controllers.Emulation.Machine;
 using System.ComponentModel;
 using MachineView = RetroMediaLab.App.Theme.OS.Editions.Windows95.Views.MachineView;
 using System.Windows;

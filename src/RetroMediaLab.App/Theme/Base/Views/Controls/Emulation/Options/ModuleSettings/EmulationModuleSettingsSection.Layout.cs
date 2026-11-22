@@ -39,7 +39,7 @@ internal sealed partial class EmulationModuleSettingsSection
             Content = LocExtension.Get("Common.Create"),
             MinWidth = 110,
             HorizontalAlignment = HorizontalAlignment.Right,
-            Visibility = _saved.Any(configuration => configuration.MachineId == _configuration.MachineId) ? Visibility.Collapsed : Visibility.Visible
+            Visibility = _session.HasSavedMachine(_configuration.MachineId) ? Visibility.Collapsed : Visibility.Visible
         };
         save.Click += async (_, _) => await ExecuteAsync(SaveAsync);
         return save;
@@ -51,7 +51,7 @@ internal sealed partial class EmulationModuleSettingsSection
         _fieldControls.Clear();
         _userChangeHandlers.Clear();
         presentationMemoryTotal = null;
-        _configuration = EmulationVideoConfigurationFunctions.Apply(_module, _configuration, _profiles.Get(_module.Id, _configuration.Id).Renderer);
+        _configuration = _session.ApplyVideoRenderer(_configuration);
         var settings = _module.Describe(_configuration.MachineId, _configuration);
         var tabs = EmulationMachineTabs.Create(tab => settings.Visibility.Tabs.GetValueOrDefault(tab)
             && (tab is not (EmulationMachineTab.Cheats or EmulationMachineTab.Ethernet or EmulationMachineTab.Extensions)
@@ -149,7 +149,7 @@ internal sealed partial class EmulationModuleSettingsSection
             }
             display = panel;
         }
-        var profile = _profiles.Get(_module.Id, _configuration.Id);
+        var profile = _session.GetVideoProfile(_configuration.Id);
         var renderer = new ComboBox
         {
             ItemsSource = EmulationVideoProcessingCatalog.RendererResourceKeys.Select(pair => new KeyValuePair<EmulationVideoRenderer, string>(pair.Key, LocExtension.Get(pair.Value))).ToArray(),
@@ -162,14 +162,13 @@ internal sealed partial class EmulationModuleSettingsSection
         {
             if (renderer.SelectedValue is not EmulationVideoRenderer choice) return;
             CaptureEditorValues();
-            var current = _profiles.Get(_module.Id, _configuration.Id);
-            _profiles.Set(_module.Id, _configuration.Id, current with { Renderer = choice });
-            _configuration = EmulationVideoConfigurationFunctions.Apply(_module, _configuration, choice);
+            _configuration = _session.ChangeVideoRenderer(_configuration, choice);
             RebuildEditor();
-            var saved = _saved.Any(item => item.Id == _configuration.Id);
-            await SaveVideoProfileAsync();
-            await PersistCapturedConfigurationAsync(_configuration, saved);
-            if (!saved) VideoConfigurationChanged?.Invoke(this, new EmulationConfigurationSavedEventArgs(_configuration));
+            var configuration = _configuration;
+            var saved = _session.IsSaved(configuration.Id);
+            await _session.SaveVideoProfileAsync(configuration.Id);
+            await _session.PersistAsync(configuration, NotifyConfigurationSaved);
+            if (!saved) VideoConfigurationChanged?.Invoke(this, new EmulationConfigurationSavedEventArgs(configuration));
         });
         var rendererChoice = EmulationSettingsLayout.VideoSettingsChoice(
             new EmulationVideoSettingsField(LocExtension.Get(rendererResourceKey), renderer, Explanation: LocExtension.Get("Emulation.Help.Video.Rendering.Short"), DetailedExplanation: LocExtension.Get("Emulation.Help.Video.Rendering.Detailed")));

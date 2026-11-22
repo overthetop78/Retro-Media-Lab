@@ -24,9 +24,13 @@ internal sealed record MachineControllerOptions(
     Func<EmulationMediaDevice, string?> InitialMediaDirectory,
     Action<EmulationMediaDevice, string> RememberMediaDirectory,
     Func<bool> IsActive,
+    Func<EmulationMachinePresentation> CreatePresentation,
     Func<EmulationMedia, CancellationToken, ValueTask<EmulationMedia>>? PrepareMediaAsync = null,
     Func<Task>? SwitchControllerPointer = null,
     Func<IReadOnlyDictionary<string, string>, Task>? PersistRuntimeOptions = null,
-    Func<EmulationMachinePresentation>? CreatePresentation = null,
     Func<IReadOnlyList<EmulationMedia>, Task>? PersistMountedMedia = null,
-    Func<Task>? OpenSettings = null);
+    Func<Task>? OpenSettings = null,
+    IReadOnlyDictionary<string, string>? ShortcutSettings = null,
+    IEmulationModule? Module = null,
+    IEmulationConfiguration? Configuration = null,
+    Func<IReadOnlyDictionary<string, string>>? ReadShortcutSettings = null);

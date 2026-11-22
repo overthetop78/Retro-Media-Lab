@@ -45,8 +45,7 @@ using RetroMediaLab.MediaEngine.Images.Visualization;
 using System.ComponentModel;
 using RetroMediaLab.MediaEngine.Contracts.Explorer;
 using System.IO;
-using System.Net.Http;
-using System.Diagnostics;
+using RetroMediaLab.App.Services.HostTools;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -136,7 +135,7 @@ public partial class MainWindow : Window
         string? dataDirectory = null
     )
     {
-        _openDocumentation = openDocumentation ?? (url => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }));
+        _openDocumentation = openDocumentation ?? ShellOpenService.Open;
         _writeError = logError ?? ((error, context) => ErrorLog.Write(error, context));
         InitializeComponent();
         _mediaEngine = MediaEngineComposition.CreateDefault();
@@ -156,9 +155,9 @@ public partial class MainWindow : Window
         _businessDialogs = businessDialogs ?? new WpfBusinessDialogService(this);
         _profileController = new OperationProfileController(_profiles, _businessDialogs, _dialogs, (key, arguments) => LocExtension.Get(key, arguments));
         _commandBuilder = commandBuilder ?? new GwCommandBuilder();
-        _hostTools = hostTools ?? new GwInstallationManager(new HttpClient(), StoragePaths.HostToolsDirectory);
+        _hostTools = hostTools ?? HostToolsInstallationService.Create();
         var directory = dataDirectory ?? StoragePaths.DataDirectory;
-        _logsDirectory = Path.Combine(directory, MainWindowConstants.LogsDirectoryName);
+        _logsDirectory = StoragePaths.LogsDirectoryFor(directory);
         _consoleLog = new ConsoleLogSession(_logsDirectory, () => _settings.Logging);
         _terminalPanel = new TerminalPanelController(TerminalBlock, ConsoleRow, ConsoleSplitter, () => _settings);
         ConnectConsoleNotifications();
@@ -381,7 +380,7 @@ public partial class MainWindow : Window
             if (path is not null)
                 await _diskImageWorkspace.LoadAsync(path);
         };
-        _settingsStore = settingsStore ?? new JsonSettingsStore(Path.Combine(directory, MainWindowConstants.SettingsFileName));
+        _settingsStore = settingsStore ?? StoragePaths.OpenSettingsStore(directory);
         _startupHardwareMonitor = new StartupHardwareMonitor(_hardwareRegistry, _settingsStore);
         _lifecycle = new MainWindowLifecycleController(
             this,
@@ -397,11 +396,7 @@ public partial class MainWindow : Window
             _diskImageWorkspace,
             value => EmulationBlock.Configure(value),
             () => EmulationBlock.StopAllAsync(),
-            async () =>
-        {
-            if (!string.IsNullOrWhiteSpace(_settings.GwExecutablePath))
-                _formatWorkspace.SetCapabilities(await new GwFormatCapabilityReader().ReadAsync(_settings.GwExecutablePath));
-        },
+            _formatWorkspace,
             () =>
         {
             SynchronizeFormatWorkspace();

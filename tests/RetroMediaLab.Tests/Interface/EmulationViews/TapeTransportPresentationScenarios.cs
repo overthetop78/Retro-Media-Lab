@@ -1,3 +1,4 @@
+using RetroMediaLab.App.Controllers.Emulation.Machine;
 using RetroMediaLab.App.Functions.Emulation.Machine;
 using RetroMediaLab.App.Contracts.Machine;
 using RetroMediaLab.App.Views.Controls.Emulation.Machine;
