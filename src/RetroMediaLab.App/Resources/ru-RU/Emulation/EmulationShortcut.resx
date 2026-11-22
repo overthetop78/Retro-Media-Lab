@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>плавать</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Подтверждаю</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Вернись.</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Показать или скрыть статистику эмуляции в полноэкранном режиме</value></data>
 </root>

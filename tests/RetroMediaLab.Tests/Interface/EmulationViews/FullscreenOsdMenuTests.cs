@@ -398,6 +398,46 @@ public sealed class FullscreenOsdMenuTests(StaExecutionScenarios sta)
     });
 
     [Fact]
+    public Task IdleTimeoutClosesTheCurrentEditorAfterItsLastNavigation() => sta.RunAsync(async () =>
+    {
+        var layer = new Grid();
+        var owner = new Window { Content = layer, ShowInTaskbar = false, Width = 800, Height = 480 };
+        FullscreenOsdWindow? menu = null;
+        try
+        {
+            var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            int saved = 0;
+            var setting = new FullscreenOsdWindow.Setting(() => saved, value => value.ToString(),
+                (value, direction) => value + direction, Preview: null,
+                Save: value => { saved = value; return Task.CompletedTask; }, Range: (-20, 20));
+            owner.Show();
+            menu = new FullscreenOsdWindow(owner, layer, "Machine", null, [new("Brightness", Value: setting)],
+                error => throw error, "Loading");
+            menu.ContentRendered += (_, _) => rendered.TrySetResult();
+            menu.Closed += (_, _) => closed.TrySetResult();
+            menu.Show();
+            await rendered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            await menu.NavigateAsync(OsdNavigation.Confirm);
+            Assert.True(menu.IsEditing);
+            var lastInput = System.Diagnostics.Stopwatch.StartNew();
+            await menu.NavigateAsync(OsdNavigation.Right);
+
+            await closed.Task.WaitAsync(TimeSpan.FromSeconds(19));
+            Assert.True(lastInput.Elapsed >= TimeSpan.FromSeconds(14.5));
+            await menu.PendingSettingSave;
+            Assert.Equal(1, saved);
+            Assert.Null(menu.Content);
+        }
+        finally
+        {
+            try { if (menu?.Content is not null) menu.Close(); }
+            finally { owner.Content = null; owner.Close(); }
+        }
+    });
+
+    [Fact]
     public Task CompleteChordsTriggerOnPressAcrossOsdFocusChanges() => sta.Run(() =>
     {
         using var view = new MachineView();
@@ -413,6 +453,7 @@ public sealed class FullscreenOsdMenuTests(StaExecutionScenarios sta)
         });
         const ModifierKeys modifiers = ModifierKeys.Control | ModifierKeys.Shift;
         var actions = new List<string>();
+        bool fullscreen = false;
         using var input = new MachineInputController(view, new Border(), IntPtr.Zero, () => machine,
             EmulationShortcutMap.GlobalShortcuts(new Dictionary<string, string>
             {
@@ -426,9 +467,15 @@ public sealed class FullscreenOsdMenuTests(StaExecutionScenarios sta)
             osdShortcuts: EmulationShortcutMap.OsdShortcuts(new Dictionary<string, string>
             {
                 [EmulationShortcutDefaults.OsdWithPause] = "Ctrl+Shift+Divide",
-                [EmulationShortcutDefaults.OsdWithoutPause] = "Ctrl+Shift+Multiply"
+                [EmulationShortcutDefaults.OsdWithoutPause] = "Ctrl+Shift+Multiply",
+                [EmulationShortcutDefaults.OsdStatistics] = EmulationShortcutDefaults.OsdValues[EmulationShortcutDefaults.OsdStatistics]
             }),
-            isFullscreen: () => true);
+            isFullscreen: () => fullscreen);
+
+        input.HandleKeyDown(Key.Subtract, modifiers);
+        input.HandleKeyUp(Key.Subtract, modifiers);
+        Assert.Empty(actions);
+        fullscreen = true;
 
         input.HandleKeyDown(Key.LeftCtrl, ModifierKeys.Control);
         input.HandleKeyDown(Key.LeftShift, modifiers);
@@ -471,16 +518,27 @@ public sealed class FullscreenOsdMenuTests(StaExecutionScenarios sta)
         input.HandleKeyDown(Key.Divide, modifiers);
         input.SetOsdFocus(true);
         input.HandleKeyUp(Key.Divide, modifiers);
+        input.HandleKeyDown(Key.Subtract, modifiers | ModifierKeys.Alt);
+        input.HandleKeyUp(Key.Subtract, modifiers);
+        input.HandleKeyDown(Key.OemMinus, modifiers);
+        input.HandleKeyUp(Key.OemMinus, modifiers);
+        input.HandleKeyDown(Key.Subtract, modifiers);
+        input.HandleKeyDown(Key.Subtract, modifiers, isRepeat: true);
+        input.HandleKeyUp(Key.Subtract, modifiers);
         input.HandleKeyDown(Key.Multiply, modifiers);
         input.SetOsdFocus(false);
         input.HandleKeyUp(Key.Multiply, modifiers);
+        input.HandleKeyDown(Key.Subtract, modifiers);
+        input.HandleKeyUp(Key.Subtract, modifiers);
         input.HandleKeyDown(Key.F12, modifiers);
         input.HandleKeyUp(Key.F12, modifiers);
         input.HandleKeyDown(Key.F11, modifiers);
         input.HandleKeyUp(Key.F11, modifiers);
         Assert.Equal([
             EmulationShortcutDefaults.OsdWithPause,
+            EmulationShortcutDefaults.OsdStatistics,
             EmulationShortcutDefaults.OsdWithoutPause,
+            EmulationShortcutDefaults.OsdStatistics,
             EmulationShortcutDefaults.ReleaseMouse,
             EmulationShortcutDefaults.ToggleFullscreen], actions);
     });

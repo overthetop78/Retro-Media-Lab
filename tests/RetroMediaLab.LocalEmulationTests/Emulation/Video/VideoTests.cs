@@ -31,10 +31,10 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
     }
 
     [Fact] public void VideoProcessingNormalizesEnumsIntensitiesAndPalette() => VideoGeometryScenarios.ProcessingLimits();
-    [Fact] public void VideoProcessingAppliesBrightnessBeforeContrast() => VideoGeometryScenarios.ProcessingOrder();
+    [Fact] public void VideoProcessingCombinesLowContrastWithGlobalBrightness() => VideoGeometryScenarios.ProcessingOrder();
     [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)]
     public Task PresentationRoutesFramesSettingsAndRendererFailures(int failure) => sta.RunAsync(() => VideoProcessingScenarios.Presentation(failure));
-    [Theory] [InlineData(-10,(byte)0,(byte)188)] [InlineData(0,(byte)0,(byte)255)] [InlineData(10,(byte)188,(byte)255)]
+    [Theory] [InlineData(-20,(byte)0,(byte)1)] [InlineData(0,(byte)0,(byte)255)] [InlineData(20,(byte)248,(byte)255)]
     public void SoftwarePipelineAdjustsLinearBrightnessAndPreservesMetadata(int setting,byte dark,byte light) => VideoProcessingScenarios.PipelineBrightness(setting,dark,light);
     [Fact] public void SoftwarePipelineNearestSamplingDuplicatesExpectedPixels() => VideoProcessingScenarios.Resize();
     [Theory] [InlineData(RetroMediaLab.VideoPresentation.Enums.EmulationVideoRenderer.Direct3D11)] [InlineData(RetroMediaLab.VideoPresentation.Enums.EmulationVideoRenderer.OpenGL)] [InlineData(RetroMediaLab.VideoPresentation.Enums.EmulationVideoRenderer.Vulkan)]
@@ -48,10 +48,16 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
     [Fact] public void PresenterUsesTheAspectRatioReportedByTheEmulator() => VideoGeometryScenarios.FrameAspect();
     [Fact] public void ImageAdjustmentsClampAndPreserveInput()=>VideoGeometryScenarios.Adjustments();
     [Theory]
-    [InlineData(-10,2d)]
-    [InlineData(0,1d)]
-    [InlineData(10,0.5d)]
-    [InlineData(100,0.5d)]
-    public void GammaExponentUsesBoundedSetting(int gamma,double expected)=>VideoGeometryScenarios.Gamma(gamma,expected);
+    [InlineData(-20,0f)]
+    [InlineData(0,0f)]
+    [InlineData(180,1.8f)]
+    [InlineData(190,1.9f)]
+    [InlineData(220,2.2f)]
+    [InlineData(240,2.4f)]
+    [InlineData(1886,-1f)]
+    public void GammaSelectsAStandardCurve(int gamma, float expected) =>
+        VideoGeometryScenarios.Gamma(gamma, expected);
+    [Fact] public void ImageAdjustmentEndpointsChangeTheExpectedSignal() => VideoGeometryScenarios.AdjustmentEndpoints();
+    [Fact] public void GammaSelectsLuminanceCurveAndSharpnessAffectsOutputPixels() => VideoGeometryScenarios.GammaAndSharpnessPixels();
     [Fact] public void PaletteSelectionIgnoresAlpha()=>VideoProcessingScenarios.Palettes();
 }

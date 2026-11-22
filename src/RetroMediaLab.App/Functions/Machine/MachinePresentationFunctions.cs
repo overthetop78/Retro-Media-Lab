@@ -14,17 +14,24 @@ internal static class MachinePresentationFunctions
         && string.Equals(machineId, MachinePresentationConstants.StatusAboveDisplayMachineId, StringComparison.Ordinal);
 
     internal static void UpdateStatus(MachineCommandPresentation presentation, VideoFrame frame,
-        double expectedFramesPerSecond, double measuredFramesPerSecond, EmulationExecutionRate? executionRate = null)
+        double expectedFramesPerSecond, double measuredFramesPerSecond, EmulationExecutionRate? executionRate = null,
+        long? processorClockHz = null)
     {
         presentation.Status.Text = Status(frame, expectedFramesPerSecond, measuredFramesPerSecond, executionRate);
         presentation.SizeStatus.Text = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.SizeStatusFormat, frame.Width, frame.ImageHeight);
         presentation.FpsStatus.Text = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.FpsStatusFormat, measuredFramesPerSecond);
         presentation.FrequencyStatus.Text = string.Format(CultureInfo.CurrentCulture, MachinePresentationConstants.FrequencyStatusFormat,
             expectedFramesPerSecond > MachinePresentationConstants.EmptyMeasurement ? expectedFramesPerSecond : measuredFramesPerSecond);
-        presentation.ExecutionStatus.Text = executionRate?.EffectiveMegahertz is { } megahertz
-            ? LocExtension.Get(MachinePresentationConstants.ExecutionRateResourceKey, megahertz,
-                executionRate.Value.SpeedRatio * MachinePresentationConstants.PercentScale).Trim(MachinePresentationConstants.StatusSeparator.ToCharArray()) : string.Empty;
+        presentation.ExecutionStatus.Text = ProcessorStatus(executionRate, processorClockHz);
     }
+
+    internal static string ProcessorStatus(EmulationExecutionRate? executionRate, long? processorClockHz) =>
+        executionRate?.EffectiveMegahertz is { } megahertz
+            ? LocExtension.Get(MachinePresentationConstants.ExecutionRateResourceKey, megahertz,
+                executionRate.Value.SpeedRatio * MachinePresentationConstants.PercentScale).Trim(MachinePresentationConstants.StatusSeparator.ToCharArray())
+            : processorClockHz is > 0
+                ? string.Format(CultureInfo.CurrentCulture, "{0:0.00} MHz", processorClockHz.Value / 1_000_000d)
+                : "—";
 
     internal static string RendererName(EmulationVideoRenderer renderer) => renderer switch
     {

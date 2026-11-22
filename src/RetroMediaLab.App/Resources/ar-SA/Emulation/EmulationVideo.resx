@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>التصيير باستخدام العتاد</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>وضع التصيير</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>يستخدم التصيير العتادي واجهة الرسوميات (API) المحددة للتطبيق إذا كان المحاكي يدعمها.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>الأصل (لا تصويب)</value></data>
 </root>

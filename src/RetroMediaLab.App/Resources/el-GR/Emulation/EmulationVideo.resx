@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Απόδοση μέσω υλικού</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Λειτουργία απόδοσης</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Η απόδοση μέσω υλικού χρησιμοποιεί το API γραφικών που έχει επιλεγεί για την εφαρμογή, εφόσον το υποστηρίζει ο εξομοιωτής.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Αρχικό (χωρίς διόρθωση)</value></data>
 </root>

@@ -272,9 +272,13 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         Pipeline? pipeline = null;
         try
         {
+            var output = _device.MainSwapchain.Framebuffer.OutputDescription;
+            var outputEncodesSrgb = output.ColorAttachments[0].Format is
+                Veldrid.PixelFormat.B8_G8_R8_A8_UNorm_SRgb or Veldrid.PixelFormat.R8_G8_B8_A8_UNorm_SRgb;
+            var fragment = VeldridVideoProcessingShaders.Fragment(sampling, displayTechnology, outputEncodesSrgb);
             shaders = factory.CreateFromSpirv(
                 new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(VeldridVideoProcessingShaders.Vertex), "main"),
-                new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(VeldridVideoProcessingShaders.Fragment(sampling, displayTechnology)), "main"));
+                new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(fragment), "main"));
             var shaderSet = new ShaderSetDescription(
                 [new VertexLayoutDescription(
                     new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
@@ -282,7 +286,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             pipeline = factory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
                 BlendStateDescription.SingleOverrideBlend, DepthStencilStateDescription.Disabled,
                 RasterizerStateDescription.CullNone, PrimitiveTopology.TriangleStrip, shaderSet,
-                [_layout!], _device.MainSwapchain.Framebuffer.OutputDescription));
+                [_layout!], output));
 
             if (_pipelines.Count == PipelineCacheCapacity)
             {
@@ -450,8 +454,11 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         return new VideoParameters(
-            new Vector4(adjustments.Brightness / 20f, MathF.Pow(2f, adjustments.Contrast / 5f), (float)EmulationImageAdjustmentFunctions.GammaExponent(adjustments.Gamma), 1f + adjustments.Saturation / 10f),
-            new Vector4(adjustments.Sharpness / 10f, (float)configuration.Sampling, sourceWidth, sourceHeight),
+            new Vector4(EmulationImageAdjustmentFunctions.BrightnessAmount(adjustments.Brightness),
+                EmulationImageAdjustmentFunctions.ContrastGain(adjustments.Contrast),
+                EmulationImageAdjustmentFunctions.GammaParameter(adjustments.Gamma),
+                EmulationImageAdjustmentFunctions.SaturationGain(adjustments.Saturation)),
+            new Vector4(EmulationImageAdjustmentFunctions.SharpnessAmount(adjustments.Sharpness), (float)configuration.Sampling, sourceWidth, sourceHeight),
             new Vector4(outputWidth, outputHeight, (float)elapsedMilliseconds, 0f),
             crt.Display, crt.Beam, crt.Optical, crt.Geometry, crt.Scanlines,
             crt.Pattern, crt.PatternIntensity,

@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Πλοηγητό</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Επιβεβαίωση</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Πήγαινε πίσω.</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Εναλλαγή στατιστικών προσομοίωσης πλήρους οθόνης</value></data>
 </root>

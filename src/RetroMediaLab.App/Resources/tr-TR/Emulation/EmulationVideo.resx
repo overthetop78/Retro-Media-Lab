@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Donanımsal işleme</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>İşleme modu</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Donanımsal işleme, emülatör destekliyorsa uygulama için seçilen grafik API’sini kullanır.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Orijinal (g düzeltme)</value></data>
 </root>

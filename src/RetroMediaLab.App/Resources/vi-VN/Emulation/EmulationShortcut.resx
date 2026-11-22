@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Chuyển</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Xác nhận</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Về đi.</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Bật/ tắt số liệu mô phỏng toàn màn hình</value></data>
 </root>

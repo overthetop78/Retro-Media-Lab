@@ -1,6 +1,7 @@
 using RetroMediaLab.App.Functions.Emulation.Shortcuts;
 using RetroMediaLab.Infrastructure.Settings;
 using RetroMediaLab.Infrastructure.Settings.Emulation;
+using RetroMediaLab.Tests.Application.TestInfrastructure;
 
 namespace RetroMediaLab.Tests.Application.SettingsStorage;
 public class SettingsStorageTests
@@ -10,17 +11,35 @@ public class SettingsStorageTests
     {
         var settings = new AppSettings();
         settings.EmulationShortcuts.Remove(EmulationShortcutDefaults.OsdWithPause);
+        settings.EmulationShortcuts.Remove(EmulationShortcutDefaults.OsdStatistics);
         settings.EmulationShortcuts[EmulationShortcutDefaults.OsdConfirm] = "Space";
 
         SettingsMigrator.Migrate(settings);
 
         Assert.Equal("Ctrl+Shift+Divide", settings.EmulationShortcuts[EmulationShortcutDefaults.OsdWithPause]);
         Assert.Equal("Ctrl+Shift+Multiply", settings.EmulationShortcuts[EmulationShortcutDefaults.OsdWithoutPause]);
+        Assert.Equal("Ctrl+Shift+Subtract", settings.EmulationShortcuts[EmulationShortcutDefaults.OsdStatistics]);
         Assert.Equal("Space", settings.EmulationShortcuts[EmulationShortcutDefaults.OsdConfirm]);
         Assert.Empty(settings.EmulationShortcuts[EmulationShortcutDefaults.OsdConfirm + EmulationShortcutDefaults.AlternativeSuffix]);
         var globalShortcuts = EmulationShortcutMap.GlobalShortcuts(settings.EmulationShortcuts);
         Assert.Contains(globalShortcuts, binding => binding.Action == EmulationShortcutDefaults.PauseResume);
         Assert.DoesNotContain(globalShortcuts, binding => EmulationShortcutDefaults.OsdValues.ContainsKey(binding.Action));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FullscreenStatisticsPreferenceAndCustomShortcutSurviveRestart(bool visible)
+    {
+        var files = new SyntheticData();
+        var settings = new AppSettings { ShowFullscreenEmulationStatistics = visible };
+        settings.EmulationShortcuts[EmulationShortcutDefaults.OsdStatistics] = "Ctrl+Shift+F8";
+
+        await SettingsRoundTripScenarios.Store(files).SaveAsync(settings);
+        var restored = await SettingsRoundTripScenarios.Store(files).LoadAsync();
+
+        Assert.Equal(visible, restored.ShowFullscreenEmulationStatistics);
+        Assert.Equal("Ctrl+Shift+F8", restored.EmulationShortcuts[EmulationShortcutDefaults.OsdStatistics]);
     }
 
     [Fact]

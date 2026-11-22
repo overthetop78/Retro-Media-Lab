@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>导航</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>确认</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>回去,你回来</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>顯示或隱藏全螢幕模擬統計資料</value></data>
 </root>

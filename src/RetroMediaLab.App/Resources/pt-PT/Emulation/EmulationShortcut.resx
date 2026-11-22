@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Navegar</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Confirmar</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Volta.</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Mostrar ou ocultar as estatísticas de emulação em ecrã inteiro</value></data>
 </root>

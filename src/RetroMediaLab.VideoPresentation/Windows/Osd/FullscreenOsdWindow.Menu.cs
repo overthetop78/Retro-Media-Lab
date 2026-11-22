@@ -176,6 +176,7 @@ public sealed partial class FullscreenOsdWindow
 
     public async Task NavigateAsync(Navigation action)
     {
+        RestartIdleTimer();
         if (_closed || _commandRunning) return;
         if (_editing is not null)
         {

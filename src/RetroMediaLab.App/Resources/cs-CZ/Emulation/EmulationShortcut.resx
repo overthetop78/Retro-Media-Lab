@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Překročení</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Potvrdit</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Vrať se.</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Přepnout statistiky emulace na celé obrazovce</value></data>
 </root>

@@ -75,7 +75,10 @@ internal sealed partial class ManagedCore : IEmulatorCore
     public EmulationVideoStandard? Region => _saturn is { } saturn
         ? saturn.IsPal ? EmulationVideoStandard.Pal : EmulationVideoStandard.Ntsc
         : _system is null ? null : _system.Video.vdp_pal != 0 ? EmulationVideoStandard.Pal : EmulationVideoStandard.Ntsc;
-    public long? ProcessorClockHz => _system is null ? null : _system.Has32X ? _system.MasterClock * 3L / 7 : _system.MasterClock / (SystemHardware.IsSixteenBit(_system.Hardware) ? 7 : 15);
+    public long? ProcessorClockHz => _saturn?.ProcessorClockHz
+        ?? (_system is { } system
+            ? system.Has32X ? system.MasterClock * 3L / 7 : system.MasterClock / (SystemHardware.IsSixteenBit(system.Hardware) ? 7 : 15)
+            : null);
     public int BufferedAudioFrames => _bufferedAudioFrames;
     public long AudioOverrunCount => _overruns;
     public long AudioUnderrunCount => 0;

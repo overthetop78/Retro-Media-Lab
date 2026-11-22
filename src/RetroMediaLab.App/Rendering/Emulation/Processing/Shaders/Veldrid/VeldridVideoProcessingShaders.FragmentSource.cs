@@ -43,8 +43,8 @@ internal static partial class VeldridVideoProcessingShaders
         vec3 adjust(vec3 color)
         {
             vec3 linear=vec3(srgbToLinear(color.r),srgbToLinear(color.g),srgbToLinear(color.b));
-            linear=videoBrightnessParameter(linear,Parameters.Adjustments.x);
             linear=videoContrastParameter(linear,Parameters.Adjustments.y);
+            linear=videoBrightnessParameter(linear,Parameters.Adjustments.x);
             linear=videoGammaParameter(linear,Parameters.Adjustments.z);
             return videoSaturationParameter(linear,Parameters.Adjustments.w);
         }
@@ -114,7 +114,22 @@ internal static partial class VeldridVideoProcessingShaders
                 c=clamp(c+(c-average)*amount,minimum-extension,maximum+extension);
             }
             if(mode==3)c=mix(c,(u+d)*.5,.5);
-            return videoSharpnessParameter(c,axial,Parameters.Processing.x);
+            if(abs(Parameters.Processing.x)>0.0001)
+            {
+                vec2 stepSize=1.0/max(Parameters.Output.xy,vec2(1.0));
+                vec3 sum=c;
+                for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++)
+                    if(x!=0||y!=0)sum+=raw(uv+vec2(x,y)*stepSize);
+                float weight=9.0;
+                if(Parameters.Processing.x<0.0)
+                {
+                    vec2 dx=vec2(stepSize.x*2.0,0.0),dy=vec2(0.0,stepSize.y*2.0);
+                    sum+=(raw(uv-dx)+raw(uv+dx)+raw(uv-dy)+raw(uv+dy))*.5;
+                    weight=11.0;
+                }
+                c=videoSharpnessParameter(c,sum/weight,Parameters.Processing.x);
+            }
+            return clamp(c,0.0,1.0);
         }
         """ + "\n" + """
         #if DISPLAY_TECHNOLOGY == 2
@@ -447,7 +462,11 @@ internal static partial class VeldridVideoProcessingShaders
                 c=filterGeneralPersistence(c,previous,Parameters.Temporal.x);
             }
             c=filterBlackFrameInsertion(c,Parameters.General.z,Parameters.Signal2.y);
+        #ifdef OUTPUT_ENCODES_SRGB
+            fsout_Color=vec4(c,1.0);
+        #else
             fsout_Color=vec4(linearToSrgb(c.r),linearToSrgb(c.g),linearToSrgb(c.b),1.0);
+        #endif
         }
         """;
 }

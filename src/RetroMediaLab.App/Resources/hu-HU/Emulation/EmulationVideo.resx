@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hardveres renderelés</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Renderelési mód</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>A hardveres renderelés az alkalmazáshoz kiválasztott grafikus API-t használja, ha az emulátor támogatja.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Eredeti (nincs korrekció)</value></data>
 </root>

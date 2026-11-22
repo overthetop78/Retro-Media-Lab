@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Navigeren</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Bevestigen</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Ga terug.</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Statistieken over volledige schermemulatie aan/uit</value></data>
 </root>

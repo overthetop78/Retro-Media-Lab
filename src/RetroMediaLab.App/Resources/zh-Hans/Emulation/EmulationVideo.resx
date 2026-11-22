@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>硬件渲染</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>渲染模式</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>硬件渲染使用应用程序所选的图形 API，前提是模拟器支持该 API。</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>原件(无更正)</value></data>
 </root>

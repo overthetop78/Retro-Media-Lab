@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>ดึงข้อมูล</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>ยืนยัน</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>กลับไป</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>เปิด/ ปิด สถิติการจําลองเต็มจอ</value></data>
 </root>

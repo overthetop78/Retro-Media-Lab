@@ -113,16 +113,19 @@ internal static class VideoProcessingScenarios
     public static void PipelineBrightness(int setting,byte dark,byte light)
     {
         using var pipeline = new RetroMediaLab.App.Rendering.Emulation.Processing.SoftwareEmulationVideoProcessingPipeline();
-        byte[] pixels = [0,0,0,255,255,255,255,255];
-        var frame = new VideoFrame(pixels,2,1,8,EmulationPixelFormat.Xrgb8888,2,17,TimeSpan.FromSeconds(1));
+        byte[] pixels = [0,0,0,255,255,255,255,255,0,165,232,255];
+        var frame = new VideoFrame(pixels,3,1,12,EmulationPixelFormat.Xrgb8888,3,17,TimeSpan.FromSeconds(1));
         var configuration = new RetroMediaLab.VideoPresentation.Contracts.EmulationVideoProcessingConfiguration { Adjustments = new(Brightness:setting) };
-        var result = pipeline.Process(configuration,frame,new(2,1),new(2,1));
-        Assert.Equal(new byte[]{dark,dark,dark,255,light,light,light,255},result.Pixels.ToArray());
-        Assert.Equal(new byte[]{0,0,0,255,255,255,255,255},pixels);
+        var result = pipeline.Process(configuration,frame,new(3,1),new(3,1));
+        var output = result.Pixels.Span;
+        Assert.Equal(new byte[]{dark,dark,dark,255,light,light,light,255},output[..8].ToArray());
+        Assert.All(output[8..11].ToArray(), component => Assert.InRange(component, dark, light));
+        if (setting == 0) Assert.Equal(pixels, output.ToArray());
+        Assert.Equal(new byte[]{0,0,0,255,255,255,255,255,0,165,232,255},pixels);
         Assert.Equal(frame.Sequence,result.Sequence); Assert.Equal(frame.Timestamp,result.Timestamp); Assert.Equal(frame.AspectRatio,result.AspectRatio);
-        Assert.Same(frame,pipeline.Process(new(),frame,new(2,1),new(2,1)));
-        Assert.Throws<ArgumentException>(()=>pipeline.Process(new(),frame,new(1,1),new(2,1)));
-        Assert.Throws<ArgumentOutOfRangeException>(()=>pipeline.Process(new(),frame,new(2,1),new(0,1)));
+        Assert.Same(frame,pipeline.Process(new(),frame,new(3,1),new(3,1)));
+        Assert.Throws<ArgumentException>(()=>pipeline.Process(new(),frame,new(1,1),new(3,1)));
+        Assert.Throws<ArgumentOutOfRangeException>(()=>pipeline.Process(new(),frame,new(3,1),new(0,1)));
     }
     public static void Resize()
     {

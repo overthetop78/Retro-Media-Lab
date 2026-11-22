@@ -106,8 +106,8 @@ internal static class OpenGlVideoShaderSource
         vec3 adjustColor(vec3 color)
         {
             vec3 linear = vec3(srgbToLinear(color.r), srgbToLinear(color.g), srgbToLinear(color.b));
-            linear = videoBrightnessParameter(linear, Adjustments.x);
             linear = videoContrastParameter(linear, Adjustments.y);
+            linear = videoBrightnessParameter(linear, Adjustments.x);
             linear = videoGammaParameter(linear, Adjustments.z);
             return videoSaturationParameter(linear, Adjustments.w);
         }
@@ -128,20 +128,7 @@ internal static class OpenGlVideoShaderSource
             return (normalized + 1.0) * 0.5;
         }
 
-        vec3 crtBase(vec2 uv)
-        {
-            vec3 center = adjustColor(sampleConfigured(uv).rgb);
-            if (abs(Processing.x) > 0.0001)
-            {
-                vec2 stepSize = 1.0 / max(Processing.zw, vec2(1.0));
-                vec3 average = vec3(0.0);
-                for (int y = -1; y <= 1; y++)
-                    for (int x = -1; x <= 1; x++)
-                        average += adjustColor(sampleConfigured(uv + vec2(x, y) * stepSize).rgb);
-                center = videoSharpnessParameter(center, average / 9.0, Processing.x);
-            }
-            return crtPalette(center);
-        }
+        vec3 crtBase(vec2 uv) { return crtPalette(adjustColor(sampleConfigured(uv).rgb)); }
 
         """ + "\n" + """
         #if DISPLAY_TECHNOLOGY == 2
@@ -454,6 +441,21 @@ internal static class OpenGlVideoShaderSource
                 color=clamp(color+(color-average)*amount,minimum-extension,maximum+extension);
             }
             if(int(Restoration.w+.5)==3)color=mix(color,(u+d)*.5,.5);
+            if(abs(Processing.x)>0.0001)
+            {
+                vec2 stepSize=1.0/max(Output.xy,vec2(1.0));
+                vec3 sum=color;
+                for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++)
+                    if(x!=0||y!=0)sum+=extraRaw(uv+vec2(float(x),float(y))*stepSize);
+                float weight=9.0;
+                if(Processing.x<0.0)
+                {
+                    vec2 dx=vec2(stepSize.x*2.0,0.0),dy=vec2(0.0,stepSize.y*2.0);
+                    sum+=(extraRaw(uv-dx)+extraRaw(uv+dx)+extraRaw(uv-dy)+extraRaw(uv+dy))*.5;
+                    weight=11.0;
+                }
+                color=videoSharpnessParameter(color,sum/weight,Processing.x);
+            }
             return clamp(color,0.0,1.0);
         }
         #if DISPLAY_TECHNOLOGY == 5

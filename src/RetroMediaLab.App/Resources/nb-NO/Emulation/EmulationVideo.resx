@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Maskinvaregjengivelse</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Gjengivelsesmodus</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Maskinvaregjengivelse bruker grafikk-API-et som er valgt for programmet, hvis emulatoren støtter det.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Opprinnelig (ingen rettelse)</value></data>
 </root>

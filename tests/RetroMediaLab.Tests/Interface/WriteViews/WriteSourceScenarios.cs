@@ -34,7 +34,11 @@ internal static class WriteSourceScenarios
         Assert.Contains("Format.amiga.amigados", view.FormatBlock.DetectionText.Text);
         await controller.BrowseSourceAsync();
         Assert.Null(view.FormatBlock.FormatCombo.SelectedItem); Assert.Equal(Visibility.Visible, view.FormatBlock.FormatCombo.Visibility);
-        Assert.Equal(3, view.FormatBlock.FormatCombo.Items.Count);
+        var adfFormats = catalog.Formats.Where(format => format.Family != "Raw" && format.SupportsPhysicalWrite
+            && format.Extensions.Any(extension => extension.Extension == ".adf")).Select(format => format.Id).ToArray();
+        Assert.Contains("amiga.amigados", adfFormats);
+        Assert.Contains("acorn.adfs.800", adfFormats);
+        Assert.Equal(adfFormats, view.FormatBlock.FormatCombo.Items.Cast<DiskFormat>().Select(format => format.Id));
         view.FormatBlock.FormatCombo.SelectedIndex = 0;
         await controller.BrowseSourceAsync();
         Assert.Equal("unknown.synthetic", model.Write.SourcePath); Assert.Null(view.FormatBlock.FormatCombo.SelectedItem);

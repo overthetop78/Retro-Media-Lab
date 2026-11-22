@@ -294,10 +294,12 @@ public sealed class AmstradCpcMediaFormatTests
                 var visualization = MediaVisualizationComposition.CreateDefault().Registry.CreateDescriptor(document);
                 Assert.Equal(MediaRepresentationKind.Blocks, visualization.RepresentationKind);
                 Assert.Equal(MediaVisualizationProgressUnit.BlockRange, visualization.ProgressUnit);
-                Assert.True(visualization.Elements.Count >= 2);
                 var blocks = Assert.IsType<BlockMediaImageRepresentation>(document.Representation);
-                Assert.Equal(source.LongLength, visualization.Elements.Sum(element => element.Length));
-                Assert.Equal(source.LongLength, visualization.Elements[^1].Position + visualization.Elements[^1].Length);
+                Assert.Collection(visualization.Elements,
+                    first => { Assert.Equal(0L, first.Position); Assert.Equal(1L, first.Length); },
+                    second => { Assert.Equal(1L, second.Position); Assert.Equal(1L, second.Length); });
+                Assert.Equal(source.LongLength, blocks.Ranges.Sum(range => range.Length));
+                Assert.Equal(7L, blocks.Ranges[^1].Length);
                 var explorer = new ConsoleCartridgeFileSystemReader();
                 Assert.Equal(2, explorer.Read(document, Volume(document)).Entries.Count);
                 var invalidMetadata = new Dictionary<string, string>(document.Metadata, StringComparer.Ordinal)

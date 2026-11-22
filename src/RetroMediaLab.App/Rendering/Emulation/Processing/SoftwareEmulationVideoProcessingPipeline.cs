@@ -74,12 +74,12 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         ApplySignalConnection(linear, frame.Width, frame.Height, frame.Sequence, normalized.SignalSimulation, signalStandard);
         ApplySignalStandard(linear, frame.Width, frame.Height, normalized.SignalSimulation, signalStandard);
         linear = Resample(linear, frame.Width, frame.Height, outputSize.Width, outputSize.Height, normalized.Sampling);
-        VideoBrightnessParameterFunctions.Apply(linear, normalized.Adjustments.Brightness);
         VideoContrastParameterFunctions.Apply(linear, normalized.Adjustments.Contrast);
+        VideoBrightnessParameterFunctions.Apply(linear, normalized.Adjustments.Brightness);
         VideoGammaParameterFunctions.Apply(linear, normalized.Adjustments.Gamma);
         VideoSaturationParameterFunctions.Apply(linear, normalized.Adjustments.Saturation);
-        ApplyDisplayTechnology(linear, sourceSize.Width, sourceSize.Height, outputSize.Width, outputSize.Height, frame.Sequence, normalized);
         VideoSharpnessParameterFunctions.Apply(linear, outputSize.Width, outputSize.Height, normalized.Adjustments.Sharpness);
+        ApplyDisplayTechnology(linear, sourceSize.Width, sourceSize.Height, outputSize.Width, outputSize.Height, frame.Sequence, normalized);
         FilterVhs.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, normalized.Stylistic.Vhs);
         FilterChromaticAberration.Apply(linear, outputSize.Width, outputSize.Height, normalized.Stylistic.ChromaticAberration);
         FilterBloom.Apply(linear, outputSize.Width, outputSize.Height, normalized.Stylistic.Bloom);

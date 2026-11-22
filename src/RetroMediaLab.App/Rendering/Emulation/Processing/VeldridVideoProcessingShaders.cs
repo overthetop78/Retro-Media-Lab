@@ -3,8 +3,7 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 internal static partial class VeldridVideoProcessingShaders
 {
     internal static string Fragment(RetroMediaLab.VideoPresentation.Enums.EmulationVideoSampling sampling,
-        RetroMediaLab.VideoPresentation.Enums.EmulationVideoDisplayTechnology displayTechnology =
-            RetroMediaLab.VideoPresentation.Enums.EmulationVideoDisplayTechnology.Normal)
+        RetroMediaLab.VideoPresentation.Enums.EmulationVideoDisplayTechnology displayTechnology, bool outputEncodesSrgb)
     {
         var (dependencies, function) = sampling switch
         {
@@ -69,7 +68,8 @@ internal static partial class VeldridVideoProcessingShaders
                     + FilterXbr.VeldridShader + FilterSabr.VeldridShader, "sabrCompactSample"),
             _ => throw new ArgumentOutOfRangeException(nameof(sampling), sampling, null)
         };
-        return FragmentHeader + $"#define DISPLAY_TECHNOLOGY {(int)displayTechnology}\n" + dependencies
+        return FragmentHeader + $"#define DISPLAY_TECHNOLOGY {(int)displayTechnology}\n"
+            + (outputEncodesSrgb ? "#define OUTPUT_ENCODES_SRGB 1\n" : string.Empty) + dependencies
             + $"vec3 sourceColor(vec2 uv){{return {function}(uv);}}\n"
             + VideoBrightnessParameterFunctions.Shader + VideoContrastParameterFunctions.Shader
             + VideoGammaParameterFunctions.Shader + VideoSaturationParameterFunctions.Shader

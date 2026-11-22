@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Navighează</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Confirmă</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Du-te înapoi</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Afișează sau ascunde statisticile de emulare pe tot ecranul</value></data>
 </root>

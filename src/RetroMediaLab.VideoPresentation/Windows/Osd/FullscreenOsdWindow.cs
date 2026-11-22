@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace RetroMediaLab.VideoPresentation.Windows.Osd;
 
@@ -13,6 +14,10 @@ public sealed partial class FullscreenOsdWindow : Window
     private readonly TextBlock _game;
     private readonly Border _mainPanel;
     private readonly FooterHints? _hints;
+    private readonly DispatcherTimer _idleTimer = new(DispatcherPriority.Background)
+    {
+        Interval = TimeSpan.FromSeconds(15)
+    };
 
     public FullscreenOsdWindow(Window owner, FrameworkElement displayHost, string machineName, string? gameName,
         IReadOnlyList<Entry> entries, Action<Exception> showError, string shaderLoadingLabel, FooterHints? hints = null)
@@ -79,6 +84,11 @@ public sealed partial class FullscreenOsdWindow : Window
         InitializeMenu(entries, showError);
         displayHost.SizeChanged += DisplayHostSizeChanged;
         owner.LocationChanged += OwnerLocationChanged;
+        _idleTimer.Tick += IdleTimerElapsed;
+        PreviewMouseMove += OsdPointerActivity;
+        PreviewMouseDown += OsdPointerActivity;
+        PreviewMouseUp += OsdPointerActivity;
+        PreviewMouseWheel += OsdPointerActivity;
     }
 
     public void SetGameName(string? gameName)
@@ -93,10 +103,43 @@ public sealed partial class FullscreenOsdWindow : Window
         Keyboard.Focus(this);
     }
 
+    protected override void OnContentRendered(EventArgs e)
+    {
+        base.OnContentRendered(e);
+        RestartIdleTimer();
+    }
+
+    private void RestartIdleTimer()
+    {
+        if (_closed) return;
+        _idleTimer.Stop();
+        _idleTimer.Start();
+    }
+
+    private void OsdPointerActivity(object sender, MouseEventArgs e)
+    {
+        if (_mainPanel.IsMouseOver || _submenu.IsMouseOver || _editBar.IsMouseOver
+            || _editSlider?.IsMouseCaptureWithin == true)
+            RestartIdleTimer();
+    }
+
+    private void IdleTimerElapsed(object? sender, EventArgs e)
+    {
+        if (_editSlider?.IsMouseCaptureWithin == true) return;
+        _idleTimer.Stop();
+        Close();
+    }
+
     protected override void OnClosed(EventArgs e)
     {
         try
         {
+            _idleTimer.Stop();
+            _idleTimer.Tick -= IdleTimerElapsed;
+            PreviewMouseMove -= OsdPointerActivity;
+            PreviewMouseDown -= OsdPointerActivity;
+            PreviewMouseUp -= OsdPointerActivity;
+            PreviewMouseWheel -= OsdPointerActivity;
             _displayHost.SizeChanged -= DisplayHostSizeChanged;
             _owner.LocationChanged -= OwnerLocationChanged;
             _closed = true;

@@ -108,11 +108,11 @@ internal sealed class OpenGlVideoProgramUniforms
     {
         var adjustments = configuration.Adjustments;
         _api.SetUniform(_adjustments,
-            adjustments.Brightness / OpenGlVideoConstants.BrightnessUniformDivisor,
-            MathF.Pow(2f, adjustments.Contrast / OpenGlVideoConstants.ContrastExponentDivisor),
-            (float)EmulationImageAdjustmentFunctions.GammaExponent(adjustments.Gamma),
-            1f + adjustments.Saturation / OpenGlVideoConstants.SaturationUniformDivisor);
-        _api.SetUniform(_processing, adjustments.Sharpness / OpenGlVideoConstants.SharpnessUniformDivisor, (float)configuration.Sampling, sourceWidth, sourceHeight);
+            EmulationImageAdjustmentFunctions.BrightnessAmount(adjustments.Brightness),
+            EmulationImageAdjustmentFunctions.ContrastGain(adjustments.Contrast),
+            EmulationImageAdjustmentFunctions.GammaParameter(adjustments.Gamma),
+            EmulationImageAdjustmentFunctions.SaturationGain(adjustments.Saturation));
+        _api.SetUniform(_processing, EmulationImageAdjustmentFunctions.SharpnessAmount(adjustments.Sharpness), (float)configuration.Sampling, sourceWidth, sourceHeight);
         _api.SetUniform(_output, outputWidth, outputHeight, 0f, 0f);
 
         var crt = CrtVideoShaderParameters.From(configuration);

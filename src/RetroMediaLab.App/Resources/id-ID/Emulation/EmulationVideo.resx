@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Rendering perangkat keras</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Mode rendering</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Rendering perangkat keras menggunakan API grafis yang dipilih untuk aplikasi jika didukung oleh emulator.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Asli (tidak ada koreksi)</value></data>
 </root>

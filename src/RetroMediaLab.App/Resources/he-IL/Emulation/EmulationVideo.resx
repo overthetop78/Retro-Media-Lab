@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>רינדור בחומרה</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>מצב רינדור</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>רינדור בחומרה משתמש ב־API הגרפי שנבחר עבור היישום, אם האמולטור תומך בו.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>מקורי (ללא תיקון)</value></data>
 </root>

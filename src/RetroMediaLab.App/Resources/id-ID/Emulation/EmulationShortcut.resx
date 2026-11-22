@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Navigasi</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Konfirmasi</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Kembali</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Ubah statistik emulasi layar penuh</value></data>
 </root>

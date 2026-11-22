@@ -113,6 +113,7 @@ public static class EmulationResourceKeys
     public const string VideoParameterBrightness = "Emulation.Video.Parameter.Brightness";
     public const string VideoParameterContrast = "Emulation.Video.Parameter.Contrast";
     public const string VideoParameterGamma = "Emulation.Video.Gamma";
+    public const string VideoGammaOriginal = "Emulation.Video.Gamma.Original";
     public const string VideoParameterSaturation = "Emulation.Video.Parameter.Saturation";
     public const string VideoParameterSharpness = "Emulation.Video.Parameter.Sharpness";
     public const string VideoParameterDedithering = "Emulation.Video.Parameter.Dedithering";

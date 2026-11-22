@@ -159,6 +159,7 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
     void IEmulationAudio.SetOutputFactory(Func<IAudioOutput?>? factory) => _audio.ReplaceFactory(factory);
     string IEmulationRuntime.EmulatorName => CoreName;
     string IEmulationRuntime.EmulatorVersion => CoreVersion;
+    public long? ProcessorClockHz => _core.ProcessorClockHz;
     IReadOnlySet<string> IEmulationRuntime.SupportedContentExtensions => SupportedContentExtensions;
     IReadOnlyDictionary<EmulationMediaSlot, bool> IEmulationRuntime.MediaActivity => _mediaCapabilities?.MediaActivity(Configuration, _core.LedStates) ?? EmulationMediaActivityFunctions.FromLedStates(_core.LedStates);
     IReadOnlyList<EmulationOption> IEmulationRuntime.AvailableOptions => AvailableOptions

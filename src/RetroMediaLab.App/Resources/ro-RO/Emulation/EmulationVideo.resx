@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Randare hardware</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Mod de randare</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Randarea hardware folosește API-ul grafic selectat pentru aplicație, dacă emulatorul îl acceptă.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Original (fără corecție)</value></data>
 </root>

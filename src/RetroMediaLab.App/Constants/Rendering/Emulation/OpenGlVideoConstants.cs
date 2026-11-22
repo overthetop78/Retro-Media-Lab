@@ -17,10 +17,6 @@ internal static class OpenGlVideoConstants
     internal const int ShaderSourceTerminatorByteCount = 1;
     internal const long ShaderSequenceCycle = 4_096;
     internal const float PercentageDivisor = 100f;
-    internal const float BrightnessUniformDivisor = 20f;
-    internal const float ContrastExponentDivisor = 5f;
-    internal const float SaturationUniformDivisor = 10f;
-    internal const float SharpnessUniformDivisor = 10f;
     internal const uint PixelFormatDrawToWindow = 4;
     internal const uint PixelFormatSupportOpenGl = 32;
     internal const uint PixelFormatDoubleBuffer = 1;

@@ -566,11 +566,18 @@ internal sealed class SaturnMachine : IDisposable
         _slaveRunning = false;
     }
 
-    private void ChangeTiming(int frequencyType)
+    internal long ProcessorClockHz => (long)Math.Round(Sh2Frequency(_sh2FrequencyType));
+
+    private double Sh2Frequency(int frequencyType)
     {
         double frequencyBase = IsPal ? 28437500.0 : (39375000.0 / 11.0) * 8.0;
         double frequencyMultiplier = frequencyType == 0 ? 15.0 / 16.0 : 1.0;
-        double shiftedFrequency = (frequencyBase * frequencyMultiplier) * (1 << TimingBits);
+        return frequencyBase * frequencyMultiplier;
+    }
+
+    private void ChangeTiming(int frequencyType)
+    {
+        double shiftedFrequency = Sh2Frequency(frequencyType) * (1 << TimingBits);
         double shiftedUsec = 1.0e6 * (1 << TimingBits);
         double decilineTime = IsPal ? 1.0 / 50 / 313 / 10 : 1.0 / (60 / 1.001) / 263 / 10;
 

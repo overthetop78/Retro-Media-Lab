@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hardwarematige rendering</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Rendermodus</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hardwarematige rendering gebruikt de voor de toepassing gekozen grafische API, als de emulator deze ondersteunt.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Oorspronkelijk (geen correctie)</value></data>
 </root>

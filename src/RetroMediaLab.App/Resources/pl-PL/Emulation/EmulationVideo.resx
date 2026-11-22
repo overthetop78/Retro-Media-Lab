@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Renderowanie sprzętowe</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Tryb renderowania</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Renderowanie sprzętowe korzysta z graficznego API wybranego dla aplikacji, jeśli emulator je obsługuje.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Oryginał (bez korekty)</value></data>
 </root>

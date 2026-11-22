@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>ナビゲート</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>確認する</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>戻る</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>フルスクリーンエミュレーション統計をトグル</value></data>
 </root>

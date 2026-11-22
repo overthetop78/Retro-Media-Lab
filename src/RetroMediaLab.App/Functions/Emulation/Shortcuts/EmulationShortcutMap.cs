@@ -42,7 +42,8 @@ internal static class EmulationShortcutMap
         ParseShortcuts(mappings?.Where(mapping => EmulationShortcutDefaults.OsdValues.ContainsKey(mapping.Key)));
 
     internal static bool IsOsdToggle(string action) =>
-        OsdPrimaryAction(action) is EmulationShortcutDefaults.OsdWithPause or EmulationShortcutDefaults.OsdWithoutPause;
+        OsdPrimaryAction(action) is EmulationShortcutDefaults.OsdWithPause or EmulationShortcutDefaults.OsdWithoutPause
+            or EmulationShortcutDefaults.OsdStatistics;
 
     internal static string OsdPrimaryAction(string action) =>
         action.EndsWith(EmulationShortcutDefaults.AlternativeSuffix, StringComparison.Ordinal)
@@ -78,6 +79,8 @@ internal static class EmulationShortcutMap
         Shortcut(EmulationShortcutDefaults.ToggleMute, "Emulation.Shortcut.Mute"),
         .. OsdShortcut(EmulationShortcutDefaults.OsdWithPause, "OsdWithPause"),
         .. OsdShortcut(EmulationShortcutDefaults.OsdWithoutPause, "OsdWithoutPause"),
+        new(EmulationShortcutDefaults.OsdStatistics, "Emulation.Shortcut.OsdStatistics",
+            EmulationShortcutDefaults.OsdValues[EmulationShortcutDefaults.OsdStatistics]),
         .. OsdShortcut(EmulationShortcutDefaults.OsdUp, "OsdUp"),
         .. OsdShortcut(EmulationShortcutDefaults.OsdDown, "OsdDown"),
         .. OsdShortcut(EmulationShortcutDefaults.OsdLeft, "OsdLeft"),

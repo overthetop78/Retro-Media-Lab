@@ -19,6 +19,7 @@ public static class EmulationShortcutDefaults
     public const string OpenSettings = "open-machine-settings";
     public const string OsdWithPause = "osd-with-pause";
     public const string OsdWithoutPause = "osd-without-pause";
+    public const string OsdStatistics = "osd-statistics";
     public const string OsdUp = "osd-up";
     public const string OsdDown = "osd-down";
     public const string OsdLeft = "osd-left";
@@ -48,6 +49,7 @@ public static class EmulationShortcutDefaults
         [OsdWithPause + AlternativeSuffix] = "",
         [OsdWithoutPause] = "Ctrl+Shift+Multiply",
         [OsdWithoutPause + AlternativeSuffix] = "",
+        [OsdStatistics] = "Ctrl+Shift+Subtract",
         [OsdUp] = "Up",
         [OsdUp + AlternativeSuffix] = "",
         [OsdDown] = "Down",

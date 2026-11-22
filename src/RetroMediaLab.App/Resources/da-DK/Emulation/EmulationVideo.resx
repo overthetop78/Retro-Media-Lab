@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hardwarebaseret gengivelse</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Gengivelsestilstand</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hardwarebaseret gengivelse bruger det grafik-API, der er valgt til programmet, hvis emulatoren understøtter det.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Oprindelig (ingen korrektion)</value></data>
 </root>

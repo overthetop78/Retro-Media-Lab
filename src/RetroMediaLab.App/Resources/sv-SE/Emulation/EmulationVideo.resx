@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hårdvarurendering</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Renderingsläge</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hårdvarurendering använder det grafik-API som valts för programmet, om emulatorn stöder det.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Ursprunglig (ingen korrigering)</value></data>
 </root>

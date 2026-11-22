@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Апаратний рендеринг</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Режим рендерингу</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Апаратний рендеринг використовує графічний API, вибраний для програми, якщо емулятор його підтримує.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Оригінальна (не корекція)</value></data>
 </root>

@@ -22,10 +22,9 @@ internal sealed partial class MachineController
                         (value, draft) => value with { Brightness = draft }),
                     Adjustment(EmulationResourceKeys.VideoParameterContrast, value => value.Contrast,
                         (value, draft) => value with { Contrast = draft }),
-                    Adjustment(EmulationResourceKeys.VideoParameterGamma, value => value.Gamma,
-                        (value, draft) => value with { Gamma = draft }),
+                    OsdGamma(),
                     Adjustment(EmulationResourceKeys.VideoParameterSaturation, value => value.Saturation,
-                        (value, draft) => value with { Saturation = draft }),
+                        (value, draft) => value with { Saturation = draft }, EmulationImageAdjustmentFunctions.FormatSaturation),
                     Adjustment(EmulationResourceKeys.VideoParameterSharpness, value => value.Sharpness,
                         (value, draft) => value with { Sharpness = draft })),
             VideoGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing,
@@ -96,26 +95,38 @@ internal sealed partial class MachineController
 
     private Entry VideoNumber(string label, Func<EmulationVideoProcessingConfiguration, int> read,
         Func<EmulationVideoProcessingConfiguration, int, EmulationVideoProcessingConfiguration> update,
-        int minimum, int maximum, bool signed = false)
+        int minimum, int maximum, bool signed = false, Func<int, string>? format = null, bool showSlider = true)
     {
         EmulationVideoProcessingConfiguration WithValue(int value) => update(_video.VideoProcessing, value);
         return new(LocExtension.Get(label), Value: new(
             () => read(_video.VideoProcessing),
-            value => value.ToString(signed ? "+0;-0;0" : "0", CultureInfo.CurrentCulture),
+            format ?? (value => value.ToString(signed ? "+0;-0;0" : "0", CultureInfo.CurrentCulture)),
             (value, direction) => Math.Clamp(value + direction, minimum, maximum),
             value => _video.SetVideoProcessing(WithValue(value)),
             value => SaveOsdVideoProfileAsync(profile => profile with
             {
                 Processing = update(profile.Processing ?? new EmulationVideoProcessingConfiguration(), value)
             }),
-            Range: (minimum, maximum)));
+            Range: showSlider ? (minimum, maximum) : null));
+    }
+
+    private Entry OsdGamma()
+    {
+        var curves = EmulationImageAdjustmentFunctions.GammaCurves.ToArray();
+        var original = LocExtension.Get(EmulationResourceKeys.VideoGammaOriginal);
+        return VideoNumber(EmulationResourceKeys.VideoParameterGamma,
+            settings => Math.Max(0, Array.IndexOf(curves, settings.Adjustments.Gamma)),
+            (settings, index) => settings with { Adjustments = settings.Adjustments with { Gamma = curves[index] } },
+            0, curves.Length - 1,
+            format: index => EmulationImageAdjustmentFunctions.FormatGamma(curves[index], original), showSlider: false);
     }
 
     private Entry Adjustment(string label, Func<EmulationImageAdjustments, int> read,
-        Func<EmulationImageAdjustments, int, EmulationImageAdjustments> update) =>
+        Func<EmulationImageAdjustments, int, EmulationImageAdjustments> update, Func<int, string>? format = null) =>
         VideoNumber(label, settings => read(settings.Adjustments),
             (settings, value) => settings with { Adjustments = update(settings.Adjustments, value) },
-            EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum, signed: true);
+            EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum,
+            format: format ?? EmulationImageAdjustmentFunctions.FormatSigned);
 
     private FullscreenOsdWindow.Entry VideoChoice<T>(string label, IReadOnlyDictionary<T, string> keys,
         Func<EmulationVideoProcessingConfiguration, T> read, Func<EmulationVideoProcessingConfiguration, T, EmulationVideoProcessingConfiguration> update)

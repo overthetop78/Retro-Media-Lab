@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>퀵메뉴</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>으로</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>전체 화면 에뮬레이션 통계 표시 또는 숨기기</value></data>
 </root>

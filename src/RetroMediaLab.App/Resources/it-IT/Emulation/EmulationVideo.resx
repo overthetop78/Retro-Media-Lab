@@ -302,4 +302,5 @@
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Rendering hardware</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Modalità di rendering</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Il rendering hardware usa l’API grafica selezionata per l’applicazione, se l’emulatore la supporta.</value></data>
+  <data name="Emulation.Video.Gamma.Original"><value>Originale (non correzione)</value></data>
 </root>

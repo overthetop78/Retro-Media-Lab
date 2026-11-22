@@ -33,4 +33,6 @@ internal sealed record MachineControllerOptions(
     IReadOnlyDictionary<string, string>? ShortcutSettings = null,
     IEmulationModule? Module = null,
     IEmulationConfiguration? Configuration = null,
-    Func<IReadOnlyDictionary<string, string>>? ReadShortcutSettings = null);
+    Func<IReadOnlyDictionary<string, string>>? ReadShortcutSettings = null,
+    Func<bool>? ReadFullscreenStatistics = null,
+    Action<bool>? WriteFullscreenStatistics = null);

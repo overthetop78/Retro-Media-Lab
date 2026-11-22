@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Navigera</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Bekräftelse</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Gå tillbaka</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Visa eller dölj emuleringsstatistik i helskärmsläge</value></data>
 </root>

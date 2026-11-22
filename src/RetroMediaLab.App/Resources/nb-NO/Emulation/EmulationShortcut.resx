@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Knap</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Bekreft</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Gå tilbake</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Slå av/på full emuleringsstatistikk</value></data>
 </root>

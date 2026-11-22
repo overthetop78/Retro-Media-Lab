@@ -1,6 +1,7 @@
 using RetroMediaLab.App.Services.Dialogs;
 using RetroMediaLab.Infrastructure.Settings.Emulation;
 using RetroMediaLab.App.Constants.Emulation;
+using RetroMediaLab.App.Constants.Controls.Visual;
 using RetroMediaLab.App.Constants.Localization;
 using RetroMediaLab.App.Constants.Machine;
 using RetroMediaLab.App.Contracts.Machine;
@@ -59,6 +60,8 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
     private Window? _fullscreenWindow;
     private Grid? _fullscreenHost;
     private FullscreenOsdIndicator? _fullscreenShaderLoading;
+    private FullscreenStatisticsOsd? _fullscreenStatistics;
+    private bool _showFullscreenStatistics;
     private FullscreenOsdWindow? _osd;
     private bool _osdPausedEmulation;
     private readonly SemaphoreSlim _osdToggleGate = new(1);
@@ -329,7 +332,11 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         _input.SetPowered(_session.IsPowered);
         _commands.SetPowered(_session.IsPowered);
         _video.SetVisible(_session.IsPowered);
-        if (!_session.IsPowered) _commands.Status.Text = string.Empty;
+        if (!_session.IsPowered)
+        {
+            _commands.Status.Text = string.Empty;
+            ResetStatistics();
+        }
         RebuildMediaDevices();
     }
 
@@ -344,7 +351,8 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         await _session.TogglePauseAsync();
         _video.ResetFrameRate();
         if (_session.Machine.Video.LatestFrame is { } frame)
-            MachinePresentationFunctions.UpdateStatus(_commands.Presentation, frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond);
+            MachinePresentationFunctions.UpdateStatus(_commands.Presentation, frame, _session.Machine.Video.FramesPerSecond,
+                _video.MeasuredFramesPerSecond, processorClockHz: _session.Machine.Runtime.ProcessorClockHz);
         _commands.SetPaused(_session.Machine.State == EmulationMachineState.Paused);
     }
 
@@ -398,8 +406,6 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
             VerticalAlignment = VerticalAlignment.Stretch
         };
         _fullscreenHost.Children.Add(_view.Screen);
-        _fullscreenShaderLoading = new FullscreenOsdIndicator(_fullscreenHost, LocExtension.Get(EmulationResourceKeys.VideoShaderLoading));
-        _video.SetDisplayHost(_fullscreenHost);
         _fullscreenWindow = new Window
         {
             Title = _options.WindowTitle,
@@ -408,12 +414,39 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
             WindowState = WindowState.Maximized,
             Background = Brushes.Black
         };
-        _fullscreenWindow.Closed += FullscreenWindowClosed;
-        _fullscreenWindow.ContentRendered += FullscreenContentRendered;
-        _fullscreenWindow.Show();
-        _fullscreenWindow.Activate();
-        VideoShaderLoadingChanged(_video.IsShaderLoading);
-        _input.CompleteHostTransition();
+        bool shown = false;
+        try
+        {
+            _fullscreenShaderLoading = new FullscreenOsdIndicator(_fullscreenHost, LocExtension.Get(EmulationResourceKeys.VideoShaderLoading));
+            _fullscreenStatistics = CreateFullscreenStatistics(_fullscreenHost);
+            _showFullscreenStatistics = _options.ReadFullscreenStatistics?.Invoke() ?? _showFullscreenStatistics;
+            if (!_session.IsPowered) ResetStatistics();
+            _video.SetDisplayHost(_fullscreenHost);
+            _fullscreenWindow.Closed += FullscreenWindowClosed;
+            _fullscreenWindow.ContentRendered += FullscreenContentRendered;
+            _fullscreenWindow.Show();
+            _fullscreenWindow.Activate();
+            VideoShaderLoadingChanged(_video.IsShaderLoading);
+            _input.CompleteHostTransition();
+            shown = true;
+        }
+        finally
+        {
+            if (!shown) ExitFullscreen();
+        }
+    }
+
+    private FullscreenStatisticsOsd CreateFullscreenStatistics(FrameworkElement host)
+    {
+        var status = _commands.Presentation;
+        return new FullscreenStatisticsOsd(host, ControlVisualConstants.IconFont,
+        [
+            new(MachineCommandGlyphConstants.Renderer, status.RendererStatus, MachinePresentationConstants.RendererStatusColor),
+            new(IconGlyphs.Display, status.SizeStatus, MachinePresentationConstants.SizeStatusColor),
+            new(IconGlyphs.Play, status.FpsStatus, MachinePresentationConstants.FpsStatusColor),
+            new(IconGlyphs.Sync, status.FrequencyStatus, MachinePresentationConstants.FrequencyStatusColor),
+            new(IconGlyphs.Processor, status.ExecutionStatus, MachinePresentationConstants.ExecutionStatusColor)
+        ]);
     }
 
     private void ExitFullscreen(bool closeWindow = true)
@@ -428,8 +461,14 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         _fullscreenHost = null;
         _fullscreenWindow = null;
         var shaderPopup = _fullscreenShaderLoading;
+        var statistics = _fullscreenStatistics;
         _fullscreenShaderLoading = null;
-        try { shaderPopup?.Dispose(); }
+        _fullscreenStatistics = null;
+        try
+        {
+            try { statistics?.Dispose(); }
+            finally { shaderPopup?.Dispose(); }
+        }
         finally
         {
             try { CloseOsd(); }
@@ -454,8 +493,26 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
 
     private void FullscreenContentRendered(object? sender, EventArgs args)
     {
+        _fullscreenStatistics?.SetVisible(_showFullscreenStatistics);
         _video.FitScreen();
         _input.RestoreFocus();
+    }
+
+    private void ToggleFullscreenStatistics()
+    {
+        if (_fullscreenStatistics is not { } statistics) return;
+        _showFullscreenStatistics = !_showFullscreenStatistics;
+        _options.WriteFullscreenStatistics?.Invoke(_showFullscreenStatistics);
+        statistics.SetVisible(_showFullscreenStatistics);
+    }
+
+    private void ResetStatistics()
+    {
+        var status = _commands.Presentation;
+        status.SizeStatus.Text = "—";
+        status.FrequencyStatus.Text = "—";
+        status.FpsStatus.Text = "—";
+        status.ExecutionStatus.Text = "—";
     }
 
     private async Task ToggleOsdAsync(bool pause)
@@ -822,6 +879,9 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
                 case EmulationShortcutDefaults.OsdWithoutPause:
                     await ToggleOsdAsync(false);
                     break;
+                case EmulationShortcutDefaults.OsdStatistics:
+                    ToggleFullscreenStatistics();
+                    break;
                 case EmulationShortcutDefaults.OsdUp or EmulationShortcutDefaults.OsdDown
                     or EmulationShortcutDefaults.OsdLeft or EmulationShortcutDefaults.OsdRight
                     or EmulationShortcutDefaults.OsdConfirm or EmulationShortcutDefaults.OsdCancel:
@@ -860,7 +920,8 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
 
     private void FramePresented(object? sender, VideoFrame frame)
     {
-        MachinePresentationFunctions.UpdateStatus(_commands.Presentation, frame, _session.Machine.Video.FramesPerSecond, _video.MeasuredFramesPerSecond, _video.ExecutionRate);
+        MachinePresentationFunctions.UpdateStatus(_commands.Presentation, frame, _session.Machine.Video.FramesPerSecond,
+            _video.MeasuredFramesPerSecond, _video.ExecutionRate, _session.Machine.Runtime.ProcessorClockHz);
         var now = DateTime.UtcNow;
         var activityStates = _session.Machine.Runtime.MediaActivity;
         if (_session.Machine.TapeTransport is { } tape) UpdateTapeTransport(tape);

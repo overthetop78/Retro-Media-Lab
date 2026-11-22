@@ -3,7 +3,6 @@ using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.Emulation.Constants;
 using RetroMediaLab.Emulation.Contracts;
 using RetroMediaLab.Emulation.Dictionaries;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -25,8 +24,9 @@ internal static class EmulationImageParametersSettingsBlock
         var sliders = new UniformGrid { Columns = 5, HorizontalAlignment = HorizontalAlignment.Stretch };
         sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Brightness, adjustments.Brightness, value => changed(current => current with { Brightness = value })));
         sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Contrast, adjustments.Contrast, value => changed(current => current with { Contrast = value })));
-        sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Gamma, adjustments.Gamma, value => changed(current => current with { Gamma = value })));
-        sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Saturation, adjustments.Saturation, value => changed(current => current with { Saturation = value })));
+        sliders.Children.Add(GammaChoice(adjustments.Gamma, value => changed(current => current with { Gamma = value })));
+        sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Saturation, adjustments.Saturation,
+            value => changed(current => current with { Saturation = value }), EmulationImageAdjustmentFunctions.FormatSaturation));
         sliders.Children.Add(VerticalSlider(EmulationVideoProcessingCatalog.Sharpness, adjustments.Sharpness, value => changed(current => current with { Sharpness = value })));
         block.Children.Add(sliders);
         if (additionalSettings is not null) block.Children.Add(additionalSettings);
@@ -34,8 +34,41 @@ internal static class EmulationImageParametersSettingsBlock
 
     }
 
-    private static FrameworkElement VerticalSlider(string id, int value, Action<int> changed)
+    private static FrameworkElement GammaChoice(int setting, Action<int> changed)
     {
+        var original = LocExtension.Get(EmulationResourceKeys.VideoGammaOriginal);
+        var column = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(8, 0, 8, 0) };
+        var label = LocExtension.Get(EmulationResourceKeys.VideoParameterGamma);
+        column.Children.Add(new TextBlock
+        {
+            Text = label,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 8)
+        });
+        var choice = new ComboBox
+        {
+            ItemsSource = EmulationImageAdjustmentFunctions.GammaCurves.Select(value => new
+            {
+                Value = value,
+                Label = EmulationImageAdjustmentFunctions.FormatGamma(value, original)
+            }),
+            DisplayMemberPath = "Label",
+            SelectedValuePath = "Value",
+            SelectedValue = EmulationImageAdjustmentFunctions.NormalizeGamma(setting)
+        };
+        AutomationProperties.SetAutomationId(choice, EmulationVideoProcessingCatalog.Gamma);
+        AutomationProperties.SetName(choice, label);
+        choice.SelectionChanged += (_, _) =>
+        {
+            if (choice.SelectedValue is int value) changed(value);
+        };
+        column.Children.Add(choice);
+        return column;
+    }
+
+    private static FrameworkElement VerticalSlider(string id, int value, Action<int> changed, Func<int, string>? format = null)
+    {
+        format ??= EmulationImageAdjustmentFunctions.FormatSigned;
         var column = new StackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -62,7 +95,7 @@ internal static class EmulationImageParametersSettingsBlock
         AutomationProperties.SetAutomationId(slider, id);
         var displayedValue = new TextBlock
         {
-            Text = value.ToString(CultureInfo.CurrentCulture),
+            Text = format(value),
             MinWidth = 36,
             TextAlignment = TextAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -71,7 +104,7 @@ internal static class EmulationImageParametersSettingsBlock
         slider.ValueChanged += (_, _) =>
         {
             var number = (int)slider.Value;
-            displayedValue.Text = number.ToString(CultureInfo.CurrentCulture);
+            displayedValue.Text = format(number);
             changed(number);
         };
         column.Children.Add(slider);

@@ -38,7 +38,9 @@ internal sealed partial class MachineController
             PersistMountedMedia: media => EmulationMachineRuntimeService.PersistMountedMediaAsync(selected, media),
             OpenSettings: OpenSettingsAsync,
             ShortcutSettings: settings.EmulationShortcuts, Module: module, Configuration: runtime.Configuration,
-            ReadShortcutSettings: () => settings.EmulationShortcuts));
+            ReadShortcutSettings: () => settings.EmulationShortcuts,
+            ReadFullscreenStatistics: () => settings.ShowFullscreenEmulationStatistics,
+            WriteFullscreenStatistics: visible => settings.ShowFullscreenEmulationStatistics = visible));
         return (controller, runtime);
 
         async Task OpenSettingsAsync()

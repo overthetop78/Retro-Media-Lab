@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Navigare</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Conferma</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Torna indietro</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Mostra o nascondi le statistiche di emulazione a schermo intero</value></data>
 </root>

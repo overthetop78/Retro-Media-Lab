@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Naiv</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Megerősítés</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Menj vissza!</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Teljes képernyős emulációs statisztika ki- be kapcsolása</value></data>
 </root>

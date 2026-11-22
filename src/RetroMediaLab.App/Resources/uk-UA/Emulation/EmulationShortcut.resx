@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Навігатор</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Підтвердження</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Повернутися</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Показати або приховати статистику емуляції в повноекранному режимі</value></data>
 </root>

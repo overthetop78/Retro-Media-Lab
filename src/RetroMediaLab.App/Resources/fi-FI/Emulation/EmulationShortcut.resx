@@ -44,4 +44,5 @@
   <data name="Emulation.Shortcut.OsdNavigateHint"><value>Suuntaa</value></data>
   <data name="Emulation.Shortcut.OsdConfirmHint"><value>Vahvista</value></data>
   <data name="Emulation.Shortcut.OsdBackHint"><value>Mene takaisin.</value></data>
+  <data name="Emulation.Shortcut.OsdStatistics"><value>Näytä tai piilota emulointitilastot koko näytön tilassa</value></data>
 </root>
