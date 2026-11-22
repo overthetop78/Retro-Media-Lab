@@ -5,7 +5,7 @@ using RetroMediaLab.MediaEngine.Enums;
 using RetroMediaLab.MediaEngine.Contracts;
 using RetroMediaLab.MediaEngine.Images.Visualization;
 using RetroMediaLab.App.Localization.Extensions;
-using System.IO;
+using RetroMediaLab.App.Presenters.Explorer;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -63,18 +63,15 @@ public partial class VisualizerHeaderSection : UserControl
     {
         Classification.ApplyDetection(formatId, protectionId);
         selectedClassificationFormatId = Classification.SelectedFormatId;
-        detectedFormatsSummary = BuildDetectedFormatsSummary(string.IsNullOrWhiteSpace(formatId) ? [] : [formatId]);
+        detectedFormatsSummary = ExplorerMediaChoicesPresenter.VisualizerDetectedFormatsSummary(ExplorerMediaChoicesPresenter.SingleDetectionId(formatId), formats);
     }
     public void ApplyDetection(string? formatId, string? protectionId, IEnumerable<string> detectedFormatIds, bool includeFlux = true)
     {
-        var ids = detectedFormatIds.Concat(string.IsNullOrWhiteSpace(formatId) ? [] : [formatId]).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var ids = ExplorerMediaChoicesPresenter.DetectionIds(formatId, detectedFormatIds);
         Classification.ApplyDetection(formatId, protectionId, ids);
         selectedClassificationFormatId = Classification.SelectedFormatId;
-        detectedFormatsSummary = BuildDetectedFormatsSummary(ids);
-        var catalog = new DiskClassificationCatalog(formats);
-        var detectedChoices = ids.Select(catalog.ResolveFormat).Where(format => format is not null).Cast<DiskFormat>().DistinctBy(format => format.Id, StringComparer.OrdinalIgnoreCase)
-                .Select(format => new ExplorerFormatChoice(format.Id, $"{format.Family} · {format.DisplayName}"));
-        var choices = (includeFlux ? new[] { new ExplorerFormatChoice(null, "Flux") }.Concat(detectedChoices) : detectedChoices).ToArray();
+        detectedFormatsSummary = ExplorerMediaChoicesPresenter.VisualizerDetectedFormatsSummary(ids, formats);
+        var choices = ExplorerMediaChoicesPresenter.VisualizationRepresentations(ids, formats, includeFlux);
         updatingRepresentationChoice = true;
         RepresentationChoice.ItemsSource = choices;
         RepresentationChoice.SelectedIndex = 0;
@@ -136,18 +133,6 @@ public partial class VisualizerHeaderSection : UserControl
     private void ManualOptionsButton_Click(object sender, RoutedEventArgs e) => ManualOptionsPopup.IsOpen = !ManualOptionsPopup.IsOpen;
 
     private CustomPopupPlacement[] ManualOptionsPopup_Place(Size popupSize, Size targetSize, Point offset) => [new(new Point(targetSize.Width - popupSize.Width, targetSize.Height), PopupPrimaryAxis.Horizontal)];
-
-    private string BuildDetectedFormatsSummary(IEnumerable<string> formatIds)
-    {
-        var ids = formatIds.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        if (ids.Contains(RetroMediaLab.MediaEngine.Constants.TapeImageFormatIds.AtariCas, StringComparer.OrdinalIgnoreCase))
-            return LocExtension.Get("Explorer.DetectedFormats", "Atari 8-bit (Atari CAS)");
-
-        var catalog = new DiskClassificationCatalog(formats);
-        var detected = ids.Select(catalog.ResolveFormat).Where(format => format is not null).Cast<DiskFormat>().DistinctBy(format => format.Id, StringComparer.OrdinalIgnoreCase).Select(format => $"{format.Family} ({format.DisplayName})") .ToArray();
-        var value = detected.Length == 0 ? "\u2014" : string.Join("  \u00b7  ", detected);
-        return LocExtension.Get("Explorer.DetectedFormats", value);
-    }
 
     private sealed record RevolutionChoiceItem(int? Index, string Label);
 }

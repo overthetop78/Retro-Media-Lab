@@ -9,9 +9,7 @@ namespace RetroMediaLab.App.Views.Controls.Common;
 
 public partial class DiskClassificationSelector : UserControl
 {
-    private DiskClassificationCatalog _catalog = new([]);
-    private IReadOnlySet<string> _detectedFormatIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-    private IReadOnlyDictionary<string, string> _detectedFormatByMachine = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    private readonly DiskClassificationChoices _choices = new();
     private bool _updating;
 
     public DiskClassificationSelector() => InitializeComponent();
@@ -40,7 +38,7 @@ public partial class DiskClassificationSelector : UserControl
         var machine = SelectedMachine;
         var format = SelectedFormatId;
         var protection = SelectedProtectionId;
-        _catalog = new DiskClassificationCatalog(formats);
+        _choices.SetCatalog(formats);
         _updating = true;
         RefreshMachines(machine);
         RefreshFormats(format);
@@ -50,7 +48,7 @@ public partial class DiskClassificationSelector : UserControl
 
     public void SelectFormat(string formatId)
     {
-        var format = _catalog.ResolveFormat(formatId);
+        var format = _choices.ResolveFormat(formatId);
         if (format is null) return;
         _updating = true;
         try
@@ -69,9 +67,7 @@ public partial class DiskClassificationSelector : UserControl
 
     public void ApplyDetection(string? detectedFormatId, string? detectedProtectionId, IEnumerable<string> detectedFormatIds)
     {
-        var detected = DiskClassificationDetection.Resolve(_catalog, detectedFormatId, detectedFormatIds);
-        _detectedFormatIds = detected.FormatIds;
-        _detectedFormatByMachine = detected.FormatByMachine;
+        var format = _choices.ApplyDetection(detectedFormatId, detectedFormatIds);
         if (!AutomaticDetection)
         {
             _updating = true;
@@ -81,7 +77,6 @@ public partial class DiskClassificationSelector : UserControl
             return;
         }
 
-        var format = detected.PreferredFormat;
         _updating = true;
         RefreshMachines(format?.Family);
         if (format is null)
@@ -102,32 +97,31 @@ public partial class DiskClassificationSelector : UserControl
 
     private void RefreshFormats(string? selectedId = null)
     {
-        var formats = _catalog.FormatsFor(SelectedMachine).Select(format => new DiskFormatChoice(format, _detectedFormatIds.Contains(format.Id))).ToArray();
+        var (formats, selected) = _choices.Formats(SelectedMachine, selectedId);
         Format.ItemsSource = formats;
-        Format.SelectedItem = formats.FirstOrDefault(item => item.Format.Id.Equals(selectedId, StringComparison.OrdinalIgnoreCase)) ?? formats.FirstOrDefault(item => item.Format.IsCommon) ?? formats.FirstOrDefault();
+        Format.SelectedItem = selected;
     }
 
     private void RefreshMachines(string? selectedMachine = null)
     {
-        var machines = _catalog.Machines.Select(machine => new DiskMachineChoice(machine, _detectedFormatByMachine.ContainsKey(machine))).ToArray();
+        var (machines, selected) = _choices.Machines(selectedMachine);
         Machine.ItemsSource = machines;
-        Machine.SelectedItem = machines.FirstOrDefault(item => item.DisplayName.Equals(selectedMachine, StringComparison.OrdinalIgnoreCase));
+        Machine.SelectedItem = selected;
     }
 
     private void RefreshProtections(string? selectedId = null)
     {
-        var compatible = _catalog.ProtectionsFor(SelectedMachine, SelectedFormatId);
-        var protections = compatible.Count == 0 ? [] : new[] { new DiskProtection("", SelectedMachine ?? "", new HashSet<string>(), "—") }.Concat(compatible).ToArray();
+        var (protections, selected) = _choices.Protections(SelectedMachine, SelectedFormatId, selectedId);
         Protection.ItemsSource = protections;
-        Protection.SelectedItem = protections.FirstOrDefault(item => item.Id.Equals(selectedId, StringComparison.OrdinalIgnoreCase)) ?? protections.FirstOrDefault();
-        ProtectionPanel.Visibility = compatible.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+        Protection.SelectedItem = selected;
+        ProtectionPanel.Visibility = protections.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void Automatic_Changed(object sender, RoutedEventArgs e) { if (!_updating) ValueChanged?.Invoke(this, EventArgs.Empty); }
     private void Machine_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (_updating) return;
-        var detected = SelectedMachine is { } machine ? _detectedFormatByMachine.GetValueOrDefault(machine) : null;
+        var detected = _choices.DetectedFormatFor(SelectedMachine);
         _updating = true; RefreshFormats(detected); RefreshProtections(); _updating = false;
         if (SelectedFormatId is not null) ValueChanged?.Invoke(this, EventArgs.Empty);
     }

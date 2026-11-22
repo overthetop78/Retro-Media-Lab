@@ -13,7 +13,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.ComponentModel;
 using RetroMediaLab.MediaEngine.Images.Creation;
-using RetroMediaLab.MediaEngine.Images.Reading;
 using RetroMediaLab.MediaEngine.Contracts.Explorer;
 
 namespace RetroMediaLab.App.Views.Windows.Conversion;
@@ -58,7 +57,7 @@ public partial class FileMigrationWindow : Window
         DataContext = this;
         _fileDialogs = new WpfFileDialogService(this);
         _dialogs = new WpfMessageDialogService(this);
-        _coordinator = new(DiskImageExplorer.CreateDefault(), new FileSystemMigrationService());
+        _coordinator = FileMigrationCoordinator.CreateDefault();
         SelectedTarget = Targets.FirstOrDefault();
         TargetComboBox.SelectedItem = SelectedTarget;
         BrowseSourceButton.Click += BrowseSource_Click;
@@ -215,10 +214,15 @@ public partial class FileMigrationWindow : Window
         {
             _report = _coordinator.Validate(_source, SelectedTarget.Target.FormatId, AcceptLossesCheckBox.IsChecked == true);
             foreach (var loss in _report.Losses) Losses.Add(new(loss));
-            var hasBlockingLoss = _report.Losses.Any(loss => loss.IsBlocking);
-            var hasMetadataLoss = _report.Losses.Any(loss => !loss.IsBlocking);
-            CompatibilityText.Text = LocExtension.Get(hasBlockingLoss ? "Migration.Incompatible" : hasMetadataLoss ? "Migration.CompatibleWithLosses" : "Migration.Compatible");
-            AcceptLossesCheckBox.Visibility = hasMetadataLoss && !hasBlockingLoss ? Visibility.Visible : Visibility.Collapsed;
+            var compatibility = FileMigrationCoordinator.CompatibilityFor(_report);
+            CompatibilityText.Text = LocExtension.Get(compatibility switch
+            {
+                FileMigrationCoordinator.Compatibility.Incompatible => "Migration.Incompatible",
+                FileMigrationCoordinator.Compatibility.MetadataLoss => "Migration.CompatibleWithLosses",
+                _ => "Migration.Compatible"
+            });
+            AcceptLossesCheckBox.Visibility = compatibility == FileMigrationCoordinator.Compatibility.MetadataLoss
+                ? Visibility.Visible : Visibility.Collapsed;
         }
         catch (Exception exception)
         {

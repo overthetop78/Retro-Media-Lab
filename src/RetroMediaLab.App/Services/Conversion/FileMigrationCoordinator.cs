@@ -10,6 +10,16 @@ namespace RetroMediaLab.App.Services.Conversion;
 public sealed class FileMigrationCoordinator(DiskImageExplorer explorer, FileSystemMigrationService migrationService)
 {
     internal enum DestinationStatus { Available, Existing, SameAsSource }
+    internal enum Compatibility { Compatible, MetadataLoss, Incompatible }
+
+    internal static FileMigrationCoordinator CreateDefault() =>
+        new(DiskImageExplorer.CreateDefault(), new FileSystemMigrationService());
+
+    internal static Compatibility CompatibilityFor(MigrationValidationReport report)
+    {
+        if (report.Losses.Any(loss => loss.IsBlocking)) return Compatibility.Incompatible;
+        return report.Losses.Any() ? Compatibility.MetadataLoss : Compatibility.Compatible;
+    }
 
     internal static DestinationStatus CheckDestination(string source, string destination)
     {

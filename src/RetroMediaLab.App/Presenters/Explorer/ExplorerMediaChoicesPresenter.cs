@@ -58,17 +58,36 @@ internal static class ExplorerMediaChoicesPresenter
         return document.FormatsDetectes.Select(format => format.FormatId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
-    internal static string DetectedFormatsSummary(IEnumerable<string> detectedFormatIds, IReadOnlyList<DiskFormat> formats)
+    internal static string[] DetectionIds(string? preferredId, IEnumerable<string> detectedIds) =>
+        detectedIds.Concat(SingleDetectionId(preferredId)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+    internal static string[] SingleDetectionId(string? id) => string.IsNullOrWhiteSpace(id) ? [] : [id];
+
+    internal static string DetectedFormatsSummary(IEnumerable<string> detectedFormatIds, IReadOnlyList<DiskFormat> formats) =>
+        FormatSummary(detectedFormatIds, formats, ControlVisualConstants.DetailSeparator, () => LocExtension.Get("System.atari-8bit"));
+
+    internal static string VisualizerDetectedFormatsSummary(IEnumerable<string> detectedFormatIds, IReadOnlyList<DiskFormat> formats) =>
+        FormatSummary(detectedFormatIds, formats, "  \u00b7  ", () => "Atari 8-bit");
+
+    private static string FormatSummary(IEnumerable<string> detectedFormatIds, IReadOnlyList<DiskFormat> formats,
+        string separator, Func<string> atariFamily)
     {
         if (detectedFormatIds.Contains(TapeImageFormatIds.AtariCas, StringComparer.OrdinalIgnoreCase))
-            return LocExtension.Get("Explorer.DetectedFormats", $"{LocExtension.Get("System.atari-8bit")} (Atari CAS)");
+            return LocExtension.Get("Explorer.DetectedFormats", $"{atariFamily()} (Atari CAS)");
 
         var catalog = new DiskClassificationCatalog(formats);
         var recognized = detectedFormatIds.Select(id => catalog.ResolveFormat(id)).Where(format => format is not null).Cast<DiskFormat>().DistinctBy(format => format.Id, StringComparer.OrdinalIgnoreCase)
             .Select(format => $"{format.Family} ({format.DisplayName})")
             .ToArray();
-        var value = recognized.Length == 0 ? ControlVisualConstants.EmptyValue : string.Join(ControlVisualConstants.DetailSeparator, recognized);
+        var value = recognized.Length == 0 ? ControlVisualConstants.EmptyValue : string.Join(separator, recognized);
         return LocExtension.Get("Explorer.DetectedFormats", value);
+    }
+
+    internal static ExplorerFormatChoice[] VisualizationRepresentations(IEnumerable<string> detectedFormatIds,
+        IReadOnlyList<DiskFormat> formats, bool includeFlux)
+    {
+        var detected = DetectedFormats(detectedFormatIds, formats);
+        return includeFlux ? [new(null, "Flux"), .. detected] : detected;
     }
 
     internal static ExplorerFormatChoice[] DetectedFormats(IEnumerable<string> detectedFormatIds, IReadOnlyList<DiskFormat> formats)
