@@ -64,6 +64,11 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum,
             value => SetCrt(_configuration.Crt with { BeamWidth = value }),
             1, 38, new Thickness(0, 2, 0, 8)));
+        panel.Children.Add(EmulationSettingsFieldControlFunctions.CreateVideoSlider(
+            EmulationVideoProcessingCatalog.CrtCurvature, crt.Curvature,
+            EmulationVideoProcessingLimits.CrtCurvatureMinimum, EmulationVideoProcessingLimits.CrtCurvatureMaximum,
+            value => SetCrt(_configuration.Crt with { Curvature = value }),
+            1, 38, new Thickness(0, 2, 0, 8)));
         return panel;
     }
 

@@ -321,4 +321,5 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Staggered slot mask</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monochrome</value></data>
   <data name="Emulation.Video.Crt.Mask.HitachiEdp"><value>Hitachi EDP</value></data>
+  <data name="Emulation.Video.Parameter.CrtCurvature"><value>Screen curvature</value></data>
 </root>

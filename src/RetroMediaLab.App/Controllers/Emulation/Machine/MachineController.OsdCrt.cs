@@ -25,7 +25,10 @@ internal sealed partial class MachineController
                 with { IsVisible = () => _video.VideoProcessing.Crt.Mask == EmulationCrtMask.Monochrome },
             VideoNumber(Catalog.ParameterResourceKeys[Catalog.CrtBeamWidth], settings => settings.Crt.BeamWidth,
                 (settings, value) => settings with { Crt = settings.Crt with { BeamWidth = value } },
-                EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum, signed: true))
+                EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum, signed: true),
+            VideoNumber(Catalog.ParameterResourceKeys[Catalog.CrtCurvature], settings => settings.Crt.Curvature,
+                (settings, value) => settings with { Crt = settings.Crt with { Curvature = value } },
+                EmulationVideoProcessingLimits.CrtCurvatureMinimum, EmulationVideoProcessingLimits.CrtCurvatureMaximum))
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.Crt };
 
     private Entry CrtChoice<T>(string parameter, IReadOnlyDictionary<T, string> keys, Func<EmulationCrtVideoConfiguration, T> read,

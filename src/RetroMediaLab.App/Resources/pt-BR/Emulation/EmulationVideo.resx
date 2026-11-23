@@ -271,4 +271,5 @@
   <data name="Emulation.Video.Parameter.CrtFieldRate"><value>Taxa de atualização vertical</value></data>
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Máscara de fenda apunhalada</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monocromático</value></data>
+  <data name="Emulation.Video.Parameter.CrtCurvature"><value>Curvatura da tela</value></data>
 </root>

@@ -271,4 +271,5 @@
   <data name="Emulation.Video.Parameter.CrtFieldRate"><value>Verticaal herhalingssnelheid</value></data>
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Verstoken slotmasker</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monochroom</value></data>
+  <data name="Emulation.Video.Parameter.CrtCurvature"><value>Schermkromming</value></data>
 </root>

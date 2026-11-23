@@ -271,4 +271,5 @@
   <data name="Emulation.Video.Parameter.CrtFieldRate"><value>Tasa de refrescación vertical</value></data>
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Máscara de tragaperras apilada</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monocromo</value></data>
+  <data name="Emulation.Video.Parameter.CrtCurvature"><value>Curvatura de la pantalla</value></data>
 </root>

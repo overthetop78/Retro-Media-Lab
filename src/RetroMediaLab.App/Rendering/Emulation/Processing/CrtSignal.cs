@@ -3,7 +3,7 @@ using System.Numerics;
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector4 Phosphor,
-    float BeamExponent)
+    float BeamExponent, float Curvature)
 {
     internal int ActiveLines => (int)(Raster.Y * 2);
     internal Vector2 MaskRasterSize => new(Tuning.W, ActiveLines);
@@ -50,8 +50,29 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
         return new CrtSignal(new(activeRows / Math.Max(1, sourceLines), activeLines / 2f,
             activeLines / (float)totalLines, phase),
             new((float)ratio, decoder, lineSlip, activeLines * screenAspect), CrtPhosphorMask.Parameters(crt),
-            MathF.Pow(2f, crt.BeamWidth / 10f));
+            MathF.Pow(2f, crt.BeamWidth / 10f),
+            .16f * Math.Clamp(crt.Curvature, 0, EmulationVideoProcessingLimits.CrtCurvatureMaximum)
+                / EmulationVideoProcessingLimits.CrtCurvatureMaximum);
     }
+
+    internal Vector2 ScreenUv(Vector2 uv)
+    {
+        if (Curvature == 0f) return uv;
+        var offset = uv - new Vector2(.5f);
+        return uv + offset * (4f * Curvature * offset.LengthSquared());
+    }
+
+    internal Vector2 ScreenFootprint(Vector2 uv, Vector2 pixelSize)
+    {
+        if (Curvature == 0f) return pixelSize;
+        var offset = uv - new Vector2(.5f);
+        var radialScale = 1f + 4f * Curvature * offset.LengthSquared();
+        var diagonal = new Vector2(radialScale) + 8f * Curvature * offset * offset;
+        var cross = 8f * Curvature * MathF.Abs(offset.X * offset.Y);
+        return diagonal * pixelSize + cross * new Vector2(pixelSize.Y, pixelSize.X);
+    }
+
+    internal static bool IsOnScreen(Vector2 uv) => uv.X is >= 0f and <= 1f && uv.Y is >= 0f and <= 1f;
 
     internal Vector2 SourceUv(Vector2 uv)
     {
@@ -107,6 +128,23 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
     private static float Fraction(float value) => value - MathF.Floor(value);
 
     internal const string Shader = """
+        vec2 crtScreenUv(vec2 uv, float curvature)
+        {
+            vec2 offset = uv - vec2(.5);
+            return uv + offset * (4.0 * curvature * dot(offset, offset));
+        }
+        vec2 crtScreenFootprint(vec2 uv, vec2 pixelSize, float curvature)
+        {
+            vec2 offset = uv - vec2(.5);
+            float radialScale = 1.0 + 4.0 * curvature * dot(offset, offset);
+            vec2 diagonal = vec2(radialScale) + 8.0 * curvature * offset * offset;
+            float crossTerm = 8.0 * curvature * abs(offset.x * offset.y);
+            return diagonal * pixelSize + crossTerm * pixelSize.yx;
+        }
+        bool crtOnScreen(vec2 uv)
+        {
+            return all(greaterThanEqual(uv, vec2(0.0))) && all(lessThanEqual(uv, vec2(1.0)));
+        }
         vec2 crtSignalUv(vec2 uv, vec4 raster, vec4 tuning)
         {
             if (tuning.x > 0.0)

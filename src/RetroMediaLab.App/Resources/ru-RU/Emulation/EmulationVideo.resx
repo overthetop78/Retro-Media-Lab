@@ -271,4 +271,5 @@
   <data name="Emulation.Video.Parameter.CrtFieldRate"><value>Вертикальная частота обновления</value></data>
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Забитая маска для слотов</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>монохромный</value></data>
+  <data name="Emulation.Video.Parameter.CrtCurvature"><value>Кривизна экрана</value></data>
 </root>

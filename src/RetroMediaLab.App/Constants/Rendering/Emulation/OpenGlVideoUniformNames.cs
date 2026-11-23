@@ -10,6 +10,7 @@ internal static class OpenGlVideoUniformNames
     internal const string CrtRaster = "CrtRaster";
     internal const string CrtTuning = "CrtTuning";
     internal const string CrtPhosphor = "CrtPhosphor";
+    internal const string CrtGeometry = "CrtGeometry";
     internal const string FixedDisplay = "FixedDisplay";
     internal const string FixedSpatial = "FixedSpatial";
     internal const string FixedTechnology = "FixedTechnology";

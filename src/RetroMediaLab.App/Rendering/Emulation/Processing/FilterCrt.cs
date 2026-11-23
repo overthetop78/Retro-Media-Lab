@@ -17,9 +17,10 @@ internal static class FilterCrt
             for (var y = 0; y < height; y++)
             for (var x = 0; x < width; x++)
             {
-                var uv = signal.SourceUv(new Vector2((x + .5f) / width, (y + .5f) / height));
+                var screenUv = signal.ScreenUv(new Vector2((x + .5f) / width, (y + .5f) / height));
                 var index = (y * width + x) * 3;
-                if (uv.X < 0 || uv.X > 1 || uv.Y < 0 || uv.Y > 1)
+                var uv = signal.SourceUv(screenUv);
+                if (!CrtSignal.IsOnScreen(screenUv) || !CrtSignal.IsOnScreen(uv))
                 {
                     colors.AsSpan(index, 3).Clear();
                     continue;
@@ -28,7 +29,7 @@ internal static class FilterCrt
                 var color = SampleColor(source, width, height, uv);
                 var neighbor = decoder == 0 ? color : SampleColor(source, width, height, uv - neighborOffset);
                 color = CrtSignal.Decode(color, neighbor, decoder, (int)(uv.Y * sourceHeight));
-                color = Vector3.Min(Vector3.One, color * (beamGain * signal.Beam((y + .5f) / height, height)));
+                color = Vector3.Min(Vector3.One, color * (beamGain * signal.Beam(screenUv.Y, height)));
                 colors[index] = color.X;
                 colors[index + 1] = color.Y;
                 colors[index + 2] = color.Z;

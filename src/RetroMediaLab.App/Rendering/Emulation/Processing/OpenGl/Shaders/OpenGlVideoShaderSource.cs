@@ -22,6 +22,7 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 CrtRaster;
         uniform vec4 CrtTuning;
         uniform vec4 CrtPhosphor;
+        uniform vec4 CrtGeometry;
         uniform vec4 FixedDisplay;
         uniform vec4 FixedSpatial;
         uniform vec4 FixedTechnology;
@@ -492,11 +493,23 @@ internal static class OpenGlVideoShaderSource
         #endif
         void main()
         {
-            vec3 center=extraDisplay(restoreColor(crtPixel(TextureCoordinate),TextureCoordinate),TextureCoordinate);
-            center=postColor(center,TextureCoordinate);
-            vec2 historyUv=clamp(TextureCoordinate,.5/Processing.zw,1.0-.5/Processing.zw);
-            vec3 previous=extraDisplay(adjustColor(texture2D(History,historyUv).rgb),TextureCoordinate);
-            previous=postColor(previous,TextureCoordinate);
+            vec2 uv = TextureCoordinate;
+        #if DISPLAY_TECHNOLOGY == 1
+            if (CrtGeometry.x > 0.0)
+            {
+                uv = crtScreenUv(uv, CrtGeometry.x);
+                if (!crtOnScreen(uv))
+                {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                    return;
+                }
+            }
+        #endif
+            vec3 center=extraDisplay(restoreColor(crtPixel(uv),uv),uv);
+            center=postColor(center,uv);
+            vec2 historyUv=clamp(uv,.5/Processing.zw,1.0-.5/Processing.zw);
+            vec3 previous=extraDisplay(adjustColor(texture2D(History,historyUv).rgb),uv);
+            previous=postColor(previous,uv);
         #if DISPLAY_TECHNOLOGY == 7
             if(DotMatrixTemporal.z>.5)
             {
@@ -511,8 +524,8 @@ internal static class OpenGlVideoShaderSource
                 center=filterVfdPersistence(center,previous,VfdOptical.y,VfdOptical.z);
         #endif
         #if DISPLAY_TECHNOLOGY == 1
-            center = crtCompose(center, TextureCoordinate, vec2(CrtTuning.w, CrtRaster.y * 2.0),
-                CrtPhosphor, Output.w, Adjustments.x, Output.xy);
+            center = crtCompose(center, uv, vec2(CrtTuning.w, CrtRaster.y * 2.0),
+                CrtPhosphor, Output.w, Adjustments.x, Output.xy, TextureCoordinate, CrtGeometry.x);
         #endif
             gl_FragColor=vec4(linearToSrgb(center.r),linearToSrgb(center.g),linearToSrgb(center.b),1.0);
         }

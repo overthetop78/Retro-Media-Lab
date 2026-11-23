@@ -271,4 +271,5 @@
   <data name="Emulation.Video.Parameter.CrtFieldRate"><value>Fréquence verticale</value></data>
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Slot Mask décalé</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monochrome</value></data>
+  <data name="Emulation.Video.Parameter.CrtCurvature"><value>Courbure de l'écran</value></data>
 </root>

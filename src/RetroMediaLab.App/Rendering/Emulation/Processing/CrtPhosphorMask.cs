@@ -23,45 +23,63 @@ internal static class CrtPhosphorMask
     internal static void Apply(float[] colors, int width, int height, CrtSignal signal, float beamGain)
     {
         var mask = (EmulationCrtMask)(int)signal.Phosphor.W;
-        if (mask == EmulationCrtMask.None) return;
+        if (mask == EmulationCrtMask.None && signal.Curvature == 0f) return;
         var phosphor = signal.Phosphor;
         var rasterSize = signal.MaskRasterSize;
-        var footprint = rasterSize * 3f / new Vector2(width, height);
+        var grid = rasterSize * 3f;
+        var outputSize = new Vector2(width, height);
+        var flatFootprint = grid / outputSize;
+        var pixelSize = Vector2.One / outputSize;
         var spacing = Vector2.One / (rasterSize * 3f);
         var across = new Vector2(spacing.X, 0f);
         var down = new Vector2(0f, spacing.Y);
         var spread = Math.Clamp(.72f * MathF.Sqrt(beamGain) / (1f + signal.BeamExponent * signal.BeamExponent), 0f, .78f);
-        var source = ArrayPool<float>.Shared.Rent(colors.Length);
+        var masked = mask != EmulationCrtMask.None;
+        var source = masked ? ArrayPool<float>.Shared.Rent(colors.Length) : colors;
         try
         {
-            colors.CopyTo(source, 0);
+            if (masked) colors.CopyTo(source, 0);
             for (var y = 0; y < height; y++)
             for (var x = 0; x < width; x++)
             {
                 var pixel = (y * width + x) * 3;
                 var uv = new Vector2((x + .5f) / width, (y + .5f) / height);
-                var direct = Emit(new Vector3(source[pixel], source[pixel + 1], source[pixel + 2]), uv);
-                var neighbors = (Sample(uv - across) + Sample(uv + across) + Sample(uv - down) + Sample(uv + down)) * .25f;
-                var color = Vector3.Lerp(direct, neighbors, spread) + new Vector3(Glass(uv, rasterSize, mask, footprint));
+                var screenUv = signal.ScreenUv(uv);
+                if (!CrtSignal.IsOnScreen(screenUv))
+                {
+                    colors.AsSpan(pixel, 3).Clear();
+                    continue;
+                }
+                if (!masked) continue;
+                var footprint = signal.Curvature == 0f ? flatFootprint : grid * signal.ScreenFootprint(uv, pixelSize);
+                var direct = Emit(new Vector3(source[pixel], source[pixel + 1], source[pixel + 2]), screenUv, footprint);
+                var neighbors = (Sample(uv - across, footprint) + Sample(uv + across, footprint)
+                    + Sample(uv - down, footprint) + Sample(uv + down, footprint)) * .25f;
+                var color = Vector3.Lerp(direct, neighbors, spread) + new Vector3(Glass(screenUv, rasterSize, mask, footprint));
                 colors[pixel] = color.X;
                 colors[pixel + 1] = color.Y;
                 colors[pixel + 2] = color.Z;
             }
         }
-        finally { ArrayPool<float>.Shared.Return(source); }
+        finally
+        {
+            if (masked) ArrayPool<float>.Shared.Return(source);
+        }
 
-        Vector3 Emit(Vector3 color, Vector2 uv)
+        Vector3 Emit(Vector3 color, Vector2 uv, Vector2 footprint)
         {
             if (mask == EmulationCrtMask.Monochrome)
                 return Vector3.Dot(color, LuminanceWeights) * new Vector3(phosphor.X, phosphor.Y, phosphor.Z);
             return color * Coverage(uv * rasterSize * 3f, footprint, mask);
         }
 
-        Vector3 Sample(Vector2 uv)
+        Vector3 Sample(Vector2 uv, Vector2 footprint)
         {
             if (uv.X < 0f || uv.X >= 1f || uv.Y < 0f || uv.Y >= 1f) return Vector3.Zero;
+            var screenUv = signal.ScreenUv(uv);
+            if (!CrtSignal.IsOnScreen(screenUv)) return Vector3.Zero;
             var index = ((int)(uv.Y * height) * width + (int)(uv.X * width)) * 3;
-            return Emit(new Vector3(source[index], source[index + 1], source[index + 2]), uv);
+            return Emit(new Vector3(source[index], source[index + 1], source[index + 2]), screenUv, footprint);
         }
     }
 
@@ -222,12 +240,15 @@ internal static class CrtPhosphorMask
             if (any(lessThan(uv, vec2(0.0))) || any(greaterThanEqual(uv, vec2(1.0)))) return vec3(0.0);
             return crtEmit(crtImageAt(uv), uv, grid, phosphor, footprint);
         }
-        vec3 crtCompose(vec3 color, vec2 uv, vec2 rasterSize, vec4 phosphor, float exponent, float gain, vec2 outputSize)
+        vec3 crtCompose(vec3 color, vec2 uv, vec2 rasterSize, vec4 phosphor, float exponent, float gain,
+            vec2 outputSize, vec2 viewUv, float curvature)
         {
             int mask = int(phosphor.w + .5);
             if (mask == 0) return color;
             vec2 grid = rasterSize * 3.0;
             vec2 footprint = grid / max(vec2(1.0), outputSize);
+            if (curvature > 0.0)
+                footprint = grid * crtScreenFootprint(viewUv, 1.0 / max(vec2(1.0), outputSize), curvature);
             vec2 across = vec2(1.0 / grid.x, 0.0);
             vec2 down = vec2(0.0, 1.0 / grid.y);
             vec3 direct = crtEmit(color, uv, grid, phosphor, footprint);

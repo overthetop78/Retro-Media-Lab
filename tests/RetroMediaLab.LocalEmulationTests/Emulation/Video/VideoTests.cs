@@ -31,6 +31,56 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
     }
 
     [Fact]
+    public void CrtCurvatureBendsThePictureWithoutChangingTheSimulatedMaskGrid()
+    {
+        var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(default, 256, 192, 1024,
+            default, 4f / 3f, 0, TimeSpan.Zero) { SignalFieldRate = 60 };
+        var flat = CrtSignal.From(new(), frame);
+        var mild = CrtSignal.From(new() { Curvature = 10 }, frame);
+        var curved = CrtSignal.From(new() { Curvature = 20 }, frame);
+        var center = new Vector2(.5f);
+        var nearCorner = new Vector2(.94f);
+        var lineMiddle = new Vector2(.5f, .8f);
+        var lineEnd = new Vector2(.8f, .8f);
+        Assert.Equal(nearCorner, flat.ScreenUv(nearCorner));
+        Assert.Equal(center, curved.ScreenUv(center));
+        Assert.True(flat.ScreenUv(nearCorner).X < mild.ScreenUv(nearCorner).X);
+        Assert.True(mild.ScreenUv(nearCorner).X < curved.ScreenUv(nearCorner).X);
+        Assert.True(curved.ScreenUv(lineEnd).Y > curved.ScreenUv(lineMiddle).Y);
+        Assert.False(CrtSignal.IsOnScreen(curved.ScreenUv(nearCorner)));
+        Assert.Equal(flat.MaskRasterSize, curved.MaskRasterSize);
+        var pixelSize = new Vector2(1f / 1440, 1f / 1080);
+        Assert.Equal(pixelSize, curved.ScreenFootprint(center, pixelSize));
+        Assert.True(curved.ScreenFootprint(lineEnd, pixelSize).X > pixelSize.X);
+    }
+
+    [Theory]
+    [InlineData(EmulationCrtMask.None)]
+    [InlineData(EmulationCrtMask.ApertureGrille)]
+    public void CrtCurvatureMakesRoundedBlackCornersWithOrWithoutAPhosphorMask(EmulationCrtMask mask)
+    {
+        const int width = 160, height = 120;
+        using var pipeline = new SoftwareEmulationVideoProcessingPipeline();
+        var white = new byte[width * height * 4];
+        Array.Fill(white, byte.MaxValue);
+        var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(white, width, height, width * 4,
+            RetroMediaLab.Emulation.Enums.EmulationPixelFormat.Xrgb8888, 4f / 3f, 1, TimeSpan.Zero) { SignalFieldRate = 60 };
+        var settings = new RetroMediaLab.VideoPresentation.Contracts.EmulationVideoProcessingConfiguration
+        {
+            DisplayTechnology = EmulationVideoDisplayTechnology.Crt,
+            Crt = new(Mask: mask)
+        };
+        var flat = pipeline.Process(settings, frame, new(width, height), new(width, height)).Pixels.ToArray();
+        var curved = pipeline.Process(settings with { Crt = settings.Crt with { Curvature = 20 } },
+            frame, new(width, height), new(width, height)).Pixels.Span;
+        var upperLeft = (8 * width + 10) * 4;
+        var topMiddle = (8 * width + width / 2) * 4;
+        Assert.True(flat[upperLeft] + flat[upperLeft + 1] + flat[upperLeft + 2] > 32);
+        Assert.True(curved[topMiddle] + curved[topMiddle + 1] + curved[topMiddle + 2] > 32);
+        Assert.Equal(new byte[] { 0, 0, 0, 255 }, curved.Slice(upperLeft, 4).ToArray());
+    }
+
+    [Fact]
     public void CrtBeamWidthChangesTheShoulderWhilePreservingThePeak()
     {
         var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(default, 256, 192, 1024,

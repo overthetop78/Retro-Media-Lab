@@ -12,6 +12,7 @@ internal sealed class OpenGlVideoProgramUniforms
     private readonly int _crtRaster;
     private readonly int _crtTuning;
     private readonly int _crtPhosphor;
+    private readonly int _crtGeometry;
     private readonly int _fixedDisplay;
     private readonly int _fixedSpatial;
     private readonly int _fixedTechnology;
@@ -55,6 +56,7 @@ internal sealed class OpenGlVideoProgramUniforms
         _crtRaster = Location(OpenGlVideoUniformNames.CrtRaster);
         _crtTuning = Location(OpenGlVideoUniformNames.CrtTuning);
         _crtPhosphor = Location(OpenGlVideoUniformNames.CrtPhosphor);
+        _crtGeometry = Location(OpenGlVideoUniformNames.CrtGeometry);
         _fixedDisplay = Location(OpenGlVideoUniformNames.FixedDisplay);
         _fixedSpatial = Location(OpenGlVideoUniformNames.FixedSpatial);
         _fixedTechnology = Location(OpenGlVideoUniformNames.FixedTechnology);
@@ -108,6 +110,7 @@ internal sealed class OpenGlVideoProgramUniforms
         Set(_crtRaster, crtSignal.Raster);
         Set(_crtTuning, crtSignal.Tuning);
         Set(_crtPhosphor, crtSignal.Phosphor);
+        _api.SetUniform(_crtGeometry, crtSignal.Curvature, 0f, 0f, 0f);
 
         var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         Set(_fixedDisplay, fixedPixel.Display);

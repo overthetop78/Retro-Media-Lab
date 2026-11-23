@@ -250,7 +250,9 @@ public static class EmulationVideoProcessingConfigurationFunctions
                 FieldRate = DefinedOrDefault(crt.FieldRate, EmulationCrtFieldRate.Hz50And60),
                 PhosphorColor = DefinedOrDefault(crt.PhosphorColor, EmulationCrtPhosphorColor.Gray),
                 BeamWidth = Math.Clamp(crt.BeamWidth, EmulationVideoProcessingLimits.AdjustmentMinimum,
-                    EmulationVideoProcessingLimits.AdjustmentMaximum)
+                    EmulationVideoProcessingLimits.AdjustmentMaximum),
+                Curvature = Math.Clamp(crt.Curvature, EmulationVideoProcessingLimits.CrtCurvatureMinimum,
+                    EmulationVideoProcessingLimits.CrtCurvatureMaximum)
             },
             FixedPixel = fixedPixel with
             {

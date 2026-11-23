@@ -6,7 +6,7 @@ internal static partial class VeldridVideoProcessingShaders
         layout(set=0,binding=0) uniform VideoParameters
         {
             vec4 Adjustments; vec4 Processing; vec4 Output;
-            vec4 CrtRaster; vec4 CrtTuning; vec4 CrtPhosphor;
+            vec4 CrtRaster; vec4 CrtTuning; vec4 CrtPhosphor; vec4 CrtGeometry;
             vec4 FixedDisplay; vec4 FixedSpatial; vec4 FixedTechnology; vec4 FixedTemporal;
             vec4 PlasmaEffect; vec4 PlasmaTemporal; vec4 PlasmaDisplay;
             vec4 VectorEffect; vec4 VectorTemporal; vec4 VectorDisplay;
@@ -395,12 +395,24 @@ internal static partial class VeldridVideoProcessingShaders
         #endif
         void main()
         {
-            vec3 c=displayEffect(restored(fsin_TexCoord),fsin_TexCoord);
-            c=clamp(postEffect(c,fsin_TexCoord),0.0,1.0);
+            vec2 uv = fsin_TexCoord;
+        #if DISPLAY_TECHNOLOGY == 1
+            if (Parameters.CrtGeometry.x > 0.0)
+            {
+                uv = crtScreenUv(uv, Parameters.CrtGeometry.x);
+                if (!crtOnScreen(uv))
+                {
+                    fsout_Color = vec4(0.0, 0.0, 0.0, 1.0);
+                    return;
+                }
+            }
+        #endif
+            vec3 c=displayEffect(restored(uv),uv);
+            c=clamp(postEffect(c,uv),0.0,1.0);
             vec2 size=vec2(textureSize(sampler2D(History,LinearSampler),0));
-            vec2 historyUv=clamp(fsin_TexCoord,.5/size,1.0-.5/size);
-            vec3 previous=displayEffect(adjust(texture(sampler2D(History,LinearSampler),historyUv).rgb),fsin_TexCoord);
-            previous=clamp(postEffect(previous,fsin_TexCoord),0.0,1.0);
+            vec2 historyUv=clamp(uv,.5/size,1.0-.5/size);
+            vec3 previous=displayEffect(adjust(texture(sampler2D(History,LinearSampler),historyUv).rgb),uv);
+            previous=clamp(postEffect(previous,uv),0.0,1.0);
         #if DISPLAY_TECHNOLOGY == 7
             if(Parameters.DotMatrixTemporal.z>.5)
             {
@@ -432,8 +444,9 @@ internal static partial class VeldridVideoProcessingShaders
             }
         #endif
         #if DISPLAY_TECHNOLOGY == 1
-            c = crtCompose(c, fsin_TexCoord, vec2(Parameters.CrtTuning.w, Parameters.CrtRaster.y * 2.0),
-                Parameters.CrtPhosphor, Parameters.Output.w, Parameters.Adjustments.x, Parameters.Output.xy);
+            c = crtCompose(c, uv, vec2(Parameters.CrtTuning.w, Parameters.CrtRaster.y * 2.0),
+                Parameters.CrtPhosphor, Parameters.Output.w, Parameters.Adjustments.x,
+                Parameters.Output.xy, fsin_TexCoord, Parameters.CrtGeometry.x);
         #endif
         #ifdef OUTPUT_ENCODES_SRGB
             fsout_Color=vec4(c,1.0);

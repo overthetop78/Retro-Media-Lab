@@ -271,4 +271,5 @@
   <data name="Emulation.Video.Parameter.CrtFieldRate"><value>Vertikale Bildwiederholrate</value></data>
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>gestaffelte Schlitzmaske</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monochrom</value></data>
+  <data name="Emulation.Video.Parameter.CrtCurvature"><value>Krümmung des Bildschirms</value></data>
 </root>

@@ -271,4 +271,5 @@
   <data name="Emulation.Video.Parameter.CrtFieldRate"><value>Κατακόρυφη ταχύτητα ανανέωσης</value></data>
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Μάσκα κλειδαριών</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Μονόχρωμο</value></data>
+  <data name="Emulation.Video.Parameter.CrtCurvature"><value>Καμπυλότητα οθόνης</value></data>
 </root>

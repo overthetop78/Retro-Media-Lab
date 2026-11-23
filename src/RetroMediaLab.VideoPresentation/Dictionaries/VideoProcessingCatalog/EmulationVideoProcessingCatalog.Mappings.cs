@@ -161,6 +161,7 @@ public static partial class EmulationVideoProcessingCatalog
             [CrtMask] = EmulationCrtMask.None,
             [CrtPhosphorColor] = EmulationCrtPhosphorColor.Gray,
             [CrtBeamWidth] = 0,
+            [CrtCurvature] = 0,
             [FixedPixelTechnology] = EmulationFixedPixelTechnology.Lcd,
             [FixedPixelSubpixels] = EmulationSubpixelLayout.Rgb, [FixedPixelMonochromeColor] = EmulationMonochromePalette.Green,
             [FixedPixelGridIntensity] = 0, [FixedPixelPixelGap] = 0, [FixedPixelResponseTime] = 0,
@@ -246,7 +247,7 @@ public static partial class EmulationVideoProcessingCatalog
     private static IReadOnlyDictionary<string, EmulationVideoDisplayTechnology> TechnologyRequirements()
     {
         var result = new Dictionary<string, EmulationVideoDisplayTechnology>(StringComparer.Ordinal);
-        Add(CrtColorStandards, CrtBeamWidth, EmulationVideoDisplayTechnology.Crt);
+        Add(CrtColorStandards, CrtCurvature, EmulationVideoDisplayTechnology.Crt);
         Add(FixedPixelTechnology, FixedPixelBlackDepth, EmulationVideoDisplayTechnology.FixedPixel);
         Add(PlasmaCellStructure, PlasmaPersistence, EmulationVideoDisplayTechnology.Plasma);
         Add(VectorLineThreshold, VectorPersistence, EmulationVideoDisplayTechnology.Vector);
