@@ -208,7 +208,8 @@ internal static partial class SettingsDescriptionFunctions
             if (segaEmu && Emulators.SegaEmu.Constants.OptionMachineConstants.MasterSystem.Contains(model.Id))
                 coreBlock = coreBlock with
                 {
-                    Fields = coreBlock.Fields.Where(field => field.Id != "segaemu_bios").Select(field =>
+                    Fields = coreBlock.Fields.Where(field => field.Id != "segaemu_bios"
+                        && (field.Id != "segaemu_aspect_ratio" || model.Id == ModelConstants.MarkIII)).Select(field =>
                         field.Id == "segaemu_region_detect" ? field with { RefreshSettingsOnChange = true } : field).ToArray()
                 };
             if (ModelConstants.IsMegaDriveFamily(model.Id) && configuration.EmulatorId == Emulators.SegaEmu.Constants.CoreConstants.Id)

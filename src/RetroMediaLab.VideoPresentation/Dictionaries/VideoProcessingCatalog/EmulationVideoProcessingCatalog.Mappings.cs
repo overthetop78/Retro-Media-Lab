@@ -53,14 +53,21 @@ public static partial class EmulationVideoProcessingCatalog
     public static IReadOnlyDictionary<EmulationCrtColorMode, string> CrtColorModeResourceKeys { get; }
         = ResourceKeys("Crt.Color", Enum.GetValues<EmulationCrtColorMode>());
 
+    public static IReadOnlyDictionary<EmulationCrtPhosphorColor, string> CrtPhosphorColorResourceKeys { get; }
+        = ResourceKeys("Crt.Color", Enum.GetValues<EmulationCrtPhosphorColor>());
+
     public static IReadOnlyDictionary<EmulationCrtMask, string> CrtMaskResourceKeys { get; }
-        = ResourceKeys("Crt.Mask", Enum.GetValues<EmulationCrtMask>());
+        = ResourceKeys("Crt.Mask", new[] { EmulationCrtMask.None, EmulationCrtMask.ShadowMask,
+            EmulationCrtMask.ApertureGrille, EmulationCrtMask.SlotMask, EmulationCrtMask.StaggeredSlotMask,
+            EmulationCrtMask.Monochrome, EmulationCrtMask.HitachiEdp });
 
-    public static IReadOnlyDictionary<EmulationPatternOrientation, string> PatternOrientationResourceKeys { get; }
-        = ResourceKeys("Orientation", Enum.GetValues<EmulationPatternOrientation>());
+    public static IReadOnlyDictionary<EmulationCrtColorStandards, string> CrtColorStandardsResourceKeys { get; }
+        = ResourceKeys("Crt.ColorStandards", new[] { EmulationCrtColorStandards.Pal, EmulationCrtColorStandards.Secam,
+            EmulationCrtColorStandards.Ntsc, EmulationCrtColorStandards.PalSecam, EmulationCrtColorStandards.PalNtsc,
+            EmulationCrtColorStandards.PalSecamNtsc });
 
-    public static IReadOnlyDictionary<EmulationScanlinePhase, string> ScanlinePhaseResourceKeys { get; }
-        = ResourceKeys("Crt.ScanlinePhase", Enum.GetValues<EmulationScanlinePhase>());
+    public static IReadOnlyDictionary<EmulationCrtFieldRate, string> CrtFieldRateResourceKeys { get; }
+        = ResourceKeys("Crt.FieldRate", Enum.GetValues<EmulationCrtFieldRate>());
 
     public static IReadOnlyDictionary<EmulationSubpixelLayout, string> SubpixelLayoutResourceKeys { get; }
         = ResourceKeys("Subpixels", Enum.GetValues<EmulationSubpixelLayout>());
@@ -125,7 +132,12 @@ public static partial class EmulationVideoProcessingCatalog
         = ResourceKeys("EPaper.ColorMode", Enum.GetValues<EmulationEPaperColorMode>());
 
     public static IReadOnlyDictionary<string, string> ParameterResourceKeys { get; } =
-        ParameterIds.ToDictionary(id => id, id => id == Gamma ? "Emulation.Video.Gamma" : $"Emulation.Video.Parameter.{id}", StringComparer.Ordinal);
+        ParameterIds.ToDictionary(id => id, id => id switch
+        {
+            Gamma => "Emulation.Video.Gamma",
+            CrtPhosphorColor => $"Emulation.Video.Parameter.{VectorPhosphorColor}",
+            _ => $"Emulation.Video.Parameter.{id}"
+        }, StringComparer.Ordinal);
 
     public static IReadOnlyDictionary<string, object?> NeutralValues { get; } =
         new Dictionary<string, object?>(StringComparer.Ordinal)
@@ -133,11 +145,6 @@ public static partial class EmulationVideoProcessingCatalog
             [Brightness] = 0, [Contrast] = 0, [Gamma] = 0, [Saturation] = 0, [Sharpness] = 0,
             [Dedithering] = 0, [Debanding] = 0, [DetailRecovery] = 0,
             [Deinterlacing] = EmulationDeinterlacingMode.Off,
-            [GeneralPersistence] = 0,
-            [MotionBlur] = 0,
-            [Flicker] = 0,
-            [Interlacing] = 0,
-            [InterlacingVisibility] = 50,
             [BlackFrameInsertion] = false,
             [SignalConnection] = EmulationSignalConnection.None,
             [SignalConnectionIntensity] = 0,
@@ -148,18 +155,10 @@ public static partial class EmulationVideoProcessingCatalog
             [ChromaticAberration] = 0,
             [Bloom] = 0,
             [Sepia] = false,
-            [CrtColorMode] = EmulationCrtColorMode.Color,
-            [CrtBeamWidth] = 0, [CrtBeamIntensity] = 0, [CrtBeamDiffusion] = 0,
-            [CrtHaloIntensity] = 0, [CrtMask] = EmulationCrtMask.None,
-            [CrtMaskSubpixels] = EmulationSubpixelLayout.Rgb, [CrtMaskIntensity] = 0,
-            [CrtHorizontalCurvature] = 0, [CrtVerticalCurvature] = 0, [CrtTrapezoid] = 0,
-            [CrtVignette] = 0, [CrtScanlinesEnabled] = false,
-            [CrtScanlineOrientation] = EmulationPatternOrientation.Horizontal,
-            [CrtScanlineIntensity] = 0, [CrtScanlineThickness] = 0,
-            [CrtScanlinePhase] = EmulationScanlinePhase.Zero,
-            [CrtScanlineCompensation] = 0, [CrtPatternEnabled] = false,
-            [CrtPatternOrientation] = EmulationPatternOrientation.Horizontal,
-            [CrtPatternFrequency] = 0, [CrtPatternPhase] = 0, [CrtPatternIntensity] = 0,
+            [CrtColorStandards] = EmulationCrtColorStandards.PalSecamNtsc,
+            [CrtFieldRate] = EmulationCrtFieldRate.Hz50And60,
+            [CrtMask] = EmulationCrtMask.None,
+            [CrtPhosphorColor] = EmulationCrtPhosphorColor.Gray,
             [FixedPixelTechnology] = EmulationFixedPixelTechnology.Lcd,
             [FixedPixelSubpixels] = EmulationSubpixelLayout.Rgb, [FixedPixelMonochromeColor] = EmulationMonochromePalette.Green,
             [FixedPixelGridIntensity] = 0, [FixedPixelPixelGap] = 0, [FixedPixelResponseTime] = 0,
@@ -213,30 +212,14 @@ public static partial class EmulationVideoProcessingCatalog
     public static IReadOnlyDictionary<string, string> RequiredParameters { get; } =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            [CrtScanlineOrientation] = CrtScanlinesEnabled,
-            [CrtScanlineIntensity] = CrtScanlinesEnabled,
-            [CrtScanlineThickness] = CrtScanlinesEnabled,
-            [CrtScanlinePhase] = CrtScanlinesEnabled,
-            [CrtScanlineCompensation] = CrtScanlinesEnabled,
-            [CrtPatternOrientation] = CrtPatternEnabled,
-            [CrtPatternFrequency] = CrtPatternEnabled,
-            [CrtPatternPhase] = CrtPatternEnabled,
-            [CrtPatternIntensity] = CrtPatternEnabled,
+            [CrtPhosphorColor] = CrtMask,
             [FixedPixelMonochromeColor] = FixedPixelSubpixels
         };
 
     public static IReadOnlyDictionary<string, object> RequiredParameterValues { get; } =
         new Dictionary<string, object>(StringComparer.Ordinal)
         {
-            [CrtScanlineOrientation] = true,
-            [CrtScanlineIntensity] = true,
-            [CrtScanlineThickness] = true,
-            [CrtScanlinePhase] = true,
-            [CrtScanlineCompensation] = true,
-            [CrtPatternOrientation] = true,
-            [CrtPatternFrequency] = true,
-            [CrtPatternPhase] = true,
-            [CrtPatternIntensity] = true,
+            [CrtPhosphorColor] = EmulationCrtMask.Monochrome,
             [FixedPixelMonochromeColor] = EmulationSubpixelLayout.Monochrome
         };
 
@@ -261,7 +244,7 @@ public static partial class EmulationVideoProcessingCatalog
     private static IReadOnlyDictionary<string, EmulationVideoDisplayTechnology> TechnologyRequirements()
     {
         var result = new Dictionary<string, EmulationVideoDisplayTechnology>(StringComparer.Ordinal);
-        Add(CrtColorMode, CrtPatternIntensity, EmulationVideoDisplayTechnology.Crt);
+        Add(CrtColorStandards, CrtPhosphorColor, EmulationVideoDisplayTechnology.Crt);
         Add(FixedPixelTechnology, FixedPixelBlackDepth, EmulationVideoDisplayTechnology.FixedPixel);
         Add(PlasmaCellStructure, PlasmaPersistence, EmulationVideoDisplayTechnology.Plasma);
         Add(VectorLineThreshold, VectorPersistence, EmulationVideoDisplayTechnology.Vector);

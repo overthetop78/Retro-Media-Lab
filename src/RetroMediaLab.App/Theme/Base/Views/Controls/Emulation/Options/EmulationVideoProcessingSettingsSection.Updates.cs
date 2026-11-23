@@ -24,9 +24,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
     private void SetRestoration(EmulationImageRestorationConfiguration value) => Update(configuration => configuration with { Restoration = value });
 
-    private void SetTemporal(EmulationTemporalVideoConfiguration value) => Update(configuration => configuration with { Temporal = value });
-
-    private void SetSignalSimulation(EmulationSignalSimulationConfiguration value) => Update(configuration => configuration with { SignalSimulation = value });
 
     private void SetStylistic(EmulationStylisticVideoConfiguration value) => Update(configuration => configuration with { Stylistic = value });
 

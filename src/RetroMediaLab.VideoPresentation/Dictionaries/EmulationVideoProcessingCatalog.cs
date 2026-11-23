@@ -22,11 +22,6 @@ public static partial class EmulationVideoProcessingCatalog
     public const string Debanding = nameof(Debanding);
     public const string DetailRecovery = nameof(DetailRecovery);
     public const string Deinterlacing = nameof(Deinterlacing);
-    public const string GeneralPersistence = nameof(GeneralPersistence);
-    public const string MotionBlur = nameof(MotionBlur);
-    public const string Flicker = nameof(Flicker);
-    public const string Interlacing = nameof(Interlacing);
-    public const string InterlacingVisibility = nameof(InterlacingVisibility);
     public const string BlackFrameInsertion = nameof(BlackFrameInsertion);
     public const string SignalConnection = nameof(SignalConnection);
     public const string SignalConnectionIntensity = nameof(SignalConnectionIntensity);
@@ -37,29 +32,10 @@ public static partial class EmulationVideoProcessingCatalog
     public const string ChromaticAberration = nameof(ChromaticAberration);
     public const string Bloom = nameof(Bloom);
     public const string Sepia = nameof(Sepia);
-    public const string CrtColorMode = nameof(CrtColorMode);
-    public const string CrtBeamWidth = nameof(CrtBeamWidth);
-    public const string CrtBeamIntensity = nameof(CrtBeamIntensity);
-    public const string CrtBeamDiffusion = nameof(CrtBeamDiffusion);
-    public const string CrtHaloIntensity = nameof(CrtHaloIntensity);
+    public const string CrtColorStandards = nameof(CrtColorStandards);
+    public const string CrtFieldRate = nameof(CrtFieldRate);
     public const string CrtMask = nameof(CrtMask);
-    public const string CrtMaskSubpixels = nameof(CrtMaskSubpixels);
-    public const string CrtMaskIntensity = nameof(CrtMaskIntensity);
-    public const string CrtHorizontalCurvature = nameof(CrtHorizontalCurvature);
-    public const string CrtVerticalCurvature = nameof(CrtVerticalCurvature);
-    public const string CrtTrapezoid = nameof(CrtTrapezoid);
-    public const string CrtVignette = nameof(CrtVignette);
-    public const string CrtScanlinesEnabled = nameof(CrtScanlinesEnabled);
-    public const string CrtScanlineOrientation = nameof(CrtScanlineOrientation);
-    public const string CrtScanlineIntensity = nameof(CrtScanlineIntensity);
-    public const string CrtScanlineThickness = nameof(CrtScanlineThickness);
-    public const string CrtScanlinePhase = nameof(CrtScanlinePhase);
-    public const string CrtScanlineCompensation = nameof(CrtScanlineCompensation);
-    public const string CrtPatternEnabled = nameof(CrtPatternEnabled);
-    public const string CrtPatternOrientation = nameof(CrtPatternOrientation);
-    public const string CrtPatternFrequency = nameof(CrtPatternFrequency);
-    public const string CrtPatternPhase = nameof(CrtPatternPhase);
-    public const string CrtPatternIntensity = nameof(CrtPatternIntensity);
+    public const string CrtPhosphorColor = nameof(CrtPhosphorColor);
     public const string FixedPixelTechnology = nameof(FixedPixelTechnology);
     public const string FixedPixelSubpixels = nameof(FixedPixelSubpixels);
     public const string FixedPixelMonochromeColor = nameof(FixedPixelMonochromeColor);
@@ -160,20 +136,14 @@ public static partial class EmulationVideoProcessingCatalog
     [
         Brightness, Contrast, Gamma, Saturation, Sharpness, Dedithering, Debanding,
         DetailRecovery,
-        Deinterlacing, GeneralPersistence, MotionBlur, Flicker, Interlacing,
-        InterlacingVisibility, BlackFrameInsertion,
+        Deinterlacing, BlackFrameInsertion,
         SignalConnection, SignalConnectionIntensity, SignalStandard, SignalStandardIntensity,
         Grain,
         Vhs,
         ChromaticAberration,
         Bloom,
         Sepia,
-        CrtColorMode, CrtBeamWidth, CrtBeamIntensity, CrtBeamDiffusion,
-        CrtHaloIntensity, CrtMask, CrtMaskSubpixels, CrtMaskIntensity,
-        CrtHorizontalCurvature, CrtVerticalCurvature, CrtTrapezoid, CrtVignette,
-        CrtScanlinesEnabled, CrtScanlineOrientation, CrtScanlineIntensity, CrtScanlineThickness,
-        CrtScanlinePhase, CrtScanlineCompensation, CrtPatternEnabled, CrtPatternOrientation,
-        CrtPatternFrequency, CrtPatternPhase, CrtPatternIntensity,
+        CrtColorStandards, CrtFieldRate, CrtMask, CrtPhosphorColor,
         FixedPixelTechnology, FixedPixelSubpixels, FixedPixelMonochromeColor,
         FixedPixelGridIntensity, FixedPixelPixelGap, FixedPixelResponseTime,
         FixedPixelPersistence, FixedPixelBacklight, FixedPixelBacklightBleed, FixedPixelOledEmission, FixedPixelBlackDepth,

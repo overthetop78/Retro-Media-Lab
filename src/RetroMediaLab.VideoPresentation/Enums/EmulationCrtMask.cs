@@ -5,5 +5,8 @@ public enum EmulationCrtMask
     None,
     ApertureGrille,
     ShadowMask,
-    SlotMask
+    SlotMask,
+    StaggeredSlotMask,
+    Monochrome,
+    HitachiEdp
 }

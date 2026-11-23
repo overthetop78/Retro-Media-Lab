@@ -25,7 +25,10 @@ internal sealed partial class MachineController
                 OsdRendererChoice(),
                 VideoChoice(EmulationResourceKeys.VideoSampling, EmulationVideoProcessingCatalog.SamplingResourceKeys,
                     settings => settings.Sampling, (settings, value) => settings with { Sampling = value })
-                    with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_video.VideoProcessing) }),
+                    with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_video.VideoProcessing) },
+                VideoChoice(EmulationResourceKeys.VideoParameterBlackFrameInsertion, VideoToggleResourceKeys,
+                    settings => settings.BlackFrameInsertion,
+                    (settings, value) => settings with { BlackFrameInsertion = value })),
             .. Enum.GetValues<EmulationVideoScreenType>().Select(OsdScreenAdjustments),
             OsdCrtSettings(),
             OsdFixedPixelSettings(),

@@ -72,13 +72,10 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new ColumnDefinition());
         grid.ColumnDefinitions.Add(new ColumnDefinition());
-        grid.ColumnDefinitions.Add(new ColumnDefinition());
-        var groups = new[]
-        {
-            FramedSection(EmulationTemporalEffectsSettingsBlock.Create(_configuration.Temporal, update => SetTemporal(update(_configuration.Temporal)))),
-            FramedSection(CreateSignalSimulation()),
-            FramedSection(CreateStylistic())
-        };
+        var stylistic = FramedSection(CreateStylistic());
+        var groups = _configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
+            ? new[] { FramedSection(CreateCrtSignalControls()), stylistic }
+            : new[] { stylistic };
         for (var index = 0; index < groups.Length; index++)
         {
             groups[index].Margin = new Thickness(index == 0 ? 0 : 6, 0, index == groups.Length - 1 ? 0 : 6, 0);
@@ -134,6 +131,15 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(_configuration),
             value => Update(configuration => configuration with { AspectRatio = value }),
             translateChoices: false));
+        var blackFrames = new CheckBox
+        {
+            Content = LocExtension.Get(EmulationResourceKeys.VideoParameterBlackFrameInsertion),
+            IsChecked = _configuration.BlackFrameInsertion
+        };
+        AutomationProperties.SetAutomationId(blackFrames, EmulationVideoProcessingCatalog.BlackFrameInsertion);
+        blackFrames.Checked += (_, _) => Update(configuration => configuration with { BlackFrameInsertion = true });
+        blackFrames.Unchecked += (_, _) => Update(configuration => configuration with { BlackFrameInsertion = false });
+        screen.Children.Add(blackFrames);
         panel.Children.Add(SideBySideGroups(render, screen));
         return panel;
     }
@@ -160,33 +166,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         return loading;
     }
 
-    private FrameworkElement CreateSignalSimulation()
-    {
-        var panel = Section(EmulationResourceKeys.VideoSignalSimulationSettings);
-        panel.Children.Add(ChoiceField(ParameterKey(EmulationVideoProcessingCatalog.SignalConnection),
-            EmulationVideoProcessingCatalog.SignalConnectionResourceKeys,
-            _configuration.SignalSimulation.Connection, value =>
-            {
-                SetSignalSimulation(_configuration.SignalSimulation with { Connection = value });
-                RebuildContent();
-            }, EmulationVideoProcessingCatalog.SignalConnection));
-        if (_configuration.SignalSimulation.Connection != EmulationSignalConnection.None)
-        {
-            AddIntensity(panel, EmulationVideoProcessingCatalog.SignalConnectionIntensity,
-                _configuration.SignalSimulation.ConnectionIntensity,
-                value => SetSignalSimulation(_configuration.SignalSimulation with { ConnectionIntensity = value }));
-            panel.Children.Add(ChoiceField(ParameterKey(EmulationVideoProcessingCatalog.SignalStandard),
-                EmulationVideoProcessingCatalog.SignalStandardResourceKeys,
-                _configuration.SignalSimulation.Standard, value =>
-                {
-                    SetSignalSimulation(_configuration.SignalSimulation with { Standard = value });
-                    RebuildContent();
-                }, EmulationVideoProcessingCatalog.SignalStandard));
-            AddIntensity(panel, EmulationVideoProcessingCatalog.SignalStandardIntensity, _configuration.SignalSimulation.StandardIntensity, value => SetSignalSimulation(_configuration.SignalSimulation with { StandardIntensity = value }));
-        }
-        return panel;
-    }
-
     private FrameworkElement CreateStylistic()
     {
         var panel = Section(EmulationResourceKeys.VideoStylisticSettings);
@@ -200,7 +179,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
     private FrameworkElement? CreateTechnologyPanel() => _configuration.DisplayTechnology switch
     {
-        EmulationVideoDisplayTechnology.Crt => CreateCrtPanel(),
         EmulationVideoDisplayTechnology.FixedPixel => CreateFixedPixelPanel(),
         EmulationVideoDisplayTechnology.Plasma => CreatePlasmaPanel(),
         EmulationVideoDisplayTechnology.Vector => CreateVectorPanel(),

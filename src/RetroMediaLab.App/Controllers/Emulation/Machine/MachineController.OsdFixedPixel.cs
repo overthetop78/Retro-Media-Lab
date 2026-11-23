@@ -25,7 +25,7 @@ internal sealed partial class MachineController
                 FixedPixelNumber(Catalog.FixedPixelOledEmission, c => c.OledEmissionIntensity,
                     (c, v) => c with { OledEmissionIntensity = v }) with { IsVisible = () => !FixedPixelHasBacklight() },
                 FixedPixelNumber(Catalog.FixedPixelBlackDepth, FixedPixelSettingsValues.BlackDepth, (c, v) => c with { BlackDepth = v })),
-            VideoGroup(EmulationResourceKeys.VideoTemporalSettings,
+            VideoGroup(EmulationResourceKeys.VideoParameterFixedPixelPersistence,
                 FixedPixelNumber(Catalog.FixedPixelResponseTime, c => c.ResponseTimeMilliseconds,
                     (c, v) => c with { ResponseTimeMilliseconds = v }, EmulationVideoProcessingLimits.DurationMinimumMilliseconds,
                     EmulationVideoProcessingLimits.DurationMaximumMilliseconds),

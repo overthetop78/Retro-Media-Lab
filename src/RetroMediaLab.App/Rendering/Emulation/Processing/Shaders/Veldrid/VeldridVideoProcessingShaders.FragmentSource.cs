@@ -6,15 +6,14 @@ internal static partial class VeldridVideoProcessingShaders
         layout(set=0,binding=0) uniform VideoParameters
         {
             vec4 Adjustments; vec4 Processing; vec4 Output;
-            vec4 CrtDisplay; vec4 CrtBeam; vec4 CrtOptical; vec4 CrtGeometry;
-            vec4 CrtScanlines; vec4 CrtPattern; vec4 CrtPatternIntensity;
+            vec4 CrtRaster; vec4 CrtTuning; vec4 CrtPhosphor;
             vec4 FixedDisplay; vec4 FixedSpatial; vec4 FixedTechnology; vec4 FixedTemporal;
             vec4 PlasmaEffect; vec4 PlasmaTemporal; vec4 PlasmaDisplay;
             vec4 VectorEffect; vec4 VectorTemporal; vec4 VectorDisplay;
             vec4 Restoration; vec4 SegmentGeometry; vec4 SegmentShape;
             vec4 SegmentEmission; vec4 SegmentOptical; vec4 SegmentTemporal;
-            vec4 General; vec4 Restoration2; vec4 Temporal;
-            vec4 Signal; vec4 Signal2; vec4 Stylistic; vec4 Stylistic2;
+            vec4 General; vec4 Restoration2;
+            vec4 Signal; vec4 Stylistic; vec4 Stylistic2;
             vec4 VfdDisplay; vec4 VfdStructure; vec4 VfdOptical;
             vec4 LedMatrixEmission; vec4 LedMatrixStructure;
             vec4 DotMatrixGeometry; vec4 DotMatrixEmission; vec4 DotMatrixTemporal;
@@ -291,9 +290,20 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 10
         """ + "\n" + ProjectionVideoShader.Create(true) + "\n" + """
         #endif
+        """ + "\n" + CrtSignal.Shader + "\n" + CrtPhosphorMask.Shader + "\n" + """
+
         vec3 displayEffect(vec3 c,vec2 uv){int t=int(Parameters.General.x+.5);vec2 p=floor(uv*Parameters.Output.xy),l=fract(uv*Parameters.Processing.zw);
         #if DISPLAY_TECHNOLOGY == 1
-            if(t==1){vec2 q=uv*2.0-1.0;q.x*=1.0+Parameters.CrtGeometry.x*.28*q.y*q.y+Parameters.CrtGeometry.z*.22*q.y;q.y*=1.0+Parameters.CrtGeometry.y*.28*q.x*q.x;vec2 wuv=(q+1.0)*.5;if(any(lessThan(wuv,vec2(0)))||any(greaterThan(wuv,vec2(1))))return vec3(0);vec2 ss=1.0/max(Parameters.Processing.zw,vec2(1));vec3 src=raw(wuv),v=(raw(wuv-vec2(0,ss.y))+raw(wuv+vec2(0,ss.y)))*.5,n=(raw(wuv-ss)+raw(wuv+ss)+raw(wuv+vec2(ss.x,-ss.y))+raw(wuv+vec2(-ss.x,ss.y))+src*5.0)/9.0;c=mix(src,v,Parameters.CrtBeam.y*.45);c=mix(c,n,Parameters.CrtBeam.w*.72);c=clamp(c*(1.0+Parameters.CrtBeam.z*.5)+max(n-vec3(.35),vec3(0))*Parameters.CrtOptical.x*.85,0.0,1.0);if(Parameters.CrtDisplay.y>.5){float lum=dot(c,vec3(.2126,.7152,.0722));c=lum*vec3(Parameters.CrtDisplay.zw,Parameters.CrtBeam.x);}p=floor(uv*Parameters.Processing.zw);int mask=int(Parameters.CrtOptical.y+.5),subpixelLayout=int(Parameters.CrtOptical.z+.5);if(mask!=0&&Parameters.CrtOptical.w>0){int selected=subpixelLayout==0?-1:int(mod(p.x,3.0));if(subpixelLayout==2)selected=2-selected;if(mask==2)selected=int(mod(float(selected)+mod(p.y,2.0),3.0));bool gap=mask==3&&int(mod(p.y,4.0))==3;float strength=Parameters.CrtOptical.w*.88;for(int channel=0;channel<3;channel++){float attenuation=gap||(selected>=0&&channel!=selected)?strength:strength*.12;if(subpixelLayout==0)attenuation=int(mod(p.x+p.y,2.0))==0?strength*.1:strength;c[channel]*=1.0-attenuation;}}if(Parameters.CrtPatternIntensity.y>.5&&Parameters.CrtScanlines.x>0){float a=Parameters.CrtPatternIntensity.z<.5?uv.y*Parameters.Processing.w:uv.x*Parameters.Processing.z,gapStart=mix(.47,.18,Parameters.CrtScanlines.y),cycle=fract((a+Parameters.CrtScanlines.z*.25)*.5),distanceFromBeam=min(abs(cycle-.25),1.0-abs(cycle-.25)),gap=smoothstep(gapStart,min(.5,gapStart+.055),distanceFromBeam),coverage=1.0-gapStart*2.0,comp=1.0+Parameters.CrtScanlines.w*Parameters.CrtScanlines.x*coverage*.45;c*=(1.0-Parameters.CrtScanlines.x*gap*.94)*comp;}if(Parameters.CrtPattern.x>.5&&Parameters.CrtPatternIntensity.x>0){float a=Parameters.CrtPattern.y<.5?p.y:p.x,len=Parameters.CrtPattern.y<.5?Parameters.Processing.w:Parameters.Processing.z,cycles=1.0+Parameters.CrtPattern.z*31.0,w=.5+.5*cos(6.2831853*(a+.5)*cycles/len+Parameters.CrtPattern.w*6.2831853);c*=1.0-Parameters.CrtPatternIntensity.x*.85*w;}float radius=clamp(dot(uv*2.0-1.0,uv*2.0-1.0)*.5,0.0,1.0);c*=1.0-Parameters.CrtGeometry.w*.92*pow(radius,1.5);}
+            if(t==1)
+            {
+                vec2 sourceUv = crtSignalUv(uv, Parameters.CrtRaster, Parameters.CrtTuning);
+                if (any(lessThan(sourceUv, vec2(0.0))) || any(greaterThan(sourceUv, vec2(1.0)))) return vec3(0.0);
+                c = raw(sourceUv);
+                int decoder = int(Parameters.CrtTuning.y + .5);
+                vec3 neighbor = decoder == 0 ? c : raw(crtChromaNeighbor(sourceUv, Parameters.Processing.zw, decoder));
+                c = crtDecode(c, neighbor, decoder, floor(sourceUv.y * Parameters.Processing.w));
+                c *= crtBeam(uv.y, Parameters.Output.y, Parameters.CrtRaster);
+            }
         #endif
         #if DISPLAY_TECHNOLOGY == 2
             if(t==2)
@@ -370,7 +380,6 @@ internal static partial class VeldridVideoProcessingShaders
             c=filterGrain(c,Parameters.Stylistic.x,hash(floor(uv*Parameters.Output.xy)+Parameters.General.z)*2.0-1.0);
             return clamp(c,0.0,1.0);
         }
-        """ + FilterGeneralPersistence.Shader + FilterMotionBlur.Shader + FilterFlicker.Shader + FilterInterlacing.Shader + FilterBlackFrameInsertion.Shader + """
         void main()
         {
             vec3 c=displayEffect(restored(fsin_TexCoord),fsin_TexCoord);
@@ -409,15 +418,9 @@ internal static partial class VeldridVideoProcessingShaders
                 c=filterFixedPixelPersistence(c,previous,Parameters.FixedTemporal.y);
             }
         #endif
-            c=filterInterlacing(c,previous,fsin_TexCoord,Parameters.Processing.w,Parameters.General.z,Parameters.Temporal.w,Parameters.Signal2.z,Parameters.General.y);
-            c=filterFlicker(c,Parameters.General.z,Parameters.Temporal.z);
-            if(Parameters.General.y>.5)
-            {
-                previous=filterFlicker(previous,Parameters.General.z-1.0,Parameters.Temporal.z);
-                c=filterMotionBlur(c,previous,Parameters.Temporal.y);
-                c=filterGeneralPersistence(c,previous,Parameters.Temporal.x);
-            }
-            c=filterBlackFrameInsertion(c,Parameters.General.z,Parameters.Signal2.y);
+        #if DISPLAY_TECHNOLOGY == 1
+            c = crtPhosphorMask(c, fsin_TexCoord, Parameters.CrtRaster.y * 2.0, Parameters.CrtPhosphor);
+        #endif
         #ifdef OUTPUT_ENCODES_SRGB
             fsout_Color=vec4(c,1.0);
         #else

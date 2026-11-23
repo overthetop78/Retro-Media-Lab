@@ -102,6 +102,9 @@ internal sealed partial class ManagedCore
     }
     private float CalculateAspect(SegaBoard system, int width, int height)
     {
+        if (_configuration?.Model is ModelConstants.MasterSystem or ModelConstants.MasterSystemII)
+            return (float)width / height;
+
         string aspect = _configuration?.Model == ModelConstants.Sg1000 ? "auto" : GetOption("aspect_ratio");
         if (aspect == "4:3") return 4f / 3f;
         if (aspect == "Uncorrected") return (float)width / height;

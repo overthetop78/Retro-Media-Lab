@@ -10,7 +10,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
 {
     public void ResetTemporalHistory()
     {
-        _interlacing.Reset();
         _signalTimestamp = TimeSpan.Zero;
         _signalSequence = 0;
         ResetHistory();
@@ -20,8 +19,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         ResetDotMatrixHistory();
         ResetSegmentDisplayHistory();
         ResetEPaperHistory();
-        _motionBlur.Reset();
-        _generalPersistence.Reset();
     }
 
     private void ApplyFixedPixelTemporal(EmulationVideoProcessingConfiguration configuration, float[] colors, int width, int height, TimeSpan timestamp)

@@ -12,18 +12,18 @@ internal static class VideoGeometryScenarios
         {
             DisplayTechnology=(RetroMediaLab.VideoPresentation.Enums.EmulationVideoDisplayTechnology)999,
             Sampling=(RetroMediaLab.VideoPresentation.Enums.EmulationVideoSampling)999,
-            Crt=new(HorizontalCurvature:-500,VerticalCurvature:500,BeamWidth:-10,MaskIntensity:200),
+            Crt = new((EmulationCrtMask)100, (EmulationCrtColorStandards)100, (EmulationCrtFieldRate)100),
             FixedPixel=new(ResponseTimeMilliseconds:5000,GridIntensity:-1,PersistenceIntensity:101,MonochromePalette:RetroMediaLab.VideoPresentation.Enums.EmulationMonochromePalette.White,BacklightIntensity:101,BlackDepth:-1),
-            Restoration=new(Dedithering:-1,Debanding:101),Temporal=new(GeneralPersistence:101,MotionBlur:-1)
+            Restoration=new(Dedithering:-1,Debanding:101),BlackFrameInsertion=true
         };
         var output=EmulationVideoProcessingConfigurationFunctions.Normalize(input);
         Assert.Equal(RetroMediaLab.VideoPresentation.Enums.EmulationVideoDisplayTechnology.Normal,output.DisplayTechnology);
         Assert.Equal(RetroMediaLab.VideoPresentation.Enums.EmulationVideoSampling.Nearest,output.Sampling);
-        Assert.Equal(-100,output.Crt.HorizontalCurvature); Assert.Equal(100,output.Crt.VerticalCurvature); Assert.Equal(0,output.Crt.BeamWidth); Assert.Equal(100,output.Crt.MaskIntensity);
+        Assert.Equal(new EmulationCrtVideoConfiguration(), output.Crt);
         Assert.Equal(1000,output.FixedPixel.ResponseTimeMilliseconds); Assert.Equal(0,output.FixedPixel.GridIntensity); Assert.Equal(100,output.FixedPixel.PersistenceIntensity);
         Assert.Equal(RetroMediaLab.VideoPresentation.Enums.EmulationMonochromePalette.White,output.FixedPixel.MonochromePalette);
         Assert.Equal(100,output.FixedPixel.BacklightIntensity); Assert.Equal(0,output.FixedPixel.BlackDepth); Assert.Equal(0,output.Restoration.Dedithering); Assert.Equal(100,output.Restoration.Debanding);
-        Assert.Equal(100,output.Temporal.GeneralPersistence); Assert.Equal(0,output.Temporal.MotionBlur);
+        Assert.True(output.BlackFrameInsertion);
         Assert.Equal(5000,input.FixedPixel.ResponseTimeMilliseconds); Assert.Equal(output,EmulationVideoProcessingConfigurationFunctions.Normalize(output));
     }
     public static void DeditheringRecognizesSourcePatterns()

@@ -47,11 +47,15 @@ public sealed class HiddenMachineRenderingTests(StaExecutionScenarios sta)
     }
 
     [Fact]
-    public void TemporalResetDoesNotWeaveAnImageFromBeforeSuspension()
+    public void TemporalResetClearsDisplayPersistenceFromBeforeSuspension()
     {
         using var pipeline = new RetroMediaLab.App.Rendering.Emulation.Processing.SoftwareEmulationVideoProcessingPipeline();
         using var fresh = new RetroMediaLab.App.Rendering.Emulation.Processing.SoftwareEmulationVideoProcessingPipeline();
-        var settings = new EmulationVideoProcessingConfiguration { Temporal = new(Interlacing: 100) };
+        var settings = new EmulationVideoProcessingConfiguration
+        {
+            DisplayTechnology = EmulationVideoDisplayTechnology.FixedPixel,
+            FixedPixel = new(PersistenceIntensity: 100)
+        };
         var old = new VideoFrame(new byte[] { 0, 0, 255, 255, 0, 0, 255, 255 }, 1, 2, 4, EmulationPixelFormat.Xrgb8888, 0.5f, 1, TimeSpan.Zero);
         var current = old with { Pixels = new byte[] { 255, 0, 0, 255, 255, 0, 0, 255 },
             Sequence = 100, Timestamp = TimeSpan.FromSeconds(2) };

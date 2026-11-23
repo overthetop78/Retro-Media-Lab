@@ -9,13 +9,9 @@ internal sealed class OpenGlVideoProgramUniforms
     private readonly int _adjustments;
     private readonly int _processing;
     private readonly int _output;
-    private readonly int _crtDisplay;
-    private readonly int _crtBeam;
-    private readonly int _crtOptical;
-    private readonly int _crtGeometry;
-    private readonly int _crtScanlines;
-    private readonly int _crtPattern;
-    private readonly int _crtPatternIntensity;
+    private readonly int _crtRaster;
+    private readonly int _crtTuning;
+    private readonly int _crtPhosphor;
     private readonly int _fixedDisplay;
     private readonly int _fixedSpatial;
     private readonly int _fixedTechnology;
@@ -33,9 +29,7 @@ internal sealed class OpenGlVideoProgramUniforms
     private readonly int _segmentTemporal;
     private readonly int _general;
     private readonly int _restoration;
-    private readonly int _temporal;
     private readonly int _signal;
-    private readonly int _signal2;
     private readonly int _stylistic;
     private readonly int _stylistic2;
     private readonly int _vfdDisplay;
@@ -58,13 +52,9 @@ internal sealed class OpenGlVideoProgramUniforms
         _adjustments = Location(OpenGlVideoUniformNames.Adjustments);
         _processing = Location(OpenGlVideoUniformNames.Processing);
         _output = Location(OpenGlVideoUniformNames.Output);
-        _crtDisplay = Location(OpenGlVideoUniformNames.CrtDisplay);
-        _crtBeam = Location(OpenGlVideoUniformNames.CrtBeam);
-        _crtOptical = Location(OpenGlVideoUniformNames.CrtOptical);
-        _crtGeometry = Location(OpenGlVideoUniformNames.CrtGeometry);
-        _crtScanlines = Location(OpenGlVideoUniformNames.CrtScanlines);
-        _crtPattern = Location(OpenGlVideoUniformNames.CrtPattern);
-        _crtPatternIntensity = Location(OpenGlVideoUniformNames.CrtPatternIntensity);
+        _crtRaster = Location(OpenGlVideoUniformNames.CrtRaster);
+        _crtTuning = Location(OpenGlVideoUniformNames.CrtTuning);
+        _crtPhosphor = Location(OpenGlVideoUniformNames.CrtPhosphor);
         _fixedDisplay = Location(OpenGlVideoUniformNames.FixedDisplay);
         _fixedSpatial = Location(OpenGlVideoUniformNames.FixedSpatial);
         _fixedTechnology = Location(OpenGlVideoUniformNames.FixedTechnology);
@@ -82,9 +72,7 @@ internal sealed class OpenGlVideoProgramUniforms
         _segmentTemporal = Location(OpenGlVideoUniformNames.SegmentTemporal);
         _general = Location(OpenGlVideoUniformNames.General);
         _restoration = Location(OpenGlVideoUniformNames.Restoration);
-        _temporal = Location(OpenGlVideoUniformNames.Temporal);
         _signal = Location(OpenGlVideoUniformNames.Signal);
-        _signal2 = Location(OpenGlVideoUniformNames.Signal2);
         _stylistic = Location(OpenGlVideoUniformNames.Stylistic);
         _stylistic2 = Location(OpenGlVideoUniformNames.Stylistic2);
         _vfdDisplay = Location(OpenGlVideoUniformNames.VfdDisplay);
@@ -104,7 +92,7 @@ internal sealed class OpenGlVideoProgramUniforms
         int Location(string name) => api.GetUniformLocation(program, name);
     }
 
-    internal void Apply(EmulationVideoProcessingConfiguration configuration, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, bool hasHistory, double elapsedMilliseconds, long sequence, float averageLuminance)
+    internal void Apply(EmulationVideoProcessingConfiguration configuration, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, bool hasHistory, double elapsedMilliseconds, long sequence, CrtSignal crtSignal, float averageLuminance)
     {
         var adjustments = configuration.Adjustments;
         _api.SetUniform(_adjustments,
@@ -115,14 +103,9 @@ internal sealed class OpenGlVideoProgramUniforms
         _api.SetUniform(_processing, EmulationImageAdjustmentFunctions.SharpnessAmount(adjustments.Sharpness), (float)configuration.Sampling, sourceWidth, sourceHeight);
         _api.SetUniform(_output, outputWidth, outputHeight, 0f, 0f);
 
-        var crt = CrtVideoShaderParameters.From(configuration);
-        Set(_crtDisplay, crt.Display);
-        Set(_crtBeam, crt.Beam);
-        Set(_crtOptical, crt.Optical);
-        Set(_crtGeometry, crt.Geometry);
-        Set(_crtScanlines, crt.Scanlines);
-        Set(_crtPattern, crt.Pattern);
-        Set(_crtPatternIntensity, crt.PatternIntensity);
+        Set(_crtRaster, crtSignal.Raster);
+        Set(_crtTuning, crtSignal.Tuning);
+        Set(_crtPhosphor, crtSignal.Phosphor);
 
         var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         Set(_fixedDisplay, fixedPixel.Display);
@@ -153,11 +136,6 @@ internal sealed class OpenGlVideoProgramUniforms
             0f,
             configuration.Restoration.Debanding / OpenGlVideoConstants.PercentageDivisor,
             0f));
-        Set(_temporal, new(
-            configuration.Temporal.GeneralPersistence / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Temporal.MotionBlur / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Temporal.Flicker / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Temporal.Interlacing > 0 ? 1f : 0f));
         Set(_signal, new(
             (float)configuration.SignalSimulation.Connection,
             configuration.SignalSimulation.ConnectionIntensity
@@ -165,7 +143,6 @@ internal sealed class OpenGlVideoProgramUniforms
             (float)configuration.SignalSimulation.Standard,
             configuration.SignalSimulation.StandardIntensity
                 / OpenGlVideoConstants.PercentageDivisor));
-        Set(_signal2, new(0f, configuration.Temporal.BlackFrameInsertion ? 1f : 0f, configuration.Temporal.InterlacingVisibility / OpenGlVideoConstants.PercentageDivisor, 0f));
         Set(_stylistic, new(
             configuration.Stylistic.Grain / OpenGlVideoConstants.PercentageDivisor,
             configuration.Stylistic.Vhs / OpenGlVideoConstants.PercentageDivisor,

@@ -7,13 +7,9 @@ internal static class OpenGlVideoUniformNames
     internal const string Adjustments = "Adjustments";
     internal const string Processing = "Processing";
     internal const string Output = "Output";
-    internal const string CrtDisplay = "CrtDisplay";
-    internal const string CrtBeam = "CrtBeam";
-    internal const string CrtOptical = "CrtOptical";
-    internal const string CrtGeometry = "CrtGeometry";
-    internal const string CrtScanlines = "CrtScanlines";
-    internal const string CrtPattern = "CrtPattern";
-    internal const string CrtPatternIntensity = "CrtPatternIntensity";
+    internal const string CrtRaster = "CrtRaster";
+    internal const string CrtTuning = "CrtTuning";
+    internal const string CrtPhosphor = "CrtPhosphor";
     internal const string FixedDisplay = "FixedDisplay";
     internal const string FixedSpatial = "FixedSpatial";
     internal const string FixedTechnology = "FixedTechnology";
@@ -31,9 +27,7 @@ internal static class OpenGlVideoUniformNames
     internal const string SegmentTemporal = "SegmentTemporal";
     internal const string General = "General";
     internal const string Restoration = "Restoration";
-    internal const string Temporal = "Temporal";
     internal const string Signal = "Signal";
-    internal const string Signal2 = "Signal2";
     internal const string Stylistic = "Stylistic";
     internal const string Stylistic2 = "Stylistic2";
     internal const string VfdDisplay = "VfdDisplay";

@@ -11,7 +11,7 @@ public sealed record EmulationVideoProcessingConfiguration
     public EmulationImageAdjustments Adjustments { get; init; } = new();
     public IReadOnlyDictionary<EmulationVideoScreenType, EmulationImageAdjustments>? ScreenAdjustments { get; init; }
     public EmulationImageRestorationConfiguration Restoration { get; init; } = new();
-    public EmulationTemporalVideoConfiguration Temporal { get; init; } = new();
+    public bool BlackFrameInsertion { get; init; }
     public EmulationSignalSimulationConfiguration SignalSimulation { get; init; } = new();
     public EmulationStylisticVideoConfiguration Stylistic { get; init; } = new();
     public EmulationCrtVideoConfiguration Crt { get; init; } = new();

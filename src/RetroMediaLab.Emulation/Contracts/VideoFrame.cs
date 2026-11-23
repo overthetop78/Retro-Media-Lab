@@ -5,6 +5,10 @@ public sealed record VideoFrame(ReadOnlyMemory<byte> Pixels, int Width, int Heig
     /// <summary>En entrelacé, Pixels/Height contiennent uniquement le champ indiqué, à sa cadence native.</summary>
     public EmulationVideoScanMode ScanMode { get; init; }
 
+    public EmulationVideoStandard? SignalStandard { get; init; }
+    public double SignalFieldRate { get; init; }
+    public int SignalFieldHeight { get; init; }
+
     /// <summary>Hauteur native de l'image ; Height reste la hauteur des lignes effectivement transférées.</summary>
     public int ImageHeight => ScanMode == EmulationVideoScanMode.Progressive ? Height : checked(Height * 2);
 }

@@ -213,7 +213,6 @@ public static class EmulationVideoProcessingConfigurationFunctions
         var ePaper = configuration.EPaper ?? new EmulationEPaperVideoConfiguration();
         var projection = configuration.Projection ?? new EmulationProjectionVideoConfiguration();
         var restoration = configuration.Restoration ?? new EmulationImageRestorationConfiguration();
-        var temporal = configuration.Temporal ?? new EmulationTemporalVideoConfiguration();
         var signalSimulation = configuration.SignalSimulation ?? new EmulationSignalSimulationConfiguration();
         var stylistic = configuration.Stylistic ?? new EmulationStylisticVideoConfiguration();
         return configuration with
@@ -228,14 +227,6 @@ public static class EmulationVideoProcessingConfigurationFunctions
                 DetailRecovery = Intensity(restoration.DetailRecovery),
                 Deinterlacing = restoration.Deinterlacing is EmulationDeinterlacingMode.BobEvenLines or EmulationDeinterlacingMode.BobOddLines
                     ? EmulationDeinterlacingMode.Bob : DefinedOrDefault(restoration.Deinterlacing, EmulationDeinterlacingMode.Off)
-            },
-            Temporal = temporal with
-            {
-                GeneralPersistence = Intensity(temporal.GeneralPersistence),
-                MotionBlur = Intensity(temporal.MotionBlur),
-                Flicker = Intensity(temporal.Flicker),
-                Interlacing = Intensity(temporal.Interlacing),
-                InterlacingVisibility = Intensity(temporal.InterlacingVisibility)
             },
             SignalSimulation = signalSimulation with
             {
@@ -254,27 +245,10 @@ public static class EmulationVideoProcessingConfigurationFunctions
             },
             Crt = crt with
             {
-                ColorMode = DefinedOrDefault(crt.ColorMode, EmulationCrtColorMode.Color),
-                BeamWidth = Intensity(crt.BeamWidth),
-                BeamIntensity = Intensity(crt.BeamIntensity),
-                BeamDiffusion = Intensity(crt.BeamDiffusion),
-                HaloIntensity = Intensity(crt.HaloIntensity),
                 Mask = DefinedOrDefault(crt.Mask, EmulationCrtMask.None),
-                MaskSubpixels = DefinedOrDefault(crt.MaskSubpixels, EmulationSubpixelLayout.Rgb),
-                MaskIntensity = Intensity(crt.MaskIntensity),
-                HorizontalCurvature = SignedIntensity(crt.HorizontalCurvature),
-                VerticalCurvature = SignedIntensity(crt.VerticalCurvature),
-                Trapezoid = SignedIntensity(crt.Trapezoid),
-                Vignette = Intensity(crt.Vignette),
-                ScanlineOrientation = DefinedOrDefault(crt.ScanlineOrientation, EmulationPatternOrientation.Horizontal),
-                ScanlineIntensity = Intensity(crt.ScanlineIntensity),
-                ScanlineThickness = Intensity(crt.ScanlineThickness),
-                ScanlinePhase = DefinedOrDefault(crt.ScanlinePhase, EmulationScanlinePhase.Zero),
-                ScanlineCompensation = Intensity(crt.ScanlineCompensation),
-                PatternOrientation = DefinedOrDefault(crt.PatternOrientation, EmulationPatternOrientation.Horizontal),
-                PatternFrequency = Intensity(crt.PatternFrequency),
-                PatternPhase = Intensity(crt.PatternPhase),
-                PatternIntensity = Intensity(crt.PatternIntensity)
+                ColorStandards = DefinedOrDefault(crt.ColorStandards, EmulationCrtColorStandards.PalSecamNtsc),
+                FieldRate = DefinedOrDefault(crt.FieldRate, EmulationCrtFieldRate.Hz50And60),
+                PhosphorColor = DefinedOrDefault(crt.PhosphorColor, EmulationCrtPhosphorColor.Gray)
             },
             FixedPixel = fixedPixel with
             {
@@ -396,7 +370,6 @@ public static class EmulationVideoProcessingConfigurationFunctions
         };
     }
 
-    private static int SignedIntensity(int value) => Math.Clamp(value, -100, 100);
 
     private static int Intensity(int value) => Math.Clamp(value, EmulationVideoProcessingLimits.IntensityMinimum, EmulationVideoProcessingLimits.IntensityMaximum);
 

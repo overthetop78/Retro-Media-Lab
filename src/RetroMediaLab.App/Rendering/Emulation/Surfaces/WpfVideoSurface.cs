@@ -17,6 +17,8 @@ internal sealed class WpfVideoSurface : IEmulationVideoSurface
     private readonly IEmulationVideoProcessingPipeline? _synchronousPipeline;
     private readonly SoftwareVideoFrameProcessingWorker? _worker;
     private long _configurationVersion;
+    private long _frameRequest;
+    private long _displayedRequest;
     private bool _disposed;
     private WriteableBitmap? _bitmap;
     private EmulationVideoProcessingConfiguration _videoProcessing = EmulationVideoProcessingConfigurationFunctions.Normalize(null);
@@ -45,10 +47,26 @@ internal sealed class WpfVideoSurface : IEmulationVideoSurface
 
     public void Present(VideoFrame frame) => PresentCore(frame, null);
 
+    public bool PresentBlack()
+    {
+        if (_bitmap is null || _displayedRequest != _frameRequest) return false;
+        _image.Opacity = 0;
+        return true;
+    }
+
+    public bool RestoreLastFrame()
+    {
+        if (_bitmap is null) return false;
+        _image.Opacity = 1;
+        return true;
+    }
+
     public void PresentTransient(VideoFrame frame, VideoFrame source) => PresentCore(frame, source);
 
     private void PresentCore(VideoFrame frame, VideoFrame? transientSource)
     {
+        _image.Opacity = 1;
+        var request = ++_frameRequest;
         var outputSize = new EmulationVideoProcessingSize(_image.ActualWidth > 0 ? (int)Math.Round(_image.ActualWidth) : frame.Width, _image.ActualHeight > 0 ? (int)Math.Round(_image.ActualHeight) : frame.Height);
         var configuration = _videoProcessing;
         var version = Interlocked.Read(ref _configurationVersion);
@@ -56,6 +74,7 @@ internal sealed class WpfVideoSurface : IEmulationVideoSurface
         {
             var surfaceFrame = EmulationVideoSurfaceFrameFunctions.Process(_synchronousPipeline!, configuration, frame, outputSize);
             UpdateBitmap(surfaceFrame.Frame, surfaceFrame.Bgra32Pixels);
+            _displayedRequest = request;
             return;
         }
         _worker.Submit(configuration, frame, outputSize, version, result =>
@@ -66,6 +85,7 @@ internal sealed class WpfVideoSurface : IEmulationVideoSurface
             {
                 if (_disposed || result.ConfigurationVersion != Interlocked.Read(ref _configurationVersion)) return;
                 UpdateBitmap(result.ProcessedFrame, result.Bgra32Pixels);
+                _displayedRequest = request;
             }, System.Windows.Threading.DispatcherPriority.Render);
         }, transientSource);
     }

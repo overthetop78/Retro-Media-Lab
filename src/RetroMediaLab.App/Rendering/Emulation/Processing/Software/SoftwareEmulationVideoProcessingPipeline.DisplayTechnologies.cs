@@ -8,7 +8,7 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulationVideoProcessingPipeline
 {
-    private static void ApplyDisplayTechnology(float[] colors, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, long sequence, EmulationVideoProcessingConfiguration configuration)
+    private static void ApplyDisplayTechnology(float[] colors, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, VideoFrame frame, EmulationVideoProcessingConfiguration configuration, CrtSignal crt)
     {
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel)
         {
@@ -23,7 +23,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             FilterPlasmaPhosphorIntensity.Apply(colors, plasma.PhosphorIntensity);
             FilterPlasmaAutomaticBrightnessLimiter.Apply(colors, plasma.AutomaticBrightnessLimiter);
             FilterPlasmaCellStructure.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, plasma.CellStructure);
-            FilterPlasmaTemporalDithering.Apply(colors, outputWidth, outputHeight, sequence, plasma.TemporalDithering);
+            FilterPlasmaTemporalDithering.Apply(colors, outputWidth, outputHeight, frame.Sequence, plasma.TemporalDithering);
             FilterPlasmaLightDiffusion.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, plasma.Diffusion);
             return;
         }
@@ -83,34 +83,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         }
         if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.Crt) return;
 
-        if (configuration.Crt.ColorMode != EmulationCrtColorMode.Color)
-        {
-            var tint = CrtTint(configuration.Crt);
-            for (var index = 0; index < colors.Length; index += 3)
-            {
-            var luminance = colors[index] * SoftwareVideoProcessingConstants.RedLuminance + colors[index + 1] * SoftwareVideoProcessingConstants.GreenLuminance + colors[index + 2] * SoftwareVideoProcessingConstants.BlueLuminance;
-                colors[index] = luminance * tint.Red;
-                colors[index + 1] = luminance * tint.Green;
-                colors[index + 2] = luminance * tint.Blue;
-            }
-        }
-        FilterCrt.Apply(colors, outputWidth, outputHeight, sourceWidth, sourceHeight, configuration.Crt);
+        FilterCrt.Apply(colors, outputWidth, outputHeight, sourceWidth, sourceHeight, crt);
     }
-
-    private static (float Red, float Green, float Blue) CrtTint(EmulationCrtVideoConfiguration configuration)
-    {
-        var argb = configuration.ColorMode switch
-        {
-            EmulationCrtColorMode.Green => 0xFF66FF66u,
-            EmulationCrtColorMode.Amber => 0xFFFFB000u,
-            EmulationCrtColorMode.White => 0xFFFFFFFFu,
-            EmulationCrtColorMode.Gray => 0xFFB0B0B0u,
-            _ => 0xFFFFFFFFu
-        };
-        return (
-            SrgbToLinear(((argb >> 16) & 0xff) / SoftwareVideoProcessingConstants.MaximumColorComponent),
-            SrgbToLinear(((argb >> 8) & 0xff) / SoftwareVideoProcessingConstants.MaximumColorComponent),
-            SrgbToLinear((argb & 0xff) / SoftwareVideoProcessingConstants.MaximumColorComponent));
-    }
-
 }

@@ -97,6 +97,20 @@ public sealed class OptionIntegrationTests
     }
 
     [Theory]
+    [InlineData("MasterSystem")]
+    [InlineData("MasterSystemII")]
+    public void MasterSystemReportsTheNativeGeometryEvenWithALegacyAspectOverride(string model)
+    {
+        using var fixture = Create("segaemu", model);
+        fixture.Core.SetOption("segaemu_aspect_ratio", "PAL PAR");
+        fixture.Core.RunFrame();
+        var frame = fixture.Core.LatestVideoFrame!;
+        Assert.Equal(256, frame.Width);
+        Assert.Equal(192, frame.Height);
+        Assert.Equal(4f / 3f, frame.AspectRatio);
+    }
+
+    [Theory]
     [InlineData("segaemu")]
     [InlineData("genesisplusgxcs")]
     public void GameGearExtendedDisplayUpdatesBothDimensionsWithoutReset(string id)

@@ -2,12 +2,6 @@ namespace RetroMediaLab.App.Constants.Localization;
 
 public static class EmulationResourceKeys
 {
-    public const string VideoCrtGroupColor = "Emulation.Video.Crt.Group.Color";
-    public const string VideoCrtGroupBeam = "Emulation.Video.Crt.Group.Beam";
-    public const string VideoCrtGroupMask = "Emulation.Video.Crt.Group.Mask";
-    public const string VideoCrtGroupGeometry = "Emulation.Video.Crt.Group.Geometry";
-    public const string VideoCrtGroupScanlines = "Emulation.Video.Crt.Group.Scanlines";
-    public const string VideoCrtGroupInterference = "Emulation.Video.Crt.Group.Interference";
     public const string Power = "Emulation.Shortcut.Power";
     public const string MachineSettings = "Emulation.Machine.Settings";
     public const string PauseResume = "Emulation.Shortcut.PauseResume";
@@ -48,7 +42,6 @@ public static class EmulationResourceKeys
     public const string VideoTechnology = "Emulation.Video.Technology";
     public const string VideoGeneralSettings = "Emulation.Video.Settings.General";
     public const string VideoRestorationSettings = "Emulation.Video.Settings.Restoration";
-    public const string VideoTemporalSettings = "Emulation.Video.Settings.Temporal";
     public const string VideoSignalSimulationSettings = "Emulation.Video.Settings.SignalSimulation";
     public const string VideoStylisticSettings = "Emulation.Video.Settings.Stylistic";
     public const string VideoRetroMediaLabProcessing = "Emulation.Video.Settings.RetroMediaLabProcessing";
@@ -102,8 +95,6 @@ public static class EmulationResourceKeys
     public const string VideoCrtMaskApertureGrille = "Emulation.Video.Crt.Mask.ApertureGrille";
     public const string VideoCrtMaskShadowMask = "Emulation.Video.Crt.Mask.ShadowMask";
     public const string VideoCrtMaskSlotMask = "Emulation.Video.Crt.Mask.SlotMask";
-    public const string VideoOrientationHorizontal = "Emulation.Video.Orientation.Horizontal";
-    public const string VideoOrientationVertical = "Emulation.Video.Orientation.Vertical";
     public const string VideoSubpixelsMonochrome = "Emulation.Video.Subpixels.Monochrome";
     public const string VideoSubpixelsRgb = "Emulation.Video.Subpixels.Rgb";
     public const string VideoSubpixelsBgr = "Emulation.Video.Subpixels.Bgr";
@@ -125,13 +116,7 @@ public static class EmulationResourceKeys
     public const string VideoRestorationLevelMedium = "Emulation.Video.Restoration.Level.Medium";
     public const string VideoRestorationLevelStrong = "Emulation.Video.Restoration.Level.Strong";
     public const string VideoParameterDeinterlacing = "Emulation.Video.Parameter.Deinterlacing";
-    public const string VideoParameterGeneralPersistence = "Emulation.Video.Parameter.GeneralPersistence";
-    public const string VideoParameterMotionBlur = "Emulation.Video.Parameter.MotionBlur";
-    public const string VideoParameterFlicker = "Emulation.Video.Parameter.Flicker";
-    public const string VideoParameterInterlacing = "Emulation.Video.Parameter.Interlacing";
-    public const string VideoParameterInterlacingVisibility = "Emulation.Video.Parameter.InterlacingVisibility";
     public const string VideoParameterBlackFrameInsertion = "Emulation.Video.Parameter.BlackFrameInsertion";
-    public const string VideoTemporalCadenceAutomatic = "Emulation.Video.Temporal.CadenceAutomatic";
     public const string VideoParameterGrain = "Emulation.Video.Parameter.Grain";
     public const string VideoParameterVhs = "Emulation.Video.Parameter.Vhs";
     public const string VideoParameterChromaticAberration = "Emulation.Video.Parameter.ChromaticAberration";
@@ -243,26 +228,7 @@ public static class EmulationResourceKeys
     public const string VideoProjectionGroupScreen = "Emulation.Video.Projection.Group.Screen";
     public const string VideoDeinterlacingOff = "Emulation.Video.Deinterlacing.Off";
     public const string VideoDeinterlacingBlend = "Emulation.Video.Deinterlacing.Blend";
-    public const string VideoParameterCrtColorMode = "Emulation.Video.Parameter.CrtColorMode";
-    public const string VideoParameterCrtBeamWidth = "Emulation.Video.Parameter.CrtBeamWidth";
-    public const string VideoParameterCrtBeamIntensity = "Emulation.Video.Parameter.CrtBeamIntensity";
-    public const string VideoParameterCrtBeamDiffusion = "Emulation.Video.Parameter.CrtBeamDiffusion";
-    public const string VideoParameterCrtHaloIntensity = "Emulation.Video.Parameter.CrtHaloIntensity";
     public const string VideoParameterCrtMask = "Emulation.Video.Parameter.CrtMask";
-    public const string VideoParameterCrtMaskSubpixels = "Emulation.Video.Parameter.CrtMaskSubpixels";
-    public const string VideoParameterCrtMaskIntensity = "Emulation.Video.Parameter.CrtMaskIntensity";
-    public const string VideoParameterCrtVignette = "Emulation.Video.Parameter.CrtVignette";
-    public const string VideoParameterCrtScanlinesEnabled = "Emulation.Video.Parameter.CrtScanlinesEnabled";
-    public const string VideoParameterCrtScanlineOrientation = "Emulation.Video.Parameter.CrtScanlineOrientation";
-    public const string VideoParameterCrtScanlineIntensity = "Emulation.Video.Parameter.CrtScanlineIntensity";
-    public const string VideoParameterCrtScanlineThickness = "Emulation.Video.Parameter.CrtScanlineThickness";
-    public const string VideoParameterCrtScanlinePhase = "Emulation.Video.Parameter.CrtScanlinePhase";
-    public const string VideoParameterCrtScanlineCompensation = "Emulation.Video.Parameter.CrtScanlineCompensation";
-    public const string VideoParameterCrtPatternEnabled = "Emulation.Video.Parameter.CrtPatternEnabled";
-    public const string VideoParameterCrtPatternOrientation = "Emulation.Video.Parameter.CrtPatternOrientation";
-    public const string VideoParameterCrtPatternFrequency = "Emulation.Video.Parameter.CrtPatternFrequency";
-    public const string VideoParameterCrtPatternPhase = "Emulation.Video.Parameter.CrtPatternPhase";
-    public const string VideoParameterCrtPatternIntensity = "Emulation.Video.Parameter.CrtPatternIntensity";
     public const string VideoParameterFixedPixelTechnology = "Emulation.Video.Parameter.FixedPixelTechnology";
     public const string VideoParameterFixedPixelSubpixels = "Emulation.Video.Parameter.FixedPixelSubpixels";
     public const string VideoParameterFixedPixelMonochromeColor = "Emulation.Video.Parameter.FixedPixelMonochromeColor";
@@ -302,9 +268,6 @@ public static class EmulationResourceKeys
     public const string VideoPresetNormal = "Emulation.Video.Preset.Normal";
     public const string VideoPresetCrtArcadeColor = "Emulation.Video.Preset.CrtArcadeColor";
     public const string VideoPresetCrtTelevisionColor = "Emulation.Video.Preset.CrtTelevisionColor";
-    public const string VideoPresetCrtGreen = "Emulation.Video.Preset.CrtGreen";
-    public const string VideoPresetCrtAmber = "Emulation.Video.Preset.CrtAmber";
-    public const string VideoPresetCrtWhite = "Emulation.Video.Preset.CrtWhite";
     public const string VideoPresetLcdColor = "Emulation.Video.Preset.LcdColor";
     public const string VideoPresetLcdMonochrome = "Emulation.Video.Preset.LcdMonochrome";
     public const string VideoPresetLedBacklitLcd = "Emulation.Video.Preset.LedBacklitLcd";
