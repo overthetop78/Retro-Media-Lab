@@ -12,6 +12,9 @@ public static class StoragePaths
     private static string? _configuredEmulationCaptureDirectory;
     public static bool IsPortable => File.Exists(Path.Combine(AppContext.BaseDirectory, "portable.flag"));
     public static string DataDirectory => ResolveDataDirectory(AppContext.BaseDirectory, Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+    internal static string ShaderCacheDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        ApplicationBrandMigrationConstants.ProductDirectory, "ShaderCache");
     public static string LogsDirectory => LogsDirectoryFor(DataDirectory);
     internal static string LogsDirectoryFor(string dataDirectory) => Path.Combine(dataDirectory, "Logs");
     internal static ISettingsStore OpenSettingsStore(string dataDirectory) =>

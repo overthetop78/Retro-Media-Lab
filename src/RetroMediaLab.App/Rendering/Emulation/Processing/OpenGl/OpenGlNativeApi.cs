@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RetroMediaLab.App.Rendering.Emulation.Processing.OpenGl;
 
-internal sealed class OpenGlNativeApi
+internal sealed partial class OpenGlNativeApi
 {
     private readonly DeleteProgramDelegate _deleteProgram = Load<DeleteProgramDelegate>(OpenGlNativeFunctionNames.DeleteProgram);
     private readonly GetUniformLocationDelegate _getUniformLocation = Load<GetUniformLocationDelegate>(OpenGlNativeFunctionNames.GetUniformLocation);
@@ -20,22 +20,29 @@ internal sealed class OpenGlNativeApi
         uint program = 0;
         try
         {
-            vertex = Compile(OpenGlVideoConstants.VertexShader, vertexSource);
-            fragment = Compile(OpenGlVideoConstants.FragmentShader, fragmentSource);
             var createProgram = Load<CreateProgramDelegate>(OpenGlNativeFunctionNames.CreateProgram);
-            var attachShader = Load<AttachShaderDelegate>(OpenGlNativeFunctionNames.AttachShader);
-            var linkProgram = Load<LinkProgramDelegate>(OpenGlNativeFunctionNames.LinkProgram);
             var getProgram = Load<GetProgramivDelegate>(OpenGlNativeFunctionNames.GetProgram);
             program = createProgram();
-            attachShader(program, vertex);
-            attachShader(program, fragment);
-            linkProgram(program);
-            getProgram(program, OpenGlVideoConstants.LinkStatus, out var linked);
-            if (linked == 0)
-                throw new InvalidOperationException(ProgramLog(program));
+            var cachedBinary = ProgramBinaryCache.ForCurrentDriver(vertexSource, fragmentSource);
+            if (cachedBinary?.Restore(program, getProgram) != true)
+            {
+                vertex = Compile(OpenGlVideoConstants.VertexShader, vertexSource);
+                fragment = Compile(OpenGlVideoConstants.FragmentShader, fragmentSource);
+                cachedBinary?.MarkRetrievable(program);
+                var attachShader = Load<AttachShaderDelegate>(OpenGlNativeFunctionNames.AttachShader);
+                var linkProgram = Load<LinkProgramDelegate>(OpenGlNativeFunctionNames.LinkProgram);
+                attachShader(program, vertex);
+                attachShader(program, fragment);
+                linkProgram(program);
+                getProgram(program, OpenGlVideoConstants.LinkStatus, out var linked);
+                if (linked == 0)
+                    throw new InvalidOperationException(ProgramLog(program));
+                cachedBinary?.Save(program, getProgram);
+            }
             var result = program;
             program = 0;
             return result;
+
         }
         finally
         {
@@ -111,6 +118,9 @@ internal sealed class OpenGlNativeApi
     }
 
     private static T Load<T>(string name) where T : Delegate
+        => Find<T>(name) ?? throw new InvalidOperationException(name);
+
+    private static T? Find<T>(string name) where T : Delegate
     {
         var address = WglGetProcAddress(name);
         if (address == IntPtr.Zero
@@ -118,7 +128,7 @@ internal sealed class OpenGlNativeApi
             || address == new IntPtr(OpenGlVideoConstants.InvalidAddressTwo)
             || address == new IntPtr(OpenGlVideoConstants.InvalidAddressThree)
             || address == new IntPtr(OpenGlVideoConstants.InvalidAddressMinusOne))
-            throw new InvalidOperationException(name);
+            return null;
         return Marshal.GetDelegateForFunctionPointer<T>(address);
     }
 

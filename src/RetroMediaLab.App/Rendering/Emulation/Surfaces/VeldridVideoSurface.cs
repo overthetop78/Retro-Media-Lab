@@ -2,16 +2,15 @@ using RetroMediaLab.App.Functions.Rendering.Emulation;
 using RetroMediaLab.App.Factories.Rendering.Emulation;
 using RetroMediaLab.App.Interfaces.Rendering.Emulation;
 using RetroMediaLab.App.Rendering.Emulation.Processing;
+using RetroMediaLab.App.Rendering.Emulation.Processing.Shaders;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using RetroMediaLab.Emulation;
 using Veldrid;
-using Veldrid.SPIRV;
 
 namespace RetroMediaLab.App.Rendering.Emulation.Surfaces;
 
@@ -321,9 +320,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             var outputEncodesSrgb = output.ColorAttachments[0].Format is
                 Veldrid.PixelFormat.B8_G8_R8_A8_UNorm_SRgb or Veldrid.PixelFormat.R8_G8_B8_A8_UNorm_SRgb;
             var fragment = VeldridVideoProcessingShaders.Fragment(sampling, displayTechnology, outputEncodesSrgb);
-            shaders = factory.CreateFromSpirv(
-                new ShaderDescription(ShaderStages.Vertex, Encoding.UTF8.GetBytes(VeldridVideoProcessingShaders.Vertex), "main"),
-                new ShaderDescription(ShaderStages.Fragment, Encoding.UTF8.GetBytes(fragment), "main"));
+            shaders = VeldridShaderBytecode.Create(factory, VeldridVideoProcessingShaders.Vertex, fragment);
             var shaderSet = PresentationShaderSet(shaders);
             pipeline = factory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
                 BlendStateDescription.SingleOverrideBlend, DepthStencilStateDescription.Disabled,
