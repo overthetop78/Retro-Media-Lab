@@ -53,7 +53,9 @@ internal static partial class VeldridVideoProcessingShaders
         vec3 adjustLinear(vec3 linear)
         {
             linear=videoContrastParameter(linear,Parameters.Adjustments.y);
+        #if DISPLAY_TECHNOLOGY != 1
             linear=videoBrightnessParameter(linear,Parameters.Adjustments.x);
+        #endif
             linear=videoGammaParameter(linear,Parameters.Adjustments.z);
             return videoSaturationParameter(linear,Parameters.Adjustments.w);
         }
@@ -302,7 +304,7 @@ internal static partial class VeldridVideoProcessingShaders
                 int decoder = int(Parameters.CrtTuning.y + .5);
                 vec3 neighbor = decoder == 0 ? c : raw(crtChromaNeighbor(sourceUv, Parameters.Processing.zw, decoder));
                 c = crtDecode(c, neighbor, decoder, floor(sourceUv.y * Parameters.Processing.w));
-                c *= crtBeam(uv.y, Parameters.Output.y, Parameters.CrtRaster);
+                c = min(vec3(1.0), c * (Parameters.Adjustments.x * crtBeam(uv.y, Parameters.Output.y, Parameters.CrtRaster, Parameters.Output.w, Parameters.CrtPhosphor.w)));
             }
         #endif
         #if DISPLAY_TECHNOLOGY == 2
@@ -354,6 +356,7 @@ internal static partial class VeldridVideoProcessingShaders
         """ + SignalConnectionRgbScart.Shader + SignalConnectionComponent.Shader + SignalConnectionSVideo.Shader + SignalConnectionComposite.Shader + SignalConnectionRf.Shader + SignalStandardPal.Shader + SignalStandardNtsc.Shader + SignalStandardSecam.Shader + FilterGrain.Shader + FilterVhs.Shader + FilterChromaticAberration.Shader + FilterBloom.Shader + FilterSepia.Shader + """
         vec3 signalEffects(vec3 color,vec2 uv)
         {
+            if (Parameters.Signal.x < .5 && Parameters.Signal.w <= 0.0) return color;
             vec2 stepSize=1.0/max(Parameters.Processing.zw,vec2(1.0));
             vec3 left=raw(uv-vec2(stepSize.x,0.0)),right=raw(uv+vec2(stepSize.x,0.0));
             vec3 up=raw(uv-vec2(0.0,stepSize.y)),down=raw(uv+vec2(0.0,stepSize.y));
@@ -380,6 +383,16 @@ internal static partial class VeldridVideoProcessingShaders
             c=filterGrain(c,Parameters.Stylistic.x,hash(floor(uv*Parameters.Output.xy)+Parameters.General.z)*2.0-1.0);
             return clamp(c,0.0,1.0);
         }
+        #if DISPLAY_TECHNOLOGY == 1
+        vec3 crtImageAt(vec2 uv)
+        {
+            vec2 sourceUv = crtSignalUv(uv, Parameters.CrtRaster, Parameters.CrtTuning);
+            if (any(lessThan(sourceUv, vec2(0.0))) || any(greaterThan(sourceUv, vec2(1.0)))) return vec3(0.0);
+            vec3 color = adjustLinear(restorationPoint(sourceUv));
+            if (Parameters.CrtTuning.y < .5) color = vec3(dot(color, vec3(.2126,.7152,.0722)));
+            return min(vec3(1.0), color * (Parameters.Adjustments.x * crtBeam(uv.y, Parameters.Output.y, Parameters.CrtRaster, Parameters.Output.w, Parameters.CrtPhosphor.w)));
+        }
+        #endif
         void main()
         {
             vec3 c=displayEffect(restored(fsin_TexCoord),fsin_TexCoord);
@@ -419,7 +432,8 @@ internal static partial class VeldridVideoProcessingShaders
             }
         #endif
         #if DISPLAY_TECHNOLOGY == 1
-            c = crtPhosphorMask(c, fsin_TexCoord, Parameters.CrtRaster.y * 2.0, Parameters.CrtPhosphor);
+            c = crtCompose(c, fsin_TexCoord, vec2(Parameters.CrtTuning.w, Parameters.CrtRaster.y * 2.0),
+                Parameters.CrtPhosphor, Parameters.Output.w, Parameters.Adjustments.x, Parameters.Output.xy);
         #endif
         #ifdef OUTPUT_ENCODES_SRGB
             fsout_Color=vec4(c,1.0);

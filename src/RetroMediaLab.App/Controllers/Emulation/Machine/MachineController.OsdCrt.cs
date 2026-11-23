@@ -22,7 +22,10 @@ internal sealed partial class MachineController
             CrtChoice(Catalog.CrtMask, Catalog.CrtMaskResourceKeys, c => c.Mask, (c, v) => c with { Mask = v }),
             CrtChoice(Catalog.CrtPhosphorColor, Catalog.CrtPhosphorColorResourceKeys,
                 c => c.PhosphorColor, (c, v) => c with { PhosphorColor = v })
-                with { IsVisible = () => _video.VideoProcessing.Crt.Mask == EmulationCrtMask.Monochrome })
+                with { IsVisible = () => _video.VideoProcessing.Crt.Mask == EmulationCrtMask.Monochrome },
+            VideoNumber(Catalog.ParameterResourceKeys[Catalog.CrtBeamWidth], settings => settings.Crt.BeamWidth,
+                (settings, value) => settings with { Crt = settings.Crt with { BeamWidth = value } },
+                EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum, signed: true))
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.Crt };
 
     private Entry CrtChoice<T>(string parameter, IReadOnlyDictionary<T, string> keys, Func<EmulationCrtVideoConfiguration, T> read,

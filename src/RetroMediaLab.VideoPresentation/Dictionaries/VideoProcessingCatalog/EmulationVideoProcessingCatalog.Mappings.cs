@@ -136,6 +136,7 @@ public static partial class EmulationVideoProcessingCatalog
         {
             Gamma => "Emulation.Video.Gamma",
             CrtPhosphorColor => $"Emulation.Video.Parameter.{VectorPhosphorColor}",
+            CrtBeamWidth => $"Emulation.Video.Parameter.{VectorBeamWidth}",
             _ => $"Emulation.Video.Parameter.{id}"
         }, StringComparer.Ordinal);
 
@@ -159,6 +160,7 @@ public static partial class EmulationVideoProcessingCatalog
             [CrtFieldRate] = EmulationCrtFieldRate.Hz50And60,
             [CrtMask] = EmulationCrtMask.None,
             [CrtPhosphorColor] = EmulationCrtPhosphorColor.Gray,
+            [CrtBeamWidth] = 0,
             [FixedPixelTechnology] = EmulationFixedPixelTechnology.Lcd,
             [FixedPixelSubpixels] = EmulationSubpixelLayout.Rgb, [FixedPixelMonochromeColor] = EmulationMonochromePalette.Green,
             [FixedPixelGridIntensity] = 0, [FixedPixelPixelGap] = 0, [FixedPixelResponseTime] = 0,
@@ -244,7 +246,7 @@ public static partial class EmulationVideoProcessingCatalog
     private static IReadOnlyDictionary<string, EmulationVideoDisplayTechnology> TechnologyRequirements()
     {
         var result = new Dictionary<string, EmulationVideoDisplayTechnology>(StringComparer.Ordinal);
-        Add(CrtColorStandards, CrtPhosphorColor, EmulationVideoDisplayTechnology.Crt);
+        Add(CrtColorStandards, CrtBeamWidth, EmulationVideoDisplayTechnology.Crt);
         Add(FixedPixelTechnology, FixedPixelBlackDepth, EmulationVideoDisplayTechnology.FixedPixel);
         Add(PlasmaCellStructure, PlasmaPersistence, EmulationVideoDisplayTechnology.Plasma);
         Add(VectorLineThreshold, VectorPersistence, EmulationVideoDisplayTechnology.Vector);

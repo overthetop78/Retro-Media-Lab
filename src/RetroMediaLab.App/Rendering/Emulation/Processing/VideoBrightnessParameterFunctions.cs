@@ -2,6 +2,8 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal static class VideoBrightnessParameterFunctions
 {
+    internal static float CrtBeamGain(int setting) => MathF.Pow(2f, setting / 10f);
+
     internal static void Apply(float[] colors, int setting)
     {
         if (setting == 0) return;

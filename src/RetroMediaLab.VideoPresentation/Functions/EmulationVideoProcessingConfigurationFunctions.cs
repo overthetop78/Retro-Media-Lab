@@ -248,7 +248,9 @@ public static class EmulationVideoProcessingConfigurationFunctions
                 Mask = DefinedOrDefault(crt.Mask, EmulationCrtMask.None),
                 ColorStandards = DefinedOrDefault(crt.ColorStandards, EmulationCrtColorStandards.PalSecamNtsc),
                 FieldRate = DefinedOrDefault(crt.FieldRate, EmulationCrtFieldRate.Hz50And60),
-                PhosphorColor = DefinedOrDefault(crt.PhosphorColor, EmulationCrtPhosphorColor.Gray)
+                PhosphorColor = DefinedOrDefault(crt.PhosphorColor, EmulationCrtPhosphorColor.Gray),
+                BeamWidth = Math.Clamp(crt.BeamWidth, EmulationVideoProcessingLimits.AdjustmentMinimum,
+                    EmulationVideoProcessingLimits.AdjustmentMaximum)
             },
             FixedPixel = fixedPixel with
             {

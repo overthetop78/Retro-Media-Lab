@@ -59,6 +59,11 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             maskRow.Children.Add(phosphor);
         }
         panel.Children.Add(maskRow);
+        panel.Children.Add(EmulationSettingsFieldControlFunctions.CreateVideoSlider(
+            EmulationVideoProcessingCatalog.CrtBeamWidth, crt.BeamWidth,
+            EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum,
+            value => SetCrt(_configuration.Crt with { BeamWidth = value }),
+            1, 38, new Thickness(0, 2, 0, 8)));
         return panel;
     }
 

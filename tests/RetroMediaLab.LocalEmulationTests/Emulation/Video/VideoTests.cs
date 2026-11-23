@@ -9,21 +9,56 @@ namespace RetroMediaLab.Tests.Emulation.Video;
 [Collection("WPF")]
 public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaExecutionScenarios sta)
 {
+    [Theory]
+    [InlineData(-20, 28, 32)]
+    [InlineData(0, 64, 64)]
+    [InlineData(20, 122, 128)]
+    public void CrtBrightnessChangesBeamEmissionAndPreservesBlack(int setting, int minimum, int maximum)
+    {
+        using var pipeline = new SoftwareEmulationVideoProcessingPipeline();
+        byte[] pixels = [0, 0, 0, 255, 64, 64, 64, 255];
+        var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(pixels, 2, 1, 8,
+            RetroMediaLab.Emulation.Enums.EmulationPixelFormat.Xrgb8888, 2f, 1, TimeSpan.Zero);
+        var settings = new RetroMediaLab.VideoPresentation.Contracts.EmulationVideoProcessingConfiguration
+        {
+            DisplayTechnology = EmulationVideoDisplayTechnology.Crt
+        };
+        settings = RetroMediaLab.VideoPresentation.Functions.EmulationVideoProcessingConfigurationFunctions
+            .WithImageAdjustments(settings, EmulationVideoScreenType.Crt, adjustments => adjustments with { Brightness = setting });
+        var output = pipeline.Process(settings, frame, new(2, 1), new(2, 1)).Pixels.Span;
+        Assert.Equal(new byte[] { 0, 0, 0, 255 }, output[..4].ToArray());
+        Assert.All(output[4..7].ToArray(), component => Assert.InRange((int)component, minimum, maximum));
+    }
+
+    [Fact]
+    public void CrtBeamWidthChangesTheShoulderWhilePreservingThePeak()
+    {
+        var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(default, 256, 192, 1024,
+            default, 4f / 3f, 0, TimeSpan.Zero) { SignalFieldRate = 50 };
+        var wide = CrtSignal.From(new(BeamWidth: -20), frame);
+        var normal = CrtSignal.From(new(), frame);
+        var thin = CrtSignal.From(new(BeamWidth: 20), frame);
+        float shoulder = .25f / 288f;
+        Assert.True(wide.Beam(shoulder, 1080) > normal.Beam(shoulder, 1080));
+        Assert.True(normal.Beam(shoulder, 1080) > thin.Beam(shoulder, 1080));
+        Assert.Equal(.91f, normal.Beam(shoulder, 1080), 5);
+        foreach (var signal in new[] { wide, normal, thin })
+            Assert.Equal(1f, signal.Beam(.5f / 288f, 1080), 5);
+    }
+
     [Fact]
     public void CrtMasksHaveDistinctPatternsAndMonochromeUsesOnlyLuminance()
     {
         var masks = Enum.GetValues<EmulationCrtMask>()
             .Where(mask => mask != EmulationCrtMask.Monochrome)
-            .Select(mask =>
-            {
-                var settings = CrtPhosphorMask.Parameters(new(Mask: mask));
-                return Enumerable.Range(0, 16 * 14)
-                    .Select(pixel => CrtPhosphorMask.ApplyPixel(Vector3.One, pixel % 16, pixel / 16, settings))
-                    .ToArray();
-            }).ToArray();
+            .Select(mask => (Mask: mask, Pixels: Enumerable.Range(0, 128 * 14)
+                .Select(pixel => mask == EmulationCrtMask.None ? Vector3.One
+                    : CrtPhosphorMask.Coverage(new((pixel % 128 + .5f) / 8f, pixel / 128 + .5f),
+                        new(.125f, 1f), mask))
+                .ToArray())).ToArray();
         for (var i = 0; i < masks.Length; i++)
         for (var j = i + 1; j < masks.Length; j++)
-            Assert.False(masks[i].SequenceEqual(masks[j]));
+            Assert.False(masks[i].Pixels.SequenceEqual(masks[j].Pixels), $"{masks[i].Mask} / {masks[j].Mask}");
 
         var trinitron = CrtPhosphorMask.Parameters(new(Mask: EmulationCrtMask.ApertureGrille));
         Assert.Equal(CrtPhosphorMask.ApplyPixel(Vector3.One, 0, 0, trinitron),
@@ -33,7 +68,7 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
         var slots = CrtPhosphorMask.Parameters(new(Mask: EmulationCrtMask.SlotMask));
         Assert.Equal(CrtPhosphorMask.ApplyPixel(Vector3.One, 0, 1, slots),
             CrtPhosphorMask.ApplyPixel(Vector3.One, 0, 8, slots));
-        Assert.NotEqual(CrtPhosphorMask.ApplyPixel(Vector3.One, 0, 1, slots),
+        Assert.Equal(CrtPhosphorMask.ApplyPixel(Vector3.One, 0, 1, slots),
             CrtPhosphorMask.ApplyPixel(Vector3.One, 0, 9, slots));
 
         var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(default, 320, 240, 1280, default, 4f / 3, 0, TimeSpan.Zero);
@@ -41,8 +76,13 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
         var raster60 = CrtSignal.From(new(), frame with { SignalFieldRate = 60 });
         Assert.Equal(576, raster50.ActiveLines);
         Assert.Equal(480, raster60.ActiveLines);
-        Assert.Equal(new Vector2(384f, 288f), CrtPhosphorMask.RasterCoordinate(new(.25f, .25f), raster50.ActiveLines));
-        Assert.Equal(new Vector2(320f, 240f), CrtPhosphorMask.RasterCoordinate(new(.25f, .25f), raster60.ActiveLines));
+        Assert.Equal(new Vector2(768f, 576f), raster50.MaskRasterSize);
+        Assert.Equal(new Vector2(640f, 480f), raster60.MaskRasterSize);
+        var masterSystem = CrtSignal.From(new(), frame with { Width = 256, Height = 192, SignalFieldRate = 50 });
+        Assert.Equal(raster50.MaskRasterSize, masterSystem.MaskRasterSize);
+        var at1080p = CrtPhosphorMask.RasterCoordinate(new Vector2(360.5f / 1440f, 270.5f / 1080f), masterSystem.MaskRasterSize);
+        var at2160p = CrtPhosphorMask.RasterCoordinate(new Vector2(720.5f / 2880f, 540.5f / 2160f), masterSystem.MaskRasterSize);
+        Assert.Equal(at1080p, at2160p);
 
         var red = new Vector3(1f, 0f, 0f);
         var green = new Vector3(0f, .2126f / .7152f, 0f);
@@ -54,6 +94,137 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
             Assert.InRange(Vector3.Distance(first, second), 0f, .00001f);
             Assert.InRange(Vector3.Distance(first, .2126f * new Vector3(settings.X, settings.Y, settings.Z)), 0f, .00001f);
         }
+    }
+
+    [Theory]
+    [InlineData(EmulationVideoAspectRatio.FiveFour, 600f)]
+    [InlineData(EmulationVideoAspectRatio.FourThree, 640f)]
+    [InlineData(EmulationVideoAspectRatio.FourteenNine, 746.6667f)]
+    [InlineData(EmulationVideoAspectRatio.SixteenNine, 853.3333f)]
+    [InlineData(EmulationVideoAspectRatio.TwentyOneNine, 1120f)]
+    public void CrtFormatChangesTheNumberOfSlitsWithoutChangingTheirPitch(EmulationVideoAspectRatio aspect, float expectedWidth)
+    {
+        var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(default, 256, 192, 1024,
+            default, 4f / 3f, 0, TimeSpan.Zero) { SignalFieldRate = 60 };
+        var signal = CrtSignal.From(new(), frame, aspect);
+        Assert.InRange(signal.MaskRasterSize.X, expectedWidth - .001f, expectedWidth + .001f);
+        Assert.Equal(480f, signal.MaskRasterSize.Y);
+        Assert.Equal(3f, CrtPhosphorMask.RasterCoordinate(new(1.25f / signal.MaskRasterSize.X, 0f), signal.MaskRasterSize).X);
+    }
+
+    [Fact]
+    public void CrtStripedMaskPassesOnlyOneChannelAndBlocksTheSeparator()
+    {
+        var mask = CrtPhosphorMask.Parameters(new(Mask: EmulationCrtMask.SlotMask));
+        var color = new Vector3(.2f, .6f, .8f);
+        Assert.Equal(new Vector3(color.X, 0f, 0f), CrtPhosphorMask.ApplyPixel(color, 0, 0, mask));
+        Assert.Equal(new Vector3(0f, color.Y, 0f), CrtPhosphorMask.ApplyPixel(color, 2, 0, mask));
+        Assert.Equal(new Vector3(0f, 0f, color.Z), CrtPhosphorMask.ApplyPixel(color, 4, 0, mask));
+        Assert.Equal(Vector3.Zero, CrtPhosphorMask.ApplyPixel(color, 5, 0, mask));
+        Assert.Equal(CrtPhosphorMask.ApplyPixel(color, 0, 0, mask),
+            CrtPhosphorMask.ApplyPixel(color, 6, 0, mask));
+        Assert.Equal(new Vector3(1.75f / 6f),
+            CrtPhosphorMask.Coverage(Vector2.Zero, new(6f, 1f), EmulationCrtMask.SlotMask));
+    }
+
+    [Fact]
+    public void CrtTrinitronHasThreeEqualVerticalSeparatorsPerRepeat()
+    {
+        var mask = EmulationCrtMask.ApertureGrille;
+        var channels = new[] { Vector3.UnitX, Vector3.UnitY, Vector3.UnitZ };
+        foreach (var height in new[] { .5f, 3f, 8f, 480f })
+        {
+            for (var i = 0; i < channels.Length; ++i)
+            {
+                Assert.Equal(channels[i], CrtPhosphorMask.Coverage(new(2f * i + 1f, height), new(.125f, 1f), mask));
+                Assert.Equal(Vector3.Zero, CrtPhosphorMask.Coverage(new(2f * i + 1.875f, height), new(.125f, 1f), mask));
+            }
+        }
+    }
+
+    [Fact]
+    public void CrtTrinitronRendersContinuousColumnsOnAFlatSignal()
+    {
+        const int width = 384;
+        const int height = 576;
+        var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(default, 256, 192, 1024,
+            default, 4f / 3f, 0, TimeSpan.Zero) { SignalFieldRate = 60 };
+
+        float VerticalVariation(EmulationCrtMask mask)
+        {
+            var signal = CrtSignal.From(new(Mask: mask), frame);
+            var pixels = new float[width * height * 3];
+            Array.Fill(pixels, 1f);
+            FilterCrt.Apply(pixels, width, height, frame.Width, frame.Height, signal, 1f);
+            CrtPhosphorMask.Apply(pixels, width, height, signal, 1f);
+            var column = Enumerable.Range(16, 32).Select(y => pixels[(y * width + 160) * 3]).ToArray();
+            return column.Max() - column.Min();
+        }
+
+        Assert.InRange(VerticalVariation(EmulationCrtMask.ApertureGrille), 0f, .0001f);
+        Assert.True(VerticalVariation(EmulationCrtMask.SlotMask) > .015f);
+    }
+
+    [Fact]
+    public void CrtStructuredMasksKeepEqualChannelCoverageAcrossAFullRepeat()
+    {
+        var masks = new (EmulationCrtMask Mask, Vector2 Period)[]
+        {
+            (EmulationCrtMask.ShadowMask, new(8f, 12f)),
+            (EmulationCrtMask.HitachiEdp, new(6f, 14f)),
+            (EmulationCrtMask.SlotMask, new(6f, 10f)),
+            (EmulationCrtMask.StaggeredSlotMask, new(12f, 10f))
+        };
+        foreach (var (mask, period) in masks)
+        {
+            var origin = CrtPhosphorMask.Coverage(new Vector2(.4f, .9f), period, mask);
+            var shifted = CrtPhosphorMask.Coverage(new Vector2(3.8f, 6.2f), period, mask);
+            Assert.InRange(origin.X, .2f, .33f);
+            Assert.InRange(MathF.Abs(origin.X - origin.Y), 0f, .00001f);
+            Assert.InRange(MathF.Abs(origin.X - origin.Z), 0f, .00001f);
+            Assert.InRange(Vector3.Distance(origin, shifted), 0f, .00001f);
+        }
+    }
+
+    [Fact]
+    public void CrtStaggeredSlotsHaveLongerOpeningsWithOffsetBridges()
+    {
+        var staggered = EmulationCrtMask.StaggeredSlotMask;
+        Assert.Equal(Vector3.UnitX, CrtPhosphorMask.Coverage(new(.8f, .5f), Vector2.Zero, staggered));
+        Assert.Equal(Vector3.Zero, CrtPhosphorMask.Coverage(new(.8f, 0f), Vector2.Zero, staggered));
+        Assert.Equal(Vector3.UnitX, CrtPhosphorMask.Coverage(new(6.8f, 0f), Vector2.Zero, staggered));
+        Assert.Equal(Vector3.Zero, CrtPhosphorMask.Coverage(new(6.8f, 5f), Vector2.Zero, staggered));
+    }
+
+    [Fact]
+    public void CrtMaskBlocksDirectLightAndOnlyReflectsNeutralLightOnBlack()
+    {
+        var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(default, 256, 192, 1024,
+            default, 4f / 3f, 0, TimeSpan.Zero) { SignalFieldRate = 60 };
+        var settings = new RetroMediaLab.VideoPresentation.Contracts.EmulationCrtVideoConfiguration(Mask: EmulationCrtMask.SlotMask);
+        var narrow = CrtSignal.From(settings with { BeamWidth = 20 }, frame);
+        var wide = CrtSignal.From(settings with { BeamWidth = -20 }, frame);
+        Assert.Equal(Vector3.Zero, CrtPhosphorMask.ApplyPixel(Vector3.UnitX, 2, 0, narrow.Phosphor));
+        const int width = 3840;
+        var black = new float[width * 3];
+        CrtPhosphorMask.Apply(black, width, 1, wide, 4f);
+        Assert.True(black[0] > black[11 * 3]);
+        for (var i = 0; i < black.Length; i += 3)
+        {
+            Assert.InRange(black[i], 0f, .001f);
+            Assert.Equal(black[i], black[i + 1]);
+            Assert.Equal(black[i], black[i + 2]);
+        }
+
+        float LightInAdjacentSlit(CrtSignal signal, float gain)
+        {
+            var colors = new float[width * 3];
+            for (var i = 0; i < colors.Length; i += 3) colors[i] = 1f;
+            CrtPhosphorMask.Apply(colors, width, 1, signal, gain);
+            return colors[4 * 3];
+        }
+        Assert.True(LightInAdjacentSlit(wide, 1f) > LightInAdjacentSlit(narrow, 1f));
+        Assert.True(LightInAdjacentSlit(narrow, 4f) > LightInAdjacentSlit(narrow, 1f));
     }
 
     [Fact]

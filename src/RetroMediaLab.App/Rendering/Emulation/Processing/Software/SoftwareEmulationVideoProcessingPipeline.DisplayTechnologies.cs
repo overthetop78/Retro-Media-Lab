@@ -83,6 +83,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         }
         if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.Crt) return;
 
-        FilterCrt.Apply(colors, outputWidth, outputHeight, sourceWidth, sourceHeight, crt);
+        FilterCrt.Apply(colors, outputWidth, outputHeight, sourceWidth, sourceHeight, crt,
+            VideoBrightnessParameterFunctions.CrtBeamGain(configuration.Adjustments.Brightness));
     }
 }

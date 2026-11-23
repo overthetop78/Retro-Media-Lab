@@ -72,12 +72,13 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             EmulationImageRestorationFunctions.ApplyDetailRecovery(reference, frame.Width, frame.Height,
                 linear, outputSize.Width, outputSize.Height, normalized.Restoration.DetailRecovery);
         VideoContrastParameterFunctions.Apply(linear, normalized.Adjustments.Contrast);
-        VideoBrightnessParameterFunctions.Apply(linear, normalized.Adjustments.Brightness);
+        if (normalized.DisplayTechnology != EmulationVideoDisplayTechnology.Crt)
+            VideoBrightnessParameterFunctions.Apply(linear, normalized.Adjustments.Brightness);
         VideoGammaParameterFunctions.Apply(linear, normalized.Adjustments.Gamma);
         VideoSaturationParameterFunctions.Apply(linear, normalized.Adjustments.Saturation);
         VideoSharpnessParameterFunctions.Apply(linear, outputSize.Width, outputSize.Height, normalized.Adjustments.Sharpness);
         var crt = normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
-            ? CrtSignal.From(normalized.Crt, frame) : default;
+            ? CrtSignal.From(normalized.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(normalized)) : default;
         ApplyDisplayTechnology(linear, sourceSize.Width, sourceSize.Height, outputSize.Width, outputSize.Height, frame, normalized, crt);
         FilterVhs.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, normalized.Stylistic.Vhs);
         FilterChromaticAberration.Apply(linear, outputSize.Width, outputSize.Height, normalized.Stylistic.ChromaticAberration);
@@ -98,7 +99,8 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         ApplySegmentDisplayTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         ApplyEPaperTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Crt)
-            CrtPhosphorMask.Apply(linear, outputSize.Width, outputSize.Height, crt);
+            CrtPhosphorMask.Apply(linear, outputSize.Width, outputSize.Height, crt,
+                VideoBrightnessParameterFunctions.CrtBeamGain(normalized.Adjustments.Brightness));
         var output = ToSrgb(linear, outputSize.Width, outputSize.Height);
         return frame with
         {

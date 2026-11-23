@@ -96,12 +96,14 @@ internal sealed class OpenGlVideoProgramUniforms
     {
         var adjustments = configuration.Adjustments;
         _api.SetUniform(_adjustments,
-            EmulationImageAdjustmentFunctions.BrightnessAmount(adjustments.Brightness),
+            configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
+                ? VideoBrightnessParameterFunctions.CrtBeamGain(adjustments.Brightness)
+                : EmulationImageAdjustmentFunctions.BrightnessAmount(adjustments.Brightness),
             EmulationImageAdjustmentFunctions.ContrastGain(adjustments.Contrast),
             EmulationImageAdjustmentFunctions.GammaParameter(adjustments.Gamma),
             EmulationImageAdjustmentFunctions.SaturationGain(adjustments.Saturation));
         _api.SetUniform(_processing, EmulationImageAdjustmentFunctions.SharpnessAmount(adjustments.Sharpness), (float)configuration.Sampling, sourceWidth, sourceHeight);
-        _api.SetUniform(_output, outputWidth, outputHeight, 0f, 0f);
+        _api.SetUniform(_output, outputWidth, outputHeight, 0f, crtSignal.BeamExponent);
 
         Set(_crtRaster, crtSignal.Raster);
         Set(_crtTuning, crtSignal.Tuning);

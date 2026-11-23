@@ -2,11 +2,14 @@ using System.Numerics;
 
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
-internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector4 Phosphor)
+internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector4 Phosphor,
+    float BeamExponent)
 {
     internal int ActiveLines => (int)(Raster.Y * 2);
+    internal Vector2 MaskRasterSize => new(Tuning.W, ActiveLines);
 
-    internal static CrtSignal From(EmulationCrtVideoConfiguration crt, VideoFrame frame)
+    internal static CrtSignal From(EmulationCrtVideoConfiguration crt, VideoFrame frame,
+        EmulationVideoAspectRatio aspectRatio = EmulationVideoAspectRatio.Original)
     {
         var rate = frame.SignalFieldRate;
         var sourceStandard = frame.SignalStandard ?? (rate is > 0 and < 55
@@ -40,9 +43,14 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
         var sourceTotalLines = source50 ? 625 : 525;
         var lineSlip = unlocked ? (float)((sourceTotalLines * rate) / (totalLines * receiverRate) - 1) : 0;
         var decoder = (crt.ColorStandards & color) == color ? (int)sourceStandard + 1 : 0;
+        var (aspectWidth, aspectHeight) = EmulationVideoProcessingConfigurationFunctions.AspectRatioDimensions(aspectRatio);
+        var screenAspect = aspectHeight > 0 ? (float)aspectWidth / aspectHeight
+            : frame.AspectRatio > 0 && float.IsFinite(frame.AspectRatio) ? frame.AspectRatio
+            : (float)Math.Max(1, frame.Width) / Math.Max(1, frame.ImageHeight);
         return new CrtSignal(new(activeRows / Math.Max(1, sourceLines), activeLines / 2f,
             activeLines / (float)totalLines, phase),
-            new((float)ratio, decoder, lineSlip, 0), CrtPhosphorMask.Parameters(crt));
+            new((float)ratio, decoder, lineSlip, activeLines * screenAspect), CrtPhosphorMask.Parameters(crt),
+            MathF.Pow(2f, crt.BeamWidth / 10f));
     }
 
     internal Vector2 SourceUv(Vector2 uv)
@@ -90,9 +98,10 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
 
     internal float Beam(float y, int outputHeight)
     {
+        if ((EmulationCrtMask)(int)Phosphor.W == EmulationCrtMask.ApertureGrille) return 1f;
         var strength = .18f * Math.Clamp(outputHeight / Raster.Y - 1, 0, 1);
         var wave = .5f + .5f * MathF.Cos(MathF.Tau * (y * Raster.Y - .5f));
-        return 1 - strength * (1 - wave);
+        return 1 - strength * (1 - MathF.Pow(Math.Clamp(wave, 0f, 1f), BeamExponent));
     }
 
     private static float Fraction(float value) => value - MathF.Floor(value);
@@ -136,11 +145,12 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
             }
             return clamp(vec3(luma) + chroma, 0.0, 1.0);
         }
-        float crtBeam(float y, float height, vec4 raster)
+        float crtBeam(float y, float height, vec4 raster, float exponent, float mask)
         {
+            if (int(mask + .5) == 1) return 1.0;
             float strength = .18 * clamp(height / raster.y - 1.0, 0.0, 1.0);
             float wave = .5 + .5 * cos(6.2831853 * (y * raster.y - .5));
-            return 1.0 - strength * (1.0 - wave);
+            return 1.0 - strength * (1.0 - pow(clamp(wave, 0.0, 1.0), exponent));
         }
         """;
 }

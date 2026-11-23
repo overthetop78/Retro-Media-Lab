@@ -5,7 +5,8 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal static class FilterCrt
 {
-    internal static void Apply(float[] colors, int width, int height, int sourceWidth, int sourceHeight, CrtSignal signal)
+    internal static void Apply(float[] colors, int width, int height, int sourceWidth, int sourceHeight,
+        CrtSignal signal, float beamGain)
     {
         var source = ArrayPool<float>.Shared.Rent(colors.Length);
         try
@@ -27,7 +28,7 @@ internal static class FilterCrt
                 var color = SampleColor(source, width, height, uv);
                 var neighbor = decoder == 0 ? color : SampleColor(source, width, height, uv - neighborOffset);
                 color = CrtSignal.Decode(color, neighbor, decoder, (int)(uv.Y * sourceHeight));
-                color *= signal.Beam((y + .5f) / height, height);
+                color = Vector3.Min(Vector3.One, color * (beamGain * signal.Beam((y + .5f) / height, height)));
                 colors[index] = color.X;
                 colors[index + 1] = color.Y;
                 colors[index + 2] = color.Z;

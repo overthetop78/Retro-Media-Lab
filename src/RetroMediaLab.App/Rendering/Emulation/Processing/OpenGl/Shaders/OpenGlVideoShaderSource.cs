@@ -106,7 +106,9 @@ internal static class OpenGlVideoShaderSource
         vec3 adjustLinear(vec3 linear)
         {
             linear = videoContrastParameter(linear, Adjustments.y);
+        #if DISPLAY_TECHNOLOGY != 1
             linear = videoBrightnessParameter(linear, Adjustments.x);
+        #endif
             linear = videoGammaParameter(linear, Adjustments.z);
             return videoSaturationParameter(linear, Adjustments.w);
         }
@@ -306,7 +308,166 @@ internal static class OpenGlVideoShaderSource
             vec3 neighbor = color;
             if (decoder != 0) neighbor = adjustColor(sampleConfigured(crtChromaNeighbor(uv, Processing.zw, decoder)).rgb);
             color = crtDecode(color, neighbor, decoder, floor(uv.y * Processing.w));
-            color *= crtBeam(originalUv.y, Output.y, CrtRaster);
+            return min(vec3(1.0), color * (Adjustments.x * crtBeam(originalUv.y, Output.y, CrtRaster, Output.w, CrtPhosphor.w)));
+        }
+        float extraHash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233))+General.z)*43758.5453);}
+        vec3 extraRaw(vec2 uv){return adjustColor(sampleConfigured(uv).rgb);}
+        vec3 restoreColor(vec3 color,vec2 uv)
+        {
+            if(abs(Processing.x)>0.0001)
+            {
+                vec2 stepSize=1.0/max(Output.xy,vec2(1.0));
+                vec3 sum=color;
+                for(int y=-1;y<=1;y++) for(int x=-1;x<=1;x++)
+                    if(x!=0||y!=0)sum+=extraRaw(uv+vec2(float(x),float(y))*stepSize);
+                float weight=9.0;
+                if(Processing.x<0.0)
+                {
+                    vec2 dx=vec2(stepSize.x*2.0,0.0),dy=vec2(0.0,stepSize.y*2.0);
+                    sum+=(extraRaw(uv-dx)+extraRaw(uv+dx)+extraRaw(uv-dy)+extraRaw(uv+dy))*.5;
+                    weight=11.0;
+                }
+                color=videoSharpnessParameter(color,sum/weight,Processing.x);
+            }
+            return clamp(color,0.0,1.0);
+        }
+        #if DISPLAY_TECHNOLOGY == 5
+        float vfdEmission(vec2 uv)
+        {
+            vec3 sampleColor=adjustColor(sampleConfigured(clamp(uv,vec2(0.0),vec2(1.0))).rgb);
+            return filterVfdEmissionThreshold(dot(sampleColor,vec3(.2126,.7152,.0722)),VfdDisplay.z);
+        }
+        vec3 vfdPixel(vec3 source,vec2 uv)
+        {
+            float mask=filterVfdCellStructure(uv,Processing.zw,VfdStructure.x,
+                VfdStructure.y,VfdStructure.z);
+            float emission=filterVfdPhosphorIntensity(
+                filterVfdEmissionThreshold(dot(source,vec3(.2126,.7152,.0722)),VfdDisplay.z)*mask,
+                VfdDisplay.y);
+            vec2 stepSize=1.0/max(Processing.zw,vec2(1.0));
+            float radius=filterVfdHaloRadius(VfdOptical.x);
+            float nearRadius=max(1.0,radius*.5);
+            float nearEmission=(vfdEmission(uv+vec2(stepSize.x*nearRadius,0.0))
+                +vfdEmission(uv-vec2(stepSize.x*nearRadius,0.0))
+                +vfdEmission(uv+vec2(0.0,stepSize.y*nearRadius))
+                +vfdEmission(uv-vec2(0.0,stepSize.y*nearRadius)))*.25;
+            float farEmission=(vfdEmission(uv+vec2(stepSize.x*radius,stepSize.y*radius))
+                +vfdEmission(uv+vec2(-stepSize.x*radius,stepSize.y*radius))
+                +vfdEmission(uv+vec2(stepSize.x*radius,-stepSize.y*radius))
+                +vfdEmission(uv-vec2(stepSize.x*radius,stepSize.y*radius)))*.25;
+            float halo=filterVfdPhosphorIntensity(
+                filterVfdHalo(nearEmission,farEmission,VfdStructure.w),VfdDisplay.y);
+            return clamp(filterVfdGlass(source,VfdDisplay.w)
+                +filterVfdPhosphorColor(emission,VfdDisplay.x)
+                +filterVfdPhosphorColor(halo,VfdDisplay.x),0.0,1.0);
+        }
+        #endif
+        #if DISPLAY_TECHNOLOGY == 6
+        vec3 ledMatrixPixel(vec2 uv)
+        {
+            vec2 sourceSize=max(Processing.zw,vec2(1.0));
+            float pitch=filterLedMatrixPitch(LedMatrixStructure.x);
+            vec2 sourcePosition=uv*sourceSize;
+            vec2 cell=floor(sourcePosition/pitch);
+            vec2 centerUv=(cell+.5)*pitch/sourceSize;
+            vec2 sampleOffset=vec2(pitch*.28)/sourceSize;
+            vec3 emission=(adjustColor(sampleConfigured(centerUv).rgb)*4.0
+                +adjustColor(sampleConfigured(centerUv-vec2(sampleOffset.x,0.0)).rgb)
+                +adjustColor(sampleConfigured(centerUv+vec2(sampleOffset.x,0.0)).rgb)
+                +adjustColor(sampleConfigured(centerUv-vec2(0.0,sampleOffset.y)).rgb)
+                +adjustColor(sampleConfigured(centerUv+vec2(0.0,sampleOffset.y)).rgb))/8.0;
+            emission=filterLedMatrixColor(emission,LedMatrixEmission.x);
+            emission=filterLedMatrixBrightness(emission,LedMatrixEmission.y);
+            vec2 localPosition=fract(sourcePosition/pitch)-.5;
+            float distance=filterLedMatrixDistance(localPosition,LedMatrixEmission.w);
+            float edgeWidth=max(sourceSize.x/max(Output.x,1.0),
+                sourceSize.y/max(Output.y,1.0))/pitch;
+            float core=filterLedMatrixCore(distance,LedMatrixStructure.y,edgeWidth);
+            float halo=filterLedMatrixHalo(distance,LedMatrixStructure.y,
+                LedMatrixStructure.w,LedMatrixStructure.z)*(1.0-core);
+            return clamp(filterLedMatrixBlackDepth(LedMatrixEmission.z)
+                +emission*(core+halo),0.0,1.0);
+        }
+        #endif
+        #if DISPLAY_TECHNOLOGY == 7
+        vec3 dotMatrixSample(vec2 uv,bool history)
+        {
+            vec2 sourceSize=max(Processing.zw,vec2(1.0));
+            float pitch=filterDotMatrixPitch(DotMatrixGeometry.z);
+            vec2 cell=floor(uv*sourceSize/pitch);
+            vec2 centerUv=(cell+.5)*pitch/sourceSize;
+            vec2 offset=vec2(pitch*.28)/sourceSize;
+            if(history)
+                return (adjustColor(texture2D(History,centerUv).rgb)*4.0
+                    +adjustColor(texture2D(History,centerUv-vec2(offset.x,0.0)).rgb)
+                    +adjustColor(texture2D(History,centerUv+vec2(offset.x,0.0)).rgb)
+                    +adjustColor(texture2D(History,centerUv-vec2(0.0,offset.y)).rgb)
+                    +adjustColor(texture2D(History,centerUv+vec2(0.0,offset.y)).rgb))/8.0;
+            return (adjustColor(sampleConfigured(centerUv).rgb)*4.0
+                +adjustColor(sampleConfigured(centerUv-vec2(offset.x,0.0)).rgb)
+                +adjustColor(sampleConfigured(centerUv+vec2(offset.x,0.0)).rgb)
+                +adjustColor(sampleConfigured(centerUv-vec2(0.0,offset.y)).rgb)
+                +adjustColor(sampleConfigured(centerUv+vec2(0.0,offset.y)).rgb))/8.0;
+        }
+        vec3 dotMatrixPixel(vec2 uv,bool history)
+        {
+            vec2 sourceSize=max(Processing.zw,vec2(1.0));
+            float pitch=filterDotMatrixPitch(DotMatrixGeometry.z);
+            vec2 local=fract(uv*sourceSize/pitch)-.5;
+            float distance=filterDotMatrixDistance(local,DotMatrixGeometry.y);
+            float radius=filterDotMatrixRadius(DotMatrixGeometry.w,DotMatrixEmission.x);
+            float edge=max(sourceSize.x/max(Output.x,1.0),sourceSize.y/max(Output.y,1.0))/pitch;
+            float core=smoothstep(radius+edge,radius-edge,distance);
+            float halo=filterDotMatrixHalo(distance,radius,DotMatrixEmission.w)*(1.0-core);
+            vec3 source=dotMatrixSample(uv,history);
+            float level=filterDotMatrixBrightness(filterDotMatrixContrast(
+                dot(source,vec3(.2126,.7152,.0722)),DotMatrixEmission.y),DotMatrixEmission.z);
+            return mix(filterDotMatrixBackground(DotMatrixGeometry.x),
+                filterDotMatrixForeground(source,DotMatrixGeometry.x),
+                clamp(level*(core+halo),0.0,1.0));
+        }
+        #endif
+        #if DISPLAY_TECHNOLOGY == 10
+        """ + "\n" + ProjectionVideoShader.Create(false) + "\n" + """
+        #endif
+        vec3 extraDisplay(vec3 color,vec2 uv){int t=int(General.x+.5);vec2 p=floor(uv*Output.xy);
+        #if DISPLAY_TECHNOLOGY == 5
+            if(t==5)color=vfdPixel(color,uv);
+        #endif
+        #if DISPLAY_TECHNOLOGY == 6
+            if(t==6)color=ledMatrixPixel(uv);
+        #endif
+        #if DISPLAY_TECHNOLOGY == 7
+            if(t==7)color=dotMatrixPixel(uv,false);
+        #endif
+        #if DISPLAY_TECHNOLOGY == 8
+            if(t==8)color=segmentDisplayPixel(uv);
+        #endif
+        #if DISPLAY_TECHNOLOGY == 9
+            if(t==9)color=ePaperPixel(uv);
+        #endif
+        #if DISPLAY_TECHNOLOGY == 10
+            if(t==10)color=projectionPixel(uv);
+        #endif
+            return clamp(color,0.0,1.0);}
+        """ + SignalConnectionRgbScart.Shader + SignalConnectionComponent.Shader + SignalConnectionSVideo.Shader + SignalConnectionComposite.Shader + SignalConnectionRf.Shader + SignalStandardPal.Shader + SignalStandardNtsc.Shader + SignalStandardSecam.Shader + FilterGrain.Shader + FilterVhs.Shader + FilterChromaticAberration.Shader + FilterBloom.Shader + FilterSepia.Shader + """
+        vec3 signalEffects(vec3 color,vec2 uv)
+        {
+            if (Signal.x < .5 && Signal.w <= 0.0) return color;
+            vec2 stepSize=1.0/max(Processing.zw,vec2(1.0));
+            vec3 left=extraRaw(uv-vec2(stepSize.x,0.0)),right=extraRaw(uv+vec2(stepSize.x,0.0));
+            vec3 up=extraRaw(uv-vec2(0.0,stepSize.y)),down=extraRaw(uv+vec2(0.0,stepSize.y));
+            int connection=int(Signal.x+.5);float amount=Signal.y;
+            int standard=int(Signal.z+.5);if(standard==0)standard=General.w>18.2?1:2;
+            float phase=mod(floor(uv.x*Processing.z)+floor(uv.y*Processing.w)+General.z,2.0)*2.0-1.0;
+            if(connection==1)color=signalConnectionRgbScart(color,left,amount);
+            else if(connection==2)color=signalConnectionComponent(color,left,right,amount);
+            else if(connection==3)color=signalConnectionSVideo(color,left,right,amount);
+            else if(connection==4)color=signalConnectionComposite(color,left,right,amount,phase);
+            else if(connection==5)color=signalConnectionRf(color,left,right,amount,extraHash(floor(uv*Output.xy))-.5,float(standard),floor(uv.y*Processing.w));
+            if(standard==1)color=signalStandardPal(color,mod(floor(uv.y*Processing.w),2.0)<.5?down:up,Signal.w);
+            else if(standard==2)color=signalStandardNtsc(color,left,Signal.w);
+            else if(standard==3)color=signalStandardSecam(color,up,Signal.w,floor(uv.y*Processing.w));
             return color;
         }
         vec3 postColor(vec3 color,vec2 uv)
@@ -319,6 +480,16 @@ internal static class OpenGlVideoShaderSource
             color=filterGrain(color,Stylistic.x,extraHash(floor(uv*Output.xy)+General.z)*2.0-1.0);
             return clamp(color,0.0,1.0);
         }
+        #if DISPLAY_TECHNOLOGY == 1
+        vec3 crtImageAt(vec2 uv)
+        {
+            vec2 sourceUv = crtSignalUv(uv, CrtRaster, CrtTuning);
+            if (any(lessThan(sourceUv, vec2(0.0))) || any(greaterThan(sourceUv, vec2(1.0)))) return vec3(0.0);
+            vec3 color = adjustLinear(restorationPoint(sourceUv));
+            if (CrtTuning.y < .5) color = vec3(dot(color, vec3(.2126,.7152,.0722)));
+            return min(vec3(1.0), color * (Adjustments.x * crtBeam(uv.y, Output.y, CrtRaster, Output.w, CrtPhosphor.w)));
+        }
+        #endif
         void main()
         {
             vec3 center=extraDisplay(restoreColor(crtPixel(TextureCoordinate),TextureCoordinate),TextureCoordinate);
@@ -340,7 +511,8 @@ internal static class OpenGlVideoShaderSource
                 center=filterVfdPersistence(center,previous,VfdOptical.y,VfdOptical.z);
         #endif
         #if DISPLAY_TECHNOLOGY == 1
-            center = crtPhosphorMask(center, TextureCoordinate, CrtRaster.y * 2.0, CrtPhosphor);
+            center = crtCompose(center, TextureCoordinate, vec2(CrtTuning.w, CrtRaster.y * 2.0),
+                CrtPhosphor, Output.w, Adjustments.x, Output.xy);
         #endif
             gl_FragColor=vec4(linearToSrgb(center.r),linearToSrgb(center.g),linearToSrgb(center.b),1.0);
         }

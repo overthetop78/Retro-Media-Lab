@@ -191,7 +191,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             gpuConfiguration, processed.Width, processed.Height,
             Math.Max(1, clientSize.Width), Math.Max(1, clientSize.Height),
             hasHistory, elapsedMilliseconds, frame.Sequence,
-            CrtSignal.From(gpuConfiguration.Crt, frame),
+            CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
             plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels) : 0f));
         var swapchain = _device.MainSwapchain.Framebuffer;
         if (_backend != GraphicsBackend.Direct3D11 && gpuConfiguration.BlackFrameInsertion) EnsureRetainedFrame();
@@ -541,12 +541,14 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         return new VideoParameters(
-            new Vector4(EmulationImageAdjustmentFunctions.BrightnessAmount(adjustments.Brightness),
+            new Vector4(configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
+                ? VideoBrightnessParameterFunctions.CrtBeamGain(adjustments.Brightness)
+                : EmulationImageAdjustmentFunctions.BrightnessAmount(adjustments.Brightness),
                 EmulationImageAdjustmentFunctions.ContrastGain(adjustments.Contrast),
                 EmulationImageAdjustmentFunctions.GammaParameter(adjustments.Gamma),
                 EmulationImageAdjustmentFunctions.SaturationGain(adjustments.Saturation)),
             new Vector4(EmulationImageAdjustmentFunctions.SharpnessAmount(adjustments.Sharpness), (float)configuration.Sampling, sourceWidth, sourceHeight),
-            new Vector4(outputWidth, outputHeight, (float)elapsedMilliseconds, 0f),
+            new Vector4(outputWidth, outputHeight, (float)elapsedMilliseconds, crtSignal.BeamExponent),
             crtSignal.Raster, crtSignal.Tuning, crtSignal.Phosphor,
             fixedPixel.Display, fixedPixel.Spatial, fixedPixel.Technology,
             fixedPixel.Temporal, plasma.Effect, plasma.Temporal, plasma.Display,
