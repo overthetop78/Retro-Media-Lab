@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>หน้ากากสล็อตที่จับต้องได้</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>พิมพ์สีเดียว</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>ความโค้งของหน้าจอ</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>ประเภทการเชื่อมต่อ</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>การเสื่อมของสัญญาณ</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>จานสีของจอภาพ</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>ดิจิทัล</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB และการซิงค์)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>วิดีโอคอมโพสิต</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>วิดีโอคอมโพเนนต์ (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF แอนะล็อก</value></data>
 </root>

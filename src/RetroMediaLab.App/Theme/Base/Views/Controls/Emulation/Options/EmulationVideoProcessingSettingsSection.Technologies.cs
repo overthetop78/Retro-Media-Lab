@@ -69,6 +69,23 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             EmulationVideoProcessingLimits.CrtCurvatureMinimum, EmulationVideoProcessingLimits.CrtCurvatureMaximum,
             value => SetCrt(_configuration.Crt with { Curvature = value }),
             1, 38, new Thickness(0, 2, 0, 8)));
+        panel.Children.Add(ChoiceField(ParameterKey(EmulationVideoProcessingCatalog.CrtConnection),
+            EmulationVideoProcessingCatalog.CrtConnectionResourceKeys, crt.Connection, value =>
+            {
+                SetCrt(_configuration.Crt with { Connection = value });
+                RebuildContent();
+            }, EmulationVideoProcessingCatalog.CrtConnection));
+        if (crt.CanDegradeConnection())
+            panel.Children.Add(EmulationSettingsFieldControlFunctions.CreateVideoSlider(
+                EmulationVideoProcessingCatalog.CrtConnectionDegradation, crt.ConnectionDegradation,
+                0, EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum,
+                value => SetCrt(_configuration.Crt with { ConnectionDegradation = value }),
+                1, 38, new Thickness(0, 2, 0, 8)));
+        if (crt.Connection == EmulationCrtConnection.LegacyMonitor)
+            panel.Children.Add(ChoiceField(ParameterKey(EmulationVideoProcessingCatalog.CrtMonitorPalette),
+                EmulationVideoProcessingCatalog.CrtMonitorPaletteResourceKeys, crt.MonitorPalette,
+                value => SetCrt(_configuration.Crt with { MonitorPalette = value }),
+                EmulationVideoProcessingCatalog.CrtMonitorPalette));
         return panel;
     }
 

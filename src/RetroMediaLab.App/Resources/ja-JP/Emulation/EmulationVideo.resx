@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>スロットマスク</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>モノクロ</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>スクリーンの湾曲</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>接続方式</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>信号劣化</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>モニターパレット</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>デジタル</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART（RGB＋同期）</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>コンポジット映像</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>コンポーネント映像（YPbPr）</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>アナログRF</value></data>
 </root>

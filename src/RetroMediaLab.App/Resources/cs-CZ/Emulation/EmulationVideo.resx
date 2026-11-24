@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Maska s odstupňovaným štěrbinou</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monochromní</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Zakřivení obrazovky</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Typ připojení</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Zhoršení signálu</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Paleta monitoru</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digitální</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB a synchronizace)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Kompozitní video</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Komponentní video (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analogové RF</value></data>
 </root>

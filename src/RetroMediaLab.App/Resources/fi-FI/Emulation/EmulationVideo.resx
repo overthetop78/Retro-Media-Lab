@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Häiriömäinen kolikkopeli</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Yksivärinen</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Näytön kaarevuus</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Liitäntätyyppi</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Signaalin heikennys</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Näytön väripaletti</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digitaalinen</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB ja tahdistus)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Komposiittivideo</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Komponenttivideo (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analoginen RF</value></data>
 </root>

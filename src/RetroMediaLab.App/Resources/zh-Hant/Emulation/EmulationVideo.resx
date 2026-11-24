@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>插槽口罩</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>单色</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>螢幕曲率</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>連接類型</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>訊號劣化</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>顯示器色盤</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>數位</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART（RGB 與同步）</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>複合視訊</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>色差視訊（YPbPr）</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>類比射頻（RF）</value></data>
 </root>

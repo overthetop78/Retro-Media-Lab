@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Стовчена маска слота</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Монохром</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Екранна кривизня</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Тип підключення</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Погіршення сигналу</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Палітра монітора</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Цифрове</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB і синхронізація)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Композитне відео</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Компонентне відео (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Аналоговий RF</value></data>
 </root>

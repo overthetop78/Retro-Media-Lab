@@ -86,8 +86,7 @@ internal static class VideoGeometryScenarios
         var host = new EmulationVideoProcessingConfiguration { Restoration = new(Dedithering: 100) };
         var crt = EmulationVideoProcessingConfigurationFunctions.WithScreenType(host, EmulationVideoScreenType.Crt);
         Assert.Equal(100, EmulationVideoProcessingConfigurationFunctions.ForRendering(crt).Restoration.Dedithering);
-        crt = crt with { SignalSimulation = crt.SignalSimulation with
-            { Connection = EmulationSignalConnection.Composite, ConnectionIntensity = 50 } };
+        crt = crt with { Crt = crt.Crt with { Connection = EmulationCrtConnection.Composite } };
         Assert.Equal(0, EmulationVideoProcessingConfigurationFunctions.ForRendering(crt).Restoration.Dedithering);
         Assert.Equal(100, crt.Restoration.Dedithering);
         foreach (var screen in Enum.GetValues<EmulationVideoScreenType>())

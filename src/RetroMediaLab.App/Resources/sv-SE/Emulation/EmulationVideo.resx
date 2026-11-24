@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Staggered slot mask</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monokrom</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Skärmens krökning</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Anslutningstyp</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Signalförsämring</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Bildskärmspalett</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digital</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB och synkronisering)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Kompositvideo</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Komponentvideo (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analog RF</value></data>
 </root>

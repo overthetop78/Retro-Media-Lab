@@ -46,6 +46,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private uint _swapchainHeight;
     private bool _hasHistory;
     private byte[]? _deditheringWorkspace;
+    private byte[]? _crtConnectionWorkspace;
     private TimeSpan _historyTimestamp;
     private long _historySequence;
     private WriteableBitmap? _snapshot;
@@ -169,6 +170,8 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var prepared = EmulationImageRestorationFunctions.ApplyDedithering(pixels, frame.Width, frame.Height,
             _videoProcessing.Restoration.Dedithering, ref _deditheringWorkspace);
         if (prepared is not null) pixels = prepared.AsSpan(0, pixels.Length);
+        var connected = FilterCrtConnection.Apply(pixels, frame, _videoProcessing, ref _crtConnectionWorkspace);
+        if (connected is not null) pixels = connected.AsSpan(0, checked(frame.Width * frame.Height * 4));
         EnsureDevice();
         EnsureFrameResources(processed.Width, processed.Height);
         EnsurePipeline(_videoProcessing.Sampling, _videoProcessing.DisplayTechnology);

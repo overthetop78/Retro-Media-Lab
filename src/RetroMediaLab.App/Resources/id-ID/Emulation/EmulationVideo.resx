@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Mask slot terstaggered</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monokrom</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Kelengkungan layar</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Jenis koneksi</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Degradasi sinyal</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Palet monitor</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digital</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB dan sinkronisasi)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Video komposit</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Video komponen (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF analog</value></data>
 </root>

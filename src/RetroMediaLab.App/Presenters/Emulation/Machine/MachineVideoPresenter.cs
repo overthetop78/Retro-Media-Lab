@@ -49,6 +49,7 @@ internal sealed class MachineVideoPresenter : IDisposable
     private volatile bool _presentationEnabled;
     private long _presentationGeneration;
     private long _historyGeneration = -1;
+    private double _layoutImageAspect;
     private Window? _hostWindow;
     private readonly BlackFrameCadence _blackFrameCadence = new();
     private IntPtr _blackFrameWindow;
@@ -198,7 +199,7 @@ internal sealed class MachineVideoPresenter : IDisposable
         _shaderPrepared = replacement.Renderer == EmulationVideoRenderer.Wpf;
         if (_shaderPrepared) SetShaderLoading(false);
         else if (_shaderLoading) Interlocked.Increment(ref _shaderLoadGeneration);
-        FitScreen();
+        FitScreenToLatestFrame();
         RequestCurrentFrame();
     }
 
@@ -220,7 +221,7 @@ internal sealed class MachineVideoPresenter : IDisposable
                 _shaderPrepared = false;
             }
         }
-        if (_presentationEnabled) FitScreen();
+        if (_presentationEnabled) FitScreenToLatestFrame();
         UpdateBlackFrameClock();
         RequestCurrentFrame();
     }
@@ -237,23 +238,38 @@ internal sealed class MachineVideoPresenter : IDisposable
         FitScreen();
     }
 
-    internal void FitScreen(double? aspectRatio = null)
+    internal void FitScreen()
+    {
+        if (FitScreenToLatestFrame()) RequestCurrentFrame();
+    }
+
+    private bool FitScreenToLatestFrame()
     {
         var frame = _machine.Video.LatestFrame;
-        var imageAspect = aspectRatio ?? (frame is { Width: > 0, Height: > 0 }
-            ? FrameAspectRatio(frame) : MachinePresentationConstants.DefaultAspectRatio);
+        var imageAspect = frame is { Width: > 0, Height: > 0 }
+            ? FrameAspectRatio(frame) : MachinePresentationConstants.DefaultAspectRatio;
+        return FitScreen(imageAspect);
+    }
+
+    private bool FitScreen(double imageAspect, bool updateLayout = false)
+    {
         var (width, height) = EmulationVideoProcessingConfigurationFunctions.AspectRatioDimensions(
             EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(_videoProcessing));
         var screenAspect = height > 0 ? (double)width / height : imageAspect;
         var (screen, image) = EmulationVideoLayoutFunctions.FitDisplay(
             _displayHost.ActualWidth, _displayHost.ActualHeight, screenAspect, imageAspect);
-        if (image.IsEmpty) return;
-
-        SetSize(_view.Screen, screen);
-        var surface = _surface.View;
-        surface.HorizontalAlignment = HorizontalAlignment.Center;
-        surface.VerticalAlignment = VerticalAlignment.Center;
-        if (SetSize(surface, image)) RequestCurrentFrame();
+        var resized = false;
+        if (!image.IsEmpty)
+        {
+            SetSize(_view.Screen, screen);
+            var surface = _surface.View;
+            surface.HorizontalAlignment = HorizontalAlignment.Center;
+            surface.VerticalAlignment = VerticalAlignment.Center;
+            resized = SetSize(surface, image);
+            if (resized && updateLayout) _view.Screen.UpdateLayout();
+        }
+        Volatile.Write(ref _layoutImageAspect, imageAspect);
+        return resized;
 
         static bool SetSize(FrameworkElement element, Size size)
         {
@@ -431,11 +447,17 @@ internal sealed class MachineVideoPresenter : IDisposable
         else QueueFrame(frame, refresh);
     }
 
-    private void RequestCurrentFrame() => _view.Dispatcher.BeginInvoke(() =>
+    private void RequestCurrentFrame()
     {
-        if (!_disposed && _presentationEnabled && _machine.Video.LatestFrame is { } frame)
-            QueueFrame(frame);
-    }, System.Windows.Threading.DispatcherPriority.Loaded);
+        if (_machine.Video.LatestFrame is not { } frame) return;
+        var generation = Volatile.Read(ref _presentationGeneration);
+        _view.Dispatcher.BeginInvoke(() =>
+        {
+            if (!_disposed && _presentationEnabled && generation == Volatile.Read(ref _presentationGeneration)
+                && ReferenceEquals(frame, _machine.Video.LatestFrame))
+                QueueFrame(frame);
+        }, DispatcherPriority.Loaded);
+    }
 
     private void VideoFrameReady(object? sender, VideoFrame frame)
     {
@@ -450,7 +472,22 @@ internal sealed class MachineVideoPresenter : IDisposable
             if (!_disposed) NotifyFrameCompleted(frame);
             return;
         }
-        if (!_blackFrameCadenceActive) QueueFrame(frame);
+        if (FrameAspectRatio(frame) == Volatile.Read(ref _layoutImageAspect))
+        {
+            if (!_blackFrameCadenceActive) QueueFrame(frame);
+            return;
+        }
+
+        var generation = Volatile.Read(ref _presentationGeneration);
+        _view.Dispatcher.BeginInvoke(() =>
+        {
+            if (_disposed || !_presentationEnabled || generation != Volatile.Read(ref _presentationGeneration)) return;
+            var latest = _machine.Video.LatestFrame ?? frame;
+            var aspect = FrameAspectRatio(latest);
+            if (aspect == Volatile.Read(ref _layoutImageAspect)) return;
+            FitScreen(aspect, updateLayout: true);
+            if (!_blackFrameCadenceActive) QueueFrame(latest);
+        }, DispatcherPriority.Render);
     }
 
     private (VideoFrame? Output, VideoFrame? Source) PresentationFrame()
@@ -644,7 +681,6 @@ internal sealed class MachineVideoPresenter : IDisposable
     private void FrameCompleted(VideoFrame frame)
     {
         if (_disposed) return;
-        if (_presentationEnabled) FitScreen(FrameAspectRatio(frame));
         FramePresented?.Invoke(this, frame);
     }
 

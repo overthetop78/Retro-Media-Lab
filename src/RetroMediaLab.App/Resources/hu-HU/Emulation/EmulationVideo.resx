@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Skagered slot maszk</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monokróm</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Képernyő görbülete</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Csatlakozás típusa</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Jelromlás</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Monitorpaletta</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digitális</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB és szinkron)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Kompozit videó</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Komponens videó (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analóg RF</value></data>
 </root>

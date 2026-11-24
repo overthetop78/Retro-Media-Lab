@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>gestaffelte Schlitzmaske</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monochrom</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Krümmung des Bildschirms</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Anschlussart</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Signalverschlechterung</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Monitorpalette</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digital</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB und Synchronisation)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Composite-Video</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Komponentenvideo (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analoges RF</value></data>
 </root>

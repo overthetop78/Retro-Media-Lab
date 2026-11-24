@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>מסכה של חריץ</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>מונוכרום</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>עקמומיות המסך</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>סוג חיבור</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>פגיעה באיכות האות</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>לוח צבעים של הצג</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>דיגיטלי</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB וסנכרון)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>וידאו מרוכב</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>וידאו רכיבים (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF אנלוגי</value></data>
 </root>

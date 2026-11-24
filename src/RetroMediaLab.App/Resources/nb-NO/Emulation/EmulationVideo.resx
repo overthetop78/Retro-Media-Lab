@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Staggered spilleautomat</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monokrom</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Skjermkrumning</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Tilkoblingstype</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Signalforringelse</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Skjermpalett</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digital</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB og synkronisering)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Komposittvideo</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Komponentvideo (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analog RF</value></data>
 </root>

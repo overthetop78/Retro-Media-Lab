@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Mască de slot cu stagnare</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monocrom</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Curbura ecranului</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Tipul conexiunii</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Degradarea semnalului</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Paleta monitorului</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digital</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB și sincronizare)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Video compozit</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Video pe componente (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF analogic</value></data>
 </root>

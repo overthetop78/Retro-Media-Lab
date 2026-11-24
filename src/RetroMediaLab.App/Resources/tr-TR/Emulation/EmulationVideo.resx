@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Staggered slot maske</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monokro</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Ekran eğriliği</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Bağlantı türü</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Sinyal bozulması</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Monitör paleti</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Dijital</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB ve eşzamanlama)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Kompozit video</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Bileşen video (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analog RF</value></data>
 </root>

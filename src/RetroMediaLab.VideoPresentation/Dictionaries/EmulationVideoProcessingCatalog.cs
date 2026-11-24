@@ -38,6 +38,9 @@ public static partial class EmulationVideoProcessingCatalog
     public const string CrtPhosphorColor = nameof(CrtPhosphorColor);
     public const string CrtBeamWidth = nameof(CrtBeamWidth);
     public const string CrtCurvature = nameof(CrtCurvature);
+    public const string CrtConnection = nameof(CrtConnection);
+    public const string CrtConnectionDegradation = nameof(CrtConnectionDegradation);
+    public const string CrtMonitorPalette = nameof(CrtMonitorPalette);
     public const string FixedPixelTechnology = nameof(FixedPixelTechnology);
     public const string FixedPixelSubpixels = nameof(FixedPixelSubpixels);
     public const string FixedPixelMonochromeColor = nameof(FixedPixelMonochromeColor);
@@ -146,6 +149,7 @@ public static partial class EmulationVideoProcessingCatalog
         Bloom,
         Sepia,
         CrtColorStandards, CrtFieldRate, CrtMask, CrtPhosphorColor, CrtBeamWidth, CrtCurvature,
+        CrtConnection, CrtConnectionDegradation, CrtMonitorPalette,
         FixedPixelTechnology, FixedPixelSubpixels, FixedPixelMonochromeColor,
         FixedPixelGridIntensity, FixedPixelPixelGap, FixedPixelResponseTime,
         FixedPixelPersistence, FixedPixelBacklight, FixedPixelBacklightBleed, FixedPixelOledEmission, FixedPixelBlackDepth,

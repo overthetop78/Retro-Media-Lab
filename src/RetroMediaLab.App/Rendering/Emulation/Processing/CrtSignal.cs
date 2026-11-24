@@ -5,15 +5,19 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector4 Phosphor,
     float BeamExponent, float Curvature)
 {
+    internal const int SeparateColorChannels = 4;
     internal int ActiveLines => (int)(Raster.Y * 2);
     internal Vector2 MaskRasterSize => new(Tuning.W, ActiveLines);
+
+    internal static EmulationVideoStandard SourceStandard(VideoFrame frame) =>
+        frame.SignalStandard ?? (frame.SignalFieldRate is > 0 and < 55
+            ? EmulationVideoStandard.Pal : EmulationVideoStandard.Ntsc);
 
     internal static CrtSignal From(EmulationCrtVideoConfiguration crt, VideoFrame frame,
         EmulationVideoAspectRatio aspectRatio = EmulationVideoAspectRatio.Original)
     {
         var rate = frame.SignalFieldRate;
-        var sourceStandard = frame.SignalStandard ?? (rate is > 0 and < 55
-            ? EmulationVideoStandard.Pal : EmulationVideoStandard.Ntsc);
+        var sourceStandard = SourceStandard(frame);
         var source50 = rate > 0 ? rate < 55 : sourceStandard != EmulationVideoStandard.Ntsc;
         if (!(rate > 0) || !double.IsFinite(rate)) rate = source50 ? 50 : 60;
         var receiver50 = crt.FieldRate switch
@@ -42,7 +46,13 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
         var phase = (float)(drift - Math.Floor(drift));
         var sourceTotalLines = source50 ? 625 : 525;
         var lineSlip = unlocked ? (float)((sourceTotalLines * rate) / (totalLines * receiverRate) - 1) : 0;
-        var decoder = (crt.ColorStandards & color) == color ? (int)sourceStandard + 1 : 0;
+        var decoder = crt.Connection switch
+        {
+            EmulationCrtConnection.Composite or EmulationCrtConnection.AnalogRf
+                => (crt.ColorStandards & color) == color ? (int)sourceStandard + 1 : 0,
+            EmulationCrtConnection.SVideo => (crt.ColorStandards & color) == color ? SeparateColorChannels : 0,
+            _ => SeparateColorChannels
+        };
         var (aspectWidth, aspectHeight) = EmulationVideoProcessingConfigurationFunctions.AspectRatioDimensions(aspectRatio);
         var screenAspect = aspectHeight > 0 ? (float)aspectWidth / aspectHeight
             : frame.AspectRatio > 0 && float.IsFinite(frame.AspectRatio) ? frame.AspectRatio
@@ -93,6 +103,7 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
 
     internal static Vector3 Decode(Vector3 center, Vector3 neighbor, int decoder, int line)
     {
+        if (decoder == SeparateColorChannels) return center;
         var luminance = Vector3.Dot(center, LumaWeights);
         if (decoder == 0) return new Vector3(luminance);
         var neighborLuma = Vector3.Dot(neighbor, LumaWeights);
@@ -168,6 +179,7 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
         }
         vec3 crtDecode(vec3 center, vec3 neighbor, int decoder, float line)
         {
+            if (decoder == 4) return center;
             const vec3 weights = vec3(.2126,.7152,.0722);
             float luma = dot(center, weights);
             if (decoder == 0) return vec3(luma);

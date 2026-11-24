@@ -302,7 +302,7 @@ internal static partial class VeldridVideoProcessingShaders
                 if (any(lessThan(sourceUv, vec2(0.0))) || any(greaterThan(sourceUv, vec2(1.0)))) return vec3(0.0);
                 c = raw(sourceUv);
                 int decoder = int(Parameters.CrtTuning.y + .5);
-                vec3 neighbor = decoder == 0 ? c : raw(crtChromaNeighbor(sourceUv, Parameters.Processing.zw, decoder));
+                vec3 neighbor = decoder > 0 && decoder < 4 ? raw(crtChromaNeighbor(sourceUv, Parameters.Processing.zw, decoder)) : c;
                 c = crtDecode(c, neighbor, decoder, floor(sourceUv.y * Parameters.Processing.w));
                 c = min(vec3(1.0), c * (Parameters.Adjustments.x * crtBeam(uv.y, Parameters.Output.y, Parameters.CrtRaster, Parameters.Output.w, Parameters.CrtPhosphor.w)));
             }

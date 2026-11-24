@@ -56,6 +56,12 @@ public static partial class EmulationVideoProcessingCatalog
     public static IReadOnlyDictionary<EmulationCrtPhosphorColor, string> CrtPhosphorColorResourceKeys { get; }
         = ResourceKeys("Crt.Color", Enum.GetValues<EmulationCrtPhosphorColor>());
 
+    public static IReadOnlyDictionary<EmulationCrtConnection, string> CrtConnectionResourceKeys { get; }
+        = ResourceKeys("Crt.Connection", Enum.GetValues<EmulationCrtConnection>());
+
+    public static IReadOnlyDictionary<EmulationCrtMonitorPalette, string> CrtMonitorPaletteResourceKeys { get; }
+        = ResourceKeys("Crt.MonitorPalette", Enum.GetValues<EmulationCrtMonitorPalette>());
+
     public static IReadOnlyDictionary<EmulationCrtMask, string> CrtMaskResourceKeys { get; }
         = ResourceKeys("Crt.Mask", new[] { EmulationCrtMask.None, EmulationCrtMask.ShadowMask,
             EmulationCrtMask.ApertureGrille, EmulationCrtMask.SlotMask, EmulationCrtMask.StaggeredSlotMask,
@@ -162,6 +168,9 @@ public static partial class EmulationVideoProcessingCatalog
             [CrtPhosphorColor] = EmulationCrtPhosphorColor.Gray,
             [CrtBeamWidth] = 0,
             [CrtCurvature] = 0,
+            [CrtConnection] = EmulationCrtConnection.Digital,
+            [CrtConnectionDegradation] = 0,
+            [CrtMonitorPalette] = EmulationCrtMonitorPalette.Mda,
             [FixedPixelTechnology] = EmulationFixedPixelTechnology.Lcd,
             [FixedPixelSubpixels] = EmulationSubpixelLayout.Rgb, [FixedPixelMonochromeColor] = EmulationMonochromePalette.Green,
             [FixedPixelGridIntensity] = 0, [FixedPixelPixelGap] = 0, [FixedPixelResponseTime] = 0,
@@ -247,7 +256,7 @@ public static partial class EmulationVideoProcessingCatalog
     private static IReadOnlyDictionary<string, EmulationVideoDisplayTechnology> TechnologyRequirements()
     {
         var result = new Dictionary<string, EmulationVideoDisplayTechnology>(StringComparer.Ordinal);
-        Add(CrtColorStandards, CrtCurvature, EmulationVideoDisplayTechnology.Crt);
+        Add(CrtColorStandards, CrtMonitorPalette, EmulationVideoDisplayTechnology.Crt);
         Add(FixedPixelTechnology, FixedPixelBlackDepth, EmulationVideoDisplayTechnology.FixedPixel);
         Add(PlasmaCellStructure, PlasmaPersistence, EmulationVideoDisplayTechnology.Plasma);
         Add(VectorLineThreshold, VectorPersistence, EmulationVideoDisplayTechnology.Vector);

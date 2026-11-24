@@ -28,7 +28,17 @@ internal sealed partial class MachineController
                 EmulationVideoProcessingLimits.AdjustmentMinimum, EmulationVideoProcessingLimits.AdjustmentMaximum, signed: true),
             VideoNumber(Catalog.ParameterResourceKeys[Catalog.CrtCurvature], settings => settings.Crt.Curvature,
                 (settings, value) => settings with { Crt = settings.Crt with { Curvature = value } },
-                EmulationVideoProcessingLimits.CrtCurvatureMinimum, EmulationVideoProcessingLimits.CrtCurvatureMaximum))
+                EmulationVideoProcessingLimits.CrtCurvatureMinimum, EmulationVideoProcessingLimits.CrtCurvatureMaximum),
+            CrtChoice(Catalog.CrtConnection, Catalog.CrtConnectionResourceKeys,
+                c => c.Connection, (c, v) => c with { Connection = v }),
+            VideoNumber(Catalog.ParameterResourceKeys[Catalog.CrtConnectionDegradation],
+                settings => settings.Crt.ConnectionDegradation,
+                (settings, value) => settings with { Crt = settings.Crt with { ConnectionDegradation = value } },
+                0, EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum)
+                with { IsVisible = () => _video.VideoProcessing.Crt.CanDegradeConnection() },
+            CrtChoice(Catalog.CrtMonitorPalette, Catalog.CrtMonitorPaletteResourceKeys,
+                c => c.MonitorPalette, (c, v) => c with { MonitorPalette = v })
+                with { IsVisible = () => _video.VideoProcessing.Crt.Connection == EmulationCrtConnection.LegacyMonitor })
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.Crt };
 
     private Entry CrtChoice<T>(string parameter, IReadOnlyDictionary<T, string> keys, Func<EmulationCrtVideoConfiguration, T> read,

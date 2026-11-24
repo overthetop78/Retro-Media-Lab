@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>插槽口罩</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>单色</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>屏幕曲率</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>连接类型</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>信号劣化</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>显示器调色板</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>数字</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART（RGB 和同步）</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>复合视频</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>分量视频（YPbPr）</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>模拟射频（RF）</value></data>
 </root>

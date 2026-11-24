@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Verstoken slotmasker</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Monochroom</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Schermkromming</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Aansluittype</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Signaaldegradatie</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Monitorpalet</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Digitaal</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB en synchronisatie)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Composietvideo</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Componentvideo (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analoog RF</value></data>
 </root>

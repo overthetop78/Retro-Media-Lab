@@ -10,4 +10,9 @@ public sealed record EmulationCrtVideoConfiguration(
     int BeamWidth = 0)
 {
     public int Curvature { get; init; }
+    public EmulationCrtConnection Connection { get; init; }
+    public int ConnectionDegradation { get; init; }
+    public EmulationCrtMonitorPalette MonitorPalette { get; init; }
+
+    public bool CanDegradeConnection() => Connection is >= EmulationCrtConnection.Scart and <= EmulationCrtConnection.AnalogRf;
 }

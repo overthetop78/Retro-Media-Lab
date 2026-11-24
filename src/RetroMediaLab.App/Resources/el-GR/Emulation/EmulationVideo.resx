@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Μάσκα κλειδαριών</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>Μονόχρωμο</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>Καμπυλότητα οθόνης</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>Τύπος σύνδεσης</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>Υποβάθμιση σήματος</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>Παλέτα οθόνης</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>Ψηφιακό</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB και συγχρονισμός)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>Σύνθετο βίντεο</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>Βίντεο συνιστωσών (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Αναλογικό RF</value></data>
 </root>

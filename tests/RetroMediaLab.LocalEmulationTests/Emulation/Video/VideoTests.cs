@@ -1,6 +1,9 @@
 using RetroMediaLab.App.Functions.Rendering.Emulation;
 using RetroMediaLab.App.Rendering.Emulation.Processing;
 using RetroMediaLab.Tests.Application.TestInfrastructure;
+using RetroMediaLab.Emulation.Contracts;
+using RetroMediaLab.Emulation.Enums;
+using RetroMediaLab.VideoPresentation.Contracts;
 using RetroMediaLab.VideoPresentation.Enums;
 using RetroMediaLab.VideoPresentation.Services;
 using System.Numerics;
@@ -9,6 +12,105 @@ namespace RetroMediaLab.Tests.Emulation.Video;
 [Collection("WPF")]
 public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaExecutionScenarios sta)
 {
+    [Fact]
+    public void CrtConnectionAppliesDistinctAnalogProfilesAndCleanDigitalPassThrough()
+    {
+        const int width = 40, height = 8;
+        var input = new byte[width * height * 4];
+        for (var i = 0; i < width * height; i++)
+        {
+            input[i * 4] = i % 2 == 0 ? (byte)20 : (byte)220;
+            input[i * 4 + 1] = i % 3 == 0 ? (byte)235 : (byte)30;
+            input[i * 4 + 2] = i % 4 < 2 ? (byte)255 : (byte)4;
+            input[i * 4 + 3] = 255;
+        }
+        var frame = new VideoFrame(input, width, height, width * 4, EmulationPixelFormat.Xrgb8888,
+            4f / 3f, 9, TimeSpan.Zero);
+        var settings = new EmulationVideoProcessingConfiguration { DisplayTechnology = EmulationVideoDisplayTechnology.Crt };
+        byte[]? scratch = null;
+        Assert.Null(FilterCrtConnection.Apply(input, frame, settings, ref scratch));
+        byte[] Apply(EmulationCrtConnection connection, int degradation, VideoFrame source)
+        {
+            var active = settings with { Crt = new() { Connection = connection, ConnectionDegradation = degradation } };
+            return FilterCrtConnection.Apply(input, source, active, ref scratch)?.ToArray() ?? input;
+        }
+
+        Assert.Same(input, Apply(EmulationCrtConnection.Scart, 0, frame));
+        Assert.Same(input, Apply(EmulationCrtConnection.Component, 0, frame));
+        var profiles = Enum.GetValues<EmulationCrtConnection>()
+            .Where(connection => connection is >= EmulationCrtConnection.Scart and <= EmulationCrtConnection.AnalogRf)
+            .Select(connection => Apply(connection, 20, frame)).ToArray();
+        Assert.All(profiles, profile => Assert.False(input.SequenceEqual(profile)));
+        for (var i = 0; i < profiles.Length; i++)
+        for (var j = i + 1; j < profiles.Length; j++)
+            Assert.False(profiles[i].SequenceEqual(profiles[j]));
+
+        Assert.False(input.SequenceEqual(Apply(EmulationCrtConnection.Composite, 0, frame)));
+        var rf = Apply(EmulationCrtConnection.AnalogRf, 20, frame);
+        Assert.Equal(rf, Apply(EmulationCrtConnection.AnalogRf, 20, frame));
+        Assert.False(rf.SequenceEqual(Apply(EmulationCrtConnection.AnalogRf, 20, frame with { Sequence = 10 })));
+    }
+
+    [Theory]
+    [InlineData(EmulationCrtColorStandards.Pal, EmulationVideoStandard.Pal)]
+    [InlineData(EmulationCrtColorStandards.Secam, EmulationVideoStandard.Secam)]
+    [InlineData(EmulationCrtColorStandards.Ntsc, EmulationVideoStandard.Ntsc)]
+    public void CrtRfUsesTheSelectedStandardAndMatchesIncomingSignalOnMultistandardReceivers(
+        EmulationCrtColorStandards standard, EmulationVideoStandard sourceStandard)
+    {
+        byte[] pixels = Enumerable.Repeat(new byte[] { 43, 65, 188, 255, 205, 81, 26, 255 }, 256)
+            .SelectMany(pair => pair).ToArray();
+        var frame = new VideoFrame(pixels, 32, 16, 128, EmulationPixelFormat.Xrgb8888, 2f, 29, TimeSpan.Zero)
+            { SignalStandard = sourceStandard };
+        var settings = new EmulationVideoProcessingConfiguration
+        {
+            DisplayTechnology = EmulationVideoDisplayTechnology.Crt,
+            Crt = new() { Connection = EmulationCrtConnection.AnalogRf, ConnectionDegradation = 20 }
+        };
+        byte[] Render(EmulationCrtColorStandards selection, EmulationCrtConnection connection = EmulationCrtConnection.AnalogRf)
+        {
+            byte[]? scratch = null;
+            return FilterCrtConnection.Apply(pixels, frame,
+                settings with { Crt = settings.Crt with { Connection = connection, ColorStandards = selection } }, ref scratch)!;
+        }
+
+        var selected = Render(standard);
+        const EmulationCrtColorStandards all = EmulationCrtColorStandards.PalSecamNtsc;
+        Assert.Equal(selected, Render(all));
+        foreach (var other in new[] { EmulationCrtColorStandards.Pal, EmulationCrtColorStandards.Secam, EmulationCrtColorStandards.Ntsc })
+        {
+            if (other == standard) continue;
+            Assert.False(selected.SequenceEqual(Render(other)));
+            Assert.Equal(Render(standard, EmulationCrtConnection.Composite), Render(other, EmulationCrtConnection.Composite));
+            Assert.Equal(0f, CrtSignal.From(settings.Crt with { ColorStandards = other }, frame).Tuning.Y);
+        }
+    }
+
+    [Theory]
+    [InlineData(EmulationCrtMonitorPalette.Mda, 127, 127, 127, 145, 145, 145)]
+    [InlineData(EmulationCrtMonitorPalette.Cga, 168, 83, 3, 170, 85, 0)]
+    [InlineData(EmulationCrtMonitorPalette.Ega, 181, 100, 20, 170, 85, 0)]
+    public void CrtLegacyMonitorsQuantizeTheSourceBeforeThePhosphors(EmulationCrtMonitorPalette palette,
+        byte r, byte g, byte b, byte expectedR, byte expectedG, byte expectedB)
+    {
+        byte[] source = [b, g, r, 255];
+        var frame = new VideoFrame(source, 1, 1, 4, EmulationPixelFormat.Xrgb8888, 1f, 0, TimeSpan.Zero);
+        var configuration = new EmulationVideoProcessingConfiguration
+        {
+            DisplayTechnology = EmulationVideoDisplayTechnology.Crt,
+            Crt = new() { Connection = EmulationCrtConnection.LegacyMonitor, MonitorPalette = palette }
+        };
+        byte[]? scratch = null;
+        Assert.Equal(new byte[] { expectedB, expectedG, expectedR, 255 },
+            FilterCrtConnection.Apply(source, frame, configuration, ref scratch));
+        using var pipeline = new SoftwareEmulationVideoProcessingPipeline();
+        var monochrome = configuration with { Crt = configuration.Crt with { Mask = EmulationCrtMask.Monochrome } };
+        var output = pipeline.Process(monochrome, frame, new(1, 1), new(1, 1)).Pixels.Span;
+        Assert.True(output[0] > 0);
+        Assert.Equal(output[0], output[1]);
+        Assert.Equal(output[1], output[2]);
+    }
+
     [Theory]
     [InlineData(-20, 28, 32)]
     [InlineData(0, 64, 64)]
@@ -287,6 +389,7 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
         };
         var receiver = new RetroMediaLab.VideoPresentation.Contracts.EmulationCrtVideoConfiguration
         {
+            Connection = EmulationCrtConnection.Composite,
             ColorStandards = RetroMediaLab.VideoPresentation.Enums.EmulationCrtColorStandards.Secam,
             FieldRate = RetroMediaLab.VideoPresentation.Enums.EmulationCrtFieldRate.Hz50
         };
@@ -304,7 +407,8 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
         Assert.Equal(0f, wrongColor.Tuning.Y);
         Assert.Equal(240f / 256, wrongColor.Raster.X);
 
-        var locked = RetroMediaLab.App.Rendering.Emulation.Processing.CrtSignal.From(new(), source);
+        var locked = RetroMediaLab.App.Rendering.Emulation.Processing.CrtSignal.From(
+            new() { Connection = EmulationCrtConnection.Composite }, source);
         Assert.Equal(0f, locked.Tuning.X);
         Assert.Equal(2f, locked.Tuning.Y);
         Assert.Equal(new System.Numerics.Vector2(.5f, .5f), locked.SourceUv(new(.5f, .5f)));
@@ -316,6 +420,7 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
         var oldProfile = System.Text.Json.JsonSerializer.Deserialize<RetroMediaLab.VideoPresentation.Contracts.EmulationCrtVideoConfiguration>(
             """{"ColorMode":1,"BeamIntensity":35,"MaskIntensity":0,"HorizontalCurvature":50,"ScanlinesEnabled":true}""");
         Assert.NotNull(oldProfile);
+        oldProfile = oldProfile with { Connection = EmulationCrtConnection.Composite };
         var source = new RetroMediaLab.Emulation.Contracts.VideoFrame(default, 320, 240, 1280, default, 4f / 3, 0, TimeSpan.Zero)
         {
             SignalFieldRate = 60

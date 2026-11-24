@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>قناع الطيار المُتَزَج</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>مونوكروم</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>انحناء الشاشة</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>نوع الاتصال</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>تدهور الإشارة</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>لوحة ألوان الشاشة</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>رقمي</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART (RGB ومزامنة)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>فيديو مركب</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>فيديو مكوّن (YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF تناظري</value></data>
 </root>

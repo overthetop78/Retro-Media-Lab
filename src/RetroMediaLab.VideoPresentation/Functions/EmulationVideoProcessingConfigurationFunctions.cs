@@ -66,14 +66,15 @@ public static class EmulationVideoProcessingConfigurationFunctions
     {
         var normalized = Normalize(configuration);
         if (UsesHostDisplay(normalized)) return normalized;
-        var analogCrt = ScreenType(normalized) == EmulationVideoScreenType.Crt
-            && normalized.SignalSimulation.ConnectionIntensity > 0
-            && normalized.SignalSimulation.Connection is EmulationSignalConnection.Composite or EmulationSignalConnection.Rf;
+        var isCrt = ScreenType(normalized) == EmulationVideoScreenType.Crt;
+        var analogCrt = isCrt
+            && normalized.Crt.Connection is EmulationCrtConnection.Composite or EmulationCrtConnection.AnalogRf;
         var controls = AdjustmentControls(normalized);
         var adjustments = ImageAdjustments(normalized, ScreenType(normalized));
         return normalized with
         {
             Sampling = SamplingForDisplay(normalized),
+            SignalSimulation = isCrt ? new() : normalized.SignalSimulation,
             Restoration = normalized.Restoration with
             {
                 Dedithering = SupportsDedithering(normalized) && !analogCrt ? normalized.Restoration.Dedithering : 0,
@@ -252,7 +253,11 @@ public static class EmulationVideoProcessingConfigurationFunctions
                 BeamWidth = Math.Clamp(crt.BeamWidth, EmulationVideoProcessingLimits.AdjustmentMinimum,
                     EmulationVideoProcessingLimits.AdjustmentMaximum),
                 Curvature = Math.Clamp(crt.Curvature, EmulationVideoProcessingLimits.CrtCurvatureMinimum,
-                    EmulationVideoProcessingLimits.CrtCurvatureMaximum)
+                    EmulationVideoProcessingLimits.CrtCurvatureMaximum),
+                Connection = DefinedOrDefault(crt.Connection, EmulationCrtConnection.Digital),
+                ConnectionDegradation = Math.Clamp(crt.ConnectionDegradation, 0,
+                    EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum),
+                MonitorPalette = DefinedOrDefault(crt.MonitorPalette, EmulationCrtMonitorPalette.Mda)
             },
             FixedPixel = fixedPixel with
             {

@@ -27,7 +27,8 @@ internal static class FilterCrt
                 }
 
                 var color = SampleColor(source, width, height, uv);
-                var neighbor = decoder == 0 ? color : SampleColor(source, width, height, uv - neighborOffset);
+                var neighbor = decoder is > 0 and < CrtSignal.SeparateColorChannels
+                    ? SampleColor(source, width, height, uv - neighborOffset) : color;
                 color = CrtSignal.Decode(color, neighbor, decoder, (int)(uv.Y * sourceHeight));
                 color = Vector3.Min(Vector3.One, color * (beamGain * signal.Beam(screenUv.Y, height)));
                 colors[index] = color.X;

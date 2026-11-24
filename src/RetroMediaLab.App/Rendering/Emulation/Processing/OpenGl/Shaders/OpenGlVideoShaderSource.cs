@@ -307,7 +307,7 @@ internal static class OpenGlVideoShaderSource
             vec3 color = adjustColor(sampleConfigured(uv).rgb);
             int decoder = int(CrtTuning.y + .5);
             vec3 neighbor = color;
-            if (decoder != 0) neighbor = adjustColor(sampleConfigured(crtChromaNeighbor(uv, Processing.zw, decoder)).rgb);
+            if (decoder > 0 && decoder < 4) neighbor = adjustColor(sampleConfigured(crtChromaNeighbor(uv, Processing.zw, decoder)).rgb);
             color = crtDecode(color, neighbor, decoder, floor(uv.y * Processing.w));
             return min(vec3(1.0), color * (Adjustments.x * crtBeam(originalUv.y, Output.y, CrtRaster, Output.w, CrtPhosphor.w)));
         }

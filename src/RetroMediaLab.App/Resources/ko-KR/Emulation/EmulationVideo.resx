@@ -272,4 +272,12 @@
   <data name="Emulation.Video.Crt.Mask.StaggeredSlotMask"><value>Staggered 구멍 가면</value></data>
   <data name="Emulation.Video.Crt.Mask.Monochrome"><value>모노크롬</value></data>
   <data name="Emulation.Video.Parameter.CrtCurvature"><value>화면 곡률</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnection"><value>연결 유형</value></data>
+  <data name="Emulation.Video.Parameter.CrtConnectionDegradation"><value>신호 열화</value></data>
+  <data name="Emulation.Video.Parameter.CrtMonitorPalette"><value>모니터 팔레트</value></data>
+  <data name="Emulation.Video.Crt.Connection.Digital"><value>디지털</value></data>
+  <data name="Emulation.Video.Crt.Connection.Scart"><value>SCART(RGB 및 동기화)</value></data>
+  <data name="Emulation.Video.Crt.Connection.Composite"><value>컴포지트 영상</value></data>
+  <data name="Emulation.Video.Crt.Connection.Component"><value>컴포넌트 영상(YPbPr)</value></data>
+  <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>아날로그 RF</value></data>
 </root>

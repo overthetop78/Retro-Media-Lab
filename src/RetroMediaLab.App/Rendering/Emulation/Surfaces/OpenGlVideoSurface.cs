@@ -40,6 +40,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     private ActiveTextureDelegate? _activeTexture;
     private bool _hasHistory;
     private byte[]? _deditheringWorkspace;
+    private byte[]? _crtConnectionWorkspace;
     private int _historyWidth;
     private int _historyHeight;
     private TimeSpan _historyTimestamp;
@@ -262,6 +263,14 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
         if (prepared is not null)
         {
             pixels = prepared;
+            pixelOffset = 0;
+        }
+        var connected = FilterCrtConnection.Apply(
+            pixels.AsSpan(pixelOffset, checked(frame.Width * frame.Height * 4)), frame,
+            _videoProcessing, ref _crtConnectionWorkspace);
+        if (connected is not null)
+        {
+            pixels = connected;
             pixelOffset = 0;
         }
         if (!WglMakeCurrent(_dc, _context))

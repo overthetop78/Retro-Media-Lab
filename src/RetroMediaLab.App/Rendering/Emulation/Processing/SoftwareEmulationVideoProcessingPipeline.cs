@@ -9,6 +9,7 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulationVideoProcessingPipeline
 {
     private byte[]? _deditheringWorkspace;
+    private byte[]? _crtConnectionWorkspace;
     private float[]? _fixedPixelHistory;
     private int _historyWidth;
     private int _historyHeight;
@@ -60,7 +61,8 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         var pixels = EmulationVideoPixelFunctions.ToBgra32(frame);
         var prepared = EmulationImageRestorationFunctions.ApplyDedithering(pixels, frame.Width, frame.Height,
             normalized.Restoration.Dedithering, ref _deditheringWorkspace);
-        var linear = ToLinear(prepared ?? pixels, frame.Width, frame.Height);
+        var connected = FilterCrtConnection.Apply(prepared ?? pixels, frame, normalized, ref _crtConnectionWorkspace);
+        var linear = ToLinear(connected ?? prepared ?? pixels, frame.Width, frame.Height);
         var reference = normalized.Restoration.DetailRecovery > 0 && !sameSize
             && normalized.Sampling != EmulationVideoSampling.Nearest ? linear.ToArray() : null;
         EmulationImageRestorationFunctions.ApplyDebanding(linear, frame.Width, frame.Height, normalized.Restoration.Debanding);
