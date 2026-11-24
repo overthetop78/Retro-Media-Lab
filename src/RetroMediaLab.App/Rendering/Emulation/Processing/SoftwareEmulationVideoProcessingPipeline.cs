@@ -17,10 +17,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
     private readonly FilterVectorDisplay _vectorDisplay = new();
     private float[] _vectorRaster = [];
     private float[] _vectorOutput = [];
-    private float[]? _dotMatrixHistory;
-    private int _dotMatrixHistoryWidth;
-    private int _dotMatrixHistoryHeight;
-    private TimeSpan _dotMatrixHistoryTimestamp;
     private float[]? _segmentDisplayHistory;
     private int _segmentDisplayHistoryWidth;
     private int _segmentDisplayHistoryHeight;
@@ -109,7 +105,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             _vfdPersistence.Apply(linear, outputSize.Width, outputSize.Height, frame.Timestamp, normalized.Vfd.PersistenceMilliseconds);
         else
             _vfdPersistence.Reset();
-        ApplyDotMatrixTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         ApplySegmentDisplayTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         ApplyEPaperTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Crt)

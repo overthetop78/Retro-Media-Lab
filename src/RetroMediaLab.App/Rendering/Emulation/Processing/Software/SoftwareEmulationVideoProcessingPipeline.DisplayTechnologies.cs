@@ -38,11 +38,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             FilterVfdPhosphorColor.Apply(colors, emission, halo, vfd.Color);
             return;
         }
-        if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.DotMatrix)
-        {
-            FilterDotMatrix.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, configuration.DotMatrix);
-            return;
-        }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.SegmentDisplay)
         {
             FilterSegmentDisplay.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, configuration.SegmentDisplay);

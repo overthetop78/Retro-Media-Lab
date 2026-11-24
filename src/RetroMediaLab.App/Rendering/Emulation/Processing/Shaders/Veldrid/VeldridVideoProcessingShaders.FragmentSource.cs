@@ -16,7 +16,7 @@ internal static partial class VeldridVideoProcessingShaders
             vec4 Signal; vec4 Stylistic; vec4 Stylistic2;
             vec4 VfdDisplay; vec4 VfdStructure; vec4 VfdOptical;
             vec4 LedMatrixStructure;
-            vec4 DotMatrixGeometry; vec4 DotMatrixEmission; vec4 DotMatrixTemporal;
+            vec4 DotMatrixGeometry; vec4 DotMatrixOptics;
             vec4 EPaperInkAndColor; vec4 EPaperSurface; vec4 EPaperTemporal;
             vec4 Projection; vec4 ProjectionScreen;
         } Parameters;
@@ -112,7 +112,6 @@ internal static partial class VeldridVideoProcessingShaders
         """ + "\n" + FilterVfdEmissionThreshold.Shader + FilterVfdPhosphorIntensity.Shader + FilterVfdPhosphorColor.Shader + FilterVfdGlass.Shader + FilterVfdCellStructure.Shader + FilterVfdHaloRadius.Shader + FilterVfdHalo.Shader + FilterVfdPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
-        """ + "\n" + FilterDotMatrixCellSize.Shader + FilterDotMatrixCellGap.Shader + FilterDotMatrixShape.Shader + FilterDotMatrixDotSize.Shader + FilterDotMatrixContrast.Shader + FilterDotMatrixBrightness.Shader + FilterDotMatrixPalette.Shader + FilterDotMatrixHalo.Shader + FilterDotMatrixResponse.Shader + FilterDotMatrixPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 8
         """ + "\n" + FilterSegmentDisplay.VeldridShader + "\n" + """
@@ -169,44 +168,7 @@ internal static partial class VeldridVideoProcessingShaders
         """ + "\n" + FilterLedMatrixCellStructure.CreateShader(true) + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
-        vec3 dotMatrixSample(vec2 uv,bool history)
-        {
-            vec2 sourceSize=max(Parameters.Processing.zw,vec2(1.0));
-            float pitch=filterDotMatrixPitch(Parameters.DotMatrixGeometry.z);
-            vec2 cell=floor(uv*sourceSize/pitch);
-            vec2 centerUv=(cell+.5)*pitch/sourceSize;
-            vec2 offset=vec2(pitch*.28)/sourceSize;
-            if(history)
-                return (adjust(texture(sampler2D(History,LinearSampler),centerUv).rgb)*4.0
-                    +adjust(texture(sampler2D(History,LinearSampler),centerUv-vec2(offset.x,0)).rgb)
-                    +adjust(texture(sampler2D(History,LinearSampler),centerUv+vec2(offset.x,0)).rgb)
-                    +adjust(texture(sampler2D(History,LinearSampler),centerUv-vec2(0,offset.y)).rgb)
-                    +adjust(texture(sampler2D(History,LinearSampler),centerUv+vec2(0,offset.y)).rgb))/8.0;
-            return (raw(centerUv)*4.0+raw(centerUv-vec2(offset.x,0))
-                +raw(centerUv+vec2(offset.x,0))+raw(centerUv-vec2(0,offset.y))
-                +raw(centerUv+vec2(0,offset.y)))/8.0;
-        }
-        vec3 dotMatrixPixel(vec2 uv,bool history)
-        {
-            vec2 sourceSize=max(Parameters.Processing.zw,vec2(1.0));
-            float pitch=filterDotMatrixPitch(Parameters.DotMatrixGeometry.z);
-            vec2 local=fract(uv*sourceSize/pitch)-.5;
-            float distance=filterDotMatrixDistance(local,Parameters.DotMatrixGeometry.y);
-            float radius=filterDotMatrixRadius(Parameters.DotMatrixGeometry.w,
-                Parameters.DotMatrixEmission.x);
-            float edge=max(sourceSize.x/max(Parameters.Output.x,1.0),
-                sourceSize.y/max(Parameters.Output.y,1.0))/pitch;
-            float core=smoothstep(radius+edge,radius-edge,distance);
-            float halo=filterDotMatrixHalo(distance,radius,
-                Parameters.DotMatrixEmission.w)*(1.0-core);
-            vec3 source=dotMatrixSample(uv,history);
-            float level=filterDotMatrixBrightness(filterDotMatrixContrast(
-                dot(source,vec3(.2126,.7152,.0722)),Parameters.DotMatrixEmission.y),
-                Parameters.DotMatrixEmission.z);
-            return mix(filterDotMatrixBackground(Parameters.DotMatrixGeometry.x),
-                filterDotMatrixForeground(source,Parameters.DotMatrixGeometry.x),
-                clamp(level*(core+halo),0.0,1.0));
-        }
+        """ + "\n" + FilterDotMatrix.CreateShader(true) + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 10
         """ + "\n" + ProjectionVideoShader.Create(true) + "\n" + """
@@ -263,7 +225,7 @@ internal static partial class VeldridVideoProcessingShaders
             if(t==6)c=ledMatrixPixel(uv);
         #endif
         #if DISPLAY_TECHNOLOGY == 7
-            if(t==7)c=dotMatrixPixel(uv,false);
+            if(t==7)c=dotMatrixPixel(uv);
         #endif
         #if DISPLAY_TECHNOLOGY == 8
             if(t==8)c=segmentDisplayPixel(uv);
@@ -368,16 +330,6 @@ internal static partial class VeldridVideoProcessingShaders
         #endif
             vec3 previous=displayEffect(adjust(historyColor),uv);
             previous=clamp(postEffect(previous,uv),0.0,1.0);
-        #if DISPLAY_TECHNOLOGY == 7
-            if(Parameters.DotMatrixTemporal.z>.5)
-            {
-                previous=clamp(postEffect(dotMatrixPixel(fsin_TexCoord,true),fsin_TexCoord),0.0,1.0);
-                c=filterDotMatrixResponse(previous,c,Parameters.DotMatrixTemporal.x);
-                c=filterDotMatrixPersistence(c,previous,Parameters.DotMatrixTemporal.y,
-                    Parameters.DotMatrixGeometry.x,
-                    filterDotMatrixBackground(Parameters.DotMatrixGeometry.x));
-            }
-        #endif
         #if DISPLAY_TECHNOLOGY == 3
             if(Parameters.PlasmaTemporal.y>.5)
                 c=filterPlasmaPersistence(c,previous,Parameters.PlasmaTemporal.x);

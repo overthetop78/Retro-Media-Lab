@@ -35,8 +35,7 @@ internal static class OpenGlVideoUniformNames
     internal const string VfdOptical = "VfdOptical";
     internal const string LedMatrixStructure = "LedMatrixStructure";
     internal const string DotMatrixGeometry = "DotMatrixGeometry";
-    internal const string DotMatrixEmission = "DotMatrixEmission";
-    internal const string DotMatrixTemporal = "DotMatrixTemporal";
+    internal const string DotMatrixOptics = "DotMatrixOptics";
     internal const string EPaperInkAndColor = "EPaperInkAndColor";
     internal const string EPaperSurface = "EPaperSurface";
     internal const string EPaperTemporal = "EPaperTemporal";

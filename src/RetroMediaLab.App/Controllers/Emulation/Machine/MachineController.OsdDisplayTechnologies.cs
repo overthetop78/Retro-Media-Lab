@@ -83,19 +83,10 @@ internal sealed partial class MachineController
         var fields = new VideoTechnologyFields<EmulationDotMatrixVideoConfiguration>(this,
             s => s.DotMatrix, (s, c) => s with { DotMatrix = c });
         return VideoGroup(EmulationResourceKeys.VideoTechnologyDotMatrix,
-            VideoGroup(EmulationResourceKeys.VideoDotMatrixGroupCells,
-                fields.Choice(Catalog.DotMatrixShape, Catalog.DotMatrixShapeResourceKeys, c => c.Shape, (c, v) => c with { Shape = v }),
-                fields.Number(Catalog.DotMatrixCellSize, c => c.CellSize, (c, v) => c with { CellSize = v }),
-                fields.Number(Catalog.DotMatrixDotSize, c => c.DotSize, (c, v) => c with { DotSize = v }),
-                fields.Number(Catalog.DotMatrixCellGap, c => c.CellGap, (c, v) => c with { CellGap = v })),
-            VideoGroup(EmulationResourceKeys.VideoDotMatrixGroupLight,
-                fields.Choice(Catalog.DotMatrixPalette, Catalog.DotMatrixPaletteResourceKeys, c => c.Palette, (c, v) => c with { Palette = v }),
-                fields.Number(Catalog.DotMatrixBrightness, c => c.Brightness, (c, v) => c with { Brightness = v }),
-                fields.Number(Catalog.DotMatrixContrast, c => c.Contrast, (c, v) => c with { Contrast = v }),
-                fields.Number(Catalog.DotMatrixHaloIntensity, c => c.HaloIntensity, (c, v) => c with { HaloIntensity = v })),
-            VideoGroup(EmulationResourceKeys.VideoDotMatrixGroupTemporal,
-                fields.Number(Catalog.DotMatrixResponseTime, c => c.ResponseTimeMilliseconds, (c, v) => c with { ResponseTimeMilliseconds = v }, EmulationVideoProcessingLimits.DurationMaximumMilliseconds),
-                fields.Number(Catalog.DotMatrixPersistence, c => c.PersistenceMilliseconds, (c, v) => c with { PersistenceMilliseconds = v }, EmulationVideoProcessingLimits.DurationMaximumMilliseconds)))
+            fields.Choice(Catalog.DotMatrixPalette, Catalog.DotMatrixPaletteResourceKeys, c => c.Palette, (c, v) => c with { Palette = v }),
+            fields.Choice(Catalog.DotMatrixDefinition, Catalog.LedMatrixDefinitionResourceKeys, c => c.Definition, (c, v) => c with { Definition = v }),
+            fields.Choice(Catalog.DotMatrixShape, Catalog.DotMatrixShapeResourceKeys, c => c.Shape, (c, v) => c with { Shape = v }),
+            fields.Choice(Catalog.DotMatrixTechnology, Catalog.DotMatrixTechnologyResourceKeys, c => c.Technology, (c, v) => c with { Technology = v }))
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.DotMatrix };
     }
 

@@ -37,8 +37,7 @@ internal sealed class OpenGlVideoProgramUniforms
     private readonly int _vfdOptical;
     private readonly int _ledMatrixStructure;
     private readonly int _dotMatrixGeometry;
-    private readonly int _dotMatrixEmission;
-    private readonly int _dotMatrixTemporal;
+    private readonly int _dotMatrixOptics;
     private readonly int _ePaperInkAndColor;
     private readonly int _ePaperSurface;
     private readonly int _ePaperTemporal;
@@ -79,8 +78,7 @@ internal sealed class OpenGlVideoProgramUniforms
         _vfdOptical = Location(OpenGlVideoUniformNames.VfdOptical);
         _ledMatrixStructure = Location(OpenGlVideoUniformNames.LedMatrixStructure);
         _dotMatrixGeometry = Location(OpenGlVideoUniformNames.DotMatrixGeometry);
-        _dotMatrixEmission = Location(OpenGlVideoUniformNames.DotMatrixEmission);
-        _dotMatrixTemporal = Location(OpenGlVideoUniformNames.DotMatrixTemporal);
+        _dotMatrixOptics = Location(OpenGlVideoUniformNames.DotMatrixOptics);
         _ePaperInkAndColor = Location(OpenGlVideoUniformNames.EPaperInkAndColor);
         _ePaperSurface = Location(OpenGlVideoUniformNames.EPaperSurface);
         _ePaperTemporal = Location(OpenGlVideoUniformNames.EPaperTemporal);
@@ -160,10 +158,9 @@ internal sealed class OpenGlVideoProgramUniforms
         var ledMatrix = LedMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         Set(_ledMatrixStructure, ledMatrix);
 
-        var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         Set(_dotMatrixGeometry, dotMatrix.Geometry);
-        Set(_dotMatrixEmission, dotMatrix.Emission);
-        Set(_dotMatrixTemporal, dotMatrix.Temporal);
+        Set(_dotMatrixOptics, dotMatrix.Optics);
 
         var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         Set(_ePaperInkAndColor, ePaper.InkAndColor);

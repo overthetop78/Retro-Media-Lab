@@ -207,7 +207,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var segmentDisplay = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.SegmentDisplay;
         var temporalDisplay = fixedPixel || plasma || segmentDisplay || rasterVector
             || gpuConfiguration.DisplayTechnology is EmulationVideoDisplayTechnology.Vfd
-                or EmulationVideoDisplayTechnology.DotMatrix or EmulationVideoDisplayTechnology.EPaper
+                or EmulationVideoDisplayTechnology.EPaper
             || gpuConfiguration.SignalSimulation.StandardIntensity > 0;
         var hasHistory = temporalDisplay && _hasHistory && (fixedPixel || segmentDisplay ? frame.Timestamp >= _historyTimestamp : frame.Sequence >= _historySequence);
         var elapsedMilliseconds = hasHistory ? (frame.Timestamp - _historyTimestamp).TotalMilliseconds : 0;
@@ -540,8 +540,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         Vector4 VfdOptical,
         Vector4 LedMatrixStructure,
         Vector4 DotMatrixGeometry,
-        Vector4 DotMatrixEmission,
-        Vector4 DotMatrixTemporal,
+        Vector4 DotMatrixOptics,
         Vector4 EPaperInkAndColor,
         Vector4 EPaperSurface,
         Vector4 EPaperTemporal,
@@ -558,7 +557,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var plasma = PlasmaVideoShaderParameters.From(configuration, hasHistory, sequence, averageLuminance);
         var vfd = VfdVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var ledMatrix = LedMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
-        var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var projection = ProjectionVideoParameters.From(configuration.Projection);
@@ -586,7 +585,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             new Vector4(configuration.Stylistic.Sepia ? 1f : 0f, 0f, 0f, 0f),
             vfd.Display, vfd.Structure, vfd.Optical,
             ledMatrix,
-            dotMatrix.Geometry, dotMatrix.Emission, dotMatrix.Temporal,
+            dotMatrix.Geometry, dotMatrix.Optics,
             ePaper.InkAndColor, ePaper.PaperSurface, ePaper.Temporal,
             projection.Optics, projection.Screen);
     }

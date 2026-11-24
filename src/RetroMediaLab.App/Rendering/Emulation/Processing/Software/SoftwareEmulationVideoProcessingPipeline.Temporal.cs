@@ -17,7 +17,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         _plasmaPersistence.Reset();
         ResetVectorProcessing();
         _vfdPersistence.Reset();
-        ResetDotMatrixHistory();
         ResetSegmentDisplayHistory();
         ResetEPaperHistory();
     }
@@ -73,47 +72,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         _historyWidth = 0;
         _historyHeight = 0;
         _historyTimestamp = TimeSpan.Zero;
-    }
-
-    private void ApplyDotMatrixTemporal(EmulationVideoProcessingConfiguration configuration, float[] colors, int width, int height, TimeSpan timestamp)
-    {
-        if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.DotMatrix)
-        {
-            ResetDotMatrixHistory();
-            return;
-        }
-        var compatibleHistory = _dotMatrixHistory is not null && _dotMatrixHistoryWidth == width && _dotMatrixHistoryHeight == height && timestamp >= _dotMatrixHistoryTimestamp;
-        if (compatibleHistory)
-        {
-            var elapsedMilliseconds = Math.Max(0.001, (timestamp - _dotMatrixHistoryTimestamp).TotalMilliseconds);
-            var response = FilterDotMatrixResponse.BlendFactor(configuration.DotMatrix.ResponseTimeMilliseconds, elapsedMilliseconds);
-            var reflective = configuration.DotMatrix.Palette is EmulationDotMatrixPalette.Green or EmulationDotMatrixPalette.Gray;
-            var background = configuration.DotMatrix.Palette == EmulationDotMatrixPalette.Green ? (.16f, .25f, .075f) : (.64f, .68f, .62f);
-            for (var index = 0; index < colors.Length; index++)
-            {
-                var responded = Lerp(_dotMatrixHistory![index], colors[index], response);
-                colors[index] = FilterDotMatrixPersistence.Apply(responded,
-                    _dotMatrixHistory[index], configuration.DotMatrix.PersistenceMilliseconds,
-                    elapsedMilliseconds, reflective, index % 3 switch
-                    {
-                        0 => background.Item1,
-                        1 => background.Item2,
-                        _ => background.Item3
-                    });
-            }
-        }
-        _dotMatrixHistory = colors.ToArray();
-        _dotMatrixHistoryWidth = width;
-        _dotMatrixHistoryHeight = height;
-        _dotMatrixHistoryTimestamp = timestamp;
-    }
-
-    private void ResetDotMatrixHistory()
-    {
-        _dotMatrixHistory = null;
-        _dotMatrixHistoryWidth = 0;
-        _dotMatrixHistoryHeight = 0;
-        _dotMatrixHistoryTimestamp = TimeSpan.Zero;
     }
 
     private void ApplySegmentDisplayTemporal(EmulationVideoProcessingConfiguration configuration, float[] colors, int width, int height, TimeSpan timestamp)

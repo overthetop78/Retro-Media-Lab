@@ -120,7 +120,15 @@ public static partial class EmulationVideoProcessingCatalog
         = ResourceKeys("LedMatrix.Shape", Enum.GetValues<EmulationLedMatrixShape>());
 
     public static IReadOnlyDictionary<EmulationDotMatrixPalette, string> DotMatrixPaletteResourceKeys { get; }
-        = ResourceKeys("DotMatrix.Palette", Enum.GetValues<EmulationDotMatrixPalette>());
+        = ResourceKeys("DotMatrix.Color", new[]
+        {
+            EmulationDotMatrixPalette.Black, EmulationDotMatrixPalette.Gray, EmulationDotMatrixPalette.Green,
+            EmulationDotMatrixPalette.Amber, EmulationDotMatrixPalette.Red, EmulationDotMatrixPalette.Blue,
+            EmulationDotMatrixPalette.Rgb
+        });
+
+    public static IReadOnlyDictionary<EmulationDotMatrixDisplayTechnology, string> DotMatrixTechnologyResourceKeys { get; }
+        = ResourceKeys("DotMatrix.Display", Enum.GetValues<EmulationDotMatrixDisplayTechnology>());
 
     public static IReadOnlyDictionary<EmulationDotMatrixShape, string> DotMatrixShapeResourceKeys { get; }
         = ResourceKeys("DotMatrix.Shape", Enum.GetValues<EmulationDotMatrixShape>());
@@ -141,7 +149,7 @@ public static partial class EmulationVideoProcessingCatalog
         ParameterIds.ToDictionary(id => id, id => id switch
         {
             Gamma => "Emulation.Video.Gamma",
-            LedMatrixDefinition => LcdDefinition,
+            LedMatrixDefinition or DotMatrixDefinition => LcdDefinition,
             CrtPhosphorColor => $"Emulation.Video.Parameter.{VectorPhosphorColor}",
             CrtBeamWidth => $"Emulation.Video.Parameter.{VectorBeamWidth}",
             _ => $"Emulation.Video.Parameter.{id}"
@@ -186,11 +194,9 @@ public static partial class EmulationVideoProcessingCatalog
             [LedMatrixColor] = EmulationLedMatrixColor.Rgb, [LedMatrixDefinition] = EmulationLedMatrixDefinition.Native,
             [LedMatrixShape] = EmulationLedMatrixShape.Round,
             [DotMatrixPalette] = EmulationDotMatrixPalette.Green,
-            [DotMatrixShape] = EmulationDotMatrixShape.Round, [DotMatrixCellSize] = 25,
-            [DotMatrixDotSize] = 55, [DotMatrixCellGap] = 20,
-            [DotMatrixContrast] = 70, [DotMatrixBrightness] = 80,
-            [DotMatrixHaloIntensity] = 15, [DotMatrixResponseTime] = 120,
-            [DotMatrixPersistence] = 0,
+            [DotMatrixDefinition] = EmulationLedMatrixDefinition.Native,
+            [DotMatrixShape] = EmulationDotMatrixShape.Round,
+            [DotMatrixTechnology] = EmulationDotMatrixDisplayTechnology.Reflective,
             [SegmentDisplayLayout] = EmulationSegmentDisplayLayout.Seven,
             [SegmentDisplayColor] = EmulationSegmentDisplayColor.Red,
             [SegmentDisplayCellSize] = 45, [SegmentDisplayHorizontalGap] = 15,
@@ -255,7 +261,7 @@ public static partial class EmulationVideoProcessingCatalog
         Add(VectorBeamWidth, VectorPhosphorColor, EmulationVideoDisplayTechnology.Vector);
         Add(VfdColor, VfdPersistence, EmulationVideoDisplayTechnology.Vfd);
         Add(LedMatrixColor, LedMatrixShape, EmulationVideoDisplayTechnology.LedMatrix);
-        Add(DotMatrixPalette, DotMatrixPersistence, EmulationVideoDisplayTechnology.DotMatrix);
+        Add(DotMatrixPalette, DotMatrixTechnology, EmulationVideoDisplayTechnology.DotMatrix);
         Add(SegmentDisplayLayout, SegmentDisplayPersistence, EmulationVideoDisplayTechnology.SegmentDisplay);
         Add(EPaperColorMode, EPaperEdgeSoftness, EmulationVideoDisplayTechnology.EPaper);
         Add(ProjectionAmbientLight, ProjectionAmbientLight, EmulationVideoDisplayTechnology.Projection);

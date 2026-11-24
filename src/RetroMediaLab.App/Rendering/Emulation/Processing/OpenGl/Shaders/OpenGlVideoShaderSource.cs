@@ -47,8 +47,7 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 VfdOptical;
         uniform vec4 LedMatrixStructure;
         uniform vec4 DotMatrixGeometry;
-        uniform vec4 DotMatrixEmission;
-        uniform vec4 DotMatrixTemporal;
+        uniform vec4 DotMatrixOptics;
         uniform vec4 EPaperInkAndColor;
         uniform vec4 EPaperSurface;
         uniform vec4 EPaperTemporal;
@@ -133,7 +132,6 @@ internal static class OpenGlVideoShaderSource
         """ + "\n" + FilterVfdEmissionThreshold.Shader + FilterVfdPhosphorIntensity.Shader + FilterVfdPhosphorColor.Shader + FilterVfdGlass.Shader + FilterVfdCellStructure.Shader + FilterVfdHaloRadius.Shader + FilterVfdHalo.Shader + FilterVfdPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
-        """ + "\n" + FilterDotMatrixCellSize.Shader + FilterDotMatrixCellGap.Shader + FilterDotMatrixShape.Shader + FilterDotMatrixDotSize.Shader + FilterDotMatrixContrast.Shader + FilterDotMatrixBrightness.Shader + FilterDotMatrixPalette.Shader + FilterDotMatrixHalo.Shader + FilterDotMatrixResponse.Shader + FilterDotMatrixPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 8
         """ + "\n" + FilterSegmentDisplay.OpenGlShader + "\n" + """
@@ -305,42 +303,7 @@ internal static class OpenGlVideoShaderSource
         """ + "\n" + FilterLedMatrixCellStructure.CreateShader(false) + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
-        vec3 dotMatrixSample(vec2 uv,bool history)
-        {
-            vec2 sourceSize=max(Processing.zw,vec2(1.0));
-            float pitch=filterDotMatrixPitch(DotMatrixGeometry.z);
-            vec2 cell=floor(uv*sourceSize/pitch);
-            vec2 centerUv=(cell+.5)*pitch/sourceSize;
-            vec2 offset=vec2(pitch*.28)/sourceSize;
-            if(history)
-                return (adjustColor(texture2D(History,centerUv).rgb)*4.0
-                    +adjustColor(texture2D(History,centerUv-vec2(offset.x,0.0)).rgb)
-                    +adjustColor(texture2D(History,centerUv+vec2(offset.x,0.0)).rgb)
-                    +adjustColor(texture2D(History,centerUv-vec2(0.0,offset.y)).rgb)
-                    +adjustColor(texture2D(History,centerUv+vec2(0.0,offset.y)).rgb))/8.0;
-            return (adjustColor(sampleConfigured(centerUv).rgb)*4.0
-                +adjustColor(sampleConfigured(centerUv-vec2(offset.x,0.0)).rgb)
-                +adjustColor(sampleConfigured(centerUv+vec2(offset.x,0.0)).rgb)
-                +adjustColor(sampleConfigured(centerUv-vec2(0.0,offset.y)).rgb)
-                +adjustColor(sampleConfigured(centerUv+vec2(0.0,offset.y)).rgb))/8.0;
-        }
-        vec3 dotMatrixPixel(vec2 uv,bool history)
-        {
-            vec2 sourceSize=max(Processing.zw,vec2(1.0));
-            float pitch=filterDotMatrixPitch(DotMatrixGeometry.z);
-            vec2 local=fract(uv*sourceSize/pitch)-.5;
-            float distance=filterDotMatrixDistance(local,DotMatrixGeometry.y);
-            float radius=filterDotMatrixRadius(DotMatrixGeometry.w,DotMatrixEmission.x);
-            float edge=max(sourceSize.x/max(Output.x,1.0),sourceSize.y/max(Output.y,1.0))/pitch;
-            float core=smoothstep(radius+edge,radius-edge,distance);
-            float halo=filterDotMatrixHalo(distance,radius,DotMatrixEmission.w)*(1.0-core);
-            vec3 source=dotMatrixSample(uv,history);
-            float level=filterDotMatrixBrightness(filterDotMatrixContrast(
-                dot(source,vec3(.2126,.7152,.0722)),DotMatrixEmission.y),DotMatrixEmission.z);
-            return mix(filterDotMatrixBackground(DotMatrixGeometry.x),
-                filterDotMatrixForeground(source,DotMatrixGeometry.x),
-                clamp(level*(core+halo),0.0,1.0));
-        }
+        """ + "\n" + FilterDotMatrix.CreateShader(false) + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 10
         """ + "\n" + ProjectionVideoShader.Create(false) + "\n" + """
@@ -353,7 +316,7 @@ internal static class OpenGlVideoShaderSource
             if(t==6)color=ledMatrixPixel(uv);
         #endif
         #if DISPLAY_TECHNOLOGY == 7
-            if(t==7)color=dotMatrixPixel(uv,false);
+            if(t==7)color=dotMatrixPixel(uv);
         #endif
         #if DISPLAY_TECHNOLOGY == 8
             if(t==8)color=segmentDisplayPixel(uv);
@@ -436,15 +399,6 @@ internal static class OpenGlVideoShaderSource
             vec2 historyUv=clamp(uv,.5/Processing.zw,1.0-.5/Processing.zw);
             vec3 previous=extraDisplay(adjustColor(texture2D(History,historyUv).rgb),uv);
             previous=postColor(previous,uv);
-        #if DISPLAY_TECHNOLOGY == 7
-            if(DotMatrixTemporal.z>.5)
-            {
-                previous=postColor(dotMatrixPixel(TextureCoordinate,true),TextureCoordinate);
-                center=filterDotMatrixResponse(previous,center,DotMatrixTemporal.x);
-                center=filterDotMatrixPersistence(center,previous,DotMatrixTemporal.y,
-                    DotMatrixGeometry.x,filterDotMatrixBackground(DotMatrixGeometry.x));
-            }
-        #endif
         #if DISPLAY_TECHNOLOGY == 5
             if(VfdOptical.w>.5)
                 center=filterVfdPersistence(center,previous,VfdOptical.y,VfdOptical.z);

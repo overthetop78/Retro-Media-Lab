@@ -69,15 +69,9 @@ public static partial class EmulationVideoProcessingCatalog
     public const string LedMatrixDefinition = nameof(LedMatrixDefinition);
     public const string LedMatrixShape = nameof(LedMatrixShape);
     public const string DotMatrixPalette = nameof(DotMatrixPalette);
+    public const string DotMatrixDefinition = nameof(DotMatrixDefinition);
     public const string DotMatrixShape = nameof(DotMatrixShape);
-    public const string DotMatrixDotSize = nameof(DotMatrixDotSize);
-    public const string DotMatrixCellSize = nameof(DotMatrixCellSize);
-    public const string DotMatrixCellGap = nameof(DotMatrixCellGap);
-    public const string DotMatrixContrast = nameof(DotMatrixContrast);
-    public const string DotMatrixBrightness = nameof(DotMatrixBrightness);
-    public const string DotMatrixHaloIntensity = nameof(DotMatrixHaloIntensity);
-    public const string DotMatrixResponseTime = nameof(DotMatrixResponseTime);
-    public const string DotMatrixPersistence = nameof(DotMatrixPersistence);
+    public const string DotMatrixTechnology = nameof(DotMatrixTechnology);
     public const string SegmentDisplayLayout = nameof(SegmentDisplayLayout);
     public const string SegmentDisplayColor = nameof(SegmentDisplayColor);
     public const string SegmentDisplayCellSize = nameof(SegmentDisplayCellSize);
@@ -135,9 +129,8 @@ public static partial class EmulationVideoProcessingCatalog
         VfdStructure, VfdCellSize, VfdCellGap, VfdHaloIntensity, VfdHaloRadius,
         VfdPersistence,
         LedMatrixColor, LedMatrixDefinition, LedMatrixShape,
-        DotMatrixPalette, DotMatrixShape, DotMatrixCellSize, DotMatrixDotSize,
-        DotMatrixCellGap, DotMatrixContrast, DotMatrixBrightness, DotMatrixHaloIntensity,
-        DotMatrixResponseTime, DotMatrixPersistence, SegmentDisplayLayout, SegmentDisplayColor,
+        DotMatrixPalette, DotMatrixDefinition, DotMatrixShape, DotMatrixTechnology,
+        SegmentDisplayLayout, SegmentDisplayColor,
         SegmentDisplayCellSize, SegmentDisplayHorizontalGap, SegmentDisplayVerticalGap,
         SegmentDisplayThickness, SegmentDisplaySegmentGap, SegmentDisplayEndShape,
         SegmentDisplayDecimalPoint, SegmentDisplayColon, SegmentDisplayBrightness,

@@ -8,5 +8,5 @@ public enum EmulationDotMatrixPalette
     Blue,
     Rgb,
     Red,
-    White
+    Black
 }

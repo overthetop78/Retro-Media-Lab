@@ -148,9 +148,6 @@ public static class EmulationResourceKeys
     public const string VideoParameterDotMatrixHaloIntensity = "Emulation.Video.Parameter.DotMatrixHaloIntensity";
     public const string VideoParameterDotMatrixResponseTime = "Emulation.Video.Parameter.DotMatrixResponseTime";
     public const string VideoParameterDotMatrixPersistence = "Emulation.Video.Parameter.DotMatrixPersistence";
-    public const string VideoDotMatrixGroupCells = "Emulation.Video.DotMatrix.Group.Cells";
-    public const string VideoDotMatrixGroupLight = "Emulation.Video.DotMatrix.Group.Light";
-    public const string VideoDotMatrixGroupTemporal = "Emulation.Video.DotMatrix.Group.Temporal";
     public const string VideoDotMatrixPaletteGreen = "Emulation.Video.DotMatrix.Palette.Green";
     public const string VideoDotMatrixPaletteGray = "Emulation.Video.DotMatrix.Palette.Gray";
     public const string VideoDotMatrixPaletteAmber = "Emulation.Video.DotMatrix.Palette.Amber";
