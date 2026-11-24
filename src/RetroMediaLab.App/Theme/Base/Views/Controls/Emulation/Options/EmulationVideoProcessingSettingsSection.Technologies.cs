@@ -89,7 +89,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         return panel;
     }
 
-    private FrameworkElement CreateFixedPixelPanel() => EmulationFixedPixelSettingsBlock.Create(_configuration.FixedPixel, update => SetFixedPixel(update(_configuration.FixedPixel)), RebuildContent);
 
     private FrameworkElement CreatePlasmaPanel() => EmulationPlasmaSettingsBlock.Create(_configuration.Plasma, update => SetPlasma(update(_configuration.Plasma)));
 

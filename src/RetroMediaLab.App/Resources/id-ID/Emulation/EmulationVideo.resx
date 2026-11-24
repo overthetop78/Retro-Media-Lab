@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Video komposit</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Video komponen (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF analog</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Struktur piksel</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Orientasi subpiksel</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>Jenis panel LCD</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Tanpa kisi piksel</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Horizontal</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Vertikal</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Resolusi</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Asli</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Tipe cahaya latar</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Vertikal RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Vertikal BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Segitiga RGB</value></data>
 </root>

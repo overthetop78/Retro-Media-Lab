@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Композитне відео</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Компонентне відео (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Аналоговий RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Структура пікселів</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Орієнтація субпікселів</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>Тип РК-панелі</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Без піксельної сітки</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Горизонтальна</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Вертикальна</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Роздільна здатність</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Вихідна</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Тип підсвічування</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Вертикальний RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Вертикальний BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Трикутний RGB</value></data>
 </root>

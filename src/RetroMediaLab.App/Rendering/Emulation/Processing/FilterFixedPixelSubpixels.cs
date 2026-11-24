@@ -5,14 +5,15 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 internal static class FilterFixedPixelSubpixels
 {
     internal const string Shader = """
-        vec3 filterFixedPixelSubpixels(vec3 color,vec2 fraction,float subpixelLayout,vec3 tint,float intensity,float pixelScale)
+        vec3 filterFixedPixelSubpixels(vec3 color,vec2 fraction,float subpixelLayout,vec3 tint,float intensity,vec2 pixelScale)
         {
             int mode=int(subpixelLayout+.5);
             if(mode==0)return dot(color,vec3(.2126,.7152,.0722))*tint;
-            float strength=intensity*smoothstep(2.25,3.0,pixelScale);
+            bool horizontal=mode>=3;
+            float strength=intensity*smoothstep(2.25,3.0,horizontal?pixelScale.y:pixelScale.x);
             if(strength<=0.0)return color;
-            int selected=int(floor(min(2.0,fraction.x*3.0)));
-            if(mode==2)selected=2-selected;
+            int selected=int(floor(min(2.0,(horizontal?fraction.y:fraction.x)*3.0)));
+            if(mode==2||mode==4)selected=2-selected;
             for(int channel=0;channel<3;channel++)if(channel!=selected)color[channel]*=1.0-.42*strength;
             return color;
         }
@@ -22,9 +23,10 @@ internal static class FilterFixedPixelSubpixels
     private const float GreenLuminance = 0.7152f;
     private const float BlueLuminance = 0.0722f;
 
-    internal static void Apply(float[] colors, int sourceWidth, int outputWidth, int outputHeight, EmulationSubpixelLayout layout, EmulationMonochromePalette palette, int intensitySetting)
+    internal static void Apply(float[] colors, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight,
+        int mode, EmulationMonochromePalette palette, int intensitySetting)
     {
-        if (layout == EmulationSubpixelLayout.Monochrome)
+        if (mode == 0)
         {
             var tint = Tint(palette);
             for (var index = 0; index < colors.Length; index += 3)
@@ -37,17 +39,17 @@ internal static class FilterFixedPixelSubpixels
             return;
         }
 
-        var outputScale = outputWidth / (float)sourceWidth;
+        var horizontal = mode >= 3;
+        var outputScale = horizontal ? outputHeight / (float)sourceHeight : outputWidth / (float)sourceWidth;
         var strength = intensitySetting / 100f * SmoothStep(2.25f, 3f, outputScale);
         if (strength <= 0f) return;
-        var scaleX = sourceWidth / (float)outputWidth;
         var attenuation = 0.42f * strength;
         for (var y = 0; y < outputHeight; y++)
         for (var x = 0; x < outputWidth; x++)
         {
-            var sourceX = (x + 0.5f) * scaleX;
-            var selected = Math.Min(2, (int)((sourceX - MathF.Floor(sourceX)) * 3f));
-            if (layout == EmulationSubpixelLayout.Bgr) selected = 2 - selected;
+            var source = ((horizontal ? y : x) + 0.5f) / outputScale;
+            var selected = Math.Min(2, (int)((source - MathF.Floor(source)) * 3f));
+            if (mode is 2 or 4) selected = 2 - selected;
             var index = (y * outputWidth + x) * 3;
             for (var channel = 0; channel < 3; channel++)
                 if (channel != selected) colors[index + channel] *= 1f - attenuation;

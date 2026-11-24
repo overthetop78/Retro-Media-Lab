@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Kompozit videó</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Komponens videó (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analóg RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Pixelszerkezet</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Alpixelek tájolása</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>LCD-panel típusa</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Pixelrács nélkül</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Vízszintes</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Függőleges</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Felbontás</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Natív</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Hátsó fényforrás típusa</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Függőleges RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Függőleges BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Háromszög RGB</value></data>
 </root>

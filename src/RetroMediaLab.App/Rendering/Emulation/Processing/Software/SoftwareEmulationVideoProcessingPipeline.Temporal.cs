@@ -23,7 +23,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
 
     private void ApplyFixedPixelTemporal(EmulationVideoProcessingConfiguration configuration, float[] colors, int width, int height, TimeSpan timestamp)
     {
-        if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.FixedPixel)
+        if (!EmulationVideoProcessingConfigurationFunctions.UsesLcdPanel(configuration))
         {
             ResetHistory();
             return;
@@ -33,11 +33,30 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         if (compatibleHistory)
         {
             var elapsedMilliseconds = Math.Max(0.001, (timestamp - _historyTimestamp).TotalMilliseconds);
-            var response = FilterFixedPixelResponse.BlendFactor(configuration.FixedPixel.ResponseTimeMilliseconds, elapsedMilliseconds);
-            for (var index = 0; index < colors.Length; index++)
+            if (EmulationVideoProcessingConfigurationFunctions.UsesLcdPanel(configuration))
             {
-                var responded = FilterFixedPixelResponse.Apply(_fixedPixelHistory![index], colors[index], response);
-                colors[index] = FilterFixedPixelPersistence.Apply(responded, _fixedPixelHistory[index], configuration.FixedPixel.PersistenceIntensity);
+                var panel = EmulationVideoProcessingConfigurationFunctions.LcdPanel(configuration).PanelType;
+                var response = FilterFixedPixelResponse.BlendFactor(FilterLcdDisplay.ResponseTime(panel), elapsedMilliseconds);
+                for (var index = 0; index < colors.Length; index += 3)
+                {
+                    if (panel == EmulationLcdPanelType.Va)
+                    {
+                        var previous = MathF.Max(_fixedPixelHistory![index], MathF.Max(_fixedPixelHistory[index + 1], _fixedPixelHistory[index + 2]));
+                        var current = MathF.Max(colors[index], MathF.Max(colors[index + 1], colors[index + 2]));
+                        response = FilterFixedPixelResponse.BlendFactor(FilterLcdDisplay.ResponseTime(panel, previous, current), elapsedMilliseconds);
+                    }
+                    for (var channel = index; channel < index + 3; channel++)
+                        colors[channel] = FilterFixedPixelResponse.Apply(_fixedPixelHistory![channel], colors[channel], response);
+                }
+            }
+            else
+            {
+                var response = FilterFixedPixelResponse.BlendFactor(configuration.FixedPixel.ResponseTimeMilliseconds, elapsedMilliseconds);
+                for (var index = 0; index < colors.Length; index++)
+                {
+                    var responded = FilterFixedPixelResponse.Apply(_fixedPixelHistory![index], colors[index], response);
+                    colors[index] = FilterFixedPixelPersistence.Apply(responded, _fixedPixelHistory[index], configuration.FixedPixel.PersistenceIntensity);
+                }
             }
         }
 

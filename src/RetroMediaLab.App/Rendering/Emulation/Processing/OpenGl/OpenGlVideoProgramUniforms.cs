@@ -112,7 +112,7 @@ internal sealed class OpenGlVideoProgramUniforms
         Set(_crtPhosphor, crtSignal.Phosphor);
         _api.SetUniform(_crtGeometry, crtSignal.Curvature, 0f, 0f, 0f);
 
-        var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, sourceWidth, sourceHeight, hasHistory, elapsedMilliseconds);
         Set(_fixedDisplay, fixedPixel.Display);
         Set(_fixedSpatial, fixedPixel.Spatial);
         Set(_fixedTechnology, fixedPixel.Technology);

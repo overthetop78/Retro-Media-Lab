@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>コンポジット映像</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>コンポーネント映像（YPbPr）</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>アナログRF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>画素構造</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>サブピクセルの向き</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>液晶パネルの種類</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>画素グリッドなし</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>横方向</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>縦方向</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>解像度</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>ネイティブ</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>バックライトのタイプ</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>縦横 縦 RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>縦横 縦 BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>トライアンギュラ RGB</value></data>
 </root>

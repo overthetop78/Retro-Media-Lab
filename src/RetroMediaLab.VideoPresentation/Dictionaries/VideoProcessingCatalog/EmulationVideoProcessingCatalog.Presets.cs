@@ -13,7 +13,12 @@ public static partial class EmulationVideoProcessingCatalog
             [EmulationVideoPreset.CrtTelevisionColor] = CrtPreset(EmulationCrtMask.SlotMask),
             [EmulationVideoPreset.LcdColor] = FixedPixelPreset(EmulationFixedPixelTechnology.Lcd, EmulationSubpixelLayout.Rgb, 35, 20, 16, 10, 70, 8),
             [EmulationVideoPreset.LcdMonochrome] = FixedPixelPreset(EmulationFixedPixelTechnology.Lcd, EmulationSubpixelLayout.Monochrome, 45, 25, 35, 25, 60, 15),
-            [EmulationVideoPreset.LedBacklitLcd] = FixedPixelPreset(EmulationFixedPixelTechnology.LedBacklitLcd, EmulationSubpixelLayout.Rgb, 25, 15, 8, 5, 85, 12),
+            [EmulationVideoPreset.LedBacklitLcd] = new()
+            {
+                DisplayTechnology = EmulationVideoDisplayTechnology.FixedPixel,
+                FixedPixel = new(Technology: EmulationFixedPixelTechnology.LedBacklitLcd),
+                Led = new() { PixelStructure = EmulationLcdPixelStructure.Rgb, BacklightIntensity = 85 }
+            },
             [EmulationVideoPreset.Oled] = FixedPixelPreset(EmulationFixedPixelTechnology.Oled, EmulationSubpixelLayout.Rgb, 15, 10, 1, 0, null, 100),
             [EmulationVideoPreset.Plasma] = new()
             {

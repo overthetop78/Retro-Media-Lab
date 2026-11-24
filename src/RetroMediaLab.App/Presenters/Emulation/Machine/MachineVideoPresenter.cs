@@ -207,6 +207,8 @@ internal sealed class MachineVideoPresenter : IDisposable
     {
         var normalized = EmulationVideoProcessingConfigurationFunctions.Normalize(configuration);
         if (_videoProcessing == normalized) return;
+        var wasLcd = EmulationVideoProcessingConfigurationFunctions.UsesLcdPanel(_videoProcessing);
+        var isLcd = EmulationVideoProcessingConfigurationFunctions.UsesLcdPanel(normalized);
         var rebuildsShader = _surface.Renderer != EmulationVideoRenderer.Wpf
             && (EmulationVideoProcessingConfigurationFunctions.SamplingForDisplay(_videoProcessing)
                 != EmulationVideoProcessingConfigurationFunctions.SamplingForDisplay(normalized)
@@ -215,6 +217,7 @@ internal sealed class MachineVideoPresenter : IDisposable
         lock (_surfaceGate)
         {
             _surface.SetVideoProcessing(normalized);
+            if (wasLcd || isLcd) _surface.ResetHistory();
             if (rebuildsShader)
             {
                 Interlocked.Increment(ref _shaderLoadGeneration);
@@ -516,7 +519,8 @@ internal sealed class MachineVideoPresenter : IDisposable
 
     private VideoFrame WithVideoSignal(VideoFrame frame, VideoFrame source)
     {
-        if (_videoProcessing.DisplayTechnology != EmulationVideoDisplayTechnology.Crt) return frame;
+        if (_videoProcessing.DisplayTechnology
+            is not (EmulationVideoDisplayTechnology.Crt or EmulationVideoDisplayTechnology.FixedPixel)) return frame;
 
         return frame with
         {

@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Kompozit video</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Bileşen video (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analog RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Piksel yapısı</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Alt piksel yönü</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>LCD panel türü</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Piksel ızgarası yok</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Yatay</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Dikey</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Çözünürlük</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Yerel</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Backlight type</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Dikey Dikey Dikey Dikey Dikey RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Dikey Dikey Dikey Dikey Dikey BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Triangular RGB</value></data>
 </root>

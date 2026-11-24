@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Kompozitní video</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Komponentní video (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analogové RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Struktura pixelů</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Orientace subpixelů</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>Typ LCD panelu</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Bez pixelové mřížky</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Vodorovně</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Svisle</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Usnesení</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Nativní</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Typ podsvícení</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Vertikální RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Vertikální BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Trojúhelníkový RGB</value></data>
 </root>

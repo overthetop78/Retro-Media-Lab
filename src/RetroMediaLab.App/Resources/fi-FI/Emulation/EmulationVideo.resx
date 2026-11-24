@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Komposiittivideo</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Komponenttivideo (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analoginen RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Pikselirakenne</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Alipikselien suunta</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>LCD-paneelin tyyppi</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Ei pikseliruudukkoa</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Vaakasuora</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Pystysuora</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Päätöslauselma</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Natiivi</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Taustavalotyyppi</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Pystysuunnassa RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Pystysuunnassa BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Kolmio RGB</value></data>
 </root>

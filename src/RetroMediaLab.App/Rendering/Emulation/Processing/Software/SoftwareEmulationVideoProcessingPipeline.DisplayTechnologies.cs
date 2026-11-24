@@ -12,7 +12,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
     {
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel)
         {
-            FilterFixedPixel.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, configuration.FixedPixel);
+            FilterFixedPixel.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, configuration);
             return;
         }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma)

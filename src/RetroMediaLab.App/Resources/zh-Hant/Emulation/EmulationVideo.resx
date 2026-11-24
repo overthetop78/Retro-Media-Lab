@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>複合視訊</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>色差視訊（YPbPr）</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>類比射頻（RF）</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>像素結構</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>子像素方向</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>LCD 面板類型</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>無像素格線</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>水平</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>垂直</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>解析度</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>原生</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>后灯类型</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>垂直 RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>垂直 BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>三角形 RGB</value></data>
 </root>

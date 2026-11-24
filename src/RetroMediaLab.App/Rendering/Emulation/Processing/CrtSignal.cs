@@ -5,7 +5,6 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector4 Phosphor,
     float BeamExponent, float Curvature)
 {
-    internal const int SeparateColorChannels = 4;
     internal int ActiveLines => (int)(Raster.Y * 2);
     internal Vector2 MaskRasterSize => new(Tuning.W, ActiveLines);
 
@@ -46,13 +45,7 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
         var phase = (float)(drift - Math.Floor(drift));
         var sourceTotalLines = source50 ? 625 : 525;
         var lineSlip = unlocked ? (float)((sourceTotalLines * rate) / (totalLines * receiverRate) - 1) : 0;
-        var decoder = crt.Connection switch
-        {
-            EmulationCrtConnection.Composite or EmulationCrtConnection.AnalogRf
-                => (crt.ColorStandards & color) == color ? (int)sourceStandard + 1 : 0,
-            EmulationCrtConnection.SVideo => (crt.ColorStandards & color) == color ? SeparateColorChannels : 0,
-            _ => SeparateColorChannels
-        };
+        var decoder = (crt.ColorStandards & color) == color ? (int)sourceStandard + 1 : 0;
         var (aspectWidth, aspectHeight) = EmulationVideoProcessingConfigurationFunctions.AspectRatioDimensions(aspectRatio);
         var screenAspect = aspectHeight > 0 ? (float)aspectWidth / aspectHeight
             : frame.AspectRatio > 0 && float.IsFinite(frame.AspectRatio) ? frame.AspectRatio
@@ -64,6 +57,9 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
             .16f * Math.Clamp(crt.Curvature, 0, EmulationVideoProcessingLimits.CrtCurvatureMaximum)
                 / EmulationVideoProcessingLimits.CrtCurvatureMaximum);
     }
+
+    internal static CrtSignal ForLcd(EmulationPanelSignalConfiguration lcd, VideoFrame frame) =>
+        From(new EmulationCrtVideoConfiguration(ColorStandards: lcd.ColorStandards, FieldRate: lcd.FieldRate), frame);
 
     internal Vector2 ScreenUv(Vector2 uv)
     {
@@ -103,7 +99,6 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
 
     internal static Vector3 Decode(Vector3 center, Vector3 neighbor, int decoder, int line)
     {
-        if (decoder == SeparateColorChannels) return center;
         var luminance = Vector3.Dot(center, LumaWeights);
         if (decoder == 0) return new Vector3(luminance);
         var neighborLuma = Vector3.Dot(neighbor, LumaWeights);
@@ -179,7 +174,6 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
         }
         vec3 crtDecode(vec3 center, vec3 neighbor, int decoder, float line)
         {
-            if (decoder == 4) return center;
             const vec3 weights = vec3(.2126,.7152,.0722);
             float luma = dot(center, weights);
             if (decoder == 0) return vec3(luma);

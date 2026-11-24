@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Wideo kompozytowe</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Wideo komponentowe (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analogowe RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Struktura pikseli</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Orientacja subpikseli</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>Typ panelu LCD</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Bez siatki pikseli</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Pozioma</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Pionowa</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Rozdzielczość</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Natywna</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Typ podświetlenia</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Pionowo RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Pionowo BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Trójkątny RGB</value></data>
 </root>

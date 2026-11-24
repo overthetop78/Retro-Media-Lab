@@ -15,8 +15,10 @@ public sealed record EmulationVideoProcessingConfiguration
     public EmulationSignalSimulationConfiguration SignalSimulation { get; init; } = new();
     public EmulationStylisticVideoConfiguration Stylistic { get; init; } = new();
     public EmulationCrtVideoConfiguration Crt { get; init; } = new();
+    public EmulationLcdVideoConfiguration Lcd { get; init; } = new();
+    public EmulationLcdVideoConfiguration Led { get; init; } = new() { BacklightIntensity = 80 };
+    public EmulationOledVideoConfiguration Oled { get; init; } = new();
     public EmulationFixedPixelVideoConfiguration FixedPixel { get; init; } = new();
-    public EmulationFixedPixelVideoConfiguration? LcdProfile { get; init; }
     public EmulationFixedPixelVideoConfiguration? LedBacklitLcdProfile { get; init; }
     public EmulationFixedPixelVideoConfiguration? OledProfile { get; init; }
     public EmulationPlasmaVideoConfiguration Plasma { get; init; } = new();

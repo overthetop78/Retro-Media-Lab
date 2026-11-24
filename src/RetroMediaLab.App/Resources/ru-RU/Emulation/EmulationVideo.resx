@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Композитное видео</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Компонентное видео (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Аналоговый RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Структура пикселей</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Ориентация субпикселей</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>Тип ЖК-матрицы</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Без пиксельной сетки</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Горизонтальная</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Вертикальная</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Разрешение</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Исходное</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Тип лампы</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>вертикальный RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>вертикальный BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>треугольный RGB</value></data>
 </root>

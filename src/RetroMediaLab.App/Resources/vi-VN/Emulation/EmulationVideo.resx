@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Video tổng hợp</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Video thành phần (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF tương tự</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Cấu trúc điểm ảnh</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Hướng điểm ảnh phụ</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>Loại tấm nền LCD</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Không có lưới điểm ảnh</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Ngang</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Dọc</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Độ phân giải</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Gốc</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Kiểu đèn sau</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Dọc RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Dọc BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Hình tam giác RGB</value></data>
 </root>

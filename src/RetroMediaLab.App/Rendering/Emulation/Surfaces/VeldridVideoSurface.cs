@@ -46,7 +46,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private uint _swapchainHeight;
     private bool _hasHistory;
     private byte[]? _deditheringWorkspace;
-    private byte[]? _crtConnectionWorkspace;
+    private readonly FilterDisplayConnection _displayConnection = new();
     private TimeSpan _historyTimestamp;
     private long _historySequence;
     private WriteableBitmap? _snapshot;
@@ -170,7 +170,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var prepared = EmulationImageRestorationFunctions.ApplyDedithering(pixels, frame.Width, frame.Height,
             _videoProcessing.Restoration.Dedithering, ref _deditheringWorkspace);
         if (prepared is not null) pixels = prepared.AsSpan(0, pixels.Length);
-        var connected = FilterCrtConnection.Apply(pixels, frame, _videoProcessing, ref _crtConnectionWorkspace);
+        var connected = _displayConnection.Apply(pixels, frame, _videoProcessing);
         if (connected is not null) pixels = connected.AsSpan(0, checked(frame.Width * frame.Height * 4));
         EnsureDevice();
         EnsureFrameResources(processed.Width, processed.Height);
@@ -533,7 +533,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         float averageLuminance)
     {
         var adjustments = configuration.Adjustments;
-        var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, sourceWidth, sourceHeight, hasHistory, elapsedMilliseconds);
         var plasma = PlasmaVideoShaderParameters.From(configuration, hasHistory, sequence, averageLuminance);
         var vector = VectorVideoShaderParameters.From(configuration, hasHistory);
         var vfd = VfdVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);

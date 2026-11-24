@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>วิดีโอคอมโพสิต</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>วิดีโอคอมโพเนนต์ (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF แอนะล็อก</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>โครงสร้างพิกเซล</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>ทิศทางของพิกเซลย่อย</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>ประเภทแผง LCD</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>ไม่มีตารางพิกเซล</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>แนวนอน</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>แนวตั้ง</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>ความละเอียด</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>ความละเอียดดั้งเดิม</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>ชนิดแสงสํารอง</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>แนวตั้ง RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>แนวตั้ง BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>ไตรอังการ RGB</value></data>
 </root>

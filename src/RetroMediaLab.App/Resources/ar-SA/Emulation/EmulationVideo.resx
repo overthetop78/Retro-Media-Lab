@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>فيديو مركب</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>فيديو مكوّن (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF تناظري</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>بنية البكسلات</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>اتجاه البكسلات الفرعية</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>نوع لوحة LCD</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>بلا شبكة بكسلات</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>أفقي</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>عمودي</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>القرار</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>الدقة الأصلية</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>نوع الضوء الخلفي</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>كتابي RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>كتابي BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>ثلاثية RGB</value></data>
 </root>

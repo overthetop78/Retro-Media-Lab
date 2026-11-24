@@ -19,26 +19,32 @@ internal static class FilterCrtConnection
         EmulationVideoProcessingConfiguration configuration, ref byte[]? workspace)
     {
         var crt = configuration.Crt;
-        if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.Crt
-            || crt.Connection == EmulationCrtConnection.Digital)
-            return null;
+        return configuration.DisplayTechnology != EmulationVideoDisplayTechnology.Crt ? null
+            : Apply(source, frame, crt.Connection, crt.ConnectionDegradation, crt.ColorStandards, crt.MonitorPalette, ref workspace);
+    }
 
-        var degradation = (float)crt.ConnectionDegradation / EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum;
-        if (degradation == 0f && crt.Connection is EmulationCrtConnection.Scart or EmulationCrtConnection.Component)
+    internal static byte[]? Apply(ReadOnlySpan<byte> source, VideoFrame frame, EmulationCrtConnection connection,
+        int connectionDegradation, EmulationCrtColorStandards colorStandards,
+        EmulationCrtMonitorPalette palette, ref byte[]? workspace)
+    {
+        if (connection == EmulationCrtConnection.Digital) return null;
+
+        var degradation = (float)connectionDegradation / EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum;
+        if (degradation == 0f && connection is EmulationCrtConnection.Scart or EmulationCrtConnection.Component)
             return null;
 
         var stride = checked(frame.Width * 4);
         var length = checked(stride * frame.Height);
         if (workspace is null || workspace.Length < length) workspace = new byte[length];
-        if (crt.Connection == EmulationCrtConnection.LegacyMonitor)
+        if (connection == EmulationCrtConnection.LegacyMonitor)
         {
             for (var offset = 0; offset < length; offset += 4)
-                Write(workspace, offset, Quantize(Read(source, offset), crt.MonitorPalette));
+                Write(workspace, offset, Quantize(Read(source, offset), palette));
         }
         else
         {
-            EmulationVideoStandard? rfStandard = crt.Connection == EmulationCrtConnection.AnalogRf
-                ? crt.ColorStandards switch
+            EmulationVideoStandard? rfStandard = connection == EmulationCrtConnection.AnalogRf
+                ? colorStandards switch
                 {
                     EmulationCrtColorStandards.Pal => EmulationVideoStandard.Pal,
                     EmulationCrtColorStandards.Secam => EmulationVideoStandard.Secam,
@@ -46,7 +52,7 @@ internal static class FilterCrtConnection
                     _ => CrtSignal.SourceStandard(frame)
                 }
                 : null;
-            ApplyAnalog(source, workspace, frame.Width, frame.Height, frame.Sequence, crt.Connection, degradation, rfStandard);
+            ApplyAnalog(source, workspace, frame.Width, frame.Height, frame.Sequence, connection, degradation, rfStandard);
         }
         return workspace;
     }

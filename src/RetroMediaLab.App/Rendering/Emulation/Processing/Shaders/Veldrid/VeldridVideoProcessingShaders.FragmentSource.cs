@@ -90,7 +90,7 @@ internal static partial class VeldridVideoProcessingShaders
         }
         """ + "\n" + """
         #if DISPLAY_TECHNOLOGY == 2
-        """ + "\n" + FilterFixedPixelSubpixels.Shader + FilterFixedPixelGrid.Shader + FilterLcdDisplay.Shader + FilterLedBacklitLcdDisplay.Shader + FilterOledDisplay.Shader + FilterFixedPixelResponse.Shader + FilterFixedPixelPersistence.Shader + "\n" + """
+        """ + "\n" + FilterLcdPixelStructure.Shader + FilterOledPixelStructure.Shader + FilterLcdDisplay.Shader + FilterLedBacklitLcdDisplay.Shader + FilterOledDisplay.Shader + FilterFixedPixelResponse.Shader + FilterFixedPixelPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 3
         """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaLightDiffusion.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaGammaResponse.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
@@ -302,7 +302,7 @@ internal static partial class VeldridVideoProcessingShaders
                 if (any(lessThan(sourceUv, vec2(0.0))) || any(greaterThan(sourceUv, vec2(1.0)))) return vec3(0.0);
                 c = raw(sourceUv);
                 int decoder = int(Parameters.CrtTuning.y + .5);
-                vec3 neighbor = decoder > 0 && decoder < 4 ? raw(crtChromaNeighbor(sourceUv, Parameters.Processing.zw, decoder)) : c;
+                vec3 neighbor = decoder > 0 ? raw(crtChromaNeighbor(sourceUv, Parameters.Processing.zw, decoder)) : c;
                 c = crtDecode(c, neighbor, decoder, floor(sourceUv.y * Parameters.Processing.w));
                 c = min(vec3(1.0), c * (Parameters.Adjustments.x * crtBeam(uv.y, Parameters.Output.y, Parameters.CrtRaster, Parameters.Output.w, Parameters.CrtPhosphor.w)));
             }
@@ -310,22 +310,25 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 2
             if(t==2)
             {
-                c=filterFixedPixelSubpixels(c,l,Parameters.FixedDisplay.z,Parameters.FixedSpatial.yzw,
-                    Parameters.FixedDisplay.w,Parameters.Output.x/max(Parameters.Processing.z,1.0));
-                c=filterFixedPixelGrid(c,l,Parameters.FixedDisplay.w,Parameters.FixedSpatial.x,
-                    Parameters.Output.xy/max(Parameters.Processing.zw,vec2(1.0)));
                 int technology=int(Parameters.FixedDisplay.y+.5);
-                if(technology<2)
+
+                if(technology<=1)
                 {
-                    vec2 ss=1.0/max(Parameters.Processing.zw,vec2(1));
-                    vec3 n=(raw(uv-vec2(ss.x,0))+raw(uv+vec2(ss.x,0))
-                        +raw(uv-vec2(0,ss.y))+raw(uv+vec2(0,ss.y)))*.25;
-                    float light=max(n.r,max(n.g,n.b));
-                    c=technology==0
-                        ?filterLcdDisplay(c,Parameters.FixedTechnology.x,Parameters.FixedTechnology.y,Parameters.FixedTechnology.z,light)
-                        :filterLedBacklitLcdDisplay(c,Parameters.FixedTechnology.x,Parameters.FixedTechnology.y,Parameters.FixedTechnology.z,light);
+                    vec2 panelSize=Parameters.FixedSpatial.yz;
+                    c=filterLcdPixelStructure(c,uv,panelSize,Parameters.Output.xy,int(Parameters.FixedDisplay.z+.5));
+                    if(technology==1)
+                    {
+                        int backlight=int(Parameters.FixedTechnology.y+.5);
+                        float zone=backlight>=2?texture(sampler2D(Source,PointSampler),uv).a:1.0;
+                        return filterLedBacklitLcdDisplay(c,uv,Parameters.FixedTechnology.x,
+                            int(Parameters.FixedTechnology.w+.5),backlight,zone);
+                    }
+                    return filterLcdDisplay(c,gl_FragCoord.xy,Parameters.Output.xy,
+                        Parameters.FixedTechnology.x,int(Parameters.FixedTechnology.w+.5));
                 }
-                else c=filterOledDisplay(c,Parameters.FixedTechnology.y,Parameters.FixedTechnology.w);
+                float frameLight=texture(sampler2D(Source,PointSampler),.5/Parameters.Processing.zw).a;
+                c=filterOledDisplay(c,int(Parameters.FixedTechnology.w+.5),frameLight);
+                c=filterOledPixelStructure(c,uv,Parameters.FixedSpatial.yz,Parameters.Output.xy,int(Parameters.FixedDisplay.z+.5));
             }
         #endif
         #if DISPLAY_TECHNOLOGY == 3
@@ -407,11 +410,22 @@ internal static partial class VeldridVideoProcessingShaders
                 }
             }
         #endif
-            vec3 c=displayEffect(restored(uv),uv);
+            vec2 sampleUv=uv;
+        #if DISPLAY_TECHNOLOGY == 2
+            bool fixedPanel=Parameters.FixedDisplay.x>.5;
+            if(fixedPanel)sampleUv=lcdPanelSampleUv(uv,Parameters.FixedSpatial.yz,Parameters.Output.xy);
+        #endif
+            vec3 c=displayEffect(restored(sampleUv),uv);
             c=clamp(postEffect(c,uv),0.0,1.0);
             vec2 size=vec2(textureSize(sampler2D(History,LinearSampler),0));
-            vec2 historyUv=clamp(uv,.5/size,1.0-.5/size);
-            vec3 previous=displayEffect(adjust(texture(sampler2D(History,LinearSampler),historyUv).rgb),uv);
+            vec2 historyUv=clamp(sampleUv,.5/size,1.0-.5/size);
+            vec3 historyColor;
+        #if DISPLAY_TECHNOLOGY == 2
+            if(fixedPanel)historyColor=texture(sampler2D(History,PointSampler),historyUv).rgb;
+            else
+        #endif
+                historyColor=texture(sampler2D(History,LinearSampler),historyUv).rgb;
+            vec3 previous=displayEffect(adjust(historyColor),uv);
             previous=clamp(postEffect(previous,uv),0.0,1.0);
         #if DISPLAY_TECHNOLOGY == 7
             if(Parameters.DotMatrixTemporal.z>.5)
@@ -439,7 +453,14 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 2
             if(Parameters.FixedDisplay.x>.5&&Parameters.FixedTemporal.z>.5)
             {
-                c=filterFixedPixelResponse(previous,c,Parameters.FixedTemporal.x,Parameters.FixedTemporal.w);
+                float response=Parameters.FixedTemporal.x;
+                if(Parameters.FixedDisplay.y<1.5)
+                {
+                    response=lcdResponseTime(response,int(Parameters.FixedTechnology.w+.5),
+                        max(previous.r,max(previous.g,previous.b)),max(c.r,max(c.g,c.b)));
+                    if(Parameters.FixedTemporal.w<=0.0)response=0.0;
+                }
+                c=filterFixedPixelResponse(previous,c,response,Parameters.FixedTemporal.w);
                 c=filterFixedPixelPersistence(c,previous,Parameters.FixedTemporal.y);
             }
         #endif

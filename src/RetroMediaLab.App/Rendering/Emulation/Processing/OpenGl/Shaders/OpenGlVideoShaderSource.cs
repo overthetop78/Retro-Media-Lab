@@ -117,7 +117,7 @@ internal static class OpenGlVideoShaderSource
 
         """ + "\n" + """
         #if DISPLAY_TECHNOLOGY == 2
-        """ + "\n" + FilterFixedPixelSubpixels.Shader + FilterFixedPixelGrid.Shader + FilterLcdDisplay.Shader + FilterLedBacklitLcdDisplay.Shader + FilterOledDisplay.Shader + FilterFixedPixelResponse.Shader + FilterFixedPixelPersistence.Shader + "\n" + """
+        """ + "\n" + FilterLcdPixelStructure.Shader + FilterOledPixelStructure.Shader + FilterLcdDisplay.Shader + FilterLedBacklitLcdDisplay.Shader + FilterOledDisplay.Shader + FilterFixedPixelResponse.Shader + FilterFixedPixelPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 3
         """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaLightDiffusion.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaGammaResponse.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
@@ -143,36 +143,44 @@ internal static class OpenGlVideoShaderSource
         #if DISPLAY_TECHNOLOGY == 2
         vec3 fixedPixel(vec3 color, vec2 uv)
         {
-            vec2 fraction=fract(uv*Processing.zw);
-            color=filterFixedPixelSubpixels(color,fraction,FixedDisplay.z,FixedSpatial.yzw,
-                FixedDisplay.w,Output.x/max(Processing.z,1.0));
-            color=filterFixedPixelGrid(color,fraction,FixedDisplay.w,FixedSpatial.x,
-                Output.xy/max(Processing.zw,vec2(1.0)));
             int technology=int(FixedDisplay.y+.5);
-            if(technology<2)
+
+            if(technology<=1)
             {
-                vec2 stepSize=1.0/max(Processing.zw,vec2(1.0));
-                vec3 neighbour=(adjustColor(sampleConfigured(uv-vec2(stepSize.x,0.0)).rgb)
-                    +adjustColor(sampleConfigured(uv+vec2(stepSize.x,0.0)).rgb)
-                    +adjustColor(sampleConfigured(uv-vec2(0.0,stepSize.y)).rgb)
-                    +adjustColor(sampleConfigured(uv+vec2(0.0,stepSize.y)).rgb))*.25;
-                float light=max(neighbour.r,max(neighbour.g,neighbour.b));
-                color=technology==0
-                    ?filterLcdDisplay(color,FixedTechnology.x,FixedTechnology.y,FixedTechnology.z,light)
-                    :filterLedBacklitLcdDisplay(color,FixedTechnology.x,FixedTechnology.y,FixedTechnology.z,light);
+                vec2 panelSize=FixedSpatial.yz;
+                color=filterLcdPixelStructure(color,uv,panelSize,Output.xy,int(FixedDisplay.z+.5));
+                if(technology==1)
+                {
+                    int backlight=int(FixedTechnology.y+.5);
+                    float zone=backlight>=2?texture2D(Source,uv).a:1.0;
+                    return filterLedBacklitLcdDisplay(color,uv,FixedTechnology.x,int(FixedTechnology.w+.5),backlight,zone);
+                }
+                return filterLcdDisplay(color,vec2(gl_FragCoord.x,Output.y-gl_FragCoord.y),Output.xy,
+                    FixedTechnology.x,int(FixedTechnology.w+.5));
             }
-            else color=filterOledDisplay(color,FixedTechnology.y,FixedTechnology.w);
-            return clamp(color,0.0,1.0);
+            float frameLight=texture2D(Source,.5/Processing.zw).a;
+            color=filterOledDisplay(color,int(FixedTechnology.w+.5),frameLight);
+            return filterOledPixelStructure(color,uv,FixedSpatial.yz,Output.xy,int(FixedDisplay.z+.5));
         }
 
         vec3 fixedPixelWithHistory(vec3 color, vec2 uv)
         {
             color=fixedPixel(color,uv);
             if(FixedTemporal.z<.5)return color;
+            vec2 historyUv=uv;
+            if(FixedDisplay.y<1.5)
+                historyUv=(floor(lcdPanelSampleUv(uv,FixedSpatial.yz,Output.xy)*Processing.zw)+.5)/Processing.zw;
             vec3 previous=texture2D(History,
-                clamp(uv,.5/Processing.zw,1.0-.5/Processing.zw)).rgb;
+                clamp(historyUv,.5/Processing.zw,1.0-.5/Processing.zw)).rgb;
             previous=fixedPixel(adjustColor(previous),uv);
-            color=filterFixedPixelResponse(previous,color,FixedTemporal.x,FixedTemporal.w);
+            float response=FixedTemporal.x;
+            if(FixedDisplay.y<1.5)
+            {
+                if(FixedTemporal.w<=0.0)return color;
+                response=lcdResponseTime(response,int(FixedTechnology.w+.5),
+                    max(previous.r,max(previous.g,previous.b)),max(color.r,max(color.g,color.b)));
+            }
+            color=filterFixedPixelResponse(previous,color,response,FixedTemporal.w);
             return filterFixedPixelPersistence(color,previous,FixedTemporal.y);
         }
         #endif
@@ -285,7 +293,12 @@ internal static class OpenGlVideoShaderSource
         {
             if (DISPLAY_TECHNOLOGY != 1)
             {
-                vec3 source = restorationLinear(sampleConfigured(originalUv).rgb);
+                vec2 sampleUv = originalUv;
+        #if DISPLAY_TECHNOLOGY == 2
+                if (FixedDisplay.x > .5)
+                    sampleUv = lcdPanelSampleUv(originalUv, FixedSpatial.yz, Output.xy);
+        #endif
+                vec3 source = restorationLinear(sampleConfigured(sampleUv).rgb);
         #if DISPLAY_TECHNOLOGY == 0
                 float recover = Processing.y > .5 && any(notEqual(Output.xy, Processing.zw)) ? Stylistic2.z : 0.0;
                 source = restoreHostSource(source, originalUv, Processing.zw, Restoration.z, recover);
@@ -307,7 +320,7 @@ internal static class OpenGlVideoShaderSource
             vec3 color = adjustColor(sampleConfigured(uv).rgb);
             int decoder = int(CrtTuning.y + .5);
             vec3 neighbor = color;
-            if (decoder > 0 && decoder < 4) neighbor = adjustColor(sampleConfigured(crtChromaNeighbor(uv, Processing.zw, decoder)).rgb);
+            if (decoder > 0) neighbor = adjustColor(sampleConfigured(crtChromaNeighbor(uv, Processing.zw, decoder)).rgb);
             color = crtDecode(color, neighbor, decoder, floor(uv.y * Processing.w));
             return min(vec3(1.0), color * (Adjustments.x * crtBeam(originalUv.y, Output.y, CrtRaster, Output.w, CrtPhosphor.w)));
         }

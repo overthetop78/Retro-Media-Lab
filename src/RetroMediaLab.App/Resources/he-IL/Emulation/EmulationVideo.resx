@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>וידאו מרוכב</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>וידאו רכיבים (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF אנלוגי</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>מבנה פיקסלים</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>כיוון תת-פיקסלים</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>סוג לוח LCD</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>ללא רשת פיקסלים</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>אופקי</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>אנכי</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>החלטה</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>רזולוציה טבעית</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>תאורה אחורית</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>המונחים RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>המונחים BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>טרינגולרי RGB</value></data>
 </root>

@@ -66,18 +66,24 @@ public static class EmulationVideoProcessingConfigurationFunctions
     {
         var normalized = Normalize(configuration);
         if (UsesHostDisplay(normalized)) return normalized;
-        var isCrt = ScreenType(normalized) == EmulationVideoScreenType.Crt;
-        var analogCrt = isCrt
-            && normalized.Crt.Connection is EmulationCrtConnection.Composite or EmulationCrtConnection.AnalogRf;
+        var screen = ScreenType(normalized);
+        EmulationCrtConnection? connection = screen switch
+        {
+            EmulationVideoScreenType.Crt => normalized.Crt.Connection,
+            EmulationVideoScreenType.Lcd or EmulationVideoScreenType.LedBacklitLcd => LcdPanel(normalized).Connection,
+            EmulationVideoScreenType.Oled => normalized.Oled.Connection,
+            _ => null
+        };
+        var mergesDithering = connection is EmulationCrtConnection.Composite or EmulationCrtConnection.AnalogRf;
         var controls = AdjustmentControls(normalized);
         var adjustments = ImageAdjustments(normalized, ScreenType(normalized));
         return normalized with
         {
             Sampling = SamplingForDisplay(normalized),
-            SignalSimulation = isCrt ? new() : normalized.SignalSimulation,
+            SignalSimulation = connection.HasValue ? new() : normalized.SignalSimulation,
             Restoration = normalized.Restoration with
             {
-                Dedithering = SupportsDedithering(normalized) && !analogCrt ? normalized.Restoration.Dedithering : 0,
+                Dedithering = SupportsDedithering(normalized) && !mergesDithering ? normalized.Restoration.Dedithering : 0,
                 Debanding = 0,
                 DetailRecovery = 0
             },
@@ -171,6 +177,42 @@ public static class EmulationVideoProcessingConfigurationFunctions
         _ => throw new ArgumentOutOfRangeException(nameof(screen), screen, null)
     };
 
+    public static bool UsesLcdPanel(EmulationVideoProcessingConfiguration configuration) =>
+        ScreenType(configuration) is EmulationVideoScreenType.Lcd or EmulationVideoScreenType.LedBacklitLcd;
+
+    public static EmulationLcdVideoConfiguration LcdPanel(EmulationVideoProcessingConfiguration configuration) =>
+        ScreenType(configuration) == EmulationVideoScreenType.LedBacklitLcd ? configuration.Led : configuration.Lcd;
+
+    public static EmulationPanelSignalConfiguration PanelSignal(EmulationVideoProcessingConfiguration configuration) =>
+        ScreenType(configuration) == EmulationVideoScreenType.Oled ? configuration.Oled : LcdPanel(configuration);
+
+    private static T NormalizePanelSignal<T>(T panel) where T : EmulationPanelSignalConfiguration => panel with
+    {
+        ColorStandards = DefinedOrDefault(panel.ColorStandards, EmulationCrtColorStandards.PalSecamNtsc),
+        FieldRate = DefinedOrDefault(panel.FieldRate, EmulationCrtFieldRate.Hz50And60),
+        Definition = DefinedOrDefault(panel.Definition, EmulationLcdDefinition.Native),
+        Connection = DefinedOrDefault(panel.Connection, EmulationCrtConnection.Digital),
+        ConnectionDegradation = Math.Clamp(panel.ConnectionDegradation, 0, EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum),
+        MonitorPalette = DefinedOrDefault(panel.MonitorPalette, EmulationCrtMonitorPalette.Mda)
+    };
+
+    private static EmulationLcdVideoConfiguration NormalizeLcd(EmulationLcdVideoConfiguration lcd) => NormalizePanelSignal(lcd) with
+    {
+        PixelStructure = DefinedOrDefault(lcd.PixelStructure, EmulationLcdPixelStructure.None),
+        Orientation = DefinedOrDefault(lcd.Orientation, EmulationLcdPixelOrientation.Vertical),
+        PanelType = DefinedOrDefault(lcd.PanelType, EmulationLcdPanelType.Ips),
+        BacklightIntensity = Intensity(lcd.BacklightIntensity),
+        BacklightType = DefinedOrDefault(lcd.BacklightType, EmulationLedBacklightType.Edge)
+    };
+
+    private static EmulationOledVideoConfiguration NormalizeOled(EmulationOledVideoConfiguration oled) => NormalizePanelSignal(oled) with
+    {
+        PanelType = DefinedOrDefault(oled.PanelType, EmulationOledPanelType.RgbOled),
+        PixelStructure = DefinedOrDefault(oled.PixelStructure, EmulationOledPixelStructure.RgbVertical),
+        Connection = oled.Connection is EmulationCrtConnection.Scart or EmulationCrtConnection.SVideo
+            ? EmulationCrtConnection.Digital : DefinedOrDefault(oled.Connection, EmulationCrtConnection.Digital)
+    };
+
     private static EmulationVideoProcessingConfiguration WithFixedPixelType(EmulationVideoProcessingConfiguration configuration,
         EmulationFixedPixelTechnology technology)
     {
@@ -179,14 +221,12 @@ public static class EmulationVideoProcessingConfigurationFunctions
         {
             configuration = current.Technology switch
             {
-                EmulationFixedPixelTechnology.Lcd => configuration with { LcdProfile = current },
                 EmulationFixedPixelTechnology.LedBacklitLcd => configuration with { LedBacklitLcdProfile = current },
                 EmulationFixedPixelTechnology.Oled => configuration with { OledProfile = current },
                 _ => configuration
             };
             current = technology switch
             {
-                EmulationFixedPixelTechnology.Lcd => configuration.LcdProfile,
                 EmulationFixedPixelTechnology.LedBacklitLcd => configuration.LedBacklitLcdProfile,
                 EmulationFixedPixelTechnology.Oled => configuration.OledProfile,
                 _ => null
@@ -259,6 +299,9 @@ public static class EmulationVideoProcessingConfigurationFunctions
                     EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum),
                 MonitorPalette = DefinedOrDefault(crt.MonitorPalette, EmulationCrtMonitorPalette.Mda)
             },
+            Lcd = NormalizeLcd(configuration.Lcd ?? new()),
+            Led = NormalizeLcd(configuration.Led ?? new() { BacklightIntensity = 80 }),
+            Oled = NormalizeOled(configuration.Oled ?? new()),
             FixedPixel = fixedPixel with
             {
                 Technology = DefinedOrDefault(fixedPixel.Technology, EmulationFixedPixelTechnology.Lcd),

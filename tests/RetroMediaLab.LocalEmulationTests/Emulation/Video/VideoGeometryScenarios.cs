@@ -258,20 +258,21 @@ internal static class VideoGeometryScenarios
             EmulationVideoProcessingConfigurationFunctions.AdjustmentControls(rgbDots));
 
         var lcd = EmulationVideoProcessingConfigurationFunctions.WithScreenType(host, EmulationVideoScreenType.Lcd);
-        lcd = lcd with { FixedPixel = lcd.FixedPixel with { BacklightIntensity = 27 } };
+        lcd = lcd with { Lcd = lcd.Lcd with { BacklightIntensity = 27 } };
         var led = EmulationVideoProcessingConfigurationFunctions.WithScreenType(lcd, EmulationVideoScreenType.LedBacklitLcd);
-        Assert.Null(led.FixedPixel.BacklightIntensity);
-        led = led with { FixedPixel = led.FixedPixel with { BacklightIntensity = 81 } };
+        Assert.Equal(80, led.Led.BacklightIntensity);
+        led = led with { Led = led.Led with { BacklightIntensity = 81 } };
         var oled = EmulationVideoProcessingConfigurationFunctions.WithScreenType(led, EmulationVideoScreenType.Oled);
-        oled = oled with { FixedPixel = oled.FixedPixel with { OledEmissionIntensity = 50 } };
+        oled = oled with { Oled = oled.Oled with { PanelType = EmulationOledPanelType.Woled,
+            PixelStructure = EmulationOledPixelStructure.None } };
         var reopened = System.Text.Json.JsonSerializer.Deserialize<EmulationVideoProcessingConfiguration>(
             System.Text.Json.JsonSerializer.Serialize(oled))!;
         var lcdAgain = EmulationVideoProcessingConfigurationFunctions.WithScreenType(reopened, EmulationVideoScreenType.Lcd);
-        Assert.Equal(27, lcdAgain.FixedPixel.BacklightIntensity);
+        Assert.Equal(27, lcdAgain.Lcd.BacklightIntensity);
         var ledAgain = EmulationVideoProcessingConfigurationFunctions.WithScreenType(lcdAgain, EmulationVideoScreenType.LedBacklitLcd);
-        Assert.Equal(81, ledAgain.FixedPixel.BacklightIntensity);
+        Assert.Equal(81, ledAgain.Led.BacklightIntensity);
         var oledAgain = EmulationVideoProcessingConfigurationFunctions.WithScreenType(ledAgain, EmulationVideoScreenType.Oled);
-        Assert.Equal(50, oledAgain.FixedPixel.OledEmissionIntensity);
+        Assert.Equal(oled.Oled, oledAgain.Oled);
 
         using var pipeline = new RetroMediaLab.App.Rendering.Emulation.Processing.SoftwareEmulationVideoProcessingPipeline();
         var frame = new RetroMediaLab.Emulation.Contracts.VideoFrame(
@@ -282,7 +283,7 @@ internal static class VideoGeometryScenarios
         var dimmed = Render(oledAgain);
         Assert.Equal(dimmed, Render(oledAgain with { Sampling = EmulationVideoSampling.Nearest, Adjustments = new() }));
         Assert.Equal(0, dimmed[0]);
-        Assert.True(dimmed[16] < Render(oledAgain with { FixedPixel = oledAgain.FixedPixel with { OledEmissionIntensity = 100 } })[16]);
+        Assert.True(dimmed[16] < Render(oledAgain with { Oled = oledAgain.Oled with { PanelType = EmulationOledPanelType.RgbOled } })[16]);
         var adjustedOled = EmulationVideoProcessingConfigurationFunctions.WithImageAdjustments(oledAgain,
             EmulationVideoScreenType.Oled, current => current with { Brightness = -20 });
         Assert.True(Render(adjustedOled)[16] < dimmed[16]);

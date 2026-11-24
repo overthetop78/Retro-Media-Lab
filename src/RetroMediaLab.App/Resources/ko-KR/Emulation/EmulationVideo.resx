@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>컴포지트 영상</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>컴포넌트 영상(YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>아날로그 RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>화소 구조</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>서브픽셀 방향</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>LCD 패널 유형</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>픽셀 격자 없음</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>가로</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>세로</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>해상도</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>기본 해상도</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>역광선 유형</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 의 BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>연락처 RGB</value></data>
 </root>

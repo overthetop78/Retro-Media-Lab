@@ -29,7 +29,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
     private void SetCrt(EmulationCrtVideoConfiguration value) => Update(configuration => configuration with { Crt = value });
 
-    private void SetFixedPixel(EmulationFixedPixelVideoConfiguration value) => Update(configuration => configuration with { FixedPixel = value });
 
     private void SetPlasma(EmulationPlasmaVideoConfiguration value) => Update(configuration => configuration with { Plasma = value });
 

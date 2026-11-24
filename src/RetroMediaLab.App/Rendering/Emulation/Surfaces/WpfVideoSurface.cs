@@ -67,8 +67,18 @@ internal sealed class WpfVideoSurface : IEmulationVideoSurface
     {
         _image.Opacity = 1;
         var request = ++_frameRequest;
-        var outputSize = new EmulationVideoProcessingSize(_image.ActualWidth > 0 ? (int)Math.Round(_image.ActualWidth) : frame.Width, _image.ActualHeight > 0 ? (int)Math.Round(_image.ActualHeight) : frame.Height);
         var configuration = _videoProcessing;
+        var width = _image.ActualWidth;
+        var height = _image.ActualHeight;
+        if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel)
+        {
+            var dpi = VisualTreeHelper.GetDpi(_image);
+            width *= dpi.DpiScaleX;
+            height *= dpi.DpiScaleY;
+        }
+        var outputSize = new EmulationVideoProcessingSize(
+            width > 0 ? Math.Max(1, (int)Math.Round(width)) : frame.Width,
+            height > 0 ? Math.Max(1, (int)Math.Round(height)) : frame.Height);
         var version = Interlocked.Read(ref _configurationVersion);
         if (_worker is null)
         {

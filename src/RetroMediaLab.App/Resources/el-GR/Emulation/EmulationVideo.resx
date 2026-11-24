@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Σύνθετο βίντεο</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Βίντεο συνιστωσών (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Αναλογικό RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Δομή εικονοστοιχείων</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Προσανατολισμός υποεικονοστοιχείων</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>Τύπος πάνελ LCD</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Χωρίς πλέγμα εικονοστοιχείων</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Οριζόντια</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Κατακόρυφα</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Ανάλυση</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Εγγενής</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Τύπος οπίσθιου φανού</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Κατακόρυφα RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Κατακόρυφα BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Τριγωνικό RGB</value></data>
 </root>

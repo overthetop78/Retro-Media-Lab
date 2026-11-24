@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Video compozit</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Video pe componente (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>RF analogic</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Structura pixelilor</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Orientarea subpixelilor</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>Tip de panou LCD</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Fără grilă de pixeli</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Orizontală</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Verticală</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Rezoluția</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Nativă</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Tipul de lumină din spate</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Vertical RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Vertical BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Triunghiular RGB</value></data>
 </root>

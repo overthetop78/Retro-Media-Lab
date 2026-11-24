@@ -280,4 +280,16 @@
   <data name="Emulation.Video.Crt.Connection.Composite"><value>Composite-Video</value></data>
   <data name="Emulation.Video.Crt.Connection.Component"><value>Komponentenvideo (YPbPr)</value></data>
   <data name="Emulation.Video.Crt.Connection.AnalogRf"><value>Analoges RF</value></data>
+  <data name="Emulation.Video.Lcd.PixelStructure"><value>Pixelstruktur</value></data>
+  <data name="Emulation.Video.Lcd.PixelOrientation"><value>Subpixelausrichtung</value></data>
+  <data name="Emulation.Video.Lcd.PanelType"><value>LCD-Paneltyp</value></data>
+  <data name="Emulation.Video.Lcd.NoGrid"><value>Kein Pixelraster</value></data>
+  <data name="Emulation.Video.Lcd.Horizontal"><value>Horizontal</value></data>
+  <data name="Emulation.Video.Lcd.Vertical"><value>Vertikal</value></data>
+  <data name="Emulation.Video.Lcd.Definition"><value>Auflösung</value></data>
+  <data name="Emulation.Video.Lcd.Definition.Native"><value>Nativ</value></data>
+  <data name="Emulation.Video.Led.BacklightType"><value>Art der Hintergrundbeleuchtung</value></data>
+  <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Vertikal RGB</value></data>
+  <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Vertikal BGR</value></data>
+  <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Dreieck RGB</value></data>
 </root>

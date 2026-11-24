@@ -9,7 +9,7 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulationVideoProcessingPipeline
 {
     private byte[]? _deditheringWorkspace;
-    private byte[]? _crtConnectionWorkspace;
+    private readonly FilterDisplayConnection _displayConnection = new();
     private float[]? _fixedPixelHistory;
     private int _historyWidth;
     private int _historyHeight;
@@ -61,7 +61,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         var pixels = EmulationVideoPixelFunctions.ToBgra32(frame);
         var prepared = EmulationImageRestorationFunctions.ApplyDedithering(pixels, frame.Width, frame.Height,
             normalized.Restoration.Dedithering, ref _deditheringWorkspace);
-        var connected = FilterCrtConnection.Apply(prepared ?? pixels, frame, normalized, ref _crtConnectionWorkspace);
+        var connected = _displayConnection.Apply(prepared ?? pixels, frame, normalized);
         var linear = ToLinear(connected ?? prepared ?? pixels, frame.Width, frame.Height);
         var reference = normalized.Restoration.DetailRecovery > 0 && !sameSize
             && normalized.Sampling != EmulationVideoSampling.Nearest ? linear.ToArray() : null;
@@ -69,7 +69,14 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         var signalStandard = ResolveSignalStandard(frame, normalized.SignalSimulation.Standard);
         ApplySignalConnection(linear, frame.Width, frame.Height, frame.Sequence, normalized.SignalSimulation, signalStandard);
         ApplySignalStandard(linear, frame.Width, frame.Height, normalized.SignalSimulation, signalStandard);
-        linear = Resample(linear, frame.Width, frame.Height, outputSize.Width, outputSize.Height, normalized.Sampling);
+        if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel)
+        {
+            var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
+                EmulationVideoProcessingConfigurationFunctions.PanelSignal(normalized).Definition, frame.Width, frame.Height);
+            linear = ResampleForLcd(linear, frame.Width, frame.Height, panelWidth, panelHeight, outputSize.Width, outputSize.Height);
+        }
+        else
+            linear = Resample(linear, frame.Width, frame.Height, outputSize.Width, outputSize.Height, normalized.Sampling);
         if (reference is not null)
             EmulationImageRestorationFunctions.ApplyDetailRecovery(reference, frame.Width, frame.Height,
                 linear, outputSize.Width, outputSize.Height, normalized.Restoration.DetailRecovery);
@@ -81,7 +88,12 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         VideoSharpnessParameterFunctions.Apply(linear, outputSize.Width, outputSize.Height, normalized.Adjustments.Sharpness);
         var crt = normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
             ? CrtSignal.From(normalized.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(normalized)) : default;
+        if (connected is not null && EmulationVideoProcessingConfigurationFunctions.ScreenType(normalized) == EmulationVideoScreenType.Oled)
+            FilterOledDisplay.Apply(linear, normalized.Oled.PanelType, connected[3] / 255f);
         ApplyDisplayTechnology(linear, sourceSize.Width, sourceSize.Height, outputSize.Width, outputSize.Height, frame, normalized, crt);
+        if (connected is not null && EmulationVideoProcessingConfigurationFunctions.ScreenType(normalized) == EmulationVideoScreenType.LedBacklitLcd)
+            FilterLedBacklitLcdDisplay.Apply(linear, outputSize.Width, outputSize.Height, connected,
+                frame.Width, frame.Height, normalized.Led);
         FilterVhs.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, normalized.Stylistic.Vhs);
         FilterChromaticAberration.Apply(linear, outputSize.Width, outputSize.Height, normalized.Stylistic.ChromaticAberration);
         FilterBloom.Apply(linear, outputSize.Width, outputSize.Height, normalized.Stylistic.Bloom);

@@ -107,6 +107,30 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         return output;
     }
 
+    private static float[] ResampleForLcd(float[] source, int sourceWidth, int sourceHeight,
+        int panelWidth, int panelHeight, int outputWidth, int outputHeight)
+    {
+        if (sourceWidth == panelWidth && sourceHeight == panelHeight &&
+            panelWidth == outputWidth && panelHeight == outputHeight) return source;
+
+        // Resolve the two nearest samples together so the simulated panel need not
+        // allocate a full frame of its own when the viewport is smaller.
+        static int Project(int pixel, int from, int to) => (int)((2L * pixel + 1) * to / (2L * from));
+        var columns = new int[outputWidth];
+        for (var x = 0; x < outputWidth; x++)
+            columns[x] = Project(Project(x, outputWidth, panelWidth), panelWidth, sourceWidth) * 3;
+
+        var output = new float[checked(outputWidth * outputHeight * 3)];
+        Parallel.For(0, outputHeight, y =>
+        {
+            var sourceRow = Project(Project(y, outputHeight, panelHeight), panelHeight, sourceHeight) * sourceWidth * 3;
+            var outputRow = y * outputWidth * 3;
+            for (var x = 0; x < outputWidth; x++)
+                source.AsSpan(sourceRow + columns[x], 3).CopyTo(output.AsSpan(outputRow + x * 3, 3));
+        });
+        return output;
+    }
+
     private static float Lerp(float first, float second, float amount) => first + (second - first) * amount;
 
 }

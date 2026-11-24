@@ -5,22 +5,22 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal static class FilterFixedPixel
 {
-    internal static void Apply(float[] colors, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, EmulationFixedPixelVideoConfiguration configuration)
+    internal static void Apply(float[] colors, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight,
+        EmulationVideoProcessingConfiguration configuration)
     {
-        FilterFixedPixelSubpixels.Apply(colors, sourceWidth, outputWidth, outputHeight, configuration.Subpixels, configuration.MonochromePalette, configuration.GridIntensity);
-        FilterFixedPixelGrid.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, configuration.GridIntensity, configuration.PixelGap);
-
-        switch (configuration.Technology)
+        var fixedPixel = configuration.FixedPixel;
+        var lcd = EmulationVideoProcessingConfigurationFunctions.LcdPanel(configuration);
+        if (EmulationVideoProcessingConfigurationFunctions.UsesLcdPanel(configuration))
         {
-            case EmulationFixedPixelTechnology.Lcd:
-                FilterLcdDisplay.Apply(colors, outputWidth, outputHeight, configuration);
-                break;
-            case EmulationFixedPixelTechnology.LedBacklitLcd:
-                FilterLedBacklitLcdDisplay.Apply(colors, outputWidth, outputHeight, configuration);
-                break;
-            case EmulationFixedPixelTechnology.Oled:
-                FilterOledDisplay.Apply(colors, configuration);
-                break;
+            var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(lcd.Definition, sourceWidth, sourceHeight);
+            FilterLcdPixelStructure.Apply(colors, panelWidth, panelHeight, outputWidth, outputHeight, lcd);
+            if (fixedPixel.Technology == EmulationFixedPixelTechnology.Lcd)
+                FilterLcdDisplay.Apply(colors, outputWidth, outputHeight, lcd);
+            return;
         }
+
+        var (oledWidth, oledHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
+            configuration.Oled.Definition, sourceWidth, sourceHeight);
+        FilterOledPixelStructure.Apply(colors, oledWidth, oledHeight, outputWidth, outputHeight, configuration.Oled.PixelStructure);
     }
 }

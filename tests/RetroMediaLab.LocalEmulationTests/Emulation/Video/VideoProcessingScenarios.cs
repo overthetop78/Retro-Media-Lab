@@ -11,7 +11,12 @@ internal static class VideoProcessingScenarios
         private readonly RetroMediaLab.Emulation.Interfaces.IEmulationRuntime _runtime;
         internal long? ProcessorClockHz { get; set; }
         internal VideoSource() => _runtime = RetroMediaLab.Tests.Application.TestInfrastructure.ControlledDependencies.Simulate<RetroMediaLab.Emulation.Interfaces.IEmulationRuntime>(
-            (method, _) => method.Name == "get_ProcessorClockHz" ? ProcessorClockHz : throw new InvalidOperationException(method.Name));
+            (method, _) => method.Name switch
+            {
+                "get_ProcessorClockHz" => ProcessorClockHz,
+                "get_Region" => EmulationVideoStandard.Pal,
+                _ => throw new InvalidOperationException(method.Name)
+            });
         public VideoFrame? LatestFrame { get; private set; }
         public double FramesPerSecond => 50;
         public event EventHandler<VideoFrame>? FrameReady;
@@ -68,6 +73,27 @@ internal static class VideoProcessingScenarios
             replacement.Send(odd with { Sequence = 1, Timestamp = TimeSpan.FromMilliseconds(20) });
             await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ContextIdle);
             Assert.Equal(odd.Pixels.ToArray().Concat(odd.Pixels.ToArray()), surface.Frames[^1].Pixels.ToArray());
+
+            foreach (var screen in new[] { EmulationVideoScreenType.LedBacklitLcd, EmulationVideoScreenType.Oled })
+            {
+                presenter.SetVideoProcessing(EmulationVideoProcessingConfigurationFunctions.WithScreenType(
+                    new() { Restoration = new(Deinterlacing: EmulationDeinterlacingMode.Weave) }, screen));
+                // Switching the screen type redraws the last frame even without a new frame from the core.
+                await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ContextIdle);
+                var displayed = surface.Frames[^1];
+                Assert.Equal(EmulationVideoStandard.Pal, displayed.SignalStandard);
+                Assert.Equal(50d, displayed.SignalFieldRate);
+                Assert.Equal(odd.Height, displayed.SignalFieldHeight);
+            }
+
+            replacement.Send(odd with
+            {
+                Sequence = 2, Timestamp = TimeSpan.FromMilliseconds(40),
+                SignalStandard = EmulationVideoStandard.Pal, SignalFieldRate = 60
+            });
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ContextIdle);
+            Assert.Equal(EmulationVideoStandard.Pal, surface.Frames[^1].SignalStandard);
+            Assert.Equal(60d, surface.Frames[^1].SignalFieldRate);
         }
         finally
         {

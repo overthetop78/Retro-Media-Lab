@@ -1,29 +1,25 @@
 using System.Numerics;
-using RetroMediaLab.Emulation.Contracts;
-using RetroMediaLab.Emulation.Enums;
 
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal readonly record struct FixedPixelVideoShaderParameters(Vector4 Display, Vector4 Spatial, Vector4 Technology, Vector4 Temporal)
 {
-    internal static FixedPixelVideoShaderParameters From(EmulationVideoProcessingConfiguration configuration, bool hasHistory = false, double elapsedMilliseconds = 0)
+    internal static FixedPixelVideoShaderParameters From(EmulationVideoProcessingConfiguration configuration,
+        int sourceWidth, int sourceHeight, bool hasHistory, double elapsedMilliseconds)
     {
         var fixedPixel = configuration.FixedPixel;
-        var tint = FilterFixedPixelSubpixels.Tint(fixedPixel.MonochromePalette);
+        var lcd = EmulationVideoProcessingConfigurationFunctions.LcdPanel(configuration);
+        var oled = configuration.Oled;
+        var isOled = fixedPixel.Technology == EmulationFixedPixelTechnology.Oled;
+        var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
+            isOled ? oled.Definition : lcd.Definition, sourceWidth, sourceHeight);
         return new FixedPixelVideoShaderParameters(
-            new Vector4(configuration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel ? 1f : 0f, (float)fixedPixel.Technology, (float)fixedPixel.Subpixels, fixedPixel.GridIntensity / 100f),
-            new Vector4(fixedPixel.PixelGap / 100f, tint.Red, tint.Green, tint.Blue),
-            new Vector4(ResolvedBacklight(fixedPixel), ResolvedBlackDepth(fixedPixel), fixedPixel.BacklightBleedIntensity / 100f, fixedPixel.OledEmissionIntensity / 100f),
-            new Vector4(fixedPixel.ResponseTimeMilliseconds, fixedPixel.PersistenceIntensity / 100f, hasHistory ? 1f : 0f, (float)Math.Max(0, elapsedMilliseconds)));
+            new Vector4(configuration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel ? 1f : 0f,
+                (float)fixedPixel.Technology, isOled ? (float)oled.PixelStructure : FilterLcdPixelStructure.Mode(lcd), 0f),
+            new Vector4(0f, panelWidth, panelHeight, 0f),
+            isOled ? new Vector4(0f, 0f, 0f, (float)oled.PanelType)
+                : new Vector4(lcd.BacklightIntensity / 100f, (float)lcd.BacklightType, 0f, (float)lcd.PanelType),
+            new Vector4(isOled ? 0f : FilterLcdDisplay.ResponseTime(lcd.PanelType),
+                0f, !isOled && hasHistory ? 1f : 0f, (float)Math.Max(0, elapsedMilliseconds)));
     }
-
-    private static float ResolvedBacklight(EmulationFixedPixelVideoConfiguration value) => (value.BacklightIntensity ?? (value.Technology == EmulationFixedPixelTechnology.Lcd ? 65 : 80)) / 100f;
-
-    private static float ResolvedBlackDepth(EmulationFixedPixelVideoConfiguration value) =>
-        (value.BlackDepth ?? value.Technology switch
-        {
-            EmulationFixedPixelTechnology.Lcd => 35,
-            EmulationFixedPixelTechnology.LedBacklitLcd => 55,
-            _ => 100
-        }) / 100f;
 }
