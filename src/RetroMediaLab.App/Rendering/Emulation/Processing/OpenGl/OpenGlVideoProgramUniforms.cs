@@ -175,15 +175,9 @@ internal sealed class OpenGlVideoProgramUniforms
         Set(_ePaperSurface, ePaper.PaperSurface);
         Set(_ePaperTemporal, ePaper.Temporal);
 
-        Set(_projection, new(
-            configuration.Projection.OpticalBlur / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Projection.Diffusion / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Projection.ScreenTexture / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Projection.Convergence / OpenGlVideoConstants.PercentageDivisor));
-        Set(_projectionScreen, new(
-            configuration.Projection.LightOutput / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Projection.AmbientLight / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Projection.Vignette / OpenGlVideoConstants.PercentageDivisor, 0f));
+        var projection = ProjectionVideoParameters.From(configuration.Projection);
+        Set(_projection, projection.Optics);
+        Set(_projectionScreen, projection.Screen);
     }
 
     private void Set(int location, Vector4 value) => _api.SetUniform(location, value);

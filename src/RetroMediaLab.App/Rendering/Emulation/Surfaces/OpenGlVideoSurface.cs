@@ -360,6 +360,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
 
     public void ResetHistory()
     {
+        _displayConnection.ResetHistory();
         _hasHistory = false;
         _historyWidth = 0;
         _historyHeight = 0;

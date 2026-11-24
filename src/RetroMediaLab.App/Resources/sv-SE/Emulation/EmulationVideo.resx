@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Redigera svarstid (ms)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Residual image</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Projektion</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>Optisk blur</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>Ljus diffusion</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>Skärmen textur</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>RGB konvergens</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Svart ram införande</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signalsimuleringar</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>Stylistiska effekter</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Ink och färger</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Pappersyta</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>Uppfrisk och resterande bild</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>Ljusproduktion</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>omgivande ljus</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>Edge mörkare</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>Optik och ljus</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>Projektionsskärm</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hårdvarurendering</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Renderingsläge</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hårdvarurendering använder det grafik-API som valts för programmet, om emulatorn stöder det.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Vertikal RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Vertikal BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Triangulär RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>Projektionsteknik</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>Projektionsytan</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1 chip)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3 chips)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>Vit projektionsskärm</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>Grå projektionsskärm</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>Vit vägg</value></data>
 </root>

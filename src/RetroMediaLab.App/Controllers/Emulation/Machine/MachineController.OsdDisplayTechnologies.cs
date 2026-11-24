@@ -165,19 +165,33 @@ internal sealed partial class MachineController
     private Entry OsdProjectionSettings()
     {
         var fields = new VideoTechnologyFields<EmulationProjectionVideoConfiguration>(this,
-            s => s.Projection, (s, c) => s with { Projection = c });
+            config => config.Projection, (config, projection) => config with { Projection = projection });
         return VideoGroup(EmulationResourceKeys.VideoTechnologyProjection,
-            VideoGroup(EmulationResourceKeys.VideoProjectionGroupOptics,
-                fields.Number(Catalog.ProjectionOpticalBlur, c => c.OpticalBlur, (c, v) => c with { OpticalBlur = v }),
-                fields.Number(Catalog.ProjectionDiffusion, c => c.Diffusion, (c, v) => c with { Diffusion = v }),
-                fields.Number(Catalog.ProjectionConvergence, c => c.Convergence, (c, v) => c with { Convergence = v }),
-                fields.Number(Catalog.ProjectionLightOutput, c => c.LightOutput, (c, v) => c with { LightOutput = v })),
-            VideoGroup(EmulationResourceKeys.VideoProjectionGroupScreen,
-                fields.Number(Catalog.ProjectionScreenTexture, c => c.ScreenTexture, (c, v) => c with { ScreenTexture = v }),
-                fields.Number(Catalog.ProjectionAmbientLight, c => c.AmbientLight, (c, v) => c with { AmbientLight = v }),
-                fields.Number(Catalog.ProjectionVignette, c => c.Vignette, (c, v) => c with { Vignette = v })))
+            fields.Choice(Catalog.CrtColorStandards, Catalog.CrtColorStandardsResourceKeys,
+                c => c.ColorStandards, (c, v) => c with { ColorStandards = v }),
+            fields.Choice(Catalog.CrtFieldRate, Catalog.CrtFieldRateResourceKeys,
+                c => c.FieldRate, (c, v) => c with { FieldRate = v }),
+            ProjectionChoice(Catalog.LcdDefinition, Catalog.LcdDefinitionResourceKeys,
+                c => c.Definition, (c, v) => c with { Definition = v }),
+            ProjectionChoice(Catalog.ProjectionTechnology, Catalog.ProjectionTechnologyResourceKeys,
+                c => c.Technology, (c, v) => c with { Technology = v }),
+            ProjectionChoice(Catalog.ProjectionSurface, Catalog.ProjectionSurfaceResourceKeys,
+                c => c.Surface, (c, v) => c with { Surface = v }),
+            fields.Number(Catalog.ProjectionAmbientLight, c => c.AmbientLight,
+                (c, v) => c with { AmbientLight = v }, EmulationProjectionVideoConfiguration.MaximumAmbientLight),
+            fields.Choice(Catalog.CrtConnection, Catalog.ProjectionConnectionResourceKeys,
+                c => c.Connection, (c, v) => c with { Connection = v }),
+            fields.Number(Catalog.CrtConnectionDegradation, c => c.ConnectionDegradation,
+                (c, v) => c with { ConnectionDegradation = v }, EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum)
+                with { IsVisible = () => _video.VideoProcessing.Projection.CanDegradeConnection() })
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.Projection };
     }
+
+    private Entry ProjectionChoice<T>(string label, IReadOnlyDictionary<T, string> keys,
+        Func<EmulationProjectionVideoConfiguration, T> read,
+        Func<EmulationProjectionVideoConfiguration, T, EmulationProjectionVideoConfiguration> update) where T : notnull =>
+        VideoChoice(label, keys, config => read(config.Projection),
+            (config, value) => config with { Projection = update(config.Projection, value) });
 
     private sealed class VideoTechnologyFields<T>(MachineController owner, Func<EmulationVideoProcessingConfiguration, T> read,
         Func<EmulationVideoProcessingConfiguration, T, EmulationVideoProcessingConfiguration> update)

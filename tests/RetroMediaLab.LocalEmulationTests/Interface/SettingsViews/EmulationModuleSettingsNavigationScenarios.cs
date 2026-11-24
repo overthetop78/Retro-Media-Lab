@@ -1,5 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Automation;
+using RetroMediaLab.App.Constants.Views.Emulation;
+using RetroMediaLab.VideoPresentation.Enums;
+using RetroMediaLab.VideoPresentation.Functions;
 using System.Net.Http;
 using RetroMediaLab.App.Constants.Emulation;
 using RetroMediaLab.App.Contracts.Emulation.Machine;
@@ -46,6 +50,24 @@ internal static class EmulationModuleSettingsNavigationScenarios
                 tabs.SelectedIndex = 2;
                 section.RefreshLocalizedContent();
                 Assert.Equal(2, Assert.IsType<TabControl>(section.Content).SelectedIndex);
+            }
+
+            EmulationVideoScreenType[] screens = [EmulationVideoScreenType.Crt, EmulationVideoScreenType.Lcd,
+                EmulationVideoScreenType.LedBacklitLcd, EmulationVideoScreenType.Oled,
+                EmulationVideoScreenType.Plasma, EmulationVideoScreenType.Projection];
+            foreach (var screen in screens)
+            {
+                section.SetConfiguration(EmulationVideoProcessingConfigurationFunctions.WithScreenType(new(), screen));
+                var tabs = Assert.IsType<TabControl>(section.Content);
+                var image = (DependencyObject)((TabItem)tabs.Items[1]).Content;
+                var technology = Assert.Single(MachineConfigurationScenarios.Controls<StackPanel>(image),
+                    panel => AutomationProperties.GetAutomationId(panel) == EmulationVideoSettingsLayoutConstants.VideoTechnologyParametersAutomationId);
+                var frame = Assert.IsType<Border>(technology.Parent);
+                var row = Assert.IsType<Grid>(frame.Parent);
+                Assert.Equal(0, Grid.GetColumn(frame));
+                Assert.Equal(2, row.ColumnDefinitions.Count);
+                Assert.Equal(row.ColumnDefinitions[0].Width, row.ColumnDefinitions[1].Width);
+                Assert.Equal(1, Grid.GetColumn(Assert.IsType<Border>(row.Children[1])));
             }
         }
         finally

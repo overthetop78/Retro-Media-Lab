@@ -43,7 +43,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
     private void SetEPaper(EmulationEPaperVideoConfiguration value) => Update(configuration => configuration with { EPaper = value });
 
-    private void SetProjection(EmulationProjectionVideoConfiguration value) => Update(configuration => configuration with { Projection = value });
 
     private void UpdateScreenControls(Func<EmulationVideoProcessingConfiguration, EmulationVideoProcessingConfiguration> update)
     {

@@ -217,15 +217,7 @@ public static class EmulationResourceKeys
     public const string VideoEPaperColorModeMonochrome = "Emulation.Video.EPaper.ColorMode.Monochrome";
     public const string VideoEPaperColorModeGrayscale16 = "Emulation.Video.EPaper.ColorMode.Grayscale16";
     public const string VideoEPaperColorModeColor4096 = "Emulation.Video.EPaper.ColorMode.Color4096";
-    public const string VideoParameterProjectionOpticalBlur = "Emulation.Video.Parameter.ProjectionOpticalBlur";
-    public const string VideoParameterProjectionDiffusion = "Emulation.Video.Parameter.ProjectionDiffusion";
-    public const string VideoParameterProjectionScreenTexture = "Emulation.Video.Parameter.ProjectionScreenTexture";
-    public const string VideoParameterProjectionConvergence = "Emulation.Video.Parameter.ProjectionConvergence";
-    public const string VideoParameterProjectionLightOutput = "Emulation.Video.Parameter.ProjectionLightOutput";
     public const string VideoParameterProjectionAmbientLight = "Emulation.Video.Parameter.ProjectionAmbientLight";
-    public const string VideoParameterProjectionVignette = "Emulation.Video.Parameter.ProjectionVignette";
-    public const string VideoProjectionGroupOptics = "Emulation.Video.Projection.Group.Optics";
-    public const string VideoProjectionGroupScreen = "Emulation.Video.Projection.Group.Screen";
     public const string VideoDeinterlacingOff = "Emulation.Video.Deinterlacing.Off";
     public const string VideoDeinterlacingBlend = "Emulation.Video.Deinterlacing.Blend";
     public const string VideoParameterCrtMask = "Emulation.Video.Parameter.CrtMask";

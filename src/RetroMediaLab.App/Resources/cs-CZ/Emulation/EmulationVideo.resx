@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Doba odezvy (ms)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Zbytkový obraz</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Promítání</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>Optické rozostření</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>Difuze světla</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>Textura obrazovky</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>Konvergence RGB</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Vložení černého rámu</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulace signálu</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>Stylistické účinky</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Inkoust a barvy</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Papírový povrch</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>Obnovit a zbytkový obraz</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>Výstup světla</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Okolní světlo</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>Ostří tmavnutí</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>Optika a světlo</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>Projekční plátno</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hardwarové vykreslování</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Režim vykreslování</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Hardwarové vykreslování používá grafické API zvolené pro aplikaci, pokud je emulátor podporuje.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Vertikální RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Vertikální BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Trojúhelníkový RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>Projekční technika</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>Projekční plocha</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1 čip)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3 čipy)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>Bílá projekční obrazovka</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>Gray projekční plátno</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>Bílá stěna</value></data>
 </root>

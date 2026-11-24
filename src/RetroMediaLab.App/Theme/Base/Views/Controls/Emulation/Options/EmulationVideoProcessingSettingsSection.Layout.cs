@@ -73,14 +73,19 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         grid.ColumnDefinitions.Add(new ColumnDefinition());
         grid.ColumnDefinitions.Add(new ColumnDefinition());
         var stylistic = FramedSection(CreateStylistic());
-        var groups = EmulationVideoProcessingConfigurationFunctions.ScreenType(_configuration) switch
+        var technology = EmulationVideoProcessingConfigurationFunctions.ScreenType(_configuration) switch
         {
-            EmulationVideoScreenType.Crt => new[] { FramedSection(CreateCrtSignalControls()), stylistic },
-            EmulationVideoScreenType.Lcd => new[] { FramedSection(CreateLcdSignalControls(led: false)), stylistic },
-            EmulationVideoScreenType.LedBacklitLcd => new[] { FramedSection(CreateLcdSignalControls(led: true)), stylistic },
-            EmulationVideoScreenType.Oled => new[] { FramedSection(CreateOledControls()), stylistic },
-            _ => new[] { stylistic }
+            EmulationVideoScreenType.Crt => CreateCrtSignalControls(),
+            EmulationVideoScreenType.Lcd => CreateLcdSignalControls(led: false),
+            EmulationVideoScreenType.LedBacklitLcd => CreateLcdSignalControls(led: true),
+            EmulationVideoScreenType.Oled => CreateOledControls(),
+            EmulationVideoScreenType.Plasma => CreatePlasmaPanel(),
+            EmulationVideoScreenType.Projection => CreateProjectionPanel(),
+            _ => null
         };
+        if (technology is not null)
+            AutomationProperties.SetAutomationId(technology, EmulationVideoSettingsLayoutConstants.VideoTechnologyParametersAutomationId);
+        var groups = technology is null ? new[] { stylistic } : new[] { FramedSection(technology), stylistic };
         for (var index = 0; index < groups.Length; index++)
         {
             groups[index].Margin = new Thickness(index == 0 ? 0 : 6, 0, index == groups.Length - 1 ? 0 : 6, 0);
@@ -184,14 +189,12 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
     private FrameworkElement? CreateTechnologyPanel() => _configuration.DisplayTechnology switch
     {
-        EmulationVideoDisplayTechnology.Plasma => CreatePlasmaPanel(),
         EmulationVideoDisplayTechnology.Vector => CreateVectorPanel(),
         EmulationVideoDisplayTechnology.Vfd => CreateVfdPanel(),
         EmulationVideoDisplayTechnology.LedMatrix => CreateLedMatrixPanel(),
         EmulationVideoDisplayTechnology.DotMatrix => CreateDotMatrixPanel(),
         EmulationVideoDisplayTechnology.SegmentDisplay => CreateSegmentDisplayPanel(),
         EmulationVideoDisplayTechnology.EPaper => CreateEPaperPanel(),
-        EmulationVideoDisplayTechnology.Projection => CreateProjectionPanel(),
         _ => null
     };
 

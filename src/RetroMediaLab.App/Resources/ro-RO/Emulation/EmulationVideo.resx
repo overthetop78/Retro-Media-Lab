@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Timp de răspuns reîmprospătat (ms)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Imagine reziduală</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Proiectare</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>Ceaţă optică</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>Difuzarea luminii</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>Textură ecran</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>Convergență RGB</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Inserție cadru negru</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulări de semnale</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>Efecte stilistice</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Cerneală și culori</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Suprafață de hârtie</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>Reîmprospătează și imaginea reziduală</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>Ieșire ușoară</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Lumina ambientală</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>Întuneric margine</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>Optica si lumina</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>Ecranul de proiectie</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Randare hardware</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Mod de randare</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Randarea hardware folosește API-ul grafic selectat pentru aplicație, dacă emulatorul îl acceptă.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Vertical RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Vertical BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Triunghiular RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>Tehnologia proiectării</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>Suprafață de proiectare</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1 cip)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3 chipsuri)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>Ecranul de proiecție alb</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>Ecranul de proiecție gri</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>Perete alb</value></data>
 </root>

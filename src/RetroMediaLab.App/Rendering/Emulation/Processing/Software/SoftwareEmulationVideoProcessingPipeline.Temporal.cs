@@ -10,6 +10,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
 {
     public void ResetTemporalHistory()
     {
+        _displayConnection.ResetHistory();
         _signalTimestamp = TimeSpan.Zero;
         _signalSequence = 0;
         ResetHistory();

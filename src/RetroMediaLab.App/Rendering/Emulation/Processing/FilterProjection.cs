@@ -1,69 +1,78 @@
-using RetroMediaLab.Emulation.Contracts;
-
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal static class FilterProjection
 {
-    internal static void Apply(float[] colors, int width, int height, EmulationProjectionVideoConfiguration configuration)
+    internal static void Apply(float[] colors, int sourceWidth, int sourceHeight, int width, int height,
+        EmulationProjectionVideoConfiguration configuration)
     {
-        var source = colors.ToArray();
-        var radius = 2;
-        var blur = configuration.OpticalBlur / 100f;
-        var diffusion = configuration.Diffusion / 100f;
-        var texture = configuration.ScreenTexture / 100f;
-        var shift = FilterProjectionConvergence.Apply(configuration.Convergence / 100f);
-        for (var y = 0; y < height; y++)
+        var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
+            configuration.Definition, sourceWidth, sourceHeight);
+        var (optics, screen) = ProjectionVideoParameters.From(configuration);
+        var source = optics.Y > 0f ? colors.ToArray() : colors;
+        var stepX = Math.Max(1f, .55f * width / panelWidth);
+        var stepY = Math.Max(1f, .55f * height / panelHeight);
+        var convergence = optics.W * width / sourceWidth;
+        var columns = new float[width];
         for (var x = 0; x < width; x++)
+            columns[x] = Aperture(x, panelWidth, width, optics.Z);
+
+        Parallel.For(0, height, y =>
         {
-            var center = (y * width + x) * 3;
-            var average = Neighborhood(source, width, height, x, y, radius);
-            var red = FilterProjectionOpticalBlur.Apply(Sample(source, width, height, x - shift, y, 0), average.R, blur);
-            var green = FilterProjectionOpticalBlur.Apply(source[center + 1], average.G, blur);
-            var blue = FilterProjectionOpticalBlur.Apply(Sample(source, width, height, x + shift, y, 2), average.B, blur);
-            red = FilterProjectionDiffusion.Apply(red, average.R, diffusion);
-            green = FilterProjectionDiffusion.Apply(green, average.G, diffusion);
-            blue = FilterProjectionDiffusion.Apply(blue, average.B, diffusion);
-            float Compose(float value)
+            var row = Aperture(y, panelHeight, height, optics.Z);
+            for (var x = 0; x < width; x++)
             {
-                value = FilterProjectionLightOutput.Apply(value, configuration.LightOutput / 100f);
-                value = FilterProjectionVignette.Apply(value, (x + .5f) / width, (y + .5f) / height, configuration.Vignette / 100f);
-                value = FilterProjectionAmbientLight.Apply(value, configuration.AmbientLight / 100f);
-                return FilterProjectionScreenTexture.Apply(value, x, y, texture);
+                var index = (y * width + x) * 3;
+                var area = columns[x] * row;
+                var reflection = screen.X;
+                if (screen.Z > 0f)
+                {
+                    var px = x + .5f;
+                    var py = y + .5f;
+                    reflection *= 1f - screen.Z * (.5f + .25f * MathF.Sin(px * .71f + py * .31f)
+                        + .25f * MathF.Sin(px * .17f - py * .83f));
+                }
+
+                for (var channel = 0; channel < 3; channel++)
+                {
+                    var value = source[index + channel];
+                    if (optics.Y > 0f)
+                    {
+                        var beamX = x + (channel - 1) * convergence;
+                        var center = Sample(source, width, height, beamX, y, channel);
+                        var surround = .25f * (Sample(source, width, height, beamX - stepX, y, channel)
+                            + Sample(source, width, height, beamX + stepX, y, channel)
+                            + Sample(source, width, height, beamX, y - stepY, channel)
+                            + Sample(source, width, height, beamX, y + stepY, channel));
+                        value = float.Lerp(center, surround, optics.Y);
+                    }
+                    var projection = float.Lerp(optics.X, 1f, value * area);
+                    colors[index + channel] = float.Lerp(projection, 1f, screen.Y) * reflection;
+                }
             }
-            colors[center] = Compose(red);
-            colors[center + 1] = Compose(green);
-            colors[center + 2] = Compose(blue);
-        }
+        });
     }
 
-    private static (float R, float G, float B) Neighborhood(float[] source, int width, int height, int x, int y, int radius)
+    private static float Aperture(int position, int cells, int pixels, float border)
     {
-        var red = 0f;
-        var green = 0f;
-        var blue = 0f;
-        var count = 0;
-        for (var offsetY = -radius; offsetY <= radius; offsetY++)
-        for (var offsetX = -radius; offsetX <= radius; offsetX++)
-        {
-            var sampleX = Math.Clamp(x + offsetX, 0, width - 1);
-            var sampleY = Math.Clamp(y + offsetY, 0, height - 1);
-            var index = (sampleY * width + sampleX) * 3;
-            red += source[index];
-            green += source[index + 1];
-            blue += source[index + 2];
-            count++;
-        }
-        return (red / count, green / count, blue / count);
+        if (border <= 0f || pixels <= cells) return 1f;
+        var span = cells / (float)pixels;
+        var center = (position + .5f) * span;
+        center -= MathF.Floor(center);
+        var coverage = FilterLcdPixelStructure.Coverage(center, span, border, 1f - border);
+        return float.Lerp(1f, coverage, FilterSampling.SmoothStep(1f, 2.5f, pixels / (float)cells));
     }
 
-    private static float Sample(float[] source, int width, int height, float x, int y, int channel)
+    private static float Sample(float[] source, int width, int height, float x, float y, int channel)
     {
         x = Math.Clamp(x, 0f, width - 1f);
-        y = Math.Clamp(y, 0, height - 1);
-        var left = (int)MathF.Floor(x);
+        y = Math.Clamp(y, 0f, height - 1f);
+        var left = (int)x;
+        var top = (int)y;
         var right = Math.Min(width - 1, left + 1);
-        return Lerp(source[(y * width + left) * 3 + channel], source[(y * width + right) * 3 + channel], x - left);
+        var bottom = Math.Min(height - 1, top + 1);
+        var topColor = float.Lerp(source[(top * width + left) * 3 + channel], source[(top * width + right) * 3 + channel], x - left);
+        var bottomColor = float.Lerp(source[(bottom * width + left) * 3 + channel],
+            source[(bottom * width + right) * 3 + channel], x - left);
+        return float.Lerp(topColor, bottomColor, y - top);
     }
-
-    private static float Lerp(float start, float end, float amount) => start + (end - start) * amount;
 }

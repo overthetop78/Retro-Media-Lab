@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Час відповіді на Refresh (MS)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Редагування зображень</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Проектування</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>Оптичний розмиття</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>Світло дифузії</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>Текстура екрану</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>RGB конвергенція</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Чорний каркас вставки</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Симуляції сигналу</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>Стилістичні ефекти</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Фарби і фарби</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Поверхня паперу</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>Рефреш і залишковий образ</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>Світловідведення</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Амбієнт світло</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>Край темний</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>Оптики і світло</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>Екран проекції</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Апаратний рендеринг</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Режим рендерингу</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Апаратний рендеринг використовує графічний API, вибраний для програми, якщо емулятор його підтримує.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Вертикальний RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Вертикальний BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Трикутний RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>Технології проектування</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>Тепла поверхня</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1 ст.л.)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3 ст.л.)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>Білий проекційний екран</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>Сірий проекційний екран</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>Біла стіна</value></data>
 </root>

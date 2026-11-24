@@ -48,13 +48,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             && normalized.Stylistic == new EmulationStylisticVideoConfiguration()
             && normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Normal)
         {
-            ResetHistory();
-            _plasmaPersistence.Reset();
-            ResetVectorHistory();
-            _vfdPersistence.Reset();
-            ResetDotMatrixHistory();
-            ResetSegmentDisplayHistory();
-            ResetEPaperHistory();
+            ResetTemporalHistory();
             return frame;
         }
 

@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>刷新响应时间( 毫秒)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>剩余图像</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>预测</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>光学模糊</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>光扩散</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>屏幕纹理</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>RGB 趋同</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>黑帧插入</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>信号模拟</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>结构效应</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>墨水和颜色</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>纸张表面</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>刷新和剩余图像</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>光输出</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>环境光</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>边缘变暗</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>光线和光线</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>投影屏幕</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>硬體算繪</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>算繪模式</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>硬體算繪會使用應用程式所選的圖形 API，前提是模擬器支援該 API。</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>垂直 RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>垂直 BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>三角形 RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>投影技术</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>投影表面</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1芯片)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3个芯片)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>白投影屏幕</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>灰色投影屏幕</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>白墙</value></data>
 </root>

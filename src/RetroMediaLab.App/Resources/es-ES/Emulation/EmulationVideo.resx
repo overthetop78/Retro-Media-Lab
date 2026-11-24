@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Tiempo de respuesta restringido (ms)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Imagen residual</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Proyección</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>Difunción óptica</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>Difusión de luz</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>Textura de pantalla</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>Convergencia RGB</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Inserción de marco negro</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>simulaciones de señales</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>Efectos estilísticos</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Tinta y colores</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Superficie de papel</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>Imagen refinada y residual</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>Producción de luz</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Luz ambiente</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>Oscurecedor de bordes</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>Óptica y luz</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>Pantalla de proyección</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Renderizado por hardware</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Modo de renderizado</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>El renderizado por hardware utiliza la API gráfica seleccionada para la aplicación si el emulador la admite.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Vertical RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Vertical BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Triangular RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>Tecnología de la proyección</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>Superficie de proyección</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1 chip)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3 chips)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>Pantalla de proyección blanca</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>Pantalla de proyección gris</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>Muro blanco</value></data>
 </root>

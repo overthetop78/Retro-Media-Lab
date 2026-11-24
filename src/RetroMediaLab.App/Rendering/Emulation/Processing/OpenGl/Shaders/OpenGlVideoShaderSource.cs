@@ -116,7 +116,7 @@ internal static class OpenGlVideoShaderSource
         vec3 adjustColor(vec3 color) { return adjustLinear(restorationLinear(color)); }
 
         """ + "\n" + """
-        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 3
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 3 || DISPLAY_TECHNOLOGY == 10
         """ + "\n" + FilterLcdPixelStructure.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 2

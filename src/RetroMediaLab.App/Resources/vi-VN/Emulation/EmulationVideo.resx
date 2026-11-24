@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Thời gian trả lời tươi (ms)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Ảnh thích hợp</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Dự án</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>Che mờ quang thể</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>Ánh sáng</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>họa tiết màn hình</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>RGB hội tụ</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Comment</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Mô phỏng tín hiệu</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>Hiệu ứng hình ảnh</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Ink và màu</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Bề mặt giấy</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>Cập nhật và lưu ảnh</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>Đầu ra ánh sáng</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Ánh sáng chung quanh</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>Tối về cạnh</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>Mắt và ánh sáng</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>Màn hình chiếu</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Kết xuất bằng phần cứng</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Chế độ kết xuất</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Kết xuất bằng phần cứng sử dụng API đồ họa đã chọn cho ứng dụng nếu trình giả lập hỗ trợ.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Dọc RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Dọc BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Hình tam giác RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>Công nghệ chiếu</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>Mặt hình</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1 chip)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3 chip)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>Màn hình chiếu trắng</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>Màn hình chiếu màu xám</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>Tường trắng</value></data>
 </root>

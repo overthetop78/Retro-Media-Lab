@@ -78,7 +78,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Projection)
         {
-            FilterProjection.Apply(colors, outputWidth, outputHeight, configuration.Projection);
+            FilterProjection.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, configuration.Projection);
             return;
         }
         if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.Crt) return;

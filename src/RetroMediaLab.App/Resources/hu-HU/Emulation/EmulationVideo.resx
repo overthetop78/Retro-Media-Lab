@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>A válaszidő frissítése (ms)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Maradvány kép</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Terjesztés</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>Optikai elmosódás</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>Fénydiffúzió</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>A képernyő textúrája</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>RGB konvergencia</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Fekete keret behelyezése</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Jelszimulációk</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>Stilisztikus hatások</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Tinta és színek</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Papírfelület</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>Frissítés és visszamaradt kép</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>Fénykimenet</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Környezeti fény</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>A szélek sötétedése</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>Optics and light</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>Vetítővászon</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hardveres renderelés</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Renderelési mód</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>A hardveres renderelés az alkalmazáshoz kiválasztott grafikus API-t használja, ha az emulátor támogatja.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>Függőleges RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>Függőleges BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>Háromszög RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>Terjedési technológia</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>Terjesztőfelület</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1 chip)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3 zseton)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>Fehér vetítőernyő</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>Szürke vetítőernyő</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>Fehér fal</value></data>
 </root>

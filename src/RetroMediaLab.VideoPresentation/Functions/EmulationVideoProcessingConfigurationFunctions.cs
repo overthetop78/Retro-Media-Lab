@@ -73,6 +73,7 @@ public static class EmulationVideoProcessingConfigurationFunctions
             EmulationVideoScreenType.Lcd or EmulationVideoScreenType.LedBacklitLcd => LcdPanel(normalized).Connection,
             EmulationVideoScreenType.Oled => normalized.Oled.Connection,
             EmulationVideoScreenType.Plasma => normalized.Plasma.Connection,
+            EmulationVideoScreenType.Projection => normalized.Projection.Connection,
             _ => null
         };
         var mergesDithering = connection is EmulationCrtConnection.Composite or EmulationCrtConnection.AnalogRf;
@@ -189,11 +190,13 @@ public static class EmulationVideoProcessingConfigurationFunctions
         {
             EmulationVideoScreenType.Oled => configuration.Oled,
             EmulationVideoScreenType.Plasma => configuration.Plasma,
+            EmulationVideoScreenType.Projection => configuration.Projection,
             _ => LcdPanel(configuration)
         };
 
     public static bool UsesPanelSignal(EmulationVideoProcessingConfiguration configuration) =>
-        configuration.DisplayTechnology is EmulationVideoDisplayTechnology.FixedPixel or EmulationVideoDisplayTechnology.Plasma;
+        configuration.DisplayTechnology is EmulationVideoDisplayTechnology.FixedPixel
+            or EmulationVideoDisplayTechnology.Plasma or EmulationVideoDisplayTechnology.Projection;
 
     private static T NormalizePanelSignal<T>(T panel) where T : EmulationPanelSignalConfiguration => panel with
     {
@@ -415,15 +418,13 @@ public static class EmulationVideoProcessingConfigurationFunctions
                 SurfaceTexture = Intensity(ePaper.SurfaceTexture),
                 EdgeSoftness = Intensity(ePaper.EdgeSoftness)
             },
-            Projection = projection with
+            Projection = NormalizePanelSignal(projection) with
             {
-                OpticalBlur = Intensity(projection.OpticalBlur),
-                Diffusion = Intensity(projection.Diffusion),
-                ScreenTexture = Intensity(projection.ScreenTexture),
-                Convergence = Intensity(projection.Convergence),
-                LightOutput = Intensity(projection.LightOutput),
-                AmbientLight = Intensity(projection.AmbientLight),
-                Vignette = Intensity(projection.Vignette)
+                Technology = DefinedOrDefault(projection.Technology, EmulationProjectionTechnology.ThreeLcd),
+                Surface = DefinedOrDefault(projection.Surface, EmulationProjectionSurface.WhiteScreen),
+                AmbientLight = Math.Clamp(projection.AmbientLight, 0, EmulationProjectionVideoConfiguration.MaximumAmbientLight),
+                Connection = EmulationVideoProcessingCatalog.ProjectionConnectionResourceKeys.ContainsKey(projection.Connection)
+                    ? projection.Connection : EmulationCrtConnection.Digital
             }
         };
     }

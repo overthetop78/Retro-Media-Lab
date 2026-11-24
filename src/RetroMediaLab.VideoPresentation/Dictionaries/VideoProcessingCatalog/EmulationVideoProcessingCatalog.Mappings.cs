@@ -212,10 +212,7 @@ public static partial class EmulationVideoProcessingCatalog
             [EPaperInkDensity] = 90, [EPaperPaperBrightness] = 90,
             [EPaperPaperWarmth] = 35, [EPaperColorSaturation] = 55,
             [EPaperSurfaceTexture] = 10, [EPaperEdgeSoftness] = 10,
-            [ProjectionOpticalBlur] = 20, [ProjectionDiffusion] = 15,
-            [ProjectionScreenTexture] = 10, [ProjectionConvergence] = 5,
-            [ProjectionLightOutput] = 50, [ProjectionAmbientLight] = 0,
-            [ProjectionVignette] = 0
+            [ProjectionAmbientLight] = 0
         };
 
     public static IReadOnlyDictionary<string, EmulationVideoDisplayTechnology> RequiredTechnologies { get; } =
@@ -265,7 +262,7 @@ public static partial class EmulationVideoProcessingCatalog
         Add(DotMatrixPalette, DotMatrixPersistence, EmulationVideoDisplayTechnology.DotMatrix);
         Add(SegmentDisplayLayout, SegmentDisplayPersistence, EmulationVideoDisplayTechnology.SegmentDisplay);
         Add(EPaperColorMode, EPaperEdgeSoftness, EmulationVideoDisplayTechnology.EPaper);
-        Add(ProjectionOpticalBlur, ProjectionVignette, EmulationVideoDisplayTechnology.Projection);
+        Add(ProjectionAmbientLight, ProjectionAmbientLight, EmulationVideoDisplayTechnology.Projection);
         return result;
 
         void Add(string first, string last, EmulationVideoDisplayTechnology technology)

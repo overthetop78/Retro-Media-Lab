@@ -103,6 +103,5 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
     private FrameworkElement CreateEPaperPanel() => EmulationEPaperSettingsBlock.Create(_configuration.EPaper, update => SetEPaper(update(_configuration.EPaper)), RebuildContent);
 
-    private FrameworkElement CreateProjectionPanel() => EmulationProjectionSettingsBlock.Create(_configuration.Projection, update => SetProjection(update(_configuration.Projection)));
 
 }

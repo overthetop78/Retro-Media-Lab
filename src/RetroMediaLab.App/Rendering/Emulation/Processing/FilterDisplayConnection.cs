@@ -6,9 +6,15 @@ internal sealed class FilterDisplayConnection
 {
     private byte[]? _connection;
     private byte[]? _decoded;
+    private readonly FilterProjectionColorBreakup _colorBreakup = new();
+
+    internal void ResetHistory() => _colorBreakup.Reset();
 
     internal byte[]? Apply(ReadOnlySpan<byte> source, VideoFrame frame, EmulationVideoProcessingConfiguration configuration)
     {
+        var singleChipProjection = configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Projection
+            && configuration.Projection.Technology == EmulationProjectionTechnology.SingleChipDlp;
+        if (!singleChipProjection) _colorBreakup.Reset();
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Crt)
             return FilterCrtConnection.Apply(source, frame, configuration, ref _connection);
         if (!EmulationVideoProcessingConfigurationFunctions.UsesPanelSignal(configuration))
@@ -53,7 +59,7 @@ internal sealed class FilterDisplayConnection
             FilterLedBacklitLcdDisplay.PrepareZones(_decoded, width, height, configuration.Led.BacklightType);
         else if (screen == EmulationVideoScreenType.Oled)
             FilterOledDisplay.PrepareBrightness(_decoded, length);
-        return _decoded;
+        return singleChipProjection ? _colorBreakup.Apply(_decoded, frame, configuration.Projection) : _decoded;
     }
 
     private static Vector3 Read(ReadOnlySpan<byte> source, int offset) =>

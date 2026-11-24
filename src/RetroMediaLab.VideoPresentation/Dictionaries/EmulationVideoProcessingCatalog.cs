@@ -119,13 +119,7 @@ public static partial class EmulationVideoProcessingCatalog
     public const string EPaperColorSaturation = nameof(EPaperColorSaturation);
     public const string EPaperSurfaceTexture = nameof(EPaperSurfaceTexture);
     public const string EPaperEdgeSoftness = nameof(EPaperEdgeSoftness);
-    public const string ProjectionOpticalBlur = nameof(ProjectionOpticalBlur);
-    public const string ProjectionDiffusion = nameof(ProjectionDiffusion);
-    public const string ProjectionScreenTexture = nameof(ProjectionScreenTexture);
-    public const string ProjectionConvergence = nameof(ProjectionConvergence);
-    public const string ProjectionLightOutput = nameof(ProjectionLightOutput);
     public const string ProjectionAmbientLight = nameof(ProjectionAmbientLight);
-    public const string ProjectionVignette = nameof(ProjectionVignette);
 
     public const string ExclusiveDisplayTechnology = nameof(ExclusiveDisplayTechnology);
     public const string UnsupportedBackend = nameof(UnsupportedBackend);
@@ -166,9 +160,7 @@ public static partial class EmulationVideoProcessingCatalog
         EPaperColorMode, EPaperContrast, EPaperDithering,
         EPaperRefreshTime, EPaperGhosting, EPaperInkDensity, EPaperPaperBrightness,
         EPaperPaperWarmth, EPaperColorSaturation, EPaperSurfaceTexture,
-        EPaperEdgeSoftness, ProjectionOpticalBlur, ProjectionDiffusion,
-        ProjectionScreenTexture, ProjectionConvergence, ProjectionLightOutput,
-        ProjectionAmbientLight, ProjectionVignette
+        EPaperEdgeSoftness, ProjectionAmbientLight
     ];
 
 }

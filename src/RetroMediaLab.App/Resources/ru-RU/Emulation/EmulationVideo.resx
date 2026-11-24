@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Время ответа (ms)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Остаточный образ</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Проекция</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>Оптический блеск</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>Светодиффузия</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>Текстура экрана</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>RGB конвергенция</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Вставка черного каркаса</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Симуляция сигналов</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>Стилистические эффекты</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Чернила и цвета</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Бумажная поверхность</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>Обновление и остаточное изображение</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>Световой выход</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Огни окружающей среды</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>Край темнеет</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>Оптика и свет</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>Экран проекции</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Аппаратный рендеринг</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Режим рендеринга</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>Аппаратный рендеринг использует графический API, выбранный для приложения, если эмулятор его поддерживает.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>вертикальный RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>вертикальный BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>треугольный RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>Технология проекции</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>Проекционная поверхность</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1 чип)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3 чипа)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>Белый экран проекции</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>Серый экран проекции</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>Белая стена</value></data>
 </root>

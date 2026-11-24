@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>応答時間(ms)をリフレッシュ</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>残留イメージ</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>プロジェクト</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>光学ブール</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>軽い拡散</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>スクリーンテクスチャ</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>RGB コンバージェンス</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>ブラックフレームインサート</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>信号シミュレーション</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>スタイリスティック効果</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>インクと色</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>ペーパー表面</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>リフレッシュと残留イメージ</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>軽い出力</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>周囲光</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>エッジダークニング</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>光と光</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>投影スクリーン</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>ハードウェアレンダリング</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>レンダリングモード</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>ハードウェアレンダリングでは、エミュレーターが対応していれば、アプリケーションで選択したグラフィックス API を使用します。</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>縦横 縦 RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>縦横 縦 BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>トライアンギュラ RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>投影技術</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>投射表面</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP (1破片)</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP (3チップ)</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>白い映写幕</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>灰色の映写幕</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>白い壁</value></data>
 </root>

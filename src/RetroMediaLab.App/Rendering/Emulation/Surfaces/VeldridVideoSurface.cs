@@ -144,6 +144,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     {
         lock (_deviceGate)
         {
+            _displayConnection.ResetHistory();
             _hasHistory = false;
             _historyTimestamp = TimeSpan.Zero;
             _historySequence = 0;
@@ -541,6 +542,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var projection = ProjectionVideoParameters.From(configuration.Projection);
         return new VideoParameters(
             new Vector4(configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
                 ? VideoBrightnessParameterFunctions.CrtBeamGain(adjustments.Brightness)
@@ -566,7 +568,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             ledMatrix.Emission, ledMatrix.Structure,
             dotMatrix.Geometry, dotMatrix.Emission, dotMatrix.Temporal,
             ePaper.InkAndColor, ePaper.PaperSurface, ePaper.Temporal,
-            new Vector4(configuration.Projection.OpticalBlur / 100f, configuration.Projection.Diffusion / 100f, configuration.Projection.ScreenTexture / 100f, configuration.Projection.Convergence / 100f),
-            new Vector4(configuration.Projection.LightOutput / 100f, configuration.Projection.AmbientLight / 100f, configuration.Projection.Vignette / 100f, 0f));
+            projection.Optics, projection.Screen);
     }
 }

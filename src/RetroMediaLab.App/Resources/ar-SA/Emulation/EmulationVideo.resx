@@ -169,10 +169,6 @@
   <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>وقت الاستجابة الجديدة (م)</value></data>
   <data name="Emulation.Video.Parameter.EPaperGhosting"><value>الصورة المتبقية</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>الإسقاط</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionOpticalBlur"><value>ضبابية المعارضة</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionDiffusion"><value>انتشار الضوء</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionScreenTexture"><value>النسيج الحرفي</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionConvergence"><value>RGB التقارب</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>الإطار الأسود</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>محاكاة الإشارات</value></data>
   <data name="Emulation.Video.Settings.Stylistic"><value>الآثار الافتراضية</value></data>
@@ -237,11 +233,7 @@
   <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>الحبر والألوان</value></data>
   <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>سطح الورق</value></data>
   <data name="Emulation.Video.EPaper.Group.Refresh"><value>صورة متجددة وصورة متبقية</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionLightOutput"><value>الناتج الخفيف</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>ضوء عال</value></data>
-  <data name="Emulation.Video.Parameter.ProjectionVignette"><value>ظالمة</value></data>
-  <data name="Emulation.Video.Projection.Group.Optics"><value>الأفيون والضوء</value></data>
-  <data name="Emulation.Video.Projection.Group.Screen"><value>شاشة الإسقاط</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>التصيير باستخدام العتاد</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>وضع التصيير</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Help"><value>يستخدم التصيير العتادي واجهة الرسوميات (API) المحددة للتطبيق إذا كان المحاكي يدعمها.</value></data>
@@ -281,4 +273,11 @@
   <data name="Emulation.Video.Oled.Structure.RgbVertical"><value>كتابي RGB</value></data>
   <data name="Emulation.Video.Oled.Structure.BgrVertical"><value>كتابي BGR</value></data>
   <data name="Emulation.Video.Oled.Structure.TriangularRgb"><value>ثلاثية RGB</value></data>
+  <data name="Emulation.Video.Projection.Technology"><value>تكنولوجيا الإسقاط</value></data>
+  <data name="Emulation.Video.Projection.Surface"><value>سطح الإسقاط</value></data>
+  <data name="Emulation.Video.Projection.Technology.SingleChipDlp"><value>DLP رقاقة واحدة</value></data>
+  <data name="Emulation.Video.Projection.Technology.ThreeChipDlp"><value>DLP )٣رقائق(</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteScreen"><value>شاشة الإسقاط الأبيض</value></data>
+  <data name="Emulation.Video.Projection.Surface.GrayScreen"><value>شاشة الإسقاطات غراي</value></data>
+  <data name="Emulation.Video.Projection.Surface.WhiteWall"><value>الجدار الأبيض</value></data>
 </root>
