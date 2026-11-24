@@ -27,9 +27,7 @@ public static partial class EmulationVideoProcessingCatalog
             },
             [EmulationVideoPreset.Vector] = new()
             {
-                DisplayTechnology = EmulationVideoDisplayTechnology.Vector,
-                Sampling = EmulationVideoSampling.Bilinear,
-                Vector = new(50, 75, 45, 30)
+                DisplayTechnology = EmulationVideoDisplayTechnology.Vector
             }
         };
 

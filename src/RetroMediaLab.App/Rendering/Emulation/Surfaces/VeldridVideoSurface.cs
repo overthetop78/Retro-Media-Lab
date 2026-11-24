@@ -46,6 +46,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private uint _swapchainHeight;
     private bool _hasHistory;
     private byte[]? _deditheringWorkspace;
+    private float? _gpuPanelDecoder;
     private readonly FilterDisplayConnection _displayConnection = new();
     private TimeSpan _historyTimestamp;
     private long _historySequence;
@@ -54,6 +55,8 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private EmulationVideoProcessingSize _snapshotOutputSize;
     private EmulationVideoProcessingConfiguration _snapshotConfiguration = EmulationVideoProcessingConfigurationFunctions.Normalize(null);
     private readonly IEmulationVideoProcessingPipeline _videoProcessingPipeline;
+    private bool _presentedVector;
+    private readonly SoftwareEmulationVideoProcessingPipeline _vectorPipeline = new();
     private readonly SoftwareEmulationVideoProcessingPipeline _snapshotPipeline = new();
     private bool _disposed;
     private EmulationVideoProcessingConfiguration _videoProcessing = EmulationVideoProcessingConfigurationFunctions.Normalize(null);
@@ -149,6 +152,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             _historyTimestamp = TimeSpan.Zero;
             _historySequence = 0;
             _snapshotPipeline.ResetTemporalHistory();
+            _vectorPipeline.ResetTemporalHistory();
         }
     }
 
@@ -157,34 +161,51 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         if (_hwnd == IntPtr.Zero) return;
         var clientSize = NativeVideoWindowFunctions.GetClientSize(_hwnd);
         var outputSize = new EmulationVideoProcessingSize(Math.Max(1, clientSize.Width), Math.Max(1, clientSize.Height));
-        var processed = frame;
+        var configuration = _videoProcessing;
+        var vector = configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Vector;
+        if (_presentedVector && !(vector && frame.VectorSegments.HasValue)) _vectorPipeline.ResetTemporalHistory();
+        _presentedVector = vector && frame.VectorSegments.HasValue;
+        var nativeVector = vector && frame.VectorSegments.HasValue;
+        var rasterVector = vector && !nativeVector;
+        var processed = nativeVector
+            ? _vectorPipeline.Process(configuration, frame, new(frame.Width, frame.Height), outputSize)
+            : frame;
+        var gpuConfiguration = nativeVector
+            ? new EmulationVideoProcessingConfiguration { BlackFrameInsertion = configuration.BlackFrameInsertion }
+            : rasterVector ? configuration with { Sampling = EmulationVideoSampling.Bilinear, SignalSimulation = new() }
+            : configuration;
         byte[]? convertedPixels = null;
         ReadOnlySpan<byte> pixels;
-        if (frame.PixelFormat == EmulationPixelFormat.Xrgb8888
-            && frame.Pitch == checked(frame.Width * 4))
-            pixels = frame.Pixels.Span;
+        if (processed.PixelFormat == EmulationPixelFormat.Xrgb8888
+            && processed.Pitch == checked(processed.Width * 4))
+            pixels = processed.Pixels.Span;
         else
         {
-            convertedPixels = EmulationVideoPixelFunctions.ToBgra32(frame);
+            convertedPixels = EmulationVideoPixelFunctions.ToBgra32(processed);
             pixels = convertedPixels;
         }
-        var prepared = EmulationImageRestorationFunctions.ApplyDedithering(pixels, frame.Width, frame.Height,
-            _videoProcessing.Restoration.Dedithering, ref _deditheringWorkspace);
+        var prepared = EmulationImageRestorationFunctions.ApplyDedithering(pixels, processed.Width, processed.Height,
+            gpuConfiguration.Restoration.Dedithering, ref _deditheringWorkspace);
         if (prepared is not null) pixels = prepared.AsSpan(0, pixels.Length);
-        var connected = _displayConnection.Apply(pixels, frame, _videoProcessing);
-        if (connected is not null) pixels = connected.AsSpan(0, checked(frame.Width * frame.Height * 4));
+        var panelSignal = PanelSignalVideoShader.ForPresentation(gpuConfiguration, frame);
+        var panelDecoder = panelSignal?.Tuning.Y;
+        if (_gpuPanelDecoder != panelDecoder)
+        {
+            _hasHistory = false;
+            _gpuPanelDecoder = panelDecoder;
+        }
+        var connected = _displayConnection.Apply(pixels, processed, gpuConfiguration, panelSignal.HasValue);
+        if (connected is not null) pixels = connected.AsSpan(0, checked(processed.Width * processed.Height * 4));
         EnsureDevice();
-        EnsureFrameResources(processed.Width, processed.Height);
-        EnsurePipeline(_videoProcessing.Sampling, _videoProcessing.DisplayTechnology);
+        EnsureFrameResources(processed.Width, processed.Height, rasterVector);
+        EnsurePipeline(gpuConfiguration.Sampling, gpuConfiguration.DisplayTechnology);
         // Le worker possède le redimensionnement GPU ; le thread WPF ne doit jamais attendre sa porte.
         ResizeSwapchainToClient();
         _device!.UpdateTexture(_texture!, pixels, 0, 0, 0, (uint)processed.Width, (uint)processed.Height, 1, 0, 0);
-        var gpuConfiguration = _videoProcessing;
         var fixedPixel = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel;
         var plasma = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma;
-        var vector = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.Vector;
         var segmentDisplay = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.SegmentDisplay;
-        var temporalDisplay = fixedPixel || plasma || vector || segmentDisplay
+        var temporalDisplay = fixedPixel || plasma || segmentDisplay || rasterVector
             || gpuConfiguration.DisplayTechnology is EmulationVideoDisplayTechnology.Vfd
                 or EmulationVideoDisplayTechnology.DotMatrix or EmulationVideoDisplayTechnology.EPaper
             || gpuConfiguration.SignalSimulation.StandardIntensity > 0;
@@ -194,8 +215,8 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             gpuConfiguration, processed.Width, processed.Height,
             Math.Max(1, clientSize.Width), Math.Max(1, clientSize.Height),
             hasHistory, elapsedMilliseconds, frame.Sequence,
-            CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
-            plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels) : 0f));
+            panelSignal ?? CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
+            plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels) : 0f, panelSignal.HasValue));
         var swapchain = _device.MainSwapchain.Framebuffer;
         if (_backend != GraphicsBackend.Direct3D11 && gpuConfiguration.BlackFrameInsertion) EnsureRetainedFrame();
         else ReleaseRetainedFrame();
@@ -221,9 +242,9 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             _historyTimestamp = TimeSpan.Zero;
             _historySequence = 0;
         }
-        _snapshotSourceFrame = frame;
+        _snapshotSourceFrame = processed;
         _snapshotOutputSize = outputSize;
-        _snapshotConfiguration = _videoProcessing;
+        _snapshotConfiguration = gpuConfiguration;
         _snapshot = null;
     }
 
@@ -248,9 +269,10 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         }
     }
 
-    private void EnsureFrameResources(int width, int height)
+    private void EnsureFrameResources(int width, int height, bool srgb)
     {
-        if (_texture is not null && _width == width && _height == height) return;
+        var format = srgb ? Veldrid.PixelFormat.B8_G8_R8_A8_UNorm_SRgb : Veldrid.PixelFormat.B8_G8_R8_A8_UNorm;
+        if (_texture is not null && _width == width && _height == height && _texture.Format == format) return;
         var factory = _device!.ResourceFactory;
         Texture? texture = null;
         TextureView? textureView = null;
@@ -261,9 +283,9 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         DeviceBuffer? vertexBuffer = null;
         try
         {
-            texture = factory.CreateTexture(TextureDescription.Texture2D((uint)width, (uint)height, 1, 1, Veldrid.PixelFormat.B8_G8_R8_A8_UNorm, TextureUsage.Sampled));
+            texture = factory.CreateTexture(TextureDescription.Texture2D((uint)width, (uint)height, 1, 1, format, TextureUsage.Sampled));
             textureView = factory.CreateTextureView(texture);
-            historyTexture = factory.CreateTexture(TextureDescription.Texture2D((uint)width, (uint)height, 1, 1, Veldrid.PixelFormat.B8_G8_R8_A8_UNorm, TextureUsage.Sampled));
+            historyTexture = factory.CreateTexture(TextureDescription.Texture2D((uint)width, (uint)height, 1, 1, format, TextureUsage.Sampled));
             historyTextureView = factory.CreateTextureView(historyTexture);
             parameterBuffer = factory.CreateBuffer(new BufferDescription((uint)Marshal.SizeOf<VideoParameters>(), BufferUsage.UniformBuffer));
             set = factory.CreateResourceSet(new ResourceSetDescription(_layout!, parameterBuffer, textureView, historyTextureView, _device.PointSampler, _device.LinearSampler));
@@ -477,7 +499,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             _commands = null;
             _layout = null;
             _device = null;
-            EmulationVideoCleanupFunctions.RunAll(() => base.Dispose(), _videoProcessingPipeline.Dispose, _snapshotPipeline.Dispose);
+            EmulationVideoCleanupFunctions.RunAll(() => base.Dispose(), _videoProcessingPipeline.Dispose, _snapshotPipeline.Dispose, _vectorPipeline.Dispose);
         }
     }
 
@@ -493,6 +515,8 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         Vector4 CrtTuning,
         Vector4 CrtPhosphor,
         Vector4 CrtGeometry,
+        Vector4 VectorPhosphor,
+        Vector4 VectorBeam,
         Vector4 FixedDisplay,
         Vector4 FixedSpatial,
         Vector4 FixedTechnology,
@@ -500,9 +524,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         Vector4 PlasmaEffect,
         Vector4 PlasmaTemporal,
         Vector4 PlasmaDisplay,
-        Vector4 VectorEffect,
-        Vector4 VectorTemporal,
-        Vector4 VectorDisplay,
         Vector4 Restoration,
         Vector4 SegmentGeometry,
         Vector4 SegmentShape,
@@ -517,7 +538,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         Vector4 VfdDisplay,
         Vector4 VfdStructure,
         Vector4 VfdOptical,
-        Vector4 LedMatrixEmission,
         Vector4 LedMatrixStructure,
         Vector4 DotMatrixGeometry,
         Vector4 DotMatrixEmission,
@@ -531,20 +551,20 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private static VideoParameters Parameters(EmulationVideoProcessingConfiguration configuration,
         int sourceWidth, int sourceHeight, int outputWidth, int outputHeight,
         bool hasHistory, double elapsedMilliseconds, long sequence, CrtSignal crtSignal,
-        float averageLuminance)
+        float averageLuminance, bool decodePanelOnGpu)
     {
         var adjustments = configuration.Adjustments;
         var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, sourceWidth, sourceHeight, hasHistory, elapsedMilliseconds);
         var plasma = PlasmaVideoShaderParameters.From(configuration, hasHistory, sequence, averageLuminance);
-        var vector = VectorVideoShaderParameters.From(configuration, hasHistory);
         var vfd = VfdVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
-        var ledMatrix = LedMatrixVideoShaderParameters.From(configuration);
+        var ledMatrix = LedMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var projection = ProjectionVideoParameters.From(configuration.Projection);
+        var vector = VectorRasterVideoShader.Parameters(configuration, outputWidth, outputHeight, hasHistory, elapsedMilliseconds);
         return new VideoParameters(
-            new Vector4(configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
+            new Vector4(configuration.DisplayTechnology is EmulationVideoDisplayTechnology.Crt or EmulationVideoDisplayTechnology.Vector
                 ? VideoBrightnessParameterFunctions.CrtBeamGain(adjustments.Brightness)
                 : EmulationImageAdjustmentFunctions.BrightnessAmount(adjustments.Brightness),
                 EmulationImageAdjustmentFunctions.ContrastGain(adjustments.Contrast),
@@ -552,10 +572,10 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
                 EmulationImageAdjustmentFunctions.SaturationGain(adjustments.Saturation)),
             new Vector4(EmulationImageAdjustmentFunctions.SharpnessAmount(adjustments.Sharpness), (float)configuration.Sampling, sourceWidth, sourceHeight),
             new Vector4(outputWidth, outputHeight, (float)elapsedMilliseconds, crtSignal.BeamExponent),
-            crtSignal.Raster, crtSignal.Tuning, crtSignal.Phosphor, new Vector4(crtSignal.Curvature, 0f, 0f, 0f),
+            crtSignal.Raster, crtSignal.Tuning, crtSignal.Phosphor, new Vector4(crtSignal.Curvature, decodePanelOnGpu ? 1f : 0f, 0f, 0f),
+            vector.Phosphor, vector.Beam,
             fixedPixel.Display, fixedPixel.Spatial, fixedPixel.Technology,
             fixedPixel.Temporal, plasma.Effect, plasma.Temporal, plasma.Display,
-            vector.Effect, vector.Temporal, vector.Display,
             new Vector4(configuration.Restoration.DetailRecovery / 100f, 0f, 0f, 0f),
             segmentDisplay.Geometry, segmentDisplay.Shape, segmentDisplay.Emission,
             segmentDisplay.Optical, segmentDisplay.Temporal,
@@ -565,7 +585,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             new Vector4(configuration.Stylistic.Grain / 100f, configuration.Stylistic.Vhs / 100f, configuration.Stylistic.ChromaticAberration / 100f, configuration.Stylistic.Bloom / 100f),
             new Vector4(configuration.Stylistic.Sepia ? 1f : 0f, 0f, 0f, 0f),
             vfd.Display, vfd.Structure, vfd.Optical,
-            ledMatrix.Emission, ledMatrix.Structure,
+            ledMatrix,
             dotMatrix.Geometry, dotMatrix.Emission, dotMatrix.Temporal,
             ePaper.InkAndColor, ePaper.PaperSurface, ePaper.Temporal,
             projection.Optics, projection.Screen);

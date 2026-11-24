@@ -54,7 +54,8 @@ internal static class EmulationModuleSettingsNavigationScenarios
 
             EmulationVideoScreenType[] screens = [EmulationVideoScreenType.Crt, EmulationVideoScreenType.Lcd,
                 EmulationVideoScreenType.LedBacklitLcd, EmulationVideoScreenType.Oled,
-                EmulationVideoScreenType.Plasma, EmulationVideoScreenType.Projection];
+                EmulationVideoScreenType.Plasma, EmulationVideoScreenType.Projection, EmulationVideoScreenType.Vector,
+                EmulationVideoScreenType.LedMatrix];
             foreach (var screen in screens)
             {
                 section.SetConfiguration(EmulationVideoProcessingConfigurationFunctions.WithScreenType(new(), screen));
@@ -68,6 +69,11 @@ internal static class EmulationModuleSettingsNavigationScenarios
                 Assert.Equal(2, row.ColumnDefinitions.Count);
                 Assert.Equal(row.ColumnDefinitions[0].Width, row.ColumnDefinitions[1].Width);
                 Assert.Equal(1, Grid.GetColumn(Assert.IsType<Border>(row.Children[1])));
+                if (screen == EmulationVideoScreenType.LedMatrix)
+                {
+                    var choices = MachineConfigurationScenarios.Controls<ComboBox>(technology).ToArray();
+                    Assert.Equal(new[] { 7, 10, 3 }, choices.Select(choice => choice.Items.Count));
+                }
             }
         }
         finally

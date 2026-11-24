@@ -10,6 +10,8 @@ internal static class OpenGlVideoUniformNames
     internal const string CrtRaster = "CrtRaster";
     internal const string CrtTuning = "CrtTuning";
     internal const string CrtPhosphor = "CrtPhosphor";
+    internal const string VectorPhosphor = "VectorPhosphor";
+    internal const string VectorBeam = "VectorBeam";
     internal const string CrtGeometry = "CrtGeometry";
     internal const string FixedDisplay = "FixedDisplay";
     internal const string FixedSpatial = "FixedSpatial";
@@ -18,9 +20,6 @@ internal static class OpenGlVideoUniformNames
     internal const string PlasmaEffect = "PlasmaEffect";
     internal const string PlasmaTemporal = "PlasmaTemporal";
     internal const string PlasmaDisplay = "PlasmaDisplay";
-    internal const string VectorEffect = "VectorEffect";
-    internal const string VectorTemporal = "VectorTemporal";
-    internal const string VectorDisplay = "VectorDisplay";
     internal const string SegmentGeometry = "SegmentGeometry";
     internal const string SegmentShape = "SegmentShape";
     internal const string SegmentEmission = "SegmentEmission";
@@ -34,7 +33,6 @@ internal static class OpenGlVideoUniformNames
     internal const string VfdDisplay = "VfdDisplay";
     internal const string VfdStructure = "VfdStructure";
     internal const string VfdOptical = "VfdOptical";
-    internal const string LedMatrixEmission = "LedMatrixEmission";
     internal const string LedMatrixStructure = "LedMatrixStructure";
     internal const string DotMatrixGeometry = "DotMatrixGeometry";
     internal const string DotMatrixEmission = "DotMatrixEmission";

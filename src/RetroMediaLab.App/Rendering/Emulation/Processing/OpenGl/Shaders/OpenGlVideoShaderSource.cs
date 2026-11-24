@@ -23,6 +23,8 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 CrtTuning;
         uniform vec4 CrtPhosphor;
         uniform vec4 CrtGeometry;
+        uniform vec4 VectorPhosphor;
+        uniform vec4 VectorBeam;
         uniform vec4 FixedDisplay;
         uniform vec4 FixedSpatial;
         uniform vec4 FixedTechnology;
@@ -30,9 +32,6 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 PlasmaEffect;
         uniform vec4 PlasmaTemporal;
         uniform vec4 PlasmaDisplay;
-        uniform vec4 VectorEffect;
-        uniform vec4 VectorTemporal;
-        uniform vec4 VectorDisplay;
         uniform vec4 SegmentGeometry;
         uniform vec4 SegmentShape;
         uniform vec4 SegmentEmission;
@@ -46,7 +45,6 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 VfdDisplay;
         uniform vec4 VfdStructure;
         uniform vec4 VfdOptical;
-        uniform vec4 LedMatrixEmission;
         uniform vec4 LedMatrixStructure;
         uniform vec4 DotMatrixGeometry;
         uniform vec4 DotMatrixEmission;
@@ -58,9 +56,15 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 ProjectionScreen;
         varying vec2 TextureCoordinate;
 
-        """ + VideoBrightnessParameterFunctions.Shader + VideoContrastParameterFunctions.Shader + VideoGammaParameterFunctions.Shader + VideoSaturationParameterFunctions.Shader + VideoSharpnessParameterFunctions.Shader + FilterBicubic.OpenGlShader + FilterNormal.OpenGlShader + FilterBilinear.OpenGlShader + FilterSharpBilinear.OpenGlShader + FilterJinc2.OpenGlShader + FilterLanczos.OpenGlShader + FilterXbr.OpenGlShader + FilterHqx.OpenGlShader + FilterXbrz.OpenGlShader + FilterHq2x.OpenGlShader + FilterHq3x.OpenGlShader + FilterHq4x.OpenGlShader + FilterTwoXSai.OpenGlShader + FilterSuperTwoXSai.OpenGlShader + FilterSuperEagle.OpenGlShader + FilterEpxScale2x.OpenGlShader + FilterScaleFx.OpenGlShader + FilterScaleNx.OpenGlShader + FilterSabr.OpenGlShader + """
+        """ + VideoBrightnessParameterFunctions.Shader + VideoContrastParameterFunctions.Shader + VideoGammaParameterFunctions.Shader + VideoSaturationParameterFunctions.Shader + VideoSharpnessParameterFunctions.Shader + FilterBicubic.OpenGlShader + FilterNormal.OpenGlShader + FilterBilinear.OpenGlShader + FilterSharpBilinear.OpenGlShader + FilterJinc2.OpenGlShader + FilterLanczos.OpenGlShader + FilterXbr.OpenGlShader + FilterHqx.OpenGlShader + FilterXbrz.OpenGlShader + FilterHq2x.OpenGlShader + FilterHq3x.OpenGlShader + FilterHq4x.OpenGlShader + FilterTwoXSai.OpenGlShader + FilterSuperTwoXSai.OpenGlShader + FilterSuperEagle.OpenGlShader + FilterEpxScale2x.OpenGlShader + FilterScaleFx.OpenGlShader + FilterScaleNx.OpenGlShader + FilterSabr.OpenGlShader + "\n" + """
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 10
+        vec3 panelDecodedColor(vec2 uv, bool history);
+        #endif
         vec4 sampleConfigured(vec2 uv)
         {
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 10
+            if (CrtGeometry.y > .5) return vec4(panelDecodedColor(uv, false), 1.0);
+        #endif
             int sampling = int(Processing.y + 0.5);
             if (sampling == 0) return pointSample(uv);
             if (sampling == 1) return linearSample(uv);
@@ -107,7 +111,7 @@ internal static class OpenGlVideoShaderSource
         vec3 adjustLinear(vec3 linear)
         {
             linear = videoContrastParameter(linear, Adjustments.y);
-        #if DISPLAY_TECHNOLOGY != 1
+        #if DISPLAY_TECHNOLOGY != 1 && DISPLAY_TECHNOLOGY != 4
             linear = videoBrightnessParameter(linear, Adjustments.x);
         #endif
             linear = videoGammaParameter(linear, Adjustments.z);
@@ -125,14 +129,8 @@ internal static class OpenGlVideoShaderSource
         #if DISPLAY_TECHNOLOGY == 3
         """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
         #endif
-        #if DISPLAY_TECHNOLOGY == 4
-        """ + "\n" + FilterVectorLineDetection.Shader + FilterVectorLineIntensity.Shader + FilterVectorBeamWidth.Shader + FilterVectorBeamFocus.Shader + FilterVectorHalo.Shader + FilterVectorHaloRadius.Shader + FilterVectorPhosphorColor.Shader + FilterVectorPersistence.Shader + "\n" + """
-        #endif
         #if DISPLAY_TECHNOLOGY == 5
         """ + "\n" + FilterVfdEmissionThreshold.Shader + FilterVfdPhosphorIntensity.Shader + FilterVfdPhosphorColor.Shader + FilterVfdGlass.Shader + FilterVfdCellStructure.Shader + FilterVfdHaloRadius.Shader + FilterVfdHalo.Shader + FilterVfdPersistence.Shader + "\n" + """
-        #endif
-        #if DISPLAY_TECHNOLOGY == 6
-        """ + "\n" + FilterLedMatrixCellStructure.Shader + FilterLedMatrixColor.Shader + FilterLedMatrixBrightness.Shader + FilterLedMatrixHalo.Shader + FilterLedMatrixBlackDepth.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
         """ + "\n" + FilterDotMatrixCellSize.Shader + FilterDotMatrixCellGap.Shader + FilterDotMatrixShape.Shader + FilterDotMatrixDotSize.Shader + FilterDotMatrixContrast.Shader + FilterDotMatrixBrightness.Shader + FilterDotMatrixPalette.Shader + FilterDotMatrixHalo.Shader + FilterDotMatrixResponse.Shader + FilterDotMatrixPersistence.Shader + "\n" + """
@@ -175,6 +173,7 @@ internal static class OpenGlVideoShaderSource
                 historyUv=(floor(lcdPanelSampleUv(uv,FixedSpatial.yz,Output.xy)*Processing.zw)+.5)/Processing.zw;
             vec3 previous=texture2D(History,
                 clamp(historyUv,.5/Processing.zw,1.0-.5/Processing.zw)).rgb;
+            if (CrtGeometry.y > .5) previous = panelDecodedColor(historyUv, true);
             previous=fixedPixel(adjustColor(previous),uv);
             float response=FixedTemporal.x;
             if(FixedDisplay.y<1.5)
@@ -211,67 +210,10 @@ internal static class OpenGlVideoShaderSource
             return clamp(color,0.0,1.0);
         }
         #endif
-        #if DISPLAY_TECHNOLOGY == 4
-        float vectorLuminance(vec2 uv)
-        {
-            return dot(adjustColor(sampleConfigured(uv).rgb), vec3(0.2126, 0.7152, 0.0722));
-        }
-
-        float vectorEmission(vec2 uv)
-        {
-            vec2 stepSize = 1.0 / max(Processing.zw, vec2(1.0));
-            float topLeft = vectorLuminance(uv + vec2(-1.0, -1.0) * stepSize);
-            float top = vectorLuminance(uv + vec2(0.0, -1.0) * stepSize);
-            float topRight = vectorLuminance(uv + vec2(1.0, -1.0) * stepSize);
-            float left = vectorLuminance(uv + vec2(-1.0, 0.0) * stepSize);
-            float right = vectorLuminance(uv + vec2(1.0, 0.0) * stepSize);
-            float bottomLeft = vectorLuminance(uv + vec2(-1.0, 1.0) * stepSize);
-            float bottom = vectorLuminance(uv + vec2(0.0, 1.0) * stepSize);
-            float bottomRight = vectorLuminance(uv + vec2(1.0, 1.0) * stepSize);
-            float gradientX = -topLeft - 2.0 * left - bottomLeft
-                + topRight + 2.0 * right + bottomRight;
-            float gradientY = -topLeft - 2.0 * top - topRight
-                + bottomLeft + 2.0 * bottom + bottomRight;
-            return filterVectorLineDetection(gradientX,gradientY,VectorEffect.y);
-        }
-
-        vec3 vectorPixel(vec2 uv)
-        {
-            vec3 color = adjustColor(sampleConfigured(uv).rgb);
-            vec2 sourceStep=1.0/max(Processing.zw,vec2(1.0));
-            float center=vectorEmission(uv);
-            float nearEmission=max(max(vectorEmission(uv+vec2(sourceStep.x,0.0)),
-                vectorEmission(uv-vec2(sourceStep.x,0.0))),max(
-                vectorEmission(uv+vec2(0.0,sourceStep.y)),
-                vectorEmission(uv-vec2(0.0,sourceStep.y))));
-            float farEmission=max(max(vectorEmission(uv+vec2(sourceStep.x*2.0,0.0)),
-                vectorEmission(uv-vec2(sourceStep.x*2.0,0.0))),max(
-                vectorEmission(uv+vec2(0.0,sourceStep.y*2.0)),
-                vectorEmission(uv-vec2(0.0,sourceStep.y*2.0))));
-            float emission=filterVectorBeamWidth(center,nearEmission,farEmission,VectorDisplay.x);
-            emission=filterVectorBeamFocus(emission,(center+nearEmission*4.0)/5.0,VectorDisplay.y);
-            color=filterVectorLineIntensity(color,emission,VectorEffect.z);
-            if (VectorEffect.w > 0.0 && VectorEffect.z > 0.0)
-            {
-                float radius=filterVectorHaloRadius(VectorDisplay.w);
-                vec2 stepSize=sourceStep*radius;
-                float average=0.0;
-                for (int y = -1; y <= 1; y++)
-                    for (int x = -1; x <= 1; x++)
-                        average += vectorEmission(uv + vec2(float(x), float(y)) * stepSize);
-                color=filterVectorHalo(color,average/9.0,VectorEffect.z,VectorEffect.w);
-            }
-            color=filterVectorPhosphorColor(color,VectorDisplay.z);
-            if (VectorTemporal.y > 0.5)
-            {
-                vec3 previous = texture2D(History,
-                    clamp(uv, 0.5 / Processing.zw, 1.0 - 0.5 / Processing.zw)).rgb;
-                color=filterVectorPersistence(color,adjustColor(previous),VectorTemporal.x);
-            }
-            return clamp(color, 0.0, 1.0);
-        }
-        #endif
         """ + "\n" + CrtSignal.Shader + "\n" + CrtPhosphorMask.Shader + "\n" + """
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 10
+        """ + "\n" + PanelSignalVideoShader.Create(false) + "\n" + """
+        #endif
 
         vec3 crtPixel(vec2 originalUv)
         {
@@ -295,9 +237,6 @@ internal static class OpenGlVideoShaderSource
         #endif
         #if DISPLAY_TECHNOLOGY == 3
                 if (PlasmaEffect.x > 0.5) return plasmaPixel(color,originalUv,sampleUv);
-        #endif
-        #if DISPLAY_TECHNOLOGY == 4
-                if (VectorEffect.x > 0.5) return vectorPixel(originalUv);
         #endif
                 return color;
             }
@@ -363,31 +302,7 @@ internal static class OpenGlVideoShaderSource
         }
         #endif
         #if DISPLAY_TECHNOLOGY == 6
-        vec3 ledMatrixPixel(vec2 uv)
-        {
-            vec2 sourceSize=max(Processing.zw,vec2(1.0));
-            float pitch=filterLedMatrixPitch(LedMatrixStructure.x);
-            vec2 sourcePosition=uv*sourceSize;
-            vec2 cell=floor(sourcePosition/pitch);
-            vec2 centerUv=(cell+.5)*pitch/sourceSize;
-            vec2 sampleOffset=vec2(pitch*.28)/sourceSize;
-            vec3 emission=(adjustColor(sampleConfigured(centerUv).rgb)*4.0
-                +adjustColor(sampleConfigured(centerUv-vec2(sampleOffset.x,0.0)).rgb)
-                +adjustColor(sampleConfigured(centerUv+vec2(sampleOffset.x,0.0)).rgb)
-                +adjustColor(sampleConfigured(centerUv-vec2(0.0,sampleOffset.y)).rgb)
-                +adjustColor(sampleConfigured(centerUv+vec2(0.0,sampleOffset.y)).rgb))/8.0;
-            emission=filterLedMatrixColor(emission,LedMatrixEmission.x);
-            emission=filterLedMatrixBrightness(emission,LedMatrixEmission.y);
-            vec2 localPosition=fract(sourcePosition/pitch)-.5;
-            float distance=filterLedMatrixDistance(localPosition,LedMatrixEmission.w);
-            float edgeWidth=max(sourceSize.x/max(Output.x,1.0),
-                sourceSize.y/max(Output.y,1.0))/pitch;
-            float core=filterLedMatrixCore(distance,LedMatrixStructure.y,edgeWidth);
-            float halo=filterLedMatrixHalo(distance,LedMatrixStructure.y,
-                LedMatrixStructure.w,LedMatrixStructure.z)*(1.0-core);
-            return clamp(filterLedMatrixBlackDepth(LedMatrixEmission.z)
-                +emission*(core+halo),0.0,1.0);
-        }
+        """ + "\n" + FilterLedMatrixCellStructure.CreateShader(false) + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
         vec3 dotMatrixSample(vec2 uv,bool history)
@@ -490,9 +405,21 @@ internal static class OpenGlVideoShaderSource
             return min(vec3(1.0), color * (Adjustments.x * crtBeam(uv.y, Output.y, CrtRaster, Output.w, CrtPhosphor.w)));
         }
         #endif
+        #if DISPLAY_TECHNOLOGY == 4
+        """ + "\n" + VectorRasterVideoShader.Create(false) + "\n" + """
+        #endif
         void main()
         {
             vec2 uv = TextureCoordinate;
+        #if DISPLAY_TECHNOLOGY == 4
+            uv = crtScreenUv(uv, VectorBeam.z);
+            vec3 color = crtOnScreen(uv) ? postColor(vectorPixel(uv), uv) : vec3(0.0);
+        #ifdef OUTPUT_ENCODES_SRGB
+            gl_FragColor = vec4(color, 1.0);
+        #else
+            gl_FragColor = vec4(linearToSrgb(color.r), linearToSrgb(color.g), linearToSrgb(color.b), 1.0);
+        #endif
+        #else
         #if DISPLAY_TECHNOLOGY == 1
             if (CrtGeometry.x > 0.0)
             {
@@ -527,6 +454,7 @@ internal static class OpenGlVideoShaderSource
                 CrtPhosphor, Output.w, Adjustments.x, Output.xy, TextureCoordinate, CrtGeometry.x);
         #endif
             gl_FragColor=vec4(linearToSrgb(center.r),linearToSrgb(center.g),linearToSrgb(center.b),1.0);
+        #endif
         }
         """;
     internal static string Fragment(EmulationVideoSampling sampling, EmulationVideoDisplayTechnology displayTechnology) => FragmentTemplate.Replace("#version 120", $"#version 120\n#define DISPLAY_TECHNOLOGY {(int)displayTechnology}");

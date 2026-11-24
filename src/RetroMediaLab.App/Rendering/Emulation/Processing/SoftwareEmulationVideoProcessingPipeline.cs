@@ -14,10 +14,9 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
     private int _historyWidth;
     private int _historyHeight;
     private TimeSpan _historyTimestamp;
-    private float[]? _vectorHistory;
-    private int _vectorHistoryWidth;
-    private int _vectorHistoryHeight;
-    private long _vectorHistorySequence;
+    private readonly FilterVectorDisplay _vectorDisplay = new();
+    private float[] _vectorRaster = [];
+    private float[] _vectorOutput = [];
     private float[]? _dotMatrixHistory;
     private int _dotMatrixHistoryWidth;
     private int _dotMatrixHistoryHeight;
@@ -41,6 +40,10 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
     {
         var normalized = EmulationVideoProcessingConfigurationFunctions.ForRendering(configuration);
         Validate(frame, sourceSize, outputSize);
+        if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Vector)
+            return ProcessVector(normalized, frame, outputSize);
+
+        if (_vectorOutput.Length != 0) ResetVectorProcessing();
         var sameSize = sourceSize == outputSize;
         if (sameSize && normalized.Adjustments == new EmulationImageAdjustments()
             && (normalized.Restoration with { Deinterlacing = EmulationDeinterlacingMode.Off }) == new EmulationImageRestorationConfiguration()
@@ -63,6 +66,14 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         var signalStandard = ResolveSignalStandard(frame, normalized.SignalSimulation.Standard);
         ApplySignalConnection(linear, frame.Width, frame.Height, frame.Sequence, normalized.SignalSimulation, signalStandard);
         ApplySignalStandard(linear, frame.Width, frame.Height, normalized.SignalSimulation, signalStandard);
+        if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.LedMatrix)
+        {
+            ApplyColorAdjustments(linear, normalized);
+            var matrixOutput = FilterLedMatrixCellStructure.Render(linear, frame.Width, frame.Height,
+                outputSize.Width, outputSize.Height, normalized.LedMatrix);
+            ApplyStylistic(matrixOutput, outputSize, frame.Sequence, normalized.Stylistic);
+            return OutputFrame(frame, outputSize, matrixOutput);
+        }
         if (EmulationVideoProcessingConfigurationFunctions.UsesPanelSignal(normalized))
         {
             var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
@@ -74,11 +85,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         if (reference is not null)
             EmulationImageRestorationFunctions.ApplyDetailRecovery(reference, frame.Width, frame.Height,
                 linear, outputSize.Width, outputSize.Height, normalized.Restoration.DetailRecovery);
-        VideoContrastParameterFunctions.Apply(linear, normalized.Adjustments.Contrast);
-        if (normalized.DisplayTechnology != EmulationVideoDisplayTechnology.Crt)
-            VideoBrightnessParameterFunctions.Apply(linear, normalized.Adjustments.Brightness);
-        VideoGammaParameterFunctions.Apply(linear, normalized.Adjustments.Gamma);
-        VideoSaturationParameterFunctions.Apply(linear, normalized.Adjustments.Saturation);
+        ApplyColorAdjustments(linear, normalized);
         VideoSharpnessParameterFunctions.Apply(linear, outputSize.Width, outputSize.Height, normalized.Adjustments.Sharpness);
         var crt = normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
             ? CrtSignal.From(normalized.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(normalized)) : default;
@@ -92,17 +99,12 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         if (connected is not null && EmulationVideoProcessingConfigurationFunctions.ScreenType(normalized) == EmulationVideoScreenType.LedBacklitLcd)
             FilterLedBacklitLcdDisplay.Apply(linear, outputSize.Width, outputSize.Height, connected,
                 frame.Width, frame.Height, normalized.Led);
-        FilterVhs.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, normalized.Stylistic.Vhs);
-        FilterChromaticAberration.Apply(linear, outputSize.Width, outputSize.Height, normalized.Stylistic.ChromaticAberration);
-        FilterBloom.Apply(linear, outputSize.Width, outputSize.Height, normalized.Stylistic.Bloom);
-        FilterSepia.Apply(linear, normalized.Stylistic.Sepia);
-        FilterGrain.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, normalized.Stylistic.Grain);
+        ApplyStylistic(linear, outputSize, frame.Sequence, normalized.Stylistic);
         ApplyFixedPixelTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma)
             _plasmaPersistence.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, PlasmaVideoShaderParameters.Persistence);
         else
             _plasmaPersistence.Reset();
-        ApplyVectorTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Sequence);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Vfd)
             _vfdPersistence.Apply(linear, outputSize.Width, outputSize.Height, frame.Timestamp, normalized.Vfd.PersistenceMilliseconds);
         else
@@ -113,15 +115,74 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Crt)
             CrtPhosphorMask.Apply(linear, outputSize.Width, outputSize.Height, crt,
                 VideoBrightnessParameterFunctions.CrtBeamGain(normalized.Adjustments.Brightness));
-        var output = ToSrgb(linear, outputSize.Width, outputSize.Height);
-        return frame with
+        return OutputFrame(frame, outputSize, linear);
+    }
+
+    private static void ApplyColorAdjustments(float[] linear, EmulationVideoProcessingConfiguration normalized)
+    {
+        VideoContrastParameterFunctions.Apply(linear, normalized.Adjustments.Contrast);
+        if (normalized.DisplayTechnology != EmulationVideoDisplayTechnology.Crt)
+            VideoBrightnessParameterFunctions.Apply(linear, normalized.Adjustments.Brightness);
+        VideoGammaParameterFunctions.Apply(linear, normalized.Adjustments.Gamma);
+        VideoSaturationParameterFunctions.Apply(linear, normalized.Adjustments.Saturation);
+    }
+
+    private static VideoFrame OutputFrame(VideoFrame frame, EmulationVideoProcessingSize size, float[] output) =>
+        frame with
         {
-            Pixels = output,
-            Width = outputSize.Width,
-            Height = outputSize.Height,
-            Pitch = checked(outputSize.Width * EmulationVideoPixelConstants.BytesPerBgraPixel),
+            Pixels = ToSrgb(output, size.Width, size.Height),
+            Width = size.Width,
+            Height = size.Height,
+            Pitch = checked(size.Width * EmulationVideoPixelConstants.BytesPerBgraPixel),
             PixelFormat = EmulationPixelFormat.Xrgb8888
         };
+
+    private VideoFrame ProcessVector(EmulationVideoProcessingConfiguration configuration, VideoFrame frame, EmulationVideoProcessingSize size)
+    {
+        var length = checked(size.Width * size.Height * 3);
+        float[]? raster = null;
+        if (!frame.VectorSegments.HasValue)
+        {
+            var pixels = EmulationVideoPixelFunctions.ToBgra32(frame);
+            if (_vectorRaster.Length != length) _vectorRaster = new float[length];
+            raster = Resample(ToLinear(pixels, frame.Width, frame.Height), frame.Width, frame.Height,
+                size.Width, size.Height, EmulationVideoSampling.Bilinear, _vectorRaster);
+        }
+
+        if (_vectorOutput.Length != length) _vectorOutput = new float[length];
+        _vectorDisplay.Render(_vectorOutput, raster, frame, size.Width, size.Height, configuration.Vector,
+            configuration.Adjustments.Brightness);
+        VideoContrastParameterFunctions.Apply(_vectorOutput, configuration.Adjustments.Contrast);
+        VideoGammaParameterFunctions.Apply(_vectorOutput, configuration.Adjustments.Gamma);
+        VideoSaturationParameterFunctions.Apply(_vectorOutput, configuration.Adjustments.Saturation);
+        VideoSharpnessParameterFunctions.Apply(_vectorOutput, size.Width, size.Height, configuration.Adjustments.Sharpness);
+        ApplyStylistic(_vectorOutput, size, frame.Sequence, configuration.Stylistic);
+        return frame with
+        {
+            Pixels = ToSrgb(_vectorOutput, size.Width, size.Height),
+            Width = size.Width,
+            Height = size.Height,
+            Pitch = checked(size.Width * EmulationVideoPixelConstants.BytesPerBgraPixel),
+            PixelFormat = EmulationPixelFormat.Xrgb8888,
+            VectorSegments = null
+        };
+    }
+
+    private void ResetVectorProcessing()
+    {
+        _vectorDisplay.Reset();
+        _vectorOutput = [];
+        _vectorRaster = [];
+    }
+
+    private static void ApplyStylistic(float[] linear, EmulationVideoProcessingSize outputSize,
+        long sequence, EmulationStylisticVideoConfiguration stylistic)
+    {
+        FilterVhs.Apply(linear, outputSize.Width, outputSize.Height, sequence, stylistic.Vhs);
+        FilterChromaticAberration.Apply(linear, outputSize.Width, outputSize.Height, stylistic.ChromaticAberration);
+        FilterBloom.Apply(linear, outputSize.Width, outputSize.Height, stylistic.Bloom);
+        FilterSepia.Apply(linear, stylistic.Sepia);
+        FilterGrain.Apply(linear, outputSize.Width, outputSize.Height, sequence, stylistic.Grain);
     }
 
     private static void ApplySignalConnection(float[] colors, int width, int height, long sequence, EmulationSignalSimulationConfiguration signal, EmulationSignalStandard standard)

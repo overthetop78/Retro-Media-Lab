@@ -27,6 +27,8 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     private EmulationVideoProcessingSize _snapshotOutputSize;
     private EmulationVideoProcessingConfiguration _snapshotConfiguration = EmulationVideoProcessingConfigurationFunctions.Normalize(null);
     private readonly IEmulationVideoProcessingPipeline _videoProcessingPipeline;
+    private bool _rasterVector;
+    private readonly SoftwareEmulationVideoProcessingPipeline _vectorPipeline = new();
     private readonly SoftwareEmulationVideoProcessingPipeline _snapshotPipeline = new();
     private bool _disposed;
     private OpenGlVideoProcessingProgram? _program;
@@ -40,6 +42,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     private ActiveTextureDelegate? _activeTexture;
     private bool _hasHistory;
     private byte[]? _deditheringWorkspace;
+    private float? _gpuPanelDecoder;
     private readonly FilterDisplayConnection _displayConnection = new();
     private int _historyWidth;
     private int _historyHeight;
@@ -245,29 +248,51 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
         if (_context == IntPtr.Zero || _hwnd == IntPtr.Zero) return;
         var clientSize = NativeVideoWindowFunctions.GetClientSize(_hwnd);
         var outputSize = new EmulationVideoProcessingSize(Math.Max(1, clientSize.Width), Math.Max(1, clientSize.Height));
-        var processed = frame;
+        var configuration = _videoProcessing;
+        var vector = configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Vector;
+        var nativeVector = vector && frame.VectorSegments.HasValue;
+        var rasterVector = vector && !nativeVector;
+        var processed = nativeVector
+            ? _vectorPipeline.Process(configuration, frame, new(frame.Width, frame.Height), outputSize)
+            : frame;
+        var gpuConfiguration = nativeVector
+            ? new EmulationVideoProcessingConfiguration { BlackFrameInsertion = configuration.BlackFrameInsertion }
+            : rasterVector ? configuration with { Sampling = EmulationVideoSampling.Bilinear, SignalSimulation = new() }
+            : configuration;
+        if (_rasterVector != rasterVector)
+        {
+            _hasHistory = false;
+            _rasterVector = rasterVector;
+        }
         byte[] pixels;
         var pixelOffset = 0;
-        if (frame.PixelFormat == EmulationPixelFormat.Xrgb8888
-            && frame.Pitch == checked(frame.Width * 4)
-            && MemoryMarshal.TryGetArray(frame.Pixels, out var sourceSegment)
+        if (processed.PixelFormat == EmulationPixelFormat.Xrgb8888
+            && processed.Pitch == checked(processed.Width * 4)
+            && MemoryMarshal.TryGetArray(processed.Pixels, out var sourceSegment)
             && sourceSegment.Array is not null)
         {
             pixels = sourceSegment.Array;
             pixelOffset = sourceSegment.Offset;
         }
-        else pixels = EmulationVideoPixelFunctions.ToBgra32(frame);
+        else pixels = EmulationVideoPixelFunctions.ToBgra32(processed);
         var prepared = EmulationImageRestorationFunctions.ApplyDedithering(
-            pixels.AsSpan(pixelOffset, checked(frame.Width * frame.Height * 4)), frame.Width, frame.Height,
-            _videoProcessing.Restoration.Dedithering, ref _deditheringWorkspace);
+            pixels.AsSpan(pixelOffset, checked(processed.Width * processed.Height * 4)), processed.Width, processed.Height,
+            gpuConfiguration.Restoration.Dedithering, ref _deditheringWorkspace);
         if (prepared is not null)
         {
             pixels = prepared;
             pixelOffset = 0;
         }
+        var panelSignal = PanelSignalVideoShader.ForPresentation(gpuConfiguration, frame);
+        var panelDecoder = panelSignal?.Tuning.Y;
+        if (_gpuPanelDecoder != panelDecoder)
+        {
+            _hasHistory = false;
+            _gpuPanelDecoder = panelDecoder;
+        }
         var connected = _displayConnection.Apply(
-            pixels.AsSpan(pixelOffset, checked(frame.Width * frame.Height * 4)), frame,
-            _videoProcessing);
+            pixels.AsSpan(pixelOffset, checked(processed.Width * processed.Height * 4)), processed,
+            gpuConfiguration, panelSignal.HasValue);
         if (connected is not null)
         {
             pixels = connected;
@@ -277,7 +302,6 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             throw new InvalidOperationException("OpenGL could not activate its rendering context.");
         try
         {
-            var gpuConfiguration = _videoProcessing;
             EnsureProgram(gpuConfiguration);
             var fixedPixel = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel;
             var temporalDisplay = gpuConfiguration.DisplayTechnology != EmulationVideoDisplayTechnology.Normal
@@ -306,7 +330,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
             try
             {
-                GlTexImage2D(OpenGlVideoConstants.Texture2D, 0, (int)OpenGlVideoConstants.Rgba, processed.Width, processed.Height, 0, OpenGlVideoConstants.Bgra, OpenGlVideoConstants.UnsignedByte, IntPtr.Add(handle.AddrOfPinnedObject(), pixelOffset));
+                GlTexImage2D(OpenGlVideoConstants.Texture2D, 0, (int)(rasterVector ? OpenGlVideoConstants.Srgb8Alpha8 : OpenGlVideoConstants.Rgba), processed.Width, processed.Height, 0, OpenGlVideoConstants.Bgra, OpenGlVideoConstants.UnsignedByte, IntPtr.Add(handle.AddrOfPinnedObject(), pixelOffset));
             }
             finally { handle.Free(); }
             GlViewport(0, 0, clientSize.Width, clientSize.Height);
@@ -314,8 +338,9 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             _program!.Use(gpuConfiguration, processed.Width, processed.Height,
                 Math.Max(1, clientSize.Width), Math.Max(1, clientSize.Height),
                 hasHistory, elapsedMilliseconds, frame.Sequence,
-                CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
-                gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels.AsSpan(pixelOffset, processed.Width * processed.Height * 4)) : 0f);
+                panelSignal ?? CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
+                gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels.AsSpan(pixelOffset, processed.Width * processed.Height * 4)) : 0f,
+                panelSignal.HasValue);
             GlEnable(OpenGlVideoConstants.Texture2D);
             GlBegin(OpenGlVideoConstants.Quads);
             GlTexCoord2f(0, 1); GlVertex2f(-1, -1);
@@ -336,10 +361,10 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
                 _historyTimestamp = frame.Timestamp;
                 _historySequence = frame.Sequence;
             }
-            else ResetHistory();
-            _snapshotSourceFrame = frame;
+            else if (!nativeVector) ResetHistory();
+            _snapshotSourceFrame = processed;
             _snapshotOutputSize = outputSize;
-            _snapshotConfiguration = _videoProcessing;
+            _snapshotConfiguration = gpuConfiguration;
             _snapshot = null;
         }
         finally { WglMakeCurrent(IntPtr.Zero, IntPtr.Zero); }
@@ -354,7 +379,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
         {
             _snapshot = null;
             _snapshotSourceFrame = null;
-            EmulationVideoCleanupFunctions.RunAll(_videoProcessingPipeline.Dispose, _snapshotPipeline.Dispose);
+            EmulationVideoCleanupFunctions.RunAll(_videoProcessingPipeline.Dispose, _snapshotPipeline.Dispose, _vectorPipeline.Dispose);
         }
     }
 
@@ -367,6 +392,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
         _historyTimestamp = TimeSpan.Zero;
         _historySequence = 0;
         _snapshotPipeline.ResetTemporalHistory();
+        _vectorPipeline.ResetTemporalHistory();
     }
 
     private void EnsureProgram(EmulationVideoProcessingConfiguration configuration)

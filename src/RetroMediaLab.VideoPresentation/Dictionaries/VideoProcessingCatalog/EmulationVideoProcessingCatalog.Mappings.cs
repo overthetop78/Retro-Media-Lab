@@ -114,7 +114,7 @@ public static partial class EmulationVideoProcessingCatalog
         = ResourceKeys("Vfd.Structure", Enum.GetValues<EmulationVfdStructure>());
 
     public static IReadOnlyDictionary<EmulationLedMatrixColor, string> LedMatrixColorResourceKeys { get; }
-        = ResourceKeys("LedMatrix.Color", Enum.GetValues<EmulationLedMatrixColor>());
+        = ResourceKeys("LedMatrix.Color", Enum.GetValues<EmulationLedMatrixColor>().OrderBy(value => value == EmulationLedMatrixColor.Rgb));
 
     public static IReadOnlyDictionary<EmulationLedMatrixShape, string> LedMatrixShapeResourceKeys { get; }
         = ResourceKeys("LedMatrix.Shape", Enum.GetValues<EmulationLedMatrixShape>());
@@ -141,6 +141,7 @@ public static partial class EmulationVideoProcessingCatalog
         ParameterIds.ToDictionary(id => id, id => id switch
         {
             Gamma => "Emulation.Video.Gamma",
+            LedMatrixDefinition => LcdDefinition,
             CrtPhosphorColor => $"Emulation.Video.Parameter.{VectorPhosphorColor}",
             CrtBeamWidth => $"Emulation.Video.Parameter.{VectorBeamWidth}",
             _ => $"Emulation.Video.Parameter.{id}"
@@ -176,19 +177,14 @@ public static partial class EmulationVideoProcessingCatalog
             [FixedPixelGridIntensity] = 0, [FixedPixelPixelGap] = 0, [FixedPixelResponseTime] = 0,
             [FixedPixelPersistence] = 0, [FixedPixelBacklight] = null, [FixedPixelBacklightBleed] = 25, [FixedPixelOledEmission] = 100, [FixedPixelBlackDepth] = null,
             [PlasmaCellStructure] = EmulationPlasmaCellStructure.Stripe,
-            [VectorLineThreshold] = 0, [VectorLineIntensity] = 0,
-            [VectorBeamWidth] = 0, [VectorBeamFocus] = 100,
-            [VectorPhosphorColor] = EmulationCrtColorMode.Color,
-            [VectorHaloIntensity] = 0, [VectorHaloRadius] = 0, [VectorPersistence] = 0,
+            [VectorBeamWidth] = 0, [VectorPhosphorColor] = EmulationCrtColorMode.Color,
             [VfdColor] = EmulationVfdColor.Blue, [VfdPhosphorIntensity] = 70,
             [VfdEmissionThreshold] = 28, [VfdGlassDarkening] = 75,
             [VfdStructure] = EmulationVfdStructure.Graphic,
             [VfdCellSize] = 70, [VfdCellGap] = 20,
             [VfdHaloIntensity] = 25, [VfdHaloRadius] = 25, [VfdPersistence] = 20,
-            [LedMatrixColor] = EmulationLedMatrixColor.Rgb, [LedMatrixCellSize] = 35,
-            [LedMatrixCellGap] = 30, [LedMatrixDiffusion] = 20, [LedMatrixBrightness] = 75,
+            [LedMatrixColor] = EmulationLedMatrixColor.Rgb, [LedMatrixDefinition] = EmulationLedMatrixDefinition.Native,
             [LedMatrixShape] = EmulationLedMatrixShape.Round,
-            [LedMatrixHaloRadius] = 25, [LedMatrixBlackDepth] = 100,
             [DotMatrixPalette] = EmulationDotMatrixPalette.Green,
             [DotMatrixShape] = EmulationDotMatrixShape.Round, [DotMatrixCellSize] = 25,
             [DotMatrixDotSize] = 55, [DotMatrixCellGap] = 20,
@@ -256,9 +252,9 @@ public static partial class EmulationVideoProcessingCatalog
         Add(CrtColorStandards, CrtMonitorPalette, EmulationVideoDisplayTechnology.Crt);
         Add(FixedPixelTechnology, FixedPixelBlackDepth, EmulationVideoDisplayTechnology.FixedPixel);
         Add(PlasmaCellStructure, PlasmaCellStructure, EmulationVideoDisplayTechnology.Plasma);
-        Add(VectorLineThreshold, VectorPersistence, EmulationVideoDisplayTechnology.Vector);
+        Add(VectorBeamWidth, VectorPhosphorColor, EmulationVideoDisplayTechnology.Vector);
         Add(VfdColor, VfdPersistence, EmulationVideoDisplayTechnology.Vfd);
-        Add(LedMatrixColor, LedMatrixBlackDepth, EmulationVideoDisplayTechnology.LedMatrix);
+        Add(LedMatrixColor, LedMatrixShape, EmulationVideoDisplayTechnology.LedMatrix);
         Add(DotMatrixPalette, DotMatrixPersistence, EmulationVideoDisplayTechnology.DotMatrix);
         Add(SegmentDisplayLayout, SegmentDisplayPersistence, EmulationVideoDisplayTechnology.SegmentDisplay);
         Add(EPaperColorMode, EPaperEdgeSoftness, EmulationVideoDisplayTechnology.EPaper);

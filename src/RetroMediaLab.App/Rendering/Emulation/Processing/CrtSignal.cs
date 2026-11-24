@@ -54,18 +54,22 @@ internal readonly record struct CrtSignal(Vector4 Raster, Vector4 Tuning, Vector
             activeLines / (float)totalLines, phase),
             new((float)ratio, decoder, lineSlip, activeLines * screenAspect), CrtPhosphorMask.Parameters(crt),
             MathF.Pow(2f, crt.BeamWidth / 10f),
-            .16f * Math.Clamp(crt.Curvature, 0, EmulationVideoProcessingLimits.CrtCurvatureMaximum)
-                / EmulationVideoProcessingLimits.CrtCurvatureMaximum);
+            CurvatureAmount(crt.Curvature));
     }
 
     internal static CrtSignal ForLcd(EmulationPanelSignalConfiguration lcd, VideoFrame frame) =>
         From(new EmulationCrtVideoConfiguration(ColorStandards: lcd.ColorStandards, FieldRate: lcd.FieldRate), frame);
 
-    internal Vector2 ScreenUv(Vector2 uv)
+    internal static float CurvatureAmount(int setting) =>
+        .16f * Math.Clamp(setting, 0, EmulationVideoProcessingLimits.CrtCurvatureMaximum)
+        / EmulationVideoProcessingLimits.CrtCurvatureMaximum;
+
+    internal Vector2 ScreenUv(Vector2 uv) => ScreenUv(uv, Curvature);
+
+    internal static Vector2 ScreenUv(Vector2 uv, float curvature)
     {
-        if (Curvature == 0f) return uv;
         var offset = uv - new Vector2(.5f);
-        return uv + offset * (4f * Curvature * offset.LengthSquared());
+        return uv + offset * (4f * curvature * offset.LengthSquared());
     }
 
     internal Vector2 ScreenFootprint(Vector2 uv, Vector2 pixelSize)

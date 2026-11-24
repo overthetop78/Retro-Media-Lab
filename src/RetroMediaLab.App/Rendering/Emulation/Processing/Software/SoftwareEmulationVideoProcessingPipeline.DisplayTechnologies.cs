@@ -27,20 +27,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             FilterPlasmaCellStructure.Apply(colors, panelWidth, panelHeight, outputWidth, outputHeight, plasma.CellStructure);
             return;
         }
-        if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Vector)
-        {
-            var vector = configuration.Vector;
-            if (vector.LineIntensity > 0)
-            {
-                var emission = FilterVectorLineDetection.Detect(colors, outputWidth, outputHeight, vector.LineThreshold);
-                emission = FilterVectorBeamWidth.Apply(emission, outputWidth, outputHeight, vector.BeamWidth);
-                emission = FilterVectorBeamFocus.Apply(emission, outputWidth, outputHeight, vector.BeamFocus);
-                FilterVectorLineIntensity.Apply(colors, emission, vector.LineIntensity);
-                FilterVectorHalo.Apply(colors, emission, outputWidth, outputHeight, vector.LineIntensity, vector.HaloIntensity, vector.HaloRadius);
-                FilterVectorPhosphorColor.Apply(colors, vector.PhosphorColor);
-            }
-            return;
-        }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Vfd)
         {
             var vfd = configuration.Vfd;
@@ -50,15 +36,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             var halo = FilterVfdHalo.Create(emission, outputWidth, outputHeight, sourceWidth, sourceHeight, vfd.HaloRadius, vfd.HaloIntensity);
             FilterVfdGlass.Apply(colors, vfd.GlassDarkening);
             FilterVfdPhosphorColor.Apply(colors, emission, halo, vfd.Color);
-            return;
-        }
-        if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.LedMatrix)
-        {
-            var ledMatrix = configuration.LedMatrix;
-            var cells = FilterLedMatrixCellStructure.Create(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, ledMatrix.CellSize, ledMatrix.CellGap, ledMatrix.Shape, ledMatrix.HaloRadius);
-            FilterLedMatrixColor.Apply(cells.Emission, ledMatrix.Color);
-            FilterLedMatrixBrightness.Apply(cells.Emission, ledMatrix.Brightness);
-            FilterLedMatrixBlackDepth.Compose(colors, cells, ledMatrix.Diffusion, ledMatrix.BlackDepth);
             return;
         }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.DotMatrix)

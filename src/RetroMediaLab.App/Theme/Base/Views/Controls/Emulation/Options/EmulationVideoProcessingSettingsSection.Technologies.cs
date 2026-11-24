@@ -91,11 +91,8 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
 
 
-    private FrameworkElement CreateVectorPanel() => EmulationVectorSettingsBlock.Create(_configuration.Vector, update => SetVector(update(_configuration.Vector)));
 
     private FrameworkElement CreateVfdPanel() => EmulationVfdSettingsBlock.Create(_configuration.Vfd, update => SetVfd(update(_configuration.Vfd)), RebuildContent);
-
-    private FrameworkElement CreateLedMatrixPanel() => EmulationLedMatrixSettingsBlock.Create(_configuration.LedMatrix, update => SetLedMatrix(update(_configuration.LedMatrix)));
 
     private FrameworkElement CreateDotMatrixPanel() => EmulationDotMatrixSettingsBlock.Create(_configuration.DotMatrix, update => SetDotMatrix(update(_configuration.DotMatrix)));
 

@@ -31,7 +31,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
 
 
-    private void SetVector(EmulationVectorVideoConfiguration value) => Update(configuration => configuration with { Vector = value });
 
     private void SetVfd(EmulationVfdVideoConfiguration value) => Update(configuration => configuration with { Vfd = value });
 

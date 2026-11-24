@@ -35,6 +35,7 @@ internal static class OpenGlVideoConstants
     internal const uint Nearest = 0x2600;
     internal const uint Linear = 0x2601;
     internal const uint Clamp = 0x2900;
+    internal const uint Srgb8Alpha8 = 0x8C43;
     internal const uint Rgba = 0x1908;
     internal const uint Quads = 0x0007;
 }

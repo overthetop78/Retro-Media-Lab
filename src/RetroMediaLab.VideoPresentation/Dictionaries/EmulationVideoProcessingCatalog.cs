@@ -53,14 +53,8 @@ public static partial class EmulationVideoProcessingCatalog
     public const string FixedPixelOledEmission = nameof(FixedPixelOledEmission);
     public const string FixedPixelBlackDepth = nameof(FixedPixelBlackDepth);
     public const string PlasmaCellStructure = nameof(PlasmaCellStructure);
-    public const string VectorLineThreshold = nameof(VectorLineThreshold);
-    public const string VectorLineIntensity = nameof(VectorLineIntensity);
     public const string VectorBeamWidth = nameof(VectorBeamWidth);
-    public const string VectorBeamFocus = nameof(VectorBeamFocus);
     public const string VectorPhosphorColor = nameof(VectorPhosphorColor);
-    public const string VectorHaloIntensity = nameof(VectorHaloIntensity);
-    public const string VectorHaloRadius = nameof(VectorHaloRadius);
-    public const string VectorPersistence = nameof(VectorPersistence);
     public const string VfdColor = nameof(VfdColor);
     public const string VfdPhosphorIntensity = nameof(VfdPhosphorIntensity);
     public const string VfdEmissionThreshold = nameof(VfdEmissionThreshold);
@@ -72,13 +66,8 @@ public static partial class EmulationVideoProcessingCatalog
     public const string VfdHaloRadius = nameof(VfdHaloRadius);
     public const string VfdPersistence = nameof(VfdPersistence);
     public const string LedMatrixColor = nameof(LedMatrixColor);
-    public const string LedMatrixCellSize = nameof(LedMatrixCellSize);
-    public const string LedMatrixCellGap = nameof(LedMatrixCellGap);
-    public const string LedMatrixDiffusion = nameof(LedMatrixDiffusion);
-    public const string LedMatrixBrightness = nameof(LedMatrixBrightness);
+    public const string LedMatrixDefinition = nameof(LedMatrixDefinition);
     public const string LedMatrixShape = nameof(LedMatrixShape);
-    public const string LedMatrixHaloRadius = nameof(LedMatrixHaloRadius);
-    public const string LedMatrixBlackDepth = nameof(LedMatrixBlackDepth);
     public const string DotMatrixPalette = nameof(DotMatrixPalette);
     public const string DotMatrixShape = nameof(DotMatrixShape);
     public const string DotMatrixDotSize = nameof(DotMatrixDotSize);
@@ -141,13 +130,11 @@ public static partial class EmulationVideoProcessingCatalog
         FixedPixelGridIntensity, FixedPixelPixelGap, FixedPixelResponseTime,
         FixedPixelPersistence, FixedPixelBacklight, FixedPixelBacklightBleed, FixedPixelOledEmission, FixedPixelBlackDepth,
         PlasmaCellStructure,
-        VectorLineThreshold, VectorLineIntensity, VectorBeamWidth, VectorBeamFocus,
-        VectorPhosphorColor, VectorHaloIntensity, VectorHaloRadius, VectorPersistence,
+        VectorBeamWidth, VectorPhosphorColor,
         VfdColor, VfdPhosphorIntensity, VfdEmissionThreshold, VfdGlassDarkening,
         VfdStructure, VfdCellSize, VfdCellGap, VfdHaloIntensity, VfdHaloRadius,
         VfdPersistence,
-        LedMatrixColor, LedMatrixCellSize, LedMatrixCellGap, LedMatrixDiffusion,
-        LedMatrixBrightness, LedMatrixShape, LedMatrixHaloRadius, LedMatrixBlackDepth,
+        LedMatrixColor, LedMatrixDefinition, LedMatrixShape,
         DotMatrixPalette, DotMatrixShape, DotMatrixCellSize, DotMatrixDotSize,
         DotMatrixCellGap, DotMatrixContrast, DotMatrixBrightness, DotMatrixHaloIntensity,
         DotMatrixResponseTime, DotMatrixPersistence, SegmentDisplayLayout, SegmentDisplayColor,

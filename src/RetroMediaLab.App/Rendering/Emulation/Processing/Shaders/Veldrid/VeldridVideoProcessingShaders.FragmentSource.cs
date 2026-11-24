@@ -7,15 +7,15 @@ internal static partial class VeldridVideoProcessingShaders
         {
             vec4 Adjustments; vec4 Processing; vec4 Output;
             vec4 CrtRaster; vec4 CrtTuning; vec4 CrtPhosphor; vec4 CrtGeometry;
+            vec4 VectorPhosphor; vec4 VectorBeam;
             vec4 FixedDisplay; vec4 FixedSpatial; vec4 FixedTechnology; vec4 FixedTemporal;
             vec4 PlasmaEffect; vec4 PlasmaTemporal; vec4 PlasmaDisplay;
-            vec4 VectorEffect; vec4 VectorTemporal; vec4 VectorDisplay;
             vec4 Restoration; vec4 SegmentGeometry; vec4 SegmentShape;
             vec4 SegmentEmission; vec4 SegmentOptical; vec4 SegmentTemporal;
             vec4 General; vec4 Restoration2;
             vec4 Signal; vec4 Stylistic; vec4 Stylistic2;
             vec4 VfdDisplay; vec4 VfdStructure; vec4 VfdOptical;
-            vec4 LedMatrixEmission; vec4 LedMatrixStructure;
+            vec4 LedMatrixStructure;
             vec4 DotMatrixGeometry; vec4 DotMatrixEmission; vec4 DotMatrixTemporal;
             vec4 EPaperInkAndColor; vec4 EPaperSurface; vec4 EPaperTemporal;
             vec4 Projection; vec4 ProjectionScreen;
@@ -53,7 +53,7 @@ internal static partial class VeldridVideoProcessingShaders
         vec3 adjustLinear(vec3 linear)
         {
             linear=videoContrastParameter(linear,Parameters.Adjustments.y);
-        #if DISPLAY_TECHNOLOGY != 1
+        #if DISPLAY_TECHNOLOGY != 1 && DISPLAY_TECHNOLOGY != 4
             linear=videoBrightnessParameter(linear,Parameters.Adjustments.x);
         #endif
             linear=videoGammaParameter(linear,Parameters.Adjustments.z);
@@ -61,10 +61,20 @@ internal static partial class VeldridVideoProcessingShaders
         }
         vec3 adjust(vec3 color) { return adjustLinear(restorationLinear(color)); }
         float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233))+Parameters.General.z)*43758.5453);}
-        vec3 raw(vec2 uv){return adjust(sourceColor(uv));}
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 10
+        vec3 panelDecodedColor(vec2 uv, bool history);
+        #endif
+        vec3 displaySourceColor(vec2 uv)
+        {
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 10
+            if (Parameters.CrtGeometry.y > .5) return panelDecodedColor(uv, false);
+        #endif
+            return sourceColor(uv);
+        }
+        vec3 raw(vec2 uv){return adjust(displaySourceColor(uv));}
         vec3 restored(vec2 uv)
         {
-            vec3 source = restorationLinear(sourceColor(uv));
+            vec3 source = restorationLinear(displaySourceColor(uv));
         #if DISPLAY_TECHNOLOGY == 0
             float recover = Parameters.Processing.y > .5 && any(notEqual(Parameters.Output.xy, Parameters.Processing.zw))
                 ? Parameters.Restoration.x : 0.0;
@@ -98,14 +108,8 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 3
         """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
         #endif
-        #if DISPLAY_TECHNOLOGY == 4
-        """ + "\n" + FilterVectorLineDetection.Shader + FilterVectorLineIntensity.Shader + FilterVectorBeamWidth.Shader + FilterVectorBeamFocus.Shader + FilterVectorHalo.Shader + FilterVectorHaloRadius.Shader + FilterVectorPhosphorColor.Shader + FilterVectorPersistence.Shader + "\n" + """
-        #endif
         #if DISPLAY_TECHNOLOGY == 5
         """ + "\n" + FilterVfdEmissionThreshold.Shader + FilterVfdPhosphorIntensity.Shader + FilterVfdPhosphorColor.Shader + FilterVfdGlass.Shader + FilterVfdCellStructure.Shader + FilterVfdHaloRadius.Shader + FilterVfdHalo.Shader + FilterVfdPersistence.Shader + "\n" + """
-        #endif
-        #if DISPLAY_TECHNOLOGY == 6
-        """ + "\n" + FilterLedMatrixCellStructure.Shader + FilterLedMatrixColor.Shader + FilterLedMatrixBrightness.Shader + FilterLedMatrixHalo.Shader + FilterLedMatrixBlackDepth.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
         """ + "\n" + FilterDotMatrixCellSize.Shader + FilterDotMatrixCellGap.Shader + FilterDotMatrixShape.Shader + FilterDotMatrixDotSize.Shader + FilterDotMatrixContrast.Shader + FilterDotMatrixBrightness.Shader + FilterDotMatrixPalette.Shader + FilterDotMatrixHalo.Shader + FilterDotMatrixResponse.Shader + FilterDotMatrixPersistence.Shader + "\n" + """
@@ -126,56 +130,6 @@ internal static partial class VeldridVideoProcessingShaders
             vec2 cell=floor(lcdPanelSampleUv(uv,panel,outputSize)*panel);
             color=filterPlasmaTemporalDithering(color,cell,Parameters.PlasmaEffect.w,Parameters.PlasmaTemporal.z);
             return filterPlasmaCellStructure(filterPlasmaBlackDepth(color),uv,panel,outputSize,int(Parameters.PlasmaEffect.y+.5));
-        }
-        #endif
-        #if DISPLAY_TECHNOLOGY == 4
-        float vectorLuminance(vec2 uv)
-        {
-            return dot(adjust(raw(uv)),vec3(.2126,.7152,.0722));
-        }
-        float vectorEmission(vec2 uv)
-        {
-            vec2 s=1.0/max(Parameters.Processing.zw,vec2(1.0));
-            float tl=vectorLuminance(uv+vec2(-s.x,-s.y));
-            float t=vectorLuminance(uv+vec2(0.0,-s.y));
-            float tr=vectorLuminance(uv+vec2(s.x,-s.y));
-            float l=vectorLuminance(uv+vec2(-s.x,0.0));
-            float r=vectorLuminance(uv+vec2(s.x,0.0));
-            float bl=vectorLuminance(uv+vec2(-s.x,s.y));
-            float b=vectorLuminance(uv+vec2(0.0,s.y));
-            float br=vectorLuminance(uv+vec2(s.x,s.y));
-            return filterVectorLineDetection(-tl-2.0*l-bl+tr+2.0*r+br,
-                -tl-2.0*t-tr+bl+2.0*b+br,Parameters.VectorEffect.y);
-        }
-        vec3 vectorPixel(vec3 color,vec2 uv)
-        {
-            vec2 sourceStep=1.0/max(Parameters.Processing.zw,vec2(1.0));
-            float center=vectorEmission(uv);
-            float nearEmission=max(max(vectorEmission(uv+vec2(sourceStep.x,0.0)),
-                vectorEmission(uv-vec2(sourceStep.x,0.0))),max(
-                vectorEmission(uv+vec2(0.0,sourceStep.y)),
-                vectorEmission(uv-vec2(0.0,sourceStep.y))));
-            float farEmission=max(max(vectorEmission(uv+vec2(sourceStep.x*2.0,0.0)),
-                vectorEmission(uv-vec2(sourceStep.x*2.0,0.0))),max(
-                vectorEmission(uv+vec2(0.0,sourceStep.y*2.0)),
-                vectorEmission(uv-vec2(0.0,sourceStep.y*2.0))));
-            float emission=filterVectorBeamWidth(center,nearEmission,farEmission,
-                Parameters.VectorDisplay.x);
-            emission=filterVectorBeamFocus(emission,(center+nearEmission*4.0)/5.0,
-                Parameters.VectorDisplay.y);
-            color=filterVectorLineIntensity(color,emission,Parameters.VectorEffect.z);
-            if(Parameters.VectorEffect.w>0.0&&Parameters.VectorEffect.z>0.0)
-            {
-                float radius=filterVectorHaloRadius(Parameters.VectorDisplay.w);
-                vec2 s=sourceStep*radius;
-                float average=0.0;
-                for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++)
-                    average+=vectorEmission(uv+vec2(float(x),float(y))*s);
-                color=filterVectorHalo(color,average/9.0,Parameters.VectorEffect.z,
-                    Parameters.VectorEffect.w);
-            }
-            color=filterVectorPhosphorColor(color,Parameters.VectorDisplay.z);
-            return clamp(color,0.0,1.0);
         }
         #endif
         #if DISPLAY_TECHNOLOGY == 5
@@ -212,30 +166,7 @@ internal static partial class VeldridVideoProcessingShaders
         }
         #endif
         #if DISPLAY_TECHNOLOGY == 6
-        vec3 ledMatrixPixel(vec2 uv)
-        {
-            vec2 sourceSize=max(Parameters.Processing.zw,vec2(1.0));
-            float pitch=filterLedMatrixPitch(Parameters.LedMatrixStructure.x);
-            vec2 sourcePosition=uv*sourceSize;
-            vec2 cell=floor(sourcePosition/pitch);
-            vec2 centerUv=(cell+.5)*pitch/sourceSize;
-            vec2 sampleOffset=vec2(pitch*.28)/sourceSize;
-            vec3 emission=(raw(centerUv)*4.0+raw(centerUv-vec2(sampleOffset.x,0.0))
-                +raw(centerUv+vec2(sampleOffset.x,0.0))
-                +raw(centerUv-vec2(0.0,sampleOffset.y))
-                +raw(centerUv+vec2(0.0,sampleOffset.y)))/8.0;
-            emission=filterLedMatrixColor(emission,Parameters.LedMatrixEmission.x);
-            emission=filterLedMatrixBrightness(emission,Parameters.LedMatrixEmission.y);
-            vec2 localPosition=fract(sourcePosition/pitch)-.5;
-            float distance=filterLedMatrixDistance(localPosition,Parameters.LedMatrixEmission.w);
-            float edgeWidth=max(sourceSize.x/max(Parameters.Output.x,1.0),
-                sourceSize.y/max(Parameters.Output.y,1.0))/pitch;
-            float core=filterLedMatrixCore(distance,Parameters.LedMatrixStructure.y,edgeWidth);
-            float halo=filterLedMatrixHalo(distance,Parameters.LedMatrixStructure.y,
-                Parameters.LedMatrixStructure.w,Parameters.LedMatrixStructure.z)*(1.0-core);
-            return clamp(filterLedMatrixBlackDepth(Parameters.LedMatrixEmission.z)
-                +emission*(core+halo),0.0,1.0);
-        }
+        """ + "\n" + FilterLedMatrixCellStructure.CreateShader(true) + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
         vec3 dotMatrixSample(vec2 uv,bool history)
@@ -281,6 +212,9 @@ internal static partial class VeldridVideoProcessingShaders
         """ + "\n" + ProjectionVideoShader.Create(true) + "\n" + """
         #endif
         """ + "\n" + CrtSignal.Shader + "\n" + CrtPhosphorMask.Shader + "\n" + """
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 10
+        """ + "\n" + PanelSignalVideoShader.Create(true) + "\n" + """
+        #endif
 
         vec3 displayEffect(vec3 c,vec2 uv){int t=int(Parameters.General.x+.5);vec2 p=floor(uv*Parameters.Output.xy),l=fract(uv*Parameters.Processing.zw);
         #if DISPLAY_TECHNOLOGY == 1
@@ -321,9 +255,6 @@ internal static partial class VeldridVideoProcessingShaders
         #endif
         #if DISPLAY_TECHNOLOGY == 3
             if(t==3)c=plasmaPixel(c,uv);
-        #endif
-        #if DISPLAY_TECHNOLOGY == 4
-            if(t==4)c=vectorPixel(c,uv);
         #endif
         #if DISPLAY_TECHNOLOGY == 5
             if(t==5)c=vfdPixel(c,uv);
@@ -384,9 +315,21 @@ internal static partial class VeldridVideoProcessingShaders
             return min(vec3(1.0), color * (Parameters.Adjustments.x * crtBeam(uv.y, Parameters.Output.y, Parameters.CrtRaster, Parameters.Output.w, Parameters.CrtPhosphor.w)));
         }
         #endif
+        #if DISPLAY_TECHNOLOGY == 4
+        """ + "\n" + VectorRasterVideoShader.Create(true) + "\n" + """
+        #endif
         void main()
         {
             vec2 uv = fsin_TexCoord;
+        #if DISPLAY_TECHNOLOGY == 4
+            uv = crtScreenUv(uv, Parameters.VectorBeam.z);
+            vec3 color = crtOnScreen(uv) ? postEffect(vectorPixel(uv), uv) : vec3(0.0);
+        #ifdef OUTPUT_ENCODES_SRGB
+            fsout_Color = vec4(color, 1.0);
+        #else
+            fsout_Color = vec4(linearToSrgb(color.r), linearToSrgb(color.g), linearToSrgb(color.b), 1.0);
+        #endif
+        #else
         #if DISPLAY_TECHNOLOGY == 1
             if (Parameters.CrtGeometry.x > 0.0)
             {
@@ -419,6 +362,10 @@ internal static partial class VeldridVideoProcessingShaders
         #else
                 historyColor=texture(sampler2D(History,LinearSampler),historyUv).rgb;
         #endif
+        #if DISPLAY_TECHNOLOGY == 2
+            if (Parameters.CrtGeometry.y > .5 && Parameters.FixedTemporal.z > .5)
+                historyColor = panelDecodedColor(historyUv, true);
+        #endif
             vec3 previous=displayEffect(adjust(historyColor),uv);
             previous=clamp(postEffect(previous,uv),0.0,1.0);
         #if DISPLAY_TECHNOLOGY == 7
@@ -434,10 +381,6 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 3
             if(Parameters.PlasmaTemporal.y>.5)
                 c=filterPlasmaPersistence(c,previous,Parameters.PlasmaTemporal.x);
-        #endif
-        #if DISPLAY_TECHNOLOGY == 4
-            if(Parameters.VectorTemporal.y>.5)
-                c=filterVectorPersistence(c,previous,Parameters.VectorTemporal.x);
         #endif
         #if DISPLAY_TECHNOLOGY == 5
             if(Parameters.VfdOptical.w>.5)
@@ -467,6 +410,7 @@ internal static partial class VeldridVideoProcessingShaders
             fsout_Color=vec4(c,1.0);
         #else
             fsout_Color=vec4(linearToSrgb(c.r),linearToSrgb(c.g),linearToSrgb(c.b),1.0);
+        #endif
         #endif
         }
         """;

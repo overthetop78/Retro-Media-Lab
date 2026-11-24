@@ -13,6 +13,8 @@ internal sealed class OpenGlVideoProgramUniforms
     private readonly int _crtTuning;
     private readonly int _crtPhosphor;
     private readonly int _crtGeometry;
+    private readonly int _vectorPhosphor;
+    private readonly int _vectorBeam;
     private readonly int _fixedDisplay;
     private readonly int _fixedSpatial;
     private readonly int _fixedTechnology;
@@ -20,9 +22,6 @@ internal sealed class OpenGlVideoProgramUniforms
     private readonly int _plasmaEffect;
     private readonly int _plasmaTemporal;
     private readonly int _plasmaDisplay;
-    private readonly int _vectorEffect;
-    private readonly int _vectorTemporal;
-    private readonly int _vectorDisplay;
     private readonly int _segmentGeometry;
     private readonly int _segmentShape;
     private readonly int _segmentEmission;
@@ -36,7 +35,6 @@ internal sealed class OpenGlVideoProgramUniforms
     private readonly int _vfdDisplay;
     private readonly int _vfdStructure;
     private readonly int _vfdOptical;
-    private readonly int _ledMatrixEmission;
     private readonly int _ledMatrixStructure;
     private readonly int _dotMatrixGeometry;
     private readonly int _dotMatrixEmission;
@@ -57,6 +55,8 @@ internal sealed class OpenGlVideoProgramUniforms
         _crtTuning = Location(OpenGlVideoUniformNames.CrtTuning);
         _crtPhosphor = Location(OpenGlVideoUniformNames.CrtPhosphor);
         _crtGeometry = Location(OpenGlVideoUniformNames.CrtGeometry);
+        _vectorPhosphor = Location(OpenGlVideoUniformNames.VectorPhosphor);
+        _vectorBeam = Location(OpenGlVideoUniformNames.VectorBeam);
         _fixedDisplay = Location(OpenGlVideoUniformNames.FixedDisplay);
         _fixedSpatial = Location(OpenGlVideoUniformNames.FixedSpatial);
         _fixedTechnology = Location(OpenGlVideoUniformNames.FixedTechnology);
@@ -64,9 +64,6 @@ internal sealed class OpenGlVideoProgramUniforms
         _plasmaEffect = Location(OpenGlVideoUniformNames.PlasmaEffect);
         _plasmaTemporal = Location(OpenGlVideoUniformNames.PlasmaTemporal);
         _plasmaDisplay = Location(OpenGlVideoUniformNames.PlasmaDisplay);
-        _vectorEffect = Location(OpenGlVideoUniformNames.VectorEffect);
-        _vectorTemporal = Location(OpenGlVideoUniformNames.VectorTemporal);
-        _vectorDisplay = Location(OpenGlVideoUniformNames.VectorDisplay);
         _segmentGeometry = Location(OpenGlVideoUniformNames.SegmentGeometry);
         _segmentShape = Location(OpenGlVideoUniformNames.SegmentShape);
         _segmentEmission = Location(OpenGlVideoUniformNames.SegmentEmission);
@@ -80,7 +77,6 @@ internal sealed class OpenGlVideoProgramUniforms
         _vfdDisplay = Location(OpenGlVideoUniformNames.VfdDisplay);
         _vfdStructure = Location(OpenGlVideoUniformNames.VfdStructure);
         _vfdOptical = Location(OpenGlVideoUniformNames.VfdOptical);
-        _ledMatrixEmission = Location(OpenGlVideoUniformNames.LedMatrixEmission);
         _ledMatrixStructure = Location(OpenGlVideoUniformNames.LedMatrixStructure);
         _dotMatrixGeometry = Location(OpenGlVideoUniformNames.DotMatrixGeometry);
         _dotMatrixEmission = Location(OpenGlVideoUniformNames.DotMatrixEmission);
@@ -94,11 +90,11 @@ internal sealed class OpenGlVideoProgramUniforms
         int Location(string name) => api.GetUniformLocation(program, name);
     }
 
-    internal void Apply(EmulationVideoProcessingConfiguration configuration, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, bool hasHistory, double elapsedMilliseconds, long sequence, CrtSignal crtSignal, float averageLuminance)
+    internal void Apply(EmulationVideoProcessingConfiguration configuration, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, bool hasHistory, double elapsedMilliseconds, long sequence, CrtSignal crtSignal, float averageLuminance, bool decodePanelOnGpu)
     {
         var adjustments = configuration.Adjustments;
         _api.SetUniform(_adjustments,
-            configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Crt
+            configuration.DisplayTechnology is EmulationVideoDisplayTechnology.Crt or EmulationVideoDisplayTechnology.Vector
                 ? VideoBrightnessParameterFunctions.CrtBeamGain(adjustments.Brightness)
                 : EmulationImageAdjustmentFunctions.BrightnessAmount(adjustments.Brightness),
             EmulationImageAdjustmentFunctions.ContrastGain(adjustments.Contrast),
@@ -110,7 +106,11 @@ internal sealed class OpenGlVideoProgramUniforms
         Set(_crtRaster, crtSignal.Raster);
         Set(_crtTuning, crtSignal.Tuning);
         Set(_crtPhosphor, crtSignal.Phosphor);
-        _api.SetUniform(_crtGeometry, crtSignal.Curvature, 0f, 0f, 0f);
+        _api.SetUniform(_crtGeometry, crtSignal.Curvature, decodePanelOnGpu ? 1f : 0f, 0f, 0f);
+
+        var vector = VectorRasterVideoShader.Parameters(configuration, outputWidth, outputHeight, hasHistory, elapsedMilliseconds);
+        Set(_vectorPhosphor, vector.Phosphor);
+        Set(_vectorBeam, vector.Beam);
 
         var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, sourceWidth, sourceHeight, hasHistory, elapsedMilliseconds);
         Set(_fixedDisplay, fixedPixel.Display);
@@ -123,10 +123,6 @@ internal sealed class OpenGlVideoProgramUniforms
         Set(_plasmaTemporal, plasma.Temporal);
         Set(_plasmaDisplay, plasma.Display);
 
-        var vector = VectorVideoShaderParameters.From(configuration, hasHistory);
-        Set(_vectorEffect, vector.Effect);
-        Set(_vectorTemporal, vector.Temporal);
-        Set(_vectorDisplay, vector.Display);
 
         var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         Set(_segmentGeometry, segmentDisplay.Geometry);
@@ -161,9 +157,8 @@ internal sealed class OpenGlVideoProgramUniforms
         Set(_vfdStructure, vfd.Structure);
         Set(_vfdOptical, vfd.Optical);
 
-        var ledMatrix = LedMatrixVideoShaderParameters.From(configuration);
-        Set(_ledMatrixEmission, ledMatrix.Emission);
-        Set(_ledMatrixStructure, ledMatrix.Structure);
+        var ledMatrix = LedMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
+        Set(_ledMatrixStructure, ledMatrix);
 
         var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         Set(_dotMatrixGeometry, dotMatrix.Geometry);

@@ -15,7 +15,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         _signalSequence = 0;
         ResetHistory();
         _plasmaPersistence.Reset();
-        ResetVectorHistory();
+        ResetVectorProcessing();
         _vfdPersistence.Reset();
         ResetDotMatrixHistory();
         ResetSegmentDisplayHistory();
@@ -73,30 +73,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         _historyWidth = 0;
         _historyHeight = 0;
         _historyTimestamp = TimeSpan.Zero;
-    }
-
-    private void ApplyVectorTemporal(EmulationVideoProcessingConfiguration configuration, float[] colors, int width, int height, long sequence)
-    {
-        if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.Vector)
-        {
-            ResetVectorHistory();
-            return;
-        }
-        var compatibleHistory = _vectorHistory is not null && _vectorHistoryWidth == width && _vectorHistoryHeight == height && sequence >= _vectorHistorySequence;
-        if (compatibleHistory)
-            FilterVectorPersistence.Apply(colors, _vectorHistory!, configuration.Vector.PersistenceIntensity);
-        _vectorHistory = colors.ToArray();
-        _vectorHistoryWidth = width;
-        _vectorHistoryHeight = height;
-        _vectorHistorySequence = sequence;
-    }
-
-    private void ResetVectorHistory()
-    {
-        _vectorHistory = null;
-        _vectorHistoryWidth = 0;
-        _vectorHistoryHeight = 0;
-        _vectorHistorySequence = 0;
     }
 
     private void ApplyDotMatrixTemporal(EmulationVideoProcessingConfiguration configuration, float[] colors, int width, int height, TimeSpan timestamp)

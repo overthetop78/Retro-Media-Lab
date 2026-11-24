@@ -8,10 +8,10 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulationVideoProcessingPipeline
 {
-    private static float[] Resample(float[] source, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, EmulationVideoSampling sampling)
+    private static float[] Resample(float[] source, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, EmulationVideoSampling sampling, float[]? destination = null)
     {
         if (sourceWidth == outputWidth && sourceHeight == outputHeight) return source;
-        var output = new float[checked(outputWidth * outputHeight * 3)];
+        var output = destination ?? new float[checked(outputWidth * outputHeight * 3)];
         var scaleX = outputWidth / (float)sourceWidth;
         var scaleY = outputHeight / (float)sourceHeight;
         Parallel.For(0, outputHeight, y =>

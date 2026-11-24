@@ -10,7 +10,7 @@ internal sealed class FilterDisplayConnection
 
     internal void ResetHistory() => _colorBreakup.Reset();
 
-    internal byte[]? Apply(ReadOnlySpan<byte> source, VideoFrame frame, EmulationVideoProcessingConfiguration configuration)
+    internal byte[]? Apply(ReadOnlySpan<byte> source, VideoFrame frame, EmulationVideoProcessingConfiguration configuration, bool decodeOnGpu = false)
     {
         var singleChipProjection = configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Projection
             && configuration.Projection.Technology == EmulationProjectionTechnology.SingleChipDlp;
@@ -23,6 +23,8 @@ internal sealed class FilterDisplayConnection
         var panel = EmulationVideoProcessingConfigurationFunctions.PanelSignal(configuration);
         var connected = FilterCrtConnection.Apply(source, frame, panel.Connection, panel.ConnectionDegradation,
             panel.ColorStandards, panel.MonitorPalette, ref _connection);
+        if (decodeOnGpu) return connected;
+
         var signal = CrtSignal.ForLcd(panel, frame);
         var decoder = (int)signal.Tuning.Y;
         var unlocked = signal.Tuning.X > 0;

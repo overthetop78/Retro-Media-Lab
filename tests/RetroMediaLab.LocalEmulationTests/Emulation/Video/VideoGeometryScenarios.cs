@@ -229,7 +229,7 @@ internal static class VideoGeometryScenarios
             Assert.Equal(stored, EmulationVideoProcessingConfigurationFunctions.ImageAdjustments(selected, screen));
             var expectedControls = screen switch
             {
-                EmulationVideoScreenType.Vector or EmulationVideoScreenType.Vfd => Brightness,
+                EmulationVideoScreenType.Vfd => Brightness,
                 EmulationVideoScreenType.DotMatrix or EmulationVideoScreenType.SegmentDisplay => Brightness | Contrast,
                 EmulationVideoScreenType.LedMatrix => Brightness | Contrast | EmulationImageAdjustmentControls.Gamma | Saturation,
                 EmulationVideoScreenType.EPaper => Contrast,

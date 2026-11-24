@@ -1,13 +1,14 @@
 using System.Numerics;
-using RetroMediaLab.Emulation.Contracts;
 
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
-internal readonly record struct LedMatrixVideoShaderParameters(Vector4 Emission, Vector4 Structure)
+internal static class LedMatrixVideoShaderParameters
 {
-    internal static LedMatrixVideoShaderParameters From(EmulationVideoProcessingConfiguration configuration)
+    internal static Vector4 From(EmulationVideoProcessingConfiguration configuration, int sourceWidth, int sourceHeight)
     {
-        var value = configuration.LedMatrix;
-        return new(new((float)value.Color, value.Brightness / 100f, value.BlackDepth / 100f, (float)value.Shape), new(value.CellSize / 100f, value.CellGap / 100f, value.Diffusion / 100f, value.HaloRadius / 100f));
+        if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.LedMatrix) return default;
+        var matrix = configuration.LedMatrix;
+        var (columns, rows) = EmulationVideoProcessingCatalog.LedMatrixDefinitionDimensions(matrix.Definition, sourceWidth, sourceHeight);
+        return new(columns, rows, (float)matrix.Color, (float)matrix.Shape);
     }
 }

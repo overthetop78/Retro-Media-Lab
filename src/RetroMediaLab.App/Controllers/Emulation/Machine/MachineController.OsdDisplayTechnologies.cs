@@ -31,18 +31,16 @@ internal sealed partial class MachineController
     private Entry OsdVectorSettings()
     {
         var fields = new VideoTechnologyFields<EmulationVectorVideoConfiguration>(this,
-            s => s.Vector, (s, c) => s with { Vector = c });
-        return VideoGroup(EmulationResourceKeys.VideoTechnologyVector,
-            VideoGroup(EmulationResourceKeys.VideoVectorGroupDrawing,
-                fields.Number(Catalog.VectorLineThreshold, c => c.LineThreshold, (c, v) => c with { LineThreshold = v }),
-                fields.Number(Catalog.VectorLineIntensity, c => c.LineIntensity, (c, v) => c with { LineIntensity = v }),
-                fields.Number(Catalog.VectorBeamWidth, c => c.BeamWidth, (c, v) => c with { BeamWidth = v }),
-                fields.Number(Catalog.VectorBeamFocus, c => c.BeamFocus, (c, v) => c with { BeamFocus = v }),
-                fields.Choice(Catalog.VectorPhosphorColor, Catalog.CrtColorModeResourceKeys, c => c.PhosphorColor, (c, v) => c with { PhosphorColor = v })),
-            VideoGroup(EmulationResourceKeys.VideoVectorGroupGlow,
-                fields.Number(Catalog.VectorHaloIntensity, c => c.HaloIntensity, (c, v) => c with { HaloIntensity = v }),
-                fields.Number(Catalog.VectorHaloRadius, c => c.HaloRadius, (c, v) => c with { HaloRadius = v }),
-                fields.Number(Catalog.VectorPersistence, c => c.PersistenceIntensity, (c, v) => c with { PersistenceIntensity = v })))
+            config => config.Vector, (config, vector) => config with { Vector = vector });
+        return VideoGroup("Emulation.Video.Screen.Vector",
+            VideoChoice(EmulationResourceKeys.VideoTechnology, Catalog.VectorPhosphorResourceKeys,
+                config => config.Vector.PhosphorColor,
+                (config, value) => config with { Vector = config.Vector with { PhosphorColor = value } }),
+            VideoNumber(Catalog.ParameterResourceKeys[Catalog.VectorBeamWidth], config => config.Vector.BeamWidth,
+                (config, value) => config with { Vector = config.Vector with { BeamWidth = value } },
+                EmulationVectorVideoConfiguration.MinimumBeamWidth, EmulationVectorVideoConfiguration.MaximumBeamWidth),
+            fields.Number(Catalog.CrtCurvature, c => c.Curvature, (c, v) => c with { Curvature = v },
+                EmulationVideoProcessingLimits.CrtCurvatureMaximum))
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.Vector };
     }
 
@@ -74,16 +72,9 @@ internal sealed partial class MachineController
         var fields = new VideoTechnologyFields<EmulationLedMatrixVideoConfiguration>(this,
             s => s.LedMatrix, (s, c) => s with { LedMatrix = c });
         return VideoGroup(EmulationResourceKeys.VideoTechnologyLedMatrix,
-            VideoGroup(EmulationResourceKeys.VideoLedMatrixGroupStructure,
-                fields.Choice(Catalog.LedMatrixShape, Catalog.LedMatrixShapeResourceKeys, c => c.Shape, (c, v) => c with { Shape = v }),
-                fields.Number(Catalog.LedMatrixCellSize, c => c.CellSize, (c, v) => c with { CellSize = v }),
-                fields.Number(Catalog.LedMatrixCellGap, c => c.CellGap, (c, v) => c with { CellGap = v })),
-            VideoGroup(EmulationResourceKeys.VideoLedMatrixGroupEmission,
-                fields.Choice(Catalog.LedMatrixColor, Catalog.LedMatrixColorResourceKeys, c => c.Color, (c, v) => c with { Color = v }),
-                fields.Number(Catalog.LedMatrixBrightness, c => c.Brightness, (c, v) => c with { Brightness = v }),
-                fields.Number(Catalog.LedMatrixDiffusion, c => c.Diffusion, (c, v) => c with { Diffusion = v }),
-                fields.Number(Catalog.LedMatrixHaloRadius, c => c.HaloRadius, (c, v) => c with { HaloRadius = v }),
-                fields.Number(Catalog.LedMatrixBlackDepth, c => c.BlackDepth, (c, v) => c with { BlackDepth = v })))
+            fields.Choice(Catalog.LedMatrixColor, Catalog.LedMatrixColorResourceKeys, c => c.Color, (c, v) => c with { Color = v }),
+            fields.Choice(Catalog.LedMatrixDefinition, Catalog.LedMatrixDefinitionResourceKeys, c => c.Definition, (c, v) => c with { Definition = v }),
+            fields.Choice(Catalog.LedMatrixShape, Catalog.LedMatrixShapeResourceKeys, c => c.Shape, (c, v) => c with { Shape = v }))
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.LedMatrix };
     }
 

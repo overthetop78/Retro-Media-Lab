@@ -7,5 +7,6 @@ public enum EmulationLedMatrixColor
     Green,
     Amber,
     Blue,
-    White
+    White,
+    RedGreen
 }

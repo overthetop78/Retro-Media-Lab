@@ -101,7 +101,7 @@ public static class EmulationVideoProcessingConfigurationFunctions
     public static EmulationImageAdjustmentControls AdjustmentControls(EmulationVideoProcessingConfiguration configuration) =>
         ScreenType(configuration) switch
         {
-            EmulationVideoScreenType.Vector or EmulationVideoScreenType.Vfd => Brightness,
+            EmulationVideoScreenType.Vfd => Brightness,
             EmulationVideoScreenType.LedMatrix => Brightness | Contrast | Gamma
                 | (configuration.LedMatrix?.Color == EmulationLedMatrixColor.Rgb ? Saturation : None),
             EmulationVideoScreenType.DotMatrix => Brightness | Contrast | (configuration.DotMatrix?.Palette switch
@@ -338,14 +338,12 @@ public static class EmulationVideoProcessingConfigurationFunctions
             },
             Vector = vector with
             {
-                LineThreshold = Intensity(vector.LineThreshold),
-                LineIntensity = Intensity(vector.LineIntensity),
-                BeamWidth = Intensity(vector.BeamWidth),
-                BeamFocus = Intensity(vector.BeamFocus),
-                PhosphorColor = DefinedOrDefault(vector.PhosphorColor, EmulationCrtColorMode.Color),
-                HaloIntensity = Intensity(vector.HaloIntensity),
-                HaloRadius = Intensity(vector.HaloRadius),
-                PersistenceIntensity = Intensity(vector.PersistenceIntensity)
+                PhosphorColor = EmulationVideoProcessingCatalog.VectorPhosphorResourceKeys.ContainsKey(vector.PhosphorColor)
+                    ? vector.PhosphorColor : EmulationCrtColorMode.Color,
+                BeamWidth = Math.Clamp(vector.BeamWidth, EmulationVectorVideoConfiguration.MinimumBeamWidth,
+                    EmulationVectorVideoConfiguration.MaximumBeamWidth),
+                Curvature = Math.Clamp(vector.Curvature, EmulationVideoProcessingLimits.CrtCurvatureMinimum,
+                    EmulationVideoProcessingLimits.CrtCurvatureMaximum)
             },
             Vfd = vfd with
             {
@@ -363,13 +361,8 @@ public static class EmulationVideoProcessingConfigurationFunctions
             LedMatrix = ledMatrix with
             {
                 Color = DefinedOrDefault(ledMatrix.Color, EmulationLedMatrixColor.Rgb),
-                CellSize = Intensity(ledMatrix.CellSize),
-                CellGap = Intensity(ledMatrix.CellGap),
-                Diffusion = Intensity(ledMatrix.Diffusion),
-                Brightness = Intensity(ledMatrix.Brightness),
-                Shape = DefinedOrDefault(ledMatrix.Shape, EmulationLedMatrixShape.Round),
-                HaloRadius = Intensity(ledMatrix.HaloRadius),
-                BlackDepth = Intensity(ledMatrix.BlackDepth)
+                Definition = DefinedOrDefault(ledMatrix.Definition, EmulationLedMatrixDefinition.Native),
+                Shape = DefinedOrDefault(ledMatrix.Shape, EmulationLedMatrixShape.Round)
             },
             DotMatrix = dotMatrix with
             {
