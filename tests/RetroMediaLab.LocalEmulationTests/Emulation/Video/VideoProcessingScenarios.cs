@@ -74,7 +74,7 @@ internal static class VideoProcessingScenarios
             await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.ContextIdle);
             Assert.Equal(odd.Pixels.ToArray().Concat(odd.Pixels.ToArray()), surface.Frames[^1].Pixels.ToArray());
 
-            foreach (var screen in new[] { EmulationVideoScreenType.LedBacklitLcd, EmulationVideoScreenType.Oled })
+            foreach (var screen in new[] { EmulationVideoScreenType.LedBacklitLcd, EmulationVideoScreenType.Oled, EmulationVideoScreenType.Plasma })
             {
                 presenter.SetVideoProcessing(EmulationVideoProcessingConfigurationFunctions.WithScreenType(
                     new() { Restoration = new(Deinterlacing: EmulationDeinterlacingMode.Weave) }, screen));

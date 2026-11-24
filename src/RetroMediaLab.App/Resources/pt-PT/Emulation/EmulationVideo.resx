@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Intensidade da luz de fundo</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Profundidade preta</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Estrutura celular</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Difusão de luz</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Dithering temporal</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Painel e células</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Fósforos</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Gestão da luz</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Resposta temporal</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Persistência</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Profundidade preta</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Intensidade de fósforo</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Resposta gama</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Limitador automático de brilho</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Limiar de linha</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Intensidade da linha</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Intensidade do halo</value></data>

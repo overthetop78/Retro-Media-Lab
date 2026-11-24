@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Intensitatea luminii din spate</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Adâncime neagră</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Structura celulară</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Difuzarea luminii</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Dithering temporal</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Panou și celule</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Fosfor</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Gestionarea luminii</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Răspuns temporal</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Persistenţă</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Adâncime neagră</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Intensitatea fosforului</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Răspunsul la gama</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Limitator automat de luminozitate</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Prag de linie</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Intensitatea liniei</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Intensitatea Halo</value></data>

@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Ένταση οπισθοφωτισμού</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Βάθος μαύρου</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Δομή κελιού</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Διάχυση φωτός</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Χρονική απόκλιση</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Πίνακας και κελιά</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Φωσφορικοί</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Διαχείριση του φωτός</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Χρονική ανταπόκριση</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Επιμονή</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Βάθος μαύρου</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Ένταση φωσφορίου</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>απόκριση γάμμα</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Αυτόματος περιοριστής φωτεινότητας</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Κατώφλι γραμμής</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Ένταση γραμμής</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Ένταση αλουμινίου</value></data>

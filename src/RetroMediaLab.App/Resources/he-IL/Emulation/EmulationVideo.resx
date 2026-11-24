@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>עוצמת תאורה אחורית</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>עומק שחור</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>מבנה תאים</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>אור diffusion</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>המונחים:</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>פאנל ותאים</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>זרחן</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>ניהול אור</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>תגובה זמנית</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>הסתברות</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>עומק שחור</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>אינטנסיביות Phosphor</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>תגובה גימה</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>הגבלת בהירות אוטומטית</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>קו סף</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>עוצמת קו</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>עוצמת Halo</value></data>

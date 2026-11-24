@@ -1,38 +1,35 @@
-using RetroMediaLab.App.Functions.Views.Emulation.Settings;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Automation;
-using System.Windows.Controls;
-using RetroMediaLab.App.Constants.Controls.Visual;
-using RetroMediaLab.App.Constants.Localization;
-using RetroMediaLab.App.Localization.Extensions;
-using RetroMediaLab.Emulation.Contracts;
-using RetroMediaLab.Emulation.Dictionaries;
+using RetroMediaLab.App.Functions.Views.Emulation.Settings;
+using Catalog = RetroMediaLab.VideoPresentation.Dictionaries.EmulationVideoProcessingCatalog;
 
 namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
 
-internal static class EmulationPlasmaSettingsBlock
+internal sealed partial class EmulationVideoProcessingSettingsSection
 {
-    internal static FrameworkElement Create(EmulationPlasmaVideoConfiguration value, Action<Func<EmulationPlasmaVideoConfiguration, EmulationPlasmaVideoConfiguration>> changed)
+    private FrameworkElement CreatePlasmaPanel()
     {
-        var groups = new Grid();
-        groups.ColumnDefinitions.Add(new ColumnDefinition());
-        groups.ColumnDefinitions.Add(new ColumnDefinition());
-        groups.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        groups.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        var plasma = _configuration.Plasma;
+        var section = Section("Emulation.Video.Technology.Plasma");
+        void Set(Func<EmulationPlasmaVideoConfiguration, EmulationPlasmaVideoConfiguration> change) =>
+            Update(configuration => configuration with { Plasma = change(configuration.Plasma) });
 
-        EmulationSettingsLayout.AddVideoProcessingGroup(groups, EmulationResourceKeys.VideoPlasmaGroupPanelAndCells, 0, 0,
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.PlasmaCellStructure, value.CellStructure, number => changed(current => current with { CellStructure = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.PlasmaBlackDepth, value.BlackDepth, number => changed(current => current with { BlackDepth = number })));
-        EmulationSettingsLayout.AddVideoProcessingGroup(groups, EmulationResourceKeys.VideoPlasmaGroupPhosphors, 0, 1,
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.PlasmaPhosphorIntensity, value.PhosphorIntensity, number => changed(current => current with { PhosphorIntensity = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.PlasmaGammaResponse, value.GammaResponse, number => changed(current => current with { GammaResponse = number })));
-        EmulationSettingsLayout.AddVideoProcessingGroup(groups, EmulationResourceKeys.VideoPlasmaGroupLight, 1, 0,
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.PlasmaAutomaticBrightnessLimiter, value.AutomaticBrightnessLimiter, number => changed(current => current with { AutomaticBrightnessLimiter = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.PlasmaDiffusion, value.Diffusion, number => changed(current => current with { Diffusion = number })));
-        EmulationSettingsLayout.AddVideoProcessingGroup(groups, EmulationResourceKeys.VideoPlasmaGroupTemporal, 1, 1,
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.PlasmaTemporalDithering, value.TemporalDithering, number => changed(current => current with { TemporalDithering = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.PlasmaPersistence, value.PersistenceIntensity, number => changed(current => current with { PersistenceIntensity = number })));
-        return groups;
+        section.Children.Add(CreatePanelSignalRow(plasma, Set));
+        section.Children.Add(ChoiceField(Catalog.LcdDefinition, Catalog.PlasmaDefinitionResourceKeys,
+            plasma.Definition, value => Set(config => config with { Definition = value })));
+        section.Children.Add(ChoiceField(ParameterKey(Catalog.PlasmaCellStructure), Catalog.PlasmaCellStructureResourceKeys,
+            plasma.CellStructure, value => Set(config => config with { CellStructure = value })));
+        section.Children.Add(ChoiceField(ParameterKey(Catalog.CrtConnection), Catalog.PlasmaConnectionResourceKeys,
+            plasma.Connection, value =>
+            {
+                Set(config => config with { Connection = value });
+                RebuildContent();
+            }));
+        if (plasma.CanDegradeConnection())
+            section.Children.Add(EmulationSettingsFieldControlFunctions.CreateVideoSlider(
+                Catalog.CrtConnectionDegradation, plasma.ConnectionDegradation, 0,
+                EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum,
+                value => Set(config => config with { ConnectionDegradation = value }),
+                1, 38, new Thickness(0, 2, 0, 8)));
+        return section;
     }
 }

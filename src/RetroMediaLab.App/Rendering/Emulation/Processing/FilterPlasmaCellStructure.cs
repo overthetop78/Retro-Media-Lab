@@ -1,63 +1,98 @@
+using System.Numerics;
+
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal static class FilterPlasmaCellStructure
 {
+    private static readonly Vector3 Luminance = new(.2126f, .7152f, .0722f);
+    private static readonly Vector3 Amber = new(1f, .29f, .025f);
+
     internal const string Shader = """
-        vec3 filterPlasmaCellStructure(vec3 color,vec2 fraction,float intensity,vec2 pixelScale)
+        vec3 filterPlasmaCellStructure(vec3 color, vec2 uv, vec2 panel, vec2 outputSize, int mode)
         {
-            if(intensity<=0.0)return color;
-            vec2 scale=max(pixelScale,vec2(1.0));
-            float resolvable=smoothstep(1.0,2.5,min(scale.x,scale.y));
-            float subpixels=smoothstep(2.4,4.0,scale.x);
-            int selected=int(floor(fraction.x*3.0));
-            if(selected>2)selected=2;
-            for(int channel=0;channel<3;channel++)
-                if(channel!=selected)color[channel]*=1.0-intensity*.38*subpixels;
-            vec2 distancePixels=min(fraction,vec2(1.0)-fraction)*scale;
-            vec2 edge=vec2(1.0)-smoothstep(vec2(.08),vec2(.65),distancePixels);
-            float border=1.0-(1.0-edge.x)*(1.0-edge.y);
-            float borderStrength=intensity*mix(.22,.62,resolvable);
-            float centerLift=1.0+intensity*.06*(1.0-border);
-            return color*(1.0-borderStrength*border)*centerLift;
+            vec2 pixel=clamp(floor(uv*outputSize),vec2(0.0),outputSize-1.0);
+            vec2 neutral=vec2(lcdCellAxis(pixel.x,panel.x,outputSize.x,false).x,
+                lcdCellAxis(pixel.y,panel.y,outputSize.y,false).x);
+            if(mode==3)return dot(color,vec3(.2126,.7152,.0722))*vec3(1.0,.29,.025)*neutral.x*neutral.y;
+            if(mode==2)
+            {
+                vec2 span=panel/outputSize;
+                vec2 center=fract((pixel+.5)*span);
+                float amount=smoothstep(2.0,5.0,min(outputSize.x/panel.x,outputSize.y/panel.y));
+                if(amount<=0.0)return color*neutral.x*neutral.y;
+                vec3 x=vec3(lcdCoverage(center.x,span.x,.04,.46),lcdCoverage(center.x,span.x,.29,.71),
+                    lcdCoverage(center.x,span.x,.54,.96));
+                vec2 y=vec2(lcdCoverage(center.y,span.y,.54,.96),lcdCoverage(center.y,span.y,.04,.46));
+                return color*mix(vec3(neutral.x*neutral.y),x*y.xyx,amount);
+            }
+            vec3 columns=lcdCellAxisWithGap(pixel.x,panel.x,outputSize.x,true,mode==1?.018:0.0);
+            return color*columns*(mode==1?neutral.y:1.0);
         }
         """;
 
-    internal static void Apply(float[] colors, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, int setting)
+    internal static void Apply(float[] colors, int panelWidth, int panelHeight, int width, int height,
+        EmulationPlasmaCellStructure structure)
     {
-        if (setting <= 0 || sourceWidth <= 0 || sourceHeight <= 0) return;
-        var intensity = setting / 100f;
-        var pixelScaleX = outputWidth / (float)sourceWidth;
-        var pixelScaleY = outputHeight / (float)sourceHeight;
-        var scaleX = MathF.Max(pixelScaleX, 1f);
-        var scaleY = MathF.Max(pixelScaleY, 1f);
-        var resolvable = FilterSampling.SmoothStep(1f, 2.5f, MathF.Min(scaleX, scaleY));
-        var subpixels = FilterSampling.SmoothStep(2.4f, 4f, scaleX);
-        var sourcePerOutputX = sourceWidth / (float)outputWidth;
-        var sourcePerOutputY = sourceHeight / (float)outputHeight;
-        for (var y = 0; y < outputHeight; y++)
+        if (width <= panelWidth && height <= panelHeight && structure != EmulationPlasmaCellStructure.Monochrome)
+            return;
+
+        var spanX = panelWidth / (float)width;
+        var spanY = panelHeight / (float)height;
+        var deltaAmount = structure == EmulationPlasmaCellStructure.Delta
+            ? FilterSampling.SmoothStep(2f, 5f, 1f / Math.Max(spanX, spanY)) : 0f;
+        var columns = new Vector3[width];
+        var neutralColumns = new float[width];
+        for (var x = 0; x < width; x++)
         {
-            var fy = Fraction((y + 0.5f) * sourcePerOutputY);
-            var edgeY = Edge(fy, scaleY);
-            for (var x = 0; x < outputWidth; x++)
+            neutralColumns[x] = FilterLcdPixelStructure.NeutralAxis(x, panelWidth, width);
+            columns[x] = structure switch
             {
-                var fx = Fraction((x + 0.5f) * sourcePerOutputX);
-                var edgeX = Edge(fx, scaleX);
-                var selected = Math.Min(2, (int)(fx * 3f));
-                var border = 1f - (1f - edgeX) * (1f - edgeY);
-                var borderStrength = intensity * (0.22f + (0.62f - 0.22f) * resolvable);
-                var factor = (1f - borderStrength * border) * (1f + intensity * 0.06f * (1f - border));
-                var index = (y * outputWidth + x) * 3;
-                for (var channel = 0; channel < 3; channel++)
+                EmulationPlasmaCellStructure.Stripe or EmulationPlasmaCellStructure.Waffle =>
+                    FilterLcdPixelStructure.Axis(x, panelWidth, width, striped: true, reverse: false,
+                        gap: structure == EmulationPlasmaCellStructure.Waffle ? .018f : 0f),
+                EmulationPlasmaCellStructure.Delta when deltaAmount > 0f => DeltaColumns(x, spanX),
+                _ => new Vector3(neutralColumns[x])
+            };
+        }
+
+        for (var y = 0; y < height; y++)
+        {
+            var neutralRow = FilterLcdPixelStructure.NeutralAxis(y, panelHeight, height);
+            var phase = Phase(y, spanY);
+            var lower = deltaAmount > 0f ? FilterLcdPixelStructure.Coverage(phase, spanY, .54f, .96f) : 0f;
+            var upper = deltaAmount > 0f ? FilterLcdPixelStructure.Coverage(phase, spanY, .04f, .46f) : 0f;
+            var deltaRows = new Vector3(lower, upper, lower);
+            for (var x = 0; x < width; x++)
+            {
+                var index = (y * width + x) * 3;
+                var color = new Vector3(colors[index], colors[index + 1], colors[index + 2]);
+                var aperture = structure switch
                 {
-                    if (channel != selected)
-                        colors[index + channel] *= 1f - intensity * 0.38f * subpixels;
-                    colors[index + channel] *= factor;
-                }
+                    EmulationPlasmaCellStructure.Stripe => columns[x],
+                    EmulationPlasmaCellStructure.Delta when deltaAmount > 0f => Vector3.Lerp(
+                        new Vector3(neutralColumns[x] * neutralRow), columns[x] * deltaRows, deltaAmount),
+                    _ => columns[x] * neutralRow
+                };
+                if (structure == EmulationPlasmaCellStructure.Monochrome) color = Vector3.Dot(color, Luminance) * Amber;
+                color *= aperture;
+                colors[index] = color.X;
+                colors[index + 1] = color.Y;
+                colors[index + 2] = color.Z;
             }
         }
     }
 
-    private static float Edge(float fraction, float scale) => 1f - FilterSampling.SmoothStep(0.08f, 0.65f, MathF.Min(fraction, 1f - fraction) * scale);
+    private static Vector3 DeltaColumns(int x, float span)
+    {
+        var phase = Phase(x, span);
+        return new Vector3(FilterLcdPixelStructure.Coverage(phase, span, .04f, .46f),
+            FilterLcdPixelStructure.Coverage(phase, span, .29f, .71f),
+            FilterLcdPixelStructure.Coverage(phase, span, .54f, .96f));
+    }
 
-    private static float Fraction(float value) => value - MathF.Floor(value);
+    private static float Phase(int pixel, float span)
+    {
+        var position = (pixel + .5f) * span;
+        return position - MathF.Floor(position);
+    }
 }

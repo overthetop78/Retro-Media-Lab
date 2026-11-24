@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Taustavalon voimakkuus</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Musta syvyys</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Solurakenne</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Valon diffuusio</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Aikavaihtelu</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Paneeli ja solut</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Fosforit</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Valonhallinta</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Aikavaste</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Pysyvyys</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Musta syvyys</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Fosforiintensiteetti</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Gammavaste</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Automaattinen kirkkauden rajoitin</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Viivakynnys</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Viivan intensiteetti</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Halo-intensiteetti</value></data>

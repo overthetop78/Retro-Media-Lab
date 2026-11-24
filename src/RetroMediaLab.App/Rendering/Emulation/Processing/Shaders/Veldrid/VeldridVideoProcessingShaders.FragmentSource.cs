@@ -89,11 +89,14 @@ internal static partial class VeldridVideoProcessingShaders
             return clamp(c,0.0,1.0);
         }
         """ + "\n" + """
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 3
+        """ + "\n" + FilterLcdPixelStructure.Shader + "\n" + """
+        #endif
         #if DISPLAY_TECHNOLOGY == 2
-        """ + "\n" + FilterLcdPixelStructure.Shader + FilterOledPixelStructure.Shader + FilterLcdDisplay.Shader + FilterLedBacklitLcdDisplay.Shader + FilterOledDisplay.Shader + FilterFixedPixelResponse.Shader + FilterFixedPixelPersistence.Shader + "\n" + """
+        """ + "\n" + FilterOledPixelStructure.Shader + FilterLcdDisplay.Shader + FilterLedBacklitLcdDisplay.Shader + FilterOledDisplay.Shader + FilterFixedPixelResponse.Shader + FilterFixedPixelPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 3
-        """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaLightDiffusion.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaGammaResponse.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
+        """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 4
         """ + "\n" + FilterVectorLineDetection.Shader + FilterVectorLineIntensity.Shader + FilterVectorBeamWidth.Shader + FilterVectorBeamFocus.Shader + FilterVectorHalo.Shader + FilterVectorHaloRadius.Shader + FilterVectorPhosphorColor.Shader + FilterVectorPersistence.Shader + "\n" + """
@@ -116,28 +119,13 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 3
         vec3 plasmaPixel(vec3 color,vec2 uv)
         {
-            vec2 sourceSize=max(Parameters.Processing.zw,vec2(1.0));
-            vec2 pixelScale=Parameters.Output.xy/sourceSize;
-            color=filterPlasmaBlackDepth(color,Parameters.PlasmaDisplay.x);
-            color=filterPlasmaGammaResponse(color,Parameters.PlasmaDisplay.z);
             color=filterPlasmaPhosphorIntensity(color,Parameters.PlasmaDisplay.y);
-            color=filterPlasmaAutomaticBrightnessLimiter(color,Parameters.PlasmaDisplay.w,
-                Parameters.PlasmaTemporal.w);
-            color=filterPlasmaCellStructure(color,fract(uv*sourceSize),
-                Parameters.PlasmaEffect.y,pixelScale);
-            color=filterPlasmaTemporalDithering(color,floor(uv*Parameters.Output.xy),
-                Parameters.PlasmaEffect.w,Parameters.PlasmaTemporal.z);
-            if(Parameters.PlasmaEffect.z>0.0)
-            {
-                vec2 stepSize=1.0/sourceSize;
-                vec3 nearLight=(raw(uv-vec2(stepSize.x,0.0))+raw(uv+vec2(stepSize.x,0.0))
-                    +raw(uv-vec2(0.0,stepSize.y))+raw(uv+vec2(0.0,stepSize.y)))*.25;
-                vec3 farLight=(raw(uv-vec2(stepSize.x*2.0,0.0))+raw(uv+vec2(stepSize.x*2.0,0.0))
-                    +raw(uv-vec2(0.0,stepSize.y*2.0))+raw(uv+vec2(0.0,stepSize.y*2.0)))*.25;
-                color=filterPlasmaLightDiffusion(color,nearLight,farLight,
-                    Parameters.PlasmaEffect.z);
-            }
-            return color;
+            color=filterPlasmaAutomaticBrightnessLimiter(color,Parameters.PlasmaDisplay.w,Parameters.PlasmaTemporal.w);
+            vec2 panel=Parameters.FixedSpatial.yz;
+            vec2 outputSize=Parameters.Output.xy;
+            vec2 cell=floor(lcdPanelSampleUv(uv,panel,outputSize)*panel);
+            color=filterPlasmaTemporalDithering(color,cell,Parameters.PlasmaEffect.w,Parameters.PlasmaTemporal.z);
+            return filterPlasmaCellStructure(filterPlasmaBlackDepth(color),uv,panel,outputSize,int(Parameters.PlasmaEffect.y+.5));
         }
         #endif
         #if DISPLAY_TECHNOLOGY == 4
@@ -414,6 +402,8 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 2
             bool fixedPanel=Parameters.FixedDisplay.x>.5;
             if(fixedPanel)sampleUv=lcdPanelSampleUv(uv,Parameters.FixedSpatial.yz,Parameters.Output.xy);
+        #elif DISPLAY_TECHNOLOGY == 3
+            sampleUv=lcdPanelSampleUv(uv,Parameters.FixedSpatial.yz,Parameters.Output.xy);
         #endif
             vec3 c=displayEffect(restored(sampleUv),uv);
             c=clamp(postEffect(c,uv),0.0,1.0);
@@ -424,7 +414,11 @@ internal static partial class VeldridVideoProcessingShaders
             if(fixedPanel)historyColor=texture(sampler2D(History,PointSampler),historyUv).rgb;
             else
         #endif
+        #if DISPLAY_TECHNOLOGY == 3
+                historyColor=texture(sampler2D(History,PointSampler),historyUv).rgb;
+        #else
                 historyColor=texture(sampler2D(History,LinearSampler),historyUv).rgb;
+        #endif
             vec3 previous=displayEffect(adjust(historyColor),uv);
             previous=clamp(postEffect(previous,uv),0.0,1.0);
         #if DISPLAY_TECHNOLOGY == 7

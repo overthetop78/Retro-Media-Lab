@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Intenzita podsvícení</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Černá hloubka</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Struktura buněk</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Difuze světla</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Časové rozprašování</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Panel a buňky</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Fosfory</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Řízení světla</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Časová odpověď</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Vytrvalost</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Černá hloubka</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Intenzita fosforu</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Gama odezva</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Automatický omezovač jasu</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Prahová hodnota tratě</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Intenzita tratě</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Intenzita Halo</value></data>

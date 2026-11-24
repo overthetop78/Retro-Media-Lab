@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>ความเข้มของแสงพื้นหลัง</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>ความลึกสีดํา</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>โครงสร้างเซลล์</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>การกระจายแสง</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>การเกลี่ยสีแบบจังหวะ</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>แถบพาเนลและเซลล์</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>ฟอสฟอเรอร์</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>การจัดการแสง</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>การตอบสนองแบบจังหวะ</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>ความต่อเนื่อง</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>ความลึกสีดํา</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>ความเข้มสี</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>การตอบกลับของค่าแกมม่า</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>ตัวจํากัดความสว่างอัตโนมัติ</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>ขีดเส้น</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>ความเข้มสีเส้น</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>ความเข้มสี</value></data>

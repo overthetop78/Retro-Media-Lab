@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>інтенсивність підсвічування</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Чорна глибина</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Структура клітин</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Світло дифузії</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Тимчасовий дитерінг</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Панель і клітинки</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Фосфори</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Управління освітленням</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Тимчасова відповідь</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Профілактика</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Чорна глибина</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>інтенсивність фосфору</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Gamma відповідь</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Автоматичний ліміт яскравості</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>лінійний поріг</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>інтенсивність лінії</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>інтенсивність гало</value></data>

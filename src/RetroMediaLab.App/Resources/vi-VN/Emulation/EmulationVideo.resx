@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Cường độ đèn nền</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Độ sâu Đen</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Cấu trúc Tế bào</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Ánh sáng</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Rung động tạm thời</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Bảng điều khiển và ô</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Phosphors</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Quản lý nhẹ</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Phản ứng tạm thời</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Kiên trì</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Độ sâu Đen</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Độ mạnh Phosphor</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Đáp ứng Gamma (γ)</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Bộ giới hạn độ sáng tự động</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Ngưỡng Đường</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Nhập cường độ</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Nhập cường độ</value></data>

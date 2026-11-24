@@ -23,8 +23,7 @@ public static partial class EmulationVideoProcessingCatalog
             [EmulationVideoPreset.Plasma] = new()
             {
                 DisplayTechnology = EmulationVideoDisplayTechnology.Plasma,
-                Sampling = EmulationVideoSampling.Bilinear,
-                Plasma = new(35, 30, 20, 20, 55, 25, 20, 35)
+                Sampling = EmulationVideoSampling.Bilinear
             },
             [EmulationVideoPreset.Vector] = new()
             {

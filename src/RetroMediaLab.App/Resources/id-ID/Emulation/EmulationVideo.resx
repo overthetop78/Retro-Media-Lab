@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Intensitas cahaya latar</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Kedalaman hitam</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Struktur sel</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Difusi cahaya</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Temporal dithing</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Panel dan sel</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Posphor</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Manajemen cahaya</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Respon temporal</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Kegigihan</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Kedalaman hitam</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Intensitas phor</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Respon Gamma</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Limiter kecerahan otomatis</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Ambang garis</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Intensitas garis</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Intensitas Halo</value></data>

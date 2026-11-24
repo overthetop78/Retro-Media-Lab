@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>백라이트 강도</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>검정 깊이</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>세포 구조</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>빛 확산</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Temporal 파열</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>패널과 세포</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>팟캐스트</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>빛 관리</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Temporal 응답</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>회사 소개</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>검정 깊이</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>인광 강도</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Gamma 응답</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>자동 광도 limiter</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>라인 임계 값</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>라인 강도</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Halo 강도</value></data>

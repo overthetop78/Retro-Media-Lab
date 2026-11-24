@@ -239,17 +239,6 @@ public static class EmulationResourceKeys
     public const string VideoParameterFixedPixelBacklight = "Emulation.Video.Parameter.FixedPixelBacklight";
     public const string VideoParameterFixedPixelBlackDepth = "Emulation.Video.Parameter.FixedPixelBlackDepth";
     public const string VideoParameterPlasmaCellStructure = "Emulation.Video.Parameter.PlasmaCellStructure";
-    public const string VideoParameterPlasmaDiffusion = "Emulation.Video.Parameter.PlasmaDiffusion";
-    public const string VideoParameterPlasmaTemporalDithering = "Emulation.Video.Parameter.PlasmaTemporalDithering";
-    public const string VideoParameterPlasmaPersistence = "Emulation.Video.Parameter.PlasmaPersistence";
-    public const string VideoParameterPlasmaBlackDepth = "Emulation.Video.Parameter.PlasmaBlackDepth";
-    public const string VideoParameterPlasmaPhosphorIntensity = "Emulation.Video.Parameter.PlasmaPhosphorIntensity";
-    public const string VideoParameterPlasmaGammaResponse = "Emulation.Video.Parameter.PlasmaGammaResponse";
-    public const string VideoParameterPlasmaAutomaticBrightnessLimiter = "Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter";
-    public const string VideoPlasmaGroupPanelAndCells = "Emulation.Video.Plasma.Group.PanelAndCells";
-    public const string VideoPlasmaGroupPhosphors = "Emulation.Video.Plasma.Group.Phosphors";
-    public const string VideoPlasmaGroupLight = "Emulation.Video.Plasma.Group.Light";
-    public const string VideoPlasmaGroupTemporal = "Emulation.Video.Plasma.Group.Temporal";
     public const string VideoParameterVectorLineThreshold = "Emulation.Video.Parameter.VectorLineThreshold";
     public const string VideoParameterVectorLineIntensity = "Emulation.Video.Parameter.VectorLineIntensity";
     public const string VideoParameterVectorBeamWidth = "Emulation.Video.Parameter.VectorBeamWidth";

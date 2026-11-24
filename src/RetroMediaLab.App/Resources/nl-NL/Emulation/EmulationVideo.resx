@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Backlight intensiteit</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Zwarte diepte</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Celstructuur</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Lichtdiffusie</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Temporale dithering</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Panel en cellen</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Fosfor</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Lichtbeheer</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Tijdsrespons</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Persistentie</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Zwarte diepte</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Fosforintensiteit</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Gammarespons</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Automatische helderheidsbegrenzer</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Regeldrempel</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Lijnintensiteit</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Halo-intensiteit</value></data>

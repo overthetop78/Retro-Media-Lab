@@ -11,13 +11,13 @@ internal sealed class FilterDisplayConnection
     {
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Crt)
             return FilterCrtConnection.Apply(source, frame, configuration, ref _connection);
-        if (configuration.DisplayTechnology != EmulationVideoDisplayTechnology.FixedPixel)
+        if (!EmulationVideoProcessingConfigurationFunctions.UsesPanelSignal(configuration))
             return null;
 
-        var lcd = EmulationVideoProcessingConfigurationFunctions.PanelSignal(configuration);
-        var connected = FilterCrtConnection.Apply(source, frame, lcd.Connection, lcd.ConnectionDegradation,
-            lcd.ColorStandards, lcd.MonitorPalette, ref _connection);
-        var signal = CrtSignal.ForLcd(lcd, frame);
+        var panel = EmulationVideoProcessingConfigurationFunctions.PanelSignal(configuration);
+        var connected = FilterCrtConnection.Apply(source, frame, panel.Connection, panel.ConnectionDegradation,
+            panel.ColorStandards, panel.MonitorPalette, ref _connection);
+        var signal = CrtSignal.ForLcd(panel, frame);
         var decoder = (int)signal.Tuning.Y;
         var unlocked = signal.Tuning.X > 0;
         if (connected is not null) source = connected;
@@ -48,9 +48,10 @@ internal sealed class FilterDisplayConnection
             _decoded[output + 1] = (byte)MathF.Round(color.Y * 255f);
             _decoded[output + 2] = (byte)MathF.Round(color.X * 255f);
         }
-        if (configuration.FixedPixel.Technology == EmulationFixedPixelTechnology.LedBacklitLcd)
+        var screen = EmulationVideoProcessingConfigurationFunctions.ScreenType(configuration);
+        if (screen == EmulationVideoScreenType.LedBacklitLcd)
             FilterLedBacklitLcdDisplay.PrepareZones(_decoded, width, height, configuration.Led.BacklightType);
-        else if (configuration.FixedPixel.Technology == EmulationFixedPixelTechnology.Oled)
+        else if (screen == EmulationVideoScreenType.Oled)
             FilterOledDisplay.PrepareBrightness(_decoded, length);
         return _decoded;
     }

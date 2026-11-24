@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Интенсивность освещения</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Черная глубина</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Структура клеток</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Светодиффузия</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Временное колебание</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Панель и ячейки</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Фосфоры</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Управление светом</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Временное реагирование</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>настойчивость</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Черная глубина</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Интенсивность фосфора</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Гамма-ответ</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Автоматический ограничитель яркости</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Линейный порог</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Интенсивность линии</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Интенсивность гало</value></data>

@@ -53,13 +53,6 @@ public static partial class EmulationVideoProcessingCatalog
     public const string FixedPixelOledEmission = nameof(FixedPixelOledEmission);
     public const string FixedPixelBlackDepth = nameof(FixedPixelBlackDepth);
     public const string PlasmaCellStructure = nameof(PlasmaCellStructure);
-    public const string PlasmaDiffusion = nameof(PlasmaDiffusion);
-    public const string PlasmaTemporalDithering = nameof(PlasmaTemporalDithering);
-    public const string PlasmaPersistence = nameof(PlasmaPersistence);
-    public const string PlasmaBlackDepth = nameof(PlasmaBlackDepth);
-    public const string PlasmaPhosphorIntensity = nameof(PlasmaPhosphorIntensity);
-    public const string PlasmaGammaResponse = nameof(PlasmaGammaResponse);
-    public const string PlasmaAutomaticBrightnessLimiter = nameof(PlasmaAutomaticBrightnessLimiter);
     public const string VectorLineThreshold = nameof(VectorLineThreshold);
     public const string VectorLineIntensity = nameof(VectorLineIntensity);
     public const string VectorBeamWidth = nameof(VectorBeamWidth);
@@ -153,9 +146,7 @@ public static partial class EmulationVideoProcessingCatalog
         FixedPixelTechnology, FixedPixelSubpixels, FixedPixelMonochromeColor,
         FixedPixelGridIntensity, FixedPixelPixelGap, FixedPixelResponseTime,
         FixedPixelPersistence, FixedPixelBacklight, FixedPixelBacklightBleed, FixedPixelOledEmission, FixedPixelBlackDepth,
-        PlasmaCellStructure, PlasmaDiffusion, PlasmaTemporalDithering, PlasmaPersistence,
-        PlasmaBlackDepth, PlasmaPhosphorIntensity, PlasmaGammaResponse,
-        PlasmaAutomaticBrightnessLimiter,
+        PlasmaCellStructure,
         VectorLineThreshold, VectorLineIntensity, VectorBeamWidth, VectorBeamFocus,
         VectorPhosphorColor, VectorHaloIntensity, VectorHaloRadius, VectorPersistence,
         VfdColor, VfdPhosphorIntensity, VfdEmissionThreshold, VfdGlassDarkening,

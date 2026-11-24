@@ -69,7 +69,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         var signalStandard = ResolveSignalStandard(frame, normalized.SignalSimulation.Standard);
         ApplySignalConnection(linear, frame.Width, frame.Height, frame.Sequence, normalized.SignalSimulation, signalStandard);
         ApplySignalStandard(linear, frame.Width, frame.Height, normalized.SignalSimulation, signalStandard);
-        if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel)
+        if (EmulationVideoProcessingConfigurationFunctions.UsesPanelSignal(normalized))
         {
             var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
                 EmulationVideoProcessingConfigurationFunctions.PanelSignal(normalized).Definition, frame.Width, frame.Height);
@@ -90,7 +90,11 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             ? CrtSignal.From(normalized.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(normalized)) : default;
         if (connected is not null && EmulationVideoProcessingConfigurationFunctions.ScreenType(normalized) == EmulationVideoScreenType.Oled)
             FilterOledDisplay.Apply(linear, normalized.Oled.PanelType, connected[3] / 255f);
-        ApplyDisplayTechnology(linear, sourceSize.Width, sourceSize.Height, outputSize.Width, outputSize.Height, frame, normalized, crt);
+        var plasmaLoad = normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma
+            ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra((connected ?? prepared ?? pixels).AsSpan(0, frame.Width * frame.Height * 4))
+            : 0f;
+        ApplyDisplayTechnology(linear, sourceSize.Width, sourceSize.Height, outputSize.Width, outputSize.Height,
+            frame, normalized, crt, plasmaLoad);
         if (connected is not null && EmulationVideoProcessingConfigurationFunctions.ScreenType(normalized) == EmulationVideoScreenType.LedBacklitLcd)
             FilterLedBacklitLcdDisplay.Apply(linear, outputSize.Width, outputSize.Height, connected,
                 frame.Width, frame.Height, normalized.Led);
@@ -101,7 +105,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         FilterGrain.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, normalized.Stylistic.Grain);
         ApplyFixedPixelTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma)
-            _plasmaPersistence.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, normalized.Plasma.PersistenceIntensity);
+            _plasmaPersistence.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, PlasmaVideoShaderParameters.Persistence);
         else
             _plasmaPersistence.Reset();
         ApplyVectorTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Sequence);

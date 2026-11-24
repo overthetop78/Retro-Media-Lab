@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Intensité du rétroéclairage</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Profondeur des noirs</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Structure des cellules</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Diffusion de la lumière</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Tramage temporel</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Dalle et cellules</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Phosphores</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Gestion de la lumière</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Réponse temporelle</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Persistance</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Profondeur des noirs</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Intensité des phosphores</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Réponse gamma</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Limiteur automatique de luminosité</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Seuil de détection des lignes</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Intensité de la ligne</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Intensité du halo</value></data>

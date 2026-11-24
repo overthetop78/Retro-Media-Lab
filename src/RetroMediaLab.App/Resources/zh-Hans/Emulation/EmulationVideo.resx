@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>背光强度</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>黑色深度</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>单元格结构</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>光扩散</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>暂时分色</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>面板和单元格</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>磷</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>灯光管理</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>临时反应</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>持久性</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>黑深线</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>磷酸盐强度</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>伽马反应</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>自动亮度限制器</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>线阈值</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>线条强度</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>光环强度</value></data>

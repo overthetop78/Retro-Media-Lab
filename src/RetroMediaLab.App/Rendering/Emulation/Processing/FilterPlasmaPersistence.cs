@@ -27,7 +27,8 @@ internal sealed class FilterPlasmaPersistence
             for (var index = 0; index < colors.Length; index++)
                 colors[index] = Math.Clamp(Math.Max(colors[index], _history![index] * decay), 0f, 1f);
         }
-        _history = colors.ToArray();
+        if (_history is null || _history.Length != colors.Length) _history = new float[colors.Length];
+        colors.CopyTo(_history, 0);
         _width = width;
         _height = height;
         _sequence = sequence;

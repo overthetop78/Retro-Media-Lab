@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>バックライトの強度</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>黒い深さ</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>セル構造</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>軽い拡散</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>テンポラルダイザリング</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>パネルとセル</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>蛍光体</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>軽い管理</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>一時的な応答</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>プレゼンス</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>黒の深さ</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>蛍光体強度</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>ガンマ応答</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>自動明るさのリミッター</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>ライン閾値</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>ライン強度</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>ハロー強度</value></data>

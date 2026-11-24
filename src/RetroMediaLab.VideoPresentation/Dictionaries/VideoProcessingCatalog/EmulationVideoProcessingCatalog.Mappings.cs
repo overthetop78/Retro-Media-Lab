@@ -175,8 +175,8 @@ public static partial class EmulationVideoProcessingCatalog
             [FixedPixelSubpixels] = EmulationSubpixelLayout.Rgb, [FixedPixelMonochromeColor] = EmulationMonochromePalette.Green,
             [FixedPixelGridIntensity] = 0, [FixedPixelPixelGap] = 0, [FixedPixelResponseTime] = 0,
             [FixedPixelPersistence] = 0, [FixedPixelBacklight] = null, [FixedPixelBacklightBleed] = 25, [FixedPixelOledEmission] = 100, [FixedPixelBlackDepth] = null,
-            [PlasmaCellStructure] = 0, [PlasmaDiffusion] = 0, [PlasmaTemporalDithering] = 0,
-            [PlasmaPersistence] = 0, [VectorLineThreshold] = 0, [VectorLineIntensity] = 0,
+            [PlasmaCellStructure] = EmulationPlasmaCellStructure.Stripe,
+            [VectorLineThreshold] = 0, [VectorLineIntensity] = 0,
             [VectorBeamWidth] = 0, [VectorBeamFocus] = 100,
             [VectorPhosphorColor] = EmulationCrtColorMode.Color,
             [VectorHaloIntensity] = 0, [VectorHaloRadius] = 0, [VectorPersistence] = 0,
@@ -258,7 +258,7 @@ public static partial class EmulationVideoProcessingCatalog
         var result = new Dictionary<string, EmulationVideoDisplayTechnology>(StringComparer.Ordinal);
         Add(CrtColorStandards, CrtMonitorPalette, EmulationVideoDisplayTechnology.Crt);
         Add(FixedPixelTechnology, FixedPixelBlackDepth, EmulationVideoDisplayTechnology.FixedPixel);
-        Add(PlasmaCellStructure, PlasmaPersistence, EmulationVideoDisplayTechnology.Plasma);
+        Add(PlasmaCellStructure, PlasmaCellStructure, EmulationVideoDisplayTechnology.Plasma);
         Add(VectorLineThreshold, VectorPersistence, EmulationVideoDisplayTechnology.Vector);
         Add(VfdColor, VfdPersistence, EmulationVideoDisplayTechnology.Vfd);
         Add(LedMatrixColor, LedMatrixBlackDepth, EmulationVideoDisplayTechnology.LedMatrix);

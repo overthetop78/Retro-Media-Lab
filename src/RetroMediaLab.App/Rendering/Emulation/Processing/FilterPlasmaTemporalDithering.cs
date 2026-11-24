@@ -13,7 +13,7 @@ internal static class FilterPlasmaTemporalDithering
     internal const string Shader = """
         float plasmaBayer(vec2 pixel,float phase)
         {
-            int x=int(mod(pixel.x+phase,4.0)),y=int(mod(pixel.y+phase,4.0));
+            int x=int(mod(pixel.x+phase,4.0)),y=int(mod(pixel.y+floor(phase/4.0),4.0));
             if(y==0)return x==0?0.0:(x==1?8.0:(x==2?2.0:10.0));
             if(y==1)return x==0?12.0:(x==1?4.0:(x==2?14.0:6.0));
             if(y==2)return x==0?3.0:(x==1?11.0:(x==2?1.0:9.0));
@@ -29,16 +29,18 @@ internal static class FilterPlasmaTemporalDithering
         }
         """;
 
-    internal static void Apply(float[] colors, int width, int height, long sequence, int setting)
+    internal static void Apply(float[] colors, int width, int height, int panelWidth, int panelHeight, long sequence, int setting)
     {
         if (setting <= 0) return;
         var intensity = setting / 100f;
         var levels = 255f + (31f - 255f) * intensity;
-        var phase = (int)(Math.Abs(sequence) % 4);
+        var phase = (int)Math.Abs(sequence % 16);
         for (var y = 0; y < height; y++)
         for (var x = 0; x < width; x++)
         {
-            var threshold = (Bayer4X4[((y + phase) & 3) * 4 + ((x + phase) & 3)] + 0.5f) / 16f;
+            var cellX = (int)((2L * x + 1) * panelWidth / (2L * width));
+            var cellY = (int)((2L * y + 1) * panelHeight / (2L * height));
+            var threshold = (Bayer4X4[((cellY + phase / 4) & 3) * 4 + ((cellX + phase) & 3)] + 0.5f) / 16f;
             var index = (y * width + x) * 3;
             for (var channel = 0; channel < 3; channel++)
             {

@@ -22,7 +22,7 @@ internal static class FilterLcdPixelStructure
         {
             return clamp((lcdOpenArea(center+span*.5,start,end)-lcdOpenArea(center-span*.5,start,end))/span,0.0,1.0);
         }
-        vec3 lcdCellAxis(float pixel,float panelSize,float outputSize,bool striped)
+        vec3 lcdCellAxisWithGap(float pixel,float panelSize,float outputSize,bool striped,float gap)
         {
             if(outputSize<=panelSize)return vec3(1.0);
             const float inset=.03;
@@ -39,10 +39,14 @@ internal static class FilterLcdPixelStructure
             float end=ceil((cell+1.0)*outputSize/panelSize-.5);
             span=1.0/max(1.0,end-start);
             center=(pixel-start+.5)*span;
-            vec3 openings=vec3(lcdCoverage(center,span,inset,inset+stripeWidth),
-                lcdCoverage(center,span,inset+stripeWidth,inset+2.0*stripeWidth),
-                lcdCoverage(center,span,inset+2.0*stripeWidth,1.0-inset));
+            vec3 openings=vec3(lcdCoverage(center,span,inset+gap,inset+stripeWidth-gap),
+                lcdCoverage(center,span,inset+stripeWidth+gap,inset+2.0*stripeWidth-gap),
+                lcdCoverage(center,span,inset+2.0*stripeWidth+gap,1.0-inset-gap));
             return mix(vec3(aperture),openings,resolved);
+        }
+        vec3 lcdCellAxis(float pixel,float panelSize,float outputSize,bool striped)
+        {
+            return lcdCellAxisWithGap(pixel,panelSize,outputSize,striped,0.0);
         }
         vec3 filterLcdPixelStructure(vec3 color,vec2 uv,vec2 panelSize,vec2 outputSize,int mode)
         {
@@ -108,7 +112,7 @@ internal static class FilterLcdPixelStructure
     internal static float NeutralAxis(int pixel, int panelSize, int outputSize) =>
         Axis(pixel, panelSize, outputSize, striped: false, reverse: false).X;
 
-    private static Vector3 Axis(int pixel, int panelSize, int outputSize, bool striped, bool reverse)
+    internal static Vector3 Axis(int pixel, int panelSize, int outputSize, bool striped, bool reverse, float gap = 0f)
     {
         if (outputSize <= panelSize) return Vector3.One;
         const float inset = .03f;
@@ -131,9 +135,9 @@ internal static class FilterLcdPixelStructure
         center = (pixel - first + .5f) * span;
 
         var openings = new Vector3(
-            Coverage(center, span, inset, inset + stripeWidth),
-            Coverage(center, span, inset + stripeWidth, inset + 2f * stripeWidth),
-            Coverage(center, span, inset + 2f * stripeWidth, 1f - inset));
+            Coverage(center, span, inset + gap, inset + stripeWidth - gap),
+            Coverage(center, span, inset + stripeWidth + gap, inset + 2f * stripeWidth - gap),
+            Coverage(center, span, inset + 2f * stripeWidth + gap, 1f - inset - gap));
         if (reverse) openings = new Vector3(openings.Z, openings.Y, openings.X);
         return Vector3.Lerp(new Vector3(aperture), openings, resolved);
     }
@@ -141,7 +145,7 @@ internal static class FilterLcdPixelStructure
     private static int Boundary(int cell, int outputSize, int panelSize) =>
         (int)((2L * cell * outputSize + panelSize - 1) / (2L * panelSize));
 
-    private static float Coverage(float center, float span, float start, float end) =>
+    internal static float Coverage(float center, float span, float start, float end) =>
         Math.Clamp((OpenArea(center + span * .5f, start, end) -
             OpenArea(center - span * .5f, start, end)) / span, 0f, 1f);
 

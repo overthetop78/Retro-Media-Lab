@@ -10,20 +10,21 @@ internal sealed partial class MachineController
     private Entry OsdPlasmaSettings()
     {
         var fields = new VideoTechnologyFields<EmulationPlasmaVideoConfiguration>(this,
-            s => s.Plasma, (s, c) => s with { Plasma = c });
+            config => config.Plasma, (config, plasma) => config with { Plasma = plasma });
         return VideoGroup(EmulationResourceKeys.VideoTechnologyPlasma,
-            VideoGroup(EmulationResourceKeys.VideoPlasmaGroupPanelAndCells,
-                fields.Number(Catalog.PlasmaCellStructure, c => c.CellStructure, (c, v) => c with { CellStructure = v }),
-                fields.Number(Catalog.PlasmaBlackDepth, c => c.BlackDepth, (c, v) => c with { BlackDepth = v })),
-            VideoGroup(EmulationResourceKeys.VideoPlasmaGroupPhosphors,
-                fields.Number(Catalog.PlasmaPhosphorIntensity, c => c.PhosphorIntensity, (c, v) => c with { PhosphorIntensity = v }),
-                fields.Number(Catalog.PlasmaGammaResponse, c => c.GammaResponse, (c, v) => c with { GammaResponse = v })),
-            VideoGroup(EmulationResourceKeys.VideoPlasmaGroupLight,
-                fields.Number(Catalog.PlasmaAutomaticBrightnessLimiter, c => c.AutomaticBrightnessLimiter, (c, v) => c with { AutomaticBrightnessLimiter = v }),
-                fields.Number(Catalog.PlasmaDiffusion, c => c.Diffusion, (c, v) => c with { Diffusion = v })),
-            VideoGroup(EmulationResourceKeys.VideoPlasmaGroupTemporal,
-                fields.Number(Catalog.PlasmaTemporalDithering, c => c.TemporalDithering, (c, v) => c with { TemporalDithering = v }),
-                fields.Number(Catalog.PlasmaPersistence, c => c.PersistenceIntensity, (c, v) => c with { PersistenceIntensity = v })))
+            fields.Choice(Catalog.CrtColorStandards, Catalog.CrtColorStandardsResourceKeys,
+                c => c.ColorStandards, (c, v) => c with { ColorStandards = v }),
+            fields.Choice(Catalog.CrtFieldRate, Catalog.CrtFieldRateResourceKeys,
+                c => c.FieldRate, (c, v) => c with { FieldRate = v }),
+            VideoChoice(Catalog.LcdDefinition, Catalog.PlasmaDefinitionResourceKeys, c => c.Plasma.Definition,
+                (c, v) => c with { Plasma = c.Plasma with { Definition = v } }),
+            fields.Choice(Catalog.PlasmaCellStructure, Catalog.PlasmaCellStructureResourceKeys,
+                c => c.CellStructure, (c, v) => c with { CellStructure = v }),
+            fields.Choice(Catalog.CrtConnection, Catalog.PlasmaConnectionResourceKeys,
+                c => c.Connection, (c, v) => c with { Connection = v }),
+            fields.Number(Catalog.CrtConnectionDegradation, c => c.ConnectionDegradation,
+                (c, v) => c with { ConnectionDegradation = v }, EmulationVideoProcessingLimits.CrtConnectionDegradationMaximum)
+                with { IsVisible = () => _video.VideoProcessing.Plasma.CanDegradeConnection() })
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma };
     }
 

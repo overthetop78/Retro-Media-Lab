@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Bakgrunnslysintensitet</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Svart dybde</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Cellstruktur</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Lysdiffusion</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Temporal utjamning</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Panel og celler</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Fosforer</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Lysstyring</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Temporal respons</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Persistens</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Svart dybde</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Fosforintensitet</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Gamma-respons</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Automatisk lysstyrkebegrenser</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Linjegrense</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Linjeintensitet</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Halointensitet</value></data>

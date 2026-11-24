@@ -8,7 +8,7 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulationVideoProcessingPipeline
 {
-    private static void ApplyDisplayTechnology(float[] colors, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, VideoFrame frame, EmulationVideoProcessingConfiguration configuration, CrtSignal crt)
+    private static void ApplyDisplayTechnology(float[] colors, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, VideoFrame frame, EmulationVideoProcessingConfiguration configuration, CrtSignal crt, float plasmaLoad)
     {
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel)
         {
@@ -18,13 +18,13 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma)
         {
             var plasma = configuration.Plasma;
-            FilterPlasmaBlackDepth.Apply(colors, plasma.BlackDepth);
-            FilterPlasmaGammaResponse.Apply(colors, plasma.GammaResponse);
-            FilterPlasmaPhosphorIntensity.Apply(colors, plasma.PhosphorIntensity);
-            FilterPlasmaAutomaticBrightnessLimiter.Apply(colors, plasma.AutomaticBrightnessLimiter);
-            FilterPlasmaCellStructure.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, plasma.CellStructure);
-            FilterPlasmaTemporalDithering.Apply(colors, outputWidth, outputHeight, frame.Sequence, plasma.TemporalDithering);
-            FilterPlasmaLightDiffusion.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, plasma.Diffusion);
+            var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(plasma.Definition, sourceWidth, sourceHeight);
+            FilterPlasmaPhosphorIntensity.Apply(colors, PlasmaVideoShaderParameters.PhosphorIntensity);
+            FilterPlasmaAutomaticBrightnessLimiter.Apply(colors, plasmaLoad, PlasmaVideoShaderParameters.BrightnessLimiter);
+            FilterPlasmaTemporalDithering.Apply(colors, outputWidth, outputHeight, panelWidth, panelHeight,
+                frame.Sequence, PlasmaVideoShaderParameters.Dithering);
+            FilterPlasmaBlackDepth.Apply(colors);
+            FilterPlasmaCellStructure.Apply(colors, panelWidth, panelHeight, outputWidth, outputHeight, plasma.CellStructure);
             return;
         }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Vector)

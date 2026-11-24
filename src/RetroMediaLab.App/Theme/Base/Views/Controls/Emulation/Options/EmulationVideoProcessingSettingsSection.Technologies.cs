@@ -90,7 +90,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
     }
 
 
-    private FrameworkElement CreatePlasmaPanel() => EmulationPlasmaSettingsBlock.Create(_configuration.Plasma, update => SetPlasma(update(_configuration.Plasma)));
 
     private FrameworkElement CreateVectorPanel() => EmulationVectorSettingsBlock.Create(_configuration.Vector, update => SetVector(update(_configuration.Vector)));
 

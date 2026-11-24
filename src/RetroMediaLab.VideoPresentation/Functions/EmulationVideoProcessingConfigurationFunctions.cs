@@ -72,6 +72,7 @@ public static class EmulationVideoProcessingConfigurationFunctions
             EmulationVideoScreenType.Crt => normalized.Crt.Connection,
             EmulationVideoScreenType.Lcd or EmulationVideoScreenType.LedBacklitLcd => LcdPanel(normalized).Connection,
             EmulationVideoScreenType.Oled => normalized.Oled.Connection,
+            EmulationVideoScreenType.Plasma => normalized.Plasma.Connection,
             _ => null
         };
         var mergesDithering = connection is EmulationCrtConnection.Composite or EmulationCrtConnection.AnalogRf;
@@ -184,7 +185,15 @@ public static class EmulationVideoProcessingConfigurationFunctions
         ScreenType(configuration) == EmulationVideoScreenType.LedBacklitLcd ? configuration.Led : configuration.Lcd;
 
     public static EmulationPanelSignalConfiguration PanelSignal(EmulationVideoProcessingConfiguration configuration) =>
-        ScreenType(configuration) == EmulationVideoScreenType.Oled ? configuration.Oled : LcdPanel(configuration);
+        ScreenType(configuration) switch
+        {
+            EmulationVideoScreenType.Oled => configuration.Oled,
+            EmulationVideoScreenType.Plasma => configuration.Plasma,
+            _ => LcdPanel(configuration)
+        };
+
+    public static bool UsesPanelSignal(EmulationVideoProcessingConfiguration configuration) =>
+        configuration.DisplayTechnology is EmulationVideoDisplayTechnology.FixedPixel or EmulationVideoDisplayTechnology.Plasma;
 
     private static T NormalizePanelSignal<T>(T panel) where T : EmulationPanelSignalConfiguration => panel with
     {
@@ -316,16 +325,13 @@ public static class EmulationVideoProcessingConfigurationFunctions
                 BacklightBleedIntensity = Intensity(fixedPixel.BacklightBleedIntensity),
                 OledEmissionIntensity = Intensity(fixedPixel.OledEmissionIntensity)
             },
-            Plasma = plasma with
+            Plasma = NormalizePanelSignal(plasma) with
             {
-                CellStructure = Intensity(plasma.CellStructure),
-                Diffusion = Intensity(plasma.Diffusion),
-                TemporalDithering = Intensity(plasma.TemporalDithering),
-                PersistenceIntensity = Intensity(plasma.PersistenceIntensity),
-                BlackDepth = Intensity(plasma.BlackDepth),
-                PhosphorIntensity = Intensity(plasma.PhosphorIntensity),
-                GammaResponse = Intensity(plasma.GammaResponse),
-                AutomaticBrightnessLimiter = Intensity(plasma.AutomaticBrightnessLimiter)
+                Definition = EmulationVideoProcessingCatalog.PlasmaDefinitionResourceKeys.ContainsKey(plasma.Definition)
+                    ? plasma.Definition : EmulationLcdDefinition.Native,
+                Connection = EmulationVideoProcessingCatalog.PlasmaConnectionResourceKeys.ContainsKey(plasma.Connection)
+                    ? plasma.Connection : EmulationCrtConnection.Digital,
+                CellStructure = DefinedOrDefault(plasma.CellStructure, EmulationPlasmaCellStructure.Stripe)
             },
             Vector = vector with
             {

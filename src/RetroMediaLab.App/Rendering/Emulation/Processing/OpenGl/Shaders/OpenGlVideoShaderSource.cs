@@ -116,11 +116,14 @@ internal static class OpenGlVideoShaderSource
         vec3 adjustColor(vec3 color) { return adjustLinear(restorationLinear(color)); }
 
         """ + "\n" + """
+        #if DISPLAY_TECHNOLOGY == 2 || DISPLAY_TECHNOLOGY == 3
+        """ + "\n" + FilterLcdPixelStructure.Shader + "\n" + """
+        #endif
         #if DISPLAY_TECHNOLOGY == 2
-        """ + "\n" + FilterLcdPixelStructure.Shader + FilterOledPixelStructure.Shader + FilterLcdDisplay.Shader + FilterLedBacklitLcdDisplay.Shader + FilterOledDisplay.Shader + FilterFixedPixelResponse.Shader + FilterFixedPixelPersistence.Shader + "\n" + """
+        """ + "\n" + FilterOledPixelStructure.Shader + FilterLcdDisplay.Shader + FilterLedBacklitLcdDisplay.Shader + FilterOledDisplay.Shader + FilterFixedPixelResponse.Shader + FilterFixedPixelPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 3
-        """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaLightDiffusion.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaGammaResponse.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
+        """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 4
         """ + "\n" + FilterVectorLineDetection.Shader + FilterVectorLineIntensity.Shader + FilterVectorBeamWidth.Shader + FilterVectorBeamFocus.Shader + FilterVectorHalo.Shader + FilterVectorHaloRadius.Shader + FilterVectorPhosphorColor.Shader + FilterVectorPersistence.Shader + "\n" + """
@@ -185,46 +188,27 @@ internal static class OpenGlVideoShaderSource
         }
         #endif
         #if DISPLAY_TECHNOLOGY == 3
-        vec3 plasmaBase(vec2 uv)
+        vec3 plasmaEmission(vec3 color,vec2 uv)
         {
-            vec3 color=adjustColor(sampleConfigured(uv).rgb);
-            color=filterPlasmaBlackDepth(color,PlasmaDisplay.x);
-            color=filterPlasmaGammaResponse(color,PlasmaDisplay.z);
             color=filterPlasmaPhosphorIntensity(color,PlasmaDisplay.y);
-            color=filterPlasmaAutomaticBrightnessLimiter(color,PlasmaDisplay.w,
-                PlasmaTemporal.w);
-            color=filterPlasmaCellStructure(color,fract(uv*Processing.zw),
-                PlasmaEffect.y,Output.xy/max(Processing.zw,vec2(1.0)));
-            return filterPlasmaTemporalDithering(color,floor(uv*Output.xy),
-                PlasmaEffect.w,PlasmaTemporal.z);
+            color=filterPlasmaAutomaticBrightnessLimiter(color,PlasmaDisplay.w,PlasmaTemporal.w);
+            vec2 cell=floor(lcdPanelSampleUv(uv,FixedSpatial.yz,Output.xy)*FixedSpatial.yz);
+            color=filterPlasmaTemporalDithering(color,cell,PlasmaEffect.w,PlasmaTemporal.z);
+            return filterPlasmaCellStructure(filterPlasmaBlackDepth(color),uv,
+                FixedSpatial.yz,Output.xy,int(PlasmaEffect.y+.5));
         }
 
-        vec3 plasmaPixel(vec2 uv)
+        vec3 plasmaPixel(vec3 color,vec2 uv,vec2 sampleUv)
         {
-            vec3 color = plasmaBase(uv);
-            if (PlasmaEffect.z > 0.0)
-            {
-                vec2 stepSize=1.0/max(Processing.zw,vec2(1.0));
-                vec3 nearLight=(plasmaBase(uv-vec2(stepSize.x,0.0))
-                    +plasmaBase(uv+vec2(stepSize.x,0.0))
-                    +plasmaBase(uv-vec2(0.0,stepSize.y))
-                    +plasmaBase(uv+vec2(0.0,stepSize.y)))*.25;
-                vec3 farLight=(plasmaBase(uv-vec2(stepSize.x*2.0,0.0))
-                    +plasmaBase(uv+vec2(stepSize.x*2.0,0.0))
-                    +plasmaBase(uv-vec2(0.0,stepSize.y*2.0))
-                    +plasmaBase(uv+vec2(0.0,stepSize.y*2.0)))*.25;
-                color=filterPlasmaLightDiffusion(color,nearLight,farLight,PlasmaEffect.z);
-            }
+            color=plasmaEmission(color,uv);
             if (PlasmaTemporal.y > 0.5)
             {
-                vec3 previous = texture2D(History,
-                    clamp(uv, 0.5 / Processing.zw, 1.0 - 0.5 / Processing.zw)).rgb;
-                previous=filterPlasmaCellStructure(adjustColor(previous),
-                    fract(uv*Processing.zw),PlasmaEffect.y,
-                    Output.xy/max(Processing.zw,vec2(1.0)));
-                color=filterPlasmaPersistence(color,previous,PlasmaTemporal.x);
+                vec2 historyUv=(floor(sampleUv*Processing.zw)+.5)/Processing.zw;
+                vec3 previous=texture2D(History,
+                    clamp(historyUv,.5/Processing.zw,1.0-.5/Processing.zw)).rgb;
+                color=filterPlasmaPersistence(color,plasmaEmission(adjustColor(previous),uv),PlasmaTemporal.x);
             }
-            return clamp(color, 0.0, 1.0);
+            return clamp(color,0.0,1.0);
         }
         #endif
         #if DISPLAY_TECHNOLOGY == 4
@@ -297,6 +281,8 @@ internal static class OpenGlVideoShaderSource
         #if DISPLAY_TECHNOLOGY == 2
                 if (FixedDisplay.x > .5)
                     sampleUv = lcdPanelSampleUv(originalUv, FixedSpatial.yz, Output.xy);
+        #elif DISPLAY_TECHNOLOGY == 3
+                sampleUv = lcdPanelSampleUv(originalUv, FixedSpatial.yz, Output.xy);
         #endif
                 vec3 source = restorationLinear(sampleConfigured(sampleUv).rgb);
         #if DISPLAY_TECHNOLOGY == 0
@@ -308,7 +294,7 @@ internal static class OpenGlVideoShaderSource
                 if (FixedDisplay.x > 0.5) return fixedPixelWithHistory(color, originalUv);
         #endif
         #if DISPLAY_TECHNOLOGY == 3
-                if (PlasmaEffect.x > 0.5) return plasmaPixel(originalUv);
+                if (PlasmaEffect.x > 0.5) return plasmaPixel(color,originalUv,sampleUv);
         #endif
         #if DISPLAY_TECHNOLOGY == 4
                 if (VectorEffect.x > 0.5) return vectorPixel(originalUv);

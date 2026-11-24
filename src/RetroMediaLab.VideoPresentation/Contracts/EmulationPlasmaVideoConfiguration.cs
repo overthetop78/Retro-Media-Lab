@@ -1,13 +1,8 @@
-using RetroMediaLab.VideoPresentation.Constants;
+using RetroMediaLab.VideoPresentation.Enums;
 
 namespace RetroMediaLab.VideoPresentation.Contracts;
 
-public sealed record EmulationPlasmaVideoConfiguration(
-    int CellStructure = EmulationVideoProcessingDefaults.Intensity,
-    int Diffusion = EmulationVideoProcessingDefaults.Intensity,
-    int TemporalDithering = EmulationVideoProcessingDefaults.Intensity,
-    int PersistenceIntensity = EmulationVideoProcessingDefaults.Intensity,
-    int BlackDepth = EmulationVideoProcessingDefaults.Intensity,
-    int PhosphorIntensity = EmulationVideoProcessingDefaults.Intensity,
-    int GammaResponse = EmulationVideoProcessingDefaults.Intensity,
-    int AutomaticBrightnessLimiter = EmulationVideoProcessingDefaults.Intensity);
+public sealed record EmulationPlasmaVideoConfiguration : EmulationPanelSignalConfiguration
+{
+    public EmulationPlasmaCellStructure CellStructure { get; init; }
+}

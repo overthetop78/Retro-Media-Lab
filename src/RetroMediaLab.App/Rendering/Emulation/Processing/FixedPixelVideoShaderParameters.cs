@@ -12,7 +12,7 @@ internal readonly record struct FixedPixelVideoShaderParameters(Vector4 Display,
         var oled = configuration.Oled;
         var isOled = fixedPixel.Technology == EmulationFixedPixelTechnology.Oled;
         var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
-            isOled ? oled.Definition : lcd.Definition, sourceWidth, sourceHeight);
+            EmulationVideoProcessingConfigurationFunctions.PanelSignal(configuration).Definition, sourceWidth, sourceHeight);
         return new FixedPixelVideoShaderParameters(
             new Vector4(configuration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel ? 1f : 0f,
                 (float)fixedPixel.Technology, isOled ? (float)oled.PixelStructure : FilterLcdPixelStructure.Mode(lcd), 0f),

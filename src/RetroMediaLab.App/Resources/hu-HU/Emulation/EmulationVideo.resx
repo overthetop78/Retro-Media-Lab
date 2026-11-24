@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>Háttérvilágítás intenzitása</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>Fekete mélység</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>Sejtszerkezet</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>Fénydiffúzió</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>Időbeli merülés</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>Panel és cellák</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>Foszfor</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>Fénykezelés</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>Időbeli válasz</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>Perzisztencia</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>Fekete mélység</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>Foszfor-intenzitás</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>Gamma válasz</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>Automatikus fényerő-korlátozó</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>Vonalküszöbérték</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>Line intenzitás</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>Halóintenzitás</value></data>

@@ -65,17 +65,6 @@
   <data name="Emulation.Video.Parameter.FixedPixelBacklight"><value>كثافة الضوء الخلفي</value></data>
   <data name="Emulation.Video.Parameter.FixedPixelBlackDepth"><value>العمق الأسود</value></data>
   <data name="Emulation.Video.Parameter.PlasmaCellStructure"><value>هيكل الخلايا</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaDiffusion"><value>انتشار الضوء</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaTemporalDithering"><value>التحلل المؤقت</value></data>
-  <data name="Emulation.Video.Plasma.Group.PanelAndCells"><value>الفريق والخلايا</value></data>
-  <data name="Emulation.Video.Plasma.Group.Phosphors"><value>فوسفور</value></data>
-  <data name="Emulation.Video.Plasma.Group.Light"><value>إدارة الضوء</value></data>
-  <data name="Emulation.Video.Plasma.Group.Temporal"><value>الاستجابة المؤقتة</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPersistence"><value>الثبات</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaBlackDepth"><value>عمق أسود</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaPhosphorIntensity"><value>كثافة الفوسفور</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaGammaResponse"><value>الاستجابة في غاما</value></data>
-  <data name="Emulation.Video.Parameter.PlasmaAutomaticBrightnessLimiter"><value>الحد من اللامع الآلي</value></data>
   <data name="Emulation.Video.Parameter.VectorLineThreshold"><value>عتبة الخط</value></data>
   <data name="Emulation.Video.Parameter.VectorLineIntensity"><value>شدة الخط</value></data>
   <data name="Emulation.Video.Parameter.VectorHaloIntensity"><value>كثافة الهالو</value></data>
