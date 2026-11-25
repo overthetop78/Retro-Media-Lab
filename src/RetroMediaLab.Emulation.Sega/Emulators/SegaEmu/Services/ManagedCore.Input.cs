@@ -43,7 +43,13 @@ internal sealed partial class ManagedCore
             _pendingInput = _pendingInput with { Pointer = _pendingInput.Pointer with { DeltaX = 0, DeltaY = 0, Wheel = 0, HorizontalWheel = 0 } };
         }
         osd_input_update_internal_bitmasks();
-        if (_system is Machines.Sc3000.Sc3000Machine computer)
+        if (_system is not { } board)
+            return;
+
+        uint buttons = _polledInput.Controllers.Count > 0 ? _polledInput.Controllers[0].Buttons : 0;
+        board.ConsolePausePressed = (buttons & (1u << 3)) != 0;
+        board.ConsoleResetPressed = (buttons & (1u << 2)) != 0;
+        if (board is Machines.Sc3000.Sc3000Machine computer)
             computer.Keys = _polledInput.Keys;
     }
     private static short ScaleRelativePointer(int delta, int sensitivity, ref long remainder)

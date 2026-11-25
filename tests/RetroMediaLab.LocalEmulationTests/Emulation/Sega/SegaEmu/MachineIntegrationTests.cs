@@ -31,6 +31,81 @@ public sealed class MachineIntegrationTests
         { ModelConstants.Pico, "PicoMachine", 0x82, ".md" },
     };
 
+    [Theory]
+    [InlineData(ModelConstants.MasterSystem, true)]
+    [InlineData(ModelConstants.MasterSystemII, false)]
+    [InlineData(ModelConstants.Sg1000, false)]
+    [InlineData(ModelConstants.MarkIII, false)]
+    public void ConsoleButtonsUseTheMachineNmiAndResetInput(string model, bool hasReset)
+    {
+        var configuration = new MachineConfiguration(model, CoreConstants.Id);
+        var settings = InputSettingsFunctions.Describe(configuration);
+        var port = settings.ControllerPorts[0];
+        Assert.Contains(port.Bindings.Definitions, binding => binding.Id == "ConsolePause");
+        Assert.Equal(hasReset, port.Bindings.Definitions.Any(binding => binding.Id == "ConsoleReset"));
+        Assert.DoesNotContain(settings.ControllerPorts.Skip(1).SelectMany(other => other.Bindings.Definitions),
+            binding => binding.Id is "ConsolePause" or "ConsoleReset");
+
+        SegaBoard? board = null;
+        try
+        {
+            board = BoardFactory.Create(model, Resources());
+            var rom = Program(board.Hardware);
+            // Set SP to mapped RAM, loop, then increment RAM on each NMI.
+            new byte[] { 0x31, 0xf0, 0xc3, 0xc3, 0x03, 0x00 }.CopyTo(rom, 0);
+            new byte[] { 0x21, 0x00, 0xc0, 0x34, 0xed, 0x45 }.CopyTo(rom, 0x66);
+            Assert.True(board.Load(model == ModelConstants.Sg1000 ? "synthetic.sg" : "synthetic.sms", rom));
+            var bus = (ICpuZ80NativeMemoryBus)board;
+            var audio = new short[4096];
+            board.RunFrame(audio);
+            byte beforePause = bus.ReadMemory(0xc000);
+
+            board.ConsolePausePressed = true;
+            board.RunFrame(audio);
+            board.RunFrame(audio);
+            Assert.Equal(unchecked((byte)(beforePause + 1)), bus.ReadMemory(0xc000));
+            board.ConsolePausePressed = false;
+            board.RunFrame(audio);
+            board.ConsolePausePressed = true;
+            board.RunFrame(audio);
+            Assert.Equal(unchecked((byte)(beforePause + 2)), bus.ReadMemory(0xc000));
+
+            Assert.NotEqual(0, bus.ReadPort(0xDD) & 0x10);
+            board.ConsoleResetPressed = true;
+            Assert.Equal(!hasReset, (bus.ReadPort(0xDD) & 0x10) != 0);
+            board.ConsoleResetPressed = false;
+            Assert.NotEqual(0, bus.ReadPort(0xDD) & 0x10);
+        }
+        finally { board?.Dispose(); }
+    }
+
+    [Theory]
+    [InlineData(ModelConstants.Sc3000)]
+    [InlineData(ModelConstants.Sf7000)]
+    public void SegaComputerSpecialKeysAreConfigurableInTheKeyboardTab(string model)
+    {
+        var configuration = new MachineConfiguration(model, CoreConstants.Id);
+        var settings = InputSettingsFunctions.Describe(configuration);
+        var keyboard = Assert.IsType<EmulationInputBindingSet>(settings.Keyboard);
+        var keys = keyboard.Definitions.ToDictionary(binding => binding.Id);
+        Assert.Equal("FUNC", keys[nameof(EmulationKey.F1)].InvariantDisplayValue);
+        Assert.Equal("GRAPH", keys[nameof(EmulationKey.LeftAlt)].InvariantDisplayValue);
+        Assert.Equal("RESET", keys[nameof(EmulationKey.SegaSc3000Reset)].InvariantDisplayValue);
+
+        var bindings = new Dictionary<string, string>
+        {
+            [nameof(EmulationKey.F1)] = nameof(EmulationKey.F2),
+            [nameof(EmulationKey.SegaSc3000Caret)] = nameof(EmulationKey.F3),
+            [nameof(EmulationKey.SegaSc3000Reset)] = nameof(EmulationKey.F4)
+        };
+        var applied = InputSettingsFunctions.Apply(configuration, settings with { Keyboard = keyboard with { Values = bindings } });
+        var mapped = InputSnapshotFunctions.Apply(EmulationInputSnapshot.Empty with
+        {
+            Keys = new HashSet<EmulationKey> { EmulationKey.F2, EmulationKey.F3, EmulationKey.F4 }
+        }, applied);
+        Assert.True(mapped.Keys.SetEquals([EmulationKey.F1, EmulationKey.SegaSc3000Caret, EmulationKey.SegaSc3000Reset]));
+    }
+
     [Theory, MemberData(nameof(Machines))]
     public void MachineRunsAndRestoresItsInMemoryProgram(string model, string type, byte hardware, string extension)
     {

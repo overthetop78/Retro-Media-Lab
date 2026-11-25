@@ -2,6 +2,9 @@ namespace RetroMediaLab.Emulation.Sega.Common.Machines.Common.Dictionaries;
 
 internal static class InputSnapshotDictionary
 {
+    internal const string ConsolePause = "ConsolePause";
+    internal const string ConsoleReset = "ConsoleReset";
+
     internal static readonly IReadOnlyDictionary<string, int> ButtonIndexes =
         new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
         {
@@ -9,6 +12,9 @@ internal static class InputSnapshotDictionary
             [InputSnapshotFunctionsConstants.Y] = 1,
             [InputSnapshotFunctionsConstants.Select] = 2,
             [InputSnapshotFunctionsConstants.Start] = 3,
+            // The 8-bit console buttons use the Start and Select slots of the input snapshot.
+            [ConsolePause] = 3,
+            [ConsoleReset] = 2,
             [InputSnapshotFunctionsConstants.Up] = 4,
             [InputSnapshotFunctionsConstants.Down] = 5,
             [InputSnapshotFunctionsConstants.Left] = 6,

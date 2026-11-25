@@ -12,7 +12,7 @@ internal static partial class InputSettingsFunctions
     {
         var model = ModelCatalog.Get(configuration.Model);
         var input = configuration.Input ?? new InputConfiguration();
-        var keyboard = model.HasKeyboard ? new EmulationInputBindingSet((new Engine().SelectedAdapter(configuration)?.GetKeyboardDefinitions(configuration) ?? KeyboardDefinitions(model)), input.KeyboardBindings ?? EmulationSdk.InputProcessing.ToStrings(input.KeyboardMappings), EmulationInputSource.Keyboard | EmulationInputSource.Mouse | EmulationInputSource.Controller) : null;
+        var keyboard = model.HasKeyboard ? new EmulationInputBindingSet((new Engine().SelectedAdapter(configuration)?.GetKeyboardDefinitions(configuration) ?? KeyboardDefinitions(configuration)), input.KeyboardBindings ?? EmulationSdk.InputProcessing.ToStrings(input.KeyboardMappings), EmulationInputSource.Keyboard | EmulationInputSource.Mouse | EmulationInputSource.Controller) : null;
         var mouse = model.MouseButtonCount > 0 ? new EmulationInputBindingSet(MouseDefinitions(), EmulationSdk.InputProcessing.MouseBindings(input.MouseButtonMappings, MouseAction.None), EmulationInputSource.Mouse | EmulationInputSource.Keyboard | EmulationInputSource.Controller, true) : null;
         if (SupportsTerebiStylus(configuration))
             mouse = new EmulationInputBindingSet(
@@ -63,11 +63,24 @@ internal static partial class InputSettingsFunctions
         return new Engine().SelectedAdapter(adjustedConfiguration)?.ApplyInputConfiguration(adjustedConfiguration) ?? adjustedConfiguration;
     }
 
-    private static IReadOnlyList<InputBindingDefinition> KeyboardDefinitions(Model model) => [];
+    private static InputBindingDefinition ComputerKey(EmulationKey key, string label, string? defaultBinding = null) =>
+        new(key.ToString(), string.Empty, defaultBinding ?? key.ToString(), label);
 
     private static IReadOnlyList<InputBindingDefinition> SessionControllerDefinitions(MachineConfiguration configuration, PeripheralCategory type, int port)
     {
-        return ControllerDefinitions(type);
+        var definitions = ControllerDefinitions(type);
+        if (port != 0 || configuration.EmulatorId != Emulators.SegaEmu.Constants.CoreConstants.Id)
+            return definitions;
+
+        return configuration.Model switch
+        {
+            ModelConstants.MasterSystem => [.. definitions,
+                new InputBindingDefinition(InputSnapshotDictionary.ConsolePause, string.Empty, string.Empty, "PAUSE"),
+                new InputBindingDefinition(InputSnapshotDictionary.ConsoleReset, string.Empty, string.Empty, "RESET")],
+            ModelConstants.MasterSystemII or ModelConstants.Sg1000 or ModelConstants.MarkIII => [.. definitions,
+                new InputBindingDefinition(InputSnapshotDictionary.ConsolePause, string.Empty, string.Empty, "PAUSE")],
+            _ => definitions
+        };
     }
 
     private static IReadOnlyList<InputBindingDefinition> MouseDefinitions() =>
@@ -270,5 +283,28 @@ internal static partial class InputSettingsFunctions
     /// <summary>Décrit les touches du clavier principal selon les règles matérielles déjà utilisées.</summary>
     /// <param name="configuration">Profil et associations empruntés à consulter.</param>
     /// <returns>Définitions de clavier du profil ; liste vide sans clavier pris en charge.</returns>
-    internal static IReadOnlyList<InputBindingDefinition> KeyboardDefinitions(MachineConfiguration configuration) { var model = ModelCatalog.Get(configuration.Model); return model.HasKeyboard ? KeyboardDefinitions(model) : []; }
+    internal static IReadOnlyList<InputBindingDefinition> KeyboardDefinitions(MachineConfiguration configuration) =>
+        configuration.Model is ModelConstants.Sc3000 or ModelConstants.Sf7000 &&
+        configuration.EmulatorId == Emulators.SegaEmu.Constants.CoreConstants.Id
+            ?
+            [
+                ComputerKey(EmulationKey.Escape, "ENG / DIER’S"),
+                ComputerKey(EmulationKey.Insert, "HOME CLR"),
+                ComputerKey(EmulationKey.Delete, "INST DEL"),
+                ComputerKey(EmulationKey.Return, "RETURN"),
+                ComputerKey(EmulationKey.F1, "FUNC"),
+                ComputerKey(EmulationKey.Break, "BREAK"),
+                ComputerKey(EmulationKey.LeftAlt, "GRAPH"),
+                ComputerKey(EmulationKey.LeftControl, "CTRL"),
+                ComputerKey(EmulationKey.LeftShift, "SHIFT"),
+                ComputerKey(EmulationKey.Up, "↑"),
+                ComputerKey(EmulationKey.Down, "↓"),
+                ComputerKey(EmulationKey.Left, "←"),
+                ComputerKey(EmulationKey.Right, "→"),
+                ComputerKey(EmulationKey.Backquote, "π"),
+                ComputerKey(EmulationKey.SegaSc3000Caret, "^", string.Empty),
+                ComputerKey(EmulationKey.Backslash, "¥"),
+                ComputerKey(EmulationKey.SegaSc3000Reset, "RESET", string.Empty)
+            ]
+            : [];
 }

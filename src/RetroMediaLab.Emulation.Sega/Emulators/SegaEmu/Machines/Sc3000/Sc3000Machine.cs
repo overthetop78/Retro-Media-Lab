@@ -15,7 +15,7 @@ internal class Sc3000Machine(MachineResources resources) : SegaBoard(SystemHardw
         [Key.D2, Key.W, Key.S, Key.X, Key.Space, Key.Period, Key.L, Key.O, Key.D9],
         [Key.D3, Key.E, Key.D, Key.C, Key.Insert, Key.Slash, Key.Semicolon, Key.P, Key.D0],
         [Key.D4, Key.R, Key.F, Key.V, Key.Delete, Key.Backquote, Key.Quote, Key.Equals, Key.Minus],
-        [Key.D5, Key.T, Key.G, Key.B, Key.Unknown, Key.Down, Key.RightBracket, Key.LeftBracket, Key.Backquote],
+        [Key.D5, Key.T, Key.G, Key.B, Key.Unknown, Key.Down, Key.RightBracket, Key.LeftBracket, Key.SegaSc3000Caret],
         [Key.D6, Key.Y, Key.H, Key.N, Key.Unknown, Key.Left, Key.Return, Key.Unknown, Key.Backslash, Key.Unknown, Key.Unknown, Key.F1],
         [Key.D7, Key.U, Key.J, Key.M, Key.Unknown, Key.Right, Key.Up, Key.Unknown, Key.Break, Key.LeftAlt, Key.LeftControl, Key.LeftShift]
     ];
@@ -37,6 +37,7 @@ internal class Sc3000Machine(MachineResources resources) : SegaBoard(SystemHardw
         _ppi.ReadPortB = ReadPpiPortB;
         SetZ80Ports(ReadPort, WritePort);
     }
+    protected override bool PauseInterruptPressed => Keys.Contains(Key.SegaSc3000Reset);
     protected override Action<int> CreateFrameScheduler() => CreateEightBitFrameScheduler();
     protected override bool AcceptsHardware(byte hardware) => hardware is SystemHardware.Sg1000 or SystemHardware.Sg1000II or SystemHardware.Sg1000IIExtendedRam;
 

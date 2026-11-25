@@ -119,7 +119,24 @@ internal abstract partial class SegaBoard : ICpuZ80NativeMemoryBus
     private void psg_config(uint cycles, uint preamp, uint pan) => _sound.Psg.Configure(cycles, preamp, pan);
     private uint io_68k_read(uint address) => _input.Read68K(address);
     private void io_68k_write(uint address, uint data) => _input.Write68K(address, data);
-    private uint io_z80_read(uint address) => _input.ReadZ80(address);
+    internal bool ConsolePausePressed { private get; set; }
+    internal bool ConsoleResetPressed { private get; set; }
+
+    protected virtual bool PauseInterruptPressed => system_hw switch
+    {
+        SystemHardware.Sg1000 or SystemHardware.Sg1000II or SystemHardware.Sg1000IIExtendedRam
+            or SystemHardware.MarkIII or SystemHardware.MasterSystem or SystemHardware.MasterSystemII => ConsolePausePressed,
+        _ => (input_pad[0] & 0x80) != 0
+    };
+
+    private uint io_z80_read(uint address)
+    {
+        uint data = _input.ReadZ80(address);
+        // The Master System I RESET switch pulls bit 4 of the second I/O port low.
+        return system_hw == SystemHardware.MasterSystem && address == 1 && ConsoleResetPressed
+            ? data & ~0x10u
+            : data;
+    }
     private void io_z80_write(uint address, uint data, uint cycles) => _input.WriteZ80(address, data, cycles);
     private uint io_gg_read(uint address) => _input.ReadGameGear(address);
     private void io_gg_write(uint address, uint data) => _input.WriteGameGear(address, data);

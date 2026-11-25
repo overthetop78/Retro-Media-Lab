@@ -187,7 +187,7 @@ internal abstract partial class SegaBoard
                 _board.h_counter = _board.reg[(int)(10)];
                 if ((unchecked((int)(_board.system_hw)) != 64))
                 {
-                    if (((unchecked((int)(_board.input_pad[(int)(0)])) & 128) != 0))
+                    if (_board.PauseInterruptPressed)
                     {
                         if ((!(_board.pause_b != 0)))
                         {
