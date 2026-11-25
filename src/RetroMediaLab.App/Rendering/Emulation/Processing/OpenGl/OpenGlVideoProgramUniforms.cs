@@ -31,8 +31,6 @@ internal sealed class OpenGlVideoProgramUniforms
     private readonly int _general;
     private readonly int _restoration;
     private readonly int _signal;
-    private readonly int _stylistic;
-    private readonly int _stylistic2;
     private readonly int _vfdDisplay;
     private readonly int _vfdStructure;
     private readonly int _ledMatrixStructure;
@@ -72,8 +70,6 @@ internal sealed class OpenGlVideoProgramUniforms
         _general = Location(OpenGlVideoUniformNames.General);
         _restoration = Location(OpenGlVideoUniformNames.Restoration);
         _signal = Location(OpenGlVideoUniformNames.Signal);
-        _stylistic = Location(OpenGlVideoUniformNames.Stylistic);
-        _stylistic2 = Location(OpenGlVideoUniformNames.Stylistic2);
         _vfdDisplay = Location(OpenGlVideoUniformNames.VfdDisplay);
         _vfdStructure = Location(OpenGlVideoUniformNames.VfdStructure);
         _ledMatrixStructure = Location(OpenGlVideoUniformNames.LedMatrixStructure);
@@ -135,7 +131,7 @@ internal sealed class OpenGlVideoProgramUniforms
             0f,
             0f,
             configuration.Restoration.Debanding / OpenGlVideoConstants.PercentageDivisor,
-            0f));
+            configuration.Restoration.DetailRecovery / OpenGlVideoConstants.PercentageDivisor));
         Set(_signal, new(
             (float)configuration.SignalSimulation.Connection,
             configuration.SignalSimulation.ConnectionIntensity
@@ -143,13 +139,6 @@ internal sealed class OpenGlVideoProgramUniforms
             (float)configuration.SignalSimulation.Standard,
             configuration.SignalSimulation.StandardIntensity
                 / OpenGlVideoConstants.PercentageDivisor));
-        Set(_stylistic, new(
-            configuration.Stylistic.Grain / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Stylistic.Vhs / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Stylistic.ChromaticAberration
-                / OpenGlVideoConstants.PercentageDivisor,
-            configuration.Stylistic.Bloom / OpenGlVideoConstants.PercentageDivisor));
-        Set(_stylistic2, new(configuration.Stylistic.Sepia ? 1f : 0f, 0f, configuration.Restoration.DetailRecovery / OpenGlVideoConstants.PercentageDivisor, 0f));
 
         var vfd = VfdVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         Set(_vfdDisplay, vfd.Display);

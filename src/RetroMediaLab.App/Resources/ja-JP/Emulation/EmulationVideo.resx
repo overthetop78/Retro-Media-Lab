@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>プロジェクト</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>ブラックフレームインサート</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>信号シミュレーション</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>スタイリスティック効果</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>アナログ粒</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>クロマティック・アバレーション</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>灯花咲</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>セピア</value></data>
   <data name="Emulation.Video.Tab.Display"><value>ディスプレイ</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>レンダリング</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>テクノロジー</value></data>

@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Dự án</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Comment</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Mô phỏng tín hiệu</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Hiệu ứng hình ảnh</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Hạt than</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Name</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Ánh sáng rực rỡ</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Sepia</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Hiển thị</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Vẽ</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Công nghệ</value></data>

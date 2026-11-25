@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Fremskrivning</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Indsættelse af sort ramme</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signalsimuleringer</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Stilistiske virkninger</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Analogt korn</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Kromatisk afvigelse</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Lyseksplosion</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Sepiazerbaijan. kgm</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Vis</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Rendering</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Teknologi</value></data>

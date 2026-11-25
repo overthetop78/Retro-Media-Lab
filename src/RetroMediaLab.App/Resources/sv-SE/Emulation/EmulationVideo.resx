@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Projektion</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Svart ram införande</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signalsimuleringar</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Stylistiska effekter</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Analogt spannmål</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Kromatisk aberration</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Ljus blom</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Sepia</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Display</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Rendering</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Teknikteknik</value></data>

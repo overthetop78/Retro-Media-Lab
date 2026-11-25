@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Проектування</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Чорний каркас вставки</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Симуляції сигналу</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Стилістичні ефекти</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Аналоговий зерна</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Хроматична аберація</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Світло квітучий</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Сепія</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Показати</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Рендеринг</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Технології</value></data>

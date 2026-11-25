@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Proiectare</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Inserție cadru negru</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulări de semnale</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Efecte stilistice</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Boabe analoge</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Aberaţii cromatice</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Bloom luminos</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Sepia</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Afișează</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Retrimiterea</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Tehnologie</value></data>

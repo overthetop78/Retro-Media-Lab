@@ -42,7 +42,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         if (sameSize && normalized.Adjustments == new EmulationImageAdjustments()
             && (normalized.Restoration with { Deinterlacing = EmulationDeinterlacingMode.Off }) == new EmulationImageRestorationConfiguration()
             && normalized.SignalSimulation == new EmulationSignalSimulationConfiguration()
-            && normalized.Stylistic == new EmulationStylisticVideoConfiguration()
             && normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Normal)
         {
             ResetTemporalHistory();
@@ -65,7 +64,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             ApplyColorAdjustments(linear, normalized);
             var matrixOutput = FilterLedMatrixCellStructure.Render(linear, frame.Width, frame.Height,
                 outputSize.Width, outputSize.Height, normalized.LedMatrix);
-            ApplyStylistic(matrixOutput, outputSize, frame.Sequence, normalized.Stylistic);
             return OutputFrame(frame, outputSize, matrixOutput);
         }
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper)
@@ -100,7 +98,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             FilterLedBacklitLcdDisplay.Apply(linear, outputSize.Width, outputSize.Height, connected,
                 frame.Width, frame.Height, normalized.Led);
         ApplyEPaperTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
-        ApplyStylistic(linear, outputSize, frame.Sequence, normalized.Stylistic);
         ApplyFixedPixelTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma)
             _plasmaPersistence.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, PlasmaVideoShaderParameters.Persistence);
@@ -154,7 +151,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         VideoGammaParameterFunctions.Apply(_vectorOutput, configuration.Adjustments.Gamma);
         VideoSaturationParameterFunctions.Apply(_vectorOutput, configuration.Adjustments.Saturation);
         VideoSharpnessParameterFunctions.Apply(_vectorOutput, size.Width, size.Height, configuration.Adjustments.Sharpness);
-        ApplyStylistic(_vectorOutput, size, frame.Sequence, configuration.Stylistic);
         return frame with
         {
             Pixels = ToSrgb(_vectorOutput, size.Width, size.Height),
@@ -173,15 +169,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         _vectorRaster = [];
     }
 
-    private static void ApplyStylistic(float[] linear, EmulationVideoProcessingSize outputSize,
-        long sequence, EmulationStylisticVideoConfiguration stylistic)
-    {
-        FilterVhs.Apply(linear, outputSize.Width, outputSize.Height, sequence, stylistic.Vhs);
-        FilterChromaticAberration.Apply(linear, outputSize.Width, outputSize.Height, stylistic.ChromaticAberration);
-        FilterBloom.Apply(linear, outputSize.Width, outputSize.Height, stylistic.Bloom);
-        FilterSepia.Apply(linear, stylistic.Sepia);
-        FilterGrain.Apply(linear, outputSize.Width, outputSize.Height, sequence, stylistic.Grain);
-    }
 
     private static void ApplySignalConnection(float[] colors, int width, int height, long sequence, EmulationSignalSimulationConfiguration signal, EmulationSignalStandard standard)
     {

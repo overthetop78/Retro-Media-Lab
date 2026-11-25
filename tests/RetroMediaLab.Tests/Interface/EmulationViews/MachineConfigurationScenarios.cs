@@ -199,13 +199,13 @@ internal static class MachineConfigurationScenarios
         try
         {
             await view.EditConfigurationAsync(configuration);
-            var grain = Controls<Slider>(view).Single(slider => AutomationProperties.GetAutomationId(slider) == EmulationVideoProcessingCatalog.Grain);
+            var detail = Controls<Slider>(view).Single(slider => AutomationProperties.GetAutomationId(slider) == EmulationVideoProcessingCatalog.DetailRecovery);
 
-            grain.Value = 60;
+            detail.Value = 60;
             await Dispatcher.Yield(DispatcherPriority.ContextIdle);
 
             Assert.Equal(configuration.Id, published?.Configuration.Id);
-            Assert.Equal(60, profiles.Get(module.Id, configuration.Id).Processing!.Stylistic.Grain);
+            Assert.Equal(60, profiles.Get(module.Id, configuration.Id).Processing!.Restoration.DetailRecovery);
             Assert.NotEmpty(files.Writes);
         }
         finally

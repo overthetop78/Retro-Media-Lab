@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Ennuste</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Musta kehys</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signaalisimulaatiot</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Tyylilliset vaikutukset</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Analoginen vilja</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Kromaattinen poikkeama</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Kevyt kukinta</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Sepia</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Näyttö</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Renderointi</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Teknologia</value></data>

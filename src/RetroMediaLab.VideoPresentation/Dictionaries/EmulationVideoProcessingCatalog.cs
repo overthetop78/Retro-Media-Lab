@@ -27,11 +27,6 @@ public static partial class EmulationVideoProcessingCatalog
     public const string SignalConnectionIntensity = nameof(SignalConnectionIntensity);
     public const string SignalStandard = nameof(SignalStandard);
     public const string SignalStandardIntensity = nameof(SignalStandardIntensity);
-    public const string Grain = nameof(Grain);
-    public const string Vhs = nameof(Vhs);
-    public const string ChromaticAberration = nameof(ChromaticAberration);
-    public const string Bloom = nameof(Bloom);
-    public const string Sepia = nameof(Sepia);
     public const string CrtColorStandards = nameof(CrtColorStandards);
     public const string CrtFieldRate = nameof(CrtFieldRate);
     public const string CrtMask = nameof(CrtMask);
@@ -98,11 +93,6 @@ public static partial class EmulationVideoProcessingCatalog
         DetailRecovery,
         Deinterlacing, BlackFrameInsertion,
         SignalConnection, SignalConnectionIntensity, SignalStandard, SignalStandardIntensity,
-        Grain,
-        Vhs,
-        ChromaticAberration,
-        Bloom,
-        Sepia,
         CrtColorStandards, CrtFieldRate, CrtMask, CrtPhosphorColor, CrtBeamWidth, CrtCurvature,
         CrtConnection, CrtConnectionDegradation, CrtMonitorPalette,
         FixedPixelTechnology, FixedPixelSubpixels, FixedPixelMonochromeColor,

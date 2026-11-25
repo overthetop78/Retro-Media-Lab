@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Proiezione</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Inserimento telaio nero</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulazioni di segnale</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Effetti stilistici</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Grano analogico</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Aberrazione cromatica</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Fiore di luce</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Seppia</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Visualizza</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Rendering</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Tecnologia</value></data>

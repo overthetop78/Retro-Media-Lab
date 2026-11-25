@@ -59,7 +59,7 @@ internal sealed partial class MachineController
                         (settings, draft) => settings with { Restoration = settings.Restoration with { Deinterlacing = draft } })
                         with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.SupportsDeinterlacing(_video.VideoProcessing) }),
             .. OsdModuleGroups(EmulationMachineTab.Video, EmulationVideoSettingsSection.Image),
-            OsdVideoEffectsSettings()
+            .. OsdModuleGroups(EmulationMachineTab.Video, EmulationVideoSettingsSection.Effects)
         ]), Glyph: MachineCommandGlyphConstants.Renderer, SeparatorBefore: true, FullHeight: true);
 
     internal static Entry[] EditableVideoRows(IReadOnlyList<Entry> groups)

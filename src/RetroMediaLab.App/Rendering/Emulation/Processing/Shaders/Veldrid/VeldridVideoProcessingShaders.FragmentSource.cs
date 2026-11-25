@@ -13,7 +13,7 @@ internal static partial class VeldridVideoProcessingShaders
             vec4 Restoration; vec4 SegmentGeometry; vec4 SegmentShape;
             vec4 SegmentEmission; vec4 SegmentOptical; vec4 SegmentTemporal; vec4 SegmentOptics;
             vec4 General; vec4 Restoration2;
-            vec4 Signal; vec4 Stylistic; vec4 Stylistic2;
+            vec4 Signal;
             vec4 VfdDisplay; vec4 VfdStructure;
             vec4 LedMatrixStructure;
             vec4 DotMatrixGeometry; vec4 DotMatrixOptics;
@@ -204,7 +204,7 @@ internal static partial class VeldridVideoProcessingShaders
             if(t==10)c=projectionPixel(uv);
         #endif
             return clamp(c,0.0,1.0);}
-        """ + SignalConnectionRgbScart.Shader + SignalConnectionComponent.Shader + SignalConnectionSVideo.Shader + SignalConnectionComposite.Shader + SignalConnectionRf.Shader + SignalStandardPal.Shader + SignalStandardNtsc.Shader + SignalStandardSecam.Shader + FilterGrain.Shader + FilterVhs.Shader + FilterChromaticAberration.Shader + FilterBloom.Shader + FilterSepia.Shader + """
+        """ + SignalConnectionRgbScart.Shader + SignalConnectionComponent.Shader + SignalConnectionSVideo.Shader + SignalConnectionComposite.Shader + SignalConnectionRf.Shader + SignalStandardPal.Shader + SignalStandardNtsc.Shader + SignalStandardSecam.Shader + """
         vec3 signalEffects(vec3 color,vec2 uv)
         {
             if (Parameters.Signal.x < .5 && Parameters.Signal.w <= 0.0) return color;
@@ -226,13 +226,7 @@ internal static partial class VeldridVideoProcessingShaders
         }
         vec3 postEffect(vec3 c,vec2 uv)
         {
-            c=signalEffects(c,uv);vec2 s=1.0/max(Parameters.Output.xy,vec2(1));
-            if(Parameters.Stylistic.y>0.0){float n=hash(floor(uv*Parameters.Output.xy)+Parameters.General.z)-.5;float w=(sin(uv.y*Parameters.Processing.w*.071+Parameters.General.z*.31)*4.0+n*4.0)*Parameters.Stylistic.y;vec2 q=uv+vec2(w*s.x,0);c=filterVhs(c,raw(q),raw(q-vec2(s.x*2.0,0)),raw(q+vec2(s.x*2.0,0)),Parameters.Stylistic.y,n,floor(uv.y*Parameters.Processing.w),uv.y);}
-            if(Parameters.Stylistic.z>0.0){float o=Parameters.Stylistic.z*s.x*7.0;c=filterChromaticAberration(raw(uv+vec2(o,0)),c,raw(uv-vec2(o,0)));}
-            if(Parameters.Stylistic.w>0.0)c=filterBloom(c,raw(uv+vec2(s.x*2.0,0)),raw(uv-vec2(s.x*2.0,0)),raw(uv+vec2(0,s.y*2.0)),raw(uv-vec2(0,s.y*2.0)),raw(uv+vec2(s.x*5.0,0)),raw(uv-vec2(s.x*5.0,0)),raw(uv+vec2(0,s.y*5.0)),raw(uv-vec2(0,s.y*5.0)),Parameters.Stylistic.w);
-            c=filterSepia(c,Parameters.Stylistic2.x);
-            c=filterGrain(c,Parameters.Stylistic.x,hash(floor(uv*Parameters.Output.xy)+Parameters.General.z)*2.0-1.0);
-            return clamp(c,0.0,1.0);
+            return clamp(signalEffects(c,uv),0.0,1.0);
         }
         #if DISPLAY_TECHNOLOGY == 1
         vec3 crtImageAt(vec2 uv)

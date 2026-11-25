@@ -41,8 +41,6 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 General;
         uniform vec4 Restoration;
         uniform vec4 Signal;
-        uniform vec4 Stylistic;
-        uniform vec4 Stylistic2;
         uniform vec4 VfdDisplay;
         uniform vec4 VfdStructure;
         uniform vec4 LedMatrixStructure;
@@ -223,7 +221,7 @@ internal static class OpenGlVideoShaderSource
         #endif
                 vec3 source = restorationLinear(sampleConfigured(sampleUv).rgb);
         #if DISPLAY_TECHNOLOGY == 0
-                float recover = Processing.y > .5 && any(notEqual(Output.xy, Processing.zw)) ? Stylistic2.z : 0.0;
+                float recover = Processing.y > .5 && any(notEqual(Output.xy, Processing.zw)) ? Restoration.w : 0.0;
                 source = restoreHostSource(source, originalUv, Processing.zw, Restoration.z, recover);
         #endif
                 vec3 color = adjustLinear(source);
@@ -297,7 +295,7 @@ internal static class OpenGlVideoShaderSource
             if(t==10)color=projectionPixel(uv);
         #endif
             return clamp(color,0.0,1.0);}
-        """ + SignalConnectionRgbScart.Shader + SignalConnectionComponent.Shader + SignalConnectionSVideo.Shader + SignalConnectionComposite.Shader + SignalConnectionRf.Shader + SignalStandardPal.Shader + SignalStandardNtsc.Shader + SignalStandardSecam.Shader + FilterGrain.Shader + FilterVhs.Shader + FilterChromaticAberration.Shader + FilterBloom.Shader + FilterSepia.Shader + """
+        """ + SignalConnectionRgbScart.Shader + SignalConnectionComponent.Shader + SignalConnectionSVideo.Shader + SignalConnectionComposite.Shader + SignalConnectionRf.Shader + SignalStandardPal.Shader + SignalStandardNtsc.Shader + SignalStandardSecam.Shader + """
         vec3 signalEffects(vec3 color,vec2 uv)
         {
             if (Signal.x < .5 && Signal.w <= 0.0) return color;
@@ -319,13 +317,7 @@ internal static class OpenGlVideoShaderSource
         }
         vec3 postColor(vec3 color,vec2 uv)
         {
-            color=signalEffects(color,uv);vec2 s=1.0/max(Output.xy,vec2(1.0));
-            if(Stylistic.y>0.0){float n=extraHash(floor(uv*Output.xy)+General.z)-.5;float w=(sin(uv.y*Processing.w*.071+General.z*.31)*4.0+n*4.0)*Stylistic.y;vec2 q=uv+vec2(w*s.x,0.0);color=filterVhs(color,extraRaw(q),extraRaw(q-vec2(s.x*2.0,0.0)),extraRaw(q+vec2(s.x*2.0,0.0)),Stylistic.y,n,floor(uv.y*Processing.w),uv.y);}
-            if(Stylistic.z>0.0){float o=Stylistic.z*s.x*7.0;color=filterChromaticAberration(extraRaw(uv+vec2(o,0.0)),color,extraRaw(uv-vec2(o,0.0)));}
-            if(Stylistic.w>0.0)color=filterBloom(color,extraRaw(uv+vec2(s.x*2.0,0.0)),extraRaw(uv-vec2(s.x*2.0,0.0)),extraRaw(uv+vec2(0.0,s.y*2.0)),extraRaw(uv-vec2(0.0,s.y*2.0)),extraRaw(uv+vec2(s.x*5.0,0.0)),extraRaw(uv-vec2(s.x*5.0,0.0)),extraRaw(uv+vec2(0.0,s.y*5.0)),extraRaw(uv-vec2(0.0,s.y*5.0)),Stylistic.w);
-            color=filterSepia(color,Stylistic2.x);
-            color=filterGrain(color,Stylistic.x,extraHash(floor(uv*Output.xy)+General.z)*2.0-1.0);
-            return clamp(color,0.0,1.0);
+            return clamp(signalEffects(color,uv),0.0,1.0);
         }
         #if DISPLAY_TECHNOLOGY == 1
         vec3 crtImageAt(vec2 uv)

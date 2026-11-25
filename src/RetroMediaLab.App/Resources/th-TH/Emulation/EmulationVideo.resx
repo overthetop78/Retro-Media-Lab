@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>โปรเจคชัน</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>แทรกกรอบสีดํา</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>การจําลองสัญญาณ</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>ผลกระทบทางภูมิแพ้</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>เมล็ด อา นา ล็อก</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>การแบ่งชั้นของโมเลกุล</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>ดอก บัว</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>ภาษาเซเปียName</value></data>
   <data name="Emulation.Video.Tab.Display"><value>แสดง</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>การแสดงผล</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>เทคโนโลยี</value></data>

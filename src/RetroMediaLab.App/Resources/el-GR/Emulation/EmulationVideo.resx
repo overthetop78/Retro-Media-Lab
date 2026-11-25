@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Προβολή</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Εισαγωγή μαύρου πλαισίου</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Προσομοιώσεις σημάτων</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Στυλιστικές επιδράσεις</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Αναλογικοί σπόροι</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Χρωματική απόκλιση</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Ανθίζει το φως</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Σέπια</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Εμφάνιση</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Αποτύπωση</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Τεχνολογία</value></data>

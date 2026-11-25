@@ -106,15 +106,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         panel.Children.Add(Field(ParameterKey(id), grid));
     }
 
-    private void AddToggle(Panel panel, string id, bool value, Action<bool> changed)
-    {
-        var toggle = new CheckBox { IsChecked = value };
-        AutomationProperties.SetAutomationId(toggle, id);
-        toggle.Checked += (_, _) => { if (!_loading) changed(true); };
-        toggle.Unchecked += (_, _) => { if (!_loading) changed(false); };
-        panel.Children.Add(Field(ParameterKey(id), toggle));
-    }
-
     private void AddArgb(Panel panel, string id, uint? value, Action<uint?> changed)
     {
         var input = new TextBox

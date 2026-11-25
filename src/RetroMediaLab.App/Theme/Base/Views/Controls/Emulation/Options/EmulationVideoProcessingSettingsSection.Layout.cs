@@ -41,9 +41,11 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
     {
         var panel = new StackPanel();
         panel.Children.Add(CreateImageGroups());
-        var effects = CreateEffectGroups();
-        effects.Margin = new Thickness(0, 12, 0, 0);
-        panel.Children.Add(effects);
+        if (CreateTechnologyGroup() is { } technology)
+        {
+            technology.Margin = new Thickness(0, 12, 0, 0);
+            panel.Children.Add(technology);
+        }
         return panel;
     }
 
@@ -60,12 +62,8 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             update => SetRestoration(update(_configuration.Restoration))));
     }
 
-    private FrameworkElement CreateEffectGroups()
+    private FrameworkElement? CreateTechnologyGroup()
     {
-        var grid = new Grid();
-        grid.ColumnDefinitions.Add(new ColumnDefinition());
-        grid.ColumnDefinitions.Add(new ColumnDefinition());
-        var stylistic = FramedSection(CreateStylistic());
         var technology = EmulationVideoProcessingConfigurationFunctions.ScreenType(_configuration) switch
         {
             EmulationVideoScreenType.Crt => CreateCrtSignalControls(),
@@ -82,15 +80,16 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             EmulationVideoScreenType.SegmentDisplay => CreateSegmentDisplayPanel(),
             _ => null
         };
-        if (technology is not null)
-            AutomationProperties.SetAutomationId(technology, EmulationVideoSettingsLayoutConstants.VideoTechnologyParametersAutomationId);
-        var groups = technology is null ? new[] { stylistic } : new[] { FramedSection(technology), stylistic };
-        for (var index = 0; index < groups.Length; index++)
-        {
-            groups[index].Margin = new Thickness(index == 0 ? 0 : 6, 0, index == groups.Length - 1 ? 0 : 6, 0);
-            Grid.SetColumn(groups[index], index);
-            grid.Children.Add(groups[index]);
-        }
+        if (technology is null)
+            return null;
+
+        AutomationProperties.SetAutomationId(technology, EmulationVideoSettingsLayoutConstants.VideoTechnologyParametersAutomationId);
+        var grid = new Grid();
+        grid.ColumnDefinitions.Add(new ColumnDefinition());
+        grid.ColumnDefinitions.Add(new ColumnDefinition());
+        var frame = FramedSection(technology);
+        frame.Margin = new Thickness(0, 0, 6, 0);
+        grid.Children.Add(frame);
         return grid;
     }
 
@@ -173,17 +172,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         });
         AutomationProperties.SetAutomationId(loading, EmulationVideoSettingsLayoutConstants.VideoShaderLoadingAutomationId);
         return loading;
-    }
-
-    private FrameworkElement CreateStylistic()
-    {
-        var panel = Section(EmulationResourceKeys.VideoStylisticSettings);
-        AddIntensity(panel, EmulationVideoProcessingCatalog.Grain, _configuration.Stylistic.Grain, value => SetStylistic(_configuration.Stylistic with { Grain = value }));
-        AddIntensity(panel, EmulationVideoProcessingCatalog.Vhs, _configuration.Stylistic.Vhs, value => SetStylistic(_configuration.Stylistic with { Vhs = value }));
-        AddIntensity(panel, EmulationVideoProcessingCatalog.ChromaticAberration, _configuration.Stylistic.ChromaticAberration, value => SetStylistic(_configuration.Stylistic with { ChromaticAberration = value }));
-        AddIntensity(panel, EmulationVideoProcessingCatalog.Bloom, _configuration.Stylistic.Bloom, value => SetStylistic(_configuration.Stylistic with { Bloom = value }));
-        AddToggle(panel, EmulationVideoProcessingCatalog.Sepia, _configuration.Stylistic.Sepia, value => SetStylistic(_configuration.Stylistic with { Sepia = value }));
-        return panel;
     }
 
     private static TabItem Tab(string id, string headerResourceKey, FrameworkElement content, double maximumWidth = EmulationVideoSettingsLayoutConstants.TabContentMaximumWidth, bool compactFields = true, bool frameContent = true)

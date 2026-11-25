@@ -129,12 +129,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>Projection</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Black frame insertion</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signal simulations</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>Stylistic effects</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>Analog grain</value></data>
-  <data name="Emulation.Video.Parameter.Vhs"><value>VHS</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>Chromatic aberration</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>Light bloom</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>Sepia</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Display</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Rendering</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>Technology</value></data>

@@ -29,8 +29,6 @@ internal static class OpenGlVideoUniformNames
     internal const string General = "General";
     internal const string Restoration = "Restoration";
     internal const string Signal = "Signal";
-    internal const string Stylistic = "Stylistic";
-    internal const string Stylistic2 = "Stylistic2";
     internal const string VfdDisplay = "VfdDisplay";
     internal const string VfdStructure = "VfdStructure";
     internal const string LedMatrixStructure = "LedMatrixStructure";

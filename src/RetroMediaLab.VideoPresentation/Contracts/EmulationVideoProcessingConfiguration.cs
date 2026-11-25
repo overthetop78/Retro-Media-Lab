@@ -13,7 +13,6 @@ public sealed record EmulationVideoProcessingConfiguration
     public EmulationImageRestorationConfiguration Restoration { get; init; } = new();
     public bool BlackFrameInsertion { get; init; }
     public EmulationSignalSimulationConfiguration SignalSimulation { get; init; } = new();
-    public EmulationStylisticVideoConfiguration Stylistic { get; init; } = new();
     public EmulationCrtVideoConfiguration Crt { get; init; } = new();
     public EmulationLcdVideoConfiguration Lcd { get; init; } = new();
     public EmulationLcdVideoConfiguration Led { get; init; } = new() { BacklightIntensity = 80 };

@@ -68,7 +68,7 @@ internal static class EmulationModuleSettingsNavigationScenarios
                 Assert.Equal(0, Grid.GetColumn(frame));
                 Assert.Equal(2, row.ColumnDefinitions.Count);
                 Assert.Equal(row.ColumnDefinitions[0].Width, row.ColumnDefinitions[1].Width);
-                Assert.Equal(1, Grid.GetColumn(Assert.IsType<Border>(row.Children[1])));
+                Assert.Same(frame, Assert.Single(row.Children.Cast<UIElement>()));
                 if (screen is EmulationVideoScreenType.LedMatrix or EmulationVideoScreenType.DotMatrix or EmulationVideoScreenType.Vfd or EmulationVideoScreenType.SegmentDisplay or EmulationVideoScreenType.EPaper)
                 {
                     var choices = MachineConfigurationScenarios.Controls<ComboBox>(technology).ToArray();

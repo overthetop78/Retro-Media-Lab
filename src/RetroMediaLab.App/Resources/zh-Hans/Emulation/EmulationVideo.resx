@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>预测</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>黑帧插入</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>信号模拟</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>结构效应</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>类似谷物</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>染色异常</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>光亮的开花</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>塞皮亚</value></data>
   <data name="Emulation.Video.Tab.Display"><value>显示</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>渲染</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>技术</value></data>

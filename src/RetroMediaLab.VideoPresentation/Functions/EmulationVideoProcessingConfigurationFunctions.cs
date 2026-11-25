@@ -269,7 +269,6 @@ public static class EmulationVideoProcessingConfigurationFunctions
         var projection = configuration.Projection ?? new EmulationProjectionVideoConfiguration();
         var restoration = configuration.Restoration ?? new EmulationImageRestorationConfiguration();
         var signalSimulation = configuration.SignalSimulation ?? new EmulationSignalSimulationConfiguration();
-        var stylistic = configuration.Stylistic ?? new EmulationStylisticVideoConfiguration();
         return configuration with
         {
             DisplayTechnology = DefinedOrDefault(configuration.DisplayTechnology, EmulationVideoDisplayTechnology.Normal),
@@ -289,14 +288,6 @@ public static class EmulationVideoProcessingConfigurationFunctions
                 ConnectionIntensity = Intensity(signalSimulation.ConnectionIntensity),
                 Standard = DefinedOrDefault(signalSimulation.Standard, EmulationSignalStandard.Automatic),
                 StandardIntensity = Intensity(signalSimulation.StandardIntensity)
-            },
-            Stylistic = stylistic with
-            {
-                Grain = Intensity(stylistic.Grain),
-                Vhs = Intensity(stylistic.Vhs),
-                ChromaticAberration = Intensity(stylistic.ChromaticAberration),
-                Bloom = Intensity(stylistic.Bloom),
-                Sepia = stylistic.Sepia
             },
             Crt = crt with
             {

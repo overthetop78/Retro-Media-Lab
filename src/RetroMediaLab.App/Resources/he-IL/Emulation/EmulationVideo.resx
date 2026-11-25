@@ -115,11 +115,6 @@
   <data name="Emulation.Video.Technology.Projection"><value>פרוייקט</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>שילוב שחור</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>סימולציות אותות</value></data>
-  <data name="Emulation.Video.Settings.Stylistic"><value>השפעות סטריליסטיות</value></data>
-  <data name="Emulation.Video.Parameter.Grain"><value>אנליסטים</value></data>
-  <data name="Emulation.Video.Parameter.ChromaticAberration"><value>המונחים: Chromatic aberration</value></data>
-  <data name="Emulation.Video.Parameter.Bloom"><value>אור פורח</value></data>
-  <data name="Emulation.Video.Parameter.Sepia"><value>ספרד</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Display Display</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>« endering</value></data>
   <data name="Emulation.Video.Tab.Technology"><value>טכנולוגיה</value></data>
