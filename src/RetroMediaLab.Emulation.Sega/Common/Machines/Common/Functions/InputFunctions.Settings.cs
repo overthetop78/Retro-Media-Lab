@@ -75,10 +75,10 @@ internal static partial class InputSettingsFunctions
         return configuration.Model switch
         {
             ModelConstants.MasterSystem => [.. definitions,
-                new InputBindingDefinition(InputSnapshotDictionary.ConsolePause, string.Empty, string.Empty, "PAUSE"),
-                new InputBindingDefinition(InputSnapshotDictionary.ConsoleReset, string.Empty, string.Empty, "RESET")],
+                new InputBindingDefinition(InputSnapshotFunctionsConstants.ConsolePause, string.Empty, string.Empty, "PAUSE"),
+                new InputBindingDefinition(InputSnapshotFunctionsConstants.ConsoleReset, string.Empty, string.Empty, "RESET")],
             ModelConstants.MasterSystemII or ModelConstants.Sg1000 or ModelConstants.MarkIII => [.. definitions,
-                new InputBindingDefinition(InputSnapshotDictionary.ConsolePause, string.Empty, string.Empty, "PAUSE")],
+                new InputBindingDefinition(InputSnapshotFunctionsConstants.ConsolePause, string.Empty, string.Empty, "PAUSE")],
             _ => definitions
         };
     }

@@ -9,6 +9,8 @@ internal static class InputSnapshotFunctionsConstants
     internal const string Y = "Y";
     internal const string Select = "Select";
     internal const string Start = "Start";
+    internal const string ConsolePause = "ConsolePause";
+    internal const string ConsoleReset = "ConsoleReset";
     internal const string Up = "Up";
     internal const string Down = "Down";
     internal const string Left = "Left";
