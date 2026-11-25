@@ -1,3 +1,4 @@
+using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.AcornSystem.Common.Services;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Machines.BbcMaster.Common.Constants;
 using RetroMediaLab.Emulation.Acorn.Emulators.AcornEmu.Functions;
 using S = RetroMediaLab.Emulation.Constants.EmulationMechanicalSoundConstants;
@@ -164,7 +165,8 @@ internal sealed partial class EmulatorCore : IEmulatorCore, IEmulatorTapeTranspo
         var height = machine.VideoHeight ?? _definition.Height;
         LatestVideoFrame = new VideoFrame(image, width, height, width * _definition.BytesPerPixel, _definition.PixelFormat, _definition.AspectRatio, ++_sequence, TimeSpan.FromSeconds(_videoTimeSeconds))
         {
-            ScanMode = machine.VideoScanMode
+            ScanMode = machine.VideoScanMode,
+            SegmentLevels = (machine as AcornSystemMachine)?.SegmentLevels
         };
         var samples = machine.DrainAudio();
         var layout = machine.AudioChannelLayout;

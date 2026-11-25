@@ -24,6 +24,7 @@ internal static class OpenGlVideoUniformNames
     internal const string SegmentShape = "SegmentShape";
     internal const string SegmentEmission = "SegmentEmission";
     internal const string SegmentOptical = "SegmentOptical";
+    internal const string SegmentOptics = "SegmentOptics";
     internal const string SegmentTemporal = "SegmentTemporal";
     internal const string General = "General";
     internal const string Restoration = "Restoration";
@@ -32,7 +33,6 @@ internal static class OpenGlVideoUniformNames
     internal const string Stylistic2 = "Stylistic2";
     internal const string VfdDisplay = "VfdDisplay";
     internal const string VfdStructure = "VfdStructure";
-    internal const string VfdOptical = "VfdOptical";
     internal const string LedMatrixStructure = "LedMatrixStructure";
     internal const string DotMatrixGeometry = "DotMatrixGeometry";
     internal const string DotMatrixOptics = "DotMatrixOptics";

@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>Zelená</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>Červená</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Barva fosforu</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Intenzita fosforu</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>VFD Halo</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>Trvání perzistence (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Práh emise</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Ztmavení kouřového skla</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Struktura anod</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Velikost buněk</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Mezera mezi buňkami</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Poloměr záře</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Grafická</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Bodová matice</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Luminofor a sklo</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Struktura anod</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Záře a odezva</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>LED matrice</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>Matrix Dot</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>Zelený LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>Modrá</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>Bílá</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Rozvržení segmentů</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Barva segmentu</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Tloušťka segmentu</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Aktivační kontrast</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Halogenová intenzita</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Reflexní zobrazení</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Pozadí</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Vylučující displej</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Barva fosforu</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Tvar buňky</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Modrozelená (klasická)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Typ zobrazení</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Technologie</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Barva</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Černá</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Šedá</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Modrá zelená</value></data>
 </root>

@@ -26,7 +26,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
     private int _ePaperHistoryHeight;
     private TimeSpan _ePaperHistoryTimestamp;
     private readonly FilterPlasmaPersistence _plasmaPersistence = new();
-    private readonly FilterVfdPersistence _vfdPersistence = new();
     private TimeSpan _signalTimestamp;
     private long _signalSequence;
 
@@ -101,11 +100,10 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             _plasmaPersistence.Apply(linear, outputSize.Width, outputSize.Height, frame.Sequence, PlasmaVideoShaderParameters.Persistence);
         else
             _plasmaPersistence.Reset();
-        if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Vfd)
-            _vfdPersistence.Apply(linear, outputSize.Width, outputSize.Height, frame.Timestamp, normalized.Vfd.PersistenceMilliseconds);
+        if (frame.SegmentLevels.HasValue)
+            ResetSegmentDisplayHistory();
         else
-            _vfdPersistence.Reset();
-        ApplySegmentDisplayTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
+            ApplySegmentDisplayTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         ApplyEPaperTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Crt)
             CrtPhosphorMask.Apply(linear, outputSize.Width, outputSize.Height, crt,

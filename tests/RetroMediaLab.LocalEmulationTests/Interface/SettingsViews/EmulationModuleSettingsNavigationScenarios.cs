@@ -55,7 +55,7 @@ internal static class EmulationModuleSettingsNavigationScenarios
             EmulationVideoScreenType[] screens = [EmulationVideoScreenType.Crt, EmulationVideoScreenType.Lcd,
                 EmulationVideoScreenType.LedBacklitLcd, EmulationVideoScreenType.Oled,
                 EmulationVideoScreenType.Plasma, EmulationVideoScreenType.Projection, EmulationVideoScreenType.Vector,
-                EmulationVideoScreenType.LedMatrix, EmulationVideoScreenType.DotMatrix];
+                EmulationVideoScreenType.LedMatrix, EmulationVideoScreenType.DotMatrix, EmulationVideoScreenType.Vfd, EmulationVideoScreenType.SegmentDisplay];
             foreach (var screen in screens)
             {
                 section.SetConfiguration(EmulationVideoProcessingConfigurationFunctions.WithScreenType(new(), screen));
@@ -69,11 +69,25 @@ internal static class EmulationModuleSettingsNavigationScenarios
                 Assert.Equal(2, row.ColumnDefinitions.Count);
                 Assert.Equal(row.ColumnDefinitions[0].Width, row.ColumnDefinitions[1].Width);
                 Assert.Equal(1, Grid.GetColumn(Assert.IsType<Border>(row.Children[1])));
-                if (screen is EmulationVideoScreenType.LedMatrix or EmulationVideoScreenType.DotMatrix)
+                if (screen is EmulationVideoScreenType.LedMatrix or EmulationVideoScreenType.DotMatrix or EmulationVideoScreenType.Vfd or EmulationVideoScreenType.SegmentDisplay)
                 {
                     var choices = MachineConfigurationScenarios.Controls<ComboBox>(technology).ToArray();
-                    int[] expected = screen == EmulationVideoScreenType.DotMatrix ? [7, 10, 3, 3] : [7, 10, 3];
+                    int[] expected = screen switch
+                    {
+                        EmulationVideoScreenType.DotMatrix => [7, 10, 3, 3],
+                        EmulationVideoScreenType.Vfd => [6, 10, 3],
+                        EmulationVideoScreenType.SegmentDisplay => [3, 3, 5],
+                        _ => [7, 10, 3]
+                    };
                     Assert.Equal(expected, choices.Select(choice => choice.Items.Count));
+                    if (screen == EmulationVideoScreenType.SegmentDisplay)
+                    {
+                        choices[1].SelectedIndex = 0;
+                        image = (DependencyObject)((TabItem)Assert.IsType<TabControl>(section.Content).Items[1]).Content;
+                        technology = Assert.Single(MachineConfigurationScenarios.Controls<StackPanel>(image),
+                            panel => AutomationProperties.GetAutomationId(panel) == EmulationVideoSettingsLayoutConstants.VideoTechnologyParametersAutomationId);
+                        Assert.Equal(new[] { 3, 3, 2 }, MachineConfigurationScenarios.Controls<ComboBox>(technology).Select(choice => choice.Items.Count));
+                    }
                 }
             }
         }

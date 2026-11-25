@@ -5,5 +5,7 @@ public enum EmulationVfdColor
     Blue,
     Green,
     Amber,
-    Red
+    Red,
+    BlueGreen,
+    White
 }

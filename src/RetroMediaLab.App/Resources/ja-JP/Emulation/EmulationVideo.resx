@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>グリーン</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>アンバー</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>レッド</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>蛍光体色</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>蛍光体強度</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>VFDハロー</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>持続期間(ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>発光しきい値</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>スモークガラスの暗さ</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>陽極構造</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>セルサイズ</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>セル間隔</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>ハロー半径</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>グラフィック</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>ドットマトリクス</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>蛍光体とガラス</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>陽極構造</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>発光と応答</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>LEDのマトリックス</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>ドットマトリクス</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>緑 LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>アンバー</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>ブルージュ</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>ホワイト</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>セグメントレイアウト</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>区分色</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>区分の厚さ</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>活動の対照</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>葉の強度</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>反射表示</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>バックライト表示</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>放射性表示</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>蛍光体色</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>セル形状</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>ブルーグリーン(古典)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>ディスプレイタイプ</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>テクノロジー</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>注文方法</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>ブラック</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>グレー</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>青緑色</value></data>
 </root>

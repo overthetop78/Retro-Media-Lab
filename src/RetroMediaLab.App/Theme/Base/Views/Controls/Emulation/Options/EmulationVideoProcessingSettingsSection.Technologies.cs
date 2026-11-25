@@ -92,10 +92,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
 
 
-    private FrameworkElement CreateVfdPanel() => EmulationVfdSettingsBlock.Create(_configuration.Vfd, update => SetVfd(update(_configuration.Vfd)), RebuildContent);
-
-    private FrameworkElement CreateSegmentDisplayPanel() => EmulationSegmentDisplaySettingsBlock.Create(_configuration.SegmentDisplay, update => SetSegmentDisplay(update(_configuration.SegmentDisplay)));
-
     private FrameworkElement CreateEPaperPanel() => EmulationEPaperSettingsBlock.Create(_configuration.EPaper, update => SetEPaper(update(_configuration.EPaper)), RebuildContent);
 
 

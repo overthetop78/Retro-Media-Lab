@@ -4,6 +4,15 @@ namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal static class FilterSegmentDisplayEndShape
 {
+    internal static (EmulationSegmentEndShape End, int Gap) ForTechnology(
+        EmulationSegmentDisplayTechnology technology, EmulationSegmentEndShape end, int gap) =>
+        technology switch
+        {
+            EmulationSegmentDisplayTechnology.Lcd => (EmulationSegmentEndShape.Straight, Math.Min(100, gap + 8)),
+            EmulationSegmentDisplayTechnology.Vfd => (EmulationSegmentEndShape.Rounded, Math.Max(0, gap - 4)),
+            _ => (end, gap)
+        };
+
     internal const string Shader = """
         float filterSegmentDistance(vec2 point,vec4 line,float endShape)
         {

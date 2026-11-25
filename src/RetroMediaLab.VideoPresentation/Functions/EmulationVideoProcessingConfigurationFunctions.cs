@@ -263,6 +263,8 @@ public static class EmulationVideoProcessingConfigurationFunctions
         var ledMatrix = configuration.LedMatrix ?? new EmulationLedMatrixVideoConfiguration();
         var dotMatrix = configuration.DotMatrix ?? new EmulationDotMatrixVideoConfiguration();
         var segmentDisplay = configuration.SegmentDisplay ?? new EmulationSegmentDisplayVideoConfiguration();
+        var segmentTechnology = DefinedOrDefault(segmentDisplay.Technology, EmulationSegmentDisplayTechnology.Led);
+        var segmentColors = EmulationVideoProcessingCatalog.SegmentColors(segmentTechnology);
         var ePaper = configuration.EPaper ?? new EmulationEPaperVideoConfiguration();
         var projection = configuration.Projection ?? new EmulationProjectionVideoConfiguration();
         var restoration = configuration.Restoration ?? new EmulationImageRestorationConfiguration();
@@ -347,16 +349,9 @@ public static class EmulationVideoProcessingConfigurationFunctions
             },
             Vfd = vfd with
             {
-                Color = DefinedOrDefault(vfd.Color, EmulationVfdColor.Blue),
-                PhosphorIntensity = Intensity(vfd.PhosphorIntensity),
-                EmissionThreshold = Intensity(vfd.EmissionThreshold),
-                GlassDarkening = Intensity(vfd.GlassDarkening),
-                Structure = DefinedOrDefault(vfd.Structure, EmulationVfdStructure.Graphic),
-                CellSize = Intensity(vfd.CellSize),
-                CellGap = Intensity(vfd.CellGap),
-                HaloIntensity = Intensity(vfd.HaloIntensity),
-                HaloRadius = Intensity(vfd.HaloRadius),
-                PersistenceMilliseconds = Duration(vfd.PersistenceMilliseconds)
+                Color = DefinedOrDefault(vfd.Color, EmulationVfdColor.BlueGreen),
+                Definition = DefinedOrDefault(vfd.Definition, EmulationLedMatrixDefinition.Native),
+                Shape = DefinedOrDefault(vfd.Shape, EmulationDotMatrixShape.Round)
             },
             LedMatrix = ledMatrix with
             {
@@ -374,7 +369,8 @@ public static class EmulationVideoProcessingConfigurationFunctions
             SegmentDisplay = segmentDisplay with
             {
                 Layout = DefinedOrDefault(segmentDisplay.Layout, EmulationSegmentDisplayLayout.Seven),
-                Color = DefinedOrDefault(segmentDisplay.Color, EmulationSegmentDisplayColor.Red),
+                Technology = segmentTechnology,
+                Color = segmentColors.ContainsKey(segmentDisplay.Color) ? segmentDisplay.Color : segmentColors.Keys.First(),
                 CellSize = Intensity(segmentDisplay.CellSize),
                 HorizontalGap = Intensity(segmentDisplay.HorizontalGap),
                 VerticalGap = Intensity(segmentDisplay.VerticalGap),

@@ -16,7 +16,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         ResetHistory();
         _plasmaPersistence.Reset();
         ResetVectorProcessing();
-        _vfdPersistence.Reset();
         ResetSegmentDisplayHistory();
         ResetEPaperHistory();
     }

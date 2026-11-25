@@ -27,6 +27,8 @@ internal sealed partial class AcornSystemMachine : ICpuBus, IAcornMachine, IDisp
     public EmulationVideoScanMode VideoScanMode => _video?.ScanMode ?? EmulationVideoScanMode.Progressive;
     public double? VideoFramesPerSecond => _video?.CompletedFieldClocks > 0
         ? (double)VideoClock / _video.CompletedFieldClocks : null;
+    internal VideoSegmentLevels? SegmentLevels => _display is null ? null : new(C.DisplayDimRed, C.DisplayRed);
+
     public double? VideoFrameDurationSeconds => (double)_lastFrameTicks / _clock;
     private int VideoClock => _card == SystemCpuCard.Fast6502A ? C.VideoCharacterClock : _clock;
     private readonly SystemCpuCard _card;

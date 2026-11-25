@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>Verde</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>Roșu</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Culoare fosfor</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Intensitate fosfor</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>Halo VFD</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>Durata de persistență (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Prag de emisie</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Întunecarea sticlei fumurii</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Structura anozilor</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Dimensiunea celulelor</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Spațierea celulelor</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Raza haloului</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Grafic</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Matrice de puncte</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Fosfor și sticlă</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Structura anozilor</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Strălucire și răspuns</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>Matrice LED</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>Matrice punct</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>LCD verde</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>Albastru</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>Alb</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Model segment</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Culoare segment</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Grosimea segmentului</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Contrast de activare</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Intensitatea Halo</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Afișare reflectorizantă</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Afișare cu iluminare din spate</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Afișare emisivă</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Culoare fosfor</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Forma celulei</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Verde-albastru (clasic)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Tip de afișare</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Tehnologie</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Culoare</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Negru</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Gri</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Verde-albastru</value></data>
 </root>

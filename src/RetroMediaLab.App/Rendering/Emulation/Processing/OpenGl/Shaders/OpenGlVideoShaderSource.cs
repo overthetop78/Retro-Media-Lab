@@ -37,6 +37,7 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 SegmentEmission;
         uniform vec4 SegmentOptical;
         uniform vec4 SegmentTemporal;
+        uniform vec4 SegmentOptics;
         uniform vec4 General;
         uniform vec4 Restoration;
         uniform vec4 Signal;
@@ -44,7 +45,6 @@ internal static class OpenGlVideoShaderSource
         uniform vec4 Stylistic2;
         uniform vec4 VfdDisplay;
         uniform vec4 VfdStructure;
-        uniform vec4 VfdOptical;
         uniform vec4 LedMatrixStructure;
         uniform vec4 DotMatrixGeometry;
         uniform vec4 DotMatrixOptics;
@@ -127,9 +127,6 @@ internal static class OpenGlVideoShaderSource
         #endif
         #if DISPLAY_TECHNOLOGY == 3
         """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
-        #endif
-        #if DISPLAY_TECHNOLOGY == 5
-        """ + "\n" + FilterVfdEmissionThreshold.Shader + FilterVfdPhosphorIntensity.Shader + FilterVfdPhosphorColor.Shader + FilterVfdGlass.Shader + FilterVfdCellStructure.Shader + FilterVfdHaloRadius.Shader + FilterVfdHalo.Shader + FilterVfdPersistence.Shader + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 7
         #endif
@@ -269,35 +266,7 @@ internal static class OpenGlVideoShaderSource
             return clamp(color,0.0,1.0);
         }
         #if DISPLAY_TECHNOLOGY == 5
-        float vfdEmission(vec2 uv)
-        {
-            vec3 sampleColor=adjustColor(sampleConfigured(clamp(uv,vec2(0.0),vec2(1.0))).rgb);
-            return filterVfdEmissionThreshold(dot(sampleColor,vec3(.2126,.7152,.0722)),VfdDisplay.z);
-        }
-        vec3 vfdPixel(vec3 source,vec2 uv)
-        {
-            float mask=filterVfdCellStructure(uv,Processing.zw,VfdStructure.x,
-                VfdStructure.y,VfdStructure.z);
-            float emission=filterVfdPhosphorIntensity(
-                filterVfdEmissionThreshold(dot(source,vec3(.2126,.7152,.0722)),VfdDisplay.z)*mask,
-                VfdDisplay.y);
-            vec2 stepSize=1.0/max(Processing.zw,vec2(1.0));
-            float radius=filterVfdHaloRadius(VfdOptical.x);
-            float nearRadius=max(1.0,radius*.5);
-            float nearEmission=(vfdEmission(uv+vec2(stepSize.x*nearRadius,0.0))
-                +vfdEmission(uv-vec2(stepSize.x*nearRadius,0.0))
-                +vfdEmission(uv+vec2(0.0,stepSize.y*nearRadius))
-                +vfdEmission(uv-vec2(0.0,stepSize.y*nearRadius)))*.25;
-            float farEmission=(vfdEmission(uv+vec2(stepSize.x*radius,stepSize.y*radius))
-                +vfdEmission(uv+vec2(-stepSize.x*radius,stepSize.y*radius))
-                +vfdEmission(uv+vec2(stepSize.x*radius,-stepSize.y*radius))
-                +vfdEmission(uv-vec2(stepSize.x*radius,stepSize.y*radius)))*.25;
-            float halo=filterVfdPhosphorIntensity(
-                filterVfdHalo(nearEmission,farEmission,VfdStructure.w),VfdDisplay.y);
-            return clamp(filterVfdGlass(source,VfdDisplay.w)
-                +filterVfdPhosphorColor(emission,VfdDisplay.x)
-                +filterVfdPhosphorColor(halo,VfdDisplay.x),0.0,1.0);
-        }
+        """ + "\n" + FilterVfdCellStructure.CreateShader(false) + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 6
         """ + "\n" + FilterLedMatrixCellStructure.CreateShader(false) + "\n" + """
@@ -310,7 +279,7 @@ internal static class OpenGlVideoShaderSource
         #endif
         vec3 extraDisplay(vec3 color,vec2 uv){int t=int(General.x+.5);vec2 p=floor(uv*Output.xy);
         #if DISPLAY_TECHNOLOGY == 5
-            if(t==5)color=vfdPixel(color,uv);
+            if(t==5)color=vfdPixel(uv);
         #endif
         #if DISPLAY_TECHNOLOGY == 6
             if(t==6)color=ledMatrixPixel(uv);
@@ -399,10 +368,6 @@ internal static class OpenGlVideoShaderSource
             vec2 historyUv=clamp(uv,.5/Processing.zw,1.0-.5/Processing.zw);
             vec3 previous=extraDisplay(adjustColor(texture2D(History,historyUv).rgb),uv);
             previous=postColor(previous,uv);
-        #if DISPLAY_TECHNOLOGY == 5
-            if(VfdOptical.w>.5)
-                center=filterVfdPersistence(center,previous,VfdOptical.y,VfdOptical.z);
-        #endif
         #if DISPLAY_TECHNOLOGY == 1
             center = crtCompose(center, uv, vec2(CrtTuning.w, CrtRaster.y * 2.0),
                 CrtPhosphor, Output.w, Adjustments.x, Output.xy, TextureCoordinate, CrtGeometry.x);

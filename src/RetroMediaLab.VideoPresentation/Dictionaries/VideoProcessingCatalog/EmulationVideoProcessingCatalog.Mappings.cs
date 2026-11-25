@@ -108,10 +108,15 @@ public static partial class EmulationVideoProcessingCatalog
         = ResourceKeys("Signal.Standard", Enum.GetValues<EmulationSignalStandard>());
 
     public static IReadOnlyDictionary<EmulationVfdColor, string> VfdColorResourceKeys { get; }
-        = ResourceKeys("Vfd.Color", Enum.GetValues<EmulationVfdColor>());
-
-    public static IReadOnlyDictionary<EmulationVfdStructure, string> VfdStructureResourceKeys { get; }
-        = ResourceKeys("Vfd.Structure", Enum.GetValues<EmulationVfdStructure>());
+        = new Dictionary<EmulationVfdColor, string>
+        {
+            [EmulationVfdColor.BlueGreen] = "Emulation.Video.Vfd.Color.BlueGreen",
+            [EmulationVfdColor.Green] = "Emulation.Video.Vfd.Color.Green",
+            [EmulationVfdColor.Blue] = "Emulation.Video.Vfd.Color.Blue",
+            [EmulationVfdColor.White] = "Emulation.Video.SegmentDisplay.Color.White",
+            [EmulationVfdColor.Amber] = "Emulation.Video.Vfd.Color.Amber",
+            [EmulationVfdColor.Red] = "Emulation.Video.Vfd.Color.Red"
+        };
 
     public static IReadOnlyDictionary<EmulationLedMatrixColor, string> LedMatrixColorResourceKeys { get; }
         = ResourceKeys("LedMatrix.Color", Enum.GetValues<EmulationLedMatrixColor>().OrderBy(value => value == EmulationLedMatrixColor.Rgb));
@@ -136,6 +141,29 @@ public static partial class EmulationVideoProcessingCatalog
     public static IReadOnlyDictionary<EmulationSegmentDisplayLayout, string> SegmentDisplayLayoutResourceKeys { get; }
         = ResourceKeys("SegmentDisplay.Layout", Enum.GetValues<EmulationSegmentDisplayLayout>());
 
+    public static IReadOnlyDictionary<EmulationSegmentDisplayTechnology, string> SegmentDisplayTechnologyResourceKeys { get; }
+        = ResourceKeys("SegmentDisplay.Technology", new[] { EmulationSegmentDisplayTechnology.Lcd,
+            EmulationSegmentDisplayTechnology.Led, EmulationSegmentDisplayTechnology.Vfd });
+
+    private static readonly IReadOnlyDictionary<EmulationSegmentDisplayColor, string> LcdSegmentColors =
+        ResourceKeys("SegmentDisplay.Color", new[] { EmulationSegmentDisplayColor.Black, EmulationSegmentDisplayColor.Gray });
+
+    private static readonly IReadOnlyDictionary<EmulationSegmentDisplayColor, string> LedSegmentColors =
+        ResourceKeys("SegmentDisplay.Color", new[] { EmulationSegmentDisplayColor.Red, EmulationSegmentDisplayColor.Green,
+            EmulationSegmentDisplayColor.Amber, EmulationSegmentDisplayColor.Blue, EmulationSegmentDisplayColor.White });
+
+    private static readonly IReadOnlyDictionary<EmulationSegmentDisplayColor, string> VfdSegmentColors =
+        ResourceKeys("SegmentDisplay.Color", new[] { EmulationSegmentDisplayColor.BlueGreen, EmulationSegmentDisplayColor.Green,
+            EmulationSegmentDisplayColor.Blue, EmulationSegmentDisplayColor.White, EmulationSegmentDisplayColor.Amber });
+
+    public static IReadOnlyDictionary<EmulationSegmentDisplayColor, string> SegmentColors(EmulationSegmentDisplayTechnology technology) =>
+        technology switch
+        {
+            EmulationSegmentDisplayTechnology.Lcd => LcdSegmentColors,
+            EmulationSegmentDisplayTechnology.Vfd => VfdSegmentColors,
+            _ => LedSegmentColors
+        };
+
     public static IReadOnlyDictionary<EmulationSegmentDisplayColor, string> SegmentDisplayColorResourceKeys { get; }
         = ResourceKeys("SegmentDisplay.Color", Enum.GetValues<EmulationSegmentDisplayColor>());
 
@@ -149,7 +177,7 @@ public static partial class EmulationVideoProcessingCatalog
         ParameterIds.ToDictionary(id => id, id => id switch
         {
             Gamma => "Emulation.Video.Gamma",
-            LedMatrixDefinition or DotMatrixDefinition => LcdDefinition,
+            LedMatrixDefinition or DotMatrixDefinition or VfdDefinition => LcdDefinition,
             CrtPhosphorColor => $"Emulation.Video.Parameter.{VectorPhosphorColor}",
             CrtBeamWidth => $"Emulation.Video.Parameter.{VectorBeamWidth}",
             _ => $"Emulation.Video.Parameter.{id}"
@@ -186,17 +214,16 @@ public static partial class EmulationVideoProcessingCatalog
             [FixedPixelPersistence] = 0, [FixedPixelBacklight] = null, [FixedPixelBacklightBleed] = 25, [FixedPixelOledEmission] = 100, [FixedPixelBlackDepth] = null,
             [PlasmaCellStructure] = EmulationPlasmaCellStructure.Stripe,
             [VectorBeamWidth] = 0, [VectorPhosphorColor] = EmulationCrtColorMode.Color,
-            [VfdColor] = EmulationVfdColor.Blue, [VfdPhosphorIntensity] = 70,
-            [VfdEmissionThreshold] = 28, [VfdGlassDarkening] = 75,
-            [VfdStructure] = EmulationVfdStructure.Graphic,
-            [VfdCellSize] = 70, [VfdCellGap] = 20,
-            [VfdHaloIntensity] = 25, [VfdHaloRadius] = 25, [VfdPersistence] = 20,
+            [VfdColor] = EmulationVfdColor.BlueGreen,
+            [VfdDefinition] = EmulationLedMatrixDefinition.Native,
+            [VfdShape] = EmulationDotMatrixShape.Round,
             [LedMatrixColor] = EmulationLedMatrixColor.Rgb, [LedMatrixDefinition] = EmulationLedMatrixDefinition.Native,
             [LedMatrixShape] = EmulationLedMatrixShape.Round,
             [DotMatrixPalette] = EmulationDotMatrixPalette.Green,
             [DotMatrixDefinition] = EmulationLedMatrixDefinition.Native,
             [DotMatrixShape] = EmulationDotMatrixShape.Round,
             [DotMatrixTechnology] = EmulationDotMatrixDisplayTechnology.Reflective,
+            [SegmentDisplayTechnology] = EmulationSegmentDisplayTechnology.Led,
             [SegmentDisplayLayout] = EmulationSegmentDisplayLayout.Seven,
             [SegmentDisplayColor] = EmulationSegmentDisplayColor.Red,
             [SegmentDisplayCellSize] = 45, [SegmentDisplayHorizontalGap] = 15,
@@ -259,7 +286,7 @@ public static partial class EmulationVideoProcessingCatalog
         Add(FixedPixelTechnology, FixedPixelBlackDepth, EmulationVideoDisplayTechnology.FixedPixel);
         Add(PlasmaCellStructure, PlasmaCellStructure, EmulationVideoDisplayTechnology.Plasma);
         Add(VectorBeamWidth, VectorPhosphorColor, EmulationVideoDisplayTechnology.Vector);
-        Add(VfdColor, VfdPersistence, EmulationVideoDisplayTechnology.Vfd);
+        Add(VfdColor, VfdShape, EmulationVideoDisplayTechnology.Vfd);
         Add(LedMatrixColor, LedMatrixShape, EmulationVideoDisplayTechnology.LedMatrix);
         Add(DotMatrixPalette, DotMatrixTechnology, EmulationVideoDisplayTechnology.DotMatrix);
         Add(SegmentDisplayLayout, SegmentDisplayPersistence, EmulationVideoDisplayTechnology.SegmentDisplay);

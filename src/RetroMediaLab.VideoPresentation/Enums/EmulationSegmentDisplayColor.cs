@@ -6,5 +6,8 @@ public enum EmulationSegmentDisplayColor
     Green,
     Amber,
     Blue,
-    White
+    White,
+    Black,
+    Gray,
+    BlueGreen
 }

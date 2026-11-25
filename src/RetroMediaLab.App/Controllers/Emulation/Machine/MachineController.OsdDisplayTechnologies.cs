@@ -49,21 +49,9 @@ internal sealed partial class MachineController
         var fields = new VideoTechnologyFields<EmulationVfdVideoConfiguration>(this,
             s => s.Vfd, (s, c) => s with { Vfd = c });
         return VideoGroup(EmulationResourceKeys.VideoTechnologyVfd,
-            VideoGroup(EmulationResourceKeys.VideoVfdGroupPhosphorAndGlass,
-                fields.Choice(Catalog.VfdColor, Catalog.VfdColorResourceKeys, c => c.Color, (c, v) => c with { Color = v }),
-                fields.Number(Catalog.VfdPhosphorIntensity, c => c.PhosphorIntensity, (c, v) => c with { PhosphorIntensity = v }),
-                fields.Number(Catalog.VfdEmissionThreshold, c => c.EmissionThreshold, (c, v) => c with { EmissionThreshold = v }),
-                fields.Number(Catalog.VfdGlassDarkening, c => c.GlassDarkening, (c, v) => c with { GlassDarkening = v })),
-            VideoGroup(EmulationResourceKeys.VideoVfdGroupAnodes,
-                fields.Choice(Catalog.VfdStructure, Catalog.VfdStructureResourceKeys, c => c.Structure, (c, v) => c with { Structure = v }),
-                fields.Number(Catalog.VfdCellSize, c => c.CellSize, (c, v) => c with { CellSize = v })
-                    with { IsEnabled = () => _video.VideoProcessing.Vfd.Structure == EmulationVfdStructure.DotMatrix },
-                fields.Number(Catalog.VfdCellGap, c => c.CellGap, (c, v) => c with { CellGap = v })
-                    with { IsEnabled = () => _video.VideoProcessing.Vfd.Structure == EmulationVfdStructure.DotMatrix }),
-            VideoGroup(EmulationResourceKeys.VideoVfdGroupGlowAndResponse,
-                fields.Number(Catalog.VfdHaloIntensity, c => c.HaloIntensity, (c, v) => c with { HaloIntensity = v }),
-                fields.Number(Catalog.VfdHaloRadius, c => c.HaloRadius, (c, v) => c with { HaloRadius = v }),
-                fields.Number(Catalog.VfdPersistence, c => c.PersistenceMilliseconds, (c, v) => c with { PersistenceMilliseconds = v }, EmulationVideoProcessingLimits.DurationMaximumMilliseconds)))
+            fields.Choice(Catalog.VfdColor, Catalog.VfdColorResourceKeys, c => c.Color, (c, v) => c with { Color = v }),
+            fields.Choice(Catalog.VfdDefinition, Catalog.LedMatrixDefinitionResourceKeys, c => c.Definition, (c, v) => c with { Definition = v }),
+            fields.Choice(Catalog.VfdShape, Catalog.DotMatrixShapeResourceKeys, c => c.Shape, (c, v) => c with { Shape = v }))
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.Vfd };
     }
 
@@ -94,30 +82,13 @@ internal sealed partial class MachineController
     {
         var fields = new VideoTechnologyFields<EmulationSegmentDisplayVideoConfiguration>(this,
             s => s.SegmentDisplay, (s, c) => s with { SegmentDisplay = c });
+        Entry Color(EmulationSegmentDisplayTechnology technology) =>
+            fields.Choice(Catalog.SegmentDisplayColor, Catalog.SegmentColors(technology), c => c.Color, (c, v) => c with { Color = v })
+                with { IsVisible = () => _video.VideoProcessing.SegmentDisplay.Technology == technology };
         return VideoGroup(EmulationResourceKeys.VideoTechnologySegmentDisplay,
-            VideoGroup(EmulationResourceKeys.VideoSegmentDisplayGroupCells,
-                fields.Choice(Catalog.SegmentDisplayLayout, Catalog.SegmentDisplayLayoutResourceKeys, c => c.Layout, (c, v) => c with { Layout = v }),
-                fields.Number(Catalog.SegmentDisplayCellSize, c => c.CellSize, (c, v) => c with { CellSize = v }),
-                fields.Number(Catalog.SegmentDisplayHorizontalGap, c => c.HorizontalGap, (c, v) => c with { HorizontalGap = v }),
-                fields.Number(Catalog.SegmentDisplayVerticalGap, c => c.VerticalGap, (c, v) => c with { VerticalGap = v })),
-            VideoGroup(EmulationResourceKeys.VideoSegmentDisplayGroupGeometry,
-                fields.Number(Catalog.SegmentDisplayThickness, c => c.Thickness, (c, v) => c with { Thickness = v }),
-                fields.Number(Catalog.SegmentDisplaySegmentGap, c => c.SegmentGap, (c, v) => c with { SegmentGap = v }),
-                fields.Choice(Catalog.SegmentDisplayEndShape, Catalog.SegmentDisplayEndShapeResourceKeys, c => c.EndShape, (c, v) => c with { EndShape = v }),
-                fields.Choice(Catalog.SegmentDisplayDecimalPoint, VideoToggleResourceKeys, c => c.DecimalPoint, (c, v) => c with { DecimalPoint = v }),
-                fields.Choice(Catalog.SegmentDisplayColon, VideoToggleResourceKeys, c => c.Colon, (c, v) => c with { Colon = v })),
-            VideoGroup(EmulationResourceKeys.VideoSegmentDisplayGroupEmission,
-                fields.Choice(Catalog.SegmentDisplayColor, Catalog.SegmentDisplayColorResourceKeys, c => c.Color, (c, v) => c with { Color = v }),
-                fields.Number(Catalog.SegmentDisplayBrightness, c => c.Brightness, (c, v) => c with { Brightness = v }),
-                fields.Number(Catalog.SegmentDisplayActivationThreshold, c => c.ActivationThreshold, (c, v) => c with { ActivationThreshold = v }),
-                fields.Number(Catalog.SegmentDisplayContrast, c => c.Contrast, (c, v) => c with { Contrast = v }),
-                fields.Number(Catalog.SegmentDisplayOffSegmentVisibility, c => c.OffSegmentVisibility, (c, v) => c with { OffSegmentVisibility = v }),
-                fields.Number(Catalog.SegmentDisplayBlackDepth, c => c.BlackDepth, (c, v) => c with { BlackDepth = v })),
-            VideoGroup(EmulationResourceKeys.VideoSegmentDisplayGroupLightAndResponse,
-                fields.Number(Catalog.SegmentDisplayGlow, c => c.Glow, (c, v) => c with { Glow = v }),
-                fields.Number(Catalog.SegmentDisplayHaloRadius, c => c.HaloRadius, (c, v) => c with { HaloRadius = v }),
-                fields.Number(Catalog.SegmentDisplayResponseTime, c => c.ResponseTimeMilliseconds, (c, v) => c with { ResponseTimeMilliseconds = v }, EmulationVideoProcessingLimits.DurationMaximumMilliseconds),
-                fields.Number(Catalog.SegmentDisplayPersistence, c => c.PersistenceMilliseconds, (c, v) => c with { PersistenceMilliseconds = v }, EmulationVideoProcessingLimits.DurationMaximumMilliseconds)))
+            fields.Choice(Catalog.SegmentDisplayLayout, Catalog.SegmentDisplayLayoutResourceKeys, c => c.Layout, (c, v) => c with { Layout = v }),
+            fields.Choice(Catalog.SegmentDisplayTechnology, Catalog.SegmentDisplayTechnologyResourceKeys, c => c.Technology, (c, v) => c with { Technology = v }),
+            Color(EmulationSegmentDisplayTechnology.Lcd), Color(EmulationSegmentDisplayTechnology.Led), Color(EmulationSegmentDisplayTechnology.Vfd))
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.SegmentDisplay };
     }
 

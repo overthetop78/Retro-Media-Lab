@@ -1,9 +1,23 @@
+using System.Numerics;
 using RetroMediaLab.Emulation.Contracts;
 
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal static class FilterSegmentDisplay
 {
+    private const string OpticalShader = """
+        vec3 segmentOpticalColor(float level,float core,float halo,vec3 tint,float technology,float background)
+        {
+            if(technology>.5 && technology<1.5)
+            {
+                vec3 lcd=vec3(.57,.61,.48);
+                return mix(lcd,mix(lcd*.92,tint,level),core);
+            }
+            vec3 panel=technology>1.5?vec3(.002,.0045,.0055):vec3(background);
+            return min(panel+tint*(core*(.006+.94*level)+halo),vec3(1.0));
+        }
+        """;
+
     internal static readonly string VeldridShader = FilterSegmentDisplayCellSize.Shader
         + FilterSegmentDisplayHorizontalGap.Shader + FilterSegmentDisplayVerticalGap.Shader
         + FilterSegmentDisplaySegmentGap.Shader
@@ -13,7 +27,7 @@ internal static class FilterSegmentDisplay
         + FilterSegmentDisplayBrightness.Shader + FilterSegmentDisplayBlackDepth.Shader
         + FilterSegmentDisplayOffSegmentVisibility.Shader
         + FilterSegmentDisplayHaloRadius.Shader + FilterSegmentDisplayGlow.Shader
-        + FilterSegmentDisplayLayout.Shader + """
+        + FilterSegmentDisplayLayout.Shader + OpticalShader + """
         vec3 segmentSource(vec2 uv,float history)
         {
             if(history>.5)return adjust(texture(sampler2D(History,LinearSampler),clamp(uv,vec2(0.0),vec2(1.0))).rgb);
@@ -34,6 +48,23 @@ internal static class FilterSegmentDisplay
         }
         vec3 segmentDisplayPixel(vec2 uv)
         {
+            vec4 optics=Parameters.SegmentOptics;
+            vec3 tint=filterSegmentColor(Parameters.SegmentEmission.x);
+            if(optics.w>.5)
+            {
+                float red=sourceColor(uv).r;
+                float level=clamp((red-optics.y)/(optics.z-optics.y),0.0,1.0);
+                float core=step(.5/255.0,red);
+                float halo=0.0;
+                if(optics.x>1.5)
+                {
+                    vec2 spread=1.35/max(Parameters.Processing.zw,vec2(1.0));
+                    float nearby=(sourceColor(uv+vec2(spread.x,0.0)).r + sourceColor(uv-vec2(spread.x,0.0)).r + sourceColor(uv+vec2(0.0,spread.y)).r + sourceColor(uv-vec2(0.0,spread.y)).r)*.25;
+                    float scattered=clamp((nearby-optics.y)/(optics.z-optics.y),0.0,1.0);
+                    halo=scattered*scattered*(1.0-core)*.14;
+                }
+                return segmentOpticalColor(level,core,halo,tint,optics.x,.004);
+            }
             float cellWidth=filterSegmentCellWidth(Parameters.SegmentGeometry.y);
             vec2 cellSize=vec2(cellWidth,max(9.0,floor(cellWidth*1.55+.5)));
             vec2 logical=uv*Parameters.Processing.zw;
@@ -59,18 +90,14 @@ internal static class FilterSegmentDisplay
                 current=current>=previous?mix(previous,current,Parameters.SegmentTemporal.x)
                     :max(current,previous*Parameters.SegmentTemporal.y);
             }
-            current=filterSegmentOffVisibility(current,Parameters.SegmentOptical.x);
             float radius=filterSegmentThickness(Parameters.SegmentShape.x);
             float edge=max(Parameters.Processing.z/max(Parameters.Output.x,1.0),
                 Parameters.Processing.w/max(Parameters.Output.y,1.0))/min(cellSize.x,cellSize.y);
-            float core=smoothstep(radius+edge,radius-edge,nearestDistance);
-            float halo=filterSegmentGlow(filterSegmentHaloFalloff(
-                max(0.0,nearestDistance-radius),Parameters.SegmentOptical.w),
-                Parameters.SegmentOptical.z)*(1.0-core);
-            float emission=filterSegmentBrightness(current*clamp(core+halo,0.0,1.0),
-                Parameters.SegmentEmission.y);
-            return clamp(vec3(filterSegmentBlackDepth(Parameters.SegmentOptical.y))
-                +emission*filterSegmentColor(Parameters.SegmentEmission.x),0.0,1.0);
+            float core=1.0-smoothstep(radius-edge,radius+edge,nearestDistance);
+            float extent=(optics.x>1.5?1.0:.34)*Parameters.SegmentOptical.w;
+            float glow=(optics.x>1.5?.32:.09)*current*current;
+            float halo=filterSegmentHaloFalloff(max(0.0,nearestDistance-radius),extent)*glow*(1.0-core);
+            return segmentOpticalColor(current,core,halo,tint,optics.x,filterSegmentBlackDepth(Parameters.SegmentOptical.y));
         }
         """;
 
@@ -83,7 +110,7 @@ internal static class FilterSegmentDisplay
         + FilterSegmentDisplayBrightness.Shader + FilterSegmentDisplayBlackDepth.Shader
         + FilterSegmentDisplayOffSegmentVisibility.Shader
         + FilterSegmentDisplayHaloRadius.Shader + FilterSegmentDisplayGlow.Shader
-        + FilterSegmentDisplayLayout.Shader + """
+        + FilterSegmentDisplayLayout.Shader + OpticalShader + """
         vec3 segmentSource(vec2 uv,float history)
         {
             if(history>.5)return adjustColor(texture2D(History,clamp(uv,vec2(0.0),vec2(1.0))).rgb);
@@ -104,6 +131,23 @@ internal static class FilterSegmentDisplay
         }
         vec3 segmentDisplayPixel(vec2 uv)
         {
+            vec4 optics=SegmentOptics;
+            vec3 tint=filterSegmentColor(SegmentEmission.x);
+            if(optics.w>.5)
+            {
+                float red=pointSample(uv).r;
+                float level=clamp((red-optics.y)/(optics.z-optics.y),0.0,1.0);
+                float core=step(.5/255.0,red);
+                float halo=0.0;
+                if(optics.x>1.5)
+                {
+                    vec2 spread=1.35/max(Processing.zw,vec2(1.0));
+                    float nearby=(pointSample(uv+vec2(spread.x,0.0)).r + pointSample(uv-vec2(spread.x,0.0)).r + pointSample(uv+vec2(0.0,spread.y)).r + pointSample(uv-vec2(0.0,spread.y)).r)*.25;
+                    float scattered=clamp((nearby-optics.y)/(optics.z-optics.y),0.0,1.0);
+                    halo=scattered*scattered*(1.0-core)*.14;
+                }
+                return segmentOpticalColor(level,core,halo,tint,optics.x,.004);
+            }
             float cellWidth=filterSegmentCellWidth(SegmentGeometry.y);
             vec2 cellSize=vec2(cellWidth,max(9.0,floor(cellWidth*1.55+.5)));
             vec2 logical=uv*Processing.zw;
@@ -129,29 +173,49 @@ internal static class FilterSegmentDisplay
                 current=current>=previous?mix(previous,current,SegmentTemporal.x)
                     :max(current,previous*SegmentTemporal.y);
             }
-            current=filterSegmentOffVisibility(current,SegmentOptical.x);
             float radius=filterSegmentThickness(SegmentShape.x);
-            float edge=max(Processing.z/max(Output.x,1.0),Processing.w/max(Output.y,1.0))/min(cellSize.x,cellSize.y);
-            float core=smoothstep(radius+edge,radius-edge,nearestDistance);
-            float halo=filterSegmentGlow(filterSegmentHaloFalloff(
-                max(0.0,nearestDistance-radius),SegmentOptical.w),SegmentOptical.z)*(1.0-core);
-            float emission=filterSegmentBrightness(current*clamp(core+halo,0.0,1.0),SegmentEmission.y);
-            return clamp(vec3(filterSegmentBlackDepth(SegmentOptical.y))+emission*filterSegmentColor(SegmentEmission.x),0.0,1.0);
+            float edge=max(Processing.z/max(Output.x,1.0),
+                Processing.w/max(Output.y,1.0))/min(cellSize.x,cellSize.y);
+            float core=1.0-smoothstep(radius-edge,radius+edge,nearestDistance);
+            float extent=(optics.x>1.5?1.0:.34)*SegmentOptical.w;
+            float glow=(optics.x>1.5?.32:.09)*current*current;
+            float halo=filterSegmentHaloFalloff(max(0.0,nearestDistance-radius),extent)*glow*(1.0-core);
+            return segmentOpticalColor(current,core,halo,tint,optics.x,filterSegmentBlackDepth(SegmentOptical.y));
         }
         """;
 
-    internal static void Apply(float[] colors, int sourceWidth, int sourceHeight, int width, int height, EmulationSegmentDisplayVideoConfiguration configuration)
+    internal static void Apply(float[] colors, int sourceWidth, int sourceHeight, int width, int height, EmulationSegmentDisplayVideoConfiguration configuration, VideoFrame frame)
     {
+        var tintComponents = FilterSegmentDisplayColor.Apply(configuration.Color);
+        var tint = new Vector3(tintComponents.R, tintComponents.G, tintComponents.B);
+        var background = FilterSegmentDisplayBlackDepth.Apply(configuration.BlackDepth);
+        if (frame.SegmentLevels is { } levels && levels.OnRed > levels.OffRed
+            && frame.PixelFormat == EmulationPixelFormat.Xrgb8888)
+        {
+            var pixels = frame.Pixels.Span;
+            for (var y = 0; y < height; y++)
+            for (var x = 0; x < width; x++)
+            {
+                var sourceX = Math.Min(frame.Width - 1, (int)((x + .5f) * frame.Width / width));
+                var sourceY = Math.Min(frame.Height - 1, (int)((y + .5f) * frame.Height / height));
+                var red = pixels[sourceY * frame.Pitch + sourceX * 4 + 2];
+                var intensity = Math.Clamp((red - levels.OffRed) / (float)(levels.OnRed - levels.OffRed), 0f, 1f);
+                Compose(intensity, red > 0 ? 1f : 0f, 0f, tint, configuration.Technology, .004f)
+                    .CopyTo(colors, (y * width + x) * 3);
+            }
+            return;
+        }
+
         var source = colors.ToArray();
         var cellWidth = FilterSegmentDisplayCellSize.Width(configuration.CellSize);
         var cellHeight = FilterSegmentDisplayCellSize.Height(configuration.CellSize);
         var columns = Math.Max(1, (sourceWidth + cellWidth - 1) / cellWidth);
         var rows = Math.Max(1, (sourceHeight + cellHeight - 1) / cellHeight);
-        var elements = FilterSegmentDisplayLayout.Elements(configuration.Layout, configuration.DecimalPoint, configuration.Colon).Select(element => FilterSegmentDisplaySegmentGap.Apply(element, configuration.SegmentGap)).ToArray();
+        var (end, gap) = FilterSegmentDisplayEndShape.ForTechnology(configuration.Technology, configuration.EndShape, configuration.SegmentGap);
+        var elements = FilterSegmentDisplayLayout.Elements(configuration.Layout, configuration.DecimalPoint, configuration.Colon)
+            .Select(element => FilterSegmentDisplaySegmentGap.Apply(element, gap)).ToArray();
         var activations = SampleActivations(source, sourceWidth, sourceHeight, width, height, columns, rows, cellWidth, cellHeight, elements, configuration);
-        var tint = FilterSegmentDisplayColor.Apply(configuration.Color);
         var radius = FilterSegmentDisplayThickness.Radius(configuration.Thickness);
-        var background = FilterSegmentDisplayBlackDepth.Apply(configuration.BlackDepth);
 
         for (var y = 0; y < height; y++)
         for (var x = 0; x < width; x++)
@@ -166,22 +230,36 @@ internal static class FilterSegmentDisplay
             var distance = float.MaxValue;
             for (var element = 0; element < elements.Length; element++)
             {
-                var candidate = FilterSegmentDisplayEndShape.Distance(localX, localY, elements[element], configuration.EndShape);
+                var candidate = FilterSegmentDisplayEndShape.Distance(localX, localY, elements[element], end);
                 if (candidate >= distance) continue;
                 distance = candidate;
                 nearest = element;
             }
             var edge = MathF.Max(sourceWidth / (float)width, sourceHeight / (float)height) / Math.Min(cellWidth, cellHeight);
             var core = SmoothStep(radius + edge, radius - edge, distance);
-            var halo = FilterSegmentDisplayGlow.Apply(FilterSegmentDisplayHaloRadius.Apply(MathF.Max(0f, distance - radius), configuration.HaloRadius), configuration.Glow) * (1f - core);
+            var fluorescent = configuration.Technology == EmulationSegmentDisplayTechnology.Vfd;
+            var haloRadius = fluorescent ? configuration.HaloRadius : configuration.HaloRadius / 3;
             var cell = (cellY * columns + cellX) * elements.Length + nearest;
-            var activation = FilterSegmentDisplayOffSegmentVisibility.Apply(activations[cell], configuration.OffSegmentVisibility);
-            var emission = FilterSegmentDisplayBrightness.Apply(activation * Math.Clamp(core + halo, 0f, 1f), configuration.Brightness);
-            var index = (y * width + x) * 3;
-            colors[index] = Math.Clamp(background + emission * tint.R, 0f, 1f);
-            colors[index + 1] = Math.Clamp(background + emission * tint.G, 0f, 1f);
-            colors[index + 2] = Math.Clamp(background + emission * tint.B, 0f, 1f);
+            var activation = activations[cell];
+            var halo = FilterSegmentDisplayHaloRadius.Apply(MathF.Max(0f, distance - radius), haloRadius)
+                * (fluorescent ? .32f : .09f) * activation * activation * (1f - core);
+            Compose(activation, core, halo, tint, configuration.Technology, background)
+                .CopyTo(colors, (y * width + x) * 3);
         }
+    }
+
+    private static Vector3 Compose(float level, float core, float halo, Vector3 tint,
+        EmulationSegmentDisplayTechnology technology, float background)
+    {
+        if (technology == EmulationSegmentDisplayTechnology.Lcd)
+        {
+            var lcd = new Vector3(.57f, .61f, .48f);
+            return Vector3.Lerp(lcd, Vector3.Lerp(lcd * .92f, tint, level), core);
+        }
+
+        var panel = technology == EmulationSegmentDisplayTechnology.Vfd
+            ? new Vector3(.002f, .0045f, .0055f) : new Vector3(background);
+        return Vector3.Min(panel + tint * (core * (.006f + .94f * level) + halo), Vector3.One);
     }
 
     private static float[] SampleActivations(float[] source, int sourceWidth, int sourceHeight,

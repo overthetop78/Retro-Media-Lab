@@ -27,20 +27,9 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             FilterPlasmaCellStructure.Apply(colors, panelWidth, panelHeight, outputWidth, outputHeight, plasma.CellStructure);
             return;
         }
-        if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Vfd)
-        {
-            var vfd = configuration.Vfd;
-            var emission = FilterVfdEmissionThreshold.Extract(colors, vfd.EmissionThreshold);
-            FilterVfdCellStructure.Apply(emission, outputWidth, outputHeight, sourceWidth, sourceHeight, vfd.Structure, vfd.CellSize, vfd.CellGap);
-            FilterVfdPhosphorIntensity.Apply(emission, vfd.PhosphorIntensity);
-            var halo = FilterVfdHalo.Create(emission, outputWidth, outputHeight, sourceWidth, sourceHeight, vfd.HaloRadius, vfd.HaloIntensity);
-            FilterVfdGlass.Apply(colors, vfd.GlassDarkening);
-            FilterVfdPhosphorColor.Apply(colors, emission, halo, vfd.Color);
-            return;
-        }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.SegmentDisplay)
         {
-            FilterSegmentDisplay.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, configuration.SegmentDisplay);
+            FilterSegmentDisplay.Apply(colors, sourceWidth, sourceHeight, outputWidth, outputHeight, configuration.SegmentDisplay, frame);
             return;
         }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper)

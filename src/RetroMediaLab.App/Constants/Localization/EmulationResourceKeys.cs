@@ -122,14 +122,6 @@ public static class EmulationResourceKeys
     public const string VideoParameterChromaticAberration = "Emulation.Video.Parameter.ChromaticAberration";
     public const string VideoParameterBloom = "Emulation.Video.Parameter.Bloom";
     public const string VideoParameterSepia = "Emulation.Video.Parameter.Sepia";
-    public const string VideoParameterVfdColor = "Emulation.Video.Parameter.VfdColor";
-    public const string VideoParameterVfdPhosphorIntensity = "Emulation.Video.Parameter.VfdPhosphorIntensity";
-    public const string VideoParameterVfdHaloIntensity = "Emulation.Video.Parameter.VfdHaloIntensity";
-    public const string VideoParameterVfdPersistence = "Emulation.Video.Parameter.VfdPersistence";
-    public const string VideoVfdColorBlue = "Emulation.Video.Vfd.Color.Blue";
-    public const string VideoVfdColorGreen = "Emulation.Video.Vfd.Color.Green";
-    public const string VideoVfdColorAmber = "Emulation.Video.Vfd.Color.Amber";
-    public const string VideoVfdColorRed = "Emulation.Video.Vfd.Color.Red";
     public const string VideoParameterLedMatrixColor = "Emulation.Video.Parameter.LedMatrixColor";
     public const string VideoParameterLedMatrixShape = "Emulation.Video.Parameter.LedMatrixShape";
     public const string VideoLedMatrixColorRgb = "Emulation.Video.LedMatrix.Color.Rgb";
@@ -222,9 +214,6 @@ public static class EmulationResourceKeys
     public const string VideoParameterPlasmaCellStructure = "Emulation.Video.Parameter.PlasmaCellStructure";
     public const string VideoParameterVectorBeamWidth = "Emulation.Video.Parameter.VectorBeamWidth";
     public const string VideoParameterVectorPhosphorColor = "Emulation.Video.Parameter.VectorPhosphorColor";
-    public const string VideoVfdGroupPhosphorAndGlass = "Emulation.Video.Vfd.Group.PhosphorAndGlass";
-    public const string VideoVfdGroupAnodes = "Emulation.Video.Vfd.Group.Anodes";
-    public const string VideoVfdGroupGlowAndResponse = "Emulation.Video.Vfd.Group.GlowAndResponse";
     public const string VideoCompatibilityExclusiveDisplayTechnology = "Emulation.Video.Compatibility.ExclusiveDisplayTechnology";
     public const string VideoLimitationUnsupportedBackend = "Emulation.Video.Limitation.UnsupportedBackend";
     public const string VideoPresetNormal = "Emulation.Video.Preset.Normal";

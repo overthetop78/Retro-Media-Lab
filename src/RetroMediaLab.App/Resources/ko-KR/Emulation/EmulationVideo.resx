@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>(주)그린</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>뚱 베어</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>빨간색</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>인광체 색상</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>인광 강도</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>VFD 할로</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>지속 시간 (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>발광 임계값</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>스모크 유리 어둡기</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>양극 구조</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>셀 크기</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>셀 간격</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>후광 반경</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>그래픽</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>도트 매트릭스</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>형광체와 유리</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>양극 구조</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>발광과 응답</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>LED 매트릭스</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>점 행렬</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>녹색 LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>뚱 베어</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>파란색</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>백색</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Segment 배치</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>세그먼트 색깔</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>세그먼트 간격</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>활성화 대비</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Halo 강도</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>반사 표시</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Backlit 전시</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Emissive 전시</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>인광체 색상</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>세포 모양</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>블루그린(클래식)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>전시 유형</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>기술 정보</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>색깔: 백색</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>뚱 베어</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>담당자: Mr. Michel</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>블루 그린</value></data>
 </root>

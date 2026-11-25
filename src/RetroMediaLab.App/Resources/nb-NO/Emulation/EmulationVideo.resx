@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>Grønn</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>Rød</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Fosforfarge</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Fosforintensitet</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>VFD halo</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>Varighet (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Utslippsterskel</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Mørklegging av røykglass</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Anodestruktur</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Cellestørrelse</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Celleavstand</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Haloradius</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Grafisk</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Punktmatrise</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Fosfor og glass</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Anodestruktur</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Glød og respons</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>LED matrise</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>Punktmatrise</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>Grønn LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>Blå</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>Hvit</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Segmentoppsett</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Segmentfarge</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Segmenttykkelse</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Aktiveringskontrast</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Halointensitet</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Refleksiv skjerm</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Baklysvisning</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Utilsiktig skjerm</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Fosforfarge</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Cellform</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Blågrønn (klassisk)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Vis type</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Teknologi</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Farge</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Svart</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Grå</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Blågrønn</value></data>
 </root>

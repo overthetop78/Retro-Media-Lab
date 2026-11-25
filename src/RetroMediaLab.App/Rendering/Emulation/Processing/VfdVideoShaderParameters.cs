@@ -1,16 +1,22 @@
 using System.Numerics;
-using RetroMediaLab.Emulation.Contracts;
 
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
-internal readonly record struct VfdVideoShaderParameters(Vector4 Display, Vector4 Structure, Vector4 Optical)
+internal readonly record struct VfdVideoShaderParameters(Vector4 Display, Vector4 Structure)
 {
-    internal static VfdVideoShaderParameters From(EmulationVideoProcessingConfiguration configuration, bool hasHistory, double elapsedMilliseconds)
+    internal static VfdVideoShaderParameters From(EmulationVideoProcessingConfiguration configuration, int width, int height)
     {
         var vfd = configuration.Vfd;
-        return new(
-            new Vector4((float)vfd.Color, vfd.PhosphorIntensity / 100f, vfd.EmissionThreshold / 100f, vfd.GlassDarkening / 100f),
-            new Vector4((float)vfd.Structure, vfd.CellSize / 100f, vfd.CellGap / 100f, vfd.HaloIntensity / 100f),
-            new Vector4(vfd.HaloRadius / 100f, vfd.PersistenceMilliseconds, (float)elapsedMilliseconds, hasHistory ? 1f : 0f));
+        var (columns, rows) = EmulationVideoProcessingCatalog.LedMatrixDefinitionDimensions(vfd.Definition, width, height);
+        var phosphor = vfd.Color switch
+        {
+            EmulationVfdColor.Green => new Vector3(.055f, 1f, .12f),
+            EmulationVfdColor.Blue => new Vector3(.055f, .29f, 1f),
+            EmulationVfdColor.White => Vector3.One,
+            EmulationVfdColor.Amber => new Vector3(1f, .42f, .028f),
+            EmulationVfdColor.Red => new Vector3(1f, .045f, .025f),
+            _ => new Vector3(.085f, 1f, .73f)
+        };
+        return new(new(phosphor, 0f), new(columns, rows, (float)vfd.Shape, 0f));
     }
 }

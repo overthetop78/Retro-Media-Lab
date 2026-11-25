@@ -340,7 +340,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
                 hasHistory, elapsedMilliseconds, frame.Sequence,
                 panelSignal ?? CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
                 gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels.AsSpan(pixelOffset, processed.Width * processed.Height * 4)) : 0f,
-                panelSignal.HasValue);
+                panelSignal.HasValue, frame.SegmentLevels);
             GlEnable(OpenGlVideoConstants.Texture2D);
             GlBegin(OpenGlVideoConstants.Quads);
             GlTexCoord2f(0, 1); GlVertex2f(-1, -1);

@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>Lục</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>Đỏ</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Name</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Độ mạnh Phosphor</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>VFD halo</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>độ bền bỉ (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Ngưỡng phát sáng</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Độ tối của kính khói</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Cấu trúc anốt</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Kích thước ô</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Khoảng cách ô</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Bán kính quầng sáng</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Đồ họa</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Ma trận điểm</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Phốt-pho và kính</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Cấu trúc anốt</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Phát sáng và đáp ứng</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>Ma trận LED</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>ma trận chấm</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>Xanh lá cây LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>Xanh nước biển</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>Trắng</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Bố trí đoạn</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Màu đoạn</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Độ dày đoạn</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Độ tương phản sáng tạo</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>cường độ Halo</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Hiển thị phản xạ</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Hiển thị lùi</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Hiển thị thả lỏng</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Name</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Hình tế bàoStencils</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Xanh lá cây (xanh)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Hiện kiểu</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Công nghệ</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Màu</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Đen</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Xám</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Xanh lá cây nhạtcolor</value></data>
 </root>

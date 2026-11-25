@@ -15,6 +15,12 @@ public sealed record VideoFrame(ReadOnlyMemory<byte> Pixels, int Width, int Heig
     /// </summary>
     public ReadOnlyMemory<VideoVectorSegment>? VectorSegments { get; init; }
 
+    /// <summary>Red-channel levels in a native segmented raster. Zero identifies the background.
+    /// Values between the two levels encode the native segment's intensity.</summary>
+    public VideoSegmentLevels? SegmentLevels { get; init; }
+
     /// <summary>Hauteur native de l'image ; Height reste la hauteur des lignes effectivement transférées.</summary>
     public int ImageHeight => ScanMode == EmulationVideoScanMode.Progressive ? Height : checked(Height * 2);
 }
+
+public readonly record struct VideoSegmentLevels(byte OffRed, byte OnRed);

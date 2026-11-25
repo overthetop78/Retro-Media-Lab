@@ -11,10 +11,10 @@ internal static partial class VeldridVideoProcessingShaders
             vec4 FixedDisplay; vec4 FixedSpatial; vec4 FixedTechnology; vec4 FixedTemporal;
             vec4 PlasmaEffect; vec4 PlasmaTemporal; vec4 PlasmaDisplay;
             vec4 Restoration; vec4 SegmentGeometry; vec4 SegmentShape;
-            vec4 SegmentEmission; vec4 SegmentOptical; vec4 SegmentTemporal;
+            vec4 SegmentEmission; vec4 SegmentOptical; vec4 SegmentTemporal; vec4 SegmentOptics;
             vec4 General; vec4 Restoration2;
             vec4 Signal; vec4 Stylistic; vec4 Stylistic2;
-            vec4 VfdDisplay; vec4 VfdStructure; vec4 VfdOptical;
+            vec4 VfdDisplay; vec4 VfdStructure;
             vec4 LedMatrixStructure;
             vec4 DotMatrixGeometry; vec4 DotMatrixOptics;
             vec4 EPaperInkAndColor; vec4 EPaperSurface; vec4 EPaperTemporal;
@@ -108,9 +108,6 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 3
         """ + "\n" + FilterPlasmaCellStructure.Shader + FilterPlasmaTemporalDithering.Shader + FilterPlasmaPersistence.Shader + FilterPlasmaBlackDepth.Shader + FilterPlasmaPhosphorIntensity.Shader + FilterPlasmaAutomaticBrightnessLimiter.Shader + "\n" + """
         #endif
-        #if DISPLAY_TECHNOLOGY == 5
-        """ + "\n" + FilterVfdEmissionThreshold.Shader + FilterVfdPhosphorIntensity.Shader + FilterVfdPhosphorColor.Shader + FilterVfdGlass.Shader + FilterVfdCellStructure.Shader + FilterVfdHaloRadius.Shader + FilterVfdHalo.Shader + FilterVfdPersistence.Shader + "\n" + """
-        #endif
         #if DISPLAY_TECHNOLOGY == 7
         #endif
         #if DISPLAY_TECHNOLOGY == 8
@@ -132,37 +129,7 @@ internal static partial class VeldridVideoProcessingShaders
         }
         #endif
         #if DISPLAY_TECHNOLOGY == 5
-        float vfdEmission(vec2 uv)
-        {
-            vec3 sampleColor=adjust(sourceColor(clamp(uv,vec2(0.0),vec2(1.0))));
-            return filterVfdEmissionThreshold(dot(sampleColor,vec3(.2126,.7152,.0722)),
-                Parameters.VfdDisplay.z);
-        }
-        vec3 vfdPixel(vec3 source,vec2 uv)
-        {
-            float mask=filterVfdCellStructure(uv,Parameters.Processing.zw,
-                Parameters.VfdStructure.x,Parameters.VfdStructure.y,
-                Parameters.VfdStructure.z);
-            float emission=filterVfdPhosphorIntensity(filterVfdEmissionThreshold(
-                dot(source,vec3(.2126,.7152,.0722)),Parameters.VfdDisplay.z)*mask,
-                Parameters.VfdDisplay.y);
-            vec2 stepSize=1.0/max(Parameters.Processing.zw,vec2(1.0));
-            float radius=filterVfdHaloRadius(Parameters.VfdOptical.x);
-            float nearRadius=max(1.0,radius*.5);
-            float nearEmission=(vfdEmission(uv+vec2(stepSize.x*nearRadius,0.0))
-                +vfdEmission(uv-vec2(stepSize.x*nearRadius,0.0))
-                +vfdEmission(uv+vec2(0.0,stepSize.y*nearRadius))
-                +vfdEmission(uv-vec2(0.0,stepSize.y*nearRadius)))*.25;
-            float farEmission=(vfdEmission(uv+vec2(stepSize.x*radius,stepSize.y*radius))
-                +vfdEmission(uv+vec2(-stepSize.x*radius,stepSize.y*radius))
-                +vfdEmission(uv+vec2(stepSize.x*radius,-stepSize.y*radius))
-                +vfdEmission(uv-vec2(stepSize.x*radius,stepSize.y*radius)))*.25;
-            float halo=filterVfdPhosphorIntensity(filterVfdHalo(nearEmission,farEmission,
-                Parameters.VfdStructure.w),Parameters.VfdDisplay.y);
-            return clamp(filterVfdGlass(source,Parameters.VfdDisplay.w)
-                +filterVfdPhosphorColor(emission,Parameters.VfdDisplay.x)
-                +filterVfdPhosphorColor(halo,Parameters.VfdDisplay.x),0.0,1.0);
-        }
+        """ + "\n" + FilterVfdCellStructure.CreateShader(true) + "\n" + """
         #endif
         #if DISPLAY_TECHNOLOGY == 6
         """ + "\n" + FilterLedMatrixCellStructure.CreateShader(true) + "\n" + """
@@ -219,7 +186,7 @@ internal static partial class VeldridVideoProcessingShaders
             if(t==3)c=plasmaPixel(c,uv);
         #endif
         #if DISPLAY_TECHNOLOGY == 5
-            if(t==5)c=vfdPixel(c,uv);
+            if(t==5)c=vfdPixel(uv);
         #endif
         #if DISPLAY_TECHNOLOGY == 6
             if(t==6)c=ledMatrixPixel(uv);
@@ -333,11 +300,6 @@ internal static partial class VeldridVideoProcessingShaders
         #if DISPLAY_TECHNOLOGY == 3
             if(Parameters.PlasmaTemporal.y>.5)
                 c=filterPlasmaPersistence(c,previous,Parameters.PlasmaTemporal.x);
-        #endif
-        #if DISPLAY_TECHNOLOGY == 5
-            if(Parameters.VfdOptical.w>.5)
-                c=filterVfdPersistence(c,previous,Parameters.VfdOptical.y,
-                    Parameters.VfdOptical.z);
         #endif
         #if DISPLAY_TECHNOLOGY == 2
             if(Parameters.FixedDisplay.x>.5&&Parameters.FixedTemporal.z>.5)

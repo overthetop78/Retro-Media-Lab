@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>зеленый</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Эмбер</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>красный</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Фосфорный цвет</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Интенсивность фосфора</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>Ореол VFD</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>Продолжительность (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Порог свечения</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Затемнение дымчатого стекла</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Структура анодов</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Размер ячеек</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Интервал ячеек</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Радиус ореола</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Графический</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Точечная матрица</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Люминофор и стекло</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Структура анодов</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Свечение и отклик</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>LED Матрица</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>Точка матрицы</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>Зеленый LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Эмбер</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>голубой</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>белый</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Макет сегмента</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Цвет сегмента</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Толщина сегмента</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Активационный контраст</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Интенсивность гало</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Отражательный дисплей</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Дисплей с подсветкой</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Эмиссивный дисплей</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Цвет фосфора</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Форма клетки</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Сине-зеленый (классический)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Тип дисплея</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Технология</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>цвет</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>черный</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Грей</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>сине-зеленый</value></data>
 </root>

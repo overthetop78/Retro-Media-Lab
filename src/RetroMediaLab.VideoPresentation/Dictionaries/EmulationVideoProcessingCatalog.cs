@@ -56,15 +56,8 @@ public static partial class EmulationVideoProcessingCatalog
     public const string VectorBeamWidth = nameof(VectorBeamWidth);
     public const string VectorPhosphorColor = nameof(VectorPhosphorColor);
     public const string VfdColor = nameof(VfdColor);
-    public const string VfdPhosphorIntensity = nameof(VfdPhosphorIntensity);
-    public const string VfdEmissionThreshold = nameof(VfdEmissionThreshold);
-    public const string VfdGlassDarkening = nameof(VfdGlassDarkening);
-    public const string VfdStructure = nameof(VfdStructure);
-    public const string VfdCellSize = nameof(VfdCellSize);
-    public const string VfdCellGap = nameof(VfdCellGap);
-    public const string VfdHaloIntensity = nameof(VfdHaloIntensity);
-    public const string VfdHaloRadius = nameof(VfdHaloRadius);
-    public const string VfdPersistence = nameof(VfdPersistence);
+    public const string VfdDefinition = nameof(VfdDefinition);
+    public const string VfdShape = nameof(VfdShape);
     public const string LedMatrixColor = nameof(LedMatrixColor);
     public const string LedMatrixDefinition = nameof(LedMatrixDefinition);
     public const string LedMatrixShape = nameof(LedMatrixShape);
@@ -72,6 +65,7 @@ public static partial class EmulationVideoProcessingCatalog
     public const string DotMatrixDefinition = nameof(DotMatrixDefinition);
     public const string DotMatrixShape = nameof(DotMatrixShape);
     public const string DotMatrixTechnology = nameof(DotMatrixTechnology);
+    public const string SegmentDisplayTechnology = nameof(SegmentDisplayTechnology);
     public const string SegmentDisplayLayout = nameof(SegmentDisplayLayout);
     public const string SegmentDisplayColor = nameof(SegmentDisplayColor);
     public const string SegmentDisplayCellSize = nameof(SegmentDisplayCellSize);
@@ -125,12 +119,10 @@ public static partial class EmulationVideoProcessingCatalog
         FixedPixelPersistence, FixedPixelBacklight, FixedPixelBacklightBleed, FixedPixelOledEmission, FixedPixelBlackDepth,
         PlasmaCellStructure,
         VectorBeamWidth, VectorPhosphorColor,
-        VfdColor, VfdPhosphorIntensity, VfdEmissionThreshold, VfdGlassDarkening,
-        VfdStructure, VfdCellSize, VfdCellGap, VfdHaloIntensity, VfdHaloRadius,
-        VfdPersistence,
+        VfdColor, VfdDefinition, VfdShape,
         LedMatrixColor, LedMatrixDefinition, LedMatrixShape,
         DotMatrixPalette, DotMatrixDefinition, DotMatrixShape, DotMatrixTechnology,
-        SegmentDisplayLayout, SegmentDisplayColor,
+        SegmentDisplayLayout, SegmentDisplayTechnology, SegmentDisplayColor,
         SegmentDisplayCellSize, SegmentDisplayHorizontalGap, SegmentDisplayVerticalGap,
         SegmentDisplayThickness, SegmentDisplaySegmentGap, SegmentDisplayEndShape,
         SegmentDisplayDecimalPoint, SegmentDisplayColon, SegmentDisplayBrightness,

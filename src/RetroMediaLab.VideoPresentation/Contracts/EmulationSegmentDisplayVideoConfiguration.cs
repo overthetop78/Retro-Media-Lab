@@ -21,4 +21,5 @@ public sealed record EmulationSegmentDisplayVideoConfiguration(
     int OffSegmentVisibility = 8,
     int BlackDepth = 100,
     int HaloRadius = 25,
-    int PersistenceMilliseconds = 60);
+    int PersistenceMilliseconds = 60,
+    EmulationSegmentDisplayTechnology Technology = EmulationSegmentDisplayTechnology.Led);

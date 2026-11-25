@@ -84,6 +84,8 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             EmulationVideoScreenType.Vector => CreateVectorPanel(),
             EmulationVideoScreenType.LedMatrix => CreateLedMatrixPanel(),
             EmulationVideoScreenType.DotMatrix => CreateDotMatrixPanel(),
+            EmulationVideoScreenType.Vfd => CreateVfdPanel(),
+            EmulationVideoScreenType.SegmentDisplay => CreateSegmentDisplayPanel(),
             _ => null
         };
         if (technology is not null)
@@ -192,8 +194,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
 
     private FrameworkElement? CreateTechnologyPanel() => _configuration.DisplayTechnology switch
     {
-        EmulationVideoDisplayTechnology.Vfd => CreateVfdPanel(),
-        EmulationVideoDisplayTechnology.SegmentDisplay => CreateSegmentDisplayPanel(),
         EmulationVideoDisplayTechnology.EPaper => CreateEPaperPanel(),
         _ => null
     };

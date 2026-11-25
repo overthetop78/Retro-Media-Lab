@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>Green</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>Red</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Phosphor color</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Phosphor intensity</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>VFD halo</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>Persistence duration (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Emission threshold</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Smoked-glass darkening</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Anode structure</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Cell size</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Cell gap</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Halo radius</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Graphic</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Dot matrix</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Phosphor and glass</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Anode structure</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Glow and response</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>LED matrix</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>Dot matrix</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>Green LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>Blue</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>White</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Segment layout</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Segment color</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Segment thickness</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Activation contrast</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Halo intensity</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Reflective display</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Backlit display</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Emissive display</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Phosphor color</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Cell shape</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Blue-green (classic)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Display type</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Technology</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Color</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Black</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Gray</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Blue-green</value></data>
 </root>

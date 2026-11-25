@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>Πράσινο</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Άμπερ.</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>Κόκκινο</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Χρώμα φώσφορ</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Ένταση φωσφορίου</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>φωτοστέφανο VFD</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>Διάρκεια επιμονής (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Κατώφλι εκπομπής</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Σκούρυνση φιμέ γυαλιού</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Δομή ανόδων</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Μέγεθος κυψελών</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Διάκενο κυψελών</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Ακτίνα άλω</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Γραφική</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Μήτρα κουκκίδων</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Φώσφορος και γυαλί</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Δομή ανόδων</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Λάμψη και απόκριση</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>Πίνακας LED</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>Πίνακας κουκκίδων</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>Πράσινο LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Άμπερ.</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>Μπλε</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>Λευκό</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Διάταξη τμήματος</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Χρώμα τμήματος</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Πάχος τμήματος</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Αντίθεση ενεργοποίησης</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Ένταση αλουμινίου</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Ανακλαστική απεικόνιση</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Οπισθόφωτη οθόνη</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Ελκυστική απεικόνιση</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Χρώμα φωσφορ</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Σχήμα κελιού</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Γαλάζια-πράσινη (κλασική)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Τύπος εμφάνισης</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Τεχνολογία</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Χρώμα</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Μαύρο</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Γκρι</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Γαλάζια</value></data>
 </root>

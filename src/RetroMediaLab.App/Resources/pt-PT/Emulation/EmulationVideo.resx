@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>Verde</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>Vermelho</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Cor do fósforo</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Intensidade de fósforo</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>Halo VFD</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>Duração da persistência (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Limiar de emissão</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Escurecimento do vidro fumado</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Estrutura dos ânodos</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Tamanho das células</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Espaçamento das células</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Raio do halo</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Gráfico</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Matriz de pontos</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Fósforo e vidro</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Estrutura dos ânodos</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Brilho e resposta</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>Matriz LED</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>Matriz de pontos</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>Verde LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>Azul</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>Branco</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Disposição do segmento</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Cor do segmento</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Espessura do segmento</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Contraste de ativação</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Intensidade do halo</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Exibição refletiva</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Visualização retroiluminada</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Emissivo</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Cor do fósforo</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Forma da célula</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Azul-verde (clássico)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Tipo de exibição</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Tecnologia</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Cor</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Preto</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Cinza</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Verde-azul</value></data>
 </root>

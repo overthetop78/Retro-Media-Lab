@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>绿色</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>琥珀</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>红色</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>磷酸盐颜色</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>磷酸盐强度</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>VFD 光环</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>脆弱家庭残疾的持久性</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>發光閾值</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>煙燻玻璃暗度</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>陽極結構</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>單元尺寸</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>單元間距</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>光暈半徑</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>圖形</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>點陣</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>螢光體和玻璃</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>陽極結構</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>輝光和響應</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>LED 矩阵</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>点矩阵</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>绿色 LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>琥珀</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>蓝色</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>白色</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>片段布局</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>线段颜色</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>分层厚度</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>活化对比</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>光环强度</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>反射式顯示</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>背光式顯示</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>自發光顯示</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>螢光粉顏色</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>發光單元形狀</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>藍綠色（經典）</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>顯示器類型</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>技術</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>顏色</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>黑色</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>灰色</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>藍綠色</value></data>
 </root>

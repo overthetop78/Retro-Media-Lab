@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>Groen</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>Rood</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>Fosforkleur</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>Fosforintensiteit</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>VFD-halo</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>duur van de Persistentie (ms)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>Emissiedrempel</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>Verduistering van rookglas</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>Anodestructuur</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>Celgrootte</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>Celafstand</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>Halostraal</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>Grafisch</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>Puntenmatrix</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>Fosfor en glas</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>Anodestructuur</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>Gloed en respons</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>LED-matrix</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>Puntmatrix</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>Groen LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>Amber</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>Blauw</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>Wit</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Segmentindeling</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Segmentkleur</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>Segmentdikte</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>Contrast activeren</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>Halo-intensiteit</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>Reflecterend display</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>Verlicht scherm</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>Emissieve weergave</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>Fosforkleur</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>Cellvorm</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>Blauwgroen (klassiek)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>Type weergave</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>Technologie</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>Kleur</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Zwart</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Grijs</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Blauwgroen</value></data>
 </root>

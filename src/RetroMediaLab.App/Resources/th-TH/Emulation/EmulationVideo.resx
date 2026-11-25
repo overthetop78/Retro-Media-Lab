@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>เขียว</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>แอมเบอร์</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>แดง</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>สี</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>ความเข้มสี</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>รัศมี VFD</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>แก้ไขโครงการหลัก...</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>เกณฑ์การเปล่งแสง</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>ความมืดของกระจกรมควัน</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>โครงสร้างแอโนด</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>ขนาดเซลล์</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>ระยะห่างเซลล์</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>รัศมีฮาโล</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>กราฟิก</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>ดอตเมทริกซ์</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>สารเรืองแสงและกระจก</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>โครงสร้างแอโนด</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>แสงเรืองและการตอบสนอง</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>เมทริกซ์หลอด LED</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>เมทริกซ์ดอต</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>เขียว LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>แอมเบอร์</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>น้ําเงิน</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>ขาว</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>จํานวนครั้งที่เล่น</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>สีเส้นการลาก</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>ความหนาของเส้นต่อเนื่อง</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>ความแตกต่างของการเปิดใช้งาน</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>ความเข้มสี</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>แสดงแบบสะท้อนแสง</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>การแสดงผลแบบกลับหน้า</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>แสดงส่วนที่พริ้วไหว</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>สีของฟอสฟอ</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>รูปทรงเซลล์</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>น้ําเงิน- เขียว (คลาส)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>ชนิดของการแสดงผล</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>เทคโนโลยี</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>สี</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>ดํา</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>เทา</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>น้ําเงิน- เขียว</value></data>
 </root>

@@ -87,21 +87,6 @@
   <data name="Emulation.Video.Vfd.Color.Green"><value>الأخضر</value></data>
   <data name="Emulation.Video.Vfd.Color.Amber"><value>أمبر</value></data>
   <data name="Emulation.Video.Vfd.Color.Red"><value>أحمر</value></data>
-  <data name="Emulation.Video.Parameter.VfdColor"><value>لون الفوسفور</value></data>
-  <data name="Emulation.Video.Parameter.VfdPhosphorIntensity"><value>كثافة الفوسفور</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloIntensity"><value>هالة VFD</value></data>
-  <data name="Emulation.Video.Parameter.VfdPersistence"><value>مدة الدوام (م)</value></data>
-  <data name="Emulation.Video.Parameter.VfdEmissionThreshold"><value>عتبة الانبعاث</value></data>
-  <data name="Emulation.Video.Parameter.VfdGlassDarkening"><value>تعتيم الزجاج المدخن</value></data>
-  <data name="Emulation.Video.Parameter.VfdStructure"><value>بنية الأنودات</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellSize"><value>حجم الخلايا</value></data>
-  <data name="Emulation.Video.Parameter.VfdCellGap"><value>تباعد الخلايا</value></data>
-  <data name="Emulation.Video.Parameter.VfdHaloRadius"><value>نصف قطر الهالة</value></data>
-  <data name="Emulation.Video.Vfd.Structure.Graphic"><value>رسومي</value></data>
-  <data name="Emulation.Video.Vfd.Structure.DotMatrix"><value>مصفوفة نقطية</value></data>
-  <data name="Emulation.Video.Vfd.Group.PhosphorAndGlass"><value>الفوسفور والزجاج</value></data>
-  <data name="Emulation.Video.Vfd.Group.Anodes"><value>بنية الأنودات</value></data>
-  <data name="Emulation.Video.Vfd.Group.GlowAndResponse"><value>التوهج والاستجابة</value></data>
   <data name="Emulation.Video.Technology.LedMatrix"><value>مصفوفة LED</value></data>
   <data name="Emulation.Video.Technology.DotMatrix"><value>مصفوفة دوت</value></data>
   <data name="Emulation.Video.DotMatrix.Palette.Green"><value>الجرين LCD</value></data>
@@ -120,8 +105,6 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Amber"><value>أمبر</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Blue"><value>الأزرق</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.White"><value>أبيض</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>مخطط الجزء</value></data>
-  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>لون الجزء</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayThickness"><value>سميكة الجزء</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayContrast"><value>تناقض النشاط</value></data>
   <data name="Emulation.Video.Parameter.SegmentDisplayGlow"><value>كثافة الهالو</value></data>
@@ -267,4 +250,13 @@
   <data name="Emulation.Video.DotMatrix.Display.Reflective"><value>شاشة عاكسة</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Backlit"><value>شاشة بإضاءة خلفية</value></data>
   <data name="Emulation.Video.DotMatrix.Display.Emissive"><value>شاشة ذاتية الإضاءة</value></data>
+  <data name="Emulation.Video.Parameter.VfdColor"><value>لون الفوسفور</value></data>
+  <data name="Emulation.Video.Parameter.VfdShape"><value>شكل الخلية</value></data>
+  <data name="Emulation.Video.Vfd.Color.BlueGreen"><value>أزرق (درجة)</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayLayout"><value>نوع التلاعب</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayTechnology"><value>التكنولوجيا</value></data>
+  <data name="Emulation.Video.Parameter.SegmentDisplayColor"><value>كولور</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>أسود</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>غراي</value></data>
+  <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>أزرق - غرين</value></data>
 </root>

@@ -206,8 +206,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var plasma = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma;
         var segmentDisplay = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.SegmentDisplay;
         var temporalDisplay = fixedPixel || plasma || segmentDisplay || rasterVector
-            || gpuConfiguration.DisplayTechnology is EmulationVideoDisplayTechnology.Vfd
-                or EmulationVideoDisplayTechnology.EPaper
+            || gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper
             || gpuConfiguration.SignalSimulation.StandardIntensity > 0;
         var hasHistory = temporalDisplay && _hasHistory && (fixedPixel || segmentDisplay ? frame.Timestamp >= _historyTimestamp : frame.Sequence >= _historySequence);
         var elapsedMilliseconds = hasHistory ? (frame.Timestamp - _historyTimestamp).TotalMilliseconds : 0;
@@ -216,7 +215,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             Math.Max(1, clientSize.Width), Math.Max(1, clientSize.Height),
             hasHistory, elapsedMilliseconds, frame.Sequence,
             panelSignal ?? CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
-            plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels) : 0f, panelSignal.HasValue));
+            plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels) : 0f, panelSignal.HasValue, frame.SegmentLevels));
         var swapchain = _device.MainSwapchain.Framebuffer;
         if (_backend != GraphicsBackend.Direct3D11 && gpuConfiguration.BlackFrameInsertion) EnsureRetainedFrame();
         else ReleaseRetainedFrame();
@@ -530,6 +529,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         Vector4 SegmentEmission,
         Vector4 SegmentOptical,
         Vector4 SegmentTemporal,
+        Vector4 SegmentOptics,
         Vector4 General,
         Vector4 Restoration2,
         Vector4 Signal,
@@ -537,7 +537,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         Vector4 Stylistic2,
         Vector4 VfdDisplay,
         Vector4 VfdStructure,
-        Vector4 VfdOptical,
         Vector4 LedMatrixStructure,
         Vector4 DotMatrixGeometry,
         Vector4 DotMatrixOptics,
@@ -550,15 +549,15 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private static VideoParameters Parameters(EmulationVideoProcessingConfiguration configuration,
         int sourceWidth, int sourceHeight, int outputWidth, int outputHeight,
         bool hasHistory, double elapsedMilliseconds, long sequence, CrtSignal crtSignal,
-        float averageLuminance, bool decodePanelOnGpu)
+        float averageLuminance, bool decodePanelOnGpu, VideoSegmentLevels? nativeSegments)
     {
         var adjustments = configuration.Adjustments;
         var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, sourceWidth, sourceHeight, hasHistory, elapsedMilliseconds);
         var plasma = PlasmaVideoShaderParameters.From(configuration, hasHistory, sequence, averageLuminance);
-        var vfd = VfdVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var vfd = VfdVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         var ledMatrix = LedMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
-        var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds, nativeSegments);
         var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
         var projection = ProjectionVideoParameters.From(configuration.Projection);
         var vector = VectorRasterVideoShader.Parameters(configuration, outputWidth, outputHeight, hasHistory, elapsedMilliseconds);
@@ -577,13 +576,13 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             fixedPixel.Temporal, plasma.Effect, plasma.Temporal, plasma.Display,
             new Vector4(configuration.Restoration.DetailRecovery / 100f, 0f, 0f, 0f),
             segmentDisplay.Geometry, segmentDisplay.Shape, segmentDisplay.Emission,
-            segmentDisplay.Optical, segmentDisplay.Temporal,
+            segmentDisplay.Optical, segmentDisplay.Temporal, segmentDisplay.Optics,
             new Vector4((float)configuration.DisplayTechnology, hasHistory ? 1f : 0f, sequence % 4096, (float)elapsedMilliseconds),
             new Vector4(0f, 0f, configuration.Restoration.Debanding / 100f, 0f),
             new Vector4((float)configuration.SignalSimulation.Connection, configuration.SignalSimulation.ConnectionIntensity / 100f, (float)configuration.SignalSimulation.Standard, configuration.SignalSimulation.StandardIntensity / 100f),
             new Vector4(configuration.Stylistic.Grain / 100f, configuration.Stylistic.Vhs / 100f, configuration.Stylistic.ChromaticAberration / 100f, configuration.Stylistic.Bloom / 100f),
             new Vector4(configuration.Stylistic.Sepia ? 1f : 0f, 0f, 0f, 0f),
-            vfd.Display, vfd.Structure, vfd.Optical,
+            vfd.Display, vfd.Structure,
             ledMatrix,
             dotMatrix.Geometry, dotMatrix.Optics,
             ePaper.InkAndColor, ePaper.PaperSurface, ePaper.Temporal,
