@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>电子纸张</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>单色</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16级灰度</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 颜色</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>墨水颜色模式</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>墨水对比</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>有序抖动</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>刷新响应时间( 毫秒)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>剩余图像</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>预测</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>黑帧插入</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>信号模拟</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>分段几何</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>排放量和背景</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>发光和反应</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>墨水密度</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>纸张亮度</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>纸张温暖</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>颜色饱和度</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>纸张纹理</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>墨水边缘柔软</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>墨水和颜色</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>纸张表面</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>刷新和剩余图像</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>环境光</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>硬件渲染</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>渲染模式</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>黑色</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>灰质</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>蓝绿色</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>面板类型</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>三色红</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>三色黄</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>颜色 (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>颜色 (Gallery)</value></data>
 </root>

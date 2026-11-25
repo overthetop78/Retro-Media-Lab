@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>กระดาษอิเล็กทรอนิกส์</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>พิมพ์สีเดียว</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>ระดับสีเทา 16 ระดับ</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 สี</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>โหมดสีหมึก</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>ความแตกต่างของหมึก</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>การเกลี่ยสีแบบลําดับ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>ปรับปรุงเวลาตอบสนอง (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>อิมเมจแบบสรุป</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>โปรเจคชัน</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>แทรกกรอบสีดํา</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>การจําลองสัญญาณ</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>เรขาคณิตแบบ seckment</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>การ ปลด ประจํา และ การ เบื้องหลัง</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>กระพริบและตอบสนอง</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>ความหนาแน่นหมึก</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>ความเข้มสีกระดาษ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>อบอุ่นกระดาษ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>ความอิ่มสี</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>พื้นผิวกระดาษ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>ความนุ่มอ่อนของหมึก (ink from)</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>หมึกและสี</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>ผิวกระดาษ</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>ปรับปรุงภาพและภาพที่ซ้ํากัน</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>แสงอาคม</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>การเรนเดอร์ด้วยฮาร์ดแวร์</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>โหมดการเรนเดอร์</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>ดํา</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>เทา</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>น้ําเงิน- เขียว</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>ชนิดพาเนล</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>สามสี (แดง)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>สามสี (เหลือง)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>สี (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>สี (Gallery)</value></data>
 </root>

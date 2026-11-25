@@ -97,21 +97,8 @@ internal sealed partial class MachineController
         var fields = new VideoTechnologyFields<EmulationEPaperVideoConfiguration>(this,
             s => s.EPaper, (s, c) => s with { EPaper = c });
         return VideoGroup(EmulationResourceKeys.VideoTechnologyEPaper,
-            VideoGroup(EmulationResourceKeys.VideoEPaperGroupInkAndColor,
-                fields.Choice(Catalog.EPaperColorMode, Catalog.EPaperColorModeResourceKeys, c => c.ColorMode, (c, v) => c with { ColorMode = v }),
-                fields.Number(Catalog.EPaperInkDensity, c => c.InkDensity, (c, v) => c with { InkDensity = v }),
-                fields.Number(Catalog.EPaperContrast, c => c.Contrast, (c, v) => c with { Contrast = v }),
-                fields.Number(Catalog.EPaperDithering, c => c.Dithering, (c, v) => c with { Dithering = v }),
-                fields.Number(Catalog.EPaperColorSaturation, c => c.ColorSaturation, (c, v) => c with { ColorSaturation = v })
-                    with { IsVisible = () => _video.VideoProcessing.EPaper.ColorMode == EmulationEPaperColorMode.Color4096 }),
-            VideoGroup(EmulationResourceKeys.VideoEPaperGroupPaperSurface,
-                fields.Number(Catalog.EPaperPaperBrightness, c => c.PaperBrightness, (c, v) => c with { PaperBrightness = v }),
-                fields.Number(Catalog.EPaperPaperWarmth, c => c.PaperWarmth, (c, v) => c with { PaperWarmth = v }),
-                fields.Number(Catalog.EPaperSurfaceTexture, c => c.SurfaceTexture, (c, v) => c with { SurfaceTexture = v }),
-                fields.Number(Catalog.EPaperEdgeSoftness, c => c.EdgeSoftness, (c, v) => c with { EdgeSoftness = v })),
-            VideoGroup(EmulationResourceKeys.VideoEPaperGroupRefresh,
-                fields.Number(Catalog.EPaperRefreshTime, c => c.RefreshTimeMilliseconds, (c, v) => c with { RefreshTimeMilliseconds = v }, EmulationVideoProcessingLimits.DurationMaximumMilliseconds),
-                fields.Number(Catalog.EPaperGhosting, c => c.Ghosting, (c, v) => c with { Ghosting = v })))
+            fields.Choice(Catalog.EPaperColorMode, Catalog.EPaperColorModeResourceKeys, c => c.ColorMode, (c, v) => c with { ColorMode = v }),
+            fields.Choice(Catalog.EPaperDefinition, Catalog.LcdDefinitionResourceKeys, c => c.Definition, (c, v) => c with { Definition = v }))
             with { IsVisible = () => _video.VideoProcessing.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper };
     }
 

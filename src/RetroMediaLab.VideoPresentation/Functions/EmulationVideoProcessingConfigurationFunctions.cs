@@ -390,16 +390,7 @@ public static class EmulationVideoProcessingConfigurationFunctions
             EPaper = ePaper with
             {
                 ColorMode = DefinedOrDefault(ePaper.ColorMode, EmulationEPaperColorMode.Monochrome),
-                Contrast = Intensity(ePaper.Contrast),
-                Dithering = Intensity(ePaper.Dithering),
-                RefreshTimeMilliseconds = Duration(ePaper.RefreshTimeMilliseconds),
-                Ghosting = Intensity(ePaper.Ghosting),
-                InkDensity = Intensity(ePaper.InkDensity),
-                PaperBrightness = Intensity(ePaper.PaperBrightness),
-                PaperWarmth = Intensity(ePaper.PaperWarmth),
-                ColorSaturation = Intensity(ePaper.ColorSaturation),
-                SurfaceTexture = Intensity(ePaper.SurfaceTexture),
-                EdgeSoftness = Intensity(ePaper.EdgeSoftness)
+                Definition = DefinedOrDefault(ePaper.Definition, EmulationLcdDefinition.Native)
             },
             Projection = NormalizePanelSignal(projection) with
             {

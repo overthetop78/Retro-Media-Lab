@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Elektronický papír</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monochromní</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>Stupnice šedi na úrovni 16</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 barev</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Režim barev inkoustu</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Inkoustový kontrast</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Objednávané zdivo</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Doba odezvy (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Zbytkový obraz</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Promítání</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Vložení černého rámu</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulace signálu</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Geometrie segmentů</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Emise a pozadí</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Zář a odezva</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Hustota inkoustu</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Jas papíru</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Papírové teplo</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Saturace barev</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>Textura papíru</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>Měkkost na inkoustu</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Inkoust a barvy</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Papírový povrch</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Obnovit a zbytkový obraz</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Okolní světlo</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hardwarové vykreslování</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Režim vykreslování</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Černá</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Šedá</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Modrá zelená</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Typ panelu</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Trikolor červený</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Trikolor žlutý</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Barva (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Barva (Gallery)</value></data>
 </root>

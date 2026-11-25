@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Електронний папір</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Монохром</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-рівневий сірий</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 кольорів</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Кольоровий режим чорнила</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Контраст на чорну сторону</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Замовляється дитерінг</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Час відповіді на Refresh (MS)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Редагування зображень</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Проектування</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Чорний каркас вставки</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Симуляції сигналу</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Геометрія сегмента</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Емісія та фон</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Відповідність та відповіді</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Щільність чорнила</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Папер яскравість</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Папір тепло</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Колірна насиченість</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>текстура паперу</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>М'якість краю чорнила</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Фарби і фарби</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Поверхня паперу</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Рефреш і залишковий образ</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Амбієнт світло</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Апаратний рендеринг</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Режим рендерингу</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Чорний</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Сірий</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Синій</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Тип панелі</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Триколор червоний</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Триколор жовтий</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Колір (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Колір (Gallery)</value></data>
 </root>

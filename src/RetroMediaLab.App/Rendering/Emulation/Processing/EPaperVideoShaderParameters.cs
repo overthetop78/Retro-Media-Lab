@@ -1,16 +1,17 @@
 using System.Numerics;
-using RetroMediaLab.Emulation.Contracts;
+using RetroMediaLab.VideoPresentation.Contracts;
+using RetroMediaLab.VideoPresentation.Dictionaries;
 
 namespace RetroMediaLab.App.Rendering.Emulation.Processing;
 
 internal readonly record struct EPaperVideoShaderParameters(Vector4 InkAndColor, Vector4 PaperSurface, Vector4 Temporal)
 {
-    internal static EPaperVideoShaderParameters From(EmulationVideoProcessingConfiguration configuration, bool hasHistory, double elapsedMilliseconds)
+    internal static EPaperVideoShaderParameters From(EmulationVideoProcessingConfiguration configuration,
+        int sourceWidth, int sourceHeight, EPaperRefresh refresh)
     {
-        var value = configuration.EPaper;
-        return new(
-            new Vector4((float)value.ColorMode, value.Contrast / 100f, value.Dithering / 100f, value.ColorSaturation / 100f),
-            new Vector4(value.InkDensity / 100f, value.PaperBrightness / 100f, value.PaperWarmth / 100f, value.SurfaceTexture / 100f),
-            new Vector4(value.EdgeSoftness / 100f, FilterEPaperRefreshTime.BlendFactor(elapsedMilliseconds, value.RefreshTimeMilliseconds), FilterEPaperGhosting.BlendFactor(value.Ghosting), hasHistory ? 1f : 0f));
+        var panel = configuration.EPaper;
+        var (width, height) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(panel.Definition, sourceWidth, sourceHeight);
+        return new(new(width, height, (float)panel.ColorMode, 0f), FilterEPaper.Surface(panel.ColorMode),
+            new(refresh.CurrentWeight, refresh.Inversion, 0f, refresh.HasPrevious ? 1f : 0f));
     }
 }

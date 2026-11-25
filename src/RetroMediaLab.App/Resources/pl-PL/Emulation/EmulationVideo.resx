@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Papier elektroniczny</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monochromatyczne</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-poziomowa skala szarości</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 kolorów</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Tryb koloru tuszu</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Kontrast atramentu</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Zamówione rozpraszanie</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Czas reakcji na odświeżenie (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Pozostały obraz</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Projekcja</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Wstawianie czarnej ramki</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Symulacje sygnałów</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Geometria segmentu</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Emisja i tło</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Błysk i reakcja</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Gęstość tuszu</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Jasność papieru</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Ciepło papieru</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Saturacja kolorów</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>Tekstura papierowa</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>miękkość krawędzi tuszu</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Tusz i kolory</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Powierzchnia papieru</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Odśwież i pozostający obraz</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Światło otoczenia</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Renderowanie sprzętowe</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Tryb renderowania</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Czarny</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Szary</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Blue- green</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Typ panelu</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Trójkolorowy (czerwony)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Trójkolorowy (żółty)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Kolor (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Kolor (Gallery)</value></data>
 </root>

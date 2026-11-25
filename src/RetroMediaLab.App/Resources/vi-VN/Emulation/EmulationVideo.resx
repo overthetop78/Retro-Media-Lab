@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Giấy điện tử</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Đơn sắc</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>Mức xám 16</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 màu</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Chế độ màu mực</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Độ tương phản mực</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>rung động có thứ tự</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Thời gian trả lời tươi (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Ảnh thích hợp</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Dự án</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Comment</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Mô phỏng tín hiệu</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Hình học đoạn</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Phát ra và nền</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Name</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Mật độ mực</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Độ sáng giấy</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Giấy ấm</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Bão hoà màu</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>hoạ tiết giấy</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>Cạnh mực mềm</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Ink và màu</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Bề mặt giấy</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Cập nhật và lưu ảnh</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Ánh sáng chung quanh</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Kết xuất bằng phần cứng</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Chế độ kết xuất</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Đen</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Xám</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Xanh lá cây nhạtcolor</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Kiểu bảng điều khiển</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Ba màu (đỏ)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Ba màu (vàng)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Màu (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Màu (Gallery)</value></data>
 </root>

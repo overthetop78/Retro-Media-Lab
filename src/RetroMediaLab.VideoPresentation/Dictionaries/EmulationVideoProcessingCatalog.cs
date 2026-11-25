@@ -86,16 +86,7 @@ public static partial class EmulationVideoProcessingCatalog
     public const string SegmentDisplayResponseTime = nameof(SegmentDisplayResponseTime);
     public const string SegmentDisplayPersistence = nameof(SegmentDisplayPersistence);
     public const string EPaperColorMode = nameof(EPaperColorMode);
-    public const string EPaperContrast = nameof(EPaperContrast);
-    public const string EPaperDithering = nameof(EPaperDithering);
-    public const string EPaperRefreshTime = nameof(EPaperRefreshTime);
-    public const string EPaperGhosting = nameof(EPaperGhosting);
-    public const string EPaperInkDensity = nameof(EPaperInkDensity);
-    public const string EPaperPaperBrightness = nameof(EPaperPaperBrightness);
-    public const string EPaperPaperWarmth = nameof(EPaperPaperWarmth);
-    public const string EPaperColorSaturation = nameof(EPaperColorSaturation);
-    public const string EPaperSurfaceTexture = nameof(EPaperSurfaceTexture);
-    public const string EPaperEdgeSoftness = nameof(EPaperEdgeSoftness);
+    public const string EPaperDefinition = nameof(EPaperDefinition);
     public const string ProjectionAmbientLight = nameof(ProjectionAmbientLight);
 
     public const string ExclusiveDisplayTechnology = nameof(ExclusiveDisplayTechnology);
@@ -129,10 +120,7 @@ public static partial class EmulationVideoProcessingCatalog
         SegmentDisplayActivationThreshold, SegmentDisplayContrast,
         SegmentDisplayOffSegmentVisibility, SegmentDisplayBlackDepth, SegmentDisplayGlow,
         SegmentDisplayHaloRadius, SegmentDisplayResponseTime, SegmentDisplayPersistence,
-        EPaperColorMode, EPaperContrast, EPaperDithering,
-        EPaperRefreshTime, EPaperGhosting, EPaperInkDensity, EPaperPaperBrightness,
-        EPaperPaperWarmth, EPaperColorSaturation, EPaperSurfaceTexture,
-        EPaperEdgeSoftness, ProjectionAmbientLight
+        EPaperColorMode, EPaperDefinition, ProjectionAmbientLight
     ];
 
 }

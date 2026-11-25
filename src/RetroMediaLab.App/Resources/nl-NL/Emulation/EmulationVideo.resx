@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Elektronisch papier</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monochroom</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-level grijswaarden</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 kleuren</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Kleurmodus inkt</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Inktcontrast</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Bestelde deterring</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Vernieuw responstijd (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Resterende afbeelding</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Projectie</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Zwarte frame invoegen</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signaalsimulaties</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Segmentgeometrie</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Emissie en achtergrond</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Gloei en reactie</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Inktdichtheid</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Papierhelderheid</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Papierwarmte</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Kleurverzadiging</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>Papierstructuur</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>Zachtheid van inktrand</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Inkt en kleuren</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Papieroppervlak</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Afbeelding vernieuwen en resterend</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Omgevingslicht</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Hardwarematige rendering</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Rendermodus</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Zwart</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Grijs</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Blauwgroen</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Paneeltype</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Tricolor rood</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Tricolorgeel</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Kleur (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Kleur (Gallery)</value></data>
 </root>

@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Kertas elektronik</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monokrom</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16- skala abu-abu tingkat</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 warna</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Mode warna tinta</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Kontras Tinta</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Dipesan difronding</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Waktu respon segarkan (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Sisa gambar</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Proyeksi</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Penyisipan bingkai hitam</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulasi sinyal</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Geometri segment</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Emisi dan latar belakang</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Glow dan respons</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Kepadatan tinta</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Kecerahan kertas</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Hangat kertas</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Saturasi warna</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>Tekstur kertas</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>Kelemah ujung Tinta</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Tinta dan warna</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Permukaan Kertas</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Segarkan dan sisa gambar</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Cahaya Ambient</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Rendering perangkat keras</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Mode rendering</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Hitam</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Abu-abu</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Biru - hijau</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Jenis panel</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Merah tricolor</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Kuning tricolor</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Warna (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Warna (Gallery)</value></data>
 </root>

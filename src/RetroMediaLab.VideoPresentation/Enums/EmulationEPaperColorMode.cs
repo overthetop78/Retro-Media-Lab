@@ -4,5 +4,8 @@ public enum EmulationEPaperColorMode
 {
     Monochrome,
     Grayscale16,
-    Color4096
+    Color4096,
+    TricolorRed,
+    TricolorYellow,
+    Gallery
 }

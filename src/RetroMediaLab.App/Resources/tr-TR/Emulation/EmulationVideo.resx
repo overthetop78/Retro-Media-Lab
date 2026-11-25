@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Elektronik kağıt</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monokro</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16 seviyesi gri ölçekli</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 renk</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Ink color modunda</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Ink contrast</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Hazırlanmış dithering</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Reaksiyon zamanı (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Residual image</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Projection</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Siyah çerçeve ekler</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signal simülasyonları</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Segment Geometri Geometri</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Emisyon ve arka plan</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Glow ve yanıt</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Ink yoğunluk</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Kağıt</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Kağıt</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Renk saturation</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>Kağıt Dokunuşu</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>Ink kenar yumuşaklık</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Ink ve renkler</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Kağıt Yüzeyi</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Yenileme ve ikametçi görüntü</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Ortam Işığı</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Donanımsal işleme</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>İşleme modu</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Siyah Siyah</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Gray</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Blue-green</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Panel türü</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Üç renkli (kırmızı)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Üç renkli (sarı)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Renk (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Renk (Gallery)</value></data>
 </root>

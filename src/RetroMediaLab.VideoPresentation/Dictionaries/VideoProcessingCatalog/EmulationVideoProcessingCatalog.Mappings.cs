@@ -171,13 +171,15 @@ public static partial class EmulationVideoProcessingCatalog
         = ResourceKeys("SegmentDisplay.EndShape", Enum.GetValues<EmulationSegmentEndShape>());
 
     public static IReadOnlyDictionary<EmulationEPaperColorMode, string> EPaperColorModeResourceKeys { get; }
-        = ResourceKeys("EPaper.ColorMode", Enum.GetValues<EmulationEPaperColorMode>());
+        = ResourceKeys<EmulationEPaperColorMode>("EPaper.ColorMode", [EmulationEPaperColorMode.Monochrome, EmulationEPaperColorMode.Grayscale16,
+            EmulationEPaperColorMode.TricolorRed, EmulationEPaperColorMode.TricolorYellow,
+            EmulationEPaperColorMode.Color4096, EmulationEPaperColorMode.Gallery]);
 
     public static IReadOnlyDictionary<string, string> ParameterResourceKeys { get; } =
         ParameterIds.ToDictionary(id => id, id => id switch
         {
             Gamma => "Emulation.Video.Gamma",
-            LedMatrixDefinition or DotMatrixDefinition or VfdDefinition => LcdDefinition,
+            LedMatrixDefinition or DotMatrixDefinition or VfdDefinition or EPaperDefinition => LcdDefinition,
             CrtPhosphorColor => $"Emulation.Video.Parameter.{VectorPhosphorColor}",
             CrtBeamWidth => $"Emulation.Video.Parameter.{VectorBeamWidth}",
             _ => $"Emulation.Video.Parameter.{id}"
@@ -236,11 +238,7 @@ public static partial class EmulationVideoProcessingCatalog
             [SegmentDisplayBlackDepth] = 100, [SegmentDisplayGlow] = 20,
             [SegmentDisplayHaloRadius] = 25, [SegmentDisplayResponseTime] = 30,
             [SegmentDisplayPersistence] = 60,
-            [EPaperColorMode] = EmulationEPaperColorMode.Monochrome, [EPaperContrast] = 70,
-            [EPaperDithering] = 35, [EPaperRefreshTime] = 500, [EPaperGhosting] = 20,
-            [EPaperInkDensity] = 90, [EPaperPaperBrightness] = 90,
-            [EPaperPaperWarmth] = 35, [EPaperColorSaturation] = 55,
-            [EPaperSurfaceTexture] = 10, [EPaperEdgeSoftness] = 10,
+            [EPaperColorMode] = EmulationEPaperColorMode.Monochrome, [EPaperDefinition] = EmulationLcdDefinition.Native,
             [ProjectionAmbientLight] = 0
         };
 
@@ -290,7 +288,7 @@ public static partial class EmulationVideoProcessingCatalog
         Add(LedMatrixColor, LedMatrixShape, EmulationVideoDisplayTechnology.LedMatrix);
         Add(DotMatrixPalette, DotMatrixTechnology, EmulationVideoDisplayTechnology.DotMatrix);
         Add(SegmentDisplayLayout, SegmentDisplayPersistence, EmulationVideoDisplayTechnology.SegmentDisplay);
-        Add(EPaperColorMode, EPaperEdgeSoftness, EmulationVideoDisplayTechnology.EPaper);
+        Add(EPaperColorMode, EPaperDefinition, EmulationVideoDisplayTechnology.EPaper);
         Add(ProjectionAmbientLight, ProjectionAmbientLight, EmulationVideoDisplayTechnology.Projection);
         return result;
 

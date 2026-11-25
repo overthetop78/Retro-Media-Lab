@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>ورقة إلكترونية</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>مونوكروم</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16 مستوى رمادي</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 ألوان</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>طريقة لون الحبر</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>تناقض</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>التقطيع النظامي</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>وقت الاستجابة الجديدة (م)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>الصورة المتبقية</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>الإسقاط</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>الإطار الأسود</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>محاكاة الإشارات</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>قياسات نوعية</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>الانبعاثات والخلفية</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>الانطلاق والاستجابة</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>الكثافة الدفينة</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>بُعد الورق</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>دفء الورق</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>شبع الكول</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>النص الورقي</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>نعي لحافة الحب</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>الحبر والألوان</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>سطح الورق</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>صورة متجددة وصورة متبقية</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>ضوء عال</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>التصيير باستخدام العتاد</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>وضع التصيير</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>أسود</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>غراي</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>أزرق - غرين</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>نوع اللوحة</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>ثلاثي الألوان (أحمر)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>ثلاثي الألوان (أصفر)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>ملوّن (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>ملوّن (Gallery)</value></data>
 </root>

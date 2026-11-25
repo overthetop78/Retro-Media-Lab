@@ -55,7 +55,7 @@ internal static class EmulationModuleSettingsNavigationScenarios
             EmulationVideoScreenType[] screens = [EmulationVideoScreenType.Crt, EmulationVideoScreenType.Lcd,
                 EmulationVideoScreenType.LedBacklitLcd, EmulationVideoScreenType.Oled,
                 EmulationVideoScreenType.Plasma, EmulationVideoScreenType.Projection, EmulationVideoScreenType.Vector,
-                EmulationVideoScreenType.LedMatrix, EmulationVideoScreenType.DotMatrix, EmulationVideoScreenType.Vfd, EmulationVideoScreenType.SegmentDisplay];
+                EmulationVideoScreenType.LedMatrix, EmulationVideoScreenType.DotMatrix, EmulationVideoScreenType.Vfd, EmulationVideoScreenType.SegmentDisplay, EmulationVideoScreenType.EPaper];
             foreach (var screen in screens)
             {
                 section.SetConfiguration(EmulationVideoProcessingConfigurationFunctions.WithScreenType(new(), screen));
@@ -69,13 +69,14 @@ internal static class EmulationModuleSettingsNavigationScenarios
                 Assert.Equal(2, row.ColumnDefinitions.Count);
                 Assert.Equal(row.ColumnDefinitions[0].Width, row.ColumnDefinitions[1].Width);
                 Assert.Equal(1, Grid.GetColumn(Assert.IsType<Border>(row.Children[1])));
-                if (screen is EmulationVideoScreenType.LedMatrix or EmulationVideoScreenType.DotMatrix or EmulationVideoScreenType.Vfd or EmulationVideoScreenType.SegmentDisplay)
+                if (screen is EmulationVideoScreenType.LedMatrix or EmulationVideoScreenType.DotMatrix or EmulationVideoScreenType.Vfd or EmulationVideoScreenType.SegmentDisplay or EmulationVideoScreenType.EPaper)
                 {
                     var choices = MachineConfigurationScenarios.Controls<ComboBox>(technology).ToArray();
                     int[] expected = screen switch
                     {
                         EmulationVideoScreenType.DotMatrix => [7, 10, 3, 3],
                         EmulationVideoScreenType.Vfd => [6, 10, 3],
+                        EmulationVideoScreenType.EPaper => [6, 10],
                         EmulationVideoScreenType.SegmentDisplay => [3, 3, 5],
                         _ => [7, 10, 3]
                     };

@@ -41,6 +41,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     private int _retainedHeight;
     private ActiveTextureDelegate? _activeTexture;
     private bool _hasHistory;
+    private readonly EPaperRefreshClock _ePaperClock = new();
     private byte[]? _deditheringWorkspace;
     private float? _gpuPanelDecoder;
     private readonly FilterDisplayConnection _displayConnection = new();
@@ -303,10 +304,14 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
         try
         {
             EnsureProgram(gpuConfiguration);
+            var paper = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper;
+            var refresh = paper ? _ePaperClock.Advance(gpuConfiguration.EPaper, processed.Width, processed.Height, frame.Timestamp) : default;
+            if (!paper)
+                _ePaperClock.Reset();
             var fixedPixel = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel;
             var temporalDisplay = gpuConfiguration.DisplayTechnology != EmulationVideoDisplayTechnology.Normal
                 || gpuConfiguration.SignalSimulation.StandardIntensity > 0;
-            var hasHistory = temporalDisplay && _hasHistory && _historyWidth == processed.Width && _historyHeight == processed.Height && (fixedPixel ? frame.Timestamp >= _historyTimestamp : frame.Sequence >= _historySequence);
+            var hasHistory = !paper && temporalDisplay && _hasHistory && _historyWidth == processed.Width && _historyHeight == processed.Height && (fixedPixel ? frame.Timestamp >= _historyTimestamp : frame.Sequence >= _historySequence);
             var elapsedMilliseconds = hasHistory ? (frame.Timestamp - _historyTimestamp).TotalMilliseconds : 0;
             var filter = gpuConfiguration.Sampling is EmulationVideoSampling.Bilinear
                 or EmulationVideoSampling.SharpBilinear
@@ -316,10 +321,11 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
                 or EmulationVideoSampling.SuperTwoXSai
                 or EmulationVideoSampling.SuperEagle
                 ? OpenGlVideoConstants.Linear : OpenGlVideoConstants.Nearest;
-            if (hasHistory)
+            if (hasHistory || refresh.HasPrevious || refresh.CaptureHistory)
             {
                 _activeTexture!(OpenGlVideoConstants.Texture1);
                 GlBindTexture(OpenGlVideoConstants.Texture2D, _historyTexture);
+                if (refresh.CaptureHistory) UploadFrame(pixels, pixelOffset, processed.Width, processed.Height, false);
                 GlTexParameteri(OpenGlVideoConstants.Texture2D, OpenGlVideoConstants.TextureMinFilter, filter);
                 GlTexParameteri(OpenGlVideoConstants.Texture2D, OpenGlVideoConstants.TextureMagFilter, filter);
             }
@@ -327,12 +333,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             GlBindTexture(OpenGlVideoConstants.Texture2D, _texture);
             GlTexParameteri(OpenGlVideoConstants.Texture2D, OpenGlVideoConstants.TextureMinFilter, filter);
             GlTexParameteri(OpenGlVideoConstants.Texture2D, OpenGlVideoConstants.TextureMagFilter, filter);
-            var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
-            try
-            {
-                GlTexImage2D(OpenGlVideoConstants.Texture2D, 0, (int)(rasterVector ? OpenGlVideoConstants.Srgb8Alpha8 : OpenGlVideoConstants.Rgba), processed.Width, processed.Height, 0, OpenGlVideoConstants.Bgra, OpenGlVideoConstants.UnsignedByte, IntPtr.Add(handle.AddrOfPinnedObject(), pixelOffset));
-            }
-            finally { handle.Free(); }
+            UploadFrame(pixels, pixelOffset, processed.Width, processed.Height, rasterVector);
             GlViewport(0, 0, clientSize.Width, clientSize.Height);
             GlClearColor(0, 0, 0, 1); GlClear(OpenGlVideoConstants.ColorBufferBit);
             _program!.Use(gpuConfiguration, processed.Width, processed.Height,
@@ -340,7 +341,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
                 hasHistory, elapsedMilliseconds, frame.Sequence,
                 panelSignal ?? CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
                 gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels.AsSpan(pixelOffset, processed.Width * processed.Height * 4)) : 0f,
-                panelSignal.HasValue, frame.SegmentLevels);
+                panelSignal.HasValue, frame.SegmentLevels, refresh);
             GlEnable(OpenGlVideoConstants.Texture2D);
             GlBegin(OpenGlVideoConstants.Quads);
             GlTexCoord2f(0, 1); GlVertex2f(-1, -1);
@@ -352,7 +353,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             if (gpuConfiguration.BlackFrameInsertion) RetainOutput(clientSize.Width, clientSize.Height);
             else ReleaseRetainedTexture();
             SwapBuffers(_dc);
-            if (temporalDisplay)
+            if (temporalDisplay && !paper)
             {
                 (_texture, _historyTexture) = (_historyTexture, _texture);
                 _hasHistory = true;
@@ -361,13 +362,25 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
                 _historyTimestamp = frame.Timestamp;
                 _historySequence = frame.Sequence;
             }
-            else if (!nativeVector) ResetHistory();
+            else if (!nativeVector && !paper) ResetHistory();
             _snapshotSourceFrame = processed;
             _snapshotOutputSize = outputSize;
             _snapshotConfiguration = gpuConfiguration;
             _snapshot = null;
         }
         finally { WglMakeCurrent(IntPtr.Zero, IntPtr.Zero); }
+    }
+
+    private static void UploadFrame(byte[] pixels, int offset, int width, int height, bool srgb)
+    {
+        var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+        try
+        {
+            var format = srgb ? OpenGlVideoConstants.Srgb8Alpha8 : OpenGlVideoConstants.Rgba;
+            GlTexImage2D(OpenGlVideoConstants.Texture2D, 0, (int)format, width, height, 0,
+                OpenGlVideoConstants.Bgra, OpenGlVideoConstants.UnsignedByte, IntPtr.Add(handle.AddrOfPinnedObject(), offset));
+        }
+        finally { handle.Free(); }
     }
 
     public new void Dispose()
@@ -386,6 +399,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     public void ResetHistory()
     {
         _displayConnection.ResetHistory();
+        _ePaperClock.Reset();
         _hasHistory = false;
         _historyWidth = 0;
         _historyHeight = 0;

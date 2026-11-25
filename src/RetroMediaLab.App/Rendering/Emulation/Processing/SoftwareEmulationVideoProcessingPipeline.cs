@@ -21,10 +21,9 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
     private int _segmentDisplayHistoryWidth;
     private int _segmentDisplayHistoryHeight;
     private TimeSpan _segmentDisplayHistoryTimestamp;
-    private float[]? _ePaperHistory;
-    private int _ePaperHistoryWidth;
-    private int _ePaperHistoryHeight;
-    private TimeSpan _ePaperHistoryTimestamp;
+    private readonly EPaperRefreshClock _ePaperClock = new();
+    private float[] _ePaperHistory = [];
+    private EmulationImageAdjustments? _ePaperAdjustments;
     private readonly FilterPlasmaPersistence _plasmaPersistence = new();
     private TimeSpan _signalTimestamp;
     private long _signalSequence;
@@ -69,7 +68,13 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             ApplyStylistic(matrixOutput, outputSize, frame.Sequence, normalized.Stylistic);
             return OutputFrame(frame, outputSize, matrixOutput);
         }
-        if (EmulationVideoProcessingConfigurationFunctions.UsesPanelSignal(normalized))
+        if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper)
+        {
+            var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
+                normalized.EPaper.Definition, frame.Width, frame.Height);
+            linear = ResampleForLcd(linear, frame.Width, frame.Height, panelWidth, panelHeight, outputSize.Width, outputSize.Height);
+        }
+        else if (EmulationVideoProcessingConfigurationFunctions.UsesPanelSignal(normalized))
         {
             var (panelWidth, panelHeight) = EmulationVideoProcessingCatalog.LcdDefinitionDimensions(
                 EmulationVideoProcessingConfigurationFunctions.PanelSignal(normalized).Definition, frame.Width, frame.Height);
@@ -94,6 +99,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         if (connected is not null && EmulationVideoProcessingConfigurationFunctions.ScreenType(normalized) == EmulationVideoScreenType.LedBacklitLcd)
             FilterLedBacklitLcdDisplay.Apply(linear, outputSize.Width, outputSize.Height, connected,
                 frame.Width, frame.Height, normalized.Led);
+        ApplyEPaperTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         ApplyStylistic(linear, outputSize, frame.Sequence, normalized.Stylistic);
         ApplyFixedPixelTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma)
@@ -104,7 +110,6 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             ResetSegmentDisplayHistory();
         else
             ApplySegmentDisplayTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
-        ApplyEPaperTemporal(normalized, linear, outputSize.Width, outputSize.Height, frame.Timestamp);
         if (normalized.DisplayTechnology == EmulationVideoDisplayTechnology.Crt)
             CrtPhosphorMask.Apply(linear, outputSize.Width, outputSize.Height, crt,
                 VideoBrightnessParameterFunctions.CrtBeamGain(normalized.Adjustments.Brightness));

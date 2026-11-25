@@ -88,7 +88,7 @@ internal sealed class OpenGlVideoProgramUniforms
         int Location(string name) => api.GetUniformLocation(program, name);
     }
 
-    internal void Apply(EmulationVideoProcessingConfiguration configuration, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, bool hasHistory, double elapsedMilliseconds, long sequence, CrtSignal crtSignal, float averageLuminance, bool decodePanelOnGpu, VideoSegmentLevels? nativeSegments)
+    internal void Apply(EmulationVideoProcessingConfiguration configuration, int sourceWidth, int sourceHeight, int outputWidth, int outputHeight, bool hasHistory, double elapsedMilliseconds, long sequence, CrtSignal crtSignal, float averageLuminance, bool decodePanelOnGpu, VideoSegmentLevels? nativeSegments, EPaperRefresh refresh)
     {
         var adjustments = configuration.Adjustments;
         _api.SetUniform(_adjustments,
@@ -162,7 +162,7 @@ internal sealed class OpenGlVideoProgramUniforms
         Set(_dotMatrixGeometry, dotMatrix.Geometry);
         Set(_dotMatrixOptics, dotMatrix.Optics);
 
-        var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var ePaper = EPaperVideoShaderParameters.From(configuration, sourceWidth, sourceHeight, refresh);
         Set(_ePaperInkAndColor, ePaper.InkAndColor);
         Set(_ePaperSurface, ePaper.PaperSurface);
         Set(_ePaperTemporal, ePaper.Temporal);

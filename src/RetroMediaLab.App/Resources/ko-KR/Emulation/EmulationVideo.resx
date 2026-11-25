@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>전자 종이</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>모노크롬</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16 레벨 그레이 스케일</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096의 색깔</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>잉크 색깔 형태</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>잉크 대조</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>주문된 제</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>응답 시간을 상쾌하게 하십시오 (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>주거용</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>사업영역</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>검정 구조 insertion</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signal 시뮬레이션</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>세그먼트 기하학</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>제출 및 배경</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Glow와 응답</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>잉크 조밀도</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>종이 광도</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>종이 따뜻함</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>색깔 포화</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>종이 질감</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>잉크 가장자리 부드러움</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>잉크와 색깔</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>종이 표면</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>새로 고침 및 잔여 이미지</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>주위 빛</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>하드웨어 렌더링</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>렌더링 모드</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>뚱 베어</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>담당자: Mr. Michel</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>블루 그린</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>패널 유형</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>3색 (빨강)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>3색 (노랑)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>색상 (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>색깔 (Gallery)</value></data>
 </root>

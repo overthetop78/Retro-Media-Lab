@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Электронная бумага</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>монохромный</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-уровневая серая шкала</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 цветов</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Цветовой режим чернил</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Чернила контрастируют</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Заказное замешательство</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Время ответа (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Остаточный образ</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Проекция</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Вставка черного каркаса</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Симуляция сигналов</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Геометрия сегмента</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Выбросы и фоновая информация</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Свечение и ответ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Плотность чернил</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Бумажная яркость</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Бумажная теплота</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Насыщение цвета</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>Текстура бумаги</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>Нежность чернильного края</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Чернила и цвета</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Бумажная поверхность</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Обновление и остаточное изображение</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Огни окружающей среды</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Аппаратный рендеринг</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Режим рендеринга</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>черный</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Грей</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>сине-зеленый</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Тип панели</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Триколор красный</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Триколор желтый</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Цвет (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Цвет (Gallery)</value></data>
 </root>

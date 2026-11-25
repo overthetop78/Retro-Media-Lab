@@ -1,57 +1,18 @@
-using RetroMediaLab.App.Functions.Views.Emulation.Settings;
-using System.Globalization;
 using System.Windows;
-using System.Windows.Automation;
-using System.Windows.Controls;
-using RetroMediaLab.App.Constants.Controls.Visual;
-using RetroMediaLab.App.Constants.Localization;
-using RetroMediaLab.App.Localization.Extensions;
-using RetroMediaLab.Emulation.Constants;
-using RetroMediaLab.Emulation.Contracts;
-using RetroMediaLab.Emulation.Dictionaries;
-using RetroMediaLab.Emulation.Enums;
+using Catalog = RetroMediaLab.VideoPresentation.Dictionaries.EmulationVideoProcessingCatalog;
 
 namespace RetroMediaLab.App.Views.Controls.Emulation.Options;
 
-internal static class EmulationEPaperSettingsBlock
+internal sealed partial class EmulationVideoProcessingSettingsSection
 {
-    internal static FrameworkElement Create(EmulationEPaperVideoConfiguration value, Action<Func<EmulationEPaperVideoConfiguration, EmulationEPaperVideoConfiguration>> changed, Action rebuild)
+    private FrameworkElement CreateEPaperPanel()
     {
-        var groups = new Grid();
-        groups.ColumnDefinitions.Add(new ColumnDefinition());
-        groups.ColumnDefinitions.Add(new ColumnDefinition());
-        groups.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        groups.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-        var ink = new List<FrameworkElement>
-        {
-            EmulationSettingsFieldControlFunctions.CreateVideoChoice(EmulationVideoProcessingCatalog.EPaperColorMode,
-                EmulationVideoProcessingCatalog.EPaperColorModeResourceKeys, value.ColorMode,
-                choice =>
-                {
-                    changed(current => current with { ColorMode = choice });
-                    rebuild();
-                }),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperInkDensity, value.InkDensity, 100, number => changed(current => current with { InkDensity = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperContrast, value.Contrast, 100, number => changed(current => current with { Contrast = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperDithering, value.Dithering, 100, number => changed(current => current with { Dithering = number }))
-        };
-        if (value.ColorMode == EmulationEPaperColorMode.Color4096)
-            ink.Add(EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperColorSaturation, value.ColorSaturation, 100, number => changed(current => current with { ColorSaturation = number })));
-        EmulationSettingsLayout.AddVideoProcessingGroup(groups, EmulationResourceKeys.VideoEPaperGroupInkAndColor, 0, 0, 1, ink.ToArray());
-
-        EmulationSettingsLayout.AddVideoProcessingGroup(groups, EmulationResourceKeys.VideoEPaperGroupPaperSurface, 0, 1, 1,
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperPaperBrightness, value.PaperBrightness, 100, number => changed(current => current with { PaperBrightness = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperPaperWarmth, value.PaperWarmth, 100, number => changed(current => current with { PaperWarmth = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperSurfaceTexture, value.SurfaceTexture, 100, number => changed(current => current with { SurfaceTexture = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperEdgeSoftness, value.EdgeSoftness, 100, number => changed(current => current with { EdgeSoftness = number })));
-
-        EmulationSettingsLayout.AddVideoProcessingGroup(groups, EmulationResourceKeys.VideoEPaperGroupRefresh, 1, 0, 2,
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperRefreshTime,
-                value.RefreshTimeMilliseconds,
-                EmulationVideoProcessingLimits.DurationMaximumMilliseconds,
-                number => changed(current => current with { RefreshTimeMilliseconds = number })),
-            EmulationSettingsFieldControlFunctions.CreateVideoSlider(EmulationVideoProcessingCatalog.EPaperGhosting, value.Ghosting, 100, number => changed(current => current with { Ghosting = number })));
-        return groups;
+        var paper = _configuration.EPaper;
+        var section = Section("Emulation.Video.Technology.EPaper");
+        section.Children.Add(ChoiceField(Catalog.ParameterResourceKeys[Catalog.EPaperColorMode], Catalog.EPaperColorModeResourceKeys,
+            paper.ColorMode, value => SetEPaper(_configuration.EPaper with { ColorMode = value })));
+        section.Children.Add(ChoiceField(Catalog.LcdDefinition, Catalog.LcdDefinitionResourceKeys,
+            paper.Definition, value => SetEPaper(_configuration.EPaper with { Definition = value })));
+        return section;
     }
 }

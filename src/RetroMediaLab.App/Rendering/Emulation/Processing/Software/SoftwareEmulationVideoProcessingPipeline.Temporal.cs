@@ -114,30 +114,44 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
             ResetEPaperHistory();
             return;
         }
-        var compatibleHistory = _ePaperHistory is not null && _ePaperHistoryWidth == width && _ePaperHistoryHeight == height && timestamp >= _ePaperHistoryTimestamp;
-        if (compatibleHistory)
+
+        if (_ePaperAdjustments != configuration.Adjustments)
         {
-            var elapsedMilliseconds = (timestamp - _ePaperHistoryTimestamp).TotalMilliseconds;
-            var response = FilterEPaperRefreshTime.BlendFactor(elapsedMilliseconds, configuration.EPaper.RefreshTimeMilliseconds);
-            var ghosting = FilterEPaperGhosting.BlendFactor(configuration.EPaper.Ghosting);
-            for (var index = 0; index < colors.Length; index++)
-            {
-                var refreshed = Lerp(_ePaperHistory![index], colors[index], response);
-                colors[index] = Lerp(_ePaperHistory[index], refreshed, ghosting);
-            }
+            _ePaperClock.Reset();
+            _ePaperAdjustments = configuration.Adjustments;
         }
-        _ePaperHistory = colors.ToArray();
-        _ePaperHistoryWidth = width;
-        _ePaperHistoryHeight = height;
-        _ePaperHistoryTimestamp = timestamp;
+
+        var output = colors.AsSpan(0, checked(width * height * 3));
+        var refresh = _ePaperClock.Advance(configuration.EPaper, width, height, timestamp);
+        if (refresh.CaptureHistory)
+        {
+            if (_ePaperHistory.Length != output.Length)
+                _ePaperHistory = new float[output.Length];
+            output.CopyTo(_ePaperHistory);
+        }
+        if (!refresh.HasPrevious)
+            return;
+
+        var previous = _ePaperHistory;
+        var surface = FilterEPaper.Surface(configuration.EPaper.ColorMode);
+        for (var i = 0; i < output.Length; i += 3)
+        {
+            var dr = output[i] - previous[i];
+            var dg = output[i + 1] - previous[i + 1];
+            var db = output[i + 2] - previous[i + 2];
+            var invert = dr * dr + dg * dg + db * db > .0001f ? refresh.Inversion : 0f;
+            output[i] = RefreshPigment(previous[i], output[i], refresh.CurrentWeight, invert, surface.X + surface.W);
+            output[i + 1] = RefreshPigment(previous[i + 1], output[i + 1], refresh.CurrentWeight, invert, surface.Y + surface.W);
+            output[i + 2] = RefreshPigment(previous[i + 2], output[i + 2], refresh.CurrentWeight, invert, surface.Z + surface.W);
+        }
     }
 
-    private void ResetEPaperHistory()
+    private static float RefreshPigment(float old, float current, float progress, float inversion, float paper)
     {
-        _ePaperHistory = null;
-        _ePaperHistoryWidth = 0;
-        _ePaperHistoryHeight = 0;
-        _ePaperHistoryTimestamp = TimeSpan.Zero;
+        var pigment = Lerp(old, current, progress);
+        return Lerp(pigment, Math.Clamp(paper - pigment, 0f, 1f), inversion);
     }
+
+    private void ResetEPaperHistory() => _ePaperClock.Reset();
 
 }

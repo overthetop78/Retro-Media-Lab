@@ -24,10 +24,10 @@ internal sealed class OpenGlVideoProcessingProgram : IDisposable
     internal void Use(EmulationVideoProcessingConfiguration configuration,
         int sourceWidth, int sourceHeight, int outputWidth, int outputHeight,
         bool hasHistory = false, double elapsedMilliseconds = 0, long sequence = 0,
-        CrtSignal crtSignal = default, float averageLuminance = 0f, bool decodePanelOnGpu = false, VideoSegmentLevels? nativeSegments = null)
+        CrtSignal crtSignal = default, float averageLuminance = 0f, bool decodePanelOnGpu = false, VideoSegmentLevels? nativeSegments = null, EPaperRefresh refresh = default)
     {
         _api.UseProgram(_program);
-        _uniforms.Apply(configuration, sourceWidth, sourceHeight, outputWidth, outputHeight, hasHistory, elapsedMilliseconds, sequence, crtSignal, averageLuminance, decodePanelOnGpu, nativeSegments);
+        _uniforms.Apply(configuration, sourceWidth, sourceHeight, outputWidth, outputHeight, hasHistory, elapsedMilliseconds, sequence, crtSignal, averageLuminance, decodePanelOnGpu, nativeSegments, refresh);
     }
 
     internal void Stop() => _api.UseProgram(0);

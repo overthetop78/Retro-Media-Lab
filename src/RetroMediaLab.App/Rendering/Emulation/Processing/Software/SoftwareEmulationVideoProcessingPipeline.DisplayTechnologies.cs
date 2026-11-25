@@ -34,7 +34,7 @@ internal sealed partial class SoftwareEmulationVideoProcessingPipeline : IEmulat
         }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper)
         {
-            FilterEPaper.Apply(colors, outputWidth, outputHeight, configuration.EPaper);
+            FilterEPaper.Apply(colors, configuration.EPaper.ColorMode);
             return;
         }
         if (configuration.DisplayTechnology == EmulationVideoDisplayTechnology.Projection)

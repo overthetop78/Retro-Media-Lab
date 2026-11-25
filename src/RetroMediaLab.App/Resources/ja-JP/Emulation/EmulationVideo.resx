@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>電子ペーパー</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>モノクロ</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16レベルのグレースケール</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 色</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>インク色のモード</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>インクコントラスト</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>注文されたダイザー</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>応答時間(ms)をリフレッシュ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>残留イメージ</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>プロジェクト</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>ブラックフレームインサート</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>信号シミュレーション</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>セグメントジオメトリ</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>排出と背景</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>輝きと応答</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>インク密度</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>ペーパー明るさ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>ペーパー暖かさ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>色彩度</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>ペーパーテクスチャ</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>インクエッジの柔らかさ</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>インクと色</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>ペーパー表面</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>リフレッシュと残留イメージ</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>周囲光</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>ハードウェアレンダリング</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>レンダリングモード</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>ブラック</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>グレー</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>青緑色</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>パネルのタイプ</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>トリコロール赤</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>トリコロールイエロー</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>カラー(Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>色(Gallery)</value></data>
 </root>

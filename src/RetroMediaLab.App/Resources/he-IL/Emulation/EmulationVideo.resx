@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>נייר אלקטרוני</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>מונוכרום</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16 דרג אפור</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 צבעים</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>מצב צבע Ink</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>ניגוד</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>המונחים: dithering</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>זמן תגובה מעודן (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>תמונה סובסידית</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>פרוייקט</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>שילוב שחור</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>סימולציות אותות</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>גיאומטריה</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>רשות ורקע</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>תגובה ותגובה</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>צפיפות Ink</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>נייר בהירות</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>חמימות נייר</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>צבע ריצוף</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>נייר מרקם</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>רכה אינסופית</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>דיו וצבעים</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>נייר משטח</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>תמונה מרעננים והחיונית</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>אור  Ambient Light</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>רינדור בחומרה</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>מצב רינדור</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>שחור שחור שחור שחור</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>אפור אפור אפור אפור</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>ירוק כחול</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>סוג פאנל</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>תלת־צבעוני (אדום)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>תלת־צבעוני (צהוב)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>צבע (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>צבע (Gallery)</value></data>
 </root>

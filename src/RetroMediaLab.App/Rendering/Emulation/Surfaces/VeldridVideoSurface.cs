@@ -45,6 +45,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private uint _swapchainWidth;
     private uint _swapchainHeight;
     private bool _hasHistory;
+    private readonly EPaperRefreshClock _ePaperClock = new();
     private byte[]? _deditheringWorkspace;
     private float? _gpuPanelDecoder;
     private readonly FilterDisplayConnection _displayConnection = new();
@@ -148,6 +149,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         lock (_deviceGate)
         {
             _displayConnection.ResetHistory();
+            _ePaperClock.Reset();
             _hasHistory = false;
             _historyTimestamp = TimeSpan.Zero;
             _historySequence = 0;
@@ -201,25 +203,31 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         EnsurePipeline(gpuConfiguration.Sampling, gpuConfiguration.DisplayTechnology);
         // Le worker possède le redimensionnement GPU ; le thread WPF ne doit jamais attendre sa porte.
         ResizeSwapchainToClient();
+        var paper = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper;
+        var refresh = paper ? _ePaperClock.Advance(gpuConfiguration.EPaper, processed.Width, processed.Height, frame.Timestamp) : default;
+        if (!paper)
+            _ePaperClock.Reset();
         _device!.UpdateTexture(_texture!, pixels, 0, 0, 0, (uint)processed.Width, (uint)processed.Height, 1, 0, 0);
         var fixedPixel = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.FixedPixel;
         var plasma = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.Plasma;
         var segmentDisplay = gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.SegmentDisplay;
         var temporalDisplay = fixedPixel || plasma || segmentDisplay || rasterVector
-            || gpuConfiguration.DisplayTechnology == EmulationVideoDisplayTechnology.EPaper
+            || paper
             || gpuConfiguration.SignalSimulation.StandardIntensity > 0;
-        var hasHistory = temporalDisplay && _hasHistory && (fixedPixel || segmentDisplay ? frame.Timestamp >= _historyTimestamp : frame.Sequence >= _historySequence);
+        var hasHistory = !paper && temporalDisplay && _hasHistory && (fixedPixel || segmentDisplay ? frame.Timestamp >= _historyTimestamp : frame.Sequence >= _historySequence);
         var elapsedMilliseconds = hasHistory ? (frame.Timestamp - _historyTimestamp).TotalMilliseconds : 0;
-        _device.UpdateBuffer(_parameterBuffer!, 0, Parameters(
+        _device!.UpdateBuffer(_parameterBuffer!, 0, Parameters(
             gpuConfiguration, processed.Width, processed.Height,
             Math.Max(1, clientSize.Width), Math.Max(1, clientSize.Height),
             hasHistory, elapsedMilliseconds, frame.Sequence,
             panelSignal ?? CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
-            plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels) : 0f, panelSignal.HasValue, frame.SegmentLevels));
+            plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels) : 0f, panelSignal.HasValue, frame.SegmentLevels, refresh));
         var swapchain = _device.MainSwapchain.Framebuffer;
         if (_backend != GraphicsBackend.Direct3D11 && gpuConfiguration.BlackFrameInsertion) EnsureRetainedFrame();
         else ReleaseRetainedFrame();
         _commands!.Begin();
+        if (refresh.CaptureHistory)
+            _commands.CopyTexture(_texture!, _historyTexture!);
         DrawProcessedFrame(_retainedFramebuffer ?? swapchain);
         if (_retainedFrame is not null)
             _commands.CopyTexture(_retainedFrame, swapchain.ColorTargets[0].Target);
@@ -228,7 +236,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         _device.SwapBuffers(_device.MainSwapchain);
         _directFrameReady = _backend == GraphicsBackend.Direct3D11;
         _directFrameCanReplay = !temporalDisplay;
-        if (temporalDisplay)
+        if (temporalDisplay && !paper)
         {
             _device.UpdateTexture(_historyTexture!, pixels, 0, 0, 0, (uint)processed.Width, (uint)processed.Height, 1, 0, 0);
             _hasHistory = true;
@@ -453,6 +461,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
 
     private void DisposeFrameResources()
     {
+        _ePaperClock.Reset();
         var resources = new IDisposable?[]
         {
             _set, _parameterBuffer, _textureView, _texture, _historyTextureView, _historyTexture, _vertexBuffer
@@ -549,7 +558,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private static VideoParameters Parameters(EmulationVideoProcessingConfiguration configuration,
         int sourceWidth, int sourceHeight, int outputWidth, int outputHeight,
         bool hasHistory, double elapsedMilliseconds, long sequence, CrtSignal crtSignal,
-        float averageLuminance, bool decodePanelOnGpu, VideoSegmentLevels? nativeSegments)
+        float averageLuminance, bool decodePanelOnGpu, VideoSegmentLevels? nativeSegments, EPaperRefresh refresh)
     {
         var adjustments = configuration.Adjustments;
         var fixedPixel = FixedPixelVideoShaderParameters.From(configuration, sourceWidth, sourceHeight, hasHistory, elapsedMilliseconds);
@@ -558,7 +567,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         var ledMatrix = LedMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         var dotMatrix = DotMatrixVideoShaderParameters.From(configuration, sourceWidth, sourceHeight);
         var segmentDisplay = SegmentDisplayVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds, nativeSegments);
-        var ePaper = EPaperVideoShaderParameters.From(configuration, hasHistory, elapsedMilliseconds);
+        var ePaper = EPaperVideoShaderParameters.From(configuration, sourceWidth, sourceHeight, refresh);
         var projection = ProjectionVideoParameters.From(configuration.Projection);
         var vector = VectorRasterVideoShader.Parameters(configuration, outputWidth, outputHeight, hasHistory, elapsedMilliseconds);
         return new VideoParameters(

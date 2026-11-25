@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Sähköinen paperi</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Yksivärinen</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-tason harmaasävy</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 väriä</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Musteen väritila</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Mustekontrasti</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Tilattu dithering</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Päivitä vasteaika (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Jäännöskuva</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Ennuste</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Musta kehys</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signaalisimulaatiot</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Segmentin geometria</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Päästöt ja tausta</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Valo ja vaste</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Mustetiheys</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Paperin kirkkaus</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Paperin lämpö</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Värikyllästyminen</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>Paperin rakenne</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>Mustereunan pehmeys</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Muste ja värit</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Paperin pinta</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Päivitä ja jätä kuva</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Ympäristövalo</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Laitteistokiihdytetty renderöinti</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Renderöintitila</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Musta</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Harmaa</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>sinivihreä</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Paneelityyppi</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Kolmivärinen (punainen)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Kolmivärinen (keltainen)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Väri (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Väri (Gallery)</value></data>
 </root>

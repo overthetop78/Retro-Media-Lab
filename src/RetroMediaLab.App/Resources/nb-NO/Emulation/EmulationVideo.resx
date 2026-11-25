@@ -112,12 +112,6 @@
   <data name="Emulation.Video.Technology.EPaper"><value>Elektronisk papir</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monokrom</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-nivå gråton</value></data>
-  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>4096 farger</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Blekkfargemodus</value></data>
-  <data name="Emulation.Video.Parameter.EPaperContrast"><value>Blekkkontrast</value></data>
-  <data name="Emulation.Video.Parameter.EPaperDithering"><value>Bestill dythering</value></data>
-  <data name="Emulation.Video.Parameter.EPaperRefreshTime"><value>Oppfrisk responstid (ms)</value></data>
-  <data name="Emulation.Video.Parameter.EPaperGhosting"><value>Residensbilde</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Projection</value></data>
   <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Svart rammeinnsetting</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signalsimuleringer</value></data>
@@ -170,15 +164,6 @@
   <data name="Emulation.Video.SegmentDisplay.Group.Geometry"><value>Segmentgeometri</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.Emission"><value>Utslipp og bakgrunn</value></data>
   <data name="Emulation.Video.SegmentDisplay.Group.LightAndResponse"><value>Glød og respons</value></data>
-  <data name="Emulation.Video.Parameter.EPaperInkDensity"><value>Blekktetthet</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperBrightness"><value>Papirlysstyrke</value></data>
-  <data name="Emulation.Video.Parameter.EPaperPaperWarmth"><value>Papirvarme</value></data>
-  <data name="Emulation.Video.Parameter.EPaperColorSaturation"><value>Fargemetning</value></data>
-  <data name="Emulation.Video.Parameter.EPaperSurfaceTexture"><value>Papirtekstur</value></data>
-  <data name="Emulation.Video.Parameter.EPaperEdgeSoftness"><value>Blekkkant mykhet</value></data>
-  <data name="Emulation.Video.EPaper.Group.InkAndColor"><value>Blek og farger</value></data>
-  <data name="Emulation.Video.EPaper.Group.PaperSurface"><value>Papiroverflate</value></data>
-  <data name="Emulation.Video.EPaper.Group.Refresh"><value>Oppdater og gjenværende bilde</value></data>
   <data name="Emulation.Video.Parameter.ProjectionAmbientLight"><value>Ambient lys</value></data>
   <data name="Emulation.Option.Common.Value.HardwareRendering"><value>Maskinvaregjengivelse</value></data>
   <data name="Emulation.Option.Common.RenderingMode.Label"><value>Gjengivelsesmodus</value></data>
@@ -259,4 +244,9 @@
   <data name="Emulation.Video.SegmentDisplay.Color.Black"><value>Svart</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.Gray"><value>Grå</value></data>
   <data name="Emulation.Video.SegmentDisplay.Color.BlueGreen"><value>Blågrønn</value></data>
+  <data name="Emulation.Video.Parameter.EPaperColorMode"><value>Paneltype</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorRed"><value>Tricolor rød</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Tricolor gul</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Farge (Kaleido)</value></data>
+  <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Farge (Gallery)</value></data>
 </root>

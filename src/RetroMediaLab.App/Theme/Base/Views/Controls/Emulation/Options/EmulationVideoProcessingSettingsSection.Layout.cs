@@ -40,14 +40,7 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
     private FrameworkElement CreateImageTab()
     {
         var panel = new StackPanel();
-        var technology = CreateTechnologyPanel();
         panel.Children.Add(CreateImageGroups());
-        if (technology is not null)
-        {
-            AutomationProperties.SetAutomationId(technology, EmulationVideoSettingsLayoutConstants.VideoTechnologyParametersAutomationId);
-            technology.Margin = new Thickness(0, 12, 0, 0);
-            panel.Children.Add(technology);
-        }
         var effects = CreateEffectGroups();
         effects.Margin = new Thickness(0, 12, 0, 0);
         panel.Children.Add(effects);
@@ -85,6 +78,7 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             EmulationVideoScreenType.LedMatrix => CreateLedMatrixPanel(),
             EmulationVideoScreenType.DotMatrix => CreateDotMatrixPanel(),
             EmulationVideoScreenType.Vfd => CreateVfdPanel(),
+            EmulationVideoScreenType.EPaper => CreateEPaperPanel(),
             EmulationVideoScreenType.SegmentDisplay => CreateSegmentDisplayPanel(),
             _ => null
         };
@@ -191,12 +185,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
         AddToggle(panel, EmulationVideoProcessingCatalog.Sepia, _configuration.Stylistic.Sepia, value => SetStylistic(_configuration.Stylistic with { Sepia = value }));
         return panel;
     }
-
-    private FrameworkElement? CreateTechnologyPanel() => _configuration.DisplayTechnology switch
-    {
-        EmulationVideoDisplayTechnology.EPaper => CreateEPaperPanel(),
-        _ => null
-    };
 
     private static TabItem Tab(string id, string headerResourceKey, FrameworkElement content, double maximumWidth = EmulationVideoSettingsLayoutConstants.TabContentMaximumWidth, bool compactFields = true, bool frameContent = true)
     {

@@ -88,11 +88,4 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
                 EmulationVideoProcessingCatalog.CrtMonitorPalette));
         return panel;
     }
-
-
-
-
-    private FrameworkElement CreateEPaperPanel() => EmulationEPaperSettingsBlock.Create(_configuration.EPaper, update => SetEPaper(update(_configuration.EPaper)), RebuildContent);
-
-
 }
