@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>монохромный</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-уровневая серая шкала</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Проекция</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Вставка черного каркаса</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Симуляция сигналов</value></data>
   <data name="Emulation.Video.Tab.Display"><value>дисплей</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>рендеринг</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Триколор желтый</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Цвет (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Цвет (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Прозрачность</value></data>
 </root>

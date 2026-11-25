@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Быстрая загрузка состояния</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Снимок экрана</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Отключить звук активной машины</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Уменьшить громкость звука</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Увеличить громкость звука</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Ускорение при удержании</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Вставить или заменить носитель</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Извлечь носитель</value></data>

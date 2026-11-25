@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Állapot gyorsbetöltése</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Képernyőkép</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Aktív gép némítása</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Az audió hangerőének csökkentése</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Hangtérfogat növelése</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Gyorsítás nyomva tartáskor</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Adathordozó behelyezése vagy cseréje</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Adathordozó kiadása</value></data>

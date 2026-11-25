@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Snel status laden</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Schermafbeelding</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Actieve machine dempen</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Audiovolume verlagen</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Verhoog audiovolume</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Snel vooruit tijdens ingedrukt houden</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Medium plaatsen of vervangen</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Medium uitwerpen</value></data>

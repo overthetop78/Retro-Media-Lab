@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>מונוכרום</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16 דרג אפור</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>פרוייקט</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>שילוב שחור</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>סימולציות אותות</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Display Display</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>« endering</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>תלת־צבעוני (צהוב)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>צבע (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>צבע (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · שקיפות</value></data>
 </root>

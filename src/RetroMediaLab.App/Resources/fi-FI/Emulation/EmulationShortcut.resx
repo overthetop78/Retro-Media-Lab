@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Pikalataus</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Näyttökuva</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Mykistä aktiivinen kone</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Pienennä äänenvoimakkuutta</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Lisää äänenvoimakkuutta</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Pikakelaus pidettäessä</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Aseta tai vaihda media</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Poista media</value></data>

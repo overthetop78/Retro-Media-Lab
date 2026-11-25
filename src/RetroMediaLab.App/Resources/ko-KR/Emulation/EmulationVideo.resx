@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>모노크롬</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16 레벨 그레이 스케일</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>사업영역</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>검정 구조 insertion</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signal 시뮬레이션</value></data>
   <data name="Emulation.Video.Tab.Display"><value>제품정보</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>렌더링</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>3색 (노랑)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>색상 (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>색깔 (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · 투명도</value></data>
 </root>

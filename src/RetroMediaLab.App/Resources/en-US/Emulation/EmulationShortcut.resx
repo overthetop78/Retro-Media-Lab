@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Quick state load</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Screenshot</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Mute active machine</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Decrease audio volume</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Increase audio volume</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Fast forward while held</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Insert or replace media</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Eject media</value></data>

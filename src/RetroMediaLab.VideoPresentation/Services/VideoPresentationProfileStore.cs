@@ -114,20 +114,8 @@ public sealed class VideoPresentationProfileStore(string directory, IVideoProfil
     }
 
     private EmulationVideoPresentationProfile ReadProfile(string path)
-    {
-        using var document = JsonDocument.Parse(_files.Read(path));
-        var profile = document.RootElement.Deserialize<EmulationVideoPresentationProfile>(JsonOptions)?.Normalize()
+        => JsonSerializer.Deserialize<EmulationVideoPresentationProfile>(_files.Read(path), JsonOptions)?.Normalize()
             ?? throw new InvalidDataException(path);
-        if (document.RootElement.TryGetProperty("processing", out var processing)
-            && processing.ValueKind == JsonValueKind.Object
-            && !processing.TryGetProperty("blackFrameInsertion", out _)
-            && processing.TryGetProperty("temporal", out var oldEffects)
-            && oldEffects.ValueKind == JsonValueKind.Object
-            && oldEffects.TryGetProperty("blackFrameInsertion", out var oldBfi)
-            && oldBfi.ValueKind == JsonValueKind.True)
-            return profile with { Processing = profile.Processing! with { BlackFrameInsertion = true } };
-        return profile;
-    }
 
     private static JsonSerializerOptions CreateJsonOptions()
     {

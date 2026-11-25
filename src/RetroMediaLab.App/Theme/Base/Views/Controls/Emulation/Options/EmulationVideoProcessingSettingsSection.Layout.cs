@@ -139,15 +139,6 @@ internal sealed partial class EmulationVideoProcessingSettingsSection : UserCont
             EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(_configuration),
             value => Update(configuration => configuration with { AspectRatio = value }),
             translateChoices: false));
-        var blackFrames = new CheckBox
-        {
-            Content = LocExtension.Get(EmulationResourceKeys.VideoParameterBlackFrameInsertion),
-            IsChecked = _configuration.BlackFrameInsertion
-        };
-        AutomationProperties.SetAutomationId(blackFrames, EmulationVideoProcessingCatalog.BlackFrameInsertion);
-        blackFrames.Checked += (_, _) => Update(configuration => configuration with { BlackFrameInsertion = true });
-        blackFrames.Unchecked += (_, _) => Update(configuration => configuration with { BlackFrameInsertion = false });
-        screen.Children.Add(blackFrames);
         panel.Children.Add(SideBySideGroups(render, screen));
         return panel;
     }

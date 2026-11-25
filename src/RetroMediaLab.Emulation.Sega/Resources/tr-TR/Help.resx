@@ -25,8 +25,6 @@
   <data name="Emulation.Sega.Help.Cpu.Model.Detailed"><value>Seçilen Sega makinesi tarafından sağlanan işlemci modelini gösterir.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Short"><value>Orijinal işlemci saati frekansı.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Detailed"><value>Seçilen Sega makinesindeki işlemcinin nominal saat frekansı gösterir.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Short"><value>Enable veya devre dışı bırakılmış ses.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Detailed"><value>Retro Media Lab'nin emülatör tarafından üretilen ses örneklerini oynadığını kontroller.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Short"><value>Retro Media Lab tarafından kullanılan ses çıktı.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Detailed"><value>Bu emated makineden ses çıkarmak için kullanılan Windows ses çıktısını seçin.</value></data>
   <data name="Emulation.Sega.Help.General.Model.Detailed"><value>Donanım yapılandırmasının editör olduğu Sega modelini belirtirim.</value></data>

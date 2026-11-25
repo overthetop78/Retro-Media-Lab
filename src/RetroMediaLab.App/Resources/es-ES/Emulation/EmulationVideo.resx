@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monocromo</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>Escala de sueldos de 16 años</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Proyección</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Inserción de marco negro</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>simulaciones de señales</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Visualización</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Rendering</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Tricolor amarillo</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Color (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Color (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Transparencia</value></data>
 </root>

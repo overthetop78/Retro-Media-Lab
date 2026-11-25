@@ -371,9 +371,15 @@ public sealed class FullscreenOsdMenuTests(StaExecutionScenarios sta)
             var overlay = Assert.IsType<Grid>(menu.Content);
             var submenu = Assert.IsType<Border>(Assert.IsType<Decorator>(overlay.Children[1]).Child);
             var editor = Assert.IsType<Border>(overlay.Children[3]);
+            menu.SetTransparency(35);
             var displayColor = submenu.Background;
+            Assert.Equal(.65, displayColor.Opacity, precision: 4);
             await menu.NavigateAsync(OsdNavigation.Confirm);
             Assert.Same(displayColor, editor.Background);
+            Assert.Equal(1, editor.Opacity);
+            var header = Assert.IsType<DockPanel>(Assert.IsType<StackPanel>(editor.Child).Children[0]);
+            Assert.Equal(["Display", "Technology"], Assert.IsType<StackPanel>(header.Children[1])
+                .Children.OfType<TextBlock>().Select(label => label.Text));
             await menu.NavigateAsync(OsdNavigation.Right);
             await menu.PendingSettingSave;
             Assert.True(enabled);
@@ -393,6 +399,96 @@ public sealed class FullscreenOsdMenuTests(StaExecutionScenarios sta)
         finally
         {
             try { menu?.Close(); }
+            finally { owner.Content = null; owner.Close(); }
+        }
+    });
+
+    [Fact]
+    public Task MixerFitsEveryFaderAtBothWindowWidthsAndPreservesNavigation() => sta.RunAsync(async () =>
+    {
+        var layer = new Grid();
+        var owner = new Window { Content = layer, ShowInTaskbar = false, Width = 1400, Height = 540 };
+        FullscreenOsdWindow? menu = null;
+        try
+        {
+            int volume = 40;
+            int psg = 30;
+            int fm = 20;
+            FullscreenOsdWindow.Setting Fader(Func<int> read, Action<int> write) => new(read, value => value.ToString(),
+                (value, direction) => Math.Clamp(value + direction, 0, 100), Preview: null,
+                Save: value => { write(value); return Task.CompletedTask; }, Range: (0, 100));
+            var entries = new Entry[]
+            {
+                new("Volume", Value: Fader(() => volume, value => volume = value)),
+                new("Mixer", Children:
+                [
+                    new("PSG 1", Value: Fader(() => psg, value => psg = value), Section: "PSG"),
+                    new("FM 1", Value: Fader(() => fm, value => fm = value), Section: "FM"),
+                    .. Enumerable.Range(2, 9).Select(voice => new Entry($"FM voice {voice}",
+                        Value: Fader(() => 20, _ => { }), Section: "FM")),
+                    .. Enumerable.Range(2, 4).Select(voice => new Entry($"PSG voice {voice}",
+                        Value: Fader(() => 20, _ => { }), Section: "PSG")),
+                    .. Enumerable.Range(1, 4).Select(voice => new Entry($"Mixer voice {voice}",
+                        Value: Fader(() => 20, _ => { }), Section: "Mixer"))
+                ], CenterPanel: FullscreenOsdWindow.CenterPanelKind.Mixer)
+            };
+            owner.Show();
+            menu = new FullscreenOsdWindow(owner, layer, "Machine", null, entries, error => throw error, "Loading");
+            menu.Show();
+
+            await menu.NavigateAsync(OsdNavigation.Right);
+            Assert.False(menu.IsEditing);
+            await menu.NavigateAsync(OsdNavigation.Confirm);
+            Assert.True(menu.IsEditing);
+            await menu.NavigateAsync(OsdNavigation.Right);
+            await menu.NavigateAsync(OsdNavigation.Cancel);
+            Assert.Equal(41, volume);
+
+            await menu.NavigateAsync(OsdNavigation.Down);
+            await menu.NavigateAsync(OsdNavigation.Right);
+            Assert.True(menu.IsEditing);
+            menu.UpdateLayout();
+            var panel = ((Grid)menu.Content).Children.OfType<Border>()
+                .Single(border => border.IsVisible && border.Child is DockPanel);
+            var scroll = ((DockPanel)panel.Child).Children.OfType<ScrollViewer>().Single();
+            var cards = ((Grid)scroll.Content).Children.OfType<StackPanel>()
+                .SelectMany(section => section.Children.OfType<System.Windows.Controls.Primitives.UniformGrid>())
+                .SelectMany(grid => grid.Children.OfType<Border>()).ToArray();
+            Assert.Equal(19, cards.Length);
+            Assert.True(panel.ActualWidth > 1100);
+            AssertAllCardsFit();
+            double wideCardWidth = cards[0].ActualWidth;
+
+            owner.Width = 800;
+            owner.UpdateLayout();
+            menu.UpdateLayout();
+            AssertAllCardsFit();
+            Assert.True(cards[0].ActualWidth < wideCardWidth);
+
+            await menu.NavigateAsync(OsdNavigation.Up);
+            for (int index = 0; index < 5; index++)
+                await menu.NavigateAsync(OsdNavigation.Right);
+            await menu.NavigateAsync(OsdNavigation.Down);
+            await menu.NavigateAsync(OsdNavigation.Cancel);
+            await menu.PendingSettingSave;
+            Assert.False(menu.IsEditing);
+            Assert.Equal(31, psg);
+            Assert.Equal(19, fm);
+
+            void AssertAllCardsFit()
+            {
+                Assert.Equal(0, scroll.ScrollableWidth);
+                Assert.All(cards, card =>
+                {
+                    var left = card.TranslatePoint(new Point(), scroll).X;
+                    Assert.True(card.ActualWidth > 0);
+                    Assert.InRange(left + card.ActualWidth, 1, scroll.ViewportWidth + 1);
+                });
+            }
+        }
+        finally
+        {
+            try { if (menu?.Content is not null) menu.Close(); }
             finally { owner.Content = null; owner.Close(); }
         }
     });

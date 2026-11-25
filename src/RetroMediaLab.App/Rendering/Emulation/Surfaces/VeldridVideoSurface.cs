@@ -32,10 +32,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     private ResourceSet? _set;
     private Pipeline? _pipeline;
     private CommandList? _commands;
-    private Framebuffer? _retainedFramebuffer;
-    private Texture? _retainedFrame;
-    private bool _directFrameReady;
-    private bool _directFrameCanReplay;
     private readonly Dictionary<(EmulationVideoSampling, EmulationVideoDisplayTechnology), (Pipeline Pipeline, Shader[] Shaders)> _pipelines = new();
     private readonly Queue<(EmulationVideoSampling, EmulationVideoDisplayTechnology)> _pipelineOrder = new();
     private int _width;
@@ -78,7 +74,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
 
     public void SetVideoProcessing(EmulationVideoProcessingConfiguration configuration)
     {
-        _directFrameReady = false;
         var displayTechnologyChanged = _videoProcessing.DisplayTechnology != configuration.DisplayTechnology;
         _videoProcessing = EmulationVideoProcessingConfigurationFunctions.ForRendering(configuration);
         if (displayTechnologyChanged)
@@ -106,42 +101,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
     public void Present(VideoFrame frame)
     {
         lock (_deviceGate) PresentCore(frame);
-    }
-
-    public bool PresentBlack()
-    {
-        lock (_deviceGate)
-        {
-            if (_hwnd == IntPtr.Zero || _device is null || _commands is null) return false;
-            ResizeSwapchainToClient();
-            if (_backend == GraphicsBackend.Direct3D11 ? !_directFrameReady : !RetainedFrameMatchesSwapchain()) return false;
-            _commands.Begin();
-            _commands.SetFramebuffer(_device.MainSwapchain.Framebuffer);
-            _commands.ClearColorTarget(0, RgbaFloat.Black);
-            _commands.End();
-            _device.SubmitCommands(_commands);
-            _device.SwapBuffers(_device.MainSwapchain);
-            return true;
-        }
-    }
-
-    public bool RestoreLastFrame()
-    {
-        lock (_deviceGate)
-        {
-            if (_hwnd == IntPtr.Zero || _device is null || _commands is null) return false;
-            ResizeSwapchainToClient();
-            if (_backend == GraphicsBackend.Direct3D11 ? !_directFrameReady || !_directFrameCanReplay : !RetainedFrameMatchesSwapchain()) return false;
-            _commands.Begin();
-            if (_backend == GraphicsBackend.Direct3D11)
-                DrawProcessedFrame(_device.MainSwapchain.Framebuffer);
-            else
-                _commands.CopyTexture(_retainedFrame!, _device.MainSwapchain.Framebuffer.ColorTargets[0].Target);
-            _commands.End();
-            _device.SubmitCommands(_commands);
-            _device.SwapBuffers(_device.MainSwapchain);
-            return true;
-        }
     }
 
     public void ResetHistory()
@@ -173,7 +132,7 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             ? _vectorPipeline.Process(configuration, frame, new(frame.Width, frame.Height), outputSize)
             : frame;
         var gpuConfiguration = nativeVector
-            ? new EmulationVideoProcessingConfiguration { BlackFrameInsertion = configuration.BlackFrameInsertion }
+            ? new EmulationVideoProcessingConfiguration()
             : rasterVector ? configuration with { Sampling = EmulationVideoSampling.Bilinear, SignalSimulation = new() }
             : configuration;
         byte[]? convertedPixels = null;
@@ -222,20 +181,13 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
             hasHistory, elapsedMilliseconds, frame.Sequence,
             panelSignal ?? CrtSignal.From(gpuConfiguration.Crt, frame, EmulationVideoProcessingConfigurationFunctions.EffectiveAspectRatio(gpuConfiguration)),
             plasma ? FilterPlasmaAutomaticBrightnessLimiter.MeasureBgra(pixels) : 0f, panelSignal.HasValue, frame.SegmentLevels, refresh));
-        var swapchain = _device.MainSwapchain.Framebuffer;
-        if (_backend != GraphicsBackend.Direct3D11 && gpuConfiguration.BlackFrameInsertion) EnsureRetainedFrame();
-        else ReleaseRetainedFrame();
         _commands!.Begin();
         if (refresh.CaptureHistory)
             _commands.CopyTexture(_texture!, _historyTexture!);
-        DrawProcessedFrame(_retainedFramebuffer ?? swapchain);
-        if (_retainedFrame is not null)
-            _commands.CopyTexture(_retainedFrame, swapchain.ColorTargets[0].Target);
+        DrawProcessedFrame(_device.MainSwapchain.Framebuffer);
         _commands.End();
         _device.SubmitCommands(_commands);
         _device.SwapBuffers(_device.MainSwapchain);
-        _directFrameReady = _backend == GraphicsBackend.Direct3D11;
-        _directFrameCanReplay = !temporalDisplay;
         if (temporalDisplay && !paper)
         {
             _device.UpdateTexture(_historyTexture!, pixels, 0, 0, 0, (uint)processed.Width, (uint)processed.Height, 1, 0, 0);
@@ -403,34 +355,9 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         if (_device is null || _hwnd == IntPtr.Zero) return;
         var clientSize = NativeVideoWindowFunctions.GetClientSize(_hwnd);
         if ((uint)clientSize.Width == _swapchainWidth && (uint)clientSize.Height == _swapchainHeight) return;
-        _directFrameReady = false;
         _device.ResizeMainWindow((uint)clientSize.Width, (uint)clientSize.Height);
         _swapchainWidth = (uint)clientSize.Width;
         _swapchainHeight = (uint)clientSize.Height;
-    }
-
-    private bool RetainedFrameMatchesSwapchain()
-    {
-        var target = _device!.MainSwapchain.Framebuffer.ColorTargets[0].Target;
-        return _retainedFrame is { } frame && frame.Width == target.Width
-            && frame.Height == target.Height && frame.Format == target.Format;
-    }
-
-    private void EnsureRetainedFrame()
-    {
-        if (RetainedFrameMatchesSwapchain()) return;
-        ReleaseRetainedFrame();
-        var target = _device!.MainSwapchain.Framebuffer.ColorTargets[0].Target;
-        var factory = _device.ResourceFactory;
-        Texture? texture = factory.CreateTexture(TextureDescription.Texture2D(
-            target.Width, target.Height, 1, 1, target.Format, TextureUsage.RenderTarget));
-        try
-        {
-            _retainedFramebuffer = factory.CreateFramebuffer(new FramebufferDescription(null, texture));
-            _retainedFrame = texture;
-            texture = null;
-        }
-        finally { texture?.Dispose(); }
     }
 
     private static ShaderSetDescription PresentationShaderSet(Shader[] shaders) => new(
@@ -446,14 +373,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         _commands.SetVertexBuffer(0, _vertexBuffer!);
         _commands.SetGraphicsResourceSet(0, _set!);
         _commands.Draw(4);
-    }
-
-    private void ReleaseRetainedFrame()
-    {
-        if (_retainedFramebuffer is not null) _device!.DisposeWhenIdle(_retainedFramebuffer);
-        if (_retainedFrame is not null) _device!.DisposeWhenIdle(_retainedFrame);
-        _retainedFramebuffer = null;
-        _retainedFrame = null;
     }
 
     private BitmapSource? EnsureSnapshot()
@@ -492,7 +411,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
                 {
                     EmulationVideoCleanupFunctions.RunAll(
                         DisposeFrameResources, DisposePipelines,
-                        () => _retainedFramebuffer?.Dispose(), () => _retainedFrame?.Dispose(),
                         () => _layout?.Dispose(),
                         () => _commands?.Dispose(), () => _device?.Dispose());
                 }
@@ -502,8 +420,6 @@ internal sealed class VeldridVideoSurface : HwndHost, IEmulationVideoSurface
         {
             _snapshot = null;
             _snapshotSourceFrame = null;
-            _retainedFramebuffer = null;
-            _retainedFrame = null;
             _commands = null;
             _layout = null;
             _device = null;

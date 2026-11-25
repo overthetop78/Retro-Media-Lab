@@ -1,11 +1,13 @@
 using System.Globalization;
 using RetroMediaLab.App.Constants.Machine;
+using RetroMediaLab.App.Constants.Controls.Visual;
 using RetroMediaLab.App.Constants.Emulation;
 using RetroMediaLab.App.Constants.Localization;
 using RetroMediaLab.App.Functions.Emulation.Settings;
 using RetroMediaLab.App.Localization.Extensions;
 using RetroMediaLab.Emulation;
 using Entry = RetroMediaLab.VideoPresentation.Windows.Osd.FullscreenOsdWindow.Entry;
+using PanelKind = RetroMediaLab.VideoPresentation.Windows.Osd.FullscreenOsdWindow.CenterPanelKind;
 using Setting = RetroMediaLab.VideoPresentation.Windows.Osd.FullscreenOsdWindow.Setting;
 
 namespace RetroMediaLab.App.Controllers.Emulation.Machine;
@@ -20,14 +22,76 @@ internal sealed partial class MachineController
 
     private Entry OsdAudioSettings()
     {
-        var children = new List<Entry>
-        {
-            new(LocExtension.Get("Emulation.Shortcut.Mute"), ToggleAudioAsync,
-                IsEnabled: () => _session.IsPowered, Status: () => _audioMuted ? "✓" : "—")
-        };
+        var children = new List<Entry> { OsdVolume(), OsdAudioMixer() };
         children.AddRange(OsdModuleGroups(EmulationMachineTab.Audio));
         return new(LocExtension.Get("Emulation.Shortcut.OsdAudioSettings"), Children: children,
             Glyph: MachineCommandGlyphConstants.Audio, FullHeight: true);
+    }
+
+    private Entry OsdVolume() => new(LocExtension.Get("Explorer.Volume"),
+        Value: OsdVolumeSetting(), Glyph: MachineCommandGlyphConstants.Audio);
+
+    private Setting OsdVolumeSetting() => new(
+        () => (int)Math.Round(_session.Machine.Audio.Volume * 100),
+        value => (value / 100d).ToString("P0"),
+        (value, direction) => Math.Clamp(value + direction, 0, 100),
+        SetOsdAudioVolume,
+        _ => Task.CompletedTask, Range: (0, 100));
+
+    private Entry OsdAudioMixer()
+    {
+        var title = LocExtension.Get("Emulation.Audio.Mixer");
+        var fields = new List<Entry> { OsdVolume() with { Section = title } };
+        if (_options.Module is { } module)
+            AddModuleFaders(module, fields, title);
+        return new(title, Children: fields, Glyph: MachineCommandGlyphConstants.Audio, CenterPanel: PanelKind.Mixer);
+    }
+
+    private void AddModuleFaders(IEmulationModule module, List<Entry> fields, string mixerTitle)
+    {
+        foreach (var block in OsdModuleBlocks.Where(block => block.Tab == EmulationMachineTab.Audio))
+        {
+            foreach (var field in block.Fields.Where(field => IsMixerField(block, field)))
+            {
+                var voice = OsdModuleField(module, block.Id, field, fader: true);
+                if (voice.Value?.Range is not null)
+                    fields.Add(voice with { Section = block.TitleResourceKey is "Emulation.Sega.Audio.Psg" or "Emulation.Sega.Audio.Fm"
+                        || block.AudioMixerSlot is not null
+                        ? LocExtension.GetForModule(module, block.TitleResourceKey) : mixerTitle });
+            }
+        }
+    }
+
+    private static bool IsMixerField(EmulationSettingsBlock block, EmulationSettingsField field) =>
+        block.AudioMixerSlot is not null || block.TitleResourceKey is
+            "Emulation.Audio.Mixer" or "Emulation.Sega.Audio.Psg" or "Emulation.Sega.Audio.Fm"
+        || field.Id.EndsWith("_volume", StringComparison.Ordinal)
+        || field.Id.EndsWith("_preamp", StringComparison.Ordinal)
+        || field.Id.Contains("_audio_eq_", StringComparison.Ordinal);
+
+    private Entry OsdMachineInformation()
+    {
+        var fields = new List<Entry>();
+        if (_options.Module is { } module)
+        {
+            foreach (var tab in EmulationMachineTabConstants.Definitions.Where(tab => tab.Tab is
+                EmulationMachineTab.General or EmulationMachineTab.Cpu or EmulationMachineTab.Ram
+                or EmulationMachineTab.Rom or EmulationMachineTab.Video or EmulationMachineTab.Audio
+                or EmulationMachineTab.Extensions))
+            {
+                foreach (var block in OsdModuleBlocks.Where(block => block.Tab == tab.Tab))
+                {
+                    fields.AddRange(block.Fields.Where(field => field.Editor == EmulationSettingsEditor.Information)
+                        .Select(field => OsdModuleField(module, block.Id, field) with
+                        {
+                            Section = LocExtension.Get(tab.ResourceKey),
+                            Glyph = tab.Icon
+                        }));
+                }
+            }
+        }
+        return new(LocExtension.Get("Menu.Information"), Children: fields, Glyph: IconGlyphs.Information,
+            CenterPanel: PanelKind.Information, IsVisible: () => fields.Any(field => field.IsVisible?.Invoke() != false));
     }
 
     private Entry OsdMachineSettings()
@@ -53,7 +117,10 @@ internal sealed partial class MachineController
         {
             var availableFields = block.Fields.Where(field =>
                 field.Editor is EmulationSettingsEditor.Toggle or EmulationSettingsEditor.Selection
-                    or EmulationSettingsEditor.Information or EmulationSettingsEditor.Slider
+                    or EmulationSettingsEditor.Slider
+                && (tab != EmulationMachineTab.Audio || (!IsMixerField(block, field)
+                    && field.LabelResourceKey != "Emulation.Audio.Enabled"
+                    && field.Id != "segaemu_ym2413_core"))
                 && (videoSection is null || field.VideoSection == videoSection)
                 && (tab != EmulationMachineTab.Video
                     || field.LabelResourceKey != EmulationResourceKeys.VideoRenderingSettings));
@@ -83,25 +150,25 @@ internal sealed partial class MachineController
             .Any(field => field.Id == block.VisibleWhenFieldId && field.Value == block.VisibleWhenValue);
     }
 
-    private Entry OsdModuleField(IEmulationModule module, string blockId, EmulationSettingsField field)
+    private Entry OsdModuleField(IEmulationModule module, string blockId, EmulationSettingsField field, bool fader = false)
     {
         EmulationSettingsField? Current() => OsdModuleBlocks.FirstOrDefault(block => block.Id == blockId)
             ?.Fields.FirstOrDefault(candidate => candidate.Id == field.Id);
 
         string? Read() => Current()?.Value;
         Task Save(string value) => SaveOsdModuleSettingAsync(module, field, value);
-        var setting = OsdModuleEditor(module, field, Read, Save);
+        var setting = OsdModuleEditor(module, field, Read, Save, fader);
         return new(LocExtension.GetForModule(module, field.LabelResourceKey),
             IsEnabled: () => setting is not null && Current()?.IsEnabled == true,
             Value: setting,
             Status: setting is null ? () => EmulationSettingsValuePresentationFunctions.DisplayValue(Current() ?? field, module) : null,
-            IsVisible: () => Current()?.IsVisible == true && !(_osdModuleSettings?.Rules ?? []).Any(rule =>
+            IsVisible: () => OsdModuleBlockVisible(blockId) && Current()?.IsVisible == true && !(_osdModuleSettings?.Rules ?? []).Any(rule =>
                 rule.TargetFieldId == field.Id && EmulationSettingsRuleFunctions.HidesTarget(rule,
                     OsdModuleBlocks.SelectMany(block => block.Fields).FirstOrDefault(candidate => candidate.Id == rule.SourceFieldId)?.Value)));
     }
 
     private static Setting? OsdModuleEditor(IEmulationModule module, EmulationSettingsField field,
-        Func<string?> read, Func<string, Task> save)
+        Func<string?> read, Func<string, Task> save, bool fader)
     {
         if (field.Editor == EmulationSettingsEditor.Slider && field.NumericRange is { Step: > 0 } range
             && !field.UseChoiceLabelsForSlider)
@@ -129,7 +196,8 @@ internal sealed partial class MachineController
                     choices[index].InvariantDisplayValue ?? LocExtension.GetForModule(module, choices[index].DisplayResourceKey),
                     field.ValueUnitResourceKey),
             (index, direction) => Math.Clamp(index + direction, 0, ids.Length - 1),
-            Preview: null, Save: index => index == ids.Length ? Task.CompletedTask : save(ids[index]));
+            Preview: null, Save: index => index == ids.Length ? Task.CompletedTask : save(ids[index]),
+            Range: fader ? (0, ids.Length - 1) : null);
     }
 
     private static Setting OsdModuleNumericEditor(EmulationSettingsField field, EmulationSettingsNumericRange range,
@@ -168,8 +236,5 @@ internal sealed partial class MachineController
         await module.SaveConfigurationAsync(updated);
         await ApplyConfigurationAsync(updated);
         await ApplyRuntimeOptionsAsync(module.RuntimeOptions(updated));
-        if (!_disposed && field.Tab == EmulationMachineTab.Audio
-            && field.Editor == EmulationSettingsEditor.Toggle && field.LabelResourceKey == "Emulation.Audio.Enabled")
-            SetAudioMuted(value != field.EnabledValue);
     }
 }

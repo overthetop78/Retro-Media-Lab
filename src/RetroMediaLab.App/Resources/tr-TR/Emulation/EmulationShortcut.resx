@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Hızlı durum yükleme</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Ekran görüntüsü</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Etkin makinenin sesini kapat</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Ducrease audio volume</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Gürültü hacminin Artışı Arttır</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Basılı tutarken hızlı ileri sar</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Ortam tak veya değiştir</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Ortamı çıkar</value></data>

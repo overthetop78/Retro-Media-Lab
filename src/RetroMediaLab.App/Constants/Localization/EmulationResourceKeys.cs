@@ -45,6 +45,7 @@ public static class EmulationResourceKeys
     public const string VideoSignalSimulationSettings = "Emulation.Video.Settings.SignalSimulation";
     public const string VideoRetroMediaLabProcessing = "Emulation.Video.Settings.RetroMediaLabProcessing";
     public const string VideoShaderLoading = "Emulation.Video.Shader.Loading";
+    public const string OsdTransparency = "Emulation.Osd.Transparency";
     public const string VideoDisplaySettings = "Emulation.Video.Settings.Display";
     public const string VideoRenderingSettings = "Emulation.Video.Settings.Rendering";
     public const string VideoTabDisplay = "Emulation.Video.Tab.Display";
@@ -115,7 +116,6 @@ public static class EmulationResourceKeys
     public const string VideoRestorationLevelMedium = "Emulation.Video.Restoration.Level.Medium";
     public const string VideoRestorationLevelStrong = "Emulation.Video.Restoration.Level.Strong";
     public const string VideoParameterDeinterlacing = "Emulation.Video.Parameter.Deinterlacing";
-    public const string VideoParameterBlackFrameInsertion = "Emulation.Video.Parameter.BlackFrameInsertion";
     public const string VideoParameterLedMatrixColor = "Emulation.Video.Parameter.LedMatrixColor";
     public const string VideoParameterLedMatrixShape = "Emulation.Video.Parameter.LedMatrixShape";
     public const string VideoLedMatrixColorRgb = "Emulation.Video.LedMatrix.Color.Rgb";

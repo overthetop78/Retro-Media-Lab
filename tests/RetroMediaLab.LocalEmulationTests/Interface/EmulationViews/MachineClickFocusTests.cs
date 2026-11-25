@@ -187,6 +187,50 @@ public sealed class MachineClickFocusTests(StaExecutionScenarios sta)
     });
 
     [Fact]
+    public Task LiveOsdConsumesOnlyItsShortcutAndPointerInteraction() => Run(ui =>
+    {
+        ui.Fullscreen = true;
+        bool pointerOverMenu = false;
+        ui.Controller.SetOsdFocus(true, allowGameInput: true, osdUsesPointer: () => pointerOverMenu);
+        ui.Controller.HandleKeyDown(Key.J, ModifierKeys.None);
+        ui.ControllerBits = 2;
+        ui.MiddleButton = true;
+        ui.Controller.Publish();
+        Assert.Contains(EmulationKey.J, ui.LastInput.Keys);
+        Assert.Equal(2u, Assert.Single(ui.LastInput.Controllers).Buttons);
+        Assert.True(ui.LastInput.Pointer.Middle);
+
+        ui.Controller.HandleKeyDown(Key.K, ModifierKeys.None);
+        ui.RightButton = ui.ControllerButton = true;
+        ui.Controller.Publish();
+        Assert.Equal(EmulationShortcutDefaults.OsdDown + EmulationShortcutDefaults.AlternativeSuffix,
+            Assert.Single(ui.ShortcutActions));
+        Assert.Contains(EmulationKey.J, ui.LastInput.Keys);
+        Assert.DoesNotContain(EmulationKey.K, ui.LastInput.Keys);
+        var controller = Assert.Single(ui.LastInput.Controllers);
+        Assert.Equal(2u, controller.Buttons);
+        Assert.Equal(0f, controller.Controls["Button1"]);
+        Assert.True(ui.LastInput.Pointer.Middle);
+        Assert.False(ui.LastInput.Pointer.Right);
+
+        pointerOverMenu = true;
+        ui.Controller.Publish();
+        Assert.False(ui.LastInput.Pointer.Middle);
+        ui.Controller.SetOsdFocus(false);
+        ui.Controller.Publish();
+        Assert.Contains(EmulationKey.J, ui.LastInput.Keys);
+        Assert.DoesNotContain(EmulationKey.K, ui.LastInput.Keys);
+        Assert.Equal(2u, Assert.Single(ui.LastInput.Controllers).Buttons);
+
+        ui.Controller.HandleKeyUp(Key.K, ModifierKeys.None);
+        ui.ControllerButton = ui.RightButton = false;
+        ui.Controller.Publish();
+        ui.Controller.HandleKeyDown(Key.K, ModifierKeys.None);
+        Assert.Contains(EmulationKey.K, ui.LastInput.Keys);
+        return Task.CompletedTask;
+    });
+
+    [Fact]
     public Task KeysHeldWhenTheOsdClosesReachTheGameOnlyAfterRelease() => Run(ui =>
     {
         ui.Fullscreen = true;

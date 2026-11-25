@@ -40,7 +40,9 @@ internal sealed partial class MachineController
             ShortcutSettings: settings.EmulationShortcuts, Module: module, Configuration: runtime.Configuration,
             ReadShortcutSettings: () => settings.EmulationShortcuts,
             ReadFullscreenStatistics: () => settings.ShowFullscreenEmulationStatistics,
-            WriteFullscreenStatistics: visible => settings.ShowFullscreenEmulationStatistics = visible));
+            WriteFullscreenStatistics: visible => settings.ShowFullscreenEmulationStatistics = visible,
+            ReadOsdTransparency: () => settings.FullscreenOsdTransparency,
+            WriteOsdTransparency: value => settings.FullscreenOsdTransparency = value));
         return (controller, runtime);
 
         async Task OpenSettingsAsync()

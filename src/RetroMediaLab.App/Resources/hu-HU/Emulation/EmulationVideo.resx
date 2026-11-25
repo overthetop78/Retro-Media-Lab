@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monokróm</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-szintű szürkeárnyalatok</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Terjesztés</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Fekete keret behelyezése</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Jelszimulációk</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Megjelenítés</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Termelés</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Trikolor sárga</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Szín (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Színes (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Átlátszóság</value></data>
 </root>

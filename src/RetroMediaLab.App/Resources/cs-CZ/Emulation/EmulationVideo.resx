@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monochromní</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>Stupnice šedi na úrovni 16</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Promítání</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Vložení černého rámu</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulace signálu</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Zobrazit</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Překládání</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Trikolor žlutý</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Barva (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Barva (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Průhlednost</value></data>
 </root>

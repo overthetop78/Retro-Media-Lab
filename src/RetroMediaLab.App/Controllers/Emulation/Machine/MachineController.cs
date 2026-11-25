@@ -61,6 +61,8 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
     private Grid? _fullscreenHost;
     private FullscreenOsdIndicator? _fullscreenShaderLoading;
     private FullscreenStatisticsOsd? _fullscreenStatistics;
+    private FullscreenMuteOsd? _fullscreenMute;
+    private FullscreenVolumeOsd? _fullscreenVolume;
     private bool _showFullscreenStatistics;
     private FullscreenOsdWindow? _osd;
     private bool _osdPausedEmulation;
@@ -68,6 +70,7 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
     private Task _osdPauseTask = Task.CompletedTask;
     private Task _osdCloseTask = Task.CompletedTask;
     private bool _audioMuted;
+    private float? _osdAudioVolume;
     private bool _disposed;
 
     internal static async Task<MachineController> CreateAsync(MachineControllerOptions options)
@@ -367,7 +370,29 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         _session.Machine.Audio.SetMuted(muted);
         _audioMuted = muted;
         _commands.SetMuted(muted);
+        UpdateFullscreenMute();
     }
+
+    private void SetOsdAudioVolume(int percent)
+    {
+        float volume = percent / 100f;
+        _osdAudioVolume = volume;
+        _session.Machine.Audio.SetVolume(volume);
+        if (volume > 0 && _audioMuted) SetAudioMuted(false);
+        else UpdateFullscreenMute();
+    }
+
+    private void StepAudioVolume(int direction)
+    {
+        var setting = OsdVolumeSetting();
+        var percent = setting.Step(setting.Read(), direction);
+        SetOsdAudioVolume(percent);
+        _fullscreenVolume?.Show(percent);
+    }
+
+    private void UpdateFullscreenMute() =>
+        _fullscreenMute?.SetVisible(_audioMuted || _session.Machine.Audio.Volume <= 0);
+
 
     private async Task QuickSaveAsync()
     {
@@ -419,6 +444,11 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         {
             _fullscreenShaderLoading = new FullscreenOsdIndicator(_fullscreenHost, LocExtension.Get(EmulationResourceKeys.VideoShaderLoading));
             _fullscreenStatistics = CreateFullscreenStatistics(_fullscreenHost);
+            _fullscreenMute = new FullscreenMuteOsd(_fullscreenHost, ControlVisualConstants.IconFont,
+                MachineCommandGlyphConstants.Muted, LocExtension.Get("Emulation.Shortcut.Mute"));
+            _fullscreenVolume = new FullscreenVolumeOsd(_fullscreenHost, ControlVisualConstants.IconFont,
+                MachineCommandGlyphConstants.Audio, LocExtension.Get("Explorer.Volume"));
+            PreviewOsdTransparency(OsdTransparency);
             _showFullscreenStatistics = _options.ReadFullscreenStatistics?.Invoke() ?? _showFullscreenStatistics;
             if (!_session.IsPowered) ResetStatistics();
             _video.SetDisplayHost(_fullscreenHost);
@@ -462,12 +492,24 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         _fullscreenWindow = null;
         var shaderPopup = _fullscreenShaderLoading;
         var statistics = _fullscreenStatistics;
+        var mute = _fullscreenMute;
+        var volume = _fullscreenVolume;
+        _fullscreenMute = null;
+        _fullscreenVolume = null;
         _fullscreenShaderLoading = null;
         _fullscreenStatistics = null;
         try
         {
-            try { statistics?.Dispose(); }
-            finally { shaderPopup?.Dispose(); }
+            try
+            {
+                try { volume?.Dispose(); }
+                finally { mute?.Dispose(); }
+            }
+            finally
+            {
+                try { statistics?.Dispose(); }
+                finally { shaderPopup?.Dispose(); }
+            }
         }
         finally
         {
@@ -494,6 +536,7 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
     private void FullscreenContentRendered(object? sender, EventArgs args)
     {
         _fullscreenStatistics?.SetVisible(_showFullscreenStatistics);
+        UpdateFullscreenMute();
         _video.FitScreen();
         _input.RestoreFocus();
     }
@@ -535,10 +578,11 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
             var opened = false;
             try
             {
+                PreviewOsdTransparency(OsdTransparency);
                 osd.PreviewKeyDown += OsdKeyDown;
                 osd.PreviewKeyUp += OsdKeyUp;
                 osd.Closed += OsdClosed;
-                _input.SetOsdFocus(true);
+                _input.SetOsdFocus(true, allowGameInput: !pause, osdUsesPointer: () => osd.IsPointerOverControls);
                 VideoShaderLoadingChanged(_video.IsShaderLoading);
                 osd.Show();
                 if (pause && _session.Machine.State == EmulationMachineState.Running)
@@ -638,9 +682,34 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
             OsdAudioSettings(),
             OsdControlsSettings(),
             OsdMachineSettings(),
+            OsdMachineInformation(),
+            OsdTransparencySetting(),
             new(LocExtension.Get("Emulation.Shortcut.OsdExitFullscreen"), ToggleFullscreenAsync,
                 Glyph: MachineCommandGlyphConstants.Power, SeparatorBefore: true)
         ];
+    }
+
+    private int OsdTransparency => Math.Clamp(_options.ReadOsdTransparency?.Invoke() ?? 5, 0, 100);
+
+    private FullscreenOsdWindow.Entry OsdTransparencySetting() =>
+        new(LocExtension.Get(EmulationResourceKeys.OsdTransparency), Section: "OSD", Value: new(
+            () => OsdTransparency,
+            value => ((double)value / 100).ToString("P0"),
+            (value, direction) => Math.Clamp(value + direction, 0, 100),
+            PreviewOsdTransparency,
+            value =>
+            {
+                _options.WriteOsdTransparency?.Invoke(value);
+                return Task.CompletedTask;
+            },
+            Range: (0, 100)));
+
+    private void PreviewOsdTransparency(int value)
+    {
+        _osd?.SetTransparency(value);
+        _fullscreenShaderLoading?.SetTransparency(value);
+        _fullscreenStatistics?.SetTransparency(value);
+        _fullscreenVolume?.SetTransparency(value);
     }
 
     private FullscreenOsdWindow.FooterHints CreateOsdFooterHints()
@@ -683,6 +752,8 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
         _input.RefreshBindings();
         _video.SetMachine(machine);
         machine.Audio.SetMuted(_audioMuted);
+        if (_osdAudioVolume is float volume) machine.Audio.SetVolume(volume);
+        UpdateFullscreenMute();
         _commands.SetMuted(_audioMuted);
         _commands.SetSavedStateAvailability(_quickStates.IsSupported, _quickStates.IsAvailable);
         RebuildMediaDevices();
@@ -912,6 +983,8 @@ internal sealed partial class MachineController : UserControl, IAsyncDisposable
                 case EmulationShortcutDefaults.ToggleFullscreen: await ToggleFullscreenAsync(); break;
                 case EmulationShortcutDefaults.ReleaseMouse: _input.ReleasePointer(); break;
                 case EmulationShortcutDefaults.ToggleMute: await ToggleAudioAsync(); break;
+                case EmulationShortcutDefaults.VolumeDown: StepAudioVolume(-1); break;
+                case EmulationShortcutDefaults.VolumeUp: StepAudioVolume(1); break;
             }
         }
         catch (Exception error) { _options.ShowError(error); }

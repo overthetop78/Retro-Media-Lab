@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>モノクロ</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16レベルのグレースケール</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>プロジェクト</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>ブラックフレームインサート</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>信号シミュレーション</value></data>
   <data name="Emulation.Video.Tab.Display"><value>ディスプレイ</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>レンダリング</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>トリコロールイエロー</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>カラー(Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>色(Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · 透明度</value></data>
 </root>

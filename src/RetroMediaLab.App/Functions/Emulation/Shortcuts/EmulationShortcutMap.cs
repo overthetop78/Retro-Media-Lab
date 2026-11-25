@@ -39,7 +39,11 @@ internal static class EmulationShortcutMap
         mappings.Where(IsGlobalShortcut).Select(mapping => mapping.Value).ToArray();
 
     internal static IReadOnlyList<GlobalShortcutBinding> OsdShortcuts(IReadOnlyDictionary<string, string>? mappings) =>
-        ParseShortcuts(mappings?.Where(mapping => EmulationShortcutDefaults.OsdValues.ContainsKey(mapping.Key)));
+        ParseShortcuts(mappings?.Where(mapping => EmulationShortcutDefaults.OsdValues.ContainsKey(mapping.Key)
+            || mapping.Key == EmulationShortcutDefaults.ToggleMute || IsVolumeShortcut(mapping.Key)));
+
+    internal static bool IsVolumeShortcut(string action) =>
+        action is EmulationShortcutDefaults.VolumeDown or EmulationShortcutDefaults.VolumeUp;
 
     internal static bool IsOsdToggle(string action) =>
         OsdPrimaryAction(action) is EmulationShortcutDefaults.OsdWithPause or EmulationShortcutDefaults.OsdWithoutPause
@@ -77,6 +81,8 @@ internal static class EmulationShortcutMap
         Shortcut(EmulationShortcutDefaults.QuickLoad, "Emulation.Shortcut.QuickLoad"),
         Shortcut(EmulationShortcutDefaults.Screenshot, "Emulation.Shortcut.Screenshot"),
         Shortcut(EmulationShortcutDefaults.ToggleMute, "Emulation.Shortcut.Mute"),
+        Shortcut(EmulationShortcutDefaults.VolumeDown, "Emulation.Shortcut.VolumeDown"),
+        Shortcut(EmulationShortcutDefaults.VolumeUp, "Emulation.Shortcut.VolumeUp"),
         .. OsdShortcut(EmulationShortcutDefaults.OsdWithPause, "OsdWithPause"),
         .. OsdShortcut(EmulationShortcutDefaults.OsdWithoutPause, "OsdWithoutPause"),
         new(EmulationShortcutDefaults.OsdStatistics, "Emulation.Shortcut.OsdStatistics",

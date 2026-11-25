@@ -25,8 +25,6 @@
   <data name="Emulation.Sega.Help.Cpu.Model.Detailed"><value>מציג את מודל המעבד המסופק על ידי מכונת Sega שנבחרה.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Short"><value>תדירות שעון המעבד המקורי</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Detailed"><value>מציג את תדירות שעון נומינאל של המעבד במכונת Sega שנבחרה.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Short"><value>צליל אמין או מפוחד.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Detailed"><value>שליטה אם Retro Media Lab משחק את הדגימות אודיו שנוצרו על ידי החיקוי.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Short"><value>צילום אודיו בשימוש על ידי Retro Media Lab.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Detailed"><value>בחר את הפלט אודיו של Windows המשמש כדי לנגן קול ממכונה זו.</value></data>
   <data name="Emulation.Sega.Help.General.Model.Detailed"><value>Identifies את מודל Sega אשר תצורות החומרה שלו נערכת.</value></data>

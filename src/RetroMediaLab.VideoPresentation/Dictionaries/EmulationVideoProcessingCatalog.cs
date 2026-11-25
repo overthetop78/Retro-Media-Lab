@@ -22,7 +22,6 @@ public static partial class EmulationVideoProcessingCatalog
     public const string Debanding = nameof(Debanding);
     public const string DetailRecovery = nameof(DetailRecovery);
     public const string Deinterlacing = nameof(Deinterlacing);
-    public const string BlackFrameInsertion = nameof(BlackFrameInsertion);
     public const string SignalConnection = nameof(SignalConnection);
     public const string SignalConnectionIntensity = nameof(SignalConnectionIntensity);
     public const string SignalStandard = nameof(SignalStandard);
@@ -91,7 +90,7 @@ public static partial class EmulationVideoProcessingCatalog
     [
         Brightness, Contrast, Gamma, Saturation, Sharpness, Dedithering, Debanding,
         DetailRecovery,
-        Deinterlacing, BlackFrameInsertion,
+        Deinterlacing,
         SignalConnection, SignalConnectionIntensity, SignalStandard, SignalStandardIntensity,
         CrtColorStandards, CrtFieldRate, CrtMask, CrtPhosphorColor, CrtBeamWidth, CrtCurvature,
         CrtConnection, CrtConnectionDegradation, CrtMonitorPalette,

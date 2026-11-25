@@ -25,8 +25,6 @@
   <data name="Emulation.Sega.Help.Cpu.Model.Detailed"><value>显示所选的Sega机提供的处理器模型.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Short"><value>原始处理器时钟频率.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Detailed"><value>在所选的Sega相机中显示处理器的标称时钟频率.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Short"><value>启用或禁用模拟声音 。</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Detailed"><value>控制 Retro Media Lab 是否播放模拟器生成的音频样本 。</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Short"><value>Retro Media Lab 使用的音频输出.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Detailed"><value>选择用于播放此仿真机声音的 Windows 音频输出 。</value></data>
   <data name="Emulation.Sega.Help.General.Model.Detailed"><value>确定正在编辑其硬件配置的Sega型号.</value></data>

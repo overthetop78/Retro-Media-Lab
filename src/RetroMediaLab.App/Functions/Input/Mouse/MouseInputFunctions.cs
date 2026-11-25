@@ -40,6 +40,30 @@ internal static class MouseInputFunctions
         | (pointer.ExtendedButton1 ? GameInputMouseButtons.Button4 : 0)
         | (pointer.ExtendedButton2 ? GameInputMouseButtons.Button5 : 0);
 
+    internal static EmulationPointerState ConsumeSource(EmulationPointerState pointer, string source,
+        ref GameInputMouseButtons consumed)
+    {
+        if (!source.StartsWith("Mouse:", StringComparison.OrdinalIgnoreCase)) return pointer;
+        var control = source["Mouse:".Length..].ToUpperInvariant();
+        consumed |= control switch
+        {
+            "LEFT" => GameInputMouseButtons.Left,
+            "RIGHT" => GameInputMouseButtons.Right,
+            "MIDDLE" => GameInputMouseButtons.Middle,
+            "XBUTTON1" => GameInputMouseButtons.Button4,
+            "XBUTTON2" => GameInputMouseButtons.Button5,
+            _ => GameInputMouseButtons.None
+        };
+        return control switch
+        {
+            "WHEELUP" when pointer.Wheel > 0 => pointer with { Wheel = 0 },
+            "WHEELDOWN" when pointer.Wheel < 0 => pointer with { Wheel = 0 },
+            "WHEELLEFT" when pointer.HorizontalWheel < 0 => pointer with { HorizontalWheel = 0 },
+            "WHEELRIGHT" when pointer.HorizontalWheel > 0 => pointer with { HorizontalWheel = 0 },
+            _ => pointer
+        };
+    }
+
     internal static EmulationPointerState WithoutButtons(EmulationPointerState pointer, GameInputMouseButtons buttons) =>
         buttons == GameInputMouseButtons.None ? pointer : pointer with
         {

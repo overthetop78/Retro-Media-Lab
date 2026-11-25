@@ -142,7 +142,6 @@ internal static partial class SettingsDescriptionFunctions
             Block(SettingsDescriptionFunctionsConstants.Audio, EmulationMachineTab.Audio,
                 SettingsDescriptionFunctionsConstants.ResourceAudio,
                 SettingsDescriptionFunctionsConstants.IconAudio, 2,
-                Toggle(SettingsConstants.AudioEnabled, EmulationMachineTab.Audio, SettingsDescriptionFunctionsConstants.Audio, SettingsDescriptionFunctionsConstants.ResourceAudioEnabled, configuration.AudioEnabled),
                 AudioOutput(configuration.Audio?.OutputDeviceId),
                 Select(SettingsConstants.AudioLatency, EmulationMachineTab.Audio,
                     SettingsDescriptionFunctionsConstants.Audio,
@@ -308,7 +307,7 @@ internal static partial class SettingsDescriptionFunctions
     {
         var audio = blocks.Find(block => block.Tab == EmulationMachineTab.Audio)!;
         static bool IsHostAudio(EmulationSettingsField field) =>
-            field.Id == SettingsConstants.AudioEnabled || field.Id == SettingsConstants.AudioLatency
+            field.Id == SettingsConstants.AudioLatency
             || field.ChoiceSource == EmulationSettingsChoiceSource.AudioOutputDevices;
         static bool IsMixingField(EmulationSettingsField field) => field.Id.EndsWith("_volume", StringComparison.Ordinal)
             || field.Id.EndsWith("_preamp", StringComparison.Ordinal) || field.Id.Contains("_audio_eq_", StringComparison.Ordinal);
@@ -318,6 +317,7 @@ internal static partial class SettingsDescriptionFunctions
         var mixing = emulated.Where(IsMixingField).ToArray();
         var psg = mixing.Where(field => field.Id.StartsWith("segaemu_psg_", StringComparison.Ordinal)).ToArray();
         var fm = mixing.Where(field => field.Id.StartsWith("segaemu_md_channel_", StringComparison.Ordinal)
+            || field.Id.StartsWith("segaemu_sms_fm_channel_", StringComparison.Ordinal)
             || field.Id == "segaemu_fm_preamp").ToArray();
         AddAudioBlock(".mixing", "Emulation.Audio.Mixer", mixing.Except(psg).Except(fm));
         AddAudioBlock(".psg", "Emulation.Sega.Audio.Psg", psg);

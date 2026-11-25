@@ -25,8 +25,6 @@
   <data name="Emulation.Sega.Help.Cpu.Model.Detailed"><value>Zeigt das von der ausgewählten Sega-Maschine bereitgestellte Prozessormodell an.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Short"><value>Ursprüngliche Prozessortaktfrequenz.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Detailed"><value>Zeigt die nominale Taktfrequenz des Prozessors in der ausgewählten Sega-Maschine an.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Short"><value>Emulierten Sound aktivieren oder deaktivieren.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Detailed"><value>Steuert, ob Retro Media Lab die vom Emulator erzeugten Audio-Samples abspielt.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Short"><value>Audio-Ausgabe von Retro Media Lab verwendet.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Detailed"><value>Wählen Sie die Windows-Audioausgabe aus, mit der Sound von diesem emulierten Computer abgespielt wird.</value></data>
   <data name="Emulation.Sega.Help.General.Model.Detailed"><value>Identifiziert das Sega-Modell, dessen Hardwarekonfiguration bearbeitet wird.</value></data>

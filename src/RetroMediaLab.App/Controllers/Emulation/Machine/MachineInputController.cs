@@ -69,8 +69,10 @@ internal sealed class MachineInputController : IDisposable
     private bool _hostTransition;
     private bool _restorePointerAfterHostTransition;
     private bool _osdHasFocus;
-    private string? _repeatedOsdAction;
-    private long _nextOsdRepeat;
+    private bool _osdPassesInput;
+    private Func<bool>? _osdUsesPointer;
+    private string? _repeatedShortcut;
+    private long _nextShortcutRepeat;
     private bool _restorePointerAfterOsd;
     private bool _disposed;
 
@@ -217,32 +219,41 @@ internal sealed class MachineInputController : IDisposable
 
     internal void ReleasePointer() => _pointerCapture.Release(_inputView, InputHandle);
 
-    internal void SetOsdFocus(bool hasFocus)
+    internal void SetOsdFocus(bool hasFocus, bool allowGameInput = false, Func<bool>? osdUsesPointer = null)
     {
         if (_osdHasFocus == hasFocus) return;
+        bool wasPassingInput = _osdPassesInput;
         _osdHasFocus = hasFocus;
-        _repeatedOsdAction = null;
-        _keys.Clear();
-        _pressedShortcutKeys.Clear();
+        _osdPassesInput = hasFocus && allowGameInput;
+        _osdUsesPointer = _osdPassesInput ? osdUsesPointer : null;
+        _repeatedShortcut = null;
+        if (!_osdPassesInput && !wasPassingInput)
+        {
+            _keys.Clear();
+            _pressedShortcutKeys.Clear();
+        }
         if (hasFocus)
         {
-            ResetKeyboardShortcutsForFocusTransfer();
+            if (!_osdPassesInput) ResetKeyboardShortcutsForFocusTransfer();
             _restorePointerAfterOsd = IsPointerCaptured;
             ReleasePointer();
-            _feedback.Reset();
-            if (_powered && CanAcceptInput(_machine()))
-                _machine().Input.SetInput(EmulationInputSnapshot.Empty);
+            if (!_osdPassesInput)
+            {
+                _feedback.Reset();
+                if (_powered && CanAcceptInput(_machine()))
+                    _machine().Input.SetInput(EmulationInputSnapshot.Empty);
+            }
         }
         else
         {
-            if (_powered && !_disposed)
+            if (!wasPassingInput && _powered && !_disposed)
             {
                 var physical = _readPhysicalInput();
                 _keysHeldAtOsdClose.UnionWith(OsdShortcutKeys(physical));
                 _buttonsHeldAtOsdClose = MouseInputFunctions.PressedButtons(physical.Pointer);
                 _controllersHeldAtOsdClose.Capture(physical.Controllers);
             }
-            ResetKeyboardShortcutsForFocusTransfer();
+            if (!wasPassingInput) ResetKeyboardShortcutsForFocusTransfer();
             foreach (var shortcut in _osdShortcuts.Where(shortcut => !EmulationShortcutMap.IsOsdToggle(shortcut.Action)))
                 _activeShortcuts.Remove(shortcut.Action);
             RestoreFocus();
@@ -346,15 +357,20 @@ internal sealed class MachineInputController : IDisposable
         modifiers = _modifierState.Normalize(modifiers, _physicalKeys);
         _physicalKeys.Add(source);
         ReleaseInactiveKeyboardShortcuts(modifiers);
-        var shortcut = EmulationShortcutFunctions.ResolveGlobal(AvailableShortcuts, modifiers, _physicalKeys, source);
+        var shortcut = EmulationShortcutFunctions.ResolveGlobal(AvailableShortcuts, modifiers, _physicalKeys, source, allowAdditionalKeys: _osdPassesInput);
         if (shortcut.Category == EmulationShortcutMatchCategory.Global)
         {
             if (!isRepeat && shortcut.Binding is { } binding && EmulationShortcutFunctions.UsesKey(binding.Chord, source)
                 && _activeShortcuts.Add(binding.Action))
+            {
+                if (_osdPassesInput || EmulationShortcutMap.IsOsdToggle(binding.Action)
+                    || EmulationShortcutMap.IsVolumeShortcut(binding.Action))
+                    ConsumeOsdKeys(binding);
                 _ = _executeShortcut(binding.Action);
+            }
             return true;
         }
-        if (_osdHasFocus || shortcut.Category == EmulationShortcutMatchCategory.ReservedForGlobal) return true;
+        if ((_osdHasFocus && !_osdPassesInput) || shortcut.Category == EmulationShortcutMatchCategory.ReservedForGlobal) return true;
         if (EmulationKeyMapper.TryMap(source, out var heldKey) && _keysHeldAtOsdClose.Contains(heldKey)) return true;
         var machineShortcut = _keyboardShortcuts.FirstOrDefault(binding => KeyboardChordFunctions.Matches(binding.Chord, modifiers, _physicalKeys));
         if (machineShortcut is not null)
@@ -377,10 +393,11 @@ internal sealed class MachineInputController : IDisposable
         _modifierState.Release(source);
         modifiers = _modifierState.Normalize(modifiers, _physicalKeys);
         ReleaseInactiveKeyboardShortcuts(modifiers);
-        EmulationShortcutFunctions.ReleaseInactive(_activeShortcuts, AvailableShortcuts, modifiers, _physicalKeys);
-        if (_repeatedOsdAction is { } repeating && !_activeShortcuts.Contains(repeating))
-            _repeatedOsdAction = null;
-        if (_osdHasFocus) return true;
+        EmulationShortcutFunctions.ReleaseInactive(_activeShortcuts, AvailableShortcuts, modifiers, _physicalKeys,
+            allowAdditionalKeys: _osdPassesInput);
+        if (_repeatedShortcut is { } repeating && !_activeShortcuts.Contains(repeating))
+            _repeatedShortcut = null;
+        if (_osdHasFocus && !_osdPassesInput) return true;
         if (_pressedShortcutKeys.Remove(source, out var shortcutKey))
         {
             _keys.Remove(shortcutKey);
@@ -506,7 +523,7 @@ internal sealed class MachineInputController : IDisposable
             RefreshOsdShortcuts();
             var machine = _machine();
             _feedback.Update(machine as IEmulationControllerFeedbackSource, _powered && !_disposed && _isActive()
-                && !_osdHasFocus && machine.State == EmulationMachineState.Running);
+                && (!_osdHasFocus || _osdPassesInput) && machine.State == EmulationMachineState.Running);
             PublishInput(deltaX, deltaY, wheel, horizontalWheel);
         }
         catch { _feedback.Reset(); throw; }
@@ -520,26 +537,19 @@ internal sealed class MachineInputController : IDisposable
             return;
         }
         var physical = _readPhysicalInput();
-        var gameControllers = _controllersHeldAtOsdClose.Filter(physical.Controllers);
         if (_keysHeldAtOsdClose.Count != 0)
             _keysHeldAtOsdClose.IntersectWith(OsdShortcutKeys(physical));
         var keys = new HashSet<EmulationKey>(physical.Keys);
         keys.UnionWith(_keys);
-        keys.ExceptWith(_keysHeldAtOsdClose);
         keys.Remove(EmulationKey.LeftWindows);
         keys.Remove(EmulationKey.RightWindows);
         if (_modifierState.HasSyntheticLeftControl) keys.Remove(EmulationKey.LeftControl);
         foreach (var shortcutKey in _pressedShortcutKeys.Values) keys.Add(shortcutKey);
-        _buttonsHeldAtOsdClose &= MouseInputFunctions.PressedButtons(physical.Pointer);
-        var gamePointer = MouseInputFunctions.WithoutButtons(physical.Pointer, _buttonsHeldAtOsdClose);
-        var pointer = _pointerCapture.IsCaptured
-            ? gamePointer
-            : gamePointer with
-            {
-                DeltaX = 0, DeltaY = 0, Wheel = 0, HorizontalWheel = 0,
-                Left = false, Right = false, Middle = false,
-                ExtendedButton1 = false, ExtendedButton2 = false
-            };
+        var pressedButtons = MouseInputFunctions.PressedButtons(physical.Pointer);
+        _buttonsHeldAtOsdClose &= pressedButtons;
+        bool osdUsesPointer = _osdPassesInput && _osdUsesPointer?.Invoke() == true;
+        if (osdUsesPointer) _buttonsHeldAtOsdClose |= pressedButtons;
+        var routedPointer = physical.Pointer;
         var machine = _machine();
         var canSendToMachine = _powered && CanAcceptInput(machine);
         var physicalSnapshot = new EmulationInputSnapshot(keys, physical.Pointer, physical.Controllers);
@@ -551,23 +561,35 @@ internal sealed class MachineInputController : IDisposable
             var snapshot = isOsdShortcut ? osdSnapshot ??= OsdShortcutSnapshot(physical) : physicalSnapshot;
             if (EmulationSdk.InputProcessing.InputSourcePressure(shortcut.SourceBinding!, EmulationControllerState.Empty, snapshot) > .5f)
             {
+                if (isOsdShortcut && (_osdPassesInput || EmulationShortcutMap.IsOsdToggle(shortcut.Action)))
+                    routedPointer = ConsumeOsdSources(shortcut, physical, routedPointer);
                 if (_activeShortcuts.Add(shortcut.Action))
                 {
                     _ = _executeShortcut(shortcut.Action);
-                    if (isOsdShortcut) break;
+                    if (isOsdShortcut && !_osdPassesInput) break;
                 }
             }
             else _activeShortcuts.Remove(shortcut.Action);
         }
-        if (_osdHasFocus)
-        {
-            RepeatOsdDirection();
-            return;
-        }
-        if (_osdShortcuts.Any(shortcut => _activeShortcuts.Contains(shortcut.Action))) return;
+        RepeatShortcut();
+        if (_osdHasFocus && !_osdPassesInput) return;
         if (!canSendToMachine || !_powered || _disposed || !_isActive() || !ReferenceEquals(machine, _machine()) || !CanAcceptInput(machine)) return;
-        var gameSources = _buttonsHeldAtOsdClose == GameInputMouseButtons.None && ReferenceEquals(gameControllers, physical.Controllers)
-            ? physicalSnapshot : physicalSnapshot with { Pointer = gamePointer, Controllers = gameControllers };
+        keys.ExceptWith(_keysHeldAtOsdClose);
+        var gameControllers = _controllersHeldAtOsdClose.Filter(physical.Controllers);
+        var gamePointer = MouseInputFunctions.WithoutButtons(routedPointer, _buttonsHeldAtOsdClose);
+        var pointer = _pointerCapture.IsCaptured || (_osdPassesInput && !osdUsesPointer)
+            ? gamePointer
+            : gamePointer with
+            {
+                DeltaX = 0, DeltaY = 0, Wheel = 0, HorizontalWheel = 0,
+                Left = false, Right = false, Middle = false,
+                ExtendedButton1 = false, ExtendedButton2 = false
+            };
+        var gameSources = physicalSnapshot with
+        {
+            Pointer = osdUsesPointer ? pointer : gamePointer,
+            Controllers = gameControllers
+        };
         foreach (var binding in machine.Input.KeyboardBindings)
             if (binding.Value.Contains(':') && Enum.TryParse<EmulationKey>(binding.Key, out var target)
                 && !_globalShortcuts.Any(shortcut => shortcut.SourceBinding is { } source && InputBindingSyntax.Conflicts(source, binding.Value))
@@ -587,20 +609,41 @@ internal sealed class MachineInputController : IDisposable
         machine.Input.SetInput(new EmulationInputSnapshot(keys, pointer, gameControllers) { HostCharacters = characters });
     }
 
-    private void RepeatOsdDirection()
+    private void ConsumeOsdKeys(GlobalShortcutBinding shortcut)
     {
-        var action = _isOsdEditing?.Invoke() == true
-            ? _osdShortcuts.FirstOrDefault(shortcut => _activeShortcuts.Contains(shortcut.Action) && IsOsdDirection(shortcut.Action))?.Action
-            : null;
-        var now = _inputClock();
-        if (action != _repeatedOsdAction)
+        foreach (var key in _physicalKeys)
+            if (EmulationShortcutFunctions.UsesKey(shortcut.Chord, key) && EmulationKeyMapper.TryMap(key, out var mapped))
+                _keysHeldAtOsdClose.Add(mapped);
+    }
+
+    private EmulationPointerState ConsumeOsdSources(GlobalShortcutBinding shortcut, GameInputPhysicalState physical,
+        EmulationPointerState pointer)
+    {
+        ConsumeOsdKeys(shortcut);
+        var binding = shortcut.SourceBinding!;
+        IEnumerable<string> sources = binding.EndsWith('+') ? [binding] : binding.Split('+', StringSplitOptions.TrimEntries);
+        foreach (var source in sources)
         {
-            _repeatedOsdAction = action;
-            _nextOsdRepeat = now + 300;
+            _controllersHeldAtOsdClose.CaptureSource(physical.Controllers, source);
+            pointer = MouseInputFunctions.ConsumeSource(pointer, source, ref _buttonsHeldAtOsdClose);
         }
-        else if (action is not null && now >= _nextOsdRepeat)
+        return pointer;
+    }
+
+    private void RepeatShortcut()
+    {
+        var action = AvailableShortcuts.FirstOrDefault(shortcut => _activeShortcuts.Contains(shortcut.Action)
+            && (EmulationShortcutMap.IsVolumeShortcut(shortcut.Action)
+                || (_osdHasFocus && _isOsdEditing?.Invoke() == true && IsOsdDirection(shortcut.Action))))?.Action;
+        var now = _inputClock();
+        if (action != _repeatedShortcut)
         {
-            _nextOsdRepeat = now + 35;
+            _repeatedShortcut = action;
+            _nextShortcutRepeat = now + 300;
+        }
+        else if (action is not null && now >= _nextShortcutRepeat)
+        {
+            _nextShortcutRepeat = now + 35;
             _ = _executeShortcut(action);
         }
     }

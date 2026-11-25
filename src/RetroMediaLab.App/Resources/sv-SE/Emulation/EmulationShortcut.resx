@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Snabbläs tillstånd</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Skärmbild</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Tysta aktiv maskin</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Minska ljudvolymen</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Öka ljudvolymen</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Snabbspola medan tangenten hålls ned</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Sätt i eller byt medium</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Mata ut medium</value></data>

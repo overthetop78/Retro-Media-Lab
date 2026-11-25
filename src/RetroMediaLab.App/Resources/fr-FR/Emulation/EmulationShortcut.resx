@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Chargement rapide de l’état</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Capture d’écran</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Couper le son de la machine active</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Baisser le volume</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Augmenter le volume</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Avance rapide tant que la touche est maintenue</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Insérer ou remplacer un média</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Éjecter le média</value></data>

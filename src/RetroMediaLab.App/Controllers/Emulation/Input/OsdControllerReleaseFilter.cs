@@ -1,4 +1,5 @@
 using RetroMediaLab.App.Constants.Input.GameInput;
+using RetroMediaLab.Emulation;
 using RetroMediaLab.Emulation.Contracts;
 
 namespace RetroMediaLab.App.Controllers.Emulation.Input;
@@ -18,6 +19,40 @@ internal sealed class OsdControllerReleaseFilter
             var held = StillHeld(controller, controller);
             if (HasInput(held)) _held[Identity(controller, index)] = held;
         }
+    }
+
+    internal void CaptureSource(IReadOnlyList<EmulationControllerState> controllers, string source)
+    {
+        var input = EmulationSdk.InputProcessing;
+        if (input.ParseControllerDeviceId(source) is null) return;
+        var controller = input.ResolveSourceController(source, controllers, EmulationControllerState.Empty);
+        if (input.ControllerSourcePressure(source, controller) <= .5f) return;
+        var id = Identity(controller, -1);
+        var held = _held.GetValueOrDefault(id) ?? EmulationControllerState.Empty;
+        var name = source[(source.LastIndexOf(':') + 1)..];
+        int bit = input.ControllerButtonIndex(name);
+        if (bit >= 0) held = held with { Buttons = held.Buttons | (1u << bit) };
+
+        held = name.ToUpperInvariant() switch
+        {
+            "LEFTSTICKLEFT" or "LEFTSTICKRIGHT" => held with { LeftX = controller.LeftX },
+            "LEFTSTICKUP" or "LEFTSTICKDOWN" => held with { LeftY = controller.LeftY },
+            "RIGHTSTICKLEFT" or "RIGHTSTICKRIGHT" => held with { RightX = controller.RightX },
+            "RIGHTSTICKUP" or "RIGHTSTICKDOWN" => held with { RightY = controller.RightY },
+            "L2" or "LEFTTRIGGER" => held with { LeftTrigger = controller.LeftTrigger },
+            "R2" or "RIGHTTRIGGER" => held with { RightTrigger = controller.RightTrigger },
+            _ => held
+        };
+        string control = name.TrimEnd('+', '-');
+        if (controller.Controls.TryGetValue(name, out var value))
+            control = name;
+        else if (!controller.Controls.TryGetValue(control, out value))
+            control = string.Empty;
+        if (control.Length != 0)
+            held = held with { Controls = new EmulationControllerControls(
+                held.Controls.Where(item => !string.Equals(item.Key, control, StringComparison.OrdinalIgnoreCase))
+                    .Append(new(control, value))) };
+        if (HasInput(held)) _held[id] = held;
     }
 
     internal IReadOnlyList<EmulationControllerState> Filter(IReadOnlyList<EmulationControllerState> controllers)

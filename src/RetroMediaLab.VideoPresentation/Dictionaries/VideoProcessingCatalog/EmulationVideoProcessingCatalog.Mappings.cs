@@ -191,7 +191,6 @@ public static partial class EmulationVideoProcessingCatalog
             [Brightness] = 0, [Contrast] = 0, [Gamma] = 0, [Saturation] = 0, [Sharpness] = 0,
             [Dedithering] = 0, [Debanding] = 0, [DetailRecovery] = 0,
             [Deinterlacing] = EmulationDeinterlacingMode.Off,
-            [BlackFrameInsertion] = false,
             [SignalConnection] = EmulationSignalConnection.None,
             [SignalConnectionIntensity] = 0,
             [SignalStandard] = EmulationSignalStandard.Automatic,

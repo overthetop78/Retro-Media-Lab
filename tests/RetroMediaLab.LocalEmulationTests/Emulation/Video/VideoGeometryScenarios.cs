@@ -14,7 +14,7 @@ internal static class VideoGeometryScenarios
             Sampling=(RetroMediaLab.VideoPresentation.Enums.EmulationVideoSampling)999,
             Crt = new((EmulationCrtMask)100, (EmulationCrtColorStandards)100, (EmulationCrtFieldRate)100),
             FixedPixel=new(ResponseTimeMilliseconds:5000,GridIntensity:-1,PersistenceIntensity:101,MonochromePalette:RetroMediaLab.VideoPresentation.Enums.EmulationMonochromePalette.White,BacklightIntensity:101,BlackDepth:-1),
-            Restoration=new(Dedithering:-1,Debanding:101),BlackFrameInsertion=true
+            Restoration=new(Dedithering:-1,Debanding:101)
         };
         var output=EmulationVideoProcessingConfigurationFunctions.Normalize(input);
         Assert.Equal(RetroMediaLab.VideoPresentation.Enums.EmulationVideoDisplayTechnology.Normal,output.DisplayTechnology);
@@ -23,7 +23,6 @@ internal static class VideoGeometryScenarios
         Assert.Equal(1000,output.FixedPixel.ResponseTimeMilliseconds); Assert.Equal(0,output.FixedPixel.GridIntensity); Assert.Equal(100,output.FixedPixel.PersistenceIntensity);
         Assert.Equal(RetroMediaLab.VideoPresentation.Enums.EmulationMonochromePalette.White,output.FixedPixel.MonochromePalette);
         Assert.Equal(100,output.FixedPixel.BacklightIntensity); Assert.Equal(0,output.FixedPixel.BlackDepth); Assert.Equal(0,output.Restoration.Dedithering); Assert.Equal(100,output.Restoration.Debanding);
-        Assert.True(output.BlackFrameInsertion);
         Assert.Equal(5000,input.FixedPixel.ResponseTimeMilliseconds); Assert.Equal(output,EmulationVideoProcessingConfigurationFunctions.Normalize(output));
     }
     public static void DeditheringRecognizesSourcePatterns()

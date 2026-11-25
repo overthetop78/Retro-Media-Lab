@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -8,11 +9,12 @@ namespace RetroMediaLab.VideoPresentation.Windows.Osd;
 public sealed partial class FullscreenOsdWindow
 {
     public enum Navigation { Up, Down, Left, Right, Confirm, Cancel }
+    public enum CenterPanelKind { Mixer, Information }
 
     public sealed record Entry(string Label, Func<Task>? Command = null, IReadOnlyList<Entry>? Children = null,
         Func<bool>? IsEnabled = null, Setting? Value = null, Func<string>? Status = null,
         string? Glyph = null, bool SeparatorBefore = false, bool FullHeight = false, Func<bool>? IsVisible = null,
-        string? Section = null);
+        string? Section = null, CenterPanelKind? CenterPanel = null);
 
     public sealed record Setting(Func<int> Read, Func<int, string> Format, Func<int, int, int> Step,
         Action<int>? Preview, Func<int, Task> Save, (int Minimum, int Maximum)? Range = null);
@@ -79,14 +81,14 @@ public sealed partial class FullscreenOsdWindow
 
     private static Brush SectionBackground(byte red, byte green, byte blue)
     {
-        var brush = new SolidColorBrush(Color.FromArgb(247, red, green, blue));
+        var brush = new SolidColorBrush(Color.FromRgb(red, green, blue));
         brush.Freeze();
         return brush;
     }
 
     private static Brush CreateDefaultEditorBackground()
     {
-        var brush = new LinearGradientBrush(Color.FromArgb(249, 11, 28, 64), Color.FromArgb(249, 15, 42, 65), 90);
+        var brush = new LinearGradientBrush(Color.FromRgb(14, 24, 44), Color.FromRgb(20, 44, 61), 90);
         brush.Freeze();
         return brush;
     }
@@ -104,12 +106,57 @@ public sealed partial class FullscreenOsdWindow
         VerticalAlignment = VerticalAlignment.Bottom,
         HorizontalAlignment = HorizontalAlignment.Center,
         Margin = new Thickness(16, 0, 16, 28),
-        Padding = new Thickness(24, 16, 24, 14),
+        Padding = new Thickness(24, 16, 24, 12),
         Background = DefaultEditorBackground,
         BorderBrush = new SolidColorBrush(Color.FromRgb(91, 187, 232)),
         BorderThickness = new Thickness(1),
-        CornerRadius = new CornerRadius(12)
+        CornerRadius = new CornerRadius(16)
     };
+    private static readonly ControlTemplate EditorSliderTemplate = (ControlTemplate)XamlReader.Parse("""
+        <ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         TargetType="{x:Type Slider}">
+            <Grid Background="Transparent" Height="22">
+                <Track x:Name="PART_Track" VerticalAlignment="Stretch"
+                       Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}"
+                       Value="{TemplateBinding Value}">
+                    <Track.DecreaseRepeatButton>
+                        <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Focusable="False">
+                            <RepeatButton.Template>
+                                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                    <Grid Background="Transparent">
+                                        <Border Background="#58CDE8" Height="6" CornerRadius="3"/>
+                                    </Grid>
+                                </ControlTemplate>
+                            </RepeatButton.Template>
+                        </RepeatButton>
+                    </Track.DecreaseRepeatButton>
+                    <Track.IncreaseRepeatButton>
+                        <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Focusable="False">
+                            <RepeatButton.Template>
+                                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                    <Grid Background="Transparent">
+                                        <Border Background="#526D87" Height="6" CornerRadius="3"/>
+                                    </Grid>
+                                </ControlTemplate>
+                            </RepeatButton.Template>
+                        </RepeatButton>
+                    </Track.IncreaseRepeatButton>
+                    <Track.Thumb>
+                        <Thumb Width="16" Height="16" VerticalAlignment="Center" Focusable="False">
+                            <Thumb.Template>
+                                <ControlTemplate TargetType="{x:Type Thumb}">
+                                    <Border Background="#F5FAFF" BorderBrush="#63D8EE"
+                                            BorderThickness="2" CornerRadius="8"/>
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Track.Thumb>
+                </Track>
+            </Grid>
+        </ControlTemplate>
+        """);
+
     private TextBlock? _editValue;
     private Slider? _editSlider;
 
@@ -171,13 +218,18 @@ public sealed partial class FullscreenOsdWindow
     public void SetShaderLoading(bool loading) =>
         _shaderLoading.Visibility = loading ? Visibility.Visible : Visibility.Collapsed;
 
-    public bool IsEditing => _editing is not null;
+    public bool IsEditing => !_closed && (_editing is not null || Current.Parent?.CenterPanel == CenterPanelKind.Mixer);
     public Task PendingSettingSave => _settingSave;
 
     public async Task NavigateAsync(Navigation action)
     {
         RestartIdleTimer();
         if (_closed || _commandRunning) return;
+        if (Current.Parent?.CenterPanel is { } panel)
+        {
+            NavigateCenterPanel(panel, action);
+            return;
+        }
         if (_editing is not null)
         {
             switch (action)
@@ -341,6 +393,15 @@ public sealed partial class FullscreenOsdWindow
             if (index + 1 == _levels.Count || level.Entries.Contains(_levels[index + 1].Parent!)) continue;
             _levels.RemoveRange(index + 1, _levels.Count - index - 1);
         }
+        if (Current.Parent?.CenterPanel is not null)
+        {
+            _mainPanel.Visibility = Visibility.Hidden;
+            _submenu.Visibility = Visibility.Hidden;
+            ClearEditBar();
+            ShowCenterPanel();
+            return;
+        }
+        ClearCenterPanel();
         if (editedEntry is not null && (!ReferenceEquals(previousLevel, Current) || !Current.Entries.Contains(editedEntry)))
             _editing = null;
         if (_closed) return;
@@ -381,7 +442,7 @@ public sealed partial class FullscreenOsdWindow
 
         if (!ReferenceEquals(_submenu.Child, current.Panel))
             _submenu.Child = current.Panel;
-        current.Panel.Background = current.ActiveSectionBackground() ?? DefaultSubmenuBackground;
+        current.Panel.Background = TranslucentBackground(current.ActiveSectionBackground() ?? DefaultSubmenuBackground);
         current.Rows.Children.Clear();
         AppendRows(current.Rows, current)?.BringIntoView();
     }
@@ -398,30 +459,40 @@ public sealed partial class FullscreenOsdWindow
 
     private void ShowEditBar(Entry item, Setting setting)
     {
-        _editBar.Background = Current.ActiveSectionBackground() ?? DefaultEditorBackground;
+        _editBar.Background = TranslucentBackground(Current.ActiveSectionBackground() ?? DefaultEditorBackground);
         if (_editValue is null)
         {
             var content = new StackPanel();
             var header = new DockPanel();
+            var titles = new StackPanel();
+            titles.Children.Add(new TextBlock
+            {
+                Text = item.Section ?? Current.Parent?.Label,
+                FontSize = 13, FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromRgb(162, 213, 236)),
+                Margin = new Thickness(0, 0, 0, 3), TextWrapping = TextWrapping.Wrap
+            });
             _editValue = new TextBlock
             {
                 Foreground = new SolidColorBrush(Color.FromRgb(171, 233, 255)),
-                FontSize = 17, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap,
+                FontSize = 20, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap,
                 TextAlignment = TextAlignment.Center
             };
             var valueBadge = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(18, 65, 106)),
-                CornerRadius = new CornerRadius(6), Padding = new Thickness(12, 4, 12, 4),
+                Background = new SolidColorBrush(Color.FromRgb(21, 53, 79)),
+                VerticalAlignment = VerticalAlignment.Center,
+                CornerRadius = new CornerRadius(9), Padding = new Thickness(13, 6, 13, 6),
                 Margin = new Thickness(16, 0, 0, 0), MinWidth = 70, Child = _editValue
             };
             DockPanel.SetDock(valueBadge, Dock.Right);
             header.Children.Add(valueBadge);
-            header.Children.Add(new TextBlock
+            titles.Children.Add(new TextBlock
             {
-                Text = item.Label, Foreground = Brushes.White, FontSize = 19, FontWeight = FontWeights.SemiBold,
-                VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap
+                Text = item.Label, Foreground = Brushes.White, FontSize = 24, FontWeight = FontWeights.SemiBold,
+                TextWrapping = TextWrapping.Wrap
             });
+            header.Children.Add(titles);
             content.Children.Add(header);
             if (setting.Range is { } range)
             {
@@ -429,7 +500,8 @@ public sealed partial class FullscreenOsdWindow
                 {
                     Minimum = range.Minimum, Maximum = range.Maximum, Value = _draft,
                     TickFrequency = 1, IsSnapToTickEnabled = true, IsMoveToPointEnabled = true,
-                    Focusable = false, Margin = new Thickness(0, 12, 0, 0)
+                    Focusable = false, Margin = new Thickness(0, 14, 0, 0),
+                    Template = EditorSliderTemplate
                 };
                 _editSlider.ValueChanged += EditSliderValueChanged;
                 content.Children.Add(_editSlider);
@@ -544,8 +616,16 @@ public sealed partial class FullscreenOsdWindow
         {
             var itemIndex = index;
             var item = level.Entries[index];
-            if (item.SeparatorBefore || index > 0 && item.Section != level.Entries[index - 1].Section)
+            var startsSection = item.Section is not null && (index == 0 || item.Section != level.Entries[index - 1].Section);
+            if (item.SeparatorBefore || startsSection && index > 0)
                 rows.Children.Add(CreateSeparator(new Thickness(16, 5, 16, 5)));
+            if (startsSection && level.Parent is not null)
+                rows.Children.Add(new TextBlock
+                {
+                    Text = item.Section, FontSize = 13, FontWeight = FontWeights.SemiBold,
+                    Foreground = new SolidColorBrush(Color.FromRgb(162, 213, 236)),
+                    Margin = new Thickness(10, 8, 8, 4), TextWrapping = TextWrapping.Wrap
+                });
             var enabled = item.IsEnabled?.Invoke() != false;
             var value = item.Value is { } setting ? setting.Format(setting.Read()) : item.Status?.Invoke();
             var label = new DockPanel { LastChildFill = true };

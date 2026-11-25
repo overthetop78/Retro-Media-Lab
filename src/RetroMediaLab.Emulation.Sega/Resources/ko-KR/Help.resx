@@ -25,8 +25,6 @@
   <data name="Emulation.Sega.Help.Cpu.Model.Detailed"><value>선택한 Sega 기계에 의해 제공된 프로세서 모델을 표시합니다.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Short"><value>본래 가공업자 시계 빈도.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Detailed"><value>선택된 Sega 기계에 있는 가공업자의 명목상 시계 빈도를 보여줍니다.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Short"><value>음을 분리하거나 비활성화 할 수 있습니다.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Detailed"><value>Retro Media Lab가 에뮬레이터에 의해 생성 된 오디오 샘플을 재생하는지 여부를 제어합니다.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Short"><value>Retro Media Lab에서 사용하는 오디오 출력.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Detailed"><value>이 에뮬레이션 기계에서 사운드를 재생하는 데 사용되는 Windows 오디오 출력을 선택합니다.</value></data>
   <data name="Emulation.Sega.Help.General.Model.Detailed"><value>하드웨어 구성이 편집되는 Sega 모델을 식별합니다.</value></data>

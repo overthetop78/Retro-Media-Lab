@@ -150,7 +150,7 @@ internal sealed class Engine
         var created = (MachineConfiguration)CreateConfiguration(machineId);
         var emulatorId = EmulatorCatalog.GetAll(machineId).Any(item => item.Id == current.EmulatorId) ? current.EmulatorId : created.EmulatorId;
         return created with { Id = current.Id, EmulatorId = emulatorId,
-            AudioEnabled = current.AudioEnabled, Audio = current.Audio };
+            Audio = current.Audio };
     }
 
     /// <summary>Transmet le choix graphique au contrat vidéo de l'adaptateur sélectionné.</summary>
@@ -171,13 +171,12 @@ internal sealed class Engine
             options.TryAdd(MachineConfiguration.Sg1000RamExtensionOption, SettingsDescriptionFunctionsConstants.Enabled);
         CommonCoreHostFunctions.OptionProcessing.ApplyValues(options, values,
             optionKey => optionKey is SettingsConstants.Model or SettingsConstants.Emulator
-                or SettingsConstants.AudioEnabled or SettingsConstants.AudioOutput
+                or SettingsConstants.AudioOutput
                 or SettingsConstants.AudioLatency || optionKey.StartsWith(SettingsConstants.Model + ".", StringComparison.Ordinal));
         var audio = SelectedAdapter(sega)?.GetAudioConfiguration(sega) ?? sega.Audio ?? new AudioConfiguration();
         var result = FirmwareConfigurationFunctions.Apply(sega with
         {
             Options = options,
-            AudioEnabled = values.TryGetValue(SettingsConstants.AudioEnabled, out var enabled) ? enabled == SettingsDescriptionFunctionsConstants.Enabled : sega.AudioEnabled,
             Audio = audio with
             {
                 OutputDeviceId = values.TryGetValue(SettingsConstants.AudioOutput, out var output) ? string.IsNullOrWhiteSpace(output) ? null : output : audio.OutputDeviceId,

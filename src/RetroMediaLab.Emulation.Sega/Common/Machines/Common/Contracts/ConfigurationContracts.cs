@@ -5,7 +5,6 @@ public sealed record MachineConfiguration(
     string EmulatorId,
     IReadOnlyDictionary<string, string>? Options = null,
     Guid Id = default,
-    bool AudioEnabled = true,
     IReadOnlyList<PeripheralCategory>? Controllers = null,
     InputConfiguration? Input = null,
     int SchemaVersion = ConfigurationStoreConstants.CurrentSchemaVersion,

@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monocrom</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>Scală gri de nivel 16</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Proiectare</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Inserție cadru negru</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulări de semnale</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Afișează</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Retrimiterea</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Galben tricolor</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Culoare (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Culoare (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Transparență</value></data>
 </root>

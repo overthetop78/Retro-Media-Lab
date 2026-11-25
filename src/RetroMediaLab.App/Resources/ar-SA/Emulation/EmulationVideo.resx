@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>مونوكروم</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16 مستوى رمادي</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>الإسقاط</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>الإطار الأسود</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>محاكاة الإشارات</value></data>
   <data name="Emulation.Video.Tab.Display"><value>التلاعب</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>الرنين</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>ثلاثي الألوان (أصفر)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>ملوّن (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>ملوّن (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · الشفافية</value></data>
 </root>

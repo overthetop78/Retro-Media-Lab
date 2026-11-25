@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Μονόχρωμο</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-επίπεδη κλίμακα του γκρι</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Προβολή</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Εισαγωγή μαύρου πλαισίου</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Προσομοιώσεις σημάτων</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Εμφάνιση</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Αποτύπωση</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Τριχρωμία κίτρινο</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Χρώμα (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Χρώμα (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Διαφάνεια</value></data>
 </root>

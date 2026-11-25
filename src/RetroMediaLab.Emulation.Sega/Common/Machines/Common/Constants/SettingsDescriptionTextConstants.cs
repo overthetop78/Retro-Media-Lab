@@ -25,7 +25,6 @@ internal static partial class SettingsDescriptionFunctionsConstants
     internal const string ResourceVideo = "Emulation.Video.Settings.Display";
     internal const string ResourceVideoChip = "Emulation.Sega.Video.Chipset";
     internal const string ResourceAudio = "Emulation.Audio";
-    internal const string ResourceAudioEnabled = "Emulation.Audio.Enabled";
     internal const string ResourceAudioDevice = "Emulation.Audio.Device";
     internal const string ResourceAudioLatency = "Emulation.Audio.LatencyLabel";
     internal const string ResourceAudioChip = "Emulation.Sega.Audio.Chip";

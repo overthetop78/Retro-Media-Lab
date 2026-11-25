@@ -12,6 +12,8 @@ public static class EmulationShortcutDefaults
     public const string QuickLoad = "quick-load";
     public const string Screenshot = "screenshot";
     public const string ToggleMute = "toggle-mute";
+    public const string VolumeDown = "volume-down";
+    public const string VolumeUp = "volume-up";
     public const string FastForward = "fast-forward";
     public const string InsertMedia = "insert-media";
     public const string EjectMedia = "eject-media";
@@ -40,6 +42,8 @@ public static class EmulationShortcutDefaults
         [QuickLoad] = "Ctrl+Shift+F7",
         [Screenshot] = "Ctrl+Shift+F9",
         [ToggleMute] = "Ctrl+Shift+M",
+        [VolumeDown] = "Ctrl+Shift+Left",
+        [VolumeUp] = "Ctrl+Shift+Right",
         [OpenSettings] = "Ctrl+Shift+F5"
     };
 

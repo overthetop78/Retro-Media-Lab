@@ -36,9 +36,6 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     private EmulationVideoDisplayTechnology _programDisplayTechnology;
     private uint _texture;
     private uint _historyTexture;
-    private uint _retainedTexture;
-    private int _retainedWidth;
-    private int _retainedHeight;
     private ActiveTextureDelegate? _activeTexture;
     private bool _hasHistory;
     private readonly EPaperRefreshClock _ePaperClock = new();
@@ -141,7 +138,6 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
                         () => EmulationVideoCleanupFunctions.DisposeAll(_programs.Values),
                         () => { if (_texture != 0) GlDeleteTextures(1, ref _texture); },
                         () => { if (_historyTexture != 0) GlDeleteTextures(1, ref _historyTexture); },
-                        ReleaseRetainedTexture,
                         ResetHistory);
                 }
                 finally
@@ -158,7 +154,6 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             _programOrder.Clear();
             _texture = 0;
             _historyTexture = 0;
-            _retainedTexture = 0;
             _activeTexture = null;
             _context = IntPtr.Zero;
             try { if (_dc != IntPtr.Zero) ReleaseDC(hwnd.Handle, _dc); }
@@ -176,74 +171,6 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
         lock (_contextGate) PresentCore(frame);
     }
 
-    public bool PresentBlack()
-    {
-        lock (_contextGate)
-        {
-            if (!HasRetainedOutput() || !WglMakeCurrent(_dc, _context)) return false;
-            try
-            {
-                GlClearColor(0, 0, 0, 1);
-                GlClear(OpenGlVideoConstants.ColorBufferBit);
-                return SwapBuffers(_dc);
-            }
-            finally { WglMakeCurrent(IntPtr.Zero, IntPtr.Zero); }
-        }
-    }
-
-    public bool RestoreLastFrame()
-    {
-        lock (_contextGate)
-        {
-            if (!HasRetainedOutput() || !WglMakeCurrent(_dc, _context)) return false;
-            try
-            {
-                _activeTexture!(OpenGlVideoConstants.Texture0);
-                GlBindTexture(OpenGlVideoConstants.Texture2D, _retainedTexture);
-                GlViewport(0, 0, _retainedWidth, _retainedHeight);
-                GlEnable(OpenGlVideoConstants.Texture2D);
-                GlBegin(OpenGlVideoConstants.Quads);
-                GlTexCoord2f(0, 0); GlVertex2f(-1, -1);
-                GlTexCoord2f(0, 1); GlVertex2f(-1, 1);
-                GlTexCoord2f(1, 1); GlVertex2f(1, 1);
-                GlTexCoord2f(1, 0); GlVertex2f(1, -1);
-                GlEnd();
-                return SwapBuffers(_dc);
-            }
-            finally { WglMakeCurrent(IntPtr.Zero, IntPtr.Zero); }
-        }
-    }
-
-    private bool HasRetainedOutput()
-    {
-        if (_context == IntPtr.Zero || _retainedTexture == 0) return false;
-        var size = NativeVideoWindowFunctions.GetClientSize(_hwnd);
-        return size.Width == _retainedWidth && size.Height == _retainedHeight;
-    }
-
-    private void RetainOutput(int width, int height)
-    {
-        var allocate = _retainedTexture == 0 || width != _retainedWidth || height != _retainedHeight;
-        if (_retainedTexture == 0) GlGenTextures(1, out _retainedTexture);
-        GlBindTexture(OpenGlVideoConstants.Texture2D, _retainedTexture);
-        if (allocate)
-        {
-            GlTexParameteri(OpenGlVideoConstants.Texture2D, OpenGlVideoConstants.TextureMinFilter, OpenGlVideoConstants.Nearest);
-            GlTexParameteri(OpenGlVideoConstants.Texture2D, OpenGlVideoConstants.TextureMagFilter, OpenGlVideoConstants.Nearest);
-            GlCopyTexImage2D(OpenGlVideoConstants.Texture2D, 0, OpenGlVideoConstants.Rgba, 0, 0, width, height, 0);
-            _retainedWidth = width;
-            _retainedHeight = height;
-        }
-        else GlCopyTexSubImage2D(OpenGlVideoConstants.Texture2D, 0, 0, 0, 0, 0, width, height);
-    }
-
-    private void ReleaseRetainedTexture()
-    {
-        if (_retainedTexture == 0) return;
-        GlDeleteTextures(1, ref _retainedTexture);
-        _retainedTexture = 0;
-    }
-
     private void PresentCore(VideoFrame frame)
     {
         if (_context == IntPtr.Zero || _hwnd == IntPtr.Zero) return;
@@ -257,7 +184,7 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             ? _vectorPipeline.Process(configuration, frame, new(frame.Width, frame.Height), outputSize)
             : frame;
         var gpuConfiguration = nativeVector
-            ? new EmulationVideoProcessingConfiguration { BlackFrameInsertion = configuration.BlackFrameInsertion }
+            ? new EmulationVideoProcessingConfiguration()
             : rasterVector ? configuration with { Sampling = EmulationVideoSampling.Bilinear, SignalSimulation = new() }
             : configuration;
         if (_rasterVector != rasterVector)
@@ -350,8 +277,6 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
             GlTexCoord2f(1, 1); GlVertex2f(1, -1);
             GlEnd();
             _program.Stop();
-            if (gpuConfiguration.BlackFrameInsertion) RetainOutput(clientSize.Width, clientSize.Height);
-            else ReleaseRetainedTexture();
             SwapBuffers(_dc);
             if (temporalDisplay && !paper)
             {
@@ -474,8 +399,6 @@ internal sealed class OpenGlVideoSurface : HwndHost, IEmulationVideoSurface
     [DllImport("opengl32.dll", EntryPoint = "glBindTexture")] private static extern void GlBindTexture(uint target, uint texture);
     [DllImport("opengl32.dll", EntryPoint = "glTexParameteri")] private static extern void GlTexParameteri(uint target, uint name, uint value);
     [DllImport("opengl32.dll", EntryPoint = "glTexImage2D")] private static extern void GlTexImage2D(uint target, int level, int internalFormat, int width, int height, int border, uint format, uint type, IntPtr pixels);
-    [DllImport("opengl32.dll", EntryPoint = "glCopyTexImage2D")] private static extern void GlCopyTexImage2D(uint target, int level, uint internalFormat, int x, int y, int width, int height, int border);
-    [DllImport("opengl32.dll", EntryPoint = "glCopyTexSubImage2D")] private static extern void GlCopyTexSubImage2D(uint target, int level, int xOffset, int yOffset, int x, int y, int width, int height);
     [DllImport("opengl32.dll", EntryPoint = "glEnable")] private static extern void GlEnable(uint capability);
     [DllImport("opengl32.dll", EntryPoint = "glBegin")] private static extern void GlBegin(uint mode);
     [DllImport("opengl32.dll", EntryPoint = "glEnd")] private static extern void GlEnd();

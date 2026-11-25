@@ -20,7 +20,6 @@ internal static class SettingsHelpDictionary
             [SettingsConstants.Ram] = "Emulation.Sega.Help.Memory.Ram",
             [SettingsConstants.FirmwareIntegrated] = "Emulation.Sega.Help.Firmware.Integrated",
             [SettingsConstants.FirmwarePath] = "Emulation.Help.Firmware.System",
-            [SettingsConstants.AudioEnabled] = "Emulation.Sega.Help.Audio.Enabled",
             [SettingsConstants.AudioOutput] = "Emulation.Sega.Help.Audio.Output",
             [SettingsConstants.AudioLatency] = "Emulation.Help.Audio.Latency"
         };

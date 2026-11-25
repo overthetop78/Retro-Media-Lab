@@ -25,8 +25,6 @@
   <data name="Emulation.Sega.Help.Cpu.Model.Detailed"><value>Toont het processormodel dat door de geselecteerde Sega machine wordt geleverd.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Short"><value>Originele processor klokfrequentie.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Detailed"><value>Toont de nominale klokfrequentie van de processor in de geselecteerde Sega machine.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Short"><value>Inschakelen of uitschakelen van emuleerd geluid.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Detailed"><value>Bepaalt of Retro Media Lab de audio samples afspeelt die door de emulator worden gegenereerd.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Short"><value>Audio-uitvoer gebruikt door Retro Media Lab.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Detailed"><value>Selecteer de Windows audio-uitvoer gebruikt om geluid af te spelen vanaf deze emuleerde machine.</value></data>
   <data name="Emulation.Sega.Help.General.Model.Detailed"><value>Identificeert het Sega model waarvan de hardware configuratie wordt bewerkt.</value></data>

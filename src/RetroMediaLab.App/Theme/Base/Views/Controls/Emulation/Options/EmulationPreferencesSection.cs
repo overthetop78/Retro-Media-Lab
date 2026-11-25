@@ -28,6 +28,7 @@ public sealed partial class EmulationPreferencesSection : UserControl
     private readonly TextBox _storageFolder = new();
     private readonly TextBox _captureFolder = new();
     private readonly TextBox _stateFolder = new();
+    private readonly Slider _osdTransparency = new() { Minimum = 0, Maximum = 100, TickFrequency = 1, IsSnapToTickEnabled = true, IsMoveToPointEnabled = true };
     private readonly EmulationPreferencesSettings _preferencesSettings = new();
     private readonly TabControl _tabs;
     private readonly TabItem _generalTab;
@@ -56,6 +57,8 @@ public sealed partial class EmulationPreferencesSection : UserControl
         _storageFolder.LostKeyboardFocus += async (_, _) => await SaveFoldersAsync();
         _captureFolder.LostKeyboardFocus += async (_, _) => await SaveFoldersAsync();
         _stateFolder.LostKeyboardFocus += async (_, _) => await SaveFoldersAsync();
+        _osdTransparency.ValueChanged += async (_, args) =>
+            await _preferencesSettings.SaveOsdTransparencyAsync((int)args.NewValue);
         _generalTab = AddTab(_tabs, IconGlyphs.Settings, "Emulation.Tab.General", BuildGeneralTab());
         _shortcutsTab = AddTab(_tabs, IconGlyphs.Keyboard, "Emulation.Tab.Shortcuts", BuildShortcutsTab());
         AddTab(_tabs, IconGlyphs.Configuration, "Emulation.Configuration", BuildConfigurationsTab());
@@ -68,6 +71,7 @@ public sealed partial class EmulationPreferencesSection : UserControl
     internal TextBox StorageFolder => _storageFolder;
     internal TextBox CaptureFolder => _captureFolder;
     internal TextBox StateFolder => _stateFolder;
+    internal Slider OsdTransparency => _osdTransparency;
     internal InputBindingEditor ShortcutEditor => _shortcuts;
     internal IReadOnlyList<EmulationConfigurationTableRow> ConfigurationRows => _configurationCatalog.Rows;
     internal IEmulationModule? SelectedModule => _configurationCatalog.SelectedModule;
@@ -93,6 +97,7 @@ public sealed partial class EmulationPreferencesSection : UserControl
         _captureFolder.Text = settings.EmulationCaptureFolder;
         _stateFolder.Text = settings.EmulationStateFolder;
         _shortcuts.SetRows(EmulationShortcutMap.GlobalShortcutDefinitions(), settings.EmulationShortcuts);
+        _osdTransparency.Value = Math.Clamp(settings.FullscreenOsdTransparency, 0, 100);
         _preferencesSettings.Configure(settings, persistSettings);
     }
 

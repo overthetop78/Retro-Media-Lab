@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Controls;
 
 namespace RetroMediaLab.VideoPresentation.Windows.Osd;
 
@@ -21,6 +22,12 @@ public sealed class FullscreenOsdIndicator : IDisposable
             IsHitTestVisible = false,
             Child = badge
         };
+    }
+
+    public void SetTransparency(int percent)
+    {
+        if (!_disposed && _popup.Child is Border panel)
+            FullscreenOsdWindow.ApplyTransparency(panel, percent);
     }
 
     public void SetVisible(bool visible)

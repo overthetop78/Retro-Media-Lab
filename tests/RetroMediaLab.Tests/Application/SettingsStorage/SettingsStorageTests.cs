@@ -29,16 +29,17 @@ public class SettingsStorageTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task FullscreenStatisticsPreferenceAndCustomShortcutSurviveRestart(bool visible)
+    public async Task FullscreenOsdPreferencesAndCustomShortcutSurviveRestart(bool visible)
     {
         var files = new SyntheticData();
-        var settings = new AppSettings { ShowFullscreenEmulationStatistics = visible };
+        var settings = new AppSettings { ShowFullscreenEmulationStatistics = visible, FullscreenOsdTransparency = 37 };
         settings.EmulationShortcuts[EmulationShortcutDefaults.OsdStatistics] = "Ctrl+Shift+F8";
 
         await SettingsRoundTripScenarios.Store(files).SaveAsync(settings);
         var restored = await SettingsRoundTripScenarios.Store(files).LoadAsync();
 
         Assert.Equal(visible, restored.ShowFullscreenEmulationStatistics);
+        Assert.Equal(37, restored.FullscreenOsdTransparency);
         Assert.Equal("Ctrl+Shift+F8", restored.EmulationShortcuts[EmulationShortcutDefaults.OsdStatistics]);
     }
 

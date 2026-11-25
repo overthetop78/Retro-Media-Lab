@@ -450,62 +450,6 @@ public class VideoTests(RetroMediaLab.Tests.Application.TestInfrastructure.StaEx
         Assert.InRange(rolled50.Raster.W, .79f, .81f);
     }
 
-    [Theory]
-    [InlineData(90, 60, "001")]
-    [InlineData(120, 60, "01")]
-    [InlineData(240, 60, "0100")]
-    [InlineData(60, 50, "000001")]
-    [InlineData(90, 50, "001010101")]
-    [InlineData(100, 50, "01")]
-    [InlineData(120, 50, "010101001010")]
-    [InlineData(240, 50, "010001000010000100001000")]
-    public void BlackFrameCadenceKeepsEveryGameFrameAndBlanksAtMostOnce(double hostHz, double emulatedHz, string cycle)
-    {
-        Assert.True(BlackFrameCadence.IsAvailable(hostHz, emulatedHz));
-        var cadence = new BlackFrameCadence();
-        var previousImage = -1d;
-        for (var refresh = 0; refresh < cycle.Length * 2; refresh++)
-        {
-            var image = Math.Ceiling((refresh + 1) * emulatedHz / hostHz) - 1;
-            Assert.Equal(cycle[refresh % cycle.Length] == '1', cadence.ShouldBlank(refresh, 0, image != previousImage));
-            previousImage = image;
-        }
-    }
-
-    [Fact]
-    public void BlackFrameCadenceKeepsAnImageAfterPauseOrMissedRefreshes()
-    {
-        Assert.False(BlackFrameCadence.IsAvailable(120, 0));
-        Assert.False(BlackFrameCadence.IsAvailable(60, 60));
-        Assert.False(BlackFrameCadence.IsAvailable(50, 60));
-        var cadence = new BlackFrameCadence();
-        Assert.False(cadence.ShouldBlank(0, 0, true));
-        Assert.True(cadence.ShouldBlank(1, 0, false));
-        Assert.False(cadence.ShouldBlank(1, 0, false));
-        Assert.False(cadence.ShouldBlank(3, 0, false));
-        Assert.False(cadence.ShouldBlank(100, 1, false));
-        Assert.False(cadence.ShouldBlank(101, 1, true));
-        Assert.True(cadence.ShouldBlank(102, 1, false));
-        Assert.False(cadence.ShouldBlank(103, 1, false));
-    }
-
-    [Theory]
-    [InlineData("""{"processing":{"temporal":{"blackFrameInsertion":true}}}""", true)]
-    [InlineData("""{"processing":{"blackFrameInsertion":false,"temporal":{"blackFrameInsertion":true}}}""", false)]
-    public void BlackFrameInsertionReadsOlderProfiles(string json, bool enabled)
-    {
-        var files = new MemoryVideoProfileFiles();
-        var id = Guid.NewGuid();
-        var store = new VideoPresentationProfileStore("virtual-video", files);
-        store.Save("sega", id);
-        var path = Assert.Single(files.Files.Keys);
-        files.Files[path] = json;
-
-        var reopened = new VideoPresentationProfileStore("virtual-video", files);
-        Assert.Equal(enabled, reopened.Get("sega", id).Processing!.BlackFrameInsertion);
-        reopened.Save("sega", id);
-        Assert.DoesNotContain("\"temporal\"", files.Files[path]);
-    }
     [Fact]
     public Task PresentationComposesFieldsBeforeDroppedFramesAndClearsHistoryOnMachineChange() =>
         sta.RunAsync(VideoProcessingScenarios.FieldPresentation);

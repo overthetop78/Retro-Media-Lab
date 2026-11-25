@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Đơn sắc</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>Mức xám 16</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Dự án</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Comment</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Mô phỏng tín hiệu</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Hiển thị</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Vẽ</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Ba màu (vàng)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Màu (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Màu (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Độ trong suốt</value></data>
 </root>

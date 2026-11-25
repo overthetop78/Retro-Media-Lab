@@ -21,6 +21,7 @@ public sealed class AppSettings
     public string EmulationStateFolder { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Retro Media Lab", "Emulation", "States");
     public Dictionary<string, string> EmulationShortcuts { get; set; } = EmulationShortcutDefaultFunctions.Create();
     public bool ShowFullscreenEmulationStatistics { get; set; }
+    public int FullscreenOsdTransparency { get; set; } = 5;
     public List<EmulationMediaFolderSettings> EmulationMediaFolders { get; set; } = [];
     public bool CreateEmulationFoldersAutomatically { get; set; } = true;
     public string? LastDiskImageFolder { get; set; }

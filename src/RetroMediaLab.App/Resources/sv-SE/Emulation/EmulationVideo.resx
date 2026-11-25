@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monokrom</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-nivå gråskala</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Projektion</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Svart ram införande</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signalsimuleringar</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Display</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Rendering</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Tricolor gul</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Färg (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Färg (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Transparens</value></data>
 </root>

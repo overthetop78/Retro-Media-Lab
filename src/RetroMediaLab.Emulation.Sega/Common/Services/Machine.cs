@@ -79,7 +79,6 @@ internal sealed partial class Machine : IEmulatedMachine, IEmulationLifecycle, I
         _deleteSession = deleteSession;
         _startErrorTranslator = startErrorTranslator;
         _audio = new AudioOutputController(audioOutput, audioOutputFactory);
-        _audio.SetMuted(!configuration.AudioEnabled);
         _mediaPaths = resolvedMedia.Select(item => Path.GetFullPath(item.Path)).ToList();
         _mountedCommonMedia = EmulationMediaConversionFunctions.ToCommon(resolvedMedia).ToList();
         _currentDiskPath = _mediaPaths.FirstOrDefault();

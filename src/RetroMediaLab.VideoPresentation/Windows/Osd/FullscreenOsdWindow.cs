@@ -13,6 +13,10 @@ public sealed partial class FullscreenOsdWindow : Window
     private readonly FrameworkElement _displayHost;
     private readonly TextBlock _game;
     private readonly Border _mainPanel;
+    private readonly Dictionary<Brush, Brush> _translucentBackgrounds = new();
+    private int _transparency;
+    private readonly Brush _mainBackground = new LinearGradientBrush(
+        Color.FromRgb(10, 19, 38), Color.FromRgb(15, 35, 54), 115);
     private readonly FooterHints? _hints;
     private readonly DispatcherTimer _idleTimer = new(DispatcherPriority.Background)
     {
@@ -73,12 +77,12 @@ public sealed partial class FullscreenOsdWindow : Window
             HorizontalAlignment = HorizontalAlignment.Left,
             BorderThickness = new Thickness(0, 0, 1, 0),
             BorderBrush = new SolidColorBrush(Color.FromArgb(166, 84, 159, 211)),
-            Background = new LinearGradientBrush(Color.FromArgb(248, 8, 18, 46), Color.FromArgb(242, 11, 27, 52), 90),
+            Background = _mainBackground,
             Child = main
         };
         // Nearly transparent pixels still receive mouse input on a layered window.
         _shaderLoading = CreateShaderLoadingBadge(shaderLoadingLabel);
-        Content = new Grid { Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)), Children = { _mainPanel, _submenu, _shaderLoading, _editBar } };
+        Content = new Grid { Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)), Children = { _mainPanel, _submenu, _shaderLoading, _editBar, _centerPanel } };
         Panel.SetZIndex(_shaderLoading, 1);
         FitDisplayHost();
         InitializeMenu(entries, showError);
@@ -89,6 +93,37 @@ public sealed partial class FullscreenOsdWindow : Window
         PreviewMouseDown += OsdPointerActivity;
         PreviewMouseUp += OsdPointerActivity;
         PreviewMouseWheel += OsdPointerActivity;
+    }
+
+    public void SetTransparency(int percent)
+    {
+        _transparency = Math.Clamp(percent, 0, 100);
+        _translucentBackgrounds.Clear();
+        _mainPanel.Background = TranslucentBackground(_mainBackground);
+        _centerPanel.Background = TranslucentBackground(_mainBackground);
+        ApplyTransparency(_shaderLoading, _transparency);
+        if (_levels.Count > 1 && Current.Panel is { } submenu)
+            submenu.Background = TranslucentBackground(Current.ActiveSectionBackground() ?? DefaultSubmenuBackground);
+        _editBar.Background = TranslucentBackground(Current.ActiveSectionBackground() ?? DefaultEditorBackground);
+    }
+
+    private Brush TranslucentBackground(Brush source)
+    {
+        if (!_translucentBackgrounds.TryGetValue(source, out var background))
+        {
+            background = source.Clone();
+            background.Opacity = 1 - _transparency / 100d;
+            background.Freeze();
+            _translucentBackgrounds.Add(source, background);
+        }
+        return background;
+    }
+
+    internal static void ApplyTransparency(Border panel, int percent)
+    {
+        var background = panel.Background.Clone();
+        background.Opacity = 1 - Math.Clamp(percent, 0, 100) / 100d;
+        panel.Background = background;
     }
 
     public void SetGameName(string? gameName)
@@ -116,16 +151,17 @@ public sealed partial class FullscreenOsdWindow : Window
         _idleTimer.Start();
     }
 
+    public bool IsPointerOverControls => _mainPanel.IsMouseOver || _submenu.IsMouseOver || _editBar.IsMouseOver
+        || _centerPanel.IsMouseOver || _centerPanel.IsMouseCaptureWithin || _editSlider?.IsMouseCaptureWithin == true;
+
     private void OsdPointerActivity(object sender, MouseEventArgs e)
     {
-        if (_mainPanel.IsMouseOver || _submenu.IsMouseOver || _editBar.IsMouseOver
-            || _editSlider?.IsMouseCaptureWithin == true)
-            RestartIdleTimer();
+        if (IsPointerOverControls) RestartIdleTimer();
     }
 
     private void IdleTimerElapsed(object? sender, EventArgs e)
     {
-        if (_editSlider?.IsMouseCaptureWithin == true) return;
+        if (_editSlider?.IsMouseCaptureWithin == true || _centerPanel.IsMouseCaptureWithin) return;
         _idleTimer.Stop();
         Close();
     }
@@ -148,6 +184,7 @@ public sealed partial class FullscreenOsdWindow : Window
         finally
         {
             ClearEditBar();
+            ClearCenterPanel();
             _submenu.Child = null;
             _levels.Clear();
             _mainRows.Children.Clear();
@@ -169,5 +206,6 @@ public sealed partial class FullscreenOsdWindow : Window
         Width = _displayHost.ActualWidth;
         Height = _displayHost.ActualHeight;
         UpdatePanelWidths();
+        FitCenterPanel();
     }
 }

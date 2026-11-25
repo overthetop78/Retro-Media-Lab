@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>快速載入狀態</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>螢幕擷取</value></data>
   <data name="Emulation.Shortcut.Mute"><value>將目前機器靜音</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>降低音量</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>提高音量</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>按住時快轉</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>插入或更換媒體</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>退出媒體</value></data>

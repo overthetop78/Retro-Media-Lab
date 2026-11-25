@@ -16,6 +16,14 @@ internal sealed class EmulationPreferencesSettings
         StoragePaths.ConfigureEmulationDirectories(settings);
     }
 
+    internal Task SaveOsdTransparencyAsync(int transparency)
+    {
+        if (_settings is not { } settings || settings.FullscreenOsdTransparency == transparency)
+            return Task.CompletedTask;
+        settings.FullscreenOsdTransparency = transparency;
+        return _persist?.Invoke() ?? Task.CompletedTask;
+    }
+
     internal Task SaveFoldersAsync(string storage, string captures, string states)
     {
         if (_settings is not { } settings) return Task.CompletedTask;

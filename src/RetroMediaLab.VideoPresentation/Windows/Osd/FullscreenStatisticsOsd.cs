@@ -53,12 +53,18 @@ public sealed class FullscreenStatisticsOsd : IDisposable
             Child = new Border
             {
                 Padding = new Thickness(9, 5, 11, 5),
-                Background = new SolidColorBrush(Color.FromArgb(226, 33, 37, 43)),
+                Background = new SolidColorBrush(Color.FromRgb(33, 37, 43)),
                 CornerRadius = new CornerRadius(5),
                 IsHitTestVisible = false,
                 Child = rows
             }
         };
+    }
+
+    public void SetTransparency(int percent)
+    {
+        if (!_disposed && _popup.Child is Border panel)
+            FullscreenOsdWindow.ApplyTransparency(panel, percent);
     }
 
     public void SetVisible(bool visible)

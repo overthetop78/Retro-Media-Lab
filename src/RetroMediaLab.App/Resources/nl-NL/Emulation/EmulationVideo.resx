@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monochroom</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-level grijswaarden</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Projectie</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Zwarte frame invoegen</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signaalsimulaties</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Beeldscherm</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Renderen</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Tricolorgeel</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Kleur (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Kleur (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Transparantie</value></data>
 </root>

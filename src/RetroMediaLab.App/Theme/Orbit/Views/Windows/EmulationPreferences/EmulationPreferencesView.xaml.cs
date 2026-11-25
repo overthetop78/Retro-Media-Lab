@@ -38,6 +38,7 @@ internal partial class EmulationPreferencesView : UserControl, IDisposable
             bindings.TwoWay(source.StorageFolder, TextBox.TextProperty, Storage, TextBox.TextProperty);
             bindings.TwoWay(source.CaptureFolder, TextBox.TextProperty, Capture, TextBox.TextProperty);
             bindings.TwoWay(source.StateFolder, TextBox.TextProperty, State, TextBox.TextProperty);
+            bindings.TwoWay(source.OsdTransparency, Slider.ValueProperty, OsdTransparency, Slider.ValueProperty);
             shortcuts = new InputBindingsView(source.ShortcutEditor, dark);
             Shortcuts.Content = shortcuts;
             network = new NetworkView(dark);

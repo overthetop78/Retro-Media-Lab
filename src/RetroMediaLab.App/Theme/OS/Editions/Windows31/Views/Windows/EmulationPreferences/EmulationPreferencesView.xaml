@@ -13,6 +13,14 @@
       <DockPanel Margin="0,4,0,12"><Button DockPanel.Dock="Right" Content="{l:Loc Common.Browse}" Tag="Capture" Click="BrowseClick" Margin="8,0,0,0"/><TextBox x:Name="Capture" LostKeyboardFocus="FolderFinished"/></DockPanel>
       <TextBlock Text="{l:Loc Emulation.Folder.State}"/>
       <DockPanel Margin="0,4,0,12"><Button DockPanel.Dock="Right" Content="{l:Loc Common.Browse}" Tag="State" Click="BrowseClick" Margin="8,0,0,0"/><TextBox x:Name="State" LostKeyboardFocus="FolderFinished"/></DockPanel>
+      <TextBlock Text="{l:Loc Emulation.Osd.Transparency}"/>
+      <DockPanel Margin="0,4,0,12">
+       <TextBlock DockPanel.Dock="Right" MinWidth="48" Margin="8,0,0,0"
+                  Text="{Binding Value, ElementName=OsdTransparency, StringFormat={}{0:0} %}"/>
+       <Slider x:Name="OsdTransparency" Minimum="0" Maximum="100" TickFrequency="1"
+               IsSnapToTickEnabled="True" IsMoveToPointEnabled="True"
+               AutomationProperties.Name="{l:Loc Emulation.Osd.Transparency}"/>
+      </DockPanel>
      </StackPanel>
     </ScrollViewer>
    </TabItem>

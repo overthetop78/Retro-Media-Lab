@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Tải nhanh trạng thái</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Chụp màn hình</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Tắt tiếng máy đang hoạt động</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Giảm âm lượng</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Tăng âm lượng</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Tua nhanh khi giữ phím</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Lắp hoặc thay phương tiện</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Đẩy phương tiện ra</value></data>

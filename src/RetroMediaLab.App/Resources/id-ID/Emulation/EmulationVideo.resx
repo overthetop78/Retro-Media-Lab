@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monokrom</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16- skala abu-abu tingkat</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Proyeksi</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Penyisipan bingkai hitam</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Simulasi sinyal</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Tampilan</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Perender</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Kuning tricolor</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Warna (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Warna (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Transparansi</value></data>
 </root>

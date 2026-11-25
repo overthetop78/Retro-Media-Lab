@@ -15,6 +15,8 @@
   <data name="Emulation.Shortcut.QuickLoad"><value>Hurtiglast tilstand</value></data>
   <data name="Emulation.Shortcut.Screenshot"><value>Skjermbilde</value></data>
   <data name="Emulation.Shortcut.Mute"><value>Demp aktiv maskin</value></data>
+  <data name="Emulation.Shortcut.VolumeDown"><value>Reduser lydvolum</value></data>
+  <data name="Emulation.Shortcut.VolumeUp"><value>Øk lydvolumet</value></data>
   <data name="Emulation.Shortcut.FastForward"><value>Spol raskt mens tasten holdes nede</value></data>
   <data name="Emulation.Shortcut.InsertMedia"><value>Sett inn eller bytt medium</value></data>
   <data name="Emulation.Shortcut.EjectMedia"><value>Løs ut medium</value></data>

@@ -113,7 +113,6 @@
   <data name="Emulation.Video.EPaper.ColorMode.Monochrome"><value>Monochrom</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Grayscale16"><value>16-stufige Graustufen</value></data>
   <data name="Emulation.Video.Technology.Projection"><value>Projektion</value></data>
-  <data name="Emulation.Video.Parameter.BlackFrameInsertion"><value>Schwarzer Rahmeneintrag</value></data>
   <data name="Emulation.Video.Settings.SignalSimulation"><value>Signalsimulationen</value></data>
   <data name="Emulation.Video.Tab.Display"><value>Anzeige</value></data>
   <data name="Emulation.Video.Tab.Rendering"><value>Tierkörperbeseitigung</value></data>
@@ -244,4 +243,5 @@
   <data name="Emulation.Video.EPaper.ColorMode.TricolorYellow"><value>Dreifarbig (Gelb)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Color4096"><value>Farbe (Kaleido)</value></data>
   <data name="Emulation.Video.EPaper.ColorMode.Gallery"><value>Farbe (Gallery)</value></data>
+  <data name="Emulation.Osd.Transparency"><value>OSD · Transparenz</value></data>
 </root>

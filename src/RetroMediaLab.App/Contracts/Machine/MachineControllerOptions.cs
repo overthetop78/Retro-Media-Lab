@@ -35,4 +35,6 @@ internal sealed record MachineControllerOptions(
     IEmulationConfiguration? Configuration = null,
     Func<IReadOnlyDictionary<string, string>>? ReadShortcutSettings = null,
     Func<bool>? ReadFullscreenStatistics = null,
-    Action<bool>? WriteFullscreenStatistics = null);
+    Action<bool>? WriteFullscreenStatistics = null,
+    Func<int>? ReadOsdTransparency = null,
+    Action<int>? WriteOsdTransparency = null);

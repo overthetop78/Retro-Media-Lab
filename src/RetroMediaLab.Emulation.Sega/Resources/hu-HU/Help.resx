@@ -25,8 +25,6 @@
   <data name="Emulation.Sega.Help.Cpu.Model.Detailed"><value>Megjeleníti a kiválasztott Sega gép által biztosított processzormodellt.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Short"><value>Eredeti processzor óra frekvencia.</value></data>
   <data name="Emulation.Sega.Help.Cpu.Frequency.Detailed"><value>Megjeleníti a processzor névleges óra frekvenciáját a kiválasztott Sega gépben.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Short"><value>Emulált hang engedélyezése vagy letiltása.</value></data>
-  <data name="Emulation.Sega.Help.Audio.Enabled.Detailed"><value>Ellenőrzi, hogy a Retro Media Lab lejátszja-e az emulátor által létrehozott hangmintákat.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Short"><value>A Retro Media Lab által használt hangkimenet.</value></data>
   <data name="Emulation.Sega.Help.Audio.Output.Detailed"><value>Kiválasztja a Windows audio kimenetet használt játszani hang ebből az emulált gép.</value></data>
   <data name="Emulation.Sega.Help.General.Model.Detailed"><value>Azonosítja a Sega modellt, amelynek hardverkonfigurációját szerkesztik.</value></data>

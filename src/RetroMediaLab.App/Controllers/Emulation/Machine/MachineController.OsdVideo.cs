@@ -18,18 +18,12 @@ internal sealed partial class MachineController
     private Entry OsdVideoSettings() =>
         new(LocExtension.Get("Emulation.Shortcut.OsdVideoSettings"), Children: EditableVideoRows(
         [
+            VideoGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing, OsdRendererChoice()),
+            .. Enum.GetValues<EmulationVideoScreenType>().Select(OsdScreenAdjustments),
             VideoGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing,
                 VideoChoice(EmulationResourceKeys.VideoTechnology, EmulationVideoProcessingCatalog.ScreenTypeResourceKeys,
                     EmulationVideoProcessingConfigurationFunctions.ScreenType,
-                    EmulationVideoProcessingConfigurationFunctions.WithScreenType),
-                OsdRendererChoice(),
-                VideoChoice(EmulationResourceKeys.VideoSampling, EmulationVideoProcessingCatalog.SamplingResourceKeys,
-                    settings => settings.Sampling, (settings, value) => settings with { Sampling = value })
-                    with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_video.VideoProcessing) },
-                VideoChoice(EmulationResourceKeys.VideoParameterBlackFrameInsertion, VideoToggleResourceKeys,
-                    settings => settings.BlackFrameInsertion,
-                    (settings, value) => settings with { BlackFrameInsertion = value })),
-            .. Enum.GetValues<EmulationVideoScreenType>().Select(OsdScreenAdjustments),
+                    EmulationVideoProcessingConfigurationFunctions.WithScreenType)),
             OsdCrtSettings(),
             OsdLcdSettings(led: false),
             OsdLcdSettings(led: true),
@@ -42,6 +36,10 @@ internal sealed partial class MachineController
             OsdSegmentDisplaySettings(),
             OsdEPaperSettings(),
             OsdProjectionSettings(),
+            VideoGroup(EmulationResourceKeys.VideoRetroMediaLabProcessing,
+                VideoChoice(EmulationResourceKeys.VideoSampling, EmulationVideoProcessingCatalog.SamplingResourceKeys,
+                    settings => settings.Sampling, (settings, value) => settings with { Sampling = value })
+                    with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.UsesHostDisplay(_video.VideoProcessing) }),
             .. OsdModuleGroups(EmulationMachineTab.Video, EmulationVideoSettingsSection.Display),
             VideoGroup(EmulationResourceKeys.VideoRestorationSettings,
                     VideoChoice(EmulationResourceKeys.VideoParameterDedithering, VideoRestorationChoices.Dedithering,
@@ -112,16 +110,16 @@ internal sealed partial class MachineController
     }
 
     private Entry OsdScreenAdjustments(EmulationVideoScreenType screen) =>
-        VideoGroup(EmulationVideoProcessingCatalog.ScreenTypeResourceKeys[screen],
+        VideoGroup(EmulationResourceKeys.VideoGeneralSettings,
             Adjustment(screen, ImageControls.Brightness, EmulationResourceKeys.VideoParameterBrightness, value => value.Brightness,
                 (value, draft) => value with { Brightness = draft }),
             Adjustment(screen, ImageControls.Contrast, EmulationResourceKeys.VideoParameterContrast, value => value.Contrast,
                 (value, draft) => value with { Contrast = draft }),
-            OsdGamma(screen),
             Adjustment(screen, ImageControls.Saturation, EmulationResourceKeys.VideoParameterSaturation, value => value.Saturation,
                 (value, draft) => value with { Saturation = draft }, EmulationImageAdjustmentFunctions.FormatSaturation),
             Adjustment(screen, ImageControls.Sharpness, EmulationResourceKeys.VideoParameterSharpness, value => value.Sharpness,
-                (value, draft) => value with { Sharpness = draft }))
+                (value, draft) => value with { Sharpness = draft }),
+            OsdGamma(screen))
         with { IsVisible = () => EmulationVideoProcessingConfigurationFunctions.ScreenType(_video.VideoProcessing) == screen };
 
     private Entry OsdGamma(EmulationVideoScreenType screen)
