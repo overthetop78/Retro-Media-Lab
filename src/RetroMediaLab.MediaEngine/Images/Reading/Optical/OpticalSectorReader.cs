@@ -35,12 +35,22 @@ public sealed class OpticalSectorReader
         return sector;
     }
 
+    public ValueTask ReadUserDataAsync(OpticalTrackDescriptor track, long relativeSector, Memory<byte> destination, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(track);
+        ValidateRelativeSector(track, relativeSector);
+        if (destination.Length != track.UserDataLength)
+            throw new ArgumentException("The destination must contain exactly one user-data sector.", nameof(destination));
+        var offset = checked(track.SourceOffset + relativeSector * track.StoredSectorSize + track.UserDataOffset);
+        return track.DataSource.ReadExactlyAsync(offset, destination, cancellationToken);
+    }
+
     public async ValueTask<byte[]> ReadUserDataAsync(OpticalTrackDescriptor track, long relativeSector, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(track);
         ValidateRelativeSector(track, relativeSector);
         var data = new byte[track.UserDataLength];
-        await track.DataSource.ReadExactlyAsync(checked(track.SourceOffset + relativeSector * track.StoredSectorSize + track.UserDataOffset), data, cancellationToken).ConfigureAwait(false);
+        await ReadUserDataAsync(track, relativeSector, data, cancellationToken).ConfigureAwait(false);
         return data;
     }
 

@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Collections.Frozen;
 using System.Globalization;
 using System.IO;
+using RetroMediaLab.MediaEngine.Images.Formats.Optical.Gdi;
 using RetroMediaLab.MediaEngine.Images.Formats.Common.Chd;
 using IMediaRandomAccessData = RetroMediaLab.MediaFileSystems.Interfaces.IMediaRandomAccessData;
 using RetroMediaLab.MediaEngine.Enums;
@@ -70,7 +71,8 @@ public sealed class ChdOpticalReader : IMediaImageReader
                 ["hunkSize"] = layout.HunkBytes.ToString(CultureInfo.InvariantCulture),
                 ["unitSize"] = layout.UnitBytes.ToString(CultureInfo.InvariantCulture),
                 ["trackCount"] = tracks.Count.ToString(CultureInfo.InvariantCulture),
-                ["mediaProfile"] = layout.IsDvd ? "DVD" : "CD"
+                ["mediaProfile"] = layout.IsDvd ? "DVD" : layout.IsGdRom ? GdiConstants.MediaProfile : "CD",
+                ["audioByteOrder"] = layout.TrackMetadata.Any(track => track.UsesLittleEndianAudio) ? "little" : "big"
             });
         transferred = true; return document;
         }
@@ -97,6 +99,10 @@ public sealed class ChdOpticalReader : IMediaImageReader
         var declarations = layout.TrackMetadata.OrderBy(track => track.TrackNumber).ToArray();
         if (declarations.Select(track => track.TrackNumber).Distinct().Count() != declarations.Length)
             throw new InvalidDataException("The CHD contains duplicate optical track numbers.");
+        if (layout.IsGdRom && (declarations.Length < 3 ||
+            declarations.Where((track, index) => !track.IsGdRom || track.TrackNumber != index + 1).Any()))
+            throw new InvalidDataException("The CHD contains an incomplete or mixed GD-ROM track list.");
+
         var tracks = new List<OpticalTrackDescriptor>(declarations.Length);
         long chdFrameOffset = 0;
         long physicalFrameOffset = 0;
@@ -106,9 +112,18 @@ public sealed class ChdOpticalReader : IMediaImageReader
             var trackSourceOffset = checked((chdFrameOffset + declaration.PregapFrames) * ChdConstants.CdFrameSize);
             var firstSector = checked(physicalFrameOffset + declaration.PregapFrames);
             var (userOffset, userLength) = GetUserDataWindow(declaration.Mode, declaration.DataSize);
+            if (layout.IsGdRom)
+            {
+                long storedPregap = declaration.PregapStored ? declaration.PregapFrames : 0;
+                dataFrames = checked(declaration.FrameCount - storedPregap - declaration.PaddingFrames);
+                trackSourceOffset = checked((chdFrameOffset + storedPregap) * ChdConstants.CdFrameSize);
+                if (dataFrames <= 0 ||
+                    (declaration.TrackNumber == 3 && firstSector != GdiConstants.HighDensityStartLba))
+                    throw new InvalidDataException("The CHD GD-ROM track layout is invalid.");
+            }
             var indexes = declaration.PregapFrames == 0 ? new[] { new OpticalTrackIndex(1, 0) } : new[] { new OpticalTrackIndex(0, -declaration.PregapFrames), new OpticalTrackIndex(1, 0) };
             tracks.Add(new OpticalTrackDescriptor(
-                1,
+                layout.IsGdRom && declaration.TrackNumber >= 3 ? 2 : 1,
                 declaration.TrackNumber,
                 declaration.Mode,
                 firstSector,
@@ -127,7 +142,9 @@ public sealed class ChdOpticalReader : IMediaImageReader
                 storedPregapSectors: declaration.PregapStored ? declaration.PregapFrames : 0,
                 storedPregapSourceOffset: declaration.PregapStored ? checked(chdFrameOffset * ChdConstants.CdFrameSize) : null,
                 subchannelStride: declaration.SubchannelSize == 0 ? 0 : ChdConstants.CdFrameSize));
-            physicalFrameOffset = checked(physicalFrameOffset + declaration.FrameCount);
+            physicalFrameOffset = layout.IsGdRom
+                ? checked(firstSector + dataFrames + declaration.PaddingFrames)
+                : checked(physicalFrameOffset + declaration.FrameCount);
             chdFrameOffset = checked(chdFrameOffset + AlignTrackFrames(declaration.FrameCount));
         }
         if (checked(chdFrameOffset * ChdConstants.CdFrameSize) != layout.LogicalBytes)
@@ -214,7 +231,8 @@ public sealed class ChdOpticalReader : IMediaImageReader
             var dataOffset = checked(offset + ChdConstants.MetadataHeaderSize);
             if (length <= 0 || dataOffset > context.Length - length)
                 throw new InvalidDataException("A CHD metadata record exceeds the file.");
-            if (tag == ChdConstants.CdTrackMetadataTag || tag == ChdConstants.CdTrackMetadata2Tag)
+            if (tag is ChdConstants.CdTrackMetadataTag or ChdConstants.CdTrackMetadata2Tag or
+                ChdConstants.GdRomTrackMetadataTag or ChdConstants.GdRomLegacyTrackMetadataTag)
             {
                 var data = await context.ReadAsync(dataOffset, length, cancellationToken).ConfigureAwait(false);
                 tracks.Add(ParseTrackMetadata(tag, System.Text.Encoding.ASCII.GetString(data.Span).TrimEnd('\0')));
@@ -235,8 +253,10 @@ public sealed class ChdOpticalReader : IMediaImageReader
         if (!text.StartsWith(ChdConstants.CdTrackMetadataPrefix, StringComparison.Ordinal))
             throw new InvalidDataException("A CHD optical track metadata record is invalid.");
         var values = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(token => token.Split(':', 2)).Where(parts => parts.Length == 2).ToDictionary(parts => parts[0], parts => parts[1], StringComparer.Ordinal);
-        var required = tag == ChdConstants.CdTrackMetadata2Tag ? new[] { "TRACK", "TYPE", "SUBTYPE", "FRAMES", "PREGAP", "PGTYPE", "PGSUB", "POSTGAP" } : new[] { "TRACK", "TYPE", "SUBTYPE", "FRAMES" };
-        if (required.Any(key => !values.ContainsKey(key)))
+        bool gdRom = tag is ChdConstants.GdRomTrackMetadataTag or ChdConstants.GdRomLegacyTrackMetadataTag;
+        bool extended = gdRom || tag == ChdConstants.CdTrackMetadata2Tag;
+        var required = extended ? new[] { "TRACK", "TYPE", "SUBTYPE", "FRAMES", "PREGAP", "PGTYPE", "PGSUB", "POSTGAP" } : new[] { "TRACK", "TYPE", "SUBTYPE", "FRAMES" };
+        if (required.Any(key => !values.ContainsKey(key)) || (gdRom && !values.ContainsKey("PAD")))
             throw new InvalidDataException("A CHD optical track metadata record is incomplete.");
 
         var trackNumber = ParsePositiveInt(values["TRACK"], "track number");
@@ -248,10 +268,15 @@ public sealed class ChdOpticalReader : IMediaImageReader
             "RW" or "RW_RAW" => OpticalSectorConstants.SubchannelSize,
             _ => throw new NotSupportedException($"Unsupported CHD subchannel type '{values["SUBTYPE"]}'.")
         };
-        var pregap = tag == ChdConstants.CdTrackMetadata2Tag ? ParseNonNegativeLong(values["PREGAP"], "pregap") : 0;
-        var postgap = tag == ChdConstants.CdTrackMetadata2Tag ? ParseNonNegativeLong(values["POSTGAP"], "postgap") : 0;
-        var pregapStored = tag == ChdConstants.CdTrackMetadata2Tag && values["PGTYPE"].StartsWith('V');
-        return new ChdOpticalTrackMetadata(trackNumber, mode, dataSize, subchannelSize, frameCount, pregap, postgap, pregapStored);
+        var pregap = extended ? ParseNonNegativeLong(values["PREGAP"], "pregap") : 0;
+        var postgap = extended ? ParseNonNegativeLong(values["POSTGAP"], "postgap") : 0;
+        var pregapStored = extended && values["PGTYPE"].StartsWith('V');
+        return new ChdOpticalTrackMetadata(trackNumber, mode, dataSize, subchannelSize, frameCount, pregap, postgap, pregapStored)
+        {
+            IsGdRom = gdRom,
+            PaddingFrames = gdRom ? ParseNonNegativeLong(values["PAD"], "padding") : 0,
+            UsesLittleEndianAudio = tag == ChdConstants.GdRomLegacyTrackMetadataTag
+        };
     }
 
     private static (OpticalTrackMode Mode, int DataSize) ParseTrackType(string type) => type switch
@@ -319,5 +344,8 @@ public sealed class ChdOpticalReader : IMediaImageReader
     }
 
     private sealed record ChdLayout(long LogicalBytes, int HunkBytes, int UnitBytes, IReadOnlyList<uint> StoredHunks, IReadOnlyList<ChdOpticalTrackMetadata> TrackMetadata, bool IsDvd,
-        bool DecodedHunks = false,int Version = (int)ChdConstants.Version5,string Compression = "none");
+        bool DecodedHunks = false,int Version = (int)ChdConstants.Version5,string Compression = "none")
+    {
+        public bool IsGdRom => TrackMetadata.Any(track => track.IsGdRom);
+    }
 }

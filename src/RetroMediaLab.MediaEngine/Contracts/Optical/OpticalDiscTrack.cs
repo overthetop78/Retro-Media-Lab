@@ -7,5 +7,7 @@ public sealed record OpticalDiscTrack(int TrackNumber, OpticalTrackMode Mode, lo
     int StoredSectorSize, int UserDataOffset, int UserDataLength, long PregapSectors, long PostgapSectors,
     long StoredPregapSectors, bool HasSubchannels, int LoopMode = 0, int LoopOffset = 0)
 {
+    public int SessionNumber { get; init; } = 1;
+
     public bool IsAudio => Mode == OpticalTrackMode.Audio;
 }

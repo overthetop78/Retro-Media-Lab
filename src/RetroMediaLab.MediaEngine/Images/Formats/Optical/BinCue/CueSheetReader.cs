@@ -24,6 +24,7 @@ public sealed class CueSheetReader
         TrackBuilder? currentTrack = null;
         string? catalog = null;
         var lineNumber = 0;
+        int? gdRomSession = null;
 
         foreach (var sourceLine in lines)
         {
@@ -46,6 +47,7 @@ public sealed class CueSheetReader
                     case CueSheetConstants.Track:
                         if (currentFile is null) throw new InvalidDataException("TRACK appears before FILE.");
                         currentTrack = ParseTrack(argument);
+                        currentTrack.GdRomSession = gdRomSession;
                         foreach (var pair in currentFile.PendingRemarks) currentTrack.Metadata[pair.Key] = pair.Value;
                         currentFile.PendingRemarks.Clear();
                         currentFile.Tracks.Add(currentTrack);
@@ -75,6 +77,16 @@ public sealed class CueSheetReader
                         AddMetadata(currentTrack?.Metadata ?? sheetMetadata, command, ParseText(argument));
                         break;
                     case CueSheetConstants.Rem:
+                        if (argument.Equals("SINGLE-DENSITY AREA", StringComparison.OrdinalIgnoreCase) ||
+                            argument.Equals("HIGH-DENSITY AREA", StringComparison.OrdinalIgnoreCase))
+                        {
+                            int session = argument.StartsWith("SINGLE", StringComparison.OrdinalIgnoreCase) ? 1 : 2;
+                            if ((gdRomSession ?? 0) >= session)
+                                throw new InvalidDataException("CUE GD-ROM density areas are out of order or repeated.");
+                            gdRomSession = session;
+                            currentTrack = null;
+                            break;
+                        }
                         var remarkName = argument.Split([' ', '\t'],2,StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
                         var targetMetadata = currentTrack?.Metadata
                             ?? (currentFile is not null && (remarkName?.Equals("LOOP",StringComparison.OrdinalIgnoreCase)==true || remarkName?.Equals("NOLOOP",StringComparison.OrdinalIgnoreCase)==true)
@@ -90,6 +102,9 @@ public sealed class CueSheetReader
                 throw new InvalidDataException($"Invalid CUE line {lineNumber}: {sourceLine}", exception);
             }
         }
+
+        if (gdRomSession == 2 && !files.SelectMany(file => file.Tracks).Any(track => track.GdRomSession == 2))
+            throw new InvalidDataException("The CUE high-density marker is not followed by any tracks.");
 
         if (files.Count == 0) throw new InvalidDataException("The CUE sheet does not contain a FILE declaration.");
         return new CueSheetDocument(files.Select(file => file.Build()).ToArray(), catalog, sheetMetadata);
@@ -246,12 +261,13 @@ public sealed class CueSheetReader
         public int Number { get; } = number;
         public OpticalTrackMode Mode { get; } = mode;
         public List<OpticalTrackIndex> Indexes { get; } = [];
+        public int? GdRomSession { get; set; }
         public long PregapSectors { get; set; }
         public long PostgapSectors { get; set; }
         public List<string> Flags { get; } = [];
         public string? Isrc { get; set; }
         public Dictionary<string, string> Metadata { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-        public CueTrackDeclaration Build() => new(Number, Mode, Indexes, PregapSectors, PostgapSectors, Flags, Isrc, Metadata);
+        public CueTrackDeclaration Build() => new(Number, Mode, Indexes, PregapSectors, PostgapSectors, Flags, Isrc, Metadata) { GdRomSession = GdRomSession };
     }
 }

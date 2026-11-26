@@ -5,7 +5,6 @@ using RetroMediaLab.MediaEngine.Contracts;
 
 using RetroMediaLab.MediaEngine.Interfaces;
 using RetroMediaLab.MediaEngine.Interfaces.Writing;
-using RetroMediaLab.MediaEngine.Images.Reading.Optical;
 using RetroMediaLab.MediaEngine.Images.Models.Optical;
 
 namespace RetroMediaLab.MediaEngine.Images.Formats.Optical.Iso;
@@ -16,7 +15,6 @@ public sealed class IsoWriter : IMediaImageWriter
     private static readonly IReadOnlySet<string> SupportedFormatIds = new[] { OpticalImageFormatIds.Iso }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
     private static readonly IReadOnlySet<MediaRepresentationKind> SupportedRepresentationKinds = new[] { MediaRepresentationKind.OpticalTracks }.ToFrozenSet();
     private readonly IAtomicImageFileWriter files;
-    private readonly OpticalSectorReader sectors = new();
 
     public IsoWriter(IAtomicImageFileWriter? files = null)
     {
@@ -69,13 +67,18 @@ public sealed class IsoWriter : IMediaImageWriter
             && track.Indexes.All(index => index.Number == 1 && index.RelativeSector == 0);
     }
 
-    private async Task WriteTrackAsync(OpticalTrackDescriptor track, Stream output, CancellationToken cancellationToken)
+    private static async Task WriteTrackAsync(OpticalTrackDescriptor track, Stream output, CancellationToken cancellationToken)
     {
-        for (long sector = 0; sector < track.SectorCount; sector++)
+        var buffer = new byte[64 * 1024];
+        long length = checked(track.SectorCount * track.StoredSectorSize);
+        for (long offset = 0; offset < length;)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var bytes = await sectors.ReadStoredSectorAsync(track, sector, cancellationToken).ConfigureAwait(false);
-            await output.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
+            int count = (int)Math.Min(buffer.Length, length - offset);
+            var chunk = buffer.AsMemory(0, count);
+            await track.DataSource.ReadExactlyAsync(track.SourceOffset + offset, chunk, cancellationToken).ConfigureAwait(false);
+            await output.WriteAsync(chunk, cancellationToken).ConfigureAwait(false);
+            offset += count;
         }
     }
 }

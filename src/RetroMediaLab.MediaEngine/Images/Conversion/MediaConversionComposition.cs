@@ -41,7 +41,7 @@ public sealed class MediaConversionComposition
             new RetroMediaLab.MediaEngine.Images.Conversion.Acorn.SectorContainerToAcornAdfRepresentationConverter(),
             new RetroMediaLab.MediaEngine.Images.Conversion.Acorn.RawToAcornAdfRepresentationConverter(),
             new RetroMediaLab.MediaEngine.Images.Conversion.Acorn.RawToBbcDfsRepresentationConverter(),
-            new RetroMediaLab.MediaEngine.Images.Conversion.Flux.FluxToHfeRepresentationConverter(), new TapeSignalRepresentationConverter()];
+            new RetroMediaLab.MediaEngine.Images.Conversion.Flux.FluxToHfeRepresentationConverter(), new TapeSignalRepresentationConverter(), new GdRomIsoRepresentationConverter(), new GdRomCueToGdiRepresentationConverter()];
         Registry = new MediaRepresentationConverterRegistry(Converters);
         SequentialDecoders = sequentialMedia.Decoders;
         SequentialEncoders = sequentialMedia.Encoders;
@@ -64,7 +64,7 @@ public sealed class MediaConversionComposition
     public OpticalImageConversionService CreateOpticalImageConverter(MediaWritingComposition writing)
     {
         ArgumentNullException.ThrowIfNull(writing);
-        return new OpticalImageConversionService(recognition.ReadingService, writing.Registry, writing.WritingService);
+        return new OpticalImageConversionService(recognition.ReadingService, writing.Registry, writing.WritingService, Registry);
     }
 
     public SequentialMediaConversionService CreateSequentialMediaConverter(MediaWritingComposition writing)

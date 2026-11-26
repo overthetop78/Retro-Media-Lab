@@ -34,8 +34,30 @@ public sealed class GdiWriter : IMediaImageWriter
             || optical.LayerCount is not null
             || optical.FaceCount is not null)
             return false;
+        bool isGdChd = IsGdChd(document);
+        bool isGdCue = document.FormatId == OpticalImageFormatIds.BinCue &&
+            document.Metadata.GetValueOrDefault("mediaProfile") == GdiConstants.MediaProfile;
+        if (!isGdChd && !isGdCue && document.FormatId != GdiConstants.FormatId)
+            return false;
+
         var numbers = new HashSet<int>();
-        return optical.Tracks!.All(track => numbers.Add(track.TrackNumber) && track.FirstSector >= 0 && track.StoredPregapSectors == 0 && !track.HasSubchannels && GetTrackSectorSize(track) is > 0 && track.SectorCount > 0);
+        long previousEnd = 0;
+        foreach (var track in optical.Tracks!.OrderBy(track => track.TrackNumber))
+        {
+            int session = track.FirstSector >= GdiConstants.HighDensityStartLba ? 2 : 1;
+            if (!numbers.Add(track.TrackNumber) || track.FirstSector < previousEnd ||
+                track.SessionNumber != session || track.StoredPregapSectors != 0 ||
+                track.PostgapSectors != 0 ||
+                (isGdCue && (track.PregapSectors != 0 || track.Flags.Count != 0 || track.CatalogNumber is not null ||
+                    track.Isrc is not null || track.Indexes.Any(index => index.Number != 1 || index.RelativeSector != 0))) ||
+                track.HasSubchannels || GetTrackSectorSize(track, isGdChd) == 0 ||
+                track.SectorCount <= 0 || track.FirstSector > long.MaxValue - track.SectorCount)
+                return false;
+
+            previousEnd = track.FirstSector + track.SectorCount;
+        }
+
+        return true;
     }
 
     public async Task<IReadOnlyList<string>> WriteAsync(MediaImageDocument document, string outputPath, string targetFormatId, CancellationToken cancellationToken = default)
@@ -49,16 +71,16 @@ public sealed class GdiWriter : IMediaImageWriter
         var baseName = Path.GetFileNameWithoutExtension(descriptorPath);
         var files = new Dictionary<string, Func<Stream, CancellationToken, Task>>(StringComparer.OrdinalIgnoreCase);
         var entries = new List<GdiOutputEntry>(optical.Tracks!.Count);
+        bool isGdChd = IsGdChd(document);
+        bool swapAudio = isGdChd && document.Metadata.GetValueOrDefault("audioByteOrder") != "little";
         foreach (var track in optical.Tracks.OrderBy(track => track.TrackNumber))
         {
             cancellationToken.ThrowIfCancellationRequested();
             var name = $"{baseName}.track{track.TrackNumber:D2}{DiskImageFileExtensions.Bin}";
             var path = Path.Combine(directory, name);
-            var sectorSize = GetTrackSectorSize(track);
+            var sectorSize = GetTrackSectorSize(track, isGdChd);
             var control = track.IsAudio ? GdiConstants.AudioControl : GdiConstants.DataControl;
-            if (track.FirstSector > long.MaxValue || track.FirstSector < 0)
-                throw new InvalidDataException($"GDI track {track.TrackNumber} has an invalid LBA.");
-            files.Add(path, (output, token) => CopyTrackAsync(track, output, sectorSize, token));
+            files.Add(path, (output, token) => CopyTrackAsync(track, output, sectorSize, swapAudio && track.IsAudio, token));
             entries.Add(new GdiOutputEntry(track.TrackNumber, track.FirstSector, control, sectorSize, name));
         }
         files.Add(descriptorPath, (output, token) => WriteDescriptorAsync(output, entries, token));
@@ -85,8 +107,24 @@ public sealed class GdiWriter : IMediaImageWriter
         await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task CopyTrackAsync(OpticalTrackDescriptor track, Stream output, int sectorSize, CancellationToken cancellationToken)
+    private static async Task CopyTrackAsync(OpticalTrackDescriptor track, Stream output, int sectorSize, bool swapAudio, CancellationToken cancellationToken)
     {
+        if (track.StoredSectorSize != sectorSize || swapAudio)
+        {
+            var sector = new byte[sectorSize];
+            for (long index = 0; index < track.SectorCount; index++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                long offset = checked(track.SourceOffset + index * track.StoredSectorSize);
+                await track.DataSource.ReadExactlyAsync(offset, sector, cancellationToken).ConfigureAwait(false);
+                if (swapAudio)
+                    for (int sample = 0; sample < sector.Length; sample += 2)
+                        (sector[sample], sector[sample + 1]) = (sector[sample + 1], sector[sample]);
+                await output.WriteAsync(sector, cancellationToken).ConfigureAwait(false);
+            }
+            return;
+        }
+
         var buffer = new byte[64 * DataSizeConstants.BytesPerKibibyte];
         var total = checked(track.SectorCount * sectorSize);
         long copied = 0;
@@ -100,13 +138,19 @@ public sealed class GdiWriter : IMediaImageWriter
         }
     }
 
-    private static int GetTrackSectorSize(OpticalTrackDescriptor track) => track.Mode switch
+    private static int GetTrackSectorSize(OpticalTrackDescriptor track, bool isGdChd)
     {
-        OpticalTrackMode.Audio when track.StoredSectorSize == GdiConstants.RawSectorSize => GdiConstants.RawSectorSize,
-        OpticalTrackMode.Mode1Data2048 when track.StoredSectorSize == GdiConstants.DataSectorSize => GdiConstants.DataSectorSize,
-        OpticalTrackMode.Mode1Raw2352 when track.StoredSectorSize == GdiConstants.RawSectorSize => GdiConstants.RawSectorSize,
-        _ => 0
-    };
+        int size = track.Mode switch
+        {
+            OpticalTrackMode.Audio or OpticalTrackMode.Mode1Raw2352 => GdiConstants.RawSectorSize,
+            OpticalTrackMode.Mode1Data2048 => GdiConstants.DataSectorSize,
+            _ => 0
+        };
+        return track.StoredSectorSize == size || (isGdChd && track.StoredSectorSize == ChdConstants.CdFrameSize) ? size : 0;
+    }
+
+    private static bool IsGdChd(MediaImageDocument document) =>
+        document.FormatId == OpticalImageFormatIds.Chd && document.Metadata.GetValueOrDefault("mediaProfile") == GdiConstants.MediaProfile;
 
     private static string Quote(string value) => $"\"{value.Replace("\"", "\\\"")}\"";
 

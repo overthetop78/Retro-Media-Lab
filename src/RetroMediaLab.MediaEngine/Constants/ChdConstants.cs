@@ -21,6 +21,8 @@ internal static class ChdConstants
     public const uint HardDiskMetadataTag = 0x47444444;
     public const uint CdTrackMetadataTag = 0x43485452;
     public const uint CdTrackMetadata2Tag = 0x43485432;
+    public const uint GdRomTrackMetadataTag = 0x43484744;
+    public const uint GdRomLegacyTrackMetadataTag = 0x43484754;
     public const uint DvdMetadataTag = 0x44564420;
     public const uint MetadataLengthMask = 0x00FFFFFF;
     public const uint MetadataFlagsMask = 0xFF000000;

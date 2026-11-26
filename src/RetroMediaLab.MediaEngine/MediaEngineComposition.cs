@@ -14,6 +14,8 @@ using FileSystemsMediaExplorer = RetroMediaLab.MediaFileSystems.Exploration.Medi
 using FileSystemRegistry = RetroMediaLab.MediaFileSystems.Exploration.SectorFileSystemRegistry;
 using RetroMediaLab.MediaEngine.Interfaces;
 using RetroMediaLab.MediaEngine.Services;
+using RetroMediaLab.MediaEngine.Images.Writing.Optical;
+using System.Runtime.Versioning;
 
 namespace RetroMediaLab.MediaEngine;
 
@@ -73,6 +75,17 @@ public sealed class MediaEngineComposition
     public MediaConversionService ConversionService { get; }
 
     public OpticalImageConversionService OpticalConversionService { get; }
+
+    public OpticalCdTrackAcquisition OpticalCdAcquisition { get; } = new();
+
+    [SupportedOSPlatform("windows")]
+    public WindowsOpticalDiscReader OpticalDiscReader { get; } = new();
+
+    [SupportedOSPlatform("windows")]
+    public WindowsOpticalDiscWriter OpticalDiscWriter { get; } = new();
+
+    [SupportedOSPlatform("windows")]
+    public GdRomAcquisitionService GdRomAcquisition { get; } = new();
 
     public SequentialMediaConversionService SequentialConversionService { get; }
 

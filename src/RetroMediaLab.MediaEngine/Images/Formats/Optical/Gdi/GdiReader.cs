@@ -56,32 +56,41 @@ public sealed class GdiReader : IMediaImageReader
         var descriptor = await descriptors.ReadAsync(context.Source.PrimaryPath, cancellationToken).ConfigureAwait(false);
         var directory = Path.GetDirectoryName(Path.GetFullPath(context.Source.PrimaryPath)) ?? Directory.GetCurrentDirectory();
         ValidateAssociatedFiles(context.Source.PrimaryPath, descriptor);
-        var sources = descriptor.Tracks.Select(track => ResolveDataPath(directory, track.FileName)).Distinct(StringComparer.OrdinalIgnoreCase) .ToDictionary(path => path, path => new FileRandomAccessData(path), StringComparer.OrdinalIgnoreCase);
+        var paths = descriptor.Tracks.Select(track => ResolveDataPath(directory, track.FileName)).ToArray();
+        var sources = paths.Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(path => path, path => new FileRandomAccessData(path), StringComparer.OrdinalIgnoreCase);
 
         var tracks = new List<OpticalTrackDescriptor>(descriptor.Tracks.Count);
         for (var index = 0; index < descriptor.Tracks.Count; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var declaration = descriptor.Tracks[index];
-            var path = ResolveDataPath(directory, declaration.FileName);
-            var source = sources[path];
-            if (declaration.FileOffset > source.Length
-                || (source.Length - declaration.FileOffset) % declaration.SectorSize != 0)
+            var source = sources[paths[index]];
+            var endOffset = source.Length;
+            for (int next = index + 1; next < paths.Length; next++)
+            {
+                if (!StringComparer.OrdinalIgnoreCase.Equals(paths[index], paths[next]))
+                    continue;
+                endOffset = descriptor.Tracks[next].FileOffset;
+                break;
+            }
+
+            long byteCount = endOffset - declaration.FileOffset;
+            if (endOffset > source.Length || byteCount <= 0 || byteCount % declaration.SectorSize != 0)
                 throw new InvalidDataException($"GDI track {declaration.Number} is not aligned to its declared sector size.");
-            var available = (source.Length - declaration.FileOffset) / declaration.SectorSize;
+            var available = byteCount / declaration.SectorSize;
             if (available <= 0) throw new InvalidDataException($"GDI track {declaration.Number} has no sectors.");
             var sectorCount = available;
             if (index + 1 < descriptor.Tracks.Count)
             {
                 var nextLba = descriptor.Tracks[index + 1].Lba;
                 var declaredCount = nextLba - declaration.Lba;
-                if (declaredCount <= 0 || declaredCount > available)
-                    throw new InvalidDataException($"GDI track {declaration.Number} does not cover the next track LBA.");
-                sectorCount = declaredCount;
+                sectorCount = Math.Min(available, declaredCount);
             }
             var mode = ResolveMode(declaration);
             var (userOffset, userLength) = ResolveUserDataWindow(mode, declaration.SectorSize);
-            tracks.Add(new OpticalTrackDescriptor(1, declaration.Number, mode, declaration.Lba, sectorCount, declaration.SectorSize, userOffset, userLength, source, declaration.FileOffset, [new OpticalTrackIndex(1, 0)]));
+            int session = declaration.Lba >= GdiConstants.HighDensityStartLba ? 2 : 1;
+            tracks.Add(new OpticalTrackDescriptor(session, declaration.Number, mode, declaration.Lba, sectorCount, declaration.SectorSize, userOffset, userLength, source, declaration.FileOffset, [new OpticalTrackIndex(1, 0)]));
         }
 
         var associatedPaths = sources.Keys.ToArray();

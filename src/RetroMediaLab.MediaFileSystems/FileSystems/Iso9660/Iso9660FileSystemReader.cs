@@ -27,20 +27,31 @@ public class Iso9660FileSystemReader : IMediaFileSystemReader
         }
     }
 
-    public FileSystemVolume Read(IMediaImageDocument document, MediaVolumeDescriptor volume)
+    public FileSystemVolume Read(IMediaImageDocument document, MediaVolumeDescriptor volume) =>
+        ReadVolume(document, volume, includeFileContents: true, CancellationToken.None).Volume;
+
+    /// <summary>Reads directory metadata and returns the track that resolves each file's storage reference.</summary>
+    public (FileSystemVolume Volume, IMediaOpticalTrack Extents) ReadCatalog(
+        IMediaImageDocument document, MediaVolumeDescriptor volume, CancellationToken cancellationToken = default) =>
+        ReadVolume(document, volume, includeFileContents: false, cancellationToken);
+
+    private (FileSystemVolume Volume, IMediaOpticalTrack Extents) ReadVolume(
+        IMediaImageDocument document, MediaVolumeDescriptor volume, bool includeFileContents, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var descriptor = ReadDescriptor(document, volume);
         var blockSize = ReadBothEndianUInt16(descriptor, Iso9660Constants.LogicalBlockSizeOffset);
         if (blockSize != Iso9660Constants.LogicalBlockSize)
             throw new NotSupportedException($"Unsupported ISO 9660 logical block size {blockSize}.");
         var volumeBlocks = ReadBothEndianUInt32(descriptor, Iso9660Constants.VolumeSpaceSizeOffset);
         var root = ReadDirectoryRecord(descriptor, Iso9660Constants.RootDirectoryRecordOffset);
-        var track = ResolveTrack(document, volume);
+        var track = ResolveExtentTrack(document, ResolveTrack(document, volume), descriptor);
         var warnings = new List<string>();
         var visited = new HashSet<uint>();
-        var entries = ReadDirectory(track, root.Extent, root.Length, visited, warnings);
+        var entries = ReadDirectory(track, root.Extent, root.Length, visited, warnings, includeFileContents, cancellationToken);
         var name = DecodeVolumeIdentifier(descriptor.AsSpan(Iso9660Constants.VolumeIdentifierOffset, Iso9660Constants.VolumeIdentifierLength));
-        return new FileSystemVolume(name, Id, checked((long)volumeBlocks * blockSize), 0, null, null, entries, warnings, freeSpaceKnown: false, attributes: ["ISO 9660"]);
+        return (new FileSystemVolume(name, Id, checked((long)volumeBlocks * blockSize), 0, null, null,
+            entries, warnings, freeSpaceKnown: false, attributes: ["ISO 9660"]), track);
     }
 
     protected virtual bool AcceptVolumeDescriptor(ReadOnlySpan<byte> descriptor) => descriptor[0] == Iso9660Constants.PrimaryVolumeDescriptorType;
@@ -69,14 +80,16 @@ public class Iso9660FileSystemReader : IMediaFileSystemReader
                 throw new InvalidDataException("An ISO 9660 volume descriptor is incomplete.");
             if (!descriptor.AsSpan(Iso9660Constants.VolumeDescriptorIdentifierOffset, Iso9660Constants.VolumeDescriptorIdentifierLength).SequenceEqual(System.Text.Encoding.ASCII.GetBytes(Iso9660Constants.VolumeDescriptorIdentifier)))
                 throw new InvalidDataException("The ISO 9660 volume descriptor identifier is missing.");
-            if (AcceptVolumeDescriptor(descriptor) && AcceptFileSystem(track, descriptor)) return descriptor;
+            if (AcceptVolumeDescriptor(descriptor) && AcceptFileSystem(ResolveExtentTrack(document, track, descriptor), descriptor)) return descriptor;
             if (descriptor[0] == Iso9660Constants.VolumeDescriptorTerminatorType)
                 throw new InvalidDataException("The requested ISO 9660 volume descriptor is absent.");
         }
     }
 
-    private IReadOnlyList<FileSystemEntry> ReadDirectory(IMediaOpticalTrack track, uint extent, uint length, HashSet<uint> visited, ICollection<string> warnings)
+    private IReadOnlyList<FileSystemEntry> ReadDirectory(IMediaOpticalTrack track, uint extent, uint length,
+        HashSet<uint> visited, ICollection<string> warnings, bool includeFileContents, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (!visited.Add(extent))
         {
             warnings.Add($"ISO 9660 directory extent {extent} is referenced recursively.");
@@ -106,9 +119,14 @@ public class Iso9660FileSystemReader : IMediaFileSystemReader
                 var childExtent = BinaryPrimitives.ReadUInt32LittleEndian(record.Slice(Iso9660Constants.DirectoryExtentOffset, 4));
                 var childLength = BinaryPrimitives.ReadUInt32LittleEndian(record.Slice(Iso9660Constants.DirectoryDataLengthOffset, 4));
                 var isDirectory = (record[Iso9660Constants.DirectoryFlagsOffset] & Iso9660Constants.DirectoryFlag) != 0;
-                var children = isDirectory ? ReadDirectory(track, childExtent, childLength, visited, warnings) : [];
+                if (!includeFileContents && ((record[Iso9660Constants.DirectoryFlagsOffset] & 0x80) != 0 ||
+                    record[1] != 0 || record[26] != 0 || record[27] != 0 || childExtent > int.MaxValue))
+                    throw new NotSupportedException("The ISO 9660 catalog contains a file section whose layout cannot be exported.");
+                var children = isDirectory
+                    ? ReadDirectory(track, childExtent, childLength, visited, warnings, includeFileContents, cancellationToken)
+                    : [];
                 IReadOnlyList<byte>? content = null;
-                if (!isDirectory && childLength <= int.MaxValue)
+                if (includeFileContents && !isDirectory && childLength <= int.MaxValue)
                     content = ReadExtent(track, childExtent, childLength);
                 entries.Add(new FileSystemEntry(
                     name,
@@ -159,6 +177,44 @@ public class Iso9660FileSystemReader : IMediaFileSystemReader
             throw new NotSupportedException("ISO 9660 requires optical track data.");
         return optical.Tracks.FirstOrDefault(track => !track.IsAudio && (volume.SessionNumber is null || track.SessionNumber == volume.SessionNumber) && (volume.TrackNumber is null || track.TrackNumber == volume.TrackNumber))
             ?? throw new InvalidDataException("No data track is available for the requested optical volume.");
+    }
+
+    private static IMediaOpticalTrack ResolveExtentTrack(IMediaImageDocument document, IMediaOpticalTrack track, ReadOnlySpan<byte> descriptor)
+    {
+        if (track.SessionNumber != 2 || track.FirstSector != 45000 ||
+            document.Representation is not IMediaOpticalRepresentation { Tracks: { } tracks } ||
+            (document.FormatId != MediaImageFormatIds.OpticalGdi &&
+             document.Metadata.GetValueOrDefault("mediaProfile") != "Dreamcast GD-ROM"))
+            return track;
+
+        var root = ReadDirectoryRecord(descriptor, Iso9660Constants.RootDirectoryRecordOffset);
+        long baseSector = root.Extent >= track.FirstSector ? 0 : track.FirstSector;
+        var dataTracks = tracks.Where(candidate => candidate.SessionNumber == track.SessionNumber &&
+            !candidate.IsAudio && candidate.UserDataLength == Iso9660Constants.LogicalBlockSize).ToArray();
+        return new GdRomExtentTrack(track, dataTracks, baseSector);
+    }
+
+    private sealed class GdRomExtentTrack(IMediaOpticalTrack volumeTrack, IMediaOpticalTrack[] dataTracks, long baseSector) : IMediaOpticalTrack
+    {
+        public int SessionNumber => volumeTrack.SessionNumber;
+        public int TrackNumber => volumeTrack.TrackNumber;
+        public long FirstSector => volumeTrack.FirstSector;
+        public long SectorCount => volumeTrack.SectorCount;
+        public int UserDataLength => volumeTrack.UserDataLength;
+        public bool IsAudio => false;
+
+        public ValueTask<byte[]> ReadUserDataAsync(long extentSector, CancellationToken cancellationToken = default)
+        {
+            long lba = checked(baseSector + extentSector);
+            foreach (var track in dataTracks)
+            {
+                long relative = lba - track.FirstSector;
+                if (relative >= 0 && relative < track.SectorCount)
+                    return track.ReadUserDataAsync(relative, cancellationToken);
+            }
+
+            throw new InvalidDataException($"GD-ROM ISO 9660 sector {lba} is outside the high-density data tracks.");
+        }
     }
 
     private static (uint Extent, uint Length) ReadDirectoryRecord(ReadOnlySpan<byte> source, int offset)

@@ -34,4 +34,7 @@ internal sealed class ChdOpticalTrackMetadata
     public long PregapFrames { get; }
     public long PostgapFrames { get; }
     public bool PregapStored { get; }
+    public long PaddingFrames { get; init; }
+    public bool IsGdRom { get; init; }
+    public bool UsesLittleEndianAudio { get; init; }
 }

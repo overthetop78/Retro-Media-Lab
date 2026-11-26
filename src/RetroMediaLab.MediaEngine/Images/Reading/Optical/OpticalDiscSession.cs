@@ -17,7 +17,16 @@ public sealed class OpticalDiscSession : IDisposable
     private byte[]?[]? _cachedSubchannels;
     public IReadOnlyList<OpticalDiscTrack> Tracks { get; }
     public string FormatId => _document.FormatId;
-    public bool AudioBigEndian => FormatId == OpticalImageFormatIds.Chd;
+    public bool AudioBigEndian => FormatId == OpticalImageFormatIds.Chd && _document.Metadata.GetValueOrDefault("audioByteOrder") != "little";
+
+    internal MediaImageDocument Document
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _document;
+        }
+    }
 
     private OpticalDiscSession(MediaImageDocument document)
     {
@@ -34,7 +43,7 @@ public sealed class OpticalDiscSession : IDisposable
         int.TryParse(metadata.GetValueOrDefault("REM:LOOP"),System.Globalization.NumberStyles.Integer,System.Globalization.CultureInfo.InvariantCulture,out int loopOffset);
         return new OpticalDiscTrack(track.TrackNumber,track.Mode,track.FirstSector,
             track.SectorCount,track.StoredSectorSize,track.UserDataOffset,track.UserDataLength,track.PregapSectors,
-            track.PostgapSectors,track.StoredPregapSectors,track.HasSubchannels,loopMode,loopOffset);
+            track.PostgapSectors,track.StoredPregapSectors,track.HasSubchannels,loopMode,loopOffset) { SessionNumber = track.SessionNumber };
     }
     public static async Task<OpticalDiscSession> OpenAsync(string path, CancellationToken cancellationToken = default, bool includeCompanionAudio = false)
     {
@@ -63,6 +72,24 @@ public sealed class OpticalDiscSession : IDisposable
         }
         return _sectors.ReadStoredSectorAsync(_tracks[trackIndex],relativeSector,destination,cancellationToken);
     }
+    public ValueTask ReadUserSectorAsync(int trackIndex, long relativeSector, Memory<byte> destination, CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        cancellationToken.ThrowIfCancellationRequested();
+        OpticalTrackDescriptor track = _tracks[trackIndex];
+        if (_cachedSectors is not { } cached)
+            return _sectors.ReadUserDataAsync(track, relativeSector, destination, cancellationToken);
+
+        if (relativeSector < 0 || relativeSector >= track.SectorCount)
+            throw new ArgumentOutOfRangeException(nameof(relativeSector));
+        if (destination.Length != track.UserDataLength)
+            throw new ArgumentException("The destination must contain exactly one user-data sector.", nameof(destination));
+        long sector = relativeSector + track.StoredPregapSectors;
+        int offset = checked((int)(sector * track.StoredSectorSize + track.UserDataOffset));
+        cached[trackIndex].AsMemory(offset, track.UserDataLength).CopyTo(destination);
+        return ValueTask.CompletedTask;
+    }
+
     public ValueTask<byte[]?> ReadSubchannelAsync(int trackIndex, long relativeSector, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed,this);
@@ -112,7 +139,7 @@ public sealed class OpticalDiscSession : IDisposable
         try { ReleaseDocument(_document); }
         finally { _cachedSectors = null; _cachedSubchannels = null; }
     }
-    private static void ReleaseDocument(MediaImageDocument document)
+    internal static void ReleaseDocument(MediaImageDocument document)
     {
         Exception? failure = null;
         try

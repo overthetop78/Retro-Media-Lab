@@ -34,6 +34,8 @@ public sealed class CueTrackDeclaration
         Metadata = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(metadata ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase));
     }
 
+    internal int? GdRomSession { get; init; }
+
     public int Number { get; }
     public OpticalTrackMode Mode { get; }
     public IReadOnlyList<OpticalTrackIndex> Indexes { get; }

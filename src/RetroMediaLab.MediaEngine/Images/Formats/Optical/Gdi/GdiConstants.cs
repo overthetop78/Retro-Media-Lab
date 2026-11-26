@@ -11,6 +11,7 @@ internal static class GdiConstants
     public const int DataControl = 4;
     public const int DataSectorSize = 2048;
     public const int RawSectorSize = 2352;
+    public const int HighDensityStartLba = 45000;
     public const int DefaultTrackNumberWidth = 2;
     public const string FormatId = OpticalImageFormatIds.Gdi;
     public const string MediaProfile = "Dreamcast GD-ROM";

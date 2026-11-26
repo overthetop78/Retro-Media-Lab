@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using RetroMediaLab.MediaEngine.Images.Formats.Optical.Gdi;
 using MediaSourceDescriptor = RetroMediaLab.MediaEngine.Contracts.MediaSourceDescriptor;
 using RetroMediaLab.MediaEngine.Enums;
 using RetroMediaLab.MediaEngine.Constants;
@@ -42,6 +43,7 @@ public sealed class BinCueReader : IMediaImageReader
         try
         {
             var sheet = await cueSheets.ReadAsync(context.Source.PrimaryPath, cancellationToken).ConfigureAwait(false);
+            _ = IsGdRomSheet(sheet);
             var cueDirectory = Path.GetDirectoryName(Path.GetFullPath(context.Source.PrimaryPath)) ?? Directory.GetCurrentDirectory();
             foreach (var file in sheet.Files)
             {
@@ -75,86 +77,130 @@ public sealed class BinCueReader : IMediaImageReader
         var cueDirectory = Path.GetDirectoryName(Path.GetFullPath(context.Source.PrimaryPath)) ?? Directory.GetCurrentDirectory();
         var associatedPaths = new List<string>();
         var tracks = new List<OpticalTrackDescriptor>();
+        var ownedResources = new List<IDisposable>();
+        bool transferred = false;
+        bool isGdRom = IsGdRomSheet(sheet);
         long firstSector = 0;
 
-        foreach (var file in sheet.Files)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var path = ResolveAssociatedPath(cueDirectory, file.DeclaredPath);
-            if (!File.Exists(path)) throw new InvalidDataException($"CUE track file '{file.DeclaredPath}' is missing.");
-            if (path.Equals(Path.GetFullPath(context.Source.PrimaryPath), StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("A CUE sheet cannot use itself as track data.");
-
-            IMediaRandomAccessData source = file.Kind switch
+            foreach (var file in sheet.Files)
             {
-                CueFileKind.Binary => new FileRandomAccessData(path),
-                CueFileKind.WavePcm => WavePcmRandomAccessData.Open(path),
-                CueFileKind.Vorbis => OpenVorbisAudio(path,cancellationToken),
-                _ => throw new NotSupportedException($"Unsupported CUE source kind '{file.Kind}'.")
-            };
-            if (file.Kind is CueFileKind.WavePcm or CueFileKind.Vorbis
-                && file.Tracks.Any(track => track.Mode != OpticalTrackMode.Audio))
-                throw new InvalidDataException("WAVE CUE files can contain only AUDIO tracks.");
-            var sectorSizes = file.Tracks.Select(track => GetStoredSectorSize(track.Mode)).Distinct().ToArray();
-            if (sectorSizes.Length != 1)
-                throw new NotSupportedException("Tracks with different stored sector sizes must use separate CUE files in the initial profile.");
-            var sectorSize = sectorSizes[0];
-            if (source.Length < sectorSize || file.Kind != CueFileKind.Vorbis && source.Length % sectorSize != 0)
-                throw new InvalidDataException($"CUE track file '{file.DeclaredPath}' is not aligned to {sectorSize}-byte sectors.");
-            var fileSectorCount = source.Length / sectorSize;
-            var starts = file.Tracks.Select(GetIndexOnePosition).ToArray();
-            if (!starts.SequenceEqual(starts.Order()))
-                throw new InvalidDataException("CUE INDEX 01 positions must increase within each file.");
+                cancellationToken.ThrowIfCancellationRequested();
+                var path = ResolveAssociatedPath(cueDirectory, file.DeclaredPath);
+                if (!File.Exists(path)) throw new InvalidDataException($"CUE track file '{file.DeclaredPath}' is missing.");
+                if (path.Equals(Path.GetFullPath(context.Source.PrimaryPath), StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("A CUE sheet cannot use itself as track data.");
 
-            for (var index = 0; index < file.Tracks.Count; index++)
-            {
-                var declaration = file.Tracks[index];
-                var start = starts[index];
-                var end = index + 1 < starts.Length ? starts[index + 1] : fileSectorCount;
-                if (start < 0 || start >= fileSectorCount || end <= start || end > fileSectorCount)
-                    throw new InvalidDataException($"CUE track {declaration.Number} exceeds its source file.");
-                var storedPregap = GetStoredPregap(declaration, start);
-                var (userOffset, userLength) = GetUserDataWindow(declaration.Mode);
-                tracks.Add(new OpticalTrackDescriptor(
-                    1,
-                    declaration.Number,
-                    declaration.Mode,
-                    firstSector,
-                    end - start,
-                    sectorSize,
-                    userOffset,
-                    userLength,
-                    source,
-                    checked(start * sectorSize),
-                    declaration.Indexes.Select(item => new OpticalTrackIndex(item.Number, item.RelativeSector - start)).ToArray(),
-                    declaration.PregapSectors,
-                    declaration.PostgapSectors,
-                    declaration.Flags,
-                    sheet.CatalogNumber,
-                    declaration.Isrc,
-                    storedPregapSectors: storedPregap,
-                    storedPregapSourceOffset: storedPregap > 0 ? checked((start - storedPregap) * sectorSize) : null)
-                    { Metadata = declaration.Metadata });
-                firstSector = checked(firstSector + end - start);
+                IMediaRandomAccessData source = file.Kind switch
+                {
+                    CueFileKind.Binary => new FileRandomAccessData(path),
+                    CueFileKind.WavePcm => WavePcmRandomAccessData.Open(path),
+                    CueFileKind.Vorbis => OpenVorbisAudio(path,cancellationToken),
+                    _ => throw new NotSupportedException($"Unsupported CUE source kind '{file.Kind}'.")
+                };
+                if (source is IDisposable resource) ownedResources.Add(resource);
+                if (file.Kind is CueFileKind.WavePcm or CueFileKind.Vorbis
+                    && file.Tracks.Any(track => track.Mode != OpticalTrackMode.Audio))
+                    throw new InvalidDataException("WAVE CUE files can contain only AUDIO tracks.");
+                var sectorSizes = file.Tracks.Select(track => GetStoredSectorSize(track.Mode)).Distinct().ToArray();
+                if (sectorSizes.Length != 1)
+                    throw new NotSupportedException("Tracks with different stored sector sizes must use separate CUE files in the initial profile.");
+                var sectorSize = sectorSizes[0];
+                if (source.Length < sectorSize || file.Kind != CueFileKind.Vorbis && source.Length % sectorSize != 0)
+                    throw new InvalidDataException($"CUE track file '{file.DeclaredPath}' is not aligned to {sectorSize}-byte sectors.");
+                var fileSectorCount = source.Length / sectorSize;
+                var starts = file.Tracks.Select(GetIndexOnePosition).ToArray();
+                if (!starts.SequenceEqual(starts.Order()))
+                    throw new InvalidDataException("CUE INDEX 01 positions must increase within each file.");
+
+                for (var index = 0; index < file.Tracks.Count; index++)
+                {
+                    var declaration = file.Tracks[index];
+                    var start = starts[index];
+                    var end = index + 1 < starts.Length ? starts[index + 1] : fileSectorCount;
+                    if (isGdRom && index + 1 < starts.Length)
+                        end -= GetStoredPregap(file.Tracks[index + 1], end);
+                    if (start < 0 || start >= fileSectorCount || end <= start || end > fileSectorCount)
+                        throw new InvalidDataException($"CUE track {declaration.Number} exceeds its source file.");
+                    var storedPregap = GetStoredPregap(declaration, start);
+                    int session = isGdRom ? declaration.GdRomSession ?? 1 : 1;
+                    if (isGdRom)
+                    {
+                        if (tracks.Count == 0 || declaration.Number == 3)
+                        {
+                            long sessionStart = session == 2 ? GdiConstants.HighDensityStartLba : 0;
+                            if (firstSector > sessionStart || storedPregap > sessionStart)
+                                throw new InvalidDataException("The CUE GD-ROM density areas overlap or the pregap starts before the disc.");
+                            firstSector = sessionStart;
+                        }
+                        else
+                        {
+                            firstSector = checked(firstSector + storedPregap + declaration.PregapSectors);
+                        }
+                    }
+                    var (userOffset, userLength) = GetUserDataWindow(declaration.Mode);
+                    tracks.Add(new OpticalTrackDescriptor(
+                        session,
+                        declaration.Number,
+                        declaration.Mode,
+                        firstSector,
+                        end - start,
+                        sectorSize,
+                        userOffset,
+                        userLength,
+                        source,
+                        checked(start * sectorSize),
+                        declaration.Indexes.Select(item => new OpticalTrackIndex(item.Number, item.RelativeSector - start)).ToArray(),
+                        declaration.PregapSectors,
+                        declaration.PostgapSectors,
+                        declaration.Flags,
+                        sheet.CatalogNumber,
+                        declaration.Isrc,
+                        storedPregapSectors: storedPregap,
+                        storedPregapSourceOffset: storedPregap > 0 ? checked((start - storedPregap) * sectorSize) : null)
+                        { Metadata = declaration.Metadata });
+                    firstSector = checked(firstSector + end - start + (isGdRom ? declaration.PostgapSectors : 0));
+                }
+
+                associatedPaths.Add(path);
             }
 
-            associatedPaths.Add(path);
-        }
-
-        var sourceDescriptor = context.Source with { AssociatedPaths = associatedPaths };
-        var representation = new OpticalMediaImageRepresentation(tracks.Sum(track => checked(track.SectorCount * track.UserDataLength)), tracks, associatedFiles: [context.Source.PrimaryPath, .. associatedPaths]);
-        return new MediaImageDocument(
-            sourceDescriptor,
-            OpticalImageFormatIds.BinCue,
-            MediaKind.Optical,
-            representation,
-            [],
-            [],
-            new Dictionary<string, string>(sheet.Metadata, StringComparer.OrdinalIgnoreCase)
+            var sourceDescriptor = context.Source with { AssociatedPaths = associatedPaths };
+            var representation = new OpticalMediaImageRepresentation(tracks.Sum(track => checked(track.SectorCount * track.UserDataLength)), tracks, associatedFiles: [context.Source.PrimaryPath, .. associatedPaths]);
+            var metadata = new Dictionary<string, string>(sheet.Metadata, StringComparer.OrdinalIgnoreCase)
             {
                 ["trackCount"] = tracks.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 ["fileCount"] = associatedPaths.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
-            });
+            };
+            if (isGdRom) metadata["mediaProfile"] = GdiConstants.MediaProfile;
+            var document = new MediaImageDocument(sourceDescriptor, OpticalImageFormatIds.BinCue, MediaKind.Optical,
+                representation, [], [], metadata);
+            transferred = true;
+            return document;
+        }
+        finally
+        {
+            if (!transferred)
+                foreach (var resource in ownedResources)
+                    resource.Dispose();
+        }
+    }
+
+    private static bool IsGdRomSheet(CueSheetDocument sheet)
+    {
+        var tracks = sheet.Files.SelectMany(file => file.Tracks).ToArray();
+        if (!tracks.Any(track => track.GdRomSession == 2))
+            return false;
+
+        if (tracks.Length is < 3 or > 99 || tracks[0].GdRomSession != 1 || tracks[1].GdRomSession != 1 ||
+            tracks.Skip(2).Any(track => track.GdRomSession != 2) ||
+            tracks.Where((track, index) => track.Number != index + 1).Any() ||
+            tracks[0].Mode == OpticalTrackMode.Audio || tracks[1].Mode != OpticalTrackMode.Audio ||
+            tracks[2].Mode == OpticalTrackMode.Audio)
+            throw new InvalidDataException("The CUE GD-ROM must declare two low-density tracks followed by a high-density data track.");
+
+        return true;
     }
 
     private static string ResolveAssociatedPath(string cueDirectory, string declaredPath)
